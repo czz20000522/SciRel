@@ -1,0 +1,152 @@
+kind: scientific_task_graph
+name: 轴对称多矩形线圈真空场
+entrypoint: graph.py::run_graph
+display_name:
+  zh: 轴对称多矩形线圈真空场
+framework_mapping:
+  primary_pfm_node: N1
+  coverage: full
+inputs:
+- name: r_grid
+  meaning: 真空场目标 R 坐标
+  shape: '[N_Z,N_R]'
+  units: m
+  required: true
+  constraints: rectilinear, R nonnegative, R/Z finite
+- name: z_grid
+  meaning: 真空场目标 Z 坐标
+  shape: '[N_Z,N_R]'
+  units: m
+  required: true
+  constraints: rectilinear, R/Z finite
+- name: rectangular_coils
+  meaning: 调用方拥有的矩形线圈配置列表
+  shape: list[mapping]
+  units: mixed SI
+  required: true
+  constraints: each mapping declares r0_m,z0_m,nr,nz,dr_m,dz_m,current_a; current_a is the source set-drive current, optional weights are per-filament multipliers, angle_deg optional
+outputs:
+- name: psi_vac
+  meaning: 线圈真空磁通
+  shape: '[N_Z,N_R]'
+  units: Wb
+- name: b_r_vac
+  meaning: 线圈真空径向磁场
+  shape: '[N_Z,N_R]'
+  units: T
+- name: b_z_vac
+  meaning: 线圈真空轴向磁场
+  shape: '[N_Z,N_R]'
+  units: T
+- name: filaments
+  meaning: 已展开的带权重圆丝表
+  shape: '[N_filament,3]=[R_m,Z_m,weight]'
+  units: m,m,dimensionless
+execution:
+  mode: ordered_composition
+  order_policy: expand_each_rectangular_coil_then_evaluate_its_weighted_filament_green_response_then_stack_one_response_row_per_coil_then_superpose_with_each_coil_current
+  state_policy: no hidden device object, cache, source path, or mutable current state
+  failure_policy: invalid configuration or nonrectilinear grid fails before field evaluation
+nodes:
+- id: rectangular_filament_geometry
+  name: 矩形线圈电流丝离散
+  kind: scientific_operator
+  asset_ref: scirel.field.rectangular_coil_filaments
+  callable: scirel.field.rectangular_coil_filaments::discretize_rectangular_coil
+  inputs: [r0_m, z0_m, nr, nz, dr_m, dz_m, angle_deg]
+  outputs: [rz_pts]
+- id: attach_coil_current
+  name: 独立驱动电流与丝权重绑定
+  kind: controlled_glue
+  callable: glue:_attach_coil_current
+  inputs: [rz_pts, current_a, weights]
+  outputs: [rzw, drive_current]
+- id: target_point_packing
+  name: R-Z 目标点打包
+  kind: controlled_glue
+  callable: glue:_target_points
+  inputs: [r_grid, z_grid]
+  outputs: [target_points]
+- id: circular_green_response
+  name: 每个线圈块的圆电流 Green 响应
+  kind: scientific_operator
+  asset_ref: scirel.field.circular_filament_green
+  callable: scirel.field.circular_filament_green::circular_filament_green_response
+  inputs: [rzw, target_points]
+  outputs: [gpsi, gBR, gBZ]
+- id: response_row_stacking
+  name: 每线圈响应行堆叠
+  kind: controlled_glue
+  callable: glue:_stack_response_rows
+  inputs: [responses]
+  outputs: [gpsi, gBR, gBZ]
+- id: current_weighted_superposition
+  name: 独立线圈电流加权叠加
+  kind: scientific_operator
+  asset_ref: scirel.field.current_green_superposition
+  callable: scirel.field.current_green_superposition::superpose_current_green_field
+  inputs: [currents, gpsi, gBR, gBZ]
+  outputs: [psi, BR, BZ]
+- id: concatenate_filament_blocks
+  name: 仅用于返回的线圈丝块拼接
+  kind: controlled_glue
+  callable: glue:_concatenate_filament_blocks
+  inputs: [weighted_filament_blocks]
+  outputs: [filaments]
+edges:
+- from: rectangular_filament_geometry
+  from_output: rz_pts
+  to: attach_coil_current
+  to_input: rz_pts
+  data: 当前线圈的有序丝坐标
+  condition: each declared coil
+  transform: append dimensionless per-filament weights and retain one current_a scalar
+  closure: controlled_glue
+- from: attach_coil_current
+  from_output: rzw
+  to: circular_green_response
+  to_input: rzw
+  data: 当前线圈独立的带权圆丝块
+  condition: each declared coil before any cross-coil concatenation
+  transform: none
+  closure: controlled_glue
+- from: target_point_packing
+  from_output: target_points
+  to: circular_green_response
+  to_input: target_points
+  data: C-order [R,Z] 目标点表
+  condition: each declared coil
+  transform: pack matching grid coordinates only
+  closure: controlled_glue
+- from: circular_green_response
+  from_output: gpsi
+  to: response_row_stacking
+  to_input: responses
+  data: one response mapping per coil block
+  condition: after each coil response is complete
+  transform: preserve one response row per coil
+  closure: controlled_glue
+- from: response_row_stacking
+  from_output: gpsi
+  to: current_weighted_superposition
+  to_input: gpsi
+  data: one response row per coil
+  condition: after all coil blocks have been evaluated separately
+  transform: stack only; no current multiplication
+  closure: controlled_glue
+- from: attach_coil_current
+  from_output: drive_current
+  to: current_weighted_superposition
+  to_input: currents
+  data: one current_a value per response row
+  condition: after all coil blocks have been evaluated separately
+  transform: preserve caller coil order
+  closure: controlled_glue
+- from: attach_coil_current
+  from_output: rzw
+  to: concatenate_filament_blocks
+  to_input: weighted_filament_blocks
+  data: one weighted filament block per declared coil
+  condition: after each coil has been assigned its current and weights
+  transform: append blocks in caller coil order; retain the per-filament weight column
+  closure: controlled_glue

@@ -1,0 +1,67 @@
+from scirel.closures.mirror_quasineutral_closure import solve_mirror_quasineutral_closure
+import scirel
+from _review_bindings import load_asset as _load_asset, load_graph as _load_graph, load_operator as _load_operator
+# 覆盖：解析准中性、损失锥闭合、零密度回退与 caller profile(psi) 端口。
+import importlib.util
+from pathlib import Path
+
+import numpy as np
+
+from scirel.closures import mirror_quasineutral_closure as graph
+E = 1.602176634e-19
+M = 1.67262192595e-27
+
+
+def _loader(asset_ref):
+    return _load_asset(asset_ref)
+
+def _inputs(**overrides):
+    inputs = dict(b_t=np.array([1.0, 1.4, 2.0]), psi=np.zeros(3), mass_kg=M, charge_c=E, density_ref_m3=2e18, temperature_parallel_j=1200*E, temperature_perpendicular_ref_j=2400*E, b_ref_t=1.0, electron_temperature_j=600*E)
+    inputs.update(overrides)
+    return inputs
+
+
+def test_no_plug_limit_matches_analytic_potential_and_neutrality():
+    result = graph.run_graph(_inputs(), asset_loader=_loader)
+    b = np.array([1.0, 1.4, 2.0])
+    t_perp = b / ((b - 1.0) / (1200*E) + 1.0 / (2400*E))
+    expected = np.log(t_perp / (2400*E)) / (E/(1200*E) + E/(600*E))
+    np.testing.assert_allclose(result['electrostatic_potential'], expected, atol=2e-8)
+    assert np.max(np.abs(result['relative_charge_residual'])) < 1e-10
+
+
+def test_loss_cone_closure_remains_neutral():
+    result = graph.run_graph(_inputs(b_plug_left_t=4.0, b_plug_right_t=5.0, phi_plug_left_v=800.0, phi_plug_right_v=1000.0, loss_cone_refill=0.0, quadrature_order=40), asset_loader=_loader)
+    assert np.all(result['kinetic_moments']['density_pitch_integral'] < 1.0)
+    assert np.max(np.abs(result['relative_charge_residual'])) < 1e-9
+
+
+def test_zero_density_returns_reference_potential():
+    result = graph.run_graph(_inputs(density_ref_m3=0.0, phi_ref_v=15.0), asset_loader=_loader)
+    np.testing.assert_allclose(result['electrostatic_potential'], 15.0)
+
+
+def test_profile_ports_receive_current_psi_values():
+    psi = np.array([0.0, 0.2, 0.4])
+    density = lambda value: 2e18 * (1.0 + 0.1 * value)
+    callable_result = graph.run_graph(_inputs(psi=psi, density_ref_m3=density), asset_loader=_loader)
+    array_result = graph.run_graph(_inputs(psi=psi, density_ref_m3=density(psi)), asset_loader=_loader)
+    np.testing.assert_allclose(callable_result['ion_density'], array_result['ion_density'])
+    assert np.max(np.abs(callable_result['relative_charge_residual'])) < 1e-10
+
+
+def test_review_gate_propagates_quasineutral_nonconvergence():
+    import pytest
+
+    with pytest.raises(RuntimeError, match="did not converge"):
+        graph.run_graph(
+            _inputs(max_iterations=1, potential_tolerance_v=1.0e-30, quasineutral_tolerance=1.0e-30),
+            asset_loader=_loader,
+        )
+
+
+def test_review_gate_rejects_fractional_max_iterations_without_truncation():
+    import pytest
+
+    with pytest.raises(ValueError, match="max_iterations must be an integer"):
+        graph.run_graph(_inputs(max_iterations=3.5), asset_loader=_loader)

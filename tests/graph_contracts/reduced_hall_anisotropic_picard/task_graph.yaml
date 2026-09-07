@@ -1,0 +1,348 @@
+kind: scientific_task_graph
+name: 约化Hall各向异性Picard平衡
+entrypoint: graph.py::run_graph
+display_name:
+  zh: 约化 Hall 各向异性 Picard 平衡
+framework_mapping:
+  primary_pfm_node: N13
+  coverage: full
+  related_pfm_nodes: [N11, N12]
+inputs:
+- name: r_grid
+  meaning: 轴对称径向网格
+  shape: '[N_Z,N_R]'
+  units: m
+  required: true
+  constraints: 二维规则直角 R-Z 网格；R 轴严格递增且至少有 3 个节点；所有坐标必须有限且单位为 m
+- name: z_grid
+  meaning: 轴对称轴向网格
+  shape: '[N_Z,N_R]'
+  units: m
+  required: true
+  constraints: 与 r_grid 同形的二维规则直角 R-Z 网格；Z 轴严格递增且至少有 3 个节点；所有坐标必须有限且单位为 m
+- name: psi_vac
+  meaning: 真空磁通
+  shape: '[N_Z,N_R]'
+  units: Wb
+  required: true
+  constraints: 真空磁通初值；必须与 R-Z 网格同形、所有值有限，单位为 Wb
+- name: g_psi
+  meaning: 等离子体单元电流到磁通的 Green 矩阵
+  shape: '[N_Z*N_R,N_Z*N_R]'
+  units: Wb/A
+  required: true
+  constraints: 等离子体单元电流到磁通的 Green 响应矩阵；形状为 (N_Z*N_R, N_Z*N_R)，所有元素必须有限，单位为 Wb/A
+- name: pressure_closure
+  meaning: 显式调用方闭合端口
+  shape: callable(B,psi)->state
+  units: SI
+  required: true
+  constraints: 调用方提供的闭合 callable(B, psi)；每次迭代接收当前磁场幅值和磁通，并返回包含非负 p_parallel、p_perpendicular 的映射；启用环向惯性时还必须提供所需密度和速度尺度状态
+- name: ion_mass_kg
+  meaning: 离子质量
+  shape: scalar
+  units: kg
+  required: true
+  constraints: 必须为有限且严格为正的标量
+- name: ion_charge_c
+  meaning: 正离子电荷
+  shape: scalar
+  units: C
+  required: true
+  constraints: 必须为有限且严格为正的标量
+- name: tol
+  meaning: Picard 磁通相对变化容差
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 必须为有限且严格为正的标量；不接受 NaN 或无穷值
+- name: maxiter
+  meaning: Picard 最大迭代次数
+  shape: scalar integer
+  units: count
+  required: false
+  constraints: 必须为大于等于 1 的整数标量；不接受浮点数或布尔值
+- name: relax
+  meaning: 磁通松弛权重
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 必须为有限标量，且满足 0 <= relax < 1
+- name: minimum_field
+  meaning: 磁场有效性下限
+  shape: scalar
+  units: T
+  required: false
+  constraints: 必须为有限且严格为正的标量
+- name: minimum_firehose_margin
+  meaning: firehose 张力裕度 1-mu0*(p_parallel-p_perpendicular)/B^2 的下限
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 必须为有限标量；允许为负值以显式关闭该下限
+- name: plasma_mask
+  meaning: 等离子体有效域 mask 或 caller mask
+  shape: '[N_Z,N_R] or callable'
+  units: bool
+  required: false
+  constraints: 可选等离子体区域掩码；可以是与网格同形的布尔场或接收 (B, psi) 并返回该布尔场的 callable；未提供时全部网格有效
+- name: hall_multiplier
+  meaning: Hall 漂移倍率
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 必须为有限且非负的标量
+- name: include_toroidal_inertia
+  meaning: 是否启用环向惯性
+  shape: scalar bool
+  units: bool
+  required: false
+  constraints: 必须为布尔值；不接受用 0/1 代替布尔值
+- name: hall_density_floor_fraction
+  meaning: Hall 密度 floor 比例
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 必须为有限标量，且满足 0 <= value < 1
+- name: maximum_inertial_mach
+  meaning: 惯性 Mach 上限
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 必须为有限且严格为正的标量
+- name: inertia_relax
+  meaning: 惯性内循环松弛
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 必须为有限标量，且满足 0 <= value < 1
+- name: inertia_tolerance
+  meaning: 惯性内循环容差
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 必须为有限且严格为正的标量
+- name: inertia_max_iterations
+  meaning: 惯性内循环最大次数
+  shape: scalar integer
+  units: count
+  required: false
+  constraints: 必须为大于等于 1 的整数标量；不接受浮点数或布尔值
+- name: compatibility_tol
+  meaning: 动量相容性误差阈值
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 必须为有限且非负的标量
+- name: ohm_tolerance
+  meaning: 广义 Ohm 误差阈值
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 必须为有限且严格为正的标量
+- name: strict_compatibility
+  meaning: 是否严格拒绝相容性超限
+  shape: scalar bool
+  units: bool
+  required: false
+  constraints: 必须为布尔值；不接受用 0/1 代替布尔值
+outputs:
+- name: psi
+  meaning: 最终磁通
+  shape: '[N_Z,N_R]'
+  units: Wb
+  constraints: 最终磁通；与输入 R-Z 网格同形，表示最后一次磁通反馈后的状态
+- name: J_phi
+  meaning: 最终环向电流密度
+  shape: '[N_Z,N_R]'
+  units: A/m^2
+- name: hall_state
+  meaning: 局部两流体诊断
+  shape: mapping
+  units: mixed
+- name: closure_state
+  meaning: 最终动理学闭合状态
+  shape: mapping
+  units: mixed
+- name: plasma_cell_currents
+  meaning: 最终网格单元电流状态
+  shape: '[N_Z,N_R]'
+  units: A
+- name: B_R
+  meaning: 最终径向极向磁场分量
+  shape: '[N_Z,N_R]'
+  units: T
+- name: B_Z
+  meaning: 最终轴向极向磁场分量
+  shape: '[N_Z,N_R]'
+  units: T
+- name: B
+  meaning: 最终极向磁场幅值
+  shape: '[N_Z,N_R]'
+  units: T
+- name: p_parallel
+  meaning: 最终平行压强
+  shape: '[N_Z,N_R]'
+  units: Pa
+- name: p_perpendicular
+  meaning: 最终垂直压强
+  shape: '[N_Z,N_R]'
+  units: Pa
+- name: parallel_force
+  meaning: 最终沿场压强力残差
+  shape: '[N_Z,N_R]'
+  units: Pa/m
+- name: force_R
+  meaning: 最终径向目标力残差
+  shape: '[N_Z,N_R]'
+  units: Pa/m
+- name: force_Z
+  meaning: 最终轴向目标力残差
+  shape: '[N_Z,N_R]'
+  units: Pa/m
+- name: ion_toroidal_velocity
+  meaning: 最终离子环向速度
+  shape: '[N_Z,N_R]'
+  units: m/s
+- name: electron_toroidal_velocity
+  meaning: 最终电子环向速度
+  shape: '[N_Z,N_R]'
+  units: m/s
+- name: electric_field_R
+  meaning: 最终径向静电场分量
+  shape: '[N_Z,N_R]'
+  units: V/m
+- name: electric_field_Z
+  meaning: 最终轴向静电场分量
+  shape: '[N_Z,N_R]'
+  units: V/m
+- name: converged
+  meaning: 外层 Picard 满足停止条件的标志
+  shape: scalar_bool
+  units: boolean
+- name: iterations
+  meaning: 外层 Picard 实际迭代轮数
+  shape: scalar_integer
+  units: count
+- name: relative_psi_change
+  meaning: 最后一轮磁通相对变化
+  shape: scalar
+  units: dimensionless
+- name: parallel_force_error
+  meaning: 最终沿场力相容性误差
+  shape: scalar
+  units: dimensionless
+- name: generalized_ohm_error
+  meaning: 最终广义 Ohm 关系误差
+  shape: scalar
+  units: dimensionless
+- name: firehose_margin
+  meaning: 最终 firehose 稳定裕度
+  shape: '[N_Z,N_R]'
+  units: dimensionless
+- name: compatibility_messages
+  meaning: 相容性检查产生的消息集合
+  shape: sequence[string]
+  units: text
+  constraints: 相容性检查消息列表；每条消息说明超过 compatibility_tol 或 ohm_tolerance 的检查项；为空不表示超出声明模型域的情况不存在
+- name: iteration_history
+  meaning: 外层每轮磁通、电流与相容性诊断记录
+  shape: sequence[mapping]
+  units: mixed
+execution:
+  mode: sequential_state_feedback
+  order_policy: psi_to_poloidal_field_then_pressure_closure_then_hall_drift_then_green_flux_feedback
+  state_policy: outer Picard owns psi and previous cell current through relax/tol/maxiter; optional inertia inner loop owns its fixed point through inertia_relax/inertia_tolerance/inertia_max_iterations
+  failure_policy: fail on invalid closure, vanished field, firehose singularity, or strict compatibility error
+nodes:
+- id: poloidal_field
+  name: 轴对称磁通极向场
+  kind: scientific_operator
+  callable: scirel.field.poloidal_field_from_flux::poloidal_field_from_flux
+  asset_ref: scirel.field.poloidal_field_from_flux
+  inputs: [r_grid, z_grid, psi]
+  outputs: [B_R, B_Z, B]
+- id: kinetic_pressure_port
+  name: 调用方动理学压强闭合端口
+  kind: configuration
+  callable: caller:pressure_closure
+  inputs: [B, psi]
+  outputs: [p_parallel, p_perpendicular, closure_state]
+- id: pressure_scalar_broadcast
+  name: 标量压强广播与网格形状校验
+  kind: controlled_glue
+  callable: glue:_coerce_pressure
+  inputs: [p_parallel, p_perpendicular, psi]
+  outputs: [p_parallel, p_perpendicular]
+  glue_contract:
+    operation: shape_embedding
+    ownership: caller owns pressure values in Pa; scalar values are copied unchanged across the grid, and non-scalar values must already have the exact grid shape
+- id: hall_drift
+  name: 约化 Hall 环向漂移闭合
+  kind: scientific_operator
+  callable: scirel.closures.reduced_hall_drift::close_reduced_hall_drift
+  asset_ref: scirel.closures.reduced_hall_drift
+  inputs: [r_grid, z_grid, B_R, B_Z, p_parallel, p_perpendicular, closure_state]
+  outputs: [J_phi, hall_state]
+- id: green_feedback
+  name: 轴对称 Picard 磁通 Green 更新
+  kind: scientific_operator
+  callable: scirel.equilibrium.axisymmetric_picard_update::update_axisymmetric_picard_flux
+  asset_ref: scirel.equilibrium.axisymmetric_picard_update
+  inputs: [r_grid, z_grid, J_phi, psi, psi_vac, g_psi, relax, previous_cell_currents]
+  outputs: [psi_next, plasma_cell_currents, relative_psi_change, relative_current_change]
+edges:
+- from: poloidal_field
+  from_output: B
+  to: kinetic_pressure_port
+  to_input: B
+  data: current magnetic magnitude
+  condition: each Picard iteration
+  required: true
+  transform: none
+  closure: orchestration
+- from: kinetic_pressure_port
+  from_output: p_parallel
+  to: pressure_scalar_broadcast
+  to_input: p_parallel
+  data: caller pressure port
+  condition: each Picard iteration
+  required: true
+  transform: scalar embedding or exact-shape validation
+  closure: controlled_glue
+- from: kinetic_pressure_port
+  from_output: p_perpendicular
+  to: pressure_scalar_broadcast
+  to_input: p_perpendicular
+  data: caller pressure port
+  condition: each Picard iteration
+  required: true
+  transform: scalar embedding or exact-shape validation
+  closure: controlled_glue
+- from: pressure_scalar_broadcast
+  from_output: [p_parallel, p_perpendicular]
+  to: hall_drift
+  to_input: [p_parallel, p_perpendicular]
+  data: grid-shaped pressure fields
+  condition: each Picard iteration
+  required: true
+  transform: none
+  closure: controlled_glue
+- from: kinetic_pressure_port
+  from_output: closure_state
+  to: hall_drift
+  to_input: closure_state
+  data: kinetic density, electron pressure and electrostatic potential
+  condition: each Picard iteration
+  required: true
+  transform: none
+  closure: asset
+- from: hall_drift
+  from_output: J_phi
+  to: green_feedback
+  to_input: J_phi
+  data: Hall current density
+  condition: each Picard iteration
+  required: true
+  transform: identity
+  closure: asset
