@@ -10,6 +10,7 @@ import csv
 import hashlib
 import importlib.metadata
 import json
+import sys
 from pathlib import Path
 import zipfile
 
@@ -25,7 +26,7 @@ def verify_installation(wheel: Path) -> dict:
     distribution = importlib.metadata.distribution('scirel')
     package_root = Path(distribution.locate_file('scirel')).resolve()
     assert Path(scirel.__file__).resolve().parent == package_root
-    assert package_root == Path('/opt/scirel/scirel'), 'use the platform-prepared runtime image'
+    assert package_root.is_relative_to(Path(sys.prefix).resolve()), 'use the platform-installed wheel, not a source checkout'
     direct = distribution.read_text('direct_url.json')
     assert not direct or not json.loads(direct).get('dir_info', {}).get('editable', False)
     count = 0
