@@ -18,7 +18,12 @@ def _matrix(name, value, size, required):
     return matrix
 
 def update_anisotropic_picard_flux(j_phi, r_grid, z_grid, plasma_mask, currents_old, relax, g_psi, g_br, g_bz, psi_vac, br_vac, bz_vac):
-    """Relax cell currents and project the resulting plasma field through Green matrices."""
+    """Relax cell currents on uniform tensor grids and project through Green matrices.
+
+    Axes may ascend or descend; spacings must agree within relative tolerance
+    1e-10. A supplied plasma_mask must be boolean with the exact [Z,R] shape.
+    Nonuniform cells require explicit cell areas and are outside this operator.
+    """
     shape = np.asarray(r_grid, dtype=float).shape
     if len(shape) != 2:
         raise ValueError('r_grid must be a two-dimensional [Z,R] grid')
@@ -32,10 +37,12 @@ def update_anisotropic_picard_flux(j_phi, r_grid, z_grid, plasma_mask, currents_
         raise ValueError('r_grid and z_grid must be tensor-product [Z,R] grids')
     if r.shape[0] < 2 or r.shape[1] < 2:
         raise ValueError('r_grid and z_grid need at least two points per axis to define cell area')
-    dr = float(np.mean(np.diff(r[0, :])))
-    dz = float(np.mean(np.diff(z[:, 0])))
-    if dr == 0.0 or dz == 0.0:
-        raise ValueError('r_grid and z_grid must have nonzero spacing')
+    steps_r, steps_z = np.diff(r[0, :]), np.diff(z[:, 0])
+    for steps in (steps_r, steps_z):
+        if (not np.all(np.isfinite(steps)) or steps[0] == 0.0
+                or not np.allclose(steps, steps[0], rtol=1e-10, atol=0.0)):
+            raise ValueError('r_grid and z_grid must have uniform nonzero spacing')
+    dr, dz = float(steps_r[0]), float(steps_z[0])
     size = r.size
     old = np.zeros(size, dtype=float) if currents_old is None else np.asarray(currents_old, dtype=float)
     if old.shape != (size,) or not np.all(np.isfinite(old)):
@@ -48,7 +55,12 @@ def update_anisotropic_picard_flux(j_phi, r_grid, z_grid, plasma_mask, currents_
     green_psi = _matrix('g_psi', g_psi, size, True)
     green_br = _matrix('g_br', g_br, size, False)
     green_bz = _matrix('g_bz', g_bz, size, False)
-    density = current_density if plasma_mask is None else np.where(np.asarray(plasma_mask, dtype=bool), current_density, 0.0)
+    density = current_density
+    if plasma_mask is not None:
+        mask = np.asarray(plasma_mask)
+        if mask.dtype != np.dtype(bool) or mask.shape != shape:
+            raise ValueError(f'plasma_mask must be boolean with shape {shape}')
+        density = np.where(mask, current_density, 0.0)
     raw_currents = density.ravel() * abs(dr * dz)
     currents = (1.0 - relaxation) * raw_currents + relaxation * old
     psi = (psi0.ravel() + green_psi @ currents).reshape(shape)

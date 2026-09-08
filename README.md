@@ -12,6 +12,10 @@ SciRel 是 CodeFusion 平台内置的科学能力，包名与安装方式属于�
 `provenance/pleiades-import.json` 记录输入来源与迁移对应关系，**不代表资产已经正式入库或发布**。
 入库连接和科学审查仍在推进；该开发包不应标成已批准发行。
 
+开发中的 `update_anisotropic_picard_flux` 已将面积积分边界收紧为均匀、非零间距的张量网格
+（相邻间距相对容差 1e-10，可递增或递减），并要求掩码是同形布尔数组。非均匀、局部重复
+坐标及隐式广播掩码会明确失败。这是需要新候选复审的科学行为修正，尚未写入正式准入版本。
+
 ## 维护者 API 示例
 
 ```python
@@ -46,6 +50,9 @@ python -m pip wheel . --no-deps --no-build-isolation --wheel-dir dist
 python -m pip install --no-deps --force-reinstall dist/scirel-0.1.0.dev1-py3-none-any.whl
 python -m pytest tests
 ```
+
+图合同测试使用 `tests/_review_bindings.py`；运行前将 `tests` 的绝对路径加入 PYTHONPATH
+（PowerShell：`$env:PYTHONPATH = (Resolve-Path tests).Path`）。wheel 验证不要把 `src` 加入该路径。
 
 发行验收另外使用断网环境，只安装 wheel 与声明依赖，不挂源码。安装后的测试不得依赖 editable
 安装或把 src 放进 PYTHONPATH。上面的版本号随 pyproject.toml 更新，不是永久发行版本。

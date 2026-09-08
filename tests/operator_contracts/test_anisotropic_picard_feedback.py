@@ -74,3 +74,25 @@ def test_review_gate_rejects_a_grid_without_a_cell_area():
             np.zeros((1, 2)),
             np.ones((1, 2)),
         )
+
+
+@pytest.mark.parametrize("axis", [[0.2, 0.2, 0.6], [0.2, 0.4, 0.8], [0.6, 0.2, 0.4]])
+def test_rejects_grids_where_one_cell_area_cannot_represent_all_cells(axis):
+    r, z = np.meshgrid(axis, [-0.1, 0.1])
+    shape, size = r.shape, r.size
+    with pytest.raises(ValueError, match="uniform nonzero spacing"):
+        scientific_operator(**_inputs(r_grid=r, z_grid=z, j_phi=np.ones(shape),
+            currents_old=np.zeros(size), g_psi=np.eye(size), psi_vac=np.zeros(shape),
+            br_vac=np.zeros(shape), bz_vac=np.ones(shape)))
+
+
+@pytest.mark.parametrize("mask", [True, [True, False], [[1, 0], [0, 1]]])
+def test_rejects_broadcast_or_nonboolean_plasma_masks(mask):
+    with pytest.raises(ValueError, match="boolean.*shape"):
+        scientific_operator(**_inputs(plasma_mask=mask))
+
+
+def test_descending_uniform_axes_preserve_positive_cell_area():
+    r, z = np.meshgrid([0.4, 0.2], [0.1, -0.1])
+    result = scientific_operator(**_inputs(r_grid=r, z_grid=z))
+    np.testing.assert_allclose(result["plasma_currents"], 0.04)
