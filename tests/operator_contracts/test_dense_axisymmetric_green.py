@@ -50,6 +50,19 @@ def test_rejects_invalid_source_shape():
         scientific_operator([[0.1, 0.0]], [[0.3, 0.0]])
 
 
+@pytest.mark.parametrize("shape", [(2, 0), (0, 2), (0, 3, 1)])
+def test_empty_source_shorthand_does_not_hide_invalid_shapes(shape):
+    with pytest.raises(ValueError, match="source_rzw"):
+        scientific_operator([[0.1, 0.0]], np.empty(shape))
+
+
+def test_empty_source_shorthand_matches_explicit_zero_source_matrix():
+    shorthand = scientific_operator([[0.1, 0.0]], [])
+    explicit = scientific_operator([[0.1, 0.0]], np.empty((0, 3)))
+    for name in shorthand:
+        np.testing.assert_array_equal(shorthand[name], explicit[name])
+
+
 def test_reviewed_relation_example():
     import numpy as np
     from scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response

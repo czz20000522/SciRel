@@ -1,6 +1,24 @@
 import numpy as np
+import pytest
 
 from scirel.diagnostics.picard_flux_residual import compute_picard_flux_residual, compute_picard_flux_residual as scientific_operator
+
+
+@pytest.mark.parametrize("previous,following,expected", [
+    ([[1e308]], [[-1e308]], 2.0),
+    ([[1.0, 0.0]], [[1.0, 1e-200]], 1e-200),
+    ([[1e100]], [[1e300]], 1e200),
+    ([[1e-300]], [[2e-300]], 1e-270),
+])
+def test_admitted_numerical_boundaries(previous, following, expected):
+    with np.errstate(over="ignore", invalid="ignore"):
+        actual = compute_picard_flux_residual(previous, following)["residual"]
+    assert actual == pytest.approx(expected, rel=2e-14, abs=0)
+
+
+def test_unrepresentable_residual_is_rejected():
+    with pytest.raises(ValueError):
+        compute_picard_flux_residual([[0.0]], [[1e308]])
 
 
 def test_returns_zero_for_unchanged_flux():

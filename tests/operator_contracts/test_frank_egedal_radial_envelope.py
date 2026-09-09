@@ -24,17 +24,15 @@ def test_reviewed_relation_example():
     assert np.allclose(linear, [[1.0, 1.0, 0.5], [0.0, 0.0, 0.0]])
     assert result[0, 2] < linear[0, 2]  # alpha 改变必须影响区间内部，而不改变截断端点。
 
-    try:
+    # The admitted contract explicitly supports reverse flux orientation.
+    np.testing.assert_allclose(
         evaluate_frank_egedal_radial_envelope(
             [[0.0, 0.5, 1.0]], {"psi_axis": 1.0, "psi_edge": 0.0, "alpha": 1.0}
-        )
-    except ValueError as exc:
-        assert "finite nonnegative profile" in str(exc)
-    else:
-        raise AssertionError("反向磁通区间必须失败关闭")
+        ), [[0.0, 0.5, 1.0]]
+    )
     try:
         evaluate_frank_egedal_radial_envelope([[1.0, 1.0]], {"psi_axis": 1.0, "psi_edge": 1.0})
     except ValueError as exc:
-        assert "finite nonnegative profile" in str(exc)
+        assert "finite radial profile" in str(exc)
     else:
         raise AssertionError("退化磁通区间必须失败关闭")

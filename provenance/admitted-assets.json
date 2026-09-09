@@ -1,0 +1,374 @@
+{
+  "schema": "scirel.admitted-integrations.v1",
+  "distribution_status": "development_partial_admission",
+  "integration_baseline_commit": "6f34f54e6207c317bea989ff91d241f2bed4c88a",
+  "integrations": [
+    {
+      "public_callable": "scirel.closures.quasineutral_reference_density.compute_reference_electron_density",
+      "input_implementation_path": "operators/准中性参考电子密度/scientific_operator.py",
+      "integration_action": "reuse_equivalent_implementation",
+      "library_source_lf_sha256": "12e37f757c4db444f9a1d965191a2eecd6c8ad640dc366c41b55d78433c7ef60",
+      "comparison": "完整模块语法树在统一公开函数名并移除 __all__ 后一致；仅有排版、引号和公开导出形式差异。无科学行为修改，不复制第二份函数。",
+      "review_rationale": "按用户明确授权由主代理完成复审并通过审核账号提交。n_e,ref=Z_i*n_i,ref 的正离子参考关系、广播、零密度、非法输入及溢出拒绝经独立计算核对。AI 对中文页面中保留英文标识符的分歧不构成科学缺陷；变量名、公式、路径允许保留。未扩大到电势响应或混合物种的隐式模型。",
+      "verification_scope": "核验导出三份正文与准入版本树摘要；独立二维广播、正有效电荷数、零密度、八种非法/溢出输入及不兼容形状通过。原项目运行时源码对照未重跑。",
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_ui_review_test",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_436062c0eb5bb8d6bf3a593b",
+          "case_ref": "asset_review_case_7e8a95bdbaa41c2c588bd4db",
+          "decision_ref": "review_decision_b9d1aaf62445009dba3c9070",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_77baec0bad376d37b3519190",
+          "root_digest": "sha256:f4ecb6fbb64a70dc31d0131a1bffacfa37325c3a412a20a0790997d9dc26a187",
+          "operator_revision_ref": "operator_revision_9b3494fcd74dd433",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-ba2e6ffcf5b51a324a5e7192-23151225a0b816bd",
+          "candidate_digest": "sha256:e91b38df762c51a01aec9a613d20ecd43f4e20997d23e3da3365824fa1253698",
+          "candidate_package_ref": "scientific_candidate_package_review_cb894bce6a50c3a64b3f5b18",
+          "candidate_package_digest": "sha256:6d0ce94120a894a09af748a88b9d791e16c18c37821f861ded9e473fa69a0529"
+        },
+        "version_tree_ref": "vtree_d360a97f565aa5abfe8bf775",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/准中性参考电子密度/operator.md",
+            "sha256": "sha256:c432bb8995e9befb6208037c567e1b774f116575140e82ee5e7e673b8a73a972",
+            "size_bytes": 1730
+          },
+          {
+            "path": "operators/准中性参考电子密度/scientific_operator.py",
+            "sha256": "sha256:3d25cad1caec9564f0acbd093fb7646ad027febd04b411eb899bafe6589282ab",
+            "size_bytes": 894
+          },
+          {
+            "path": "operators/准中性参考电子密度/test_scientific_operator.py",
+            "sha256": "sha256:a97643d26d4ccfdaa2c441e02c17be46e2cc409324b4387ddde25f8c39b734ef",
+            "size_bytes": 1533
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.field.dense_axisymmetric_green.dense_axisymmetric_green_response",
+      "input_implementation_path": "operators/轴对称稠密三分量Green矩阵/scientific_operator.py",
+      "integration_action": "adapt_input_shape",
+      "library_source_lf_sha256": "63d2f4b49392f6b7a863729e9a250f55a7b79145b12510be75a417e646e2f9f7",
+      "comparison": "统一公开函数名、移除 __all__、允许新增函数说明和精确的 (0,) 到 (0,3) 空源形状适配后，完整语法树一致。磁场公式、单位、列顺序、权重、奇点约定和正式形状输入行为未修改。",
+      "input_adaptation": "独立库保留 [] 作为零源的便利输入；不是原准入合同的一部分。原开发实现误接受 (2,0)、(0,2)、(0,3,1)，本轮改为明确拒绝。此参数适配经独立工程审查及回归，不改写入库内容或声称字节等价。",
+      "review_rationale": "用户授权主代理最终复审。返修文档已明确 psi=R*A_phi、单位电流响应、无量纲权重和奇点置零数值约定；机器通过，双 AI 一致通过。独立圆丝矢势/Biot-Savart 积分核验三分量，轴上解析极限、负权重和零半径约定一致。",
+      "verification_scope": "精确导出正文 hash/size 核验；三个目标和两个源的独立积分 rtol=2e-11 atol=1e-20，最大绝对差 1.7734752333136913e-21。空源适配及错误形状红绿回归通过。未重跑原 Pleiades 环境的逐矩阵对照。",
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_ui_review_test",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_2e3dd1de5d43d3df67852d15",
+          "case_ref": "asset_review_case_f10f05678ee4c70de1636c8c",
+          "decision_ref": "review_decision_2d8d56b4806d5c66bb36b298",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_56b2b8f054e6325307678314",
+          "root_digest": "sha256:3e6d97cdf97c1f12f232a2a1efc2513fdbbafbab68e9ac1e3ca44ee05123509d",
+          "operator_revision_ref": "operator_revision_864dfebf71045cd0",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-ecd25dd82e62e4c694f1f4f2-9fe61cf7b85eb4b3-r1f6e82ec36ad29ca3ee7e5f7",
+          "candidate_digest": "sha256:f794f51de87aa96cd748a4fe513fe373a9ee404e1afa65c3f3b153bb41bf2743",
+          "candidate_package_ref": "scientific_candidate_package_repair_1f6e82ec36ad29ca3ee7e5f7",
+          "candidate_package_digest": "sha256:5e2ccc6f7f0f570833e36254e5c1822321d4fe753cede267128f58fd27ea074d"
+        },
+        "version_tree_ref": "vtree_cb6565387ee69f714f7a65a7",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/轴对称稠密三分量Green矩阵/operator.md",
+            "sha256": "sha256:4d99b73ce7c755544e96c405f6b23228f22da32fa8588576f81c9f207481ff53",
+            "size_bytes": 3019
+          },
+          {
+            "path": "operators/轴对称稠密三分量Green矩阵/scientific_operator.py",
+            "sha256": "sha256:5517852e1365b0d21fb53b589a938236bb310e256b2f47e3d82f179e2d495fd3",
+            "size_bytes": 2899
+          },
+          {
+            "path": "operators/轴对称稠密三分量Green矩阵/test_scientific_operator.py",
+            "sha256": "sha256:899f239876fd41a913ad50e1e0f2530153b37491e1c7e21ced7d3394ee8478aa",
+            "size_bytes": 2740
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.field.poloidal_field_magnitude.compute_poloidal_field_magnitude",
+      "input_implementation_path": "operators/极向磁场幅值/scientific_operator.py",
+      "integration_action": "replace_development_implementation",
+      "library_source_lf_sha256": "ff631596e0ceeb52925c7e19ebc560f677cf2fa50c0edebd45f69190380c9e3c",
+      "comparison": "用实际准入实现替换已有同名开发函数；仅重命名公开函数并增加 __all__，完整模块 AST 在归一化这两处后与准入输入一致。修复旧开发版中位数溢出、空网格及不可表示幅值未拒绝的问题，不复制第二个算子。",
+      "review_rationale": "按用户明确授权由主代理承担最终复审并通过审核账号提交，不代表另有人类专家独立签字。接受文档声明的极向幅值、1e-30 T 数值下界、同网格及中位数参考约定，不据此宣称完整平衡模型的物理正确性。历史 claim_ceiling 保留，平台验证和决定另有版本绑定记录。",
+      "verification_scope": "精确冻结正文与已测修正版逐字一致；11 项测试覆盖原始合同、跨数量级 math.hypot/标量中位数独立对照、分量变换与转置不变性、非法输入、不修改输入。未完成原始 Pleiades 运行环境逐例对照。SciRel 旧版三项反例先失败，整合后须通过全部库与无源码 wheel 验证。",
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_ui_review_test",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_cd6684cc92163c2f043624f0",
+          "case_ref": "asset_review_case_dd48c8e80f4615dcc7d4e844",
+          "decision_ref": "review_decision_499b34a8b3fbbd29dca62e7e",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_50c6dc3d4350ceac1da2e622",
+          "root_digest": "sha256:711f662befd053288624de275823126a24806aeefc756858361ee995e82c42da",
+          "operator_revision_ref": "operator_revision_825e7f7b3f977aeb",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-28f99012d9768a6b892c8d67-7508a7822e17de52-radf2b6c01aee49c09f2dd192-r4cafb614ded142d5f682eae6",
+          "candidate_digest": "sha256:c72f62b091eb3cbd57a2e7263728ae350da79e68f1c57212520db2ac95273ba4",
+          "candidate_package_ref": "scientific_candidate_package_repair_4cafb614ded142d5f682eae6",
+          "candidate_package_digest": "sha256:b0a67f7c856387597db05b7bde4dff7b9cecebcdcb597ab48fb48bd580fb9aef"
+        },
+        "version_tree_ref": "vtree_7a700440472def0dda1b8be2",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/极向磁场幅值/operator.md",
+            "sha256": "sha256:3bc787bac1740bbdd9e8b2e8c5a68ea03cbf275e58198cbb9bda0abffa0cb4af",
+            "size_bytes": 1685
+          },
+          {
+            "path": "operators/极向磁场幅值/scientific_operator.py",
+            "sha256": "sha256:156b5d996d47c2dd37aa4d636d1d53151ab875e50831e51247f206c8c8f928d2",
+            "size_bytes": 1240
+          },
+          {
+            "path": "operators/极向磁场幅值/test_scientific_operator.py",
+            "sha256": "sha256:6da3e0b7eb06d8d143175cb58de64251a2f96b4e8d5edef26f18c78c9f093a81",
+            "size_bytes": 1876
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.diagnostics.picard_flux_residual.compute_picard_flux_residual",
+      "input_implementation_path": "operators/Picard磁通相对残差/scientific_operator.py",
+      "integration_action": "replace_development_implementation",
+      "library_source_lf_sha256": "e6ff451623be3aa6b92028eea930f4bc91edfc364a47015bd82307b4c4e5c82e",
+      "comparison": "替换现有同名开发函数；只重命名公开函数并增加 __all__，归一化后完整模块 AST 与实际准入正文相同。稳定计算同一 L2 相对变化公式，不新增重复算子。",
+      "review_rationale": "按用户授权由主代理承担最终复审并通过审核账号提交，不代表另有人类专家独立签字。接受无量纲相对磁通变化观测量及 1e-30 Wb 数值下界，不赋予停止阈值或物理力平衡证明；原始环境逐例一致性仍未证明。",
+      "verification_scope": "冻结三份正文摘要核验；25 项检查含 100 位 Decimal 独立公式对照、跨数量级、转置不变性及不修改输入。旧开发实现的五项数值回归先失败。整合后须继续全库及隔离 wheel 验证。",
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_ui_review_test",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_bfb171195e174e33859b9211",
+          "case_ref": "asset_review_case_27bdc384eab8d328a8afbf24",
+          "decision_ref": "review_decision_fafe9f8d9311bbc59aa3bf95",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_192c8c4e6dbc81c92a743840",
+          "root_digest": "sha256:ea64d4fb045ee04e775bc545da824799d2deb10bdb358e77157db1d277d25d11",
+          "operator_revision_ref": "operator_revision_4d226b48495feee9",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-85f8fc3424560840743dfbe9-3033157f61742eec-r34509136054868be6556d9e7-r322ac6d70916e2a04cbb9338-r2597eef1927e9937f8083b98",
+          "candidate_digest": "sha256:429d566b270840adb24f9d6fbcddefb53ee4001758c4e5d96e96b819c2f0e65a",
+          "candidate_package_ref": "scientific_candidate_package_repair_2597eef1927e9937f8083b98",
+          "candidate_package_digest": "sha256:2223ad088a2adbde83e05c8bc6ce8c91d26e6b5dfd2bab357425005da3577feb"
+        },
+        "version_tree_ref": "vtree_73d10a4521a68c56366d813c",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/Picard磁通相对残差/operator.md",
+            "sha256": "sha256:ae4189c02f9496baf36ed03d5574ede0f90882861a96f0059c6f18992a64cbcd",
+            "size_bytes": 1932
+          },
+          {
+            "path": "operators/Picard磁通相对残差/scientific_operator.py",
+            "sha256": "sha256:c09731747d12d7a1f4b4cbb4ca85e394761063cd371cd49683e8cb1d6c25eac6",
+            "size_bytes": 1681
+          },
+          {
+            "path": "operators/Picard磁通相对残差/test_scientific_operator.py",
+            "sha256": "sha256:033c9afd9a9ed5f80b30c127b7b3a3a86c8470e67ee17dfbc1c060ecfcd88857",
+            "size_bytes": 2914
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.kinetic.frank_egedal_radial_envelope.evaluate_frank_egedal_radial_envelope",
+      "input_implementation_path": "operators/FrankEgedal径向包络/scientific_operator.py",
+      "integration_action": "replace_development_implementation",
+      "library_source_lf_sha256": "20680282fc2808fdbb5debd2e3a1bd86a0d84dfec00f2b1d01b9306c9db23223",
+      "comparison": "统一公开函数名并移除 __all__ 后，完整模块 AST 与实际准入导出一致。替换开发版的正向区间限制，采用准入版本的反向磁通、有限差值和 1e-30 Wb 退化阈值合同。",
+      "review_rationale": "用户授权主代理复审并经审核账号正式入库。包络按磁通标签归一化、两端截断和非负指数取幂，是可分离闭合的无量纲调制；反向坐标是等价标记，不需要重排网格。接受新增有限性和退化区间拒绝，不据此声称装置平衡或实验有效性。",
+      "verification_scope": "三份导出正文摘要与长度核对。独立闭式数值、正负仿射磁通变换、零指数、默认参考、非法/溢出/退化输入与无输入修改共 12 项通过。库旧版三项红测证明差异，随后采用准入实现；未重跑原项目环境或包外来源证据。",
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_ui_review_test",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_83556ae1d9630da8aca3b4c8",
+          "case_ref": "asset_review_case_0e9e861d84e1e6f4bae37921",
+          "decision_ref": "review_decision_223410c47da9b66f803de372",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_1f40d121e538406a0cbc2180",
+          "root_digest": "sha256:457d0009e39ec8baffed341a1e8f4334d819627bf57c6f029d1a3e2cb2d492a2",
+          "operator_revision_ref": "operator_revision_f0bd56aa067c84ba",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-04b0d8a27cbf371b0b32a78e-63695d1d066bbef3",
+          "candidate_digest": "sha256:50087dcec10b1df822d23eea22e2ecad279418e4cefd77889344233d20f56133",
+          "candidate_package_ref": "scientific_candidate_package_review_cb894bce6a50c3a64b3f5b18",
+          "candidate_package_digest": "sha256:6d0ce94120a894a09af748a88b9d791e16c18c37821f861ded9e473fa69a0529"
+        },
+        "version_tree_ref": "vtree_49b602d0d9fad5a34f36f2b0",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/FrankEgedal径向包络/operator.md",
+            "sha256": "sha256:871a29ac12928d68e4fb4aeb0d384e7e7e0d2f791f26e39f48e42f0da0de3166",
+            "size_bytes": 2487
+          },
+          {
+            "path": "operators/FrankEgedal径向包络/scientific_operator.py",
+            "sha256": "sha256:f1f39cdd825365f0437fb9e451876d3b2ea43f4d0832446a7a35313e4cdb8ab8",
+            "size_bytes": 1011
+          },
+          {
+            "path": "operators/FrankEgedal径向包络/test_scientific_operator.py",
+            "sha256": "sha256:f2dd279f950c39045a931a060fe0a1dadf02780ebaf5770be643f9647dd0025b",
+            "size_bytes": 1869
+          }
+        ]
+      },
+      "equivalent_admitted_inputs": [
+        {
+          "relationship": "byte_identical_implementation_and_tests",
+          "comparison": "本次独立人审入库的 scientific_operator.py 与 test_scientific_operator.py 分别与既有准入输入逐字节同哈希；专家说明文档是不同快照。因此复用同一公开函数，仅追加不可变入库溯源，不重复实现。",
+          "admitted_input": {
+            "schema": "scirel.admitted-asset-export.v1",
+            "tenant_id": "tenant_pleiades_191471077735",
+            "admission": {
+              "admission_ref": "scientific_asset_admission_bff7513f14eb910950e287a2",
+              "case_ref": "asset_review_case_8ac9b2f4e1a123155eebe5d5",
+              "decision_ref": "review_decision_417b65485b2d7ad358b89bb4",
+              "asset_kind": "operator",
+              "version_commit_ref": "vcommit_5b244d75f9259326a7371148",
+              "root_digest": "sha256:81f92e06677b555124a026e97c54c2e1bcf80a1a47439ee201e7826a44e2e8eb",
+              "operator_revision_ref": "operator_revision_607b7e3c9d5ec090",
+              "task_graph_revision_ref": null,
+              "candidate_ref": null,
+              "candidate_digest": null,
+              "candidate_package_ref": null,
+              "candidate_package_digest": null
+            },
+            "version_tree_ref": "vtree_5418f30f4f8a3e8d3cc4fe59",
+            "version_tree_root_digest": "sha256:324d911c86a0fa90c65b387e36d2ff52678de6ac8b8e041dee195426d7164e22",
+            "dependency_bindings": [],
+            "files": [
+              {
+                "path": "operator.md",
+                "sha256": "sha256:fb23e6d5c64a9c66a719de6fdc29cb4333dafdd3f56ca7536b8d64102d98fbd6",
+                "size_bytes": 2460
+              },
+              {
+                "path": "scientific_operator.py",
+                "sha256": "sha256:f1f39cdd825365f0437fb9e451876d3b2ea43f4d0832446a7a35313e4cdb8ab8",
+                "size_bytes": 1011
+              },
+              {
+                "path": "test_scientific_operator.py",
+                "sha256": "sha256:f2dd279f950c39045a931a060fe0a1dadf02780ebaf5770be643f9647dd0025b",
+                "size_bytes": 1869
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "public_callable": "scirel.kinetic.frank_egedal_pressure_state.assemble_frank_egedal_pressure",
+      "input_implementation_path": "operators/FrankEgedal压强组装/scientific_operator.py",
+      "integration_action": "replace_development_implementation",
+      "library_source_lf_sha256": "0b082d23c12387a57429ff88969ab199b1d2da03f246b4032e9b2aa2c206b5ba",
+      "comparison": "统一公开函数名并移除 __all__ 后，完整模块 AST 与实际准入导出一致。采用准入版本的非空网格、非负形状及输出有限性校验，正常域公式不变。",
+      "review_rationale": "用户授权主代理复审并经审核账号正式入库，非外部专家签字。热密度矩按参考密度归一化，压强矩按同一参考平行热压强归一化；接受显式非负物理域和溢出拒绝，结论限于代数组装，不证明平衡收敛。",
+      "verification_scope": "三份准入导出正文摘要和长度核对，独立公式、各向异性差值、缺省与显式零密度、参数回退、负尺度、溢出、形状和无输入修改共10项通过。库旧版两项红测复现边界差异；未重放包外来源证据。",
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_ui_review_test",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_23fabe24c214c90b9943c70b",
+          "case_ref": "asset_review_case_c0309d18d46b469f89135ebe",
+          "decision_ref": "review_decision_90b891562468f050d66f8fd1",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_96128cba0a140ad9b14cab46",
+          "root_digest": "sha256:f1ebaab928db463be3c39f6e12890604231763e96de68fdc9dee31cd77caf88b",
+          "operator_revision_ref": "operator_revision_a5c4a5f56d86c295",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-75332a7ad9d83274309c1949-db236aae6f224c90",
+          "candidate_digest": "sha256:19247cadac210599ba5dbba0959870239b82f4eff114f11a5cf94c95d6c314f5",
+          "candidate_package_ref": "scientific_candidate_package_review_cb894bce6a50c3a64b3f5b18",
+          "candidate_package_digest": "sha256:6d0ce94120a894a09af748a88b9d791e16c18c37821f861ded9e473fa69a0529"
+        },
+        "version_tree_ref": "vtree_dd4681244c0f6f10e3c2b1a2",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/FrankEgedal压强组装/operator.md",
+            "sha256": "sha256:2f620cc3ea1baaccc14a41797b9838f4ccf54bc7e1ae8d73f301cea9486ba2c3",
+            "size_bytes": 4339
+          },
+          {
+            "path": "operators/FrankEgedal压强组装/scientific_operator.py",
+            "sha256": "sha256:626322a78400808e3fc10882dda69ee5f9167f918b8343ff7b52588f899ba22f",
+            "size_bytes": 2650
+          },
+          {
+            "path": "operators/FrankEgedal压强组装/test_scientific_operator.py",
+            "sha256": "sha256:10bcd5bbecfd77ca9c06c20af32109da91c8f01b9b6872b178d2a6ea1b36edca",
+            "size_bytes": 2444
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.field.current_green_superposition.superpose_current_green_field",
+      "input_implementation_path": "operators/电流加权磁通磁场叠加/scientific_operator.py",
+      "integration_action": "reuse_equivalent_implementation",
+      "library_source_lf_sha256": "ef48b26b1e552fa11d54509d280ce16df4542517a833ea99e0b9a060941adf1e",
+      "comparison": "完整 AST 排除公开函数名、docstring 和 __all__ 后一致；复用现有函数，不重复新增实现。",
+      "review_rationale": "用户授权主代理复审。source轴电流加权、Wb/A与T/A乘A的单位及有限输入溢出边界明确。人工修正文档后经请求76生成快照、机器和AI复验；AI经请求77同步输出元数据，再经机器和双轮AI复审，最终按准确版本正式准入。",
+      "verification_scope": "8项独立测试覆盖标量正负零电流、source轴收缩、输入保护、非法域与溢出。三份实际导出摘要和长度核对。静态核对本地 ai4s_fusion_nexus/projects/pleiades/pleiades/fields.py 的 psi/BR/BZ 方法确认 rank-1/rank-2 约定；未重放原环境和历史外部数值证据。",
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_ui_review_test",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_66a470642642710bc1e86eab",
+          "case_ref": "asset_review_case_de52cb60b59fd7d7fbee0f91",
+          "decision_ref": "review_decision_a6bd45e6840cd86db4371e8d",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_b40cb8509c90f743751d3273",
+          "root_digest": "sha256:df9d92949c387ae09c63d690e4ab22e73f0320c5197e43812ea6277420874963",
+          "operator_revision_ref": "operator_revision_b08738be21fb0e72",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-revision-6c8c57c6f87ce98be93291ef9dc8498f809b481251617146959d755e2a3e800a",
+          "candidate_digest": "sha256:e51a5e24ed20eb6373e25481d35cdc6362a5065fb6dfce20d8664fe8fbfc4f4c",
+          "candidate_package_ref": "scientific_candidate_package_repair_5397988f81f3aad5c5ff68b2",
+          "candidate_package_digest": "sha256:e37e4dfef93b0c2940aa7dc3a968cdb4aaf7b86ab0b91fb1b73afc964e49b6da"
+        },
+        "version_tree_ref": "vtree_849243ec2b866b4c294695fe",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/电流加权磁通磁场叠加/operator.md",
+            "sha256": "sha256:04b17d60de47ee0c6cc0ec59e995dc349c88a1fa87ee84419abe25a0392a40b6",
+            "size_bytes": 4138
+          },
+          {
+            "path": "operators/电流加权磁通磁场叠加/scientific_operator.py",
+            "sha256": "sha256:ae2a3d448d8c263ed39ba7288f8c83da7c646005e5ad9fcdb5c5084614f760d9",
+            "size_bytes": 1394
+          },
+          {
+            "path": "operators/电流加权磁通磁场叠加/test_scientific_operator.py",
+            "sha256": "sha256:d23e3206a7be55bc5a72c56d7d7046f04b75685d4dcd56e2eb92e9310e9067c8",
+            "size_bytes": 2192
+          }
+        ]
+      }
+    }
+  ]
+}

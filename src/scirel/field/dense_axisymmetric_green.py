@@ -9,10 +9,12 @@ def dense_axisymmetric_green_response(rz_pts, source_rzw):
     ``rz_pts`` is the target point list ``[R, Z]``.  ``source_rzw`` is the
     source list ``[R0, Z0, weight]``; the third column is a linear source
     weight and is not a current value or a cell-area factor.
+    An empty one-dimensional source sequence is accepted as shorthand for
+    a ``(0, 3)`` source matrix; other shapes must satisfy the source contract.
     """
     rz_pts = np.asarray(rz_pts, dtype=float)
     source_rzw = np.asarray(source_rzw, dtype=float)
-    if source_rzw.size == 0:
+    if source_rzw.shape == (0,):
         source_rzw = np.empty((0, 3), dtype=float)
     if rz_pts.ndim != 2 or rz_pts.shape[1] != 2:
         raise ValueError('rz_pts must have shape (n_targets, 2)')

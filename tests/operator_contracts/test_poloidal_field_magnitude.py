@@ -15,6 +15,28 @@ def test_rejects_shape_mismatch():
         scientific_operator([[1.0]], [[1.0, 2.0]])
 
 
+def test_admitted_large_finite_median_does_not_overflow():
+    result = scientific_operator([[1e308, 1e308]], [[0.0, 0.0]])
+    np.testing.assert_array_equal(result["B"], [[1e308, 1e308]])
+    assert result["B0_default"] == 1e308
+
+
+def test_admitted_large_two_component_magnitude():
+    import math
+    result = scientific_operator([[1e200]], [[1e200]])
+    assert result["B"][0, 0] == pytest.approx(math.hypot(1e200, 1e200))
+
+
+def test_admitted_unrepresentable_magnitude_is_rejected():
+    with pytest.raises(ValueError):
+        scientific_operator([[1.7e308]], [[1.7e308]])
+
+
+def test_admitted_empty_grid_has_no_reference_field():
+    with pytest.raises(ValueError):
+        scientific_operator(np.empty((0, 2)), np.empty((0, 2)))
+
+
 def test_reviewed_relation_example():
     import numpy as np
     from scirel.field.poloidal_field_magnitude import compute_poloidal_field_magnitude
