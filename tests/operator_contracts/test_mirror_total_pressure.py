@@ -44,3 +44,39 @@ def test_reviewed_relation_example():
     assert result["kinetic_moments"] is ion
     assert result["marker"] == "ion"
     assert result["electrostatic_potential"] is None
+
+
+def test_electrostatic_potential_is_preserved_when_provided():
+    ion = {
+        "p_parallel_pa": [2.0],
+        "p_perpendicular_pa": [3.0],
+        "density_m3": [1.0],
+    }
+    potential = np.array([0.2, -0.1])
+    electron = {
+        "electron_density_m3": [1.0],
+        "electron_pressure_pa": [1.0],
+        "relative_charge_residual": [0.0],
+        "electrostatic_potential": potential,
+    }
+
+    result = assemble_mirror_total_pressure(ion, electron)
+
+    assert result["electrostatic_potential"] is potential
+
+
+def test_electrostatic_potential_defaults_to_none_when_absent():
+    ion = {
+        "p_parallel_pa": [2.0],
+        "p_perpendicular_pa": [3.0],
+        "density_m3": [1.0],
+    }
+    electron = {
+        "electron_density_m3": [1.0],
+        "electron_pressure_pa": [1.0],
+        "relative_charge_residual": [0.0],
+    }
+
+    result = assemble_mirror_total_pressure(ion, electron)
+
+    assert result["electrostatic_potential"] is None

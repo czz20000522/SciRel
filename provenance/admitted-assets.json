@@ -369,6 +369,53 @@
           }
         ]
       }
+    },
+    {
+      "public_callable": "scirel.kinetic.mirror_total_pressure.assemble_mirror_total_pressure",
+      "input_implementation_path": "scientific_operator.py",
+      "integration_action": "replace_development_implementation",
+      "library_source_lf_sha256": "c5138095b45d6cc9dafccff1bebe58a83e55342c4081c6507056c740e711071e",
+      "comparison": "复用既有 kinetic namespace 与公开函数名。除函数名、docstring 和 __all__ 外，SciRel 函数体采用实际准入实现；替换开发版固定写入 None 的电势行为，并移除未绑定本次准入决定的额外密度广播和非负限制。",
+      "review_rationale": "用户授权主代理执行最终人工语义审核。总平行/垂直压强是离子方向压强与电子标量压强之和；输入电势若存在则属于终态的一部分，缺省时保持 None。专家文档已用中文说明物理关系、单位、生命周期与边界；Python 内部英文 docstring 不承担专家审核文档职责。双温镜准中性任务图在组装后仍显式写回求解电势，因此替换不改变其既有终态。",
+      "verification_scope": "准入快照的 contract、implementation、runtime、test 四项机器验证通过，平台 AI 复审进入人工审核；本地主动执行准入包 4 项测试通过。SciRel 先由新增电势保留回归复现 1 项失败，再替换开发实现后该模块 5 项通过。未以旧 Pleiades 目录或历史导入替代当前 admission。",
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_pleiades_191471077735",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_9872d9ef7d6bdfdf97e429ca",
+          "case_ref": "asset_review_case_159e7d54d56dd7cd20ad8617",
+          "decision_ref": "review_decision_e72c9a4140f0129f4bedd7c7",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_a81f131155ed23860bbf2db2",
+          "root_digest": "sha256:dab0620a66f99fc04f0bc9aaae4f62655e380b418713bef09585f58ddf767bc6",
+          "operator_revision_ref": "operator_revision_108bfea76a437f01",
+          "task_graph_revision_ref": null,
+          "candidate_ref": null,
+          "candidate_digest": null,
+          "candidate_package_ref": null,
+          "candidate_package_digest": null
+        },
+        "version_tree_ref": "vtree_47eb93c49dcd7ba45a9e074a",
+        "version_tree_root_digest": "sha256:81ea0b5ab3e72e52630297f61f2c4e9a60fc5320798f2135e9d1d3ac8cd6b032",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operator.md",
+            "sha256": "sha256:b74217d47081b6fe2296f3bd8b628083adf558aa71c043073ef6b1d25096ea3c",
+            "size_bytes": 4365
+          },
+          {
+            "path": "scientific_operator.py",
+            "sha256": "sha256:574b19dec6d0934af6671c1d97eb19acdb62b133b3c4f20306643efd6a739206",
+            "size_bytes": 2018
+          },
+          {
+            "path": "test_scientific_operator.py",
+            "sha256": "sha256:27072832a52df3cd38e0d63aa5298c4cb2eded02c1b1b4686c0d672458c6359c",
+            "size_bytes": 2549
+          }
+        ]
+      }
     }
   ]
 }
