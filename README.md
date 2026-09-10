@@ -8,12 +8,14 @@ SciRel 是 CodeFusion 平台内置的科学能力，包名与安装方式属于�
 平台维护者在受控 Python runtime 镜像准备阶段预装经过验证的 wheel；运行任务时直接调用现有能力，
 不临时下载或让用户配置依赖。独立源码项目服务于库维护和版本管理，不改变这一用户体验边界。
 
-当前为 `0.1.0.dev1` 开发迁移，包含 Pleiades 的 40 个算子函数和 10 个组合函数。
+当前为 `0.1.0.dev2` 开发迁移，开发树包含 Pleiades 的 40 个算子函数和 10 个组合函数。
 `provenance/pleiades-import.json` 记录输入来源与迁移对应关系，**不代表资产已经正式入库或发布**。
 入库连接和科学审查仍在推进；该开发包不应标成已批准发行。
 
 `provenance/admitted-assets.json` 单独记录已经通过正式准入接口的精确输入与库函数对应关系。
-目前“准中性参考电子密度”、“轴对称稠密三分量 Green 矩阵”、“极向磁场幅值”、“Picard 磁通相对残差”、“磁通径向压强包络”、“气体、电子与热离子压强组装”和“电流加权磁通磁场叠加”已核对各自准入版本树与正文摘要。
+目前“准中性参考电子密度”、“轴对称稠密三分量 Green 矩阵”、“极向磁场幅值”、“Picard 磁通相对残差”、“磁通径向压强包络”、“气体、电子与热离子压强组装”、“电流加权磁通磁场叠加”和“双温镜总压强状态组装”已核对各自准入版本树与正文摘要。
+其中“双温镜总压强状态组装”采用人工返修后的精确准入版本，保留输入中已有的静电势；缺失时返回
+`None`，上层任务图仍可在求解后写入电势。
 压强组装采用准入实现，补齐非负形状、非空网格及输出溢出拒绝；正常域代数关系保持。
 电流叠加复用已存在的等价函数；来源记录包含人工文档修整、AI 元数据返修及最终准入版本，
 不据此承诺任意尺度下浮点输出有限，也不证明已重放原项目历史环境。
@@ -60,13 +62,17 @@ assert result["B"][0, 0] == 5.0
 
 ## 本地验证与构建
 
-在隔离 Python 环境中安装已有开发依赖（numpy、scipy、pytest、setuptools）。
+在隔离 Python 环境中安装已有开发依赖（numpy、scipy、pytest、setuptools）。开发测试可以直接针对
+源码树运行；平台候选 wheel 必须先由准入记录生成独立 staging，不能直接打包整个开发树。
 
 ```text
-python -m pip wheel . --no-deps --no-build-isolation --wheel-dir dist
-python -m pip install --no-deps --force-reinstall dist/scirel-0.1.0.dev1-py3-none-any.whl
-python -m pytest tests
+python -m pytest tests/test_admitted_distribution_builder.py tests/test_admitted_integrations.py
+python scripts/build_admitted_distribution.py --staging-dir <new-staging-directory> --wheel-dir <new-wheel-directory>
 ```
+
+构建器逐项核对 `provenance/admitted-assets.json` 中的源码摘要，拒绝未绑定的内部模块依赖，生成只含
+已准入 callable 的公共导出、内置准入清单与文件内容锁。它拒绝覆盖已有 staging 目录；失败结果不能
+替换上一运行版本。wheel 构建固定归档时间与 Python hash seed，同一源码和准入账本应产生相同摘要。
 
 图合同测试使用 `tests/_review_bindings.py`；运行前将 `tests` 的绝对路径加入 PYTHONPATH
 （PowerShell：`$env:PYTHONPATH = (Resolve-Path tests).Path`）。wheel 验证不要把 `src` 加入该路径。
