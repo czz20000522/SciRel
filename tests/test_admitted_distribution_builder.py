@@ -92,7 +92,7 @@ def test_staging_contains_only_hash_locked_admitted_modules(tmp_path):
         (staging / "src/scirel/_admitted_manifest.json").read_text(encoding="utf-8")
     )
     assert manifest["schema"] == "scirel.admitted-wheel-manifest.v1"
-    assert manifest["distribution_version"] == "0.1.0.dev3"
+    assert manifest["distribution_version"] == "0.1.0.dev4"
     assert {item["public_callable"] for item in manifest["assets"]} == {
         entry["public_callable"] for entry in records["integrations"]
     }

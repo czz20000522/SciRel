@@ -83,6 +83,7 @@ def test_current_formal_pleiades_admissions_are_bound_without_duplicate_function
         "scientific_asset_admission_9872d9ef7d6bdfdf97e429ca",
         "scientific_asset_admission_aa8d3f9934b837aa92b3250b",
         "scientific_asset_admission_5c9a2b0fd8d77434625dcca9",
+        "scientific_asset_admission_ba0a99bc7a84888f06988a85",
     }
     actual = {
         exported["admission"]["admission_ref"]
@@ -92,4 +93,4 @@ def test_current_formal_pleiades_admissions_are_bound_without_duplicate_function
         ]]
     }
     assert expected <= actual
-    assert len(records["integrations"]) == 8
+    assert len(records["integrations"]) == 9

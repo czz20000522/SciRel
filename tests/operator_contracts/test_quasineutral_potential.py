@@ -3,12 +3,22 @@ import pytest
 
 from scirel.closures.quasineutral_potential import solve_quasineutral_potential, solve_quasineutral_potential as scientific_operator
 
+ELEMENTARY_CHARGE = 1.602176634e-19
+
 
 def test_monotone_log_charge_residual_reaches_known_root():
     def residual(potential):
         return {"logarithmic_charge_residual": 0.5 - np.asarray(potential)}
 
-    result = scientific_operator(0.0, 2.0, 1.0, 1.0, np.array([True, True]), residual, potential_tolerance_v=1.0e-10)
+    result = scientific_operator(
+        0.0,
+        2.0 * ELEMENTARY_CHARGE,
+        1.0 * ELEMENTARY_CHARGE,
+        ELEMENTARY_CHARGE,
+        np.array([True, True]),
+        residual,
+        potential_tolerance_v=1.0e-10,
+    )
     np.testing.assert_allclose(result["potential_v"], 0.5, atol=1.0e-8)
     assert result["converged"]
     assert np.max(np.abs(result["logarithmic_charge_residual"])) <= 1.0e-10
@@ -29,7 +39,6 @@ def test_reviewed_relation_example():
     from scirel.closures.quasineutral_potential import solve_quasineutral_potential
     import numpy as np
 
-    ELEMENTARY_CHARGE = 1.602176634e-19
     # f(phi)=phi_root-phi 具有求解器要求的符号方向。热能取 0.1 eV，
     # 初始半括区为 0.02 V，因此首、末根位于初始括区之外，会实际触发扩展。
     roots = np.array([0.8, 123.0, -0.35])
@@ -62,8 +71,8 @@ def test_reviewed_relation_example():
             max_iterations=1,
             initial_bracket_thermal=0.1,
         )
-    except RuntimeError as exc:
-        assert "did not converge" in str(exc)
+    except ValueError as exc:
+        assert "at least 2" in str(exc)
     else:
         raise AssertionError("one bisection step must not be reported as converged")
 
@@ -101,3 +110,68 @@ def test_review_gate_rejects_nonfinite_solver_controls_and_accepts_mapping_resul
         quasineutral_tolerance=1.0e-8,
     )
     assert result["converged"]
+
+
+def test_mixed_active_inactive_residual_uses_reference_at_inactive_surfaces():
+    observations = []
+
+    def residual(potential):
+        values = np.asarray(potential)
+        observations.append(values.copy())
+        assert values[0] == pytest.approx(17.0)
+        assert values[2] == pytest.approx(99.0)
+        return {"logarithmic_charge_residual": 0.5 - values}
+
+    result = solve_quasineutral_potential(
+        np.array([17.0, 0.0, 99.0]),
+        2.0 * ELEMENTARY_CHARGE,
+        1.0 * ELEMENTARY_CHARGE,
+        ELEMENTARY_CHARGE,
+        np.array([False, True, False]),
+        residual,
+        potential_tolerance_v=1.0e-10,
+        quasineutral_tolerance=1.0e-10,
+        max_iterations=60,
+        initial_bracket_thermal=1.0,
+    )
+
+    np.testing.assert_allclose(result["potential_v"], [17.0, 0.5, 99.0], atol=1.0e-8)
+    assert observations
+
+
+def test_iteration_budget_has_no_hidden_convergence_evaluation():
+    calls = []
+
+    def residual(potential):
+        values = np.asarray(potential)
+        calls.append(values.copy())
+        return {"logarithmic_charge_residual": -values}
+
+    with pytest.raises(RuntimeError, match="did not converge"):
+        solve_quasineutral_potential(
+            0.0,
+            2.0 * ELEMENTARY_CHARGE,
+            1.0 * ELEMENTARY_CHARGE,
+            ELEMENTARY_CHARGE,
+            np.array([True]),
+            residual,
+            potential_tolerance_v=1.0e-12,
+            quasineutral_tolerance=1.0e-14,
+            max_iterations=4,
+            initial_bracket_thermal=1.0,
+        )
+
+    assert len(calls) == 2 + 4
+
+
+def test_max_iterations_must_allow_a_real_bisection_decision():
+    with pytest.raises(ValueError, match="at least 2"):
+        solve_quasineutral_potential(
+            0.0,
+            2.0 * ELEMENTARY_CHARGE,
+            1.0 * ELEMENTARY_CHARGE,
+            ELEMENTARY_CHARGE,
+            np.array([True]),
+            lambda potential: {"logarithmic_charge_residual": -np.asarray(potential)},
+            max_iterations=1,
+        )

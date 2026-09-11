@@ -502,6 +502,53 @@
           }
         ]
       }
+    },
+    {
+      "public_callable": "scirel.closures.quasineutral_potential.solve_quasineutral_potential",
+      "input_implementation_path": "scientific_operator.py",
+      "integration_action": "replace_development_implementation",
+      "library_source_lf_sha256": "9f10e5b648fb870f4cf72898dc27eb214696554d1be2c06d65b6141df8afd2dd",
+      "comparison": "以实际准入的二分算法替换已有开发实现，修复混合活动面污染、括区宽度判定和迭代预算语义。独立库保留既有 Mapping 返回类型、有限控制量检查和标量输入支持；这些是兼容性与输入防御，不改变准入关系、符号约定或收敛判据。未复制第二个算子。",
+      "review_rationale": "主代理完成最终人工语义复审后通过真实审核接口准入。机器合同、实现、运行和测试均通过，双 AI 未发现确定的科学缺陷；人工裁决中文审核文档允许保留代码标识符、内部 docstring 与测试注释中的英文。",
+      "verification_scope": "核验三份导出正文、准入版本树和摘要；新增混合活动/非活动面、迭代预算与 max_iterations 下界回归，保留既有 Mapping、非法控制量、括根失败和标量路径测试。",
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_ui_review_test",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_ba0a99bc7a84888f06988a85",
+          "case_ref": "asset_review_case_9467789c939959cf8acc3ebc",
+          "decision_ref": "review_decision_c2f2c27915203efb9c966eb8",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_a7599aaf7be345e66687bc20",
+          "root_digest": "sha256:e87cccaa54369b54b5c491f287fc141979dfc20ea8d82e57dbc2046c974159ee",
+          "operator_revision_ref": "operator_revision_3dca98fcd33b0780",
+          "task_graph_revision_ref": null,
+          "candidate_ref": null,
+          "candidate_digest": null,
+          "candidate_package_ref": null,
+          "candidate_package_digest": null
+        },
+        "version_tree_ref": "vtree_de6ec125c46756c095e80f25",
+        "version_tree_root_digest": "sha256:d01be5f73390076628be8e3b9eaac77794c9d4f00866f6b350a0b676c5fac111",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operator.md",
+            "sha256": "sha256:05a7349f8efc4ddd727573ae7243b2d88c386b852a31f30afcd8d1bf40dcef89",
+            "size_bytes": 5260
+          },
+          {
+            "path": "scientific_operator.py",
+            "sha256": "sha256:e7d0890e785555a3a73b39d0eac4b47f98ed2e39c9b0af75f2ba367d47e016fa",
+            "size_bytes": 6747
+          },
+          {
+            "path": "test_scientific_operator.py",
+            "sha256": "sha256:79da4f98e43d5e61f8f95e1fdf768bad036bcf32d0804a2f02ff8cb5d2cf6ee0",
+            "size_bytes": 8539
+          }
+        ]
+      }
     }
   ]
 }

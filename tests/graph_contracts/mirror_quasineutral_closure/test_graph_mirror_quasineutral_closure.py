@@ -50,10 +50,10 @@ def test_profile_ports_receive_current_psi_values():
     assert np.max(np.abs(callable_result['relative_charge_residual'])) < 1e-10
 
 
-def test_review_gate_propagates_quasineutral_nonconvergence():
+def test_review_gate_propagates_invalid_quasineutral_iteration_budget():
     import pytest
 
-    with pytest.raises(RuntimeError, match="did not converge"):
+    with pytest.raises(ValueError, match="at least 2"):
         graph.run_graph(
             _inputs(max_iterations=1, potential_tolerance_v=1.0e-30, quasineutral_tolerance=1.0e-30),
             asset_loader=_loader,

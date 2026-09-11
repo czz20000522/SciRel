@@ -1,79 +1,155 @@
 """Standalone bisection of the kinetic quasineutral-potential relation."""
 from __future__ import annotations
+
 from collections.abc import Mapping
+
 import numpy as np
+
+
 ELEMENTARY_CHARGE_C = 1.602176634e-19
+
 
 def _field(value, shape, name):
     values = np.asarray(value, dtype=float)
     try:
         values = np.broadcast_to(values, shape)
     except ValueError as exc:
-        raise ValueError(f'{name} cannot be broadcast to the declared surface shape') from exc
+        raise ValueError(f"{name} cannot be broadcast to the declared surface shape") from exc
     if not np.all(np.isfinite(values)):
-        raise ValueError(f'{name} must be finite')
+        raise ValueError(f"{name} must be finite")
     return values
 
-def solve_quasineutral_potential(potential_reference_v, temperature_parallel_j, electron_temperature_j, charge_c, active, residual, potential_tolerance_v=1e-08, quasineutral_tolerance=1e-10, max_iterations=100, initial_bracket_thermal=8.0):
+
+def solve_quasineutral_potential(
+    potential_reference_v,
+    temperature_parallel_j,
+    electron_temperature_j,
+    charge_c,
+    active,
+    residual,
+    potential_tolerance_v=1.0e-8,
+    quasineutral_tolerance=1.0e-10,
+    max_iterations=100,
+    initial_bracket_thermal=8.0,
+):
     """Solve ``log(Z*n_i(phi))-log(n_e(phi)) == 0`` by vectorized bisection.
 
     ``residual`` is a caller-owned source-free evaluator returning a mapping with
-    ``logarithmic_charge_residual``.  Positive residuals must be on the lower-
-    potential side of the root; the operator owns only bracket expansion and the
+    ``logarithmic_charge_residual``. Positive residuals must be on the lower
+    potential side of the root. The operator owns bracket expansion and the
     monotone bisection state, not the kinetic or electron relation.
     """
-    phi_ref, t_parallel, t_e, active = np.broadcast_arrays(np.asarray(potential_reference_v, dtype=float), np.asarray(temperature_parallel_j, dtype=float), np.asarray(electron_temperature_j, dtype=float), np.asarray(active, dtype=bool))
-    if not all((np.all(np.isfinite(value)) for value in (phi_ref, t_parallel, t_e))):
-        raise ValueError('potential and temperatures must be finite')
+    phi_ref, t_parallel, t_e, active = np.broadcast_arrays(
+        np.asarray(potential_reference_v, dtype=float),
+        np.asarray(temperature_parallel_j, dtype=float),
+        np.asarray(electron_temperature_j, dtype=float),
+        np.asarray(active, dtype=bool),
+    )
+    phi_ref = phi_ref.copy()
+    t_parallel = t_parallel.copy()
+    t_e = t_e.copy()
+    active = active.copy()
+    if not all(np.all(np.isfinite(value)) for value in (phi_ref, t_parallel, t_e)):
+        raise ValueError("potential and temperatures must be finite")
     if np.any(t_parallel <= 0.0) or np.any(t_e <= 0.0):
-        raise ValueError('temperatures must be positive')
+        raise ValueError("temperatures must be positive")
     charge = float(charge_c)
     if not np.isfinite(charge) or charge <= 0.0:
-        raise ValueError('charge_c must be finite and positive')
+        raise ValueError("charge_c must be finite and positive")
     tolerance = float(potential_tolerance_v)
     residual_tolerance = float(quasineutral_tolerance)
-    if isinstance(max_iterations, (bool, np.bool_)) or not isinstance(max_iterations, (int, np.integer)):
-        raise ValueError('max_iterations must be an integer')
+    if isinstance(max_iterations, (bool, np.bool_)) or not isinstance(
+        max_iterations, (int, np.integer)
+    ):
+        raise ValueError("max_iterations must be an integer")
     iterations_limit = int(max_iterations)
     bracket_thermal = float(initial_bracket_thermal)
-    if not np.isfinite(tolerance) or not np.isfinite(residual_tolerance) or (not np.isfinite(bracket_thermal)) or (tolerance <= 0.0) or (residual_tolerance <= 0.0) or (iterations_limit < 1) or (bracket_thermal <= 0.0):
-        raise ValueError('invalid quasineutral solver controls')
+    if (
+        not np.isfinite(tolerance)
+        or not np.isfinite(residual_tolerance)
+        or not np.isfinite(bracket_thermal)
+        or tolerance <= 0.0
+        or residual_tolerance <= 0.0
+        or bracket_thermal <= 0.0
+    ):
+        raise ValueError("invalid quasineutral solver controls")
+    if iterations_limit < 2:
+        raise ValueError("max_iterations must be at least 2 for bisection")
 
     def evaluate(value):
         result = residual(value)
-        if not isinstance(result, Mapping) or 'logarithmic_charge_residual' not in result:
-            raise ValueError('residual must return logarithmic_charge_residual')
-        values = _field(result['logarithmic_charge_residual'], phi_ref.shape, 'logarithmic_charge_residual')
-        return values
+        if not isinstance(result, Mapping) or "logarithmic_charge_residual" not in result:
+            raise ValueError("residual must return logarithmic_charge_residual")
+        return _field(
+            result["logarithmic_charge_residual"],
+            phi_ref.shape,
+            "logarithmic_charge_residual",
+        )
+
     thermal_voltage = t_parallel / charge + t_e / ELEMENTARY_CHARGE_C
     lower = phi_ref - bracket_thermal * thermal_voltage
     upper = phi_ref + bracket_thermal * thermal_voltage
-    lower_residual, upper_residual = (evaluate(lower), evaluate(upper))
+    if not np.any(active):
+        return {
+            "potential_v": phi_ref,
+            "logarithmic_charge_residual": evaluate(phi_ref),
+            "iterations": 0,
+            "converged": True,
+        }
+
+    active_indices = np.flatnonzero(active.reshape(-1))
+    active_lower = lower.reshape(-1)[active_indices].copy()
+    active_upper = upper.reshape(-1)[active_indices].copy()
+
+    def evaluate_active(value):
+        full = phi_ref.reshape(-1).copy()
+        full[active_indices] = value
+        return evaluate(full.reshape(phi_ref.shape)).reshape(-1)[active_indices]
+
+    active_lower_residual = evaluate_active(active_lower)
+    active_upper_residual = evaluate_active(active_upper)
     for _ in range(8):
-        missing_lower = active & (lower_residual < 0.0)
-        missing_upper = active & (upper_residual > 0.0)
+        missing_lower = active_lower_residual < 0.0
+        missing_upper = active_upper_residual > 0.0
         if not np.any(missing_lower | missing_upper):
             break
-        span = upper - lower
-        lower = np.where(missing_lower, lower - span, lower)
-        upper = np.where(missing_upper, upper + span, upper)
-        lower_residual, upper_residual = (evaluate(lower), evaluate(upper))
-    if np.any(active & ((lower_residual < 0.0) | (upper_residual > 0.0))):
-        raise RuntimeError('failed to bracket ambipolar potential')
-    potential = 0.5 * (lower + upper)
-    converged = not np.any(active)
-    iterations = 0
-    current_residual = upper_residual
+        span = active_upper - active_lower
+        active_lower = np.where(missing_lower, active_lower - span, active_lower)
+        active_upper = np.where(missing_upper, active_upper + span, active_upper)
+        active_lower_residual = evaluate_active(active_lower)
+        active_upper_residual = evaluate_active(active_upper)
+    if np.any((active_lower_residual < 0.0) | (active_upper_residual > 0.0)):
+        raise RuntimeError("failed to bracket ambipolar potential")
+
+    final_potential = None
+    final_iterations = 0
     for iterations in range(1, iterations_limit + 1):
-        current_residual = evaluate(potential)
-        lower = np.where(active & (current_residual > 0.0), potential, lower)
-        upper = np.where(active & (current_residual <= 0.0), potential, upper)
-        next_potential = np.where(active, 0.5 * (lower + upper), phi_ref)
-        if not np.any(active) or (np.max(np.abs(next_potential[active] - potential[active])) <= tolerance and np.max(np.abs(current_residual[active])) <= residual_tolerance):
-            potential, converged = (next_potential, True)
+        width = active_upper - active_lower
+        potential = 0.5 * (active_lower + active_upper)
+        potential_residual = evaluate_active(potential)
+        if (
+            np.max(width) <= tolerance
+            and np.max(np.abs(potential_residual)) <= residual_tolerance
+        ):
+            final_potential = potential
+            final_iterations = iterations
             break
-        potential = next_potential
-    if not converged:
-        raise RuntimeError('ambipolar potential solve did not converge')
-    return {'potential_v': potential, 'logarithmic_charge_residual': evaluate(potential), 'iterations': iterations, 'converged': bool(converged)}
-__all__ = ['solve_quasineutral_potential']
+        positive = potential_residual > 0.0
+        active_lower = np.where(positive, potential, active_lower)
+        active_upper = np.where(~positive, potential, active_upper)
+
+    if final_potential is None:
+        raise RuntimeError("ambipolar potential solve did not converge")
+
+    returned_potential = phi_ref.reshape(-1).copy()
+    returned_potential[active_indices] = final_potential
+    returned_potential = returned_potential.reshape(phi_ref.shape)
+    return {
+        "potential_v": returned_potential,
+        "logarithmic_charge_residual": evaluate(returned_potential),
+        "iterations": final_iterations,
+        "converged": True,
+    }
+
+
+__all__ = ["solve_quasineutral_potential"]
