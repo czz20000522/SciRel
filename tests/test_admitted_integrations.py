@@ -75,3 +75,21 @@ def test_duplicate_human_admission_is_bound_to_the_existing_frank_egedal_impleme
     }
     for name in ("scientific_operator.py", "test_scientific_operator.py"):
         assert duplicate_files[name] == primary_files[name]
+
+def test_current_formal_pleiades_admissions_are_bound_without_duplicate_functions():
+    root = Path(__file__).resolve().parents[1]
+    records = json.loads((root / "provenance/admitted-assets.json").read_text(encoding="utf-8"))
+    expected = {
+        "scientific_asset_admission_9872d9ef7d6bdfdf97e429ca",
+        "scientific_asset_admission_aa8d3f9934b837aa92b3250b",
+        "scientific_asset_admission_5c9a2b0fd8d77434625dcca9",
+    }
+    actual = {
+        exported["admission"]["admission_ref"]
+        for record in records["integrations"]
+        for exported in [record["admitted_input"], *[
+            item["admitted_input"] for item in record.get("equivalent_admitted_inputs", [])
+        ]]
+    }
+    assert expected <= actual
+    assert len(records["integrations"]) == 8

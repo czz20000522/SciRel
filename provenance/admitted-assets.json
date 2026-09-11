@@ -47,7 +47,51 @@
             "size_bytes": 1533
           }
         ]
-      }
+      },
+      "equivalent_admitted_inputs": [
+        {
+          "relationship": "byte_identical_implementation_and_tests",
+          "comparison": "本次正式 Pleiades 准入的 scientific_operator.py 与 test_scientific_operator.py 和既有准入输入逐字节同哈希；专家说明文档是新的审核快照。复用同一公开函数，仅追加不可变准入来源。",
+          "admitted_input": {
+            "schema": "scirel.admitted-asset-export.v1",
+            "tenant_id": "tenant_pleiades_191471077735",
+            "admission": {
+              "admission_ref": "scientific_asset_admission_5c9a2b0fd8d77434625dcca9",
+              "case_ref": "asset_review_case_48dd52cec11430f123929bb0",
+              "decision_ref": "review_decision_5ff2aae85731e701a2919d9e",
+              "asset_kind": "operator",
+              "version_commit_ref": "vcommit_515e0f9d9a173e1bb1a8a08d",
+              "root_digest": "sha256:364e5daeca5a024299b3f9e78b4c71c186cfe2b69e1c6b590677340ac7f6b8eb",
+              "operator_revision_ref": "operator_revision_1ba1e17f00cf26a2",
+              "task_graph_revision_ref": null,
+              "candidate_ref": null,
+              "candidate_digest": null,
+              "candidate_package_ref": null,
+              "candidate_package_digest": null
+            },
+            "version_tree_ref": "vtree_65a8fe5d637aefa71d2a1c16",
+            "version_tree_root_digest": "sha256:d360423c22c614f355b409d35dc409868d715d96df3982acfea878499a38be19",
+            "dependency_bindings": [],
+            "files": [
+              {
+                "path": "operator.md",
+                "sha256": "sha256:6e025d616e084adf8cd50cf8f00f3124ae2a5a0d1b9d7019adcc2896a8681f87",
+                "size_bytes": 1698
+              },
+              {
+                "path": "scientific_operator.py",
+                "sha256": "sha256:3d25cad1caec9564f0acbd093fb7646ad027febd04b411eb899bafe6589282ab",
+                "size_bytes": 894
+              },
+              {
+                "path": "test_scientific_operator.py",
+                "sha256": "sha256:a97643d26d4ccfdaa2c441e02c17be46e2cc409324b4387ddde25f8c39b734ef",
+                "size_bytes": 1533
+              }
+            ]
+          }
+        }
+      ]
     },
     {
       "public_callable": "scirel.field.dense_axisymmetric_green.dense_axisymmetric_green_response",
@@ -248,6 +292,48 @@
               "version_commit_ref": "vcommit_5b244d75f9259326a7371148",
               "root_digest": "sha256:81f92e06677b555124a026e97c54c2e1bcf80a1a47439ee201e7826a44e2e8eb",
               "operator_revision_ref": "operator_revision_607b7e3c9d5ec090",
+              "task_graph_revision_ref": null,
+              "candidate_ref": null,
+              "candidate_digest": null,
+              "candidate_package_ref": null,
+              "candidate_package_digest": null
+            },
+            "version_tree_ref": "vtree_5418f30f4f8a3e8d3cc4fe59",
+            "version_tree_root_digest": "sha256:324d911c86a0fa90c65b387e36d2ff52678de6ac8b8e041dee195426d7164e22",
+            "dependency_bindings": [],
+            "files": [
+              {
+                "path": "operator.md",
+                "sha256": "sha256:fb23e6d5c64a9c66a719de6fdc29cb4333dafdd3f56ca7536b8d64102d98fbd6",
+                "size_bytes": 2460
+              },
+              {
+                "path": "scientific_operator.py",
+                "sha256": "sha256:f1f39cdd825365f0437fb9e451876d3b2ea43f4d0832446a7a35313e4cdb8ab8",
+                "size_bytes": 1011
+              },
+              {
+                "path": "test_scientific_operator.py",
+                "sha256": "sha256:f2dd279f950c39045a931a060fe0a1dadf02780ebaf5770be643f9647dd0025b",
+                "size_bytes": 1869
+              }
+            ]
+          }
+        },
+        {
+          "relationship": "byte_identical_implementation_and_tests",
+          "comparison": "本次正式 Pleiades 准入的 operator.md、scientific_operator.py 与 test_scientific_operator.py 均与已绑定准入输入逐字节同哈希。复用同一公开函数，仅追加不可变准入来源。",
+          "admitted_input": {
+            "schema": "scirel.admitted-asset-export.v1",
+            "tenant_id": "tenant_pleiades_191471077735",
+            "admission": {
+              "admission_ref": "scientific_asset_admission_aa8d3f9934b837aa92b3250b",
+              "case_ref": "asset_review_case_6494dbc6422a3ec3ede59d49",
+              "decision_ref": "review_decision_a199b98f34105bcc0cb1df0d",
+              "asset_kind": "operator",
+              "version_commit_ref": "vcommit_5b244d75f9259326a7371148",
+              "root_digest": "sha256:81f92e06677b555124a026e97c54c2e1bcf80a1a47439ee201e7826a44e2e8eb",
+              "operator_revision_ref": "operator_revision_b2896b385bb5465c",
               "task_graph_revision_ref": null,
               "candidate_ref": null,
               "candidate_digest": null,
