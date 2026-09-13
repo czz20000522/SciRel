@@ -80,5 +80,7 @@ python scripts/build_admitted_distribution.py --staging-dir <new-staging-directo
 
 发行验收另外使用断网环境，只安装 wheel 与声明依赖，不挂源码。安装后的测试不得依赖 editable
 安装或把 src 放进 PYTHONPATH。上面的版本号随 pyproject.toml 更新，不是永久发行版本。
+`test_admitted_distribution_builder.py` 会创建独立虚拟环境，以 `--no-index --no-deps` 安装刚生成的
+wheel，并用隔离模式验证安装位置、内置准入清单、全部 callable 与仅含准入模块的公开面。
 
 项目尚未声明独立分发许可证，保留来源对应关系；正式分发前需确认输入资产与项目许可证选择。

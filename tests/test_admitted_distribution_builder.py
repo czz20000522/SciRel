@@ -2,9 +2,11 @@
 
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 import sys
+import venv
 from pathlib import Path
 
 
@@ -48,6 +50,12 @@ def _build_with_wheel(source_root: Path, staging: Path, wheel: Path) -> subproce
         capture_output=True,
         text=True,
     )
+
+
+def _venv_python(environment: Path) -> Path:
+    directory = "Scripts" if os.name == "nt" else "bin"
+    executable = "python.exe" if os.name == "nt" else "python"
+    return environment / directory / executable
 
 
 def _copy_builder_input(destination: Path) -> None:
@@ -209,3 +217,65 @@ def test_wheel_build_is_reproducible(tmp_path):
     second_result = json.loads(second.stdout)
     assert first_result["wheel_sha256"] == second_result["wheel_sha256"]
     assert Path(first_result["wheel"]).read_bytes() == Path(second_result["wheel"]).read_bytes()
+
+
+def test_wheel_clean_install_exposes_only_the_admitted_public_api(tmp_path):
+    staging = tmp_path / "staging"
+    wheel_dir = tmp_path / "wheel"
+    built = _build_with_wheel(ROOT, staging, wheel_dir)
+    assert built.returncode == 0, built.stderr
+    wheel = Path(json.loads(built.stdout)["wheel"])
+
+    environment = tmp_path / "environment"
+    venv.EnvBuilder(with_pip=True, system_site_packages=True).create(environment)
+    python = _venv_python(environment)
+    install = subprocess.run(
+        [
+            str(python),
+            "-m",
+            "pip",
+            "install",
+            "--disable-pip-version-check",
+            "--no-index",
+            "--no-deps",
+            str(wheel),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        cwd=tmp_path,
+    )
+    assert install.returncode == 0, install.stderr
+
+    probe = subprocess.run(
+        [
+            str(python),
+            "-I",
+            "-c",
+            (
+                "import importlib,importlib.metadata,json,pkgutil,sys;"
+                "import scirel;"
+                "distribution=importlib.metadata.distribution('scirel');"
+                "package_root=scirel.__path__[0];"
+                "assert package_root.startswith(sys.prefix),package_root;"
+                "manifest=json.loads("
+                "distribution.locate_file('scirel/_admitted_manifest.json').read_text(encoding='utf-8')"
+                ");"
+                "expected={item['public_callable'].rsplit('.',1)[0] for item in manifest['assets']};"
+                "expected|={'.'.join(module.split('.')[:depth]) for module in expected "
+                "for depth in range(2,len(module.split('.')))};"
+                "actual={item.name for item in pkgutil.walk_packages(scirel.__path__,'scirel.')};"
+                "assert actual==expected,(actual,expected)\n"
+                "for item in manifest['assets']:\n"
+                "    module_name,symbol=item['public_callable'].rsplit('.',1)\n"
+                "    assert callable(getattr(importlib.import_module(module_name),symbol))\n"
+                "print(json.dumps({'assets':len(expected),'version':distribution.version},sort_keys=True))"
+            ),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        cwd=tmp_path,
+    )
+    assert probe.returncode == 0, probe.stderr
+    assert json.loads(probe.stdout)["assets"] > 0
