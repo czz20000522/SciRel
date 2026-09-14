@@ -271,7 +271,9 @@ def assemble(source_root: Path, staging_dir: Path) -> dict[str, Any]:
     }
 
 
-def build_wheel(staging_dir: Path, wheel_dir: Path) -> dict[str, str]:
+def build_wheel(
+    staging_dir: Path, wheel_dir: Path, builder_python: str | None = None
+) -> dict[str, str]:
     staging_dir = staging_dir.resolve()
     wheel_dir = wheel_dir.resolve()
     if wheel_dir.exists():
@@ -282,7 +284,7 @@ def build_wheel(staging_dir: Path, wheel_dir: Path) -> dict[str, str]:
     environment["PYTHONHASHSEED"] = "0"
     with tempfile.TemporaryDirectory(prefix=f".{wheel_dir.name}-", dir=wheel_dir.parent) as temporary:
         command = [
-            sys.executable,
+            builder_python or sys.executable,
             "-m",
             "pip",
             "wheel",
@@ -318,13 +320,19 @@ def main() -> int:
     parser.add_argument("--source-root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--staging-dir", type=Path, required=True)
     parser.add_argument("--wheel-dir", type=Path)
+    parser.add_argument(
+        "--builder-python",
+        help="Python interpreter for the isolated wheel build (default: this interpreter)",
+    )
     args = parser.parse_args()
     try:
         if args.wheel_dir is not None and args.wheel_dir.exists():
             raise FileExistsError(f"wheel directory already exists: {args.wheel_dir.resolve()}")
         result = assemble(args.source_root, args.staging_dir)
         if args.wheel_dir is not None:
-            result.update(build_wheel(args.staging_dir, args.wheel_dir))
+            result.update(
+                build_wheel(args.staging_dir, args.wheel_dir, args.builder_python)
+            )
     except Exception as error:
         print(f"admitted distribution assembly failed: {error}", file=sys.stderr)
         return 1

@@ -34,18 +34,26 @@ def _build_from(source_root: Path, staging: Path) -> subprocess.CompletedProcess
     )
 
 
-def _build_with_wheel(source_root: Path, staging: Path, wheel: Path) -> subprocess.CompletedProcess[str]:
+def _build_with_wheel(
+    source_root: Path,
+    staging: Path,
+    wheel: Path,
+    builder_python: Path | None = None,
+) -> subprocess.CompletedProcess[str]:
+    command = [
+        sys.executable,
+        str(BUILDER),
+        "--source-root",
+        str(source_root),
+        "--staging-dir",
+        str(staging),
+        "--wheel-dir",
+        str(wheel),
+    ]
+    if builder_python is not None:
+        command.extend(["--builder-python", str(builder_python)])
     return subprocess.run(
-        [
-            sys.executable,
-            str(BUILDER),
-            "--source-root",
-            str(source_root),
-            "--staging-dir",
-            str(staging),
-            "--wheel-dir",
-            str(wheel),
-        ],
+        command,
         check=False,
         capture_output=True,
         text=True,
@@ -220,18 +228,23 @@ def test_wheel_build_is_reproducible(tmp_path):
 
 
 def test_wheel_clean_install_exposes_only_the_admitted_public_api(tmp_path):
+    builder_environment = tmp_path / "builder-environment"
+    venv.EnvBuilder(with_pip=True, system_site_packages=True).create(builder_environment)
+    builder_python = _venv_python(builder_environment)
+
     staging = tmp_path / "staging"
     wheel_dir = tmp_path / "wheel"
-    built = _build_with_wheel(ROOT, staging, wheel_dir)
+    built = _build_with_wheel(ROOT, staging, wheel_dir, builder_python)
     assert built.returncode == 0, built.stderr
     wheel = Path(json.loads(built.stdout)["wheel"])
 
-    environment = tmp_path / "environment"
-    venv.EnvBuilder(with_pip=True, system_site_packages=True).create(environment)
-    python = _venv_python(environment)
+    runtime_environment = tmp_path / "runtime-environment"
+    venv.EnvBuilder(with_pip=True, system_site_packages=True).create(runtime_environment)
+    runtime_python = _venv_python(runtime_environment)
+    assert builder_python != runtime_python
     install = subprocess.run(
         [
-            str(python),
+            str(runtime_python),
             "-m",
             "pip",
             "install",
@@ -249,7 +262,7 @@ def test_wheel_clean_install_exposes_only_the_admitted_public_api(tmp_path):
 
     probe = subprocess.run(
         [
-            str(python),
+            str(runtime_python),
             "-I",
             "-c",
             (

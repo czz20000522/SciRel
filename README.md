@@ -71,6 +71,15 @@ python -m pytest tests/test_admitted_distribution_builder.py tests/test_admitted
 python scripts/build_admitted_distribution.py --staging-dir <new-staging-directory> --wheel-dir <new-wheel-directory>
 ```
 
+运行镜像不承担构建工具。需要从不带 `pip` 的运行环境构建时，使用带 `pip`、`setuptools` 和
+wheel backend 的临时构建解释器：
+
+```text
+python scripts/build_admitted_distribution.py --staging-dir <new-staging-directory> --wheel-dir <new-wheel-directory> --builder-python <isolated-builder-python>
+```
+
+`--builder-python` 只用于 wheel 构建；最终安装和 source-free runtime 验证可以使用另一个解释器。
+
 构建器逐项核对 `provenance/admitted-assets.json` 中的源码摘要，拒绝未绑定的内部模块依赖，生成只含
 已准入 callable 的公共导出、内置准入清单与文件内容锁。它拒绝覆盖已有 staging 目录；失败结果不能
 替换上一运行版本。wheel 构建固定归档时间与 Python hash seed，同一源码和准入账本应产生相同摘要。
