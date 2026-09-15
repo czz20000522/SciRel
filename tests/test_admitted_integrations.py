@@ -9,7 +9,7 @@ def test_admitted_integrations_match_the_loaded_library():
     root = Path(__file__).resolve().parents[1]
     records = json.loads((root / "provenance/admitted-assets.json").read_text(encoding="utf-8"))
     assert records["schema"] == "scirel.admitted-integrations.v1"
-    assert records["distribution_status"] == "development_partial_admission"
+    assert records["distribution_status"] == "development_full_admission_candidate"
     assert records["integrations"]
     public_names = set()
     admissions = set()
@@ -34,10 +34,10 @@ def test_admitted_integrations_match_the_loaded_library():
         assert len(paths) == len(set(paths))
         assert record["input_implementation_path"] in paths
         assert record["integration_action"] in {
-            "reuse_equivalent_implementation", "adapt_input_shape", "replace_development_implementation"
+            "add_admitted_implementation",
+            "maintain_compatible_library_implementation",
+            "normalize_task_graph_wrapper",
         }
-        if record["integration_action"] == "adapt_input_shape":
-            assert record["input_adaptation"]
         for equivalent in record.get("equivalent_admitted_inputs", []):
             assert equivalent["relationship"] and equivalent["comparison"]
             exported = equivalent["admitted_input"]
@@ -50,47 +50,52 @@ def test_admitted_integrations_match_the_loaded_library():
             assert len(paths) == len(set(paths))
 
 
-def test_duplicate_human_admission_is_bound_to_the_existing_frank_egedal_implementation():
+def test_current_formal_pleiades_batch_is_exact_and_dependency_closed():
     root = Path(__file__).resolve().parents[1]
     records = json.loads((root / "provenance/admitted-assets.json").read_text(encoding="utf-8"))
-    record = next(
-        item for item in records["integrations"]
-        if item["public_callable"].endswith(".evaluate_frank_egedal_radial_envelope")
-    )
+    batch = records["admission_batch"]
+    assert batch["asset_count"] == 52
+    assert batch["operator_count"] == 41
+    assert batch["task_graph_count"] == 11
+    assert len(records["integrations"]) == 52
 
-    duplicate = next(
-        item for item in record["equivalent_admitted_inputs"]
-        if item["admitted_input"]["admission"]["admission_ref"]
-        == "scientific_asset_admission_bff7513f14eb910950e287a2"
-    )
-    assert duplicate["relationship"] == "byte_identical_implementation_and_tests"
-
-    primary_files = {
-        Path(item["path"]).name: item["sha256"]
-        for item in record["admitted_input"]["files"]
-    }
-    duplicate_files = {
-        Path(item["path"]).name: item["sha256"]
-        for item in duplicate["admitted_input"]["files"]
-    }
-    for name in ("scientific_operator.py", "test_scientific_operator.py"):
-        assert duplicate_files[name] == primary_files[name]
-
-def test_current_formal_pleiades_admissions_are_bound_without_duplicate_functions():
-    root = Path(__file__).resolve().parents[1]
-    records = json.loads((root / "provenance/admitted-assets.json").read_text(encoding="utf-8"))
-    expected = {
-        "scientific_asset_admission_9872d9ef7d6bdfdf97e429ca",
-        "scientific_asset_admission_aa8d3f9934b837aa92b3250b",
-        "scientific_asset_admission_5c9a2b0fd8d77434625dcca9",
-        "scientific_asset_admission_ba0a99bc7a84888f06988a85",
-    }
-    actual = {
-        exported["admission"]["admission_ref"]
+    admissions = {
+        record["admitted_input"]["admission"]["admission_ref"]
         for record in records["integrations"]
-        for exported in [record["admitted_input"], *[
-            item["admitted_input"] for item in record.get("equivalent_admitted_inputs", [])
-        ]]
     }
-    assert expected <= actual
-    assert len(records["integrations"]) == 9
+    assert len(admissions) == 52
+    kinds = [
+        record["admitted_input"]["admission"]["asset_kind"]
+        for record in records["integrations"]
+    ]
+    assert kinds.count("operator") == 41
+    assert kinds.count("task_graph") == 11
+    assert all(
+        set(record["dependency_admission_refs"]) <= admissions
+        for record in records["integrations"]
+    )
+
+    public_callables = {record["public_callable"] for record in records["integrations"]}
+    assert "scirel.inference.anisotropic_trial_evaluation.evaluate_anisotropic_trial" in public_callables
+    assert (
+        "scirel.equilibrium.kinetic_mirror_hall_equilibrium."
+        "solve_kinetic_mirror_hall_equilibrium"
+    ) in public_callables
+
+
+def test_support_modules_are_hash_bound_without_becoming_assets():
+    root = Path(__file__).resolve().parents[1]
+    records = json.loads((root / "provenance/admitted-assets.json").read_text(encoding="utf-8"))
+    public_modules = {
+        record["public_callable"].rsplit(".", 1)[0]
+        for record in records["integrations"]
+    }
+    assert {item["module"] for item in records["support_modules"]} == {
+        "scirel._composition",
+        "scirel._validation",
+    }
+    for support in records["support_modules"]:
+        assert support["module"] not in public_modules
+        path = root / "src" / Path(*support["module"].split(".")).with_suffix(".py")
+        source = path.read_bytes().replace(b"\r\n", b"\n")
+        assert hashlib.sha256(source).hexdigest() == support["library_source_lf_sha256"]

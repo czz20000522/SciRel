@@ -51,6 +51,21 @@ def _module_source(source_root: Path, public_callable: str) -> tuple[str, str, P
     return module_name, parts[-1], source
 
 
+def _support_module_source(source_root: Path, module_name: str) -> Path:
+    parts = module_name.split(".")
+    if (
+        len(parts) < 2
+        or parts[0] != "scirel"
+        or parts[-1] == "__init__"
+        or not all(part.isidentifier() for part in parts)
+    ):
+        raise ValueError(f"invalid support module: {module_name!r}")
+    source = source_root / "src" / Path(*parts).with_suffix(".py")
+    if not source.resolve().is_relative_to((source_root / "src" / "scirel").resolve()):
+        raise ValueError(f"support module escapes the SciRel source tree: {module_name}")
+    return source
+
+
 def _required_reference(admission: dict[str, Any], name: str, module_name: str) -> str:
     value = admission.get(name)
     if not isinstance(value, str) or not value:
@@ -58,27 +73,50 @@ def _required_reference(admission: dict[str, Any], name: str, module_name: str) 
     return value
 
 
-def _validate_internal_imports(source: Path, module_name: str, selected_modules: set[str]) -> None:
+def _relative_import_module(module_name: str, node: ast.ImportFrom) -> str | None:
+    package = module_name.split(".")[:-1]
+    if node.level > len(package):
+        raise ValueError(
+            f"{module_name} has a relative import escaping the SciRel source tree"
+        )
+    base = package[: len(package) - node.level + 1]
+    if node.module:
+        return ".".join([*base, *node.module.split(".")])
+    return None
+
+
+def _validate_internal_imports(source: Path, module_name: str, admitted_modules: set[str]) -> None:
     tree = ast.parse(source.read_text(encoding="utf-8"), filename=str(source))
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             internal = [alias.name for alias in node.names if alias.name == "scirel" or alias.name.startswith("scirel.")]
-            missing = [name for name in internal if name not in selected_modules]
+            missing = [name for name in internal if name not in admitted_modules]
             if missing:
                 raise ValueError(
-                    f"{module_name} imports modules outside the admitted set: {', '.join(missing)}"
+                    f"{module_name} has an unbound internal import: {', '.join(missing)}"
                 )
         elif isinstance(node, ast.ImportFrom):
             if node.level:
-                raise ValueError(
-                    f"{module_name} uses a relative internal import; bind and admit its dependency before release"
-                )
-            imported = node.module or ""
-            if imported == "scirel" or imported.startswith("scirel."):
-                if imported not in selected_modules:
+                imported = _relative_import_module(module_name, node)
+                if imported is None:
+                    base = module_name.split(".")[:-1]
+                    for alias in node.names:
+                        candidate = ".".join([*base, alias.name])
+                        if candidate not in admitted_modules:
+                            raise ValueError(
+                                f"{module_name} has an unbound internal import: {candidate}"
+                            )
+                elif imported not in admitted_modules:
                     raise ValueError(
-                        f"{module_name} imports a module outside the admitted set: {imported}"
+                        f"{module_name} has an unbound internal import: {imported}"
                     )
+            else:
+                imported = node.module or ""
+                if imported == "scirel" or imported.startswith("scirel."):
+                    if imported not in admitted_modules:
+                        raise ValueError(
+                            f"{module_name} has an unbound internal import: {imported}"
+                        )
 
 
 def _write_package_initializers(
@@ -147,6 +185,34 @@ def assemble(source_root: Path, staging_dir: Path) -> dict[str, Any]:
         selected_modules.add(module_name)
         parsed.append((entry, module_name, symbol, source))
 
+    support_entries = records.get("support_modules", [])
+    if not isinstance(support_entries, list):
+        raise ValueError("support module list must be a list")
+    support_modules: set[str] = set()
+    parsed_support: list[tuple[str, Path, bytes]] = []
+    for entry in support_entries:
+        if not isinstance(entry, dict):
+            raise ValueError("support module entry must be an object")
+        module_name = entry.get("module")
+        if not isinstance(module_name, str) or module_name in support_modules:
+            raise ValueError(f"duplicate or missing support module: {module_name!r}")
+        if module_name in selected_modules:
+            raise ValueError(f"support module is already a public asset module: {module_name}")
+        source = _support_module_source(source_root, module_name)
+        expected_hash = entry.get("library_source_lf_sha256")
+        if not isinstance(expected_hash, str) or not SHA256_RE.fullmatch(expected_hash):
+            raise ValueError(f"invalid source digest for support module: {module_name}")
+        if not source.is_file():
+            raise FileNotFoundError(f"admitted support source is missing: {source}")
+        source_bytes = source.read_bytes()
+        normalized_bytes = source_bytes.replace(b"\r\n", b"\n")
+        if _sha256(normalized_bytes) != expected_hash:
+            raise ValueError(f"support source digest differs from admitted integration: {module_name}")
+        support_modules.add(module_name)
+        parsed_support.append((module_name, source, normalized_bytes))
+
+    admitted_modules = selected_modules | support_modules
+
     version = _read_version(source_root)
     target_parent = staging_dir.parent
     target_parent.mkdir(parents=True, exist_ok=True)
@@ -166,7 +232,7 @@ def assemble(source_root: Path, staging_dir: Path) -> dict[str, Any]:
                 raise ValueError(f"invalid source digest for {module_name}")
             if normalized_hash != expected_hash:
                 raise ValueError(f"source digest differs from admitted integration: {module_name}")
-            _validate_internal_imports(source, module_name, selected_modules)
+            _validate_internal_imports(source, module_name, admitted_modules)
 
             relative_module = Path("src", *module_name.split(".")).with_suffix(".py")
             destination = stage / relative_module
@@ -215,6 +281,13 @@ def assemble(source_root: Path, staging_dir: Path) -> dict[str, Any]:
                     "public_callable": entry["public_callable"],
                 }
             )
+
+        for module_name, source, source_bytes in sorted(parsed_support):
+            _validate_internal_imports(source, module_name, admitted_modules)
+            relative_module = Path("src", *module_name.split(".")).with_suffix(".py")
+            destination = stage / relative_module
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(source_bytes)
 
         package_root = stage / "src" / "scirel"
         _write_package_initializers(package_root, exports)

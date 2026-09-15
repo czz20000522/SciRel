@@ -19,6 +19,7 @@ _OPERATORS = {
     'scirel.equilibrium.anisotropic_toroidal_current': ('scirel.equilibrium.anisotropic_toroidal_current', 'compute_anisotropic_toroidal_current'),
     'scirel.inference.latin_hypercube_sampling': ('scirel.inference.latin_hypercube_sampling', 'sample_latin_hypercube'),
     'scirel.inference.anisotropic_parameter_optimization': ('scirel.inference.anisotropic_parameter_optimization', 'optimize_anisotropic_parameters'),
+    'scirel.inference.anisotropic_trial_evaluation': ('scirel.inference.anisotropic_trial_evaluation', 'evaluate_anisotropic_trial'),
     'scirel.diagnostics.observation_residuals': ('scirel.diagnostics.observation_residuals', 'reduce_observation_residuals'),
     'scirel.diagnostics.parallel_pressure_residual': ('scirel.diagnostics.parallel_pressure_residual', 'compute_parallel_pressure_residual'),
     'scirel.kinetic.loss_cone_spectrum': ('scirel.kinetic.loss_cone_spectrum', 'solve_loss_cone_spectrum'),
@@ -55,6 +56,7 @@ _GRAPHS = {
     'scirel.equilibrium.graphs.reduced_hall_anisotropic_picard': ('scirel.equilibrium.reduced_hall_anisotropic_picard', 'solve_reduced_hall_anisotropic_picard'),
     'scirel.field.graphs.multi_coil_vacuum_field': ('scirel.field.multi_coil_vacuum_field', 'solve_multi_coil_vacuum_field'),
     'scirel.kinetic.graphs.frank_egedal_pressure_closure': ('scirel.kinetic.frank_egedal_pressure_closure', 'solve_frank_egedal_pressure_closure'),
+    'scirel.equilibrium.graphs.kinetic_mirror_hall_equilibrium': ('scirel.equilibrium.kinetic_mirror_hall_equilibrium', 'solve_kinetic_mirror_hall_equilibrium'),
 }
 
 def _resolve(table, ref, kind):

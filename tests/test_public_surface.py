@@ -49,7 +49,9 @@ from scirel.closures.mirror_quasineutral_closure import solve_mirror_quasineutra
 from scirel.kinetic.grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
 from scirel.equilibrium.axisymmetric_anisotropic_picard import solve_axisymmetric_anisotropic_picard
 from scirel.inference.direct_anisotropic_inversion import solve_direct_anisotropic_inversion
+from scirel.inference.anisotropic_trial_evaluation import evaluate_anisotropic_trial
 from scirel.equilibrium.reduced_hall_anisotropic_picard import solve_reduced_hall_anisotropic_picard
+from scirel.equilibrium.kinetic_mirror_hall_equilibrium import solve_kinetic_mirror_hall_equilibrium
 from scirel.field.multi_coil_vacuum_field import solve_multi_coil_vacuum_field
 from scirel.kinetic.frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure
 
@@ -103,7 +105,9 @@ def test_all_normalized_public_callables_are_importable():
         solve_grid_mirror_kinetic_closure,
         solve_axisymmetric_anisotropic_picard,
         solve_direct_anisotropic_inversion,
+        evaluate_anisotropic_trial,
         solve_reduced_hall_anisotropic_picard,
+        solve_kinetic_mirror_hall_equilibrium,
         solve_multi_coil_vacuum_field,
         solve_frank_egedal_pressure_closure,
     ])

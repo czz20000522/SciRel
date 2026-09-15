@@ -1,5 +1,6 @@
 from .latin_hypercube_sampling import sample_latin_hypercube
 from .anisotropic_parameter_optimization import optimize_anisotropic_parameters
 from .direct_anisotropic_inversion import solve_direct_anisotropic_inversion
+from .anisotropic_trial_evaluation import evaluate_anisotropic_trial
 
-__all__ = ['sample_latin_hypercube', 'optimize_anisotropic_parameters', 'solve_direct_anisotropic_inversion']
+__all__ = ['sample_latin_hypercube', 'optimize_anisotropic_parameters', 'evaluate_anisotropic_trial', 'solve_direct_anisotropic_inversion']

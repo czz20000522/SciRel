@@ -8,5 +8,6 @@ from .free_boundary_anisotropic_picard import solve_free_boundary_anisotropic_pi
 from .isotropic_pressure_flux import solve_isotropic_pressure_flux
 from .axisymmetric_anisotropic_picard import solve_axisymmetric_anisotropic_picard
 from .reduced_hall_anisotropic_picard import solve_reduced_hall_anisotropic_picard
+from .kinetic_mirror_hall_equilibrium import solve_kinetic_mirror_hall_equilibrium
 
-__all__ = ['pressure_flux_picard_step', 'build_pressure_flux_state', 'update_anisotropic_picard_flux', 'compute_anisotropic_toroidal_current', 'update_axisymmetric_picard_flux', 'compute_anisotropic_force_balance', 'solve_free_boundary_anisotropic_picard', 'solve_isotropic_pressure_flux', 'solve_axisymmetric_anisotropic_picard', 'solve_reduced_hall_anisotropic_picard']
+__all__ = ['pressure_flux_picard_step', 'build_pressure_flux_state', 'update_anisotropic_picard_flux', 'compute_anisotropic_toroidal_current', 'update_axisymmetric_picard_flux', 'compute_anisotropic_force_balance', 'solve_free_boundary_anisotropic_picard', 'solve_isotropic_pressure_flux', 'solve_axisymmetric_anisotropic_picard', 'solve_reduced_hall_anisotropic_picard', 'solve_kinetic_mirror_hall_equilibrium']
