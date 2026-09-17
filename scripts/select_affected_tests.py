@@ -28,6 +28,9 @@ FULL_SUITE_PATHS = {
 }
 
 ENGINEERING_TESTS = {
+    "docs/integration/codefusion-consumer-contract.md": (
+        "tests/test_codefusion_consumer_contract.py",
+    ),
     "examples/user_acceptance.py": ("tests/test_admitted_distribution_builder.py",),
     "scripts/build_admitted_distribution.py": (
         "tests/test_admitted_distribution_builder.py",

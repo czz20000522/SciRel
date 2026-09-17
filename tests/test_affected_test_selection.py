@@ -80,6 +80,15 @@ def test_mcp_adapter_change_selects_only_its_boundary_tests():
     assert result["reasons"][0]["classification"] == "source_engineering_contract"
 
 
+def test_codefusion_consumer_contract_change_selects_its_contract_test():
+    result = select("docs/integration/codefusion-consumer-contract.md")
+
+    assert result["full_suite_required"] is False
+    assert result["affected_assets"] == []
+    assert result["test_paths"] == ["tests/test_codefusion_consumer_contract.py"]
+    assert result["reasons"][0]["classification"] == "engineering_contract"
+
+
 def test_shared_composition_change_selects_every_task_graph():
     result = select("src/scirel/_composition.py")
 
