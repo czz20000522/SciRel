@@ -236,7 +236,11 @@
         "transform": {"type": "string", "minLength": 1},
         "kind": {"enum": ["data", "control", "feedback"]},
         "required": {"type": "boolean"},
-        "feedback_id": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9._-]*$"}
+        "feedback_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9._-]*$",
+          "description": "Stable controlled-loop ID; multiple feedback edges may share it."
+        }
       },
       "allOf": [
         {
@@ -251,7 +255,11 @@
       "additionalProperties": false,
       "required": ["id", "state", "initialization", "update_order", "continue_when", "stop_when", "iteration_bound", "nonconvergence"],
       "properties": {
-        "id": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9._-]*$"},
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9._-]*$",
+          "description": "Unique controlled-loop ID matching one or more feedback edges."
+        },
         "state": {"type": "string", "minLength": 1},
         "initialization": {"type": "string", "minLength": 1},
         "update_order": {"type": "string", "minLength": 1},

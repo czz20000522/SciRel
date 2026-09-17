@@ -365,8 +365,6 @@ def _validate_graph(
             feedback_id = _text(edge["feedback_id"], f"{location}.feedback_id")
             if not FEEDBACK_ID_RE.fullmatch(feedback_id):
                 _fail(f"{location}.feedback_id", "has an invalid stable feedback ID")
-            if feedback_id in feedback_edge_ids:
-                _fail("graph.edges", f"duplicate feedback_id: {feedback_id}")
             feedback_edge_ids.add(feedback_id)
         elif "feedback_id" in edge:
             _fail(f"{location}.feedback_id", "is allowed only for feedback edges")

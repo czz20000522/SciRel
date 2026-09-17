@@ -34,10 +34,10 @@ def _canonical(value):
     ).encode("utf-8")
 
 
-def _feedback_edge(feedback_id):
+def _feedback_edge(feedback_id, *, source_port="psi", target_port="r0"):
     return {
-        "from": {"node": "superposition", "port": "psi"},
-        "to": {"node": "rectangular_geometry", "port": "r0"},
+        "from": {"node": "superposition", "port": source_port},
+        "to": {"node": "rectangular_geometry", "port": target_port},
         "description": "Feed the computed flux into the next controlled iteration.",
         "condition": "The loop continuation predicate is true.",
         "transform": "Identity for contract validation.",
@@ -109,10 +109,13 @@ def test_task_graph_ordinary_cycle_is_rejected_without_feedback_contract():
         validate_document(document)
 
 
-def test_each_feedback_edge_requires_its_own_matching_contract():
+def test_distinct_feedback_loops_require_matching_contracts():
     document = _task_graph_document()
     document["graph"]["edges"].extend(
-        (_feedback_edge("loop-a"), _feedback_edge("loop-b"))
+        (
+            _feedback_edge("loop-a"),
+            _feedback_edge("loop-b", source_port="BR", target_port="z0"),
+        )
     )
     document["graph"]["execution"]["feedback"] = [_feedback_contract("loop-a")]
 
@@ -120,9 +123,14 @@ def test_each_feedback_edge_requires_its_own_matching_contract():
         validate_document(document)
 
 
-def test_feedback_edge_and_contract_match_by_stable_id():
+def test_multiple_feedback_edges_can_share_one_bounded_loop_contract():
     document = _task_graph_document()
-    document["graph"]["edges"].append(_feedback_edge("picard-loop"))
+    document["graph"]["edges"].extend(
+        (
+            _feedback_edge("picard-loop"),
+            _feedback_edge("picard-loop", source_port="BR", target_port="z0"),
+        )
+    )
     document["graph"]["execution"]["feedback"] = [
         _feedback_contract("picard-loop")
     ]

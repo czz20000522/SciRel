@@ -34,11 +34,11 @@ The formal v1 shape is [`contracts/scientific-asset-document.schema.json`](../..
 A TaskGraph shares every common field and additionally declares:
 
 - nodes, node kinds, stable dependency asset IDs and typed input/output ports;
-- edges with endpoints, condition, transform, kind and required status; every feedback edge also has a stable `feedback_id`;
+- edges with endpoints, condition, transform, kind and required status; every feedback edge also names its controlled loop with a stable `feedback_id`, and multiple state edges may share that loop ID;
 - execution mode, observable ordering, branches, state ownership and failure propagation; and
 - every controlled feedback loop's state, initialization, update order, continue/stop predicates, finite iteration-bound expression and nonconvergence result. The bound may reference a validated runtime input such as `maxiter`; it cannot be implicit or unbounded.
 
-Ordinary data/control edges must be acyclic. A cycle is valid only through an edge explicitly typed `feedback` and exactly one bounded feedback contract with the same stable ID. Duplicate IDs, feedback edges without contracts and contracts without edges fail closed. Glue nodes may rename, pack, reshape or preserve declared data; they cannot hide interpolation, closure, discretization, geometry reconstruction or another scientific relation.
+Ordinary data/control edges must be acyclic. A cycle is valid only through edges explicitly typed `feedback` and a bounded feedback contract for their loop ID. The set of distinct edge `feedback_id` values must exactly match the unique execution feedback contract IDs: one loop may contain multiple feedback edges, while duplicate contracts, edges without a loop contract and contracts without edges fail closed. Glue nodes may rename, pack, reshape or preserve declared data; they cannot hide interpolation, closure, discretization, geometry reconstruction or another scientific relation.
 
 ## Progressive disclosure
 
