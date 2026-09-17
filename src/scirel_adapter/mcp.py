@@ -214,11 +214,19 @@ class ThinMcpAdapter:
         }
 
     @staticmethod
+    def _validate_string_keys(
+        value: Mapping[Any, Any], *, code: str, label: str
+    ) -> None:
+        if not all(isinstance(key, str) for key in value):
+            _fail(code, f"{label} names must be strings")
+
+    @staticmethod
     def _validate_exact_keys(
         request: Mapping[str, Any], required: set[str], allowed: set[str]
     ) -> None:
-        if not all(isinstance(key, str) for key in request):
-            _fail("invalid_request", "request field names must be strings")
+        ThinMcpAdapter._validate_string_keys(
+            request, code="invalid_request", label="request field"
+        )
         missing = sorted(required - set(request))
         unknown = sorted(set(request) - allowed)
         if missing:
@@ -284,6 +292,9 @@ class ThinMcpAdapter:
             filters = {}
         if not isinstance(filters, Mapping):
             _fail("invalid_request", "filters must be an object")
+        self._validate_string_keys(
+            filters, code="invalid_request", label="discovery filter"
+        )
         matches = [route for route in self._routes if self._matches(route, filters)]
         page = matches[cursor : cursor + limit]
         next_cursor = cursor + len(page)
@@ -428,6 +439,9 @@ class ThinMcpAdapter:
     def invoke(self, asset_id: str, arguments: Mapping[str, Any]) -> dict[str, Any]:
         if not isinstance(arguments, Mapping):
             _fail("invalid_request", "arguments must be an object")
+        self._validate_string_keys(
+            arguments, code="invalid_arguments", label="argument"
+        )
         document = self._document(asset_id)
         ports = {port["name"]: port for port in document["inputs"]}
         unknown = sorted(set(arguments) - set(ports))

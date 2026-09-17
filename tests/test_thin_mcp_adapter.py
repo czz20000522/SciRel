@@ -209,6 +209,27 @@ def test_unknown_platform_fields_and_undocumented_arguments_fail_closed(catalog)
     assert filter_error.value.code == "invalid_request"
 
 
+def test_non_string_discovery_filter_names_fail_closed(catalog):
+    adapter = _adapter(catalog)
+
+    with pytest.raises(ThinMcpAdapterError, match="filter names must be strings") as failure:
+        adapter.discover(filters={1: "operator"})
+    assert failure.value.code == "invalid_request"
+
+
+def test_non_string_argument_names_fail_closed_before_document_read(catalog):
+    adapter = _adapter(catalog)
+
+    with mock.patch.object(
+        adapter,
+        "_document",
+        side_effect=AssertionError("invalid argument names read an asset document"),
+    ):
+        with pytest.raises(ThinMcpAdapterError, match="argument names must be strings") as failure:
+            adapter.invoke("scirel.field.current-green-superposition", {1: [1.0]})
+    assert failure.value.code == "invalid_arguments"
+
+
 def test_scientific_failure_is_preserved_as_the_adapter_error_cause(catalog):
     adapter = _adapter(catalog)
     with pytest.raises(ThinMcpAdapterError) as failure:
