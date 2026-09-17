@@ -6,7 +6,7 @@ SciRel wheel code and standardized asset documents are the core. The catalog is 
 
 ## Catalog build boundary
 
-`scripts/build_catalog.py` consumes a dependency-closed set of validated `scirel.asset-document.v1` records and writes a new immutable snapshot. It does not query CodeFusion, import source-project checkouts, fetch the network or read private review refs.
+`scripts/build_catalog.py` consumes a dependency-closed set of validated `scirel.asset-document.v1` records whose implementation versions match the requested catalog release, and writes a new immutable snapshot. It does not query CodeFusion, import source-project checkouts, fetch the network or read private review refs.
 
 `--execute-examples` executes repository-owned example code for release verification. It is not an evaluator for untrusted uploaded documents; an adapter handling untrusted input must parse values against the exact contract and use its own sandbox rather than passing arbitrary example code to this command.
 
@@ -14,7 +14,7 @@ The snapshot contains:
 
 - `release.json`: schema, release identity, honest coverage, progressive-disclosure order, partition hashes and root digest;
 - `routes/*.jsonl`: small typed routing facets and exact-record refs;
-- `summaries/*.jsonl`: bounded descriptions, public callable, scope and evidence ceiling;
+- `summaries/*.jsonl`: bounded descriptions, projected input/output/default and identity fields, public callable, applicability, limitations and evidence ceiling;
 - `records/<prefix>/<asset-id>.json`: exact standardized documents; and
 - `reverse-dependencies/*.jsonl`: direct consumers used for impact and closure analysis.
 
@@ -92,7 +92,9 @@ Deferred until this contract stabilizes:
 
 ## CodeFusion consumer handoff
 
-CodeFusion does not need to modify SciRel to consume this contract. Its separate work item is:
+The complete integration contract is maintained separately in [CodeFusion consumer contract](../integration/codefusion-consumer-contract.md). It records the release tuple, export-set parity, document entrypoints, callable/MCP surface, errors and current cross-project boundary mismatches without copying CodeFusion owner schemas into SciRel.
+
+CodeFusion does not need to modify SciRel to consume this development contract. Its separate work item is:
 
 1. export or confirm the exact admitted set and release binding used to authorize a complete SciRel catalog;
 2. pin SciRel wheel SHA-256 and catalog root digest in its runtime image/configuration;

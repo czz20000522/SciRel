@@ -7,6 +7,7 @@ SciRel 按长期独立 Python 项目维护。文档只保存稳定合同、可�
 - [标准化资产文档需求](requirements/asset-documentation.md)：每条资产必须提供的科学、调用、证据和 provenance 字段。
 - [薄 MCP 适配合同](requirements/thin-mcp-adapter.md)：固定 catalog 的发现、文档读取、callable 绑定与调用边界。
 - [Catalog 与适配器设计](design/catalog-and-adapters.md)：framework-neutral 投影、MCP/CLI/云适配边界和 CodeFusion 交付清单。
+- [CodeFusion 消费合同](integration/codefusion-consumer-contract.md)：发行绑定、导出集合、文档入口、callable/MCP、错误语义及跨项目职责差异。
 - [开发与增量整合流程](development-process.md)：首次/增量整合、验证分层和发行候选流程。
 - [贡献指南](../CONTRIBUTING.md)：开发环境、改动分类、兼容性和提交前检查。
 

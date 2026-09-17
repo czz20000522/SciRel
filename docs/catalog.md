@@ -20,7 +20,7 @@
 | --- | --- | --- |
 | release manifest | schema/release、根摘要、数量、分片引用、构建环境 | 每次检索一次 |
 | route index | asset ID、kind、领域、输出、关系方向及高区分度 facets | 相关分片 |
-| capability summary | 简短用途、关键输入输出、模型/几何/边界、适用域、证据上限 | 有界候选集 |
+| capability summary | 简短用途、结构化关键输入输出及默认值、模型/几何/边界、适用域、限制和证据上限 | 有界候选集 |
 | exact record | 完整合同、public callable、signature、implementation version、dependencies 与 provenance | 最终 shortlist |
 | reverse dependency index | Operator/TaskGraph 到直接消费者 | 变更影响分析 |
 
@@ -36,6 +36,8 @@ catalog/
 ```
 
 每个分片在 release manifest 中保存条目数、字节数和内容摘要。写入先进入新 staging，完成 schema、唯一性、引用闭包和摘要验证后再原子发布整个 snapshot；不得原地修改上一 release。
+
+同一 snapshot 的 `release_version` 必须等于其中每条 exact record 的 `version.implementation_version`。版本不一致不是可由 adapter 猜测修复的 metadata gap，而是 catalog 构建失败。wheel 文件摘要、admitted manifest digest 与 catalog root digest 由消费方作为一个发行绑定整体固定，但不逐项复制到资产文档。
 
 ## 稳定身份与精确记录
 

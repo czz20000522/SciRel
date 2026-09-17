@@ -191,8 +191,16 @@
         "shape": {"type": "string", "minLength": 1},
         "dtype": {"type": "string", "minLength": 1},
         "required": {"type": "boolean"},
-        "constraints": {"type": "string", "minLength": 1}
-      }
+        "constraints": {"type": "string", "minLength": 1},
+        "default": {}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"required": {"const": false}}},
+          "then": {"required": ["default"]},
+          "else": {"not": {"required": ["default"]}}
+        }
+      ]
     },
     "dependency": {
       "type": "object",

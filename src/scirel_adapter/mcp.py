@@ -399,7 +399,51 @@ class ThinMcpAdapter:
         actual_signature = f"{python_api['symbol']}{signature}"
         if actual_signature != python_api["signature"]:
             _fail("callable_mismatch", f"runtime signature differs for {asset_id}")
+        self._validate_input_binding(asset_id, document["inputs"], signature)
         return document, function, signature
+
+    @staticmethod
+    def _validate_input_binding(
+        asset_id: str,
+        ports: Sequence[Mapping[str, Any]],
+        signature: inspect.Signature,
+    ) -> None:
+        accepts_keywords = any(
+            parameter.kind is inspect.Parameter.VAR_KEYWORD
+            for parameter in signature.parameters.values()
+        )
+        for port in ports:
+            name = port["name"]
+            parameter = signature.parameters.get(name)
+            if parameter is None:
+                if not accepts_keywords:
+                    _fail(
+                        "callable_mismatch",
+                        f"documented input is not callable for {asset_id}: {name}",
+                    )
+                continue
+            if parameter.kind is inspect.Parameter.POSITIONAL_ONLY:
+                _fail(
+                    "callable_mismatch",
+                    f"documented input is positional-only for {asset_id}: {name}",
+                )
+            runtime_required = parameter.default is inspect.Parameter.empty
+            if port["required"] != runtime_required:
+                _fail(
+                    "callable_mismatch",
+                    f"required status differs for {asset_id}: {name}",
+                )
+            if not runtime_required:
+                if "default" not in port:
+                    _fail(
+                        "callable_mismatch",
+                        f"documented default is missing for {asset_id}: {name}",
+                    )
+                if port["default"] != parameter.default:
+                    _fail(
+                        "callable_mismatch",
+                        f"default differs for {asset_id}: {name}",
+                    )
 
     def resolve_callable(self, asset_id: str) -> dict[str, Any]:
         document, _, _ = self._resolve_callable(asset_id)

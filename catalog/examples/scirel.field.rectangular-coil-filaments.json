@@ -26,7 +26,7 @@
     {"name": "nz", "description": "Number of axial filament centers.", "units": "count", "shape": "scalar", "dtype": "integer", "required": true, "constraints": "Positive integer; booleans and fractional values are rejected."},
     {"name": "dr", "description": "Radial center spacing.", "units": "m", "shape": "scalar", "dtype": "real", "required": true, "constraints": "Positive finite value."},
     {"name": "dz", "description": "Axial center spacing.", "units": "m", "shape": "scalar", "dtype": "real", "required": true, "constraints": "Positive finite value."},
-    {"name": "angle_deg", "description": "In-plane rotation using the maintained row-vector sign convention.", "units": "degree", "shape": "scalar", "dtype": "real", "required": false, "constraints": "Finite; defaults to 0.0."}
+    {"name": "angle_deg", "description": "In-plane rotation using the maintained row-vector sign convention.", "units": "degree", "shape": "scalar", "dtype": "real", "required": false, "default": 0.0, "constraints": "Finite."}
   ],
   "outputs": [
     {"name": "rz_pts", "description": "Ordered filament center coordinates [R,Z].", "units": "m,m", "shape": "[nr*nz,2]", "dtype": "float64", "required": true, "constraints": "Radii are nonnegative; unrotated ordering is radial outer loop and axial inner loop."}

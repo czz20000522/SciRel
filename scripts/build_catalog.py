@@ -55,6 +55,13 @@ def build_catalog(
         raise FileExistsError(f"catalog output already exists: {output_dir}")
     if coverage_status not in {"partial", "complete"}:
         raise ValueError("coverage_status must be partial or complete")
+    document_versions = {
+        document["version"]["implementation_version"] for document in documents
+    }
+    if document_versions != {release_version}:
+        raise ValueError(
+            "every document implementation_version must match catalog release_version"
+        )
     if declared_total < len(documents):
         raise ValueError("declared_total cannot be smaller than included assets")
     if coverage_status == "complete" and declared_total != len(documents):
@@ -104,11 +111,38 @@ def build_catalog(
                     "kind": document["kind"],
                     "title": document["title"],
                     "summary": document["summary"],
+                    "identity": {
+                        field: document["identity"][field]
+                        for field in ("model", "geometry", "coordinates", "boundary")
+                    },
+                    "inputs": [
+                        {
+                            field: port[field]
+                            for field in (
+                                "name",
+                                "units",
+                                "shape",
+                                "dtype",
+                                "required",
+                                "default",
+                            )
+                            if field in port
+                        }
+                        for port in document["inputs"]
+                    ],
+                    "outputs": [
+                        {
+                            field: port[field]
+                            for field in ("name", "units", "shape", "dtype")
+                        }
+                        for port in document["outputs"]
+                    ],
                     "public_callable": (
                         f"{document['public_api']['python']['module']}."
                         f"{document['public_api']['python']['symbol']}"
                     ),
                     "supported": document["applicability"]["supported"],
+                    "known_limitations": document["verification"]["known_limitations"],
                     "evidence_ceiling": document["verification"]["evidence_ceiling"],
                     "exact_record": exact_refs[asset_id],
                 }

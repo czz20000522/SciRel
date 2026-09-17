@@ -81,6 +81,14 @@ def test_documents_drive_progressive_discovery_and_retrieval(catalog):
     assert summaries["items"][0]["evidence_ceiling"] == source_document["verification"][
         "evidence_ceiling"
     ]
+    assert summaries["items"][0]["inputs"] == [
+        {
+            field: port[field]
+            for field in ("name", "units", "shape", "dtype", "required", "default")
+            if field in port
+        }
+        for port in source_document["inputs"]
+    ]
 
     documents = adapter.handle(
         {
@@ -160,6 +168,24 @@ def test_callable_binding_and_invocation_are_document_driven(catalog):
     serialized = json.dumps(response, sort_keys=True)
     for forbidden in ("session_id", "project_id", "workbench_id", "admission_ref"):
         assert forbidden not in serialized
+
+
+def test_optional_documented_default_can_be_omitted(catalog):
+    adapter = _adapter(catalog)
+
+    response = adapter.invoke(
+        "scirel.field.rectangular-coil-filaments",
+        {
+            "r0": 1.0,
+            "z0": 2.0,
+            "nr": 2,
+            "nz": 1,
+            "dr": 0.4,
+            "dz": 0.2,
+        },
+    )
+
+    assert response["result"] == [[0.8, 2.0], [1.2, 2.0]]
 
 
 def test_unknown_platform_fields_and_undocumented_arguments_fail_closed(catalog):
@@ -308,4 +334,25 @@ def test_installed_version_must_match_the_canonical_document(catalog):
     with mock.patch("scirel_adapter.mcp.metadata.version", return_value="0.1.0.dev4"):
         with pytest.raises(ThinMcpAdapterError, match="SciRel version differs") as failure:
             adapter.resolve_callable("scirel.field.current-green-superposition")
+    assert failure.value.code == "callable_mismatch"
+
+
+def test_documented_default_must_match_the_runtime_callable(catalog):
+    adapter = _adapter(catalog)
+    document = json.loads(
+        (EXAMPLES / "scirel.field.rectangular-coil-filaments.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    document["inputs"][-1]["default"] = 90.0
+
+    with mock.patch.object(adapter, "_document", return_value=document):
+        with pytest.raises(ThinMcpAdapterError, match="default differs") as failure:
+            adapter.resolve_callable(document["asset_id"])
+    assert failure.value.code == "callable_mismatch"
+
+    del document["inputs"][-1]["default"]
+    with mock.patch.object(adapter, "_document", return_value=document):
+        with pytest.raises(ThinMcpAdapterError, match="default is missing") as failure:
+            adapter.resolve_callable(document["asset_id"])
     assert failure.value.code == "callable_mismatch"

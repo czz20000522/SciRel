@@ -17,12 +17,21 @@ from validate_asset_documents import (  # noqa: E402
     AssetDocumentError,
     load_document_set,
     validate_document,
+    validate_runtime,
 )
 
 
 def _task_graph_document():
     return json.loads(
         (EXAMPLES / "scirel.field.multi-coil-vacuum-field.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+
+def _rectangular_coil_document():
+    return json.loads(
+        (EXAMPLES / "scirel.field.rectangular-coil-filaments.json").read_text(
             encoding="utf-8"
         )
     )
@@ -89,6 +98,26 @@ def test_missing_units_and_private_governance_fields_fail_closed():
     leaked["provenance"]["admission_ref"] = "private-owner-reference"
     with pytest.raises(AssetDocumentError, match="private governance fields"):
         validate_document(leaked)
+
+
+def test_optional_inputs_require_structured_defaults():
+    missing_default = _rectangular_coil_document()
+    del missing_default["inputs"][-1]["default"]
+    with pytest.raises(AssetDocumentError, match="optional ports must declare a default"):
+        validate_document(missing_default)
+
+    default_on_required = _rectangular_coil_document()
+    default_on_required["inputs"][0]["default"] = 1.0
+    with pytest.raises(AssetDocumentError, match="required ports must not declare a default"):
+        validate_document(default_on_required)
+
+
+def test_runtime_input_defaults_must_match_the_document():
+    document = _rectangular_coil_document()
+    document["inputs"][-1]["default"] = 90.0
+
+    with pytest.raises(AssetDocumentError, match="default differs for input: angle_deg"):
+        validate_runtime(document)
 
 
 def test_task_graph_ordinary_cycle_is_rejected_without_feedback_contract():
@@ -239,6 +268,27 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
     for summary in summaries:
         assert set(summary["exact_record"]) == {"path"}
         assert summary["exact_record"]["path"] in partition_paths
+    rectangular_summary = next(
+        item
+        for item in summaries
+        if item["asset_id"] == "scirel.field.rectangular-coil-filaments"
+    )
+    assert rectangular_summary["identity"] == {
+        "model": "geometric discretization without a magnetic-field model",
+        "geometry": "axisymmetric rectangular coil cross-section represented by circular filaments",
+        "coordinates": "cylindrical R-Z coordinates",
+        "boundary": "all generated cylindrical radii must remain nonnegative",
+    }
+    assert rectangular_summary["inputs"][-1] == {
+        "name": "angle_deg",
+        "units": "degree",
+        "shape": "scalar",
+        "dtype": "real",
+        "required": False,
+        "default": 0.0,
+    }
+    assert rectangular_summary["outputs"][0]["name"] == "rz_pts"
+    assert rectangular_summary["known_limitations"]
 
     serialized = b"\n".join(first_files.values())
     for private_term in (
@@ -259,5 +309,17 @@ def test_complete_catalog_cannot_hide_missing_documents(tmp_path):
             catalog_id="invalid-complete",
             release_version="0.1.0.dev5",
             coverage_status="complete",
+            declared_total=52,
+        )
+
+
+def test_catalog_release_version_must_match_every_document(tmp_path):
+    with pytest.raises(ValueError, match="implementation_version must match"):
+        build_catalog(
+            EXAMPLES,
+            tmp_path / "catalog",
+            catalog_id="version-mismatch",
+            release_version="0.1.0.dev4",
+            coverage_status="partial",
             declared_total=52,
         )

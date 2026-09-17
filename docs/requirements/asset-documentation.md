@@ -16,7 +16,7 @@ Every document must bind one stable scientific `asset_id` and declare:
 - kind, bilingual title, bounded summary, taxonomy and aliases;
 - scientific relation, implemented direction and definition;
 - model, assumptions, geometry, coordinates and boundary/closure;
-- named input/output ports with meaning, units, shape, dtype, required/default status and constraints;
+- named input/output ports with meaning, units, shape, dtype, required/default status and constraints; optional ports carry a JSON-compatible `default`, while required ports omit it;
 - applicability preconditions, supported scope and explicit exclusions;
 - invalid-input, runtime-failure, nonconvergence and partial-result semantics;
 - stable Python module, symbol and exact signature;
@@ -27,7 +27,9 @@ Every document must bind one stable scientific `asset_id` and declare:
 
 Public provenance must preserve useful lineage without exposing tenant IDs, admission/case/decision refs, candidate refs, source-project directories or another platform's internal owner model. Private governance evidence remains in `provenance/` and is joined only inside authorized release engineering. The absence of a public reference must remain explicit; it cannot be filled from a guessed project name.
 
-The formal v1 shape is [`contracts/scientific-asset-document.schema.json`](../../contracts/scientific-asset-document.schema.json). Unknown fields fail closed. Contract evolution requires a schema version change or a backward-compatible documented extension; consumers may not infer missing scientific fields from names or source similarity.
+This canonical scientific contract is not CodeFusion reviewer prose and is not the independently authored public documentation-site article. Reviewer documents remain frozen candidate evidence. CodeFusion publication state and expert-authored public pages remain CodeFusion-owned projections. A consumer may join those records by stable asset ID at its authorized boundary, but it cannot copy their governance fields into this document or treat this document as proof of publication.
+
+The formal v1 shape is [`contracts/scientific-asset-document.schema.json`](../../contracts/scientific-asset-document.schema.json). Unknown fields fail closed. The structured optional-input default is a pre-release closure of the four-document development pilot; no immutable or public v1 catalog has been released. After v1 release, an incompatible change requires a new schema version, while a backward-compatible extension must be documented explicitly. Consumers may not infer missing scientific fields from names or source similarity.
 
 ## TaskGraph extension
 
@@ -56,11 +58,12 @@ A document is eligible for catalog projection only when:
 
 1. schema and semantic validation pass;
 2. its Python callable imports from SciRel and its runtime signature matches;
-3. every dependency asset ID resolves to the canonical document in the same release;
-4. TaskGraph ports, DAG/feedback and dependency bindings are valid;
-5. its example executes against the bound SciRel source/wheel;
-6. declared direct tests exist and remain part of affected-test selection; and
-7. the catalog release manifest binds the complete record and index partitions by digest.
+3. documented input names are accepted by the callable, and structured required/default status matches explicit runtime parameters;
+4. every dependency asset ID resolves to the canonical document in the same release;
+5. TaskGraph ports, DAG/feedback and dependency bindings are valid;
+6. its example executes against the bound SciRel source/wheel;
+7. declared direct tests exist and remain part of affected-test selection; and
+8. the catalog release version equals every document's `implementation_version`, and its manifest binds the complete record and index partitions by digest.
 
 There is one current canonical document per public `asset_id`. Git and immutable catalog releases retain history; maintainers do not create parallel snapshot documents or require repeated confirmation merely because source bytes changed. `implementation_version` states which SciRel implementation the current contract describes. A scientific contract change is handled through normal compatibility, review and release history rather than a document-local hash.
 

@@ -64,7 +64,8 @@ python scripts/build_catalog.py catalog/examples --output-dir build/catalog/<new
 MCP、Codex、Claude Code、CodeFusion、CLI 与云 batch/service 都是 catalog/wheel 的消费者或薄适配器；
 它们不能改变资产身份、单位、端口、适用域或失败语义。详细需求与适配合同见
 [`docs/requirements/asset-documentation.md`](docs/requirements/asset-documentation.md) 和
-[`docs/design/catalog-and-adapters.md`](docs/design/catalog-and-adapters.md)。
+[`docs/design/catalog-and-adapters.md`](docs/design/catalog-and-adapters.md)；CodeFusion 的独立消费边界见
+[`docs/integration/codefusion-consumer-contract.md`](docs/integration/codefusion-consumer-contract.md)。
 
 新增资产先比较科学合同与已有能力，再决定复用、变体、新增或替换。不要用重新运行一次导入覆盖
 此项目的人工维护代码。提取共享函数前验证假设、默认值、边界和失败行为相同；科学算法的合并须有

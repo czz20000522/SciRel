@@ -7,6 +7,7 @@ import ast
 import importlib
 import inspect
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -49,7 +50,9 @@ PORT_KEYS = {
     "dtype",
     "required",
     "constraints",
+    "default",
 }
+REQUIRED_PORT_KEYS = PORT_KEYS - {"default"}
 IDENTITY_KEYS = {
     "relation",
     "direction",
@@ -135,7 +138,7 @@ def _validate_ports(value: Any, location: str, *, nonempty: bool = False) -> set
     for index, raw in enumerate(ports):
         item_location = f"{location}[{index}]"
         port = _object(raw, item_location)
-        _exact_keys(port, PORT_KEYS, PORT_KEYS, item_location)
+        _exact_keys(port, REQUIRED_PORT_KEYS, PORT_KEYS, item_location)
         name = _text(port["name"], f"{item_location}.name")
         if not name.isidentifier():
             _fail(f"{item_location}.name", "must be a Python identifier")
@@ -146,7 +149,33 @@ def _validate_ports(value: Any, location: str, *, nonempty: bool = False) -> set
             _text(port[field], f"{item_location}.{field}")
         if not isinstance(port["required"], bool):
             _fail(f"{item_location}.required", "must be boolean")
+        if port["required"] and "default" in port:
+            _fail(item_location, "required ports must not declare a default")
+        if not port["required"] and "default" not in port:
+            _fail(item_location, "optional ports must declare a default")
+        if "default" in port:
+            _validate_json_value(port["default"], f"{item_location}.default")
     return names
+
+
+def _validate_json_value(value: Any, location: str) -> None:
+    if value is None or isinstance(value, (str, bool, int)):
+        return
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            _fail(location, "must be a finite JSON value")
+        return
+    if isinstance(value, list):
+        for index, item in enumerate(value):
+            _validate_json_value(item, f"{location}[{index}]")
+        return
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if not isinstance(key, str):
+                _fail(location, "JSON object keys must be strings")
+            _validate_json_value(item, f"{location}.{key}")
+        return
+    _fail(location, "must be JSON-compatible")
 
 
 def _validate_identity(value: Any) -> None:
@@ -520,12 +549,14 @@ def validate_runtime(document: dict[str, Any], source_root: Path = ROOT) -> None
     function = getattr(module, python_api["symbol"], None)
     if not callable(function):
         _fail(document["asset_id"], "documented Python callable is unavailable")
-    actual_signature = f"{python_api['symbol']}{inspect.signature(function)}"
+    signature = inspect.signature(function)
+    actual_signature = f"{python_api['symbol']}{signature}"
     if actual_signature != python_api["signature"]:
         _fail(
             document["asset_id"],
             f"runtime signature differs: expected {python_api['signature']}, got {actual_signature}",
         )
+    _validate_runtime_inputs(document, signature)
     for test_path in document["verification"]["tests"]:
         candidate = (source_root / test_path).resolve()
         try:
@@ -534,6 +565,29 @@ def validate_runtime(document: dict[str, Any], source_root: Path = ROOT) -> None
             _fail(document["asset_id"], f"test path escapes the repository: {test_path}")
         if not candidate.is_file():
             _fail(document["asset_id"], f"declared test is missing: {test_path}")
+
+
+def _validate_runtime_inputs(
+    document: dict[str, Any], signature: inspect.Signature
+) -> None:
+    accepts_keywords = any(
+        parameter.kind is inspect.Parameter.VAR_KEYWORD
+        for parameter in signature.parameters.values()
+    )
+    for port in document["inputs"]:
+        name = port["name"]
+        parameter = signature.parameters.get(name)
+        if parameter is None:
+            if not accepts_keywords:
+                _fail(document["asset_id"], f"documented input is not callable: {name}")
+            continue
+        if parameter.kind is inspect.Parameter.POSITIONAL_ONLY:
+            _fail(document["asset_id"], f"documented input is positional-only: {name}")
+        runtime_required = parameter.default is inspect.Parameter.empty
+        if port["required"] != runtime_required:
+            _fail(document["asset_id"], f"required status differs for input: {name}")
+        if not runtime_required and port["default"] != parameter.default:
+            _fail(document["asset_id"], f"default differs for input: {name}")
 
 
 def execute_example(document: dict[str, Any], source_root: Path = ROOT) -> None:
