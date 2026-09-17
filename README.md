@@ -45,6 +45,26 @@ assert result["B"][0, 0] == 5.0
 - `_composition.py`：不修改调用方输入的组合调用；依赖由模块显式绑定，无全局资产目录。
 - `tests/`：迁移保留的科学回归与新增库工程测试。审核 YAML 仅作历史合同测试证据，不进入运行包。
 - `provenance/`：来源关系和审核状态，不参与运行时加载。
+- `docs/architecture.md`：Operator、TaskGraph、公共接口、科学身份和目录投影的权威边界。
+- `docs/catalog.md`：面向数万 Operator、数千 TaskGraph 的分片目录和渐进检索合同。
+- `contracts/` 与 `catalog/examples/`：标准资产/catalog Schema，以及依赖闭合的 4/52 开发 pilot。
+- `docs/development-process.md`：首次/增量整合、验证分层和发行候选流程。
+- `skills/development/scirel-integration/`：已准入资产进入 SciRel 时使用的项目内方法。
+
+项目文档入口见 [`docs/README.md`](docs/README.md)，贡献与兼容要求见
+[`CONTRIBUTING.md`](CONTRIBUTING.md)。
+
+标准化资产文档是 framework-neutral catalog 的唯一科学输入。当前 pilot 可执行验证与构建：
+
+```powershell
+python scripts/validate_asset_documents.py catalog/examples --check-runtime --execute-examples
+python scripts/build_catalog.py catalog/examples --output-dir build/catalog/<new-run> --catalog-id scirel-development-pilot --release-version 0.1.0.dev5 --coverage-status partial --declared-total 52
+```
+
+MCP、Codex、Claude Code、CodeFusion、CLI 与云 batch/service 都是 catalog/wheel 的消费者或薄适配器；
+它们不能改变资产身份、单位、端口、适用域或失败语义。详细需求与适配合同见
+[`docs/requirements/asset-documentation.md`](docs/requirements/asset-documentation.md) 和
+[`docs/design/catalog-and-adapters.md`](docs/design/catalog-and-adapters.md)。
 
 新增资产先比较科学合同与已有能力，再决定复用、变体、新增或替换。不要用重新运行一次导入覆盖
 此项目的人工维护代码。提取共享函数前验证假设、默认值、边界和失败行为相同；科学算法的合并须有
@@ -52,20 +72,29 @@ assert result["B"][0, 0] == 5.0
 
 ## 本地验证与构建
 
-在隔离 Python 环境中安装已有开发依赖（numpy、scipy、pytest、setuptools）。开发测试可以直接针对
-源码树运行；平台候选 wheel 必须先由准入记录生成独立 staging，不能直接打包整个开发树。
+在隔离 Python 环境中安装已有开发依赖（numpy、scipy、pytest、setuptools）。统一入口会设置源码测试所需
+的 `PYTHONPATH`；平台候选 wheel 必须先由准入记录生成独立 staging，不能直接打包整个开发树。
 
-```text
-python -m pytest tests/test_admitted_distribution_builder.py tests/test_admitted_integrations.py
-python scripts/build_admitted_distribution.py --staging-dir <new-staging-directory> --wheel-dir <new-wheel-directory>
+```powershell
+pwsh ./scripts/check.ps1 -Mode affected -ChangedPath src/scirel/<domain>/<asset>.py
+pwsh ./scripts/check.ps1 -Mode focused
+pwsh ./scripts/check.ps1 -Mode full
+pwsh ./scripts/check.ps1 -Mode release -OutputRoot build/verification/<new-run>
 ```
+
+`affected` 根据准入依赖、源码 import 关系和显式测试映射选择改变的 Operator、共享模块及其反向依赖
+TaskGraph；不传 `-ChangedPath` 时读取当前 Git 工作区，也可用 `-BaseRef <ref>` 检查提交范围。无法可靠归属的
+SciRel 源码或公共基线变更会 fail closed 到全套测试。`focused` 可用 `-TestPath` 手工指定精确测试。
+`release` 要求一个不存在的输出目录，并保留 staging、wheel、
+隔离环境与验收报告；它不会覆盖或清理已有结果。更细的整合和验证规则见
+[`docs/development-process.md`](docs/development-process.md)。
 
 构建器逐项核对 `provenance/admitted-assets.json` 中的源码摘要，拒绝未绑定的内部模块依赖，生成只含
 已准入 callable 的公共导出、内置准入清单与文件内容锁。它拒绝覆盖已有 staging 目录；失败结果不能
 替换上一运行版本。wheel 构建固定归档时间与 Python hash seed，同一源码和准入账本应产生相同摘要。
 
-图合同测试使用 `tests/_review_bindings.py`；运行前将 `tests` 的绝对路径加入 PYTHONPATH
-（PowerShell：`$env:PYTHONPATH = (Resolve-Path tests).Path`）。wheel 验证不要把 `src` 加入该路径。
+图合同测试使用 `tests/_review_bindings.py`；`scripts/check.ps1` 会把 `src` 与 `tests` 的绝对路径仅用于
+源码测试，并在 wheel 验收前清空 `PYTHONPATH`。
 
 发行验收另外使用断网环境，只安装 wheel 与声明依赖，不挂源码。安装后的测试不得依赖 editable
 安装或把 src 放进 PYTHONPATH。上面的版本号随 pyproject.toml 更新，不是永久发行版本。

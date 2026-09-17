@@ -1,10 +1,13 @@
 # SciRel development
 
-SciRel 是独立 Python 库；不要套用相邻 CodeFusion 的 Rust 生产代码规则。
+SciRel 是长期独立维护的 Python 科学关系库；不要套用相邻 CodeFusion 的 Rust 生产代码规则，也不要把它作为一次性资产汇总目录。
 
-- 先读 README、相关函数、科学测试和 provenance；不得把候选来源记录解释为人工批准。
+- 先读 README、`docs/` 中相关架构/目录/流程、相关函数、科学测试和 provenance；不得把候选来源记录解释为人工批准。
 - 不依赖 CodeFusion、源项目 checkout、数据库或网络来执行科学函数。
 - 公共 API 按科学领域组织，任务图是组合函数；共享代码必须保持科学合同、默认值与失败行为。
+- 普通 TaskGraph 依赖保持 DAG；反馈/迭代必须显式声明状态、顺序、停止条件和上限。资产发现使用分片索引与渐进披露，不建立需要全量 import 或把全部合同送入上下文的 registry。
+- 日常内循环先用 `scripts/check.ps1 -Mode affected` 根据变更资产、共享源码和 TaskGraph 反向依赖选择精确测试；无法归属的源码变更 fail closed 到全套。只有影响范围、发布门禁或公共基线要求时才跑全仓，不把全仓测试作为每个算子修改的默认动作。
+- 新增或改变公共资产时同步维护 `scirel.asset-document.v1` exact document；catalog 只从已验证文档生成。不得从名称/源码猜补科学字段，不得把 CodeFusion 私有 owner/ref 或 adapter session/job 字段写入公共合同。
 - 不用文件覆盖方式重复导入整批资产；对照当前 Git 基线逐项整合，保留其他贡献者的修改。
 - 改变科学行为先写失败回归；保持旧数值断言和容差，不能为了通过测试弱化它们。
 - 改动后运行相关测试；发行前构建 wheel，并在没有源码的环境验证全套测试和公共 API。

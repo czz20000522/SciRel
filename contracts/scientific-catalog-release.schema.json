@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scirel.dev/schemas/scientific-catalog-release.v1.json",
+  "title": "SciRel framework-neutral catalog release v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "catalog_id",
+    "release_version",
+    "coverage",
+    "progressive_disclosure",
+    "partitions",
+    "root_digest"
+  ],
+  "properties": {
+    "schema": {"const": "scirel.catalog-release.v1"},
+    "catalog_id": {"type": "string", "minLength": 1},
+    "release_version": {"type": "string", "minLength": 1},
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "included_asset_count", "declared_total_asset_count"],
+      "properties": {
+        "status": {"enum": ["partial", "complete"]},
+        "included_asset_count": {"type": "integer", "minimum": 1},
+        "declared_total_asset_count": {"type": "integer", "minimum": 1}
+      }
+    },
+    "progressive_disclosure": {
+      "const": ["routes", "summaries", "exact_records"]
+    },
+    "partitions": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "bytes", "sha256"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "bytes": {"type": "integer", "minimum": 1},
+          "sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "root_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  }
+}
