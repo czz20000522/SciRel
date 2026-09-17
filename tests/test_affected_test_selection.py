@@ -71,6 +71,15 @@ def test_package_export_change_checks_public_surface_and_asset_examples():
     ]
 
 
+def test_mcp_adapter_change_selects_only_its_boundary_tests():
+    result = select("src/scirel_adapter/mcp.py")
+
+    assert result["full_suite_required"] is False
+    assert result["affected_assets"] == []
+    assert result["test_paths"] == ["tests/test_thin_mcp_adapter.py"]
+    assert result["reasons"][0]["classification"] == "source_engineering_contract"
+
+
 def test_shared_composition_change_selects_every_task_graph():
     result = select("src/scirel/_composition.py")
 

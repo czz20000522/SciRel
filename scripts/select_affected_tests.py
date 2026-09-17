@@ -44,6 +44,8 @@ ENGINEERING_TESTS = {
 
 SOURCE_DIRECT_TESTS = {
     "src/scirel/_composition.py": ("tests/test_library_composition.py",),
+    "src/scirel_adapter/__init__.py": ("tests/test_thin_mcp_adapter.py",),
+    "src/scirel_adapter/mcp.py": ("tests/test_thin_mcp_adapter.py",),
 }
 
 NO_TEST_PREFIXES = (
@@ -256,13 +258,25 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
             else:
                 full_suite_reasons.append(f"{path} changes shared or unmapped test material")
                 reason = "shared_test_material"
+        elif path.startswith("src/scirel_adapter/") and path.endswith(".py"):
+            path_tests.update(SOURCE_DIRECT_TESTS.get(path, ()))
+            if path_tests:
+                reason = "source_engineering_contract"
+            else:
+                full_suite_reasons.append(
+                    f"{path} is adapter source without a test mapping"
+                )
+                reason = "unmapped_adapter_source"
         elif path.startswith("src/scirel/") and path.endswith("/__init__.py"):
             path_tests.update(
                 ("tests/test_asset_documentation.py", "tests/test_public_surface.py")
             )
             reason = "public_exports"
         elif path.startswith("src/scirel/") and path.endswith(".py"):
-            path_tests.update(SOURCE_DIRECT_TESTS.get(path, ()))
+            direct_source_tests = SOURCE_DIRECT_TESTS.get(path, ())
+            path_tests.update(direct_source_tests)
+            if direct_source_tests:
+                reason = "source_engineering_contract"
             selected_for_path.update(assets_by_source.get(path, ()))
             module = _module_from_source_path(path)
             modules = _dependent_modules(module, reverse_imports)

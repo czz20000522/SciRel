@@ -57,6 +57,8 @@ For execution, the adapter must own authentication, authorization, input seriali
 
 Codex and Claude Code can consume files directly or through MCP. A CLI can map the same operations to commands. A cloud batch adapter can resolve once, pin the wheel/catalog digests in a job specification, and execute in its managed environment. CodeFusion may add natural-language orchestration and product projections, but those are consumer behavior rather than SciRel catalog fields.
 
+The implemented development slice is the SDK-free core in the separate `scirel_adapter` package, with the request/response surface defined by the [thin MCP adapter contract](../requirements/thin-mcp-adapter.md). Keeping it outside the `scirel` runtime package prevents discovery from triggering SciRel's public scientific imports. It verifies a catalog release and partitions before serving operations, reads route/summary/document projections, resolves only a selected callable, and materializes JSON-compatible results. A production MCP server remains a separate transport and execution-policy layer.
+
 ## Adapter compatibility
 
 Adapters are conforming when the same catalog snapshot and request produce the same selected exact record and callable binding, subject to explicit search bounds. Cross-framework demonstration tests should therefore compare catalog root digest, asset ID, callable signature and scientific output, not UI wording or transport envelopes.
@@ -77,12 +79,13 @@ Implemented in this slice:
 - semantic/runtime/example validator;
 - deterministic progressive catalog builder;
 - dependency-closed four-asset pilot; and
-- regression tests for missing units, private-field leakage, dependency closure, graph cycles and deterministic projections.
+- SDK-free thin MCP adapter core for bounded discovery, documentation retrieval, callable resolution and invocation; and
+- regression tests for missing units, private-field leakage, dependency closure, graph cycles, deterministic projections and adapter boundary enforcement.
 
 Deferred until this contract stabilizes:
 
 - migration of the remaining 48 admitted assets;
-- a production MCP server or other adapter package;
+- a production MCP transport/server or separately distributed adapter package;
 - a source-free wheel plus catalog conformance run across multiple frameworks;
 - catalog pagination/search indexing beyond the single pilot shard; and
 - public distribution licensing and publication authorization.

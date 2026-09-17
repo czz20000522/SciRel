@@ -66,6 +66,10 @@ There is one current canonical document per public `asset_id`. Git and immutable
 
 Current `catalog/examples/` is a dependency-closed 4-of-52 pilot, not a complete catalog. Missing documents remain a metadata gap and cannot be represented by generated placeholder science.
 
+## Adapter projection
+
+The canonical document drives adapter behavior directly: route projections drive bounded discovery, summary projections support shortlist review, `public_api.python` binds the selected callable, `inputs` define accepted/required argument names, and `verification.evidence_ceiling` accompanies results. An adapter may serialize values but cannot duplicate these fields into a second scientific schema or infer executable unit/shape validation from their prose. The minimal operation and response envelopes are defined by the [thin MCP adapter contract](thin-mcp-adapter.md).
+
 ## Release decision
 
 SciRel does not yet have an approved public distribution license. Every pilot document records `pending-human-decision`. Selecting a project license, reconciling input obligations and authorizing public distribution are human release decisions and are not performed by the validator, catalog builder or adapter.
