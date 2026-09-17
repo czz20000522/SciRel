@@ -27,8 +27,8 @@
 
 - 先写或保留能观察目标行为的合同；科学行为变化必须先有失败回归。
 - 公共 API 继续使用按领域组织的 Python callable；REST/CLI 仅在有明确消费者时作为适配器增加。
-- TaskGraph 显式绑定节点、边、状态、反馈和依赖 revision，不把新科学规则藏进 glue。
-- 从变更资产沿反向依赖找到受影响 TaskGraph；未受影响资产保持精确锁。
+- TaskGraph 显式绑定节点、边、状态、反馈和稳定依赖 asset IDs，不把新科学规则藏进 glue。
+- 从变更资产沿反向依赖找到受影响 TaskGraph；未受影响资产沿用当前 canonical contracts。
 - 行为相同的共享代码可以提取，但只有科学合同相同才可合并身份。
 - 参考实现只吸收与当前问题相关的可观察行为和反例，不复制其整个框架。
 
@@ -62,9 +62,9 @@ pwsh ./scripts/check.ps1 -Mode release -OutputRoot build/verification/<new-run>
 
 `scripts/select_affected_tests.py` 的 JSON 报告是可重建工程证据，不是新的治理事实。新增资产没有直接测试映射、
 依赖引用缺失或选择器无法解释源码归属时应阻断增量门禁；禁止用手写排除列表绕过。选择器自身的回归测试必须覆盖
-独立算子、直接图依赖、嵌套图依赖、共享模块扩散、文档零测试和未知源码 fail-closed。
+独立算子、直接图依赖、嵌套图依赖、共享模块扩散、包级公开导出、文档零测试和未知源码 fail-closed。
 
-`release` 的输出目录必须不存在，脚本不会覆盖或清理已有结果。正式发行还需固定 Python 与构建工具版本；不同工具链下 wheel 字节摘要不同，即使内置内容 manifest 保持一致，也不能声称可复现构建。
+`release` 的输出目录必须不存在，脚本不会覆盖或清理已有结果。其 venv 不继承 system site-packages，SciRel wheel 以 `--no-index --no-deps` 安装，并清空源码 `PYTHONPATH`；当前离线方式通过 `.pth` 暴露开发解释器中 NumPy/SciPy 所在目录，因此只证明 wheel 可在无源码环境配合这些已存在依赖运行，不证明未声明包完全不可见，也不等价于从干净离线 wheelhouse 安装全部依赖。正式发行还需从固定的离线 wheelhouse 安装声明依赖，并固定 Python 与构建工具版本；不同工具链下 wheel 字节摘要不同，即使内置内容 manifest 保持一致，也不能声称可复现构建。
 
 ## 5. 收尾与发行边界
 

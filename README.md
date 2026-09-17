@@ -96,7 +96,9 @@ SciRel 源码或公共基线变更会 fail closed 到全套测试。`focused` �
 图合同测试使用 `tests/_review_bindings.py`；`scripts/check.ps1` 会把 `src` 与 `tests` 的绝对路径仅用于
 源码测试，并在 wheel 验收前清空 `PYTHONPATH`。
 
-发行验收另外使用断网环境，只安装 wheel 与声明依赖，不挂源码。安装后的测试不得依赖 editable
-安装或把 src 放进 PYTHONPATH。上面的版本号随 pyproject.toml 更新，不是永久发行版本。
+发行验收另外使用不继承 system site-packages 的 venv，以 `--no-index --no-deps` 安装候选 wheel，不挂源码。
+当前脚本通过 `.pth` 暴露开发解释器中 NumPy/SciPy 所在目录，因此证明的是无源码 wheel 执行，不是从
+干净离线 wheelhouse 重装全部依赖，也不证明同目录的其他包不可见。正式发行门禁仍需固定依赖 wheelhouse。
+安装后的测试不得依赖 editable 安装或把 src 放进 PYTHONPATH。上面的版本号随 pyproject.toml 更新，不是永久发行版本。
 
 项目尚未声明独立分发许可证，保留来源对应关系；正式分发前需确认输入资产与项目许可证选择。

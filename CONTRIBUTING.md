@@ -19,7 +19,7 @@ pwsh ./scripts/check.ps1 -Mode affected
 2. 确认输入是否已有最终人工准入；候选、机器或 AI 检查结果不能代替准入。
 3. 对照当前 Git/release 基线，列出公共 API、科学身份、直接依赖和受影响 TaskGraph。
 4. 对增量资产使用项目的 `scirel-integration` skill；不要重新导入整批文件覆盖维护源码。
-5. 新增或改变公共资产时维护对应标准资产文档，并运行 runtime/digest/example 验证；缺失可信元数据时保留 metadata gap，不生成占位科学合同。
+5. 新增或改变公共资产时维护对应标准资产文档，并运行 runtime/example/catalog release 验证；缺失可信元数据时保留 metadata gap，不生成占位科学合同。
 
 ## 变更分类
 

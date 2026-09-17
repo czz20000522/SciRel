@@ -21,6 +21,8 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
     throw "SciRel checks require pwsh 7 or newer."
 }
 
+. (Join-Path $PSScriptRoot "check_helpers.ps1")
+
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $sourcePath = (Resolve-Path (Join-Path $repoRoot "src")).Path
 $testsPath = (Resolve-Path (Join-Path $repoRoot "tests")).Path
@@ -119,11 +121,8 @@ try {
         $wheelPath = [IO.Path]::GetFullPath([string]$build.wheel)
 
         $environmentPath = Join-Path $releaseOutputPath "environment"
-        Invoke-Python -Arguments @("-m", "venv", "--system-site-packages", $environmentPath)
-        $environmentPython = Join-Path $environmentPath "Scripts/python.exe"
-        if (-not (Test-Path -LiteralPath $environmentPython)) {
-            throw "Isolated Python was not created at $environmentPython"
-        }
+        Invoke-Python -Arguments @("-m", "venv", $environmentPath)
+        $environmentPython = Resolve-SciRelVenvPython -EnvironmentPath $environmentPath
 
         $dependencyRootsJson = & $Python -c @'
 import importlib.util
@@ -159,6 +158,11 @@ print(json.dumps(roots))
             --no-index --no-deps --force-reinstall $wheelPath
         if ($LASTEXITCODE -ne 0) {
             throw "Installing the admitted wheel failed with exit code $LASTEXITCODE."
+        }
+
+        & $environmentPython -c "import numpy, scipy, scirel"
+        if ($LASTEXITCODE -ne 0) {
+            throw "The wheel or its declared runtime dependencies are unavailable in the release environment."
         }
 
         $env:PYTHONPATH = $null

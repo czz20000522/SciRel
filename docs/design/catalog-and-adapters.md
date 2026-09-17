@@ -20,7 +20,7 @@ The snapshot contains:
 
 The v1 release schema is [`contracts/scientific-catalog-release.schema.json`](../../contracts/scientific-catalog-release.schema.json). An output directory must be new; a failed build cannot replace the previous snapshot. `coverage.status=complete` is valid only when included and declared totals match. The pilot must remain `partial` with 4 included assets and 52 declared current assets.
 
-The catalog does not participate in `import scirel` and does not import every module at startup. Exact runtime callable resolution occurs only after selection and must match the selected record's module, symbol, signature, implementation version and digest.
+The catalog does not participate in `import scirel` and does not import every module at startup. Exact runtime callable resolution occurs only after selection and must match the selected record's module, symbol, signature and implementation version. Exact content binding belongs to the enclosing catalog release, whose partition and root digests cover the record.
 
 ## Neutral adapter operations
 
@@ -31,12 +31,12 @@ Every adapter maps its protocol to the following logical operations. Operation n
 | `open_snapshot` | catalog location and optional expected root digest | immutable snapshot identity and coverage | none |
 | `search_routes` | snapshot, typed facets, cursor and bounded limit | route records plus remaining bounds | none |
 | `read_summaries` | snapshot and bounded asset IDs | capability summaries | none |
-| `read_exact_records` | snapshot, asset IDs and expected digests | exact documents and dependency refs | none |
+| `read_exact_records` | pinned snapshot and asset IDs | canonical documents and dependency refs | none |
 | `resolve_callable` | exact record and installed distribution identity | module, symbol and signature match | none |
 | `generate_call` | exact record plus caller-supplied values | reviewable Python call/code | none |
 | `execute_call` | exact record, validated values and execution policy | typed result or declared failure | none |
 
-`search_routes` cannot return `asset_unavailable` merely because its limit was exhausted. `resolve_callable` fails closed on snapshot/digest/version/signature mismatch. `generate_call` cannot invent missing scientific inputs or silently select defaults not present in the exact contract. `execute_call` is optional; adapters that lack an approved execution boundary still support discovery and code generation.
+`search_routes` cannot return `asset_unavailable` merely because its limit was exhausted. `resolve_callable` fails closed on catalog snapshot, implementation version or signature mismatch. `generate_call` cannot invent missing scientific inputs or silently select defaults not present in the exact contract. `execute_call` is optional; adapters that lack an approved execution boundary still support discovery and code generation.
 
 ## MCP mapping
 
@@ -59,7 +59,7 @@ Codex and Claude Code can consume files directly or through MCP. A CLI can map t
 
 ## Adapter compatibility
 
-Adapters are conforming when the same catalog snapshot and request produce the same selected exact record and callable binding, subject to explicit search bounds. Cross-framework demonstration tests should therefore compare snapshot, asset ID, exact-record digest, callable signature and scientific output, not UI wording or transport envelopes.
+Adapters are conforming when the same catalog snapshot and request produce the same selected exact record and callable binding, subject to explicit search bounds. Cross-framework demonstration tests should therefore compare catalog root digest, asset ID, callable signature and scientific output, not UI wording or transport envelopes.
 
 Adapters may add transport-specific errors, but they must preserve the core failure cause. They cannot:
 

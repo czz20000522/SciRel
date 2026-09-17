@@ -33,7 +33,11 @@ ENGINEERING_TESTS = {
         "tests/test_admitted_distribution_builder.py",
     ),
     "scripts/build_catalog.py": ("tests/test_asset_documentation.py",),
-    "scripts/check.ps1": ("tests/test_affected_test_selection.py",),
+    "scripts/check.ps1": (
+        "tests/test_affected_test_selection.py",
+        "tests/test_release_environment.py",
+    ),
+    "scripts/check_helpers.ps1": ("tests/test_release_environment.py",),
     "scripts/select_affected_tests.py": ("tests/test_affected_test_selection.py",),
     "scripts/validate_asset_documents.py": ("tests/test_asset_documentation.py",),
 }
@@ -253,7 +257,9 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
                 full_suite_reasons.append(f"{path} changes shared or unmapped test material")
                 reason = "shared_test_material"
         elif path.startswith("src/scirel/") and path.endswith("/__init__.py"):
-            path_tests.add("tests/test_public_surface.py")
+            path_tests.update(
+                ("tests/test_asset_documentation.py", "tests/test_public_surface.py")
+            )
             reason = "public_exports"
         elif path.startswith("src/scirel/") and path.endswith(".py"):
             path_tests.update(SOURCE_DIRECT_TESTS.get(path, ()))

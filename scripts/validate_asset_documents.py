@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import ast
-import hashlib
 import importlib
 import inspect
 import json
@@ -19,7 +18,7 @@ from typing import Any, Iterable
 ROOT = Path(__file__).resolve().parents[1]
 ASSET_SCHEMA = "scirel.asset-document.v1"
 ASSET_ID_RE = re.compile(r"^scirel\.[a-z][a-z0-9]*(?:[.-][a-z0-9]+)+$")
-DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
+FEEDBACK_ID_RE = re.compile(r"^[A-Za-z][A-Za-z0-9._-]*$")
 
 TOP_LEVEL_KEYS = {
     "schema",
@@ -214,23 +213,14 @@ def _validate_public_api(value: Any) -> tuple[str, str, str]:
 
 def _validate_version(value: Any) -> set[str]:
     version = _object(value, "version")
-    keys = {
-        "asset_revision",
-        "implementation_version",
-        "implementation_digest",
-        "dependencies",
-    }
+    keys = {"implementation_version", "dependencies"}
     _exact_keys(version, keys, keys, "version")
-    _text(version["asset_revision"], "version.asset_revision")
     _text(version["implementation_version"], "version.implementation_version")
-    digest = _text(version["implementation_digest"], "version.implementation_digest")
-    if not DIGEST_RE.fullmatch(digest):
-        _fail("version.implementation_digest", "must be sha256:<64 lowercase hex>")
     dependency_ids = set()
     for index, raw in enumerate(_list(version["dependencies"], "version.dependencies")):
         location = f"version.dependencies[{index}]"
         dependency = _object(raw, location)
-        dependency_keys = {"asset_id", "asset_revision", "implementation_digest"}
+        dependency_keys = {"asset_id"}
         _exact_keys(dependency, dependency_keys, dependency_keys, location)
         asset_id = _text(dependency["asset_id"], f"{location}.asset_id")
         if not ASSET_ID_RE.fullmatch(asset_id):
@@ -238,11 +228,6 @@ def _validate_version(value: Any) -> set[str]:
         if asset_id in dependency_ids:
             _fail("version.dependencies", f"duplicate dependency: {asset_id}")
         dependency_ids.add(asset_id)
-        _text(dependency["asset_revision"], f"{location}.asset_revision")
-        if not DIGEST_RE.fullmatch(
-            _text(dependency["implementation_digest"], f"{location}.implementation_digest")
-        ):
-            _fail(f"{location}.implementation_digest", "must be sha256:<64 lowercase hex>")
     return dependency_ids
 
 
@@ -314,7 +299,7 @@ def _validate_graph(
         asset_id = node.get("asset_id")
         if kind in {"operator", "task_graph"}:
             if not isinstance(asset_id, str) or asset_id not in dependency_ids:
-                _fail(f"{location}.asset_id", "must name an exact version dependency")
+                _fail(f"{location}.asset_id", "must name a declared dependency")
             scientific_nodes.add(asset_id)
         elif asset_id is not None:
             _fail(f"{location}.asset_id", "is allowed only for scientific nodes")
@@ -324,19 +309,28 @@ def _validate_graph(
         nodes[node_id] = {"inputs": node_inputs, "outputs": node_outputs}
     if scientific_nodes != dependency_ids:
         missing = sorted(dependency_ids - scientific_nodes)
-        _fail("graph.nodes", f"does not bind every exact dependency: {', '.join(missing)}")
+        _fail("graph.nodes", f"does not bind every declared dependency: {', '.join(missing)}")
 
     ordinary_edges = []
-    feedback_edge_count = 0
+    feedback_edge_ids = set()
     consumed_graph_inputs = set()
     connected_node_inputs = set()
     connected_graph_outputs = set()
     endpoint_keys = {"node", "port"}
-    edge_keys = {"from", "to", "description", "condition", "transform", "kind", "required"}
+    required_edge_keys = {
+        "from",
+        "to",
+        "description",
+        "condition",
+        "transform",
+        "kind",
+        "required",
+    }
+    edge_keys = required_edge_keys | {"feedback_id"}
     for index, raw in enumerate(_list(graph["edges"], "graph.edges", nonempty=True)):
         location = f"graph.edges[{index}]"
         edge = _object(raw, location)
-        _exact_keys(edge, edge_keys, edge_keys, location)
+        _exact_keys(edge, required_edge_keys, edge_keys, location)
         source = _object(edge["from"], f"{location}.from")
         target = _object(edge["to"], f"{location}.to")
         _exact_keys(source, endpoint_keys, endpoint_keys, f"{location}.from")
@@ -365,11 +359,19 @@ def _validate_graph(
             _fail(f"{location}.kind", "must be data, control, or feedback")
         if not isinstance(edge["required"], bool):
             _fail(f"{location}.required", "must be boolean")
-        if source_node in nodes and target_node in nodes:
-            if edge["kind"] == "feedback":
-                feedback_edge_count += 1
-            else:
-                ordinary_edges.append((source_node, target_node))
+        if edge["kind"] == "feedback":
+            if "feedback_id" not in edge:
+                _fail(location, "feedback edge is missing feedback_id")
+            feedback_id = _text(edge["feedback_id"], f"{location}.feedback_id")
+            if not FEEDBACK_ID_RE.fullmatch(feedback_id):
+                _fail(f"{location}.feedback_id", "has an invalid stable feedback ID")
+            if feedback_id in feedback_edge_ids:
+                _fail("graph.edges", f"duplicate feedback_id: {feedback_id}")
+            feedback_edge_ids.add(feedback_id)
+        elif "feedback_id" in edge:
+            _fail(f"{location}.feedback_id", "is allowed only for feedback edges")
+        if source_node in nodes and target_node in nodes and edge["kind"] != "feedback":
+            ordinary_edges.append((source_node, target_node))
     if _has_cycle(set(nodes), ordinary_edges):
         _fail("graph.edges", "ordinary data/control edges must be acyclic")
     if consumed_graph_inputs != input_ports:
@@ -411,14 +413,31 @@ def _validate_graph(
         "iteration_bound",
         "nonconvergence",
     }
+    feedback_contract_ids = set()
     for index, raw in enumerate(feedback):
         location = f"graph.execution.feedback[{index}]"
         contract = _object(raw, location)
         _exact_keys(contract, feedback_keys, feedback_keys, location)
         for field in feedback_keys:
             _text(contract[field], f"{location}.{field}")
-    if bool(feedback_edge_count) != bool(feedback):
-        _fail("graph.execution.feedback", "must correspond to explicit feedback edges")
+        feedback_id = contract["id"]
+        if not FEEDBACK_ID_RE.fullmatch(feedback_id):
+            _fail(f"{location}.id", "has an invalid stable feedback ID")
+        if feedback_id in feedback_contract_ids:
+            _fail("graph.execution.feedback", f"duplicate feedback contract: {feedback_id}")
+        feedback_contract_ids.add(feedback_id)
+    missing_contracts = sorted(feedback_edge_ids - feedback_contract_ids)
+    if missing_contracts:
+        _fail(
+            "graph.execution.feedback",
+            f"missing contracts for feedback edges: {', '.join(missing_contracts)}",
+        )
+    orphan_contracts = sorted(feedback_contract_ids - feedback_edge_ids)
+    if orphan_contracts:
+        _fail(
+            "graph.execution.feedback",
+            f"contracts without feedback edges: {', '.join(orphan_contracts)}",
+        )
 
 
 def validate_document(document: Any, *, location: str = "document") -> dict[str, Any]:
@@ -484,24 +503,12 @@ def load_document_set(directory: Path) -> list[dict[str, Any]]:
         asset_ids.add(asset_id)
         callables.add(callable_name)
         documents.append(document)
-    documents_by_id = {document["asset_id"]: document for document in documents}
     for document in documents:
         for dependency in document["version"]["dependencies"]:
             if dependency["asset_id"] not in asset_ids:
                 _fail(
                     document["asset_id"],
                     f"dependency is outside the document set: {dependency['asset_id']}",
-                )
-            target = documents_by_id[dependency["asset_id"]]["version"]
-            if dependency["asset_revision"] != target["asset_revision"]:
-                _fail(
-                    document["asset_id"],
-                    f"dependency revision differs for {dependency['asset_id']}",
-                )
-            if dependency["implementation_digest"] != target["implementation_digest"]:
-                _fail(
-                    document["asset_id"],
-                    f"dependency digest differs for {dependency['asset_id']}",
                 )
     return documents
 
@@ -521,14 +528,6 @@ def validate_runtime(document: dict[str, Any], source_root: Path = ROOT) -> None
             document["asset_id"],
             f"runtime signature differs: expected {python_api['signature']}, got {actual_signature}",
         )
-    source = source_root / "src" / Path(*python_api["module"].split(".")).with_suffix(".py")
-    if not source.is_file():
-        _fail(document["asset_id"], f"source module is missing: {source}")
-    digest = "sha256:" + hashlib.sha256(
-        source.read_bytes().replace(b"\r\n", b"\n")
-    ).hexdigest()
-    if digest != document["version"]["implementation_digest"]:
-        _fail(document["asset_id"], "implementation digest differs from source")
     for test_path in document["verification"]["tests"]:
         candidate = (source_root / test_path).resolve()
         try:

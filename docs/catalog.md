@@ -8,7 +8,7 @@
 
 - 不要求 Python import 全部模块来发现能力。
 - 不要求模型、开发者或工具一次加载全量合同。
-- 精确记录与运行 wheel、revision lock 和内容摘要保持一致。
+- canonical record 与运行 wheel 的实现版本保持一致，精确内容由 release manifest 集中绑定。
 - 支持按领域增量更新、确定性重建、反向依赖查询和旧 release 恢复。
 - 检索失败与“没有能力”分开；缺元数据、预算耗尽和不适用有不同结果。
 
@@ -21,7 +21,7 @@
 | release manifest | schema/release、根摘要、数量、分片引用、构建环境 | 每次检索一次 |
 | route index | asset ID、kind、领域、输出、关系方向及高区分度 facets | 相关分片 |
 | capability summary | 简短用途、关键输入输出、模型/几何/边界、适用域、证据上限 | 有界候选集 |
-| exact record | 完整合同、public callable、signature、revision/dependencies、provenance 与摘要 | 最终 shortlist |
+| exact record | 完整合同、public callable、signature、implementation version、dependencies 与 provenance | 最终 shortlist |
 | reverse dependency index | Operator/TaskGraph 到直接消费者 | 变更影响分析 |
 
 推荐物理布局如下；具体分片键属于发行实现细节，不能进入资产身份：
@@ -48,13 +48,13 @@ inputs[], outputs[]
 relation_direction, model, geometry, coordinates, boundary, closure
 units, axes, shape, dtype, indexing, normalization
 state_lifecycle, failure_behavior, applicability
-revision_ref, implementation_digest, dependencies[]
+implementation_version, dependencies[]
 provenance_refs[], evidence_ceiling
 ```
 
-TaskGraph 记录还包含节点、类型化端口边、分支、状态所有权、反馈/收敛合同和精确依赖。运行参数与本次状态不进入 exact record。缺少不能可靠推导的字段时记录明确的 metadata gap；禁止按名字、文档相似度或函数签名自动补造科学含义。
+TaskGraph 记录还包含节点、类型化端口边、分支、状态所有权、反馈/收敛合同和稳定依赖 asset IDs。运行参数与本次状态不进入 exact record。缺少不能可靠推导的字段时记录明确的 metadata gap；禁止按名字、文档相似度或函数签名自动补造科学含义。
 
-公共 callable 可以在兼容期增加 alias 或迁移，但 asset ID 不随模块整理而变化。不同模型、几何、边界或失败合同保持不同资产 ID，即使共享实现。相同身份的新工程实现使用新的 revision/digest，不复制第二个身份。
+公共 callable 可以在兼容期增加 alias 或迁移，但 asset ID 不随模块整理而变化。不同模型、几何、边界或失败合同保持不同资产 ID，即使共享实现。每个 asset ID 只维护一份当前 canonical record；历史由 Git 和不可变 catalog release 保存，不复制逐次源码快照文档。
 
 ## 渐进检索
 
@@ -70,13 +70,13 @@ release + route shard
 
 调用方在读取前给出或选择有界的 summary/exact-record 预算，并记录实际 snapshot、分片、接受/拒绝候选和未搜索区域。预算耗尽返回 shortlist 或 `metadata_gap`；只有授权范围和兼容组合均完成检查后才能返回 `asset_unavailable`。
 
-模型上下文只承载本次路由和最终候选。资产总量增长主要增加索引存储和检索成本，不应线性增加单次推理 token。对常用任务可以发布绑定精确 revision 的 TaskGraph，但不能把一次运行参数固化成新的公共资产。
+模型上下文只承载本次路由和最终候选。资产总量增长主要增加索引存储和检索成本，不应线性增加单次推理 token。对常用任务可以发布绑定稳定依赖身份的 TaskGraph，但不能把一次运行参数固化成新的公共资产。
 
 ## 构建与增量更新
 
-catalog builder 的输入只能是同一待发行内容锁中的可信合同与 revision，不读取 CodeFusion 数据库、源项目 checkout 或网络。增量构建可重用未变化分片，但最终 snapshot 必须重新验证：
+catalog builder 的输入只能是同一待发行版本中的可信 canonical contracts，不读取 CodeFusion 数据库、源项目 checkout 或网络。增量构建可重用未变化分片，但最终 snapshot 必须重新验证：
 
-- asset ID、public callable 和 revision 的唯一性；
+- asset ID 与 public callable 的唯一性；
 - 所有依赖和反向依赖的双向一致性；
 - TaskGraph 依赖闭包及普通边无环、反馈边显式有界；
 - signature 与实际安装 callable 一致；

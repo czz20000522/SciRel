@@ -114,11 +114,9 @@
     "version": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["asset_revision", "implementation_version", "implementation_digest", "dependencies"],
+      "required": ["implementation_version", "dependencies"],
       "properties": {
-        "asset_revision": {"type": "string", "minLength": 1},
         "implementation_version": {"type": "string", "minLength": 1},
-        "implementation_digest": {"$ref": "#/$defs/digest"},
         "dependencies": {
           "type": "array",
           "items": {"$ref": "#/$defs/dependency"}
@@ -156,10 +154,6 @@
     }
   ],
   "$defs": {
-    "digest": {
-      "type": "string",
-      "pattern": "^sha256:[0-9a-f]{64}$"
-    },
     "stringArray": {
       "type": "array",
       "uniqueItems": true,
@@ -203,11 +197,9 @@
     "dependency": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["asset_id", "asset_revision", "implementation_digest"],
+      "required": ["asset_id"],
       "properties": {
-        "asset_id": {"type": "string", "pattern": "^scirel\\.[a-z][a-z0-9]*(?:[.-][a-z0-9]+)+$"},
-        "asset_revision": {"type": "string", "minLength": 1},
-        "implementation_digest": {"$ref": "#/$defs/digest"}
+        "asset_id": {"type": "string", "pattern": "^scirel\\.[a-z][a-z0-9]*(?:[.-][a-z0-9]+)+$"}
       }
     },
     "endpoint": {
@@ -243,15 +235,23 @@
         "condition": {"type": "string", "minLength": 1},
         "transform": {"type": "string", "minLength": 1},
         "kind": {"enum": ["data", "control", "feedback"]},
-        "required": {"type": "boolean"}
-      }
+        "required": {"type": "boolean"},
+        "feedback_id": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9._-]*$"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"kind": {"const": "feedback"}}},
+          "then": {"required": ["feedback_id"]},
+          "else": {"not": {"required": ["feedback_id"]}}
+        }
+      ]
     },
     "feedback": {
       "type": "object",
       "additionalProperties": false,
       "required": ["id", "state", "initialization", "update_order", "continue_when", "stop_when", "iteration_bound", "nonconvergence"],
       "properties": {
-        "id": {"type": "string", "minLength": 1},
+        "id": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9._-]*$"},
         "state": {"type": "string", "minLength": 1},
         "initialization": {"type": "string", "minLength": 1},
         "update_order": {"type": "string", "minLength": 1},

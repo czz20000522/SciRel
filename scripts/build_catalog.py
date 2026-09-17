@@ -71,10 +71,7 @@ def build_catalog(
             prefix = hashlib.sha256(asset_id.encode("utf-8")).hexdigest()[:2]
             relative = Path("records") / prefix / f"{asset_id}.json"
             _write_json(root / relative, document)
-            exact_refs[asset_id] = {
-                "path": relative.as_posix(),
-                "digest": _digest((root / relative).read_bytes()),
-            }
+            exact_refs[asset_id] = {"path": relative.as_posix()}
 
         routes = []
         summaries = []

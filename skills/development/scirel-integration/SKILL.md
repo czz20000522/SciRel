@@ -15,7 +15,7 @@ Compare scientific meaning before code shape: direction, assumptions, model, geo
 
 Record the decision once in the current task or existing assembly evidence. Do not create a parallel approval record, rewrite frozen provenance, or rerun a bulk import over maintained source.
 
-Create or update the asset's `scirel.asset-document.v1` exact document only from verified contract evidence. Keep public provenance framework-neutral and exclude private admission/case/tenant refs. A TaskGraph document must bind exact dependency asset IDs/digests and declare ports, ordinary DAG edges, controlled feedback, stopping and failure propagation. If required scientific metadata is unavailable, preserve a metadata gap instead of synthesizing a complete-looking record.
+Create or update the asset's single canonical `scirel.asset-document.v1` document only from verified contract evidence. Keep public provenance framework-neutral and exclude private admission/case/tenant refs. A TaskGraph document must bind stable dependency asset IDs and declare ports, ordinary DAG edges, controlled feedback, stopping and failure propagation. Content digests belong to the catalog release, not each asset or dependency entry. If required scientific metadata is unavailable, preserve a metadata gap instead of synthesizing a complete-looking record.
 
 ## Implement incrementally
 
@@ -31,6 +31,6 @@ Use `pwsh ./scripts/check.ps1 -Mode affected -ChangedPath <path>` during the ord
 
 Run `-Mode full` when the affected surface or merge policy requires the repository baseline. For a release candidate, use `-Mode release -OutputRoot <new-directory>` and retain its wheel, manifest, acceptance report, tool versions, and hashes as the evidence for that candidate.
 
-Source-free verification must install only the produced wheel into an isolated environment, clear `PYTHONPATH`, and prove imports resolve under that environment. A passing wheel does not expand scientific applicability or create admission/publication facts. Report actual changed files, checks run, compatibility impact, evidence limits, and unresolved decisions.
+Source-free verification must install the produced wheel into a venv that does not inherit system site-packages, clear `PYTHONPATH`, and prove imports resolve there. The current `.pth` exposure of development-interpreter dependency roots does not prove undeclared packages are invisible or that declared dependencies were cleanly installed; a formal release needs a pinned offline wheelhouse. A passing wheel does not expand scientific applicability or create admission/publication facts. Report actual changed files, checks run, compatibility impact, evidence limits, and unresolved decisions.
 
 Before catalog projection, run `python scripts/validate_asset_documents.py <documents> --check-runtime --execute-examples`. Catalog/MCP/CLI/cloud adapters consume the validated document and wheel; they may not copy or alter its scientific semantics.

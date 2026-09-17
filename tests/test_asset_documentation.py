@@ -34,6 +34,32 @@ def _canonical(value):
     ).encode("utf-8")
 
 
+def _feedback_edge(feedback_id):
+    return {
+        "from": {"node": "superposition", "port": "psi"},
+        "to": {"node": "rectangular_geometry", "port": "r0"},
+        "description": "Feed the computed flux into the next controlled iteration.",
+        "condition": "The loop continuation predicate is true.",
+        "transform": "Identity for contract validation.",
+        "kind": "feedback",
+        "required": True,
+        "feedback_id": feedback_id,
+    }
+
+
+def _feedback_contract(feedback_id):
+    return {
+        "id": feedback_id,
+        "state": "The prior iteration flux.",
+        "initialization": "Use the caller-provided initial state.",
+        "update_order": "Update after the forward pass.",
+        "continue_when": "The residual exceeds tolerance.",
+        "stop_when": "The residual meets tolerance.",
+        "iteration_bound": "At most maxiter updates.",
+        "nonconvergence": "Raise the declared nonconvergence failure.",
+    }
+
+
 def test_contract_schemas_and_dependency_closed_examples_parse():
     asset_schema = json.loads(
         (ROOT / "contracts/scientific-asset-document.schema.json").read_text(
@@ -83,19 +109,53 @@ def test_task_graph_ordinary_cycle_is_rejected_without_feedback_contract():
         validate_document(document)
 
 
-def test_dependency_lock_must_match_target_document(tmp_path):
+def test_each_feedback_edge_requires_its_own_matching_contract():
+    document = _task_graph_document()
+    document["graph"]["edges"].extend(
+        (_feedback_edge("loop-a"), _feedback_edge("loop-b"))
+    )
+    document["graph"]["execution"]["feedback"] = [_feedback_contract("loop-a")]
+
+    with pytest.raises(AssetDocumentError, match="missing contracts.*loop-b"):
+        validate_document(document)
+
+
+def test_feedback_edge_and_contract_match_by_stable_id():
+    document = _task_graph_document()
+    document["graph"]["edges"].append(_feedback_edge("picard-loop"))
+    document["graph"]["execution"]["feedback"] = [
+        _feedback_contract("picard-loop")
+    ]
+
+    assert validate_document(document) is document
+
+
+def test_feedback_contract_without_an_edge_is_rejected():
+    document = _task_graph_document()
+    document["graph"]["execution"]["feedback"] = [_feedback_contract("orphan-loop")]
+
+    with pytest.raises(AssetDocumentError, match="contracts without feedback edges.*orphan-loop"):
+        validate_document(document)
+
+
+def test_dependency_must_resolve_to_a_canonical_document(tmp_path):
     for source in EXAMPLES.glob("*.json"):
         (tmp_path / source.name).write_bytes(source.read_bytes())
     graph_path = tmp_path / "scirel.field.multi-coil-vacuum-field.json"
     graph = json.loads(graph_path.read_text(encoding="utf-8"))
-    graph["version"]["dependencies"][0]["implementation_digest"] = "sha256:" + "0" * 64
+    previous_id = graph["version"]["dependencies"][0]["asset_id"]
+    missing_id = "scirel.field.missing"
+    graph["version"]["dependencies"][0]["asset_id"] = missing_id
+    for node in graph["graph"]["nodes"]:
+        if node.get("asset_id") == previous_id:
+            node["asset_id"] = missing_id
     graph_path.write_text(json.dumps(graph), encoding="utf-8")
 
-    with pytest.raises(AssetDocumentError, match="dependency digest differs"):
+    with pytest.raises(AssetDocumentError, match="dependency is outside the document set"):
         load_document_set(tmp_path)
 
 
-def test_runtime_signatures_source_digests_tests_and_examples_are_executable():
+def test_runtime_signatures_tests_and_examples_are_executable():
     completed = subprocess.run(
         [
             sys.executable,
@@ -164,11 +224,13 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
         for line in first_files["reverse-dependencies/all.jsonl"].splitlines()
     ]
     assert len(routes) == len(summaries) == len(reverse) == 4
+    partition_paths = {item["path"] for item in release["partitions"]}
     for route in routes:
-        exact = first / route["exact_record"]["path"]
-        assert route["exact_record"]["digest"] == "sha256:" + hashlib.sha256(
-            exact.read_bytes()
-        ).hexdigest()
+        assert set(route["exact_record"]) == {"path"}
+        assert route["exact_record"]["path"] in partition_paths
+    for summary in summaries:
+        assert set(summary["exact_record"]) == {"path"}
+        assert summary["exact_record"]["path"] in partition_paths
 
     serialized = b"\n".join(first_files.values())
     for private_term in (

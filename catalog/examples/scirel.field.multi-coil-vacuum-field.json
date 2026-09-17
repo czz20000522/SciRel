@@ -42,7 +42,7 @@
     "partial_results": "No partial field mapping is returned after a node failure."
   },
   "provenance": {
-    "lineage_summary": "Maintained SciRel TaskGraph with frozen internal admission evidence and exact SciRel dependency digests; private review identifiers are not part of the public contract.",
+    "lineage_summary": "Maintained SciRel TaskGraph with frozen internal admission evidence and explicit SciRel dependency identities; private review identifiers are not part of the public contract.",
     "source_kinds": ["reviewed TaskGraph contract", "reviewed scientific implementations", "scientific regression tests"],
     "public_references": [],
     "license_status": "pending-human-decision"
@@ -55,13 +55,11 @@
     }
   },
   "version": {
-    "asset_revision": "scirel-asset-v1",
     "implementation_version": "0.1.0.dev5",
-    "implementation_digest": "sha256:bfc04c817742d7bc935c88bc9f92c78036083d793ef9db94d794d2bbecb73acc",
     "dependencies": [
-      {"asset_id": "scirel.field.circular-filament-green", "asset_revision": "scirel-asset-v1", "implementation_digest": "sha256:4be4663adfabc8df207421c5365853a4fa1dc67a5e9da515f438a8cfd9433947"},
-      {"asset_id": "scirel.field.current-green-superposition", "asset_revision": "scirel-asset-v1", "implementation_digest": "sha256:ef48b26b1e552fa11d54509d280ce16df4542517a833ea99e0b9a060941adf1e"},
-      {"asset_id": "scirel.field.rectangular-coil-filaments", "asset_revision": "scirel-asset-v1", "implementation_digest": "sha256:1615ade92a272170d0799eab6779917e2c236ce698056a4f7efeb71c080c2ecb"}
+      {"asset_id": "scirel.field.circular-filament-green"},
+      {"asset_id": "scirel.field.current-green-superposition"},
+      {"asset_id": "scirel.field.rectangular-coil-filaments"}
     ]
   },
   "example": {

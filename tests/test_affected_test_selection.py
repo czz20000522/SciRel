@@ -61,6 +61,16 @@ def test_task_graph_change_does_not_select_unrelated_graphs():
     ]
 
 
+def test_package_export_change_checks_public_surface_and_asset_examples():
+    result = select("src/scirel/field/__init__.py")
+
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == [
+        "tests/test_asset_documentation.py",
+        "tests/test_public_surface.py",
+    ]
+
+
 def test_shared_composition_change_selects_every_task_graph():
     result = select("src/scirel/_composition.py")
 
@@ -88,6 +98,13 @@ def test_asset_schema_and_example_changes_select_contract_tests():
 
     assert result["full_suite_required"] is False
     assert result["test_paths"] == ["tests/test_asset_documentation.py"]
+
+
+def test_release_environment_helper_change_selects_only_its_contract_test():
+    result = select("scripts/check_helpers.ps1")
+
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == ["tests/test_release_environment.py"]
 
 
 def test_unicode_graph_evidence_path_is_classified_without_git_quoting():
