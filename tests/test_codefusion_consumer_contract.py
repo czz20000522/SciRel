@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,6 +23,7 @@ def test_consumer_contract_tracks_the_single_admission_producer_shape():
         assert field in text
     assert "there is no batch `assets` wrapper in v1" in text
     assert "`owner_snapshot_digest`" not in text
+    assert re.search(r"\b[0-9a-f]{40}\b", text) is None
 
 
 def test_current_owner_gaps_are_not_manifest_decode_requirements():

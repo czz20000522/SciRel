@@ -31,7 +31,7 @@ Joining them is allowed only at an authorized CodeFusion release or publication 
 
 ## Minimum CodeFusion handoff fields
 
-The current producer contract is the single-admission `codefusion.scirel-admitted-input.v1` manifest implemented at CodeFusion commit `346b88f78c8d7dcc071c23213b4f82e9ddf4301d`. SciRel does not define a replacement schema and must decode the producer's exact shape. A dependency closure is transferred as separately exported manifests, one per admission; there is no batch `assets` wrapper in v1.
+The current producer contract is the single-admission `codefusion.scirel-admitted-input.v1` manifest owned by the CodeFusion `ScientificAssetLibraryOwner` handoff DTO (`domains/inbound/codefusion-scientific-asset-library-owner/src/handoff.rs`) and emitted by the application exporter (`application/codefusion-application-product/src/bin/codefusion_scientific_asset_export.rs`). SciRel does not define a replacement schema and must decode the producer's exact shape. A dependency closure is transferred as separately exported manifests, one per admission; there is no batch `assets` wrapper in v1.
 
 | Current field | Producer source | SciRel handling | Authority |
 | --- | --- | --- | --- |
