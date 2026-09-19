@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scirel.review-ui-extension.dev",
+  "title": "SciRel development review UI projection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "extension_id",
+    "workflow",
+    "available_actions"
+  ],
+  "properties": {
+    "schema": {"const": "scirel.review-ui-extension.dev"},
+    "extension_id": {"const": "scientific-asset-review"},
+    "workflow": {"type": "object"},
+    "available_actions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "standardize",
+          "retry_automated_check",
+          "provide_evidence",
+          "rework_candidate",
+          "create_draft",
+          "update_draft",
+          "submit_for_review",
+          "start_review",
+          "approve",
+          "needs_evidence",
+          "rework_requested",
+          "reject",
+          "release"
+        ]
+      }
+    }
+  }
+}

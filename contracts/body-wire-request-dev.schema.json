@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scirel.dev/contracts/body-wire-request-dev.schema.json",
+  "title": "SciRel development body-wire request envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["operation", "artifact_ref", "artifact_digest", "media_type", "body"],
+  "properties": {
+    "operation": {
+      "enum": [
+        "scirel.import_l1",
+        "scirel.automated_check",
+        "scirel.review.list_items",
+        "scirel.review.open_item"
+      ]
+    },
+    "artifact_ref": {"type": "string", "minLength": 1},
+    "artifact_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-fA-F]{64}$"
+    },
+    "media_type": {"const": "application/json"},
+    "body": {"type": "string"},
+    "operation_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["item_ref", "revision"],
+      "properties": {
+        "item_ref": {"type": "string", "minLength": 1},
+        "revision": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-fA-F]{64}$"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "operation": {"const": "scirel.review.open_item"}
+        },
+        "required": ["operation"]
+      },
+      "then": {"required": ["operation_payload"]},
+      "else": {"not": {"required": ["operation_payload"]}}
+    }
+  ]
+}

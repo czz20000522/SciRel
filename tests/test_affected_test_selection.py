@@ -125,6 +125,77 @@ def test_release_environment_helper_change_selects_only_its_contract_test():
     assert result["test_paths"] == ["tests/test_release_environment.py"]
 
 
+def test_wire_fixture_builder_selects_only_wire_smoke_test():
+    result = select("scripts/build_l1_wire_fixture.py")
+
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == ["tests/test_l1_wire_smoke.py"]
+
+
+def test_https_runner_selects_only_listener_test():
+    result = select("scripts/run_scirel_https.py")
+
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == ["tests/plugin/test_http_listener.py"]
+
+
+def test_workflow_source_change_selects_workflow_boundary_without_full_suite():
+    result = select("src/scirel_workflow/workflow.py")
+
+    assert result["full_suite_required"] is False
+    assert result["reasons"][0]["classification"] == "workflow_source_contract"
+    assert set(result["test_paths"]) == {
+        "tests/workflow/test_workflow.py",
+        "tests/workflow/test_vertical_slice.py",
+        "tests/workflow/test_l1_inventory.py",
+        "tests/test_workflow_contracts.py",
+    }
+
+
+def test_plugin_contract_change_selects_plugin_and_vertical_boundary():
+    result = select("src/scirel_plugin/contract.py")
+
+    assert result["full_suite_required"] is False
+    assert result["reasons"][0]["classification"] == "plugin_source_contract"
+    assert set(result["test_paths"]) == {
+        "tests/plugin/test_codefusion_plugin_contract.py",
+        "tests/plugin/test_http_listener.py",
+        "tests/workflow/test_vertical_slice.py",
+    }
+
+
+def test_workflow_contract_change_selects_all_workflow_boundaries():
+    result = select(
+        "contracts/release-manifest-dev.schema.json",
+        "contracts/review-ui-extension-dev.schema.json",
+        "contracts/workflow-state-dev.schema.json",
+    )
+
+    assert result["full_suite_required"] is False
+    assert {
+        reason["classification"] for reason in result["reasons"]
+    } == {"workflow_contract"}
+    assert set(result["test_paths"]) == {
+        "tests/workflow/test_workflow.py",
+        "tests/workflow/test_vertical_slice.py",
+        "tests/workflow/test_l1_inventory.py",
+        "tests/test_workflow_contracts.py",
+        "tests/plugin/test_codefusion_plugin_contract.py",
+        "tests/plugin/test_http_listener.py",
+    }
+
+
+def test_l1_fixture_change_selects_wire_and_vertical_slice_tests():
+    result = select("tests/fixtures/l1/imperfect-inventory.json")
+
+    assert result["full_suite_required"] is False
+    assert result["reasons"][0]["classification"] == "workflow_fixture"
+    assert result["test_paths"] == [
+        "tests/test_l1_wire_smoke.py",
+        "tests/workflow/test_vertical_slice.py",
+    ]
+
+
 def test_unicode_graph_evidence_path_is_classified_without_git_quoting():
     result = select("tests/graph_contracts/轴对称多矩形线圈真空场/graph.py")
 

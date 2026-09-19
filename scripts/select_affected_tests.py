@@ -42,7 +42,36 @@ ENGINEERING_TESTS = {
     ),
     "scripts/check_helpers.ps1": ("tests/test_release_environment.py",),
     "scripts/select_affected_tests.py": ("tests/test_affected_test_selection.py",),
+    "scripts/build_l1_inventory.py": ("tests/workflow/test_l1_inventory.py",),
+    "scripts/build_l1_wire_fixture.py": ("tests/test_l1_wire_smoke.py",),
+    "scripts/run_l1_wire_smoke.py": ("tests/test_l1_wire_smoke.py",),
+    "scripts/run_scirel_https.py": ("tests/plugin/test_http_listener.py",),
     "scripts/validate_asset_documents.py": ("tests/test_asset_documentation.py",),
+}
+
+WORKFLOW_TESTS = (
+    "tests/workflow/test_workflow.py",
+    "tests/workflow/test_vertical_slice.py",
+    "tests/workflow/test_l1_inventory.py",
+    "tests/test_workflow_contracts.py",
+)
+
+PLUGIN_TESTS = (
+    "tests/plugin/test_codefusion_plugin_contract.py",
+    "tests/plugin/test_http_listener.py",
+    "tests/workflow/test_vertical_slice.py",
+)
+
+WORKFLOW_CONTRACTS = {
+    "contracts/body-wire-request-dev.schema.json",
+    "contracts/candidate-package-dev.schema.json",
+    "contracts/automated-check-result-dev.schema.json",
+    "contracts/l1-inventory-dev.schema.json",
+    "contracts/standardized-draft-dev.schema.json",
+    "contracts/review-decision-dev.schema.json",
+    "contracts/release-manifest-dev.schema.json",
+    "contracts/review-ui-extension-dev.schema.json",
+    "contracts/workflow-state-dev.schema.json",
 }
 
 SOURCE_DIRECT_TESTS = {
@@ -232,11 +261,22 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
         elif path in ENGINEERING_TESTS:
             path_tests.update(ENGINEERING_TESTS[path])
             reason = "engineering_contract"
+        elif path in WORKFLOW_CONTRACTS:
+            path_tests.update((*WORKFLOW_TESTS, *PLUGIN_TESTS))
+            reason = "workflow_contract"
         elif path.startswith("contracts/") or path.startswith("catalog/examples/"):
             path_tests.add("tests/test_asset_documentation.py")
             reason = "asset_document_contract"
         elif path in NO_TEST_FILES or path.startswith(NO_TEST_PREFIXES):
             reason = "documentation_only"
+        elif path.startswith("tests/fixtures/l1/"):
+            path_tests.update(
+                (
+                    "tests/test_l1_wire_smoke.py",
+                    "tests/workflow/test_vertical_slice.py",
+                )
+            )
+            reason = "workflow_fixture"
         elif path.startswith("tests/"):
             if path == "tests/_review_bindings.py":
                 path_tests.update(
@@ -261,6 +301,14 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
             else:
                 full_suite_reasons.append(f"{path} changes shared or unmapped test material")
                 reason = "shared_test_material"
+        elif path.startswith("src/scirel_workflow/") and path.endswith(".py"):
+            path_tests.update(WORKFLOW_TESTS)
+            reason = "workflow_source_contract"
+        elif path.startswith("src/scirel_plugin/") and path.endswith(".py"):
+            path_tests.update(PLUGIN_TESTS)
+            if path.endswith("plugin.py"):
+                path_tests.update(WORKFLOW_TESTS)
+            reason = "plugin_source_contract"
         elif path.startswith("src/scirel_adapter/") and path.endswith(".py"):
             path_tests.update(SOURCE_DIRECT_TESTS.get(path, ()))
             if path_tests:

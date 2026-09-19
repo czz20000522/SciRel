@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scirel.l1-inventory.dev",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "inventory_id", "inventory_digest", "projects", "counts", "assets", "automated_checks", "gaps"],
+  "properties": {
+    "schema": {"const": "scirel.l1-inventory.dev"},
+    "inventory_id": {"type": "string", "minLength": 1},
+    "inventory_digest": {"type": "string", "pattern": "^sha256:[0-9a-fA-F]{64}$"},
+    "project_id": {"type": "string", "minLength": 1},
+    "projects": {"type": "array", "items": {"type": "object"}},
+    "counts": {
+      "type": "object",
+      "required": ["projects", "operators", "task_graphs", "assets"],
+      "additionalProperties": false,
+      "properties": {
+        "projects": {"type": "integer", "minimum": 1},
+        "operators": {"type": "integer", "minimum": 0},
+        "task_graphs": {"type": "integer", "minimum": 0},
+        "assets": {"type": "integer", "minimum": 0}
+      }
+    },
+    "assets": {"type": "array", "items": {"type": "object"}},
+    "automated_checks": {"type": "array", "items": {"type": "object"}},
+    "gaps": {"type": "array", "items": {"type": "string"}}
+  }
+}

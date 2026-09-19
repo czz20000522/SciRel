@@ -17,6 +17,7 @@ def _resolve(environment: Path, platform: str):
         cwd=ROOT,
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
 
 

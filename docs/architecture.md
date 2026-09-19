@@ -1,8 +1,23 @@
 # SciRel 架构与科学资产合同
 
-本文定义 SciRel 自身的长期边界。CodeFusion 提供已经完成人工准入的精确输入；SciRel 负责把这些输入维护为一个可安装、可组合、可验证的 Python 科学关系库。CodeFusion 的数据库、Rust owner、审核工作流和源项目目录都不是 SciRel 的运行时依赖。
+本文定义 SciRel 自身的长期边界。SciRel 从保存的 L1 产物开始拥有 candidate、自动检查、标准化、专家审核和 release 的领域流程；CodeFusion 只提供 artifact、job runner、身份、队列和审核 UI 等宿主能力。CodeFusion 的数据库、Rust owner、宿主审核状态和源项目目录都不是 SciRel core 的运行时依赖。
+
+保存的多项目 L1 目录先经过项目级 inventory 适配器，再进入 candidate。inventory 只保留来源路径、摘要、测试归属和显式依赖缺口；它不把拆解项目源码复制进 SciRel，也不把候选来源记录解释为专家批准。适配器的合同和当前六项目盘点见 [`l1-inventory.md`](design/l1-inventory.md)。
+
+新流程的权威需求和设计分别见 [`scirel-workflow.md`](requirements/scirel-workflow.md) 与 [`scirel-workflow.md`](design/scirel-workflow.md)。本文件中的历史 admitted 记录仍可作为开发期 provenance fixture，但不再是新 workflow 的唯一输入。
 
 ## 核心对象
+
+### 框架图、TaskGraph 与运行实例
+
+SciRel 的公共资产层级与拆解阶段的项目认知层级不同，不能把它们混为同一种资产：
+
+- 框架图 L0 面向人，描述项目级流程和能力边界；L1 面向拆解模型，指导如何把流程分成可验证的局部能力。框架图是拆解和理解的边界，不是运行时公共 callable。
+- TaskGraph 是可复用的局部功能编排，节点可以是 Operator 或嵌套 TaskGraph。它必须有明确目标、可描述的输入输出、独立测试和显式依赖。
+- Operator 是最小科学关系，承担单个可验证的科学合同。
+- 用户请求产生的动态补全图是运行实例或临时组合；除非经过标准文档、验证和准入流程，否则不会自动成为公共 TaskGraph 资产。
+
+拆解阶段可以采用“一个 TaskGraph 不超过一个框架图节点、通常至少包含两个算子”的粒度经验，以避免把整个项目直接当作一张图。该经验只约束拆解过程，不是 catalog 的绝对最小/最大规模规则；单算子复用、嵌套图和经验证的更细粒度图仍须按功能目标和独立测试判断。
 
 ### Operator
 
@@ -30,11 +45,28 @@ TaskGraph 定义与运行实例分开：定义绑定公共入口和精确依赖�
 
 来源和许可证义务随身份保留。参考项目的行为是证据，不是 SciRel 权威；采用参考行为时保留其成立条件、适用范围和已知反例，并用 SciRel 合同与回归测试确认最终行为。
 
+### 组装错误与验证边界
+
+组装失败按层处理，不能因为 Python 参数已经绑定就认为科学连接正确：
+
+1. 结构错误：签名、端口、类型、shape/dtype 或必需输入不匹配；
+2. 连接错误：选错算子、顺序/分支错误或把不兼容的图连接在一起；
+3. 语义错误：单位、坐标系、轴序、归一化或变量含义不一致；
+4. 科学错误：组合可以运行，但整体模型、边界条件或守恒关系不成立。
+
+签名和端口校验、单位/量纲、shape/dtype、轴序、输入域、守恒量、残差、正定性、对称性、极限情况和 metamorphic tests 都可以作为自动检查。它们只能证明各自声明的局部性质；不能靠穷举规则证明所有输入下的物理翻译或模型选择正确。形式化证明适合量纲保持、守恒量传播、线性性质和反馈上限等明确合同，不能替代科学审核。
+
+### 能力边界与缺口
+
+L3 运行时能力边界包括：没有对应 Operator/TaskGraph，候选模型/几何/边界/适用域不兼容，缺少关键输入或标准科学文档，需要引入新的变量、单位制、坐标约定或数值方法，或者必须改变已有资产的科学语义。遇到这些情况必须返回结构化的 `capability_gap`，不得让模型猜测一个看似相近的替代资产。
+
+能力扩展遵循“发现缺口 -> 搜索/拆解新来源 -> 形成标准资产文档 -> 科学审核与验证 -> 进入 catalog -> 重新组装”的闭环。skill 可以辅助缺口分析和候选构建，但不能替代科学审核，也不能直接产生公共资产。
+
 ## 三个边界
 
-### 准入与 provenance
+### 候选与 provenance
 
-`provenance/admitted-assets.json` 保存 CodeFusion 已准入输入、最终人工决定、精确版本树、内容摘要和依赖绑定。它是冻结的治理输入，不能因 SciRel 重构、措辞调整或重新组包而改写。候选、机器检查通过或 AI 建议不等于人工准入。
+`provenance/admitted-assets.json` 保存旧流程导出的 52 条开发迁移样本。它的来源路径、版本树、内容摘要、依赖绑定和当时决定标签保持冻结，不能因重构或措辞调整而改写；但这些标签不等于新生命周期的专家批准，也不再是 L1 到 release 主链的治理输入。新候选、机器检查通过、旧 admission 标签或 AI 建议都不能单独产生批准。
 
 ### 维护源码与公共 API
 
@@ -44,7 +76,7 @@ TaskGraph 定义与运行实例分开：定义绑定公共入口和精确依赖�
 
 ### 发行与目录投影
 
-`scripts/build_admitted_distribution.py` 从精确准入账本生成 admitted-only staging、wheel、内置 manifest 和内容锁。组装成功只产生待发行候选，不产生批准或发布事实。
+`scripts/build_admitted_distribution.py` 可以从历史迁移账本复现 admitted-only staging、wheel、内置 manifest 和内容锁，只作为开发证据。新流程的发行输入是专家批准后固化的 SciRel 基线及其 exact asset documents；任何构建成功都不单独产生批准或发布事实。
 
 面向大规模发现的 catalog 应是从同一发行内容锁重建的投影，而不是新的真值。每条精确记录至少需要：
 

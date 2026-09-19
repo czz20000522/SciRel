@@ -16,10 +16,11 @@ pwsh ./scripts/check.ps1 -Mode affected
 ## 开始修改前
 
 1. 阅读 `README.md`、[架构合同](docs/architecture.md)、相关函数、科学测试和 provenance。
-2. 确认输入是否已有最终人工准入；候选、机器或 AI 检查结果不能代替准入。
-3. 对照当前 Git/release 基线，列出公共 API、科学身份、直接依赖和受影响 TaskGraph。
-4. 对增量资产使用项目的 `scirel-integration` skill；不要重新导入整批文件覆盖维护源码。
-5. 新增或改变公共资产时维护对应标准资产文档，并运行 runtime/example/catalog release 验证；缺失可信元数据时保留 metadata gap，不生成占位科学合同。
+2. 固定本次保存的 L1 输入和只读 SciRel 基线，并读取当前全部未发布候选；候选准备期间只写隔离 worktree/输出目录，L1 来源材料、机器检查和模型结论都不能代替后续专家审核。
+3. 对照当前 Git/release 基线与候选池，列出公共 API、科学身份、直接依赖和受影响 TaskGraph；不要把不完整 catalog 当作全部已有能力，也不要把未发布候选当作可运行资产。
+4. 对 L1 整合使用项目的 `scirel-integration` skill，逐项判断复用、重复、变体、组合、新增或未决，并先提交以文档为主的候选代码/测试三件套；未经专家批准不要修改维护源码。
+5. 候选记录比较时的 Git base；尚未被专家打开的排队候选可合并、替换或撤回，专家首次打开完整详情时才冻结三件套。候选入队后原 Agent run 即可结束；批准后由独立任务对照最新基线固化。同一资产、合同、依赖闭包、TaskGraph 或 patch hunk 已变化时生成新候选重新审核，不采用 last-write-wins。
+6. 新增或改变公共资产时维护对应标准资产文档，并运行 runtime/example/catalog release 验证；缺失可信元数据时保留 metadata gap，不生成占位科学合同。
 
 ## 变更分类
 
@@ -38,7 +39,7 @@ pwsh ./scripts/check.ps1 -Mode affected
 pwsh ./scripts/check.ps1 -Mode affected -ChangedPath src/scirel/<domain>/<asset>.py
 ```
 
-选择器会加入改变资产的直接合同测试、所有传递依赖 TaskGraph、共享实现测试和准入一致性测试。当前工作区可省略
+选择器会加入改变资产的直接合同测试、所有传递依赖 TaskGraph、共享实现测试和历史绑定一致性测试。当前工作区可省略
 `-ChangedPath`，提交范围使用 `-BaseRef <ref>`。只有正在处理单个失败断点时使用
 `-Mode focused -TestPath tests/<relevant-test>.py`；不能手工缩小已经计算出的影响闭包。
 

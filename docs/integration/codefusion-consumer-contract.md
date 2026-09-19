@@ -3,12 +3,13 @@
 ## Status and authority
 
 - Status: development handoff contract
-- Inbound producer: CodeFusion `ScientificAssetLibraryOwner` handoff exporter
-- Inbound consumer: SciRel assembly maintainers
+- Domain workflow owner: SciRel plugin and SciRel core
+- Platform host: CodeFusion artifact/job/identity/review services
 - Downstream consumer: CodeFusion runtime/plugin integration after SciRel release
-- Non-goal: redefining CodeFusion review, admission, publication or public-site schemas
+- Legacy evidence: CodeFusion admitted handoff records may be used to reconstruct development fixtures
+- Non-goal: copying CodeFusion owner, review, admission or public-site schemas into SciRel
 
-This document defines both sides of the integration boundary: the admitted input that SciRel can consume and the release tuple that SciRel can later hand to CodeFusion. It does not copy CodeFusion owner records. The authoritative CodeFusion contracts remain its inbound public-documentation and Python-distribution requirements/designs; the assembly record remains an engineering join record rather than a new governance store.
+This document retains the historical admitted-input comparison and release tuple for existing development evidence. The new L1-to-release plugin boundary is defined by [`codefusion-plugin-contract.md`](codefusion-plugin-contract.md): SciRel creates and owns domain artifacts while CodeFusion supplies the host envelope and execution services. It does not copy CodeFusion owner records. The authoritative CodeFusion contracts remain its platform contracts; the assembly record remains engineering evidence rather than a new governance store.
 
 The read-only comparison baseline was the following CodeFusion-owned material:
 
@@ -18,20 +19,20 @@ The read-only comparison baseline was the following CodeFusion-owned material:
 - `docs/domains/design/inbound/scientific-asset-python-distribution.md`
 - `skills/development/codefusion-scirel-integration/assets/assembly_record.md`
 
-Four records have separate responsibilities:
+The active workflow keeps four responsibilities separate:
 
 | Record | Authority |
 | --- | --- |
-| reviewer/candidate document | frozen pre-admission scientific review evidence owned by CodeFusion |
-| admission/publication records | governance decisions and current published refs owned by CodeFusion |
+| SciRel candidate document and opened review snapshot | scientific proposal and exact expert-observed evidence owned by SciRel |
+| SciRel review decision and release manifest | domain approval and released package binding owned by SciRel |
 | `scirel.asset-document.v1` | current SciRel scientific identity, callable, ports, applicability, failures, example and bounded public lineage |
 | catalog route/summary records | rebuildable discovery projections derived only from canonical SciRel documents |
 
-Joining them is allowed only at an authorized CodeFusion release or publication boundary using stable IDs. No join may write CodeFusion refs back into SciRel documents or reinterpret a SciRel build as approval or publication.
+CodeFusion may store all four as opaque artifacts and bind a released catalog/wheel into its runtime. It must not copy their domain fields into platform tables, write platform refs into SciRel documents, or reinterpret a generic run result as approval or release.
 
-## Minimum CodeFusion handoff fields
+## Historical CodeFusion handoff fixture
 
-The current producer contract is the single-admission `codefusion.scirel-admitted-input.v1` manifest owned by the CodeFusion `ScientificAssetLibraryOwner` handoff DTO (`domains/inbound/codefusion-scientific-asset-library-owner/src/handoff.rs`) and emitted by the application exporter (`application/codefusion-application-product/src/bin/codefusion_scientific_asset_export.rs`). SciRel does not define a replacement schema and must decode the producer's exact shape. A dependency closure is transferred as separately exported manifests, one per admission; there is no batch `assets` wrapper in v1.
+The old experimental path used a single-admission `codefusion.scirel-admitted-input.v1` manifest emitted by CodeFusion. It remains useful only for reproducing the 52-asset development fixture. The active L1-to-release path does not require this manifest, does not preserve compatibility branches for it, and does not treat its decision fields as current approval.
 
 | Current field | Producer source | SciRel handling | Authority |
 | --- | --- | --- | --- |
@@ -45,30 +46,30 @@ The current producer contract is the single-admission `codefusion.scirel-admitte
 | `files` | owner tree plus verified bodies | consume exact `path`, `sha256`, `size_bytes` and producer-defined `role` receipts | admitted content fact |
 | `gaps` | exporter-observed missing owner projections | preserve each `{field, reason}` without inventing a replacement fact | explicit absence fact |
 
-The manifest decoder fails closed on an unknown schema/field, unsafe path, invalid digest or inconsistent revision binding. It does not reject a valid admitted-input export merely because `gaps` reports missing information. In particular, `license_evidence`, an independent `source_provenance_ref`, and a missing `scientific_contract_ref` are allowed gap fields in v1 because the current CodeFusion owner does not supply those facts.
+The historical decoder fails closed on an unknown schema/field, unsafe path, invalid digest or inconsistent revision binding. Its gap behavior belongs to fixture reproduction and is not the contract for new L1 candidates.
 
-SciRel must preserve such gaps rather than treating them as satisfied. A missing scientific contract blocks canonical-document standardization for that asset. Missing license or source-provenance evidence becomes a release/production blocker only when the selected SciRel release policy requires that evidence; it is not a reason to reject or misdecode the admitted-input manifest itself.
+When historical material is used as evidence, SciRel preserves its gaps rather than treating them as satisfied. New L1 candidates independently establish the scientific contract, license and provenance evidence required by the current SciRel release policy.
 
 The following fields are SciRel-derived and should not be required as CodeFusion admission facts: SciRel `asset_id`, taxonomy, module path, public symbol/signature, package layout, implementation version, catalog facets, summaries and adapter/MCP metadata. SciRel records their mapping during assembly and changes them only under its own compatibility and scientific-review rules.
 
-## Release binding
+## Active release binding
 
-A runtime integration pins one coherent tuple after admitted-input gaps required by that release policy have been resolved:
+A runtime integration pins one coherent tuple after SciRel expert approval, approved-candidate integration and release validation:
 
-1. every selected single-admission handoff's `admission_ref`, `owner_snapshot_ref` and `owner_snapshot_root_digest`, plus a SciRel-recorded digest of the received manifest/file set;
-2. SciRel distribution name and `distribution_version`;
-3. the SciRel admitted-manifest digest and distribution content lock generated from the selected inputs;
-4. wheel SHA-256;
-5. catalog `release_version`, root digest and coverage declaration; and
+1. SciRel `candidate_id`/candidate digest and `draft_id`/draft digest from the released workflow;
+2. the exact SciRel release manifest artifact and digest;
+3. SciRel distribution name and `distribution_version`;
+4. wheel reference and SHA-256;
+5. catalog reference, `release_version`, root digest and coverage declaration; and
 6. parity of the distribution export set, canonical document set and declared complete catalog set.
 
-The received-manifest digest is SciRel assembly evidence, not a new CodeFusion owner field. The catalog builder requires every canonical document's `implementation_version` to equal `release_version`. The thin adapter additionally requires the installed `scirel` distribution version to match the selected document. CodeFusion must reject a mixed tuple; it must not use an unpinned `latest` wheel or catalog. The tuple is a release binding, not another per-asset governance hash.
+The catalog builder requires every canonical document's `implementation_version` to equal `release_version`. The thin adapter additionally requires the installed `scirel` distribution version to match the selected document. CodeFusion verifies the opaque release artifact and rejects a mixed tuple; it must not use an unpinned `latest` wheel or catalog. The tuple is a release binding, not another per-asset governance hash.
 
 ## Export set
 
-For a complete release, the canonical document set must be dependency-closed and its asset/callable set must equal the selected distribution manifest export set. Each record supplies stable `asset_id`, kind, module, symbol, signature and stable dependency asset IDs. CodeFusion remains responsible for joining these public identities to the exact admitted or published revisions required by its owner contract.
+For a complete release, the canonical document set must be dependency-closed and its asset/callable set must equal the selected distribution manifest export set. Each record supplies stable `asset_id`, kind, module, symbol, signature and stable dependency asset IDs. CodeFusion consumes the released identities and bindings without adding another SciRel admission state.
 
-The current catalog is explicitly `partial` with 4 of 52 admitted assets. It is valid development metadata but cannot demonstrate complete manifest parity, public-site parity or production plugin coverage.
+The current catalog is explicitly `partial` with 4 of 52 development-sample assets. It is valid development metadata but cannot demonstrate complete manifest parity or production plugin coverage.
 
 ## Documentation entrypoints
 

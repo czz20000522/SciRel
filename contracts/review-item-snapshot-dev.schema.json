@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scirel.review-item-snapshot.dev",
+  "title": "SciRel immutable opened review item snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "item_ref", "opened_from", "view"],
+  "properties": {
+    "schema": {"const": "scirel.review-item-snapshot.dev"},
+    "item_ref": {"type": "string", "minLength": 1},
+    "opened_from": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_ref", "revision"],
+      "properties": {
+        "artifact_ref": {"type": "string", "minLength": 1},
+        "revision": {"type": "string", "pattern": "^sha256:[0-9a-fA-F]{64}$"}
+      }
+    },
+    "view": {
+      "$ref": "review-ui-extension-dev.schema.json"
+    }
+  }
+}
