@@ -28,7 +28,7 @@ def test_saved_l1_runs_to_release_with_host_adapter():
     run_id = "run-vertical-pleiades"
 
     host = FakeHost(tenant_id="tenant-test", project_id="project-scirel")
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     source_artifact = host.put_artifact("scirel.l1-payload.dev", payload)
     handoff = plugin.import_l1_artifact(
         source_artifact,
@@ -100,7 +100,7 @@ def test_host_result_artifact_cannot_repair_l1_gap():
         "gaps": ["missing direct test"],
     }
     host = FakeHost(project_id="project-scirel")
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     candidate = CandidatePackage.from_l1(
         payload,
         source_artifact_ref="artifact://l1/sample",

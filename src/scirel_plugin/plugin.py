@@ -77,70 +77,82 @@ class SciRelPlugin:
 
         return SERVICE_PRINCIPAL_SCOPES
 
-    def __init__(self, host: HostServices):
+    def __init__(self, host: HostServices, release: PluginReleaseSnapshot):
         self.host = host
+        release.validate()
+        self._release_snapshot = release
         self.host.register_plugin(self.registration())
 
-    def registration(self) -> PluginRegistration:
+    @staticmethod
+    def development_release() -> PluginReleaseSnapshot:
+        """Return placeholder metadata for local contract tests only."""
+
         skill_bundle_ref = "cf://artifact/scirel-skill-bundle-example-20260920"
-        return PluginRegistration(
-            plugin_id=self.plugin_id,
-            release=PluginReleaseSnapshot(
-                plugin_release_ref=(
-                    "plugin-release://scirel/0.1.0.dev5/example-20260920"
+        return PluginReleaseSnapshot(
+            plugin_release_ref=(
+                "plugin-release://scirel/0.1.0.dev5/example-20260920"
+            ),
+            artifacts=(
+                ArtifactReference(
+                    artifact_ref=skill_bundle_ref,
+                    digest="sha256:" + "1" * 64,
+                    media_type="application/vnd.agent-skills.bundle+zip",
                 ),
-                artifacts=(
-                    ArtifactReference(
-                        artifact_ref=skill_bundle_ref,
-                        digest="sha256:" + "1" * 64,
-                        media_type="application/vnd.agent-skills.bundle+zip",
+                ArtifactReference(
+                    artifact_ref=(
+                        "cf://artifact/scirel-catalog-example-20260920"
                     ),
-                    ArtifactReference(
-                        artifact_ref=(
-                            "cf://artifact/scirel-catalog-example-20260920"
-                        ),
-                        digest="sha256:" + "2" * 64,
-                        media_type="application/vnd.scirel.catalog-snapshot+zip",
-                    ),
-                ),
-                skill_entrypoints=(
-                    PluginSkillEntrypoint(
-                        name="scientific-computation-asset-extraction",
-                        artifact_ref=skill_bundle_ref,
-                        path=(
-                            "skills/extraction/"
-                            "scientific-computation-asset-extraction/SKILL.md"
-                        ),
-                    ),
-                    PluginSkillEntrypoint(
-                        name="scirel-integration",
-                        artifact_ref=skill_bundle_ref,
-                        path="skills/integration/scirel-integration/SKILL.md",
-                    ),
-                    PluginSkillEntrypoint(
-                        name="scirel-solving",
-                        artifact_ref=skill_bundle_ref,
-                        path="skills/usage/scirel-solving/SKILL.md",
-                    ),
-                ),
-                connectors=(
-                    PluginConnectorDescriptor(
-                        connector_id="scirel.thin-mcp",
-                        protocol_family="mcp",
-                        capability_refs=(
-                            "catalog.discover",
-                            "asset.read",
-                            "callable.resolve",
-                            "callable.invoke",
-                        ),
-                        endpoint_ref="connector-endpoint://scirel/default",
-                    ),
-                ),
-                runtime_dependency_refs=(
-                    "runtime-dependency://python-distribution/scirel/"
-                    "0.1.0.dev5/example-20260920",
+                    digest="sha256:" + "2" * 64,
+                    media_type="application/vnd.scirel.catalog-snapshot+zip",
                 ),
             ),
+            skill_entrypoints=(
+                PluginSkillEntrypoint(
+                    name="scientific-computation-asset-extraction",
+                    artifact_ref=skill_bundle_ref,
+                    path=(
+                        "skills/extraction/"
+                        "scientific-computation-asset-extraction/SKILL.md"
+                    ),
+                ),
+                PluginSkillEntrypoint(
+                    name="scirel-integration",
+                    artifact_ref=skill_bundle_ref,
+                    path="skills/integration/scirel-integration/SKILL.md",
+                ),
+                PluginSkillEntrypoint(
+                    name="scirel-solving",
+                    artifact_ref=skill_bundle_ref,
+                    path="skills/usage/scirel-solving/SKILL.md",
+                ),
+            ),
+            connectors=(
+                PluginConnectorDescriptor(
+                    connector_id="scirel.thin-mcp",
+                    protocol_family="mcp",
+                    capability_refs=(
+                        "catalog.discover",
+                        "asset.read",
+                        "callable.resolve",
+                        "callable.invoke",
+                    ),
+                    endpoint_ref="connector-endpoint://scirel/default",
+                ),
+            ),
+            runtime_dependency_refs=(
+                "runtime-dependency://python-distribution/scirel/"
+                "0.1.0.dev5/example-20260920",
+            ),
+        )
+
+    @classmethod
+    def for_development(cls, host: HostServices) -> "SciRelPlugin":
+        return cls(host, cls.development_release())
+
+    def registration(self) -> PluginRegistration:
+        return PluginRegistration(
+            plugin_id=self.plugin_id,
+            release=self._release_snapshot,
             capabilities=(
                 "plugin.dispatch",
                 "artifact.read",

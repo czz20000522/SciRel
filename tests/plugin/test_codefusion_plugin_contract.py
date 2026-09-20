@@ -11,6 +11,7 @@ from scirel_plugin import (
     PluginCommandEnvelope,
     PluginContractError,
     PluginEventEnvelope,
+    PluginReleaseSnapshot,
     PluginScope,
     PluginRunSubmitEnvelope,
     PluginRunResult,
@@ -56,7 +57,7 @@ def candidate() -> CandidatePackage:
 
 def test_plugin_publishes_candidate_as_artifact_and_job():
     host = FakeHost(user="reviewer-1")
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
 
     handoff = plugin.publish_candidate(candidate())
 
@@ -84,7 +85,7 @@ def test_plugin_publishes_candidate_as_artifact_and_job():
 
 def test_plugin_publishes_sci_rel_owned_workflow_state():
     host = FakeHost(user="reviewer-1")
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     workflow = SciRelWorkflow(candidate())
 
     artifact = plugin.publish_workflow_state(workflow)
@@ -544,7 +545,7 @@ def test_wire_request_rejects_non_json_media_type():
 
 def test_plugin_builds_generic_run_submission_for_candidate_artifact():
     host = FakeHost(tenant_id="tenant-a", project_id="project-a")
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     candidate_value = candidate()
     artifact = host.put_artifact(
         "scirel.candidate-package.dev", candidate_value.to_dict()
@@ -568,7 +569,7 @@ def test_plugin_builds_generic_run_submission_for_candidate_artifact():
 
 def test_candidate_run_rejects_cross_project_scope_and_wrong_artifact():
     host = FakeHost(tenant_id="tenant-a", project_id="project-a")
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     candidate_value = CandidatePackage.from_l1(
         {
             "project_id": "project-a",
@@ -615,7 +616,7 @@ def test_candidate_run_rejects_cross_project_scope_and_wrong_artifact():
 
 def test_plugin_builds_explicit_l1_import_run_submission():
     host = FakeHost(tenant_id="tenant-a", project_id="project-a")
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     source = host.put_artifact(
         "scirel.l1-source.dev",
         {"assets": [], "automated_checks": []},
@@ -638,7 +639,7 @@ def test_plugin_builds_explicit_l1_import_run_submission():
 
 def test_plugin_publishes_draft_and_registers_scientific_review_view():
     host = FakeHost()
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     draft = StandardizedDraft(
         draft_id="draft-plugin",
         candidate_id="candidate-run-plugin",
@@ -659,7 +660,7 @@ def test_plugin_publishes_draft_and_registers_scientific_review_view():
 
 def test_review_list_is_bounded_minimal_and_does_not_observe_candidate():
     host = FakeHost()
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     workflow = SciRelWorkflow(candidate())
     workflow.create_draft(draft_id="draft-list", assets=[ASSET_DOCUMENT])
     workflow.submit_for_review()
@@ -686,7 +687,7 @@ def test_review_list_is_bounded_minimal_and_does_not_observe_candidate():
 
 def test_review_open_returns_idempotent_exact_snapshot_without_host_side_state():
     host = FakeHost()
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     workflow = SciRelWorkflow(candidate())
     workflow.create_draft(draft_id="draft-open", assets=[ASSET_DOCUMENT])
     workflow.submit_for_review()
@@ -717,7 +718,7 @@ def test_review_open_returns_idempotent_exact_snapshot_without_host_side_state()
 
 def test_review_open_rejects_stale_revision_and_wrong_item_ref():
     host = FakeHost()
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     workflow = SciRelWorkflow(candidate())
     workflow.create_draft(draft_id="draft-stale", assets=[ASSET_DOCUMENT])
     workflow.submit_for_review()
@@ -740,7 +741,7 @@ def test_review_open_rejects_stale_revision_and_wrong_item_ref():
 
 def test_plugin_imports_l1_and_publishes_review_artifact():
     host = FakeHost()
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
 
     handoff = plugin.import_l1(
         {"assets": [], "automated_checks": [{"name": "replay", "status": "passed"}]},
@@ -758,7 +759,7 @@ def test_plugin_imports_l1_and_publishes_review_artifact():
 
 def test_plugin_imports_l1_from_saved_host_artifact():
     host = FakeHost()
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     source = host.put_artifact(
         "scirel.l1-payload.dev",
         {"assets": [], "automated_checks": [{"name": "replay", "status": "passed"}]},
@@ -773,7 +774,7 @@ def test_plugin_imports_l1_from_saved_host_artifact():
 
 def test_plugin_imports_l1_from_host_supplied_body():
     host = FakeHost()
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     source = host.put_artifact(
         "scirel.l1-payload.dev",
         {"assets": [], "automated_checks": [{"name": "replay", "status": "passed"}]},
@@ -800,7 +801,7 @@ def test_plugin_imports_l1_from_host_supplied_body():
 
 def test_plugin_publishes_and_applies_automated_result_artifact():
     host = FakeHost()
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     original = CandidatePackage.from_l1(
         {
             "assets": [{"l1_asset_id": "sample:operator:leaf"}],
@@ -828,7 +829,7 @@ def test_plugin_publishes_and_applies_automated_result_artifact():
 
 def test_plugin_imports_automated_result_from_host_supplied_body_and_checks_digest():
     host = FakeHost()
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     original = CandidatePackage.from_l1(
         {
             "assets": [{"l1_asset_id": "sample:operator:leaf"}],
@@ -864,7 +865,7 @@ def test_plugin_imports_automated_result_from_host_supplied_body_and_checks_dige
 
 def test_automated_result_artifact_mapping_is_fail_closed():
     host = FakeHost()
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     original = candidate()
     result = AutomatedCheckResult(
         result_id="check-strict",
@@ -905,7 +906,7 @@ def test_automated_result_artifact_mapping_is_fail_closed():
 
 def test_artifact_imports_require_verified_json_references():
     host = FakeHost()
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     original = candidate()
     result = AutomatedCheckResult(
         result_id="check-artifact-contract",
@@ -946,7 +947,7 @@ def test_artifact_imports_require_verified_json_references():
 
 def test_completed_run_imports_one_result_artifact_and_platform_failure_stays_platform_failure():
     host = FakeHost()
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     original = CandidatePackage.from_l1(
         {
             "assets": [{"l1_asset_id": "sample:operator:leaf"}],
@@ -1097,7 +1098,7 @@ def test_codefusion_run_result_wire_mapping_accepts_completed_receipt():
 
 
 def test_registration_maps_codefusion_host_fields():
-    plugin = SciRelPlugin(FakeHost())
+    plugin = SciRelPlugin.for_development(FakeHost())
 
     registration = plugin.registration()
     registration.validate()
@@ -1112,8 +1113,23 @@ def test_registration_maps_codefusion_host_fields():
     assert tuple(plugin.descriptor()["service_principal_scopes"]) == SERVICE_PRINCIPAL_SCOPES
 
 
+def test_runtime_registration_uses_the_admitted_release_snapshot():
+    release = PluginReleaseSnapshot(
+        plugin_release_ref="plugin-release://scirel/0.1.0.dev5/admitted",
+        artifacts=(),
+        skill_entrypoints=(),
+        connectors=(),
+        runtime_dependency_refs=(),
+    )
+
+    plugin = SciRelPlugin(FakeHost(), release)
+
+    assert plugin.registration().release is release
+    assert plugin.registration().to_dict()["release"] == release.to_dict()
+
+
 def test_review_ui_projection_is_domain_owned_and_status_driven():
-    plugin = SciRelPlugin(FakeHost())
+    plugin = SciRelPlugin.for_development(FakeHost())
     workflow = SciRelWorkflow(candidate())
 
     ready = plugin.review_ui_projection(workflow)
@@ -1158,7 +1174,7 @@ def test_review_ui_projection_is_domain_owned_and_status_driven():
 
 
 def test_review_ui_projection_exposes_rework_without_platform_state():
-    plugin = SciRelPlugin(FakeHost())
+    plugin = SciRelPlugin.for_development(FakeHost())
     workflow = SciRelWorkflow(candidate())
     draft = workflow.create_draft(
         draft_id="draft-ui-rework",
@@ -1190,7 +1206,7 @@ def test_review_ui_projection_exposes_rework_without_platform_state():
 def test_review_ui_projection_keeps_pre_draft_queue_actions_distinct(
     next_action, expected_action
 ):
-    plugin = SciRelPlugin(FakeHost())
+    plugin = SciRelPlugin.for_development(FakeHost())
     workflow = SciRelWorkflow(candidate())
     workflow.apply_automated_result(
         AutomatedCheckResult(
@@ -1210,7 +1226,7 @@ def test_review_ui_projection_keeps_pre_draft_queue_actions_distinct(
 
 
 def test_review_ui_projection_runtime_actions_match_exact_schema():
-    plugin = SciRelPlugin(FakeHost())
+    plugin = SciRelPlugin.for_development(FakeHost())
     projected_actions = set(plugin.review_ui_projection(SciRelWorkflow(candidate()))["available_actions"])
 
     for next_action in ("retry", "needs_evidence", "rework_requested", "rejected"):
@@ -1287,7 +1303,7 @@ def test_review_ui_projection_runtime_actions_match_exact_schema():
 
 
 def test_review_ui_projection_hides_approve_for_unresolved_gaps():
-    plugin = SciRelPlugin(FakeHost())
+    plugin = SciRelPlugin.for_development(FakeHost())
     workflow = SciRelWorkflow(candidate())
     workflow.create_draft(
         draft_id="draft-ui-gap",
@@ -1308,7 +1324,7 @@ def test_review_ui_projection_hides_approve_for_unresolved_gaps():
 
 def test_review_action_uses_host_identity_and_publishes_domain_artifacts():
     host = FakeHost(user="expert-reviewer")
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     workflow = SciRelWorkflow(candidate())
     workflow.create_draft(
         draft_id="draft-ui-action",
@@ -1351,7 +1367,7 @@ def test_review_action_uses_host_identity_and_publishes_domain_artifacts():
 
 def test_review_action_cannot_bypass_expert_observation_transition():
     host = FakeHost(user="expert-reviewer")
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     workflow = SciRelWorkflow(candidate())
     workflow.create_draft(
         draft_id="draft-not-pending",
@@ -1371,7 +1387,7 @@ def test_review_action_cannot_bypass_expert_observation_transition():
 
 def test_automated_result_event_carries_artifact_and_opaque_summary():
     host = FakeHost()
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     candidate_value = candidate()
     result = AutomatedCheckResult(
         result_id="check-event",
@@ -1424,7 +1440,7 @@ def test_automated_result_event_carries_artifact_and_opaque_summary():
 
 def test_host_generates_event_system_fields_and_preserves_domain_payload():
     host = FakeHost(tenant_id="tenant-a", project_id="project-a")
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     handoff = plugin.publish_candidate(candidate())
 
     event = host.emit_event(
@@ -1447,7 +1463,7 @@ def test_host_generates_event_system_fields_and_preserves_domain_payload():
 
 
 def test_command_scope_must_match_registration():
-    plugin = SciRelPlugin(FakeHost())
+    plugin = SciRelPlugin.for_development(FakeHost())
     registration = plugin.registration()
     command = PluginCommandEnvelope(
         command="scirel.automated_check",
@@ -1463,7 +1479,7 @@ def test_command_scope_must_match_registration():
 
 @pytest.mark.parametrize("payload", [None, ["candidate", 1], "candidate"])
 def test_envelope_payload_matches_json_value_contract(payload):
-    plugin = SciRelPlugin(FakeHost())
+    plugin = SciRelPlugin.for_development(FakeHost())
     registration = plugin.registration()
     command = PluginCommandEnvelope(
         command="scirel.inspect",
@@ -1479,7 +1495,7 @@ def test_envelope_payload_matches_json_value_contract(payload):
 
 def test_plugin_release_is_an_artifact_operation():
     host = FakeHost()
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
 
     artifact = plugin.release(
         {
@@ -1514,7 +1530,7 @@ def test_plugin_release_is_an_artifact_operation():
 
 def test_release_events_bind_manifest_and_use_bounded_failure_codes():
     host = FakeHost()
-    plugin = SciRelPlugin(host)
+    plugin = SciRelPlugin.for_development(host)
     release = ReleaseManifest(
         release_id="release-event",
         draft_id="draft-event",
