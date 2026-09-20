@@ -2,7 +2,7 @@
 
 Claude Code、Codex、CodeFusion 或其他具备代码读取、修改和执行能力的 harness，都可以驱动保存的
 L1 产物进入 SciRel。harness 只是承载模型工作的工具；SciRel 的方法由
-`skills/development/scirel-integration/SKILL.md` 定义，科学结论最终由专家审核。
+`skills/integration/scirel-integration/SKILL.md` 定义，科学结论最终由专家审核。
 
 ## 输入
 

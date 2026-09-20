@@ -57,6 +57,13 @@ Decide relationships from the scientific contract, in roughly this order:
 5. discretization, interpolation, solver, matrix/RHS construction, tolerance, and error semantics;
 6. applicability domain, evidence ceiling, provenance, and license constraints.
 
+When the incoming and maintained forms differ by a callable name, asset id, port mapping, split, or merge, replaying
+the unchanged L1 test against the maintained package measures **drop-in compatibility**, not scientific equivalence.
+A missing symbol or unresolved source id proves that direct binding is unavailable; it is not by itself a scientific
+conflict. If equivalence, reuse, or a lossless adapter is claimed, construct a task-specific binding or adapter and
+compare the mapped scientific outputs, invariants, accepted domain, and failures. State explicit one-to-many or
+many-to-one mappings instead of hiding them under a byte-identity or undifferentiated `reuse` claim.
+
 For every incoming operator or TaskGraph, reach one evidence-bounded disposition:
 
 - reuse the existing SciRel identity or absorb an exact duplicate while preserving source lineage;
@@ -132,6 +139,20 @@ not mistake them for the reasoning process or for scientific proof. Create task-
 clarify the case; keep them as temporary evidence unless repeated use demonstrates a stable project requirement.
 Do not weaken existing numerical assertions, tolerances, or failure checks to make an integration pass.
 
+When replaying an L1 contract, include a control that runs the same test against its own saved implementation whenever
+that is needed to distinguish a broken input from a successor difference. A successor pass establishes only that the
+exercised cases do not distinguish the implementations. A successor failure establishes a difference whose cause still
+needs semantic classification; it does not select `variant`, `conflict`, or `lossless adapter` automatically.
+
+## Specialist routing
+
+Load `scientific-asset-correctness` when an exact candidate needs claim-specific correctness assessment, an
+evidence-bounded repair, or reverse-dependency revalidation. Load `scientific-asset-normalization` when a
+correctness-qualified cross-source batch needs deduplication, parameterization, composition, or bounded refactoring.
+Use `scientific-computation-validation` when the scientific claim requires independent gate design or evidence
+assessment. These are conditional methods, not a mandatory serial pipeline; a well-supported reuse or no-code
+duplicate proposal can proceed directly to the review candidate.
+
 ## Handoff
 
 Report the exact L1 input and frozen SciRel baseline inspected, every candidate document/code/test artifact, tests and
@@ -139,6 +160,12 @@ experiments run, and the evidence limits. Account for every incoming asset in a 
 identifies its disposition, the related existing or proposed SciRel identity, material differences, evidence used,
 and unresolved questions. The inventory may use whatever task-local form best supports the batch; it is not a new
 governance database or a claim of approval.
+
+Distinguish inventory coverage from review readiness in batch reporting. `inventoried` means an input received a row;
+`triaged` means it has an evidence-bounded preliminary disposition; `candidate-ready` means an expert can inspect the
+document, proposed code or explicit no-code rationale, and distinguishing tests for a specific decision. Report each
+level separately when they differ. A reconciled inventory, even with no missing rows, does not make every row a
+scientifically reviewable candidate.
 
 Stop at an expert-reviewable candidate outside the frozen SciRel baseline. Model execution, passing tests, a generated
 report, or a clean build does not approve the science, apply the candidate, or authorize release.

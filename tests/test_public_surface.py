@@ -32,6 +32,11 @@ from scirel.closures.tabulated_pressure_closure import evaluate_tabulated_pressu
 from scirel.field.current_green_superposition import superpose_current_green_field
 from scirel.geometry.bilinear_grid_sampling import sample_rectilinear_field
 from scirel.geometry.flux_surface_profile import evaluate_flux_surface_profile
+from scirel.geometry.axisymmetric_grid_mapping import map_axisymmetric_equilibrium_to_cartesian_grid
+from scirel.geometry.material_support import classify_material_support
+from scirel.geometry.axisymmetric_equilibrium_grid_support import solve_axisymmetric_equilibrium_grid_mapping
+from scirel.geometry.complex_rectilinear_interpolation import interpolate_complex_rectilinear_field
+from scirel.diagnostics.species_absorption_fraction import compute_species_absorption_fraction
 from scirel.equilibrium.axisymmetric_picard_update import update_axisymmetric_picard_flux
 from scirel.geometry.flux_surface_inverse_field_average import compute_flux_surface_inverse_field_average
 from scirel.closures.reduced_hall_drift import close_reduced_hall_drift
@@ -54,6 +59,18 @@ from scirel.equilibrium.reduced_hall_anisotropic_picard import solve_reduced_hal
 from scirel.equilibrium.kinetic_mirror_hall_equilibrium import solve_kinetic_mirror_hall_equilibrium
 from scirel.field.multi_coil_vacuum_field import solve_multi_coil_vacuum_field
 from scirel.kinetic.frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure
+from scirel.collisions.relativistic_maxwellian_bessel import (
+    BesselBackendEvaluationError,
+    InvalidBesselArgumentError,
+    relativistic_maxwellian_bessel,
+)
+from scirel.collisions.momentum_scales import normalized_momentum, thermal_electron_momentum
+from scirel.fusion.dd_neutron_lab_energy import calculate_dd_neutron_lab_energy_kev
+from scirel.dielectric.cold_plasma_tensor import (
+    ColdPlasmaOverflowError,
+    ColdPlasmaResonanceError,
+    cold_plasma_dielectric_tensor,
+)
 
 
 def test_all_normalized_public_callables_are_importable():
@@ -110,8 +127,26 @@ def test_all_normalized_public_callables_are_importable():
         solve_kinetic_mirror_hall_equilibrium,
         solve_multi_coil_vacuum_field,
         solve_frank_egedal_pressure_closure,
+        map_axisymmetric_equilibrium_to_cartesian_grid,
+        classify_material_support,
+        solve_axisymmetric_equilibrium_grid_mapping,
+        interpolate_complex_rectilinear_field,
+        compute_species_absorption_fraction,
+        relativistic_maxwellian_bessel,
+        normalized_momentum,
+        thermal_electron_momentum,
+        calculate_dd_neutron_lab_energy_kev,
+        cold_plasma_dielectric_tensor,
     ])
     assert hasattr(scirel, 'field') and hasattr(scirel, 'equilibrium')
+    assert hasattr(scirel, 'collisions') and hasattr(scirel, 'fusion')
+    assert hasattr(scirel, 'dielectric')
+    # The two rejection classes are classes rather than callables, so they are
+    # asserted as the ValueError subclasses the relation promises to raise.
+    assert issubclass(InvalidBesselArgumentError, ValueError)
+    assert issubclass(BesselBackendEvaluationError, ValueError)
+    assert issubclass(ColdPlasmaResonanceError, ValueError)
+    assert issubclass(ColdPlasmaOverflowError, ValueError)
 
 
 def test_root_namespace_supports_normal_python_imports():

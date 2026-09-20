@@ -54,6 +54,7 @@ def test_l1_candidate_moves_through_review_and_release():
         catalog_digest="sha256:" + "c" * 64,
         wheel_ref="artifact://wheel/dev",
         wheel_digest="sha256:" + "d" * 64,
+        release_version="0.1.0.dev5",
     )
 
     assert workflow.status is WorkflowStatus.RELEASED
@@ -229,6 +230,7 @@ def test_workflow_snapshot_round_trips_without_host_fields():
         catalog_digest="sha256:" + "c" * 64,
         wheel_ref="artifact://wheel/dev",
         wheel_digest="sha256:" + "d" * 64,
+        release_version="0.1.0.dev5",
     )
 
     snapshot = workflow.to_dict()
@@ -328,6 +330,7 @@ def test_workflow_snapshot_rejects_release_binding_mismatch(field, value, messag
         catalog_digest="sha256:" + "c" * 64,
         wheel_ref="artifact://wheel/binding",
         wheel_digest="sha256:" + "d" * 64,
+        release_version="0.1.0.dev5",
     )
     snapshot = workflow.to_dict()
     snapshot["release"][field] = value
@@ -364,6 +367,7 @@ def test_workflow_snapshot_cannot_restore_release_without_release_gates(
         catalog_digest="sha256:" + "c" * 64,
         wheel_ref="artifact://wheel/dev",
         wheel_digest="sha256:" + "d" * 64,
+        release_version="0.1.0.dev5",
     )
     snapshot = workflow.to_dict()
 

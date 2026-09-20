@@ -1,0 +1,74 @@
+---
+name: scientific-project-implementation
+description: Use when turning a scientific-computing request into working files in the current user project, extending an existing scientific codebase, or integrating scientific capabilities. Does not extract, publish, or review assets, or define validation methodology.
+---
+
+# Scientific Project Implementation
+
+Deliver the working project, not a prose-only code sample. Work in the current persistent user workspace,
+follow its language and conventions, create or update actual files, run the relevant entrypoint and tests,
+and read the resulting files and output before reporting success.
+
+This project-level skill covers delivery inside the user's project. The application/project owner retains workspace
+and request truth. The method may consume an authorized published capability, but it does not create or mutate plugin
+candidate, review, catalog, or release state. A runnable user project is not automatically a reusable or published
+scientific capability.
+
+## Decide once, then act
+
+Inspect the current project and supplied material first. A complete request needs no confirmation. Concrete
+geometry, profiles, parameter values, output formatting, numerical controls, and manufactured test data are
+normally callable inputs or implementation choices rather than reasons to stop.
+
+If the request admits materially different models, geometries, boundaries, closures, safety behavior, or
+result claims and the user's intent does not choose among them, ask once through the host's available
+user-input mechanism with one compact blocking decision. Present two or three meaningful alternatives, their consequences, and a
+recommendation. Do not ask a sequence of small questions. For a request such as “给我写个平衡程序”, first
+resolve what physical equilibrium and observable the user means; do not run a guessed solver before that
+answer. If the user delegated the choice, select the narrowest defensible model and state its claim boundary.
+
+## Execute in the project
+
+1. Inspect the workspace tree, existing code, tests, dependency files, and runnable commands that matter to
+   the request. Do not require a new framework or language when the project already has a suitable one.
+2. Record the smallest project-native scientific contract needed for the current slice: requested output,
+   model, inputs, units, geometry, boundaries, failure behavior, provenance, claim ceiling, and unresolved
+   material choices. Use stable owner/project refs and revisions for ordinary identity.
+   Do not add per-record hashes or confirmation/rehash steps for routine requirements, snapshots, receipts, or project revisions;
+   use digests only at an actual package, transfer, signature, secret, or compare-and-set integrity boundary.
+3. Reuse compatible project code and ordinary libraries first. When an authorized published scientific
+   catalog is relevant, read only the matching manifest and capability detail needed for this request, then
+   use `scientific-asset-navigation` for a real applicability decision. Do not browse internal
+   candidates or require the user to know platform package names.
+4. Treat unit, field-name, dtype, axis, index-base, and lossless shape conversions as adapters. A change to
+   equations, closure, boundary physics, interpolation, discretization, solver update, or reconstructed state
+   is a scientific change; use `scientific-relation-implementation` for that bounded relation.
+5. Create or update the actual source, tests, configuration, run instructions, and requested result files in
+   the current project. Keep scientific relations in project-native modules and keep serialization and plots
+   at their normal output boundary.
+6. Run the user-facing entrypoint and focused tests. On failure, localize the earliest broken contract, add or
+   strengthen a focused test, make the smallest correction, and rerun. Reopen the user decision only when the
+   failure proves a new material scientific ambiguity.
+7. Read back changed files and observable outputs. Report only commands, exit states, output, and artifacts
+   actually observed. Do not claim success from generated text alone.
+
+Keep interim chat concise. Do not narrate every tool call, and do not substitute displayed snippets for
+writing the requested files into the project.
+
+For a complex normalization or reuse decision, read
+[references/normalized-requirement-and-asset-match.md](references/normalized-requirement-and-asset-match.md).
+Load `scientific-computation-validation` only when the requested scientific or numerical claim needs
+independent acceptance evidence. Load `scientific-runtime-dataset-construction` only when a specific
+source-side state or observation is otherwise unavailable. Do not load every specialist skill by default.
+
+## Delivery boundary
+
+Do not silently invent material physics or replace a requested source-parity relation with a simpler related
+model. A reference example does not supply unstated case data. Keep missing case values as runtime inputs and
+use admissible manufactured values for development when appropriate.
+
+The final response names the changed project files, required inputs, selected model/resources, assumptions,
+commands run, observed results, and remaining scientific limits. Use `delivered` only when the requested
+artifact exists and the declared user-facing path was run. Use `bounded_candidate` when it runs but evidence
+is limited, `needs_scientific_input` when a material choice remains, and `cannot_complete` when the available
+information or environment cannot support an honest implementation.

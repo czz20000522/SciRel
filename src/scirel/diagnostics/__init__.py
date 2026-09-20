@@ -3,5 +3,6 @@ from .observation_residuals import reduce_observation_residuals
 from .parallel_pressure_residual import compute_parallel_pressure_residual
 from .firehose_mirror_margins import compute_firehose_mirror_margins
 from .equilibrium_synthesis_diagnostics import synthesize_equilibrium_diagnostics
+from .species_absorption_fraction import compute_species_absorption_fraction
 
-__all__ = ['compute_picard_flux_residual', 'reduce_observation_residuals', 'compute_parallel_pressure_residual', 'compute_firehose_mirror_margins', 'synthesize_equilibrium_diagnostics']
+__all__ = ['compute_picard_flux_residual', 'reduce_observation_residuals', 'compute_parallel_pressure_residual', 'compute_firehose_mirror_margins', 'synthesize_equilibrium_diagnostics', 'compute_species_absorption_fraction']

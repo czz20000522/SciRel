@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 import ast
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import json
 from pathlib import Path
 import subprocess
@@ -14,6 +14,7 @@ from typing import Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
 LEDGER = ROOT / "provenance" / "admitted-assets.json"
+CATALOG = ROOT / "catalog" / "examples"
 SCHEMA = "scirel.affected-tests.v1"
 
 DIRECT_TEST_OVERRIDES = {
@@ -36,9 +37,11 @@ ENGINEERING_TESTS = {
         "tests/test_admitted_distribution_builder.py",
     ),
     "scripts/build_catalog.py": ("tests/test_asset_documentation.py",),
+    "scripts/finalize_release.py": ("tests/test_release_finalization.py",),
     "scripts/check.ps1": (
         "tests/test_affected_test_selection.py",
         "tests/test_release_environment.py",
+        "tests/test_release_finalization.py",
     ),
     "scripts/check_helpers.ps1": ("tests/test_release_environment.py",),
     "scripts/select_affected_tests.py": ("tests/test_affected_test_selection.py",),
@@ -97,9 +100,9 @@ class Asset:
     module: str
     source_path: str
     kind: str
-    admission_ref: str
+    asset_ref: str
     dependency_refs: frozenset[str]
-    direct_test: str
+    direct_tests: tuple[str, ...]
 
 
 def _relative_path(value: str) -> str:
@@ -132,7 +135,13 @@ def _direct_test(public_callable: str, module: str, kind: str) -> str:
     return candidate
 
 
-def _load_assets() -> list[Asset]:
+def _load_ledger_assets() -> list[Asset]:
+    """Load the historical admission ledger, kept as a compatibility input.
+
+    The ledger still binds the 52 migrated development assets to their callables
+    and direct tests.  It is no longer the admission authority: assets that now
+    carry a canonical catalog document are loaded from that document instead.
+    """
     ledger = json.loads(LEDGER.read_text(encoding="utf-8"))
     assets = []
     for record in ledger["integrations"]:
@@ -147,12 +156,73 @@ def _load_assets() -> list[Asset]:
                 module=module,
                 source_path=source_path,
                 kind=kind,
-                admission_ref=admission["admission_ref"],
+                asset_ref=admission["admission_ref"],
                 dependency_refs=frozenset(record["dependency_admission_refs"]),
-                direct_test=_direct_test(public_callable, module, kind),
+                direct_tests=(_direct_test(public_callable, module, kind),),
             )
         )
     return assets
+
+
+def _load_catalog_assets() -> list[Asset]:
+    """Load the canonical exact documents as the current asset index.
+
+    A document is the current authority for one scientific identity: it names the
+    public callable, the direct tests that keep the contract verified, and the
+    dependency closure of a TaskGraph.  Reading them here keeps affected-test
+    selection aligned with the same source the catalog is built from, and it does
+    not reintroduce admission or review records into the public contract.
+    """
+    if not CATALOG.is_dir():
+        return []
+    assets = []
+    for path in sorted(CATALOG.glob("*.json")):
+        document = json.loads(path.read_text(encoding="utf-8"))
+        python_api = document["public_api"]["python"]
+        module = python_api["module"]
+        symbol = python_api["symbol"]
+        direct_tests = tuple(document["verification"]["tests"])
+        for direct_test in direct_tests:
+            if not (ROOT / direct_test).is_file():
+                raise ValueError(f"{path.name} declares a missing direct test: {direct_test}")
+        assets.append(
+            Asset(
+                public_callable=f"{module}.{symbol}",
+                module=module,
+                source_path="src/" + module.replace(".", "/") + ".py",
+                kind=document["kind"],
+                asset_ref=document["asset_id"],
+                dependency_refs=frozenset(
+                    entry["asset_id"]
+                    for entry in document["version"]["dependencies"]
+                ),
+                direct_tests=direct_tests,
+            )
+        )
+    return assets
+
+
+def _load_assets() -> list[Asset]:
+    """Union current documents with legacy samples under one dependency ID space."""
+    catalog = _load_catalog_assets()
+    catalog_by_callable = {asset.public_callable: asset for asset in catalog}
+    ledger_assets = _load_ledger_assets()
+    legacy_to_current_ref = {
+        asset.asset_ref: catalog_by_callable.get(asset.public_callable, asset).asset_ref
+        for asset in ledger_assets
+    }
+    ledger = [
+        replace(
+            asset,
+            dependency_refs=frozenset(
+                legacy_to_current_ref.get(reference, reference)
+                for reference in asset.dependency_refs
+            ),
+        )
+        for asset in ledger_assets
+        if asset.public_callable not in catalog_by_callable
+    ]
+    return [*ledger, *catalog]
 
 
 def _module_name(path: Path) -> str:
@@ -224,14 +294,14 @@ def _dependent_modules(changed_module: str, reverse: dict[str, set[str]]) -> set
 
 def _dependent_assets(initial: set[Asset], assets: list[Asset]) -> set[Asset]:
     affected = set(initial)
-    refs = {asset.admission_ref for asset in affected}
+    refs = {asset.asset_ref for asset in affected}
     changed = True
     while changed:
         changed = False
         for asset in assets:
             if asset not in affected and asset.dependency_refs & refs:
                 affected.add(asset)
-                refs.add(asset.admission_ref)
+                refs.add(asset.asset_ref)
                 changed = True
     return affected
 
@@ -280,7 +350,10 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
         elif path.startswith("tests/"):
             if path == "tests/_review_bindings.py":
                 path_tests.update(
-                    asset.direct_test for asset in assets if asset.kind == "task_graph"
+                    test
+                    for asset in assets
+                    if asset.kind == "task_graph"
+                    for test in asset.direct_tests
                 )
                 reason = "shared_graph_test_support"
             elif (
@@ -342,7 +415,9 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
             if selected_for_path:
                 selected_for_path = _dependent_assets(selected_for_path, assets)
                 affected_assets.update(selected_for_path)
-                path_tests.update(asset.direct_test for asset in selected_for_path)
+                path_tests.update(
+                    test for asset in selected_for_path for test in asset.direct_tests
+                )
                 path_tests.add("tests/test_admitted_integrations.py")
                 reason = reason or "asset_and_reverse_dependencies"
             elif not path_tests:

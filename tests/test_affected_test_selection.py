@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import runpy
 import subprocess
 import sys
 
@@ -125,6 +126,13 @@ def test_release_environment_helper_change_selects_only_its_contract_test():
     assert result["test_paths"] == ["tests/test_release_environment.py"]
 
 
+def test_release_finalizer_selects_only_its_contract_test():
+    result = select("scripts/finalize_release.py")
+
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == ["tests/test_release_finalization.py"]
+
+
 def test_wire_fixture_builder_selects_only_wire_smoke_test():
     result = select("scripts/build_l1_wire_fixture.py")
 
@@ -203,6 +211,15 @@ def test_unicode_graph_evidence_path_is_classified_without_git_quoting():
     assert result["reasons"][0]["classification"] == "shared_test_material"
 
 
+def test_shared_test_conftest_fails_closed_to_the_full_suite():
+    """The repository-wide test conftest has no bounded test mapping."""
+    result = select("tests/conftest.py")
+
+    assert result["full_suite_required"] is True
+    assert result["test_paths"] == ["tests"]
+    assert result["reasons"][0]["classification"] == "shared_test_material"
+
+
 def test_unmapped_scirel_source_fails_closed_to_full_suite():
     result = select("src/scirel/_unknown_shared_module.py")
 
@@ -223,3 +240,156 @@ def test_every_admitted_asset_has_a_direct_test_mapping():
 
     assert len(result["affected_assets"]) == 52
     assert result["full_suite_required"] is False
+
+
+def test_documented_operator_selects_its_own_direct_test():
+    result = select("src/scirel/geometry/complex_rectilinear_interpolation.py")
+
+    assert result["full_suite_required"] is False
+    assert result["reasons"][0]["classification"] == "asset_and_reverse_dependencies"
+    assert result["test_paths"] == [
+        "tests/operator_contracts/test_complex_rectilinear_interpolation.py",
+        "tests/test_admitted_integrations.py",
+    ]
+
+
+def test_documented_u1_operators_reverse_select_the_task_graph_test():
+    graph_asset = (
+        "scirel.geometry.axisymmetric_equilibrium_grid_support."
+        "solve_axisymmetric_equilibrium_grid_mapping"
+    )
+    cases = {
+        "src/scirel/geometry/axisymmetric_grid_mapping.py": (
+            "tests/operator_contracts/test_axisymmetric_grid_mapping.py",
+            "scirel.geometry.axisymmetric_grid_mapping."
+            "map_axisymmetric_equilibrium_to_cartesian_grid",
+        ),
+        "src/scirel/geometry/material_support.py": (
+            "tests/operator_contracts/test_material_support.py",
+            "scirel.geometry.material_support.classify_material_support",
+        ),
+    }
+    for operator, (operator_test, operator_asset) in cases.items():
+        result = select(operator)
+
+        assert result["full_suite_required"] is False, operator
+        assert set(result["affected_assets"]) == {graph_asset, operator_asset}, operator
+        assert operator_test in result["test_paths"], operator
+        assert (
+            "tests/graph_contracts/axisymmetric_equilibrium_grid_support/"
+            "test_graph_axisymmetric_equilibrium_grid_support.py"
+        ) in result["test_paths"], operator
+        assert "tests/test_admitted_integrations.py" in result["test_paths"], operator
+
+
+def test_catalog_asset_ids_drive_reverse_dependencies_without_import_inference():
+    namespace = runpy.run_path(str(SELECTOR))
+    assets = namespace["_load_catalog_assets"]()
+    by_ref = {asset.asset_ref: asset for asset in assets}
+    mapping = by_ref["scirel.geometry.axisymmetric-equilibrium-grid-mapping"]
+    graph = by_ref["scirel.geometry.axisymmetric-equilibrium-grid-support"]
+
+    assert mapping.asset_ref in graph.dependency_refs
+    assert graph in namespace["_dependent_assets"]({mapping}, assets)
+
+
+def test_legacy_graph_dependencies_are_canonicalized_to_documented_asset_ids(tmp_path):
+    namespace = runpy.run_path(str(SELECTOR))
+    catalog = tmp_path / "catalog"
+    catalog.mkdir()
+    documented_callables = (
+        "scirel.field.rectangular_coil_filaments.discretize_rectangular_coil",
+        "scirel.field.current_green_superposition.superpose_current_green_field",
+        "scirel.field.circular_filament_green.circular_filament_green_response",
+    )
+    for source in (ROOT / "catalog/examples").glob("*.json"):
+        document = json.loads(source.read_text(encoding="utf-8"))
+        public_callable = (
+            f"{document['public_api']['python']['module']}."
+            f"{document['public_api']['python']['symbol']}"
+        )
+        if public_callable in documented_callables:
+            (catalog / source.name).write_text(
+                json.dumps(document), encoding="utf-8"
+            )
+    namespace["_load_catalog_assets"].__globals__["CATALOG"] = catalog
+
+    assets = namespace["_load_assets"]()
+    by_callable = {asset.public_callable: asset for asset in assets}
+    graph = by_callable[
+        "scirel.field.multi_coil_vacuum_field.solve_multi_coil_vacuum_field"
+    ]
+    dependency = by_callable[documented_callables[0]]
+
+    assert dependency.asset_ref.startswith("scirel.")
+    assert dependency.asset_ref in graph.dependency_refs
+    assert graph in namespace["_dependent_assets"]({dependency}, assets)
+
+
+def test_current_asset_index_unions_legacy_samples_and_exact_documents():
+    namespace = runpy.run_path(str(SELECTOR))
+    assets = namespace["_load_assets"]()
+
+    assert len(assets) == 62
+    assert len({asset.public_callable for asset in assets}) == 62
+
+
+def test_catalog_asset_keeps_every_declared_direct_test(tmp_path):
+    document = json.loads(
+        (
+            ROOT
+            / "catalog/examples/scirel.geometry.complex-rectilinear-interpolation.json"
+        ).read_text(encoding="utf-8")
+    )
+    declared_tests = (
+        "tests/operator_contracts/test_complex_rectilinear_interpolation.py",
+        "tests/test_public_surface.py",
+    )
+    document["verification"]["tests"] = list(declared_tests)
+    (tmp_path / "asset.json").write_text(
+        json.dumps(document), encoding="utf-8"
+    )
+    namespace = runpy.run_path(str(SELECTOR))
+    namespace["_load_catalog_assets"].__globals__["CATALOG"] = tmp_path
+
+    assets = namespace["_load_catalog_assets"]()
+
+    assert assets[0].direct_tests == declared_tests
+
+
+def test_documented_task_graph_selects_only_its_own_direct_test():
+    result = select("src/scirel/geometry/axisymmetric_equilibrium_grid_support.py")
+
+    assert result["full_suite_required"] is False
+    assert result["affected_assets"] == [
+        "scirel.geometry.axisymmetric_equilibrium_grid_support."
+        "solve_axisymmetric_equilibrium_grid_mapping"
+    ]
+    assert result["test_paths"] == [
+        "tests/graph_contracts/axisymmetric_equilibrium_grid_support/"
+        "test_graph_axisymmetric_equilibrium_grid_support.py",
+        "tests/test_admitted_integrations.py",
+    ]
+
+
+def test_documented_diagnostics_operator_selects_its_own_direct_test():
+    result = select("src/scirel/diagnostics/species_absorption_fraction.py")
+
+    assert result["full_suite_required"] is False
+    assert result["affected_assets"] == [
+        "scirel.diagnostics.species_absorption_fraction."
+        "compute_species_absorption_fraction"
+    ]
+    assert result["test_paths"] == [
+        "tests/operator_contracts/test_species_absorption_fraction.py",
+        "tests/test_admitted_integrations.py",
+    ]
+
+
+def test_documented_asset_without_a_test_mapping_still_fails_closed():
+    """A SciRel source change outside both indexes must not be silently skipped."""
+    result = select("src/scirel/geometry/_undocumented_shared_module.py")
+
+    assert result["full_suite_required"] is True
+    assert result["test_paths"] == ["tests"]
+    assert "without an asset/test mapping" in result["full_suite_reasons"][0]

@@ -399,15 +399,46 @@ class ThinMcpAdapter:
         actual_signature = f"{python_api['symbol']}{signature}"
         if actual_signature != python_api["signature"]:
             _fail("callable_mismatch", f"runtime signature differs for {asset_id}")
-        self._validate_input_binding(asset_id, document["inputs"], signature)
+        self._validate_input_binding(asset_id, document, signature)
         return document, function, signature
 
     @staticmethod
+    def _uses_task_graph_input_mapping(
+        document: Mapping[str, Any], signature: inspect.Signature
+    ) -> bool:
+        if document.get("kind") != "task_graph":
+            return False
+        port_names = {port["name"] for port in document["inputs"]}
+        parameter = signature.parameters.get("inputs")
+        return parameter is not None and "inputs" not in port_names
+
+    @classmethod
     def _validate_input_binding(
+        cls,
         asset_id: str,
-        ports: Sequence[Mapping[str, Any]],
+        document: Mapping[str, Any],
         signature: inspect.Signature,
     ) -> None:
+        if cls._uses_task_graph_input_mapping(document, signature):
+            parameter = signature.parameters["inputs"]
+            if parameter.kind not in (
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                inspect.Parameter.KEYWORD_ONLY,
+            ):
+                _fail(
+                    "callable_mismatch",
+                    f"TaskGraph inputs mapping is not keyword-bindable for {asset_id}",
+                )
+            try:
+                signature.bind(inputs={})
+            except TypeError as error:
+                raise ThinMcpAdapterError(
+                    "callable_mismatch",
+                    f"TaskGraph inputs mapping cannot bind for {asset_id}: {error}",
+                ) from error
+            return
+
+        ports = document["inputs"]
         accepts_keywords = any(
             parameter.kind is inspect.Parameter.VAR_KEYWORD
             for parameter in signature.parameters.values()
@@ -499,7 +530,10 @@ class ThinMcpAdapter:
         if missing:
             _fail("invalid_arguments", f"missing required input arguments: {', '.join(missing)}")
         document, function, signature = self._resolve_callable(asset_id, document)
-        call_arguments = dict(arguments)
+        if self._uses_task_graph_input_mapping(document, signature):
+            call_arguments = {"inputs": dict(arguments)}
+        else:
+            call_arguments = dict(arguments)
         try:
             signature.bind(**call_arguments)
         except TypeError as error:

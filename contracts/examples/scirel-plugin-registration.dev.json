@@ -1,0 +1,45 @@
+{
+  "schema": "scirel.plugin-registration.dev",
+  "plugin_id": "scirel",
+  "plugin_release_ref": "plugin-release://scirel/0.1.0.dev5/example-20260920",
+  "skill_bundle": {
+    "artifact_ref": "artifact://scirel/skill-bundle/0.1.0.dev5/example-20260920",
+    "media_type": "application/vnd.agent-skills.bundle+zip",
+    "expected_upper_bound_bytes": 33554432,
+    "implicit_entrypoints": [
+      {
+        "name": "scientific-computation-asset-extraction",
+        "path": "skills/extraction/scientific-computation-asset-extraction/SKILL.md"
+      },
+      {
+        "name": "scirel-integration",
+        "path": "skills/integration/scirel-integration/SKILL.md"
+      },
+      {
+        "name": "scirel-solving",
+        "path": "skills/usage/scirel-solving/SKILL.md"
+      }
+    ]
+  },
+  "catalog": {
+    "artifact_ref": "artifact://scirel/catalog/0.1.0.dev5/example-20260920",
+    "media_type": "application/vnd.scirel.catalog-snapshot+zip",
+    "expected_upper_bound_bytes": 536870912,
+    "release_version": "0.1.0.dev5",
+    "root_digest": "sha256:1e6fb3b7b5d4f5390e1bd2cf759dffd078154934de4823972da164e2d75bc339"
+  },
+  "connector": {
+    "connector_id": "scirel.thin-mcp",
+    "protocol_family": "mcp",
+    "capability_refs": [
+      "catalog.discover",
+      "asset.read",
+      "callable.resolve",
+      "callable.invoke"
+    ],
+    "endpoint_ref": "connector-endpoint://scirel/default"
+  },
+  "runtime_dependency_refs": [
+    "runtime-dependency://python-distribution/scirel/0.1.0.dev5/example-20260920"
+  ]
+}

@@ -540,12 +540,21 @@ def load_document_set(directory: Path) -> list[dict[str, Any]]:
     return documents
 
 
-def validate_runtime(document: dict[str, Any], source_root: Path = ROOT) -> None:
+def validate_runtime(
+    document: dict[str, Any],
+    source_root: Path = ROOT,
+    *,
+    installed_runtime: bool = False,
+) -> None:
     python_api = document["public_api"]["python"]
     source_path = str(source_root / "src")
-    if source_path not in sys.path:
+    if not installed_runtime and source_path not in sys.path:
         sys.path.insert(0, source_path)
     module = importlib.import_module(python_api["module"])
+    if installed_runtime:
+        module_path = Path(module.__file__).resolve()
+        if module_path.is_relative_to((source_root / "src").resolve()):
+            _fail(document["asset_id"], "installed runtime resolved to the source checkout")
     function = getattr(module, python_api["symbol"], None)
     if not callable(function):
         _fail(document["asset_id"], "documented Python callable is unavailable")
@@ -590,12 +599,22 @@ def _validate_runtime_inputs(
             _fail(document["asset_id"], f"default differs for input: {name}")
 
 
-def execute_example(document: dict[str, Any], source_root: Path = ROOT) -> None:
+def execute_example(
+    document: dict[str, Any],
+    source_root: Path = ROOT,
+    *,
+    installed_runtime: bool = False,
+) -> None:
     environment = os.environ.copy()
-    environment["PYTHONPATH"] = str(source_root / "src")
+    command = [sys.executable, "-c", document["example"]["code"]]
+    if installed_runtime:
+        environment.pop("PYTHONPATH", None)
+        command.insert(1, "-I")
+    else:
+        environment["PYTHONPATH"] = str(source_root / "src")
     completed = subprocess.run(
-        [sys.executable, "-c", document["example"]["code"]],
-        cwd=source_root,
+        command,
+        cwd=Path.cwd() if installed_runtime else source_root,
         env=environment,
         capture_output=True,
         text=True,
@@ -612,15 +631,22 @@ def main() -> int:
     parser.add_argument("documents_dir", type=Path)
     parser.add_argument("--check-runtime", action="store_true")
     parser.add_argument("--execute-examples", action="store_true")
+    parser.add_argument("--installed-runtime", action="store_true")
     args = parser.parse_args()
+    if args.installed_runtime and not args.check_runtime:
+        parser.error("--installed-runtime requires --check-runtime")
     try:
         documents = load_document_set(args.documents_dir.resolve())
         if args.check_runtime:
             for document in documents:
-                validate_runtime(document)
+                validate_runtime(
+                    document, installed_runtime=args.installed_runtime
+                )
         if args.execute_examples:
             for document in documents:
-                execute_example(document)
+                execute_example(
+                    document, installed_runtime=args.installed_runtime
+                )
     except (AssetDocumentError, ImportError, AttributeError) as error:
         print(f"asset document validation failed: {error}", file=sys.stderr)
         return 1
@@ -631,6 +657,9 @@ def main() -> int:
                 "asset_count": len(documents),
                 "asset_ids": sorted(document["asset_id"] for document in documents),
                 "runtime_checked": args.check_runtime,
+                "runtime_origin": (
+                    "installed" if args.installed_runtime else "source"
+                ) if args.check_runtime else None,
                 "examples_executed": args.execute_examples,
             },
             ensure_ascii=False,

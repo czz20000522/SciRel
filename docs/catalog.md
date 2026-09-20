@@ -1,8 +1,8 @@
 # SciRel 规模化目录合同
 
-本文定义 SciRel 从当前 52 条资产扩展到数万 Operator、数千 TaskGraph 时的目录边界。catalog 服务发现、依赖分析和发行核对；它是从已选发行内容重建的索引，不拥有准入、科学身份或发布权威。
+本文定义 SciRel 从当前 62 条开发资产扩展到数万 Operator、数千 TaskGraph 时的目录边界。catalog 服务发现、依赖分析和发行核对；它是从已选发行内容重建的索引，不拥有准入、科学身份或发布权威。
 
-标准资产字段的权威需求见[标准化资产文档需求](requirements/asset-documentation.md)，catalog builder 与 MCP/CLI/云适配边界见[设计](design/catalog-and-adapters.md)。当前 `catalog/examples/` 是 4/52 的依赖闭合 pilot，不代表完整目录。
+标准资产字段的权威需求见[标准化资产文档需求](requirements/asset-documentation.md)，catalog builder 与 MCP/CLI/云适配边界见[设计](design/catalog-and-adapters.md)。当前 `catalog/examples/` 是 14/62 的依赖闭合 pilot，不代表完整目录。
 
 ## 设计目标
 
@@ -37,7 +37,7 @@ catalog/
 
 每个分片在 release manifest 中保存条目数、字节数和内容摘要。写入先进入新 staging，完成 schema、唯一性、引用闭包和摘要验证后再原子发布整个 snapshot；不得原地修改上一 release。
 
-同一 snapshot 的 `release_version` 必须等于其中每条 exact record 的 `version.implementation_version`。版本不一致不是可由 adapter 猜测修复的 metadata gap，而是 catalog 构建失败。wheel 文件摘要、admitted manifest digest 与 catalog root digest 由消费方作为一个发行绑定整体固定，但不逐项复制到资产文档。
+同一 snapshot 的 `release_version` 必须等于其中每条 exact record 的 `version.implementation_version`。版本不一致不是可由 adapter 猜测修复的 metadata gap，而是 catalog 构建失败。wheel 文件摘要、release manifest digest 与 catalog root digest 由消费方作为一个发行绑定整体固定，但不逐项复制到资产文档。
 
 ## 稳定身份与精确记录
 
@@ -104,6 +104,6 @@ catalog 不必进入 `import scirel` 的热路径。运行时按 public callable
 
 ## 当前迁移边界
 
-现有 `provenance/admitted-assets.json` 与 wheel `_admitted_manifest.json` 已提供公共 callable、准入 revision、依赖绑定和内容摘要，但不是完整 catalog。`scirel.asset-document.v1`、验证器和 route/summary/exact/reverse-dependency builder 已由 `catalog/examples/` 的依赖闭合 4 条 pilot 验证；该 pilot 的 coverage 必须保持 `partial: 4/52`。
+现有 `provenance/admitted-assets.json` 与 wheel `_admitted_manifest.json` 已提供 52 条历史开发样本的 callable、来源 revision、依赖绑定和内容摘要，但不是完整 catalog。`scirel.asset-document.v1`、验证器和 route/summary/exact/reverse-dependency builder 已由 `catalog/examples/` 的依赖闭合 14 条 pilot 验证；该 pilot 的 coverage 必须保持 `partial: 14/62`。
 
-下一阶段是逐项核对 TaskGraph YAML、科学测试和实现，把剩余 48 条资产迁移为 exact documents；不得批量按名称或源码猜测元数据。完整 52 条闭包稳定后，再测量分片字节、token、查询延迟和增量重建成本，并据此选择生产分片和索引策略。只有小批次及完整批次门禁都成立后才扩展到数万资产。
+下一阶段是逐项核对 TaskGraph YAML、科学测试和实现，把剩余 48 条资产补齐为 exact documents；不得批量按名称或源码猜测元数据。完整 62 条闭包稳定后，再测量分片字节、token、查询延迟和增量重建成本，并据此选择生产分片和索引策略。只有小批次及完整批次门禁都成立后才扩展到数万资产。

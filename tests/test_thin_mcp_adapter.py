@@ -27,7 +27,7 @@ def catalog(tmp_path):
         catalog_id="scirel-development-pilot",
         release_version="0.1.0.dev5",
         coverage_status="partial",
-        declared_total=52,
+        declared_total=62,
     )
     return output, result["root_digest"]
 
@@ -168,6 +168,55 @@ def test_callable_binding_and_invocation_are_document_driven(catalog):
     serialized = json.dumps(response, sort_keys=True)
     for forbidden in ("session_id", "project_id", "workbench_id", "admission_ref"):
         assert forbidden not in serialized
+
+
+def test_task_graph_document_ports_are_passed_through_the_inputs_mapping(
+    catalog, equilibrium, axes
+):
+    adapter = _adapter(catalog)
+    x_m, y_m, z_m, pec_mask = axes()
+
+    response = adapter.invoke(
+        "scirel.geometry.axisymmetric-equilibrium-grid-support",
+        {
+            "equilibrium": equilibrium(),
+            "x_m": x_m,
+            "y_m": y_m,
+            "z_m": z_m,
+            "xpoint_half_length_m": 0.2,
+            "pml_cells": 1,
+            "pec_mask": pec_mask,
+        },
+    )
+
+    assert response["result"]["magnetic_flux_density_t"]
+    assert response["result"]["material_support_mask"]
+    assert response["result"]["radially_clamped_point_count"] == 0
+
+
+def test_task_graph_inputs_mapping_rejects_an_unbound_required_parameter(catalog):
+    adapter = _adapter(catalog)
+    asset_id = "scirel.geometry.axisymmetric-equilibrium-grid-support"
+    document = adapter.read_assets([asset_id], detail="document")["items"][0]
+
+    def invalid_task_graph(inputs, required_dependency):
+        return inputs, required_dependency
+
+    document["public_api"]["python"] = {
+        "module": "scirel.invalid_task_graph",
+        "symbol": "invalid_task_graph",
+        "signature": "invalid_task_graph(inputs, required_dependency)",
+    }
+    module = mock.Mock(invalid_task_graph=invalid_task_graph)
+
+    with (
+        mock.patch.object(adapter, "_document", return_value=document),
+        mock.patch("scirel_adapter.mcp.importlib.import_module", return_value=module),
+        pytest.raises(ThinMcpAdapterError, match="inputs mapping cannot bind") as failure,
+    ):
+        adapter.resolve_callable(asset_id)
+
+    assert failure.value.code == "callable_mismatch"
 
 
 def test_optional_documented_default_can_be_omitted(catalog):

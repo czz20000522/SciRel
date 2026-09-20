@@ -73,13 +73,13 @@ pwsh ./scripts/check.ps1 -Mode affected -ChangedPath src/scirel/<domain>/<asset>
 pwsh ./scripts/check.ps1 -Mode affected -BaseRef <merge-base-or-release-ref>
 pwsh ./scripts/check.ps1 -Mode focused
 pwsh ./scripts/check.ps1 -Mode full
-pwsh ./scripts/check.ps1 -Mode release -OutputRoot build/verification/<new-run>
+pwsh ./scripts/check.ps1 -Mode release -WorkflowSnapshot <approved-workflow.json> -ReleaseId <release-id> -OutputRoot build/verification/<new-run>
 ```
 
 - `affected`：从显式路径、Git 工作区或 `base...HEAD` 计算影响闭包，输出机器可读选择报告后只运行所选测试；共享模块会自然扩大到其消费者，未知源码会转为 full。
 - `focused`：默认检查公共 surface、组合和准入绑定；也可通过 `-TestPath` 指定本次精确测试。
 - `full`：运行完整科学与工程测试。
-- `release`：先运行全套测试，再生成新的 admitted-only staging/wheel，并在不含源码 `PYTHONPATH` 的独立环境安装该 wheel、执行用户验收。
+- `release`：先验证输入是 approved workflow，再运行全套源码维护测试和 exact document 检查，从当前维护基线构建普通 wheel 与 catalog；随后在隔离环境中验证已安装 wheel 的文档示例、科学合同、公共 API 和用户验收，最后用实际摘要生成 release manifest 与 released workflow 快照。历史 admitted-only builder 不参与此路径。
 
 内循环默认运行 `affected`；正在编写失败回归时可用 `focused -TestPath` 只跑该断点。修复后重跑失败断点和受影响闭包，
 不因单个独立算子变化反复运行全仓。合并到共享基线前按影响与仓库策略运行 full，候选确定后再执行一次 release
@@ -89,7 +89,9 @@ pwsh ./scripts/check.ps1 -Mode release -OutputRoot build/verification/<new-run>
 依赖引用缺失或选择器无法解释源码归属时应阻断增量门禁；禁止用手写排除列表绕过。选择器自身的回归测试必须覆盖
 独立算子、直接图依赖、嵌套图依赖、共享模块扩散、包级公开导出、文档零测试和未知源码 fail-closed。
 
-`release` 的输出目录必须不存在，脚本不会覆盖或清理已有结果。其 venv 不继承 system site-packages，SciRel wheel 以 `--no-index --no-deps` 安装，并清空源码 `PYTHONPATH`；当前离线方式通过 `.pth` 暴露开发解释器中 NumPy/SciPy 所在目录，因此只证明 wheel 可在无源码环境配合这些已存在依赖运行，不证明未声明包完全不可见，也不等价于从干净离线 wheelhouse 安装全部依赖。正式发行还需从固定的离线 wheelhouse 安装声明依赖，并固定 Python 与构建工具版本；不同工具链下 wheel 字节摘要不同，即使内置内容 manifest 保持一致，也不能声称可复现构建。
+`release` 的输出目录必须不存在，脚本不会覆盖或清理已有结果。其 venv 不继承 system site-packages，SciRel wheel 以 `--no-index --no-deps` 安装，并清空源码 `PYTHONPATH`；当前离线方式通过 `.pth` 暴露开发解释器中 NumPy/SciPy/Pytest 所在开发 site-packages，因此只证明 wheel 可在不导入 SciRel 源码的环境配合这些已存在依赖运行，不证明未声明包完全不可见，也不等价于从干净离线 wheelhouse 安装全部依赖。正式发行还需从固定的离线 wheelhouse 安装声明依赖，并固定 Python 与构建工具版本；不同工具链下 wheel 字节摘要不同，不能仅凭相同源码声称 wheel 字节可复现。
+
+当前 catalog 为 `partial: 14/62` 开发 pilot。release manifest 只证明 approved draft 中的 exact documents 已与本次 catalog/wheel 绑定；它不会把 wheel 中未进入 catalog 的维护代码解释成已批准资产。正式首发前必须为全部可见发布资产完成 bootstrap/batch 审核与 exact documentation，并把 `.dev` schema 统一冻结为 `v1`。
 
 ## 6. 收尾与发行边界
 

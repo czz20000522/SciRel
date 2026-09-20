@@ -1,0 +1,6 @@
+interface:
+  display_name: "Scientific Asset Extraction"
+  short_description: "Extract source-traceable scientific L1 bundles"
+  default_prompt: "Use $scientific-computation-asset-extraction to extract this source project into a source-traceable L1 scientific asset bundle."
+policy:
+  allow_implicit_invocation: true

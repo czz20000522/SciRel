@@ -465,7 +465,7 @@ class SciRelWorkflow:
         catalog_digest: str,
         wheel_ref: str,
         wheel_digest: str,
-        release_version: str = "0.1.0.dev5",
+        release_version: str,
     ) -> ReleaseManifest:
         draft = self._require_draft()
         if self.status is not WorkflowStatus.APPROVED:

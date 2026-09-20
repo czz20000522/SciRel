@@ -694,7 +694,7 @@ class SciRelPlugin:
         wheel_ref: str,
         wheel_digest: str,
         correlation_id: str,
-        release_version: str = "0.1.0.dev5",
+        release_version: str,
     ) -> PluginReleaseResult:
         """Complete the SciRel release and persist its resumable state."""
 

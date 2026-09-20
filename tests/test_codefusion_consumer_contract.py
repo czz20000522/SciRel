@@ -1,38 +1,53 @@
+import json
 from pathlib import Path
-import re
 
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "docs" / "integration" / "codefusion-consumer-contract.md"
+PLUGIN_REGISTRATION = (
+    ROOT / "contracts" / "examples" / "scirel-plugin-registration.dev.json"
+)
 
 
-def test_consumer_contract_keeps_single_admission_shape_as_historical_fixture():
+def test_consumer_contract_retires_the_legacy_admission_flow():
     text = CONTRACT.read_text(encoding="utf-8")
 
-    assert "`codefusion.scirel-admitted-input.v1`" in text
-    for field in (
-        "`tenant_id`",
-        "`admission`",
-        "`owner_snapshot_ref`",
-        "`owner_snapshot_root_digest`",
-        "`dependency_bindings`",
-        "`scientific_contract_ref`",
-        "`files`",
-        "`gaps`",
-    ):
-        assert field in text
-    assert "old experimental path" in text
-    assert "only for reproducing the 52-asset development fixture" in text
-    assert "does not treat its decision fields as current approval" in text
-    assert "`owner_snapshot_digest`" not in text
-    assert re.search(r"\b[0-9a-f]{40}\b", text) is None
+    assert "codefusion.scirel-admitted-input.v1" not in text
+    assert "docs/domains/" not in text
+    assert "no legacy admission-flow compatibility before v1" in text
+    assert "No branch is retained for the retired CodeFusion-owned admission flow" in text
 
 
-def test_active_binding_uses_scirel_release_artifacts_not_admission_state():
+def test_active_binding_uses_one_pinned_scirel_plugin_release():
     text = CONTRACT.read_text(encoding="utf-8")
+    registration = json.loads(PLUGIN_REGISTRATION.read_text(encoding="utf-8"))
 
-    assert "SciRel `candidate_id`/candidate digest" in text
-    assert "the exact SciRel release manifest artifact and digest" in text
-    assert "wheel reference and SHA-256" in text
-    assert "CodeFusion consumes the released identities and bindings" in text
-    assert "without adding another SciRel admission state" in text
+    assert "plugin release reference" in text
+    assert "wheel artifact reference and digest" in text
+    assert "catalog artifact reference, release version, root digest" in text
+    assert registration["plugin_id"] == "scirel"
+    assert registration["skill_bundle"]["media_type"] == (
+        "application/vnd.agent-skills.bundle+zip"
+    )
+    assert registration["catalog"]["media_type"] == (
+        "application/vnd.scirel.catalog-snapshot+zip"
+    )
+    assert registration["connector"]["protocol_family"] == "mcp"
+    assert registration["connector"]["capability_refs"] == [
+        "catalog.discover",
+        "asset.read",
+        "callable.resolve",
+        "callable.invoke",
+    ]
+    assert all(
+        ref.startswith("runtime-dependency://")
+        for ref in registration["runtime_dependency_refs"]
+    )
+    entrypoints = registration["skill_bundle"]["implicit_entrypoints"]
+    assert {entry["name"] for entry in entrypoints} == {
+        "scientific-computation-asset-extraction",
+        "scirel-integration",
+        "scirel-solving",
+    }
+    for entry in entrypoints:
+        assert (ROOT / entry["path"]).is_file()

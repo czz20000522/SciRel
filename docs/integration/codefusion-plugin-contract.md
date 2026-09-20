@@ -28,6 +28,23 @@ JSON patch 或目录布局。
 SciRel 可提供 `scripts/build_l1_inventory.py`、affected-test selector 和资产文档 validator 作为
 可选工具。它们不是 Agent 调用协议，CodeFusion 无需调用或理解其输出。
 
+### Plugin registration
+
+开发期示例为
+[`contracts/examples/scirel-plugin-registration.dev.json`](../../contracts/examples/scirel-plugin-registration.dev.json)。
+CodeFusion 将 `plugin_release_ref`、skill bundle、catalog 和 runtime dependency refs 当作一次运行固定的
+opaque 引用。旧运行继续使用已固定 snapshot；更新或卸载只阻止新运行选择旧 release。
+
+bundle/catalog media type 分别为 `application/vnd.agent-skills.bundle+zip` 和
+`application/vnd.scirel.catalog-snapshot+zip`。connector 使用 `mcp` 协议族，只暴露
+`catalog.discover`、`asset.read`、`callable.resolve`、`callable.invoke` 四个 capability ref；认证、
+授权、transport、timeout、sandbox 和审计由宿主包裹。运行时依赖使用 version-locked opaque
+`runtime-dependency://...` 引用，SciRel 的 Python 模块布局不进入 CodeFusion 核心合同。
+
+开发期容量提示为 skill bundle 32 MiB、压缩 catalog snapshot 512 MiB。隐式入口仅有
+`scientific-computation-asset-extraction`、`scirel-integration` 和 `scirel-solving`；specialist skills
+从入口 skill 渐进加载。
+
 ## 确定性结果
 
 `AutomatedCheckResult` 只表达确定性检查及证据引用，并绑定被检查的 candidate/source。
