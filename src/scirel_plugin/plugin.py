@@ -19,11 +19,15 @@ from scirel_workflow.workflow import SciRelWorkflow
 
 from .contract import (
     ArtifactReference,
+    PluginConnectorDescriptor,
     PluginEventEnvelope,
     PluginRegistration,
+    PluginReleaseSnapshot,
     PluginRunResult,
     PluginRunSubmitEnvelope,
+    PluginSkillEntrypoint,
     PluginScope,
+    PluginViewDescriptor,
 )
 from .host import ArtifactRef, HostServices, JobRef, ReviewView
 from .adapter import (
@@ -78,19 +82,82 @@ class SciRelPlugin:
         self.host.register_plugin(self.registration())
 
     def registration(self) -> PluginRegistration:
+        skill_bundle_ref = "cf://artifact/scirel-skill-bundle-example-20260920"
         return PluginRegistration(
             plugin_id=self.plugin_id,
-            capabilities=(
-                "candidate_pipeline",
-                "automated_checks",
-                "standardization",
-                "expert_review",
-                "release",
+            release=PluginReleaseSnapshot(
+                plugin_release_ref=(
+                    "plugin-release://scirel/0.1.0.dev5/example-20260920"
+                ),
+                artifacts=(
+                    ArtifactReference(
+                        artifact_ref=skill_bundle_ref,
+                        digest="sha256:" + "1" * 64,
+                        media_type="application/vnd.agent-skills.bundle+zip",
+                    ),
+                    ArtifactReference(
+                        artifact_ref=(
+                            "cf://artifact/scirel-catalog-example-20260920"
+                        ),
+                        digest="sha256:" + "2" * 64,
+                        media_type="application/vnd.scirel.catalog-snapshot+zip",
+                    ),
+                ),
+                skill_entrypoints=(
+                    PluginSkillEntrypoint(
+                        name="scientific-computation-asset-extraction",
+                        artifact_ref=skill_bundle_ref,
+                        path=(
+                            "skills/extraction/"
+                            "scientific-computation-asset-extraction/SKILL.md"
+                        ),
+                    ),
+                    PluginSkillEntrypoint(
+                        name="scirel-integration",
+                        artifact_ref=skill_bundle_ref,
+                        path="skills/integration/scirel-integration/SKILL.md",
+                    ),
+                    PluginSkillEntrypoint(
+                        name="scirel-solving",
+                        artifact_ref=skill_bundle_ref,
+                        path="skills/usage/scirel-solving/SKILL.md",
+                    ),
+                ),
+                connectors=(
+                    PluginConnectorDescriptor(
+                        connector_id="scirel.thin-mcp",
+                        protocol_family="mcp",
+                        capability_refs=(
+                            "catalog.discover",
+                            "asset.read",
+                            "callable.resolve",
+                            "callable.invoke",
+                        ),
+                        endpoint_ref="connector-endpoint://scirel/default",
+                    ),
+                ),
+                runtime_dependency_refs=(
+                    "runtime-dependency://python-distribution/scirel/"
+                    "0.1.0.dev5/example-20260920",
+                ),
             ),
-            required_scopes=self.service_principal_scopes(),
-            ui_extensions=("scientific-asset-review",),
-            command_endpoint="plugin://scirel/commands",
-            event_endpoint="plugin://scirel/events",
+            capabilities=(
+                "plugin.dispatch",
+                "artifact.read",
+                "artifact.write",
+            ),
+            required_scopes=(
+                "plugin.dispatch",
+                "artifact.read",
+                "artifact.write",
+            ),
+            ui_extensions=("scirel.review",),
+            view_descriptors=(
+                PluginViewDescriptor(
+                    view_ref="scirel.review",
+                    open_operation="scirel.review.open_item",
+                ),
+            ),
         )
 
     def descriptor(self) -> dict[str, Any]:
@@ -98,12 +165,15 @@ class SciRelPlugin:
         return {
             "plugin_id": self.plugin_id,
             "contract": self.contract,
+            "release": registration.release.to_dict(),
             "capabilities": list(registration.capabilities),
             "required_scopes": list(registration.required_scopes),
             "service_principal_scopes": list(self.service_principal_scopes()),
             "ui_extensions": list(registration.ui_extensions),
-            "command_endpoint": registration.command_endpoint,
-            "event_endpoint": registration.event_endpoint,
+            "view_descriptors": [
+                descriptor.to_dict()
+                for descriptor in registration.view_descriptors
+            ],
             "operations": [
                 "scirel.import_l1",
                 "scirel.automated_check",
@@ -560,7 +630,7 @@ class SciRelPlugin:
         self.host.register_review_view(
             self.plugin_id,
             ReviewView(
-                view_id="scientific-asset-review",
+                view_id="scirel.review",
                 title="SciRel scientific asset review",
                 operations=(
                     "scirel.review.list_items",

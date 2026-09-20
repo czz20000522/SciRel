@@ -2,13 +2,17 @@
 
 from .contract import (
     ArtifactReference,
+    PluginConnectorDescriptor,
     PluginCommandEnvelope,
     PluginContractError,
     PluginEventEnvelope,
     PluginRegistration,
+    PluginReleaseSnapshot,
     PluginRunResult,
     PluginRunSubmitEnvelope,
+    PluginSkillEntrypoint,
     PluginScope,
+    PluginViewDescriptor,
 )
 from .host import ArtifactRef, FakeHost, HostServices, JobRef, ReviewView
 from .plugin import PluginReleaseResult, PluginReviewResult, SciRelPlugin
@@ -34,6 +38,7 @@ from scirel_workflow import AutomatedCheckResult
 __all__ = [
     "ArtifactReference",
     "ArtifactRef",
+    "PluginConnectorDescriptor",
     "FakeHost",
     "HostServices",
     "JobRef",
@@ -41,9 +46,12 @@ __all__ = [
     "PluginContractError",
     "PluginEventEnvelope",
     "PluginRegistration",
+    "PluginReleaseSnapshot",
     "PluginRunResult",
     "PluginRunSubmitEnvelope",
+    "PluginSkillEntrypoint",
     "PluginScope",
+    "PluginViewDescriptor",
     "ReviewView",
     "PluginReviewResult",
     "PluginReleaseResult",

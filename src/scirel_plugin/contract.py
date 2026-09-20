@@ -11,7 +11,7 @@ class PluginContractError(ValueError):
     """Raised when a host envelope does not satisfy the public contract."""
 
 
-_SHA256 = re.compile(r"^sha256:[0-9a-fA-F]{64}$")
+_SHA256 = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 
 def _required(value: str, field: str) -> str:
@@ -27,36 +27,177 @@ def _names(values: tuple[str, ...], field: str) -> tuple[str, ...]:
 
 
 @dataclass(frozen=True)
+class PluginSkillEntrypoint:
+    name: str
+    artifact_ref: str
+    path: str
+
+    def validate(self) -> None:
+        _required(self.name, "skill_entrypoint.name")
+        _required(self.artifact_ref, "skill_entrypoint.artifact_ref")
+        _required(self.path, "skill_entrypoint.path")
+        if (
+            self.path.startswith(("/", "\\"))
+            or "\\" in self.path
+            or any(ord(character) < 32 for character in self.path)
+            or any(segment in {"", ".", ".."} for segment in self.path.split("/"))
+        ):
+            raise PluginContractError(
+                "skill_entrypoint.path must be a portable relative path without traversal"
+            )
+
+    def to_dict(self) -> dict[str, str]:
+        self.validate()
+        return {
+            "name": self.name,
+            "artifact_ref": self.artifact_ref,
+            "path": self.path,
+        }
+
+
+@dataclass(frozen=True)
+class PluginConnectorDescriptor:
+    connector_id: str
+    protocol_family: str
+    capability_refs: tuple[str, ...]
+    endpoint_ref: str
+
+    def validate(self) -> None:
+        _required(self.connector_id, "connector_id")
+        _required(self.protocol_family, "protocol_family")
+        _names(self.capability_refs, "connector.capability_refs")
+        _required(self.endpoint_ref, "connector.endpoint_ref")
+
+    def to_dict(self) -> dict[str, Any]:
+        self.validate()
+        return {
+            "connector_id": self.connector_id,
+            "protocol_family": self.protocol_family,
+            "capability_refs": list(self.capability_refs),
+            "endpoint_ref": self.endpoint_ref,
+        }
+
+
+@dataclass(frozen=True)
+class PluginReleaseSnapshot:
+    plugin_release_ref: str
+    artifacts: tuple[ArtifactReference, ...]
+    skill_entrypoints: tuple[PluginSkillEntrypoint, ...]
+    connectors: tuple[PluginConnectorDescriptor, ...]
+    runtime_dependency_refs: tuple[str, ...]
+
+    def validate(self) -> None:
+        _required(self.plugin_release_ref, "plugin_release_ref")
+        if self.plugin_release_ref != self.plugin_release_ref.strip():
+            raise PluginContractError(
+                "plugin_release_ref must not contain surrounding whitespace"
+            )
+        for artifact in self.artifacts:
+            artifact.validate()
+        artifact_refs = [artifact.artifact_ref for artifact in self.artifacts]
+        if len(artifact_refs) != len(set(artifact_refs)):
+            raise PluginContractError(
+                "release artifact refs must be unique within a plugin release"
+            )
+        skill_names = []
+        for entrypoint in self.skill_entrypoints:
+            entrypoint.validate()
+            if entrypoint.artifact_ref not in artifact_refs:
+                raise PluginContractError(
+                    "skill entrypoint must reference a declared release artifact"
+                )
+            skill_names.append(entrypoint.name)
+        if len(skill_names) != len(set(skill_names)):
+            raise PluginContractError(
+                "skill entrypoint names must be unique within a plugin release"
+            )
+        connector_ids = []
+        for connector in self.connectors:
+            connector.validate()
+            connector_ids.append(connector.connector_id)
+        if len(connector_ids) != len(set(connector_ids)):
+            raise PluginContractError(
+                "connector ids must be unique within a plugin release"
+            )
+        _names(self.runtime_dependency_refs, "release.runtime_dependency_refs")
+        if len(self.runtime_dependency_refs) != len(set(self.runtime_dependency_refs)):
+            raise PluginContractError(
+                "runtime dependency refs must be unique within a plugin release"
+            )
+        if any(ref != ref.strip() for ref in self.runtime_dependency_refs):
+            raise PluginContractError(
+                "runtime dependency refs must not contain surrounding whitespace"
+            )
+
+    def to_dict(self) -> dict[str, Any]:
+        self.validate()
+        return {
+            "plugin_release_ref": self.plugin_release_ref,
+            "artifacts": [artifact.to_dict() for artifact in self.artifacts],
+            "skill_entrypoints": [
+                entrypoint.to_dict() for entrypoint in self.skill_entrypoints
+            ],
+            "connectors": [connector.to_dict() for connector in self.connectors],
+            "runtime_dependency_refs": list(self.runtime_dependency_refs),
+        }
+
+
+@dataclass(frozen=True)
+class PluginViewDescriptor:
+    view_ref: str
+    open_operation: str
+
+    def validate(self) -> None:
+        _required(self.view_ref, "view_ref")
+        _required(self.open_operation, "open_operation")
+
+    def to_dict(self) -> dict[str, str]:
+        self.validate()
+        return {
+            "view_ref": self.view_ref,
+            "open_operation": self.open_operation,
+        }
+
+
+@dataclass(frozen=True)
 class PluginRegistration:
     plugin_id: str
+    release: PluginReleaseSnapshot
     capabilities: tuple[str, ...]
     required_scopes: tuple[str, ...]
     ui_extensions: tuple[str, ...]
-    command_endpoint: str = ""
-    event_endpoint: str = ""
+    view_descriptors: tuple[PluginViewDescriptor, ...] = ()
 
     def validate(self) -> None:
         _required(self.plugin_id, "plugin_id")
+        self.release.validate()
         _names(self.capabilities, "capabilities")
         _names(self.required_scopes, "required_scopes")
         _names(self.ui_extensions, "ui_extensions")
-        if self.command_endpoint:
-            _required(self.command_endpoint, "command_endpoint")
-        if self.event_endpoint:
-            _required(self.event_endpoint, "event_endpoint")
+        view_refs = []
+        for descriptor in self.view_descriptors:
+            descriptor.validate()
+            if descriptor.view_ref not in self.ui_extensions:
+                raise PluginContractError(
+                    "view descriptor must reference a declared UI extension"
+                )
+            view_refs.append(descriptor.view_ref)
+        if len(view_refs) != len(set(view_refs)):
+            raise PluginContractError("view descriptor refs must be unique")
 
     def to_dict(self) -> dict[str, Any]:
         self.validate()
         payload = {
             "plugin_id": self.plugin_id,
+            "release": self.release.to_dict(),
             "capabilities": list(self.capabilities),
             "required_scopes": list(self.required_scopes),
             "ui_extensions": list(self.ui_extensions),
         }
-        if self.command_endpoint:
-            payload["command_endpoint"] = self.command_endpoint
-        if self.event_endpoint:
-            payload["event_endpoint"] = self.event_endpoint
+        if self.view_descriptors:
+            payload["view_descriptors"] = [
+                descriptor.to_dict() for descriptor in self.view_descriptors
+            ]
         return payload
 
 
@@ -167,6 +308,7 @@ class PluginRunResult:
     """Platform run receipt returned by CodeFusion."""
 
     run_id: str
+    plugin_release_ref: str
     attempt_no: int
     status: str
     failure_class: str | None
@@ -179,6 +321,7 @@ class PluginRunResult:
             raise PluginContractError("run result must be an object")
         required = {
             "run_id",
+            "plugin_release_ref",
             "attempt_no",
             "status",
             "failure_class",
@@ -211,6 +354,9 @@ class PluginRunResult:
             )
         result = cls(
             run_id=_required(payload["run_id"], "run_id"),
+            plugin_release_ref=_required(
+                payload["plugin_release_ref"], "plugin_release_ref"
+            ),
             attempt_no=payload["attempt_no"],
             status=_required(payload["status"], "status"),
             failure_class=payload["failure_class"],
@@ -222,10 +368,17 @@ class PluginRunResult:
 
     def validate(self) -> None:
         _required(self.run_id, "run_id")
+        _required(self.plugin_release_ref, "plugin_release_ref")
         if not isinstance(self.attempt_no, int) or self.attempt_no < 1:
             raise PluginContractError("attempt_no must be a positive integer")
-        if self.status not in {"running", "completed", "failed"}:
+        if self.status not in {"running", "completed", "failed", "result_unknown"}:
             raise PluginContractError("unsupported run status")
+        if self.status == "result_unknown" and (
+            self.failure_class is not None or self.result_artifact_refs
+        ):
+            raise PluginContractError(
+                "result_unknown cannot claim a failure or result artifact"
+            )
         if self.status == "failed" and not self.failure_class:
             raise PluginContractError("failed run must include failure_class")
         if self.status != "failed" and self.failure_class is not None:
@@ -239,6 +392,7 @@ class PluginRunResult:
         self.validate()
         return {
             "run_id": self.run_id,
+            "plugin_release_ref": self.plugin_release_ref,
             "attempt_no": self.attempt_no,
             "status": self.status,
             "failure_class": self.failure_class,

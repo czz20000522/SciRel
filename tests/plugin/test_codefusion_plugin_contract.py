@@ -42,6 +42,9 @@ from scirel_workflow import (
 )
 
 
+PLUGIN_RELEASE_REF = "plugin-release://scirel/0.1.0.dev5/example-20260920"
+
+
 def candidate() -> CandidatePackage:
     return CandidatePackage.from_l1(
         {"assets": [{"candidate_asset_id": "candidate-field"}], "automated_checks": [{"name": "replay", "status": "passed"}]},
@@ -647,7 +650,7 @@ def test_plugin_publishes_draft_and_registers_scientific_review_view():
     artifact = plugin.publish_draft(draft)
 
     assert artifact.kind == "scirel.standardized-draft.dev"
-    view = host.review_views["scirel:scientific-asset-review"]
+    view = host.review_views["scirel:scirel.review"]
     assert view.operations == (
         "scirel.review.list_items",
         "scirel.review.open_item",
@@ -965,6 +968,7 @@ def test_completed_run_imports_one_result_artifact_and_platform_failure_stays_pl
         original,
         PluginRunResult(
             run_id="run-host-1",
+            plugin_release_ref=PLUGIN_RELEASE_REF,
             attempt_no=1,
             status="completed",
             failure_class=None,
@@ -980,6 +984,7 @@ def test_completed_run_imports_one_result_artifact_and_platform_failure_stays_pl
         workflow,
         PluginRunResult(
             run_id="run-host-workflow",
+            plugin_release_ref=PLUGIN_RELEASE_REF,
             attempt_no=1,
             status="completed",
             failure_class=None,
@@ -996,6 +1001,7 @@ def test_completed_run_imports_one_result_artifact_and_platform_failure_stays_pl
         workflow,
         PluginRunResult(
             run_id="run-host-workflow-replay",
+            plugin_release_ref=PLUGIN_RELEASE_REF,
             attempt_no=2,
             status="completed",
             failure_class=None,
@@ -1013,6 +1019,7 @@ def test_completed_run_imports_one_result_artifact_and_platform_failure_stays_pl
             SciRelWorkflow(original),
             PluginRunResult(
                 run_id="run-host-wrong-media",
+                plugin_release_ref=PLUGIN_RELEASE_REF,
                 attempt_no=1,
                 status="completed",
                 failure_class=None,
@@ -1028,6 +1035,7 @@ def test_completed_run_imports_one_result_artifact_and_platform_failure_stays_pl
             original,
             PluginRunResult(
                 run_id="run-host-tampered",
+                plugin_release_ref=PLUGIN_RELEASE_REF,
                 attempt_no=1,
                 status="completed",
                 failure_class=None,
@@ -1042,6 +1050,7 @@ def test_completed_run_imports_one_result_artifact_and_platform_failure_stays_pl
             original,
             PluginRunResult(
                 run_id="run-host-2",
+                plugin_release_ref=PLUGIN_RELEASE_REF,
                 attempt_no=1,
                 status="failed",
                 failure_class="runner_unavailable",
@@ -1054,6 +1063,7 @@ def test_codefusion_run_result_wire_mapping_accepts_completed_receipt():
     result = PluginRunResult.from_mapping(
         {
             "run_id": "run_wire-1",
+            "plugin_release_ref": PLUGIN_RELEASE_REF,
             "attempt_no": 1,
             "status": "completed",
             "failure_class": None,
@@ -1068,8 +1078,22 @@ def test_codefusion_run_result_wire_mapping_accepts_completed_receipt():
         }
     )
 
+    assert result.to_dict()["plugin_release_ref"] == PLUGIN_RELEASE_REF
     assert result.to_dict()["status"] == "completed"
     assert result.result_artifact_refs[0].artifact_ref == "cf://artifact/result"
+
+    unknown = PluginRunResult.from_mapping(
+        {
+            "run_id": "run_wire-unknown",
+            "plugin_release_ref": PLUGIN_RELEASE_REF,
+            "attempt_no": 1,
+            "status": "result_unknown",
+            "failure_class": None,
+            "result_artifact_refs": [],
+            "replayed": True,
+        }
+    )
+    assert unknown.to_dict()["status"] == "result_unknown"
 
 
 def test_registration_maps_codefusion_host_fields():
@@ -1077,21 +1101,14 @@ def test_registration_maps_codefusion_host_fields():
 
     registration = plugin.registration()
     registration.validate()
-    assert registration.to_dict() == {
-        "plugin_id": "scirel",
-        "capabilities": [
-            "candidate_pipeline",
-            "automated_checks",
-            "standardization",
-            "expert_review",
-            "release",
-        ],
-        "required_scopes": ["artifact.read", "artifact.write", "job.submit"],
-        "ui_extensions": ["scientific-asset-review"],
-        "command_endpoint": "plugin://scirel/commands",
-        "event_endpoint": "plugin://scirel/events",
-    }
-    assert plugin.descriptor()["ui_extensions"] == ["scientific-asset-review"]
+    expected = json.loads(
+        (
+            Path(__file__).parents[2]
+            / "contracts/examples/scirel-plugin-registration.dev.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert registration.to_dict() == expected
+    assert plugin.descriptor()["ui_extensions"] == ["scirel.review"]
     assert tuple(plugin.descriptor()["service_principal_scopes"]) == SERVICE_PRINCIPAL_SCOPES
 
 

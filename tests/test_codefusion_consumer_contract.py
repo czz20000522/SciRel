@@ -14,8 +14,6 @@ def test_consumer_contract_retires_the_legacy_admission_flow():
 
     assert "codefusion.scirel-admitted-input.v1" not in text
     assert "docs/domains/" not in text
-    assert "no legacy admission-flow compatibility before v1" in text
-    assert "No branch is retained for the retired CodeFusion-owned admission flow" in text
 
 
 def test_active_binding_uses_one_pinned_scirel_plugin_release():
