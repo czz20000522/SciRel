@@ -448,6 +448,8 @@ class SciRelPlugin:
             else PluginRunResult.from_mapping(run_result)
         )
         result.validate()
+        if result.plugin_release_ref != self._release_snapshot.plugin_release_ref:
+            raise ValueError("platform run release does not match plugin release")
         if result.status != "completed":
             raise ValueError(
                 "platform run did not complete: "

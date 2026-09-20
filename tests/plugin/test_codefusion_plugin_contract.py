@@ -1059,6 +1059,19 @@ def test_completed_run_imports_one_result_artifact_and_platform_failure_stays_pl
             ),
         )
 
+    with pytest.raises(ValueError, match="release does not match"):
+        plugin.import_automated_result_from_run(
+            original,
+            PluginRunResult(
+                run_id="run-host-other-release",
+                plugin_release_ref="plugin-release://scirel/other",
+                attempt_no=1,
+                status="completed",
+                failure_class=None,
+                result_artifact_refs=(),
+            ),
+        )
+
 
 def test_codefusion_run_result_wire_mapping_accepts_completed_receipt():
     result = PluginRunResult.from_mapping(
