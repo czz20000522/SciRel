@@ -13,9 +13,15 @@ does not need SciRel-specific database tables or scientific state in its kernel.
 
 The host selects one fixed plugin registration for each run. The development example is
 [`contracts/examples/scirel-plugin-registration.dev.json`](../../contracts/examples/scirel-plugin-registration.dev.json).
-It carries an opaque plugin release ref, skill bundle ref, catalog ref, optional connector descriptor, and versioned
-runtime dependency refs. Updating or uninstalling the plugin affects new runs only; an active run keeps its selected
-snapshot.
+Its neutral `release` object carries an opaque plugin release ref, ArtifactReferences for the skill bundle and catalog,
+portable skill entrypoint locators, an optional connector descriptor, and versioned runtime dependency refs. Updating
+or uninstalling the plugin affects new runs only; an active run keeps its selected snapshot. The example artifact refs
+and digests are placeholders for the wire shape, not upload or release evidence; a real registration uses identities
+issued by the host ArtifactOwner.
+
+Release metadata is not execution authority. A connector descriptor does not establish a trusted endpoint, a declared
+capability does not grant it, and a skill entrypoint does not request implicit loading. The host resolves each reference
+through its owning registry and applies the current permission policy before exposing it to a run.
 
 ## Release binding
 

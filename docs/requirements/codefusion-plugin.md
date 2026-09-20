@@ -37,21 +37,27 @@ CodeFusion 不需要新增 SciRel 专属数据库表、task/projection/finalize/
 
 CodeFusion 对 SciRel 的安装/更新只需要理解以下中性引用：
 
-- 固定的 `plugin_id=scirel` 和不可变 `plugin_release_ref`；
-- skill bundle ArtifactReference，media type 为 `application/vnd.agent-skills.bundle+zip`；
+- 固定的 `plugin_id=scirel` 和 registration `release` 中的不可变 `plugin_release_ref`；
+- `release.artifacts` 中的 skill bundle ArtifactReference，media type 为
+  `application/vnd.agent-skills.bundle+zip`；
 - 与运行时版本一致的本地 catalog ArtifactReference，media type 为
   `application/vnd.scirel.catalog-snapshot+zip`；
-- 可选 connector descriptor，仅声明协议族、通用 capability refs 和 endpoint ref；
-- 版本锁定的 opaque `runtime_dependency_refs`。
+- `release.skill_entrypoints` 中绑定到 skill bundle artifact 的可移植相对路径；
+- 可选 `release.connectors` descriptor，仅声明协议族、通用 capability refs 和 endpoint ref；
+- 版本锁定的 opaque `release.runtime_dependency_refs`。
 
 运行开始时固定这一组引用；插件更新或卸载只影响新运行，不改变进行中的 turn。宿主不解析 bundle
 内的科学正文，也不从 catalog HTML 页面抓取机器合同。开发期登记样例见
 [`contracts/examples/scirel-plugin-registration.dev.json`](../../contracts/examples/scirel-plugin-registration.dev.json)。
 
-初始消费容量按 skill bundle 32 MiB、压缩 catalog snapshot 512 MiB 预留。它们是便于宿主实现的
-开发期上界，不是永久科学规则；有真实 release 证据后可以调整。默认允许隐式触发的入口只有：
-`scientific-computation-asset-extraction`、`scirel-integration` 和 `scirel-solving`。其余 specialist
-skills 由入口按需加载，避免把全部科学方法和资产合同送入基础上下文。
+初始消费容量按 skill bundle 32 MiB、压缩 catalog snapshot 512 MiB 预留。它们是宿主安装策略，
+不进入 registration wire contract，也不是永久科学规则；有真实 release 证据后可以调整。SciRel release
+声明的三个主入口是 `scientific-computation-asset-extraction`、`scirel-integration` 和 `scirel-solving`。
+registration 不携带 `implicit` 标志；是否自动选择入口由宿主的 application intent、skill owner policy 和
+kernel grant 决定。其余 specialist skills 由入口按需加载，避免把全部科学方法和资产合同送入基础上下文。
+
+开发样例中的 `cf://artifact/...` 与 digest 是 wire-shape 占位。真实登记必须先由 CodeFusion ArtifactOwner
+接收 release 产物，再替换为 owner 签发且与正文一致的 ref/digest；样例本身不是发布或上传证据。
 
 ## 确定性门禁
 

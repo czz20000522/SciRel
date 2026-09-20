@@ -10,9 +10,6 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 EXAMPLES = ROOT / "catalog" / "examples"
-PLUGIN_REGISTRATION = (
-    ROOT / "contracts" / "examples" / "scirel-plugin-registration.dev.json"
-)
 sys.path.insert(0, str(SCRIPTS))
 
 from build_catalog import build_catalog  # noqa: E402
@@ -237,9 +234,6 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
     second_result = build_catalog(EXAMPLES, second, **arguments)
 
     assert first_result["root_digest"] == second_result["root_digest"]
-    registration = json.loads(PLUGIN_REGISTRATION.read_text(encoding="utf-8"))
-    assert registration["catalog"]["release_version"] == arguments["release_version"]
-    assert registration["catalog"]["root_digest"] == first_result["root_digest"]
     first_files = {
         path.relative_to(first).as_posix(): path.read_bytes()
         for path in first.rglob("*")

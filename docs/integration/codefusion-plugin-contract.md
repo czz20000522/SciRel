@@ -32,8 +32,10 @@ SciRel 可提供 `scripts/build_l1_inventory.py`、affected-test selector 和资
 
 开发期示例为
 [`contracts/examples/scirel-plugin-registration.dev.json`](../../contracts/examples/scirel-plugin-registration.dev.json)。
-CodeFusion 将 `plugin_release_ref`、skill bundle、catalog 和 runtime dependency refs 当作一次运行固定的
-opaque 引用。旧运行继续使用已固定 snapshot；更新或卸载只阻止新运行选择旧 release。
+它直接使用 CodeFusion 中性的 `PluginRegistration` wire shape：`release` 包含 `plugin_release_ref`、
+ArtifactReference、skill entrypoint、connector descriptor 与 runtime dependency refs；外层只声明通用
+capability、scope 和 UI extension。CodeFusion 把完整 release 当作一次运行固定的 opaque snapshot。旧运行
+继续使用已固定 snapshot；更新或卸载只阻止新运行选择旧 release。
 
 bundle/catalog media type 分别为 `application/vnd.agent-skills.bundle+zip` 和
 `application/vnd.scirel.catalog-snapshot+zip`。connector 使用 `mcp` 协议族，只暴露
@@ -41,9 +43,10 @@ bundle/catalog media type 分别为 `application/vnd.agent-skills.bundle+zip` �
 授权、transport、timeout、sandbox 和审计由宿主包裹。运行时依赖使用 version-locked opaque
 `runtime-dependency://...` 引用，SciRel 的 Python 模块布局不进入 CodeFusion 核心合同。
 
-开发期容量提示为 skill bundle 32 MiB、压缩 catalog snapshot 512 MiB。隐式入口仅有
-`scientific-computation-asset-extraction`、`scirel-integration` 和 `scirel-solving`；specialist skills
-从入口 skill 渐进加载。
+开发期容量提示为 skill bundle 32 MiB、压缩 catalog snapshot 512 MiB；它属于宿主安装 policy，不进入
+registration。release 声明 `scientific-computation-asset-extraction`、`scirel-integration` 和
+`scirel-solving` 三个主入口，但不能自行要求隐式加载；宿主选择后，specialist skills 再从入口 skill 渐进加载。
+样例 artifact ref/digest 只是 wire-shape 占位，真实联调必须使用 ArtifactOwner 签发的身份。
 
 ## 确定性结果
 
