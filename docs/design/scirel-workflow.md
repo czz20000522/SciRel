@@ -16,7 +16,7 @@ workflow 只记录其结果，并执行可确定验证的状态、摘要、文�
 
 候选生成进程在提交 draft 后结束。工作台随后独立承载人工审核；当前 `approved` 是逐项结论，不能把含其他未认可科学增量的开发版本整体标可信，不要求原模型会话继续存活。
 
-待审版从确切开发提交冻结 Git tree、exact documents 集合、相对上一可信版的累积科学差异、受影响反向依赖及证据；内部 wheel/catalog 若已构建也绑定其摘要。初次审核没有可信基线时明确首次审核集合。未变证据只在实现、合同、依赖和适用环境均未变化时复用。部分认可应在隔离开发版剔除或返工未认可内容，重验受影响闭包并冻结 successor；不可在原快照上只改批准标签。这个版本级流程是待实现设计，不对应当前 `WorkflowStatus` 的新增状态。
+待审版从确切开发提交冻结 Git tree、exact documents 集合、相对上一可信版的累积科学差异、受影响反向依赖及证据；内部 wheel/catalog 若已构建也绑定其摘要。初次审核没有可信基线时明确首次审核集合。未变证据只在实现、合同、依赖和适用环境均未变化时复用。部分认可应在隔离开发版剔除或返工未认可内容，重验受影响闭包并冻结 successor；不可在原快照上只改批准标签。`scripts/freeze_review_version.py` 已实现首次开发快照的确定性绑定，输出 `pending_unapproved`，不做科学差异推断；专家认可、可信晋级和发行绑定仍待实现，不对应当前 `WorkflowStatus` 的新增状态。
 
 工作流还可以通过 `SciRelWorkflow.to_dict()` 生成
 `scirel.workflow-state.dev` 快照，并用 `SciRelWorkflow.from_dict()` 恢复。
