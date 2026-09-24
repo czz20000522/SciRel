@@ -165,11 +165,11 @@ outputs:
   required: true
   constraints: True 仅表示优化器返回成功且最佳嵌套 equilibrium 的 converged 为 True；本图不额外施加 residual <= tol
 - name: equilibrium
-  meaning: 只读平衡状态 mapping
-  shape: mapping
+  meaning: 最佳 trial 平衡状态；惩罚路径可为空
+  shape: mapping_or_null
   units: mixed
   required: true
-  constraints: fields on caller [N_Z,N_R] grid
+  constraints: 非空时由调用方求解器在 [N_Z,N_R] 网格上定义；惩罚路径返回 null
 - name: evaluation_log
   meaning: 有序 LHS/optimizer 评估记录
   shape: '[N_eval]'
@@ -222,8 +222,9 @@ nodes:
   outputs: [residual_reducer]
 - id: trial_evaluator_port
   name: 单次参数试探绑定
-  kind: controlled_glue
-  callable: glue:_evaluate_trial
+  kind: scientific_operator
+  callable: scirel.inference.anisotropic_trial_evaluation::evaluate_anisotropic_trial
+  asset_ref: scirel.inference.anisotropic_trial_evaluation
   inputs: [params, observations, solver_config, equilibrium_solver, diagnostic_evaluator, residual_reducer]
   outputs: [trial_evaluator]
 - id: direct_optimizer

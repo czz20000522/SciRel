@@ -50,7 +50,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.equilibrium.axisymmetric_picard_update", "symbol": "update_axisymmetric_picard_flux", "signature": "update_axisymmetric_picard_flux(r_grid, z_grid, j_phi, psi_state, psi_vac, g_psi, relax, previous_cell_currents=None)"}},
-  "version": {"implementation_version": "0.1.0.dev10", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev11", "dependencies": []},
   "example": {
     "description": "A diagonal unit Green response and constant current on a three-by-three grid reveal the cell area and flux-relaxation order.",
     "code": "import numpy as np\nfrom scirel.equilibrium import update_axisymmetric_picard_flux\nr_grid, z_grid = np.meshgrid([0.0, 0.5, 1.0], [-0.5, 0.0, 0.5])\nresult = update_axisymmetric_picard_flux(r_grid, z_grid, np.ones((3,3)), np.zeros((3,3)), np.ones((3,3)), np.eye(9), 0.25)\nnp.testing.assert_allclose(result['plasma_cell_currents'], 0.25)\nnp.testing.assert_allclose(result['psi_next'], 0.9375)\nassert result['relative_current_change'] == 0.75",

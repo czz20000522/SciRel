@@ -1,0 +1,72 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.equilibrium.anisotropic-picard-feedback",
+  "kind": "operator",
+  "title": {"en":"Cell-current Picard relaxation and Green feedback","zh":"单元电流 Picard 松弛与 Green 反馈"},
+  "summary": "Mask a toroidal current-density grid, convert it to cell currents, relax those currents against the previous state and project flux and optional field responses through dense Green matrices.",
+  "taxonomy": ["equilibrium", "anisotropic-pressure", "picard", "green-response"],
+  "aliases": ["anisotropic Picard current feedback"],
+  "identity": {
+    "relation": "toroidal current density and prior cell-current state to relaxed Green-response flux and poloidal field",
+    "direction": "j_phi, R-Z grid, mask, old currents, relaxation, Green matrices and vacuum state -> new psi, BR, BZ and current state",
+    "definition": "For a uniform tensor-product grid, set inactive j_phi cells to zero, flatten in C order, multiply by absolute dR*dZ to obtain raw cell currents, and form I=(1-relax)*I_raw+relax*I_old. Then psi=psi_vac+G_psi@I. If both field Green matrices are supplied, BR=br_vac+G_br@I and BZ=bz_vac+G_bz@I; otherwise the vacuum field components are returned unchanged.",
+    "model": "one explicit cell-current Picard feedback step using caller-provided dense linear Green responses",
+    "geometry": "uniform tensor-product R-Z grid with at least two samples on each axis; axes may increase or decrease",
+    "coordinates": "all fields indexed [Z,R], and Green rows/columns use C-order flattened grid points and source cells",
+    "boundary": "No wall or free-boundary condition is solved here; supplied vacuum fields are the additive reference state.",
+    "assumptions": ["j_phi has units A/m^2 and a cell is represented by the positive area abs(dR*dZ).", "The caller's Green matrices match the declared cell-current ordering and SI response units.", "relax weights the previous cell-current state, not the previous flux."]
+  },
+  "inputs": [
+    {"name":"j_phi","description":"Toroidal current density before optional plasma clipping.","units":"A/m^2","shape":"[N_Z,N_R]","dtype":"finite real array-like","required":true,"constraints":"Same shape as the grid; inactive cells become zero when a mask is supplied."},
+    {"name":"r_grid","description":"Radius tensor grid.","units":"m","shape":"[N_Z,N_R]","dtype":"finite real array-like","required":true,"constraints":"At least two points per axis, rows repeat one uniform nonzero radial axis within the implementation tolerances; descending axes are allowed."},
+    {"name":"z_grid","description":"Axial tensor grid.","units":"m","shape":"[N_Z,N_R]","dtype":"finite real array-like","required":true,"constraints":"Same grid shape; columns repeat one uniform nonzero axial axis within the implementation tolerances; descending axes are allowed."},
+    {"name":"plasma_mask","description":"Optional active-cell selector, passed explicitly as None when absent.","units":"boolean","shape":"[N_Z,N_R] or null","dtype":"bool array or None","required":true,"constraints":"None means all cells active; otherwise exact grid shape and boolean dtype, without broadcast or 0/1 coercion."},
+    {"name":"currents_old","description":"Previous relaxed cell-current state, passed explicitly as None for zero initialization.","units":"A","shape":"[N_Z*N_R] or null","dtype":"finite real array-like or None","required":true,"constraints":"None initializes all zeros; otherwise exact flattened length and finite values."},
+    {"name":"relax","description":"Retention weight of the old cell-current state.","units":"dimensionless","shape":"scalar","dtype":"finite real scalar","required":true,"constraints":"0 <= relax <= 1; 0 uses raw current, 1 retains the old state."},
+    {"name":"g_psi","description":"Dense current-to-flux Green response.","units":"Wb/A","shape":"[N_Z*N_R,N_Z*N_R]","dtype":"finite real array-like","required":true,"constraints":"Required, exact square shape; rows are field points and columns are C-order source cells."},
+    {"name":"g_br","description":"Optional current-to-radial-field Green response, passed explicitly as None when absent.","units":"T/A","shape":"[N_Z*N_R,N_Z*N_R] or null","dtype":"finite real array-like or None","required":true,"constraints":"Must be supplied as a finite exact square matrix together with g_bz, or both must be None."},
+    {"name":"g_bz","description":"Optional current-to-axial-field Green response, passed explicitly as None when absent.","units":"T/A","shape":"[N_Z*N_R,N_Z*N_R] or null","dtype":"finite real array-like or None","required":true,"constraints":"Must be supplied as a finite exact square matrix together with g_br, or both must be None."},
+    {"name":"psi_vac","description":"Vacuum or external flux offset.","units":"Wb","shape":"[N_Z,N_R]","dtype":"finite real array-like","required":true,"constraints":"Exact grid shape; added to the g_psi response."},
+    {"name":"br_vac","description":"Vacuum radial-field offset.","units":"T","shape":"[N_Z,N_R]","dtype":"finite real array-like","required":true,"constraints":"Exact grid shape; returned unchanged when field Green matrices are absent."},
+    {"name":"bz_vac","description":"Vacuum axial-field offset.","units":"T","shape":"[N_Z,N_R]","dtype":"finite real array-like","required":true,"constraints":"Exact grid shape; returned unchanged when field Green matrices are absent."}
+  ],
+  "outputs": [
+    {"name":"psi","description":"Vacuum flux plus relaxed-current Green response.","units":"Wb","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"The matrix response uses C-order flattened cell currents."},
+    {"name":"BR","description":"Vacuum radial field plus optional Green response.","units":"T","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Equals br_vac when both field Green matrices are None."},
+    {"name":"BZ","description":"Vacuum axial field plus optional Green response.","units":"T","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Equals bz_vac when both field Green matrices are None."},
+    {"name":"j_phi","description":"Current density after plasma-mask clipping.","units":"A/m^2","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Zero outside True cells when a mask is supplied."},
+    {"name":"initial_picard_current_state","description":"Zero current vector for graph zero-step initialization.","units":"A","shape":"[N_Z*N_R]","dtype":"float64","required":true,"constraints":"Always zeros, independent of supplied currents_old."},
+    {"name":"picard_current_state","description":"Relaxed C-order flattened cell-current vector used by the Green projections.","units":"A","shape":"[N_Z*N_R]","dtype":"float64","required":true,"constraints":"(1-relax)*raw currents + relax*old currents."},
+    {"name":"plasma_currents","description":"Unrelaxed masked cell currents.","units":"A","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Masked j_phi times abs(dR*dZ); unlike picard_current_state, no old-state relaxation is included."}
+  ],
+  "applicability": {
+    "preconditions": ["The dense matrices represent the caller's chosen linear Green response in the same C-order cell-current basis.", "The grid is a uniform tensor product, and the optional plasma selector has exact boolean grid shape."],
+    "supported": ["One masked, relaxed cell-current projection with optional paired magnetic-field response on ascending or descending uniform axes."],
+    "excluded": ["Nonuniform cell areas or automatic Green-matrix construction.", "Flux relaxation, field derivation from psi, wall correction or convergence decisions.", "A guarantee that the supplied Green response describes a physically valid equilibrium."]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for wrong-rank, wrong-shape or nonfinite fields and matrices, non-tensor or nonuniform/zero-spacing grids, fewer than two points on an axis, nonboolean or wrong-shaped mask, malformed old-current state, out-of-range relaxation or unpaired g_br/g_bz.",
+    "runtime_failure": "NumPy matrix-arithmetic failures propagate; finite inputs that overflow a matrix product are not postvalidated for finite outputs.",
+    "nonconvergence": "Not applicable; this Operator performs exactly one feedback step and no convergence check.",
+    "partial_results": "No partial dictionary is returned after input or matrix-operation failure."
+  },
+  "provenance": {
+    "lineage_summary": "Maintained SciRel relation mapped to a saved Pleiades L1 Picard-feedback Operator and direct tests; historical review labels are development provenance, not expert recognition of this version.",
+    "source_kinds": ["saved L1 Operator contract and implementation", "saved direct tests", "maintained SciRel regression tests"],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {"python":{"module":"scirel.equilibrium.anisotropic_picard_feedback","symbol":"update_anisotropic_picard_flux","signature":"update_anisotropic_picard_flux(j_phi, r_grid, z_grid, plasma_mask, currents_old, relax, g_psi, g_br, g_bz, psi_vac, br_vac, bz_vac)"}},
+  "version": {"implementation_version":"0.1.0.dev11","dependencies":[]},
+  "example": {
+    "description": "A two-by-two active-cell pattern distinguishes raw and relaxed currents and tests all three Green projections.",
+    "code": "import numpy as np\nfrom scirel.equilibrium import update_anisotropic_picard_flux\nr, z = np.meshgrid([0.2, 0.4], [-0.1, 0.1])\nj = np.array([[1.0, 2.0], [3.0, 4.0]])\nmask = np.array([[True, False], [False, True]])\nold = np.array([0.2, 0.3, 0.4, 0.5])\nresult = update_anisotropic_picard_flux(j, r, z, mask, old, 0.25, np.eye(4), 2*np.eye(4), -np.eye(4), np.zeros((2,2)), np.ones((2,2)), 2*np.ones((2,2)))\nraw = np.array([0.04, 0.0, 0.0, 0.16])\nrelaxed = 0.75*raw + 0.25*old\nnp.testing.assert_allclose(result['plasma_currents'].ravel(), raw)\nnp.testing.assert_allclose(result['picard_current_state'], relaxed)\nnp.testing.assert_allclose(result['psi'].ravel(), relaxed)\nnp.testing.assert_allclose(result['BR'].ravel(), 1.0 + 2*relaxed)\nnp.testing.assert_allclose(result['BZ'].ravel(), 2.0 - relaxed)",
+    "expected": "Only two cells carry raw current, and flux/field outputs use the relaxed current vector."
+  },
+  "verification": {
+    "scope": ["Zero Green response and positive cell area.", "Active-mask clipping, raw versus relaxed currents and paired flux/field response.", "Unpaired field matrices, wrong masks and nonuniform grids are rejected.", "Uniform descending axes retain positive cell area."],
+    "tests": ["tests/operator_contracts/test_anisotropic_picard_feedback.py"],
+    "evidence_ceiling": "Direct small-grid tests cover discrete current weighting, matrix projection and selected validation failures; they do not establish physical validity of arbitrary Green matrices or expert recognition.",
+    "known_limitations": ["The caller must provide explicit None for optional physical inputs because the Python signature has no defaults.", "Cell area uses the uniform first spacing rather than a quadrature rule for irregular grids.", "Public distribution licensing and expert recognition remain pending."]
+  }
+}

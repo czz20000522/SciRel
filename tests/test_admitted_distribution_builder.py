@@ -140,7 +140,7 @@ def test_staging_contains_only_hash_locked_admitted_modules(tmp_path):
         (staging / "src/scirel/_admitted_manifest.json").read_text(encoding="utf-8")
     )
     assert manifest["schema"] == "scirel.admitted-wheel-manifest.v1"
-    assert manifest["distribution_version"] == "0.1.0.dev10"
+    assert manifest["distribution_version"] == "0.1.0.dev11"
     assert {item["public_callable"] for item in manifest["assets"]} == {
         entry["public_callable"] for entry in records["integrations"]
     }
@@ -323,7 +323,7 @@ def test_admitted_wheel_runs_the_source_free_user_acceptance(tmp_path):
     assert acceptance.returncode == 0, acceptance.stderr
 
     report = json.loads((output / "acceptance.json").read_text(encoding="utf-8"))
-    assert report["installation"]["version"] == "0.1.0.dev10"
+    assert report["installation"]["version"] == "0.1.0.dev11"
     assert set(report["tasks"]) == {
         "green_field_synthesis",
         "pressure_state_and_residual",

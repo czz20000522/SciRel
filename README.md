@@ -13,7 +13,7 @@ SciRel 以独立插件和发布 wheel 交付；CodeFusion 可以预装或加载�
 平台维护者在受控 Python runtime 镜像准备阶段预装经过验证的 wheel；运行任务时直接调用现有能力，
 不临时下载或让用户配置依赖。独立源码项目服务于库维护和版本管理，不改变这一用户体验边界。
 
-当前 `0.1.0.dev10` 为开发期候选，而非公开发行。保存的 L1 产物是新 workflow 的重跑输入；
+当前 `0.1.0.dev11` 为开发期候选，而非公开发行。保存的 L1 产物是新 workflow 的重跑输入；
 旧的 `provenance/admitted-assets.json` 仅作为历史开发样本和来源证据，不再定义新的准入流程。
 
 当前 `provenance/admitted-assets.json` 是旧流程留下的 52 条完整迁移样本，其中包含 41 条 operator
@@ -54,7 +54,7 @@ assert result["B"][0, 0] == 5.0
 - `provenance/`：来源关系和审核状态，不参与运行时加载。
 - `docs/architecture.md`：Operator、TaskGraph、公共接口、科学身份和目录投影的权威边界。
 - `docs/catalog.md`：面向数万 Operator、数千 TaskGraph 的分片目录和渐进检索合同。
-- `contracts/` 与 `catalog/examples/`：标准资产/catalog Schema，以及依赖闭合的 39/68 开发 pilot；严格 D1 来源交接不替代专家审核。
+- `contracts/` 与 `catalog/examples/`：标准资产/catalog Schema，以及依赖闭合的 50/68 开发 pilot；严格 D1 来源交接不替代专家审核。
 - `docs/development-process.md`：首次/增量整合、验证分层和发行候选流程。
 - `docs/requirements/scirel-workflow.md` 与 `docs/design/scirel-workflow.md`：L1 到 release 的领域需求和设计。
 - `docs/requirements/scientific-request-workflow.md` 与 `docs/design/scientific-request-workflow.md`：从用户需求到 SciRel 计算结果和审计解释的出库流程。
@@ -70,7 +70,7 @@ assert result["B"][0, 0] == 5.0
 
 ```powershell
 python scripts/validate_asset_documents.py catalog/examples --check-runtime --execute-examples
-python scripts/build_catalog.py catalog/examples --output-dir build/catalog/<new-run> --catalog-id scirel-development-pilot --release-version 0.1.0.dev10 --coverage-status partial --declared-total 68
+python scripts/build_catalog.py catalog/examples --output-dir build/catalog/<new-run> --catalog-id scirel-development-pilot --release-version 0.1.0.dev11 --coverage-status partial --declared-total 68
 ```
 
 L1 workflow 的本地 fixture 使用 `tests/fixtures/l1/pleiades-minimal.json`，不读取源项目 checkout、数据库或网络；它只验证 candidate、draft、审核和 release artifact 的确定性关联，不代替模型完成真实科学整合。
@@ -117,7 +117,7 @@ SciRel 源码或公共基线变更会 fail closed 到全套测试。`focused` �
 干净离线 wheelhouse 重装全部依赖，也不证明同目录的其他包不可见。正式发行门禁仍需固定依赖 wheelhouse。
 安装后的测试不得依赖 editable 安装或把 src 放进 PYTHONPATH。上面的版本号随 pyproject.toml 更新，不是永久发行版本。
 
-当前 catalog 仍是 `partial: 39/68` 开发 pilot。第一阶段当前合格交付根暂为空；fluidBW 和 PDRF、KN1DPy、ASCOT5、TokaGrad、PDRK、aorsa3d 的保存产物只能按确切身份作为历史开发对照，不能据此获科学认可。D1 验证也不等于 SciRel 专家认可；现有 release fixture 只验证逐项审核记录、catalog 与 wheel 的工程绑定，不证明整个开发版本可信。正式首发前必须让可见发布基线获得
+当前 catalog 仍是 `partial: 50/68` 开发 pilot。第一阶段当前合格交付根暂为空；fluidBW 和 PDRF、KN1DPy、ASCOT5、TokaGrad、PDRK、aorsa3d 的保存产物只能按确切身份作为历史开发对照，不能据此获科学认可。D1 验证也不等于 SciRel 专家认可；现有 release fixture 只验证逐项审核记录、catalog 与 wheel 的工程绑定，不证明整个开发版本可信。正式首发前必须让可见发布基线获得
 相对上一可信版的专家审核（无可信版时为首次审核集合），补齐 exact documents，并把开发期 `.dev` workflow 合同统一冻结为 `v1`。
 
 项目尚未声明独立分发许可证，保留来源对应关系；正式分发前需确认输入资产与项目许可证选择。

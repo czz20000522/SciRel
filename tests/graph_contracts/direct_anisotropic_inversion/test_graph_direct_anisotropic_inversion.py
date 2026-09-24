@@ -94,6 +94,12 @@ def test_yaml_declares_explicit_cross_node_ports():
     assert "scirel.equilibrium.graphs.free_boundary_anisotropic_picard" not in contract
     assert "scirel.diagnostics.graphs.equilibrium_synthesis_diagnostics" not in contract
     assert "id: direct_optimizer" in contract
+    trial_node = contract.split("- id: trial_evaluator_port\n", 1)[1].split("\n- id:", 1)[0]
+    assert "kind: scientific_operator" in trial_node
+    assert "callable: scirel.inference.anisotropic_trial_evaluation::evaluate_anisotropic_trial" in trial_node
+    assert "asset_ref: scirel.inference.anisotropic_trial_evaluation" in trial_node
+    equilibrium_output = contract.split("- name: equilibrium\n", 1)[1].split("\n- name:", 1)[0]
+    assert "shape: mapping_or_null" in equilibrium_output
     assert "N6 required Picard convergence tolerance" in contract
     assert "N6 required Picard iteration limit" in contract
     assert "N6 required Picard relaxation" in contract
