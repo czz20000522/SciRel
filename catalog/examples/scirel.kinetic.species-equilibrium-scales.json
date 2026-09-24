@@ -64,7 +64,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.kinetic.species_equilibrium_scales", "symbol": "derive_species_equilibrium_scales", "signature": "derive_species_equilibrium_scales(*, ms, qs, ns_unit, Ts_unit, B0, n00, T00)"}},
-  "version": {"implementation_version": "0.1.0.dev7", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev8", "dependencies": []},
   "example": {
     "description": "Derive single-electron scales with the saved fluidBW reference values.",
     "code": "from scirel.kinetic import derive_species_equilibrium_scales\nr = derive_species_equilibrium_scales(ms=[9.1094e-31], qs=[-1.60217662e-19], ns_unit=[1.0], Ts_unit=[1.0], B0=1.0, n00=6.075e19, T00=1000.0)\nassert r['wcs'][0] < 0 and r['rhocs'][0] < 0\nassert r['wn'] == r['wcn'] and r['kn'] == 1.0 / r['rhocn']",

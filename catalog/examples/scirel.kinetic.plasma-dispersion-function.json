@@ -41,7 +41,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.kinetic.plasma_dispersion", "symbol": "evaluate_plasma_dispersion", "signature": "evaluate_plasma_dispersion(z)"}},
-  "version": {"implementation_version": "0.1.0.dev7", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev8", "dependencies": []},
   "example": {
     "description": "Evaluate the analytic function at the origin.",
     "code": "import numpy as np\nfrom scirel.kinetic import evaluate_plasma_dispersion\nresult = evaluate_plasma_dispersion(0j)\nassert result['w'] == 1\nassert np.isclose(result['Z'], 1j * np.sqrt(np.pi))",

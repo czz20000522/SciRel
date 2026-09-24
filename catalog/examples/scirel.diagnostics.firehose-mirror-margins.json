@@ -1,0 +1,66 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.diagnostics.firehose-mirror-margins",
+  "kind": "operator",
+  "title": {"en": "Firehose and mirror pressure margins", "zh": "火焰管与磁镜压强裕度"},
+  "summary": "Calculate source-defined firehose and mirror margin fields, their sampled minima and positivity flags from anisotropic pressure and magnetic-field values.",
+  "taxonomy": ["diagnostics", "anisotropic-pressure", "stability-margin"],
+  "aliases": ["firehose tension margin", "mirror pressure-gradient margin"],
+  "identity": {
+    "relation": "Anisotropic pressures and magnetic-field samples to two sampled margin criteria",
+    "direction": "(p_parallel, p_perp, B, mu0) -> firehose_margin, mirror_margin, minima and positivity flags",
+    "definition": "firehose_margin=B^2/mu0+p_perp-p_parallel; mirror_margin=B^2/mu0-B*d(p_perp)/dB. Flatten samples, sort by B, take a first-order-edge finite gradient in B-value space, then restore the original shape. Each stable flag means the corresponding minimum over supplied samples is strictly positive.",
+    "model": "Saved Pleiades anisotropic-pressure margin diagnostic; positive sampled margins are necessary outcomes of these implemented criteria, not a general proof of plasma stability",
+    "geometry": "No spatial grid geometry is used; array dimensions preserve sample layout only",
+    "coordinates": "The mirror derivative is with respect to sorted magnetic-field values, not spatial position or array index",
+    "boundary": "With one sample or B range at most 1e-30, the mirror derivative is zero. With a nondegenerate B range, adjacent sorted B samples must differ by more than 1e-30.",
+    "assumptions": ["p_parallel and p_perp are pressure values in Pa sampled consistently with B in tesla.", "The caller has independently established that this finite B-value derivative and these sampled margin criteria are appropriate for its equilibrium model."]
+  },
+  "inputs": [
+    {"name": "p_parallel", "description": "Parallel pressure samples.", "units": "Pa", "shape": "nonempty scalar or array; exactly the same shape as p_perp and magnetic_field", "dtype": "real numeric convertible to float64", "required": true, "constraints": "Finite; negative values are not rejected."},
+    {"name": "p_perp", "description": "Perpendicular pressure samples and value-space derivative input.", "units": "Pa", "shape": "exactly the same shape as p_parallel", "dtype": "real numeric convertible to float64", "required": true, "constraints": "Finite; negative values are not rejected."},
+    {"name": "magnetic_field", "description": "Magnetic-field samples for magnetic pressure and the B-value derivative.", "units": "T", "shape": "exactly the same shape as p_parallel", "dtype": "real numeric convertible to float64", "required": true, "constraints": "Finite; all-equal samples are accepted, while duplicates or near duplicates within 1e-30 are rejected in a nondegenerate sample set."},
+    {"name": "mu0", "description": "Magnetic permeability used in the B^2/mu0 terms.", "units": "H/m", "shape": "scalar", "dtype": "real numeric", "required": false, "default": 1.2566370614359173e-06, "constraints": "Finite and strictly positive; the default is 4*pi*1e-7."},
+    {"name": "parallel_equilibrium", "description": "Optional upstream diagnostic dictionary; only error and max_relative_error fields are forwarded.", "units": "mixed, defined by upstream fields", "shape": "dict or None", "dtype": "mapping or null", "required": false, "default": null, "constraints": "When present, must be a dict. The two forwarded values are not independently validated for shape, units or finiteness."}
+  ],
+  "outputs": [
+    {"name": "firehose_margin", "description": "Pointwise B^2/mu0+p_perp-p_parallel.", "units": "Pa", "shape": "same shape as input samples", "dtype": "float64 array", "required": true, "constraints": "Finite on successful return."},
+    {"name": "mirror_margin", "description": "Pointwise B^2/mu0-B*d(p_perp)/dB using the global B-sorted sample derivative.", "units": "Pa", "shape": "same shape as input samples", "dtype": "float64 array", "required": true, "constraints": "Finite on successful return."},
+    {"name": "firehose_stable", "description": "True exactly when every supplied firehose margin is strictly positive.", "units": "boolean", "shape": "scalar", "dtype": "bool", "required": true, "constraints": "A sampled aggregate flag, not a spatially resolved stability field or sufficient physical stability theorem."},
+    {"name": "mirror_stable", "description": "True exactly when every supplied mirror margin is strictly positive.", "units": "boolean", "shape": "scalar", "dtype": "bool", "required": true, "constraints": "A sampled aggregate flag, not a spatially resolved stability field or sufficient physical stability theorem."},
+    {"name": "min_firehose_margin", "description": "Minimum firehose margin across all samples.", "units": "Pa", "shape": "scalar", "dtype": "float", "required": true, "constraints": "Finite on successful return."},
+    {"name": "min_mirror_margin", "description": "Minimum mirror margin across all samples.", "units": "Pa", "shape": "scalar", "dtype": "float", "required": true, "constraints": "Finite on successful return."},
+    {"name": "parallel_equilibrium_error", "description": "Unmodified parallel_equilibrium.error value, or None when absent.", "units": "upstream-defined, normally Pa, or not applicable", "shape": "upstream-defined or null", "dtype": "unvalidated upstream value or null", "required": true, "constraints": "No independent numeric, unit, shape or finite check."},
+    {"name": "max_parallel_equilibrium_error", "description": "Unmodified parallel_equilibrium.max_relative_error value, or None when absent.", "units": "upstream-defined, normally dimensionless, or not applicable", "shape": "upstream-defined or null", "dtype": "unvalidated upstream value or null", "required": true, "constraints": "No independent numeric, unit or finite check."}
+  ],
+  "applicability": {
+    "preconditions": ["Both pressure arrays and magnetic-field values refer to the same nonempty sample set and share an exact shape.", "The caller has selected a physically meaningful B-value coordinate and criterion for interpreting the margins."],
+    "supported": ["Finite scalar and array sample sets, including unsorted B values.", "All-equal B samples under the explicit zero-derivative convention and a resolved B range without near-duplicate values."],
+    "excluded": ["A spatial pressure gradient, kinetic instability calculation, mode growth rate or full equilibrium stability proof.", "Automatic physical validation of negative pressures, field orientation or forwarded parallel-equilibrium evidence."]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for mismatched shape, nonfinite pressures/field, nonpositive or nonfinite mu0, a non-dict parallel_equilibrium, or duplicate B values in a nondegenerate sample set. An empty sample set fails during the minimum reduction rather than yielding a result.",
+    "runtime_failure": "Raises ValueError if the B-value derivative or either margin becomes nonfinite; other unexpected NumPy conversion or reduction errors may propagate.",
+    "nonconvergence": "Not applicable; no iterative stability or equilibrium solve is performed.",
+    "partial_results": "None; both margin fields and aggregate flags are returned together, while optional upstream fields are forwarded unchanged."
+  },
+  "provenance": {
+    "lineage_summary": "SciRel maintains the firehose/mirror margin relation from saved Pleiades development-migration material. The prior candidate record has a validation gap and is neither current qualified D1 source evidence nor expert approval. The formulas here are the implemented sampled diagnostic, not a claim that all physical firehose or mirror instability criteria are covered.",
+    "source_kinds": ["saved Pleiades operator descriptor and migration provenance", "SciRel direct formula, value-space and duplicate-field regression tests"],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {"python": {"module": "scirel.diagnostics.firehose_mirror_margins", "symbol": "compute_firehose_mirror_margins", "signature": "compute_firehose_mirror_margins(p_parallel, p_perp, magnetic_field, mu0=1.2566370614359173e-06, parallel_equilibrium=None)"}},
+  "version": {"implementation_version": "0.1.0.dev8", "dependencies": []},
+  "example": {
+    "description": "Evaluate both sampled margins with unsorted B values and a linear perpendicular-pressure profile.",
+    "code": "import numpy as np\nfrom scirel.diagnostics import compute_firehose_mirror_margins\nB = np.array([2.0, 1.0, 3.0, 1.5])\np_perp = 5.0 + 3.0 * B\nr = compute_firehose_mirror_margins(p_perp + 2.0, p_perp, B)\nmu0 = 4.0e-7 * np.pi\nnp.testing.assert_allclose(r['firehose_margin'], B * B / mu0 - 2.0)\nnp.testing.assert_allclose(r['mirror_margin'], B * B / mu0 - 3.0 * B)\nassert r['firehose_stable'] and r['mirror_stable']",
+    "expected": "The B-sorted derivative is 3 Pa/T despite unsorted input, giving the two stated positive margin arrays in original sample order."
+  },
+  "verification": {
+    "scope": ["Constant-pressure analytic margins and negative firehose-margin flag.", "Unsorted linear p_perp(B) derivative, all-equal B zero-derivative convention and duplicate nondegenerate B rejection."],
+    "tests": ["tests/operator_contracts/test_firehose_mirror_margins.py"],
+    "evidence_ceiling": "Direct SciRel tests establish the listed finite-sample formulas and numerical branches. They do not establish a current qualified source oracle, derivative convergence, full spatial or kinetic stability, or expert scientific approval.",
+    "known_limitations": ["Flattening pools all positions into one B-sorted derivative; array adjacency and geometry are ignored.", "All-equal B forces a zero derivative even when perpendicular pressure values differ.", "The stable flags summarize only strict positivity at supplied samples; they are not general stability conclusions.", "The optional upstream diagnostic values are forwarded without scientific validation.", "Public distribution licensing and expert recognition remain pending."]
+  }
+}
