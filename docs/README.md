@@ -21,9 +21,10 @@ SciRel 按长期独立 Python 项目维护。文档只保存稳定合同、可�
 - [SciRel 求解 skill](../skills/usage/scirel-solving/SKILL.md)：供不同 harness 规范化、规划、执行和解释用户科学请求的共同方法。
 - [L1 wire smoke](../scripts/run_l1_wire_smoke.py)：开发期确定性 body 合同测试工具，不是语义整合入口。
 - [贡献指南](../CONTRIBUTING.md)：开发环境、改动分类、兼容性和提交前检查。
+- [动理学等离子体波领域草稿](domains/kinetic-plasma-waves.md)：当前关系族、组合边界、证据与专家待决问题。
 
 ## 当前实现边界
 
-当前 `0.1.0.dev5` 开发树包含 52 条历史资产候选和 12 条本阶段新增的开发资产；其中 16 条已有 catalog exact document。workflow 已具备 host-independent 状态协调、artifact 关联、逐项审核/release 的旧门禁和最小 fixture；真实 L1 的理解与整合由 skill 驱动的模型完成，不属于状态机能力。版本级专家认可、生产审核插件接线、完整 L1 整合、v1 合同冻结、固定发行工具链和正式发布授权尚未完成。
+当前 `0.1.0.dev6` 开发树包含 52 条历史资产候选和 16 条后续开发资产；其中 23 条已有 catalog exact document。workflow 已具备 host-independent 状态协调、artifact 关联、逐项审核/release 的旧门禁和最小 fixture；真实 L1 的理解与整合由 skill 驱动的模型完成，不属于状态机能力。版本级专家认可、生产审核插件接线、完整 L1 整合、v1 合同冻结、固定发行工具链和正式发布授权尚未完成。
 
 新增长期机制时，优先扩展上述权威文档和可执行检查。只有出现独立 owner、不同生命周期或明显不同读者时才拆新文档，避免用报告数量代替项目治理。

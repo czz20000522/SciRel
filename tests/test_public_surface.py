@@ -23,6 +23,11 @@ from scirel.diagnostics.observation_residuals import reduce_observation_residual
 from scirel.diagnostics.parallel_pressure_residual import compute_parallel_pressure_residual
 from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum
 from scirel.kinetic.plasma_dispersion import evaluate_plasma_dispersion
+from scirel.kinetic import (
+    derive_species_equilibrium_scales,
+    evaluate_bessel_gamma,
+    evaluate_kinetic_dispersion_sum,
+)
 from scirel.field.poloidal_field_magnitude import compute_poloidal_field_magnitude
 from scirel.field.permanent_ring_filaments import discretize_permanent_ring
 from scirel.diagnostics.firehose_mirror_margins import compute_firehose_mirror_margins
@@ -98,6 +103,9 @@ def test_all_normalized_public_callables_are_importable():
         compute_parallel_pressure_residual,
         solve_loss_cone_spectrum,
         evaluate_plasma_dispersion,
+        derive_species_equilibrium_scales,
+        evaluate_bessel_gamma,
+        evaluate_kinetic_dispersion_sum,
         compute_poloidal_field_magnitude,
         discretize_permanent_ring,
         compute_firehose_mirror_margins,
@@ -162,6 +170,9 @@ def test_root_namespace_supports_normal_python_imports():
 def test_kinetic_star_exports_keep_existing_scientific_relations():
     assert "evaluate_mirror_constrained_moments" in scirel.kinetic.__all__
     assert "evaluate_plasma_dispersion" in scirel.kinetic.__all__
+    assert "derive_species_equilibrium_scales" in scirel.kinetic.__all__
+    assert "evaluate_bessel_gamma" in scirel.kinetic.__all__
+    assert "evaluate_kinetic_dispersion_sum" in scirel.kinetic.__all__
     assert all(hasattr(scirel.kinetic, name) for name in scirel.kinetic.__all__)
 
 

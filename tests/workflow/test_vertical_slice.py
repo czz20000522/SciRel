@@ -69,7 +69,7 @@ def test_saved_l1_runs_to_release_with_host_adapter():
         wheel_ref="artifact://wheel/dev/vertical",
         wheel_digest="sha256:" + "d" * 64,
         correlation_id="build://vertical/release",
-        release_version="0.1.0.dev5",
+        release_version="0.1.0.dev6",
     )
     release = release_result.release
 

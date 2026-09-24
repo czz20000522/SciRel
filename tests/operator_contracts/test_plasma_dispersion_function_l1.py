@@ -1,4 +1,4 @@
-"""Bounded comparisons with fluidBW D1 and the withdrawn historical PDRK input."""
+"""Bounded comparisons with saved fluidBW and historical PDRK inputs."""
 
 import hashlib
 import importlib.util
@@ -18,11 +18,19 @@ SOURCE_HASHES = {
 
 
 def _source_operator(project):
-    root = os.environ.get("SCIREL_L1_ROOT")
+    root = (
+        os.environ.get("SCIREL_HISTORICAL_FLUIDBW_ROOT") or os.environ.get("SCIREL_L1_ROOT")
+        if project == "fluidBW"
+        else os.environ.get("SCIREL_HISTORICAL_PDRK_ROOT")
+    )
     if not root:
-        pytest.skip("SCIREL_L1_ROOT is not set; source-free contract tests remain active")
-    historical_pdrk = os.environ.get("SCIREL_HISTORICAL_PDRK_ROOT") if project == "PDRK" else None
-    project_root = Path(historical_pdrk) if historical_pdrk else Path(root) / project
+        pytest.skip(f"{project} L1 input is not configured")
+    project_root = (
+        Path(root) if os.environ.get("SCIREL_HISTORICAL_FLUIDBW_ROOT")
+        else Path(root) / "fluidBW"
+    ) if project == "fluidBW" else Path(root)
+    if not project_root.is_dir():
+        pytest.skip(f"{project} L1 input is not present")
     path = project_root / "operators/plasma_dispersion_function/scientific_operator.py"
     assert path.is_file()
     assert hashlib.sha256(path.read_bytes()).hexdigest() == SOURCE_HASHES[project]

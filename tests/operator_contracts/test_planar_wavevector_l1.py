@@ -20,12 +20,10 @@ SOURCE_HASHES = {
 
 
 def _source_operator(project: str, name: str):
-    root = os.environ.get("SCIREL_L1_ROOT")
+    root = os.environ.get(f"SCIREL_HISTORICAL_{project}_ROOT")
     if not root:
-        pytest.skip("SCIREL_L1_ROOT is not set; source-free contract tests remain active")
-    historical_pdrk = os.environ.get("SCIREL_HISTORICAL_PDRK_ROOT") if project == "PDRK" else None
-    project_root = Path(historical_pdrk) if historical_pdrk else Path(root) / project
-    source = project_root / "operators" / name / "scientific_operator.py"
+        pytest.skip(f"historical {project} input is not configured")
+    source = Path(root) / "operators" / name / "scientific_operator.py"
     assert source.is_file(), f"saved L1 source missing: {source}"
     assert hashlib.sha256(source.read_bytes()).hexdigest() == SOURCE_HASHES[(project, name)]
     spec = importlib.util.spec_from_file_location(f"{project}_{name}", source)

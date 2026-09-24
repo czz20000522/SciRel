@@ -1,4 +1,4 @@
-"""Bounded comparisons with the saved ASCOT5 and TokaGrad D1 relations."""
+"""Bounded comparisons with withdrawn historical ASCOT5 and TokaGrad inputs."""
 
 import hashlib
 import importlib.util
@@ -24,11 +24,11 @@ _SOURCES = {
 
 
 def _source(project):
-    root = os.environ.get("SCIREL_L1_ROOT")
+    root = os.environ.get(f"SCIREL_HISTORICAL_{project.upper()}_ROOT")
     if not root:
-        pytest.skip("SCIREL_L1_ROOT is not set; source-free contract tests remain active")
+        pytest.skip(f"historical {project} input is not configured")
     directory, digest = _SOURCES[project]
-    path = Path(root) / project / "operators" / directory / "scientific_operator.py"
+    path = Path(root) / "operators" / directory / "scientific_operator.py"
     assert path.is_file()
     assert hashlib.sha256(path.read_bytes()).hexdigest() == digest
     spec = importlib.util.spec_from_file_location(f"{project}_bosch_hale", path)

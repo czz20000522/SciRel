@@ -1,0 +1,59 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.field.poloidal-field-from-flux",
+  "kind": "operator",
+  "title": {"en": "Axisymmetric poloidal field from flux", "zh": "轴对称磁通导出极向场"},
+  "summary": "Recover radial and axial poloidal magnetic-field components and their magnitude from axisymmetric flux on a rectilinear cylindrical R-Z grid.",
+  "taxonomy": ["field", "axisymmetric", "flux-gradient"],
+  "aliases": ["poloidal field from psi"],
+  "identity": {
+    "relation": "axisymmetric flux psi = R A_phi to poloidal magnetic field",
+    "direction": "R-Z grid and psi -> B_R, B_Z and B",
+    "definition": "Off the cylindrical axis, B_R = -(partial psi/partial Z)/R and B_Z = (partial psi/partial R)/R. Grid derivatives use the maintained second-order finite-difference stencils. At R=0, B_R is set to zero and B_Z = 2(psi[:,1]-psi[:,0])/R_1^2. B = hypot(B_R,B_Z), without a magnitude floor.",
+    "model": "axisymmetric cylindrical poloidal-field relation with discrete grid derivatives",
+    "geometry": "rectilinear R-Z mesh, optionally including the cylindrical axis",
+    "coordinates": "cylindrical R-Z, arrays indexed [Z,R]",
+    "boundary": "At an included R=0 column, use the stated axis rule; at other grid edges, use one-sided second-order derivatives.",
+    "assumptions": ["psi denotes R A_phi in Wb, with R and Z in metres.", "The sampled flux is sufficiently resolved for the finite-difference derivative to represent the intended field."]
+  },
+  "inputs": [
+    {"name": "r_grid", "description": "Cylindrical radius at each grid point.", "units": "m", "shape": "[N_Z,N_R]", "dtype": "real array-like, converted to float64", "required": true, "constraints": "Finite rectilinear grid with nonnegative, strictly increasing R axis and N_R >= 3; same shape as z_grid and psi."},
+    {"name": "z_grid", "description": "Axial coordinate at each grid point.", "units": "m", "shape": "[N_Z,N_R]", "dtype": "real array-like, converted to float64", "required": true, "constraints": "Finite rectilinear grid with strictly increasing Z axis and N_Z >= 3; same shape as r_grid and psi."},
+    {"name": "psi", "description": "Axisymmetric flux R A_phi sampled on the R-Z grid.", "units": "Wb", "shape": "[N_Z,N_R]", "dtype": "real array-like, converted to float64", "required": true, "constraints": "Finite values and exactly the same two-dimensional shape as the coordinate grids."}
+  ],
+  "outputs": [
+    {"name": "B_R", "description": "Radial poloidal magnetic-field component.", "units": "T", "shape": "[N_Z,N_R]", "dtype": "float64", "required": true, "constraints": "Zero at an included cylindrical-axis column."},
+    {"name": "B_Z", "description": "Axial poloidal magnetic-field component.", "units": "T", "shape": "[N_Z,N_R]", "dtype": "float64", "required": true, "constraints": "Uses the discrete axis rule if R=0 is included."},
+    {"name": "B", "description": "Poloidal-field magnitude hypot(B_R,B_Z).", "units": "T", "shape": "[N_Z,N_R]", "dtype": "float64", "required": true, "constraints": "No fixed lower floor is applied."}
+  ],
+  "applicability": {
+    "preconditions": ["Axisymmetric psi, R and Z share the declared SI units and [Z,R] indexing.", "The grid has at least three strictly ordered points along each coordinate axis."],
+    "supported": ["Discrete reconstruction of an axisymmetric poloidal field on a finite rectilinear R-Z grid, including the maintained R=0 rule."],
+    "excluded": ["Toroidal magnetic-field reconstruction.", "Non-axisymmetric or curvilinear meshes.", "A general proof of axis regularity or derivative convergence for arbitrary flux data."]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for wrong rank or shape, nonfinite coordinates or psi, nonrectilinear or insufficient grids, decreasing/repeated axes, or negative starting radius.",
+    "runtime_failure": "Unexpected NumPy arithmetic errors propagate. Finite accepted inputs are not guaranteed to yield finite derivatives when floating-point range is exceeded; no output-finiteness gate is applied.",
+    "nonconvergence": "Not applicable; no iteration is performed.",
+    "partial_results": "No dictionary is returned if validation fails or execution raises."
+  },
+  "provenance": {
+    "lineage_summary": "Maintained SciRel relation mapped to a saved Pleiades L1 operator and its direct tests. The historical admission mapping is development provenance only, not approval in the current SciRel lifecycle.",
+    "source_kinds": ["saved L1 operator document and implementation", "saved direct tests", "maintained SciRel regression tests"],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {"python": {"module": "scirel.field.poloidal_field_from_flux", "symbol": "poloidal_field_from_flux", "signature": "poloidal_field_from_flux(r_grid, z_grid, psi)"}},
+  "version": {"implementation_version": "0.1.0.dev6", "dependencies": []},
+  "example": {
+    "description": "Recover a uniform axial field from a quadratic flux profile including R=0.",
+    "code": "import numpy as np\nfrom scirel.field import poloidal_field_from_flux\nr_grid, z_grid = np.meshgrid([0.0, 0.2, 0.4], [-0.5, 0.0, 0.5])\nresult = poloidal_field_from_flux(r_grid, z_grid, r_grid**2)\nnp.testing.assert_allclose(result['B_R'], 0.0)\nnp.testing.assert_allclose(result['B_Z'], 2.0)\nnp.testing.assert_allclose(result['B'], 2.0)",
+    "expected": "B_R is zero and B_Z = B = 2 T at every point, including the cylindrical axis."
+  },
+  "verification": {
+    "scope": ["Quadratic-flux uniform-field and axis-rule regression.", "Nonrectilinear and nonfinite-coordinate rejection.", "Finite subnormal and large-magnitude hypot helper regression."],
+    "tests": ["tests/operator_contracts/test_poloidal_field_from_flux.py"],
+    "evidence_ceiling": "Direct SciRel tests establish the stated sampled-grid identities and selected failure cases, not general physical correctness, convergence of the discrete derivative, or expert recognition of this development record.",
+    "known_limitations": ["Axis regularization is a specific discrete rule, not an arbitrary-axis extrapolator.", "Only a two-dimensional rectilinear R-Z mesh is accepted.", "Public distribution licensing and SciRel expert recognition remain pending."]
+  }
+}
