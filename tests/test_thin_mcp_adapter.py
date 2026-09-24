@@ -25,8 +25,8 @@ def catalog(tmp_path):
         EXAMPLES,
         output,
         catalog_id="scirel-development-pilot",
-        release_version="0.1.0.dev14",
-        coverage_status="partial",
+        release_version="0.1.0.dev15",
+        coverage_status="complete",
         declared_total=68,
     )
     return output, result["root_digest"]
@@ -34,7 +34,7 @@ def catalog(tmp_path):
 
 @pytest.fixture(autouse=True)
 def installed_scirel_version():
-    with mock.patch("scirel_adapter.mcp.metadata.version", return_value="0.1.0.dev14"):
+    with mock.patch("scirel_adapter.mcp.metadata.version", return_value="0.1.0.dev15"):
         yield
 
 
@@ -163,7 +163,7 @@ def test_callable_binding_and_invocation_are_document_driven(catalog):
         "BZ": [-5.0, 0.0],
     }
     assert response["asset_id"] == asset_id
-    assert response["implementation_version"] == "0.1.0.dev14"
+    assert response["implementation_version"] == "0.1.0.dev15"
     assert response["evidence_ceiling"]
     serialized = json.dumps(response, sort_keys=True)
     for forbidden in ("session_id", "project_id", "workbench_id", "admission_ref"):

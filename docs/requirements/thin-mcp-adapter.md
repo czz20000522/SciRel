@@ -112,4 +112,4 @@ The final response reports the selected `asset_id`, catalog root digest, impleme
 
 ## Deferred boundaries
 
-This slice does not provide JSON-RPC transport, MCP tool registration, authentication/authorization, process isolation, resource limits, cancellation, streaming, audit storage, arbitrary object serialization, natural-language routing, cross-framework conformance, a complete 62-asset catalog or publication authorization. Those capabilities require separate owners and evidence.
+This slice does not provide JSON-RPC transport, MCP tool registration, authentication/authorization, process isolation, resource limits, cancellation, streaming, audit storage, arbitrary object serialization, natural-language routing, cross-framework conformance, an expert-approved public catalog or publication authorization. Those capabilities require separate owners and evidence.

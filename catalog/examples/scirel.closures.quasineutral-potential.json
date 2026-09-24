@@ -52,7 +52,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.closures.quasineutral_potential", "symbol": "solve_quasineutral_potential", "signature": "solve_quasineutral_potential(potential_reference_v, temperature_parallel_j, electron_temperature_j, charge_c, active, residual, potential_tolerance_v=1e-08, quasineutral_tolerance=1e-10, max_iterations=100, initial_bracket_thermal=8.0)"}},
-  "version": {"implementation_version": "0.1.0.dev14", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev15", "dependencies": []},
   "example": {
     "description": "Solve a decreasing residual on one active surface while leaving an inactive surface at its reference potential.",
     "code": "import numpy as np\nfrom scirel.closures import solve_quasineutral_potential\ne = 1.602176634e-19\ndef residual(phi):\n    return {'logarithmic_charge_residual': 0.5 - np.asarray(phi)}\nr = solve_quasineutral_potential([0.0, 17.0], 0.1*e, 0.1*e, e, [True, False], residual)\nnp.testing.assert_allclose(r['potential_v'], [0.5, 17.0], atol=1e-8)\nassert abs(r['logarithmic_charge_residual'][0]) <= 1e-10\nnp.testing.assert_allclose(r['logarithmic_charge_residual'][1], -16.5)\nassert r['converged'] and 1 <= r['iterations'] <= 100",

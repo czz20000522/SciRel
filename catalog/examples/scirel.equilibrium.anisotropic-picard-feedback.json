@@ -57,7 +57,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python":{"module":"scirel.equilibrium.anisotropic_picard_feedback","symbol":"update_anisotropic_picard_flux","signature":"update_anisotropic_picard_flux(j_phi, r_grid, z_grid, plasma_mask, currents_old, relax, g_psi, g_br, g_bz, psi_vac, br_vac, bz_vac)"}},
-  "version": {"implementation_version":"0.1.0.dev14","dependencies":[]},
+  "version": {"implementation_version":"0.1.0.dev15","dependencies":[]},
   "example": {
     "description": "A two-by-two active-cell pattern distinguishes raw and relaxed currents and tests all three Green projections.",
     "code": "import numpy as np\nfrom scirel.equilibrium import update_anisotropic_picard_flux\nr, z = np.meshgrid([0.2, 0.4], [-0.1, 0.1])\nj = np.array([[1.0, 2.0], [3.0, 4.0]])\nmask = np.array([[True, False], [False, True]])\nold = np.array([0.2, 0.3, 0.4, 0.5])\nresult = update_anisotropic_picard_flux(j, r, z, mask, old, 0.25, np.eye(4), 2*np.eye(4), -np.eye(4), np.zeros((2,2)), np.ones((2,2)), 2*np.ones((2,2)))\nraw = np.array([0.04, 0.0, 0.0, 0.16])\nrelaxed = 0.75*raw + 0.25*old\nnp.testing.assert_allclose(result['plasma_currents'].ravel(), raw)\nnp.testing.assert_allclose(result['picard_current_state'], relaxed)\nnp.testing.assert_allclose(result['psi'].ravel(), relaxed)\nnp.testing.assert_allclose(result['BR'].ravel(), 1.0 + 2*relaxed)\nnp.testing.assert_allclose(result['BZ'].ravel(), 2.0 - relaxed)",

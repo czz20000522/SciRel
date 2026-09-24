@@ -59,7 +59,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.kinetic.kinetic_dispersion_sum_n", "symbol": "evaluate_kinetic_dispersion_sum", "signature": "evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5)"}},
-  "version": {"implementation_version": "0.1.0.dev14", "dependencies": [{"asset_id": "scirel.kinetic.bessel-gamma"}, {"asset_id": "scirel.kinetic.plasma-dispersion-function"}]},
+  "version": {"implementation_version": "0.1.0.dev15", "dependencies": [{"asset_id": "scirel.kinetic.bessel-gamma"}, {"asset_id": "scirel.kinetic.plasma-dispersion-function"}]},
   "example": {
     "description": "Assemble one single-electron tensor at a saved fluidBW case point.",
     "code": "import numpy as np\nfrom scirel.kinetic import evaluate_kinetic_dispersion_sum\nr = evaluate_kinetic_dispersion_sum(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[1000.0 * 1.6022e-19 / 1.38064852e-23], f=175881684853.009 / (2*np.pi), kz=1326.1942478795652, kx=13261.94247879565)\nassert r['K'].shape == (3, 3) and r['D'].shape == (3, 3)\nassert abs(r['determinant'] - (1184249.3244493124 + 4322451.2861608062j)) < 1e-6",

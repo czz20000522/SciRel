@@ -18,7 +18,7 @@ The snapshot contains:
 - `records/<prefix>/<asset-id>.json`: exact standardized documents; and
 - `reverse-dependencies/*.jsonl`: direct consumers used for impact and closure analysis.
 
-The v1 release schema is [`contracts/scientific-catalog-release.schema.json`](../../contracts/scientific-catalog-release.schema.json). An output directory must be new; a failed build cannot replace the previous snapshot. `coverage.status=complete` is valid only when included and declared totals match. The development pilot remains `partial` with 62 included assets and 68 declared current assets.
+The v1 release schema is [`contracts/scientific-catalog-release.schema.json`](../../contracts/scientific-catalog-release.schema.json). An output directory must be new; a failed build cannot replace the previous snapshot. `coverage.status=complete` is valid only when included and declared totals match. The development catalog has complete document coverage for its 68 declared current assets; this does not grant scientific approval or release authority.
 
 The catalog does not participate in `import scirel` and does not import every module at startup. Exact runtime callable resolution occurs only after selection and must match the selected record's module, symbol, signature and implementation version. Exact content binding belongs to the enclosing catalog release, whose partition and root digests cover the record.
 
@@ -78,7 +78,7 @@ Implemented in this slice:
 - v1 asset and catalog release schemas;
 - semantic/runtime/example validator;
 - deterministic progressive catalog builder;
-- dependency-closed 62-asset development pilot; and
+- dependency-closed 68-asset development catalog; and
 - SDK-free thin MCP adapter core for bounded discovery, documentation retrieval, callable resolution and invocation; and
 - regression tests for missing units, private-field leakage, dependency closure, graph cycles, deterministic projections and adapter boundary enforcement.
 
