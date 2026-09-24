@@ -1,0 +1,62 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.field.filament-vacuum-field",
+  "kind": "operator",
+  "title": {
+    "en": "Circular-filament vacuum field on a cylindrical grid",
+    "zh": "柱坐标网格上的圆电流丝真空场"
+  },
+  "summary": "Superpose circular-filament magnetic fields on a uniform radial R-Z grid and integrate R times B_Z radially to obtain the maintained flux convention.",
+  "taxonomy": ["field", "vacuum-field", "axisymmetric"],
+  "aliases": ["filament vacuum field radial quadrature"],
+  "identity": {
+    "relation": "circular-filament currents to axisymmetric vacuum flux and poloidal field on a grid",
+    "direction": "R-Z grids and [source R, source Z, current] rows -> psi, b_r, b_z",
+    "definition": "Evaluates elliptic-integral field contributions from each ideal circular filament, sums them, and applies radial trapezoidal quadrature to R times B_Z from the first radial grid point.",
+    "model": "axisymmetric ideal circular-filament vacuum field",
+    "geometry": "circular sources and a rectilinear cylindrical R-Z target grid",
+    "coordinates": "SI cylindrical R-Z coordinates; either array axis may be radial",
+    "boundary": "psi is zero at the first radial grid point; B_R is set to zero for R < 1e-9 m",
+    "assumptions": ["The radial grid is uniformly spaced and strictly increasing.", "Each source row carries current in amperes, not a dimensionless Green weight."]
+  },
+  "inputs": [
+    {"name": "r_grid", "description": "Target cylindrical radius grid.", "units": "m", "shape": "2-D, at least two points per axis", "dtype": "real array-like", "required": true, "constraints": "Finite, nonnegative, rectilinear, uniformly spaced and strictly increasing along exactly one array axis."},
+    {"name": "z_grid", "description": "Target axial coordinate grid.", "units": "m", "shape": "same as r_grid", "dtype": "real array-like", "required": true, "constraints": "Finite and rectilinear along the other axis; axial order is not constrained."},
+    {"name": "filaments", "description": "Ideal circular source rows [R0_m, Z0_m, current_A].", "units": "m,m,A", "shape": "[N_filament,3]", "dtype": "real array-like", "required": true, "constraints": "Finite with strictly positive source radius; an empty source set is allowed; no source may coincide with a target grid point."}
+  ],
+  "outputs": [
+    {"name": "psi", "description": "Radial trapezoidal integral of R times B_Z from the first radial grid point.", "units": "Wb", "shape": "same as r_grid", "dtype": "float64", "required": true, "constraints": "Zero at the first radial grid point under the maintained convention."},
+    {"name": "b_r", "description": "Superposed radial magnetic field.", "units": "T", "shape": "same as r_grid", "dtype": "float64", "required": true, "constraints": "Forced to zero where R < 1e-9 m."},
+    {"name": "b_z", "description": "Superposed axial magnetic field.", "units": "T", "shape": "same as r_grid", "dtype": "float64", "required": true, "constraints": "Finite on successful return."}
+  ],
+  "applicability": {
+    "preconditions": ["Finite SI inputs on a uniform radial, rectilinear cylindrical grid without source-target coincidence."],
+    "supported": ["Linear vacuum superposition of ideal axisymmetric circular-filament currents on the declared grid."],
+    "excluded": ["Resolved filament self-fields.", "Finite-conductor or material physics.", "Non-axisymmetric three-dimensional fields.", "Absolute flux reference independent of the first radial grid point."]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for invalid grid rank, shape, radial spacing/order, nonfinite values, nonpositive source radius or coincident source and target.",
+    "runtime_failure": "Scientific dependency errors propagate; a nonfinite computed field or flux raises FloatingPointError.",
+    "nonconvergence": "Not applicable; the field formula and quadrature have no solver iteration.",
+    "partial_results": "No partial mapping is returned after validation or computation failure."
+  },
+  "provenance": {
+    "lineage_summary": "Maintained SciRel implementation with internal source-derived development evidence; this document does not assert expert scientific approval of the current version.",
+    "source_kinds": ["source-derived candidate relation", "maintained scientific implementation", "scientific regression tests"],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {"python": {"module": "scirel.field.filament_vacuum_field", "symbol": "integrate_filament_vacuum_field", "signature": "integrate_filament_vacuum_field(r_grid, z_grid, filaments)"}},
+  "version": {"implementation_version": "0.1.0.dev7", "dependencies": []},
+  "example": {
+    "description": "Evaluate one off-grid filament and check the axis limit and radial flux reference.",
+    "code": "import numpy as np\nfrom scirel.field.filament_vacuum_field import integrate_filament_vacuum_field\nr_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.3, 5), np.linspace(-0.2, 0.2, 4))\nresult = integrate_filament_vacuum_field(r_grid, z_grid, [[0.45, -0.1, 1500.0]])\nassert set(result) == {'psi', 'b_r', 'b_z'}\nassert all(value.shape == r_grid.shape for value in result.values())\nassert np.isfinite(result['b_z']).all()\nnp.testing.assert_array_equal(result['psi'][:, 0], 0.0)\nnp.testing.assert_array_equal(result['b_r'][:, 0], 0.0)",
+    "expected": "Finite grid-shaped field arrays with zero first-radial-column flux and axis radial field."
+  },
+  "verification": {
+    "scope": ["Filament-current superposition.", "Circular-filament analytic axial-field limit.", "Radial quadrature increment and first-grid-point reference.", "Transposed rectilinear layout and invalid radial grid."],
+    "tests": ["tests/operator_contracts/test_filament_vacuum_field.py"],
+    "evidence_ceiling": "Validated for the maintained ideal-filament grid relation and tested examples; historical candidate evidence does not establish complete source-project closure or expert approval.",
+    "known_limitations": ["The returned flux uses the first radial grid point as reference and omits a 2-pi flux factor.", "The ideal source is singular at coincident targets, which are rejected.", "Public distribution licensing remains pending a human decision."]
+  }
+}
