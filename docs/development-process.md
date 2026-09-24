@@ -57,7 +57,7 @@ Agent 可在隔离开发分支按已比较的科学关系逐项整合代码、Ta
 
 从确定的开发提交冻结待审版，绑定 Git tree/提交、exact documents 集合、相对上一可信版的科学增量、受影响依赖闭包和验证证据；若构建了内部 wheel/pilot catalog，也绑定其摘要。专家以领域能力和适用域审阅该增量，未变且未受影响的资产可复用经核实仍有效的证据。机械版本号或文案变化本身不触发全库科学重审，但工程构建与发行绑定仍需重新验证。
 
-当前首次待审版本可使用 `scripts/freeze_review_version.py` 在干净的 Git 提交上绑定 exact documents、内部 wheel、开发 catalog、科学审核说明和测试证据，输出不可覆盖的新快照目录。它只验证确定性绑定，`pending_unapproved` 不表示科学证据充分；科学增量、首次审核范围和待决事项必须由审核说明如实呈现。版本级专家认可和可信晋级仍未实现，公开 release 保持阻断。
+当前首次待审版本可使用 `scripts/freeze_review_version.py` 在干净的 Git 提交上绑定 exact documents、内部 wheel、开发 catalog、科学审核说明和测试证据，输出不可覆盖的新快照目录。快照保存文档与审核说明的原始字节，并用 `snapshot_path` 指向其内部副本；Windows 工作树换行字节不要求与 Git 归一化 blob 的 SHA-256 相同，审核者可脱离源码目录核对快照清单。它只验证确定性绑定，`pending_unapproved` 不表示科学证据充分；科学增量、首次审核范围和待决事项必须由审核说明如实呈现。版本级专家认可和可信晋级仍未实现，公开 release 保持阻断。
 
 专家只认可部分科学增量时，不把含未认可内容的原快照标可信；在隔离开发版剔除或返工，重跑受影响验证并冻结 successor。已观测的审核记录保持不变，旧认可不自动转移到新的科学合同或代码。开发候选冲突时对照最新基线重新比较关系与行动，同一资产、科学合同、依赖闭包、TaskGraph 或 patch hunk 变化不采用 last-write-wins。开发内容可进入内部 import、内部 wheel 和标明非可信的 pilot catalog；只有专家认可的确切版本才有资格晋级可信，公开发行仍另过门禁。
 
@@ -91,7 +91,7 @@ pwsh ./scripts/check.ps1 -Mode full
 
 恢复后的 `release` 仍须使用不存在的输出目录，不得覆盖或清理已有结果。历史实现的 venv 不继承 system site-packages，SciRel wheel 以 `--no-index --no-deps` 安装，并清空源码 `PYTHONPATH`；其离线方式通过 `.pth` 暴露开发解释器中 NumPy/SciPy/Pytest 所在开发 site-packages，因此只证明 wheel 可在不导入 SciRel 源码的环境配合这些已存在依赖运行，不证明未声明包完全不可见，也不等价于从干净离线 wheelhouse 安装全部依赖。正式发行还需从固定的离线 wheelhouse 安装声明依赖，并固定 Python 与构建工具版本；不同工具链下 wheel 字节摘要不同，不能仅凭相同源码声称 wheel 字节可复现。
 
-当前 catalog 为 `partial: 50/68` 开发 pilot，不是可信发布目录。现有 release manifest 只证明旧 approved draft 中的 exact documents 已与本次 catalog/wheel 绑定；它不会把 wheel 中未进入 catalog 的维护代码解释成已批准资产，更不能替代版本级科学审核。正式首发前必须为全部可见发布资产完成相对上一可信版的审核（无可信版时为首次审核集合）与 exact documentation，并把 `.dev` schema 统一冻结为 `v1`。
+当前 catalog 为 `partial: 53/68` 开发 pilot，不是可信发布目录。现有 release manifest 只证明旧 approved draft 中的 exact documents 已与本次 catalog/wheel 绑定；它不会把 wheel 中未进入 catalog 的维护代码解释成已批准资产，更不能替代版本级科学审核。正式首发前必须为全部可见发布资产完成相对上一可信版的审核（无可信版时为首次审核集合）与 exact documentation，并把 `.dev` schema 统一冻结为 `v1`。
 
 ## 6. 收尾与发行边界
 

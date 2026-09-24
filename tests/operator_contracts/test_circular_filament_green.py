@@ -1,6 +1,7 @@
 import numpy as np
 
 from scirel.field.circular_filament_green import circular_filament_green_response, circular_filament_green_response as scientific_operator
+from scirel.field.poloidal_field_from_flux import poloidal_field_from_flux
 
 
 # 验证：轴上的 source filament 必须依源码约定跳过，且不污染其他有限响应。
@@ -22,6 +23,25 @@ def test_weighted_filament_response_is_linear():
     total = scientific_operator(np.array([[0.25, 0.0, 2.0], [0.35, 0.05, -0.5]]), points)
     for key in ("gpsi", "gBR", "gBZ"):
         assert np.allclose(total[key], left[key] + right[key])
+
+
+def test_flux_normalization_recovers_direct_green_field():
+    r = np.linspace(0.2, 0.6, 41)
+    z = np.linspace(-0.2, 0.2, 41)
+    r_grid, z_grid = np.meshgrid(r, z)
+    points = np.column_stack((r_grid.ravel(), z_grid.ravel()))
+    green = circular_filament_green_response([[0.8, 0.0, 1.0]], points)
+    flux = green["gpsi"].reshape(r_grid.shape)
+    reconstructed = poloidal_field_from_flux(r_grid, z_grid, flux)
+    full_linked_flux = poloidal_field_from_flux(r_grid, z_grid, 2.0 * np.pi * flux)
+    interior = (slice(4, -4), slice(4, -4))
+
+    for field_name, green_name in (("B_R", "gBR"), ("B_Z", "gBZ")):
+        direct = green[green_name].reshape(r_grid.shape)[interior]
+        error = np.max(np.abs(reconstructed[field_name][interior] - direct))
+        assert error / np.max(np.abs(direct)) < 2.0e-3
+        full_flux_error = np.max(np.abs(full_linked_flux[field_name][interior] - direct))
+        assert full_flux_error / np.max(np.abs(direct)) > 1.0
 
 
 def test_reviewed_relation_example():

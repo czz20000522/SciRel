@@ -86,7 +86,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.equilibrium.reduced_hall_anisotropic_picard", "symbol": "solve_reduced_hall_anisotropic_picard", "signature": "solve_reduced_hall_anisotropic_picard(inputs=None, **kwargs)"}},
-  "version": {"implementation_version": "0.1.0.dev11", "dependencies": [{"asset_id":"scirel.field.poloidal-field-from-flux"},{"asset_id":"scirel.closures.reduced-hall-drift"},{"asset_id":"scirel.equilibrium.axisymmetric-picard-update"}]},
+  "version": {"implementation_version": "0.1.0.dev12", "dependencies": [{"asset_id":"scirel.field.poloidal-field-from-flux"},{"asset_id":"scirel.closures.reduced-hall-drift"},{"asset_id":"scirel.equilibrium.axisymmetric-picard-update"}]},
   "example": {
     "description": "A uniform axial vacuum field, constant isotropic species state and zero Green response converge in one outer update.",
     "code": "import numpy as np\nfrom scirel.equilibrium import solve_reduced_hall_anisotropic_picard\nr_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.4, 5), np.linspace(-0.2, 0.2, 5))\npsi_vac = r_grid**2\ndef pressure_closure(_b, psi):\n    zeros = np.zeros_like(psi)\n    return {'p_parallel': 0.0, 'p_perpendicular': 0.0, 'ion_density': np.full_like(psi, 1e18), 'electron_pressure': zeros, 'electrostatic_potential': zeros}\nresult = solve_reduced_hall_anisotropic_picard(r_grid=r_grid, z_grid=z_grid, psi_vac=psi_vac, g_psi=np.zeros((25,25)), ion_mass_kg=1.67262192595e-27, ion_charge_c=1.602176634e-19, pressure_closure=pressure_closure, maxiter=2)\nnp.testing.assert_allclose(result['psi'], psi_vac)\nnp.testing.assert_allclose(result['J_phi'], 0.0)\nassert result['converged'] and result['iterations'] == 1",

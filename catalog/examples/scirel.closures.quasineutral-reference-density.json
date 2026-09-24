@@ -1,0 +1,56 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.closures.quasineutral-reference-density",
+  "kind": "operator",
+  "title": {"en": "Quasineutral reference electron density", "zh": "准中性参考电子密度"},
+  "summary": "Compute the electron reference number density as positive ion charge state times ion reference number density, with NumPy broadcasting and an explicit finite-product check.",
+  "taxonomy": ["closures", "quasineutrality", "reference-density"],
+  "aliases": ["electron reference density", "n_e,ref = Z_i n_i,ref"],
+  "identity": {
+    "relation": "Reference electron number density from positive-ion reference number density and charge state",
+    "direction": "(density_ref_m3, ion_charge_state) -> electron_density_ref_m3",
+    "definition": "n_e,ref = Z_i * n_i,ref, evaluated elementwise after broadcasting both inputs as float arrays. The returned value is a NumPy float array with their common broadcast shape.",
+    "model": "Single positive-ion quasineutral reference-density relation; no kinetic moment, potential response or equilibrium solve is performed.",
+    "geometry": "None imposed; scalar values or broadcast-compatible fields are accepted without a spatial-grid convention.",
+    "coordinates": "Input array axes are caller supplied and preserved through NumPy broadcasting; the function has no coordinate inputs.",
+    "boundary": "Zero ion reference density produces zero electron reference density. The finite product must remain representable; otherwise FloatingPointError is raised.",
+    "assumptions": ["density_ref_m3 is a nonnegative ion number density in m^-3 and ion_charge_state is a positive dimensionless ion charge multiplier.", "The function does not enforce integral charge states or check whether the supplied density and charge state describe one physical plasma state."]
+  },
+  "inputs": [
+    {"name": "density_ref_m3", "description": "Positive-ion reference number density n_i,ref.", "units": "m^-3", "shape": "scalar or array; broadcast with ion_charge_state", "dtype": "real array-like converted to float64", "required": true, "constraints": "Every converted element must be finite and nonnegative; zero is accepted."},
+    {"name": "ion_charge_state", "description": "Positive ion charge-state multiplier Z_i.", "units": "dimensionless", "shape": "scalar or array; broadcast with density_ref_m3", "dtype": "real array-like converted to float64", "required": true, "constraints": "Every converted element must be finite and strictly positive; integer charge state is not enforced."}
+  ],
+  "outputs": [
+    {"name": "electron_density_ref_m3", "description": "Charge-state-weighted electron reference number density.", "units": "m^-3", "shape": "common broadcast shape of both inputs", "dtype": "NumPy float64 array, including a zero-dimensional array for scalar inputs", "required": true, "constraints": "Finite and nonnegative for every returned element; an unrepresentable product raises instead of being returned."}
+  ],
+  "applicability": {
+    "preconditions": ["The supplied ion reference density and positive charge-state multiplier describe the same reference state and use broadcast-compatible shapes."],
+    "supported": ["One positive-ion charge multiplier per scalar or broadcast field, including zero-density cells.", "Constructing a reference electron density for later quasineutral or Boltzmann-electron evaluation."],
+    "excluded": ["Multiple ion species charge sums unless the caller has already reduced them to an equivalent valid density and multiplier.", "Determining a potential, local electron density away from the reference state, or whether a supplied plasma is actually quasineutral."]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for nonfinite or negative density, nonfinite or nonpositive charge state, or incompatible broadcast shapes. NumPy conversion can raise TypeError or ValueError for nonnumeric inputs.",
+    "runtime_failure": "Raises FloatingPointError when finite validated inputs yield a nonfinite product, such as float64 overflow. NumPy may emit an overflow warning during that multiplication.",
+    "nonconvergence": "Not applicable; no iteration is performed.",
+    "partial_results": "No result mapping is returned after an exception."
+  },
+  "provenance": {
+    "lineage_summary": "SciRel-maintained relation corresponding to a saved Pleiades L1 quasineutral reference-density operator and maintained direct regressions. The historical source and admission records are development provenance, not current expert recognition.",
+    "source_kinds": ["saved L1 operator description and implementation", "saved direct contract test", "SciRel direct scientific regression tests"],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {"python": {"module": "scirel.closures.quasineutral_reference_density", "symbol": "compute_reference_electron_density", "signature": "compute_reference_electron_density(density_ref_m3, ion_charge_state)"}},
+  "version": {"implementation_version": "0.1.0.dev12", "dependencies": []},
+  "example": {
+    "description": "Broadcast two positive charge states over ion reference densities.",
+    "code": "import numpy as np\nfrom scirel.closures import compute_reference_electron_density\nresult = compute_reference_electron_density([1.0e18, 2.0e18], [1.0, 3.0])\nnp.testing.assert_allclose(result['electron_density_ref_m3'], [1.0e18, 6.0e18])\nassert result['electron_density_ref_m3'].shape == (2,)",
+    "expected": "The electron reference densities are 1.0e18 and 6.0e18 m^-3 in an array of shape (2,)."
+  },
+  "verification": {
+    "scope": ["Broadcast charge-state multiplication and output shape.", "Accepted zero ion density and rejected negative, nonfinite or nonpositive direct inputs."],
+    "tests": ["tests/operator_contracts/test_quasineutral_reference_density.py"],
+    "evidence_ceiling": "Direct SciRel regressions establish the product on selected scalar and vector cases and selected invalid-input behavior. They do not establish multi-species physics, spatial-grid semantics, all broadcast shapes, or expert recognition; the finite-product branch is specified by the current implementation but has no dedicated direct regression.",
+    "known_limitations": ["The charge state may be any positive finite floating-point value; integer-equivalent physical meaning is a caller responsibility.", "Broadcasting does not establish that input axes refer to the same coordinates.", "Public distribution licensing and expert recognition remain pending."]
+  }
+}

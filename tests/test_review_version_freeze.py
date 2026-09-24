@@ -1,3 +1,4 @@
+import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -42,15 +43,15 @@ def _inputs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict:
         documents,
         catalog,
         catalog_id="test-development",
-        release_version="0.1.0.dev11",
+        release_version="0.1.0.dev12",
         coverage_status="partial",
         declared_total=63,
     )
-    wheel = tmp_path / "scirel-0.1.0.dev11-py3-none-any.whl"
+    wheel = tmp_path / "scirel-0.1.0.dev12-py3-none-any.whl"
     with zipfile.ZipFile(wheel, "w") as archive:
         archive.writestr(
-            "scirel-0.1.0.dev11.dist-info/METADATA",
-            "Metadata-Version: 2.1\nName: scirel\nVersion: 0.1.0.dev11\n",
+            "scirel-0.1.0.dev12.dist-info/METADATA",
+            "Metadata-Version: 2.1\nName: scirel\nVersion: 0.1.0.dev12\n",
         )
     evidence = tmp_path / "tests.md"
     evidence.write_text("Focused test passed.\n", encoding="utf-8")
@@ -77,9 +78,94 @@ def test_freeze_binds_clean_commit_documents_catalog_and_wheel(
     assert manifest["trusted_baseline"] is None
     assert manifest["catalog"]["coverage"]["included_asset_count"] == 1
     assert len(manifest["exact_documents"]) == 1
+    for entry in [manifest["review_dossier"], *manifest["exact_documents"]]:
+        saved_path = inputs["output_dir"] / entry["snapshot_path"]
+        assert saved_path.is_file()
+        assert entry["sha256"] == "sha256:" + hashlib.sha256(saved_path.read_bytes()).hexdigest()
     assert (inputs["output_dir"] / manifest["wheel"]["path"]).is_file()
     assert (inputs["output_dir"] / "test-evidence.md").is_file()
     with pytest.raises(FileExistsError, match="already exists"):
+        freeze_module.freeze_review_version(**inputs)
+
+
+def test_freeze_preserves_worktree_line_endings_outside_source_checkout(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    inputs = _inputs(tmp_path, monkeypatch)
+    repo = inputs["review_dossier"].parent
+    document = next(inputs["documents_dir"].glob("*.json"))
+    _git(repo, "config", "core.autocrlf", "true")
+    for path in (document, inputs["review_dossier"]):
+        data = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
+        path.write_bytes(data)
+    _git(repo, "add", ".")
+    assert not subprocess.run(
+        ["git", "status", "--porcelain"], cwd=repo, check=True, capture_output=True
+    ).stdout
+    blob = subprocess.run(
+        ["git", "show", "HEAD:catalog/examples/" + document.name],
+        cwd=repo, check=True, capture_output=True,
+    ).stdout
+    assert blob != document.read_bytes()
+
+    manifest = freeze_module.freeze_review_version(**inputs)
+    archived = tmp_path / "detached-review"
+    inputs["output_dir"].rename(archived)
+    repo.rename(tmp_path / "source-away")
+    for entry in [manifest["review_dossier"], *manifest["exact_documents"]]:
+        saved = archived / entry["snapshot_path"]
+        assert entry["sha256"] == "sha256:" + hashlib.sha256(saved.read_bytes()).hexdigest()
+    assert (archived / "catalog/release.json").is_file()
+
+
+def test_freeze_rejects_committed_document_change_without_rebuilt_catalog(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    inputs = _inputs(tmp_path, monkeypatch)
+    document = next(inputs["documents_dir"].glob("*.json"))
+    payload = json.loads(document.read_text(encoding="utf-8"))
+    payload["summary"] += " Revised contract."
+    document.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    _git(document.parents[2], "add", ".")
+    _git(
+        document.parents[2], "-c", "user.name=SciRel Test",
+        "-c", "user.email=test@example.invalid", "commit", "-m", "revise document",
+    )
+
+    with pytest.raises(ValueError, match="catalog records differ"):
+        freeze_module.freeze_review_version(**inputs)
+
+
+def test_freeze_allows_snapshot_beside_tracked_sources(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    inputs = _inputs(tmp_path, monkeypatch)
+    inputs["output_dir"] = inputs["review_dossier"].parent / "review-version"
+
+    manifest = freeze_module.freeze_review_version(**inputs)
+
+    assert (inputs["output_dir"] / manifest["exact_documents"][0]["snapshot_path"]).is_file()
+
+
+@pytest.mark.parametrize("artifact,expected", [
+    ("wheel", "wheel changed during freeze"),
+    ("test_evidence", "test evidence changed during freeze"),
+])
+def test_freeze_rejects_changed_copied_artifact(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, artifact: str, expected: str
+) -> None:
+    inputs = _inputs(tmp_path, monkeypatch)
+    original_copy = freeze_module.shutil.copy2
+    source = inputs[artifact]
+
+    def changed_copy(src, dst, *args, **kwargs):
+        result = original_copy(src, dst, *args, **kwargs)
+        if Path(src) == source:
+            Path(dst).write_bytes(b"changed after validation")
+        return result
+
+    monkeypatch.setattr(freeze_module.shutil, "copy2", changed_copy)
+    with pytest.raises(ValueError, match=expected):
         freeze_module.freeze_review_version(**inputs)
 
 

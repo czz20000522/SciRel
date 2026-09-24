@@ -69,7 +69,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.equilibrium.axisymmetric_anisotropic_picard", "symbol": "solve_axisymmetric_anisotropic_picard", "signature": "solve_axisymmetric_anisotropic_picard(inputs=None, **kwargs)"}},
-  "version": {"implementation_version": "0.1.0.dev11", "dependencies": [{"asset_id": "scirel.field.poloidal-field-from-flux"}, {"asset_id": "scirel.equilibrium.anisotropic-force-balance"}, {"asset_id": "scirel.equilibrium.axisymmetric-picard-update"}]},
+  "version": {"implementation_version": "0.1.0.dev12", "dependencies": [{"asset_id": "scirel.field.poloidal-field-from-flux"}, {"asset_id": "scirel.equilibrium.anisotropic-force-balance"}, {"asset_id": "scirel.equilibrium.axisymmetric-picard-update"}]},
   "example": {
     "description": "A zero Green response with an isotropic linear radial pressure performs one analytic current step and returns the unchanged vacuum flux.",
     "code": "import numpy as np\nfrom scirel.equilibrium import solve_axisymmetric_anisotropic_picard\nr_grid, z_grid = np.meshgrid(np.linspace(0.2, 0.6, 5), np.linspace(-0.2, 0.2, 5))\npressure = 3.0 + r_grid\nresult = solve_axisymmetric_anisotropic_picard(r_grid=r_grid, z_grid=z_grid, psi_vac=r_grid**2, g_psi=np.zeros((25,25)), pressure_closure=lambda _b,_psi: {'p_parallel': pressure, 'p_perpendicular': pressure}, maxiter=1, tol=1e-12, relax=0.0)\nnp.testing.assert_allclose(result['psi'], r_grid**2)\nnp.testing.assert_allclose(result['J_phi'], 0.5, rtol=2e-13, atol=2e-13)\nassert result['converged'] and result['iterations'] == 1",

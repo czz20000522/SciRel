@@ -14,12 +14,12 @@
     "geometry": "rectilinear R-Z mesh, optionally including the cylindrical axis",
     "coordinates": "cylindrical R-Z, arrays indexed [Z,R]",
     "boundary": "At an included R=0 column, use the stated axis rule; at other grid edges, use one-sided second-order derivatives.",
-    "assumptions": ["psi denotes R A_phi in Wb, with R and Z in metres.", "The sampled flux is sufficiently resolved for the finite-difference derivative to represent the intended field."]
+    "assumptions": ["psi denotes R A_phi in Wb/rad, with R and Z in metres; full linked flux requires division by 2 pi before this operator.", "The sampled flux is sufficiently resolved for the finite-difference derivative to represent the intended field."]
   },
   "inputs": [
     {"name": "r_grid", "description": "Cylindrical radius at each grid point.", "units": "m", "shape": "[N_Z,N_R]", "dtype": "real array-like, converted to float64", "required": true, "constraints": "Finite rectilinear grid with nonnegative, strictly increasing R axis and N_R >= 3; same shape as z_grid and psi."},
     {"name": "z_grid", "description": "Axial coordinate at each grid point.", "units": "m", "shape": "[N_Z,N_R]", "dtype": "real array-like, converted to float64", "required": true, "constraints": "Finite rectilinear grid with strictly increasing Z axis and N_Z >= 3; same shape as r_grid and psi."},
-    {"name": "psi", "description": "Axisymmetric flux R A_phi sampled on the R-Z grid.", "units": "Wb", "shape": "[N_Z,N_R]", "dtype": "real array-like, converted to float64", "required": true, "constraints": "Finite values and exactly the same two-dimensional shape as the coordinate grids."}
+    {"name": "psi", "description": "Axisymmetric poloidal flux function R A_phi sampled on the R-Z grid, not full linked flux.", "units": "Wb/rad", "shape": "[N_Z,N_R]", "dtype": "real array-like, converted to float64", "required": true, "constraints": "Finite values and exactly the same two-dimensional shape as the coordinate grids."}
   ],
   "outputs": [
     {"name": "B_R", "description": "Radial poloidal magnetic-field component.", "units": "T", "shape": "[N_Z,N_R]", "dtype": "float64", "required": true, "constraints": "Zero at an included cylindrical-axis column."},
@@ -44,7 +44,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.field.poloidal_field_from_flux", "symbol": "poloidal_field_from_flux", "signature": "poloidal_field_from_flux(r_grid, z_grid, psi)"}},
-  "version": {"implementation_version": "0.1.0.dev11", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev12", "dependencies": []},
   "example": {
     "description": "Recover a uniform axial field from a quadratic flux profile including R=0.",
     "code": "import numpy as np\nfrom scirel.field import poloidal_field_from_flux\nr_grid, z_grid = np.meshgrid([0.0, 0.2, 0.4], [-0.5, 0.0, 0.5])\nresult = poloidal_field_from_flux(r_grid, z_grid, r_grid**2)\nnp.testing.assert_allclose(result['B_R'], 0.0)\nnp.testing.assert_allclose(result['B_Z'], 2.0)\nnp.testing.assert_allclose(result['B'], 2.0)",

@@ -12,7 +12,7 @@
   "identity": {
     "relation": "rectangular coil configurations and an R-Z grid to axisymmetric vacuum flux and poloidal field",
     "direction": "coil configurations plus target grid -> psi_vac, b_r_vac, b_z_vac, filaments",
-    "definition": "For each coil, discretizes its section, attaches dimensionless per-filament weights, evaluates a separate circular-filament Green row, then contracts rows with one drive current per coil.",
+    "definition": "For each coil, discretizes its section, attaches dimensionless per-filament weights, evaluates a separate circular-filament Green row, then contracts rows with one drive current per coil. psi_vac is psi = R A_phi, without a 2 pi full-linked-flux factor.",
     "model": "vacuum axisymmetric circular-filament superposition",
     "geometry": "multiple rectangular coil cross-sections represented by circular filaments",
     "coordinates": "strictly increasing rectilinear cylindrical R-Z grid with C-order target flattening",
@@ -25,7 +25,7 @@
     {"name": "rectangular_coils", "description": "Coil mappings with r0_m,z0_m,nr,nz,dr_m,dz_m,current_a and optional angle_deg/weights.", "units": "mixed SI", "shape": "list[mapping]", "dtype": "Python sequence of mappings", "required": true, "constraints": "Nonempty; one finite drive current and one optional finite weight per generated filament."}
   ],
   "outputs": [
-    {"name": "psi_vac", "description": "Vacuum poloidal flux on the target grid.", "units": "Wb", "shape": "[N_Z,N_R]", "dtype": "float64", "required": true, "constraints": "Same grid shape and C-order point mapping as inputs."},
+    {"name": "psi_vac", "description": "Vacuum poloidal flux function psi = R A_phi on the target grid, not full linked flux.", "units": "Wb/rad", "shape": "[N_Z,N_R]", "dtype": "float64", "required": true, "constraints": "Same grid shape and C-order point mapping as inputs."},
     {"name": "b_r_vac", "description": "Vacuum radial magnetic field on the target grid.", "units": "T", "shape": "[N_Z,N_R]", "dtype": "float64", "required": true, "constraints": "Same grid shape and C-order point mapping as inputs."},
     {"name": "b_z_vac", "description": "Vacuum axial magnetic field on the target grid.", "units": "T", "shape": "[N_Z,N_R]", "dtype": "float64", "required": true, "constraints": "Same grid shape and C-order point mapping as inputs."},
     {"name": "filaments", "description": "Concatenated [R_m,Z_m,weight] rows in caller coil order.", "units": "m,m,dimensionless", "shape": "[N_filament,3]", "dtype": "float64", "required": true, "constraints": "Preserves each coil's filament order and the outer caller coil order."}
@@ -55,7 +55,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev11",
+    "implementation_version": "0.1.0.dev12",
     "dependencies": [
       {"asset_id": "scirel.field.circular-filament-green"},
       {"asset_id": "scirel.field.current-green-superposition"},

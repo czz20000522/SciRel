@@ -80,7 +80,7 @@ def freeze_review_version(
     tree = _git("rev-parse", "HEAD^{tree}")
     dossier_ref = _tracked_path(review_dossier)
     document_refs = {
-        _tracked_path(path): _digest(path)
+        _tracked_path(path): (path, _digest(path))
         for path in sorted(documents_dir.rglob("*.json"))
     }
     documents = load_document_set(documents_dir)
@@ -114,11 +114,19 @@ def freeze_review_version(
         "git_commit": commit,
         "git_tree": tree,
         "implementation_version": catalog["release_version"],
-        "review_dossier": {"path": dossier_ref, "sha256": _digest(review_dossier)},
+        "review_dossier": {
+            "path": dossier_ref,
+            "snapshot_path": f"review-dossier/{dossier_ref}",
+            "sha256": _digest(review_dossier),
+        },
         "test_evidence": {"path": "test-evidence.md", "sha256": _digest(test_evidence)},
         "exact_documents": [
-            {"path": path, "sha256": digest}
-            for path, digest in sorted(document_refs.items())
+            {
+                "path": path,
+                "snapshot_path": f"exact-documents/{path}",
+                "sha256": digest,
+            }
+            for path, (_, digest) in sorted(document_refs.items())
         ],
         "catalog": {
             "path": "catalog/release.json",
@@ -133,14 +141,39 @@ def freeze_review_version(
     ) as temporary:
         staging = Path(temporary)
         shutil.copytree(catalog_dir, staging / "catalog")
+        if _validate_catalog(staging / "catalog") != catalog:
+            raise ValueError("catalog changed during freeze")
+        dossier_copy = staging / manifest["review_dossier"]["snapshot_path"]
+        dossier_copy.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(review_dossier, dossier_copy)
+        if _digest(dossier_copy) != manifest["review_dossier"]["sha256"]:
+            raise ValueError("review dossier changed during freeze")
+        for source_ref, (source, _) in document_refs.items():
+            target = staging / "exact-documents" / source_ref
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
+        for entry in manifest["exact_documents"]:
+            copied = staging / entry["snapshot_path"]
+            if _digest(copied) != entry["sha256"]:
+                raise ValueError(f"exact document changed during freeze: {entry['path']}")
         (staging / "wheel").mkdir()
         shutil.copy2(wheel, staging / "wheel" / wheel.name)
         shutil.copy2(test_evidence, staging / "test-evidence.md")
+        if _digest(staging / "wheel" / wheel.name) != manifest["wheel"]["sha256"]:
+            raise ValueError("wheel changed during freeze")
+        if _digest(staging / "test-evidence.md") != manifest["test_evidence"]["sha256"]:
+            raise ValueError("test evidence changed during freeze")
         (staging / "manifest.json").write_text(
             json.dumps(manifest, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
             encoding="utf-8",
             newline="\n",
         )
+        status_args = ["status", "--porcelain", "--untracked-files=all"]
+        if staging.is_relative_to(ROOT.resolve()):
+            relative_staging = staging.relative_to(ROOT.resolve()).as_posix()
+            status_args.extend(("--", ".", f":(exclude){relative_staging}/**"))
+        if _git("rev-parse", "HEAD") != commit or _git(*status_args):
+            raise ValueError("review source changed during freeze")
         staging.replace(output_dir)
     return manifest
 
