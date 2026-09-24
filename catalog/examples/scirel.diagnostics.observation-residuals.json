@@ -42,7 +42,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.diagnostics.observation_residuals", "symbol": "reduce_observation_residuals", "signature": "reduce_observation_residuals(*, predicted, observations)"}},
-  "version": {"implementation_version": "0.1.0.dev13", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev14", "dependencies": []},
   "example": {
     "description": "A flux-loop residual precedes a Thomson-like perpendicular-pressure residual.",
     "code": "import numpy as np\nfrom scirel.diagnostics import reduce_observation_residuals\nresult = reduce_observation_residuals(predicted={'flux_loops': [3.0], 'thomson': {'p_perp': [5.0]}}, observations={'flux_loops': {'values': [1.0], 'sigma': [2.0]}, 'thomson': {'p_perp': {'values': [3.0], 'sigma': [1.0]}}})\nnp.testing.assert_allclose(result['residual_vector'], [1.0, 2.0])\nassert result['chi2'] == 5.0",

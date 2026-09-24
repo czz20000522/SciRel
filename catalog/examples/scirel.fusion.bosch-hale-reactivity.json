@@ -41,7 +41,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.fusion.bosch_hale_reactivity", "symbol": "evaluate_bosch_hale_reactivity", "signature": "evaluate_bosch_hale_reactivity(ion_temperature_kev, *, reaction='DT')"}},
-  "version": {"implementation_version": "0.1.0.dev13", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev14", "dependencies": []},
   "example": {
     "description": "Evaluate DT Maxwellian reactivity at 10 keV.",
     "code": "from scirel.fusion import evaluate_bosch_hale_reactivity\nrate = evaluate_bosch_hale_reactivity(10.0, reaction='DT')\nassert abs(rate / 1.1361654705836232e-22 - 1) < 1e-11",

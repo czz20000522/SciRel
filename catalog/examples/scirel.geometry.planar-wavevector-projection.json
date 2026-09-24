@@ -47,7 +47,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.geometry.planar_wavevector", "symbol": "project_planar_wavevector", "signature": "project_planar_wavevector(*, k_grid=None, theta_rad=None, kx_grid=None, kz_grid=None)"}},
-  "version": {"implementation_version": "0.1.0.dev13", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev14", "dependencies": []},
   "example": {
     "description": "Measure a 3-4-5 Cartesian wavevector after caller-side SI conversion.",
     "code": "from scirel.geometry import project_planar_wavevector\nresult = project_planar_wavevector(kx_grid=[3.0], kz_grid=[4.0])\nassert result['k'][0] == 5.0",

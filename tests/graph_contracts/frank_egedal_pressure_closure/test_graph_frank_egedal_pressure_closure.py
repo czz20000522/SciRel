@@ -39,7 +39,7 @@ def _inputs(**parameter_overrides):
 def test_yaml_declares_the_non_interchangeable_closure_pipeline():
     contract = Path(__file__).with_name("task_graph.yaml").read_text(encoding="utf-8")
     assert "primary_pfm_node: N4" in contract
-    assert "id: loss_cone_spectrum" in contract
+    assert "- id: loss_cone_spectrum_port" in contract
     assert "id: hot_ion_moments" in contract
     assert "from: hot_ion_moments" in contract
 
@@ -47,6 +47,9 @@ def test_yaml_declares_the_non_interchangeable_closure_pipeline():
 # 验证：显式 degree 分支仍须产生有限、同 shape 的两个压力场和可审查闭合状态。
 def test_returns_finite_grid_shaped_pressure_and_explicit_closure_state():
     result = _run_graph(_inputs())
+    assert set(result) == {
+        "p_parallel", "p_perp", "density", "electron_temperature", "closure_state"
+    }
     assert result["p_parallel"].shape == (2, 2)
     assert result["p_perp"].shape == (2, 2)
     assert np.all(np.isfinite(result["p_parallel"]))
@@ -107,6 +110,19 @@ def test_uses_emitted_loss_cone_asset_when_degrees_are_not_supplied():
     result = _run_graph(inputs)
     assert result["closure_state"]["degree_source"] == "scirel.kinetic.loss_cone_spectrum"
     assert result["closure_state"]["degrees"].shape == (1,)
+
+
+def test_mirror_ratio_precedes_turning_b_with_turning_fallback():
+    baseline = _run_graph(_inputs(mirror_ratio=2.0))
+    both = _run_graph(_inputs(mirror_ratio=2.0, turning_b=4.0))
+    fallback_inputs = _inputs(turning_b=2.0)
+    del fallback_inputs["params"]["mirror_ratio"]
+    fallback = _run_graph(fallback_inputs)
+
+    for result in (both, fallback):
+        np.testing.assert_allclose(result["p_parallel"], baseline["p_parallel"])
+        np.testing.assert_allclose(result["p_perp"], baseline["p_perp"])
+        assert result["closure_state"]["xi_tp_mid"] == baseline["closure_state"]["xi_tp_mid"]
 
 
 def test_requires_explicit_params_contract():

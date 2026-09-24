@@ -98,7 +98,14 @@ def test_shared_composition_change_selects_every_task_graph():
     ]
     assert len(graph_assets) == 11
     assert "tests/test_library_composition.py" in result["test_paths"]
-    assert len(result["test_paths"]) == 13
+    assert {
+        "tests/graph_contracts/frank_egedal_pressure_closure/test_graph_frank_egedal_pressure_closure.py",
+        "tests/operator_contracts/test_frank_egedal_hot_ion_moments.py",
+        "tests/operator_contracts/test_frank_egedal_pressure_state.py",
+        "tests/operator_contracts/test_frank_egedal_radial_envelope.py",
+        "tests/operator_contracts/test_frank_egedal_source_projection.py",
+        "tests/operator_contracts/test_loss_cone_spectrum.py",
+    } <= set(result["test_paths"])
 
 
 def test_documentation_change_needs_no_scientific_tests():
