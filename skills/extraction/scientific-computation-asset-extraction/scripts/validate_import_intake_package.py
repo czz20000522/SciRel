@@ -1638,31 +1638,12 @@ def _validate_operator_markdown(
                 "operator.md must not contain internal workflow heading "
                 f"{heading.title()}: {source_path}"
             )
-    _validate_boundaries_format(
-        markdown_text,
-        source_path=source_path,
-        errors=errors,
-    )
     if LOCAL_RUNTIME_TERMS_RE.search(markdown_text):
         errors.append(
             "operator.md must not prescribe local runtime harnesses "
             "(Docker/container/mount paths belong in test headers): "
             f"{source_path}"
         )
-
-
-def _validate_boundaries_format(
-    markdown_text: str,
-    *,
-    source_path: str,
-    errors: list[str],
-) -> None:
-    boundaries = _section_text(markdown_text, _operator_section_name(markdown_text, "boundaries"))
-    if not boundaries:
-        return
-    if len(boundaries.split()) < 3:
-        errors.append(f"operator.md Boundaries requires substantive content: {source_path}")
-
 
 def _validate_operator_documentation_quality(
     markdown_text: str,

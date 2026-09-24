@@ -16,6 +16,71 @@ SPEC.loader.exec_module(VALIDATOR)
 
 
 class ImportIntakeLanguageContractTest(unittest.TestCase):
+    def _operator_markdown(self, boundaries: str | None) -> str:
+        boundary_section = (
+            f"## 行为与边界\n{boundaries}\n" if boundaries is not None else ""
+        )
+        return f"""---
+language: zh-CN
+---
+# 离散折线路径弧长
+
+## 语法
+`scientific_operator(points) -> {{"s": array}}`
+
+## 说明
+沿连续二维离散折线路径累计各相邻顶点间的欧氏距离，返回每个顶点处的累计弧长。
+
+## 输入参数
+- `points`：按路径顺序排列的二维顶点坐标；shape `[n, 2]`；单位为调用者采用的长度单位；约束为有限且至少包含两个顶点。
+
+## 输出参数
+- `s`：从首个顶点起累计的离散折线弧长；shape `[n]`；单位与输入坐标相同；约束为有限且首项为零。
+
+## 科学或数值定义
+令 `s[0] = 0`，后续元素等于前一累计值加相邻二维顶点的欧氏距离。
+
+{boundary_section}
+## 验证与溯源
+source_unavailable: 使用独立闭式公式和边界测试验证当前实现。
+"""
+
+    def test_accepts_complete_chinese_boundaries_without_spaces(self) -> None:
+        boundaries = (
+            "适用域为有限二维离散折线路径，顶点必须按连续路径顺序提供，且至少两点。"
+            "该算法仅累加折线段，不自动闭合端点、不重排路径、不插值连续曲线、不估算平滑曲率。"
+            "重复顶点产生零长段。非有限坐标、错误shape或少于两点均抛ValueError。"
+            "反向输入使s序列反向，但总长度保持相同。"
+        )
+        errors: list[str] = []
+
+        VALIDATOR._validate_operator_markdown(
+            self._operator_markdown(boundaries),
+            source_path="operators/polyline_length/operator.md",
+            implementation_path=Path("scientific_operator.py"),
+            errors=errors,
+        )
+
+        self.assertFalse(
+            any("Boundaries requires substantive content" in error for error in errors),
+            errors,
+        )
+
+    def test_rejects_missing_required_boundaries_section(self) -> None:
+        errors: list[str] = []
+
+        VALIDATOR._validate_operator_markdown(
+            self._operator_markdown(None),
+            source_path="operators/polyline_length/operator.md",
+            implementation_path=Path("scientific_operator.py"),
+            errors=errors,
+        )
+
+        self.assertIn(
+            "operator.md requires 行为与边界: operators/polyline_length/operator.md",
+            errors,
+        )
+
     def test_operator_contract_allows_a_trailing_known_gap_section(self) -> None:
         sections = "\n".join(
             f"## {heading}\n有效内容。" for heading in VALIDATOR.CHINESE_OPERATOR_HEADINGS
