@@ -1,0 +1,65 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.equilibrium.axisymmetric-picard-update",
+  "kind": "operator",
+  "title": {"en": "Axisymmetric Picard Green flux update", "zh": "轴对称 Picard 磁通 Green 更新"},
+  "summary": "Convert toroidal current density to cell currents, apply a dense cell-current-to-flux Green matrix, relax the resulting flux against the previous state, and report relative flux/current changes.",
+  "taxonomy": ["equilibrium", "picard", "axisymmetric", "green-response"],
+  "aliases": ["flux-relaxed axisymmetric Picard step"],
+  "identity": {
+    "relation": "toroidal current-density grid and dense Green response to one relaxed axisymmetric flux update",
+    "direction": "R-Z grid, J_phi, previous/vacuum flux, Green matrix and relax -> psi_next, cell currents and relative changes",
+    "definition": "Form raw cell currents I=J_phi*dR*dZ using the first grid spacings; candidate flux is psi_vac+reshape(G_psi @ C_order(I)); return psi_next=relax*psi_state+(1-relax)*candidate. Compare psi_next against psi_state and the raw currents against the optional previous currents with the declared norm denominators.",
+    "model": "one axisymmetric dense-Green Picard step with flux relaxation, not current relaxation",
+    "geometry": "rectilinear cylindrical R-Z grid with at least three nodes per axis",
+    "coordinates": "[Z,R] arrays; Green rows and columns follow C-order field-point and cell-current flattening",
+    "boundary": "R starts at a nonnegative value; no external boundary solver or extrapolation is performed.",
+    "assumptions": ["g_psi maps one cell current in A to field-point flux in Wb in the declared order.", "The first R and Z spacings are the cell-area convention even if later spacings differ.", "relax is the weight of the previous flux, not a mixer for current values."]
+  },
+  "inputs": [
+    {"name": "r_grid", "description": "Cylindrical radius mesh.", "units": "m", "shape": "[N_Z,N_R]", "dtype": "finite real array-like", "required": true, "constraints": "Nonnegative, rectilinear and strictly increasing radial axis; at least three columns."},
+    {"name": "z_grid", "description": "Axial coordinate mesh.", "units": "m", "shape": "[N_Z,N_R]", "dtype": "finite real array-like", "required": true, "constraints": "Rectilinear and strictly increasing axial axis; at least three rows and same shape as r_grid."},
+    {"name": "j_phi", "description": "Caller-selected toroidal current density at each grid cell.", "units": "A/m^2", "shape": "[N_Z,N_R]", "dtype": "finite real array-like", "required": true, "constraints": "Same shape as the grid; this Operator does not apply a plasma mask."},
+    {"name": "psi_state", "description": "Previous total flux state.", "units": "Wb", "shape": "[N_Z,N_R]", "dtype": "finite real array-like", "required": true, "constraints": "Same shape as the grid; used for flux relaxation and relative change."},
+    {"name": "psi_vac", "description": "Vacuum or external flux contribution.", "units": "Wb", "shape": "[N_Z,N_R]", "dtype": "finite real array-like", "required": true, "constraints": "Same shape as the grid and aligned with Green response rows."},
+    {"name": "g_psi", "description": "Dense cell-current-to-field-flux response matrix.", "units": "Wb/A", "shape": "[N_Z*N_R,N_Z*N_R]", "dtype": "finite real array-like", "required": true, "constraints": "Finite square matrix with field-point rows and source-current columns in [Z,R] C order."},
+    {"name": "relax", "description": "Weight retained from psi_state.", "units": "dimensionless", "shape": "scalar", "dtype": "real scalar convertible to float", "required": true, "constraints": "Finite and 0 <= relax < 1; one is rejected."},
+    {"name": "previous_cell_currents", "description": "Previous raw cell-current array used only for the current-change diagnostic.", "units": "A", "shape": "[N_Z,N_R] or null", "dtype": "finite real array-like or None", "required": false, "default": null, "constraints": "If omitted or null, compare against zeros; otherwise exactly match the grid shape."}
+  ],
+  "outputs": [
+    {"name": "psi_next", "description": "Flux-relaxed next total flux state.", "units": "Wb", "shape": "[N_Z,N_R]", "dtype": "float64", "required": true, "constraints": "relax*psi_state+(1-relax)*(psi_vac+G_psi @ raw_currents)."},
+    {"name": "plasma_cell_currents", "description": "Unrelaxed raw cell currents formed from J_phi and first-spacing area.", "units": "A", "shape": "[N_Z,N_R]", "dtype": "float64", "required": true, "constraints": "No relax factor is applied to this current array."},
+    {"name": "relative_psi_change", "description": "L2 norm of psi_next-psi_state divided by max(||psi_next||,||psi_vac||,tiny).", "units": "dimensionless", "shape": "scalar", "dtype": "float", "required": true, "constraints": "Uses the returned psi_next and the previous psi_state."},
+    {"name": "relative_current_change", "description": "L2 norm of raw currents minus prior currents divided by max(||raw currents||,1).", "units": "dimensionless", "shape": "scalar", "dtype": "float", "required": true, "constraints": "Previous currents affect this diagnostic only, not the flux update."}
+  ],
+  "applicability": {
+    "preconditions": ["The caller supplies a physically meaningful J_phi and a Green matrix in the stated cell-current/field-point convention.", "All grid fields are same-shape finite arrays and g_psi has the exact dense square shape."],
+    "supported": ["One finite R-Z axisymmetric flux-feedback step with caller-selected current, external flux and flux-relaxation weight."],
+    "excluded": ["A complete converged equilibrium or automatic selection of iteration count.", "Current relaxation or automatic active-cell masking.", "Non-axisymmetric geometry, sparse-Green optimization, or a guarantee of finite arithmetic for all extreme finite inputs."]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for wrong-rank, mismatched or nonfinite grid fields; negative/nonincreasing/nonrectilinear or too-small grids; invalid Green matrix; relax outside [0,1); or invalid previous currents.",
+    "runtime_failure": "Unexpected NumPy arithmetic failures propagate. Intermediate overflow in matrix multiplication or norm evaluation is not separately trapped by a finite-output guard.",
+    "nonconvergence": "Not applicable to one step; the caller controls and checks the iteration loop.",
+    "partial_results": "No partial mapping is returned after an exception."
+  },
+  "provenance": {
+    "lineage_summary": "Maintained SciRel step mapped to a saved Pleiades L1 Picard update and direct tests; historical candidate labels are not current expert recognition.",
+    "source_kinds": ["saved L1 Operator contract and implementation", "saved direct tests", "maintained SciRel regression tests"],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {"python": {"module": "scirel.equilibrium.axisymmetric_picard_update", "symbol": "update_axisymmetric_picard_flux", "signature": "update_axisymmetric_picard_flux(r_grid, z_grid, j_phi, psi_state, psi_vac, g_psi, relax, previous_cell_currents=None)"}},
+  "version": {"implementation_version": "0.1.0.dev10", "dependencies": []},
+  "example": {
+    "description": "A diagonal unit Green response and constant current on a three-by-three grid reveal the cell area and flux-relaxation order.",
+    "code": "import numpy as np\nfrom scirel.equilibrium import update_axisymmetric_picard_flux\nr_grid, z_grid = np.meshgrid([0.0, 0.5, 1.0], [-0.5, 0.0, 0.5])\nresult = update_axisymmetric_picard_flux(r_grid, z_grid, np.ones((3,3)), np.zeros((3,3)), np.ones((3,3)), np.eye(9), 0.25)\nnp.testing.assert_allclose(result['plasma_cell_currents'], 0.25)\nnp.testing.assert_allclose(result['psi_next'], 0.9375)\nassert result['relative_current_change'] == 0.75",
+    "expected": "Raw cell currents are 0.25 A and the flux-relaxed next state is 0.9375 Wb at every grid point."
+  },
+  "verification": {
+    "scope": ["Cell-area and flux-relaxation arithmetic on a small uniform grid.", "Manufactured diagonal-Green update and both relative-change formulas.", "Rejection of relax=1 and negative cylindrical radius."],
+    "tests": ["tests/operator_contracts/test_axisymmetric_picard_update.py"],
+    "evidence_ceiling": "Direct SciRel tests cover selected small-grid numerical and failure paths; they do not certify the physical Green response, convergence of a containing graph, or the first-spacing area convention on arbitrary nonuniform grids. No expert recognition is implied.",
+    "known_limitations": ["The function validates strictly increasing axes but does not require uniform spacing; current conversion still uses only the first spacing on each axis.", "The previous-current input changes only the reported diagnostic.", "Public distribution licensing and SciRel expert recognition remain pending."]
+  }
+}

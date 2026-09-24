@@ -23,9 +23,10 @@ SciRel 按长期独立 Python 项目维护。文档只保存稳定合同、可�
 - [贡献指南](../CONTRIBUTING.md)：开发环境、改动分类、兼容性和提交前检查。
 - [动理学等离子体波领域草稿](domains/kinetic-plasma-waves.md)：当前关系族、组合边界、证据与专家待决问题。
 - [各向同性平衡与点诊断领域草稿](domains/isotropic-equilibrium-and-observations.md)：有界 Picard 反馈、只读观测投影及跨图缺口。
+- [各向异性 Picard 平衡领域草稿](domains/anisotropic-picard-equilibrium.md)：压强力、磁通松弛、调用方闭合和终态门槛。
 
 ## 当前实现边界
 
-当前 `0.1.0.dev9` 开发树包含 52 条历史资产候选和 16 条后续开发资产；其中 36 条已有 catalog exact document。workflow 已具备 host-independent 状态协调、artifact 关联、逐项审核/release 的旧门禁和最小 fixture；真实 L1 的理解与整合由 skill 驱动的模型完成，不属于状态机能力。版本级专家认可、生产审核插件接线、完整 L1 整合、v1 合同冻结、固定发行工具链和正式发布授权尚未完成。
+当前 `0.1.0.dev10` 开发树包含 52 条历史资产候选和 16 条后续开发资产；其中 39 条已有 catalog exact document。workflow 已具备 host-independent 状态协调、artifact 关联、逐项审核/release 的旧门禁和最小 fixture；真实 L1 的理解与整合由 skill 驱动的模型完成，不属于状态机能力。版本级专家认可、生产审核插件接线、完整 L1 整合、v1 合同冻结、固定发行工具链和正式发布授权尚未完成。
 
 新增长期机制时，优先扩展上述权威文档和可执行检查。只有出现独立 owner、不同生命周期或明显不同读者时才拆新文档，避免用报告数量代替项目治理。

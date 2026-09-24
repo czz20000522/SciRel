@@ -42,7 +42,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.field.poloidal_field_magnitude", "symbol": "compute_poloidal_field_magnitude", "signature": "compute_poloidal_field_magnitude(br, bz)"}},
-  "version": {"implementation_version": "0.1.0.dev9", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev10", "dependencies": []},
   "example": {
     "description": "Measure one 3-4-5 field point and one zero component pair.",
     "code": "import numpy as np\nfrom scirel.field import compute_poloidal_field_magnitude\nresult = compute_poloidal_field_magnitude([[3.0, 0.0]], [[4.0, 0.0]])\nnp.testing.assert_allclose(result['B'], [[5.0, 1e-30]])\nassert result['B0_default'] == 2.5",
