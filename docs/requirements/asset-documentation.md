@@ -28,8 +28,10 @@ Every document must bind one stable scientific `asset_id` and declare:
 Public provenance must preserve useful lineage without exposing tenant IDs, admission/case/decision refs, candidate refs, source-project directories or another platform's internal owner model. Private governance evidence remains in `provenance/` and is joined only inside authorized release engineering. The absence of a public reference must remain explicit; it cannot be filled from a guessed project name.
 
 This canonical scientific contract is not reviewer prose. Reviewer documents remain candidate evidence, while the
-machine catalog and human documentation site are SciRel-owned projections generated from the same approved exact
-documents. A harness such as CodeFusion may display or link those projections, but it does not own or rewrite their
+machine catalog and human documentation site are SciRel-owned projections generated from the same exact documents.
+An isolated development version may validate those documents and build an internal pilot catalog without expert
+recognition. User-facing trusted projections require an expert-recognized exact version and the release gate. A
+harness such as CodeFusion may display or link those projections, but it does not own or rewrite their
 scientific content. Private review, identity, queue, and host audit fields remain outside the public document and are
 joined only at their authorized UI or release boundary.
 
@@ -58,7 +60,7 @@ Route and summary projections may omit detail only when they retain `asset_id`, 
 
 ## Validation and acceptance
 
-A document is eligible for catalog projection only when:
+A document is eligible for release catalog projection only when:
 
 1. schema and semantic validation pass;
 2. its Python callable imports from SciRel and its runtime signature matches;
@@ -72,7 +74,7 @@ A document is eligible for catalog projection only when:
 
 There is one current canonical document per public `asset_id`. Git and immutable catalog releases retain history; maintainers do not create parallel snapshot documents or require repeated confirmation merely because source bytes changed. `implementation_version` states which SciRel implementation the current contract describes. A scientific contract change is handled through normal compatibility, review and release history rather than a document-local hash.
 
-Current `catalog/examples/` is a dependency-closed 14-of-62 pilot, not a complete catalog. Missing documents remain a metadata gap and cannot be represented by generated placeholder science.
+Current `catalog/examples/` is a dependency-closed 15-of-63 development pilot, not a trusted release catalog. The added wavevector document still lacks a strict D1 freeze receipt and expert recognition. Missing documents remain a metadata gap and cannot be represented by generated placeholder science.
 
 ## Adapter projection
 

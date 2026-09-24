@@ -16,12 +16,12 @@ SciRel 专属 task、projection、finalize、receipt 或数据库状态。
 
 - `scirel-integration` skill snapshot，可带版本或内容摘要；
 - 只读 L1 目录引用；
-- 从冻结 SciRel baseline 派生的可写隔离候选 worktree/输出目录及其 Git base；
+- 从确切 SciRel 开发 Git base 派生的可写隔离分支/worktree，以及只读的上一可信版引用（若存在）；
 - 当前未发布候选池的只读比较视图或 artifact refs；
 - 通用文件/终端/测试工具和权限；
 - 自然语言任务目标与完成后的确定性验证命令。
 
-模型只在候选 worktree/输出目录准备文档、代码和测试，不修改冻结 baseline。输出是通用运行证据：候选三件套、模型/skill/harness 身份、实际命令、
+模型可在隔离开发 worktree 整合 `src/scirel`、文档和测试，并构建内部 wheel；不修改 L1、可信版或已冻结待审版。输出是通用运行证据：候选三件套、开发改动、模型/skill/harness 身份、实际命令、
 退出状态和需要保存的 artifact。CodeFusion 不解析逐项关系判定，也不要求固定的中间 manifest、
 JSON patch 或目录布局。
 
@@ -52,7 +52,7 @@ registration。release 声明 `scientific-computation-asset-extraction`、`scire
 
 `AutomatedCheckResult` 只表达确定性检查及证据引用，并绑定被检查的 candidate/source。
 它不能修改 candidate，也不包含 `asset_updates`。发现缺直接测试、未解析依赖或科学差异时，
-模型按照 skill 在冻结基线之外准备候选代码和测试，再对候选运行检查。
+模型按照 skill 在隔离开发分支整合代码和测试，再对实际变更运行检查。
 
 CodeFusion 的 run/job/attempt/timeout/权限和 transport 结果属于平台事实，不能转换为科学成功、
 拒绝或批准。SciRel 的检查失败也不能伪装成平台故障。
@@ -79,10 +79,9 @@ decision 和 release manifest 作为普通 plugin artifact 保存；CodeFusion �
 
 actor、tenant/project、correlation 和 idempotency 留在通用宿主 envelope。CodeFusion 在同一事务中登记 open result artifact/lineage/receipt，并以输入 artifact ref/digest 为 expected current pointer 做 CAS；只有 CAS 成功后才展示返回快照。SciRel 不维护 current pointer，不从 run status 推导领域状态。CAS loser、result unknown、缺 artifact 或 digest 不匹配时均不得显示详情。
 
-只有专家批准且 release 门禁通过的资产进入 catalog/runtime。candidate、临时报告、模型完成
-状态和测试通过都不能单独产生发布。
+只有专家认可的确切版本通过 release 门禁后，其资产才进入面向用户的可信 catalog/runtime。隔离开发分支的内部 wheel 和开发 pilot catalog 仅供验证；candidate、临时报告、模型完成状态和测试通过都不能单独产生发布。版本认可属于 SciRel，不进入 CodeFusion 通用 kernel 状态。
 
-候选提交工作台后，产生它的 Agent run 可以结束。批准触发一个新的固化 run，而不是恢复并长期占用原会话。UI extension 可以把“approved 且没有 release”显示为待固化，并展示最近一次固化 artifact 中的冲突；这些仍是 SciRel 领域投影。若当前基线与候选审核 base 在同一科学身份、合同、依赖闭包、TaskGraph 或 patch hunk 上冲突，固化 run 只提交关联的新候选，不覆盖旧批准，也不要求 CodeFusion 理解冲突的科学含义。
+候选提交工作台后，产生它的 Agent run 可以结束。当前逐项 workflow 的 approved 后固化 run 与“approved 且没有 release”投影仍是旧接口行为，不等于版本级可信认可；后续迁移只需由 SciRel 插件提供相应领域投影，不要求 CodeFusion 理解科学冲突。开发整合遇到同一科学身份、合同、依赖闭包、TaskGraph 或 patch hunk 冲突时，SciRel 在最新开发基线上重新比较，不覆盖旧审核事件。
 
 ## 当前代码定位
 

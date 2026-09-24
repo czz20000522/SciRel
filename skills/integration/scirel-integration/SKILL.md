@@ -16,16 +16,18 @@ receipt schema, workspace layout, or standard set of probes. Choose inspections,
 experiments, and tests from the actual scientific question. A useful task-specific check may remain run evidence;
 promote it into maintained project code only when it protects a stable reusable invariant.
 
-The inputs are the exact saved L1 directory, a frozen SciRel baseline, and a view of all current unpublished
-candidates. Treat L1 and the frozen baseline as read-only. Write only to an isolated candidate area or candidate
-worktree that is not the maintained baseline. The candidate pool is comparison context, not an authoritative or
-runnable baseline. L1 is expected to follow the extraction contract, but it may still contain missing files, weak tests,
+The inputs are the exact saved L1 directory, a pinned SciRel development base, the last trusted version if any, and a
+view of all current unpublished candidates. Treat L1, trusted versions, and frozen review versions as read-only. Work
+in an isolated development branch or worktree, where integration may change `src/scirel`, documents, TaskGraphs, and
+tests and produce an internal wheel. The candidate pool is comparison context, not an authoritative scientific
+baseline; code already integrated into a development branch is runnable but not thereby trusted. L1 is expected to
+follow the extraction contract, but it may still contain missing files, weak tests,
 dangling graph references, ambiguous science, or source-specific assumptions. Diagnose those facts rather than
 assuming either perfection or invalidity.
 
-This skill does not change, approve, or release SciRel assets. It prepares a candidate document, candidate code, and
-candidate tests for later expert review. Approval is what authorizes a separate task to apply the accepted candidate
-to SciRel.
+This skill may integrate and verify development SciRel assets. It cannot grant expert trust or publish a release.
+Prepare the scientific comparison, exact documents, implementation, tests, and evidence for a frozen version review;
+expert recognition is bound to that exact version and its cumulative scientific delta from the last trusted version.
 
 ## Understand both sides
 
@@ -34,7 +36,7 @@ Establish what each candidate computes, its direction, assumptions, ports, units
 applicability, dependencies, tests, provenance, and evidence ceiling. Use the implementation and tests to challenge
 the prose; do not infer missing science from names.
 
-Read SciRel's architecture and catalog guidance, then inspect the maintained implementation, public exports,
+Read SciRel's architecture and catalog guidance, then inspect the development implementation, public exports,
 scientific tests, TaskGraph bindings, asset documents, and provenance relevant to the incoming families. The catalog
 may be partial, so absence from `catalog/examples/` is not evidence that SciRel lacks a capability. Discover the
 actual baseline progressively rather than loading the whole library into context.
@@ -80,49 +82,50 @@ A shared implementation does not merge scientific identities. A larger TaskGraph
 not make the smaller graph redundant when it has an independent contract or reuse value. Partial node overlap is
 usually an `overlaps` relation, not duplication.
 
-## Prepare the review candidate
+## Integrate the development candidate
 
-Keep the frozen SciRel baseline unchanged. Prepare proposed code and tests in an isolated candidate worktree, patch,
-or review directory; do not bulk-copy an L1 bundle over maintained SciRel source. Reuse an existing public capability
-when its contract already fits. Propose code only for the selected scientific disposition, and keep domain-organized
-Python callables as the public surface.
+Keep L1, trusted versions, and frozen review versions unchanged. Integrate code, exact documents, TaskGraphs, and tests
+on an isolated development branch or worktree; do not bulk-copy an L1 bundle over SciRel source. Reuse an existing
+capability when its contract already fits. Change code only for the selected scientific disposition, and keep
+domain-organized Python callables as the public surface.
 
 When L1 structure is defective, repair only derived working material or the SciRel successor; do not rewrite the
 saved input. When science is ambiguous, preserve the gap. When normalization changes a formula, unit, boundary,
 discretization, state transition, default, or failure behavior, treat it as a scientific change and establish the
 new behavior with appropriate evidence before presenting it for review.
 
-The candidate document is the primary review surface because it lets an expert understand the proposal before reading
+The candidate document is the primary review surface because it lets an expert understand the change before reading
 code. For each affected scientific identity, explain the incoming and current behavior, proposed disposition, material
 scientific differences, public API and dependency impact, evidence, provenance, known limits, and the exact decision
 requested from the expert. Include proposed canonical asset-document content when the candidate would add or change a
-public asset; do not publish it into the maintained catalog before approval.
+public asset. The exact document may live in the isolated development package, but its pilot catalog is internal
+validation, not a trusted or user-facing release catalog.
 
-Candidate code shows the smallest implementation or patch needed if the proposal is accepted. Candidate tests show
+Candidate code shows the smallest integrated implementation or diff. Candidate tests show
 the claimed relation, retained behavior, boundary and failure semantics, and affected compositions. Run them against
-the isolated candidate when feasible and record the result. A pure reuse or duplicate disposition may legitimately
+the isolated development version when feasible and record the result. A pure reuse or duplicate disposition may legitimately
 have no runtime-code patch, but the document must say so explicitly and comparison tests or experiments must support
 the claim; do not create meaningless code merely to fill a slot.
 
-Record the exact frozen SciRel Git base and unpublished candidate-pool snapshot used for the comparison in the
+Record the exact SciRel Git base and unpublished candidate-pool snapshot used for the comparison in the
 candidate document or harness run evidence. An unobserved candidate may be edited in place even after it enters the
 review queue so its document, code, and tests converge into one review unit. The workbench must atomically freeze the
 trio before returning its full detail to an expert. Later material changes require rework or a linked replacement
-candidate. Candidate generation ends after the trio enters the review queue; do not
-keep an agent session open while waiting for an expert. Approval starts a separate integration task against the
-then-current SciRel baseline.
+candidate. Agent development and preparation may end after the review material is submitted; do not keep an agent
+session open while waiting for an expert. The complete version submitted for trust review also needs a frozen Git
+tree/commit, exact-document set, cumulative scientific delta from the last trusted version, affected reverse
+dependencies, verification evidence, and internal wheel/catalog digests when built.
 
-Integrate approved candidates one at a time at first, or in parallel only when their affected scientific identities
-and dependency closures are demonstrably disjoint. Apply the approved patch unchanged when it still applies and rerun
-the affected tests. If intervening changes alter the same identity, public contract, dependency, TaskGraph, or patch
-hunk, do not choose a winner or bulk-merge queued candidates. Compare again against the current baseline and prepare a
-linked replacement candidate for review. An older approval remains evidence for the older candidate; it does not
-approve materially changed code. A candidate that becomes duplicate after an earlier integration should return as a
-documented reuse/duplicate proposal, not be silently dropped.
+Integrate independent scientific families incrementally; coordinate work on overlapping identities and dependency
+closures. If intervening changes alter the same identity, public contract, dependency, TaskGraph, or patch hunk, do
+not choose a winner or bulk-merge queued candidates. Compare again against the current development base and record
+the new relation and action. An older review remains evidence for its exact version; it does not recognize materially
+changed code. A candidate that becomes duplicate after earlier integration should return as a documented
+reuse/duplicate conclusion, not be silently dropped.
 
-Unreviewed candidate code may be stored in a review directory, artifact, branch, or worktree. It must remain excluded
-from SciRel public imports, the catalog, and built wheels. Putting it in an experimental location with those exclusions
-is still candidate staging; putting it in the maintained runtime package is a baseline change and requires approval.
+Unreviewed code may enter imports and internal wheels on an isolated development branch. It must not enter the trusted
+user-facing catalog/runtime or a public release. A development pilot catalog, if built, must be labeled as such. A
+successful build is engineering evidence, not expert recognition.
 
 For TaskGraphs, bind exact dependency identities and make ports, ordinary DAG edges, state ownership, branches,
 feedback, stopping conditions, bounds, and failure propagation explicit. Do not hide scientific work in glue.
@@ -167,5 +170,9 @@ document, proposed code or explicit no-code rationale, and distinguishing tests 
 level separately when they differ. A reconciled inventory, even with no missing rows, does not make every row a
 scientifically reviewable candidate.
 
-Stop at an expert-reviewable candidate outside the frozen SciRel baseline. Model execution, passing tests, a generated
-report, or a clean build does not approve the science, apply the candidate, or authorize release.
+Deliver a runnable development version and, when ready, a frozen expert-reviewable version with its scientific delta
+and evidence. Review the cumulative delta against the last trusted version, not merely the preceding development
+commit. Reuse evidence only when implementation, contract, dependencies, and applicable environment remain unchanged.
+If an expert accepts only part of that delta, remove or rework the rest on an isolated successor, rerun affected checks,
+and freeze it anew; never mark the mixed original snapshot trusted. Model execution, passing tests, a generated report,
+or a clean build does not approve the science or authorize release.

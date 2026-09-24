@@ -56,6 +56,7 @@ if ($Mode -eq "release") {
     if (-not (Test-Path -LiteralPath $workflowSnapshotPath -PathType Leaf)) {
         throw "Approved workflow snapshot does not exist: $workflowSnapshotPath"
     }
+    throw "Public release is suspended until a trusted whole-version review gate is implemented; an approved item snapshot does not authorize this wheel."
 }
 
 if ($Mode -eq "affected" -and $TestPath.Count -ne 0) {
@@ -217,8 +218,8 @@ print(json.dumps(roots))
         }
 
         $catalogCoverageStatus = "partial"
-        $catalogIncludedAssetCount = 14
-        $catalogDeclaredTotalAssetCount = 62
+        $catalogIncludedAssetCount = 15
+        $catalogDeclaredTotalAssetCount = 63
         $catalogPath = Join-Path $releaseOutputPath "catalog"
         $catalogOutput = & $Python "scripts/build_catalog.py" `
             "catalog/examples" `

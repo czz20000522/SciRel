@@ -1,6 +1,6 @@
 # SciRel 开发与增量整合流程
 
-本流程适用于从保存的 L1 产物开始的候选准备、专家审核、批准后整合和 release。SciRel 拥有这些领域状态；CodeFusion 只提供中性 Agent 执行、artifact、身份和审核 UI。历史 admitted-only 内容仅作为开发期输入证据，不构成新流程的长期前置条件。
+本流程适用于从保存的 L1 产物开始的隔离开发整合、冻结待审版本、专家增量审核、可信版本确认和 release。SciRel 拥有这些科学边界；CodeFusion 只提供中性 Agent 执行、artifact、身份和审核 UI。历史 admitted-only 内容仅作为开发期输入证据，不构成新流程的长期前置条件。当前逐项 workflow 与发行脚本尚未完成版本级审核迁移，不能把本流程的目标语义当成已交付实现。
 
 完整的生命周期需求和 plugin 边界见 [`SciRel L1 到 Release 需求`](requirements/scirel-workflow.md) 与 [`CodeFusion 宿主插件需求`](requirements/codefusion-plugin.md)。
 
@@ -9,15 +9,15 @@
 探针、数值实验和测试，不要求统一验证脚本或固定中间产物。只有反复证明具有项目级复用价值
 的检查才进入 `scripts/` 或测试基线。
 
-## 1. 冻结输入与基线
+## 1. 冻结输入与比较基线
 
-先读取 `README.md`、相关实现、科学测试、历史 `provenance/admitted-assets.json`、当前 Git 状态和全部未发布候选。固定本次保存的 L1 输入、只读 SciRel baseline、公共 callable、依赖闭包和相关测试。候选准备期间不得修改该 baseline；候选文件只写入隔离 worktree、patch 或本次输出目录。历史准入记录只用于理解已有来源和行为，不能阻止从新的 L1 输入重新比较，也不能替代后续专家审核。
+先读取 `README.md`、相关实现、科学测试、历史 `provenance/admitted-assets.json`、当前 Git 状态和全部未发布候选。固定本次保存的 L1 输入、确切开发 Git base、上一可信版（若存在）、公共 callable、依赖闭包和相关测试。L1、可信版和已冻结待审版只读；开发改动写在隔离分支或 worktree，可直接进入其中的 `src/scirel`、文档和测试。历史准入记录只用于理解已有来源和行为，不能阻止从新的 L1 输入重新比较，也不能替代后续专家审核。
 
-没有正式发行基线时才按首次组包处理。有基线但暂时缺少 wheel 或内容锁时先恢复基线，不能借此绕过兼容检查。不得整批覆盖导入；逐项对照当前 Git 基线，并保留其他贡献者的修改。
+没有可信版时明确首次审核集合；跳过若干开发提交时仍相对上一可信版呈现累积科学增量。有基线但暂时缺少 wheel 或内容锁时先说明证据缺口，不能借此绕过兼容检查。不得整批覆盖导入；逐项对照当前 Git 基线，并保留其他贡献者的修改。
 
 ## 2. 形成最小整合清单
 
-每个输入只记录一次：目标科学身份、与现有能力、未发布候选及同批候选的关系、拟采取动作、理由、公共 API 影响、受影响 TaskGraph、验证方式和待决项。冻结基线、未发布候选池和当前 L1 共同构成比较视图，但只有冻结基线是权威且可运行的资产事实。清单可以使用最适合当前任务的形式放在任务或既有组装记录中；不要求统一 manifest/receipt，也不为单次工作复制多份状态文档。
+每个输入只记录一次：目标科学身份、与现有能力、未发布候选及同批候选的关系、拟采取动作、理由、公共 API 影响、受影响 TaskGraph、验证方式和待决项。确切开发基线、未发布候选池和当前 L1 共同构成比较视图；可运行的开发实现不等于可信或已发布资产。清单可以使用最适合当前任务的形式放在任务或既有组装记录中；不要求统一 manifest/receipt，也不为单次工作复制多份状态文档。
 
 比较顺序如下：
 
@@ -30,19 +30,19 @@
 
 据此选择复用、新增、保留变体、无损适配、组合、兼容替换或保持未决。哈希可以筛出相同字节，名称和相似度可以帮助检索，但都不能独立证明科学等价。无法判断的资产保持分离；可以继续不依赖它的工作。
 
-## 3. 准备候选三件套
+## 3. 开发整合与审核材料
 
-专家审核前只准备候选，不修改冻结 SciRel：
+Agent 可在隔离开发分支按已比较的科学关系逐项整合代码、TaskGraph、exact documents 和测试，修复有依据的缺陷，并构建内部 wheel 做 source-free 验证。不得修改 L1、上一可信版或已冻结待审版；开发成果不进入面向用户的可信 catalog/runtime 或公开发行。审核材料仍保留文档、代码、测试三件套：
 
 - 候选文档是主审查入口，解释现有能力、L1 能力、拟议处置、科学差异、API/依赖影响、证据、限制和专家需决定的问题；
-- 候选代码给出批准后将实施的最小 patch 或隔离实现；
+- 候选代码给出开发版的确切实现或 diff；
 - 候选测试证明文档中声称的新行为、等价性、兼容性、边界和失败语义，并记录实际执行结果。
 
 完全重复或直接复用可以没有运行时代码 patch，但文档必须明确说明，且测试或实验要支撑判断。候选三件套不要求统一 schema 或目录；不得为了形式完整制造空实现。
 
-候选同时记录比较时的 SciRel Git base。处于 `draft` 或 `review_pending` 且尚未被专家打开的候选可以为消除重复审核而合并、替换或撤回；工作台在专家首次打开完整详情前原子地执行 `start_review`，进入 `review_in_progress` 后才冻结文档、代码和测试三件套。之后的实质修改必须走返工或新候选。候选入队后本次模型运行结束，不等待人工审核。
+候选同时记录比较时的 SciRel Git base。处于 `draft` 或 `review_pending` 且尚未被专家打开的逐项候选可以为消除重复审核而合并、替换或撤回；工作台在专家首次打开完整详情前原子地执行 `start_review`，进入 `review_in_progress` 后才冻结所展示的文档、代码和测试三件套。之后的实质修改必须走返工或新候选。候选入队后本次模型运行结束，不等待人工审核。此逐项快照不能替代完整开发版本冻结。
 
-## 4. 批准后实施最小变化
+## 4. 科学实施与版本审核
 
 - 先写或保留能观察目标行为的合同；科学行为变化必须先有失败回归。
 - 公共 API 继续使用按领域组织的 Python callable；REST/CLI 仅在有明确消费者时作为适配器增加。
@@ -51,13 +51,13 @@
 - 行为相同的共享代码可以提取，但只有科学合同相同才可合并身份。
 - 参考实现只吸收与当前问题相关的可观察行为和反例，不复制其整个框架。
 
-当组装过程触及 L3 能力边界时，停止猜测式拼接并登记 `capability_gap`。缺口记录至少说明缺少的关系/模型、已检查的兼容条件、未满足的输入或证据，以及是否需要新 Operator、TaskGraph、标准或数值方法。后续按“发现 -> 拆解 -> 标准文档 -> 审核/验证 -> catalog -> 组装”推进；临时运行实例和 skill 产物不直接写入公共资产。
+当组装过程触及 L3 能力边界时，停止猜测式拼接并登记 `capability_gap`。缺口记录至少说明缺少的关系/模型、已检查的兼容条件、未满足的输入或证据，以及是否需要新 Operator、TaskGraph、标准或数值方法。后续按“发现 -> 拆解 -> 开发整合与验证 -> 冻结审核 -> 可信发行 -> 用户组装”推进；临时运行实例和 skill 产物不自动成为可信公共资产。
 
 任务专有的参数、数据路径和一次性选择留在任务中；可迁移的方法进入 skill；已经确认的公共行为由测试保护。一次事故优先补局部回归或修正文档，不自动增加全局门禁。
 
-只有专家批准的处置才进入本节。实施必须与批准的候选文档、代码和测试可核对；实质变化需要重新审核，不能借实施阶段扩大候选范围。
+从确定的开发提交冻结待审版，绑定 Git tree/提交、exact documents 集合、相对上一可信版的科学增量、受影响依赖闭包和验证证据；若构建了内部 wheel/pilot catalog，也绑定其摘要。专家以领域能力和适用域审阅该增量，未变且未受影响的资产可复用经核实仍有效的证据。机械版本号或文案变化本身不触发全库科学重审，但工程构建与发行绑定仍需重新验证。
 
-批准后由独立固化任务对照当前基线实施。初期串行处理已批准候选：原 patch 仍可保持时应用并运行 affected tests；若同一资产、科学合同、依赖闭包、TaskGraph 或 patch hunk 已被其他候选改变，则停止并基于当前基线生成新候选。旧批准不自动转移，新候选即使变成“重复/复用”也要明确交代。候选可以堆积在隔离 artifact、branch 或 worktree，但不能进入公共 import、catalog 或 wheel。
+专家只认可部分科学增量时，不把含未认可内容的原快照标可信；在隔离开发版剔除或返工，重跑受影响验证并冻结 successor。已观测的审核记录保持不变，旧认可不自动转移到新的科学合同或代码。开发候选冲突时对照最新基线重新比较关系与行动，同一资产、科学合同、依赖闭包、TaskGraph 或 patch hunk 变化不采用 last-write-wins。开发内容可进入内部 import、内部 wheel 和标明非可信的 pilot catalog；只有专家认可的确切版本才有资格晋级可信，公开发行仍另过门禁。
 
 ## 5. 分层验证
 
@@ -73,25 +73,23 @@ pwsh ./scripts/check.ps1 -Mode affected -ChangedPath src/scirel/<domain>/<asset>
 pwsh ./scripts/check.ps1 -Mode affected -BaseRef <merge-base-or-release-ref>
 pwsh ./scripts/check.ps1 -Mode focused
 pwsh ./scripts/check.ps1 -Mode full
-pwsh ./scripts/check.ps1 -Mode release -WorkflowSnapshot <approved-workflow.json> -ReleaseId <release-id> -OutputRoot build/verification/<new-run>
 ```
 
 - `affected`：从显式路径、Git 工作区或 `base...HEAD` 计算影响闭包，输出机器可读选择报告后只运行所选测试；共享模块会自然扩大到其消费者，未知源码会转为 full。
 - `focused`：默认检查公共 surface、组合和准入绑定；也可通过 `-TestPath` 指定本次精确测试。
 - `full`：运行完整科学与工程测试。
-- `release`：先验证输入是 approved workflow，再运行全套源码维护测试和 exact document 检查，从当前维护基线构建普通 wheel 与 catalog；随后在隔离环境中验证已安装 wheel 的文档示例、科学合同、公共 API 和用户验收，最后用实际摘要生成 release manifest 与 released workflow 快照。历史 admitted-only builder 不参与此路径。
+- `release`：当前入口在构建前 fail closed，因为逐项 approved workflow 不能授权整个开发 wheel。历史构建与验证代码仍保留作迁移依据，但版本级可信审核及绑定实现前不得调用其公开发行。历史 admitted-only builder 也不是发行入口。
 
 内循环默认运行 `affected`；正在编写失败回归时可用 `focused -TestPath` 只跑该断点。修复后重跑失败断点和受影响闭包，
-不因单个独立算子变化反复运行全仓。合并到共享基线前按影响与仓库策略运行 full，候选确定后再执行一次 release
-门禁。未变化的代码、输入和环境可以复用仍有效的证据，但发行结论必须绑定本次实际 wheel、工具链和输出摘要。
+不因单个独立算子变化反复运行全仓。合并到共享开发基线前按影响与仓库策略运行 full；冻结待审版绑定实际验证证据，获得可信认可后再执行发行门禁。未变化的代码、合同、依赖和环境可以复用仍有效的科学证据，但发行结论必须绑定本次实际 wheel、工具链和输出摘要。
 
 `scripts/select_affected_tests.py` 的 JSON 报告是可重建工程证据，不是新的治理事实。新增资产没有直接测试映射、
 依赖引用缺失或选择器无法解释源码归属时应阻断增量门禁；禁止用手写排除列表绕过。选择器自身的回归测试必须覆盖
 独立算子、直接图依赖、嵌套图依赖、共享模块扩散、包级公开导出、文档零测试和未知源码 fail-closed。
 
-`release` 的输出目录必须不存在，脚本不会覆盖或清理已有结果。其 venv 不继承 system site-packages，SciRel wheel 以 `--no-index --no-deps` 安装，并清空源码 `PYTHONPATH`；当前离线方式通过 `.pth` 暴露开发解释器中 NumPy/SciPy/Pytest 所在开发 site-packages，因此只证明 wheel 可在不导入 SciRel 源码的环境配合这些已存在依赖运行，不证明未声明包完全不可见，也不等价于从干净离线 wheelhouse 安装全部依赖。正式发行还需从固定的离线 wheelhouse 安装声明依赖，并固定 Python 与构建工具版本；不同工具链下 wheel 字节摘要不同，不能仅凭相同源码声称 wheel 字节可复现。
+恢复后的 `release` 仍须使用不存在的输出目录，不得覆盖或清理已有结果。历史实现的 venv 不继承 system site-packages，SciRel wheel 以 `--no-index --no-deps` 安装，并清空源码 `PYTHONPATH`；其离线方式通过 `.pth` 暴露开发解释器中 NumPy/SciPy/Pytest 所在开发 site-packages，因此只证明 wheel 可在不导入 SciRel 源码的环境配合这些已存在依赖运行，不证明未声明包完全不可见，也不等价于从干净离线 wheelhouse 安装全部依赖。正式发行还需从固定的离线 wheelhouse 安装声明依赖，并固定 Python 与构建工具版本；不同工具链下 wheel 字节摘要不同，不能仅凭相同源码声称 wheel 字节可复现。
 
-当前 catalog 为 `partial: 14/62` 开发 pilot。release manifest 只证明 approved draft 中的 exact documents 已与本次 catalog/wheel 绑定；它不会把 wheel 中未进入 catalog 的维护代码解释成已批准资产。正式首发前必须为全部可见发布资产完成 bootstrap/batch 审核与 exact documentation，并把 `.dev` schema 统一冻结为 `v1`。
+当前 catalog 为 `partial: 15/63` 开发 pilot，不是可信发布目录。现有 release manifest 只证明旧 approved draft 中的 exact documents 已与本次 catalog/wheel 绑定；它不会把 wheel 中未进入 catalog 的维护代码解释成已批准资产，更不能替代版本级科学审核。正式首发前必须为全部可见发布资产完成相对上一可信版的审核（无可信版时为首次审核集合）与 exact documentation，并把 `.dev` schema 统一冻结为 `v1`。
 
 ## 6. 收尾与发行边界
 

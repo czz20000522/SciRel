@@ -67,8 +67,8 @@ def test_release_gate_uses_the_current_baseline_and_an_approved_workflow():
     assert "scripts/build_catalog.py" in script
     assert "scripts/finalize_release.py" in script
     assert '$catalogCoverageStatus = "partial"' in script
-    assert "$catalogIncludedAssetCount = 14" in script
-    assert "$catalogDeclaredTotalAssetCount = 62" in script
+    assert "$catalogIncludedAssetCount = 15" in script
+    assert "$catalogDeclaredTotalAssetCount = 63" in script
     assert '"--expected-coverage-status" $catalogCoverageStatus' in script
     assert '"--expected-included-asset-count" $catalogIncludedAssetCount' in script
     assert (
@@ -89,3 +89,34 @@ def test_release_gate_checks_the_installed_scientific_runtime():
     assert '"operator_contracts", "graph_contracts", "framework_compositions"' in script
     assert '"test_library_composition.py", "test_public_surface.py"' in script
     assert '"runtime-test-bundle"' in script
+
+
+def test_release_refuses_an_item_approval_without_whole_version_review(tmp_path):
+    snapshot = tmp_path / "item-approved.json"
+    snapshot.write_text("{}", encoding="utf-8")
+    output = tmp_path / "release"
+
+    result = subprocess.run(
+        [
+            "pwsh",
+            "-NoProfile",
+            "-File",
+            str(CHECK),
+            "-Mode",
+            "release",
+            "-WorkflowSnapshot",
+            str(snapshot),
+            "-ReleaseId",
+            "untrusted-item",
+            "-OutputRoot",
+            str(output),
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+
+    assert result.returncode != 0
+    assert "trusted whole-version review gate" in result.stderr
+    assert not output.exists()
