@@ -43,15 +43,15 @@ def _inputs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict:
         documents,
         catalog,
         catalog_id="test-development",
-        release_version="0.1.0.dev12",
+        release_version="0.1.0.dev13",
         coverage_status="partial",
         declared_total=63,
     )
-    wheel = tmp_path / "scirel-0.1.0.dev12-py3-none-any.whl"
+    wheel = tmp_path / "scirel-0.1.0.dev13-py3-none-any.whl"
     with zipfile.ZipFile(wheel, "w") as archive:
         archive.writestr(
-            "scirel-0.1.0.dev12.dist-info/METADATA",
-            "Metadata-Version: 2.1\nName: scirel\nVersion: 0.1.0.dev12\n",
+            "scirel-0.1.0.dev13.dist-info/METADATA",
+            "Metadata-Version: 2.1\nName: scirel\nVersion: 0.1.0.dev13\n",
         )
     evidence = tmp_path / "tests.md"
     evidence.write_text("Focused test passed.\n", encoding="utf-8")

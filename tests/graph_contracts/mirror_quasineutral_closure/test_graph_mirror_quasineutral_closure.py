@@ -23,6 +23,16 @@ def _inputs(**overrides):
 
 def test_no_plug_limit_matches_analytic_potential_and_neutrality():
     result = graph.run_graph(_inputs(), asset_loader=_loader)
+    assert set(result) == {
+        'density_m3', 'p_parallel_pa', 'p_perpendicular_pa',
+        'temperature_parallel_j', 'temperature_perpendicular_local_j',
+        'untruncated_density_m3', 'density_pitch_integral',
+        'parallel_pitch_integral', 'perpendicular_pitch_integral',
+        'p_parallel', 'p_perpendicular', 'ion_density', 'ion_p_parallel',
+        'ion_p_perpendicular', 'electron_density', 'electron_pressure',
+        'electrostatic_potential', 'relative_charge_residual',
+        'kinetic_moments', 'iterations', 'converged',
+    }
     b = np.array([1.0, 1.4, 2.0])
     t_perp = b / ((b - 1.0) / (1200*E) + 1.0 / (2400*E))
     expected = np.log(t_perp / (2400*E)) / (E/(1200*E) + E/(600*E))

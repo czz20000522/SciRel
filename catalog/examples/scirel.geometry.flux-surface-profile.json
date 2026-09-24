@@ -46,7 +46,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.geometry.flux_surface_profile", "symbol": "evaluate_flux_surface_profile", "signature": "evaluate_flux_surface_profile(*, psi_samples, values, target, left=None, right=None) -> 'dict[str, np.ndarray]'"}},
-  "version": {"implementation_version": "0.1.0.dev12", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev13", "dependencies": []},
   "example": {
     "description": "Interpolate unsorted samples with a duplicate flux coordinate and explicit endpoint values.",
     "code": "import numpy as np\nfrom scirel.geometry.flux_surface_profile import evaluate_flux_surface_profile\nresult = evaluate_flux_surface_profile(psi_samples=[2.0, 0.0, 1.0, 1.0], values=[4.0, 0.0, 2.0, 3.0], target=[-1.0, 0.5, 3.0], left=-7.0, right=9.0)\nnp.testing.assert_allclose(result['values'], [-7.0, 1.0, 9.0])\nnp.testing.assert_allclose(result['psi'], [0.0, 1.0, 2.0])\nnp.testing.assert_allclose(result['profile_values'], [0.0, 2.0, 4.0])",

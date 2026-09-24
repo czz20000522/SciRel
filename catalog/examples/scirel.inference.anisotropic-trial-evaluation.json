@@ -49,7 +49,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.inference.anisotropic_trial_evaluation", "symbol": "evaluate_anisotropic_trial", "signature": "evaluate_anisotropic_trial(*, params, observations, solver_config, equilibrium_solver, diagnostic_evaluator, residual_reducer)"}},
-  "version": {"implementation_version": "0.1.0.dev12", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev13", "dependencies": []},
   "example": {
     "description": "Injected forward and diagnostic ports yield a two-unit normalized residual without requiring a real equilibrium solver.",
     "code": "import numpy as np\nfrom scirel.inference import evaluate_anisotropic_trial\nfrom scirel.diagnostics import reduce_observation_residuals\ndef solve(payload):\n    return {'converged': True, 'failure_reason': None, 'p': payload['params']['p']}\ndef diagnose(state):\n    return {'flux_loops': [state['equilibrium']['p']]}\nresult = evaluate_anisotropic_trial(params={'p': 3.0}, observations={'flux_loops': {'values': [1.0], 'sigma': [1.0]}}, solver_config={'r_grid': [0.0], 'z_grid': [0.0]}, equilibrium_solver=solve, diagnostic_evaluator=diagnose, residual_reducer=reduce_observation_residuals)\nnp.testing.assert_allclose(result['residuals'], [2.0])\nassert result['chi2'] == 4.0 and result['failure_reason'] is None",
