@@ -1,4 +1,4 @@
-"""Bounded parity with two saved D1 numerical implementations."""
+"""Bounded comparisons with fluidBW D1 and the withdrawn historical PDRK input."""
 
 import hashlib
 import importlib.util
@@ -21,7 +21,9 @@ def _source_operator(project):
     root = os.environ.get("SCIREL_L1_ROOT")
     if not root:
         pytest.skip("SCIREL_L1_ROOT is not set; source-free contract tests remain active")
-    path = Path(root) / project / "operators/plasma_dispersion_function/scientific_operator.py"
+    historical_pdrk = os.environ.get("SCIREL_HISTORICAL_PDRK_ROOT") if project == "PDRK" else None
+    project_root = Path(historical_pdrk) if historical_pdrk else Path(root) / project
+    path = project_root / "operators/plasma_dispersion_function/scientific_operator.py"
     assert path.is_file()
     assert hashlib.sha256(path.read_bytes()).hexdigest() == SOURCE_HASHES[project]
     spec = importlib.util.spec_from_file_location(f"{project}_plasma_dispersion", path)

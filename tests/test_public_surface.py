@@ -67,6 +67,7 @@ from scirel.collisions.relativistic_maxwellian_bessel import (
 )
 from scirel.collisions.momentum_scales import normalized_momentum, thermal_electron_momentum
 from scirel.fusion.dd_neutron_lab_energy import calculate_dd_neutron_lab_energy_kev
+from scirel.fusion import evaluate_bosch_hale_reactivity
 from scirel.dielectric.cold_plasma_tensor import (
     ColdPlasmaOverflowError,
     ColdPlasmaResonanceError,
@@ -138,6 +139,7 @@ def test_all_normalized_public_callables_are_importable():
         normalized_momentum,
         thermal_electron_momentum,
         calculate_dd_neutron_lab_energy_kev,
+        evaluate_bosch_hale_reactivity,
         cold_plasma_dielectric_tensor,
     ])
     assert hasattr(scirel, 'field') and hasattr(scirel, 'equilibrium')

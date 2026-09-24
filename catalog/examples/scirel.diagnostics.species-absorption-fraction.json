@@ -105,8 +105,8 @@
   "provenance": {
     "lineage_summary": "SciRel-owned merge of two source routes that implement the same four-species absorption closure: the E-star-dot-J route and the Wdot route. The observed implementations differ only in the entry-point name and docstring wording, so SciRel carries one scientific identity with both routes recorded here as provenance. The observation snapshot and the batch inventory are private review artifacts and are not part of the public contract.",
     "source_kinds": [
-      "reviewed scientific implementation",
-      "reviewed duplicate-pair evidence",
+      "saved source-shaped implementation",
+      "development duplicate-pair comparison evidence",
       "scientific regression tests"
     ],
     "public_references": [],
@@ -142,6 +142,7 @@
     "known_limitations": [
       "The species count is fixed at four; no general-length ledger is supported.",
       "The zero-total branch is unavailable by design, so a physically zero-absorption run cannot be represented.",
+      "The observed aorsa3d source has been withdrawn from the current qualified D1 delivery pending whole-source re-review; its retained bytes support only historical development comparison.",
       "The observed-route comparison requires the read-only source checkout to be reachable; it is skipped rather than silently passed when it is not.",
       "Public distribution licensing remains pending a human decision."
     ]

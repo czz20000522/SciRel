@@ -35,8 +35,8 @@
     "partial_results": "None; output is returned only after all elements pass validation."
   },
   "provenance": {
-    "lineage_summary": "SciRel standardizes the shared analytic Z/w relation appearing in the saved PDRK and fluidBW plasma_dispersion_function operators. PDRK's configurable N=16 default and fluidBW's fixed N=64 are distinct numerical approximations, not exact implementation duplicates. fluidBW's L1 prose incorrectly states Z(0)=i*pi; its implementation, source replay and SciRel's analytic relation give i*sqrt(pi). The first-stage handoff reports strict D1 freezes and independent candidate-tree audits for both saved projects; source-package digests and SciRel-specific comparison limits are recorded in the intake evaluation.",
-    "source_kinds": ["strictly frozen saved L1 operator contracts and implementations", "saved direct source-parity tests", "independent analytic special-function identity and bounded cross-project comparison"],
+    "lineage_summary": "SciRel standardizes the analytic Z/w relation appearing in saved PDRK and fluidBW plasma_dispersion_function operators. PDRK's configurable N=16 default and fluidBW's fixed N=64 are distinct numerical approximations, not exact implementation duplicates. fluidBW's L1 prose incorrectly states Z(0)=i*pi; its implementation, source replay and SciRel's analytic relation give i*sqrt(pi). fluidBW remains in the qualified D1 delivery; PDRK was withdrawn after a source-scope census exposed extraction gaps, so its retained bytes support a bounded historical development comparison only. Exact source-package digests and limits are recorded in the intake evaluation.",
+    "source_kinds": ["qualified fluidBW D1 and withdrawn historical PDRK operator contracts and implementations", "saved direct source-parity tests", "independent analytic special-function identity and bounded cross-project comparison"],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
@@ -50,7 +50,7 @@
   "verification": {
     "scope": ["Analytic origin value, complex-plane symmetry and upper-half-plane representability.", "Scalar, array, dtype, no-mutation and failure semantics.", "Bounded numerical comparisons against the pinned PDRK N=32 and fluidBW N=64 L1 implementations."],
     "tests": ["tests/operator_contracts/test_plasma_dispersion_function.py", "tests/operator_contracts/test_plasma_dispersion_function_l1.py"],
-    "evidence_ceiling": "Direct tests verify the declared SciRel calculation and failure behavior. Saved-source comparisons establish numerical agreement only on the listed finite arguments at stated tolerances; PDRK N=16 is demonstrably a distinct approximation. They do not prove arbitrary-input source parity, a chosen physical normalization, dispersion-root correctness or expert scientific approval.",
+    "evidence_ceiling": "Direct tests verify the declared SciRel calculation and failure behavior. Saved-source comparisons establish numerical agreement only on the listed finite arguments at stated tolerances; PDRK N=16 is demonstrably a distinct approximation but its D1 source scope is currently withdrawn. They do not prove arbitrary-input source parity, a chosen physical normalization, dispersion-root correctness or expert scientific approval.",
     "known_limitations": ["Caller-specific thermal-speed and drift definitions are not inferred or converted.", "Source truncation order and diagnostic flags are not part of this standardized output.", "Finite z may yield unrepresentable lower-half-plane values; SciRel rejects them.", "The first-stage source-prose errors remain in frozen L1; SciRel documents the corrected mathematical identity rather than rewriting them.", "Distribution license and expert approval remain pending."]
   }
 }

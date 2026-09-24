@@ -41,7 +41,7 @@
     "partial_results": "None; the result dictionary is returned only after validation and calculation complete."
   },
   "provenance": {
-    "lineage_summary": "Development integration from the PDRF planar projection and bounded comparison with the overlapping PDRK scan relation. The first-stage handoff now reports strict D1 freezes and independent candidate-tree audits for both saved project directories; this does not constitute SciRel expert recognition. The related source-package digests and bounded port mapping remain in the intake evaluation.",
+    "lineage_summary": "Development integration from the PDRF planar projection and bounded comparison with the overlapping historical PDRK scan relation. PDRF remains in the qualified D1 delivery; PDRK was withdrawn after a source-scope census exposed extraction gaps and is pending a new strict freeze. Its retained bytes support a bounded development comparison only, not qualified D1 provenance or SciRel expert recognition. The source-package digests and port mapping remain in the intake evaluation.",
     "source_kinds": ["saved L1 operator documents and implementations", "saved direct tests", "cross-source development comparison"],
     "public_references": [],
     "license_status": "pending-human-decision"
@@ -56,7 +56,7 @@
   "verification": {
     "scope": ["Polar and Cartesian projection contract.", "Zero-magnitude angle and mode distinction.", "Non-real input rejection, nonfinite magnitude rejection and large finite hypot behavior."],
     "tests": ["tests/operator_contracts/test_planar_wavevector.py", "tests/operator_contracts/test_planar_wavevector_l1.py"],
-    "evidence_ceiling": "Source-free direct tests establish this development callable's declared bounded arithmetic and failures. The PDRF/PDRK comparison measures only the mapped overlap and differences. First-stage D1 freeze evidence establishes source-package provenance, not the physical validity or SciRel expert approval of this standardized relation.",
+    "evidence_ceiling": "Source-free direct tests establish this development callable's declared bounded arithmetic and failures. The PDRF comparison uses qualified D1 input; the withdrawn PDRK comparison measures only historical mapped overlap and differences. Neither establishes physical validity or SciRel expert approval of this standardized relation.",
     "known_limitations": ["PDRF normalized input-card wave numbers lack a verified conversion to 1/m.", "SciRel rejects string/boolean numeric surrogates; the source comparison covers only the declared real numeric domain.", "Cartesian hypot intentionally differs from the PDRF square-and-sum overflow at large finite components.", "PDRK scan-state semantics require a separate relation.", "SciRel expert recognition and distribution licensing remain pending."]
   }
 }

@@ -79,6 +79,7 @@ _NEEDS_OBSERVED = pytest.mark.skipif(
 )
 
 
+@_NEEDS_OBSERVED
 def test_u3_t00_the_two_observed_routes_are_present_and_distinct_files():
     """Guard: the merge claim is only meaningful if both routes really exist."""
     assert OBSERVED, "the observed-route comparison could not be loaded"
