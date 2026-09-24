@@ -7,6 +7,7 @@ import hashlib
 import json
 from typing import Any, Mapping
 
+from scirel_workflow.l1_bundle import L1_BUNDLE_SCHEMA, l1_bundle_to_payload
 from scirel_workflow.models import (
     AutomatedCheckResult,
     CandidatePackage,
@@ -14,6 +15,7 @@ from scirel_workflow.models import (
     ReviewDecision,
     StandardizedDraft,
     WorkflowStatus,
+    digest,
 )
 from scirel_workflow.workflow import SciRelWorkflow
 
@@ -480,6 +482,9 @@ class SciRelPlugin:
         run_id: str | None = None,
     ) -> PluginHandoff:
         """Turn one stored L1 payload into a candidate handoff."""
+        if payload.get("schema") == L1_BUNDLE_SCHEMA:
+            source_digest = source_digest or digest(payload)
+            payload = l1_bundle_to_payload(payload)
         candidate = CandidatePackage.from_l1(
             payload,
             source_artifact_ref=source_artifact_ref,

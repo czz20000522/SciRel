@@ -8,6 +8,7 @@ import re
 from typing import Any, Mapping
 
 from scirel_workflow import CandidatePackage, SciRelWorkflow, WorkflowStatus
+from scirel_workflow.l1_bundle import L1_BUNDLE_SCHEMA, l1_bundle_to_payload
 from scirel_workflow.models import canonical_json
 
 from .body_runner import execute_automated_check
@@ -246,6 +247,8 @@ def _candidate_from_l1(request: SciRelBodyImportRequest) -> CandidatePackage:
         raise ValueError("L1 artifact must contain a JSON object") from exc
     if not isinstance(payload, dict):
         raise ValueError("L1 artifact must contain a JSON object")
+    if payload.get("schema") == L1_BUNDLE_SCHEMA:
+        payload = l1_bundle_to_payload(payload)
     return CandidatePackage.from_l1(
         payload,
         source_artifact_ref=request.artifact_ref,
