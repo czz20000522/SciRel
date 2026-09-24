@@ -91,7 +91,7 @@ pwsh ./scripts/check.ps1 -Mode full
 
 恢复后的 `release` 仍须使用不存在的输出目录，不得覆盖或清理已有结果。历史实现的 venv 不继承 system site-packages，SciRel wheel 以 `--no-index --no-deps` 安装，并清空源码 `PYTHONPATH`；其离线方式通过 `.pth` 暴露开发解释器中 NumPy/SciPy/Pytest 所在开发 site-packages，因此只证明 wheel 可在不导入 SciRel 源码的环境配合这些已存在依赖运行，不证明未声明包完全不可见，也不等价于从干净离线 wheelhouse 安装全部依赖。正式发行还需从固定的离线 wheelhouse 安装声明依赖，并固定 Python 与构建工具版本；不同工具链下 wheel 字节摘要不同，不能仅凭相同源码声称 wheel 字节可复现。
 
-当前 catalog 为 `partial: 32/68` 开发 pilot，不是可信发布目录。现有 release manifest 只证明旧 approved draft 中的 exact documents 已与本次 catalog/wheel 绑定；它不会把 wheel 中未进入 catalog 的维护代码解释成已批准资产，更不能替代版本级科学审核。正式首发前必须为全部可见发布资产完成相对上一可信版的审核（无可信版时为首次审核集合）与 exact documentation，并把 `.dev` schema 统一冻结为 `v1`。
+当前 catalog 为 `partial: 36/68` 开发 pilot，不是可信发布目录。现有 release manifest 只证明旧 approved draft 中的 exact documents 已与本次 catalog/wheel 绑定；它不会把 wheel 中未进入 catalog 的维护代码解释成已批准资产，更不能替代版本级科学审核。正式首发前必须为全部可见发布资产完成相对上一可信版的审核（无可信版时为首次审核集合）与 exact documentation，并把 `.dev` schema 统一冻结为 `v1`。
 
 ## 6. 收尾与发行边界
 

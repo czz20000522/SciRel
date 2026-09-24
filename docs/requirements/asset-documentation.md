@@ -74,7 +74,7 @@ A document is eligible for release catalog projection only when:
 
 There is one current canonical document per public `asset_id`. Git and immutable catalog releases retain history; maintainers do not create parallel snapshot documents or require repeated confirmation merely because source bytes changed. `implementation_version` states which SciRel implementation the current contract describes. A scientific contract change is handled through normal compatibility, review and release history rather than a document-local hash.
 
-Current `catalog/examples/` is a dependency-closed 32-of-68 development pilot, not a trusted release catalog. The current qualified first-stage D1 delivery root is empty; saved project bundles support bounded historical development comparisons pending re-freeze. The standardized SciRel relations still lack expert recognition. Missing documents remain a metadata gap and cannot be represented by generated placeholder science.
+Current `catalog/examples/` is a dependency-closed 36-of-68 development pilot, not a trusted release catalog. The current qualified first-stage D1 delivery root is empty; saved project bundles support bounded historical development comparisons pending re-freeze. The standardized SciRel relations still lack expert recognition. Missing documents remain a metadata gap and cannot be represented by generated placeholder science.
 
 ## Adapter projection
 

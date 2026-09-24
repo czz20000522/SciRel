@@ -63,11 +63,11 @@ def _release_inputs(tmp_path: Path) -> tuple[Path, Path, Path]:
         documents,
         catalog,
         catalog_id="scirel-release-test",
-        release_version="0.1.0.dev8",
+        release_version="0.1.0.dev9",
         coverage_status="complete",
         declared_total=1,
     )
-    wheel = tmp_path / "scirel-0.1.0.dev8-py3-none-any.whl"
+    wheel = tmp_path / "scirel-0.1.0.dev9-py3-none-any.whl"
     wheel.write_bytes(b"wheel fixture")
     return documents, catalog, wheel
 
