@@ -82,3 +82,47 @@ def test_public_graph_passes_current_field_to_bound_kinetic_closure():
     assert observed["kinetic"]["r_grid"] is inputs["r_grid"]
     np.testing.assert_array_equal(result["p_parallel"], [[2.0, 2.0]])
     np.testing.assert_array_equal(result["p_perpendicular"], [[3.0, 3.0]])
+
+
+def test_real_nested_graphs_close_a_manufactured_radial_profile_with_feedback():
+    charge_c = 1.602176634e-19
+    mass_kg = 1.67262192595e-27
+    r_grid, z_grid = np.meshgrid(
+        np.linspace(0.0, 0.4, 7), np.linspace(-1.0, 1.0, 7)
+    )
+    vacuum_flux = 0.5 * r_grid**2
+    kinetic_config = {
+        "mass_kg": mass_kg,
+        "charge_c": charge_c,
+        "density_ref_m3": lambda psi: 1e18 * (1.0 - 0.2 * psi / vacuum_flux.max()),
+        "temperature_parallel_j": 1000.0 * charge_c,
+        "temperature_perpendicular_ref_j": 2000.0 * charge_c,
+        "electron_temperature_j": 500.0 * charge_c,
+        "reference_z": 0.0,
+        "plug_left_z": -1.0,
+        "plug_right_z": 1.0,
+        "loss_cone_refill": 0.05,
+        "quadrature_order": 24,
+        "plug_potential_mode": "prescribed",
+    }
+    result = solve_kinetic_mirror_hall_equilibrium(
+        {
+            "r_grid": r_grid,
+            "z_grid": z_grid,
+            "psi_vac": vacuum_flux,
+            "g_psi": np.eye(r_grid.size) * 1e-8,
+            "ion_mass_kg": mass_kg,
+            "ion_charge_c": charge_c,
+            "kinetic_config": kinetic_config,
+            "maxiter": 25,
+            "tol": 1e-12,
+        }
+    )
+
+    assert result["converged"] and 1 < result["iterations"] <= 25
+    assert result["compatibility_messages"] == []
+    assert np.max(np.abs(result["psi"] - vacuum_flux)) > 1e-9
+    assert np.max(np.abs(result["J_phi"][:, 1:])) > 1.0
+    assert np.all(np.diff(result["p_parallel"], axis=1) < 0.0)
+    assert np.max(np.abs(result["closure_state"]["relative_charge_residual"])) < 1e-9
+    np.testing.assert_array_equal(result["p_parallel"], result["closure_state"]["p_parallel"])
