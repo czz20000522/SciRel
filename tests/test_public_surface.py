@@ -22,6 +22,7 @@ from scirel.inference.anisotropic_parameter_optimization import optimize_anisotr
 from scirel.diagnostics.observation_residuals import reduce_observation_residuals
 from scirel.diagnostics.parallel_pressure_residual import compute_parallel_pressure_residual
 from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum
+from scirel.kinetic.plasma_dispersion import evaluate_plasma_dispersion
 from scirel.field.poloidal_field_magnitude import compute_poloidal_field_magnitude
 from scirel.field.permanent_ring_filaments import discretize_permanent_ring
 from scirel.diagnostics.firehose_mirror_margins import compute_firehose_mirror_margins
@@ -95,6 +96,7 @@ def test_all_normalized_public_callables_are_importable():
         reduce_observation_residuals,
         compute_parallel_pressure_residual,
         solve_loss_cone_spectrum,
+        evaluate_plasma_dispersion,
         compute_poloidal_field_magnitude,
         discretize_permanent_ring,
         compute_firehose_mirror_margins,
@@ -153,6 +155,12 @@ def test_root_namespace_supports_normal_python_imports():
     namespace = {}
     exec('from scirel import *', namespace)
     assert all(callable(namespace[name]) for name in scirel.__all__ if not hasattr(scirel, name) or not hasattr(getattr(scirel, name), '__path__'))
+
+
+def test_kinetic_star_exports_keep_existing_scientific_relations():
+    assert "evaluate_mirror_constrained_moments" in scirel.kinetic.__all__
+    assert "evaluate_plasma_dispersion" in scirel.kinetic.__all__
+    assert all(hasattr(scirel.kinetic, name) for name in scirel.kinetic.__all__)
 
 
 def test_poloidal_field_and_magnitude_smoke():

@@ -67,8 +67,8 @@ def test_release_gate_uses_the_current_baseline_and_an_approved_workflow():
     assert "scripts/build_catalog.py" in script
     assert "scripts/finalize_release.py" in script
     assert '$catalogCoverageStatus = "partial"' in script
-    assert "$catalogIncludedAssetCount = 15" in script
-    assert "$catalogDeclaredTotalAssetCount = 63" in script
+    assert "$catalogIncludedAssetCount = 16" in script
+    assert "$catalogDeclaredTotalAssetCount = 64" in script
     assert '"--expected-coverage-status" $catalogCoverageStatus' in script
     assert '"--expected-included-asset-count" $catalogIncludedAssetCount' in script
     assert (

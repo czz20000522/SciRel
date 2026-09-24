@@ -54,7 +54,7 @@ assert result["B"][0, 0] == 5.0
 - `provenance/`：来源关系和审核状态，不参与运行时加载。
 - `docs/architecture.md`：Operator、TaskGraph、公共接口、科学身份和目录投影的权威边界。
 - `docs/catalog.md`：面向数万 Operator、数千 TaskGraph 的分片目录和渐进检索合同。
-- `contracts/` 与 `catalog/examples/`：标准资产/catalog Schema，以及依赖闭合的 15/63 开发 pilot；新增波矢关系仍待 D1 冻结回执和专家审核。
+- `contracts/` 与 `catalog/examples/`：标准资产/catalog Schema，以及依赖闭合的 16/64 开发 pilot；严格 D1 来源交接不替代专家审核。
 - `docs/development-process.md`：首次/增量整合、验证分层和发行候选流程。
 - `docs/requirements/scirel-workflow.md` 与 `docs/design/scirel-workflow.md`：L1 到 release 的领域需求和设计。
 - `docs/requirements/scientific-request-workflow.md` 与 `docs/design/scientific-request-workflow.md`：从用户需求到 SciRel 计算结果和审计解释的出库流程。
@@ -70,7 +70,7 @@ assert result["B"][0, 0] == 5.0
 
 ```powershell
 python scripts/validate_asset_documents.py catalog/examples --check-runtime --execute-examples
-python scripts/build_catalog.py catalog/examples --output-dir build/catalog/<new-run> --catalog-id scirel-development-pilot --release-version 0.1.0.dev5 --coverage-status partial --declared-total 63
+python scripts/build_catalog.py catalog/examples --output-dir build/catalog/<new-run> --catalog-id scirel-development-pilot --release-version 0.1.0.dev5 --coverage-status partial --declared-total 64
 ```
 
 L1 workflow 的本地 fixture 使用 `tests/fixtures/l1/pleiades-minimal.json`，不读取源项目 checkout、数据库或网络；它只验证 candidate、draft、审核和 release artifact 的确定性关联，不代替模型完成真实科学整合。
@@ -117,7 +117,7 @@ SciRel 源码或公共基线变更会 fail closed 到全套测试。`focused` �
 干净离线 wheelhouse 重装全部依赖，也不证明同目录的其他包不可见。正式发行门禁仍需固定依赖 wheelhouse。
 安装后的测试不得依赖 editable 安装或把 src 放进 PYTHONPATH。上面的版本号随 pyproject.toml 更新，不是永久发行版本。
 
-当前 catalog 仍是 `partial: 15/63` 开发 pilot，新增波矢条目尚未获得严格 D1 回执或专家认可；现有 release fixture 只验证逐项审核记录、catalog 与 wheel 的工程绑定，不证明整个开发版本可信。正式首发前必须让可见发布基线获得
+当前 catalog 仍是 `partial: 16/64` 开发 pilot。第一阶段已经交接 PDRF、PDRK 等七个严格 D1 候选目录，但其验证不等于 SciRel 专家认可；现有 release fixture 只验证逐项审核记录、catalog 与 wheel 的工程绑定，不证明整个开发版本可信。正式首发前必须让可见发布基线获得
 相对上一可信版的专家审核（无可信版时为首次审核集合），补齐 exact documents，并把开发期 `.dev` workflow 合同统一冻结为 `v1`。
 
 项目尚未声明独立分发许可证，保留来源对应关系；正式分发前需确认输入资产与项目许可证选择。

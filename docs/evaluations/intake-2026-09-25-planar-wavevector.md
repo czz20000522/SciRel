@@ -18,3 +18,7 @@
 - 内部开发 catalog 为 `partial: 15/63`，root digest `sha256:ffbf9e403a0507c513d6f4b54f12c2808ace7c19454e868cfa0d636abc81b185`。该 builder 输出是开发校验投影，不能交给用户运行时当作可信 release。
 
 以上虚拟环境继承开发机已安装的科学依赖，只验证 SciRel wheel 与源码隔离，不证明声明依赖可由干净离线 wheelhouse 独立安装。公开发行许可证仍待人工决定。专家需审视科学身份、SI 输入约定、数值差异及适用域；第一阶段负责人还需补齐同一 L1 快照的严格冻结交接。当前仓库的逐项 `release` fixture 不能证明整版科学增量获认可，本切片不得调用它晋级可信版。
+
+## 后续 D1 交接（不改写原开发判断）
+
+在上述开发切片冻结后，第一阶段于 2026-09-25 提交独立审查交接。PDRF 的 source/candidate tree 摘要分别为 `55824a96fb3abdcf2ae75b15da853084fad64f603560e8523f494ee9979ffb76` / `c56a5adb17db1e3af020a74d63a04a00eab744c4f52dadba0afa1fb054ba0cb5`，PDRK 分别为 `7ceab1c6383a474ec55095c7ff19316db5c1b739855e495a6b325f0f110b39e4` / `fb84032458e0fd502ca4bdc60df6272b9c8d12cbdeae59c7f889a7fffa29a9d8`。本地候选目录仍为 35 文件/220532 字节与 52 文件/620505 字节，和交接审查的计数一致；`plasma_k_projection` / `wavevector_projection` 整包摘要与本记录上文一致。交接称两份停写候选已通过严格 D1 门禁和独立候选树审查；这关闭本记录原先的来源交接缺口，但**不**批准 SciRel 标准波矢关系或其 `1/m` 映射。原 `06c1122` 待审快照及当时证据保持原样，后续版本另作 successor。
