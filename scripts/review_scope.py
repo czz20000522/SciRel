@@ -141,26 +141,29 @@ def _git_show(commit: str, path: str) -> str:
     return result.stdout.decode("utf-8")
 
 
-def _public_export_surface(source: str, package: str) -> tuple[dict[str, str], dict[str, str], list[str] | None, str] | None:
-    """Parse one ``__init__.py`` into its export surface and a residual AST dump.
+def _public_export_surface(
+    source: str, package: str
+) -> tuple[list[tuple[str, str, str]], list[tuple[str, str, str]], list[str] | None, str] | None:
+    """Parse one ``__init__.py`` into ordered export bindings and a residual AST dump.
 
-    Returns ``(import_map, other_map, all_names, residual)`` where
-    ``import_map`` maps every exported name to its absolute ``scirel.*`` module,
-    ``other_map`` records non-``scirel`` imported names (which must not change
-    for the change to count as a pure export change), ``all_names`` is the
-    literal ``__all__`` list or ``None`` when absent, and ``residual`` is the
-    AST dump with the import and ``__all__`` statements removed.  Returns
-    ``None`` for anything this parser refuses to judge (syntax errors, star
-    imports, dynamic ``__all__``), which the caller must treat as unresolved.
+    Returns ``(bindings, other_bindings, all_names, residual)`` where
+    ``bindings`` is the ordered list of ``(module, symbol, local_name)`` triples
+    for ``scirel.*`` imports, ``other_bindings`` the same for non-``scirel``
+    imports, ``all_names`` the literal ``__all__`` list or ``None`` when absent,
+    and ``residual`` the AST dump with the import and ``__all__`` statements
+    removed.  Returns ``None`` for anything this parser refuses to judge:
+    syntax errors, star imports, dynamic ``__all__``, or a local name bound
+    more than once (a duplicate or shadowed alias cannot be attributed).
     """
     try:
         tree = ast.parse(source)
     except (SyntaxError, ValueError):
         return None
-    import_map: dict[str, str] = {}
-    other_map: dict[str, str] = {}
+    bindings: list[tuple[str, str, str]] = []
+    other_bindings: list[tuple[str, str, str]] = []
     all_names: list[str] | None = None
     seen_all = 0
+    seen_locals: set[str] = set()
     body = []
     for node in tree.body:
         if isinstance(node, ast.ImportFrom):
@@ -178,11 +181,15 @@ def _public_export_surface(source: str, package: str) -> tuple[dict[str, str], d
             if any(alias.name == "*" for alias in node.names):
                 return None
             for alias in node.names:
-                name = alias.asname or alias.name
+                local = alias.asname or alias.name
+                if local in seen_locals:
+                    return None
+                seen_locals.add(local)
+                entry = (target, alias.name, local)
                 if target.startswith("scirel"):
-                    import_map[name] = target
+                    bindings.append(entry)
                 else:
-                    other_map[name] = target
+                    other_bindings.append(entry)
             continue
         if (
             isinstance(node, ast.Assign)
@@ -206,7 +213,7 @@ def _public_export_surface(source: str, package: str) -> tuple[dict[str, str], d
     if seen_all and all_names is None:
         return None
     tree.body = body
-    return import_map, other_map, all_names, ast.dump(tree)
+    return bindings, other_bindings, all_names, ast.dump(tree)
 
 
 def _attributed_export_assets(
@@ -214,13 +221,17 @@ def _attributed_export_assets(
 ) -> set[str] | None:
     """Attribute a pure public-export change in an ``__init__.py`` to assets.
 
-    Compares the two frozen blob versions at the AST level.  The change is a
-    pure export change only when the residual AST (everything except import
-    statements and the ``__all__`` literal) is identical, no non-``scirel``
-    import changed, and every added or removed public name resolves through
-    that version's own imports to a callable of a known asset.  Returns the
-    mapped asset IDs, or ``None`` when the change is not machine-verifiably a
-    pure export change -- the caller must then keep the fail-closed behaviour.
+    Compares the two frozen blob versions at the AST level, modelling exports
+    as ordered ``(module, symbol, local_name)`` triples so that alias
+    rebinding, duplicate aliases and import reordering are visible.  The change
+    is a pure export change only when the residual AST (everything except
+    import statements and the ``__all__`` literal) is identical, no
+    non-``scirel`` import changed, the import and ``__all__`` orderings change
+    only by additions and removals (never reorders), and every added or
+    removed symbol resolves through that version's own imports to a callable of
+    a known asset.  Returns the mapped asset IDs, or ``None`` when the change
+    is not machine-verifiably a pure export change -- the caller must then keep
+    the fail-closed behaviour.
     """
     parts = Path(path).parts
     if len(parts) < 3 or parts[-1] != "__init__.py":
@@ -233,20 +244,41 @@ def _attributed_export_assets(
         return None
     if before is None or after is None:
         return None
-    before_map, before_other, before_all, before_residual = before
-    after_map, after_other, after_all, after_residual = after
+    before_bindings, before_other, before_all, before_residual = before
+    after_bindings, after_other, after_all, after_residual = after
     if before_residual != after_residual or before_other != after_other:
         return None
-    changed = set(after_map) ^ set(before_map)
-    for name in set(after_map) & set(before_map):
-        if after_map[name] != before_map[name]:
-            changed.add(name)
-    if after_all != before_all:
-        changed.update(set(after_all or []) ^ set(before_all or []))
+    if (before_all is None) != (after_all is None):
+        return None
+    removed = [entry for entry in before_bindings if entry not in after_bindings]
+    added = [entry for entry in after_bindings if entry not in before_bindings]
+    if [entry for entry in before_bindings if entry not in removed] != [
+        entry for entry in after_bindings if entry not in added
+    ]:
+        return None
+    removed_names = [name for name in before_all or [] if name not in after_all or []]
+    added_names = [name for name in after_all or [] if name not in before_all or []]
+    if [name for name in before_all or [] if name not in removed_names] != [
+        name for name in after_all or [] if name not in added_names
+    ]:
+        return None
     assets = set()
-    for name in sorted(changed):
-        module = after_map.get(name, before_map.get(name))
-        asset_id = by_callable.get(f"{module}.{name}") if module else None
+    for module, symbol, _local in [*removed, *added]:
+        asset_id = by_callable.get(f"{module}.{symbol}")
+        if asset_id is None:
+            return None
+        assets.add(asset_id)
+    after_by_local = {local: (module, symbol) for module, symbol, local in after_bindings}
+    before_by_local = {local: (module, symbol) for module, symbol, local in before_bindings}
+    for name in added_names:
+        module, symbol = after_by_local.get(name, (None, None))
+        asset_id = by_callable.get(f"{module}.{symbol}") if module else None
+        if asset_id is None:
+            return None
+        assets.add(asset_id)
+    for name in removed_names:
+        module, symbol = before_by_local.get(name, (None, None))
+        asset_id = by_callable.get(f"{module}.{symbol}") if module else None
         if asset_id is None:
             return None
         assets.add(asset_id)

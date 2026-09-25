@@ -570,6 +570,90 @@ def test_star_import_stays_unattributable(monkeypatch):
     assert attributed is None
 
 
+def test_alias_rebinding_between_scirel_imports_stays_unattributable(monkeypatch):
+    before = "from .a import old as x\n"
+    after = "from .a import new as x\n"
+    _patch_git_show(monkeypatch, before, after)
+
+    attributed = scope_module._attributed_export_assets(
+        "src/scirel/collisions/__init__.py",
+        BASELINE,
+        CANDIDATE,
+        {"scirel.collisions.a.x": "scirel.collisions.some-asset"},
+    )
+
+    assert attributed is None
+
+
+def test_alias_rebinding_between_non_scirel_imports_stays_unattributable(monkeypatch):
+    before = "from os import path as x\n"
+    after = "from os import sep as x\n"
+    _patch_git_show(monkeypatch, before, after)
+
+    attributed = scope_module._attributed_export_assets(
+        "src/scirel/collisions/__init__.py",
+        BASELINE,
+        CANDIDATE,
+        {},
+    )
+
+    assert attributed is None
+
+
+def test_duplicate_local_alias_stays_unattributable(monkeypatch):
+    before = "from .a import old as x\n"
+    after = "from .a import old as x\nfrom .a import new as x\n"
+    _patch_git_show(monkeypatch, before, after)
+
+    attributed = scope_module._attributed_export_assets(
+        "src/scirel/collisions/__init__.py",
+        BASELINE,
+        CANDIDATE,
+        {
+            "scirel.collisions.a.old": "asset-old",
+            "scirel.collisions.a.new": "asset-new",
+        },
+    )
+
+    assert attributed is None
+
+
+def test_import_reordering_stays_unattributable(monkeypatch):
+    before = "from .a import p\nfrom .b import q\n"
+    after = "from .b import q\nfrom .a import p\n"
+    _patch_git_show(monkeypatch, before, after)
+
+    attributed = scope_module._attributed_export_assets(
+        "src/scirel/collisions/__init__.py",
+        BASELINE,
+        CANDIDATE,
+        {
+            "scirel.collisions.a.p": "asset-a",
+            "scirel.collisions.b.q": "asset-b",
+        },
+    )
+
+    assert attributed is None
+
+
+def test_alias_rebinding_with_both_symbols_mapped_includes_both_assets(monkeypatch):
+    before = "from .a import old as x\n"
+    after = "from .a import new as x\n"
+    _patch_git_show(monkeypatch, before, after)
+
+    attributed = scope_module._attributed_export_assets(
+        "src/scirel/collisions/__init__.py",
+        BASELINE,
+        CANDIDATE,
+        {
+            "scirel.collisions.a.old": "asset-old",
+            "scirel.collisions.a.new": "asset-new",
+        },
+    )
+
+    assert attributed == {"asset-old", "asset-new"}
+
+
 def test_pure_init_export_change_scopes_review_to_the_added_asset(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
