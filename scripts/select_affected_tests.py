@@ -38,6 +38,7 @@ ENGINEERING_TESTS = {
     ),
     "scripts/build_catalog.py": ("tests/test_asset_documentation.py",),
     "scripts/finalize_release.py": ("tests/test_release_finalization.py",),
+    "scripts/review_scope.py": ("tests/test_review_scope.py",),
     "scripts/check.ps1": (
         "tests/test_affected_test_selection.py",
         "tests/test_release_environment.py",

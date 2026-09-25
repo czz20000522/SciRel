@@ -1,0 +1,156 @@
+import hashlib
+import json
+from pathlib import Path
+import sys
+
+import pytest
+
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+
+import review_scope as scope_module  # noqa: E402
+
+
+def _document(asset_id, *, version="0.1.0.dev15", dependencies=(), evidence="initial"):
+    return {
+        "asset_id": asset_id,
+        "version": {
+            "implementation_version": version,
+            "dependencies": [{"asset_id": item} for item in dependencies],
+        },
+        "public_api": {"python": {"module": f"scirel.field.{asset_id}", "symbol": "evaluate"}},
+        "verification": {"tests": [f"tests/operator_contracts/test_{asset_id}.py"], "scope": evidence},
+    }
+
+
+def _snapshot(root: Path, commit: str, documents: list[dict]) -> Path:
+    root.mkdir()
+    entries = []
+    for document in documents:
+        relative = f"exact-documents/catalog/examples/{document['asset_id']}.json"
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(document), encoding="utf-8")
+        entries.append({
+            "snapshot_path": relative,
+            "sha256": "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest(),
+        })
+    artifacts = {}
+    for name, relative in (
+        ("review_dossier", "review-dossier/review.md"),
+        ("test_evidence", "test-evidence.md"),
+        ("wheel", "wheel/scirel.whl"),
+    ):
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(name.encode("ascii"))
+        artifacts[name] = {
+            "path": relative,
+            "sha256": "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest(),
+        }
+    manifest = {
+        "schema": "scirel.review-version.dev",
+        "git_commit": commit,
+        "exact_documents": entries,
+        "catalog": {"coverage": {"included_asset_count": len(entries)}},
+        **artifacts,
+    }
+    (root / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    return root
+
+
+def test_first_review_includes_all_frozen_assets(tmp_path: Path):
+    snapshot = _snapshot(
+        tmp_path / "candidate", "a" * 40,
+        [_document("a"), _document("b", dependencies=("a",))],
+    )
+
+    result = scope_module.review_scope(snapshot)
+
+    assert result["mode"] == "first_review"
+    assert result["baseline_approval_verified"] is False
+    assert result["review_asset_ids"] == ["a", "b"]
+
+
+def test_comparison_excludes_version_only_edits_and_includes_dependents(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    baseline = _snapshot(
+        tmp_path / "baseline", "a" * 40,
+        [_document("a"), _document("b"), _document("c", dependencies=("a",))],
+    )
+    candidate = _snapshot(
+        tmp_path / "candidate", "b" * 40,
+        [
+            _document("a", evidence="new direct evidence"),
+            _document("b", version="0.1.0.dev16"),
+            _document("c", dependencies=("a",)),
+        ],
+    )
+    monkeypatch.setattr(scope_module, "_changed_paths", lambda *_: ["catalog/examples/a.json"])
+
+    result = scope_module.review_scope(candidate, baseline)
+
+    assert result["changed_document_ids"] == ["a"]
+    assert result["mechanical_only_document_ids"] == ["b"]
+    assert result["review_asset_ids"] == ["a", "c"]
+
+
+def test_source_change_uses_existing_impact_selector_and_reverse_dependencies(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    docs = [_document("a"), _document("c", dependencies=("a",))]
+    baseline = _snapshot(tmp_path / "baseline", "a" * 40, docs)
+    candidate = _snapshot(tmp_path / "candidate", "b" * 40, docs)
+    changed_path = "src/scirel/field/a.py"
+    monkeypatch.setattr(scope_module, "_changed_paths", lambda *_: [changed_path])
+
+    def impact(paths, commit, documents):
+        assert paths == [changed_path]
+        assert commit == "b" * 40
+        assert set(documents) == {"a", "c"}
+        return {"a"}, []
+
+    monkeypatch.setattr(scope_module, "_source_impact", impact)
+
+    result = scope_module.review_scope(candidate, baseline)
+
+    assert result["changed_document_ids"] == []
+    assert result["review_asset_ids"] == ["a", "c"]
+
+
+def test_tampered_snapshot_is_rejected(tmp_path: Path):
+    snapshot = _snapshot(tmp_path / "candidate", "a" * 40, [_document("a")])
+    path = snapshot / "exact-documents/catalog/examples/a.json"
+    path.write_text(path.read_text(encoding="utf-8") + " ", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="digest differs"):
+        scope_module.review_scope(snapshot)
+
+
+def test_removed_assets_are_not_silently_approved_by_current_reverse_graph(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    baseline = _snapshot(
+        tmp_path / "baseline", "a" * 40,
+        [_document("a", dependencies=("retired",)), _document("retired")],
+    )
+    candidate = _snapshot(
+        tmp_path / "candidate", "b" * 40,
+        [_document("a", dependencies=("retired",))],
+    )
+    monkeypatch.setattr(scope_module, "_changed_paths", lambda *_: [])
+
+    result = scope_module.review_scope(candidate, baseline)
+
+    assert result["removed_asset_ids"] == ["retired"]
+    assert result["removed_assets_require_manual_review"] is True
+    assert result["review_asset_ids"] == ["a"]
+
+
+def test_snapshot_commit_must_be_a_full_hex_revision(tmp_path: Path):
+    snapshot = _snapshot(tmp_path / "candidate", "--help", [_document("a")])
+
+    with pytest.raises(ValueError, match="invalid Git commit"):
+        scope_module.review_scope(snapshot)

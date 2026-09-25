@@ -140,6 +140,13 @@ def test_release_finalizer_selects_only_its_contract_test():
     assert result["test_paths"] == ["tests/test_release_finalization.py"]
 
 
+def test_review_scope_report_selects_only_its_contract_test():
+    result = select("scripts/review_scope.py")
+
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == ["tests/test_review_scope.py"]
+
+
 def test_wire_fixture_builder_selects_only_wire_smoke_test():
     result = select("scripts/build_l1_wire_fixture.py")
 
