@@ -13,8 +13,8 @@
 ## 验证
 
 - `tests/operator_contracts/test_cylindrical_velocity_quadrature.py` + `test_shifted_maxwellian_seed.py`:**54 passed**(49 既有 + 5 新),无既有断言弱化;开发期发现 four-pi 计算位于 errstate 块外导致一条 RuntimeWarning 泄漏,已随本修复移入块内并重建 wheel。
-- `check.ps1 -Mode affected`(版本变更选全套):**1010 passed, 52 skipped**;71/71 文档源码态与干净离线 venv(`--no-index` wheelhouse,`python -I`)安装态校验通过;干净安装态 source-free 套件 **737 passed, 43 skipped**(L1 根已配置,复放真实运行)。
-- 内部 wheel `scirel-0.1.0.dev22-py3-none-any.whl`,SHA-256 `7318754560472b945b035ff89c36fe34358c6a296d02bca7ddc46b674da395f0`;开发 catalog `complete: 71/71`,root digest `sha256:7db0c7616626f571fc032fcec6fc573fd8740a26848f4a815abf4f75fe0f0a8c`。
+- `check.ps1 -Mode full`(最终字节,源码态全仓):**1010 passed, 52 skipped**;71/71 文档源码态与干净离线 venv(`--no-index` wheelhouse,`python -I`)安装态校验通过;干净安装态 source-free 套件 **737 passed, 43 skipped**(L1 根已配置,复放真实运行)。
+- 内部 wheel `scirel-0.1.0.dev22-py3-none-any.whl`,SHA-256 `92ceac03516e0c1ccca9d4aa624795f2a90cf6d242fe79162ea600fbbb1e642b`;开发 catalog `complete: 71/71`,root digest `sha256:7db0c7616626f571fc032fcec6fc573fd8740a26848f4a815abf4f75fe0f0a8c`。
 
 ## 边界
 
