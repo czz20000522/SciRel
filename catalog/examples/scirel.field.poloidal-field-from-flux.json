@@ -44,7 +44,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.field.poloidal_field_from_flux", "symbol": "poloidal_field_from_flux", "signature": "poloidal_field_from_flux(r_grid, z_grid, psi)"}},
-  "version": {"implementation_version": "0.1.0.dev24", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev25", "dependencies": []},
   "example": {
     "description": "Recover a uniform axial field from a quadratic flux profile including R=0.",
     "code": "import numpy as np\nfrom scirel.field import poloidal_field_from_flux\nr_grid, z_grid = np.meshgrid([0.0, 0.2, 0.4], [-0.5, 0.0, 0.5])\nresult = poloidal_field_from_flux(r_grid, z_grid, r_grid**2)\nnp.testing.assert_allclose(result['B_R'], 0.0)\nnp.testing.assert_allclose(result['B_Z'], 2.0)\nnp.testing.assert_allclose(result['B'], 2.0)",

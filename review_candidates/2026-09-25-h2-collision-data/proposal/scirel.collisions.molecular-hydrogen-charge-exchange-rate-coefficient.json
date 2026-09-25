@@ -1,0 +1,144 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient",
+  "kind": "operator",
+  "title": {
+    "en": "Molecular-hydrogen charge-exchange Maxwellian rate coefficient",
+    "zh": "分子氢电荷交换Maxwellian速率系数"
+  },
+  "summary": "The H2 charge-exchange Maxwellian rate coefficient in m^3/s as a nine-by-nine bivariate logarithmic polynomial in log(T) and log(E), with the plasma temperature and impact energy in eV, evaluated exactly in the saved source's summation order after clipping both inputs to [0.1, 2.01e4] eV. Nonpositive temperatures and negative energies are rejected, which the saved implementation did not check although its own document declared them.",
+  "taxonomy": [
+    "collisions",
+    "rate-coefficient",
+    "charge-exchange",
+    "hydrogen",
+    "molecular",
+    "tabulated-fit"
+  ],
+  "aliases": [
+    "sigmav_cx_hh",
+    "H2-H2+ charge-exchange rate coefficient",
+    "molecular-H2 CX Maxwellian rate",
+    "EQ-N15-H2-CX-RATE"
+  ],
+  "identity": {
+    "relation": "the molecular-hydrogen charge-exchange Maxwellian rate coefficient as a bivariate logarithmic polynomial of plasma temperature T and impact energy E",
+    "direction": "temperature and impact energy, same shape -> rate coefficient per sample",
+    "definition": "Both inputs are sequentially clipped to [0.1, 2.01e4] eV. The polynomial is accumulated in the saved source's summation order -- energy power outer, temperature power inner, coefficient indexed [temperature_power, energy_power] -- as log_rate = sum(a[i][j] * log(E)^j * log(T)^i), and the result is exp(log_rate) * 1e-6 in m^3/s. The bounded fit domain keeps the exponential representable for every accepted input.",
+    "model": "a nine-by-nine bivariate logarithmic polynomial fit; not a Maxwellian integral over a cross section",
+    "geometry": "none; a scalar material function of temperature and impact energy",
+    "coordinates": "temperature and impact energy in eV; output rate coefficient in m^3/s",
+    "boundary": "inputs must be finite, of equal shape, with temperature strictly positive and energy nonnegative; in-domain values outside the fit range clip to [0.1, 2.01e4] eV; the output is finite and strictly positive for every accepted input",
+    "assumptions": [
+      "The nine-by-nine coefficient table is the saved source's frozen table and the summation order is the saved source's, preserved so that replay is bit-exact.",
+      "This is a fit evaluation, not a Maxwellian average of a cross section: it is distinct from scirel.collisions.maxwellian-relative-speed-rate-average, which integrates a caller-supplied cross section on an explicit velocity mesh. The two relations agree only to the accuracy of the underlying fit, which is not established by any test here.",
+      "The atomic-H charge-exchange rate coefficient (a sibling asset) is a different physical system with a different coefficient table; the two are not interchangeable.",
+      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "temperature_ev",
+      "description": "Plasma temperature of the Maxwellian target species.",
+      "units": "eV",
+      "shape": "same as energy_ev (scalar or array)",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and strictly positive. In-domain values outside [0.1, 2.01e4] eV are clipped to that range."
+    },
+    {
+      "name": "energy_ev",
+      "description": "Impact energy of the charge-exchanging particle.",
+      "units": "eV",
+      "shape": "same as temperature_ev (scalar or array)",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative, with the same clipping."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "rate_m3_s",
+      "description": "Charge-exchange rate coefficient, one value per paired sample.",
+      "units": "m^3/s",
+      "shape": "same as the inputs",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and strictly positive for every accepted input."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller accepts the saved source's clipping convention: temperatures or energies outside [0.1, 2.01e4] eV silently return the fit evaluated at the range endpoint rather than an error or an extrapolation.",
+      "The caller supplies physically paired temperature and energy samples of equal shape."
+    ],
+    "supported": [
+      "Molecular-H2 charge-exchange rate coefficients on the saved bivariate fit within (or clamped to) its declared domain.",
+      "Scalar and array evaluation of any shape, including zero-dimensional inputs.",
+      "Rejecting nonpositive temperatures and negative energies, which the saved implementation silently clipped into the fit domain."
+    ],
+    "excluded": [
+      "Velocity-mesh Maxwellian averaging of a cross section: use scirel.collisions.maxwellian-relative-speed-rate-average, a different relation.",
+      "Atomic-hydrogen charge exchange: a sibling asset with a different coefficient table, not a variant of this relation.",
+      "Molecular elastic momentum transfer, dissociation or recombination channels: different relations not provided by this asset.",
+      "CX collision frequencies, Alpha_CX sinks, Vth normalization or transport source terms: the saved ledger records these as caller-owned.",
+      "A rate model validated against an external atomic-physics reference; none is bound."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError with a message naming the quantity when the inputs differ in shape, contain a non-finite value, or when temperature_ev contains a nonpositive value or energy_ev a negative value.",
+    "runtime_failure": "Not reachable on the declared domain: the clipped fit keeps the exponential representable, so the result is finite and strictly positive for every accepted input. No iteration, no state and no partial results.",
+    "nonconvergence": "Not applicable; the relation has no iteration or feedback.",
+    "partial_results": "Never returned; a rejected call produces no rate."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy sigmav_cx_hh slice, package 分子氢电荷交换Maxwellian速率系数, source anchor KN1DPy/sigma/sigmav_cx_hh.py:5-95 with direct-caller evidence KN1DPy/kinetic_h2.py:1196-1206 and KN1DPy/kinetic_mesh.py:137 (saved implementation file SHA-256 8ca54201138f6d1d19803e2bfb042b80980b2a9367bad36d53eafccdfc6bfd22). The saved extraction ledger records the N15 source relation as an explicit contract: finite same-shaped temperature and impact-energy arrays, sequential clipping to [0.1, 2.01e4] eV, source-order energy-power/temperature-power sum evaluated in the logarithmic domain, and exp(result) * 1e-6 returning m^3/s. Two documented repairs relative to the saved implementation, whose own document declares both contracts: a nonpositive temperature and a negative energy are rejected instead of being silently clipped into the fit domain. The arithmetic, including the summation order, is preserved bit for bit on the declared domain. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "saved extraction ledger evidence",
+      "independent polyval2d reevaluation of the saved coefficients",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.collisions.hydrogen2_charge_exchange_rate",
+      "symbol": "evaluate_hydrogen2_charge_exchange_rate",
+      "signature": "evaluate_hydrogen2_charge_exchange_rate(temperature_ev, energy_ev)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev25",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate the fit on a temperature/energy grid, confirm agreement with an independent polyval2d oracle, confirm it differs from the atomic sibling, and confirm that a nonpositive temperature and a negative energy are rejected.",
+    "code": "import numpy as np\nfrom scirel.collisions import evaluate_hydrogen2_charge_exchange_rate, evaluate_atomic_hydrogen_charge_exchange_rate\n\ntemperature = np.array([0.1, 1.0, 10.0, 100.0, 1.0e3, 2.01e4])\nenergy = np.array([0.2, 1.0, 10.0, 100.0, 1.0e3, 2.01e4])\nrate = evaluate_hydrogen2_charge_exchange_rate(temperature, energy)\nassert rate.shape == temperature.shape\nassert np.all(np.isfinite(rate)) and np.all(rate > 0.0)\natomic = evaluate_atomic_hydrogen_charge_exchange_rate(temperature, energy)\nassert not np.allclose(rate, atomic, rtol=1e-12, atol=0.0)\ntry:\n    evaluate_hydrogen2_charge_exchange_rate(np.array([1.0, -5.0]), np.array([1.0, 2.0]))\nexcept ValueError as error:\n    assert 'temperature_ev' in str(error)\nelse:\n    raise AssertionError('a nonpositive temperature must be rejected')\ntry:\n    evaluate_hydrogen2_charge_exchange_rate(np.array([1.0, 2.0]), np.array([1.0, -0.5]))\nexcept ValueError as error:\n    assert 'energy_ev' in str(error)\nelse:\n    raise AssertionError('a negative energy must be rejected')",
+    "expected": "Finite strictly positive rate coefficients in m^3/s on the grid; the molecular fit disagreeing with the atomic sibling; ValueError naming temperature_ev for a nonpositive temperature and naming energy_ev for a negative energy."
+  },
+  "verification": {
+    "scope": [
+      "That the fit equals an independent numpy.polyval2d evaluation of the same frozen coefficient table on in-domain and endpoint-clamped grids to a relative tolerance of 1e-12, in the saved package's own oracle style.",
+      "The source summation order: exact bit-level equality with the saved KN1DPy implementation, pinned by SHA-256, on one- and two-dimensional grids.",
+      "That the molecular fit materially differs from the atomic-hydrogen sibling asset's coefficient table.",
+      "The input contract: equal shapes, finite, strictly positive temperature and nonnegative energy, with messages naming the quantity. The nonpositive-temperature and negative-energy rejections are documented repairs: the saved implementation silently clipped both into the fit domain although its document declared a positive temperature and nonnegative energy.",
+      "Repair witnesses in the environment-gated replay: the saved implementation returns the endpoint-clamped value for a nonpositive temperature and for a negative energy where this asset rejects both; ordinary in-domain values are reproduced exactly. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_hydrogen2_charge_exchange_rate.py",
+      "tests/operator_contracts/test_hydrogen2_charge_exchange_rate_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the bivariate fit against an in-file independent polyval2d evaluation, the source summation order by exact equality, the clipping, the full input and failure contracts including the two documented repairs, and the distinction from the atomic sibling. The environment-gated replay establishes exact agreement with the saved KN1DPy implementation on the compared grids only. No test establishes the fit against an external atomic-physics reference: the saved package records that residual as validation_oracle_gap. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "known_limitations": [
+      "The fit is not validated against an external atomic-physics reference; the saved package's own validation gap carries over unchanged.",
+      "Inputs outside [0.1, 2.01e4] eV silently return the endpoint-clamped fit; this is the saved source's declared clipping convention, not an error.",
+      "This is a fit evaluation, not a Maxwellian integral; it is distinct from scirel.collisions.maxwellian-relative-speed-rate-average, and no test quantifies their disagreement.",
+      "The nonpositive-temperature and negative-energy rejections are documented development repairs, not source behavior: a caller migrating from the saved implementation sees a ValueError where it previously saw the endpoint-clamped fit.",
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

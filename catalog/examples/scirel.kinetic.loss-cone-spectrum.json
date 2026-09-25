@@ -47,7 +47,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.kinetic.loss_cone_spectrum", "symbol": "solve_loss_cone_spectrum", "signature": "solve_loss_cone_spectrum(xi_tp, mode_count, grid_points=256, backend='truncated')"}},
-  "version": {"implementation_version": "0.1.0.dev24", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev25", "dependencies": []},
   "example": {
     "description": "Solve two hypergeometric modes for an interior loss-cone boundary and check the returned grid and normalization.",
     "code": "import numpy as np\nfrom scirel.kinetic import solve_loss_cone_spectrum\nr = solve_loss_cone_spectrum(0.6, 2, grid_points=32, backend='hypergeometric')\nassert r['xi'].shape == (32,) and r['eigenfunctions'].shape == (32, 2)\nassert r['xi'][0] == 0.0 and r['xi'][-1] == 0.6 * 31 / 32\nassert np.allclose(r['eigenfunctions'][0], 1.0)\nassert np.all(np.diff(r['degrees']) > 0)\nassert np.allclose(r['eigenvalues'], r['degrees'] * (r['degrees'] + 1))",

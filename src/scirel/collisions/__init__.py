@@ -14,6 +14,10 @@ from .atomic_hydrogen_charge_exchange_rate import (
     evaluate_atomic_hydrogen_charge_exchange_rate,
 )
 from .collrad_h0_ionization_rate import evaluate_collrad_h0_ionization_rate
+from .molecular_hydrogen_charge_exchange_cross_section import (
+    evaluate_molecular_hydrogen_charge_exchange_cross_section,
+)
+from .hydrogen2_charge_exchange_rate import evaluate_hydrogen2_charge_exchange_rate
 
 __all__ = [
     'BesselBackendEvaluationError',
@@ -25,4 +29,6 @@ __all__ = [
     'evaluate_atomic_hydrogen_charge_exchange_cross_section',
     'evaluate_atomic_hydrogen_charge_exchange_rate',
     'evaluate_collrad_h0_ionization_rate',
+    'evaluate_molecular_hydrogen_charge_exchange_cross_section',
+    'evaluate_hydrogen2_charge_exchange_rate',
 ]
