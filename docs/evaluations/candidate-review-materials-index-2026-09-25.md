@@ -12,6 +12,24 @@ drift between a digest below and the working tree means the candidate text
 changed after this index was written and the batch needs a successor, not a
 silent edit.
 
+## Batch r57: Johnson-Hinnov coefficient B-spline family
+
+Directory: `review_candidates/2026-09-25-jh-coefficients/`
+- `README.md` -- sha256 `7f52df8bd4c59c0add0e96e7448a489071fc610267aa2d56ba0995d33fc45166`
+- `review.md` -- sha256 `6bb47dbadef808fae8c758ed4f5a79257af6153d10d2a7e27840b2d0f2a9fc51`
+- `proposal/hydrogen_jh_r_coefficient.py` -- sha256 `718a6c2d444d3b8c40c582d4f23e78c0e2eb247c4869c4a32b7da9815b07dcce`
+- `proposal/hydrogen_jh_s_coefficient.py` -- sha256 `94a527b59f441c857bd7bd0a474b7b95c770a2e7878c6e976a16073c33ca6dda`
+- `proposal/hydrogen_jh_alpha_coefficient.py` -- sha256 `9494a98ef4e7cd9e020c4580d084d1118a8a73b7b47d1dc7dddc1e9137abee58`
+- `proposal/test_hydrogen_jh_r_coefficient.py` -- sha256 `963994b9f7ec9f9f5a501ff2b5bf60180b925e584c7bc72504d3912c5fa97065`
+- `proposal/test_hydrogen_jh_r_coefficient_l1.py` -- sha256 `c624e7223ae66cf94e16d86e33fe263e30cf34a2a2571b8d6189099dbd800ab4`
+- `proposal/test_hydrogen_jh_s_coefficient.py` -- sha256 `52585f19a3b6ba2dd148ae8c4580faaa8acac15392731aae57ac5c9ac3154c7b`
+- `proposal/test_hydrogen_jh_s_coefficient_l1.py` -- sha256 `ead02ceeb9c513b19c8ba9280ff11fa73e1f6827cf61f76ecadeb0d516125fca`
+- `proposal/test_hydrogen_jh_alpha_coefficient.py` -- sha256 `fda8f860f201d647669350896b7a10aeea263b833ed2e49458a18f3359bf0155`
+- `proposal/test_hydrogen_jh_alpha_coefficient_l1.py` -- sha256 `a7b45647f1d0e572c7bef10e95fd90add90e96b2299468ad73bc26ab0e2065e9`
+- `proposal/scirel.collisions.hydrogen-jh-r-coefficient.json` -- sha256 `dce4a2b12f50aa191cfffd7f18e6b659098ab50230de25559b6f41b03056698c`
+- `proposal/scirel.collisions.hydrogen-jh-s-coefficient.json` -- sha256 `347ccdf5cf9b6a425410a49d40ffc55909f266b817cff669e12129640766fbd9`
+- `proposal/scirel.collisions.hydrogen-jh-alpha-coefficient.json` -- sha256 `15162445872716e5c0c261db633e384d2edc1f7f438c4be81c08ae05ff24d5f7`
+
 ## Batch r56: atomic-hydrogen population family
 
 Directory: `review_candidates/2026-09-25-population-family/`

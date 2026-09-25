@@ -1,0 +1,153 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.collisions.hydrogen-jh-s-coefficient",
+  "kind": "operator",
+  "title": {
+    "en": "Atomic-hydrogen Johnson-Hinnov s-coefficient B-spline evaluation",
+    "zh": "原子氢JH-s系数B样条评价"
+  },
+  "summary": "The Johnson-Hinnov hydrogen s coefficient, evaluated as a cubic B-spline over (log Te, log n) on the caller's clipped coordinates, reading the LogS_BSCoef vector from an exact-field validated payload. Unlike the sibling r and alpha branches, this branch consumes the caller's density. No repair is claimed.",
+  "taxonomy": [
+    "collisions",
+    "atomic-hydrogen",
+    "johnson-hinnov",
+    "b-spline",
+    "rate-coefficient"
+  ],
+  "aliases": [
+    "jhs_coef",
+    "JH s coefficient",
+    "Johnson-Hinnov ionization coefficient"
+  ],
+  "identity": {
+    "relation": "the Johnson-Hinnov hydrogen s coefficient as a function of paired density and temperature via a cubic B-spline in (log Te, log n) over the payload's LogS_BSCoef vector",
+    "direction": "paired density and temperature, explicit payload -> s coefficient per sample",
+    "definition": "With the payload's knots and source cubic order 4, the coefficient is evaluated as exp of the cubic B-spline at (clip(log T), clip(log n)) using the caller's density after clipping to the density-knot range -- the saved s branch consumes density, unlike the sibling r and alpha branches.",
+    "model": "the saved formal implementation's explicit-payload evaluation of the source jhs_coef no_null=1 branch; the payload is caller state, not hidden common-block state",
+    "geometry": "none; a scalar material relation over the spline payload",
+    "coordinates": "density in m^-3, temperature in eV; output s coefficient in the coefficient table's units",
+    "boundary": "inputs must be non-empty one-dimensional paired arrays, finite and strictly positive; the payload must be a mapping with the exact fields DKnot, TKnot, order, LogR_BSCoef, LogS_BSCoef, LogAlpha_BSCoef, A_Lyman, A_Balmer, with one-dimensional non-decreasing finite knots, source cubic order 4, a knot geometry describing exactly 77 coefficients, and finiteness; no_null must be 1; the result must be finite and strictly positive",
+    "assumptions": [
+      "The payload validation is the saved formal contract: the exact field set and the source cubic geometry (order 4, 77 coefficients) are enforced before any evaluation.",
+      "The coefficient table itself is caller-supplied data; this asset evaluates the spline, it does not certify any coefficient table.",
+      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "density_m3",
+      "description": "Densities; clipped to the density-knot range and consumed by the spline.",
+      "units": "m^-3",
+      "shape": "[n]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A non-empty one-dimensional array, finite and strictly positive, paired with the temperatures."
+    },
+    {
+      "name": "temperature_ev",
+      "description": "Temperatures; clipped to the temperature-knot range.",
+      "units": "eV",
+      "shape": "[n]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A one-dimensional array of the same shape, finite and strictly positive."
+    },
+    {
+      "name": "jh_payload",
+      "description": "The read-only Johnson-Hinnov coefficient payload mapping.",
+      "units": "mixed (knots and coefficient vectors)",
+      "shape": "mapping",
+      "dtype": "mapping of arrays and an integer",
+      "required": true,
+      "constraints": "Exactly the fields DKnot, TKnot, order, LogR_BSCoef, LogS_BSCoef, LogAlpha_BSCoef, A_Lyman, A_Balmer; one-dimensional non-decreasing finite knots; order 4; (temperature_knots.size - 5) * (density_knots.size - 5) == 77; all numeric fields finite. Never mutated."
+    },
+    {
+      "name": "no_null",
+      "description": "The source branch selector.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer scalar",
+      "required": false,
+      "constraints": "Only the source-complete no_null=1 branch is admitted; other values fail closed."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "coefficient",
+      "description": "s coefficients, one per paired sample.",
+      "units": "coefficient-table units (exp of the log-space spline)",
+      "shape": "same as the inputs",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and strictly positive for every accepted input."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller supplies a complete validated payload; the asset evaluates it, it does not construct or certify one.",
+      "The caller accepts the branch split the three sibling assets preserve: this s branch consumes the caller's density, the r and alpha branches overwrite it with the source's null sentinel."
+    ],
+    "supported": [
+      "s coefficients on any consistent caller-supplied payload over the declared domain.",
+      "Rejecting malformed profiles, incomplete or geometrically inconsistent payloads, and non-1 no_null."
+    ],
+    "excluded": [
+      "The sibling r and alpha coefficient branches: separate assets with different density semantics and coefficient vectors.",
+      "The source's null-sentinel output values: on the admitted branch the result is always finite and strictly positive.",
+      "A coefficient table validated against an external atomic-physics reference; none is bound."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError with a message naming the condition when the profiles are not non-empty same-shaped 1-D finite positive arrays, no_null is not 1, the payload is not a mapping with the exact field set, its knots are not one-dimensional non-decreasing, its order is not 4, its knot geometry does not describe 77 coefficients, or its numeric fields are not finite.",
+    "runtime_failure": "Raises ValueError when the evaluation produces a non-finite value; on the declared domain the relation is positive by construction, so this guards the branch boundary rather than expected inputs. No iteration over states and no partial results.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned; a rejected call produces no coefficient."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy 原子氢JH-r系数B样条评价 package, source anchor KN1DPy/jh_related/jhs_coef.py:24-60 with the payload common-block anchor KN1DPy/common/JH_Coef.py:5-29, both as recorded by the saved bundle's own extraction report (the raw source tree was not re-read; the anchors are the saved candidate's). Saved implementation file SHA-256 253cda226c553cd5cd560914a6474b4b3572262b63aad61c76f91df8bafb6344. The saved formal implementation's explicit-payload no_null=1 evaluation is reproduced bit for bit, including the payload validation contract and the density-consuming (non-overwritten) evaluation; no repair is claimed. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent FITPACK reevaluation of the same spline",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.collisions.hydrogen_jh_s_coefficient",
+      "symbol": "evaluate_h_jh_s_coefficient",
+      "signature": "evaluate_h_jh_s_coefficient(density_m3, temperature_ev, jh_payload, no_null=1)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev29",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate the s coefficient on a synthetic validated payload, confirm the density dependence and the payload rejections.",
+    "code": "import numpy as np\nfrom scipy.interpolate import RectBivariateSpline\nfrom scirel.collisions import evaluate_h_jh_s_coefficient\n\ntemperature_axis = np.linspace(-1.0, 1.0, 11)\ndensity_axis = np.linspace(30.0, 32.0, 7)\nspline = RectBivariateSpline(temperature_axis, density_axis, np.add.outer(temperature_axis, density_axis), kx=4, ky=4)\ntemperature_knots, density_knots = spline.get_knots()\npayload = {\n    'DKnot': density_knots,\n    'TKnot': temperature_knots,\n    'order': 4,\n    'LogR_BSCoef': np.zeros((spline.get_coeffs().size, 2, 5)),\n    'LogS_BSCoef': spline.get_coeffs().copy(),\n    'LogAlpha_BSCoef': spline.get_coeffs().copy() + 0.25,\n    'A_Lyman': np.ones(15),\n    'A_Balmer': np.ones(15),\n}\ndensity = np.array([1.0e19, 1.0e20])\ntemperature = np.array([1.0, 5.0])\nresult = evaluate_h_jh_s_coefficient(density, temperature, payload)\nassert result.shape == density.shape\nassert np.all(np.isfinite(result)) and np.all(result > 0.0)\n# the s branch consumes density: different densities, different output\nshifted = evaluate_h_jh_s_coefficient(np.array([np.exp(30.0), np.exp(32.0)]), temperature, payload)\nassert not np.array_equal(result, shifted)\ntry:\n    evaluate_h_jh_s_coefficient(density, temperature, {'DKnot': density_knots})\nexcept ValueError as error:\n    assert 'fields are incomplete' in str(error)\nelse:\n    raise AssertionError('an incomplete payload must be rejected')\ntry:\n    evaluate_h_jh_s_coefficient(density, temperature, payload, no_null=0)\nexcept ValueError as error:\n    assert 'no_null=1' in str(error)\nelse:\n    raise AssertionError('no_null=0 must be rejected')",
+    "expected": "Finite strictly positive s coefficients with the inputs' shape; the density-dependence witness holds; an incomplete payload and no_null=0 are rejected with messages naming the violated contract."
+  },
+  "verification": {
+    "scope": [
+      "That the coefficient equals an independent FITPACK evaluation (RectBivariateSpline.ev, not bisplev) of the same spline at the caller's clipped coordinates to a relative tolerance of 1e-12.",
+      "The density-dependence witness: unlike the sibling r and alpha branches, different densities give different outputs, matching the oracle at the caller's density.",
+      "That out-of-range coordinates land exactly on the endpoint evaluations, per the saved clipping.",
+      "The payload validation contract: mapping type, exact field set, order 4, 77-coefficient knot geometry, finiteness.",
+      "The input and failure contracts with messages naming the violated condition.",
+      "Exact bit-level replay against the saved KN1DPy implementation, pinned by SHA-256, on the packaged coefficient payload (1-D and longer profiles), plus its rejection behavior and the s-consumes-density/alpha-does-not branch witness read from the saved implementation itself. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_hydrogen_jh_s_coefficient.py",
+      "tests/operator_contracts/test_hydrogen_jh_s_coefficient_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the B-spline evaluation against independent FITPACK reevaluations, the clipping, the density dependence, the payload validation, and the full input and failure contracts exactly as the saved implementation declared them (no repair). The environment-gated replay establishes exact agreement with the saved KN1DPy implementation on the compared payloads and rejections only. No test establishes any coefficient table against an external atomic-physics reference: the saved package records that residual as validation_oracle_gap. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "known_limitations": [
+      "The asset evaluates caller-supplied coefficient tables; it does not certify any table's physics (validation_oracle_gap).",
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

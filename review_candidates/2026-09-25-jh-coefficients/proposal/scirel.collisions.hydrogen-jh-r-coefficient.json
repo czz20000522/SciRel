@@ -1,0 +1,199 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.collisions.hydrogen-jh-r-coefficient",
+  "kind": "operator",
+  "title": {
+    "en": "Atomic-hydrogen Johnson-Hinnov r-coefficient B-spline evaluation",
+    "zh": "原子氢JH-r系数B样条评价"
+  },
+  "summary": "The Johnson-Hinnov hydrogen r coefficient for principal levels 2-6, evaluated as a cubic B-spline over (log Te, log n) with caller-supplied knots, spline order and coefficient tensor, and the saved source's endpoint clipping in both coordinates. On the source-complete no_null=1 branch the saved source's 1e32 null-sentinel density overwrite is preserved: the spline's density coordinate is the clipped sentinel, not the caller's values. No repair is claimed.",
+  "taxonomy": [
+    "collisions",
+    "atomic-hydrogen",
+    "johnson-hinnov",
+    "b-spline",
+    "rate-coefficient"
+  ],
+  "aliases": [
+    "jhr_coef",
+    "JH r coefficient",
+    "Johnson-Hinnov rate coefficient"
+  ],
+  "identity": {
+    "relation": "the Johnson-Hinnov hydrogen r coefficient for (ion channel, principal level) as a function of temperature (and nominally density) via a cubic B-spline in (log Te, log n)",
+    "direction": "paired density and temperature, ion channel, principal level, explicit spline payload -> r coefficient per sample",
+    "definition": "With the caller's knots, spline order and the (n_coefficients, 2, 5) log-space tensor, the coefficient for (ion, principal_level - 2) is selected and evaluated as exp of the cubic B-spline at (clip(log T), clip(log D)). On the admitted no_null=1 branch the density coordinate entering the spline is the source's 1e32 null sentinel, clipped to the density-knot range, reproducing jhr_coef.py's result = Density; result[:] = 1e32 initialization.",
+    "model": "the saved formal implementation's explicit-payload evaluation of the source jhr_coef no_null=1 branch; knots and coefficients are caller state, not hidden common-block state",
+    "geometry": "none; a scalar material relation over the spline payload",
+    "coordinates": "density in m^-3 (validation and shape only on the admitted branch), temperature in eV, dimensionless ion channel {0, 1} and principal level in [2, 6]; output r coefficient in the coefficient table's units",
+    "boundary": "inputs must be non-empty one-dimensional paired arrays, finite and strictly positive; knots one-dimensional, finite, non-decreasing, at least two each; spline order a positive integer; log_r_bscoef finite of shape (n_coefficients, 2, 5) with n_coefficients = (temperature_knots.size - spline_order - 1) * (density_knots.size - spline_order - 1); no_null must be 1; the result must be finite and strictly positive",
+    "assumptions": [
+      "The saved implementation's density-overwrite behavior on the no_null=1 branch is preserved as the observable contract; whether that null-sentinel overwrite is the intended published contract or a source defect to repair is an open expert-review question.",
+      "The coefficient table itself is caller-supplied data; this asset evaluates the spline, it does not certify any coefficient table.",
+      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "density_m3",
+      "description": "Densities; on the admitted branch they carry shape and validation only.",
+      "units": "m^-3",
+      "shape": "[n]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A non-empty one-dimensional array, finite and strictly positive, paired with the temperatures."
+    },
+    {
+      "name": "temperature_ev",
+      "description": "Temperatures; clipped to the temperature-knot range.",
+      "units": "eV",
+      "shape": "[n]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A one-dimensional array of the same shape, finite and strictly positive."
+    },
+    {
+      "name": "ion",
+      "description": "The ion channel selector of the coefficient tensor.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer scalar",
+      "required": true,
+      "constraints": "The integer 0 or 1, as saved."
+    },
+    {
+      "name": "principal_level",
+      "description": "The atomic principal level whose r coefficient is evaluated.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer scalar",
+      "required": true,
+      "constraints": "An integer in [2, 6], as saved."
+    },
+    {
+      "name": "density_knots",
+      "description": "The B-spline knot vector in log-density coordinates.",
+      "units": "dimensionless (log-represented)",
+      "shape": "[k]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "One-dimensional, finite, non-decreasing, at least two knots."
+    },
+    {
+      "name": "temperature_knots",
+      "description": "The B-spline knot vector in log-temperature coordinates.",
+      "units": "dimensionless (log-represented)",
+      "shape": "[k]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "One-dimensional, finite, non-decreasing, at least two knots."
+    },
+    {
+      "name": "spline_order",
+      "description": "The B-spline order applied in both coordinates.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer scalar",
+      "required": true,
+      "constraints": "A positive integer consistent with the knots and the coefficient tensor."
+    },
+    {
+      "name": "log_r_bscoef",
+      "description": "The log-space r coefficient tensor; the (ion, principal_level - 2) slice is evaluated.",
+      "units": "log-represented coefficient",
+      "shape": "[n_coefficients, 2, 5]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, three-dimensional, trailing shape (2, 5), and n_coefficients consistent with the knots and spline order."
+    },
+    {
+      "name": "no_null",
+      "description": "The source branch selector.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer scalar",
+      "required": false,
+      "constraints": "Only the source-complete no_null=1 branch is admitted; other values fail closed."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "coefficient",
+      "description": "r coefficients, one per paired sample.",
+      "units": "coefficient-table units (exp of the log-space spline)",
+      "shape": "same as the inputs",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and strictly positive for every accepted input."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller supplies a complete, consistent spline payload (knots, order, tensor); the asset evaluates it, it does not construct or certify one.",
+      "The caller accepts the saved no_null=1 density-overwrite behavior: within the admitted branch the output does not depend on the caller's density values beyond shape and validation."
+    ],
+    "supported": [
+      "r coefficients for ion channels 0/1 and principal levels 2-6 on any consistent caller-supplied payload.",
+      "Rejecting malformed profiles, non-decreasing-violating knots, inconsistent tensor shapes, invalid ion/level and non-1 no_null."
+    ],
+    "excluded": [
+      "The source's null-sentinel output values: on the admitted branch the result is always finite and strictly positive.",
+      "Coefficients for principal levels outside [2, 6] or ion channels outside {0, 1}: rejected by the saved contract.",
+      "A coefficient table validated against an external atomic-physics reference; none is bound."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError with a message naming the condition when the profiles are not non-empty same-shaped 1-D finite positive arrays, ion is not 0 or 1, principal_level is not an integer in [2, 6], no_null is not 1, the knots are not one-dimensional finite non-decreasing arrays of at least two knots, spline_order is not a positive integer, or log_r_bscoef is not finite with shape (n_coefficients, 2, 5) consistent with the knots and spline order.",
+    "runtime_failure": "Raises ValueError when the evaluation produces a non-finite value; on the declared domain the relation is positive by construction, so this guards the branch boundary rather than expected inputs. No iteration over states and no partial results.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned; a rejected call produces no coefficient."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy 原子氢JH-r系数B样条评价 package, source anchor KN1DPy/jh_related/jhr_coef.py:12-66 with the payload common-block anchor KN1DPy/common/JH_Coef.py:5-29, both as recorded by the saved bundle's own extraction report (the raw source tree was not re-read; the anchors are the saved candidate's). Saved implementation file SHA-256 253cda226c553cd5cd560914a6474b4b3572262b63aad61c76f91df8bafb6344. The saved formal implementation's explicit-payload no_null=1 evaluation is reproduced bit for bit, including the documented null-sentinel density overwrite (jhr_coef.py:42-43); no repair is claimed. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent FITPACK reevaluation of the same spline",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.collisions.hydrogen_jh_r_coefficient",
+      "symbol": "evaluate_h_jh_r_coefficient",
+      "signature": "evaluate_h_jh_r_coefficient(density_m3, temperature_ev, ion, principal_level, density_knots, temperature_knots, spline_order, log_r_bscoef, no_null=1)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev29",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate the r coefficient on a synthetic spline payload, confirm the density-independence witness and the domain rejections.",
+    "code": "import numpy as np\nfrom scipy.interpolate import RectBivariateSpline\nfrom scirel.collisions import evaluate_h_jh_r_coefficient\n\ntemperature_axis = np.linspace(-1.0, 1.0, 5)\ndensity_axis = np.linspace(30.0, 32.0, 5)\nspline = RectBivariateSpline(temperature_axis, density_axis, np.add.outer(temperature_axis, density_axis), kx=4, ky=4)\ntemperature_knots, density_knots = spline.get_knots()\ncoefficients = np.zeros((spline.get_coeffs().size, 2, 5), dtype=float)\ncoefficients[:, 0, 1] = spline.get_coeffs()\ndensity = np.array([1.0e19, 1.0e20])\ntemperature = np.array([1.0, 5.0])\nresult = evaluate_h_jh_r_coefficient(density, temperature, 0, 3, density_knots, temperature_knots, 4, coefficients)\nassert result.shape == density.shape\nassert np.all(np.isfinite(result)) and np.all(result > 0.0)\n# no_null=1 density overwrite: different densities, one output\nshifted = evaluate_h_jh_r_coefficient(np.array([np.exp(30.0), np.exp(32.0)]), temperature, 0, 3, density_knots, temperature_knots, 4, coefficients)\nnp.testing.assert_array_equal(result, shifted)\ntry:\n    evaluate_h_jh_r_coefficient(density, temperature, 0, 7, density_knots, temperature_knots, 4, coefficients)\nexcept ValueError as error:\n    assert '[2, 6]' in str(error)\nelse:\n    raise AssertionError('a level outside [2, 6] must be rejected')\ntry:\n    evaluate_h_jh_r_coefficient(density, temperature, 0, 3, density_knots, temperature_knots, 4, coefficients, no_null=0)\nexcept ValueError as error:\n    assert 'no_null=1' in str(error)\nelse:\n    raise AssertionError('no_null=0 must be rejected')",
+    "expected": "Finite strictly positive r coefficients with the inputs' shape; the density-independence witness holds on the admitted branch; a level outside [2, 6] and no_null=0 are rejected with messages naming the violated contract."
+  },
+  "verification": {
+    "scope": [
+      "That the coefficient equals an independent FITPACK evaluation (RectBivariateSpline.ev, not bisplev) of the same spline at the clipped coordinates to a relative tolerance of 1e-12.",
+      "That out-of-range coordinates land exactly on the endpoint evaluations, per the saved clipping.",
+      "That ion and principal_level select distinct coefficient channels.",
+      "The density-independence witness on the admitted no_null=1 branch.",
+      "The input and failure contracts: profiles, knots, order, tensor shape, ion/level/no_null, with messages naming the violated condition.",
+      "Exact bit-level replay against the saved KN1DPy implementation, pinned by SHA-256, on the packaged coefficient payload (all ion channels and levels 2-6) and on a synthetic payload, plus its density-overwrite witness and rejection behavior. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_hydrogen_jh_r_coefficient.py",
+      "tests/operator_contracts/test_hydrogen_jh_r_coefficient_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the B-spline evaluation against independent FITPACK reevaluations, the clipping, the channel selection, the density-independence witness, and the full input and failure contracts exactly as the saved implementation declared them (no repair). The environment-gated replay establishes exact agreement with the saved KN1DPy implementation on the compared payloads and rejections only. No test establishes any coefficient table against an external atomic-physics reference: the saved package records that residual as validation_oracle_gap. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "known_limitations": [
+      "On the admitted no_null=1 branch the output does not depend on the caller's density values: the saved source's null-sentinel overwrite (jhr_coef.py:42-43) is preserved verbatim, and whether that is the intended published contract or a defect to repair is an open expert-review question.",
+      "The asset evaluates caller-supplied coefficient tables; it does not certify any table's physics (validation_oracle_gap).",
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

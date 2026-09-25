@@ -104,6 +104,9 @@ def test_the_module_is_named_for_what_it_contains():
         "evaluate_h2_plus_h1s_hn_dissociative_recombination_rate",
         "evaluate_janev_electron_impact_ionization_rate",
         "evaluate_atomic_hydrogen_1s_radiative_recombination_rate",
+        "evaluate_h_jh_r_coefficient",
+        "evaluate_h_jh_s_coefficient",
+        "evaluate_h_jh_alpha_coefficient",
     ]
 
 

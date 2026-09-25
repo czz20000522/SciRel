@@ -43,7 +43,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.inference.latin_hypercube_sampling", "symbol": "sample_latin_hypercube", "signature": "sample_latin_hypercube(*, bounds, n_samples, seed=None, fit_keys=None)"}},
-  "version": {"implementation_version": "0.1.0.dev28", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev29", "dependencies": []},
   "example": {
     "description": "A fixed seed produces repeatable independent strata for two bounded coordinates.",
     "code": "from scirel.inference import sample_latin_hypercube\nbounds = {'a': (0.0, 1.0), 'b': (10.0, 20.0)}\na = sample_latin_hypercube(bounds=bounds, n_samples=5, seed=4)['initial_samples']\nb = sample_latin_hypercube(bounds=bounds, n_samples=5, seed=4)['initial_samples']\nassert a == b\nassert sorted(int(row['a'] * 5) for row in a) == list(range(5))\nassert sorted(int((row['b'] - 10) / 10 * 5) for row in a) == list(range(5))",

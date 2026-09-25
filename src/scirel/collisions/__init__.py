@@ -39,6 +39,9 @@ from .janev_electron_impact_ionization_rate import (
 from .atomic_hydrogen_1s_radiative_recombination_rate import (
     evaluate_atomic_hydrogen_1s_radiative_recombination_rate,
 )
+from .hydrogen_jh_r_coefficient import evaluate_h_jh_r_coefficient
+from .hydrogen_jh_s_coefficient import evaluate_h_jh_s_coefficient
+from .hydrogen_jh_alpha_coefficient import evaluate_h_jh_alpha_coefficient
 from .hydrogen2_h1s_h1s_dissociation_rate import evaluate_hydrogen2_h1s_h1s_dissociation_rate
 from .hydrogen2_h1s_h2s_dissociation_rate import evaluate_hydrogen2_h1s_h2s_dissociation_rate
 from .hydrogen2_h1s_hn3_dissociation_rate import evaluate_hydrogen2_h1s_hn3_dissociation_rate
@@ -77,4 +80,7 @@ __all__ = [
     'evaluate_h2_plus_h1s_hn_dissociative_recombination_rate',
     'evaluate_janev_electron_impact_ionization_rate',
     'evaluate_atomic_hydrogen_1s_radiative_recombination_rate',
+    'evaluate_h_jh_r_coefficient',
+    'evaluate_h_jh_s_coefficient',
+    'evaluate_h_jh_alpha_coefficient',
 ]
