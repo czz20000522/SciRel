@@ -12,6 +12,9 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 EXAMPLES = ROOT / "catalog" / "examples"
+CURRENT_VERSION = json.loads(
+    (EXAMPLES / "scirel.field.circular-filament-green.json").read_text(encoding="utf-8")
+)["version"]["implementation_version"]
 sys.path.insert(0, str(SCRIPTS))
 
 from build_catalog import build_catalog  # noqa: E402
@@ -25,7 +28,7 @@ def catalog(tmp_path):
         EXAMPLES,
         output,
         catalog_id="scirel-development-pilot",
-        release_version="0.1.0.dev15",
+        release_version=CURRENT_VERSION,
         coverage_status="complete",
         declared_total=68,
     )
@@ -34,7 +37,7 @@ def catalog(tmp_path):
 
 @pytest.fixture(autouse=True)
 def installed_scirel_version():
-    with mock.patch("scirel_adapter.mcp.metadata.version", return_value="0.1.0.dev15"):
+    with mock.patch("scirel_adapter.mcp.metadata.version", return_value=CURRENT_VERSION):
         yield
 
 
@@ -163,7 +166,7 @@ def test_callable_binding_and_invocation_are_document_driven(catalog):
         "BZ": [-5.0, 0.0],
     }
     assert response["asset_id"] == asset_id
-    assert response["implementation_version"] == "0.1.0.dev15"
+    assert response["implementation_version"] == CURRENT_VERSION
     assert response["evidence_ceiling"]
     serialized = json.dumps(response, sort_keys=True)
     for forbidden in ("session_id", "project_id", "workbench_id", "admission_ref"):

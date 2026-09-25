@@ -21,6 +21,7 @@ ASSET_DOCUMENT = json.loads(
         / "catalog/examples/scirel.field.multi-coil-vacuum-field.json"
     ).read_text(encoding="utf-8")
 )
+CURRENT_VERSION = ASSET_DOCUMENT["version"]["implementation_version"]
 
 
 def test_saved_l1_runs_to_release_with_host_adapter():
@@ -69,7 +70,7 @@ def test_saved_l1_runs_to_release_with_host_adapter():
         wheel_ref="artifact://wheel/dev/vertical",
         wheel_digest="sha256:" + "d" * 64,
         correlation_id="build://vertical/release",
-        release_version="0.1.0.dev15",
+        release_version=CURRENT_VERSION,
     )
     release = release_result.release
 

@@ -15,6 +15,9 @@ from scirel_workflow import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
+CURRENT_VERSION = json.loads(
+    (ROOT / "catalog/examples/scirel.field.circular-filament-green.json").read_text(encoding="utf-8")
+)["version"]["implementation_version"]
 SCRIPTS = ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
@@ -63,11 +66,11 @@ def _release_inputs(tmp_path: Path) -> tuple[Path, Path, Path]:
         documents,
         catalog,
         catalog_id="scirel-release-test",
-        release_version="0.1.0.dev15",
+        release_version=CURRENT_VERSION,
         coverage_status="complete",
         declared_total=1,
     )
-    wheel = tmp_path / "scirel-0.1.0.dev15-py3-none-any.whl"
+    wheel = tmp_path / f"scirel-{CURRENT_VERSION}-py3-none-any.whl"
     wheel.write_bytes(b"wheel fixture")
     return documents, catalog, wheel
 

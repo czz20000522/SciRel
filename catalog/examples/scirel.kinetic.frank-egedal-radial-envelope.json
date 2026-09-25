@@ -41,7 +41,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.kinetic.frank_egedal_radial_envelope", "symbol": "evaluate_frank_egedal_radial_envelope", "signature": "evaluate_frank_egedal_radial_envelope(psi, params)"}},
-  "version": {"implementation_version": "0.1.0.dev15", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev16", "dependencies": []},
   "example": {
     "description": "Apply a quadratic envelope on a grid with values both inside and outside the chosen flux interval.",
     "code": "import numpy as np\nfrom scirel.kinetic import evaluate_frank_egedal_radial_envelope\npsi = np.array([[-1.0, 0.0, 0.5], [1.0, 1.5, 2.0]])\nr = evaluate_frank_egedal_radial_envelope(psi, {'psi_axis': 0.0, 'psi_edge': 1.0, 'alpha': 2.0})\nnp.testing.assert_allclose(r, [[1.0, 1.0, 0.25], [0.0, 0.0, 0.0]])\nassert r.shape == psi.shape",

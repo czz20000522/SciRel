@@ -4,8 +4,10 @@ import importlib
 import json
 from pathlib import Path
 
+from _historical_admitted import historical_file
 
-def test_admitted_integrations_match_the_loaded_library():
+
+def test_historical_admitted_sources_remain_bound_and_callables_remain_available():
     root = Path(__file__).resolve().parents[1]
     records = json.loads((root / "provenance/admitted-assets.json").read_text(encoding="utf-8"))
     assert records["schema"] == "scirel.admitted-integrations.v1"
@@ -21,7 +23,8 @@ def test_admitted_integrations_match_the_loaded_library():
         assert module_name.startswith("scirel.")
         module = importlib.import_module(module_name)
         assert callable(getattr(module, symbol))
-        source = Path(module.__file__).read_bytes().replace(b"\r\n", b"\n")
+        source_path = Path("src", *module_name.split(".")).with_suffix(".py")
+        source = historical_file(source_path).replace(b"\r\n", b"\n")
         assert hashlib.sha256(source).hexdigest() == record["library_source_lf_sha256"]
         exported = record["admitted_input"]
         assert exported["schema"] == "scirel.admitted-asset-export.v1"

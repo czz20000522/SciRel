@@ -10,6 +10,9 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 EXAMPLES = ROOT / "catalog" / "examples"
+CURRENT_VERSION = json.loads(
+    (EXAMPLES / "scirel.field.circular-filament-green.json").read_text(encoding="utf-8")
+)["version"]["implementation_version"]
 sys.path.insert(0, str(SCRIPTS))
 
 from build_catalog import build_catalog  # noqa: E402
@@ -226,7 +229,7 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
     second = tmp_path / "second"
     arguments = {
         "catalog_id": "scirel-development-pilot",
-        "release_version": "0.1.0.dev15",
+        "release_version": CURRENT_VERSION,
         "coverage_status": "complete",
         "declared_total": 68,
     }
@@ -315,7 +318,7 @@ def test_complete_catalog_cannot_hide_missing_documents(tmp_path):
             EXAMPLES,
             tmp_path / "catalog",
             catalog_id="invalid-complete",
-            release_version="0.1.0.dev15",
+            release_version=CURRENT_VERSION,
             coverage_status="complete",
             declared_total=69,
         )

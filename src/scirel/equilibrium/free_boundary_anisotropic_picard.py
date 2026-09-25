@@ -61,6 +61,7 @@ def run_graph(inputs, *, asset_loader):
     """Schedule declared N4 closure and N6 feedback assets without hidden numerical kernels."""
     if not isinstance(inputs, Mapping):
         raise ValueError('inputs must be a mapping')
+    pressure_closure = _require_ports(inputs)
     r_grid = np.asarray(inputs['r_grid'], dtype=float)
     z_grid = np.asarray(inputs['z_grid'], dtype=float)
     if r_grid.ndim != 2 or z_grid.shape != r_grid.shape or r_grid.shape[0] < 3 or (r_grid.shape[1] < 3):
@@ -74,7 +75,6 @@ def run_graph(inputs, *, asset_loader):
         plasma_mask = np.asarray(inputs['plasma_mask'])
         if plasma_mask.shape != r_grid.shape or plasma_mask.dtype != np.dtype(bool):
             raise ValueError('plasma_mask must be a boolean array with the same shape as r_grid')
-    pressure_closure = _require_ports(inputs)
     params = dict(_require_mapping(inputs['params'], 'params'))
     magnitude = asset_loader('scirel.field.poloidal_field_magnitude')
     current = asset_loader('scirel.equilibrium.anisotropic_toroidal_current')

@@ -247,7 +247,7 @@ def test_requires_explicit_n4_pressure_closure_port():
 
 
 def test_requires_all_yaml_required_picard_controls():
-    for name in ("params", "tol", "maxiter", "relax"):
+    for name in ("r_grid", "z_grid", "params", "tol", "maxiter", "relax"):
         values = _inputs()
         values.pop(name)
         with pytest.raises(ValueError, match=f"{name} is required"):

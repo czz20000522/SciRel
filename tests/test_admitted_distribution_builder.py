@@ -10,13 +10,17 @@ import sys
 import venv
 from pathlib import Path
 
+from _historical_admitted import HISTORICAL_VERSION, historical_file
+
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILDER = ROOT / "scripts" / "build_admitted_distribution.py"
 
 
 def _build(staging: Path) -> subprocess.CompletedProcess[str]:
-    return _build_from(ROOT, staging)
+    source_root = staging.parent / "historical-source"
+    _copy_builder_input(source_root)
+    return _build_from(source_root, staging)
 
 
 def _build_from(source_root: Path, staging: Path) -> subprocess.CompletedProcess[str]:
@@ -55,7 +59,7 @@ def _build_with_wheel(source_root: Path, staging: Path, wheel: Path) -> subproce
 
 def _copy_builder_input(destination: Path) -> None:
     (destination / "provenance").mkdir(parents=True)
-    shutil.copyfile(ROOT / "pyproject.toml", destination / "pyproject.toml")
+    (destination / "pyproject.toml").write_bytes(historical_file("pyproject.toml"))
     shutil.copyfile(
         ROOT / "provenance" / "admitted-assets.json",
         destination / "provenance" / "admitted-assets.json",
@@ -67,12 +71,12 @@ def _copy_builder_input(destination: Path) -> None:
         module = Path("src", *entry["public_callable"].split(".")[:-1]).with_suffix(".py")
         target = destination / module
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(ROOT / module, target)
+        target.write_bytes(historical_file(module))
     for entry in records.get("support_modules", []):
         module = Path("src", *entry["module"].split(".")).with_suffix(".py")
         target = destination / module
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(ROOT / module, target)
+        target.write_bytes(historical_file(module))
 
 
 def _write_module(source_root: Path, module_name: str, source: str) -> str:
@@ -140,7 +144,7 @@ def test_staging_contains_only_hash_locked_admitted_modules(tmp_path):
         (staging / "src/scirel/_admitted_manifest.json").read_text(encoding="utf-8")
     )
     assert manifest["schema"] == "scirel.admitted-wheel-manifest.v1"
-    assert manifest["distribution_version"] == "0.1.0.dev15"
+    assert manifest["distribution_version"] == HISTORICAL_VERSION
     assert {item["public_callable"] for item in manifest["assets"]} == {
         entry["public_callable"] for entry in records["integrations"]
     }
@@ -248,8 +252,10 @@ def test_builder_rejects_incomplete_admission_provenance(tmp_path):
 
 
 def test_wheel_build_is_reproducible(tmp_path):
-    first = _build_with_wheel(ROOT, tmp_path / "stage-one", tmp_path / "wheel-one")
-    second = _build_with_wheel(ROOT, tmp_path / "stage-two", tmp_path / "wheel-two")
+    source_root = tmp_path / "historical-source"
+    _copy_builder_input(source_root)
+    first = _build_with_wheel(source_root, tmp_path / "stage-one", tmp_path / "wheel-one")
+    second = _build_with_wheel(source_root, tmp_path / "stage-two", tmp_path / "wheel-two")
     assert first.returncode == 0, first.stderr
     assert second.returncode == 0, second.stderr
 
@@ -260,7 +266,9 @@ def test_wheel_build_is_reproducible(tmp_path):
 
 
 def test_admitted_wheel_runs_the_source_free_user_acceptance(tmp_path):
-    result = _build_with_wheel(ROOT, tmp_path / "staging", tmp_path / "wheel")
+    source_root = tmp_path / "historical-source"
+    _copy_builder_input(source_root)
+    result = _build_with_wheel(source_root, tmp_path / "staging", tmp_path / "wheel")
     assert result.returncode == 0, result.stderr
     wheel = Path(json.loads(result.stdout)["wheel"])
 
@@ -323,7 +331,7 @@ def test_admitted_wheel_runs_the_source_free_user_acceptance(tmp_path):
     assert acceptance.returncode == 0, acceptance.stderr
 
     report = json.loads((output / "acceptance.json").read_text(encoding="utf-8"))
-    assert report["installation"]["version"] == "0.1.0.dev15"
+    assert report["installation"]["version"] == HISTORICAL_VERSION
     assert set(report["tasks"]) == {
         "green_field_synthesis",
         "pressure_state_and_residual",

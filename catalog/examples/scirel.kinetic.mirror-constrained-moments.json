@@ -63,7 +63,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.kinetic.mirror_constrained_moments", "symbol": "evaluate_mirror_constrained_moments", "signature": "evaluate_mirror_constrained_moments(b_t, psi, potential_v, mass_kg, charge_c, density_ref_m3, temperature_parallel_j, temperature_perpendicular_ref_j, b_ref_t, phi_ref_v=0.0, b_plug_left_t=None, b_plug_right_t=None, phi_plug_left_v=0.0, phi_plug_right_v=0.0, loss_cone_refill=0.0, quadrature_order=32)"}},
-  "version": {"implementation_version": "0.1.0.dev15", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev16", "dependencies": []},
   "example": {
     "description": "Check the analytic untruncated bi-Maxwellian limit at two magnetic-field values.",
     "code": "import numpy as np\nfrom scirel.kinetic import evaluate_mirror_constrained_moments\ne = 1.602176634e-19\nb = np.array([1.0, 2.0])\nr = evaluate_mirror_constrained_moments(b, np.zeros(2), 0.0, 1.67262192595e-27, e, 2.0e18, 1200.0*e, 2400.0*e, 1.0)\nt_perp = b / ((b-1.0)/(1200.0*e) + 1.0/(2400.0*e))\nn = 2.0e18*t_perp/(2400.0*e)\nnp.testing.assert_allclose(r['density_m3'], n)\nnp.testing.assert_allclose(r['p_parallel_pa'], n*1200.0*e)\nnp.testing.assert_allclose(r['p_perpendicular_pa'], n*t_perp)\nnp.testing.assert_allclose(r['density_pitch_integral'], 1.0)",

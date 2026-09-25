@@ -10,6 +10,9 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
+CURRENT_VERSION = json.loads(
+    (ROOT / "catalog/examples/scirel.geometry.planar-wavevector-projection.json").read_text(encoding="utf-8")
+)["version"]["implementation_version"]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import freeze_review_version as freeze_module  # noqa: E402
@@ -49,15 +52,15 @@ def _inputs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict:
         documents,
         catalog,
         catalog_id="test-development",
-        release_version="0.1.0.dev15",
+        release_version=CURRENT_VERSION,
         coverage_status="partial",
         declared_total=63,
     )
-    wheel = tmp_path / "scirel-0.1.0.dev15-py3-none-any.whl"
+    wheel = tmp_path / f"scirel-{CURRENT_VERSION}-py3-none-any.whl"
     with zipfile.ZipFile(wheel, "w") as archive:
         archive.writestr(
-            "scirel-0.1.0.dev15.dist-info/METADATA",
-            "Metadata-Version: 2.1\nName: scirel\nVersion: 0.1.0.dev15\n",
+            f"scirel-{CURRENT_VERSION}.dist-info/METADATA",
+            f"Metadata-Version: 2.1\nName: scirel\nVersion: {CURRENT_VERSION}\n",
         )
         archive.writestr("scirel/__init__.py", "VERSION = 'current'\n")
     evidence = tmp_path / "tests.md"
@@ -210,8 +213,8 @@ def test_freeze_rejects_wheel_with_stale_scientific_module(
     inputs = _inputs(tmp_path, monkeypatch)
     with zipfile.ZipFile(inputs["wheel"], "w") as archive:
         archive.writestr(
-            "scirel-0.1.0.dev15.dist-info/METADATA",
-            "Metadata-Version: 2.1\nName: scirel\nVersion: 0.1.0.dev15\n",
+            f"scirel-{CURRENT_VERSION}.dist-info/METADATA",
+            f"Metadata-Version: 2.1\nName: scirel\nVersion: {CURRENT_VERSION}\n",
         )
         archive.writestr("scirel/__init__.py", "VERSION = 'stale'\n")
 
@@ -225,8 +228,8 @@ def test_freeze_accepts_wheel_with_windows_source_line_endings(
     inputs = _inputs(tmp_path, monkeypatch)
     with zipfile.ZipFile(inputs["wheel"], "w") as archive:
         archive.writestr(
-            "scirel-0.1.0.dev15.dist-info/METADATA",
-            "Metadata-Version: 2.1\nName: scirel\nVersion: 0.1.0.dev15\n",
+            f"scirel-{CURRENT_VERSION}.dist-info/METADATA",
+            f"Metadata-Version: 2.1\nName: scirel\nVersion: {CURRENT_VERSION}\n",
         )
         archive.writestr("scirel/__init__.py", b"VERSION = 'current'\r\n")
 

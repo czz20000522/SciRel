@@ -42,7 +42,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.kinetic.bessel_gamma", "symbol": "evaluate_bessel_gamma", "signature": "evaluate_bessel_gamma(n, x)"}},
-  "version": {"implementation_version": "0.1.0.dev15", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev16", "dependencies": []},
   "example": {
     "description": "Evaluate the zero-order term and derivative at the origin.",
     "code": "from scirel.kinetic import evaluate_bessel_gamma\nr = evaluate_bessel_gamma(0, 0.0)\nassert r['Gamma_n'] == 1 and r['Gamma_prime_n'] == -1",

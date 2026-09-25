@@ -22,6 +22,7 @@ ASSET_DOCUMENT = json.loads(
         / "catalog/examples/scirel.field.circular-filament-green.json"
     ).read_text(encoding="utf-8")
 )
+CURRENT_VERSION = ASSET_DOCUMENT["version"]["implementation_version"]
 
 
 def ready_candidate() -> CandidatePackage:
@@ -54,7 +55,7 @@ def test_l1_candidate_moves_through_review_and_release():
         catalog_digest="sha256:" + "c" * 64,
         wheel_ref="artifact://wheel/dev",
         wheel_digest="sha256:" + "d" * 64,
-        release_version="0.1.0.dev15",
+        release_version=CURRENT_VERSION,
     )
 
     assert workflow.status is WorkflowStatus.RELEASED
@@ -64,7 +65,7 @@ def test_l1_candidate_moves_through_review_and_release():
     assert release.candidate_id == "candidate-run-1"
     assert release.candidate_digest.startswith("sha256:")
     assert release.draft_digest.startswith("sha256:")
-    assert release.release_version == "0.1.0.dev15"
+    assert release.release_version == CURRENT_VERSION
     assert release.release_digest.startswith("sha256:")
 
 
@@ -230,7 +231,7 @@ def test_workflow_snapshot_round_trips_without_host_fields():
         catalog_digest="sha256:" + "c" * 64,
         wheel_ref="artifact://wheel/dev",
         wheel_digest="sha256:" + "d" * 64,
-        release_version="0.1.0.dev15",
+        release_version=CURRENT_VERSION,
     )
 
     snapshot = workflow.to_dict()
@@ -330,7 +331,7 @@ def test_workflow_snapshot_rejects_release_binding_mismatch(field, value, messag
         catalog_digest="sha256:" + "c" * 64,
         wheel_ref="artifact://wheel/binding",
         wheel_digest="sha256:" + "d" * 64,
-        release_version="0.1.0.dev15",
+        release_version=CURRENT_VERSION,
     )
     snapshot = workflow.to_dict()
     snapshot["release"][field] = value
@@ -367,7 +368,7 @@ def test_workflow_snapshot_cannot_restore_release_without_release_gates(
         catalog_digest="sha256:" + "c" * 64,
         wheel_ref="artifact://wheel/dev",
         wheel_digest="sha256:" + "d" * 64,
-        release_version="0.1.0.dev15",
+        release_version=CURRENT_VERSION,
     )
     snapshot = workflow.to_dict()
 
@@ -463,7 +464,7 @@ def test_release_rejects_asset_implementation_version_mismatch():
             catalog_digest="sha256:" + "c" * 64,
             wheel_ref="artifact://wheel/version-mismatch",
             wheel_digest="sha256:" + "d" * 64,
-            release_version="0.1.0.dev15",
+            release_version=CURRENT_VERSION,
         )
 
 
