@@ -88,6 +88,29 @@ def test_density_and_temperature_are_only_reported_when_configured():
     assert np.all(with_optional_fields["p_parallel"] >= with_optional_fields["density"] * 4.0)
 
 
+def test_flux_relabeling_requires_matching_axis_and_edge_references():
+    inputs = _inputs()
+    baseline = solve_frank_egedal_pressure_closure(inputs)
+    factor = 2.0 * np.pi
+    relabeled = _inputs()
+    relabeled["psi"] = factor * relabeled["psi"]
+    relabeled["params"]["psi_axis"] *= factor
+    relabeled["params"]["psi_edge"] *= factor
+    changed = solve_frank_egedal_pressure_closure(relabeled)
+
+    for key in ("p_parallel", "p_perp"):
+        np.testing.assert_allclose(changed[key], baseline[key], rtol=1.0e-12)
+    np.testing.assert_allclose(
+        changed["closure_state"]["radial_shape"],
+        baseline["closure_state"]["radial_shape"],
+        rtol=1.0e-12,
+    )
+
+    relabeled["params"]["psi_edge"] /= factor
+    unmatched = solve_frank_egedal_pressure_closure(relabeled)
+    assert not np.allclose(unmatched["p_parallel"], baseline["p_parallel"])
+
+
 # Eq. (19b) integrates the perpendicular moment only over v >= v_c.
 def test_perpendicular_moment_is_zero_when_critical_speed_reaches_beam_speed():
     result = _run_graph(

@@ -13,7 +13,7 @@ inputs:
 - name: psi
   meaning: 当前或最终磁通
   shape: '[N_Z,N_R]'
-  units: Wb
+  units: caller_flux_coordinate
   required: true
   constraints: finite [Z,R] field
 - name: B

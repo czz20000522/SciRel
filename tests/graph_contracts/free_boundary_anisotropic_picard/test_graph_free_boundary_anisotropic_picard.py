@@ -8,6 +8,7 @@ import pytest
 
 from scirel.field.circular_filament_green import circular_filament_green_response
 from scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response
+from scirel.kinetic.frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure
 
 
 
@@ -159,6 +160,60 @@ def test_per_radian_filament_green_pair_feeds_graph_without_wall_correction():
                                            ('BR', 'gBR', 'gBR'), ('BZ', 'gBZ', 'gBZ')):
         increment = result[output][target_index] - vacuum[vacuum_key].reshape(r_grid.shape)[target_index]
         np.testing.assert_allclose(increment, plasma[plasma_key][0], rtol=1e-8, atol=1e-15)
+
+
+def test_frank_egedal_closure_feeds_per_radian_free_boundary_step():
+    r_grid, z_grid = np.meshgrid(np.linspace(0.1, 0.5, 7), np.linspace(-0.2, 0.2, 7))
+    points = np.column_stack((r_grid.ravel(), z_grid.ravel()))
+    sources = np.column_stack((points, np.ones(points.shape[0])))
+    green = dense_axisymmetric_green_response(points, sources)
+    vacuum_source = [0.7, 0.0, 1e6]
+    vacuum = circular_filament_green_response([vacuum_source], points)
+    psi_vac = vacuum["gpsi"].reshape(r_grid.shape)
+    active = np.zeros_like(r_grid, dtype=bool)
+    source_index = (3, 4)
+    active[source_index] = True
+
+    result = solve_free_boundary_anisotropic_picard(
+        r_grid=r_grid,
+        z_grid=z_grid,
+        psi_vac=psi_vac,
+        br_vac=vacuum["gBR"].reshape(r_grid.shape),
+        bz_vac=vacuum["gBZ"].reshape(r_grid.shape),
+        g_psi=green["gpsi"],
+        g_br=green["gBR"],
+        g_bz=green["gBZ"],
+        plasma_mask=active,
+        pressure_closure=solve_frank_egedal_pressure_closure,
+        params={
+            "p0": 100.0,
+            "psi_axis": float(np.min(psi_vac)),
+            "psi_edge": float(np.max(psi_vac)),
+            "mirror_ratio": 2.0,
+            "legendre_degrees": [0.5],
+            "source_coefficients": [1.0],
+            "velocity_nodes": 4,
+            "pitch_nodes": 4,
+        },
+        tol=1e-12,
+        maxiter=1,
+        relax=0.0,
+    )
+
+    cell_current = result["picard_current_state"][np.ravel_multi_index(source_index, r_grid.shape)]
+    assert abs(cell_current) > 1e-6
+    target_index = (5, 1)
+    target = points[np.ravel_multi_index(target_index, r_grid.shape)]
+    plasma_source = [r_grid[source_index], z_grid[source_index], cell_current]
+    direct = circular_filament_green_response([vacuum_source, plasma_source], [target])
+    for field, key in (("psi", "gpsi"), ("BR", "gBR"), ("BZ", "gBZ")):
+        np.testing.assert_allclose(result[field][target_index], direct[key][0], rtol=1e-10)
+
+    terminal_closure = solve_frank_egedal_pressure_closure(
+        psi=result["psi"], B=result["B"], params=result["parameters"]
+    )
+    for field in ("p_parallel", "p_perp"):
+        np.testing.assert_allclose(result["profiles"][field], terminal_closure[field])
 
 
 # 验证：自洽 BR/BZ Green 响应是成对合同，单独提供一个会改变 B 的物理含义，必须拒绝。
