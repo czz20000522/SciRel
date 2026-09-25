@@ -161,9 +161,10 @@ def test_source_change_uses_existing_impact_selector_and_reverse_dependencies(
     changed_path = "src/scirel/field/a.py"
     monkeypatch.setattr(scope_module, "_changed_paths", lambda *_: [changed_path])
 
-    def impact(paths, commit, documents):
+    def impact(paths, baseline_commit, candidate_commit, documents):
         assert paths == [changed_path]
-        assert commit == "b" * 40
+        assert baseline_commit == "a" * 40
+        assert candidate_commit == "b" * 40
         assert set(documents) == {"a", "c"}
         return {"a"}, []
 
@@ -377,3 +378,244 @@ def test_snapshot_commit_must_be_a_full_hex_revision(tmp_path: Path):
 
     with pytest.raises(ValueError, match="invalid Git commit"):
         scope_module.review_scope(snapshot)
+
+
+# ---------------------------------------------------------------------------
+# Pure public-export attribution for __init__.py changes
+# ---------------------------------------------------------------------------
+
+BASELINE = "a" * 40
+CANDIDATE = "b" * 40
+MAXWELLIAN_CALLABLE = (
+    "scirel.collisions.maxwellian_relative_speed_rate_average"
+    ".average_cross_section_over_maxwellian"
+)
+MAXWELLIAN_ASSET = "scirel.collisions.maxwellian-relative-speed-rate-average"
+
+
+def _maxwellian_document():
+    document = _document(MAXWELLIAN_ASSET)
+    document["public_api"] = {
+        "python": {
+            "module": "scirel.collisions.maxwellian_relative_speed_rate_average",
+            "symbol": "average_cross_section_over_maxwellian",
+        }
+    }
+    return document
+
+
+def _patch_git_show(monkeypatch, before: str, after: str) -> None:
+    monkeypatch.setattr(
+        scope_module,
+        "_git_show",
+        lambda commit, path: before if commit == BASELINE else after,
+    )
+
+
+def _patch_head_guard(monkeypatch) -> None:
+    real_git = scope_module._git
+
+    def fake_git(*args):
+        if args[:2] == ("rev-parse", "HEAD"):
+            return CANDIDATE
+        if args[:1] == ("status",):
+            return ""
+        return real_git(*args)
+
+    monkeypatch.setattr(scope_module, "_git", fake_git)
+
+
+def test_pure_package_export_addition_is_attributed_to_the_added_asset(monkeypatch):
+    before = (
+        "from .momentum_scales import normalized_momentum\n"
+        "\n"
+        "__all__ = ['normalized_momentum']\n"
+    )
+    after = (
+        "from .momentum_scales import normalized_momentum\n"
+        "from .maxwellian_relative_speed_rate_average import "
+        "average_cross_section_over_maxwellian\n"
+        "\n"
+        "__all__ = ['normalized_momentum', 'average_cross_section_over_maxwellian']\n"
+    )
+    _patch_git_show(monkeypatch, before, after)
+
+    attributed = scope_module._attributed_export_assets(
+        "src/scirel/collisions/__init__.py",
+        BASELINE,
+        CANDIDATE,
+        {MAXWELLIAN_CALLABLE: MAXWELLIAN_ASSET},
+    )
+
+    assert attributed == {MAXWELLIAN_ASSET}
+
+
+def test_pure_package_export_removal_is_attributed_to_the_removed_asset(monkeypatch):
+    before = (
+        "from .momentum_scales import normalized_momentum\n"
+        "from .maxwellian_relative_speed_rate_average import "
+        "average_cross_section_over_maxwellian\n"
+        "\n"
+        "__all__ = ['normalized_momentum', 'average_cross_section_over_maxwellian']\n"
+    )
+    after = (
+        "from .momentum_scales import normalized_momentum\n"
+        "\n"
+        "__all__ = ['normalized_momentum']\n"
+    )
+    _patch_git_show(monkeypatch, before, after)
+
+    attributed = scope_module._attributed_export_assets(
+        "src/scirel/collisions/__init__.py",
+        BASELINE,
+        CANDIDATE,
+        {MAXWELLIAN_CALLABLE: MAXWELLIAN_ASSET},
+    )
+
+    assert attributed == {MAXWELLIAN_ASSET}
+
+
+def test_all_membership_change_without_import_change_is_attributed(monkeypatch):
+    before = (
+        "from .maxwellian_relative_speed_rate_average import "
+        "average_cross_section_over_maxwellian\n"
+        "\n"
+        "__all__ = []\n"
+    )
+    after = (
+        "from .maxwellian_relative_speed_rate_average import "
+        "average_cross_section_over_maxwellian\n"
+        "\n"
+        "__all__ = ['average_cross_section_over_maxwellian']\n"
+    )
+    _patch_git_show(monkeypatch, before, after)
+
+    attributed = scope_module._attributed_export_assets(
+        "src/scirel/collisions/__init__.py",
+        BASELINE,
+        CANDIDATE,
+        {MAXWELLIAN_CALLABLE: MAXWELLIAN_ASSET},
+    )
+
+    assert attributed == {MAXWELLIAN_ASSET}
+
+
+def test_non_export_init_change_stays_unattributable(monkeypatch):
+    before = "from .momentum_scales import normalized_momentum\n"
+    after = (
+        "from .momentum_scales import normalized_momentum\n"
+        "\n"
+        "def _helper():\n"
+        "    return 1\n"
+    )
+    _patch_git_show(monkeypatch, before, after)
+
+    attributed = scope_module._attributed_export_assets(
+        "src/scirel/collisions/__init__.py",
+        BASELINE,
+        CANDIDATE,
+        {MAXWELLIAN_CALLABLE: MAXWELLIAN_ASSET},
+    )
+
+    assert attributed is None
+
+
+def test_unmapped_export_name_stays_unattributable(monkeypatch):
+    before = "from .momentum_scales import normalized_momentum\n"
+    after = (
+        "from .momentum_scales import normalized_momentum\n"
+        "from .ghost import phantom\n"
+        "\n"
+        "__all__ = ['normalized_momentum', 'phantom']\n"
+    )
+    _patch_git_show(monkeypatch, before, after)
+
+    attributed = scope_module._attributed_export_assets(
+        "src/scirel/collisions/__init__.py",
+        BASELINE,
+        CANDIDATE,
+        {MAXWELLIAN_CALLABLE: MAXWELLIAN_ASSET},
+    )
+
+    assert attributed is None
+
+
+def test_non_scirel_import_change_stays_unattributable(monkeypatch):
+    before = "from .momentum_scales import normalized_momentum\n"
+    after = "from .momentum_scales import normalized_momentum\nfrom os import sep\n"
+    _patch_git_show(monkeypatch, before, after)
+
+    attributed = scope_module._attributed_export_assets(
+        "src/scirel/collisions/__init__.py",
+        BASELINE,
+        CANDIDATE,
+        {MAXWELLIAN_CALLABLE: MAXWELLIAN_ASSET},
+    )
+
+    assert attributed is None
+
+
+def test_star_import_stays_unattributable(monkeypatch):
+    before = "from .momentum_scales import normalized_momentum\n"
+    after = "from .momentum_scales import normalized_momentum\nfrom .ghost import *\n"
+    _patch_git_show(monkeypatch, before, after)
+
+    attributed = scope_module._attributed_export_assets(
+        "src/scirel/collisions/__init__.py",
+        BASELINE,
+        CANDIDATE,
+        {MAXWELLIAN_CALLABLE: MAXWELLIAN_ASSET},
+    )
+
+    assert attributed is None
+
+
+def test_pure_init_export_change_scopes_review_to_the_added_asset(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    baseline = _snapshot(tmp_path / "baseline", BASELINE, [_document("b")])
+    candidate = _snapshot(
+        tmp_path / "candidate", CANDIDATE, [_document("b"), _maxwellian_document()]
+    )
+    monkeypatch.setattr(
+        scope_module, "_changed_paths", lambda *_: ["src/scirel/collisions/__init__.py"]
+    )
+    _patch_head_guard(monkeypatch)
+    before = "from .momentum_scales import normalized_momentum\n"
+    after = (
+        "from .momentum_scales import normalized_momentum\n"
+        "from .maxwellian_relative_speed_rate_average import "
+        "average_cross_section_over_maxwellian\n"
+    )
+    _patch_git_show(monkeypatch, before, after)
+
+    result = scope_module.review_scope(candidate, baseline)
+
+    assert result["unresolved_source_paths"] == []
+    assert result["review_asset_ids"] == [MAXWELLIAN_ASSET]
+
+
+def test_non_export_init_change_still_expands_to_full_suite(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    baseline = _snapshot(tmp_path / "baseline", BASELINE, [_document("b")])
+    candidate = _snapshot(
+        tmp_path / "candidate", CANDIDATE, [_document("b"), _maxwellian_document()]
+    )
+    monkeypatch.setattr(
+        scope_module, "_changed_paths", lambda *_: ["src/scirel/collisions/__init__.py"]
+    )
+    _patch_head_guard(monkeypatch)
+    before = "from .momentum_scales import normalized_momentum\n"
+    after = (
+        "from .momentum_scales import normalized_momentum\n"
+        "\n"
+        "def _helper():\n"
+        "    return 1\n"
+    )
+    _patch_git_show(monkeypatch, before, after)
+
+    result = scope_module.review_scope(candidate, baseline)
+
+    assert result["unresolved_source_paths"] == ["src/scirel/collisions/__init__.py"]
+    assert set(result["review_asset_ids"]) == {"b", MAXWELLIAN_ASSET}

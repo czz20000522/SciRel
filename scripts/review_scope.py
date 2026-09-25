@@ -6,6 +6,7 @@ This is a read-only change/impact report, not a scientific equivalence or approv
 from __future__ import annotations
 
 import argparse
+import ast
 from email.parser import BytesParser
 import hashlib
 import json
@@ -133,6 +134,125 @@ def _git(*args: str) -> str:
     return result.stdout.decode("utf-8").strip()
 
 
+def _git_show(commit: str, path: str) -> str:
+    result = subprocess.run(
+        ["git", "show", f"{commit}:{path}"], cwd=ROOT, capture_output=True, check=True
+    )
+    return result.stdout.decode("utf-8")
+
+
+def _public_export_surface(source: str, package: str) -> tuple[dict[str, str], dict[str, str], list[str] | None, str] | None:
+    """Parse one ``__init__.py`` into its export surface and a residual AST dump.
+
+    Returns ``(import_map, other_map, all_names, residual)`` where
+    ``import_map`` maps every exported name to its absolute ``scirel.*`` module,
+    ``other_map`` records non-``scirel`` imported names (which must not change
+    for the change to count as a pure export change), ``all_names`` is the
+    literal ``__all__`` list or ``None`` when absent, and ``residual`` is the
+    AST dump with the import and ``__all__`` statements removed.  Returns
+    ``None`` for anything this parser refuses to judge (syntax errors, star
+    imports, dynamic ``__all__``), which the caller must treat as unresolved.
+    """
+    try:
+        tree = ast.parse(source)
+    except (SyntaxError, ValueError):
+        return None
+    import_map: dict[str, str] = {}
+    other_map: dict[str, str] = {}
+    all_names: list[str] | None = None
+    seen_all = 0
+    body = []
+    for node in tree.body:
+        if isinstance(node, ast.ImportFrom):
+            if node.level:
+                parts = package.split(".")
+                drop = node.level - 1
+                if drop > len(parts):
+                    return None
+                base = parts[: len(parts) - drop] if drop else parts
+                target = ".".join(
+                    [*base, *(node.module.split(".") if node.module else [])]
+                )
+            else:
+                target = node.module or ""
+            if any(alias.name == "*" for alias in node.names):
+                return None
+            for alias in node.names:
+                name = alias.asname or alias.name
+                if target.startswith("scirel"):
+                    import_map[name] = target
+                else:
+                    other_map[name] = target
+            continue
+        if (
+            isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)
+            and node.targets[0].id == "__all__"
+        ):
+            seen_all += 1
+            if seen_all > 1 or not isinstance(node.value, (ast.List, ast.Tuple)):
+                return None
+            names = []
+            for element in node.value.elts:
+                if not isinstance(element, ast.Constant) or not isinstance(
+                    element.value, str
+                ):
+                    return None
+                names.append(element.value)
+            all_names = names
+            continue
+        body.append(node)
+    if seen_all and all_names is None:
+        return None
+    tree.body = body
+    return import_map, other_map, all_names, ast.dump(tree)
+
+
+def _attributed_export_assets(
+    path: str, baseline_commit: str, candidate_commit: str, by_callable: dict[str, str]
+) -> set[str] | None:
+    """Attribute a pure public-export change in an ``__init__.py`` to assets.
+
+    Compares the two frozen blob versions at the AST level.  The change is a
+    pure export change only when the residual AST (everything except import
+    statements and the ``__all__`` literal) is identical, no non-``scirel``
+    import changed, and every added or removed public name resolves through
+    that version's own imports to a callable of a known asset.  Returns the
+    mapped asset IDs, or ``None`` when the change is not machine-verifiably a
+    pure export change -- the caller must then keep the fail-closed behaviour.
+    """
+    parts = Path(path).parts
+    if len(parts) < 3 or parts[-1] != "__init__.py":
+        return None
+    package = ".".join(parts[1:-1])
+    try:
+        before = _public_export_surface(_git_show(baseline_commit, path), package)
+        after = _public_export_surface(_git_show(candidate_commit, path), package)
+    except (OSError, ValueError, subprocess.CalledProcessError, UnicodeDecodeError):
+        return None
+    if before is None or after is None:
+        return None
+    before_map, before_other, before_all, before_residual = before
+    after_map, after_other, after_all, after_residual = after
+    if before_residual != after_residual or before_other != after_other:
+        return None
+    changed = set(after_map) ^ set(before_map)
+    for name in set(after_map) & set(before_map):
+        if after_map[name] != before_map[name]:
+            changed.add(name)
+    if after_all != before_all:
+        changed.update(set(after_all or []) ^ set(before_all or []))
+    assets = set()
+    for name in sorted(changed):
+        module = after_map.get(name, before_map.get(name))
+        asset_id = by_callable.get(f"{module}.{name}") if module else None
+        if asset_id is None:
+            return None
+        assets.add(asset_id)
+    return assets
+
+
 def _changed_paths(baseline_commit: str, candidate_commit: str) -> list[str]:
     output = subprocess.run(
         [
@@ -145,7 +265,10 @@ def _changed_paths(baseline_commit: str, candidate_commit: str) -> list[str]:
 
 
 def _source_impact(
-    paths: list[str], candidate_commit: str, documents: dict[str, dict[str, Any]]
+    paths: list[str],
+    baseline_commit: str,
+    candidate_commit: str,
+    documents: dict[str, dict[str, Any]],
 ) -> tuple[set[str], list[str]]:
     if not paths:
         return set(), []
@@ -160,10 +283,24 @@ def _source_impact(
     unresolved = []
     for reason in selection["reasons"]:
         callables = reason["affected_assets"]
-        if not callables or any(item not in by_callable for item in callables):
-            unresolved.append(reason["changed_path"])
-        else:
-            affected.update(by_callable[item] for item in callables)
+        if callables:
+            if any(item not in by_callable for item in callables):
+                unresolved.append(reason["changed_path"])
+            else:
+                affected.update(by_callable[item] for item in callables)
+            continue
+        # An __init__.py export change is unattributable to the selector, but a
+        # pure, machine-verifiable public-export change is attributed here to
+        # exactly the assets whose callables entered or left the surface; every
+        # other shape stays fail-closed via the unresolved path below.
+        if reason.get("classification") == "public_exports":
+            attributed = _attributed_export_assets(
+                reason["changed_path"], baseline_commit, candidate_commit, by_callable
+            )
+            if attributed is not None:
+                affected.update(attributed)
+                continue
+        unresolved.append(reason["changed_path"])
     if selection["full_suite_required"] or unresolved:
         affected.update(documents)
     return affected, unresolved
@@ -227,7 +364,9 @@ def review_scope(candidate_dir: Path, baseline_dir: Path | None = None) -> dict[
         path for path in changed_paths
         if path.startswith("src/scirel/") and path.endswith(".py")
     ]
-    source_assets, unresolved = _source_impact(source_paths, candidate["git_commit"], current)
+    source_assets, unresolved = _source_impact(
+        source_paths, baseline["git_commit"], candidate["git_commit"], current
+    )
     changed_tests = {path for path in changed_paths if path.startswith("tests/")}
     evidence_assets = {
         asset_id for asset_id, document in current.items()
