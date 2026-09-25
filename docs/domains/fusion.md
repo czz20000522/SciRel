@@ -11,6 +11,6 @@
 
 ## 模型条件与证据
 
-反应率采用 Bosch-Hale Maxwellian 拟合，温度必须已经以 keV 给出。SciRel 不隐式截断温度；正温度的数值可计算性不等于拟合在全域具备物理精度。ASCOT5 来源有编译源码金值，TokaGrad 的 DT 实现只提供 source-free 方程/不变量证据且含舍入系数与夹取，具体比较见[开发整合记录](../evaluations/intake-2026-09-25-bosch-hale-reactivity.md)。DD 能量关系的常量和非相对论适用性限制见其 exact document。
+反应率采用 Bosch-Hale Maxwellian 拟合，温度必须已经以 keV 给出。SciRel 不隐式截断温度；正温度的数值可计算性不等于拟合在全域具备物理精度。ASCOT5 保存的编译源码金值与 TokaGrad 的 source-free DT 方程/不变量测试仍是有界开发证据；两项目原严格 D1 资格均已撤回，不能视为当前合格原料。TokaGrad 实现另有舍入系数与夹取，具体比较及资格更正见[开发整合记录](../evaluations/intake-2026-09-25-bosch-hale-reactivity.md)。DD 能量关系的常量和非相对论适用性限制见其 exact document。
 
 专家待决：各反应拟合的可信温度范围、来源许可证、TokaGrad 变体是否保留、聚变功率及快离子分配的标准身份和组合边界。文档未覆盖的科学关系不能由下游 Agent 自行补造为可信资产。

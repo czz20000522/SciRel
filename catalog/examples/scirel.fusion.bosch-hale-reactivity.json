@@ -35,8 +35,8 @@
     "partial_results": "None; all elements must pass validation before output is returned."
   },
   "provenance": {
-    "lineage_summary": "The standard four-channel fit uses the saved ASCOT5 boschhale reaction-rate coefficients. TokaGrad supplies a DT-only implementation of the same algebraic relation with rounded coefficients and 0.2-200 keV clipping; it is overlapping evidence, not exact implementation reuse. Their strictly frozen D1 source/candidate tree references are in the 2026-09-25 extraction handoff; SciRel-specific comparisons and limits are in the intake evaluation.",
-    "source_kinds": ["strictly frozen ASCOT5 and TokaGrad L1 operator contracts and implementations", "ASCOT5 compiled-source golden and direct L1 tests", "TokaGrad source-free equation tests and bounded numerical comparison"],
+    "lineage_summary": "The standard four-channel fit uses the saved ASCOT5 boschhale reaction-rate coefficients. TokaGrad supplies a DT-only implementation of the same algebraic relation with rounded coefficients and 0.2-200 keV clipping; it is overlapping evidence, not exact implementation reuse. Independent whole-source review later withdrew both projects' former strict D1 qualification. Their archived candidate trees and bounded numerical comparisons remain historical development evidence, not current qualified L1 input; exact references and limits are in the 2026-09-25 extraction handoff and intake evaluation.",
+    "source_kinds": ["archived ASCOT5 and TokaGrad L1 operator contracts and implementations, pending renewed strict D1 review", "saved ASCOT5 compiled-source golden and direct L1 tests", "saved TokaGrad source-free equation tests and bounded numerical comparison"],
     "public_references": ["Bosch and Hale, Nuclear Fusion 32 (1992), doi:10.1088/0029-5515/32/4/I07"],
     "license_status": "pending-human-decision"
   },
@@ -50,7 +50,7 @@
   "verification": {
     "scope": ["Four channel source-golden values, positive real scalar and array behavior, input validation and no clipping.", "Pinned ASCOT5 and TokaGrad saved implementations compared on finite temperatures; rounded DT discrepancy and clipping distinguished."],
     "tests": ["tests/operator_contracts/test_bosch_hale_reactivity.py", "tests/operator_contracts/test_bosch_hale_reactivity_l1.py"],
-    "evidence_ceiling": "ASCOT5's saved direct test reports compiled-source parity and SciRel's bounded replay checks the saved implementation at listed temperatures. TokaGrad's test is source-free only; its DT values differ by up to about 4.6e-5 relative on sampled 0.2-200 keV inputs. Neither comparison proves physical fit validity for all temperatures, complete source-project reproduction or expert approval.",
+    "evidence_ceiling": "ASCOT5's saved direct test reports compiled-source parity and historical SciRel replay checks the saved implementation at listed temperatures. TokaGrad's saved test is source-free only; its DT values differ by up to about 4.6e-5 relative on sampled 0.2-200 keV inputs. Both project-level strict D1 qualifications were withdrawn; neither comparison proves a current qualified source package, physical fit validity for all temperatures, complete source-project reproduction or expert approval.",
     "known_limitations": ["No reaction cross section, product kinematics, fuel density or fusion power is exposed.", "No caller-specific temperature clipping or profile policy is inferred.", "TokaGrad's negative-density validation claim conflicts with its saved implementation and is not adopted.", "Distribution license and expert science approval remain pending."]
   }
 }
