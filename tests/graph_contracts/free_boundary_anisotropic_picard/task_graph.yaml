@@ -28,7 +28,7 @@ inputs:
 - name: psi_vac
   meaning: 外加或真空磁通
   shape: '[N_Z,N_R]'
-  units: Wb
+  units: Wb/rad
   required: true
   constraints: ravel matches Green field axis
 - name: br_vac
@@ -46,7 +46,7 @@ inputs:
 - name: g_psi
   meaning: cell current 到 field flux dense Green 矩阵
   shape: '[N_field,N_field]'
-  units: Wb/A
+  units: Wb/rad/A
   required: true
   constraints: row field; column source cell
 - name: g_br
@@ -215,7 +215,7 @@ inputs:
 - name: pressure_closure
   meaning: 调用方提供的 N4 闭合 callable
   shape: callable({psi,B,params})->mapping
-  units: caller_adapter
+  units: psi Wb/rad, B T, pressure Pa
   required: true
   constraints: returns p_parallel,p_perp,density,electron_temperature
 - name: tol
@@ -264,13 +264,13 @@ inputs:
     green_boundary_to_boundary:
       meaning: wall current 到 boundary flux Green 矩阵
       shape: '[N_boundary,N_wall]'
-      units: Wb/A
+      units: Wb/rad/A
       required: true
       constraints: finite
     green_boundary_to_field:
       meaning: wall current 到 field flux Green 矩阵
       shape: '[N_field,N_wall]'
-      units: Wb/A
+      units: Wb/rad/A
       required: true
       constraints: finite
     rcond:
@@ -283,7 +283,7 @@ outputs:
 - name: psi
   meaning: 当前或最终磁通
   shape: '[N_Z,N_R]'
-  units: Wb
+  units: Wb/rad
   required: true
   constraints: finite [Z,R] field
 - name: BR
@@ -379,13 +379,13 @@ outputs:
 - name: boundary_flux_correction
   meaning: 墙引起的磁通改变量
   shape: '[N_Z,N_R] or null'
-  units: Wb
+  units: Wb/rad
   required: true
   constraints: wall branch only
 - name: boundary_residual_norm
   meaning: 墙边界残差范数
   shape: scalar_or_null
-  units: Wb
+  units: Wb/rad
   required: true
   constraints: 非墙分支返回 null；启用 boundary_correction 时返回有限标量
 - name: failure_reason

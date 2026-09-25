@@ -23,15 +23,15 @@
     {"name":"plasma_mask","description":"Optional active-cell selector, passed explicitly as None when absent.","units":"boolean","shape":"[N_Z,N_R] or null","dtype":"bool array or None","required":true,"constraints":"None means all cells active; otherwise exact grid shape and boolean dtype, without broadcast or 0/1 coercion."},
     {"name":"currents_old","description":"Previous relaxed cell-current state, passed explicitly as None for zero initialization.","units":"A","shape":"[N_Z*N_R] or null","dtype":"finite real array-like or None","required":true,"constraints":"None initializes all zeros; otherwise exact flattened length and finite values."},
     {"name":"relax","description":"Retention weight of the old cell-current state.","units":"dimensionless","shape":"scalar","dtype":"finite real scalar","required":true,"constraints":"0 <= relax <= 1; 0 uses raw current, 1 retains the old state."},
-    {"name":"g_psi","description":"Dense current-to-flux Green response.","units":"Wb/A","shape":"[N_Z*N_R,N_Z*N_R]","dtype":"finite real array-like","required":true,"constraints":"Required, exact square shape; rows are field points and columns are C-order source cells."},
+    {"name":"g_psi","description":"Dense current-to-flux Green response for psi=R A_phi.","units":"Wb/rad/A","shape":"[N_Z*N_R,N_Z*N_R]","dtype":"finite real array-like","required":true,"constraints":"Required, exact square shape; rows are field points and columns are C-order source cells."},
     {"name":"g_br","description":"Optional current-to-radial-field Green response, passed explicitly as None when absent.","units":"T/A","shape":"[N_Z*N_R,N_Z*N_R] or null","dtype":"finite real array-like or None","required":true,"constraints":"Must be supplied as a finite exact square matrix together with g_bz, or both must be None."},
     {"name":"g_bz","description":"Optional current-to-axial-field Green response, passed explicitly as None when absent.","units":"T/A","shape":"[N_Z*N_R,N_Z*N_R] or null","dtype":"finite real array-like or None","required":true,"constraints":"Must be supplied as a finite exact square matrix together with g_br, or both must be None."},
-    {"name":"psi_vac","description":"Vacuum or external flux offset.","units":"Wb","shape":"[N_Z,N_R]","dtype":"finite real array-like","required":true,"constraints":"Exact grid shape; added to the g_psi response."},
+    {"name":"psi_vac","description":"Vacuum or external psi=R A_phi offset.","units":"Wb/rad","shape":"[N_Z,N_R]","dtype":"finite real array-like","required":true,"constraints":"Exact grid shape; added to the g_psi response."},
     {"name":"br_vac","description":"Vacuum radial-field offset.","units":"T","shape":"[N_Z,N_R]","dtype":"finite real array-like","required":true,"constraints":"Exact grid shape; returned unchanged when field Green matrices are absent."},
     {"name":"bz_vac","description":"Vacuum axial-field offset.","units":"T","shape":"[N_Z,N_R]","dtype":"finite real array-like","required":true,"constraints":"Exact grid shape; returned unchanged when field Green matrices are absent."}
   ],
   "outputs": [
-    {"name":"psi","description":"Vacuum flux plus relaxed-current Green response.","units":"Wb","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"The matrix response uses C-order flattened cell currents."},
+    {"name":"psi","description":"Vacuum psi=R A_phi plus relaxed-current Green response.","units":"Wb/rad","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"The matrix response uses C-order flattened cell currents."},
     {"name":"BR","description":"Vacuum radial field plus optional Green response.","units":"T","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Equals br_vac when both field Green matrices are None."},
     {"name":"BZ","description":"Vacuum axial field plus optional Green response.","units":"T","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Equals bz_vac when both field Green matrices are None."},
     {"name":"j_phi","description":"Current density after plasma-mask clipping.","units":"A/m^2","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Zero outside True cells when a mask is supplied."},
@@ -64,9 +64,9 @@
     "expected": "Only two cells carry raw current, and flux/field outputs use the relaxed current vector."
   },
   "verification": {
-    "scope": ["Zero Green response and positive cell area.", "Active-mask clipping, raw versus relaxed currents and paired flux/field response.", "Unpaired field matrices, wrong masks and nonuniform grids are rejected.", "Uniform descending axes retain positive cell area."],
+    "scope": ["Zero Green response and positive cell area.", "Active-mask clipping, raw versus relaxed currents and paired flux/field response.", "A selected off-source grid point matches direct circular-filament psi=R A_phi, BR and BZ without a 2*pi factor.", "Unpaired field matrices, wrong masks and nonuniform grids are rejected.", "Uniform descending axes retain positive cell area."],
     "tests": ["tests/operator_contracts/test_anisotropic_picard_feedback.py"],
-    "evidence_ceiling": "Direct small-grid tests cover discrete current weighting, matrix projection and selected validation failures; they do not establish physical validity of arbitrary Green matrices or expert recognition.",
+    "evidence_ceiling": "Direct small-grid tests cover discrete current weighting, matrix projection and selected validation failures. One finite off-source circular-filament comparison supports the per-radian flux convention, not arbitrary Green-matrix physics, convergence or expert recognition.",
     "known_limitations": ["The caller must provide explicit None for optional physical inputs because the Python signature has no defaults.", "Cell area uses the uniform first spacing rather than a quadrature rule for irregular grids.", "Public distribution licensing and expert recognition remain pending."]
   }
 }

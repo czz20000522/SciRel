@@ -2,6 +2,8 @@ import numpy as np
 import pytest
 
 from scirel.equilibrium.anisotropic_picard_feedback import update_anisotropic_picard_flux, update_anisotropic_picard_flux as scientific_operator
+from scirel.field.circular_filament_green import circular_filament_green_response
+from scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response
 
 
 def _inputs(**overrides):
@@ -15,6 +17,35 @@ def test_zero_green_keeps_vacuum_field_and_emits_cell_current():
     result = scientific_operator(**_inputs())
     np.testing.assert_allclose(result["psi"], _inputs()["psi_vac"])
     np.testing.assert_allclose(result["plasma_currents"], 0.04)
+
+
+def test_per_radian_green_projection_matches_direct_filament_field():
+    r_grid, z_grid = np.meshgrid(np.linspace(0.1, 0.5, 5), np.linspace(-0.2, 0.2, 5))
+    points = np.column_stack((r_grid.ravel(), z_grid.ravel()))
+    sources = np.column_stack((points, np.ones(points.shape[0])))
+    green = dense_axisymmetric_green_response(points, sources)
+    vacuum_source = [0.7, 0.0, 1e6]
+    vacuum = circular_filament_green_response([vacuum_source], points)
+    shape = r_grid.shape
+    j_phi = np.zeros(shape)
+    source_index = (2, 3)
+    j_phi[source_index] = 200.0
+
+    result = update_anisotropic_picard_flux(
+        j_phi, r_grid, z_grid, None, None, 0.0,
+        green['gpsi'], green['gBR'], green['gBZ'],
+        vacuum['gpsi'].reshape(shape), vacuum['gBR'].reshape(shape), vacuum['gBZ'].reshape(shape),
+    )
+
+    cell_current = j_phi[source_index] * (r_grid[0, 1] - r_grid[0, 0]) * (z_grid[1, 0] - z_grid[0, 0])
+    target_index = (4, 1)
+    target = points[np.ravel_multi_index(target_index, shape)]
+    plasma_source = [r_grid[source_index], z_grid[source_index], cell_current]
+    direct = circular_filament_green_response([vacuum_source, plasma_source], [target])
+    assert abs(result['psi'][target_index] - vacuum['gpsi'].reshape(shape)[target_index]) > 1e-9
+    np.testing.assert_allclose(result['psi'][target_index], direct['gpsi'][0], rtol=1e-10)
+    np.testing.assert_allclose(result['BR'][target_index], direct['gBR'][0], rtol=1e-10)
+    np.testing.assert_allclose(result['BZ'][target_index], direct['gBZ'][0], rtol=1e-10)
 
 
 def test_rejects_unpaired_field_green_matrices():

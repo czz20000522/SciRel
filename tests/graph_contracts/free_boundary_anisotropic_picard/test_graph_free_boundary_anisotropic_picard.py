@@ -6,6 +6,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from scirel.field.circular_filament_green import circular_filament_green_response
+from scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response
+
 
 
 def _run(values):
@@ -113,6 +116,49 @@ def test_nonzero_green_requires_sequential_state_feedback():
     assert result["failure_reason"] is None
     assert np.any(np.abs(result["picard_current_state"]) > 0.0)
     assert not np.allclose(result["psi"], values["psi_vac"])
+
+
+def test_per_radian_filament_green_pair_feeds_graph_without_wall_correction():
+    r_grid, z_grid = np.meshgrid(np.linspace(0.1, 0.5, 7), np.linspace(-0.2, 0.2, 7))
+    points = np.column_stack((r_grid.ravel(), z_grid.ravel()))
+    sources = np.column_stack((points, np.ones(points.shape[0])))
+    green = dense_axisymmetric_green_response(points, sources)
+    vacuum_source = [0.7, 0.0, 1e6]
+    vacuum = circular_filament_green_response([vacuum_source], points)
+    active = np.zeros_like(r_grid, dtype=bool)
+    source_index = (3, 4)
+    active[source_index] = True
+
+    def pressure_closure(state):
+        pressure = 10.0 + 100.0 * state['psi']
+        return {'p_parallel': pressure, 'p_perp': pressure,
+                'density': None, 'electron_temperature': None}
+
+    result = _run({
+        'r_grid': r_grid, 'z_grid': z_grid,
+        'psi_vac': vacuum['gpsi'].reshape(r_grid.shape),
+        'br_vac': vacuum['gBR'].reshape(r_grid.shape),
+        'bz_vac': vacuum['gBZ'].reshape(r_grid.shape),
+        'g_psi': green['gpsi'], 'g_br': green['gBR'], 'g_bz': green['gBZ'],
+        'plasma_mask': active, 'pressure_closure': pressure_closure,
+        'params': {}, 'tol': 1e-12, 'maxiter': 1, 'relax': 0.0,
+    })
+
+    cell_current = result['picard_current_state'][np.ravel_multi_index(source_index, r_grid.shape)]
+    assert abs(cell_current) > 1e-3
+    target_index = (5, 1)
+    target = points[np.ravel_multi_index(target_index, r_grid.shape)]
+    plasma_source = [r_grid[source_index], z_grid[source_index], cell_current]
+    direct = circular_filament_green_response([vacuum_source, plasma_source], [target])
+    plasma = circular_filament_green_response([plasma_source], [target])
+    assert abs(plasma['gpsi'][0]) > 1e-12
+    np.testing.assert_allclose(result['psi'][target_index], direct['gpsi'][0], rtol=1e-10)
+    np.testing.assert_allclose(result['BR'][target_index], direct['gBR'][0], rtol=1e-10)
+    np.testing.assert_allclose(result['BZ'][target_index], direct['gBZ'][0], rtol=1e-10)
+    for output, vacuum_key, plasma_key in (('psi', 'gpsi', 'gpsi'),
+                                           ('BR', 'gBR', 'gBR'), ('BZ', 'gBZ', 'gBZ')):
+        increment = result[output][target_index] - vacuum[vacuum_key].reshape(r_grid.shape)[target_index]
+        np.testing.assert_allclose(increment, plasma[plasma_key][0], rtol=1e-8, atol=1e-15)
 
 
 # 验证：自洽 BR/BZ Green 响应是成对合同，单独提供一个会改变 B 的物理含义，必须拒绝。
