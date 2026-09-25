@@ -18,6 +18,21 @@ from .molecular_hydrogen_charge_exchange_cross_section import (
     evaluate_molecular_hydrogen_charge_exchange_cross_section,
 )
 from .hydrogen2_charge_exchange_rate import evaluate_hydrogen2_charge_exchange_rate
+from .atomic_hydrogen_elastic_cross_section import (
+    evaluate_atomic_hydrogen_elastic_cross_section,
+)
+from .hydrogen_proton_elastic_cross_section import (
+    evaluate_hydrogen_proton_elastic_cross_section,
+)
+from .hydrogen_h2_elastic_cross_section import (
+    evaluate_hydrogen_h2_elastic_cross_section,
+)
+from .hydrogen2_hydrogen2_elastic_cross_section import (
+    evaluate_hydrogen2_hydrogen2_elastic_cross_section,
+)
+from .hydrogen2_proton_elastic_cross_section import (
+    evaluate_hydrogen2_proton_elastic_cross_section,
+)
 
 __all__ = [
     'BesselBackendEvaluationError',
@@ -31,4 +46,9 @@ __all__ = [
     'evaluate_collrad_h0_ionization_rate',
     'evaluate_molecular_hydrogen_charge_exchange_cross_section',
     'evaluate_hydrogen2_charge_exchange_rate',
+    'evaluate_atomic_hydrogen_elastic_cross_section',
+    'evaluate_hydrogen_proton_elastic_cross_section',
+    'evaluate_hydrogen_h2_elastic_cross_section',
+    'evaluate_hydrogen2_hydrogen2_elastic_cross_section',
+    'evaluate_hydrogen2_proton_elastic_cross_section',
 ]
