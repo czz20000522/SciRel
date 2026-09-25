@@ -63,8 +63,11 @@ physical systems: the disagreement is asserted numerically in both directions
 
 ## Evidence
 
-Source-free maintained tests (24 total: 17 direct + 7 environment-gated
-replay) establish each relation against an independent evaluation in the
+Source-free maintained tests (22 total: 15 direct + 7 environment-gated
+replay, per pytest collection -- cross-section 8 direct + 3 replay, rate
+7 direct + 4 replay; corrected in r52, an earlier draft of this paragraph
+miscounted 24 = 17 + 7) establish each relation against an independent
+evaluation in the
 saved package's own oracle style (closed-form reevaluation for the
 cross-section fit, polyval2d for the rate fit), the clipping contracts, the
 full input/failure contracts including the repairs, the numerical distinction

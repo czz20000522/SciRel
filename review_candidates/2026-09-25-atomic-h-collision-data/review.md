@@ -83,8 +83,11 @@ the averaging relation remains `maxwellian-relative-speed-rate-average`, whose
 
 ## Evidence
 
-Source-free maintained tests (63 total: 21 direct + 4 environment-gated replay
-per asset) establish each relation against an independent evaluation in the
+Source-free maintained tests (37 total: 25 direct + 12 environment-gated
+replay; per pytest collection -- cross-section 8 direct + 4 replay, rate
+coefficient 7 direct + 4 replay, COLLRAD 10 direct + 4 replay; corrected in
+r52, an earlier draft of this paragraph miscounted 63 = 3 x (21 + 4)) establish
+each relation against an independent evaluation in the
 saved package's own oracle style (polyval2d for the rate fit, geometric-mean
 midpoint and grid anchors for the COLLRAD table, closed-form reevaluation for
 both cross-section branches), the clipping contracts, the full input/failure

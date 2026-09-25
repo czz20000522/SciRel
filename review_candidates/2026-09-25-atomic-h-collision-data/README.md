@@ -18,9 +18,9 @@ trusted version, or a public release.
 
 | Saved package | Disposition | Proposed SciRel identity | Material differences | Evidence |
 | --- | --- | --- | --- | --- |
-| 原子氢电荷交换截面 (sigma_cx_h0.py:7-32) | add new capability | scirel.collisions.atomic-hydrogen-charge-exchange-cross-section | two documented repairs: negative-energy rejection, scalar-only branch selector; branch arithmetic bit-preserved | 21 direct + 4 replay tests |
-| 原子氢电荷交换Maxwellian速率系数 (sigmav_cx_h0.py:8-95, N25) | add new capability | scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient | two documented repairs: nonpositive-temperature and negative-energy rejection; summation order bit-preserved | 21 direct + 4 replay tests |
-| COLLRAD_H0电子碰撞电离率 (collrad_sigmav_ion_h0.py:16-217) | add new capability | scirel.collisions.collrad-h0-ionization-rate | one documented repair: equal-shape inputs and shape-preserving output; table and interpolation bit-preserved | 21 direct + 4 replay tests |
+| 原子氢电荷交换截面 (sigma_cx_h0.py:7-32) | add new capability | scirel.collisions.atomic-hydrogen-charge-exchange-cross-section | two documented repairs: negative-energy rejection, scalar-only branch selector; branch arithmetic bit-preserved | 8 direct + 4 replay tests |
+| 原子氢电荷交换Maxwellian速率系数 (sigmav_cx_h0.py:8-95, N25) | add new capability | scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient | two documented repairs: nonpositive-temperature and negative-energy rejection; summation order bit-preserved | 7 direct + 4 replay tests |
+| COLLRAD_H0电子碰撞电离率 (collrad_sigmav_ion_h0.py:16-217) | add new capability | scirel.collisions.collrad-h0-ionization-rate | one documented repair: equal-shape inputs and shape-preserving output; table and interpolation bit-preserved | 10 direct + 4 replay tests |
 
 Relations kept distinct and not merged: the two charge-exchange assets are
 sibling fits of one process (a cross section and a bivariate rate-coefficient

@@ -21,7 +21,7 @@ trusted version, or a public release.
 | Saved package | Disposition | Proposed SciRel identity | Material differences | Evidence |
 | --- | --- | --- | --- | --- |
 | 分子氢电荷交换截面 (sigma_cx_hh.py:5-23) | add new capability | scirel.collisions.molecular-hydrogen-charge-exchange-cross-section | one documented repair: negative-energy rejection; fit arithmetic bit-preserved | 8 direct + 3 replay tests |
-| 分子氢电荷交换Maxwellian速率系数 (sigmav_cx_hh.py:5-95, N15) | add new capability | scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient | two documented repairs: nonpositive-temperature and negative-energy rejection; summation order bit-preserved | 9 direct + 4 replay tests |
+| 分子氢电荷交换Maxwellian速率系数 (sigmav_cx_hh.py:5-95, N15) | add new capability | scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient | two documented repairs: nonpositive-temperature and negative-energy rejection; summation order bit-preserved | 7 direct + 4 replay tests |
 
 Relations kept distinct and not merged: the two H2 assets are sibling fits of
 one process, not one relation, mirroring the r49 atomic pair; the molecular
