@@ -7,9 +7,23 @@ the saved bundle's own extraction report), integrated as
 :func:`evaluate_h_jh_alpha_coefficient`:
 
 the Johnson-Hinnov hydrogen alpha (recombination) coefficient, evaluated as a
-cubic B-spline over ``(log Te, log n)`` with the caller-supplied explicit
-payload (knots, order and the ``LogAlpha_BSCoef`` coefficient vector) and the
-saved source's endpoint clipping in both coordinates.
+tensor-product B-spline over ``(log Te, log n)`` with the caller-supplied
+explicit payload (knots, order and the ``LogAlpha_BSCoef`` coefficient
+vector) and the saved source's endpoint clipping in both coordinates.
+
+**Degree convention, stated precisely (r58 correction of the r57 wording).**
+The payload's ``order`` field (fixed at ``4`` by the saved validation) is
+passed to scipy's FITPACK ``bisplev`` as ``kx=ky``, and scipy documents
+``kx``/``ky`` as the spline *degree*, so the admitted payload executes a
+degree-four (quartic) surface -- not the cubic surface the saved source's
+own label describes.  The saved coefficient-count contract closes only
+under that reading: ``(temperature_knots.size - 4 - 1) *
+(density_knots.size - 4 - 1)`` is FITPACK's degree formula for the 77
+coefficients.  The direct tests pin the executed degree with an independent
+numpy Cox-de Boor evaluation.  Whether the saved label's intended
+degree-three surface should replace the executed degree-four surface is an
+open expert-review question; no repair is claimed and the executed
+arithmetic is preserved bit for bit.
 
 **The evaluation is the saved formal implementation's, exactly, including one
 observable source quirk.**  The saved implementation documents that the raw
@@ -27,8 +41,9 @@ precisely because their density semantics differ.
 **No repair is claimed for this leaf.**  The saved formal implementation
 enforces its declared input contract (non-empty one-dimensional paired
 arrays, finite and strictly positive density and temperature, an exact-field
-read-only payload with one-dimensional non-decreasing finite knots, source
-cubic order ``4``, a knot/field geometry describing exactly 77 coefficients,
+read-only payload with one-dimensional non-decreasing finite knots, the
+payload's ``order`` field fixed at ``4`` -- consumed by FITPACK as the
+spline degree -- a knot/field geometry describing exactly 77 coefficients,
 and ``no_null == 1``); the contract is reproduced bit for bit, messages
 included.
 
@@ -121,8 +136,9 @@ def evaluate_h_jh_alpha_coefficient(density_m3, temperature_ev, jh_payload, no_n
         The read-only Johnson-Hinnov coefficient payload mapping with the
         exact fields ``DKnot``, ``TKnot``, ``order``, ``LogR_BSCoef``,
         ``LogS_BSCoef``, ``LogAlpha_BSCoef``, ``A_Lyman``, ``A_Balmer``;
-        validated for knot geometry (source cubic order 4 describing exactly
-        77 coefficients) and finiteness.  The inputs are not mutated.
+        validated for knot geometry (order field 4, consumed by FITPACK as
+        the spline degree, describing exactly 77 coefficients) and
+        finiteness.  The inputs are not mutated.
     no_null
         The source branch selector; only the source-complete ``no_null=1``
         branch is admitted.

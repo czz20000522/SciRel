@@ -12,6 +12,25 @@ drift between a digest below and the working tree means the candidate text
 changed after this index was written and the batch needs a successor, not a
 silent edit.
 
+## Batch r58: Johnson-Hinnov degree-convention correction (description only)
+
+Directory: `review_candidates/2026-09-25-jh-degree-correction/`
+Successor of batch r57: the r57 candidate files above keep their frozen r57 bytes and digests; this batch binds the corrected bytes.
+- `README.md` -- sha256 `56769da43f3ccf7b69dfdcd93e0dfeffe2356bdd1b3a37cdfe9ab6deaa97ce7a`
+- `review.md` -- sha256 `9b80e25a15ec04b3f132f37796d234ad203fc9a311c06ad3ec8ef3e46c09715a`
+- `proposal/hydrogen_jh_r_coefficient.py` -- sha256 `df3cf80c947232568ccb2cdac910539fcec29ecdfc1502d202632d9e964473e1`
+- `proposal/hydrogen_jh_s_coefficient.py` -- sha256 `fbb97eaa506f57ad64038d5658085c454a334af47e2ae903838faa155dd1409f`
+- `proposal/hydrogen_jh_alpha_coefficient.py` -- sha256 `7e20159e5661d15de2dadedd12b706f9cd3ae0b0d93e62cfbcbcde39cbf79b05`
+- `proposal/test_hydrogen_jh_r_coefficient.py` -- sha256 `bb45953147507fe20aba13db9289ceae016fc04050e347aa8206772d40ebf449`
+- `proposal/test_hydrogen_jh_r_coefficient_l1.py` -- sha256 `c624e7223ae66cf94e16d86e33fe263e30cf34a2a2571b8d6189099dbd800ab4`
+- `proposal/test_hydrogen_jh_s_coefficient.py` -- sha256 `bb6dd5bad0ec640d1bccf57fcc9ac1d0e5425b2567e958e796bd979705f66bbc`
+- `proposal/test_hydrogen_jh_s_coefficient_l1.py` -- sha256 `ead02ceeb9c513b19c8ba9280ff11fa73e1f6827cf61f76ecadeb0d516125fca`
+- `proposal/test_hydrogen_jh_alpha_coefficient.py` -- sha256 `ad8980e3b4ffe84dcdce56bfafd4731f7b74a178c0e991dc2a38ab51388e6cf6`
+- `proposal/test_hydrogen_jh_alpha_coefficient_l1.py` -- sha256 `a7b45647f1d0e572c7bef10e95fd90add90e96b2299468ad73bc26ab0e2065e9`
+- `proposal/scirel.collisions.hydrogen-jh-r-coefficient.json` -- sha256 `464d3b89ea203fa9c2f59039953108865f2e63e54d80bbc513b341392a43dfcf`
+- `proposal/scirel.collisions.hydrogen-jh-s-coefficient.json` -- sha256 `9031868241a3007d729ec6ad39d3b038653c760829f875adff424750b11ccc5a`
+- `proposal/scirel.collisions.hydrogen-jh-alpha-coefficient.json` -- sha256 `6442a1e4021c0d2a7aaa2a729b3d58a20f627a5fcfbe8ae3e7f1e35966de3a90`
+
 ## Batch r57: Johnson-Hinnov coefficient B-spline family
 
 Directory: `review_candidates/2026-09-25-jh-coefficients/`

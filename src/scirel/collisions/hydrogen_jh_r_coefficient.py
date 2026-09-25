@@ -7,9 +7,22 @@ saved bundle's own extraction report), integrated as
 :func:`evaluate_h_jh_r_coefficient`:
 
 the Johnson-Hinnov hydrogen r coefficient for principal levels 2-6, evaluated
-as a cubic B-spline over ``(log Te, log n)`` with the caller-supplied knots
-and coefficient tensor and the saved source's endpoint clipping in both
+as a tensor-product B-spline over ``(log Te, log n)`` with the caller-supplied
+knots and coefficient tensor and the saved source's endpoint clipping in both
 coordinates.
+
+**Degree convention, stated precisely (r58 correction of the r57 wording).**
+The ``spline_order`` argument is passed to scipy's FITPACK ``bisplev`` as
+``kx=ky``, and scipy documents ``kx``/``ky`` as the spline *degree*, so the
+admitted ``spline_order=4`` executes a degree-four (quartic) surface -- not
+the cubic surface the saved source's own label describes.  The saved
+coefficient-count contract closes only under that reading:
+``(temperature_knots.size - 4 - 1) * (density_knots.size - 4 - 1)`` is
+FITPACK's degree formula for the coefficient count.  The direct tests pin
+the executed degree with an independent numpy Cox-de Boor evaluation.
+Whether the saved label's intended degree-three surface should replace the
+executed degree-four surface is an open expert-review question; no repair is
+claimed and the executed arithmetic is preserved bit for bit.
 
 **The evaluation is the saved formal implementation's, exactly, including one
 observable source quirk.**  On the source-complete ``no_null=1`` branch the

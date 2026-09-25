@@ -81,7 +81,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.closures.mirror_quasineutral_closure", "symbol": "solve_mirror_quasineutral_closure", "signature": "solve_mirror_quasineutral_closure(inputs=None, **kwargs)"}},
-  "version": {"implementation_version": "0.1.0.dev29", "dependencies": [
+  "version": {"implementation_version": "0.1.0.dev30", "dependencies": [
     {"asset_id": "scirel.closures.boltzmann-quasineutrality"},
     {"asset_id": "scirel.closures.quasineutral-potential"},
     {"asset_id": "scirel.closures.quasineutral-reference-density"},

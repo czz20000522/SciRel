@@ -41,7 +41,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.closures.quasineutral_reference_density", "symbol": "compute_reference_electron_density", "signature": "compute_reference_electron_density(density_ref_m3, ion_charge_state)"}},
-  "version": {"implementation_version": "0.1.0.dev29", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev30", "dependencies": []},
   "example": {
     "description": "Broadcast two positive charge states over ion reference densities.",
     "code": "import numpy as np\nfrom scirel.closures import compute_reference_electron_density\nresult = compute_reference_electron_density([1.0e18, 2.0e18], [1.0, 3.0])\nnp.testing.assert_allclose(result['electron_density_ref_m3'], [1.0e18, 6.0e18])\nassert result['electron_density_ref_m3'].shape == (2,)",

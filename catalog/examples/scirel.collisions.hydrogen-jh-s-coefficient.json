@@ -6,7 +6,7 @@
     "en": "Atomic-hydrogen Johnson-Hinnov s-coefficient B-spline evaluation",
     "zh": "原子氢JH-s系数B样条评价"
   },
-  "summary": "The Johnson-Hinnov hydrogen s coefficient, evaluated as a cubic B-spline over (log Te, log n) on the caller's clipped coordinates, reading the LogS_BSCoef vector from an exact-field validated payload. Unlike the sibling r and alpha branches, this branch consumes the caller's density. No repair is claimed.",
+  "summary": "The Johnson-Hinnov hydrogen s coefficient, evaluated as a tensor-product B-spline over (log Te, log n) on the caller's clipped coordinates, reading the LogS_BSCoef vector from an exact-field validated payload. The payload's order field (4) is consumed by scipy's FITPACK bisplev as the spline degree (scipy documents kx/ky as degrees), so the executed surface is degree four (quartic), not the cubic surface the saved source's own label describes; that label-vs-executed-degree discrepancy is an open expert-review question. Unlike the sibling r and alpha branches, this branch consumes the caller's density. No repair is claimed.",
   "taxonomy": [
     "collisions",
     "atomic-hydrogen",
@@ -20,16 +20,17 @@
     "Johnson-Hinnov ionization coefficient"
   ],
   "identity": {
-    "relation": "the Johnson-Hinnov hydrogen s coefficient as a function of paired density and temperature via a cubic B-spline in (log Te, log n) over the payload's LogS_BSCoef vector",
+    "relation": "the Johnson-Hinnov hydrogen s coefficient as a function of paired density and temperature via a tensor-product B-spline in (log Te, log n) over the payload's LogS_BSCoef vector, whose order field is consumed by FITPACK as the spline degree (degree four for the admitted order-4 payload)",
     "direction": "paired density and temperature, explicit payload -> s coefficient per sample",
-    "definition": "With the payload's knots and source cubic order 4, the coefficient is evaluated as exp of the cubic B-spline at (clip(log T), clip(log n)) using the caller's density after clipping to the density-knot range -- the saved s branch consumes density, unlike the sibling r and alpha branches.",
+    "definition": "With the payload's knots and its order field fixed at 4 (consumed by FITPACK as the spline degree, so the executed surface is degree four), the coefficient is evaluated as exp of the B-spline surface at (clip(log T), clip(log n)) using the caller's density after clipping to the density-knot range -- the saved s branch consumes density, unlike the sibling r and alpha branches.",
     "model": "the saved formal implementation's explicit-payload evaluation of the source jhs_coef no_null=1 branch; the payload is caller state, not hidden common-block state",
     "geometry": "none; a scalar material relation over the spline payload",
     "coordinates": "density in m^-3, temperature in eV; output s coefficient in the coefficient table's units",
-    "boundary": "inputs must be non-empty one-dimensional paired arrays, finite and strictly positive; the payload must be a mapping with the exact fields DKnot, TKnot, order, LogR_BSCoef, LogS_BSCoef, LogAlpha_BSCoef, A_Lyman, A_Balmer, with one-dimensional non-decreasing finite knots, source cubic order 4, a knot geometry describing exactly 77 coefficients, and finiteness; no_null must be 1; the result must be finite and strictly positive",
+    "boundary": "inputs must be non-empty one-dimensional paired arrays, finite and strictly positive; the payload must be a mapping with the exact fields DKnot, TKnot, order, LogR_BSCoef, LogS_BSCoef, LogAlpha_BSCoef, A_Lyman, A_Balmer, with one-dimensional non-decreasing finite knots, the order field fixed at 4 (consumed by FITPACK as the spline degree), a knot geometry describing exactly 77 coefficients, and finiteness; no_null must be 1; the result must be finite and strictly positive",
     "assumptions": [
-      "The payload validation is the saved formal contract: the exact field set and the source cubic geometry (order 4, 77 coefficients) are enforced before any evaluation.",
+      "The payload validation is the saved formal contract: the exact field set and the saved geometry (order field 4 -- consumed by FITPACK as the spline degree -- and the 77 coefficients it describes) are enforced before any evaluation.",
       "The coefficient table itself is caller-supplied data; this asset evaluates the spline, it does not certify any coefficient table.",
+      "The payload's order field (fixed at 4 by the saved validation) is consumed by scipy's FITPACK bisplev as the spline degree (scipy documents kx/ky as degrees), so the executed surface is degree four (quartic); the saved source's own label describes a cubic (degree-three) surface, and whether that intended degree-three surface should replace the executed degree-four arithmetic is an open expert-review question.",
       "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
     ]
   },
@@ -123,7 +124,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev29",
+    "implementation_version": "0.1.0.dev30",
     "dependencies": []
   },
   "example": {
@@ -137,6 +138,7 @@
       "The density-dependence witness: unlike the sibling r and alpha branches, different densities give different outputs, matching the oracle at the caller's density.",
       "That out-of-range coordinates land exactly on the endpoint evaluations, per the saved clipping.",
       "The payload validation contract: mapping type, exact field set, order 4, 77-coefficient knot geometry, finiteness.",
+      "That the executed surface is degree four under scipy/FITPACK's degree convention (the payload's order field consumed as the kx=ky degree), by an independent numpy Cox-de Boor tensor-product evaluation of the same knots and coefficients.",
       "The input and failure contracts with messages naming the violated condition.",
       "Exact bit-level replay against the saved KN1DPy implementation, pinned by SHA-256, on the packaged coefficient payload (1-D and longer profiles), plus its rejection behavior and the s-consumes-density/alpha-does-not branch witness read from the saved implementation itself. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance."
     ],
@@ -146,6 +148,7 @@
     ],
     "evidence_ceiling": "The maintained tests establish the B-spline evaluation against independent FITPACK reevaluations, the clipping, the density dependence, the payload validation, and the full input and failure contracts exactly as the saved implementation declared them (no repair). The environment-gated replay establishes exact agreement with the saved KN1DPy implementation on the compared payloads and rejections only. No test establishes any coefficient table against an external atomic-physics reference: the saved package records that residual as validation_oracle_gap. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
     "known_limitations": [
+      "The saved source's own text labels the surface cubic; the executed surface is degree four under FITPACK's degree convention (the 77-coefficient arithmetic closes only under the degree reading). Whether the intended relation is the executed degree-four surface or a repaired degree-three surface is an open expert-review question; this asset preserves the executed arithmetic.",
       "The asset evaluates caller-supplied coefficient tables; it does not certify any table's physics (validation_oracle_gap).",
       "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
       "Public distribution licensing remains pending a human decision."

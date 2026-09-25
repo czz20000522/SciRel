@@ -2,7 +2,7 @@
 
 The saved KN1DPy package (source anchor ``KN1DPy/jh_related/jhr_coef.py:12-66``
 as recorded by the saved bundle's extraction report) evaluates the
-Johnson-Hinnov hydrogen r coefficient as a cubic B-spline over
+Johnson-Hinnov hydrogen r coefficient as a tensor-product B-spline over
 ``(log Te, log n)``.  On the source-complete ``no_null=1`` branch the saved
 implementation reproduces the raw source's ``result = Density;
 result[:] = 1e32`` initialization, so the spline's density coordinate is the
@@ -11,6 +11,13 @@ caller's density values beyond shape and validation.  That observable quirk
 is preserved bit for bit and asserted here as the density-independence
 witness; whether it is the intended published contract or a source defect to
 repair is an open expert-review question.
+
+Degree convention: ``spline_order`` is consumed by scipy's FITPACK
+``bisplev`` as the spline *degree* (scipy documents ``kx``/``ky`` as
+degrees), so the admitted ``spline_order=4`` executes a degree-four
+(quartic) surface, not the cubic surface the saved source's label
+describes.  The degree witness below pins the executed surface against an
+independent numpy Cox-de Boor evaluation at degree 4.
 
 The tests re-verify the relation against an independent FITPACK evaluation
 of the same spline (``RectBivariateSpline.ev`` at the clipped coordinates),
@@ -29,7 +36,8 @@ _NULL_DENSITY_M3 = 1.0e32
 
 
 def make_payload():
-    """Build a synthetic spline payload exactly as the saved package's tests do."""
+    """Build a synthetic spline payload exactly as the saved package's tests
+    do; ``kx=ky=4`` per scipy's degree convention is a degree-four surface."""
     temperature_axis = np.linspace(-1.0, 1.0, 5)
     density_axis = np.linspace(30.0, 32.0, 5)
     surface = np.add.outer(temperature_axis, density_axis)
@@ -39,6 +47,32 @@ def make_payload():
     coefficients[:, 0, 1] = spline.get_coeffs()
     coefficients[:, 1, 4] = spline.get_coeffs() + 0.25
     return density_knots, temperature_knots, spline, coefficients
+
+
+def _cox_de_boor_surface_value(x, y, temperature_knots, density_knots, coefficients, degree):
+    """Independent tensor-product B-spline evaluation (numpy only, no scipy):
+    the Cox-de Boor recurrence at the given degree, with FITPACK's coefficient
+    layout (x-major) and the right-endpoint convention."""
+    coefficients = np.asarray(coefficients, dtype=float)
+    n_x = len(temperature_knots) - degree - 1
+    n_y = len(density_knots) - degree - 1
+    grid = coefficients.reshape(n_x, n_y)
+
+    def basis(i, k, v, knots):
+        if v == knots[-1]:
+            return 1.0 if i == len(knots) - k - 2 else 0.0
+        if k == 0:
+            return 1.0 if knots[i] <= v < knots[i + 1] else 0.0
+        left = right = 0.0
+        if knots[i + k] > knots[i]:
+            left = (v - knots[i]) / (knots[i + k] - knots[i]) * basis(i, k - 1, v, knots)
+        if knots[i + k + 1] > knots[i + 1]:
+            right = (knots[i + k + 1] - v) / (knots[i + k + 1] - knots[i + 1]) * basis(i + 1, k - 1, v, knots)
+        return left + right
+
+    weight_x = np.array([basis(i, degree, x, temperature_knots) for i in range(n_x)])
+    weight_y = np.array([basis(j, degree, y, density_knots) for j in range(n_y)])
+    return float(weight_x @ grid @ weight_y)
 
 
 def independent_oracle(density, temperature, ion, level, density_knots, temperature_knots, spline):
@@ -102,6 +136,39 @@ def test_output_is_independent_of_the_caller_density_on_the_admitted_branch():
         np.array([np.exp(32.0), 1.0e20]), temperature, 0, 3, density_knots, temperature_knots, 4, coefficients
     )
     np.testing.assert_array_equal(low, high)
+
+
+def test_the_executed_surface_is_degree_four_under_fitpacks_degree_convention():
+    """scipy's bisplev/RectBivariateSpline document kx/ky as the spline
+    DEGREE, so spline_order=4 executes a degree-four (quartic) surface, not
+    the cubic surface the saved source's label describes.  Witness: an
+    independent numpy Cox-de Boor evaluation at degree 4 (no scipy)
+    reproduces the module output, including the clipped null-sentinel
+    density coordinate at the right knot endpoint.  The saved
+    coefficient-count contract (knots - 4 - 1) products closes only under
+    the degree reading (the order reading would need 96, not 77,
+    coefficients for the packaged geometry)."""
+    density_knots, temperature_knots, _, coefficients = make_payload()
+    density = np.array([np.exp(30.7), np.exp(31.4)])
+    temperature = np.array([np.exp(-0.4), np.exp(0.6)])
+    actual = evaluate_h_jh_r_coefficient(
+        density, temperature, 0, 3, density_knots, temperature_knots, 4, coefficients
+    )
+    # the r branch's density coordinate is the clipped null sentinel, which
+    # lands exactly on the right density-knot endpoint (32.0)
+    sentinel_log_density = min(np.log(_NULL_DENSITY_M3), density_knots[-1])
+    expected = np.array([
+        np.exp(_cox_de_boor_surface_value(
+            np.clip(np.log(temperature[i]), temperature_knots[0], temperature_knots[-1]),
+            sentinel_log_density,
+            temperature_knots,
+            density_knots,
+            coefficients[:, 0, 1],
+            4,
+        ))
+        for i in range(density.size)
+    ])
+    np.testing.assert_allclose(actual, expected, rtol=1e-9, atol=0.0)
 
 
 def test_invalid_ion_level_or_branch_fail_closed():

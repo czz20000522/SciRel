@@ -6,7 +6,7 @@
     "en": "Atomic-hydrogen Johnson-Hinnov r-coefficient B-spline evaluation",
     "zh": "原子氢JH-r系数B样条评价"
   },
-  "summary": "The Johnson-Hinnov hydrogen r coefficient for principal levels 2-6, evaluated as a cubic B-spline over (log Te, log n) with caller-supplied knots, spline order and coefficient tensor, and the saved source's endpoint clipping in both coordinates. On the source-complete no_null=1 branch the saved source's 1e32 null-sentinel density overwrite is preserved: the spline's density coordinate is the clipped sentinel, not the caller's values. No repair is claimed.",
+  "summary": "The Johnson-Hinnov hydrogen r coefficient for principal levels 2-6, evaluated as a tensor-product B-spline over (log Te, log n) with caller-supplied knots, spline order and coefficient tensor, and the saved source's endpoint clipping in both coordinates. The spline order value 4 is consumed by scipy's FITPACK bisplev as the spline degree (scipy documents kx/ky as degrees), so the executed surface is degree four (quartic), not the cubic surface the saved source's own label describes; that label-vs-executed-degree discrepancy is an open expert-review question. On the source-complete no_null=1 branch the saved source's 1e32 null-sentinel density overwrite is preserved: the spline's density coordinate is the clipped sentinel, not the caller's values. No repair is claimed.",
   "taxonomy": [
     "collisions",
     "atomic-hydrogen",
@@ -20,16 +20,17 @@
     "Johnson-Hinnov rate coefficient"
   ],
   "identity": {
-    "relation": "the Johnson-Hinnov hydrogen r coefficient for (ion channel, principal level) as a function of temperature (and nominally density) via a cubic B-spline in (log Te, log n)",
+    "relation": "the Johnson-Hinnov hydrogen r coefficient for (ion channel, principal level) as a function of temperature (and nominally density) via a tensor-product B-spline in (log Te, log n) whose spline order is consumed by FITPACK as the spline degree (degree four for the admitted spline_order=4)",
     "direction": "paired density and temperature, ion channel, principal level, explicit spline payload -> r coefficient per sample",
-    "definition": "With the caller's knots, spline order and the (n_coefficients, 2, 5) log-space tensor, the coefficient for (ion, principal_level - 2) is selected and evaluated as exp of the cubic B-spline at (clip(log T), clip(log D)). On the admitted no_null=1 branch the density coordinate entering the spline is the source's 1e32 null sentinel, clipped to the density-knot range, reproducing jhr_coef.py's result = Density; result[:] = 1e32 initialization.",
-    "model": "the saved formal implementation's explicit-payload evaluation of the source jhr_coef no_null=1 branch; knots and coefficients are caller state, not hidden common-block state",
+    "definition": "With the caller's knots, spline order and the (n_coefficients, 2, 5) log-space tensor, the coefficient for (ion, principal_level - 2) is selected and evaluated as exp of the B-spline surface at (clip(log T), clip(log D)); the spline order value 4 is FITPACK's spline degree, so the executed surface is degree four (quartic). On the admitted no_null=1 branch the density coordinate entering the spline is the source's 1e32 null sentinel, clipped to the density-knot range, reproducing jhr_coef.py's result = Density; result[:] = 1e32 initialization.",
+    "model": "the saved formal implementation's explicit-payload evaluation of the source jhr_coef no_null=1 branch; knots and coefficients are caller state, not hidden common-block state; the executed surface degree is fixed by FITPACK's degree convention (spline_order consumed as kx=ky degree)",
     "geometry": "none; a scalar material relation over the spline payload",
     "coordinates": "density in m^-3 (validation and shape only on the admitted branch), temperature in eV, dimensionless ion channel {0, 1} and principal level in [2, 6]; output r coefficient in the coefficient table's units",
     "boundary": "inputs must be non-empty one-dimensional paired arrays, finite and strictly positive; knots one-dimensional, finite, non-decreasing, at least two each; spline order a positive integer; log_r_bscoef finite of shape (n_coefficients, 2, 5) with n_coefficients = (temperature_knots.size - spline_order - 1) * (density_knots.size - spline_order - 1); no_null must be 1; the result must be finite and strictly positive",
     "assumptions": [
       "The saved implementation's density-overwrite behavior on the no_null=1 branch is preserved as the observable contract; whether that null-sentinel overwrite is the intended published contract or a source defect to repair is an open expert-review question.",
       "The coefficient table itself is caller-supplied data; this asset evaluates the spline, it does not certify any coefficient table.",
+      "The saved implementation's spline_order value 4 is consumed by scipy's FITPACK bisplev as the spline degree (scipy documents kx/ky as degrees), so the executed surface is degree four (quartic); the saved source's own label describes a cubic (degree-three) surface, and whether that intended degree-three surface should replace the executed degree-four arithmetic is an open expert-review question.",
       "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
     ]
   },
@@ -168,7 +169,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev29",
+    "implementation_version": "0.1.0.dev30",
     "dependencies": []
   },
   "example": {
@@ -182,6 +183,7 @@
       "That out-of-range coordinates land exactly on the endpoint evaluations, per the saved clipping.",
       "That ion and principal_level select distinct coefficient channels.",
       "The density-independence witness on the admitted no_null=1 branch.",
+      "That the executed surface is degree four under scipy/FITPACK's degree convention (spline_order consumed as the kx=ky degree), by an independent numpy Cox-de Boor tensor-product evaluation of the same knots and coefficients.",
       "The input and failure contracts: profiles, knots, order, tensor shape, ion/level/no_null, with messages naming the violated condition.",
       "Exact bit-level replay against the saved KN1DPy implementation, pinned by SHA-256, on the packaged coefficient payload (all ion channels and levels 2-6) and on a synthetic payload, plus its density-overwrite witness and rejection behavior. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance."
     ],
@@ -192,6 +194,7 @@
     "evidence_ceiling": "The maintained tests establish the B-spline evaluation against independent FITPACK reevaluations, the clipping, the channel selection, the density-independence witness, and the full input and failure contracts exactly as the saved implementation declared them (no repair). The environment-gated replay establishes exact agreement with the saved KN1DPy implementation on the compared payloads and rejections only. No test establishes any coefficient table against an external atomic-physics reference: the saved package records that residual as validation_oracle_gap. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
     "known_limitations": [
       "On the admitted no_null=1 branch the output does not depend on the caller's density values: the saved source's null-sentinel overwrite (jhr_coef.py:42-43) is preserved verbatim, and whether that is the intended published contract or a defect to repair is an open expert-review question.",
+      "The saved source's own text labels the surface cubic; the executed surface is degree four under FITPACK's degree convention (the 77-coefficient arithmetic closes only under the degree reading). Whether the intended relation is the executed degree-four surface or a repaired degree-three surface is an open expert-review question; this asset preserves the executed arithmetic.",
       "The asset evaluates caller-supplied coefficient tables; it does not certify any table's physics (validation_oracle_gap).",
       "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
       "Public distribution licensing remains pending a human decision."

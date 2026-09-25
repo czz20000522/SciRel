@@ -48,7 +48,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.equilibrium.pressure_flux_state", "symbol": "build_pressure_flux_state", "signature": "build_pressure_flux_state(r_grid, z_grid, psi, pressure_of_radius, plasma_mask=None)"}},
-  "version": {"implementation_version": "0.1.0.dev29", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev30", "dependencies": []},
   "example": {
     "description": "Fit a linearly decreasing midplane pressure profile and mask one derivative cell.",
     "code": "import numpy as np\nfrom scirel.equilibrium.pressure_flux_state import build_pressure_flux_state\nr_grid, z_grid = np.meshgrid(np.linspace(0.2, 0.8, 4), [-0.1, 0.0, 0.1])\nmask = np.zeros_like(r_grid, dtype=bool)\nmask[1, 2] = True\nresult = build_pressure_flux_state(r_grid, z_grid, r_grid.copy(), lambda radius: max(0.8 - radius, 0.0), plasma_mask=mask)\nexpected = np.full(r_grid.size, -1.0)\nexpected[6] = 0.0\nnp.testing.assert_allclose(result['pressure_derivative'], expected)\nnp.testing.assert_allclose(result['zero_currents'], 0.0)\nassert result['limiter_index'] == 3\nassert result['psi_edge'] == 0.8\nassert result['pressure_of_psi']['extrapolation'] == 'zeros'",

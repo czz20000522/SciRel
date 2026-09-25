@@ -2,11 +2,18 @@
 
 The saved KN1DPy package (source anchor ``KN1DPy/jh_related/jhs_coef.py:24-60``
 as recorded by the saved bundle's extraction report) evaluates the
-Johnson-Hinnov hydrogen s coefficient as a cubic B-spline over
+Johnson-Hinnov hydrogen s coefficient as a tensor-product B-spline over
 ``(log Te, log n)`` on the caller's clipped coordinates, reading the
 ``LogS_BSCoef`` vector from an exact-field validated payload.  Unlike the
 sibling r and alpha branches, this branch consumes the caller's density;
 the tests assert that dependence explicitly.
+
+Degree convention: the payload's ``order`` field is consumed by scipy's
+FITPACK ``bisplev`` as the spline *degree* (scipy documents ``kx``/``ky``
+as degrees), so the admitted order-4 payload executes a degree-four
+(quartic) surface, not the cubic surface the saved source's label
+describes.  The degree witness below pins the executed surface against an
+independent numpy Cox-de Boor evaluation at degree 4.
 
 The tests re-verify the relation against an independent FITPACK evaluation
 of the same spline (``RectBivariateSpline.ev`` at the clipped coordinates),
@@ -24,8 +31,9 @@ from scirel.collisions import evaluate_h_jh_s_coefficient
 
 def make_jh_payload():
     """Build a synthetic payload with the exact saved field set and the
-    saved knot geometry (cubic order 4 describing exactly 77 coefficients:
-    an 11-point temperature axis and a 7-point density axis)."""
+    saved knot geometry (order field 4, a degree-four surface under
+    FITPACK's degree convention, describing exactly 77 coefficients via an
+    11-point temperature axis and a 7-point density axis)."""
     temperature_axis = np.linspace(-1.0, 1.0, 11)
     density_axis = np.linspace(30.0, 32.0, 7)
     surface = np.add.outer(temperature_axis, density_axis)
@@ -41,6 +49,32 @@ def make_jh_payload():
         "A_Lyman": np.ones(15),
         "A_Balmer": np.ones(15),
     }, spline
+
+
+def _cox_de_boor_surface_value(x, y, temperature_knots, density_knots, coefficients, degree):
+    """Independent tensor-product B-spline evaluation (numpy only, no scipy):
+    the Cox-de Boor recurrence at the given degree, with FITPACK's coefficient
+    layout (x-major) and the right-endpoint convention."""
+    coefficients = np.asarray(coefficients, dtype=float)
+    n_x = len(temperature_knots) - degree - 1
+    n_y = len(density_knots) - degree - 1
+    grid = coefficients.reshape(n_x, n_y)
+
+    def basis(i, k, v, knots):
+        if v == knots[-1]:
+            return 1.0 if i == len(knots) - k - 2 else 0.0
+        if k == 0:
+            return 1.0 if knots[i] <= v < knots[i + 1] else 0.0
+        left = right = 0.0
+        if knots[i + k] > knots[i]:
+            left = (v - knots[i]) / (knots[i + k] - knots[i]) * basis(i, k - 1, v, knots)
+        if knots[i + k + 1] > knots[i + 1]:
+            right = (knots[i + k + 1] - v) / (knots[i + k + 1] - knots[i + 1]) * basis(i + 1, k - 1, v, knots)
+        return left + right
+
+    weight_x = np.array([basis(i, degree, x, temperature_knots) for i in range(n_x)])
+    weight_y = np.array([basis(j, degree, y, density_knots) for j in range(n_y)])
+    return float(weight_x @ grid @ weight_y)
 
 
 def independent_oracle(density, temperature, density_knots, temperature_knots, spline):
@@ -84,6 +118,33 @@ def test_out_of_range_coordinates_are_clipped_to_the_knot_ends():
         np.array([np.exp(payload["DKnot"][0])]), np.array([np.exp(payload["TKnot"][-1])]), payload
     )
     np.testing.assert_array_equal(sparse, at_knots)
+
+
+def test_the_executed_surface_is_degree_four_under_fitpacks_degree_convention():
+    """scipy's bisplev/RectBivariateSpline document kx/ky as the spline
+    DEGREE, so the admitted order-4 payload executes a degree-four (quartic)
+    surface, not the cubic surface the saved source's label describes.
+    Witness: an independent numpy Cox-de Boor evaluation at degree 4
+    (no scipy) reproduces the module output on interior coordinates.  The
+    saved coefficient-count contract (knots - 4 - 1) products closes only
+    under the degree reading (the order reading would need 96, not 77,
+    coefficients for the packaged geometry)."""
+    payload, _ = make_jh_payload()
+    density = np.array([np.exp(30.6), np.exp(31.3)])
+    temperature = np.array([np.exp(-0.4), np.exp(0.6)])
+    actual = evaluate_h_jh_s_coefficient(density, temperature, payload)
+    expected = np.array([
+        np.exp(_cox_de_boor_surface_value(
+            np.clip(np.log(temperature[i]), payload["TKnot"][0], payload["TKnot"][-1]),
+            np.clip(np.log(density[i]), payload["DKnot"][0], payload["DKnot"][-1]),
+            payload["TKnot"],
+            payload["DKnot"],
+            payload["LogS_BSCoef"],
+            4,
+        ))
+        for i in range(density.size)
+    ])
+    np.testing.assert_allclose(actual, expected, rtol=1e-9, atol=0.0)
 
 
 def test_invalid_payloads_fail_closed():
