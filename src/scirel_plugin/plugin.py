@@ -196,7 +196,6 @@ class SciRelPlugin:
                 "scirel.review.list_items",
                 "scirel.review.open_item",
                 "scirel.review",
-                "scirel.release",
             ],
             "required_host_capabilities": [
                 "artifact_store",
@@ -716,13 +715,9 @@ class SciRelPlugin:
         )
 
     def release(self, release_payload: ReleaseManifest | Mapping[str, Any]) -> ArtifactRef:
-        release = (
-            release_payload
-            if isinstance(release_payload, ReleaseManifest)
-            else ReleaseManifest.from_mapping(release_payload)
-        )
-        return self.host.put_artifact(
-            "scirel.release-manifest.dev", release.to_dict()
+        raise ValueError(
+            "release requires expert approval of an exact trusted version; "
+            "the legacy plugin operation is disabled"
         )
 
     def publish_release_completed_event(
@@ -733,25 +728,11 @@ class SciRelPlugin:
         workflow_run_id: str,
         correlation_id: str,
     ) -> PluginEventEnvelope:
-        """Publish a release completion bound to its exact manifest artifact."""
+        """Reject legacy completion events until trusted-version binding exists."""
 
-        if artifact.kind != "scirel.release-manifest.dev":
-            raise ValueError("release event requires a release-manifest artifact")
-        if artifact.digest != release.release_digest:
-            raise ValueError("release artifact digest does not match release manifest")
-        return self.host.emit_event(
-            plugin_id=self.plugin_id,
-            event_type="scirel.release.completed",
-            workflow_run_id=workflow_run_id,
-            correlation_id=correlation_id,
-            artifact_refs=(artifact.ref,),
-            payload={
-                "release_id": release.release_id,
-                "candidate_id": release.candidate_id,
-                "draft_id": release.draft_id,
-                "release_version": release.release_version,
-                "release_digest": release.release_digest,
-            },
+        raise ValueError(
+            "release requires expert approval of an exact trusted version; "
+            "the legacy completion event is disabled"
         )
 
     def publish_release_failed_event(
@@ -785,27 +766,9 @@ class SciRelPlugin:
         correlation_id: str,
         release_version: str,
     ) -> PluginReleaseResult:
-        """Complete the SciRel release and persist its resumable state."""
+        """Reject the old per-item approval to release shortcut."""
 
-        release = workflow.release(
-            release_id=release_id,
-            catalog_ref=catalog_ref,
-            catalog_digest=catalog_digest,
-            wheel_ref=wheel_ref,
-            wheel_digest=wheel_digest,
-            release_version=release_version,
-        )
-        release_artifact = self.release(release)
-        state_artifact = self.publish_workflow_state(workflow)
-        event = self.publish_release_completed_event(
-            release,
-            release_artifact,
-            workflow_run_id=workflow.record.candidate.run_id,
-            correlation_id=correlation_id,
-        )
-        return PluginReleaseResult(
-            release=release,
-            release_artifact=release_artifact,
-            state_artifact=state_artifact,
-            event=event,
+        raise ValueError(
+            "release requires expert approval of an exact trusted version; "
+            "the legacy plugin workflow is disabled"
         )

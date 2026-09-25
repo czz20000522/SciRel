@@ -1506,12 +1506,12 @@ def test_envelope_payload_matches_json_value_contract(payload):
     assert command.to_dict()["payload"] == payload
 
 
-def test_plugin_release_is_an_artifact_operation():
+def test_plugin_release_cannot_publish_an_artifact():
     host = FakeHost()
     plugin = SciRelPlugin.for_development(host)
 
-    artifact = plugin.release(
-        {
+    with pytest.raises(ValueError, match="trusted version"):
+        plugin.release({
             "schema": "scirel.release-manifest.dev",
             "release_id": "release-plugin",
             "draft_id": "draft-plugin",
@@ -1524,24 +1524,11 @@ def test_plugin_release_is_an_artifact_operation():
             "candidate_digest": "sha256:" + "0" * 64,
             "draft_digest": "sha256:" + "1" * 64,
             "release_version": "0.1.0.dev5",
-        }
-    )
-
-    assert artifact.kind == "scirel.release-manifest.dev"
-    assert artifact.ref in host.artifacts
-
-    invalid = json.loads(host.read_artifact(artifact.ref))
-    invalid.pop("wheel_digest")
-    with pytest.raises(ValueError, match="missing fields: wheel_digest"):
-        plugin.release(invalid)
-
-    invalid = json.loads(host.read_artifact(artifact.ref))
-    invalid["job_id"] = "must-not-enter-domain"
-    with pytest.raises(ValueError, match="unknown fields: job_id"):
-        plugin.release(invalid)
+        })
+    assert not host.artifacts
 
 
-def test_release_events_bind_manifest_and_use_bounded_failure_codes():
+def test_legacy_release_completion_event_is_disabled():
     host = FakeHost()
     plugin = SciRelPlugin.for_development(host)
     release = ReleaseManifest(
@@ -1557,38 +1544,26 @@ def test_release_events_bind_manifest_and_use_bounded_failure_codes():
         draft_digest="sha256:" + "1" * 64,
         release_version="0.1.0.dev5",
     )
-    artifact = plugin.release(release)
+    artifact = host.put_artifact("scirel.release-manifest.dev", release.to_dict())
 
-    completed = plugin.publish_release_completed_event(
-        release,
-        artifact,
-        workflow_run_id="run-release-event",
-        correlation_id="build://release-event",
-    )
+    with pytest.raises(ValueError, match="trusted version"):
+        plugin.publish_release_completed_event(
+            release,
+            artifact,
+            workflow_run_id="run-release-event",
+            correlation_id="build://release-event",
+        )
+    assert not host.events
+
     failed = plugin.publish_release_failed_event(
         workflow_run_id="run-release-failed",
         correlation_id="build://release-failed",
         failure_code="validation_failed",
     )
-
-    assert completed.event_type == "scirel.release.completed"
-    assert completed.artifact_refs[0].artifact_ref == artifact.ref
-    assert completed.payload["release_digest"] == release.release_digest
     assert failed.event_type == "scirel.release.failed"
     assert failed.payload == {"failure_code": "validation_failed"}
     assert failed.artifact_refs == ()
 
-    wrong = host.put_artifact(
-        "scirel.release-manifest.dev",
-        {**release.to_dict(), "release_id": "release-other"},
-    )
-    with pytest.raises(ValueError, match="digest does not match"):
-        plugin.publish_release_completed_event(
-            release,
-            wrong,
-            workflow_run_id="run-release-event",
-            correlation_id="build://release-event",
-        )
     with pytest.raises(ValueError, match="unsupported release failure code"):
         plugin.publish_release_failed_event(
             workflow_run_id="run-release-failed",

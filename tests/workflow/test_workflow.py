@@ -10,6 +10,7 @@ from scirel_workflow import (
     CandidatePackage,
     ReviewDecision,
     ReviewOutcome,
+    ReleaseManifest,
     SciRelWorkflow,
     WorkflowError,
     WorkflowStatus,
@@ -34,7 +35,7 @@ def ready_candidate() -> CandidatePackage:
     )
 
 
-def test_l1_candidate_moves_through_review_and_release():
+def test_l1_candidate_moves_through_item_review_without_release():
     workflow = SciRelWorkflow(ready_candidate())
     assert workflow.status is WorkflowStatus.AUTOMATED_READY
 
@@ -49,24 +50,9 @@ def test_l1_candidate_moves_through_review_and_release():
     workflow.record_review(
         ReviewDecision("draft-1", ReviewOutcome.APPROVED, "expert-1", "checked")
     )
-    release = workflow.release(
-        release_id="release-1",
-        catalog_ref="artifact://catalog/dev",
-        catalog_digest="sha256:" + "c" * 64,
-        wheel_ref="artifact://wheel/dev",
-        wheel_digest="sha256:" + "d" * 64,
-        release_version=CURRENT_VERSION,
-    )
-
-    assert workflow.status is WorkflowStatus.RELEASED
+    assert workflow.status is WorkflowStatus.APPROVED
     assert draft.status is WorkflowStatus.APPROVED
-    assert release.to_dict()["schema"] == "scirel.release-manifest.dev"
-    assert release.approved_assets == ("scirel.field.circular-filament-green",)
-    assert release.candidate_id == "candidate-run-1"
-    assert release.candidate_digest.startswith("sha256:")
-    assert release.draft_digest.startswith("sha256:")
-    assert release.release_version == CURRENT_VERSION
-    assert release.release_digest.startswith("sha256:")
+    assert workflow.record.release is None
 
 
 def test_open_draft_can_be_replaced_without_creating_review_history():
@@ -225,23 +211,14 @@ def test_workflow_snapshot_round_trips_without_host_fields():
     workflow.record_review(
         ReviewDecision("draft-snapshot", ReviewOutcome.APPROVED, "expert-1")
     )
-    workflow.release(
-        release_id="release-snapshot",
-        catalog_ref="artifact://catalog/dev",
-        catalog_digest="sha256:" + "c" * 64,
-        wheel_ref="artifact://wheel/dev",
-        wheel_digest="sha256:" + "d" * 64,
-        release_version=CURRENT_VERSION,
-    )
-
     snapshot = workflow.to_dict()
     restored = SciRelWorkflow.from_dict(snapshot)
 
-    assert restored.status is WorkflowStatus.RELEASED
+    assert restored.status is WorkflowStatus.APPROVED
     assert restored.record.candidate.candidate_id == workflow.record.candidate.candidate_id
     assert [item.draft_id for item in restored.record.drafts] == ["draft-snapshot"]
     assert restored.record.reviews[0].reviewer == "expert-1"
-    assert restored.record.release.release_id == "release-snapshot"
+    assert restored.record.release is None
     assert "tenant_id" not in snapshot
     assert "job_id" not in snapshot
 
@@ -299,95 +276,31 @@ def test_workflow_snapshot_rejects_approved_draft_with_hidden_contract_gaps():
         SciRelWorkflow.from_dict(snapshot)
 
 
-@pytest.mark.parametrize(
-    "field, value, message",
-    [
-        ("candidate_id", "candidate-other", "candidate_id does not match"),
-        ("draft_id", "draft-other", "draft_id does not match"),
-        ("candidate_digest", "sha256:" + "a" * 64, "candidate digest does not match"),
-        ("draft_digest", "sha256:" + "b" * 64, "draft digest does not match"),
-        ("approved_assets", ["scirel.field.other"], "asset set does not match"),
-        ("release_version", "9.9.9", "implementation_version does not match"),
-    ],
-)
-def test_workflow_snapshot_rejects_release_binding_mismatch(field, value, message):
+def test_workflow_snapshot_rejects_legacy_release_even_with_matching_bindings():
     workflow = SciRelWorkflow(ready_candidate())
-    workflow.create_draft(
-        draft_id="draft-release-binding",
-        assets=[ASSET_DOCUMENT],
-    )
+    draft = workflow.create_draft(draft_id="draft-release-binding", assets=[ASSET_DOCUMENT])
     workflow.submit_for_review()
     workflow.start_review()
     workflow.record_review(
-        ReviewDecision(
-            "draft-release-binding",
-            ReviewOutcome.APPROVED,
-            "expert-release-binding",
-        )
+        ReviewDecision("draft-release-binding", ReviewOutcome.APPROVED, "reviewer")
     )
-    workflow.release(
+    snapshot = workflow.to_dict()
+    snapshot["release"] = ReleaseManifest(
         release_id="release-binding",
+        draft_id=draft.draft_id,
+        approved_assets=(ASSET_DOCUMENT["asset_id"],),
         catalog_ref="artifact://catalog/binding",
         catalog_digest="sha256:" + "c" * 64,
         wheel_ref="artifact://wheel/binding",
         wheel_digest="sha256:" + "d" * 64,
+        candidate_id=workflow.record.candidate.candidate_id,
+        candidate_digest=workflow.record.candidate.package_digest,
+        draft_digest=draft.draft_digest,
         release_version=CURRENT_VERSION,
-    )
-    snapshot = workflow.to_dict()
-    snapshot["release"][field] = value
+    ).to_dict()
+    snapshot["status"] = WorkflowStatus.RELEASED.value
 
-    with pytest.raises(WorkflowError, match=message):
-        SciRelWorkflow.from_dict(snapshot)
-
-
-@pytest.mark.parametrize(
-    ("mutation", "message"),
-    [
-        ("missing_review", "no approved review"),
-        ("rejected_review", "no approved review"),
-        ("unapproved_draft", "draft is not approved"),
-        ("unready_candidate", "drafts for a candidate that is not"),
-    ],
-)
-def test_workflow_snapshot_cannot_restore_release_without_release_gates(
-    mutation, message
-):
-    workflow = SciRelWorkflow(ready_candidate())
-    workflow.create_draft(
-        draft_id="draft-release-gates",
-        assets=[ASSET_DOCUMENT],
-    )
-    workflow.submit_for_review()
-    workflow.start_review()
-    workflow.record_review(
-        ReviewDecision("draft-release-gates", ReviewOutcome.APPROVED, "expert-1")
-    )
-    workflow.release(
-        release_id="release-gates",
-        catalog_ref="artifact://catalog/dev",
-        catalog_digest="sha256:" + "c" * 64,
-        wheel_ref="artifact://wheel/dev",
-        wheel_digest="sha256:" + "d" * 64,
-        release_version=CURRENT_VERSION,
-    )
-    snapshot = workflow.to_dict()
-
-    if mutation == "missing_review":
-        snapshot["review"] = None
-        snapshot["reviews"] = []
-    elif mutation == "rejected_review":
-        snapshot["review"]["outcome"] = "rejected"
-        snapshot["reviews"][0]["outcome"] = "rejected"
-    elif mutation == "unapproved_draft":
-        snapshot["draft"]["status"] = "review_pending"
-        snapshot["drafts"][0]["status"] = "review_pending"
-    else:
-        snapshot["candidate"]["automated_checks"][0]["status"] = "failed"
-        snapshot["release"]["candidate_digest"] = CandidatePackage.from_mapping(
-            snapshot["candidate"]
-        ).package_digest
-
-    with pytest.raises(WorkflowError, match=message):
+    with pytest.raises(WorkflowError, match="trusted version"):
         SciRelWorkflow.from_dict(snapshot)
 
 
@@ -437,35 +350,6 @@ def test_workflow_snapshot_current_records_must_be_latest_history(history):
 
     with pytest.raises(WorkflowError, match="not its latest history record"):
         SciRelWorkflow.from_dict(snapshot)
-
-
-def test_release_rejects_asset_implementation_version_mismatch():
-    asset = json.loads(json.dumps(ASSET_DOCUMENT))
-    asset["version"]["implementation_version"] = "0.2.0"
-    workflow = SciRelWorkflow(ready_candidate())
-    workflow.create_draft(
-        draft_id="draft-version-mismatch",
-        assets=[asset],
-    )
-    workflow.submit_for_review()
-    workflow.start_review()
-    workflow.record_review(
-        ReviewDecision(
-            "draft-version-mismatch",
-            ReviewOutcome.APPROVED,
-            "expert-version",
-        )
-    )
-
-    with pytest.raises(WorkflowError, match="implementation_version does not match"):
-        workflow.release(
-            release_id="release-version-mismatch",
-            catalog_ref="artifact://catalog/version-mismatch",
-            catalog_digest="sha256:" + "c" * 64,
-            wheel_ref="artifact://wheel/version-mismatch",
-            wheel_digest="sha256:" + "d" * 64,
-            release_version=CURRENT_VERSION,
-        )
 
 
 def test_failed_automated_check_cannot_create_draft():

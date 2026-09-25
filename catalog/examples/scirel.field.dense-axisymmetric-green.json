@@ -46,7 +46,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.field.dense_axisymmetric_green", "symbol": "dense_axisymmetric_green_response", "signature": "dense_axisymmetric_green_response(rz_pts, source_rzw)"}},
-  "version": {"implementation_version": "0.1.0.dev17", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev18", "dependencies": []},
   "example": {
     "description": "Compare one source response with a changed weight and an empty source list.",
     "code": "import numpy as np\nfrom scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response\ntargets = [[0.0, -0.1], [0.2, 0.15]]\nunit = dense_axisymmetric_green_response(targets, [[0.35, -0.1, 1.0]])\nweighted = dense_axisymmetric_green_response(targets, [[0.35, -0.1, -2.5]])\nempty = dense_axisymmetric_green_response(targets, [])\nfor name in ('gpsi', 'gBR', 'gBZ'):\n    assert unit[name].shape == (2, 1)\n    np.testing.assert_allclose(weighted[name], -2.5 * unit[name])\n    assert empty[name].shape == (2, 0)",

@@ -37,7 +37,10 @@ ENGINEERING_TESTS = {
         "tests/test_admitted_distribution_builder.py",
     ),
     "scripts/build_catalog.py": ("tests/test_asset_documentation.py",),
-    "scripts/finalize_release.py": ("tests/test_release_finalization.py",),
+    "scripts/finalize_release.py": (
+        "tests/test_release_finalization.py",
+        "tests/test_legacy_release_gate.py",
+    ),
     "scripts/freeze_review_version.py": ("tests/test_review_version_freeze.py",),
     "scripts/review_scope.py": ("tests/test_review_scope.py",),
     "scripts/check.ps1": (
@@ -59,12 +62,14 @@ WORKFLOW_TESTS = (
     "tests/workflow/test_vertical_slice.py",
     "tests/workflow/test_l1_inventory.py",
     "tests/test_workflow_contracts.py",
+    "tests/test_legacy_release_gate.py",
 )
 
 PLUGIN_TESTS = (
     "tests/plugin/test_codefusion_plugin_contract.py",
     "tests/plugin/test_http_listener.py",
     "tests/workflow/test_vertical_slice.py",
+    "tests/test_legacy_release_gate.py",
 )
 
 WORKFLOW_CONTRACTS = {

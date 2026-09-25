@@ -5,7 +5,7 @@ SciRel 是独立维护的 Python 科学关系库，并拥有从保存的 L1 产�
 候选三件套；尚未被专家打开的排队候选可以先合并、替换或撤回，项目代码只实现
 稳定的确定性门禁、审核状态、catalog/wheel 构建和 release 绑定。CodeFusion 与 Claude Code、
 Codex 一样是中性 Agent harness，也可提供 artifact、身份和审核 UI；它不拥有 SciRel 的科学语义。
-候选入队后 Agent run 即可结束；专家首次打开完整候选时才冻结三件套。开发版可先验证并构建内部 wheel；冻结待审版由专家审核相对上一可信版的累积科学增量和反向依赖，获认可的确切版本才有资格晋级可信并进入独立发行门禁。现有逐项 workflow 和 release 脚本尚未实现这条版本晋级链。
+候选入队后 Agent run 即可结束；专家首次打开完整候选时才冻结三件套。开发版可先验证并构建内部 wheel；冻结待审版由专家审核相对上一可信版的累积科学增量和反向依赖，获认可的确切版本才有资格晋级可信并进入独立发行门禁。版本晋级链尚未实现；旧逐项审核到 release 的 workflow、插件和脚本入口已阻断。
 
 SciRel 以独立插件和发布 wheel 交付；CodeFusion 可以预装或加载它，但 SciRel 不属于 CodeFusion kernel。
 包名与安装方式属于平台实现细节。
@@ -13,7 +13,7 @@ SciRel 以独立插件和发布 wheel 交付；CodeFusion 可以预装或加载�
 平台维护者在受控 Python runtime 镜像准备阶段预装经过验证的 wheel；运行任务时直接调用现有能力，
 不临时下载或让用户配置依赖。独立源码项目服务于库维护和版本管理，不改变这一用户体验边界。
 
-当前 `0.1.0.dev17` 为开发期候选，而非公开发行。保存的 L1 产物是新 workflow 的重跑输入；
+当前 `0.1.0.dev18` 为开发期候选，而非公开发行。保存的 L1 产物是新 workflow 的重跑输入；
 旧的 `provenance/admitted-assets.json` 仅作为历史开发样本和来源证据，不再定义新的准入流程。
 
 当前 `provenance/admitted-assets.json` 是旧流程留下的 52 条完整迁移样本，其中包含 41 条 operator
@@ -70,7 +70,7 @@ assert result["B"][0, 0] == 5.0
 
 ```powershell
 python scripts/validate_asset_documents.py catalog/examples --check-runtime --execute-examples
-python scripts/build_catalog.py catalog/examples --output-dir build/catalog/<new-run> --catalog-id scirel-development-pilot --release-version 0.1.0.dev17 --coverage-status complete --declared-total 68
+python scripts/build_catalog.py catalog/examples --output-dir build/catalog/<new-run> --catalog-id scirel-development-pilot --release-version 0.1.0.dev18 --coverage-status complete --declared-total 68
 ```
 
 L1 workflow 的本地 fixture 使用 `tests/fixtures/l1/pleiades-minimal.json`，不读取源项目 checkout、数据库或网络；它只验证 candidate、draft、审核和 release artifact 的确定性关联，不代替模型完成真实科学整合。
@@ -101,7 +101,7 @@ pwsh ./scripts/check.ps1 -Mode full
 `affected` 根据准入依赖、源码 import 关系和显式测试映射选择改变的 Operator、共享模块及其反向依赖
 TaskGraph；不传 `-ChangedPath` 时读取当前 Git 工作区，也可用 `-BaseRef <ref>` 检查提交范围。无法可靠归属的
 SciRel 源码或公共基线变更会 fail closed 到全套测试。`focused` 可用 `-TestPath` 手工指定精确测试。
-`-Mode release` 当前暂停：旧逐项 approved 快照不能授权整个开发 wheel；脚本在构建前拒绝发行。
+`-Mode release` 当前暂停：旧逐项 approved 快照不能授权整个开发 wheel；脚本在构建前拒绝发行。直接调用旧 `finalize_release.py`、workflow 或插件 release 入口也会拒绝。
 内部 wheel 可单独构建和验证，但版本级可信审核与发行绑定实现前不得公开发布。历史发行代码保留用于迁移和测试，不能当作可用发行入口。更细的整合和验证规则见
 [`docs/development-process.md`](docs/development-process.md)。
 
@@ -113,7 +113,7 @@ SciRel 源码或公共基线变更会 fail closed 到全套测试。`focused` �
 源码测试，并在 wheel 验收前清空 `PYTHONPATH`。
 
 目标发行验收使用不继承 system site-packages 的 venv，以 `--no-index --no-deps` 安装候选 wheel，不挂源码。
-暂停中的发行代码通过 `.pth` 暴露开发解释器中 NumPy/SciPy 所在目录，因此即使恢复运行，证明的也只是无源码 wheel 执行，不是从
+暂停中的发行代码曾通过 `.pth` 暴露开发解释器中 NumPy/SciPy 所在目录，因此即使恢复运行，证明的也只是无源码 wheel 执行，不是从
 干净离线 wheelhouse 重装全部依赖，也不证明同目录的其他包不可见。正式发行门禁仍需固定依赖 wheelhouse。
 安装后的测试不得依赖 editable 安装或把 src 放进 PYTHONPATH。上面的版本号随 pyproject.toml 更新，不是永久发行版本。
 

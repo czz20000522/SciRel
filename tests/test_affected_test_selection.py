@@ -133,11 +133,14 @@ def test_release_environment_helper_change_selects_only_its_contract_test():
     assert result["test_paths"] == ["tests/test_release_environment.py"]
 
 
-def test_release_finalizer_selects_only_its_contract_test():
+def test_release_finalizer_selects_catalog_and_legacy_gate_tests():
     result = select("scripts/finalize_release.py")
 
     assert result["full_suite_required"] is False
-    assert result["test_paths"] == ["tests/test_release_finalization.py"]
+    assert result["test_paths"] == [
+        "tests/test_legacy_release_gate.py",
+        "tests/test_release_finalization.py",
+    ]
 
 
 def test_review_scope_report_selects_only_its_contract_test():
@@ -178,6 +181,7 @@ def test_workflow_source_change_selects_workflow_boundary_without_full_suite():
         "tests/workflow/test_vertical_slice.py",
         "tests/workflow/test_l1_inventory.py",
         "tests/test_workflow_contracts.py",
+        "tests/test_legacy_release_gate.py",
     }
 
 
@@ -190,6 +194,7 @@ def test_plugin_contract_change_selects_plugin_and_vertical_boundary():
         "tests/plugin/test_codefusion_plugin_contract.py",
         "tests/plugin/test_http_listener.py",
         "tests/workflow/test_vertical_slice.py",
+        "tests/test_legacy_release_gate.py",
     }
 
 
@@ -211,6 +216,7 @@ def test_workflow_contract_change_selects_all_workflow_boundaries():
         "tests/test_workflow_contracts.py",
         "tests/plugin/test_codefusion_plugin_contract.py",
         "tests/plugin/test_http_listener.py",
+        "tests/test_legacy_release_gate.py",
     }
 
 

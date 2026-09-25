@@ -2,7 +2,7 @@
 
 ## 设计原则
 
-workflow 是 host-independent 的领域协调器。当前实现记录从 L1 比较得到的逐项候选、确定性检查、专家 action，以及旧批准后整合产生的 catalog、wheel 和 release version。存储和传输由调用方或 plugin adapter 负责。目标流程另区分隔离开发版、冻结待审版、专家认可的可信版及公开 release；现有 workflow 尚未实现版本晋级。
+workflow 是 host-independent 的领域协调器。当前实现记录从 L1 比较得到的逐项候选、确定性检查和专家 action。存储和传输由调用方或 plugin adapter 负责。目标流程另区分隔离开发版、冻结待审版、专家认可的可信版及公开 release；现有 workflow 尚未实现版本晋级，旧逐项审核到发行的入口已阻断。
 
 workflow 不执行科学标准化，也不规定模型必须使用的探针、脚本或中间文件。加载
 `scirel-integration` skill 的模型负责理解 L1、比较当前 SciRel 与未发布候选池、修改隔离工作树和形成证据；
@@ -34,19 +34,17 @@ session、credential 或平台审计字段，因此恢复不依赖 CodeFusion �
 检查通过但 next_action 要求补证据或返工 -> needs_evidence / rework_requested
 有 draft            -> draft / review_pending / review_in_progress
 审核 action         -> needs_evidence / rework_requested / rejected / approved
-approved + 构建完成 -> released
+版本级专家认可 + 独立发行门禁 -> released（尚未实现）
 ```
 
 状态由领域对象和 workflow transition 推导，不由 UI 文案或 CodeFusion job 状态直接替代。
 Candidate 和 draft 在每次构造及 snapshot 恢复时重新推导 inventory/scientific contract gaps，
-不信任 L1 或序列化 payload 自报的空 gaps。恢复出的 approved/released draft 如果重新检查后
+不信任 L1 或序列化 payload 自报的空 gaps。恢复出的 approved draft 如果重新检查后
 存在 gap，整个 snapshot 视为非法。
-恢复还会校验 result→candidate/source、draft→candidate、review→draft 以及
-release→candidate/draft/digest/approved-assets 的关系完整性，并要求当前 draft/review 存在于
+恢复还会校验 result→candidate/source、draft→candidate、review→draft 的关系完整性，并要求当前 draft/review 存在于
 对应历史。单个记录各自满足 schema 但跨记录绑定不一致时，整个 snapshot 拒绝恢复。
 当前 draft 和 review 必须分别等于各自历史的末项，返工历史被重排时拒绝恢复。
-含 release 的 snapshot 还会重新要求 candidate 已通过自动门禁、当前 draft 为 approved、
-当前 review 明确为 approved；存在 release 字段本身不能替代这些发布前置条件。
+含旧 release 的 snapshot 会被拒绝恢复；逐项 approved 无法证明整个版本已获专家认可。
 更一般地，只要 snapshot 已包含 draft 历史，candidate 就必须仍为 automated-ready，
 不能通过改写 candidate 检查结果恢复出本来无法创建的 draft 或 review 状态。
 
@@ -61,7 +59,7 @@ release→candidate/draft/digest/approved-assets 的关系完整性，并要求�
 - `submit_for_review()`；
 - `start_review()`；
 - `record_review(ReviewDecision(...))`；
-- `release(release_id, catalog_ref, catalog_digest, wheel_ref, wheel_digest, release_version)`。
+- `release(...)`：旧调用签名保留用于明确拒绝，不生成 manifest；新版本级发行 API 待设计。
 
 插件侧消费已完成的 generic run 使用
 `SciRelPlugin.consume_automated_result_into_workflow(workflow, run_result)`：它先校验
@@ -70,15 +68,13 @@ release→candidate/draft/digest/approved-assets 的关系完整性，并要求�
 被修改。相同 `result_id` 与 `result_digest` 的重放是领域幂等 no-op，即使 workflow 已经
 创建 draft 也返回当前 candidate；相同 `result_id` 携带不同正文则拒绝，不能覆盖第一次结果。
 
-`create_draft` 只允许自动检查通过，或允许在 `needs_evidence`/`rework_requested` 后重新创建。`update_open_draft` 在 `draft` 或未被观测的 `review_pending` 状态替换当前内容，复用 `draft_id` 并替换 history 末项；它不保留专家从未看到的中间编辑版本。`start_review` 是观测边界：工作台必须先完成该 transition，再把同一个 `review_in_progress` 快照展示给专家。候选文档、代码和测试可以作为 task-local artifact/patch 被 draft 证据引用，不要求统一文件 schema。当前 `release` 只允许最新 draft 获得 `approved`，并要求调用方先完成旧式批准后整合，再提供 candidate/draft digest、asset ID、catalog ref/digest 和 wheel ref/digest。这仍是现有 API 的行为，不足以证明整个开发版本相对上一可信版的累积科学增量已获认可；版本级调用方和兼容影响须在实现迁移时单独列明。
-release 还逐项要求资产文档的 `version.implementation_version` 精确等于请求的
-`release_version`；snapshot 恢复时重复执行同一检查，不能通过改写 manifest 版本绕过。
+`create_draft` 只允许自动检查通过，或允许在 `needs_evidence`/`rework_requested` 后重新创建。`update_open_draft` 在 `draft` 或未被观测的 `review_pending` 状态替换当前内容，复用 `draft_id` 并替换 history 末项；它不保留专家从未看到的中间编辑版本。`start_review` 是观测边界：工作台必须先完成该 transition，再把同一个 `review_in_progress` 快照展示给专家。候选文档、代码和测试可以作为 task-local artifact/patch 被 draft 证据引用，不要求统一文件 schema。逐项 `approved` 后只能保存审核结论；`release()` 明确拒绝，直到整版专家认可及发行绑定实现。
 
 `create_draft` 不要求上游标准化一次成功。它对每个资产执行无依赖的
 `scirel.asset-document.v1` 顶层字段检查，并递归拒绝 tenant、job、session、credential
 及旧 admission/case/decision 等私有字段；缺失、未知、错误 schema 或私有字段被记录为
 `scientific_contract_*` gap。这样的 draft 可以进入专家工作台以请求证据或返工，但不能
-执行 `approve`，也不能通过 release 的 unresolved-gap 门禁；UI projection 对此类 draft
+执行 `approve`；UI projection 对此类 draft
 只暴露 `needs_evidence`、`rework_requested` 和 `reject`。端口、单位、坐标、适用域、版本和 TaskGraph 结构的
 完整嵌套验证仍由 `scripts/validate_asset_documents.py` 在发行构建时执行；顶层检查不能被解释
 为完整科学正确性证明。
@@ -96,15 +92,14 @@ release 还逐项要求资产文档的 `version.implementation_version` 精确�
 scirel.candidate-package.dev
 scirel.standardized-draft.dev
 scirel.review-decision.dev
-scirel.release-manifest.dev
 scirel.workflow-state.dev
 ```
 
-artifact 的 digest 和 reference 由 host 生成；领域 payload 由 SciRel contract 定义。正式发布前将这些开发期 media/schema 名称统一冻结为 `v1`。
+artifact 的 digest 和 reference 由 host 生成；领域 payload 由 SciRel contract 定义。旧 `scirel.release-manifest.dev` schema 仍可作为历史证据读取，但插件不再创建该 artifact，也不发出旧完成事件。正式发布前将有效的开发期 media/schema 名称统一冻结为 `v1`。
 
 ## 构建与运行绑定
 
-Agent 可先在隔离开发分支写入代码、文档和测试，构建内部 wheel 做 source-free 验证；开发 pilot catalog 只供内部核对，不作为已发布目录。待审版的专家认可绑定确切版本及其科学增量；release build 再从获认可的版本读取实际标准化资产文档和验证结果，生成面向用户的 catalog、wheel 和 manifest。manifest 只描述这一次 release 绑定，不成为第二套科学真值。CodeFusion runtime 仅暴露已发布 callable。旧 `release` 实现按逐项 approved draft 绑定 candidate/draft、catalog 和 wheel，不能覆盖整版增量；`check.ps1 -Mode release` 因此已在构建前暂停，版本绑定需后续迁移。
+Agent 可先在隔离开发分支写入代码、文档和测试，构建内部 wheel 做 source-free 验证；开发 pilot catalog 只供内部核对，不作为已发布目录。待审版的专家认可绑定确切版本及其科学增量；release build 再从获认可的版本读取实际标准化资产文档和验证结果，生成面向用户的 catalog、wheel 和 manifest。manifest 只描述这一次 release 绑定，不成为第二套科学真值。CodeFusion runtime 仅暴露已发布 callable。旧 `release` 实现按逐项 approved draft 绑定 candidate/draft、catalog 和 wheel，不能覆盖整版增量；现在 workflow、插件、直接 finalizer 和 `check.ps1 -Mode release` 均阻断该路径，版本绑定需后续实现。
 
 draft、review action 和自动检查结果可以被工作台查询，但不得被运行时 callable resolver 当作 release。
 
@@ -119,10 +114,10 @@ draft、review action 和自动检查结果可以被工作台查询，但不得�
 - 冲突保留比较证据，并以当前 HEAD 为 base 重新判断关系和行动；旧 workflow 和旧 review 不改写；
 - 新判断可以得出“已被前一个候选吸收/现在应复用”的结论，但仍需记录确切来源、条件及证据，不自动扩大旧审核结论。
 
-不需要在 `WorkflowStatus` 中复制开发队列的瞬时状态。当前 API 的 `approved` 和 release 投影仍保留旧含义，不能代替冻结版本的审核和晋级记录。具体版本记录、发布接口及工作台投影待实现时定义，不在此假定已交付。
+不需要在 `WorkflowStatus` 中复制开发队列的瞬时状态。当前 API 的 `approved` 保留逐项含义；UI 不再展示 `release` 动作。具体版本记录、发布接口及工作台投影待实现时定义，不在此假定已交付。
 
 “先写入开发包、后冻结审核”允许在隔离开发分支执行和构建内部 wheel；周期审查本身不能代替专家对确切冻结版本的认可。未认可内容不得进入可信发行基线、面向用户的 catalog/runtime 或公开 wheel。
 
 ## 验证策略
 
-工作流单元测试验证所有合法和非法 transition；plugin contract tests 验证 host envelope 字段；垂直 fixture 验证从 L1 到 release 的串联。工作流源码、plugin 源码及其 `.dev` 合同由 `affected` 选择器映射到上述边界测试；只有无法归属的共享源码或合同变化才 fail closed 到全套测试。
+工作流单元测试验证合法/非法 transition；plugin contract tests 验证 host envelope 字段；垂直 fixture 验证从 L1 到逐项审核，以及旧 release 入口的拒绝。工作流源码、plugin 源码及其 `.dev` 合同由 `affected` 选择器映射到上述边界测试；只有无法归属的共享源码或合同变化才 fail closed 到全套测试。

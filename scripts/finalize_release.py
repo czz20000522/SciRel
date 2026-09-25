@@ -1,4 +1,4 @@
-"""Bind an approved SciRel workflow to an already built catalog and wheel."""
+"""Legacy release CLI, disabled until trusted-version binding is implemented."""
 
 from __future__ import annotations
 
@@ -7,17 +7,7 @@ import hashlib
 import json
 from pathlib import Path
 import sys
-import tempfile
 from typing import Any
-
-
-ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src"
-if str(SOURCE) not in sys.path:
-    sys.path.insert(0, str(SOURCE))
-
-from scirel_workflow import SciRelWorkflow, WorkflowStatus  # noqa: E402
-from validate_asset_documents import load_document_set  # noqa: E402
 
 
 def _canonical_json(value: Any) -> bytes:
@@ -75,15 +65,6 @@ def _validate_catalog(catalog_dir: Path) -> dict[str, Any]:
     return release
 
 
-def _artifact_ref(path: Path, release_root: Path, *, label: str) -> str:
-    resolved = path.resolve()
-    try:
-        relative = resolved.relative_to(release_root.resolve())
-    except ValueError as error:
-        raise ValueError(f"{label} must be inside the release root") from error
-    return relative.as_posix()
-
-
 def finalize_release(
     *,
     workflow_snapshot: Path,
@@ -96,117 +77,10 @@ def finalize_release(
     expected_included_asset_count: int,
     expected_declared_total_asset_count: int,
 ) -> dict[str, Any]:
-    if output_dir.exists():
-        raise FileExistsError(f"release metadata output already exists: {output_dir}")
-    workflow = SciRelWorkflow.from_dict(_read_json(workflow_snapshot))
-    if workflow.status is not WorkflowStatus.APPROVED:
-        raise ValueError("release finalization requires an approved workflow snapshot")
-    draft = workflow.record.draft
-    if draft is None:
-        raise ValueError("approved workflow has no standardized draft")
-
-    documents = {
-        document["asset_id"]: document
-        for document in load_document_set(documents_dir)
-    }
-    for asset in draft.assets:
-        asset_id = asset["asset_id"]
-        document = documents.get(asset_id)
-        if document is None:
-            raise ValueError(f"approved asset is absent from the release documents: {asset_id}")
-        if _canonical_json(asset) != _canonical_json(document):
-            raise ValueError(f"approved asset differs from the release document: {asset_id}")
-
-    catalog = _validate_catalog(catalog_dir)
-    catalog_documents = {
-        document["asset_id"]: document
-        for document in (
-            _read_json(path)
-            for path in sorted((catalog_dir / "records").rglob("*.json"))
-        )
-    }
-    if set(catalog_documents) != set(documents):
-        raise ValueError(
-            "built catalog asset IDs differ from the release document set"
-        )
-    for asset_id, document in documents.items():
-        if _canonical_json(catalog_documents[asset_id]) != _canonical_json(document):
-            raise ValueError(f"built catalog record differs from the release document: {asset_id}")
-    coverage = catalog.get("coverage")
-    if not isinstance(coverage, dict):
-        raise ValueError("catalog release has no valid coverage declaration")
-    included = coverage.get("included_asset_count")
-    declared = coverage.get("declared_total_asset_count")
-    status = coverage.get("status")
-    if included != len(catalog_documents):
-        raise ValueError("catalog included asset count differs from its records")
-    if not isinstance(declared, int) or isinstance(declared, bool) or declared < included:
-        raise ValueError("catalog declared asset count is invalid")
-    if status not in {"partial", "complete"}:
-        raise ValueError("catalog coverage status is invalid")
-    if status == "complete" and declared != included:
-        raise ValueError("complete catalog coverage requires equal asset counts")
-    if status != expected_coverage_status:
-        raise ValueError(
-            "catalog coverage status differs from the release policy: "
-            f"expected {expected_coverage_status}, got {status}"
-        )
-    if included != expected_included_asset_count:
-        raise ValueError(
-            "catalog included asset count differs from the release policy: "
-            f"expected {expected_included_asset_count}, got {included}"
-        )
-    if declared != expected_declared_total_asset_count:
-        raise ValueError(
-            "catalog declared asset count differs from the release policy: "
-            f"expected {expected_declared_total_asset_count}, got {declared}"
-        )
-    if not wheel.is_file():
-        raise ValueError(f"release wheel is missing: {wheel}")
-    release_root = output_dir.parent.resolve()
-    catalog_ref = _artifact_ref(
-        catalog_dir / "release.json", release_root, label="catalog release"
+    raise ValueError(
+        "release requires expert approval of an exact trusted version; "
+        "the legacy per-item finalizer is disabled"
     )
-    wheel_ref = _artifact_ref(wheel, release_root, label="wheel")
-    wheel_digest = _digest(wheel.read_bytes())
-    release = workflow.release(
-        release_id=release_id,
-        catalog_ref=catalog_ref,
-        catalog_digest=catalog["root_digest"],
-        wheel_ref=wheel_ref,
-        wheel_digest=wheel_digest,
-        release_version=catalog["release_version"],
-    )
-
-    output_dir.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(
-        prefix=f".{output_dir.name}-", dir=output_dir.parent
-    ) as temporary:
-        staging = Path(temporary)
-        manifest_path = staging / "release-manifest.json"
-        snapshot_path = staging / "workflow-state.json"
-        manifest_path.write_text(
-            json.dumps(release.to_dict(), ensure_ascii=False, indent=2, sort_keys=True)
-            + "\n",
-            encoding="utf-8",
-            newline="\n",
-        )
-        snapshot_path.write_text(
-            json.dumps(workflow.to_dict(), ensure_ascii=False, indent=2, sort_keys=True)
-            + "\n",
-            encoding="utf-8",
-            newline="\n",
-        )
-        Path(temporary).replace(output_dir)
-
-    return {
-        "schema": "scirel.release-finalization-result.v1",
-        "release_manifest": str(output_dir / "release-manifest.json"),
-        "released_workflow": str(output_dir / "workflow-state.json"),
-        "release_digest": release.release_digest,
-        "catalog_digest": release.catalog_digest,
-        "wheel_digest": release.wheel_digest,
-    }
 
 
 def main() -> int:

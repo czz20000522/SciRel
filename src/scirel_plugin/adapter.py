@@ -339,7 +339,6 @@ def review_ui_projection(workflow: SciRelWorkflow) -> dict[str, Any]:
             if workflow.record.draft is not None and not workflow.record.draft.gaps
             else ("needs_evidence", "rework_requested", "reject")
         ),
-        "approved": ("release",),
     }.get(status, ())
     return {
         "schema": "scirel.review-ui-extension.dev",

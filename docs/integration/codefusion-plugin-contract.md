@@ -66,8 +66,8 @@ CodeFusion 的 run/job/attempt/timeout/权限和 transport 结果属于平台事
 - 资产文档、测试和实验依据；
 - 未解决 gap 及允许的审核动作。
 
-专家身份由宿主提供，审核动作语义由 SciRel 定义。SciRel 可以把 workflow snapshot、review
-decision 和 release manifest 作为普通 plugin artifact 保存；CodeFusion 只存 reference/digest
+专家身份由宿主提供，审核动作语义由 SciRel 定义。SciRel 可以把 workflow snapshot 和 review
+decision 作为普通 plugin artifact 保存；旧插件 release manifest 写入与完成事件已禁用。CodeFusion 只存 reference/digest
 及平台审计，不把其中字段复制到通用表，也不根据 run 状态推导可用审核动作。
 
 `review_pending` 只表示候选已进入队列，并不表示专家已看到完整内容，因此该候选仍可被模型更新。队列列表可以展示不构成科学审核的最小索引信息；第一次打开完整候选详情是观测边界。CodeFusion 必须在返回详情前原子地投递 `start_review`，持久化 SciRel 返回的 `review_in_progress` 状态，并把同一快照展示给专家。转换失败时不得展示旧详情。`review_in_progress` 之后不再接受 `update_draft`，实质变化必须形成返工 draft 或关联新候选。
@@ -81,7 +81,7 @@ actor、tenant/project、correlation 和 idempotency 留在通用宿主 envelope
 
 只有专家认可的确切版本通过 release 门禁后，其资产才进入面向用户的可信 catalog/runtime。隔离开发分支的内部 wheel 和开发 pilot catalog 仅供验证；candidate、临时报告、模型完成状态和测试通过都不能单独产生发布。版本认可属于 SciRel，不进入 CodeFusion 通用 kernel 状态。
 
-候选提交工作台后，产生它的 Agent run 可以结束。当前逐项 workflow 的 approved 后固化 run 与“approved 且没有 release”投影仍是旧接口行为，不等于版本级可信认可；后续迁移只需由 SciRel 插件提供相应领域投影，不要求 CodeFusion 理解科学冲突。开发整合遇到同一科学身份、合同、依赖闭包、TaskGraph 或 patch hunk 冲突时，SciRel 在最新开发基线上重新比较，不覆盖旧审核事件。
+候选提交工作台后，产生它的 Agent run 可以结束。逐项 `approved` 不等于版本级可信认可；当前 UI 不提供 `release` 动作，`scirel.release` 不在插件 operations 中，旧 `complete_release` 与完成事件均拒绝。CodeFusion 若曾消费这些开发期入口，应停止调用；通用 artifact/审核能力与插件自身的 `PluginReleaseSnapshot` 不受影响。版本级确认与发布接口需另行联调，不要求 CodeFusion 理解科学冲突。开发整合遇到同一科学身份、合同、依赖闭包、TaskGraph 或 patch hunk 冲突时，SciRel 在最新开发基线上重新比较，不覆盖旧审核事件。
 
 ## 当前代码定位
 

@@ -161,5 +161,4 @@ def test_review_ui_projection_contract_has_exact_public_actions():
         "needs_evidence",
         "rework_requested",
         "reject",
-        "release",
     }

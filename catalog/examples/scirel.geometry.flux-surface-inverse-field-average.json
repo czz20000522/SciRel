@@ -45,7 +45,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.geometry.flux_surface_inverse_field_average", "symbol": "compute_flux_surface_inverse_field_average", "signature": "compute_flux_surface_inverse_field_average(r_grid, z_grid, magnetic_field, field_line_points, quantity=None)"}},
-  "version": {"implementation_version": "0.1.0.dev17", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev18", "dependencies": []},
   "example": {
     "description": "Use constant B and quantity on a three-point polyline to check the path measure and weighted mean.",
     "code": "import numpy as np\nfrom scirel.geometry.flux_surface_inverse_field_average import compute_flux_surface_inverse_field_average\nr_grid, z_grid = np.meshgrid(np.linspace(0.0, 1.0, 5), np.linspace(-1.0, 1.0, 5))\nline = np.array([[0.2, -0.5], [0.4, 0.0], [0.6, 0.5]])\nresult = compute_flux_surface_inverse_field_average(r_grid, z_grid, np.full_like(r_grid, 2.0), line, np.full_like(r_grid, 3.0))\nlength = np.linalg.norm(np.diff(line, axis=0), axis=1).sum()\nnp.testing.assert_allclose(result['dl_B'], length / 2.0)\nnp.testing.assert_allclose(result['flux_surface_average'], 3.0)",

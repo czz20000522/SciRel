@@ -51,7 +51,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.diagnostics.firehose_mirror_margins", "symbol": "compute_firehose_mirror_margins", "signature": "compute_firehose_mirror_margins(p_parallel, p_perp, magnetic_field, mu0=1.2566370614359173e-06, parallel_equilibrium=None)"}},
-  "version": {"implementation_version": "0.1.0.dev17", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev18", "dependencies": []},
   "example": {
     "description": "Evaluate both sampled margins with unsorted B values and a linear perpendicular-pressure profile.",
     "code": "import numpy as np\nfrom scirel.diagnostics import compute_firehose_mirror_margins\nB = np.array([2.0, 1.0, 3.0, 1.5])\np_perp = 5.0 + 3.0 * B\nr = compute_firehose_mirror_margins(p_perp + 2.0, p_perp, B)\nmu0 = 4.0e-7 * np.pi\nnp.testing.assert_allclose(r['firehose_margin'], B * B / mu0 - 2.0)\nnp.testing.assert_allclose(r['mirror_margin'], B * B / mu0 - 3.0 * B)\nassert r['firehose_stable'] and r['mirror_stable']",

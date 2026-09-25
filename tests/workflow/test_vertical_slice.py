@@ -1,4 +1,4 @@
-"""One local L1 -> release run without CodeFusion or source-project access."""
+"""One local L1 -> item review run without CodeFusion or source access."""
 
 import json
 from pathlib import Path
@@ -21,10 +21,7 @@ ASSET_DOCUMENT = json.loads(
         / "catalog/examples/scirel.field.multi-coil-vacuum-field.json"
     ).read_text(encoding="utf-8")
 )
-CURRENT_VERSION = ASSET_DOCUMENT["version"]["implementation_version"]
-
-
-def test_saved_l1_runs_to_release_with_host_adapter():
+def test_saved_l1_runs_to_item_review_with_host_adapter():
     payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
     run_id = "run-vertical-pleiades"
 
@@ -62,29 +59,14 @@ def test_saved_l1_runs_to_release_with_host_adapter():
         notes="fixture checked",
         correlation_id="workbench://vertical/review",
     )
-    release_result = plugin.complete_release(
-        workflow,
-        release_id="release-vertical-pleiades",
-        catalog_ref="artifact://catalog/dev/vertical",
-        catalog_digest="sha256:" + "c" * 64,
-        wheel_ref="artifact://wheel/dev/vertical",
-        wheel_digest="sha256:" + "d" * 64,
-        correlation_id="build://vertical/release",
-        release_version=CURRENT_VERSION,
-    )
-    release = release_result.release
-
-    assert workflow.status is WorkflowStatus.RELEASED
+    assert workflow.status is WorkflowStatus.APPROVED
     assert handoff.artifact.ref in host.artifacts
     assert draft_artifact.ref in host.artifacts
     assert review_result.decision_artifact.ref in host.artifacts
-    assert release_result.release_artifact.ref in host.artifacts
-    assert release.candidate_id == "candidate-run-vertical-pleiades"
-    assert release.candidate_digest == workflow.record.candidate.package_digest
-    assert release.draft_digest == draft.draft_digest
+    assert workflow.record.release is None
     assert host.jobs[0][1] == (handoff.artifact.ref,)
-    assert release_result.event.event_type == "scirel.release.completed"
-    assert json.loads(host.read_artifact(release_result.state_artifact.ref))["status"] == "released"
+    assert review_result.event.event_type == "scirel.review_action.recorded"
+    assert json.loads(host.read_artifact(review_result.state_artifact.ref))["status"] == "approved"
 
 
 def test_host_result_artifact_cannot_repair_l1_gap():

@@ -26,7 +26,7 @@ candidate
 
 `draft` 和尚未被专家打开的 `review_pending` 可以复用同一 `draft_id` 替换内容，不产生需要专家逐份处理的草稿历史。工作台在返回完整候选详情前执行 `start_review`；进入 `review_in_progress` 才表示发生专家观测并冻结三件套。`needs_evidence` 和 `rework_requested` 通过新的 draft 返工并保留已发生的审核记录。每个 workflow 保留一个 `run_id`，draft 和 review action 按顺序记录；开发期不引入额外的版本服务。
 
-候选生成与专家审核是两个异步流程。模型提交 draft 后即可结束运行，不等待耗时不可控的人工审核。当前 API 中的 `approved` 只表示该 draft 的逐项审核结果，不自动批准其他开发增量或发行。未获认可的开发资产不得进入面向用户的可信 catalog/runtime；但隔离开发分支中的代码、测试、内部 wheel 和开发 pilot catalog 可用于验证，并须标明非可信。`released` 仍只由发行门禁产生。
+候选生成与专家审核是两个异步流程。模型提交 draft 后即可结束运行，不等待耗时不可控的人工审核。当前 API 中的 `approved` 只表示该 draft 的逐项审核结果，不自动批准其他开发增量或发行。未获认可的开发资产不得进入面向用户的可信 catalog/runtime；但隔离开发分支中的代码、测试、内部 wheel 和开发 pilot catalog 可用于验证，并须标明非可信。当前没有可用的 `released` 转换，旧逐项批准到发行的入口必须拒绝。
 
 ## 领域对象
 
@@ -83,13 +83,13 @@ SciRel 可以通过宿主 artifact store 保存 `scirel.workflow-state.dev` 快�
 4. 冲突候选基于最新基线重新比较并形成关联处置，即使变成重复或直接复用也保留来源与比较证据；
 5. 旧审核记录保持冻结，只证明旧候选曾获审核，不能自动认可新代码或新的待审版本。
 
-这里不把开发合并、版本审核与发行压成逐项 workflow 状态。当前实现仍将 `approved` 用作其旧的“等待固化”前置，`release` 仍受此 API 门禁约束；版本级确认与发布绑定需要后续实现迁移。冲突时保留原审核证据，重新比较受影响关系。
+这里不把开发合并、版本审核与发行压成逐项 workflow 状态。`approved` 保留逐项审核含义，但旧 `release` API、插件完成事件与直接 finalizer 已 fail closed；版本级确认与发布绑定需要后续实现。冲突时保留原审核证据，重新比较受影响关系。
 
 允许候选增量堆积在 artifact、review directory、branch 或 worktree 中，也允许隔离开发分支的已整合内容进入内部 import、内部 wheel 和标明非可信的开发 pilot catalog。它们不得通过面向用户的可信 catalog/runtime 投影；定期功能审查不能替代冻结版本的专家认可。
 
 ## Release 门禁
 
-目标上，公开 release 必须从专家认可的确切可信版本构建，并满足下列门禁。当前 `scripts/check.ps1 -Mode release` 已暂停并在构建前拒绝旧逐项 `approved` snapshot；workflow API 仍未实现可信版本门禁，不得以其 fixture 成功声称新版审核完成。
+目标上，公开 release 必须从专家认可的确切可信版本构建，并满足下列门禁。当前 `scripts/check.ps1 -Mode release`、workflow 和插件旧入口均拒绝逐项 `approved` 到发行的转换；版本级专家认可与发行绑定尚未实现。
 
 1. 待审版本的累积科学增量及反向依赖已获专家认可，且发布构建只包含该确切版本；
 2. 待审版本的认可范围没有未解决的科学 gaps，且包含明确的标准化资产集合；
@@ -104,4 +104,4 @@ SciRel 可以通过宿主 artifact store 保存 `scirel.workflow-state.dev` 快�
 
 每个 workflow 变更必须覆盖直接状态转换测试。科学资产测试仍由 `scripts/check.ps1 -Mode affected` 根据资产和 TaskGraph 反向依赖选择；无法归属的 workflow、plugin 或公共合同变化 fail closed 到全套测试。
 
-生命周期 fixture 可以在没有 CodeFusion、数据库、网络和源项目 checkout 的环境中验证 draft/review/release artifact 关联；它不声称能替代模型从真实 L1 完成科学整合。
+生命周期 fixture 可以在没有 CodeFusion、数据库、网络和源项目 checkout 的环境中验证 candidate、draft 和逐项 review，以及旧 release 入口的拒绝；它不声称能替代模型从真实 L1 完成科学整合。

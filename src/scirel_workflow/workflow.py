@@ -286,49 +286,9 @@ class SciRelWorkflow:
         release = record.release
         if release is None:
             return
-        if not candidate.automated_ready:
-            raise WorkflowError(
-                "workflow snapshot release candidate is not automated_ready"
-            )
-        if record.draft is None:
-            raise WorkflowError("workflow snapshot release has no current draft")
-        if record.draft.status is not WorkflowStatus.APPROVED:
-            raise WorkflowError("workflow snapshot release draft is not approved")
-        if (
-            record.review is None
-            or record.review.outcome is not ReviewOutcome.APPROVED
-        ):
-            raise WorkflowError("workflow snapshot release has no approved review")
-        if release.candidate_id != candidate.candidate_id:
-            raise WorkflowError("workflow snapshot release candidate_id does not match")
-        if release.draft_id != record.draft.draft_id:
-            raise WorkflowError("workflow snapshot release draft_id does not match")
-        if release.candidate_digest != candidate.package_digest:
-            raise WorkflowError("workflow snapshot release candidate digest does not match")
-        if release.draft_digest != record.draft.draft_digest:
-            raise WorkflowError("workflow snapshot release draft digest does not match")
-        asset_ids = tuple(str(asset.get("asset_id", "")) for asset in record.draft.assets)
-        if release.approved_assets != asset_ids:
-            raise WorkflowError("workflow snapshot release asset set does not match draft")
-        self._validate_release_versions(record.draft, release.release_version)
-
-    @staticmethod
-    def _validate_release_versions(
-        draft: StandardizedDraft, release_version: str
-    ) -> None:
-        for index, asset in enumerate(draft.assets):
-            version = asset.get("version")
-            implementation_version = (
-                version.get("implementation_version")
-                if isinstance(version, Mapping)
-                else None
-            )
-            if implementation_version != release_version:
-                asset_id = asset.get("asset_id") or f"asset[{index}]"
-                raise WorkflowError(
-                    "draft asset implementation_version does not match release_version: "
-                    + str(asset_id)
-                )
+        raise WorkflowError(
+            "legacy release snapshot lacks expert approval of an exact trusted version"
+        )
 
     def create_draft(
         self,
@@ -467,36 +427,10 @@ class SciRelWorkflow:
         wheel_digest: str,
         release_version: str,
     ) -> ReleaseManifest:
-        draft = self._require_draft()
-        if self.status is not WorkflowStatus.APPROVED:
-            raise WorkflowError("only an approved draft can be released")
-        if draft.gaps:
-            raise WorkflowError("draft has unresolved gaps")
-        if not draft.assets:
-            raise WorkflowError("draft has no assets")
-        approved_assets = tuple(
-            str(asset["asset_id"])
-            for asset in draft.assets
-            if isinstance(asset, Mapping) and asset.get("asset_id")
+        raise WorkflowError(
+            "release requires expert approval of an exact trusted version; "
+            "per-item draft approval is insufficient"
         )
-        if len(approved_assets) != len(draft.assets):
-            raise WorkflowError("every draft asset must have an asset_id")
-        self._validate_release_versions(draft, release_version)
-        release = ReleaseManifest(
-            release_id=release_id,
-            draft_id=draft.draft_id,
-            approved_assets=approved_assets,
-            catalog_ref=catalog_ref,
-            catalog_digest=catalog_digest,
-            wheel_ref=wheel_ref,
-            wheel_digest=wheel_digest,
-            candidate_id=self.record.candidate.candidate_id,
-            candidate_digest=self.record.candidate.package_digest,
-            draft_digest=draft.draft_digest,
-            release_version=release_version,
-        )
-        self.record.release = release
-        return release
 
     def _require_draft(self) -> StandardizedDraft:
         if self.record.draft is None:
