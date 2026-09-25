@@ -41,7 +41,7 @@
       "shape": "[nvr]",
       "dtype": "real array-like",
       "required": true,
-      "constraints": "A finite, strictly increasing one-dimensional array of length at least two."
+      "constraints": "A finite, strictly increasing, nonnegative one-dimensional array of length at least two. vr is a radial-speed axis: a negative node would make the annular measure negative, so the domain is restricted to nonnegative meshes."
     },
     {
       "name": "vx",
@@ -236,8 +236,8 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError with a message naming the quantity when vr or vx is not a finite strictly increasing one-dimensional array of length at least two, or when vx does not contain both strictly negative and strictly positive velocities.",
-    "runtime_failure": "Not applicable; the construction is a fixed arithmetic pipeline with no callback and no iteration.",
+    "invalid_input": "Raises ValueError with a message naming the quantity when vr or vx is not a finite strictly increasing one-dimensional array of length at least two, when vr has a negative entry (vr is a radial-speed axis; a negative node would make the annular measure negative), or when vx does not contain both strictly negative and strictly positive velocities.",
+    "runtime_failure": "Raises ValueError when the quadrature outputs are not representable in double precision for finite inputs that satisfy the stated domain -- for example a radial mesh at 1e308 whose mirrored ghost face and squared faces overflow to infinity, or an axial ghost face beyond the float64 ceiling. There is no callback and no iteration.",
     "nonconvergence": "Not applicable; no iteration.",
     "partial_results": "Never returned; a rejected call produces no fields."
   },
@@ -260,7 +260,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev21",
+    "implementation_version": "0.1.0.dev22",
     "dependencies": []
   },
   "example": {
@@ -276,7 +276,8 @@
       "Nonuniform radial meshes: the annular measure stays exact for the ghost-face construction, including the mirrored outer face.",
       "The ghosted coefficient arrays are exactly zero on the boundary shell and carry 1/dvx, vx/dvx and vr/dvr in the interior.",
       "The composition contract: the volume feeds the Maxwellian relative-speed rate average to finite positive rates.",
-      "The input contract: finite strictly increasing meshes of length at least two, both axial signs required; NaN and infinite meshes are rejected by parameter name. Non-finite input rejection is a documented repair; the saved implementation propagated NaN silently.",
+      "The input contract: finite strictly increasing nonnegative meshes of length at least two, both axial signs required; NaN and infinite meshes are rejected by parameter name, and a negative radial node (which would make the annular measure negative) is rejected. Non-finite input rejection is a documented repair; the saved implementation propagated NaN silently.",
+      "Output representability: meshes near the float64 ceiling (radial 1e308 with a mirrored ghost face, or an axial ghost beyond the ceiling) are rejected with a ValueError instead of returning non-finite measures or volumes. Ordinary positive meshes produce unchanged numbers.",
       "Bounded historical replay against the saved KN1DPy implementation, pinned by SHA-256, reproducing every field on two meshes at rtol 1e-15 plus the repair differential witness. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance."
     ],
     "tests": [
@@ -287,7 +288,8 @@
     "known_limitations": [
       "The outer faces use the saved source's half-cell extrapolation (mirror the last node); schemes expecting different face placements must not reuse the measure unreviewed.",
       "The asset performs no unit conversion: the meshes and every output share the caller's normalized velocity unit, and the physical thermal-speed scale is the caller's.",
-      "Non-finite mesh rejection is a documented development repair, not source behavior: a caller migrating from the saved implementation sees a ValueError where it previously saw a silently corrupted quadrature.",
+      "Non-finite mesh rejection is a documented development repair, not source behavior: a caller migrating from the saved implementation sees a ValueError where it previously saw a silently corrupted quadrature. The same holds for the nonnegative radial domain and the output representability check: a negative or float64-ceiling mesh that the saved implementation accepted with negative or non-finite measures is rejected here.",
+      "The nonnegative radial domain makes the saved source's positive-radial-speed convention explicit; a caller that believes a signed radial axis is meaningful is looking at a different relation.",
       "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
       "Public distribution licensing remains pending a human decision."
     ]

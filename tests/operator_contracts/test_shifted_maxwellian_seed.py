@@ -268,3 +268,26 @@ def test_the_inputs_are_not_modified():
     assert np.array_equal(vr, [0.5, 1.0])
     assert np.array_equal(vx, [-1.0, 0.0, 1.0])
     assert np.array_equal(volume, np.ones((2, 3)))
+
+
+# ---------------------------------------------------------------------------
+# Output representability
+# ---------------------------------------------------------------------------
+
+
+def test_a_nonrepresentable_thermal_speed_is_rejected():
+    """tnorm_ev = 1e308 is a finite positive input, but the thermal-speed
+    arithmetic overflows; the finite thermal_speed_m_s contract is enforced
+    rather than returning infinity."""
+    with pytest.raises(ValueError, match="not representable"):
+        _call(tnorm_ev=1.0e308)
+
+
+def test_a_nonrepresentable_exponent_is_rejected():
+    """A tiny normalization temperature with a huge shift makes shift/vth
+    overflow, so the raw exponent is -inf; the finite-exponent contract on
+    the exponent output is enforced (the distribution itself stays finite
+    through the clamp, which is not a reason to return it with a broken
+    exponent companion)."""
+    with pytest.raises(ValueError, match="not representable"):
+        _call(tnorm_ev=1.0e-300, shifted_vx_m_s=np.array([1.0e308]))

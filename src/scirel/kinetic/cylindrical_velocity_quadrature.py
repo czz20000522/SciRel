@@ -83,28 +83,56 @@ def make_cylindrical_velocity_quadrature(*, vr, vx):
     Raises
     ------
     ValueError
-        If a mesh is not a finite strictly increasing one-dimensional array of
-        length at least two, or if ``vx`` does not contain both negative and
-        positive velocities.
+        If a mesh is not a finite strictly increasing nonnegative
+        one-dimensional array of length at least two (``vr`` is a radial-speed
+        axis, so negative nodes are outside the domain), if ``vx`` does not
+        contain both negative and positive velocities, or if the outputs are
+        not representable in double precision for the supplied finite inputs.
     """
     radial = _finite_increasing("vr", vr)
     axial = _finite_increasing("vx", vx)
-    radial_extended = np.append(radial, 2.0 * radial[-1] - radial[-2])
-    radial_mid = np.concatenate(((0.0,), 0.5 * (radial_extended + np.roll(radial_extended, -1))))
-    radial_left, radial_right = radial_mid[: radial.size], np.roll(radial_mid, -1)[: radial.size]
-    axial_extended = np.concatenate(
-        ((2.0 * axial[0] - axial[1],), axial, (2.0 * axial[-1] - axial[-2],))
+    if bool(np.any(radial < 0.0)):
+        raise ValueError("vr must be nonnegative")
+    # The ghost-face extrapolation and the squared faces overflow for meshes
+    # near the float64 ceiling; the overflow warnings are the conditions the
+    # explicit representability check below reports as ValueError.
+    with np.errstate(over="ignore", invalid="ignore"):
+        radial_extended = np.append(radial, 2.0 * radial[-1] - radial[-2])
+        radial_mid = np.concatenate(((0.0,), 0.5 * (radial_extended + np.roll(radial_extended, -1))))
+        radial_left, radial_right = radial_mid[: radial.size], np.roll(radial_mid, -1)[: radial.size]
+        axial_extended = np.concatenate(
+            ((2.0 * axial[0] - axial[1],), axial, (2.0 * axial[-1] - axial[-2],))
+        )
+        axial_right = 0.5 * (np.roll(axial_extended, -1) + axial_extended)[1 : axial.size + 1]
+        axial_left = 0.5 * (np.roll(axial_extended, 1) + axial_extended)[1 : axial.size + 1]
+        dvr, dvx = radial_right - radial_left, axial_right - axial_left
+        radial_measure = np.pi * (radial_right**2 - radial_left**2)
+        radial_four_pi_measure = 4.0 / 3.0 * np.pi * (radial_right**3 - radial_left**3)
+        volume = radial_measure[:, None] * dvx
+        ghost_shape = (radial.size + 2, axial.size + 2)
+        inv_dvx, vx_over_dvx, vr_over_dvr = (np.zeros(ghost_shape) for _ in range(3))
+        inv_dvx[1:-1, 1:-1] = 1.0 / dvx
+        vx_over_dvx[1:-1, 1:-1] = axial / dvx
+        vr_over_dvr[1:-1, 1:-1] = (radial / dvr)[:, None]
+        speed_squared = radial[:, None] ** 2 + axial**2
+    float_outputs = (
+        radial_measure,
+        radial_four_pi_measure,
+        dvx,
+        radial_left,
+        radial_right,
+        axial_left,
+        axial_right,
+        volume,
+        inv_dvx,
+        vx_over_dvx,
+        vr_over_dvr,
+        speed_squared,
     )
-    axial_right = 0.5 * (np.roll(axial_extended, -1) + axial_extended)[1 : axial.size + 1]
-    axial_left = 0.5 * (np.roll(axial_extended, 1) + axial_extended)[1 : axial.size + 1]
-    dvr, dvx = radial_right - radial_left, axial_right - axial_left
-    radial_measure = np.pi * (radial_right**2 - radial_left**2)
-    volume = radial_measure[:, None] * dvx
-    ghost_shape = (radial.size + 2, axial.size + 2)
-    inv_dvx, vx_over_dvx, vr_over_dvr = (np.zeros(ghost_shape) for _ in range(3))
-    inv_dvx[1:-1, 1:-1] = 1.0 / dvx
-    vx_over_dvx[1:-1, 1:-1] = axial / dvx
-    vr_over_dvr[1:-1, 1:-1] = (radial / dvr)[:, None]
+    if not all(np.all(np.isfinite(array)) for array in float_outputs):
+        raise ValueError(
+            "the quadrature outputs are not representable for these finite inputs"
+        )
     positive, negative = np.flatnonzero(axial > 0.0), np.flatnonzero(axial < 0.0)
     if positive.size == 0 or negative.size == 0:
         raise ValueError("vx must contain both negative and positive velocities")
@@ -120,7 +148,7 @@ def make_cylindrical_velocity_quadrature(*, vr, vx):
         "inv_dvx_ghost": inv_dvx,
         "vx_over_dvx_ghost": vx_over_dvx,
         "vr_over_dvr_ghost": vr_over_dvr,
-        "speed_squared": radial[:, None] ** 2 + axial**2,
+        "speed_squared": speed_squared,
         "positive_vx_indices": positive,
         "positive_vx_first_index": int(positive[0]),
         "positive_vx_last_index": int(positive[-1]),

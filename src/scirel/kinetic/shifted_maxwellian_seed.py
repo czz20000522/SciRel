@@ -120,11 +120,24 @@ def build_shifted_maxwellian_seed(
         raise ValueError("physical inputs must be finite and positive where required")
     tnorm_ev = required_finite_scalar(tnorm_ev, "tnorm_ev", positive=True)
     mass_amu = required_finite_scalar(mass_amu, "mass_amu", positive=True)
-    thermal_speed = np.sqrt(2.0 * ELEMENTARY_CHARGE_C * tnorm_ev / (mass_amu * AMU_KG))
-    argument = -(
-        radial[:, None, None] ** 2
-        + (axial[None, :, None] - shifts[None, None, :] / thermal_speed) ** 2
-    ) * molecule_count * tnorm_ev / temperatures[None, None, :]
+    # Extreme-but-finite inputs can overflow the thermal speed or the raw
+    # exponent; the overflow warnings are the conditions the explicit
+    # representability checks below report as ValueError.
+    with np.errstate(over="ignore", invalid="ignore"):
+        thermal_speed = np.sqrt(2.0 * ELEMENTARY_CHARGE_C * tnorm_ev / (mass_amu * AMU_KG))
+    if not np.isfinite(thermal_speed) or thermal_speed <= 0.0:
+        raise ValueError(
+            "the thermal speed is not representable for these finite inputs"
+        )
+    with np.errstate(over="ignore", invalid="ignore"):
+        argument = -(
+            radial[:, None, None] ** 2
+            + (axial[None, :, None] - shifts[None, None, :] / thermal_speed) ** 2
+        ) * molecule_count * tnorm_ev / temperatures[None, None, :]
+    if not bool(np.all(np.isfinite(argument))):
+        raise ValueError(
+            "the seed exponent is not representable for these finite inputs"
+        )
     seed = np.exp(np.where(np.logical_and(-80.0 < argument, argument < 0.0), argument, -80.0))
     seed /= np.sum(volume[:, :, None] * seed, axis=(0, 1), keepdims=True)
     return {

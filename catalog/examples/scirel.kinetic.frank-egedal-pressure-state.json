@@ -48,7 +48,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.kinetic.frank_egedal_pressure_state", "symbol": "assemble_frank_egedal_pressure", "signature": "assemble_frank_egedal_pressure(psi, radial_shape, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, params)"}},
-  "version": {"implementation_version": "0.1.0.dev21", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev22", "dependencies": []},
   "example": {
     "description": "Assemble two grid cells with gas, hot-ion and electron contributions and compare both pressure components.",
     "code": "import numpy as np\nfrom scirel.kinetic.frank_egedal_pressure_state import assemble_frank_egedal_pressure\npsi = np.zeros((1, 2))\nradial = np.array([[1.0, 0.5]])\nr = assemble_frank_egedal_pressure(psi, radial, np.full((1, 2), 2.0), np.full((1, 2), 3.0), np.full((1, 2), 4.0), {'hot_pressure_scale': 5.0, 'gas_dynamic_pressure': 7.0, 'gas_dynamic_density': 11.0, 'hot_density_scale': 13.0, 'electron_temperature': 17.0})\nnp.testing.assert_allclose(r['density'], 63.0 * radial)\nnp.testing.assert_allclose(r['p_parallel'], 1088.0 * radial)\nnp.testing.assert_allclose(r['p_perp'], 1093.0 * radial)\nnp.testing.assert_allclose(r['electron_temperature'], 17.0)",

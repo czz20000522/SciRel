@@ -64,7 +64,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.closures.mirror_ambipolar_potential", "symbol": "solve_mirror_ambipolar_potential", "signature": "solve_mirror_ambipolar_potential(b_reference_t, b_plug_t, psi, ion_mass_kg, ion_charge_c, ion_density_ref_m3, ion_temperature_parallel_j, ion_temperature_perpendicular_j, electron_temperature_j, phi_reference_v=0.0, electron_density_ref_m3=None, ion_loss_refill=1.0, electron_loss_refill=1.0, potential_tolerance_v=1e-06, current_tolerance=1e-10, max_iterations=100, initial_bracket_thermal=8.0, mode='solve', phi_plug_v=None)"}},
-  "version": {"implementation_version": "0.1.0.dev21", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev22", "dependencies": []},
   "example": {
     "description": "Check the zero-slope half-space barrier integral at a prescribed plug potential.",
     "code": "import numpy as np\nfrom scirel.closures import solve_mirror_ambipolar_potential\ne = 1.602176634e-19\nm_i = 1.67262192595e-27\nm_e = 9.1093837139e-31\nr = solve_mirror_ambipolar_potential(1.0, 1.0, 0.0, m_i, e, 2.0e18, 2.0*e, 3.0*e, e, electron_density_ref_m3=3.0e18, ion_loss_refill=0.25, electron_loss_refill=0.5, mode='evaluate', phi_plug_v=1.0)\nnp.testing.assert_allclose(r['ion_particle_flux_m2_s'], 2.0e18*np.sqrt(2.0*e/(2.0*np.pi*m_i))*np.exp(-0.5)*0.25)\nnp.testing.assert_allclose(r['electron_particle_flux_m2_s'], 3.0e18*np.sqrt(e/(2.0*np.pi*m_e))*0.5)\nassert r['iterations'] == 0 and r['converged']",

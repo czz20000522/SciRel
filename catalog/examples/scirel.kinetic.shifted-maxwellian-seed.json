@@ -155,7 +155,7 @@
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError when vr/vx/shift/temperature/volume shapes are inconsistent or arrays are empty, when tnorm_ev or mass_amu is not a finite positive scalar, when molecule_count is not exactly 1 or 2, when a temperature is nonpositive, or when any input value is non-finite or a volume is nonpositive.",
-    "runtime_failure": "Not applicable; the construction is a fixed arithmetic pipeline with no callback and no iteration. Every accepted call returns finite distributions by construction of the clamp.",
+    "runtime_failure": "Raises ValueError when the thermal speed or the raw exponent is not representable in double precision for finite inputs that satisfy the stated domain -- for example a normalization temperature at 1e308 whose thermal speed overflows, or a tiny normalization temperature with a huge shift whose quotient overflows to an infinite exponent. Every accepted call then returns finite outputs by construction of the clamp. Exceptions from no callback exist; there is no iteration.",
     "nonconvergence": "Not applicable; no iteration. The saved source's moment-compensation loop is outside this leaf.",
     "partial_results": "Never returned; a rejected call produces no outputs."
   },
@@ -178,7 +178,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev21",
+    "implementation_version": "0.1.0.dev22",
     "dependencies": []
   },
   "example": {
@@ -195,6 +195,7 @@
       "The molecule-count factor: molecule_count 2 doubles the exponent and the distribution matches the independent formulation at molecule_count 2 with unit normalization.",
       "A positive shift moves the volume-weighted axial moment positive.",
       "The composition contract: the cylindrical quadrature's volumes normalize the seed and feed the Maxwellian relative-speed rate average on one immutable mesh snapshot.",
+      "Output representability: a normalization temperature at 1e308 (thermal-speed overflow) and a tiny normalization temperature with a 1e308 shift (infinite raw exponent) are rejected with a ValueError instead of returning a non-finite thermal speed or exponent companion to an otherwise finite distribution. Ordinary inputs produce unchanged numbers.",
       "The input contract: shape consistency, finite values, positive temperatures/masses/tnorm, molecule_count exactly 1 or 2, strictly positive volumes; every out-of-domain value is rejected.",
       "Bounded historical replay against the saved KN1DPy implementation, pinned by SHA-256, reproducing the distribution, exponent and thermal speed for single- and double-molecule holdouts at rtol 1e-15. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance."
     ],

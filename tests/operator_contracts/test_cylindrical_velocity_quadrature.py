@@ -206,3 +206,32 @@ def test_the_inputs_are_not_modified():
     _call(vr=vr, vx=vx)
     assert np.array_equal(vr, [0.5, 1.5])
     assert np.array_equal(vx, [-1.5, -0.5, 0.5, 1.5])
+
+
+# ---------------------------------------------------------------------------
+# The radial domain and output representability
+# ---------------------------------------------------------------------------
+
+
+def test_a_negative_radial_mesh_is_rejected():
+    """vr is a radial-speed axis (the saved source's final positive-radial
+    convention): a negative node makes the annular measure negative -- for
+    vr = [-2, -1] the second cell's measure is pi*(0.25 - 2.25) = -2*pi -- so
+    the domain is restricted to nonnegative meshes instead of weakening the
+    positive-output contract."""
+    with pytest.raises(ValueError, match="vr"):
+        _call(vr=[-2.0, -1.0])
+
+
+def test_nonrepresentable_quadrature_outputs_are_rejected():
+    """vr = [1e308, 1.5e308] is finite and strictly increasing, but the
+    mirrored ghost face and the squared faces overflow, so the measure and
+    volume are not finite.  The finite-output contract is enforced rather
+    than returned as infinity or NaN."""
+    with pytest.raises(ValueError, match="not representable"):
+        _call(vr=[1.0e308, 1.5e308])
+
+
+def test_an_overflowing_axial_ghost_is_rejected():
+    with pytest.raises(ValueError, match="not representable"):
+        _call(vx=[-1.7e308, 0.5, 1.0])

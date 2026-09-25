@@ -49,7 +49,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.closures.boltzmann_quasineutrality", "symbol": "compute_boltzmann_electron_state", "signature": "compute_boltzmann_electron_state(potential_v, electron_temperature_j, electron_density_ref_m3, electron_phi_ref_v, ion_density_m3, ion_charge_state)"}},
-  "version": {"implementation_version": "0.1.0.dev21", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev22", "dependencies": []},
   "example": {
     "description": "At one electron thermal voltage above the reference, the Boltzmann density matches the positive-ion charge-weighted density.",
     "code": "import numpy as np\nfrom scirel.closures import compute_boltzmann_electron_state\ne = 1.602176634e-19\nr = compute_boltzmann_electron_state(np.log(2.0), e, 3.0, 0.0, 3.0, 2.0)\nnp.testing.assert_allclose(r['electron_density_m3'], 6.0)\nnp.testing.assert_allclose(r['electron_pressure_pa'], 6.0 * e)\nnp.testing.assert_allclose(r['logarithmic_charge_residual'], 0.0, atol=1e-14)\nnp.testing.assert_allclose(r['charge_residual_m3'], 0.0, atol=1e-14)",
