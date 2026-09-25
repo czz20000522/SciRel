@@ -21,23 +21,23 @@ inputs:
   required: true
   constraints: 与 r_grid 同形的二维规则直角 R-Z 网格；Z 轴严格递增且至少有 3 个节点；所有坐标必须有限且单位为 m
 - name: psi_vac
-  meaning: 真空磁通
+  meaning: 真空磁通函数 psi=R A_phi
   shape: '[N_Z,N_R]'
-  units: Wb
+  units: Wb/rad
   required: true
-  constraints: 真空磁通初值；必须与 R-Z 网格同形、所有值有限，单位为 Wb
+  constraints: 真空磁通函数初值；必须与 R-Z 网格同形、所有值有限，单位为 Wb/rad；完整链磁通须在图外显式乘 2*pi
 - name: g_psi
   meaning: 等离子体单元电流到磁通的 Green 矩阵
   shape: '[N_Z*N_R,N_Z*N_R]'
-  units: Wb/A
+  units: Wb/rad/A
   required: true
-  constraints: 等离子体单元电流到磁通的 Green 响应矩阵；形状为 (N_Z*N_R, N_Z*N_R)，所有元素必须有限，单位为 Wb/A
+  constraints: 等离子体单元电流到 psi=R A_phi 的 Green 响应矩阵；形状为 (N_Z*N_R, N_Z*N_R)，所有元素必须有限，单位为 Wb/rad/A，不内含 2*pi 或单元面积
 - name: pressure_closure
   meaning: 显式调用方闭合端口
   shape: callable(B,psi)->state
-  units: SI
+  units: '输入 B 为 T、psi 为 Wb/rad；输出压强为 Pa，其余状态按合同'
   required: true
-  constraints: 调用方提供的闭合 callable(B, psi)；每次迭代接收当前磁场幅值和磁通，并返回包含非负 p_parallel、p_perpendicular 的映射；启用环向惯性时还必须提供所需密度和速度尺度状态
+  constraints: 调用方提供的闭合 callable(B, psi)；每次迭代接收当前磁场幅值和 psi=R A_phi，并按 Wb/rad 解释剖面，返回包含非负 p_parallel、p_perpendicular 的映射；启用环向惯性时还必须提供所需密度和速度尺度状态
 - name: ion_mass_kg
   meaning: 离子质量
   shape: scalar
@@ -148,10 +148,10 @@ inputs:
   constraints: 必须为布尔值；不接受用 0/1 代替布尔值
 outputs:
 - name: psi
-  meaning: 最终磁通
+  meaning: 最终磁通函数 psi=R A_phi
   shape: '[N_Z,N_R]'
-  units: Wb
-  constraints: 最终磁通；与输入 R-Z 网格同形，表示最后一次磁通反馈后的状态
+  units: Wb/rad
+  constraints: 最终 psi=R A_phi；与输入 R-Z 网格同形，表示最后一次磁通反馈后的状态
 - name: J_phi
   meaning: 最终环向电流密度
   shape: '[N_Z,N_R]'
