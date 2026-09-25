@@ -8,6 +8,10 @@ import numpy as np
 import pytest
 
 from scirel.equilibrium import isotropic_pressure_flux as graph
+from scirel.field.circular_filament_green import circular_filament_green_response
+from scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response
+
+
 def _asset_loader(asset_ref):
     return _load_asset(asset_ref)
 
@@ -66,6 +70,52 @@ def test_nonzero_green_changes_flux_through_sequential_feedback():
     assert result["residual_history"].shape == (2,)
     assert np.any(np.abs(result["plasma_currents"]) > 0.0)
     assert not np.allclose(result["psi"], values["psi_vac"])
+
+
+def test_per_radian_pressure_current_and_filament_flux_in_one_graph_step():
+    r_grid, z_grid = np.meshgrid(np.linspace(0.2, 0.8, 7), np.linspace(-0.3, 0.3, 7))
+    points = np.column_stack((r_grid.ravel(), z_grid.ravel()))
+    green = dense_axisymmetric_green_response(points, np.column_stack((points, np.ones(points.shape[0]))))
+    psi_vac = 0.5 * r_grid ** 2
+    source_index = (3, 3)
+    target_index = (5, 1)
+    mask = np.ones_like(r_grid, dtype=bool)
+    mask[source_index] = False
+
+    def pressure_of_radius(radius):
+        return max(1000.0 * (0.8 - radius), 0.0)
+
+    inputs = {
+        "r_grid": r_grid, "z_grid": z_grid,
+        "pressure_of_radius": pressure_of_radius,
+        "psi_vac": psi_vac, "g_psi": green["gpsi"], "plasma_mask": mask,
+        "tol": 1e-12, "maxiter": 1, "relax": 0.0,
+    }
+    result = _run_graph(inputs)
+
+    current = result["plasma_currents"][source_index]
+    assert abs(current) > 1.0
+    assert np.count_nonzero(result["plasma_currents"]) == 1
+    target = points[np.ravel_multi_index(target_index, r_grid.shape)]
+    direct = circular_filament_green_response(
+        [[r_grid[source_index], z_grid[source_index], current]], [target]
+    )
+    assert abs(direct["gpsi"][0]) > 1e-9
+    np.testing.assert_allclose(
+        result["psi"][target_index] - psi_vac[target_index],
+        direct["gpsi"][0], rtol=1e-9, atol=1e-15,
+    )
+
+    linked = _run_graph({
+        **inputs, "psi_vac": 2.0 * np.pi * psi_vac,
+        "g_psi": 2.0 * np.pi * green["gpsi"],
+    })
+    np.testing.assert_allclose(
+        linked["plasma_currents"][source_index], current / (2.0 * np.pi), rtol=1e-9,
+    )
+    linked_increment = linked["psi"][target_index] - 2.0 * np.pi * psi_vac[target_index]
+    np.testing.assert_allclose(linked_increment, direct["gpsi"][0], rtol=1e-9, atol=1e-15)
+    assert not np.isclose(linked_increment, 2.0 * np.pi * direct["gpsi"][0], rtol=0.1, atol=0.0)
 
 
 # 验证：plasma_mask 是源码 plas_clip 的显式名称；true cell 必须在 dP/dpsi 乘面积前被清零。

@@ -30,6 +30,19 @@ def test_builds_pressure_flux_state_from_exact_midplane():
     assert result["pressure_of_psi"]["extrapolation"] == "zeros"
 
 
+def test_pressure_derivative_tracks_the_supplied_flux_coordinate():
+    base = _case()
+    reduced = scientific_operator(**base)
+    linked = scientific_operator(**_case(psi=2.0 * np.pi * base["psi"]))
+
+    np.testing.assert_allclose(
+        linked["pressure_derivative"],
+        reduced["pressure_derivative"] / (2.0 * np.pi),
+        rtol=1e-12,
+    )
+    np.testing.assert_allclose(linked["psi_edge"], 2.0 * np.pi * reduced["psi_edge"])
+
+
 def test_masked_cells_have_no_pressure_driven_derivative():
     mask = np.zeros((3, 4), dtype=bool)
     mask[1, 2] = True

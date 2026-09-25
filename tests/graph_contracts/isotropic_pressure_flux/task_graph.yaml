@@ -31,13 +31,13 @@ inputs:
 - name: psi_vac
   meaning: 外加或真空磁通
   shape: '[N_Z,N_R]'
-  units: Wb
+  units: Wb/rad
   required: true
   constraints: 与网格同形状且有限；按[Z,R]的C-order展平后对应Green矩阵的场点
 - name: g_psi
   meaning: cell current 到 field flux dense Green 矩阵
   shape: '[N_field,N_field]'
-  units: Wb/A
+  units: Wb/rad/A
   required: true
   constraints: N_field=N_Z*N_R；行对应目标场点、列对应源单元；行列均按[Z,R]的C-order排列；有限
 - name: tol
@@ -68,7 +68,7 @@ outputs:
 - name: psi
   meaning: 当前或最终磁通
   shape: '[N_Z,N_R]'
-  units: Wb
+  units: Wb/rad
   required: true
   constraints: 与输入网格同形状；是真空磁通与最后一轮等离子体磁通之和
 - name: plasma_currents
@@ -80,7 +80,7 @@ outputs:
 - name: pressure_of_psi
   meaning: 可重建 P(psi) spline 表示
   shape: mapping
-  units: Pa and Wb
+  units: Pa and Wb/rad
   required: true
   constraints: 包含压力--磁通采样、样条节点、系数和阶数；采样区间外压力取零
 - name: iterations
