@@ -10,6 +10,9 @@ import numpy as np
 import pytest
 
 from scirel.inference import direct_anisotropic_inversion as graph
+from scirel.equilibrium import solve_free_boundary_anisotropic_picard
+
+
 def _operator_loader(asset_ref, callable_name=None):
     return _load_operator(asset_ref, callable_name)
 
@@ -205,6 +208,57 @@ def test_public_simplified_parameter_fit_scenario():
     )
     assert result["converged"]
     assert abs(result["best_parameters"]["p0"] - 4.0) < 1.0e-6
+
+
+def test_public_inversion_with_nonzero_green_equilibrium():
+    r_grid, z_grid = np.meshgrid([0.2, 0.4, 0.6], [-0.1, 0.0, 0.1])
+    psi_vac = 0.5 * r_grid**2
+    green_response = 0.01
+    cell_area = (r_grid[0, 1] - r_grid[0, 0]) * (z_grid[1, 0] - z_grid[0, 0])
+
+    def pressure_closure(state):
+        pressure = 2.0 + state["params"]["p0"] * r_grid
+        return {
+            "p_parallel": pressure,
+            "p_perp": pressure,
+            "density": None,
+            "electron_temperature": None,
+        }
+
+    def equilibrium_solver(state):
+        return solve_free_boundary_anisotropic_picard(
+            **state, pressure_closure=pressure_closure
+        )
+
+    def diagnostic_evaluator(state):
+        return {"flux_loops": np.array([2.0 * np.pi * state["equilibrium"]["psi"][1, 1]])}
+
+    true_p0 = 4.0
+    expected_psi = psi_vac[1, 1] + green_response * true_p0 * cell_area
+    observed_flux = 2.0 * np.pi * expected_psi
+    result = solve_direct_anisotropic_inversion(
+        initial_params={"p0": 1.0},
+        bounds={"p0": (0.1, 10.0)},
+        method="least_squares",
+        fit_keys=["p0"],
+        solver_config={
+            "r_grid": r_grid,
+            "z_grid": z_grid,
+            "psi_vac": psi_vac,
+            "br_vac": np.zeros_like(r_grid),
+            "bz_vac": np.ones_like(r_grid),
+            "g_psi": np.eye(r_grid.size) * green_response,
+            "tol": 1.0e-12,
+            "maxiter": 2,
+            "relax": 0.0,
+        },
+        observations={"flux_loops": {"values": [observed_flux], "sigma": [1.0e-4]}},
+        equilibrium_solver=equilibrium_solver,
+        diagnostic_evaluator=diagnostic_evaluator,
+    )
+    assert result["converged"]
+    assert result["best_parameters"]["p0"] == pytest.approx(true_p0, rel=1.0e-4)
+    np.testing.assert_allclose(result["equilibrium"]["psi"][1, 1], expected_psi, atol=1.0e-8)
 
 
 def test_review_gate_reports_nonconverged_equilibrium_reason():
