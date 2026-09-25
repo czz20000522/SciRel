@@ -6,6 +6,8 @@ from scirel._framework_compositions.kinetic_mirror_hall_equilibrium import (
 from scirel.equilibrium.kinetic_mirror_hall_equilibrium import (
     solve_kinetic_mirror_hall_equilibrium,
 )
+from scirel.field.circular_filament_green import circular_filament_green_response
+from scirel.field.mirror_plasma_green import build_mirror_plasma_flux_green
 from scirel.field.poloidal_field_from_flux import poloidal_field_from_flux
 
 
@@ -132,3 +134,76 @@ def test_real_nested_graphs_close_a_manufactured_radial_profile_with_feedback():
     assert np.all(np.diff(result["p_parallel"], axis=1) < 0.0)
     assert np.max(np.abs(result["closure_state"]["relative_charge_residual"])) < 1e-9
     np.testing.assert_array_equal(result["p_parallel"], result["closure_state"]["p_parallel"])
+
+
+def test_real_nested_hall_graphs_with_filament_vacuum_and_mirror_green():
+    charge_c = 1.602176634e-19
+    mass_kg = 1.67262192595e-27
+    r_grid, z_grid = np.meshgrid(
+        np.linspace(0.0, 0.4, 17), np.linspace(-1.0, 1.0, 17)
+    )
+    points = np.column_stack((r_grid.ravel(), z_grid.ravel()))
+    vacuum_sources = [[0.7, -1.3, 1e6], [0.7, 1.3, 1e6]]
+    vacuum_flux = circular_filament_green_response(vacuum_sources, points)["gpsi"].reshape(r_grid.shape)
+    green = build_mirror_plasma_flux_green(r_grid, z_grid)["g_psi"]
+    source_index = (8, 12)
+    active = np.zeros_like(r_grid, dtype=bool)
+    active[source_index] = True
+
+    inputs = {
+        "r_grid": r_grid,
+        "z_grid": z_grid,
+        "psi_vac": vacuum_flux,
+        "g_psi": green,
+        "ion_mass_kg": mass_kg,
+        "ion_charge_c": charge_c,
+        "kinetic_config": {
+            "mass_kg": mass_kg,
+            "charge_c": charge_c,
+            "density_ref_m3": lambda psi: 1e18 * (1.0 - 0.2 * psi / vacuum_flux.max()),
+            "temperature_parallel_j": 1000.0 * charge_c,
+            "temperature_perpendicular_ref_j": 2000.0 * charge_c,
+            "electron_temperature_j": 500.0 * charge_c,
+            "reference_z": 0.0,
+            "plug_left_z": -1.0,
+            "plug_right_z": 1.0,
+            "loss_cone_refill": 0.05,
+            "quadrature_order": 24,
+            "plug_potential_mode": "prescribed",
+        },
+        "plasma_mask": active,
+        "maxiter": 8,
+        "tol": 1e-10,
+        "relax": 0.0,
+    }
+    result = solve_kinetic_mirror_hall_equilibrium(inputs)
+    without_hall = solve_kinetic_mirror_hall_equilibrium(
+        {**inputs, "hall_multiplier": 0.0}
+    )
+
+    assert result["converged"] and 1 < result["iterations"] <= 8
+    assert result["compatibility_messages"] == []
+    assert without_hall["compatibility_messages"] == []
+    assert abs(result["hall_state"]["hall_electric_field_R"][source_index]) > 1.0
+    np.testing.assert_allclose(
+        without_hall["hall_state"]["hall_electric_field_R"][source_index],
+        0.0,
+        atol=1e-9,
+    )
+    assert abs(result["J_phi"][source_index]) > 1.0
+    cell_current = result["plasma_cell_currents"][source_index]
+    assert abs(cell_current) > 1e-3
+    target_index = (12, 4)
+    target = points[np.ravel_multi_index(target_index, r_grid.shape)]
+    plasma_source = [r_grid[source_index], z_grid[source_index], cell_current]
+    direct = circular_filament_green_response([*vacuum_sources, plasma_source], [target])
+    plasma_flux = circular_filament_green_response([plasma_source], [target])["gpsi"][0]
+    np.testing.assert_allclose(
+        result["psi"][target_index] - vacuum_flux[target_index],
+        plasma_flux,
+        rtol=1e-7,
+        atol=1e-15,
+    )
+    np.testing.assert_allclose(result["B_R"][target_index], direct["gBR"][0], rtol=0.02)
+    np.testing.assert_allclose(result["B_Z"][target_index], direct["gBZ"][0], rtol=0.02)
+    assert np.max(np.abs(result["closure_state"]["relative_charge_residual"])) < 1e-9
