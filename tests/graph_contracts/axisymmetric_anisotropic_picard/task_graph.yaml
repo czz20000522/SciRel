@@ -27,13 +27,13 @@ inputs:
 - name: psi_vac
   meaning: 真空磁通 psi=R*A_phi
   shape: '[N_Z,N_R]'
-  units: Wb
+  units: Wb/rad
   required: true
   constraints: finite; same grid
 - name: g_psi
   meaning: cell current 到磁通的稠密 Green 矩阵
   shape: '[N_Z*N_R,N_Z*N_R]'
-  units: Wb/A
+  units: Wb/rad/A
   required: true
   constraints: C-order [Z,R] source and field axes
 - name: pressure_closure
@@ -41,7 +41,7 @@ inputs:
   shape: callable(B,psi)->mapping
   units: caller_adapter
   required: true
-  constraints: returns finite nonnegative p_parallel,p_perpendicular on the current grid
+  constraints: interprets psi=R*A_phi in Wb/rad; returns finite nonnegative p_parallel,p_perpendicular on the current grid
 - name: tol
   meaning: 相对磁通停止阈值
   shape: scalar
@@ -94,7 +94,7 @@ outputs:
 - name: psi
   meaning: 返回磁通状态
   shape: '[N_Z,N_R]'
-  units: Wb
+  units: Wb/rad
   required: true
   constraints: same returned state used to recompute all final fields
 - name: plasma_cell_currents

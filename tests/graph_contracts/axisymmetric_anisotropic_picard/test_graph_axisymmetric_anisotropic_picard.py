@@ -2,6 +2,10 @@ from scirel.equilibrium.axisymmetric_anisotropic_picard import solve_axisymmetri
 import scirel
 from _review_bindings import load_asset as _load_asset, load_graph as _load_graph, load_operator as _load_operator
 from pathlib import Path
+from scirel.equilibrium.anisotropic_force_balance import compute_anisotropic_force_balance
+from scirel.field.circular_filament_green import circular_filament_green_response
+from scirel.field.mirror_plasma_green import build_mirror_plasma_flux_green
+from scirel.field.poloidal_field_from_flux import poloidal_field_from_flux
 
 import numpy as np
 import pytest
@@ -52,6 +56,50 @@ def test_dynamic_mask_is_applied_before_green_feedback():
     np.testing.assert_allclose(result["J_phi"], 0.0)
     np.testing.assert_allclose(result["psi"], values["psi_vac"])
     assert result["converged"]
+
+
+def test_per_radian_vacuum_and_mirror_green_feed_real_picard_graph():
+    radial = np.linspace(0.1, 0.5, 17)
+    axial = np.linspace(-0.2, 0.2, 17)
+    r_grid, z_grid = np.meshgrid(radial, axial)
+    points = np.column_stack((r_grid.ravel(), z_grid.ravel()))
+    vacuum_source = [0.7, 0.0, 3.0]
+    psi_vac = circular_filament_green_response([vacuum_source], points)["gpsi"].reshape(r_grid.shape)
+    g_psi = build_mirror_plasma_flux_green(r_grid, z_grid)["g_psi"]
+    source_index = (8, 12)
+    mask = np.zeros_like(r_grid, dtype=bool)
+    mask[source_index] = True
+    pressure = 1.0 + 1e-6 * r_grid
+
+    initial_field = poloidal_field_from_flux(r_grid, z_grid, psi_vac)
+    initial_current_density = compute_anisotropic_force_balance(
+        r_grid, z_grid, initial_field["B_R"], initial_field["B_Z"], pressure, pressure, mask
+    )["J_phi"][source_index]
+    cell_current = initial_current_density * (radial[1] - radial[0]) * (axial[1] - axial[0])
+    result = _run({
+        "r_grid": r_grid,
+        "z_grid": z_grid,
+        "psi_vac": psi_vac,
+        "g_psi": g_psi,
+        "pressure_closure": lambda _b, _psi: {"p_parallel": pressure, "p_perpendicular": pressure},
+        "plasma_mask": mask,
+        "maxiter": 1,
+        "tol": 1e-12,
+        "relax": 0.0,
+        "strict_compatibility": True,
+    })
+
+    target_index = (12, 4)
+    target = points[np.ravel_multi_index(target_index, r_grid.shape)]
+    plasma_source = [r_grid[source_index], z_grid[source_index], cell_current]
+    direct = circular_filament_green_response([vacuum_source, plasma_source], [target])
+    assert cell_current != 0.0
+    relative_feedback = np.max(np.abs(result["psi"] - psi_vac)) / np.max(np.abs(psi_vac))
+    assert relative_feedback > 1e-6
+    plasma_flux = circular_filament_green_response([plasma_source], [target])["gpsi"][0]
+    np.testing.assert_allclose(result["psi"][target_index] - psi_vac[target_index], plasma_flux, rtol=1e-12, atol=1e-18)
+    np.testing.assert_allclose(result["B_R"][target_index], direct["gBR"][0], rtol=0.02, atol=0.0)
+    np.testing.assert_allclose(result["B_Z"][target_index], direct["gBZ"][0], rtol=0.02, atol=0.0)
 
 
 def test_scalar_pressure_broadcast_preserves_pa_value():
