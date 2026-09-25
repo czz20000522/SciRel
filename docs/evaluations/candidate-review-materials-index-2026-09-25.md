@@ -1,14 +1,60 @@
-# Candidate review-material index (r53)
+# Candidate review-material index (r54)
 
 The freeze script binds review materials to tracked `docs/*.md` files only,
 so the expert-review entry point for each integration batch -- the candidate
 document, its comparison inventory (README) and the proposal files under
 `review_candidates/` -- is not listed in any snapshot manifest material list,
 even though the frozen commit tree contains the bytes. This index binds those
-files by exact SHA-256 at the r53 freeze commit so the manifest chain points
+files by exact SHA-256 at the r54 freeze commit so the manifest chain points
 an expert to them. Any drift between a digest below and the working tree
 means the candidate text changed after this index was written and the batch
 needs a successor, not a silent edit.
+
+## Batch r54: dissociation-rate family
+
+Directory: `review_candidates/2026-09-25-dissociation-rates/`
+- `README.md` -- sha256 `7b44443ed2aee47106ef657ec95f213df844a6c95b9df0fc6835506cdc0af990`
+- `review.md` -- sha256 `315527b430a85d4573d295ddd587f985f127f0977abe34c333b99545c463a543`
+- `proposal/tmp_gen_diss_tests.py` -- sha256 `5b525325d789629bd750879c0fda23e2b91dcf883f675569df83c1e37f985bd1`
+- `proposal/tmp_regen_diss_tests.py` -- sha256 `0b073ba0ee9e94fb6505424e44c4a34f5f2ebdd0a61382a7afe2cf9cc1c2351f`
+- `proposal/tmp_gen_diss_modules.py` -- sha256 `c90eff26379313e12cae42f077960f57e7c62ff5b7c1e999ec753dd9c80f8dc8`
+- `proposal/tmp_gen_diss_docs.py` -- sha256 `0a5a371bc6a98bbb21f7012af3f6fb6864e609cab07933ec6b101685cde1bc6e`
+- `hydrogen2_h1s_h1s_dissociation_rate.py` -- sha256 `66440c460b20d25964efc7a756a5fc42c37cf25b5374bb305d723b3f190c7d4b`
+- `test_hydrogen2_h1s_h1s_dissociation_rate.py` -- sha256 `98671172c303c7aa8ef40e051a7453bf6169b3c318df0ec1264ea09c2100db8b`
+- `test_hydrogen2_h1s_h1s_dissociation_rate_l1.py` -- sha256 `a5767d3ad0492b3629023c28807825f8cdc8d665a6ea7c8677746dee88b09180`
+- `hydrogen2_h1s_h2s_dissociation_rate.py` -- sha256 `5a09104c860f7567ef2815a1fbb94eefa37b8a256fdcf89d6b89ad04f197b577`
+- `test_hydrogen2_h1s_h2s_dissociation_rate.py` -- sha256 `23e914de448b5c4eeb6834e52ae32930440187349c8b82538b6350fbdc551303`
+- `test_hydrogen2_h1s_h2s_dissociation_rate_l1.py` -- sha256 `ab9c6bac7a2e4786773e2ee755f532d0bba03ef28834d4ea42dc90816009471c`
+- `hydrogen2_h1s_hn3_dissociation_rate.py` -- sha256 `5bf4aa209d2ddf2f07791dbf7deee264bc8955531869f1273359fa0b23b26f73`
+- `test_hydrogen2_h1s_hn3_dissociation_rate.py` -- sha256 `8ebb64392390f9579a05cf50571d5e823558a3c6601f82fbe1d70088abe912af`
+- `test_hydrogen2_h1s_hn3_dissociation_rate_l1.py` -- sha256 `3182efed90a1d394c69c95745ba81f424bfa2ee79aa3902198935a95b69dddd9`
+- `hydrogen2_h2p_h2s_dissociation_rate.py` -- sha256 `21058caba6b856a9ece2e5db6eecee0b5448d6f173ca515ba4911d8f18ce1e6d`
+- `test_hydrogen2_h2p_h2s_dissociation_rate.py` -- sha256 `28d5d0db3bff2c63a2fe4c347af9fcc90897ea67d5f5f2d1729562aaca8ee6f6`
+- `test_hydrogen2_h2p_h2s_dissociation_rate_l1.py` -- sha256 `b7085aa8c2f07cfd961ea5c76ee504a6b90d1382917ba68d92e5af07ed879f4f`
+- `hydrogen2_p_h1s_dissociation_rate.py` -- sha256 `b3420dfa0ae90cf37e761bb5598dd8d736aca355c40ca2154161ac6f72fb5223`
+- `test_hydrogen2_p_h1s_dissociation_rate.py` -- sha256 `72271c60f0f995f33a5b3d4d9cfe1c41080eee48c6007f31ac616cd259603234`
+- `test_hydrogen2_p_h1s_dissociation_rate_l1.py` -- sha256 `d7826cdbfd8f79a80b863fb9f11b2914bb1cc19a67c620e02abe7bd0268eef8c`
+- `h2_plus_two_proton_dissociation_rate.py` -- sha256 `d8192dca1b597b4e09d79bacce46db5b7dfec411f3c4d0ce9c121fac83d511dc`
+- `test_h2_plus_two_proton_dissociation_rate.py` -- sha256 `9d8e38ca07d155f77b41488cbb4c86e5080f1a6d1ded45ed4fdc302f5f44242f`
+- `test_h2_plus_two_proton_dissociation_rate_l1.py` -- sha256 `5206867ceebb7564d580b811c0d45d54a085dcea56fd8490572b56109477102a`
+- `h2_plus_p_h1s_dissociation_rate.py` -- sha256 `6b53dce8e6c447bf078455a1dd43b07f85808ed243c4c4df4140f36d00732b24`
+- `test_h2_plus_p_h1s_dissociation_rate.py` -- sha256 `ab344ec9d9966550a42af17485ed70eeedce810d988d6877e9887223dc722ab2`
+- `test_h2_plus_p_h1s_dissociation_rate_l1.py` -- sha256 `255d7f03f48ca952042e6a29ef3f345873b5b44cc430e4ad05f88589ae606b27`
+- `h2_plus_p_hn2_dissociation_rate.py` -- sha256 `c7b8fad4654578e68a6cfa8928f2d94dbcda83f0da9626d88af414510b882c16`
+- `test_h2_plus_p_hn2_dissociation_rate.py` -- sha256 `21dc189cdcecc2771dd21eb374571fc2c404a40a170ef0c350c02bb1078367ef`
+- `test_h2_plus_p_hn2_dissociation_rate_l1.py` -- sha256 `60a043e1e15cb791e5b768687d7c6fe8567e4f0a852a717b3bcd215e233cf0c5`
+- `h2_plus_h1s_hn_dissociative_recombination_rate.py` -- sha256 `7d219e5fc9b7a8ceffd615513db82dfacc0b0fdba9de272463a88cc04cd6b47b`
+- `test_h2_plus_h1s_hn_dissociative_recombination_rate.py` -- sha256 `b6fb9f8b70e3e72e44162803d02fb77379fc4710d6518de867a7bb6511f4f9fa`
+- `test_h2_plus_h1s_hn_dissociative_recombination_rate_l1.py` -- sha256 `dbc27a65fab0feef5288fe227f8db7aeb2c14496818795a701c89633091ed707`
+- `scirel.collisions.h2-dissociation-h1s-h1s-rate-coefficient.json` -- sha256 `1b642ff96af1bdb61dfcb66c69dc055c46da9709310b98f4b79a85fb3cecb254`
+- `scirel.collisions.h2-dissociation-h1s-h2s-rate-coefficient.json` -- sha256 `f47ac52746cf7dfbc83d99883fe85ab5e79f86ba4b34aafa3b37fba7bc387168`
+- `scirel.collisions.h2-dissociation-h1s-hn3-rate-coefficient.json` -- sha256 `843b5c2ef58bc380eaceda8ccfb8b0ea26c905036a5e4fdbf2134ed7c288ebf1`
+- `scirel.collisions.h2-dissociation-h2p-h2s-rate-coefficient.json` -- sha256 `5140f2c397be5e72af28e6c040a4246d1d021dc7bc989ba4ab8b013e1cb12c9f`
+- `scirel.collisions.h2-dissociation-p-h1s-rate-coefficient.json` -- sha256 `fae02ca4ff650d569c68abc3fdc0519a961b0209b35016eb010884cd04fa3287`
+- `scirel.collisions.h2-plus-two-proton-dissociation-rate-coefficient.json` -- sha256 `dd0c704cf3e8611dda6c21a879c5364360082b85cd701a2836fdd7545a68286e`
+- `scirel.collisions.h2-plus-p-h1s-dissociation-rate-coefficient.json` -- sha256 `bf1ea0cfbdb50e3daa396c89e7f63d5bcdd943e22722aa5fc2cb171d307f85dd`
+- `scirel.collisions.h2-plus-p-hn2-dissociation-rate-coefficient.json` -- sha256 `660b7f89807cbad87d08494415034e09ecf5801960c8cfddb5bfbe10ba31d816`
+- `scirel.collisions.h2-plus-h1s-hn-dissociative-recombination-rate-coefficient.json` -- sha256 `534d4cfd7dbb700abf50ae0c7572921a7e26e6f976ef11f7337c986f745beef0`
 
 ## Batch r53: elastic momentum-transfer cross-section family
 
@@ -39,10 +85,6 @@ Directory: `review_candidates/2026-09-25-elastic-cross-sections/`
 ## Batch r51: molecular-hydrogen charge-exchange pair
 
 Directory: `review_candidates/2026-09-25-h2-collision-data/`
-
-Digests unchanged from the r52-era index except where the r52 count
-corrections touched the candidate texts; all values below are the current
-r53-commit bytes.
 - `README.md` -- sha256 `fc151546f10155bf54945e1165f855df7dff641e0ad9b3da86d55778f86ec2d2`
 - `review.md` -- sha256 `aee8a652fa76462342c2fe2da7aa304b6196cdf0a96f439a8812a5c3eae8f8c2`
 - `proposal/molecular_hydrogen_charge_exchange_cross_section.py` -- sha256 `eba61c74eb751a6e216d6a9fe2b6f4d84710cfedb15c74b0c7ecdfc735b7611a`
@@ -74,6 +116,6 @@ Directory: `review_candidates/2026-09-25-atomic-h-collision-data/`
 
 The proposal files are byte-identical to the integrated files under `src/`,
 `tests/` and `catalog/examples/` at the same commit. Coverage boundary: the
-r49/r51/r52 manifests named only docs materials; the candidate bytes were in
-the frozen trees but not named by any manifest. This index closes that gap
+r49/r51/r52/r53 manifests named only docs materials; the candidate bytes were
+in the frozen trees but not named by any manifest. This index closes that gap
 from r53 onward.

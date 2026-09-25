@@ -44,7 +44,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.diagnostics.equilibrium_synthesis_diagnostics", "symbol": "synthesize_equilibrium_diagnostics", "signature": "synthesize_equilibrium_diagnostics(inputs=None, **kwargs)"}},
-  "version": {"implementation_version": "0.1.0.dev26", "dependencies": [{"asset_id": "scirel.geometry.bilinear-grid-sampling"}]},
+  "version": {"implementation_version": "0.1.0.dev27", "dependencies": [{"asset_id": "scirel.geometry.bilinear-grid-sampling"}]},
   "example": {
     "description": "Request both branches on a two-by-two R-Z grid, then verify the caller-psi and pressure point samples; the example does not model a physical loop flux.",
     "code": "import numpy as np\nfrom scirel.diagnostics import synthesize_equilibrium_diagnostics\nR, Z = np.meshgrid([0.0, 1.0], [0.0, 1.0])\nresult = synthesize_equilibrium_diagnostics(R=R, Z=Z, equilibrium={'psi': R + 2.0*Z, 'profiles': {'p_parallel': 10.0 + R + Z, 'p_perp': 20.0 + 2.0*R + Z}}, observations={'flux_loops': {'points': [[0.5, 0.5]]}, 'thomson': {'points': [[0.5, 0.5]]}})\nassert list(result) == ['flux_loops', 'thomson']\nnp.testing.assert_allclose(result['flux_loops'], [1.5])\nnp.testing.assert_allclose(result['thomson']['p_parallel'], [11.0])\nnp.testing.assert_allclose(result['thomson']['p_perp'], [21.5])\nassert set(result['thomson']) == {'p_parallel', 'p_perp'}",

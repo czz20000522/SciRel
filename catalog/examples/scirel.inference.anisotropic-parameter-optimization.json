@@ -54,7 +54,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.inference.anisotropic_parameter_optimization", "symbol": "optimize_anisotropic_parameters", "signature": "optimize_anisotropic_parameters(*, initial_params, bounds, method, trial_evaluator, fit_keys=None, lhs_sampler=None, n_initial_samples=None, seed=None)"}},
-  "version": {"implementation_version": "0.1.0.dev26", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev27", "dependencies": []},
   "example": {
     "description": "A one-parameter caller trial is minimized while a fixed extra parameter is retained.",
     "code": "import numpy as np\nfrom scirel.inference import optimize_anisotropic_parameters\ndef trial(*, params):\n    residuals = np.array([params['x'] - 3.0])\n    return {'chi2': float(residuals @ residuals), 'residuals': residuals, 'equilibrium': {'converged': True}, 'failure_reason': None}\nr = optimize_anisotropic_parameters(initial_params={'x': 0.0, 'fixed': 7.0}, bounds={'x': (-5.0, 5.0)}, fit_keys=['x'], method='least_squares', trial_evaluator=trial)\nassert abs(r['best_parameters']['x'] - 3.0) < 1e-6\nassert r['best_parameters']['fixed'] == 7.0 and r['converged']\nassert r['chi2'] == min(e['chi2'] for e in r['evaluation_log'])",

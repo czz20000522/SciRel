@@ -50,7 +50,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.diagnostics.parallel_pressure_residual", "symbol": "compute_parallel_pressure_residual", "signature": "compute_parallel_pressure_residual(p_parallel, p_perp, magnetic_field, rtol=0.01, atol=1e-06, strict=False)"}},
-  "version": {"implementation_version": "0.1.0.dev26", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev27", "dependencies": []},
   "example": {
     "description": "Check the value-space relation on unsorted magnetic-field samples.",
     "code": "import numpy as np\nfrom scirel.diagnostics import compute_parallel_pressure_residual\nB = np.array([3.0, 1.0, 2.0, 4.0])\nr = compute_parallel_pressure_residual(B * B, -B * B, B, rtol=1e-12)\nnp.testing.assert_allclose(r['rhs'], -B * B, rtol=1e-12, atol=1e-12)\nassert r['passed'] and r['max_relative_error'] <= 1e-12",
