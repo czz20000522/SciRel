@@ -1,0 +1,129 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient",
+  "kind": "operator",
+  "title": {
+    "en": "Atomic-hydrogen 1s radiative recombination rate coefficient",
+    "zh": "原子氢1s辐射复合速率"
+  },
+  "summary": "The H+ + e -> H(1s) + hv radiative recombination rate coefficient in m^3/s as a Storey-type analytic form with the saved source's frozen constants (Rydberg 13.58 eV, A_nl = 3.92, x_nl = 0.35, level n = 1), evaluated on the source-clipped [0.1, 2.01e4] eV domain. A nonpositive temperature is rejected, which the saved implementation did not check although its document declared a positive temperature.",
+  "taxonomy": [
+    "collisions",
+    "rate-coefficient",
+    "recombination",
+    "hydrogen",
+    "analytic-fit"
+  ],
+  "aliases": [
+    "sigmav_rec_h1s",
+    "radiative recombination of H+",
+    "H+ + e -> H(1s) + hv"
+  ],
+  "identity": {
+    "relation": "the H+ + e -> H(1s) + hv radiative recombination rate coefficient as a function of electron temperature",
+    "direction": "electron temperature -> rate coefficient per sample",
+    "definition": "The temperature is clipped to [0.1, 2.01e4] eV. With the frozen constants, the excited-level binning parameter is b_n = (Ry/n^2) / T with n = 1, and the rate is A_nl * 1e-14 * sqrt((Ry/n^2) / Ry) * (b_n^1.5 / (b_n + x_nl)) * 1e-6 m^3/s. Endpoint values repeat outside the clipped range.",
+    "model": "a single source-faithful analytic fit with frozen constants; no interpolation of external data and no rate integration",
+    "geometry": "none; a scalar material function of electron temperature",
+    "coordinates": "electron temperature in eV; output rate coefficient in m^3/s",
+    "boundary": "temperature must be finite and strictly positive; in-domain values outside the fit range clip to the range endpoints; the fit is strictly positive and finite on its clipped domain",
+    "assumptions": [
+      "The frozen constants (Ry = 13.58 eV, A_nl = 3.92, x_nl = 0.35, n = 1) and the closed form are the saved source's, kept bit for bit; they are not re-derived from any external reference.",
+      "This is the level-1 (ground-state) radiative recombination branch only; excited-level recombination is not provided.",
+      "Endpoint clipping is the saved source's declared behavior and is kept.",
+      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "electron_temperature_ev",
+      "description": "Electron temperature of the recombining plasma.",
+      "units": "eV",
+      "shape": "any (scalar or array)",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and strictly positive. Values above or below the fit range are clipped to the range endpoints."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "rate_m3_s",
+      "description": "Radiative recombination rate coefficient, one value per temperature.",
+      "units": "m^3/s",
+      "shape": "same as electron_temperature_ev",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and strictly positive for every accepted input."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller accepts the saved source's clipping convention: temperatures outside the fit range silently return the endpoint value."
+    ],
+    "supported": [
+      "H+ + e -> H(1s) + hv radiative recombination rate coefficients on the saved analytic form within (or clamped to) its declared temperature range.",
+      "Scalar and array evaluation of any shape, including zero-dimensional inputs.",
+      "Rejecting nonpositive temperatures."
+    ],
+    "excluded": [
+      "Momentum-space Maxwellian averaging of a cross section: use scirel.collisions.maxwellian-relative-speed-rate-average, a different relation.",
+      "Excited-level (n > 1) recombination: the saved leaf fixes n = 1 and the successor keeps that.",
+      "Three-body recombination, dielectronic recombination or ionization channels: different relations, provided by sibling assets.",
+      "A rate model validated against an external atomic-physics reference; none is bound."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError with a message naming the quantity when electron_temperature_ev contains a non-finite or nonpositive value. There is no other failure mode.",
+    "runtime_failure": "Not reachable on the declared domain: the analytic form is evaluated only on its clipped positive range. No iteration, no state and no partial results.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy sigmav_rec_h1s slice, package 原子氢1s辐射复合速率, source anchor KN1DPy/sigma/sigmav_rec_h1s.py:3-25 with caller evidence KN1DPy/kinetic_h.py:862 and KN1DPy/kinetic_h.py:867-881 (saved implementation file SHA-256 ad71a46c865380793ee73e4ae267d536f0e0c8384929b1fff4bb18000c2e2528). One documented repair relative to the saved implementation, whose own document declares the contract: a nonpositive temperature is rejected instead of being silently clipped into the fit domain. The frozen constants and the closed form are preserved bit for bit on the declared domain. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent reevaluation of the saved closed form",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.collisions.atomic_hydrogen_1s_radiative_recombination_rate",
+      "symbol": "evaluate_atomic_hydrogen_1s_radiative_recombination_rate",
+      "signature": "evaluate_atomic_hydrogen_1s_radiative_recombination_rate(electron_temperature_ev)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev28",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate the fit on a temperature grid, confirm the endpoint clipping, and confirm the nonpositive-temperature rejection.",
+    "code": "import numpy as np\nfrom scirel.collisions import evaluate_atomic_hydrogen_1s_radiative_recombination_rate\n\ntemperature = np.array([0.1, 1.0, 10.0, 100.0, 1.0e3, 2.01e4])\nrate = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(temperature)\nassert rate.shape == temperature.shape\nassert np.all(np.isfinite(rate)) and np.all(rate > 0.0)\nclipped = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(np.array([0.01, 2.01e4, 5.0e4]))\nedge = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(np.array([0.1, 2.01e4, 2.01e4]))\nassert clipped[0] == edge[0] and clipped[1] == edge[1] and clipped[2] == edge[2]\ntry:\n    evaluate_atomic_hydrogen_1s_radiative_recombination_rate(np.array([1.0, -5.0]))\nexcept ValueError as error:\n    assert 'electron_temperature_ev' in str(error)\nelse:\n    raise AssertionError('a nonpositive temperature must be rejected')",
+    "expected": "Finite strictly positive rate coefficients in m^3/s on the grid; endpoint repetition outside the clipped range; ValueError naming electron_temperature_ev for a nonpositive temperature."
+  },
+  "verification": {
+    "scope": [
+      "That the closed form equals an independent evaluation with the same frozen constants on the clipped domain to a relative tolerance of 1e-15, on in-domain and holdout grids.",
+      "The endpoint clipping: values below and above the fit range repeat the endpoint values exactly.",
+      "The input contract: non-finite and nonpositive temperatures are rejected with messages naming the quantity; the nonpositive-temperature rejection is a documented repair (the saved implementation silently clipped negatives).",
+      "Exact bit-level replay against the saved KN1DPy implementation, pinned by SHA-256, on one- and two-dimensional grids, plus the repair witness. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_atomic_hydrogen_1s_radiative_recombination_rate.py",
+      "tests/operator_contracts/test_atomic_hydrogen_1s_radiative_recombination_rate_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the closed form against in-file independent evaluations, the clipping, and the full input and failure contracts including the documented repair. The environment-gated replay establishes exact agreement with the saved KN1DPy implementation on the compared grids only. No test establishes the fit against an external atomic-physics reference: the saved package records that residual as validation_oracle_gap. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "known_limitations": [
+      "The fit is not validated against an external atomic-physics reference; the saved package's own validation gap carries over unchanged.",
+      "The frozen constants are 1990s-era fit values (Ry = 13.58 eV differs from the current 13.5984 eV by design of the saved source); the asset evaluates the saved form, not a modern re-derivation.",
+      "Temperatures outside the fit range silently return the endpoint value; this is the saved source's declared clipping convention, not an error.",
+      "The nonpositive-temperature rejection is a documented development repair, not source behavior: a caller migrating from the saved implementation sees a ValueError where it previously saw the endpoint-clamped fit.",
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

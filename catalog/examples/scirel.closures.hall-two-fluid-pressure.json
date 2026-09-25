@@ -58,7 +58,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.closures.hall_two_fluid_pressure", "symbol": "close_hall_two_fluid_pressure", "signature": "close_hall_two_fluid_pressure(magnetic_field, psi, pressure_law, ion_density_m3, electron_pressure_pa, electrostatic_potential_v, ion_p_parallel_pa=None, ion_p_perpendicular_pa=None, electron_p_parallel_pa=None, electron_p_perpendicular_pa=None)"}},
-  "version": {"implementation_version": "0.1.0.dev27", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev28", "dependencies": []},
   "example": {
     "description": "Assemble a broadcast Hall state with the default algebraic ion pressure split.",
     "code": "import numpy as np\nfrom scirel.closures import close_hall_two_fluid_pressure\ndef law(b, psi):\n    return {'p_parallel': 5.0 + b + psi, 'p_perpendicular': 4.0 + b + 2.0*psi}\nr = close_hall_two_fluid_pressure([[1.0, 2.0]], [[0.2, 0.4]], law, 1.0e18, 1.0, 3.0)\nnp.testing.assert_allclose(r['p_parallel'], [[6.2, 7.4]])\nnp.testing.assert_allclose(r['ion_p_parallel'] + r['electron_p_parallel'], r['p_parallel'])\nnp.testing.assert_allclose(r['electron_density'], r['ion_density'])",

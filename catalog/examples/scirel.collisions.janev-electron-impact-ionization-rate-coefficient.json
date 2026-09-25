@@ -1,0 +1,141 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.collisions.janev-electron-impact-ionization-rate-coefficient",
+  "kind": "operator",
+  "title": {
+    "en": "Janev Maxwellian electron-impact ionization rate coefficient (H, H2)",
+    "zh": "Janev电子碰撞电离率"
+  },
+  "summary": "The Maxwellian electron-impact ionization rate coefficient in m^3/s for two declared target species, H and H2, each as a temperature-only nine-coefficient logarithmic polynomial evaluated on the source-clipped [0.1, 2.01e4] eV domain. A nonpositive temperature is rejected and the species selector is restricted to the declared enum, closing gaps the saved document declared but its implementation folded into one generic error.",
+  "taxonomy": [
+    "collisions",
+    "rate-coefficient",
+    "ionization",
+    "hydrogen",
+    "molecular",
+    "tabulated-fit"
+  ],
+  "aliases": [
+    "sigmav_ion_h0",
+    "sigmav_ion_hh",
+    "Janev ionization rate",
+    "electron-impact ionization of H and H2"
+  ],
+  "identity": {
+    "relation": "the Maxwellian electron-impact ionization rate coefficient for a declared target species (H or H2) as a temperature-only logarithmic polynomial",
+    "direction": "electron temperature and species selector -> rate coefficient per sample",
+    "definition": "The temperature is clipped to [0.1, 2.01e4] eV and the rate is exp(polyval(log(T_clipped), a_species)) * 1e-6 m^3/s with the frozen nine coefficients of the selected species. Endpoint values repeat outside the clipped range.",
+    "model": "two independent source-faithful temperature-only fits selected by a declared species enum; no interpolation of external data and no rate integration",
+    "geometry": "none; a scalar material function of electron temperature",
+    "coordinates": "electron temperature in eV; output rate coefficient in m^3/s",
+    "boundary": "temperature must be finite and strictly positive; in-domain values outside the fit range clip to the range endpoints; the species selector must be exactly \"H\" or \"H2\"; both fits are strictly positive and finite on their clipped domains",
+    "assumptions": [
+      "The two coefficient tables are the saved source's frozen values, evaluated with the saved source's expressions; they are not re-derived from any external reference.",
+      "The species selector is a dispatch between two different physical systems (atomic and molecular targets), not a continuous parameterization; the declared enum is closed.",
+      "Endpoint clipping is the saved source's declared behavior and is kept.",
+      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "electron_temperature_ev",
+      "description": "Electron temperature of the Maxwellian electron population.",
+      "units": "eV",
+      "shape": "any (scalar or array)",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and strictly positive. Values above or below the fit range are clipped to the range endpoints."
+    },
+    {
+      "name": "target_species",
+      "description": "Declared target-species selector.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "string enum",
+      "required": true,
+      "constraints": "Exactly \"H\" or \"H2\"; any other value is rejected."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "rate_m3_s",
+      "description": "Ionization rate coefficient of the selected species, one value per temperature.",
+      "units": "m^3/s",
+      "shape": "same as electron_temperature_ev",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and strictly positive for every accepted input."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller accepts the saved source's clipping convention: temperatures outside the fit range silently return the endpoint value.",
+      "The caller selects one of the two declared species; no other target is provided."
+    ],
+    "supported": [
+      "Maxwellian electron-impact ionization rate coefficients for H and H2 on the saved fits within (or clamped to) their declared temperature range.",
+      "Scalar and array evaluation of any shape, including zero-dimensional inputs.",
+      "Rejecting nonpositive temperatures and undeclared species values."
+    ],
+    "excluded": [
+      "Momentum-space Maxwellian averaging of a cross section: use scirel.collisions.maxwellian-relative-speed-rate-average, a different relation.",
+      "Recombination, dissociation, elastic or charge-exchange channels: separate sibling assets.",
+      "Species other than H and H2: the declared enum is closed.",
+      "A rate model validated against an external atomic-physics reference; none is bound."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError with a message naming the condition when electron_temperature_ev contains a non-finite or nonpositive value, or when target_species is not one of the declared values.",
+    "runtime_failure": "Not reachable on the declared domain: both fits are evaluated only on their clipped positive range. No iteration, no state and no partial results.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy Janev ionization slice, package Janev电子碰撞电离率, source anchors KN1DPy/sigma/sigmav_ion_h0.py:1-22 and KN1DPy/sigma/sigmav_ion_hh.py:1-27 with the shared polynomial evaluation KN1DPy/sigma/poly.py:1-10 (saved implementation file SHA-256 ff9b5f5cf854870608ce9e7e7ec8effe8718dbf5ddfa16b1bc90f42df908e3d1). One documented repair relative to the saved implementation, whose own document declares the contract: a nonpositive temperature is rejected with a message naming the quantity, where the saved implementation folded the temperature and species checks into one generic error and silently clipped nonpositive values into the fit domain. The species enum, both coefficient tables and the arithmetic are preserved bit for bit on the declared domain. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent polyval reevaluation of the saved coefficients",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.collisions.janev_electron_impact_ionization_rate",
+      "symbol": "evaluate_janev_electron_impact_ionization_rate",
+      "signature": "evaluate_janev_electron_impact_ionization_rate(electron_temperature_ev, target_species)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev28",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate both species branches, confirm the endpoint clipping and the species distinction, and confirm the nonpositive-temperature and undeclared-species rejections.",
+    "code": "import numpy as np\nfrom scirel.collisions import evaluate_janev_electron_impact_ionization_rate\n\ntemperature = np.array([0.1, 1.0, 10.0, 100.0, 1.0e3, 2.01e4])\nh_rate = evaluate_janev_electron_impact_ionization_rate(temperature, 'H')\nh2_rate = evaluate_janev_electron_impact_ionization_rate(temperature, 'H2')\nassert h_rate.shape == temperature.shape\nassert np.all(np.isfinite(h_rate)) and np.all(h_rate > 0.0)\nassert not np.allclose(h_rate, h2_rate, rtol=1e-12, atol=0.0)\nclipped = evaluate_janev_electron_impact_ionization_rate(np.array([0.01, 2.01e4, 5.0e4]), 'H')\nedge = evaluate_janev_electron_impact_ionization_rate(np.array([0.1, 2.01e4, 2.01e4]), 'H')\nassert clipped[0] == edge[0] and clipped[1] == edge[1] and clipped[2] == edge[2]\ntry:\n    evaluate_janev_electron_impact_ionization_rate(np.array([1.0, -5.0]), 'H')\nexcept ValueError as error:\n    assert 'temperature' in str(error)\nelse:\n    raise AssertionError('a nonpositive temperature must be rejected')\ntry:\n    evaluate_janev_electron_impact_ionization_rate(np.array([1.0]), 'He')\nexcept ValueError as error:\n    assert 'H or H2' in str(error)\nelse:\n    raise AssertionError('an undeclared species must be rejected')",
+    "expected": "Finite strictly positive rate coefficients in m^3/s on both branches, disagreeing with each other; endpoint repetition outside the clipped range; ValueError naming temperature for a nonpositive temperature and naming the declared enum for an undeclared species."
+  },
+  "verification": {
+    "scope": [
+      "That both species' fits equal independent polyval evaluations of their frozen coefficient tables on the clipped domain to a relative tolerance of 1e-12, and that the two branches disagree.",
+      "The endpoint clipping: values below and above the fit range repeat the endpoint values exactly.",
+      "The input contract: non-finite and nonpositive temperatures are rejected with a message naming the quantity; undeclared species values are rejected with a message naming the declared enum. The temperature repair replaces the saved implementation's combined generic error and silent clipping.",
+      "Exact bit-level replay of both species branches against the saved KN1DPy implementation, pinned by SHA-256, on one- and two-dimensional grids, plus the repair witness. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_janev_electron_impact_ionization_rate.py",
+      "tests/operator_contracts/test_janev_electron_impact_ionization_rate_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish both fits against in-file independent evaluations, the clipping, the species distinction, the full input and failure contracts including the documented repair. The environment-gated replay establishes exact agreement with the saved KN1DPy implementation on the compared grids only. No test establishes either fit against an external atomic-physics reference: the saved package records that residual as validation_oracle_gap. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "known_limitations": [
+      "Neither fit is validated against an external atomic-physics reference; the saved package's own validation gap carries over unchanged.",
+      "Temperatures outside the fit range silently return the endpoint value; this is the saved source's declared clipping convention, not an error.",
+      "The declared species enum is closed at H and H2; no other target is provided or validated.",
+      "The nonpositive-temperature rejection is a documented development repair, not source behavior: a caller migrating from the saved implementation sees a named ValueError where it previously saw the endpoint-clamped fit or a combined generic error.",
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

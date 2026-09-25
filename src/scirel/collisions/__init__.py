@@ -33,6 +33,12 @@ from .hydrogen2_hydrogen2_elastic_cross_section import (
 from .hydrogen2_proton_elastic_cross_section import (
     evaluate_hydrogen2_proton_elastic_cross_section,
 )
+from .janev_electron_impact_ionization_rate import (
+    evaluate_janev_electron_impact_ionization_rate,
+)
+from .atomic_hydrogen_1s_radiative_recombination_rate import (
+    evaluate_atomic_hydrogen_1s_radiative_recombination_rate,
+)
 from .hydrogen2_h1s_h1s_dissociation_rate import evaluate_hydrogen2_h1s_h1s_dissociation_rate
 from .hydrogen2_h1s_h2s_dissociation_rate import evaluate_hydrogen2_h1s_h2s_dissociation_rate
 from .hydrogen2_h1s_hn3_dissociation_rate import evaluate_hydrogen2_h1s_hn3_dissociation_rate
@@ -69,4 +75,6 @@ __all__ = [
     'evaluate_h2_plus_p_h1s_dissociation_rate',
     'evaluate_h2_plus_p_hn2_dissociation_rate',
     'evaluate_h2_plus_h1s_hn_dissociative_recombination_rate',
+    'evaluate_janev_electron_impact_ionization_rate',
+    'evaluate_atomic_hydrogen_1s_radiative_recombination_rate',
 ]

@@ -1,0 +1,146 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.hydrogen-saha-equilibrium-population",
+  "kind": "operator",
+  "title": {
+    "en": "Atomic-hydrogen Saha equilibrium population density",
+    "zh": "原子氢Saha平衡人口密度"
+  },
+  "summary": "The Saha equilibrium population density of atomic-hydrogen principal level n in m^-3, formed from paired electron density and temperature with the saved source's frozen constants (Saha constant 3.310e-28, ionization energy 13.6057 eV). The saved formal implementation already enforced its declared contract -- exposing only the positive finite scientific branch of the source's sentinel-filled computation and rejecting inputs outside it -- so no repair is claimed; the contract is reproduced bit for bit.",
+  "taxonomy": [
+    "kinetic",
+    "population",
+    "saha-equilibrium",
+    "hydrogen",
+    "analytic-relation"
+  ],
+  "aliases": [
+    "nh_saha",
+    "Saha equation population",
+    "equilibrium excited-level population"
+  ],
+  "identity": {
+    "relation": "the Saha equilibrium population density of atomic-hydrogen principal level n as a function of paired electron density and electron temperature",
+    "direction": "paired electron density and temperature, principal level -> equilibrium population density per sample",
+    "definition": "With the frozen constants, the population of level n is n_e * (Saha * n_e) * n_level^2 * exp(chi / (n_level^2 T)) / T^1.5 in m^-3, where chi = 13.6057 eV is the frozen ionization energy and Saha = 3.310e-28 the frozen Saha constant.",
+    "model": "the closed Saha relation over the source's scientific branch; the source's 1e32 sentinel on non-scientific branches is excluded by rejecting out-of-domain inputs rather than returned",
+    "geometry": "none; a scalar material relation of density, temperature and level",
+    "coordinates": "electron density in m^-3, electron temperature in eV, dimensionless principal level; output population density in m^-3",
+    "boundary": "inputs must be non-empty one-dimensional paired arrays, finite, with density and temperature strictly positive and below 1e32; the principal level must be a scalar integer >= 1; the result must be finite and strictly positive; the output rank equals the input rank (one-dimensional in, one-dimensional out)",
+    "assumptions": [
+      "The frozen constants and the closed form are the saved source's, kept bit for bit; they are not re-derived from any external reference.",
+      "The saved formal implementation deliberately exposes only the scientific branch of the source computation and rejects out-of-domain inputs; the 1e32 sentinel of the raw source is never returned. The saved document's boilerplate ('scalar or profile array') is broader than the implementation's declared one-dimensional contract; this asset keeps the implementation's one-dimensional behavior and records the discrepancy as an expert-review question.",
+      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "electron_density_m3",
+      "description": "Electron densities.",
+      "units": "m^-3",
+      "shape": "[n]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A non-empty one-dimensional array; finite, strictly positive and below 1e32."
+    },
+    {
+      "name": "electron_temperature_ev",
+      "description": "Electron temperatures, paired elementwise with the densities.",
+      "units": "eV",
+      "shape": "[n]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A one-dimensional array of the same shape; finite, strictly positive and below 1e32."
+    },
+    {
+      "name": "principal_level",
+      "description": "The atomic principal level n whose Saha population is evaluated.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer scalar",
+      "required": true,
+      "constraints": "A scalar integer >= 1; booleans, non-integral values and values below 1 are rejected."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "population_m3",
+      "description": "Saha equilibrium population density of the requested level, one value per paired sample.",
+      "units": "m^-3",
+      "shape": "same as the inputs",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and strictly positive for every accepted input; the source's 1e32 sentinel is never returned."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller accepts the saved formal contract's one-dimensional paired-sample shape (scalars and higher-rank arrays are rejected) and the 1e32 domain limits.",
+      "The caller accepts the Saha-equilibrium idealization itself; the asset evaluates the relation, it does not verify that a plasma is in equilibrium."
+    ],
+    "supported": [
+      "Saha equilibrium population densities for any principal level n >= 1 within (or bounded by) the declared domain.",
+      "Rejecting out-of-domain density/temperature, invalid levels and mismatched or higher-rank shapes."
+    ],
+    "excluded": [
+      "Non-equilibrium excited-state populations: the relation is the equilibrium idealization only.",
+      "Molecular or ion population densities: different relations not provided by this asset.",
+      "The source's 1e32 sentinel values: rejected inputs mean the sentinel branch is unreachable by contract.",
+      "A population model validated against an external atomic-physics reference; none is bound."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError with a message naming the condition when the arrays are not non-empty, one-dimensional and of equal shape, contain non-finite values, leave the scientific domain (nonpositive or >= 1e32), or when principal_level is not a scalar integer >= 1.",
+    "runtime_failure": "Raises ValueError when the computed population is not finite and strictly positive for the supplied inputs; on the declared domain the relation is positive by construction, so this guards the branch boundary rather than expected inputs. No iteration and no partial results.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned; a rejected call produces no population."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy nh_saha slice, package 原子氢Saha平衡人口密度, source anchor KN1DPy/jh_related/nh_saha.py:25-46 with related excitation-context evidence KN1DPy/jh_related/balmer_alpha.py:40-48 and KN1DPy/jh_related/lyman_alpha.py:42-50 (saved implementation file SHA-256 38fa28ac6728cf4aaa3e98ec638b1c39435200901ba8415a444a4df8d1dee89c). Unlike most leaves in the hydrogen-population family, the saved formal implementation already enforced its declared contract (scientific-branch-only exposure, one-dimensional paired inputs, positive finite domain, integer level, finite positive result), so no repair is claimed; the contract is reproduced bit for bit. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent reevaluation of the Saha relation",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.hydrogen_saha_equilibrium_population",
+      "symbol": "evaluate_h_saha_equilibrium_population",
+      "signature": "evaluate_h_saha_equilibrium_population(electron_density_m3, electron_temperature_ev, principal_level)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev28",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate the population for levels 1 and 2, confirm both against the closed form, and confirm the domain and level rejections.",
+    "code": "import numpy as np\nfrom scirel.kinetic import evaluate_h_saha_equilibrium_population\n\ndensity = np.array([1.0e18, 1.0e19])\ntemperature = np.array([1.0, 2.0])\nlevel1 = evaluate_h_saha_equilibrium_population(density, temperature, 1)\nassert level1.shape == density.shape\nassert np.all(np.isfinite(level1)) and np.all(level1 > 0.0)\nlevel2 = evaluate_h_saha_equilibrium_population(density, temperature, 2)\nassert np.all(np.isfinite(level2)) and np.all(level2 > 0.0)\nsaha = 3.310e-28\nchi = 13.6057\nn = 2\nexpected = density * (saha * density) * 4.0 * np.exp(chi / (4.0 * temperature)) / temperature**1.5\nnp.testing.assert_allclose(level2, expected, rtol=1e-15)\ntry:\n    evaluate_h_saha_equilibrium_population(np.array([[1.0e18]]), np.array([[1.0]]), 1)\nexcept ValueError as error:\n    assert 'one-dimensional' in str(error)\nelse:\n    raise AssertionError('a two-dimensional input must be rejected')\ntry:\n    evaluate_h_saha_equilibrium_population(density, temperature, 2.5)\nexcept ValueError as error:\n    assert 'integer >= 1' in str(error)\nelse:\n    raise AssertionError('a non-integral level must be rejected')",
+    "expected": "Finite strictly positive population densities in m^-3 with the inputs' shape; level 2 reproduced exactly by the closed Saha form; ValueError naming the one-dimensional contract for higher-rank inputs and naming the integer requirement for a non-integral level."
+  },
+  "verification": {
+    "scope": [
+      "That the population equals an independent evaluation of the Saha relation with the same frozen constants to a relative tolerance of 1e-15, for principal levels 1, 2 and 3.",
+      "The principal-level scaling behavior asserted physically (higher levels more populated on the tested inputs, consistent with the exponential factor).",
+      "The input contract: non-empty one-dimensional paired arrays, finite, strictly positive and below 1e32 density and temperature, scalar integer level >= 1, with messages naming the violated condition.",
+      "That the source's 1e32 sentinel is never returned: out-of-domain inputs are rejected before any computation.",
+      "Exact bit-level replay against the saved KN1DPy implementation, pinned by SHA-256, on density/temperature grids for levels 1-3, plus exact agreement on its rejection behavior for higher-rank inputs and invalid levels. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_hydrogen_saha_equilibrium_population.py",
+      "tests/operator_contracts/test_hydrogen_saha_equilibrium_population_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the Saha relation against in-file independent evaluations, the level scaling, and the full input and failure contracts exactly as the saved implementation declared them (no repair). The environment-gated replay establishes exact agreement with the saved KN1DPy implementation on the compared grids and rejections only. No test establishes the Saha model against an external atomic-physics reference: the saved package records that residual as validation_oracle_gap. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "known_limitations": [
+      "The Saha relation is an equilibrium idealization; the asset cannot verify that any real plasma is in equilibrium.",
+      "The frozen constants (Saha constant 3.310e-28, ionization energy 13.6057 eV) are the saved source's values, not a modern re-derivation; no external reference is bound (validation_oracle_gap).",
+      "The one-dimensional paired-sample shape is the saved formal implementation's declared contract; the saved document's boilerplate ('scalar or profile array') is broader, and the discrepancy is kept in favor of the implementation and recorded as an open expert-review question.",
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

@@ -1,14 +1,34 @@
-# Candidate review-material index (r54)
+# Candidate review-material index (r56)
 
 The freeze script binds review materials to tracked `docs/*.md` files only,
 so the expert-review entry point for each integration batch -- the candidate
 document, its comparison inventory (README) and the proposal files under
 `review_candidates/` -- is not listed in any snapshot manifest material list,
 even though the frozen commit tree contains the bytes. This index binds those
-files by exact SHA-256 at the r54 freeze commit so the manifest chain points
-an expert to them. Any drift between a digest below and the working tree
-means the candidate text changed after this index was written and the batch
-needs a successor, not a silent edit.
+files by exact SHA-256 at the r56 freeze commit so the manifest chain points
+an expert to them. Every entry path is relative to its batch Directory and
+resolvable from it (verified by script after the r55 path correction); any
+drift between a digest below and the working tree means the candidate text
+changed after this index was written and the batch needs a successor, not a
+silent edit.
+
+## Batch r56: atomic-hydrogen population family
+
+Directory: `review_candidates/2026-09-25-population-family/`
+- `README.md` -- sha256 `6e8ae4adee489719daab164be1a72415cfbcc9b2a8c02f4bc7f7711585492886`
+- `review.md` -- sha256 `ea8bdd82afb3f92f2b9b6e12e40b73b864b043f86bc6ef06464a218a6032695c`
+- `proposal/janev_electron_impact_ionization_rate.py` -- sha256 `966ef3bdf8218a09ec6d593166bb80bdfb4b45f6b9b4ce8b95a71c4a97080f64`
+- `proposal/atomic_hydrogen_1s_radiative_recombination_rate.py` -- sha256 `0371ee015d6f58ceeaa3859fbd8ff97188e32eb78b18ce20e024589fd482c21b`
+- `proposal/hydrogen_saha_equilibrium_population.py` -- sha256 `36e4a5cb0b00b17b105c3e93e303dd80b39621ecd50d206457f79c7109aacde5`
+- `proposal/test_janev_electron_impact_ionization_rate.py` -- sha256 `4a31746087cc24264467eea0bb960a44e386e7aa508df26a3757521ebc1e8454`
+- `proposal/test_janev_electron_impact_ionization_rate_l1.py` -- sha256 `d02b01e329809a882d4c45935c0735326a0e34e28b8b324e9c1855fb39a02730`
+- `proposal/test_atomic_hydrogen_1s_radiative_recombination_rate.py` -- sha256 `139ede9ea708163f4ecfe4c268df85a48880faa642bd004cd76961865c7ffd51`
+- `proposal/test_atomic_hydrogen_1s_radiative_recombination_rate_l1.py` -- sha256 `17325ee5a54cf057538042af481008836e4036f4a54157dce06c2b751c522a42`
+- `proposal/test_hydrogen_saha_equilibrium_population.py` -- sha256 `bbb18aa309db4348e3b947ab4bdb10c4a589aceee530e37e33a8fc0ab9cd2c34`
+- `proposal/test_hydrogen_saha_equilibrium_population_l1.py` -- sha256 `36e42427837b5cf6a88aa62eb4924bb863298faf1409e9bce86fd2a234bfad97`
+- `proposal/scirel.collisions.janev-electron-impact-ionization-rate-coefficient.json` -- sha256 `5213faffb85e44bae32fc49d347db7de9cc8d7d87f3fa0093777829a4b4d584b`
+- `proposal/scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient.json` -- sha256 `9c263010a156fa8d116128fc3d117ecb98661b09be9faf9d027bf2ced660e157`
+- `proposal/scirel.kinetic.hydrogen-saha-equilibrium-population.json` -- sha256 `207f61417c045a609eed351c34dda02103193dabb5bacf058ef71700c0928824`
 
 ## Batch r54: dissociation-rate family
 
@@ -116,6 +136,6 @@ Directory: `review_candidates/2026-09-25-atomic-h-collision-data/`
 
 The proposal files are byte-identical to the integrated files under `src/`,
 `tests/` and `catalog/examples/` at the same commit. Coverage boundary: the
-r49/r51/r52/r53 manifests named only docs materials; the candidate bytes were
-in the frozen trees but not named by any manifest. This index closes that gap
-from r53 onward.
+r49-r55 manifests named only docs materials; the candidate bytes were in the
+frozen trees but not named by any manifest. This index closes that gap from
+r53 onward.

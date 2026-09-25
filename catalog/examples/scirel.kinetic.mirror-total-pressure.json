@@ -50,7 +50,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.kinetic.mirror_total_pressure", "symbol": "assemble_mirror_total_pressure", "signature": "assemble_mirror_total_pressure(kinetic_moments, electron_state)"}},
-  "version": {"implementation_version": "0.1.0.dev27", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev28", "dependencies": []},
   "example": {
     "description": "Add a scalar electron pressure to two ion pressure arrays while retaining the ion input mapping and an absent potential.",
     "code": "import numpy as np\nfrom scirel.kinetic import assemble_mirror_total_pressure\nion = {'p_parallel_pa': [2.0, 3.0], 'p_perpendicular_pa': [4.0, 5.0], 'density_m3': [1.0, 2.0], 'marker': 'ion'}\nelectron = {'electron_density_m3': [6.0, 7.0], 'electron_pressure_pa': 1.5, 'relative_charge_residual': [0.1, 0.2]}\nr = assemble_mirror_total_pressure(ion, electron)\nnp.testing.assert_allclose(r['p_parallel'], [3.5, 4.5])\nnp.testing.assert_allclose(r['p_perpendicular'], [5.5, 6.5])\nassert r['kinetic_moments'] is ion and r['marker'] == 'ion'\nassert r['electrostatic_potential'] is None",
