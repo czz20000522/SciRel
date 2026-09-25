@@ -34,8 +34,10 @@ def _snapshot_file(root: Path, relative: str) -> Path:
     return path
 
 
-def _read_snapshot(root: Path) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
-    manifest = json.loads(_snapshot_file(root, "manifest.json").read_text(encoding="utf-8"))
+def _read_snapshot(root: Path) -> tuple[dict[str, Any], dict[str, dict[str, Any]], str]:
+    manifest_bytes = _snapshot_file(root, "manifest.json").read_bytes()
+    manifest = json.loads(manifest_bytes.decode("utf-8"))
+    manifest_digest = "sha256:" + hashlib.sha256(manifest_bytes).hexdigest()
     if manifest.get("schema") != "scirel.review-version.dev":
         raise ValueError("unsupported review snapshot schema")
     if not isinstance(manifest.get("git_commit"), str) or not re.fullmatch(
@@ -97,7 +99,7 @@ def _read_snapshot(root: Path) -> tuple[dict[str, Any], dict[str, dict[str, Any]
         catalog_records[asset_id] = record
     if catalog_records != documents:
         raise ValueError("catalog records differ from exact documents")
-    return manifest, documents
+    return manifest, documents, manifest_digest
 
 
 def _scientific_document(document: dict[str, Any]) -> dict[str, Any]:
@@ -167,13 +169,15 @@ def _reverse_dependents(
 
 
 def review_scope(candidate_dir: Path, baseline_dir: Path | None = None) -> dict[str, Any]:
-    candidate, current = _read_snapshot(candidate_dir)
+    candidate, current, candidate_manifest_digest = _read_snapshot(candidate_dir)
     if baseline_dir is None:
         return {
             "schema": SCHEMA,
             "mode": "first_review",
             "candidate_commit": candidate["git_commit"],
+            "candidate_manifest_digest": candidate_manifest_digest,
             "comparison_commit": None,
+            "comparison_manifest_digest": None,
             "baseline_approval_verified": False,
             "review_asset_ids": sorted(current),
             "changed_document_ids": sorted(current),
@@ -184,7 +188,7 @@ def review_scope(candidate_dir: Path, baseline_dir: Path | None = None) -> dict[
             "removed_assets_require_manual_review": False,
         }
 
-    baseline, previous = _read_snapshot(baseline_dir)
+    baseline, previous, comparison_manifest_digest = _read_snapshot(baseline_dir)
     changed = {
         asset_id for asset_id, document in current.items()
         if asset_id not in previous
@@ -213,7 +217,9 @@ def review_scope(candidate_dir: Path, baseline_dir: Path | None = None) -> dict[
         "schema": SCHEMA,
         "mode": "snapshot_comparison",
         "candidate_commit": candidate["git_commit"],
+        "candidate_manifest_digest": candidate_manifest_digest,
         "comparison_commit": baseline["git_commit"],
+        "comparison_manifest_digest": comparison_manifest_digest,
         "baseline_approval_verified": False,
         "review_asset_ids": sorted(_reverse_dependents(seeds | removed, current) & current.keys()),
         "changed_document_ids": sorted(changed),

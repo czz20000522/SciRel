@@ -43,6 +43,8 @@ SciRel 可以通过宿主 artifact store 保存 `scirel.workflow-state.dev` 快�
 
 冻结待审版本至少绑定 Git tree/提交、参与审核的 exact documents、科学增量与受影响依赖闭包、验证证据，以及已构建的 wheel/catalog 摘要。证据复用须核实实现、合同、依赖和适用环境仍未变化；机械版本号或文案变化本身不触发全库科学重审，但发行工程验证仍需重做。此版本审核与晋级记录尚未由当前 `WorkflowRecord` 实现。
 
+版本级认可必须绑定待审 manifest 的确切字节摘要及本次审核范围，并有可验证的专家身份/授权证据。宿主提供中性的身份与审核事件，SciRel 判断科学认可范围；本地 `reviewer` 字符串、逐项 `approved` 或 Agent 生成的 JSON 均不能单独把待审快照晋级为可信版。
+
 ## 自动检查
 
 自动检查至少覆盖资产合同/实现记录、结构、依赖、许可证/来源记录、构建、直接测试 replay

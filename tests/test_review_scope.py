@@ -97,6 +97,8 @@ def test_first_review_includes_all_frozen_assets(tmp_path: Path):
     result = scope_module.review_scope(snapshot)
 
     assert result["mode"] == "first_review"
+    assert result["candidate_manifest_digest"] == scope_module._sha256(snapshot / "manifest.json")
+    assert result["comparison_manifest_digest"] is None
     assert result["baseline_approval_verified"] is False
     assert result["review_asset_ids"] == ["a", "b"]
 
@@ -120,6 +122,8 @@ def test_comparison_excludes_version_only_edits_and_includes_dependents(
 
     result = scope_module.review_scope(candidate, baseline)
 
+    assert result["candidate_manifest_digest"] == scope_module._sha256(candidate / "manifest.json")
+    assert result["comparison_manifest_digest"] == scope_module._sha256(baseline / "manifest.json")
     assert result["changed_document_ids"] == ["a"]
     assert result["mechanical_only_document_ids"] == ["b"]
     assert result["review_asset_ids"] == ["a", "c"]
@@ -221,6 +225,20 @@ def test_catalog_release_formatting_does_not_change_its_digest(tmp_path: Path):
     )
 
     assert scope_module.review_scope(snapshot)["review_asset_ids"] == ["a"]
+
+
+def test_manifest_formatting_changes_exact_snapshot_identity_not_science_scope(tmp_path: Path):
+    snapshot = _snapshot(tmp_path / "candidate", "a" * 40, [_document("a")])
+    before = scope_module.review_scope(snapshot)
+    manifest_path = snapshot / "manifest.json"
+    manifest_path.write_text(
+        json.dumps(json.loads(manifest_path.read_text(encoding="utf-8")), indent=2),
+        encoding="utf-8",
+    )
+
+    after = scope_module.review_scope(snapshot)
+    assert after["candidate_manifest_digest"] != before["candidate_manifest_digest"]
+    assert after["review_asset_ids"] == before["review_asset_ids"]
 
 
 def test_catalog_manifest_digest_mismatch_is_rejected(tmp_path: Path):

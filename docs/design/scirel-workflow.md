@@ -18,6 +18,8 @@ workflow 只记录其结果，并执行可确定验证的状态、摘要、文�
 
 待审版从确切开发提交冻结 Git tree、exact documents 集合、相对上一可信版的累积科学差异、受影响反向依赖及证据；内部 wheel/catalog 若已构建也绑定其摘要。初次审核没有可信基线时明确首次审核集合。未变证据只在实现、合同、依赖和适用环境均未变化时复用。部分认可应在隔离开发版剔除或返工未认可内容，重验受影响闭包并冻结 successor；不可在原快照上只改批准标签。`scripts/freeze_review_version.py` 已实现首次开发快照的确定性绑定，输出 `pending_unapproved`，不做科学差异推断；专家认可、可信晋级和发行绑定仍待实现，不对应当前 `WorkflowStatus` 的新增状态。
 
+`scripts/review_scope.py` 输出参与比较的原始 manifest SHA-256，供异步审核动作指向专家实际看到的确切快照；排版改变也会改变该身份，但不会因此扩大科学差异。摘要与 `ReviewDecision.reviewer` 字符串都不能证明审核者是获授权专家。未来版本级认可必须另取得可验证的人工身份/授权事件或等效签名，并绑定该快照和审核范围；在此之前保持 `pending_unapproved`，旧发行入口继续拒绝。
+
 工作流还可以通过 `SciRelWorkflow.to_dict()` 生成
 `scirel.workflow-state.dev` 快照，并用 `SciRelWorkflow.from_dict()` 恢复。
 这是 SciRel 自己的最小持久化边界：candidate、自动检查结果、draft、审核记录和
