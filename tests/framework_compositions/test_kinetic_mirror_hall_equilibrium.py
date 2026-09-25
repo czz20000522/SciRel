@@ -197,13 +197,26 @@ def test_real_nested_hall_graphs_with_filament_vacuum_and_mirror_green():
     target = points[np.ravel_multi_index(target_index, r_grid.shape)]
     plasma_source = [r_grid[source_index], z_grid[source_index], cell_current]
     direct = circular_filament_green_response([*vacuum_sources, plasma_source], [target])
-    plasma_flux = circular_filament_green_response([plasma_source], [target])["gpsi"][0]
+    plasma_direct = circular_filament_green_response([plasma_source], [target])
+    vacuum_field = poloidal_field_from_flux(r_grid, z_grid, vacuum_flux)
+    plasma_flux_grid = circular_filament_green_response(
+        [plasma_source], points
+    )["gpsi"].reshape(r_grid.shape)
+    plasma_grid_field = poloidal_field_from_flux(r_grid, z_grid, plasma_flux_grid)
     np.testing.assert_allclose(
         result["psi"][target_index] - vacuum_flux[target_index],
-        plasma_flux,
+        plasma_direct["gpsi"][0],
         rtol=1e-7,
         atol=1e-15,
     )
     np.testing.assert_allclose(result["B_R"][target_index], direct["gBR"][0], rtol=0.02)
     np.testing.assert_allclose(result["B_Z"][target_index], direct["gBZ"][0], rtol=0.02)
+    for field, direct_field in (("B_R", "gBR"), ("B_Z", "gBZ")):
+        increment = result[field][target_index] - vacuum_field[field][target_index]
+        np.testing.assert_allclose(
+            increment, plasma_grid_field[field][target_index], rtol=1e-6, atol=1e-12
+        )
+        np.testing.assert_allclose(
+            increment, plasma_direct[direct_field][0], rtol=0.1, atol=0.0
+        )
     assert np.max(np.abs(result["closure_state"]["relative_charge_residual"])) < 1e-9
