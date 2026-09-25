@@ -82,6 +82,7 @@ def test_the_module_is_named_for_what_it_contains():
         "relativistic_maxwellian_bessel",
         "normalized_momentum",
         "thermal_electron_momentum",
+        "average_cross_section_over_maxwellian",
     ]
 
 

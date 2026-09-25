@@ -87,7 +87,7 @@ def test_contract_schemas_and_dependency_closed_examples_parse():
 
     assert asset_schema["$schema"].endswith("2020-12/schema")
     assert release_schema["properties"]["schema"]["const"] == "scirel.catalog-release.v1"
-    assert len(documents) == 68
+    assert len(documents) == 69
     assert {item["kind"] for item in documents} == {"operator", "task_graph"}
 
 
@@ -211,7 +211,7 @@ def test_runtime_signatures_tests_and_examples_are_executable():
 
     assert completed.returncode == 0, completed.stderr
     report = json.loads(completed.stdout)
-    assert report["asset_count"] == 68
+    assert report["asset_count"] == 69
     assert report["runtime_checked"] is True
     assert report["runtime_origin"] == "source"
     assert report["examples_executed"] is True
@@ -231,7 +231,7 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
         "catalog_id": "scirel-development-pilot",
         "release_version": CURRENT_VERSION,
         "coverage_status": "complete",
-        "declared_total": 68,
+        "declared_total": 69,
     }
     first_result = build_catalog(EXAMPLES, first, **arguments)
     second_result = build_catalog(EXAMPLES, second, **arguments)
@@ -252,8 +252,8 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
     release = json.loads(first_files["release.json"])
     assert release["coverage"] == {
         "status": "complete",
-        "included_asset_count": 68,
-        "declared_total_asset_count": 68,
+        "included_asset_count": 69,
+        "declared_total_asset_count": 69,
     }
     digest = release.pop("root_digest")
     assert digest == "sha256:" + hashlib.sha256(_canonical(release)).hexdigest()
@@ -271,7 +271,7 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
         json.loads(line)
         for line in first_files["reverse-dependencies/all.jsonl"].splitlines()
     ]
-    assert len(routes) == len(summaries) == len(reverse) == 68
+    assert len(routes) == len(summaries) == len(reverse) == 69
     partition_paths = {item["path"] for item in release["partitions"]}
     for route in routes:
         assert set(route["exact_record"]) == {"path"}
@@ -320,7 +320,7 @@ def test_complete_catalog_cannot_hide_missing_documents(tmp_path):
             catalog_id="invalid-complete",
             release_version=CURRENT_VERSION,
             coverage_status="complete",
-            declared_total=69,
+            declared_total=70,
         )
 
 
@@ -332,5 +332,5 @@ def test_catalog_release_version_must_match_every_document(tmp_path):
             catalog_id="version-mismatch",
             release_version="0.1.0.dev4",
             coverage_status="partial",
-            declared_total=68,
+            declared_total=69,
         )
