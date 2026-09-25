@@ -17,7 +17,7 @@
     "geometry": "circular sources and a rectilinear cylindrical R-Z target grid",
     "coordinates": "SI cylindrical R-Z coordinates; either array axis may be radial",
     "boundary": "psi is zero at the first radial grid point; B_R is set to zero for R < 1e-9 m",
-    "assumptions": ["The radial grid is uniformly spaced and strictly increasing.", "Each source row carries current in amperes, not a dimensionless Green weight."]
+    "assumptions": ["The radial grid is uniformly spaced and strictly increasing.", "Each source row carries current in amperes, not a dimensionless Green weight.", "The integrated flux is psi=R A_phi relative to the first radial grid point, not complete linked flux 2*pi*psi."]
   },
   "inputs": [
     {"name": "r_grid", "description": "Target cylindrical radius grid.", "units": "m", "shape": "2-D, at least two points per axis", "dtype": "real array-like", "required": true, "constraints": "Finite, nonnegative, rectilinear, uniformly spaced and strictly increasing along exactly one array axis."},
@@ -25,7 +25,7 @@
     {"name": "filaments", "description": "Ideal circular source rows [R0_m, Z0_m, current_A].", "units": "m,m,A", "shape": "[N_filament,3]", "dtype": "real array-like", "required": true, "constraints": "Finite with strictly positive source radius; an empty source set is allowed; no source may coincide with a target grid point."}
   ],
   "outputs": [
-    {"name": "psi", "description": "Radial trapezoidal integral of R times B_Z from the first radial grid point.", "units": "Wb", "shape": "same as r_grid", "dtype": "float64", "required": true, "constraints": "Zero at the first radial grid point under the maintained convention."},
+    {"name": "psi", "description": "Psi=R A_phi from radial trapezoidal integration of R times B_Z, referenced to the first radial grid point.", "units": "Wb/rad", "shape": "same as r_grid", "dtype": "float64", "required": true, "constraints": "Zero at the first radial grid point; no 2*pi factor is applied."},
     {"name": "b_r", "description": "Superposed radial magnetic field.", "units": "T", "shape": "same as r_grid", "dtype": "float64", "required": true, "constraints": "Forced to zero where R < 1e-9 m."},
     {"name": "b_z", "description": "Superposed axial magnetic field.", "units": "T", "shape": "same as r_grid", "dtype": "float64", "required": true, "constraints": "Finite on successful return."}
   ],
@@ -54,7 +54,7 @@
     "expected": "Finite grid-shaped field arrays with zero first-radial-column flux and axis radial field."
   },
   "verification": {
-    "scope": ["Filament-current superposition.", "Circular-filament analytic axial-field limit.", "Radial quadrature increment and first-grid-point reference.", "Transposed rectilinear layout and invalid radial grid."],
+    "scope": ["Filament-current superposition.", "Circular-filament analytic axial-field limit.", "Radial quadrature increment and first-grid-point reference.", "Comparison with independent circular-filament psi=R A_phi Green values away from the source.", "Transposed rectilinear layout and invalid radial grid."],
     "tests": ["tests/operator_contracts/test_filament_vacuum_field.py"],
     "evidence_ceiling": "Validated for the maintained ideal-filament grid relation and tested examples; historical candidate evidence does not establish complete source-project closure or expert approval.",
     "known_limitations": ["The returned flux uses the first radial grid point as reference and omits a 2-pi flux factor.", "The ideal source is singular at coincident targets, which are rejected.", "Public distribution licensing remains pending a human decision."]

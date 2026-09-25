@@ -7,7 +7,7 @@
 - [圆电流丝 Green 响应](../../catalog/examples/scirel.field.circular-filament-green.json)对带无量纲权重的多个圆丝求和，给出目标点的每安培 `psi = R A_phi` 与极向场响应。这里的磁通函数是 `Wb/rad` 约定，不是乘以 `2*pi` 的完整环连磁通。
 - [稠密 Green 矩阵](../../catalog/examples/scirel.field.dense-axisymmetric-green.json)保留每个目标/源对的独立响应列，供调用方另行组合。它与上一关系共享理想轴对称圆丝模型，但输出维度与后续电流收缩责任不同，不能因公式相似直接判作可互换。
 - [镜像等离子体 Green 矩阵](../../catalog/examples/scirel.field.mirror-plasma-green.json)在源与目标共用的反射对称 R-Z 网格上生成稠密磁通响应，矩阵两轴按 `[Z,R]` 的 C-order 展平。它有固定的网格/对称条件，不提供任意点集的 `BR` 或 `BZ`，也不隐含电流或网格面积因子。
-- [网格真空场与径向积分](../../catalog/examples/scirel.field.filament-vacuum-field.json)直接接受每根圆丝的安培电流，在等间距径向网格上叠加场，并从首个径向点对 `R * B_Z` 做梯形积分。其磁通参考边界、网格约束与 Green 点响应不同。
+- [网格真空场与径向积分](../../catalog/examples/scirel.field.filament-vacuum-field.json)直接接受每根圆丝的安培电流，在等间距径向网格上叠加场，并从首个径向点对 `R * B_Z` 做梯形积分。输出是以该首点为零的 `psi = R A_phi`（`Wb/rad`），不是乘以 `2*pi` 的完整环连磁通；其参考边界、网格约束与 Green 点响应不同。
 - [矩形线圈电流丝](../../catalog/examples/scirel.field.rectangular-coil-filaments.json)和[固定 16 丝永磁环几何](../../catalog/examples/scirel.field.permanent-ring-filaments.json)只构造不同的源几何；后者返回相对权重，不能当作已指定实际电流的场求解。
 - [多线圈真空场图](../../catalog/examples/scirel.field.multi-coil-vacuum-field.json)使用矩形线圈几何、点响应和电流叠加构造场。它不调用永磁环几何或稠密 Green 矩阵；这些能力可供未来经证据审查的组合使用，而非现有图已覆盖的路径。
 - [理想导体边界磁通修正](../../catalog/examples/scirel.field.ideal-conductor-boundary.json)在调用方提供的采样与 Green 矩阵上进行截断 SVD 最小二乘校正。实现检查形状，不证明矩阵对应相同几何或 `S @ Gbf = Gbb`；有截断或不相容输入时剩余边界通量可非零。

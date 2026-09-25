@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from scirel.field.filament_vacuum_field import integrate_filament_vacuum_field, integrate_filament_vacuum_field as scientific_operator
+from scirel.field.circular_filament_green import circular_filament_green_response
 
 
 def _grid():
@@ -33,6 +34,19 @@ def test_axis_field_matches_circular_filament_analytic_limit():
         / (2.0 * (source_r**2 + (z_axis - source_z) ** 2) ** 1.5)
     )
     np.testing.assert_allclose(result["b_z"][:, 0], expected_b_z, rtol=2.0e-14, atol=1.0e-300)
+
+
+def test_radial_flux_matches_psi_ra_phi_with_first_radius_reference():
+    radial = np.linspace(0.0, 0.3, 301)
+    r_grid, z_grid = np.meshgrid(radial, [-0.12, 0.08])
+    source_r, source_z, current_a = 0.45, -0.02, 1200.0
+    result = scientific_operator(r_grid, z_grid, [[source_r, source_z, current_a]])
+    point_green = circular_filament_green_response(
+        [[source_r, source_z, 1.0]],
+        np.column_stack((r_grid.ravel(), z_grid.ravel())),
+    )["gpsi"].reshape(r_grid.shape) * current_a
+    expected = point_green - point_green[:, :1]
+    np.testing.assert_allclose(result["psi"], expected, rtol=3e-5, atol=3e-9)
 
 
 def test_accepts_transposed_rectilinear_layout():
