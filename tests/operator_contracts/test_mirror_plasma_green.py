@@ -3,6 +3,7 @@ import pytest
 from scipy.special import ellipe, ellipk
 
 from scirel.field.mirror_plasma_green import build_mirror_plasma_flux_green, build_mirror_plasma_flux_green as scientific_operator
+from scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response
 
 
 def _grid():
@@ -49,6 +50,15 @@ def test_shape_finiteness_and_axis_source_columns_follow_source_convention():
     assert np.all(np.isfinite(result))
     for source_plane in range(r_grid.shape[0]):
         np.testing.assert_allclose(result[:, source_plane * r_grid.shape[1]], 0.0, atol=0.0)
+
+
+def test_reflected_matrix_matches_direct_filament_columns_on_symmetric_grid():
+    r_grid, z_grid = _grid()
+    points = np.column_stack((r_grid.ravel(), z_grid.ravel()))
+    sources = np.column_stack((points, np.ones(points.shape[0])))
+    direct = dense_axisymmetric_green_response(points, sources)["gpsi"]
+    reflected = scientific_operator(r_grid, z_grid)["g_psi"]
+    np.testing.assert_allclose(reflected, direct, rtol=2e-14, atol=1e-30)
 
 
 def test_rejects_non_symmetric_axial_grid():

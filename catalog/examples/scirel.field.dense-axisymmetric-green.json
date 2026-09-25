@@ -17,14 +17,14 @@
     "geometry": "point targets and circular source filaments in a cylindrical R-Z plane",
     "coordinates": "SI cylindrical R-Z coordinates",
     "boundary": "an axis source within 1e-12 m yields a zero column; nonfinite singular formula elements are replaced by zero",
-    "assumptions": ["Source weights are dimensionless multipliers, not currents or cell-area factors.", "The caller performs any subsequent source-current contraction."]
+    "assumptions": ["The flux kernel is psi=R A_phi, not the complete linked flux 2*pi*psi.", "Source weights are dimensionless multipliers, not currents or cell-area factors.", "The caller performs any subsequent source-current contraction."]
   },
   "inputs": [
     {"name": "rz_pts", "description": "Target rows [R_m,Z_m].", "units": "m,m", "shape": "[N_target,2]", "dtype": "real array-like", "required": true, "constraints": "Finite with nonnegative target radii; an empty target list must retain the two-column shape."},
     {"name": "source_rzw", "description": "Source rows [R0_m,Z0_m,dimensionless weight].", "units": "m,m,dimensionless", "shape": "[N_source,3]", "dtype": "real array-like", "required": true, "constraints": "Finite with nonnegative source radii; [] is accepted as an empty-source shorthand."}
   ],
   "outputs": [
-    {"name": "gpsi", "description": "Weighted flux response for each target and source pair.", "units": "Wb/A", "shape": "[N_target,N_source]", "dtype": "float64", "required": true, "constraints": "Nonfinite formula values become zero; axis-source columns are zero."},
+    {"name": "gpsi", "description": "Weighted psi=R A_phi response for each target and source pair.", "units": "Wb/rad/A", "shape": "[N_target,N_source]", "dtype": "float64", "required": true, "constraints": "Nonfinite formula values become zero; axis-source columns are zero; no 2*pi factor is applied."},
     {"name": "gBR", "description": "Weighted radial-field response for each target and source pair.", "units": "T/A", "shape": "[N_target,N_source]", "dtype": "float64", "required": true, "constraints": "Nonfinite formula values become zero; axis-source columns are zero."},
     {"name": "gBZ", "description": "Weighted axial-field response for each target and source pair.", "units": "T/A", "shape": "[N_target,N_source]", "dtype": "float64", "required": true, "constraints": "Nonfinite formula values become zero; axis targets may retain the analytic finite limit."}
   ],
@@ -53,7 +53,7 @@
     "expected": "Three two-by-one weighted Green response matrices and zero-column matrices for the empty source set."
   },
   "verification": {
-    "scope": ["Source-weight scaling and empty-source shape.", "Axis-source zero-column convention.", "Circular-filament analytic axial-field limit.", "Invalid radius and source-shape rejection."],
+    "scope": ["Source-weight scaling and empty-source shape.", "Axis-source zero-column convention.", "Circular-filament analytic axial-field limit.", "Columnwise equality with the separately maintained circular-filament flux and field kernel.", "Invalid radius and source-shape rejection."],
     "tests": ["tests/operator_contracts/test_dense_axisymmetric_green.py"],
     "evidence_ceiling": "Validated for the maintained ideal-filament Green columns and tested axis/weight cases; historical candidate evidence does not establish complete source-project closure or expert approval.",
     "known_limitations": ["Singular formula elements are zeroed, not resolved physically.", "The result preserves separate source columns and does not sum them.", "Public distribution licensing remains pending a human decision."]

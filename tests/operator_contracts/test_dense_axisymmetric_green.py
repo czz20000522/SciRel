@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 
 from scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response, dense_axisymmetric_green_response as scientific_operator
+from scirel.field.circular_filament_green import circular_filament_green_response
 
 
 def test_shape_finiteness_and_axis_source_columns():
@@ -27,6 +28,16 @@ def test_source_weight_scales_each_column_and_zeroes_a_column():
     zero = scientific_operator(targets, [[0.3, 0.0, 0.0]])
     for value in zero.values():
         np.testing.assert_allclose(value, 0.0)
+
+
+def test_columns_match_individual_filament_flux_and_field_responses():
+    targets = np.array([[0.08, -0.17], [0.22, 0.04], [0.31, 0.18]])
+    sources = np.array([[0.39, -0.06, 1.0], [0.48, 0.27, -0.4]])
+    dense = scientific_operator(targets, sources)
+    for column, source in enumerate(sources):
+        single = circular_filament_green_response([source], targets)
+        for name in ("gpsi", "gBR", "gBZ"):
+            np.testing.assert_allclose(dense[name][:, column], single[name], rtol=2e-14, atol=1e-18)
 
 
 def test_axis_bz_matches_circular_filament_limit():

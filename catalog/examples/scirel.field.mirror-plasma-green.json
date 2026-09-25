@@ -14,14 +14,14 @@
     "geometry": "source and target cells share a nonnegative-radius rectilinear R-Z mesh",
     "coordinates": "SI cylindrical R-Z coordinates; grid arrays indexed [Z,R], matrix target and source axes flattened in C order",
     "boundary": "A source radius within 1e-12 m of the axis yields a zero source column; nonfinite evaluated kernel elements, including unresolved singular values, are replaced by zero.",
-    "assumptions": ["The Z axis is strictly increasing, uniformly spaced and reflection-symmetric about zero within the implementation tolerances.", "Each source column is a response per ampere of that circular source; the caller applies current or cell-current weights separately."]
+    "assumptions": ["The Z axis is strictly increasing, uniformly spaced and reflection-symmetric about zero within the implementation tolerances.", "Each source column is a psi=R A_phi response per ampere of that circular source, not complete linked flux; the caller applies current or cell-current weights separately."]
   },
   "inputs": [
     {"name": "r_grid", "description": "Cylindrical radius mesh shared by source and target cells.", "units": "m", "shape": "[N_Z,N_R]", "dtype": "real array-like, converted to float64", "required": true, "constraints": "Finite, rectilinear, nonnegative and strictly increasing R axis; same shape as z_grid and at least two points per axis."},
     {"name": "z_grid", "description": "Axial coordinate mesh shared by source and target cells.", "units": "m", "shape": "[N_Z,N_R]", "dtype": "real array-like, converted to float64", "required": true, "constraints": "Finite rectilinear grid with a strictly increasing, uniformly spaced and reflection-symmetric Z axis; same shape as r_grid and at least two points per axis."}
   ],
   "outputs": [
-    {"name": "g_psi", "description": "Flux response per source current for each target/source grid-cell pair.", "units": "Wb/A", "shape": "[N_Z*N_R,N_Z*N_R]", "dtype": "float64", "required": true, "constraints": "Both axes follow C-order [Z,R] flattening; axis-source columns and nonfinite formula elements use the zero convention; no cell-area factor is included."}
+    {"name": "g_psi", "description": "Psi=R A_phi response per source current for each target/source grid-cell pair.", "units": "Wb/rad/A", "shape": "[N_Z*N_R,N_Z*N_R]", "dtype": "float64", "required": true, "constraints": "Both axes follow C-order [Z,R] flattening; axis-source columns and nonfinite formula elements use the zero convention; no cell-area or 2*pi factor is included."}
   ],
   "applicability": {
     "preconditions": ["Source and target are the same cylindrical R-Z mesh, with SI metre coordinates.", "The axial grid is reflection-symmetric about zero and uniformly spaced at the declared numerical tolerances."],
@@ -48,7 +48,7 @@
     "expected": "A finite 12-by-12 float64 flux-response matrix with zero axis-source columns and equal blocks for equal axial plane separation."
   },
   "verification": {
-    "scope": ["First source-plane columns against an independently written circular-filament formula.", "Square shape, finite output and axis-source zero-column convention.", "Rejection of an axially nonsymmetric grid and reflection-block relation."],
+    "scope": ["First source-plane columns against an independently written circular-filament formula.", "Whole-matrix equality with direct dense filament columns on a symmetric grid.", "Square shape, finite output and axis-source zero-column convention.", "Rejection of an axially nonsymmetric grid and reflection-block relation."],
     "tests": ["tests/operator_contracts/test_mirror_plasma_green.py"],
     "evidence_ceiling": "Direct SciRel tests establish selected source-plane formula values, indexing invariants and one invalid-grid case. They do not prove resolved self-fields, arbitrary-grid validity, whole-project reassembly or expert recognition of this development record.",
     "known_limitations": ["The result is a dense O((N_Z*N_R)^2) matrix and may be costly on large grids.", "Near-axis source columns and nonfinite kernel values use a zero convention rather than a physical singularity model.", "Current contraction and cell-area factors are caller responsibilities.", "Public distribution licensing and SciRel expert recognition remain pending."]

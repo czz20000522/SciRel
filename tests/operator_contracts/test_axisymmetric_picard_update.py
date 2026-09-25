@@ -2,6 +2,9 @@ import numpy as np
 import pytest
 
 from scirel.equilibrium.axisymmetric_picard_update import update_axisymmetric_picard_flux, update_axisymmetric_picard_flux as scientific_operator
+from scirel.field.circular_filament_green import circular_filament_green_response
+from scirel.field.mirror_plasma_green import build_mirror_plasma_flux_green
+from scirel.field.poloidal_field_from_flux import poloidal_field_from_flux
 
 
 def _inputs(**overrides):
@@ -21,6 +24,30 @@ def test_flux_relaxation_and_cell_area_follow_declared_source_order():
 def test_relax_one_is_rejected():
     with pytest.raises(ValueError, match="relax"):
         scientific_operator(**_inputs(relax=1.0))
+
+
+def test_vacuum_and_mirror_green_picard_flux_recovers_filament_field():
+    radial = np.linspace(0.1, 0.5, 17)
+    axial = np.linspace(-0.2, 0.2, 17)
+    r_grid, z_grid = np.meshgrid(radial, axial)
+    points = np.column_stack((r_grid.ravel(), z_grid.ravel()))
+    vacuum_source = [0.7, 0.0, 3.0]
+    psi_vac = circular_filament_green_response([vacuum_source], points)["gpsi"].reshape(r_grid.shape)
+    g_psi = build_mirror_plasma_flux_green(r_grid, z_grid)["g_psi"]
+    source_index = (8, 12)
+    j_phi = np.zeros_like(r_grid)
+    j_phi[source_index] = 1.0 / ((radial[1] - radial[0]) * (axial[1] - axial[0]))
+
+    state = scientific_operator(r_grid, z_grid, j_phi, psi_vac, psi_vac, g_psi, 0.0)
+    field = poloidal_field_from_flux(r_grid, z_grid, state["psi_next"])
+    target_index = (12, 4)
+    target = points[np.ravel_multi_index(target_index, r_grid.shape)]
+    plasma_source = [r_grid[source_index], z_grid[source_index], 1.0]
+    direct = circular_filament_green_response([vacuum_source, plasma_source], [target])
+    np.testing.assert_allclose(state["plasma_cell_currents"][source_index], 1.0)
+    np.testing.assert_allclose(field["B_R"][target_index], direct["gBR"][0], rtol=0.02, atol=0.0)
+    np.testing.assert_allclose(field["B_Z"][target_index], direct["gBZ"][0], rtol=0.02, atol=0.0)
+    assert not np.isclose(2 * np.pi * field["B_Z"][target_index], direct["gBZ"][0], rtol=0.1, atol=0.0)
 
 
 def test_reviewed_relation_example():
