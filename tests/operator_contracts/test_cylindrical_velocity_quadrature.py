@@ -235,3 +235,12 @@ def test_nonrepresentable_quadrature_outputs_are_rejected():
 def test_an_overflowing_axial_ghost_is_rejected():
     with pytest.raises(ValueError, match="not representable"):
         _call(vx=[-1.7e308, 0.5, 1.0])
+
+
+def test_an_underflowing_radial_mesh_is_rejected():
+    """vr = [0.0, 1e-200] is finite, nonnegative and strictly increasing, but
+    the squared faces underflow to zero, so radial_measure, the four-pi
+    measure and the volumes are exactly zero -- contradicting the
+    strictly-positive output contract."""
+    with pytest.raises(ValueError, match="underflow"):
+        _call(vr=[0.0, 1e-200])

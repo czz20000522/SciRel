@@ -237,7 +237,7 @@
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError with a message naming the quantity when vr or vx is not a finite strictly increasing one-dimensional array of length at least two, when vr has a negative entry (vr is a radial-speed axis; a negative node would make the annular measure negative), or when vx does not contain both strictly negative and strictly positive velocities.",
-    "runtime_failure": "Raises ValueError when the quadrature outputs are not representable in double precision for finite inputs that satisfy the stated domain -- for example a radial mesh at 1e308 whose mirrored ghost face and squared faces overflow to infinity, or an axial ghost face beyond the float64 ceiling. There is no callback and no iteration.",
+    "runtime_failure": "Raises ValueError when the quadrature outputs are not representable in double precision for finite inputs that satisfy the stated domain -- for example a radial mesh at 1e308 whose mirrored ghost face and squared faces overflow to infinity, or an axial ghost face beyond the float64 ceiling -- and when the annular measures, the four-pi measure, the axial widths or the volumes underflow to exact zero (for example a radial mesh at 0 and 1e-200 whose squared faces underflow), contradicting the strictly-positive output contract. There is no callback and no iteration.",
     "nonconvergence": "Not applicable; no iteration.",
     "partial_results": "Never returned; a rejected call produces no fields."
   },
@@ -260,7 +260,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev22",
+    "implementation_version": "0.1.0.dev23",
     "dependencies": []
   },
   "example": {
@@ -277,7 +277,7 @@
       "The ghosted coefficient arrays are exactly zero on the boundary shell and carry 1/dvx, vx/dvx and vr/dvr in the interior.",
       "The composition contract: the volume feeds the Maxwellian relative-speed rate average to finite positive rates.",
       "The input contract: finite strictly increasing nonnegative meshes of length at least two, both axial signs required; NaN and infinite meshes are rejected by parameter name, and a negative radial node (which would make the annular measure negative) is rejected. Non-finite input rejection is a documented repair; the saved implementation propagated NaN silently.",
-      "Output representability: meshes near the float64 ceiling (radial 1e308 with a mirrored ghost face, or an axial ghost beyond the ceiling) are rejected with a ValueError instead of returning non-finite measures or volumes. Ordinary positive meshes produce unchanged numbers.",
+      "Output representability: meshes near the float64 ceiling (radial 1e308 with a mirrored ghost face, or an axial ghost beyond the ceiling) are rejected with a ValueError instead of returning non-finite measures or volumes, and meshes whose squared faces underflow to zero (radial 0 and 1e-200) are rejected instead of returning zero measures. Ordinary positive meshes produce unchanged numbers.",
       "Bounded historical replay against the saved KN1DPy implementation, pinned by SHA-256, reproducing every field on two meshes at rtol 1e-15 plus the repair differential witness. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance."
     ],
     "tests": [

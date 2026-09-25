@@ -47,7 +47,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.kinetic.frank_egedal_source_projection", "symbol": "project_frank_egedal_source_modes", "signature": "project_frank_egedal_source_modes(params, spectrum_operator=None)"}},
-  "version": {"implementation_version": "0.1.0.dev22", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev23", "dependencies": []},
   "example": {
     "description": "Project one explicitly supplied noninteger degree with a hypergeometric mode and check its origin, normalization and coefficient finiteness.",
     "code": "import numpy as np\nfrom scirel.kinetic import project_frank_egedal_source_modes\nr = project_frank_egedal_source_modes({'mirror_ratio': 2.0, 'legendre_degrees': [0.5], 'nbi_pitch_angle_deg': 60.0, 'legendre_terms': 24, 'legendre_backend': 'hypergeometric'})\nassert r['degree_source'] == 'caller_supplied'\nnp.testing.assert_allclose(r['degrees'], [0.5])\nassert r['source_coefficients'].shape == (1,) and np.all(np.isfinite(r['source_coefficients']))\nassert abs(float(r['fractional_mode'](0.5, 0.0, 24)) - 1.0) < 1e-10",

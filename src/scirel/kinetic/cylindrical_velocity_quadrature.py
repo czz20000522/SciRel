@@ -133,6 +133,16 @@ def make_cylindrical_velocity_quadrature(*, vr, vx):
         raise ValueError(
             "the quadrature outputs are not representable for these finite inputs"
         )
+    for name, array in (
+        ("radial_measure", radial_measure),
+        ("radial_four_pi_measure", radial_four_pi_measure),
+        ("dvx", dvx),
+        ("volume", volume),
+    ):
+        if bool(np.any(array <= 0.0)):
+            raise ValueError(
+                f"the quadrature {name} underflows to zero for these finite inputs"
+            )
     positive, negative = np.flatnonzero(axial > 0.0), np.flatnonzero(axial < 0.0)
     if positive.size == 0 or negative.size == 0:
         raise ValueError("vx must contain both negative and positive velocities")

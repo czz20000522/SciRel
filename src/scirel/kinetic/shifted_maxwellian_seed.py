@@ -138,8 +138,17 @@ def build_shifted_maxwellian_seed(
         raise ValueError(
             "the seed exponent is not representable for these finite inputs"
         )
-    seed = np.exp(np.where(np.logical_and(-80.0 < argument, argument < 0.0), argument, -80.0))
-    seed /= np.sum(volume[:, :, None] * seed, axis=(0, 1), keepdims=True)
+    with np.errstate(over="ignore", invalid="ignore"):
+        seed = np.exp(np.where(np.logical_and(-80.0 < argument, argument < 0.0), argument, -80.0))
+        seed /= np.sum(volume[:, :, None] * seed, axis=(0, 1), keepdims=True)
+    # Extreme-but-finite volumes can make the normalization denominator
+    # underflow (the divided distribution overflows to infinity) or overflow
+    # (the divided distribution collapses to exact zeros); either way the
+    # finite, strictly-positive contract is violated and the call fails closed.
+    if not bool(np.all(np.isfinite(seed))) or not bool(np.all(seed > 0.0)):
+        raise ValueError(
+            "the normalized seed distribution is not representable for these finite inputs"
+        )
     return {
         "distribution": seed,
         "thermal_speed_m_s": thermal_speed,

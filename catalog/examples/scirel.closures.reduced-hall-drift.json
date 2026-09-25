@@ -95,7 +95,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.closures.reduced_hall_drift", "symbol": "close_reduced_hall_drift", "signature": "close_reduced_hall_drift(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular, closure_state, plasma_mask, ion_mass_kg, ion_charge_c, hall_multiplier=1.0, include_toroidal_inertia=True, hall_density_floor_fraction=0.1, maximum_inertial_mach=0.5, inertia_relax=0.5, inertia_tolerance=1e-10, inertia_max_iterations=80)"}},
-  "version": {"implementation_version": "0.1.0.dev22", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev23", "dependencies": []},
   "example": {
     "description": "Uniform isotropic pressure and potential in an axial field produce zero toroidal current and species drift.",
     "code": "import numpy as np\nfrom scirel.closures import close_reduced_hall_drift\nr_grid, z_grid = np.meshgrid([0.0, 0.2, 0.4], [-0.2, 0.0, 0.2])\nzeros = np.zeros_like(r_grid)\npressure = np.full_like(r_grid, 20.0)\nstate = {'ion_density': np.full_like(r_grid, 1e18), 'electron_pressure': zeros, 'electrostatic_potential': zeros}\nresult = close_reduced_hall_drift(r_grid, z_grid, zeros, np.full_like(r_grid, 2.0), pressure, pressure, state, np.ones_like(r_grid, dtype=bool), 1.67262192595e-27, 1.602176634e-19)\nnp.testing.assert_allclose(result['J_phi'], 0.0)\nnp.testing.assert_allclose(result['ion_toroidal_velocity'], 0.0)\nassert result['inertia_converged']",
