@@ -116,14 +116,34 @@ def test_documentation_change_needs_no_scientific_tests():
     assert result["test_paths"] == []
 
 
-def test_asset_schema_and_example_changes_select_contract_tests():
-    result = select(
-        "contracts/scientific-asset-document.schema.json",
-        "catalog/examples/scirel.field.circular-filament-green.json",
-    )
-
+def test_asset_schema_change_selects_contract_tests():
+    result = select("contracts/scientific-asset-document.schema.json")
     assert result["full_suite_required"] is False
     assert result["test_paths"] == ["tests/test_asset_documentation.py"]
+
+
+def test_exact_document_change_selects_asset_and_reverse_graph_tests():
+    result = select("catalog/examples/scirel.field.circular-filament-green.json")
+
+    assert result["full_suite_required"] is False
+    assert result["reasons"][0]["classification"] == "asset_document_and_reverse_dependencies"
+    assert set(result["affected_assets"]) == {
+        "scirel.field.circular_filament_green.circular_filament_green_response",
+        "scirel.field.multi_coil_vacuum_field.solve_multi_coil_vacuum_field",
+    }
+    assert result["test_paths"] == [
+        "tests/graph_contracts/multi_coil_vacuum_field/test_graph_multi_coil_vacuum_field.py",
+        "tests/operator_contracts/test_circular_filament_green.py",
+        "tests/test_asset_documentation.py",
+    ]
+
+
+def test_unmapped_exact_document_change_fails_closed():
+    result = select("catalog/examples/scirel.field.unmapped.json")
+
+    assert result["full_suite_required"] is True
+    assert result["test_paths"] == ["tests"]
+    assert result["reasons"][0]["classification"] == "unmapped_asset_document"
 
 
 def test_release_environment_helper_change_selects_only_its_contract_test():

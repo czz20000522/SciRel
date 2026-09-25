@@ -69,8 +69,8 @@ Agent 可在隔离开发分支按已比较的科学关系逐项整合代码、Ta
 
 测试分离是 SciRel 的基本合同。每个受维护的公共资产必须能映射到直接合同测试；TaskGraph 的精确 dependency refs
 形成科学依赖图，Python import 形成共享实现依赖图。一次源码变更的测试范围是：改变资产的直接测试、所有传递
-依赖它的 TaskGraph 测试、相关共享/准入一致性测试。不能映射的 `src/scirel` 文件、测试共享材料或公共基线变更
-必须 fail closed 到全套，不能返回空测试集。
+依赖它的 TaskGraph 测试、相关共享/准入一致性测试。exact document 变更也选其直接测试、反向 TaskGraph 测试和文档门禁；
+不能映射的资产文档、`src/scirel` 文件、测试共享材料或公共基线变更必须 fail closed 到全套，不能返回空测试集。
 
 使用仓库统一入口，避免手工遗漏 `src`/`tests` 的 Python 路径：
 

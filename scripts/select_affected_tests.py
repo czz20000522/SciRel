@@ -110,6 +110,7 @@ class Asset:
     asset_ref: str
     dependency_refs: frozenset[str]
     direct_tests: tuple[str, ...]
+    document_path: str | None = None
 
 
 def _relative_path(value: str) -> str:
@@ -204,6 +205,7 @@ def _load_catalog_assets() -> list[Asset]:
                     for entry in document["version"]["dependencies"]
                 ),
                 direct_tests=direct_tests,
+                document_path=f"catalog/examples/{path.name}",
             )
         )
     return assets
@@ -317,9 +319,12 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
     assets = _load_assets()
     assets_by_source: dict[str, set[Asset]] = {}
     assets_by_module: dict[str, set[Asset]] = {}
+    assets_by_document: dict[str, set[Asset]] = {}
     for asset in assets:
         assets_by_source.setdefault(asset.source_path, set()).add(asset)
         assets_by_module.setdefault(asset.module, set()).add(asset)
+        if asset.document_path is not None:
+            assets_by_document.setdefault(asset.document_path, set()).add(asset)
     reverse_imports = _reverse_imports()
     normalized = sorted({_relative_path(path) for path in changed_paths})
     tests: set[str] = set()
@@ -341,7 +346,20 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
         elif path in WORKFLOW_CONTRACTS:
             path_tests.update((*WORKFLOW_TESTS, *PLUGIN_TESTS))
             reason = "workflow_contract"
-        elif path.startswith("contracts/") or path.startswith("catalog/examples/"):
+        elif path.startswith("catalog/examples/") and path.endswith(".json"):
+            path_tests.add("tests/test_asset_documentation.py")
+            selected_for_path.update(assets_by_document.get(path, ()))
+            if selected_for_path:
+                selected_for_path = _dependent_assets(selected_for_path, assets)
+                affected_assets.update(selected_for_path)
+                path_tests.update(
+                    test for asset in selected_for_path for test in asset.direct_tests
+                )
+                reason = "asset_document_and_reverse_dependencies"
+            else:
+                full_suite_reasons.append(f"{path} has no current asset mapping")
+                reason = "unmapped_asset_document"
+        elif path.startswith("contracts/"):
             path_tests.add("tests/test_asset_documentation.py")
             reason = "asset_document_contract"
         elif path in NO_TEST_FILES or path.startswith(NO_TEST_PREFIXES):
