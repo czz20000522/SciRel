@@ -386,3 +386,26 @@ def test_a_nonrepresentable_rate_is_rejected_rather_than_returned():
     with pytest.raises(ValueError) as raised:
         _call(sigma=huge_sigma)
     assert "not representable" in str(raised.value)
+
+
+def test_nonrepresentable_collision_energies_are_rejected_before_the_callback():
+    """An extreme-but-finite energy overflows the collision-energy arithmetic.
+
+    ``2 e E / (m amu)`` overflows for ``E = 1e308``, so the sampled
+    collision energies are infinite while every input satisfies the stated
+    finite domain.  The public failure contract requires the asset itself to
+    reject them *before* the cross-section callable is invoked: the saved
+    implementation handed the non-finite array to the callback first, so a
+    validating callback observed values the asset never declared, and the
+    asset's own failure surfaced only after the callback had run.
+    """
+    observed = []
+
+    def recording_sigma(energy):
+        observed.append(np.asarray(energy))
+        return np.full_like(energy, SIGMA_CONST)
+
+    with pytest.raises(ValueError) as raised:
+        _call(energies=np.array([1.0e308]), sigma=recording_sigma)
+    assert "not representable" in str(raised.value)
+    assert observed == [], "the callable must not observe non-finite collision energies"

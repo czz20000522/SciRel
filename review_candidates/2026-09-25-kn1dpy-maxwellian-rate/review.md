@@ -47,22 +47,28 @@ proposed as a **new capability**, not a reuse, variant, or merge.
    and rejects a non-representable rate, so the saved document's declared
    finite contract is actually true. This is a repair, not a source-behavior
    claim; the replay test includes the differential witness.
-2. **Error messages.** The saved implementation raises two generic messages;
-   the successor names the parameter, consistent with the maintained library's
+2. **Collision-energy representability gate before the callback.** Extreme but
+   finite inputs (a 1e308 eV energy overflows the collision-energy arithmetic)
+   made the saved implementation hand a non-finite collision-energy array to
+   the caller's cross-section callable before any check. The successor rejects
+   it with a ValueError first; a recording callback observes nothing. Ordinary
+   finite inputs produce unchanged numbers.
+3. **Error messages.** The saved implementation raises two generic messages;
+   the successor names the quantity, consistent with the maintained library's
    failure style. The rejection domain is otherwise unchanged.
-3. **Calling convention.** Keyword-only ports (library convention); the saved
+4. **Calling convention.** Keyword-only ports (library convention); the saved
    signature was positional.
-4. **Constants frozen.** `AMU_KG = 1.6726231e-27`,
+5. **Constants frozen.** `AMU_KG = 1.6726231e-27`,
    `ELEMENTARY_CHARGE_C = 1.602177e-19` are kept bit-compatible with the saved
    source so the replay reproduces its arithmetic; they are not current CODATA
    values.
-5. Everything else — formula, normalization by the supplied volumes, volume
+6. Everything else — formula, normalization by the supplied volumes, volume
    proportionality invariance, collision-energy convention, shape/sign/
    positivity conditions — is preserved.
 
 ## Evidence
 
-Source-free maintained tests (44) establish the relation against an
+Source-free maintained tests (45) establish the relation against an
 in-file independent loop-per-energy formulation (rtol 1e-14), the rest-beam
 limit `<sigma v> -> sigma * vth * 2/sqrt(pi)` with monotone mesh convergence,
 the cold-target limit `<sigma v> -> sigma(E_beam) * v_beam`, volume-scale
@@ -85,20 +91,36 @@ domain.
 
 One new public callable, exported from `scirel.collisions` and the root
 namespace; one new exact document; development version moves `0.1.0.dev18` ->
-`0.1.0.dev19` with a rebuilt internal wheel (the r40 wheel is not reused). The
-other 68 exact documents change only in their mechanical
+`0.1.0.dev20` with rebuilt internal wheels (the r40 wheel is not reused; the
+r41 wheel is superseded by the r42 successor after the review findings below).
+The other 68 exact documents change only in their mechanical
 `implementation_version` bump; no scientific callable, document contract, or
 test of theirs changes. The affected-mode gate selected the new operator, the
 public-surface and documentation gates, and the touched count assertions:
-941 passed, 46 skipped.
+941 passed, 46 skipped for the r41 freeze; the r42 successor re-runs the gate
+with the collision-energy repair and typographical corrections (numbers in the
+r42 review statement).
+
+## Successor note (r42)
+
+The first freeze of this candidate (r41, commit `c71c6a5`) was reviewed
+read-only and three findings were fixed in the r42 successor without rewriting
+the r41 snapshot: the exact document's overflow witness was misprinted as
+`1e-305` (the example and tests use `1e305`); a failing regression established
+that non-representable collision energies reached the caller's callable before
+any check (fixed: reject first); and the frozen review-material set was not
+self-contained (fixed: the r42 snapshot carries the still-valid r40 background
+materials alongside this candidate's review documents). r41 remains valid
+evidence for its exact version only.
 
 ## Decision requested from the expert
 
 1. Whether `scirel.collisions.maxwellian-relative-speed-rate-average` is an
    acceptable identity and contract for this relation, in particular:
-2. whether the two documented repairs (non-finite rejection, finite-output
-   rejection) are the right resolutions of the saved document-vs-implementation
-   gap, and whether the error-message restyle is acceptable;
+2. whether the three documented repairs (non-finite rejection, finite-output
+   rejection, collision-energy representability gate before the callback) are
+   the right resolutions of the saved document-vs-implementation gap, and
+   whether the error-message restyle is acceptable;
 3. whether the particle-mass collision-energy convention should remain the
    published contract (a reduced-mass variant is deliberately not provided);
 4. whether subsuming the single-node consumer graph without a separate

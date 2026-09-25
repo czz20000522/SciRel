@@ -47,7 +47,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.field.filament_vacuum_field", "symbol": "integrate_filament_vacuum_field", "signature": "integrate_filament_vacuum_field(r_grid, z_grid, filaments)"}},
-  "version": {"implementation_version": "0.1.0.dev19", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev20", "dependencies": []},
   "example": {
     "description": "Evaluate one off-grid filament and check the axis limit and radial flux reference.",
     "code": "import numpy as np\nfrom scirel.field.filament_vacuum_field import integrate_filament_vacuum_field\nr_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.3, 5), np.linspace(-0.2, 0.2, 4))\nresult = integrate_filament_vacuum_field(r_grid, z_grid, [[0.45, -0.1, 1500.0]])\nassert set(result) == {'psi', 'b_r', 'b_z'}\nassert all(value.shape == r_grid.shape for value in result.values())\nassert np.isfinite(result['b_z']).all()\nnp.testing.assert_array_equal(result['psi'][:, 0], 0.0)\nnp.testing.assert_array_equal(result['b_r'][:, 0], 0.0)",

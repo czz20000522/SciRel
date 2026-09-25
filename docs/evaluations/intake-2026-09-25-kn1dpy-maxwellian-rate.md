@@ -12,7 +12,7 @@
 
 开发行动是新增 `scirel.collisions.maxwellian-relative-speed-rate-average`(公共 callable `average_cross_section_over_maxwellian`,keyword-only 九端口),不改接任何来源 TaskGraph;唯一精确科学合同为 [asset document](../../catalog/examples/scirel.collisions.maxwellian-relative-speed-rate-average.json),代码与直接测试分别在 `src/scirel/collisions/maxwellian_relative_speed_rate_average.py` 与 `tests/operator_contracts/test_maxwellian_relative_speed_rate_average.py`。来源单节点消费图 `粒子靶Maxwellian速率系数图` 为恒等组合,其 N1 快照端口/状态/失败策略写入 exact document 并由组合回归保护,不另立 SciRel TaskGraph 资产。
 
-两处有据修复(均写入 exact document 的 failure semantics 与 known_limitations):保存文档声明非有限输入 fail closed 且结果有限,但其实现两者都未检查——NaN 网格点、质量或温度会静默传播;SciRel 后继按参数名拒绝非有限输入,并拒绝不可表示的速率。错误消息改为按参数命名。拒绝域其余保持不变;公式、体积归一化与比例不变性、粒子质量碰撞能量约定逐位保留(常数 `AMU_KG=1.6726231e-27`、`ELEMENTARY_CHARGE_C=1.602177e-19` 为保存源冻结值)。
+三处有据修复(均写入 exact document 的 failure semantics 与 known_limitations):保存文档声明非有限输入 fail closed 且结果有限,但其实现两者都未检查——NaN 网格点、质量或温度会静默传播;SciRel 后继按参数名拒绝非有限输入,并拒绝不可表示的速率。此外,极端但有限的输入(如 1e308 eV)会令派生碰撞能量数组溢出,保存实现在任何检查之前就把该非有限数组交给调用方截面回调;后继在调用回调前按公共失败合同拒绝,回调不再观察未声明的值。错误消息改为按量命名。拒绝域其余保持不变;公式、体积归一化与比例不变性、粒子质量碰撞能量约定逐位保留(常数 `AMU_KG=1.6726231e-27`、`ELEMENTARY_CHARGE_C=1.602177e-19` 为保存源冻结值)。
 
 ## 公式核实与双臂对照(独立探针,交付根外临时目录,PYTHONDONTWRITEBYTECODE=1)
 
@@ -23,18 +23,22 @@
 - 冷靶极限(`T_target=0.05 eV`):`<σv> -> σ(E_beam)·v_beam`,相对误差 `3.311e-4`。
 - 保存 extraction_report 的历史双臂 source-free 复放(常数截面 7.81861707894196e-17、线性截面 2.4125886194670293e-16)作为来源侧证据一并引用;KN1DPy 严格 D1 资格撤回后,该证据同样只是有界历史比较。
 
-## 开发验证
+## 开发验证(r42 successor 当前状态;r41 数字见其快照 test-evidence)
 
-- 失败回归先行:直接合同测试在新 callable 缺失时 ImportError 失败,实现后 44 passed。
+- 失败回归先行:直接合同测试在新 callable 缺失时 ImportError 失败,实现后通过;回调顺序失败回归先复现"非有限碰撞能量先交给回调"的旧行为,修复后通过(直接测试 45 passed)。
 - 环境门控历史复放 `tests/operator_contracts/test_maxwellian_relative_speed_rate_average_l1.py`(变量 `SCIREL_KN1DPY_REVIEW_ROOT`,源文件 SHA-256 绑定):常数/线性截面 rtol 1e-14 复放通过,并含 NaN 修复差分见证(保存实现返回非有限速率,后继拒绝),3 passed。
-- `pwsh ./scripts/check.ps1 -Mode affected`:选择新算子直接测试、公共导出、exact document 与计数断言,**941 passed, 46 skipped**。计数断言更新为 69 资产(`test_asset_documentation`、`test_affected_test_selection`、`test_thin_mcp_adapter` fixture)与包级 `__all__` 断言(`test_momentum_scales`);无既有数值断言或容差放宽。
+- r41 冻结门禁 **941 passed, 46 skipped**;r42 successor 因版本与文档变更按选择器全量重跑,数字见 r42 审核说明。计数断言更新为 69 资产(`test_asset_documentation`、`test_affected_test_selection`、`test_thin_mcp_adapter` fixture)与包级 `__all__` 断言(`test_momentum_scales`);无既有数值断言或容差放宽。
 - `python scripts/validate_asset_documents.py catalog/examples --check-runtime --execute-examples`:源码态 **69/69** 通过(含可执行示例)。
-- 内部 wheel `scirel-0.1.0.dev19-py3-none-any.whl`(SHA-256 `c18a3bafe88fad22c69f4cce246537ffdc35099db3c40718deb94e2f7f67405d`),含新模块 `scirel/collisions/maxwellian_relative_speed_rate_average.py`。
-- 开发 catalog `complete: 69/69`,root digest `sha256:2f9147ae725f0a4c55f0dc64d9c7b3bcc4cefe08c88390378dbe20777b3b5707`。该 builder 输出是开发校验投影,不是可信发布目录。
-- 隔离安装态(venv `--system-site-packages` 复用开发机 NumPy/SciPy,`--no-index --no-deps` 安装 wheel,`python -I` 执行):隔离探针确认 `scirel` 解析到 venv `site-packages` 而非源码;安装态公共调用探针通过;安装态直接/复放/相邻算子测试 **100 passed**(44+3+21+32);69 份 exact document 安装态运行时与示例校验通过(`runtime_origin: installed`)。该环境只证明 wheel 与源码隔离,不证明声明依赖可由干净离线 wheelhouse 独立重装。
+- r41 内部 wheel `scirel-0.1.0.dev19-py3-none-any.whl`(SHA-256 `c18a3bafe88fad22c69f4cce246537ffdc35099db3c40718deb94e2f7f67405d`)已被 r42 successor 的 `0.1.0.dev20` wheel 取代;确切摘要见 r42 审核说明。两轮 wheel 均含新模块 `scirel/collisions/maxwellian_relative_speed_rate_average.py`。
+- 开发 catalog `complete: 69/69`(r41 root digest `sha256:2f9147ae725f0a4c55f0dc64d9c7b3bcc4cefe08c88390378dbe20777b3b5707`;r42 见审核说明)。该 builder 输出是开发校验投影,不是可信发布目录。
+- 隔离安装态(venv `--system-site-packages` 复用开发机 NumPy/SciPy,`--no-index --no-deps` 安装 wheel,`python -I` 执行):隔离探针确认 `scirel` 解析到 venv `site-packages` 而非源码;安装态公共调用探针通过;安装态直接/复放/相邻算子测试通过(r41 为 **100 passed**,即 44+3+21+32;r42 见审核说明);69 份 exact document 安装态运行时与示例校验通过(`runtime_origin: installed`)。该环境只证明 wheel 与源码隔离,不证明声明依赖可由干净离线 wheelhouse 独立重装。
+
+## r41 只读复核与 r42 successor(2026-09-25)
+
+监控方对 r41(`c71c6a5`,快照 `build/review-version-2026-09-25-r41-kn1dpy-maxwellian-rate`)的三项只读复核发现均成立并已按最小后继处理,r41 快照原样保留:一,exact document 的溢出见证误印为 `1e-305`,实际示例与测试用 `1e305`,正本与候选副本均已更正;二,新增回调顺序失败回归并修复为在调用回调前拒绝不可表示碰撞能量;三,r41 仅附一份背景材料,r42 快照自包含仍有效的 r40 背景材料(领域草稿、P4 记录、r40 审核说明、来源覆盖记录)与本轮候选审查文档。`review_scope` 相对 r40/r41 把根导出等共享源文件列为未解析路径并保守建议审全部资产,审核说明如实区分"内容新增一项"与"保守审阅范围、首次无可信基线 69 项"。
 
 ## 边界与待决
 
 - 本轮不宣称:合格 L1 消费、物理截面模型正确性、调用方网格/体积的物理有效性、来源项目在比较域外的正确性、专家认可、可信晋级或公开发行。
 - 许可证状态沿用 `pending-human-decision`;来源文件无许可证声明。
-- 专家需决定的五项问题见候选文档;冻结待审版说明见 [r41 评审说明](review-version-2026-09-25-r41.md)。
+- 专家需决定的五项问题见候选文档;当前冻结待审版说明见 [r42 评审说明](review-version-2026-09-25-r42.md);r41 审核说明保留为其确切版本的历史记录。

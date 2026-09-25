@@ -46,7 +46,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.kinetic.frank_egedal_pressure_closure", "symbol": "solve_frank_egedal_pressure_closure", "signature": "solve_frank_egedal_pressure_closure(inputs=None, **kwargs)"}},
-  "version": {"implementation_version": "0.1.0.dev19", "dependencies": [
+  "version": {"implementation_version": "0.1.0.dev20", "dependencies": [
     {"asset_id": "scirel.kinetic.frank-egedal-radial-envelope"},
     {"asset_id": "scirel.kinetic.loss-cone-spectrum"},
     {"asset_id": "scirel.kinetic.frank-egedal-source-projection"},

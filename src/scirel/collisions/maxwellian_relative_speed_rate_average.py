@@ -32,15 +32,18 @@ bounded historical replay reproduces the source arithmetic.  They are
 1998-CODATA-era values, not the current best estimates; no conversion is
 performed and no other constant is stated.
 
-**Two repairs relative to the saved implementation, both documented.**  The
+**Three repairs relative to the saved implementation, all documented.**  The
 saved document declares non-finite inputs fail closed and the result finite,
 but its implementation checked neither: a ``NaN`` mesh point, mass or
 temperature propagated silently into the rate.  This module rejects non-finite
 inputs by parameter name and rejects a computed rate that is not representable
-in double precision, so the declared contract is true.  The rejection *domain*
-is otherwise unchanged: the same shapes, signs and positivity conditions as the
-saved implementation, with messages that name the parameter instead of two
-generic strings.
+in double precision, so the declared contract is true.  Additionally, extreme
+but finite inputs can overflow the sampled collision-energy array; the saved
+implementation handed that non-finite array to the caller's cross-section
+callable before any check, so this module rejects it before the callable is
+invoked.  The rejection *domain* is otherwise unchanged: the same shapes,
+signs and positivity conditions as the saved implementation, with messages
+that name the quantity instead of two generic strings.
 
 Evidence ceiling: this module establishes the discrete relation above, its
 agreement with an independent loop-per-energy formulation, its rest-beam and
@@ -136,10 +139,12 @@ def average_cross_section_over_maxwellian(
     Raises
     ------
     ValueError
-        If an input leaves the domain stated above, if the callable returns a
-        wrong-shape, non-finite or negative array, or if the computed rate is
-        not representable in double precision.  Exceptions raised by the
-        callable itself propagate unchanged.
+        If an input leaves the domain stated above, if the sampled collision
+        energies are not representable in double precision for the supplied
+        finite inputs (checked before the callable is invoked), if the callable
+        returns a wrong-shape, non-finite or negative array, or if the computed
+        rate is not representable in double precision.  Exceptions raised by
+        the callable itself propagate unchanged.
     """
     if not callable(cross_section_m2):
         raise ValueError("cross_section_m2 must be callable")
@@ -185,6 +190,13 @@ def average_cross_section_over_maxwellian(
             * AMU_KG
             / ELEMENTARY_CHARGE_C
         )
+        # Extreme-but-finite inputs can overflow this intermediate array.  The
+        # failure contract requires rejecting it here, before the caller's
+        # cross-section callable observes a value the asset never declared.
+        if not bool(np.all(np.isfinite(collision_energy))):
+            raise ValueError(
+                "the sampled collision energies are not representable for these finite inputs"
+            )
         cross_section = np.asarray(cross_section_m2(collision_energy), dtype=float)
         if cross_section.shape != collision_energy.shape:
             raise ValueError(

@@ -41,7 +41,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.field.mirror_plasma_green", "symbol": "build_mirror_plasma_flux_green", "signature": "build_mirror_plasma_flux_green(r_grid, z_grid)"}},
-  "version": {"implementation_version": "0.1.0.dev19", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev20", "dependencies": []},
   "example": {
     "description": "Build a symmetric three-plane, four-radius response and check source-axis and axial-reflection blocks.",
     "code": "import numpy as np\nfrom scirel.field import build_mirror_plasma_flux_green\nr_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.3, 4), np.linspace(-0.4, 0.4, 3))\ng_psi = build_mirror_plasma_flux_green(r_grid, z_grid)['g_psi']\nassert g_psi.shape == (r_grid.size, r_grid.size)\nassert np.isfinite(g_psi).all()\nfor source_plane in range(3):\n    np.testing.assert_allclose(g_psi[:, source_plane*4], 0.0)\nnp.testing.assert_allclose(g_psi[0:4, 4:8], g_psi[4:8, 0:4])",
