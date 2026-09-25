@@ -30,6 +30,9 @@ def _inputs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict:
     )
     dossier = repo / "review.md"
     dossier.write_text("Initial whole-version review scope.\n", encoding="utf-8")
+    material = repo / "docs" / "domains" / "field.md"
+    material.parent.mkdir(parents=True)
+    material.write_text("# Field review\nBounded development evidence.\n", encoding="utf-8")
     package = repo / "src" / "scirel"
     package.mkdir(parents=True)
     (package / "__init__.py").write_bytes(b"VERSION = 'current'\n")
@@ -126,6 +129,61 @@ def test_freeze_preserves_worktree_line_endings_outside_source_checkout(
         saved = archived / entry["snapshot_path"]
         assert entry["sha256"] == "sha256:" + hashlib.sha256(saved.read_bytes()).hexdigest()
     assert (archived / "catalog/release.json").is_file()
+
+
+def test_freeze_copies_explicit_review_material_for_detached_reading(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    inputs = _inputs(tmp_path, monkeypatch)
+    repo = inputs["review_dossier"].parent
+    material = repo / "docs/domains/field.md"
+    inputs["review_materials"] = [material]
+
+    manifest = freeze_module.freeze_review_version(**inputs)
+    archived = tmp_path / "detached-review"
+    inputs["output_dir"].rename(archived)
+    repo.rename(tmp_path / "source-away")
+
+    assert len(manifest["review_materials"]) == 1
+    entry = manifest["review_materials"][0]
+    assert entry["path"] == "docs/domains/field.md"
+    assert (archived / entry["snapshot_path"]).read_text(encoding="utf-8").startswith("# Field review")
+    assert entry["sha256"] == "sha256:" + hashlib.sha256(
+        (archived / entry["snapshot_path"]).read_bytes()
+    ).hexdigest()
+
+
+def test_freeze_rejects_untracked_or_repeated_review_material(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    inputs = _inputs(tmp_path, monkeypatch)
+    repo = inputs["review_dossier"].parent
+    material = repo / "docs/domains/field.md"
+    with pytest.raises(ValueError, match="repeated"):
+        freeze_module.freeze_review_version(**inputs, review_materials=[material, material])
+
+    untracked = repo / "docs/domains/untracked.md"
+    untracked.write_text("draft", encoding="utf-8")
+    with pytest.raises(ValueError, match="clean Git worktree"):
+        freeze_module.freeze_review_version(**inputs, review_materials=[untracked])
+
+
+def test_freeze_rejects_review_material_changed_while_copying(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    inputs = _inputs(tmp_path, monkeypatch)
+    material = inputs["review_dossier"].parent / "docs/domains/field.md"
+    original_copy = freeze_module.shutil.copy2
+
+    def changed_copy(src, dst, *args, **kwargs):
+        result = original_copy(src, dst, *args, **kwargs)
+        if Path(src) == material:
+            Path(dst).write_text("changed", encoding="utf-8")
+        return result
+
+    monkeypatch.setattr(freeze_module.shutil, "copy2", changed_copy)
+    with pytest.raises(ValueError, match="review material changed during freeze"):
+        freeze_module.freeze_review_version(**inputs, review_materials=[material])
 
 
 def test_freeze_rejects_committed_document_change_without_rebuilt_catalog(

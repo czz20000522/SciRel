@@ -157,6 +157,52 @@ def test_tampered_snapshot_is_rejected(tmp_path: Path):
         scope_module.review_scope(snapshot)
 
 
+def test_review_material_digest_is_checked_and_old_snapshot_still_reads(tmp_path: Path):
+    snapshot = _snapshot(tmp_path / "candidate", "a" * 40, [_document("a")])
+    assert scope_module.review_scope(snapshot)["review_asset_ids"] == ["a"]
+
+    material = snapshot / "review-materials/docs/domains/field.md"
+    material.parent.mkdir(parents=True)
+    material.write_text("# Field\n", encoding="utf-8")
+    manifest_path = snapshot / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["review_materials"] = [{
+        "path": "docs/domains/field.md",
+        "snapshot_path": "review-materials/docs/domains/field.md",
+        "sha256": "sha256:" + hashlib.sha256(material.read_bytes()).hexdigest(),
+    }]
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    assert scope_module.review_scope(snapshot)["review_asset_ids"] == ["a"]
+
+    material.write_text("# Changed\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="digest differs"):
+        scope_module.review_scope(snapshot)
+
+
+def test_review_material_path_cannot_escape_snapshot(tmp_path: Path):
+    snapshot = _snapshot(tmp_path / "candidate", "a" * 40, [_document("a")])
+    manifest_path = snapshot / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["review_materials"] = [{
+        "path": "docs/domains/field.md",
+        "snapshot_path": "../elsewhere.md",
+        "sha256": "sha256:" + "0" * 64,
+    }]
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="invalid material entry"):
+        scope_module.review_scope(snapshot)
+
+
+def test_review_material_entry_must_be_structured(tmp_path: Path):
+    snapshot = _snapshot(tmp_path / "candidate", "a" * 40, [_document("a")])
+    manifest_path = snapshot / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["review_materials"] = [None]
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="invalid material entry"):
+        scope_module.review_scope(snapshot)
+
+
 def test_tampered_catalog_partition_is_rejected(tmp_path: Path):
     snapshot = _snapshot(tmp_path / "candidate", "a" * 40, [_document("a")])
     path = snapshot / "catalog/records/a.json"

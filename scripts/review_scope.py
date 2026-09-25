@@ -55,6 +55,24 @@ def _read_snapshot(root: Path) -> tuple[dict[str, Any], dict[str, dict[str, Any]
         manifest["test_evidence"],
         manifest["wheel"],
     ]
+    materials = manifest.get("review_materials", [])
+    if not isinstance(materials, list):
+        raise ValueError("review snapshot materials must be a list")
+    material_paths = set()
+    for entry in materials:
+        if not isinstance(entry, dict):
+            raise ValueError("review snapshot has an invalid material entry")
+        relative = entry.get("path")
+        if (
+            not isinstance(relative, str)
+            or not relative.startswith("docs/")
+            or not relative.endswith(".md")
+            or relative in material_paths
+            or entry.get("snapshot_path") != f"review-materials/{relative}"
+        ):
+            raise ValueError("review snapshot has an invalid material entry")
+        material_paths.add(relative)
+    entries.extend(materials)
     for entry in entries:
         path = _snapshot_file(root, entry.get("snapshot_path", entry.get("path")))
         if _sha256(path) != entry["sha256"]:

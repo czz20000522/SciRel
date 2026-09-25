@@ -104,6 +104,7 @@ def freeze_review_version(
     review_dossier: Path,
     test_evidence: Path,
     output_dir: Path,
+    review_materials: list[Path] | None = None,
 ) -> dict[str, Any]:
     if output_dir.exists():
         raise FileExistsError(f"review snapshot already exists: {output_dir}")
@@ -114,6 +115,14 @@ def freeze_review_version(
     commit = _git("rev-parse", "HEAD")
     tree = _git("rev-parse", "HEAD^{tree}")
     dossier_ref = _tracked_path(review_dossier)
+    material_refs: dict[str, tuple[Path, str]] = {}
+    for material in review_materials or []:
+        relative = _tracked_path(material)
+        if not relative.startswith("docs/") or not relative.endswith(".md"):
+            raise ValueError(f"review material must be a tracked docs Markdown file: {relative}")
+        if relative in material_refs:
+            raise ValueError(f"review material is repeated: {relative}")
+        material_refs[relative] = (material, _digest(material))
     document_refs = {
         _tracked_path(path): (path, _digest(path))
         for path in sorted(documents_dir.rglob("*.json"))
@@ -155,6 +164,14 @@ def freeze_review_version(
             "snapshot_path": f"review-dossier/{dossier_ref}",
             "sha256": _digest(review_dossier),
         },
+        "review_materials": [
+            {
+                "path": path,
+                "snapshot_path": f"review-materials/{path}",
+                "sha256": digest,
+            }
+            for path, (_, digest) in sorted(material_refs.items())
+        ],
         "test_evidence": {"path": "test-evidence.md", "sha256": _digest(test_evidence)},
         "exact_documents": [
             {
@@ -184,6 +201,12 @@ def freeze_review_version(
         shutil.copy2(review_dossier, dossier_copy)
         if _digest(dossier_copy) != manifest["review_dossier"]["sha256"]:
             raise ValueError("review dossier changed during freeze")
+        for source_ref, (source, digest) in material_refs.items():
+            target = staging / "review-materials" / source_ref
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
+            if _digest(target) != digest:
+                raise ValueError(f"review material changed during freeze: {source_ref}")
         for source_ref, (source, _) in document_refs.items():
             target = staging / "exact-documents" / source_ref
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -221,6 +244,7 @@ def main() -> int:
     parser.add_argument("--wheel", type=Path, required=True)
     parser.add_argument("--review-dossier", type=Path, required=True)
     parser.add_argument("--test-evidence", type=Path, required=True)
+    parser.add_argument("--review-material", type=Path, action="append", default=[])
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
     try:
@@ -231,6 +255,7 @@ def main() -> int:
             review_dossier=args.review_dossier,
             test_evidence=args.test_evidence,
             output_dir=args.output_dir,
+            review_materials=args.review_material,
         )
     except (OSError, ValueError, subprocess.CalledProcessError, zipfile.BadZipFile) as error:
         print(f"review freeze failed: {error}", file=sys.stderr)
