@@ -49,7 +49,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.closures.tabulated_pressure_closure", "symbol": "evaluate_tabulated_pressure", "signature": "evaluate_tabulated_pressure(magnetic_field, psi, psi_grid, p_parallel_table, p_perpendicular_table=None, b_grid=None, bounds_error=True, fill_value=None)"}},
-  "version": {"implementation_version": "0.1.0.dev16", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev17", "dependencies": []},
   "example": {
     "description": "Interpolate a two-dimensional affine pressure pair and a separate one-dimensional isotropic table.",
     "code": "import numpy as np\nfrom scirel.closures import evaluate_tabulated_pressure\nb_axis = np.array([1.0, 2.0])\npsi_axis = np.array([0.0, 1.0])\nparallel = np.array([[2.0, 4.0], [4.0, 6.0]])\nperpendicular = np.array([[3.0, 5.0], [5.0, 7.0]])\na = evaluate_tabulated_pressure(1.5, 0.25, psi_axis, parallel, perpendicular, b_axis)\nnp.testing.assert_allclose(a['p_parallel'], 3.5)\nnp.testing.assert_allclose(a['p_perpendicular'], 4.5)\nassert a['is_isotropic'] is False\nb = evaluate_tabulated_pressure(10.0, 0.5, psi_axis, [2.0, 6.0])\nnp.testing.assert_allclose(b['p_parallel'], 4.0)\nnp.testing.assert_allclose(b['p_perpendicular'], 4.0)\nassert b['is_isotropic'] is True",

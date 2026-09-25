@@ -199,6 +199,43 @@ def test_review_gate_rechecks_minimum_field_after_terminal_update():
     assert calls["field"] >= 2
 
 
+def test_terminal_low_field_is_rejected_before_pressure_closure():
+    from scirel.equilibrium import axisymmetric_anisotropic_picard as graph
+
+    calls = {"field": 0, "closure": 0}
+
+    def loader(reference):
+        asset = _load_asset(reference)
+        if reference != "scirel.field.poloidal_field_from_flux":
+            return asset
+
+        def field(*args, **kwargs):
+            result = asset(*args, **kwargs)
+            calls["field"] += 1
+            if calls["field"] == 2:
+                result = {
+                    **result,
+                    "B_R": np.zeros_like(result["B_R"]),
+                    "B_Z": np.zeros_like(result["B_Z"]),
+                    "B": np.zeros_like(result["B"]),
+                }
+            return result
+
+        return field
+
+    def closure(b, psi):
+        calls["closure"] += 1
+        assert np.all(b >= 1.0e-6), "low-field closure must not run"
+        return _closure(b, psi)
+
+    with pytest.raises(FloatingPointError, match="returned terminal state"):
+        graph.run_graph(
+            _inputs(maxiter=1, minimum_field=1.0e-6, pressure_closure=closure),
+            asset_loader=loader,
+        )
+    assert calls == {"field": 2, "closure": 1}
+
+
 def test_review_gate_rejects_nonfinite_and_coerced_control_values():
     with pytest.raises(ValueError, match="tol must be a finite scalar"):
         _run(_inputs(tol=np.nan))

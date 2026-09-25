@@ -95,6 +95,8 @@ def run_graph(inputs, *, asset_loader):
             converged = True
             break
     magnetic = field(r_grid, z_grid, psi)
+    if np.any(magnetic['B'] < minimum_field):
+        raise FloatingPointError('magnetic field fell below minimum_field at the returned terminal state')
     state = _require_state(closure, magnetic, psi)
     active = np.asarray(mask_port(magnetic['B'], psi), dtype=bool) if callable(mask_port) else fixed_mask
     if active.shape != psi.shape:
@@ -104,8 +106,6 @@ def run_graph(inputs, *, asset_loader):
     dr = float(r_grid[0, 1] - r_grid[0, 0])
     dz = float(z_grid[1, 0] - z_grid[0, 0])
     terminal_cell_currents = j_phi * abs(dr * dz)
-    if np.any(magnetic['B'] < minimum_field):
-        raise FloatingPointError('magnetic field fell below minimum_field at the returned terminal state')
     if np.any(active & (force_state['firehose_margin'] <= minimum_firehose)):
         raise FloatingPointError('pressure closure crossed the firehose/tension singularity')
     if force_state['parallel_force_error'] > compatibility_tol and strict:

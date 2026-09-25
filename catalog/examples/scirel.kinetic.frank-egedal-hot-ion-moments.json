@@ -50,7 +50,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.kinetic.frank_egedal_hot_ion_moments", "symbol": "evaluate_frank_egedal_hot_ion_moments", "signature": "evaluate_frank_egedal_hot_ion_moments(magnetic_field, params, degrees, source_coefficients, legendre_terms, fractional_mode)"}},
-  "version": {"implementation_version": "0.1.0.dev16", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev17", "dependencies": []},
   "example": {
     "description": "Use a constant angular mode to check reference normalization and the closed trapped interval at the mirror ratio.",
     "code": "import numpy as np\nfrom scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments\ndef mode(degree, xi, terms):\n    return np.ones_like(xi)\nr = evaluate_frank_egedal_hot_ion_moments([[1.0, 4.0]], {'B0': 1.0, 'mirror_ratio': 4.0, 'vc_over_v0': 0.5, 'velocity_nodes': 8, 'pitch_nodes': 8}, [0.5], [1.0], 15, mode)\nnp.testing.assert_allclose(r['normalized_field'], [[1.0, 4.0]])\nnp.testing.assert_allclose(r['hot_parallel_shape'], [[1.0, 0.0]])\nnp.testing.assert_allclose(r['hot_density_shape'], [[1.0, 0.0]])\nassert r['hot_perpendicular_shape'][0, 0] > 0.0\nassert r['hot_perpendicular_shape'][0, 1] == 0.0\nassert r['quadrature'] == {'velocity_nodes': 8, 'pitch_nodes': 8}",
