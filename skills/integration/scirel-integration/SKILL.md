@@ -36,6 +36,12 @@ Establish what each candidate computes, its direction, assumptions, ports, units
 applicability, dependencies, tests, provenance, and evidence ceiling. Use the implementation and tests to challenge
 the prose; do not infer missing science from names.
 
+When describing a saved bundle as *currently qualified* L1, reconcile its exact identity with the latest owning-stage
+handoff and qualifying delivery, not only an earlier freeze receipt or a successful local replay. A later source-scope
+reopen or withdrawal leaves bounded comparisons usable as historical development evidence, but removes the current
+qualification claim until a new freeze is handed over. Preserve earlier frozen review records and date the correction
+in a successor; this check does not turn every historical candidate into an unusable input.
+
 Read SciRel's architecture and catalog guidance, then inspect the development implementation, public exports,
 scientific tests, TaskGraph bindings, asset documents, and provenance relevant to the incoming families. The catalog
 may be partial, so absence from `catalog/examples/` is not evidence that SciRel lacks a capability. Discover the
