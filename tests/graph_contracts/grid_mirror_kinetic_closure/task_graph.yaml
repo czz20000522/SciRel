@@ -26,11 +26,11 @@ inputs:
   required: true
   constraints: 当前磁场幅值；必须与网格同形、有限且严格为正
 - name: psi
-  meaning: 当前磁通
+  meaning: 调用方当前磁通剖面坐标
   shape: '[N_Z,N_R]'
-  units: Wb
+  units: '调用方一致的 Wb 或 Wb/rad'
   required: true
-  constraints: 当前磁通；必须与网格同形且有限
+  constraints: 当前磁通剖面坐标；必须与网格同形且有限，全部采样行和 psi 相关剖面须使用同一约定；历史来源标为 Wb，嵌入 Hall 图时传入 Wb/rad，本图不自动换算
 - name: reference_z
   meaning: 参考面位置
   shape: scalar

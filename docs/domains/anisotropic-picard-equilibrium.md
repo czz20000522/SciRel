@@ -12,7 +12,7 @@
 - [自由边界各向异性 Picard 图](../../catalog/examples/scirel.equilibrium.free-boundary-anisotropic-picard.json)组合[环向电流](../../catalog/examples/scirel.equilibrium.anisotropic-toroidal-current.json)、[电流反馈](../../catalog/examples/scirel.equilibrium.anisotropic-picard-feedback.json)、[磁通残差](../../catalog/examples/scirel.diagnostics.picard-flux-residual.json)、场强和可选导体边界修正。它使用另一个调用方闭合端口、均匀 R/Z 网格和不同的反馈/终态语义；墙修正只改变磁通，不同步修正返回的 `BR/BZ`，不能与其他 Picard 图按名称合并。
 - [表格压强插值](../../catalog/examples/scirel.closures.tabulated-pressure.json)只在调用方给定的一维 `psi` 表或二维 `(B,psi)` 表上插值得到平行/垂直压强；域外默认报错，外推仍须通过有限非负检查。它是压力律候选，不自行解决表的物理来源或跨图磁通单位。
 - [Hall 双流体压强状态](../../catalog/examples/scirel.closures.hall-two-fluid-pressure.json)在调用方压力律、密度和电势上作单离子/电子分量组装；显式离子分量不核对其与电子分量是否合计为总压强。它不求 Hall 电流或平衡。
-- [动理学镜端 Hall 组合图](../../catalog/examples/scirel.equilibrium.kinetic-mirror-hall-equilibrium.json)把 Hall 迭代中的当前 `B,psi` 送入[网格镜端闭合](../../catalog/examples/scirel.kinetic.grid-mirror-kinetic-closure.json)作为压强回调，再返回约化 Hall 图的结果。外层只绑定端口，反馈由 Hall 子图拥有；一组制造的径向密度剖面已用两个真实子图完成非零 Green 反馈和严格相容性检查，但没有同输入源码对照或真实装置物理验收。
+- [动理学镜端 Hall 组合图](../../catalog/examples/scirel.equilibrium.kinetic-mirror-hall-equilibrium.json)把 Hall 迭代中的当前 `B,psi=R A_phi`（`Wb/rad`）原样送入[网格镜端闭合](../../catalog/examples/scirel.kinetic.grid-mirror-kinetic-closure.json)作为压强回调，再返回约化 Hall 图的结果。镜端图把 `psi` 用作调用方剖面插值坐标；固定剖面的 `2*pi` 坐标重标度回归通过，但任意 `psi` 回调必须由调用方按传入坐标重新定义。外层只绑定端口，反馈由 Hall 子图拥有；一组 `0.5 R²` 真空磁通函数和制造径向密度剖面已用两个真实子图完成**合成对角 Green** 反馈和严格相容性检查，但没有真实圆丝/镜像 Green 联算、同输入源码对照或真实装置物理验收。
 
 本图和[历史各向同性压力磁通图](../../catalog/examples/scirel.equilibrium.isotropic-pressure-flux.json)都用 Picard 反馈，但科学输入、压力模型、松弛位置、网格约束、收敛诊断和失败行为不同，不能按“平衡求解器”名称合并。前者的压力闭合是未标准化的调用方端口；把某个已保存动理学闭合接入它，仍要核对场、磁通、剖面、单位和边界，并审查对应嵌套 TaskGraph，不能视为本图已覆盖所有闭合模型。
 
@@ -20,4 +20,4 @@
 
 直接测试包含常压零力极限、制造的旋转场和变量压强梯度、cell-area/flux-relax 算术，以及图内动态 mask、终态重算、解析电流和若干失败路径。它们没有证明真实装置的压强闭合或 Green 矩阵适用性，也没有证明所有极端有限输入可产生有限输出。历史 Pleiades 来源映射仍是开发证据；当前合格 L1 交付根为空。
 
-专家待决：各调用方压强闭合的科学身份和可接受域、网格与 Green/墙响应的物理约定、接近零场的 gyrotropic 模型边界、Hall/惯性和 firehose 门槛、相容性容限、未收敛末态的下游资格，以及当前来源与许可证。free-boundary 和 kinetic-mirror 图及其镜端闭合仍须逐项核对旧 `Wb` 端口与单步的 `Wb/rad`、跨图状态、反馈差异和真实装置联算；reduced-Hall 的关闭 Hall 制造输入不能自动授权非零 Hall 路径或嵌套图。均匀压强制造输入曾出现绝对力与电场残差约 `1e-12`、相对相容性误差 `0.207/0.090` 的消减敏感性；这一条件下默认严格门槛拒绝结果，不能用单个案例改写普遍容差。
+专家待决：各调用方压强闭合的科学身份和可接受域、网格与 Green/墙响应的物理约定、接近零场的 gyrotropic 模型边界、Hall/惯性和 firehose 门槛、相容性容限、未收敛末态的下游资格，以及当前来源与许可证。free-boundary 图仍须核对旧 `Wb` 端口与单步的 `Wb/rad`，kinetic-mirror 图仍须核对嵌套镜端各 `psi` 剖面的物理定义、非零 Hall 与真实 Green 的共同适用域；两个制造输入都不能自动授权完整磁镜平衡。均匀压强制造输入曾出现绝对力与电场残差约 `1e-12`、相对相容性误差 `0.207/0.090` 的消减敏感性；这一条件下默认严格门槛拒绝结果，不能用单个案例改写普遍容差。

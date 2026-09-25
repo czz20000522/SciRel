@@ -6,6 +6,7 @@ from scirel._framework_compositions.kinetic_mirror_hall_equilibrium import (
 from scirel.equilibrium.kinetic_mirror_hall_equilibrium import (
     solve_kinetic_mirror_hall_equilibrium,
 )
+from scirel.field.poloidal_field_from_flux import poloidal_field_from_flux
 
 
 def test_composition_passes_current_state_into_kinetic_closure():
@@ -91,6 +92,11 @@ def test_real_nested_graphs_close_a_manufactured_radial_profile_with_feedback():
         np.linspace(0.0, 0.4, 7), np.linspace(-1.0, 1.0, 7)
     )
     vacuum_flux = 0.5 * r_grid**2
+    np.testing.assert_allclose(
+        poloidal_field_from_flux(r_grid, z_grid, vacuum_flux)["B_Z"][:, 1:-1],
+        1.0,
+        rtol=1e-14,
+    )
     kinetic_config = {
         "mass_kg": mass_kg,
         "charge_c": charge_c,

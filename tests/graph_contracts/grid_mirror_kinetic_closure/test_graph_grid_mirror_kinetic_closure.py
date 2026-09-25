@@ -47,6 +47,31 @@ def test_profile_port_is_evaluated_against_current_flux():
     assert np.all(np.isfinite(result['ion_density']))
     assert np.max(np.abs(result['relative_charge_residual'])) < 1e-9
 
+
+def test_fixed_profiles_are_invariant_to_consistent_flux_coordinate_rescaling():
+    inputs = _inputs()
+    reference = _run(inputs)
+    rescaled = _run({**inputs, 'psi': inputs['psi'] * (2.0 * np.pi)})
+
+    for name in ('p_parallel', 'p_perpendicular', 'ion_density', 'electrostatic_potential',
+                 'end_left_potential_v', 'end_right_potential_v'):
+        np.testing.assert_allclose(rescaled[name], reference[name], rtol=1e-10, atol=1e-10)
+
+
+def test_psi_dependent_profile_must_follow_flux_coordinate_rescaling():
+    inputs = _inputs()
+    psi_scale = np.max(inputs['psi'])
+    inputs['density_ref_m3'] = lambda psi: 1e18 * (1.0 - 0.01 * psi / psi_scale)
+    reference = _run(inputs)
+    unadjusted = _run({**inputs, 'psi': inputs['psi'] * (2.0 * np.pi)})
+
+    relative_change = (
+        np.max(np.abs(unadjusted['ion_density'] - reference['ion_density']))
+        / np.max(reference['ion_density'])
+    )
+    assert relative_change > 1e-3
+
+
 def test_review_gate_reference_potential_shape_and_end_loss_refill_fail_closed():
     import pytest
 
