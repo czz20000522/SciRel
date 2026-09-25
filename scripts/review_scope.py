@@ -14,6 +14,7 @@ import subprocess
 import sys
 from typing import Any
 
+from finalize_release import _validate_catalog
 from select_affected_tests import ROOT, select
 
 
@@ -41,6 +42,13 @@ def _read_snapshot(root: Path) -> tuple[dict[str, Any], dict[str, dict[str, Any]
         r"[0-9a-f]{40}", manifest["git_commit"]
     ):
         raise ValueError("review snapshot has an invalid Git commit")
+    catalog = _validate_catalog(root / "catalog")
+    if (
+        manifest["catalog"].get("path") != "catalog/release.json"
+        or manifest["catalog"].get("root_digest") != catalog["root_digest"]
+        or manifest["catalog"].get("coverage") != catalog["coverage"]
+    ):
+        raise ValueError("review snapshot catalog differs from its manifest")
     entries = [
         *manifest["exact_documents"],
         manifest["review_dossier"],
@@ -60,6 +68,17 @@ def _read_snapshot(root: Path) -> tuple[dict[str, Any], dict[str, dict[str, Any]
         documents[asset_id] = document
     if len(documents) != manifest["catalog"]["coverage"]["included_asset_count"]:
         raise ValueError("snapshot document count differs from catalog coverage")
+    catalog_records = {}
+    for path in (root / "catalog" / "records").rglob("*.json"):
+        record = json.loads(
+            _snapshot_file(root, path.relative_to(root).as_posix()).read_text(encoding="utf-8")
+        )
+        asset_id = record["asset_id"]
+        if asset_id in catalog_records:
+            raise ValueError(f"catalog repeats asset ID: {asset_id}")
+        catalog_records[asset_id] = record
+    if catalog_records != documents:
+        raise ValueError("catalog records differ from exact documents")
     return manifest, documents
 
 

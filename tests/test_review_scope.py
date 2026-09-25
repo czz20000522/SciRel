@@ -27,6 +27,7 @@ def _document(asset_id, *, version="0.1.0.dev15", dependencies=(), evidence="ini
 def _snapshot(root: Path, commit: str, documents: list[dict]) -> Path:
     root.mkdir()
     entries = []
+    partitions = []
     for document in documents:
         relative = f"exact-documents/catalog/examples/{document['asset_id']}.json"
         path = root / relative
@@ -36,6 +37,29 @@ def _snapshot(root: Path, commit: str, documents: list[dict]) -> Path:
             "snapshot_path": relative,
             "sha256": "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest(),
         })
+        record_relative = f"records/{document['asset_id']}.json"
+        record = root / "catalog" / record_relative
+        record.parent.mkdir(parents=True, exist_ok=True)
+        record.write_bytes(path.read_bytes())
+        payload = record.read_bytes()
+        partitions.append({
+            "path": record_relative,
+            "bytes": len(payload),
+            "sha256": "sha256:" + hashlib.sha256(payload).hexdigest(),
+        })
+    catalog_release = {
+        "schema": "scirel.catalog-release.v1",
+        "release_version": "0.1.0.dev15",
+        "coverage": {"included_asset_count": len(entries)},
+        "partitions": partitions,
+    }
+    catalog_payload = json.dumps(
+        catalog_release, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    catalog_release["root_digest"] = "sha256:" + hashlib.sha256(catalog_payload).hexdigest()
+    (root / "catalog/release.json").write_text(
+        json.dumps(catalog_release), encoding="utf-8"
+    )
     artifacts = {}
     for name, relative in (
         ("review_dossier", "review-dossier/review.md"),
@@ -53,7 +77,11 @@ def _snapshot(root: Path, commit: str, documents: list[dict]) -> Path:
         "schema": "scirel.review-version.dev",
         "git_commit": commit,
         "exact_documents": entries,
-        "catalog": {"coverage": {"included_asset_count": len(entries)}},
+        "catalog": {
+            "path": "catalog/release.json",
+            "root_digest": catalog_release["root_digest"],
+            "coverage": catalog_release["coverage"],
+        },
         **artifacts,
     }
     (root / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
@@ -126,6 +154,64 @@ def test_tampered_snapshot_is_rejected(tmp_path: Path):
     path.write_text(path.read_text(encoding="utf-8") + " ", encoding="utf-8")
 
     with pytest.raises(ValueError, match="digest differs"):
+        scope_module.review_scope(snapshot)
+
+
+def test_tampered_catalog_partition_is_rejected(tmp_path: Path):
+    snapshot = _snapshot(tmp_path / "candidate", "a" * 40, [_document("a")])
+    path = snapshot / "catalog/records/a.json"
+    path.write_bytes(path.read_bytes().replace(b'"a"', b'"b"', 1))
+
+    with pytest.raises(ValueError, match="catalog partition digest differs"):
+        scope_module.review_scope(snapshot)
+
+
+def test_catalog_release_formatting_does_not_change_its_digest(tmp_path: Path):
+    snapshot = _snapshot(tmp_path / "candidate", "a" * 40, [_document("a")])
+    path = snapshot / "catalog/release.json"
+    path.write_text(
+        json.dumps(json.loads(path.read_text(encoding="utf-8")), indent=2),
+        encoding="utf-8",
+    )
+
+    assert scope_module.review_scope(snapshot)["review_asset_ids"] == ["a"]
+
+
+def test_catalog_manifest_digest_mismatch_is_rejected(tmp_path: Path):
+    snapshot = _snapshot(tmp_path / "candidate", "a" * 40, [_document("a")])
+    path = snapshot / "manifest.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["catalog"]["root_digest"] = "sha256:" + "0" * 64
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="catalog differs from its manifest"):
+        scope_module.review_scope(snapshot)
+
+
+def test_catalog_record_must_match_frozen_exact_document(tmp_path: Path):
+    snapshot = _snapshot(tmp_path / "candidate", "a" * 40, [_document("a")])
+    record_path = snapshot / "catalog/records/a.json"
+    record = json.loads(record_path.read_text(encoding="utf-8"))
+    record["verification"]["scope"] = "catalog-only change"
+    record_path.write_text(json.dumps(record), encoding="utf-8")
+    payload = record_path.read_bytes()
+
+    release_path = snapshot / "catalog/release.json"
+    release = json.loads(release_path.read_text(encoding="utf-8"))
+    release["partitions"][0]["bytes"] = len(payload)
+    release["partitions"][0]["sha256"] = "sha256:" + hashlib.sha256(payload).hexdigest()
+    unsigned = {key: value for key, value in release.items() if key != "root_digest"}
+    release["root_digest"] = "sha256:" + hashlib.sha256(
+        json.dumps(unsigned, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    release_path.write_text(json.dumps(release), encoding="utf-8")
+
+    manifest_path = snapshot / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["catalog"]["root_digest"] = release["root_digest"]
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="catalog records differ from exact documents"):
         scope_module.review_scope(snapshot)
 
 
