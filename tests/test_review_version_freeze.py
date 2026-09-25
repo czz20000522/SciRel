@@ -30,6 +30,9 @@ def _inputs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict:
     )
     dossier = repo / "review.md"
     dossier.write_text("Initial whole-version review scope.\n", encoding="utf-8")
+    package = repo / "src" / "scirel"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_bytes(b"VERSION = 'current'\n")
     _git(repo, "init")
     _git(repo, "add", ".")
     _git(
@@ -53,6 +56,7 @@ def _inputs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict:
             "scirel-0.1.0.dev15.dist-info/METADATA",
             "Metadata-Version: 2.1\nName: scirel\nVersion: 0.1.0.dev15\n",
         )
+        archive.writestr("scirel/__init__.py", "VERSION = 'current'\n")
     evidence = tmp_path / "tests.md"
     evidence.write_text("Focused test passed.\n", encoding="utf-8")
     return {
@@ -94,8 +98,9 @@ def test_freeze_preserves_worktree_line_endings_outside_source_checkout(
     inputs = _inputs(tmp_path, monkeypatch)
     repo = inputs["review_dossier"].parent
     document = next(inputs["documents_dir"].glob("*.json"))
+    package_module = repo / "src/scirel/__init__.py"
     _git(repo, "config", "core.autocrlf", "true")
-    for path in (document, inputs["review_dossier"]):
+    for path in (document, inputs["review_dossier"], package_module):
         data = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
         path.write_bytes(data)
     _git(repo, "add", ".")
@@ -107,6 +112,11 @@ def test_freeze_preserves_worktree_line_endings_outside_source_checkout(
         cwd=repo, check=True, capture_output=True,
     ).stdout
     assert blob != document.read_bytes()
+    package_blob = subprocess.run(
+        ["git", "show", "HEAD:src/scirel/__init__.py"],
+        cwd=repo, check=True, capture_output=True,
+    ).stdout
+    assert package_blob != package_module.read_bytes()
 
     manifest = freeze_module.freeze_review_version(**inputs)
     archived = tmp_path / "detached-review"
@@ -134,6 +144,36 @@ def test_freeze_rejects_committed_document_change_without_rebuilt_catalog(
 
     with pytest.raises(ValueError, match="catalog records differ"):
         freeze_module.freeze_review_version(**inputs)
+
+
+def test_freeze_rejects_wheel_with_stale_scientific_module(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    inputs = _inputs(tmp_path, monkeypatch)
+    with zipfile.ZipFile(inputs["wheel"], "w") as archive:
+        archive.writestr(
+            "scirel-0.1.0.dev15.dist-info/METADATA",
+            "Metadata-Version: 2.1\nName: scirel\nVersion: 0.1.0.dev15\n",
+        )
+        archive.writestr("scirel/__init__.py", "VERSION = 'stale'\n")
+
+    with pytest.raises(ValueError, match="wheel package differs from committed source"):
+        freeze_module.freeze_review_version(**inputs)
+
+
+def test_freeze_accepts_wheel_with_windows_source_line_endings(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    inputs = _inputs(tmp_path, monkeypatch)
+    with zipfile.ZipFile(inputs["wheel"], "w") as archive:
+        archive.writestr(
+            "scirel-0.1.0.dev15.dist-info/METADATA",
+            "Metadata-Version: 2.1\nName: scirel\nVersion: 0.1.0.dev15\n",
+        )
+        archive.writestr("scirel/__init__.py", b"VERSION = 'current'\r\n")
+
+    manifest = freeze_module.freeze_review_version(**inputs)
+    assert manifest["review_status"] == "pending_unapproved"
 
 
 def test_freeze_allows_snapshot_beside_tracked_sources(

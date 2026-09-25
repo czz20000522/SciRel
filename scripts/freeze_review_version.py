@@ -61,6 +61,41 @@ def _wheel_version(wheel: Path) -> str:
     return version
 
 
+def _validate_wheel_source(wheel: Path, commit: str) -> None:
+    tracked = subprocess.run(
+        ["git", "ls-tree", "-r", "-z", "--name-only", commit, "--", "src/scirel"],
+        cwd=ROOT, capture_output=True, check=True,
+    ).stdout
+    source_modules = {
+        path.removeprefix("src/"): path
+        for path in tracked.decode("utf-8").split("\0")
+        if path.endswith(".py")
+    }
+    if "scirel/__init__.py" not in source_modules:
+        raise ValueError("committed SciRel package source is missing")
+
+    def normalized_python(source: bytes) -> bytes:
+        return source.replace(b"\r\n", b"\n")
+
+    with zipfile.ZipFile(wheel) as archive:
+        wheel_modules = [
+            name for name in archive.namelist()
+            if name.startswith("scirel/") and name.endswith(".py")
+        ]
+        if (
+            len(wheel_modules) != len(set(wheel_modules))
+            or set(wheel_modules) != source_modules.keys()
+        ):
+            raise ValueError("wheel package differs from committed source")
+        for name in wheel_modules:
+            committed = subprocess.run(
+                ["git", "show", f"{commit}:{source_modules[name]}"],
+                cwd=ROOT, capture_output=True, check=True,
+            ).stdout
+            if normalized_python(archive.read(name)) != normalized_python(committed):
+                raise ValueError("wheel package differs from committed source")
+
+
 def freeze_review_version(
     *,
     documents_dir: Path,
@@ -90,6 +125,7 @@ def freeze_review_version(
         raise ValueError("catalog coverage differs from exact document count")
     if catalog["release_version"] != _wheel_version(wheel):
         raise ValueError("catalog and development wheel versions differ")
+    _validate_wheel_source(wheel, commit)
     if any(
         document["version"]["implementation_version"] != catalog["release_version"]
         for document in documents
