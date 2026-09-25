@@ -6,6 +6,7 @@ This is a read-only change/impact report, not a scientific equivalence or approv
 from __future__ import annotations
 
 import argparse
+from email.parser import BytesParser
 import hashlib
 import json
 from pathlib import Path
@@ -13,6 +14,7 @@ import re
 import subprocess
 import sys
 from typing import Any
+import zipfile
 
 from finalize_release import _validate_catalog
 from select_affected_tests import ROOT, select
@@ -108,6 +110,22 @@ def _scientific_document(document: dict[str, Any]) -> dict[str, Any]:
     return comparable
 
 
+def _wheel_environment(
+    root: Path, manifest: dict[str, Any]
+) -> tuple[str | None, tuple[str, ...]]:
+    with zipfile.ZipFile(_snapshot_file(root, manifest["wheel"]["path"])) as archive:
+        metadata_paths = [
+            name for name in archive.namelist() if name.endswith(".dist-info/METADATA")
+        ]
+        if len(metadata_paths) != 1:
+            raise ValueError("review wheel must contain exactly one distribution METADATA")
+        metadata = BytesParser().parsebytes(archive.read(metadata_paths[0]))
+    if metadata.get("Name", "").lower().replace("_", "-") != "scirel":
+        raise ValueError("review wheel distribution is not scirel")
+    requirements = tuple(sorted(metadata.get_all("Requires-Dist", [])))
+    return metadata.get("Requires-Python"), requirements
+
+
 def _git(*args: str) -> str:
     result = subprocess.run(
         ["git", *args], cwd=ROOT, capture_output=True, check=True
@@ -179,6 +197,7 @@ def review_scope(candidate_dir: Path, baseline_dir: Path | None = None) -> dict[
             "comparison_commit": None,
             "comparison_manifest_digest": None,
             "baseline_approval_verified": False,
+            "runtime_requirements_changed": None,
             "review_asset_ids": sorted(current),
             "changed_document_ids": sorted(current),
             "mechanical_only_document_ids": [],
@@ -189,6 +208,9 @@ def review_scope(candidate_dir: Path, baseline_dir: Path | None = None) -> dict[
         }
 
     baseline, previous, comparison_manifest_digest = _read_snapshot(baseline_dir)
+    runtime_requirements_changed = _wheel_environment(
+        candidate_dir, candidate
+    ) != _wheel_environment(baseline_dir, baseline)
     changed = {
         asset_id for asset_id, document in current.items()
         if asset_id not in previous
@@ -212,6 +234,8 @@ def review_scope(candidate_dir: Path, baseline_dir: Path | None = None) -> dict[
         if changed_tests.intersection(document["verification"]["tests"])
     }
     seeds = changed | source_assets | evidence_assets
+    if runtime_requirements_changed:
+        seeds.update(current)
     removed = previous.keys() - current.keys()
     return {
         "schema": SCHEMA,
@@ -221,6 +245,7 @@ def review_scope(candidate_dir: Path, baseline_dir: Path | None = None) -> dict[
         "comparison_commit": baseline["git_commit"],
         "comparison_manifest_digest": comparison_manifest_digest,
         "baseline_approval_verified": False,
+        "runtime_requirements_changed": runtime_requirements_changed,
         "review_asset_ids": sorted(_reverse_dependents(seeds | removed, current) & current.keys()),
         "changed_document_ids": sorted(changed),
         "mechanical_only_document_ids": sorted(mechanical),
@@ -238,7 +263,10 @@ def main() -> int:
     args = parser.parse_args()
     try:
         result = review_scope(args.candidate_snapshot, args.comparison_snapshot)
-    except (KeyError, OSError, ValueError, subprocess.CalledProcessError, json.JSONDecodeError) as error:
+    except (
+        KeyError, OSError, ValueError, subprocess.CalledProcessError,
+        json.JSONDecodeError, zipfile.BadZipFile,
+    ) as error:
         print(f"review scope failed: {error}", file=sys.stderr)
         return 1
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))

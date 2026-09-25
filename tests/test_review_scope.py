@@ -2,6 +2,7 @@ import hashlib
 import json
 from pathlib import Path
 import sys
+import zipfile
 
 import pytest
 
@@ -68,7 +69,15 @@ def _snapshot(root: Path, commit: str, documents: list[dict]) -> Path:
     ):
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(name.encode("ascii"))
+        if name == "wheel":
+            with zipfile.ZipFile(path, "w") as archive:
+                archive.writestr(
+                    "scirel-0.1.0.dist-info/METADATA",
+                    "Metadata-Version: 2.1\nName: scirel\nVersion: 0.1.0\n"
+                    "Requires-Python: >=3.10\nRequires-Dist: numpy>=1.24\n",
+                )
+        else:
+            path.write_bytes(name.encode("ascii"))
         artifacts[name] = {
             "path": relative,
             "sha256": "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest(),
@@ -86,6 +95,20 @@ def _snapshot(root: Path, commit: str, documents: list[dict]) -> Path:
     }
     (root / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
     return root
+
+
+def _replace_wheel_metadata(root: Path, *, version: str, dependency: str) -> None:
+    wheel = root / "wheel/scirel.whl"
+    with zipfile.ZipFile(wheel, "w") as archive:
+        archive.writestr(
+            f"scirel-{version}.dist-info/METADATA",
+            f"Metadata-Version: 2.1\nName: scirel\nVersion: {version}\n"
+            f"Requires-Python: >=3.10\nRequires-Dist: {dependency}\n",
+        )
+    manifest_path = root / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["wheel"]["sha256"] = scope_module._sha256(wheel)
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
 
 def test_first_review_includes_all_frozen_assets(tmp_path: Path):
@@ -150,6 +173,56 @@ def test_source_change_uses_existing_impact_selector_and_reverse_dependencies(
 
     assert result["changed_document_ids"] == []
     assert result["review_asset_ids"] == ["a", "c"]
+
+
+def test_runtime_dependency_change_reopens_scientific_review(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    docs = [_document("a"), _document("b", dependencies=("a",))]
+    baseline = _snapshot(tmp_path / "baseline", "a" * 40, docs)
+    candidate = _snapshot(tmp_path / "candidate", "b" * 40, docs)
+    _replace_wheel_metadata(baseline, version="0.1.0", dependency="numpy>=1.24")
+    _replace_wheel_metadata(candidate, version="0.1.0", dependency="numpy>=2")
+    monkeypatch.setattr(scope_module, "_changed_paths", lambda *_: ["pyproject.toml"])
+
+    result = scope_module.review_scope(candidate, baseline)
+
+    assert result["runtime_requirements_changed"] is True
+    assert result["review_asset_ids"] == ["a", "b"]
+
+
+def test_package_version_only_change_does_not_reopen_scientific_review(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    docs = [_document("a")]
+    baseline = _snapshot(tmp_path / "baseline", "a" * 40, docs)
+    candidate = _snapshot(tmp_path / "candidate", "b" * 40, docs)
+    _replace_wheel_metadata(baseline, version="0.1.0.dev17", dependency="numpy>=1.24")
+    _replace_wheel_metadata(candidate, version="0.1.0.dev18", dependency="numpy>=1.24")
+    monkeypatch.setattr(scope_module, "_changed_paths", lambda *_: ["pyproject.toml"])
+
+    result = scope_module.review_scope(candidate, baseline)
+
+    assert result["runtime_requirements_changed"] is False
+    assert result["review_asset_ids"] == []
+
+
+def test_invalid_comparison_wheel_metadata_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    docs = [_document("a")]
+    baseline = _snapshot(tmp_path / "baseline", "a" * 40, docs)
+    candidate = _snapshot(tmp_path / "candidate", "b" * 40, docs)
+    wheel = candidate / "wheel/scirel.whl"
+    wheel.write_bytes(b"not a wheel")
+    manifest_path = candidate / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["wheel"]["sha256"] = scope_module._sha256(wheel)
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    monkeypatch.setattr(scope_module, "_changed_paths", lambda *_: [])
+
+    with pytest.raises(zipfile.BadZipFile):
+        scope_module.review_scope(candidate, baseline)
 
 
 def test_tampered_snapshot_is_rejected(tmp_path: Path):
