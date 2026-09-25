@@ -41,7 +41,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python":{"module":"scirel.diagnostics.picard_flux_residual","symbol":"compute_picard_flux_residual","signature":"compute_picard_flux_residual(psi_previous, psi_next)"}},
-  "version": {"implementation_version":"0.1.0.dev20","dependencies":[]},
+  "version": {"implementation_version":"0.1.0.dev21","dependencies":[]},
   "example": {
     "description": "Doubling a 3-4 flux state produces a unit relative change; the unchanged state has zero residual.",
     "code": "import numpy as np\nfrom scirel.diagnostics import compute_picard_flux_residual\nprevious = np.array([[3.0, 4.0]])\nassert compute_picard_flux_residual(previous, previous)['residual'] == 0.0\nassert np.isclose(compute_picard_flux_residual(previous, 2*previous)['residual'], 1.0)",

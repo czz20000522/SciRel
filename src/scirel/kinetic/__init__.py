@@ -12,5 +12,7 @@ from .plasma_dispersion import evaluate_plasma_dispersion
 from .species_equilibrium_scales import derive_species_equilibrium_scales
 from .bessel_gamma import evaluate_bessel_gamma
 from .kinetic_dispersion_sum_n import evaluate_kinetic_dispersion_sum
+from .cylindrical_velocity_quadrature import make_cylindrical_velocity_quadrature
+from .shifted_maxwellian_seed import build_shifted_maxwellian_seed
 
-__all__ = ['assemble_frank_egedal_pressure', 'evaluate_frank_egedal_radial_envelope', 'project_frank_egedal_source_modes', 'evaluate_frank_egedal_hot_ion_moments', 'evaluate_mirror_invariant_distribution', 'assemble_mirror_total_pressure', 'evaluate_mirror_constrained_moments', 'solve_loss_cone_spectrum', 'solve_grid_mirror_kinetic_closure', 'solve_frank_egedal_pressure_closure', 'evaluate_plasma_dispersion', 'derive_species_equilibrium_scales', 'evaluate_bessel_gamma', 'evaluate_kinetic_dispersion_sum']
+__all__ = ['assemble_frank_egedal_pressure', 'evaluate_frank_egedal_radial_envelope', 'project_frank_egedal_source_modes', 'evaluate_frank_egedal_hot_ion_moments', 'evaluate_mirror_invariant_distribution', 'assemble_mirror_total_pressure', 'evaluate_mirror_constrained_moments', 'solve_loss_cone_spectrum', 'solve_grid_mirror_kinetic_closure', 'solve_frank_egedal_pressure_closure', 'evaluate_plasma_dispersion', 'derive_species_equilibrium_scales', 'evaluate_bessel_gamma', 'evaluate_kinetic_dispersion_sum', 'make_cylindrical_velocity_quadrature', 'build_shifted_maxwellian_seed']

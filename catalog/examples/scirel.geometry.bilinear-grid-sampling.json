@@ -43,7 +43,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.geometry.bilinear_grid_sampling", "symbol": "sample_rectilinear_field", "signature": "sample_rectilinear_field(r_grid, z_grid, quantity, points)"}},
-  "version": {"implementation_version": "0.1.0.dev20", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev21", "dependencies": []},
   "example": {
     "description": "Sample an affine R-Z scalar field at an interior point and the upper grid corner.",
     "code": "import numpy as np\nfrom scirel.geometry import sample_rectilinear_field\nr_grid, z_grid = np.meshgrid([1.0, 2.0, 4.0], [-1.0, 1.0])\nquantity = 3.0*r_grid - 2.0*z_grid + 1.0\nresult = sample_rectilinear_field(r_grid, z_grid, quantity, [[1.5, 0.0], [4.0, 1.0]])\nnp.testing.assert_allclose(result['samples'], [5.5, 11.0])",

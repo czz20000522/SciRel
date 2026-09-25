@@ -100,7 +100,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.kinetic.grid_mirror_kinetic_closure", "symbol": "solve_grid_mirror_kinetic_closure", "signature": "solve_grid_mirror_kinetic_closure(inputs=None, **kwargs)"}},
-  "version": {"implementation_version": "0.1.0.dev20", "dependencies": [{"asset_id": "scirel.closures.mirror-ambipolar-potential"}, {"asset_id": "scirel.closures.mirror-quasineutral-closure"}, {"asset_id": "scirel.geometry.flux-surface-profile"}]},
+  "version": {"implementation_version": "0.1.0.dev21", "dependencies": [{"asset_id": "scirel.closures.mirror-ambipolar-potential"}, {"asset_id": "scirel.closures.mirror-quasineutral-closure"}, {"asset_id": "scirel.geometry.flux-surface-profile"}]},
   "example": {
     "description": "Evaluate two end potentials and a quasineutral pressure state on a small rectilinear mirror grid.",
     "code": "import numpy as np\nfrom scirel.kinetic import solve_grid_mirror_kinetic_closure\ne = 1.602176634e-19\nr, z = np.linspace(0.0, 0.2, 5), np.linspace(-1.0, 1.0, 7)\nR, Z = np.meshgrid(r, z)\nstate = solve_grid_mirror_kinetic_closure({'r_grid': R, 'z_grid': Z, 'b_t': 1.0 + 3.0*np.abs(Z), 'psi': 0.5*R**2, 'mass_kg': 1.67262192595e-27, 'charge_c': e, 'density_ref_m3': 1.0e18, 'temperature_parallel_j': 1000.0*e, 'temperature_perpendicular_ref_j': 2000.0*e, 'electron_temperature_j': 500.0*e, 'reference_z': 0.0, 'plug_left_z': -1.0, 'plug_right_z': 1.0, 'loss_cone_refill': 0.05, 'quadrature_order': 24, 'plug_potential_mode': 'ambipolar_end_loss'})\nassert state['p_parallel'].shape == R.shape\nassert np.all(state['end_left_potential_v'] < 0.0)\nassert np.max(np.abs(state['relative_charge_residual'])) < 1e-9",

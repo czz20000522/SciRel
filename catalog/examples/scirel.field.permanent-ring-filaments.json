@@ -45,7 +45,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.field.permanent_ring_filaments", "symbol": "discretize_permanent_ring", "signature": "discretize_permanent_ring(r0, z0, width, height, mu_hat_deg=0.0)"}},
-  "version": {"implementation_version": "0.1.0.dev20", "dependencies": []},
+  "version": {"implementation_version": "0.1.0.dev21", "dependencies": []},
   "example": {
     "description": "Check unrotated face ordering, axial span and opposite relative weights.",
     "code": "import numpy as np\nfrom scirel.field import discretize_permanent_ring\nresult = discretize_permanent_ring(2.0, 3.0, 4.0, 2.0)\nassert result['rz_pts'].shape == (16, 2)\nnp.testing.assert_allclose(result['rz_pts'][:8, 0], 0.0)\nnp.testing.assert_allclose(result['rz_pts'][8:, 0], 4.0)\nnp.testing.assert_allclose(result['rz_pts'][:8, 1], np.linspace(2.0, 4.0, 8))\nnp.testing.assert_allclose(result['default_weights'], [-1.0]*8 + [1.0]*8)",
