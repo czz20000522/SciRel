@@ -10,7 +10,7 @@
 - [参数优化](../../catalog/examples/scirel.inference.anisotropic-parameter-optimization.json)使用 SciPy 搜索，可先从拉丁超立方样本选择初值，并保留已记录的最佳试探及优化器状态。有限次成功运行不保证全局最优或物理可辨识性。
 - [直接各向异性反演图](../../catalog/examples/scirel.inference.direct-anisotropic-inversion.json)把以上关系连接起来，但平衡求解器与合成诊断仍是调用方端口。图内的单次试探是明确的科学算子节点，不是隐藏在 glue 中的关系；本图不固定使用某一种平衡或诊断 TaskGraph。
 
-当前图的合成测试使用调用方给定的求解和诊断端口恢复简单参数，并覆盖失败惩罚、无效方法及输入端口；其中一个组合案例在等向压力极限接入 SciRel 自由边界各向异性平衡、非零 Green 响应与解析磁通环目标。图自身不规定磁通单位；接入该平衡时 `psi=R A_phi` 为 `Wb/rad`，`g_psi` 为 `Wb/rad/A`，案例的调用方诊断端口显式计算圆环磁通 `2πψ`（`Wb`）。该案例不验证真实装置数据、任意各向异性压力闭合、观测协方差、反演唯一性或跨模型适用域。历史 Pleiades 来源映射仍是开发证据；当前没有合格的新 L1 交付。
+当前图的合成测试使用调用方给定的求解和诊断端口恢复简单参数，并覆盖失败惩罚、无效方法及输入端口；其中一个组合案例在等向压力极限接入 SciRel 自由边界各向异性平衡、非零 Green 响应与解析磁通环目标。图自身不规定磁通单位；接入该平衡时 `psi=R A_phi` 为 `Wb/rad`，`g_psi` 为 `Wb/rad/A`，案例的调用方诊断端口显式计算圆环磁通 `2πψ`（`Wb`）。[现有平衡合成点诊断图](../../catalog/examples/scirel.diagnostics.equilibrium-synthesis-diagnostics.json)的历史 `flux_loops` 键只采样 `psi`，不做该转换；不能把其 `Wb/rad` 输出直接与 `Wb` 观测比较。该案例不验证真实装置数据、任意各向异性压力闭合、观测协方差、反演唯一性或跨模型适用域。历史 Pleiades 来源映射仍是开发证据；当前没有合格的新 L1 交付。
 
 ## 专家待决
 

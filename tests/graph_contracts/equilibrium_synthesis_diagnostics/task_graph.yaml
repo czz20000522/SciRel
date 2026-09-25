@@ -20,7 +20,7 @@ inputs:
     psi:
       meaning: 磁通 field
       shape: '[N_Z,N_R] or null'
-      units: Wb
+      units: caller_psi_units
       required: false
       constraints: flux_loops requires it
     profiles:
@@ -62,11 +62,11 @@ inputs:
       constraints: points [N,2]=[R,Z]
 outputs:
 - name: flux_loops
-  meaning: 磁通环预测
+  meaning: 调用方 psi 的点采样，非自动换算的完整环磁通
   shape: '[N_flux] or absent'
-  units: Wb
+  units: same_as_equilibrium.psi
   required: false
-  constraints: same requested-point order
+  constraints: same requested-point order; no automatic 2*pi conversion
 - name: thomson
   meaning: Thomson 型局域预测
   shape: mapping or absent

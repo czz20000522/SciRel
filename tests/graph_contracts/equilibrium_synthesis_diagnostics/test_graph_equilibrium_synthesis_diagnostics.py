@@ -60,6 +60,19 @@ def test_predicts_flux_loop_from_equilibrium_flux_only():
     np.testing.assert_allclose(result["flux_loops"], [1.5])
 
 
+def test_flux_loop_key_preserves_caller_psi_coordinate():
+    r_grid, z_grid = np.meshgrid([0.2, 0.4], [-0.1, 0.1])
+    psi_per_radian = 0.5 * r_grid**2  # Uniform Bz = 1 T has psi = R A_phi.
+    result = synthesize_equilibrium_diagnostics(
+        equilibrium={"psi": psi_per_radian},
+        R=r_grid,
+        Z=z_grid,
+        observations={"flux_loops": {"points": [[0.4, 0.1]]}},
+    )
+    np.testing.assert_allclose(result["flux_loops"], [0.08])
+    assert result["flux_loops"][0] != pytest.approx(2.0 * np.pi * 0.08)
+
+
 # 验证：Thomson 压强为必需端口，密度和电子温度仅在 source profile 实际提供时加入。
 def test_predicts_required_and_optional_thomson_fields():
     result = _run(_inputs())
