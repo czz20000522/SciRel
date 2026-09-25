@@ -18,6 +18,7 @@ def _resolve(environment: Path, platform: str):
         capture_output=True,
         text=True,
         encoding="utf-8",
+        errors="replace",
     )
 
 
@@ -115,6 +116,7 @@ def test_release_refuses_an_item_approval_without_whole_version_review(tmp_path)
         capture_output=True,
         text=True,
         encoding="utf-8",
+        errors="replace",
     )
 
     assert result.returncode != 0

@@ -218,6 +218,17 @@ def test_runtime_signatures_tests_and_examples_are_executable():
 
 
 def test_installed_runtime_mode_rejects_the_source_checkout():
+    # The guard under test only fires where ``scirel`` resolves to this
+    # checkout.  Under an installed-state run (SCIREL_INSTALLED_RUNTIME=1 with
+    # ``-o pythonpath=``) the wheel resolves first, the premise does not hold,
+    # and the installed-runtime validator legitimately succeeds there.
+    import scirel
+
+    if not Path(scirel.__file__).resolve().is_relative_to((ROOT / "src").resolve()):
+        pytest.skip(
+            "scirel resolves to the installed wheel, not the source checkout; "
+            "the source-checkout rejection guard is exercised in source mode only"
+        )
     document = _rectangular_coil_document()
 
     with pytest.raises(AssetDocumentError, match="resolved to the source checkout"):

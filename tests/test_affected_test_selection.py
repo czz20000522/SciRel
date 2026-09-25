@@ -19,6 +19,8 @@ def select(*paths):
         check=False,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
     )
     assert completed.returncode == 0, completed.stderr
     return json.loads(completed.stdout)
