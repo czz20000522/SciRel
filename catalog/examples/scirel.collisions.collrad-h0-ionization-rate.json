@@ -1,0 +1,141 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.collisions.collrad-h0-ionization-rate",
+  "kind": "operator",
+  "title": {
+    "en": "COLLRAD H0 electron-impact ionization rate",
+    "zh": "COLLRAD_H0电子碰撞电离率"
+  },
+  "summary": "Paired electron density (m^-3) and electron temperature (eV) map to the COLLRAD (DEGAS-2) H0 Maxwellian-averaged electron-impact ionization rate (m^3/s) by bilinear interpolation of log(rate) on the frozen 15x60 log(n)/log(T) table, with endpoint clamping outside the table range. The result is returned with the paired inputs' shape and out-of-order or mismatched samples are rejected, which the saved implementation did not enforce although its own document declared both.",
+  "taxonomy": [
+    "collisions",
+    "rate-coefficient",
+    "ionization",
+    "hydrogen",
+    "tabulated-interpolation"
+  ],
+  "aliases": [
+    "COLLRAD H0 ionization",
+    "electron-impact ionization of H0",
+    "collrad_sigmav_ion_h0"
+  ],
+  "identity": {
+    "relation": "the COLLRAD (DEGAS-2) H0 Maxwellian-averaged electron-impact ionization rate as a function of paired electron density and electron temperature",
+    "direction": "paired electron density and temperature -> ionization rate coefficient per sample",
+    "definition": "Density converts internally to cm^-3; the table coordinates are 2 (log10(n) - 16) over 15 density rows and 10 (log10(T) + 1.2) over 60 temperature columns, each clamped to the table range. log(rate) is interpolated bilinearly among the four surrounding frozen table entries and exponentiated, giving m^3/s. Along the flat C-order sample sequence the derived table coordinates must both be nondecreasing, matching the source's monotone profile sweeps.",
+    "model": "bilinear interpolation of log(rate) on a frozen 15x60 table; no external data is read at runtime",
+    "geometry": "none; a scalar material function of density and temperature",
+    "coordinates": "electron density in m^-3 and electron temperature in eV; output rate coefficient in m^3/s",
+    "boundary": "inputs must be finite, strictly positive and of equal shape; values outside the table ranges clamp to the table endpoints; the output is finite and strictly positive for every accepted input because the interpolation weights lie in [0, 1] and the table entries are positive",
+    "assumptions": [
+      "The 15x60 rate table is the saved source's frozen table, carried over bit for bit; it is the COLLRAD (DEGAS-2) dataset as embedded by the source project, not re-derived from any external reference.",
+      "The nondecreasing paired-coordinate contract is the source's: it matches the source's monotone profile sweeps and rejects out-of-order sample sequences rather than sorting or masking them.",
+      "No external atomic-physics reference (AMJUEL/HYDHEL or otherwise) is bound: the saved package records that residual as validation_oracle_gap, and the saved extraction ledger's source-runtime dataset validation is bounded historical evidence, not independent physical validation."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "electron_density_m3",
+      "description": "Electron densities.",
+      "units": "m^-3",
+      "shape": "same as electron_temperature_ev (scalar or array)",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and strictly positive (zero is rejected). Values outside the table's density range clamp to its endpoints."
+    },
+    {
+      "name": "electron_temperature_ev",
+      "description": "Electron temperatures, paired elementwise with the densities.",
+      "units": "eV",
+      "shape": "same as electron_density_m3 (scalar or array)",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and strictly positive. Values outside the table's temperature range clamp to its endpoints."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "rate_m3_s",
+      "description": "Maxwellian-averaged electron-impact ionization rate coefficient, one value per paired sample.",
+      "units": "m^3/s",
+      "shape": "same as the inputs",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and strictly positive for every accepted input."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller accepts the source's endpoint-clamping convention: densities or temperatures outside the table ranges silently return the endpoint value rather than an error or an extrapolation.",
+      "The caller supplies physically paired density/temperature samples of equal shape, ordered so that the derived log-log table coordinates are nondecreasing along the flat sample sequence (a monotone profile sweep)."
+    ],
+    "supported": [
+      "COLLRAD H0 ionization rate coefficients on the frozen table within (or clamped to) its declared density and temperature ranges.",
+      "Scalar and array evaluation of any shape; the result keeps the inputs' shape.",
+      "Rejecting mismatched shapes, non-finite and non-positive values, and decreasing derived table coordinates."
+    ],
+    "excluded": [
+      "Recombination, dissociation and other hydrogen channels: different relations not provided by this asset.",
+      "The JH-r analytic alternative and the Use_Collrad_Ionization selection logic: the saved ledger records the selector and downstream Alpha_ion aggregation as caller-owned.",
+      "Plasma state, neutral transport or source terms: caller-owned.",
+      "A rate model validated against an external atomic-physics reference; none is bound."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError with a message naming the condition when the inputs differ in shape, contain a non-finite or non-positive value, or when the derived density or temperature table coordinates decrease along the flat sample sequence.",
+    "runtime_failure": "Not reachable on the declared domain: the interpolation weights lie in [0, 1] and the frozen table entries are positive, so the result is finite and strictly positive for every accepted input. No iteration, no state and no partial results.",
+    "nonconvergence": "Not applicable; the relation has no iteration or feedback.",
+    "partial_results": "Never returned; a rejected call produces no rate."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy collrad_sigmav_ion_h0 slice, package COLLRAD_H0电子碰撞电离率, source anchor KN1DPy/collrad_sigmav_ion_h0.py:16-217, reachable from KN1DPy/kinetic_h.py:841-855 when Use_Collrad_Ionization=1 (saved implementation file SHA-256 2cd665e788e1444d60a4d7ca4b0e95fd76fd651b8a12653f7969aba8b9939bf1). The saved extraction ledger records the targeted addition as ACCEPT_OPERATOR with a source-runtime dataset validation over nine partitions and a fixed no-source asset replay at maximum relative error 1.45e-14. One documented repair relative to the saved implementation, whose own document declares the contract: the result is returned with the paired inputs' shape and the inputs must have equal shapes, where the saved implementation flattened everything to one dimension and compared flattened sizes only, silently accepting same-size differently-shaped arrays and flattening two-dimensional profiles. The table values and the interpolation arithmetic are preserved bit for bit. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "saved extraction ledger evidence",
+      "saved package grid-anchor and midpoint invariants",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.collisions.collrad_h0_ionization_rate",
+      "symbol": "evaluate_collrad_h0_ionization_rate",
+      "signature": "evaluate_collrad_h0_ionization_rate(electron_density_m3, electron_temperature_ev)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev24",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate the rate on a monotone sweep, confirm the log-log bilinear midpoint is the geometric mean of the four surrounding table corners, and confirm the shape and ordering contracts.",
+    "code": "import numpy as np\nfrom scirel.collisions import evaluate_collrad_h0_ionization_rate\n\ndensity = np.logspace(16, 23, 8)\ntemperature = np.logspace(-1, 4, 8)\nrate = evaluate_collrad_h0_ionization_rate(density, temperature)\nassert rate.shape == density.shape\nassert np.all(np.isfinite(rate)) and np.all(rate > 0.0)\nmid = evaluate_collrad_h0_ionization_rate([10.0**16.25], [10.0**-1.15])[0]\ncorners = np.array([1.0e-105, 1.93923e-89, 1.0e-105, 3.08801e-89])\nnp.testing.assert_allclose(mid, np.exp(np.log(corners).mean()), rtol=1e-12)\ngrid = evaluate_collrad_h0_ionization_rate(np.array([[1.0e16, 1.0e17], [1.0e18, 1.0e19]]), np.array([[1.0, 2.0], [4.0, 8.0]]))\nassert grid.shape == (2, 2)\ntry:\n    evaluate_collrad_h0_ionization_rate(np.array([[1.0e18, 2.0e18], [3.0e18, 4.0e18]]), np.array([1.0, 2.0, 3.0, 4.0]))\nexcept ValueError as error:\n    assert 'shape' in str(error)\nelse:\n    raise AssertionError('same-size mismatched shapes must be rejected')\ntry:\n    evaluate_collrad_h0_ionization_rate([1.0e19, 1.0e18], [2.0, 20.0])\nexcept ValueError as error:\n    assert 'nondecreasing' in str(error)\nelse:\n    raise AssertionError('decreasing coordinates must be rejected')",
+    "expected": "Finite strictly positive rate coefficients in m^3/s on the monotone sweep; the midpoint sample equals the geometric mean of the four surrounding table corners to 1e-12; a two-dimensional profile keeps its shape; ValueError naming shape for same-size mismatched arrays and naming nondecreasing for an out-of-order sweep."
+  },
+  "verification": {
+    "scope": [
+      "The saved package's grid anchors: the first density row at 1e16 and 1e17 reproduce the table-corner rates to a relative tolerance of 2e-14.",
+      "The log-log bilinear midpoint: a sample at the geometric center of four table corners equals the geometric mean of those corners to 1e-12.",
+      "The endpoint clamping: values below and above each table range repeat the endpoint values exactly.",
+      "The input contract: equal shapes, finite, strictly positive density and temperature, and the nondecreasing derived-coordinate requirement, with messages naming the condition.",
+      "The shape repair: two-dimensional inputs return the input shape and scalars return a zero-dimensional result; the saved implementation returned a flat one-dimensional array. Values on one-dimensional inputs, and the flattened values of higher-rank inputs, are reproduced exactly.",
+      "Exact bit-level replay against the saved KN1DPy implementation, pinned by SHA-256, on one-dimensional sweeps and clamped edges, plus repair witnesses showing the saved implementation flattens a two-dimensional profile and accepts same-size mismatched shapes where this asset returns the input shape and rejects both. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_collrad_h0_ionization_rate.py",
+      "tests/operator_contracts/test_collrad_h0_ionization_rate_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the frozen-table interpolation against the saved package's grid anchors and midpoint invariant, the clamping, the full input and failure contracts including the shape repair. The environment-gated replay establishes exact agreement with the saved KN1DPy implementation on the compared one-dimensional domain only. The saved ledger's source-runtime dataset validation (nine partitions, 1.45e-14) is bounded historical evidence for the table, not independent physical-reference validation: the saved package records the external-reference residual as validation_oracle_gap. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "known_limitations": [
+      "The COLLRAD table is not validated against an external atomic-physics reference such as AMJUEL/HYDHEL; the saved package's own validation gap carries over unchanged.",
+      "Densities or temperatures outside the table ranges silently return the endpoint value; this is the saved source's declared clamping convention, not an error.",
+      "The nondecreasing paired-coordinate contract rejects non-monotone sample sequences rather than sorting or masking them; a caller with genuinely non-monotone paired samples must reorder them first.",
+      "The shape contract (equal shapes, output keeps the input shape) is a documented development repair, not source behavior: a caller migrating from the saved implementation sees a ValueError for same-size mismatched shapes and a differently-shaped result for higher-rank inputs.",
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

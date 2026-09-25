@@ -55,7 +55,7 @@
     "license_status": "pending-human-decision"
   },
   "public_api": {"python": {"module": "scirel.equilibrium.isotropic_pressure_flux", "symbol": "solve_isotropic_pressure_flux", "signature": "solve_isotropic_pressure_flux(inputs=None, **kwargs)"}},
-  "version": {"implementation_version": "0.1.0.dev23", "dependencies": [{"asset_id": "scirel.equilibrium.pressure-flux-state"}, {"asset_id": "scirel.equilibrium.isotropic-picard-step"}]},
+  "version": {"implementation_version": "0.1.0.dev24", "dependencies": [{"asset_id": "scirel.equilibrium.pressure-flux-state"}, {"asset_id": "scirel.equilibrium.isotropic-picard-step"}]},
   "example": {
     "description": "With a zero Green response, one update leaves the vacuum flux unchanged while constructing a pressure spline.",
     "code": "import numpy as np\nfrom scirel.equilibrium import solve_isotropic_pressure_flux\nr_grid, z_grid = np.meshgrid(np.linspace(0.2, 0.8, 4), [-0.1, 0.0, 0.1])\nresult = solve_isotropic_pressure_flux(r_grid=r_grid, z_grid=z_grid, pressure_of_radius=lambda r: max(1.0-r/0.8, 0.0), psi_vac=r_grid.copy(), g_psi=np.zeros((12, 12)), tol=1e-12, maxiter=1, relax=0.0)\nnp.testing.assert_allclose(result['psi'], r_grid)\nassert result['iterations'] == 1 and result['converged']\nassert result['pressure_of_psi']['extrapolation'] == 'zeros'",

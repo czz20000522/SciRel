@@ -1,0 +1,143 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
+  "kind": "operator",
+  "title": {
+    "en": "Atomic-hydrogen charge-exchange cross section",
+    "zh": "原子氢电荷交换截面"
+  },
+  "summary": "H + H+ charge-exchange cross section in m^2 as a function of collision energy in eV: a Janev nine-coefficient logarithmic polynomial by default, with an alternative Freeman-Jones analytic fit under freeman=True. Both branches are evaluated on their source-clipped energy ranges, so endpoint values repeat outside each fit's domain. Negative energies and non-scalar branch selectors are rejected, which the saved implementation did not check although its own document declared both.",
+  "taxonomy": [
+    "collisions",
+    "cross-section",
+    "charge-exchange",
+    "hydrogen",
+    "tabulated-fit"
+  ],
+  "aliases": [
+    "sigma_cx_h0",
+    "H-H+ charge-exchange cross section",
+    "Janev charge-exchange fit",
+    "Freeman-Jones charge-exchange fit"
+  ],
+  "identity": {
+    "relation": "the H + H+ charge-exchange cross section as a function of collision energy, given by the Janev logarithmic polynomial exp(polyval(log(E), a)) * 1e-4 with the Freeman-Jones analytic form 1e-4 * 0.6937e-14 * (1 - 0.155 log10(E))^2 / (1 + 0.1112e-14 E^3.3) as the alternative branch",
+    "direction": "collision energies and branch selector -> cross section per energy",
+    "definition": "The default branch clips energies to [0.1, 2.01e4] eV and returns exp(polyval(log(E_clipped), a)) * 1e-4 m^2 with the frozen nine Janev coefficients a. The freeman=True branch clips to [0.1, 1e5] eV and returns 1e-4 * 0.6937e-14 * (1 - 0.155 log10(E_clipped))^2 / (1 + 0.1112e-14 E_clipped^3.3) m^2. Endpoint values repeat outside each clipped range.",
+    "model": "two independent source-faithful cross-section fits; no interpolation of external data and no rate integration",
+    "geometry": "none; a scalar material function of collision energy",
+    "coordinates": "collision energy in eV; output cross section in m^2",
+    "boundary": "energies must be finite and nonnegative; in-domain values outside a branch's fit range clip to the range endpoints; the branch selector must be a scalar; both fits are strictly positive and finite on their clipped domains",
+    "assumptions": [
+      "The Janev coefficients and the Freeman-Jones constants are the saved source's frozen values and are evaluated with the saved source's expressions; they are not re-derived from any external reference.",
+      "The two branches are independent fits, not equivalent parameterizations of one relation; selecting one is a caller decision, and no test establishes either fit against an external physical cross-section reference (the saved package records that residual as validation_oracle_gap).",
+      "Endpoint clipping is the saved source's declared behavior and is kept: a caller evaluating far outside the fit range silently obtains the endpoint value."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "energy_ev",
+      "description": "Collision energies at which the cross section is evaluated.",
+      "units": "eV",
+      "shape": "any (scalar or array)",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative. Values above or below a branch's fit range are clipped to that range's endpoints."
+    },
+    {
+      "name": "freeman",
+      "description": "Branch selector: the Freeman-Jones analytic fit when truthy, otherwise the Janev logarithmic polynomial.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "scalar selector",
+      "required": false,
+      "default": false,
+      "constraints": "A scalar interpreted as its truth value; arrays are rejected. The default selects the Janev branch."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "cross_section_m2",
+      "description": "Charge-exchange cross section, one value per energy.",
+      "units": "m^2",
+      "shape": "same as energy_ev",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and strictly positive for every accepted input, because both fits are evaluated only on their clipped positive domains."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller accepts the saved source's clipping convention: energies outside a branch's fit range silently return the endpoint value rather than an error or an extrapolation.",
+      "The caller chooses the branch; the two fits disagree in magnitude and are not interchangeable."
+    ],
+    "supported": [
+      "H + H+ charge-exchange cross sections on either saved fit within (or clamped to) its declared energy range.",
+      "Scalar and array evaluation of any shape, including zero-dimensional inputs.",
+      "Rejecting negative energies and non-scalar branch selectors."
+    ],
+    "excluded": [
+      "Maxwellian averaging of this cross section: use scirel.collisions.maxwellian-relative-speed-rate-average, which accepts this callable as its cross_section_m2 port.",
+      "Charge-exchange involving molecular hydrogen or other species: different relations not provided by this asset.",
+      "Rate coefficients or collision frequencies: downstream caller-owned quantities.",
+      "A cross-section model validated against an external atomic-physics reference; none is bound."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError with a message naming the quantity when energy_ev contains a non-finite or negative value, or when freeman is an array rather than a scalar. There is no other failure mode.",
+    "runtime_failure": "Not reachable on the declared domain: both fits are evaluated only on their clipped positive ranges, so the result is finite and strictly positive for every accepted input. No iteration, no branch state and no partial results.",
+    "nonconvergence": "Not applicable; the relation has no iteration or feedback.",
+    "partial_results": "Never returned; a rejected call produces no cross section."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy sigma_cx_h0 slice, package 原子氢电荷交换截面, source anchor KN1DPy/sigma/sigma_cx_h0.py:7-32 with the shared polynomial evaluation KN1DPy/poly.py:3-10 (saved implementation file SHA-256 af55e393c0e7510a0c1734eabc2a635374c1dfe2ec8dcc3ae87386772a80b099). The saved extraction ledger records the targeted extraction as ACCEPT_OPERATOR with package-level tests of both branches' clipping, positivity, shape and rejection behavior. Two documented repairs relative to the saved implementation, whose own document declares both contracts: negative energies are rejected instead of being silently clipped into the fit domain, and the freeman selector must be a scalar instead of being reduced by np.any over arrays. The branch arithmetic is preserved bit for bit on the declared domain. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "saved extraction ledger evidence",
+      "independent reevaluation of the saved formulas",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.collisions.atomic_hydrogen_charge_exchange_cross_section",
+      "symbol": "evaluate_atomic_hydrogen_charge_exchange_cross_section",
+      "signature": "evaluate_atomic_hydrogen_charge_exchange_cross_section(energy_ev, freeman=False)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev24",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate both branches on a small energy grid, confirm the endpoint clipping and confirm that a negative energy and an array branch selector are rejected.",
+    "code": "import numpy as np\nfrom scirel.collisions import evaluate_atomic_hydrogen_charge_exchange_cross_section\n\nenergy = np.array([0.1, 1.0, 10.0, 100.0, 1.0e3, 1.0e4, 2.01e4])\njanev = evaluate_atomic_hydrogen_charge_exchange_cross_section(energy)\nassert janev.shape == energy.shape\nassert np.all(np.isfinite(janev)) and np.all(janev > 0.0)\nfreeman = evaluate_atomic_hydrogen_charge_exchange_cross_section(energy, freeman=True)\nassert np.all(np.isfinite(freeman)) and np.all(freeman > 0.0)\nassert not np.allclose(janev, freeman, rtol=1e-12, atol=0.0)\nclipped = evaluate_atomic_hydrogen_charge_exchange_cross_section(np.array([0.01, 0.1, 3.0e4, 2.01e4]))\nassert clipped[0] == clipped[1] and clipped[-1] == clipped[-2]\ntry:\n    evaluate_atomic_hydrogen_charge_exchange_cross_section(np.array([1.0, -0.5]))\nexcept ValueError as error:\n    assert 'nonnegative' in str(error)\nelse:\n    raise AssertionError('a negative energy must be rejected')\ntry:\n    evaluate_atomic_hydrogen_charge_exchange_cross_section(energy, freeman=np.ones((2, 2)))\nexcept ValueError as error:\n    assert 'freeman' in str(error)\nelse:\n    raise AssertionError('an array branch selector must be rejected')",
+    "expected": "Finite strictly positive cross sections in m^2 on both branches, with the two branches disagreeing; endpoint repetition outside each clipped range; ValueError for a negative energy naming nonnegativity and ValueError for an array freeman selector naming freeman."
+  },
+  "verification": {
+    "scope": [
+      "That the Janev branch equals an independent evaluation of exp(polyval(log(E), a)) * 1e-4 on the clipped domain to a relative tolerance of 1e-15, and the Freeman-Jones branch equals an independent evaluation of its analytic form likewise.",
+      "That the two branches disagree, so the selector materially selects a different relation.",
+      "The endpoint clipping: values below and above each fit range repeat the endpoint values exactly.",
+      "The input contract: non-finite and negative energies are rejected with messages naming the quantity; arrays passed as freeman are rejected. The negative-energy and array-selector rejections are documented repairs: the saved implementation silently clipped negatives and reduced arrays with np.any although its document declared nonnegative energies and a scalar selector.",
+      "Exact bit-level replay of both branches against the saved KN1DPy implementation, pinned by SHA-256, plus repair witnesses showing the saved implementation returns the clipped endpoint for a negative energy and accepts an array selector where this asset rejects both. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance.",
+      "The composition contract: this callable serves directly as the cross_section_m2 port of scirel.collisions.maxwellian-relative-speed-rate-average and yields finite positive rate coefficients."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_atomic_hydrogen_charge_exchange_cross_section.py",
+      "tests/operator_contracts/test_atomic_hydrogen_charge_exchange_cross_section_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish both fits against in-file independent evaluations, the clipping, the full input and failure contracts including the two documented repairs, and the composition with the retained Maxwellian rate average. The environment-gated replay establishes exact agreement with the saved KN1DPy implementation on the compared grid only. No test establishes either fit against an external physical cross-section reference: the saved package records that residual as validation_oracle_gap. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "known_limitations": [
+      "Neither branch is validated against an external atomic-physics reference; the saved package's own validation gap carries over unchanged.",
+      "Energies outside a branch's fit range silently return the endpoint value; this is the saved source's declared clipping convention, not an error.",
+      "The two branches are different fits, not equivalent forms; selecting the wrong one for an application is a scientific error no runtime check can detect.",
+      "The negative-energy and scalar-selector rejections are documented development repairs, not source behavior: a caller migrating from the saved implementation sees a ValueError where it previously saw the clipped endpoint or an array-reduced branch selection.",
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}
