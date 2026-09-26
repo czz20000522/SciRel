@@ -48,14 +48,15 @@ zero writes.
   `runtime_origin: installed`, `examples_executed: true`.
 - Installed full tree: **1268 passed, 172 skipped, 0 failed**
   (`SCIREL_INSTALLED_RUNTIME=1`, `python -I -B -m pytest -q -o pythonpath=
-  -p no:cacheprovider tests/`; log line `1266 passed, 172 skipped,
+  -p no:cacheprovider tests/`; log line `1268 passed, 172 skipped,
   7 warnings in 189.85s`; re-executed on the frozen wheel (805615bc...).
 - Catalog `build/catalog/r63`: `complete: 116/116`, root digest
   `sha256:77513fbe37a5574652f6cf3322d8a2fcba3ffbbfaddc6d932da1b18e6db28622`.
 - Internal wheel `scirel-0.1.0.dev37-py3-none-any.whl`, SHA-256
   `805615bcec33d4ad45354db0d6320208fc4e4fc9181e584a1f3293053bff338e`.
-- Snapshot deletion disclosure: `review-2026-09-27-r63-final/` and
-  `review-2026-09-27-r63b-transport/` were created and then deleted by
+- Snapshot deletion disclosure: `review-2026-09-27-r63-final/`,
+  `review-2026-09-27-r63b-transport/`, and
+  `review-2026-09-27-r63c-transport-disclosure/` were created and then deleted by
   cleanup commands. Their manifest bytes are not recoverable. No claims
   about their full contents are made. Going forward, every freeze attempt
   keeps its directory and superseded/inconsistent snapshots are superseded
