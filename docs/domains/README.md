@@ -12,6 +12,7 @@
 | 双温镜端动理学、准中性与端损失闭合 | [双温磁镜动理学与准中性闭合](mirror-kinetics-and-quasineutrality.md) |
 | Frank-Egedal 压强组合 | [Frank-Egedal 压强闭合](frank-egedal-pressure-closure.md) |
 | 磁通剖面与离散路径采样 | [磁通坐标剖面与路径采样](flux-coordinate-sampling.md) |
+| 中性粒子速度空间输运与代际推进 | [中性粒子输运关系族](neutral-particle-transport.md) |
 | 动理学波响应与有限谐波张量 | [动理学等离子体波](kinetic-plasma-waves.md) |
 | 聚变反应率与 DD 中子能量 | [聚变关系](fusion.md) |
 

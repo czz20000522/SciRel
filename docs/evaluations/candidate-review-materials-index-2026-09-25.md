@@ -24,6 +24,20 @@ needs a successor, not a silent edit.
 
 
 
+
+## Batch r69: GSEQ filament-coil Green family (three operators)
+
+Directory: `review_candidates/2026-09-27-gseq-green/`
+Successor of batch r68: the r68 candidate files below keep their frozen r68 v1 bytes and digests; this batch binds the new bytes.
+- `review.md` -- sha256 `ffe26453061a662d49c519e3896e975fe24c29e0962806f6171a1d429bb41eab`
+- `proposal/coil_green_geometry.py` -- sha256 `e4bebba8a4acf5f75ca565a2644abbbc8615ec1210a3b2d6bd7d27a87d1f8098`
+- `proposal/complete_elliptic_integrals_approx.py` -- sha256 `07a2b468c38a2cb8569f4a34913632cad029d90d65e6a1007cb5634cf0c8e90e`
+- `proposal/filament_coil_green_field.py` -- sha256 `76ed8621d21e85f91e5e2a2036a418d638fd50db1e07563b6c600783f3e0dff6`
+- `proposal/scirel.field.coil-green-geometry.json` -- sha256 `4f08c91065143d831f956cf28a32d3a870fed3fd0fee044085cc928e57f46b0b`
+- `proposal/scirel.field.complete-elliptic-integrals-approx.json` -- sha256 `f692854493a0c7d0353036ef871b51738938331a73316f2f7c63706bfdee7396`
+- `proposal/scirel.field.filament-coil-green-field.json` -- sha256 `5e53e55005ba3679c08fa5bf371b80fcbfdd791aae0d046d4d5ac67b37818db3`
+- `proposal/test_filament_coil_green_gseq.py` -- sha256 `33de0db701e6cee1de7bc502d6825ea5b55289f5cea3b2a97e581b5a2310b287`
+
 ## Batch r68: KN1DPy Omega aggregation family (two operators)
 
 Directory: `review_candidates/2026-09-27-omega-aggregation/`
