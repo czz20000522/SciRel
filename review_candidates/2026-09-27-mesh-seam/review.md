@@ -1,58 +1,68 @@
-# Candidate: KN1DPy adaptive velocity mesh + cross-mesh scalar seam (two operators)
+# Candidate: KN1DPy cross-mesh distribution interpolation (one operator)
 
 Status: development candidate prepared for expert review, to be frozen as the
-pending_unapproved r61 successor of r60c. Nothing here is expert approval, a
+pending_unapproved r62 successor of r61. Nothing here is expert approval, a
 trusted version, or a public release.
 
 ## Base and comparison scope
 
-- SciRel base: `913accd` (r60c, KN1DPy neutral-moment diagnostics family,
-  110 assets dev32, `pending_unapproved`).
-- Unpublished candidate pool: re-checked by relation for velocity-mesh
-  constructors and cross-mesh interpolation seams — none exists. The
-  baseline has the cylindrical quadrature (a quadrature over an existing
-  mesh) but no mesh constructor and no mesh-to-mesh seam; both incoming
-  leaves are **new capabilities**.
+- SciRel base: `d01820e` (r61b, mesh/seam family + boundary fix, 112 assets
+  dev33, `pending_unapproved`).
+- Unpublished candidate pool: re-checked by relation for cross-grid
+  distribution interpolation — none exists. The baseline has the cross-mesh
+  scalar seam (r61) but no distribution-level transfer; the incoming leaf
+  is a **new capability**.
 - Incoming source (read only): the saved KN1DPy bundle
   `D1待重审历史产物/KN1DPy-631d0bf1` (provisional; strict D1 withdrawn),
-  implementations pinned by SHA-256 (`38fcde8b…` mesh, `01a014fe…` seam).
-  Saved-tree imports read-only; zero writes.
+  implementation pinned by SHA-256 `c93f491369b36e237c35c10528a82af9f33de2db730f9a3a8054dace6dca5a43`.
 - Qualified L1 consumption: none (delivery root re-checked empty; strict D1
   withdrawn). Bounded historical development evidence only.
 
-## Inventory
+## Proposed identity
 
-| Saved callable | Disposition | Proposed SciRel identity | Material differences | Evidence |
-| --- | --- | --- | --- | --- |
-| `create_vr_vx_mesh` (`create_vr_vx_mesh.py:16-56`) | add new capability | scirel.kinetic.adaptive-neutral-velocity-mesh | **no repair**; one declared JSON adaptation: `requested_energy_ev` defaults to `None` (JSON-serializable) instead of the empty tuple, treated identically — recorded in the document | direct 7 + replay 3 |
-| `interp_scalar_across_mesh` (`interp_scalarx.py`, consumed at `kn1d.py:485-486, 521`) | add new capability | scirel.kinetic.cross-mesh-scalar-interpolation | **no repair** — linear interpolation, out-of-range zero fill (the saved phase-space contract), and the do_warn boundary warnings reproduced | direct 7 + replay 3 |
+- `scirel.kinetic.cross-mesh-distribution-interpolation`, callable
+  `interp_distribution_across_mesh(fa, vr_a, vx_a, x_a, Tnorm_a, vr_b, vx_b,
+  x_b, Tnorm_b, correct=1, do_warn=None)`
 
-Why these two and why only these two: they form the minimal closure for the
-next deferred layer (mesh construction feeds every transport leaf already
-integrated; the seam is the prerequisite for the H<->H2 cross-grid handoff
-deferred from earlier batches). The larger cross-grid distribution
-interpolation (411 lines) and the per-species source-production assemblies
-remain deferred until their upstream chains close.
+## Material scientific differences and declared divergences
 
-## Declared adaptations and open questions
+1. **No cache/w_new in the saved formal operator.** The original source
+   runtime has a weight cache lifecycle (w_new=1 build / w_new=0 reuse),
+   but the saved formal operator does not carry it — it recomputes the
+   weight matrix every call, exactly like the stateless SciRel port.
+   Cache-state parity is therefore out of scope for this replay.
+2. **Axis validation (declared narrowing).** The saved arm only validates
+   vr_a/vr_b monotonicity; x_a/x_b/vx_a/vx_b monotonicity and minimum node
+   counts are unvalidated (a single-node vx_a raises a raw IndexError in
+   the correction branch). This integration enforces strict monotonicity
+   and >= 2 nodes on all six axes, with named ValueError messages.
+3. **Tnorm finiteness (declared narrowing).** The saved arm checks
+   Tnorm <= 0, so NaN/inf pass silently; this asset requires finite and
+   positive Tnorm.
+4. **No repair on the declared legal domain.** On inputs satisfying the
+   declared contracts, the port reproduces the saved formal operator
+   bit for bit (verified by the environment-gated replay across both
+   correct branches and repeated calls).
 
-- `requested_energy_ev=None` default replaces the saved `()` so the default
-  is JSON-serializable in the exact document; behavior is identical for
-  both defaults. Recorded as an assumption, flagged for expert review.
-- The saved `vmax = 3.5`, the `0.1*Tmax` uniformity threshold, the out-of-
-  range zero fill and the cap semantics are preserved verbatim.
+## Evidence
+
+- Independent analytic quadrature in the test oracle: ring areas
+  pi*(edges[1:]^2 - edges[:-1]^2) computed from first principles (not from
+  the implementation's _make_dvr_dvx), so an error in either would surface
+  as a mismatch.
+- Moment-target assertions: density on mesh_b matches mesh_a density
+  interpolated onto mesh_b x nodes to 1e-9 rtol; axial flow stays zero for
+  vx-symmetric input.
+- 9 tests total (6 direct + 3 replay); `pytest --collect-only` verified.
 
 ## Files
 
-- `proposal/adaptive_neutral_velocity_mesh.py`,
-  `proposal/cross_mesh_scalar_interpolation.py`
-- `proposal/test_mesh_and_seam.py`, `proposal/test_mesh_and_seam_l1.py`
-- `proposal/scirel.kinetic.adaptive-neutral-velocity-mesh.json`,
-  `proposal/scirel.kinetic.cross-mesh-scalar-interpolation.json`
+- `proposal/cross_mesh_distribution_interpolation.py`
+- `proposal/test_cross_mesh_distribution.py`, `test_cross_mesh_distribution_l1.py`
+- `proposal/scirel.kinetic.cross-mesh-distribution-interpolation.json`
 
-## Public API and dependency impact
+## Version and impact
 
-Two new public callables in `scirel.kinetic` and the root namespace; two new
-exact documents; version `0.1.0.dev32` -> `0.1.0.dev33`; catalog 110 -> 112.
-The other 110 exact documents change only in the mechanical
-`implementation_version` bump. No existing assertion weakened.
+Version `0.1.0.dev34` -> `0.1.0.dev35`; catalog 112 -> 113 exact documents.
+The other 112 documents change only in the mechanical `implementation_version`
+bump.

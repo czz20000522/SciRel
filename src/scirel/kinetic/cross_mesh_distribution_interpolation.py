@@ -188,9 +188,10 @@ def interp_distribution_across_mesh(
     # node count unvalidated; a single-node vx_a raises a raw IndexError in
     # the correction branch (vx[1] access), and a single-node x_a/x_b or
     # vr_a/vr_b can enter _locate / _make_dvr_dvx with undefined semantics.
-    # The exact document requires at least 2 nodes per axis; this port
-    # enforces that here.  The saved-arm divergences are pinned by
-    # regression tests.
+    # The exact document requires at least 2 nodes per axis; this asset
+    # fail-closes with a named ValueError for each case, which is a
+    # declared divergence from the saved arm's raw IndexError. The
+    # saved-arm divergences are pinned by regression tests.
     for name, a in (("vr_a", vr_a), ("vx_a", vx_a), ("x_a", x_a),
                      ("vr_b", vr_b), ("vx_b", vx_b), ("x_b", x_b)):
         if a.size < 2:
