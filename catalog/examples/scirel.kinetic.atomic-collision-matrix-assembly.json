@@ -1,0 +1,213 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.atomic-collision-matrix-assembly",
+  "kind": "operator",
+  "title": {
+    "en": "Atomic hydrogen four-family collision-matrix assembly",
+    "zh": "原子氢四族碰撞矩阵组装"
+  },
+  "summary": "From an explicit cylindrical velocity-space carrier (vr, vx, Vr2pidVr, dVx) and the thermal normalization (Tnorm, mu), assemble the four (nvr*nvx, nvr*nvx) atomic SIG collision matrices (CX, H-H, H-H2, H-P) via the double-velocity-space predecessor geometry, the embedded theta five-point quadrature and Fortran-order reshapes.",
+  "taxonomy": [
+    "kinetic",
+    "neutral-transport",
+    "collision",
+    "assembly"
+  ],
+  "aliases": [
+    "assemble_atomic_hydrogen_collision_matrices"
+  ],
+  "identity": {
+    "relation": "SIG_fam = F^-1(W * (S_fam @ D_THETA)) per family, where S_fam[:,:,m] carries v_v*sigma_fam(E) (with the family's vr2_vx2/vx_vx factor and constants) evaluated on the (nvr,nvx,nvr,nvx,ntheta) predecessor geometry, W = Vr2pidVrdVx (times vx_vx for the H-H2/H-P elastic families), and F/F^-1 are the source's legacy Fortran-order flatten/restore between the (nvr,nvx,nvr,nvx) kernel and the (N,N) matrix (N = nvr*nvx).",
+    "direction": "velocity-space carrier (vr, vx, Vr2pidVr, dVx) + thermal normalization (Tnorm, mu) -> four assembled atomic SIG collision matrices (SIG_CX, SIG_H_H, SIG_H_H2, SIG_H_P)",
+    "definition": "The saved source's four-family SIG kernel assembly (kinetic_h.py:888-1018): a double-velocity-space (vr,vx) x (vr',vx') kernel v_v2 = (vr-vr')^2 - 2*vr*vr'*(1-cos(theta_m)) + (vx-vx')^2 over a five-point theta quadrature; each family multiplies v_v (relative speed) by its cross-section fit evaluated at E = v_v2 * (energy factor), applies the signed vr2_vx2 / vx_vx factors and constants (SIG_H_H: vr2_vx2 factor and /8), contracts over theta, applies the Vr2pidVrdVx weight, and restores to the (N,N) matrix in Fortran order. Energy factors: SIG_CX/SIG_H_H2/SIG_H_P use 0.5*H_MASS*Vth2/Q; SIG_H_H uses 0.5*H_MASS*mu*Vth2/Q.",
+    "model": "the saved formal implementation, ported with its geometry, quadrature and reshapes verbatim and its cross-section fits reused from the integrated scirel.collisions leaves (see provenance and verification for the exact parity statement)",
+    "geometry": "per call: the full (nvr,nvx) x (nvr,nvx) double-velocity-space kernel over ntheta=5 quadrature points, Fortran-order flattened to (N,N) matrices with N = nvr*nvx",
+    "coordinates": "cylindrical (vr,vx) velocity space, v/vth normalized; Vr2pidVr and dVx in the source's discrete velocity-space measure; Tnorm in eV; the callable performs no implicit unit conversion",
+    "boundary": "finite aligned inputs of the declared shapes; vr entries must be positive and vx strictly increasing with at least one positive and one negative entry (no monotonicity gate on vr, no exact-symmetry gate on vx); Vr2pidVr nonnegative, dVx positive, Tnorm and mu positive; bounded negative cells in the three elastic families (intrinsic to the signed vr2_vx2 / vx_vx factors) are reproduced as-is, never clamped",
+    "assumptions": [
+      "The carrier (vr, vx, Vr2pidVr, dVx) arrives already built (source make_dvr_dvx outputs); this operator performs no gridding.",
+      "The cross-section fits are the saved KN1DPy sigma/ slices; the port evaluates them through the integrated scirel.collisions leaves instead of a second embedded copy.",
+      "Bounded negative cells inherited from the signed elastic factors are reproduced as-is; whether they correspond to physically acceptable diffusion behavior is left to expert review.",
+      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "vr",
+      "description": "Radial velocity axis v/vth on the cylindrical mesh; the source make_dvr_dvx output axis.",
+      "units": "v/vth (normalized speed); no implicit conversion",
+      "shape": "[nvr]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 1-D with at least one entry; every entry positive (rejected otherwise). No monotonicity gate is applied."
+    },
+    {
+      "name": "vx",
+      "description": "Axial velocity axis v/vth on the cylindrical mesh; the source make_dvr_dvx output axis.",
+      "units": "v/vth (normalized speed); no implicit conversion",
+      "shape": "[nvx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 1-D, strictly increasing, containing at least one positive and one negative entry."
+    },
+    {
+      "name": "Vr2pidVr",
+      "description": "Cylindrical radial finite-volume integration weight (source make_dvr_dvx output).",
+      "units": "source-discrete velocity-space measure; no implicit conversion",
+      "shape": "[nvr]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 1-D of size nvr; entries nonnegative."
+    },
+    {
+      "name": "dVx",
+      "description": "Axial cell widths (source make_dvr_dvx output).",
+      "units": "source-discrete velocity-space measure; no implicit conversion",
+      "shape": "[nvx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 1-D of size nvx; entries positive."
+    },
+    {
+      "name": "Tnorm",
+      "description": "Thermal normalization temperature; Vth = sqrt(2*Q*Tnorm/(mu*H_MASS)) with Q = 1.602177e-19 J/eV and H_MASS = 1.6726231e-27 kg (the same eV convention as the integrated thermal-speed-scale relation).",
+      "units": "eV",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive; must be a true scalar (0-d). Size-1 arrays are rejected -- a port-added fail-closed tightening: the saved arm accepts a size-1 array Tnorm and would produce a (1,1) Vth2 field instead of the declared length-1."
+    },
+    {
+      "name": "mu",
+      "description": "Normalized mass of the colliding species entering the SIG_H_H energy factor and Vth (source: 1 = hydrogen).",
+      "units": "dimensionless (normalized to H mass)",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": false,
+      "default": 1.0,
+      "constraints": "Finite and positive; must be a true scalar (0-d). Size-1 arrays are rejected -- a port-added fail-closed tightening: the saved arm accepts a size-1 array Tnorm and would produce a (1,1) Vth2 field instead of the declared length-1."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "SIG_CX",
+      "description": "H + H+ charge-exchange collision matrix: v_v * sigma_cx_h0(v_v2 * 0.5*H_MASS*Vth2/Q) contracted over the five-point theta quadrature with the Vr2pidVrdVx weight.",
+      "units": "source-discrete assembled collision-matrix measure (cross section x relative speed x velocity-space weight); no implicit conversion",
+      "shape": "[nvr*nvx, nvr*nvx]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite (fail closed otherwise); nonnegative on the declared domain; never clamped."
+    },
+    {
+      "name": "SIG_H_H",
+      "description": "H-H elastic (viscosity-branch) collision matrix: vr2_vx2 * v_v * sigma_el_h_h(v_v2 * 0.5*H_MASS*mu*Vth2/Q) / 8 contracted over theta with the Vr2pidVrdVx weight.",
+      "units": "source-discrete assembled collision-matrix measure; no implicit conversion",
+      "shape": "[nvr*nvx, nvr*nvx]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite (fail closed otherwise); contains bounded negative cells from the signed vr2_vx2 factor, reproduced as-is."
+    },
+    {
+      "name": "SIG_H_H2",
+      "description": "H-H2 elastic collision matrix: v_v * sigma_el_h_hh(v_v2 * 0.5*H_MASS*Vth2/Q) contracted over theta with the Vr2pidVrdVx * vx_vx weight.",
+      "units": "source-discrete assembled collision-matrix measure; no implicit conversion",
+      "shape": "[nvr*nvx, nvr*nvx]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite (fail closed otherwise); contains bounded negative cells from the signed vx_vx factor, reproduced as-is."
+    },
+    {
+      "name": "SIG_H_P",
+      "description": "H-H+ elastic collision matrix: v_v * sigma_el_p_h(v_v2 * 0.5*H_MASS*Vth2/Q) (two energy branches) contracted over theta with the Vr2pidVrdVx * vx_vx weight.",
+      "units": "source-discrete assembled collision-matrix measure; no implicit conversion",
+      "shape": "[nvr*nvx, nvr*nvx]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite (fail closed otherwise); contains bounded negative cells from the signed vx_vx factor, reproduced as-is."
+    },
+    {
+      "name": "forensic_state",
+      "description": "Captured predecessor geometry and thermal normalization returned by the saved formal implementation for forensic parity checks: v_v2, v_v, vr2_vx2 (shapes (nvr,nvx,nvr,nvx,ntheta)), vx_vx, Vr2pidVrdVx (shapes (nvr,nvx,nvr,nvx)), and Vth2 (length-1 array).",
+      "units": "source-discrete derived quantities",
+      "shape": "as listed; Vth2 is a length-1 array",
+      "dtype": "float64 arrays",
+      "required": true,
+      "constraints": "Finite; bitwise part of the saved-arm replay comparison. These are captured-state forensic fields of the saved formal contract, not additional scientific products; they are returned in one dict alongside the SIG_* matrices under the listed key names."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "A finite aligned velocity-space carrier of the declared shapes exists (the source make_dvr_dvx outputs).",
+      "The caller supplies the thermal normalization; this operator performs no gridding, gating, or cache handling."
+    ],
+    "supported": [
+      "Atomic four-family SIG collision-matrix assembly (SIG_CX, SIG_H_H, SIG_H_H2, SIG_H_P) on an explicit velocity carrier."
+    ],
+    "excluded": [
+      "The molecular four-family assembly, the SIG_D2_* and other collision families, Do_SIG_* gating, KH.Internal cache lifecycle (the source's New_Grid=1/0 two states are bitwise identical for this mapping), the downstream Alpha contraction and Omega aggregation, and external physical validation."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when any carrier argument is not 1-D of the declared size, when any entry is non-finite, when vr has a non-positive entry, when vx is not strictly increasing or lacks a positive or negative entry, when Vr2pidVr is negative or dVx is non-positive, or when Tnorm or mu is non-positive or non-finite.",
+    "runtime_failure": "Raises ValueError if any family matrix assembles to a non-finite value; no partial results are returned.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy 原子氢碰撞矩阵组装 package, source anchor KN1DPy/kinetic_h.py:888-1018, as recorded by the saved bundle's own provenance section. Saved implementation file SHA-256 80fcd63681d255fbe6a2a0fc2e400d63143c9809099d1181bb30ef3266a956fe. The predecessor geometry, theta quadrature, weights and Fortran-order reshapes are ported verbatim; the cross-section fits are reused from the integrated scirel.collisions leaves (coefficient- and clip-identical) instead of a second embedded copy. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is provisional bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent recomputation witness (broadcasting-geometry oracle)",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.atomic_collision_matrix_assembly",
+      "symbol": "assemble_atomic_hydrogen_collision_matrices",
+      "signature": "assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu=1.0)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev41",
+    "dependencies": [
+      {
+        "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section"
+      },
+      {
+        "asset_id": "scirel.collisions.atomic-hydrogen-elastic-cross-section"
+      },
+      {
+        "asset_id": "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section"
+      },
+      {
+        "asset_id": "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section"
+      }
+    ]
+  },
+  "example": {
+    "description": "Assemble the four atomic SIG matrices on a two-by-two canonical carrier and check the returned keys, shapes and SIG_CX nonnegativity.",
+    "code": "import numpy as np\nfrom scirel.kinetic import assemble_atomic_hydrogen_collision_matrices\nresult = assemble_atomic_hydrogen_collision_matrices(\n    vr=np.array([0.5, 1.0]), vx=np.array([-1.0, 1.0]),\n    Vr2pidVr=np.array([1.7671458676442586, 3.141592653589793]),\n    dVx=np.array([2.0, 2.0]), Tnorm=1.0, mu=1.0,\n)\nassert set(result) >= {\"SIG_CX\", \"SIG_H_H\", \"SIG_H_H2\", \"SIG_H_P\"}\nassert result[\"SIG_CX\"].shape == (4, 4)\nassert np.all(result[\"SIG_CX\"] >= 0.0)\ntry:\n    assemble_atomic_hydrogen_collision_matrices(\n        np.array([0.5, 1.0]), np.array([-1.0, 1.0]),\n        np.array([1.0]), np.array([2.0, 2.0]), 1.0,\n    )\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError(\"a carrier length mismatch must be rejected\")",
+    "expected": "Four (4, 4) SIG matrices are returned; SIG_CX is nonnegative; a carrier length mismatch raises ValueError."
+  },
+  "verification": {
+    "scope": [
+      "Agreement with the saved KN1DPy implementation.",
+      "Input and failure contracts."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_collision_matrix_assembly.py",
+      "tests/operator_contracts/test_collision_matrix_assembly_l1.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests establish the four-family assembly against an independent broadcasting-geometry oracle built on the source's own embedded formulas (rtol=1e-12, the saved packages' budget), the captured predecessor state, SIG_CX nonnegativity, the bounded negative elastic cells, and the fail-closed carrier contracts. In the environment-gated replay the port agrees with the saved KN1DPy implementation bit for bit on the three elastic families and the captured predecessor state, while the charge-exchange family agrees within rtol=1e-14: the standardized scirel.collisions leaf evaluates np.exp where the source uses np.e **, a deviation measured as at most 2.22e-15 relative on a 200,011-point probe of the union of the declared fit domains (clip endpoints, the H-P 10 eV branch boundary and E = 0; a 1,000,001-point log-grid root-cause probe observes up to 17 double-precision ulp by np.spacing). That probe is sampled evidence, not a bound over the continuous domain. The replay is provisional historical development evidence, not qualified-L1 provenance. No test establishes the assembly against an external atomic-physics reference; the saved package records that residual as validation_oracle_gap.",
+    "known_limitations": [
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "The saved molecular operator document's canonical negative-cell note (2/2/4) conflicts with the reproducible canonical computation (4/4/8) on the saved package test's own fixture; the atomic note (8/4/4) matches. The saved document is kept verbatim and the cause is an open expert-review item.",
+      "Negative cells in the elastic families are reproduced as-is; their physical acceptability is an open expert question, not a runtime gate.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

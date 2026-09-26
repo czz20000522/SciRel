@@ -22,6 +22,19 @@ needs a successor, not a silent edit.
 
 
 
+
+## Batch r67: KN1DPy collision-matrix assembly family (two operators)
+
+Directory: `review_candidates/2026-09-27-collision-matrix-assembly/`
+Successor of batch r66: the r66 candidate files below keep their frozen r66 v3 bytes and digests; this batch binds the new bytes.
+- `review.md` -- sha256 `09baa7128df4e1605856431fedd899b226f8296f9a2a02097c93aebbcbedb408`
+- `proposal/atomic_collision_matrix_assembly.py` -- sha256 `a93bb9168d6652be8f89e1a08753a000afa6e93f32bed49606b43d6cc587af27`
+- `proposal/molecular_collision_matrix_assembly.py` -- sha256 `64873059223ee93229b9feaa477a347f81968275e54fdf2616b90d2717199585`
+- `proposal/scirel.kinetic.atomic-collision-matrix-assembly.json` -- sha256 `db18d0e796befc029946d7cf1b8d0f9b988e22b3d3f062f1087797c9bb2e69a5`
+- `proposal/scirel.kinetic.molecular-collision-matrix-assembly.json` -- sha256 `604e61e9493d19f314907a09da5cd976707cbfc2ef73af404873c86c4b5b0bcc`
+- `proposal/test_collision_matrix_assembly.py` -- sha256 `570f79c7e4c546bbe330abcb08bef3ba92d58bce793a1b81870193c260441f43`
+- `proposal/test_collision_matrix_assembly_l1.py` -- sha256 `1aff6826a60147c9246315b59a83433f947a5871160596eb3d655c854bc28e01`
+
 ## Batch r66: KN1DPy collision frequency contraction family (two operators)
 
 Directory: `review_candidates/2026-09-27-alpha-contraction/`
