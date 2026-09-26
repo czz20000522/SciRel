@@ -1,0 +1,177 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.atomic-alpha-contraction",
+  "kind": "operator",
+  "title": {
+    "en": "Atomic alpha collision frequency contraction",
+    "zh": "原子氢碰撞频率收缩"
+  },
+  "summary": "Contract the atomic four-family SIG matrices (CX, H-H, H-H2, H-H+) to Alpha collision frequencies using Fortran-order flatten/restore.",
+  "taxonomy": [
+    "kinetic",
+    "neutral-transport",
+    "collision",
+    "contraction"
+  ],
+  "aliases": [
+    "contract_atomic_hydrogen_alpha_frequencies"
+  ],
+  "identity": {
+    "relation": "Contract the atomic four-family SIG matrices (CX, H-H, H-H2, H-H+) to Alpha collision frequencies using Fortran-order flatten/restore.",
+    "direction": "SIG matrices + predecessor distributions -> Alpha collision frequencies",
+    "definition": "Contract the atomic four-family SIG matrices (CX, H-H, H-H2, H-H+) to Alpha collision frequencies using Fortran-order flatten/restore.",
+    "model": "the saved formal implementation, ported verbatim and reproduced bit for bit on the declared legal domain",
+    "geometry": "double-velocity-space (vr,vx) x (vr,vx) collision matrices contracted to (nvr,nvx,nx) Alpha frequencies",
+    "coordinates": "collision matrices in source-defined units; velocities in normalized units; densities in m^-3",
+    "boundary": "finite aligned SIG matrices and 3-D distributions; positive densities",
+    "assumptions": [
+      "The saved formal operator is ported verbatim; no repair is claimed.",
+      "Bounded negative cells inherited from signed elastic SIG families are reproduced as-is, never clamped.",
+      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "SIG_CX",
+      "description": "The SIG_CX input.",
+      "units": "source-defined",
+      "shape": "varies",
+      "dtype": "real array-like / scalar / boolean",
+      "required": true,
+      "constraints": "Finite, shape-compatible."
+    },
+    {
+      "name": "SIG_H_H",
+      "description": "The SIG_H_H input.",
+      "units": "source-defined",
+      "shape": "varies",
+      "dtype": "real array-like / scalar / boolean",
+      "required": true,
+      "constraints": "Finite, shape-compatible."
+    },
+    {
+      "name": "SIG_H_H2",
+      "description": "The SIG_H_H2 input.",
+      "units": "source-defined",
+      "shape": "varies",
+      "dtype": "real array-like / scalar / boolean",
+      "required": true,
+      "constraints": "Finite, shape-compatible."
+    },
+    {
+      "name": "SIG_H_P",
+      "description": "The SIG_H_P input.",
+      "units": "source-defined",
+      "shape": "varies",
+      "dtype": "real array-like / scalar / boolean",
+      "required": true,
+      "constraints": "Finite, shape-compatible."
+    },
+    {
+      "name": "fi_hat",
+      "description": "The fi_hat input.",
+      "units": "source-defined",
+      "shape": "varies",
+      "dtype": "real array-like / scalar / boolean",
+      "required": true,
+      "constraints": "Finite, shape-compatible."
+    },
+    {
+      "name": "ni",
+      "description": "The ni input.",
+      "units": "source-defined",
+      "shape": "varies",
+      "dtype": "real array-like / scalar / boolean",
+      "required": true,
+      "constraints": "Finite, shape-compatible."
+    },
+    {
+      "name": "fH2",
+      "description": "The fH2 input.",
+      "units": "source-defined",
+      "shape": "varies",
+      "dtype": "real array-like / scalar / boolean",
+      "required": true,
+      "constraints": "Finite, shape-compatible."
+    },
+    {
+      "name": "fH",
+      "description": "The fH input.",
+      "units": "source-defined",
+      "shape": "varies",
+      "dtype": "real array-like / scalar / boolean",
+      "required": true,
+      "constraints": "Finite, shape-compatible."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "The Alpha collision frequency mapping.",
+      "units": "source-defined",
+      "shape": "mapping",
+      "dtype": "mapping of [nvr,nvx,nx] arrays",
+      "required": true,
+      "constraints": "Finite; the saved return structure."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite aligned SIG matrices and 3-D distributions."
+    ],
+    "supported": [
+      "Atomic (4-family) and molecular (3-family) Alpha collision frequency contraction."
+    ],
+    "excluded": [
+      "External physical validation; non-Alpha collision families."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError or IndexError when inputs are misaligned.",
+    "runtime_failure": "Not applicable; contraction is a deterministic matrix product.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy 原子氢碰撞频率收缩 package, source anchor KN1DPy/kinetic_h.py:1041-1165, as recorded by the saved bundle's own provenance section. Saved implementation file SHA-256 6a30883d44d3fee77add57a09617e9621e728c7e984f3e4394f3b372683d4839. The saved formal implementation is ported verbatim and reproduced bit for bit on the declared legal domain; no repair is claimed. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent recomputation witness",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.atomic_alpha_contraction",
+      "symbol": "contract_atomic_hydrogen_alpha_frequencies",
+      "signature": "contract_atomic_hydrogen_alpha_frequencies(SIG_CX, SIG_H_H, SIG_H_H2, SIG_H_P, fi_hat, ni, fH2, fH)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev40",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Contract with identity SIG matrices.",
+    "code": "from scirel.kinetic import contract_atomic_hydrogen_alpha_frequencies",
+    "expected": "The callable exists and returns finite results."
+  },
+  "verification": {
+    "scope": [
+      "Bit-identical agreement with the saved KN1DPy implementation.",
+      "Input and failure contracts."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_alpha_contraction.py",
+      "tests/operator_contracts/test_alpha_contraction_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the relation against independent recomputation, the documented fail-closed contracts, and -- in the environment-gated replay test -- bit-identical agreement with the saved KN1DPy implementation pinned by SHA-256, including rejection-behavior agreement. That replay is historical development evidence, not qualified-L1 provenance.",
+    "known_limitations": [
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}
