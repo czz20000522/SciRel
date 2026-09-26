@@ -1,0 +1,145 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.cross-mesh-scalar-interpolation",
+  "kind": "operator",
+  "title": {
+    "en": "Cross-mesh scalar interpolation",
+    "zh": "跨网格标量插值"
+  },
+  "summary": "Interpolate a 1-D spatial scalar profile from one species' spatial mesh onto another's: in-range mesh_b nodes take the scipy linear interpolation of the profile, out-of-range nodes stay exactly zero (the source's phase-space contract), with the optional source boundary warnings.",
+  "taxonomy": [
+    "kinetic",
+    "neutral-transport",
+    "interpolation",
+    "mesh-handoff"
+  ],
+  "aliases": [
+    "interp_scalarx"
+  ],
+  "identity": {
+    "relation": "the saved interp_scalarx handoff: fb[k0:k1+1] = interp1d(xa, fa)(xb[okk]) with okk the mesh_b nodes inside the mesh_a range and zeros elsewhere",
+    "direction": "profile and mesh_a nodes plus mesh_b nodes -> interpolated profile on mesh_b",
+    "definition": "okk selects xb in [min(xa), max(xa)]; the in-range block receives the scipy linear interpolation; out-of-range nodes are exactly zero; do_warn reproduces the source's boundary warnings without changing the output",
+    "model": "the saved formal implementation of the N5 H<->H2 seam interpolation",
+    "geometry": "one-dimensional spatial meshes",
+    "coordinates": "nodes in m; profile in the caller's units",
+    "boundary": "nonempty finite one-dimensional arrays; xa strictly increasing and aligned to fa; at least one in-range xb node; finite output",
+    "assumptions": [
+      "The out-of-range zero fill is the saved physics contract (interpolations outside the phase space are set to zero), not a defect.",
+      "Linear interpolation only; higher-order or conservative remaps are excluded."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "fa",
+      "description": "The scalar profile on mesh_a.",
+      "units": "caller units",
+      "shape": "[nxa]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A finite nonempty one-dimensional array."
+    },
+    {
+      "name": "xa",
+      "description": "The mesh_a spatial nodes.",
+      "units": "m",
+      "shape": "[nxa]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, strictly increasing, aligned to fa."
+    },
+    {
+      "name": "xb",
+      "description": "The mesh_b spatial nodes.",
+      "units": "m",
+      "shape": "[nxb]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A finite nonempty one-dimensional array; out-of-range nodes receive zero."
+    },
+    {
+      "name": "do_warn",
+      "description": "The source boundary-warning switch.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer scalar",
+      "required": false,
+      "constraints": "0 (default) skips the warnings; other values enable them (output unchanged).",
+      "default": 0
+    }
+  ],
+  "outputs": [
+    {
+      "name": "fb",
+      "description": "The interpolated profile on mesh_b.",
+      "units": "caller units",
+      "shape": "[nxb]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite; in-range nodes interpolated, out-of-range nodes exactly zero."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Strictly increasing mesh_a nodes aligned to the profile; at least one mesh_b node inside the mesh_a range."
+    ],
+    "supported": [
+      "H<->H2 species-handoff interpolation of 1-D scalars (densities, temperatures, wall sources) between two spatial meshes."
+    ],
+    "excluded": [
+      "Extrapolation outside the mesh_a range: out-of-range nodes are zero, never extrapolated.",
+      "Two-dimensional or vector profiles."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when any array is not a finite nonempty one-dimensional array, xa is not strictly increasing, fa and xa lengths disagree, no xb node is in range, or the result is non-finite.",
+    "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result; on the declared domain the relation is finite by construction.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned; a rejected call produces no result."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy 跨网格标量插值 package, source anchor KN1DPy/interp_scalarx.py (consumed at kn1d.py:485-486, 521), as recorded by the saved bundle's own provenance section (the raw source tree was not re-read; the anchor is the saved candidate's). Saved implementation file SHA-256 01a014fe9b733d6afc6b9ce1216baed292a8cc9f79c0a45d6b89d5f9236bffa7. The saved formal implementation is reproduced bit for bit with its documented validation contract and error messages; no repair is claimed. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent recomputation witness",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.cross_mesh_scalar_interpolation",
+      "symbol": "interpolate_scalar_across_mesh",
+      "signature": "interpolate_scalar_across_mesh(fa, xa, xb, do_warn=0)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev33",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Interpolate a linear profile across meshes; confirm the zero fill and rejections.",
+    "code": "import numpy as np\nfrom scirel.kinetic import interpolate_scalar_across_mesh\nxa = np.array([0.0, 0.5, 1.0, 1.5, 2.0])\nfa = np.array([1.0, 2.0, 3.0, 4.0, 5.0])\nxb = np.array([0.0, 0.25, 0.8, 1.1, 1.6, 2.0])\nfb = interpolate_scalar_across_mesh(fa, xa, xb)\nnp.testing.assert_allclose(fb, 1.0 + 2.0 * xb, rtol=0.0, atol=4e-16)\nfb2 = interpolate_scalar_across_mesh(fa, xa, np.array([-1.0, 0.5, 5.0]))\nassert fb2[0] == 0.0 and fb2[2] == 0.0 and fb2[1] == 2.0\ntry:\n    interpolate_scalar_across_mesh(fa, xa, np.array([5.0, 6.0]))\nexcept ValueError as error:\n    assert 'within range' in str(error)\nelse:\n    raise AssertionError('a fully out-of-range mesh_b must be rejected')",
+    "expected": "The closed-form linear profile on in-range nodes, exact zeros outside; a fully out-of-range mesh_b is rejected."
+  },
+  "verification": {
+    "scope": [
+      "That a linear profile is reproduced to closed-form precision at every in-range node.",
+      "That out-of-range mesh_b nodes are exactly zero and the interpolation is affine-invariant.",
+      "That the do_warn mode changes warnings only, never the output.",
+      "The input and failure contracts.",
+      "Exact bit-level replay against the saved KN1DPy implementation, pinned by SHA-256, on random meshes and the rejection paths. Environment-gated; historical development evidence only."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_mesh_and_seam.py",
+      "tests/operator_contracts/test_mesh_and_seam_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the relation against an independent recomputation or manufactured closed-form oracle, the documented fail-closed contracts, and -- in the environment-gated replay test -- bit-identical agreement with the saved KN1DPy implementation pinned by SHA-256, including rejection-behavior agreement. That replay is historical development evidence, not qualified-L1 provenance. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "known_limitations": [
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

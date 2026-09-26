@@ -164,6 +164,33 @@ def test_nonfinite_velocity_axes_fail_closed():
         )
 
 
+def test_complex_distribution_fail_closed():
+    """Pre-review regression: the saved arm silently casts a complex
+    distribution to float (ComplexWarning, imaginary part dropped); the
+    exact document requires real array-like input, so this asset
+    fail-closes instead."""
+    distribution, vx, vr, volume = _fixture()
+    with pytest.raises(ValueError, match="real-valued"):
+        reduce_axisymmetric_neutral_moments(
+            distribution.astype(complex), vx, vr, volume,
+            normalization_temperature_ev=3.0, isotope_mass_amu=2.0, molecularity=2,
+        )
+
+
+def test_zero_axial_node_is_a_valid_mesh_point():
+    """A zero axial node is inside the saved mesh contract (the mesh is
+    symmetric around vx=0) and must be accepted, not rejected.  The saved
+    moment arithmetic over a single-node mesh yields T = 1/3 (pressure over
+    density with all weight at vx=0), asserted exactly as computed."""
+    f = np.ones((1, 1, 1))
+    result = reduce_axisymmetric_neutral_moments(
+        f, np.array([0.0]), np.array([1.0]), np.array([[1.0]]),
+        normalization_temperature_ev=1.0, isotope_mass_amu=1.0, molecularity=1,
+    )
+    assert result["axial_velocity_m_s"][0] == 0.0
+    np.testing.assert_allclose(result["temperature_ev"][0], 2.0 / 3.0, rtol=0.0, atol=1e-15)
+
+
 def test_nonfinite_scalar_inputs_fail_closed():
     """Pre-review regression: the saved arm accepts NaN normalization
     temperature, NaN mass, and NaN volume (under source_default), each

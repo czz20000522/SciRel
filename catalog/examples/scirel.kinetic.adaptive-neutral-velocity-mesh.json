@@ -1,0 +1,147 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.adaptive-neutral-velocity-mesh",
+  "kind": "operator",
+  "title": {
+    "en": "Adaptive neutral velocity mesh",
+    "zh": "自适应中性粒子速度网格"
+  },
+  "summary": "Build the source-equivalent symmetric cylindrical velocity mesh (vx, vr) for a neutral species from its ion temperatures and requested discharge energies: a uniform vmax=3.5 mesh when the temperature spread is small, the saved quadratic stretching otherwise, with requested positive energies inserted as exact nodes and the normalization temperature returned.",
+  "taxonomy": [
+    "kinetic",
+    "neutral-transport",
+    "velocity-mesh",
+    "discretization"
+  ],
+  "aliases": [
+    "create_vr_vx_mesh"
+  ],
+  "identity": {
+    "relation": "the saved adaptive cylindrical velocity mesh: uniform v in [0, 3.5] when (Tmax - Tmin) <= 0.1*Tmax, otherwise the saved quadratic stretching from ratio = sqrt(Tmin/Tmax); requested positive energies inserted as exact nodes with axial symmetry preserved; Tnorm = mean of the selected population",
+    "direction": "node count, ion temperatures, requested energies, optional cap -> vx, vr, Tnorm, energy indices",
+    "definition": "selected = temperatures + positive requested energies (capped entries dropped when temperature_cap_ev > 0); vmax = 3.5; the uniform branch uses nv+1 equispaced nodes, the stretched branch g*b*i + b*i^2; vr = v[1:], vx = mirror of vr; the returned ix/ir locate the inserted requested-energy node",
+    "model": "the saved formal implementation's source-specific mesh construction",
+    "geometry": "one radial half-mesh mirrored into a symmetric axial mesh",
+    "coordinates": "temperatures and energies in eV; mesh nodes in normalized speed units; Tnorm in eV",
+    "boundary": "nv >= 1; temperatures nonempty positive one-dimensional; cap nonnegative; selected population nonempty and positive",
+    "assumptions": [
+      "The vmax = 3.5 truncation and the 0.1*Tmax uniformity threshold are the saved source's constants.",
+      "The mesh is species-agnostic: callers pass their own temperatures and energies.",
+      "The saved callable defaults requested_energy_ev to the empty tuple; this integration uses None as the JSON-serializable equivalent and treats it identically (the mesh result is unchanged for both defaults)."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "nv",
+      "description": "The base node count.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer scalar",
+      "required": true,
+      "constraints": "A positive integer."
+    },
+    {
+      "name": "ion_temperature_ev",
+      "description": "The species' ion temperatures.",
+      "units": "eV",
+      "shape": "[k]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Nonempty, finite, strictly positive, one-dimensional."
+    },
+    {
+      "name": "requested_energy_ev",
+      "description": "Optional requested discharge energies.",
+      "units": "eV",
+      "shape": "[m]",
+      "dtype": "real array-like",
+      "required": false,
+      "constraints": "Optional; positive entries are inserted as exact mesh nodes.",
+      "default": null
+    },
+    {
+      "name": "temperature_cap_ev",
+      "description": "Optional cap on the selected population.",
+      "units": "eV",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": false,
+      "constraints": "Nonnegative; 0.0 disables the cap; selected entries at or above the cap are dropped.",
+      "default": 0.0
+    }
+  ],
+  "outputs": [
+    {
+      "name": "mesh",
+      "description": "The constructed mesh and derived indices.",
+      "units": "mixed",
+      "shape": "tuple",
+      "dtype": "tuple (vx, vr, tnorm, ix, ir)",
+      "required": true,
+      "constraints": "vx symmetric around zero, vr its positive half; tnorm the mean of the selected population; ix/ir the requested-energy index positions."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "A positive node count and a nonempty positive temperature population."
+    ],
+    "supported": [
+      "Source-equivalent velocity meshes for H and H2 neutral transport on caller-declared temperature/energy populations."
+    ],
+    "excluded": [
+      "Meshes for charged-species gyrophase or full 3V grids.",
+      "Energy populations that become empty after the cap: rejected."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when nv is not positive, temperatures are not nonempty positive one-dimensional, the cap is negative, or the selected population is empty or nonpositive.",
+    "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result; on the declared domain the relation is finite by construction.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned; a rejected call produces no result."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy 自适应中性粒子速度网格 package, source anchor KN1DPy/create_vr_vx_mesh.py:16-56 (create_vr_vx_mesh), as recorded by the saved bundle's own provenance section (the raw source tree was not re-read; the anchor is the saved candidate's). Saved implementation file SHA-256 38fcde8ba437ce5ee72f6465968ea3fd8ade9a4ff24b5a6692823a20207f2842. The saved formal implementation is reproduced bit for bit with its documented validation contract and error messages; no repair is claimed. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent recomputation witness",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.adaptive_neutral_velocity_mesh",
+      "symbol": "create_adaptive_neutral_velocity_mesh",
+      "signature": "create_adaptive_neutral_velocity_mesh(nv, ion_temperature_ev, requested_energy_ev=None, temperature_cap_ev=0.0)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev33",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Build the uniform and stretched meshes and confirm symmetry and the cap.",
+    "code": "import numpy as np\nfrom scirel.kinetic import create_adaptive_neutral_velocity_mesh\nvx, vr, tnorm, ix, ir = create_adaptive_neutral_velocity_mesh(4, (1.0, 1.05))\nassert np.array_equal(vr, (0.875, 1.75, 2.625, 3.5))\nassert np.array_equal(vx, -vx[::-1])\nassert tnorm == 1.025\nvx2, vr2, tnorm2, ix2, ir2 = create_adaptive_neutral_velocity_mesh(4, (1.0, 9.0), temperature_cap_ev=4.0)\nassert tnorm2 == 1.0\ntry:\n    create_adaptive_neutral_velocity_mesh(0, (1.0,))\nexcept ValueError as error:\n    assert 'nv must be positive' in str(error)\nelse:\n    raise AssertionError('nv=0 must be rejected')",
+    "expected": "The uniform 3.5 mesh for a near-uniform population, symmetric vx; the cap truncates to the uniform branch; nv=0 is rejected."
+  },
+  "verification": {
+    "scope": [
+      "That the uniform and stretched branches match the saved source formula exactly.",
+      "That requested positive energies are inserted as exact nodes with axial symmetry preserved.",
+      "That the cap truncates the selected population and the tnorm follows.",
+      "The input and failure contracts.",
+      "Exact bit-level replay against the saved KN1DPy implementation, pinned by SHA-256, over uniform, stretched, inserted-energy, capped and multi-temperature cases. Environment-gated; historical development evidence only."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_mesh_and_seam.py",
+      "tests/operator_contracts/test_mesh_and_seam_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the relation against an independent recomputation or manufactured closed-form oracle, the documented fail-closed contracts, and -- in the environment-gated replay test -- bit-identical agreement with the saved KN1DPy implementation pinned by SHA-256, including rejection-behavior agreement. That replay is historical development evidence, not qualified-L1 provenance. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "known_limitations": [
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

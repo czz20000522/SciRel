@@ -121,6 +121,12 @@ def reduce_axisymmetric_neutral_moments(
         np.asarray(vr, dtype=float),
         np.asarray(cylindrical_volume, dtype=float),
     )
+    # Declared r61 pre-review tightening: the saved arm silently casts a
+    # complex distribution to float (ComplexWarning, imaginary part dropped);
+    # the exact document requires real array-like input, so this asset
+    # fail-closes on complex input instead.
+    if np.iscomplexobj(distribution):
+        raise ValueError("distribution must be real-valued")
     if (
         f.ndim != 3
         or f.shape[:2] != (radial.size, axial.size)
