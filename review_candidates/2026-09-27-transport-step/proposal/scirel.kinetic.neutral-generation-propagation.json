@@ -19,7 +19,7 @@
   "identity": {
     "relation": "bidirectional spatial propagation of one neutral generation using saved transport coefficients",
     "direction": "vx, Ak/Bk/Fk/Ck/Dk/Gk, generation_kind, incoming_boundary or scattered_source -> generation distribution",
-    "definition": "first_flight: forward from boundary on positive vx, backward on negative vx, no source terms. scattered: forward/backward with source terms Bk/Fk (positive) and Dk/Gk (negative).",
+    "definition": "first_flight: forward from boundary on positive vx using Fk as source term, backward on negative vx using Gk as source term; scattered: forward on positive vx using Bk as source coefficient, backward on negative vx using Dk as source coefficient.",
     "model": "the saved formal implementation's bidirectional first-order upwind propagation",
     "geometry": "one spatial dimension, two velocity branches",
     "coordinates": "vx and generation in the source's own discrete units; the dimensional convention is source-defined",
