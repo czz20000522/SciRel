@@ -50,7 +50,7 @@ def test_temperature_cap_drops_selected_entries():
 
 
 def test_mesh_contracts_fail_closed():
-    with pytest.raises(ValueError, match="nv must be positive"):
+    with pytest.raises(ValueError, match="nv must be a positive integer"):
         create_adaptive_neutral_velocity_mesh(0, (1.0,))
     with pytest.raises(ValueError, match="nv must be positive"):
         create_adaptive_neutral_velocity_mesh(4, (0.0,))
@@ -125,3 +125,23 @@ def test_non_contiguous_in_range_selection_fails_closed_named():
         interpolate_scalar_across_mesh(fa, xa, np.array([0.5, 2.0]), 0),
         np.array([0.5, 0.0]),
     )
+
+
+def test_noninteger_nv_fail_closed():
+    """Pre-review regression: the saved arm accepts fractional nv (2.5) and
+    builds a mesh with a fractional node count; the exact document requires
+    a positive integer, so this asset fail-closes on non-integer nv."""
+    with pytest.raises(ValueError, match="nv must be a positive integer"):
+        create_adaptive_neutral_velocity_mesh(2.5, [1.0])
+    with pytest.raises(ValueError, match="nv must be a positive integer"):
+        create_adaptive_neutral_velocity_mesh(2.0, [1.0])
+
+
+def test_nonfinite_temperature_fail_closed():
+    """Pre-review regression: the saved arm accepts NaN temperatures and
+    returns an all-NaN mesh; the exact document requires finite temperatures
+    and a finite result, so this asset fail-closes."""
+    with pytest.raises(ValueError, match="temperatures positive and one-dimensional"):
+        create_adaptive_neutral_velocity_mesh(2, [float("nan")])
+    with pytest.raises(ValueError, match="temperatures positive and one-dimensional"):
+        create_adaptive_neutral_velocity_mesh(2, [float("inf")])

@@ -70,7 +70,15 @@ def create_adaptive_neutral_velocity_mesh(nv, ion_temperature_ev, requested_ener
     if requested_energy_ev is None:
         requested_energy_ev = ()
     requested = np.asarray(requested_energy_ev, dtype=float)
-    if nv < 1 or temperature.ndim != 1 or temperature.size == 0 or np.any(temperature <= 0.0) or temperature_cap_ev < 0.0:
+    # Declared r61 pre-review tightenings: the saved arm accepts fractional
+    # nv (building a fractional-count mesh) and non-finite temperatures
+    # (returning an all-NaN mesh); the exact document requires a positive
+    # integer nv, finite temperatures and a finite result, so this asset
+    # fail-closes on all three.  The saved-arm divergences are pinned by
+    # regression tests.
+    if isinstance(nv, bool) or not isinstance(nv, (int, np.integer)) or nv < 1:
+        raise ValueError("nv must be a positive integer")
+    if temperature.ndim != 1 or temperature.size == 0 or not np.all(np.isfinite(temperature)) or np.any(temperature <= 0.0) or temperature_cap_ev < 0.0:
         raise ValueError("nv must be positive; temperatures positive and one-dimensional; cap nonnegative")
     selected = np.concatenate((temperature, requested[requested > 0.0]))
     if temperature_cap_ev > 0.0:

@@ -27,7 +27,8 @@
     "assumptions": [
       "The vmax = 3.5 truncation and the 0.1*Tmax uniformity threshold are the saved source's constants.",
       "The mesh is species-agnostic: callers pass their own temperatures and energies.",
-      "The saved callable defaults requested_energy_ev to the empty tuple; this integration uses None as the JSON-serializable equivalent and treats it identically (the mesh result is unchanged for both defaults)."
+      "The saved callable defaults requested_energy_ev to the empty tuple; this integration uses None as the JSON-serializable equivalent and treats it identically (the mesh result is unchanged for both defaults).",
+      "Declared r61 pre-review tightenings: the saved arm accepts fractional nv (building a fractional-count mesh) and non-finite temperatures (returning an all-NaN mesh); this asset fail-closes on non-integer nv and on non-finite temperatures, per the positive-integer and finite-input contracts. The saved-arm divergences are pinned by regression tests."
     ]
   },
   "inputs": [
@@ -38,7 +39,7 @@
       "shape": "scalar",
       "dtype": "integer scalar",
       "required": true,
-      "constraints": "A positive integer."
+      "constraints": "A positive integer (bool rejected); fractional values fail closed."
     },
     {
       "name": "ion_temperature_ev",
@@ -94,7 +95,7 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError when nv is not positive, temperatures are not nonempty positive one-dimensional, the cap is negative, or the selected population is empty or nonpositive.",
+    "invalid_input": "Raises ValueError when nv is not a positive integer, temperatures are not nonempty positive finite one-dimensional, the cap is negative, or the selected population is empty or nonpositive.",
     "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result; on the declared domain the relation is finite by construction.",
     "nonconvergence": "Not applicable.",
     "partial_results": "Never returned; a rejected call produces no result."
@@ -118,12 +119,12 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev33",
+    "implementation_version": "0.1.0.dev34",
     "dependencies": []
   },
   "example": {
     "description": "Build the uniform and stretched meshes and confirm symmetry and the cap.",
-    "code": "import numpy as np\nfrom scirel.kinetic import create_adaptive_neutral_velocity_mesh\nvx, vr, tnorm, ix, ir = create_adaptive_neutral_velocity_mesh(4, (1.0, 1.05))\nassert np.array_equal(vr, (0.875, 1.75, 2.625, 3.5))\nassert np.array_equal(vx, -vx[::-1])\nassert tnorm == 1.025\nvx2, vr2, tnorm2, ix2, ir2 = create_adaptive_neutral_velocity_mesh(4, (1.0, 9.0), temperature_cap_ev=4.0)\nassert tnorm2 == 1.0\ntry:\n    create_adaptive_neutral_velocity_mesh(0, (1.0,))\nexcept ValueError as error:\n    assert 'nv must be positive' in str(error)\nelse:\n    raise AssertionError('nv=0 must be rejected')",
+    "code": "import numpy as np\nfrom scirel.kinetic import create_adaptive_neutral_velocity_mesh\nvx, vr, tnorm, ix, ir = create_adaptive_neutral_velocity_mesh(4, (1.0, 1.05))\nassert np.array_equal(vr, (0.875, 1.75, 2.625, 3.5))\nassert np.array_equal(vx, -vx[::-1])\nassert tnorm == 1.025\nvx2, vr2, tnorm2, ix2, ir2 = create_adaptive_neutral_velocity_mesh(4, (1.0, 9.0), temperature_cap_ev=4.0)\nassert tnorm2 == 1.0\ntry:\n    create_adaptive_neutral_velocity_mesh(0, (1.0,))\nexcept ValueError as error:\n    assert 'nv must be a positive integer' in str(error)\nelse:\n    raise AssertionError('nv=0 must be rejected')",
     "expected": "The uniform 3.5 mesh for a near-uniform population, symmetric vx; the cap truncates to the uniform branch; nv=0 is rejected."
   },
   "verification": {
