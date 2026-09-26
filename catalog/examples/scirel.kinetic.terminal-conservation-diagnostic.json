@@ -1,0 +1,131 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.terminal-conservation-diagnostic",
+  "kind": "operator",
+  "title": {
+    "en": "Terminal molecular total energy conservation diagnostic",
+    "zh": "终态分子总能量守恒诊断"
+  },
+  "summary": "Reduce caller-owned qxH2_total and QH2_total profiles to a source-defined dimensionless conservation-error diagnostic.",
+  "taxonomy": [
+    "kinetic",
+    "neutral-transport",
+    "terminal-diagnostics",
+    "conservation"
+  ],
+  "aliases": [
+    "reduce_qh2_total_conservation_diagnostic"
+  ],
+  "identity": {
+    "relation": "reduce caller-owned qxh2_total and qh2_total profiles to a source-defined dimensionless conservation-error diagnostic.",
+    "direction": "terminal distribution/moments -> physical diagnostic profiles",
+    "definition": "Reduce caller-owned qxH2_total and QH2_total profiles to a source-defined dimensionless conservation-error diagnostic.",
+    "model": "the saved formal implementation, ported verbatim and reproduced bit for bit on the declared legal domain",
+    "geometry": "zero-dimensional profile relation over 1-D spatial/velocity axes",
+    "coordinates": "positions in m, velocities in normalized units, temperature in eV; diagnostics in source-defined units",
+    "boundary": "finite nonnegative aligned input profiles; positive thermal speed; nonzero spatial spacing",
+    "assumptions": [
+      "The saved formal operator is ported verbatim; no repair is claimed.",
+      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "axial_position_m",
+      "description": "The axial positions.",
+      "units": "m",
+      "shape": "[nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, strictly increasing (nonzero diff), at least two nodes."
+    },
+    {
+      "name": "total_heat_flux_profile_w_m2",
+      "description": "The total heat flux profile.",
+      "units": "W m^-2",
+      "shape": "[nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, same shape as axial_position_m."
+    },
+    {
+      "name": "total_energy_transfer_rate_profile_w_m3",
+      "description": "The total energy transfer rate profile.",
+      "units": "W m^-3",
+      "shape": "[nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, same shape as axial_position_m."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "The diagnostic result mapping.",
+      "units": "source-defined",
+      "shape": "mapping",
+      "dtype": "mapping of profiles",
+      "required": true,
+      "constraints": "Finite; the saved return structure."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite nonnegative aligned input profiles; positive thermal speed where applicable."
+    ],
+    "supported": [
+      "Terminal molecular diagnostics for H2 neutral transport."
+    ],
+    "excluded": [
+      "External physical validation; non-terminal distributions."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when inputs are non-finite, shape-incompatible, or violate nonnegativity constraints.",
+    "runtime_failure": "Raises ValueError when the diagnostic produces a non-finite result.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned; a rejected call produces no result."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy terminal conservation diagnostic package, source anchor KN1DPy/kinetic_h2.py:1755-1790, as recorded by the saved bundle's own provenance section. Saved implementation file SHA-256 258ef36f7d265f5a7cc08f021cbf91fbd83ad9ce6876a1c56d1064655d4c2af3. The saved formal implementation is ported verbatim and reproduced bit for bit on the declared legal domain; no repair is claimed. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent recomputation witness",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.terminal_conservation_diagnostic",
+      "symbol": "reduce_qh2_total_conservation_diagnostic",
+      "signature": "reduce_qh2_total_conservation_diagnostic(axial_position_m, total_heat_flux_profile_w_m2, total_energy_transfer_rate_profile_w_m3)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev39",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate with small finite inputs.",
+    "code": "import numpy as np\nfrom scirel.kinetic import reduce_qh2_total_conservation_diagnostic\nx = np.linspace(0, 1, 3)\nresult = reduce_qh2_total_conservation_diagnostic(x, np.ones(3), np.ones(3))\nassert result['total_energy_conservation_error_profile_dimensionless'].shape == (3,)",
+    "expected": "The callable exists and returns a finite result."
+  },
+  "verification": {
+    "scope": [
+      "Bit-identical agreement with the saved KN1DPy implementation.",
+      "Input and failure contracts."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_terminal_molecular.py",
+      "tests/operator_contracts/test_terminal_molecular_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the relation against independent recomputation, the documented fail-closed contracts, and -- in the environment-gated replay test -- bit-identical agreement with the saved KN1DPy implementation pinned by SHA-256, including rejection-behavior agreement. That replay is historical development evidence, not qualified-L1 provenance.",
+    "known_limitations": [
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

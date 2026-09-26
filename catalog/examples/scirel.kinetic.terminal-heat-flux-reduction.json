@@ -1,0 +1,167 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.terminal-heat-flux-reduction",
+  "kind": "operator",
+  "title": {
+    "en": "Terminal molecular random and total heat flux reduction",
+    "zh": "终态分子随机与总热通量归约"
+  },
+  "summary": "Reduce terminal fH2 into source-defined qxH2 and qxH2_total profiles.",
+  "taxonomy": [
+    "kinetic",
+    "neutral-transport",
+    "terminal-diagnostics",
+    "heat-flux"
+  ],
+  "aliases": [
+    "reduce_terminal_molecular_heat_flux"
+  ],
+  "identity": {
+    "relation": "reduce terminal fh2 into source-defined qxh2 and qxh2_total profiles.",
+    "direction": "terminal distribution/moments -> physical diagnostic profiles",
+    "definition": "Reduce terminal fH2 into source-defined qxH2 and qxH2_total profiles.",
+    "model": "the saved formal implementation, ported verbatim and reproduced bit for bit on the declared legal domain",
+    "geometry": "zero-dimensional profile relation over 1-D spatial/velocity axes",
+    "coordinates": "positions in m, velocities in normalized units, temperature in eV; diagnostics in source-defined units",
+    "boundary": "finite nonnegative aligned input profiles; positive thermal speed; nonzero spatial spacing",
+    "assumptions": [
+      "The saved formal operator is ported verbatim; no repair is claimed.",
+      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "radial_velocity_normalized",
+      "description": "The radial_velocity_normalized input.",
+      "units": "source-defined",
+      "shape": "varies",
+      "dtype": "real array-like / scalar",
+      "required": true,
+      "constraints": "Finite, shape-compatible."
+    },
+    {
+      "name": "axial_velocity_normalized",
+      "description": "The axial_velocity_normalized input.",
+      "units": "source-defined",
+      "shape": "varies",
+      "dtype": "real array-like / scalar",
+      "required": true,
+      "constraints": "Finite, shape-compatible."
+    },
+    {
+      "name": "mass_ratio",
+      "description": "The mass_ratio input.",
+      "units": "source-defined",
+      "shape": "varies",
+      "dtype": "real array-like / scalar",
+      "required": true,
+      "constraints": "Finite, shape-compatible."
+    },
+    {
+      "name": "thermal_speed_m_s",
+      "description": "The thermal_speed_m_s input.",
+      "units": "source-defined",
+      "shape": "varies",
+      "dtype": "real array-like / scalar",
+      "required": true,
+      "constraints": "Finite, shape-compatible."
+    },
+    {
+      "name": "terminal_distribution",
+      "description": "The terminal_distribution input.",
+      "units": "source-defined",
+      "shape": "varies",
+      "dtype": "real array-like / scalar",
+      "required": true,
+      "constraints": "Finite, shape-compatible."
+    },
+    {
+      "name": "cylindrical_weight",
+      "description": "The cylindrical_weight input.",
+      "units": "source-defined",
+      "shape": "varies",
+      "dtype": "real array-like / scalar",
+      "required": true,
+      "constraints": "Finite, shape-compatible."
+    },
+    {
+      "name": "dvx",
+      "description": "The dvx input.",
+      "units": "source-defined",
+      "shape": "varies",
+      "dtype": "real array-like / scalar",
+      "required": true,
+      "constraints": "Finite, shape-compatible."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "The diagnostic result mapping.",
+      "units": "source-defined",
+      "shape": "mapping",
+      "dtype": "mapping of profiles",
+      "required": true,
+      "constraints": "Finite; the saved return structure."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite nonnegative aligned input profiles; positive thermal speed where applicable."
+    ],
+    "supported": [
+      "Terminal molecular diagnostics for H2 neutral transport."
+    ],
+    "excluded": [
+      "External physical validation; non-terminal distributions."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when inputs are non-finite, shape-incompatible, or violate nonnegativity constraints.",
+    "runtime_failure": "Raises ValueError when the diagnostic produces a non-finite result.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned; a rejected call produces no result."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy terminal heat flux reduction package, source anchor KN1DPy/kinetic_h2.py:1693-1760, as recorded by the saved bundle's own provenance section. Saved implementation file SHA-256 46e9c00fb9cce1f2d6e82efa83a176a91500ea06c00de4f224aa2a337bdf7aeb. The saved formal implementation is ported verbatim and reproduced bit for bit on the declared legal domain; no repair is claimed. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent recomputation witness",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.terminal_heat_flux_reduction",
+      "symbol": "reduce_terminal_molecular_heat_flux",
+      "signature": "reduce_terminal_molecular_heat_flux(radial_velocity_normalized, axial_velocity_normalized, mass_ratio, thermal_speed_m_s, terminal_distribution, cylindrical_weight, dvx)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev39",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate with small finite inputs.",
+    "code": "from scirel.kinetic import reduce_terminal_molecular_heat_flux\nprint(reduce_terminal_molecular_heat_flux.__doc__ is not None)",
+    "expected": "The callable exists and returns a finite result."
+  },
+  "verification": {
+    "scope": [
+      "Bit-identical agreement with the saved KN1DPy implementation.",
+      "Input and failure contracts."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_terminal_molecular.py",
+      "tests/operator_contracts/test_terminal_molecular_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the relation against independent recomputation, the documented fail-closed contracts, and -- in the environment-gated replay test -- bit-identical agreement with the saved KN1DPy implementation pinned by SHA-256, including rejection-behavior agreement. That replay is historical development evidence, not qualified-L1 provenance.",
+    "known_limitations": [
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}
