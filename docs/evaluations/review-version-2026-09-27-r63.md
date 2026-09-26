@@ -41,7 +41,8 @@
 
 - 新增 3 个模块 + 导出;新增 3 份 exact document + 其余 113 份机械提升;`dev36` → `dev37`。
 - 新增 2 个测试文件(`test_transport_step.py` 10 direct + `test_transport_step_l1.py` 4 replay)。
-- 新增候选文档 `review_candidates/2026-09-27-mesh-seam/review.md`;index batch r62(11 条)。
+- 候选审核材料:本批 3 个 transport 算子尚无独立候选评审文档或 index batch;
+  精确描述见本文件与 `build/test-evidence-r63.md`,待后续批次补充。
 - 账本与 _validation/_composition 字节零变化。
 
 ## 科学证据
