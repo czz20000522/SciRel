@@ -14,6 +14,8 @@ def propagate_neutral_generation(vx, Ak, Bk, Fk, Ck, Dk, Gk, generation_kind, in
     positive, negative = axial > 0.0, axial < 0.0
     if not np.any(positive) or not np.any(negative) or generation_kind not in ("first_flight", "scattered"):
         raise ValueError("vx branches or generation_kind are invalid")
+    if a.shape[2] < 1:
+        raise ValueError("nx must be at least one for generation propagation")
     generation = np.zeros_like(a)
     if generation_kind == "first_flight":
         boundary = np.asarray(incoming_boundary, dtype=float)

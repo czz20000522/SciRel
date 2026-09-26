@@ -30,7 +30,8 @@
       "The incoming_boundary applies only to the positive-vx branch (the forward propagation entry point); the negative-vx branch starts from zero at the right boundary (the saved contract: generation[:, negative, x.size-1] remains zero).",
       "The vx axis units are the source's own discrete convention (not independently calibrated); the dimensional relationship between vx, collision frequency, and spatial step is defined by the saved upwind scheme itself.",
       "The vx axis must be finite (NaN/inf rejected); a NaN vx node would be silently left zero by the saved arm.",
-      "The incoming_boundary applies only to the positive-vx branch (forward propagation entry point); the negative-vx branch starts from zero at the right boundary."
+      "The incoming_boundary applies only to the positive-vx branch (forward propagation entry point); the negative-vx branch starts from zero at the right boundary.",
+      "first_flight uses Fk as the forward source term; scattered uses Bk (positive) and Dk (negative) as source coefficients. The two kinds are distinguished by which coefficient enters the recurrence, confirmed by a regression test."
     ]
   },
   "inputs": [
