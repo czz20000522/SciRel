@@ -15,9 +15,11 @@
 
 ## 科学条件与依赖
 
-前五个算子（flux/velocity、pressure/temperature、heat flux、energy transfer、ion state）共享同一柱坐标速度/空间网格合同；输入为 caller-owned terminal fH2 分布及柱坐标权重；输入合同：有限非负分布、正热速度、非零空间步长。
+前四项（flux/velocity、pressure/temperature、heat flux、energy transfer）为分布积分关系：共享同一柱坐标速度/空间网格合同，输入为 caller-owned terminal fH2 分布及柱坐标权重；输入合同：有限非负分布、正热速度、非零空间步长（heat flux 和 energy transfer 还要求 mass_ratio 和径向/轴向速度两轴；energy transfer 另接收 Boltzmann RHS 场和外部分子源 profile）。
 
-第六项（conservation diagnostic）仅接受 `axial_position_m`、`total_heat_flux_profile_w_m2`、`total_energy_transfer_rate_profile_w_m3` 三组有限同形 1-D 序列（至少两点、非零轴向间距），不接收 fH2 分布、速度网格或热速度。
+第五项（ion state）为 profile/rate 代数关系：接收分子/中性密度、离子温度、质量比、离化率、反应率表和损失频率，不接收 terminal fH2 分布、柱坐标权重、速度网格、热速度或轴向间距。
+
+第六项（conservation diagnostic）为轴向守恒诊断条件：仅接收 `axial_position_m`、`total_heat_flux_profile_w_m2`、`total_energy_transfer_rate_profile_w_m3` 三组有限同形 1-D 序列（至少两点、非零轴向间距），不接收 fH2 分布、速度网格、热速度或质量比。
 
 - 无修复:保存 formal operator 逐字移植(含 make_dvr_dvx 环形面积/轴向宽度、积分循环、守恒差比)
 
