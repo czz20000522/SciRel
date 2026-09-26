@@ -1,0 +1,151 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.neutral-generation-stopping",
+  "kind": "operator",
+  "title": {
+    "en": "Neutral generation stopping criterion",
+    "zh": "中性代际收敛判据"
+  },
+  "summary": "Evaluate the source Delta_n stopping criterion for collision-generation convergence: returns the relative generation density ratio and whether the next generation is unnecessary.",
+  "taxonomy": [
+    "kinetic",
+    "neutral-transport",
+    "convergence",
+    "stopping-criterion"
+  ],
+  "aliases": [
+    "evaluate_neutral_generation_stopping"
+  ],
+  "identity": {
+    "relation": "Evaluate the source Delta_n stopping criterion for collision-generation convergence: returns the relative generation density ratio and whether the next generation is unnecessary.",
+    "direction": "explicit 1-D density profiles and scalar parameters -> convergence/accumulation result",
+    "definition": "Evaluate the source Delta_n stopping criterion for collision-generation convergence: returns the relative generation density ratio and whether the next generation is unnecessary.",
+    "model": "the saved formal implementation, ported verbatim and reproduced bit for bit on the declared legal domain",
+    "geometry": "none; a zero-dimensional profile relation over 1-D density vectors",
+    "coordinates": "densities in m^-3, truncate dimensionless",
+    "boundary": "finite nonnegative 1-D density arrays of one shape, positive truncate",
+    "assumptions": [
+      "The saved formal operator is ported verbatim; no repair is claimed.",
+      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "generation_density_m3",
+      "description": "The current generation density profile.",
+      "units": "m^-3",
+      "shape": "[nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, nonnegative, one-dimensional."
+    },
+    {
+      "name": "accumulated_density_m3",
+      "description": "The accumulated density profile.",
+      "units": "m^-3",
+      "shape": "[nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, nonnegative, one-dimensional, same shape as generation_density_m3, must contain a positive value."
+    },
+    {
+      "name": "truncate",
+      "description": "The convergence threshold.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "seed_iteration_enabled",
+      "description": "Whether the outer seed iteration is enabled.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "boolean scalar",
+      "required": false,
+      "default": false,
+      "constraints": "Boolean scalar."
+    },
+    {
+      "name": "seed_error",
+      "description": "The outer seed error from the previous pass.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": false,
+      "default": null,
+      "constraints": "Required (and must be finite nonnegative) when seed_iteration_enabled is true; must be None when false."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "A tuple (delta, done, reason): delta is the relative generation density ratio, done is whether the next generation is unnecessary, reason is 'truncate', 'seed_relative', or 'continue'.",
+      "units": "mixed (dimensionless ratio, boolean, string)",
+      "shape": "tuple of 3 scalars",
+      "dtype": "tuple(float, bool, str)",
+      "required": true,
+      "constraints": "Finite delta; done is a Python bool; reason is a saved status string."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite nonnegative aligned density profiles; positive truncate."
+    ],
+    "supported": [
+      "Convergence stopping and accumulation state updates for H and H2 neutral transport generation loops."
+    ],
+    "excluded": [
+      "Non-density convergence criteria; external physical validation."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when density vectors are non-finite, have negative entries, shape mismatch, truncate is nonpositive, or seed_iteration_enabled is true without a finite nonnegative seed_error.",
+    "runtime_failure": "Not applicable; convergence/accumulation is a deterministic arithmetic step.",
+    "nonconvergence": "Not applicable; this relation reports convergence, it does not iterate.",
+    "partial_results": "Never returned; a rejected call produces no result."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy neutral generation stopping package, source anchor KN1DPy/kinetic_h.py:1278-1305, as recorded by the saved bundle's own provenance section. Saved implementation file SHA-256 dd110cbdc804c0ee3c4fcadbe7fb5da5254ae0a829de40ffc65c901ad9c89cc3. The saved formal implementation is ported verbatim and reproduced bit for bit on the declared legal domain; no repair is claimed. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent recomputation witness",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.neutral_generation_stopping",
+      "symbol": "evaluate_neutral_generation_stopping",
+      "signature": "evaluate_neutral_generation_stopping(generation_density_m3, accumulated_density_m3, truncate, seed_iteration_enabled=False, seed_error=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev38",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate the stopping criterion with a known ratio.",
+    "code": "import numpy as np\nfrom scirel.kinetic import evaluate_neutral_generation_stopping\ndelta, done, reason = evaluate_neutral_generation_stopping(\n    np.array([10.0, 20.0]), np.array([100.0, 200.0]), truncate=0.05)\nassert delta == 0.1\nassert done is False\nassert reason == 'continue'\ndelta2, done2, reason2 = evaluate_neutral_generation_stopping(\n    np.array([0.001, 0.001]), np.array([100.0, 200.0]), truncate=0.1)\nassert done2 is True\nassert reason2 == 'truncate'",
+    "expected": "delta = max(gen)/max(acc); done=True with reason='truncate' when delta < truncate; done=False with reason='continue' otherwise."
+  },
+  "verification": {
+    "scope": [
+      "Bit-identical agreement with the saved KN1DPy implementation.",
+      "Input and failure contracts."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_convergence_accumulation.py",
+      "tests/operator_contracts/test_convergence_accumulation_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the relation against independent recomputation, the documented fail-closed contracts, and -- in the environment-gated replay test -- bit-identical agreement with the saved KN1DPy implementation pinned by SHA-256, including rejection-behavior agreement. That replay is historical development evidence, not qualified-L1 provenance.",
+    "known_limitations": [
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

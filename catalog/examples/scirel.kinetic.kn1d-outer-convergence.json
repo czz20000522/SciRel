@@ -1,0 +1,131 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.kn1d-outer-convergence",
+  "kind": "operator",
+  "title": {
+    "en": "KN1DPy top-level outer convergence",
+    "zh": "KN1DPy顶层外层收敛判据"
+  },
+  "summary": "Evaluate the source top-level kn1d outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate.",
+  "taxonomy": [
+    "kinetic",
+    "neutral-transport",
+    "convergence",
+    "top-level"
+  ],
+  "aliases": [
+    "evaluate_kn1d_outer_convergence"
+  ],
+  "identity": {
+    "relation": "Evaluate the source top-level kn1d outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate.",
+    "direction": "explicit 1-D density profiles and scalar parameters -> convergence/accumulation result",
+    "definition": "Evaluate the source top-level kn1d outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate.",
+    "model": "the saved formal implementation, ported verbatim and reproduced bit for bit on the declared legal domain",
+    "geometry": "none; a zero-dimensional profile relation over 1-D density vectors",
+    "coordinates": "densities in m^-3, truncate dimensionless",
+    "boundary": "finite nonnegative 1-D density arrays of one shape, positive truncate",
+    "assumptions": [
+      "The saved formal operator is ported verbatim; no repair is claimed.",
+      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "previous_density_m3",
+      "description": "The density profile before the pass.",
+      "units": "m^-3",
+      "shape": "[nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, nonnegative, one-dimensional."
+    },
+    {
+      "name": "current_density_m3",
+      "description": "The density profile after the pass.",
+      "units": "m^-3",
+      "shape": "[nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, nonnegative, one-dimensional, same shape as previous."
+    },
+    {
+      "name": "truncate",
+      "description": "The convergence threshold.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "A mapping with seed_error (relative change), reentry_threshold (truncate), should_reiterate (bool), and reason ('reiterate' or 'converged').",
+      "units": "mixed (dimensionless ratio, boolean, string)",
+      "shape": "mapping",
+      "dtype": "mapping of scalars and a boolean",
+      "required": true,
+      "constraints": "Finite seed_error; reentry_threshold = truncate; should_reiterate is a Python bool."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite nonnegative aligned density profiles; positive truncate."
+    ],
+    "supported": [
+      "Convergence stopping and accumulation state updates for H and H2 neutral transport generation loops."
+    ],
+    "excluded": [
+      "Non-density convergence criteria; external physical validation."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when density vectors are non-finite, have negative entries, shape mismatch, or truncate is nonpositive.",
+    "runtime_failure": "Not applicable; convergence/accumulation is a deterministic arithmetic step.",
+    "nonconvergence": "Not applicable; this relation reports convergence, it does not iterate.",
+    "partial_results": "Never returned; a rejected call produces no result."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy kn1d outer convergence package, source anchor KN1DPy/kn1d.py:493-511, as recorded by the saved bundle's own provenance section. Saved implementation file SHA-256 3a5913b26bdac6361461f37c5494050a9102d6c98a98e9cb2906c9761d3dbbe2. The saved formal implementation is ported verbatim and reproduced bit for bit on the declared legal domain; no repair is claimed. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent recomputation witness",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.kn1d_outer_convergence",
+      "symbol": "evaluate_kn1d_outer_convergence",
+      "signature": "evaluate_kn1d_outer_convergence(previous_density_m3, current_density_m3, truncate)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev38",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate the top-level kn1d outer-pass convergence.",
+    "code": "import numpy as np\nfrom scirel.kinetic import evaluate_kn1d_outer_convergence\nprev = np.array([100.0])\ncurr = np.array([100.05])\nresult = evaluate_kn1d_outer_convergence(prev, curr, truncate=0.1)\nassert result['should_reiterate'] is False\nassert result['reentry_threshold'] == 0.1\ncurr2 = np.array([120.0])\nresult2 = evaluate_kn1d_outer_convergence(prev, curr2, truncate=0.1)\nassert result2['should_reiterate'] is True",
+    "expected": "A mapping with seed_error, reentry_threshold, should_reiterate, and reason; a relative change exceeding truncate triggers re-entry."
+  },
+  "verification": {
+    "scope": [
+      "Bit-identical agreement with the saved KN1DPy implementation.",
+      "Input and failure contracts."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_convergence_accumulation.py",
+      "tests/operator_contracts/test_convergence_accumulation_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the relation against independent recomputation, the documented fail-closed contracts, and -- in the environment-gated replay test -- bit-identical agreement with the saved KN1DPy implementation pinned by SHA-256, including rejection-behavior agreement. That replay is historical development evidence, not qualified-L1 provenance.",
+    "known_limitations": [
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}
