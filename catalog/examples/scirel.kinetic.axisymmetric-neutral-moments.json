@@ -30,7 +30,7 @@
       "The source_default empty-slice policy (flow 0 m/s, temperature 1 eV on zero-density slices) is the saved initial-iteration semantics, preserved for callers that need it; reject is this integration's default.",
       "The moment recovery assumes the caller's distribution is normalized as the saved source normalizes it; this asset reduces, it does not renormalize.",
       "Declared r60 pre-review tightenings: the saved arm does not check the finiteness of the velocity axes, the volume weights, the normalization temperature or the mass, and it does not gate the outputs; this asset fail-closes on non-finite axes, volume, temperature, mass and on any non-finite returned field. The saved-arm divergences are pinned by regression tests.",
-      "Declared r61 pre-review tightening: the saved arm silently casts a complex distribution to float (imaginary part dropped); this asset fail-closes on complex input, per the real-array-like input contract. A reported IndexError for a zero axial node did not reproduce on the r60c bytes (vx=0 is inside the saved symmetric-mesh contract and stays valid); the case is pinned as a positive test."
+      "Declared r61 pre-review tightenings: complex distribution input fails closed (the saved arm silently discarded the imaginary part), and a 0-D scalar vx (a reviewer-reproduced raw IndexError on the r60c bytes) now fails closed with ValueError because the axes must be one-dimensional arrays; a zero node inside a one-dimensional mesh stays valid."
     ]
   },
   "inputs": [

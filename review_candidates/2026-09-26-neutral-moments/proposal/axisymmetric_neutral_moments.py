@@ -121,14 +121,31 @@ def reduce_axisymmetric_neutral_moments(
         np.asarray(vr, dtype=float),
         np.asarray(cylindrical_volume, dtype=float),
     )
-    # Declared r61 pre-review tightening: the saved arm silently casts a
+    # Declared r61 pre-review tightenings: (a) the saved arm silently casts a
     # complex distribution to float (ComplexWarning, imaginary part dropped);
     # the exact document requires real array-like input, so this asset
-    # fail-closes on complex input instead.
-    if np.iscomplexobj(distribution):
+    # fail-closes on complex input instead.  (b) A 0-D scalar vx passes the
+    # saved ndim checks but raises a raw IndexError mid-arithmetic; the axes
+    # must be one-dimensional arrays up front (fail-closed ValueError).
+    if (
+        np.iscomplexobj(distribution)
+        or np.iscomplexobj(vx)
+        or np.iscomplexobj(vr)
+        or np.iscomplexobj(cylindrical_volume)
+    ):
         raise ValueError("distribution must be real-valued")
+    axial = np.atleast_1d(np.asarray(vx, dtype=float))
+    radial = np.atleast_1d(np.asarray(vr, dtype=float))
+    volume = np.asarray(cylindrical_volume, dtype=float)
+    if axial.shape != np.asarray(vx, dtype=float).shape:
+        raise ValueError("vx must be a one-dimensional array")
+    if radial.shape != np.asarray(vr, dtype=float).shape:
+        raise ValueError("vr must be a one-dimensional array")
     if (
         f.ndim != 3
+        or axial.ndim != 1
+        or radial.ndim != 1
+        or volume.ndim != 2
         or f.shape[:2] != (radial.size, axial.size)
         or volume.shape != f.shape[:2]
         or not np.all(np.isfinite(f))

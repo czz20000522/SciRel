@@ -89,3 +89,15 @@ def test_interpolation_contracts_fail_closed():
         interpolate_scalar_across_mesh(fa, xa, np.array([5.0, 6.0]))
     with pytest.raises(ValueError, match="finite"):
         interpolate_scalar_across_mesh(np.array([1.0, np.nan, 3.0]), xa, xb)
+
+
+def test_non_monotonic_xb_with_in_range_holes_keeps_the_saved_raw_error():
+    """The saved assignment fb[k0:k1+1] = interp1d(...)(xb[okk]) raises numpy's
+    raw broadcast ValueError when okk is non-contiguous (declared divergence
+    from a named contract message); the physically meaningful zero fill for
+    out-of-range nodes is unchanged."""
+    xa = np.array([0.0, 1.0, 2.0])
+    fa = np.array([0.0, 10.0, 20.0])
+    xb = np.array([1.0, 5.0, 1.5])  # okk = [0, 2], non-contiguous
+    with pytest.raises(ValueError, match="could not broadcast"):
+        interpolate_scalar_across_mesh(fa, xa, xb, 0)
