@@ -23,6 +23,19 @@ needs a successor, not a silent edit.
 
 
 
+
+## Batch r68: KN1DPy Omega aggregation family (two operators)
+
+Directory: `review_candidates/2026-09-27-omega-aggregation/`
+Successor of batch r67: the r67 candidate files below keep their frozen r67 v1 bytes and digests; this batch binds the new bytes.
+- `review.md` -- sha256 `d9f3998430c6bff3963d38d0de7fc207aa6ec2da3be6d214231a994bd124054e`
+- `proposal/atomic_omega_aggregation.py` -- sha256 `0bc27000e23ee28759d358f4a71c6c5f2bd49ab279d172223bdc780fcb48c63f`
+- `proposal/molecular_omega_aggregation.py` -- sha256 `90361f9016d19846bf47b053b2e856b3f6bc676005560873ea9bab2761b0b6fa`
+- `proposal/scirel.kinetic.atomic-omega-aggregation.json` -- sha256 `494e8fae0bc1611efa6c777886c858b1c6ef10b842407138b7e9bee2b8a7bc4a`
+- `proposal/scirel.kinetic.molecular-omega-aggregation.json` -- sha256 `ff3a61b19a2919a1f7cde7de33e0c152cbf787a450e99bcb35a88b1585b74523`
+- `proposal/test_omega_aggregation.py` -- sha256 `405ff413b3a099df684a3342429a8b9372d694e8d933c933b4924f6bdf02a31e`
+- `proposal/test_omega_aggregation_l1.py` -- sha256 `c90d290b6147552315d1b1c2d2c7e3c133433c9e42703a78047cb16f245f2692`
+
 ## Batch r67: KN1DPy collision-matrix assembly family (two operators)
 
 Directory: `review_candidates/2026-09-27-collision-matrix-assembly/`

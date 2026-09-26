@@ -1,0 +1,337 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.molecular-omega-aggregation",
+  "kind": "operator",
+  "title": {
+    "en": "Molecular hydrogen elastic-frequency (Omega) aggregation",
+    "zh": "分子氢弹性碰撞频率聚合"
+  },
+  "summary": "Per spatial cell, aggregate the molecular elastic Alpha frequencies and the branch-time SIG_H2_H2 re-contraction into the H2-H+, H2-H, H2-H2 and total elastic Omega frequencies, the H2 bulk x-flow velocity, and the perpendicular second moment feeding the Wpp floor.",
+  "taxonomy": [
+    "kinetic",
+    "neutral-transport",
+    "collision",
+    "aggregation"
+  ],
+  "aliases": [
+    "assemble_molecular_hydrogen_omega_frequencies"
+  ],
+  "identity": {
+    "relation": "Omega_H2_P[k] = max(sum(Vr2pidVr * ((Alpha_H2_P[:,:,k]*fH2[:,:,k]) @ dVx)) / (nH2[k]*DeltaVx), 0) with DeltaVx = sign((VxH2[k]-vxi[k])/Vth) * max(|(VxH2[k]-vxi[k])/Vth|, DeltaVx_tol); Omega_H2_H[k] = max(sum(Vr2pidVr * ((Alpha_H2_H[:,:,k]*fH2[:,:,k]) @ dVx) / (nH2[k]*DeltaVx)), 0) against the atomic-H flow VxH with the denominator INSIDE the sum (source-exact ordering); Omega_H2_H2[k] = max(sum(Vr2pidVr * ((Alpha_H2_H2*fH2[:,:,k]) @ dVx)) / (nH2[k]*Wpp), 0) with Alpha_H2_H2 = F^-1(SIG_H2_H2 @ F(fH2[:,:,k])) re-contracted at branch time; Omega_EL = Omega_H2_P + Omega_H2_H + Omega_H2_H2; VxH2[k] = Vth * sum(Vr2pidVr * (fH2[:,:,k] @ (vx*dVx))) / nH2[k].",
+    "direction": "molecular Alpha frequencies (Alpha_H2_P, Alpha_H2_H) + SIG_H2_H2 matrix + branch-time state (fH2, nH2, MH2_H2_sum) + mesh/weights (Vr2pidVr, dVx, vr, vx) + flow targets (Vth, vxi, VxH) + projection kernel (vr2_2vx2_2D) -> three elastic Omega families, their total, the bulk x-flow velocity VxH2, and the perpendicular second moment Wperp_paraH2",
+    "definition": "The saved source's per-cell Omega block (kinetic_h2.py:1232-1296): each elastic channel reduces the pointwise Alpha*fH2 product over the velocity mesh and divides by the density times a sign-floored drift difference (or the floored perpendicular second moment for the H2-H2 viscosity channel); the H2-H2 channel re-contracts Alpha_H2_H2 from SIG_H2_H2 with the branch-time fH2 through the legacy Fortran-order Work carrier. The legacy symbolic sign is preserved. Source-exact operator ordering: the Omega_H2_P denominator (nH2[k]*DeltaVx) divides OUTSIDE the sum (kinetic_h2.py:1257) while the Omega_H2_H denominator divides INSIDE (kinetic_h2.py:1270) -- preserved for bit-identical reproduction. All three Omega families are clamped at zero. Wperp_paraH2 dual branch (kinetic_h2.py:1279-1287): sum(MH2_H2_sum) < 0 selects the direct vr2-2*(vx-VxH2/Vth)^2 projection; otherwise the accumulated-moment reduction. NOTE the < 0 test (the atomic side uses <= 0), so a zero accumulator takes the else path -- the path exercised by the registered probe evidence.",
+    "model": "the saved formal implementation, ported verbatim with documented fail-closed hardenings (see verification and known_limitations)",
+    "geometry": "per spatial cell k: velocity-space quadrature reductions over the (nvr,nvx) slice, producing one scalar per (nx,) output field",
+    "coordinates": "cylindrical (vr,vx) velocity space, v/vth normalized; Vth in m/s (or the caller's normalized speed); densities source-discrete; the callable performs no implicit unit conversion",
+    "boundary": "finite aligned inputs of the declared shapes; nH2 entries must be positive wherever any elastic channel is enabled; Vth, DeltaVx_tol, Wpp_tol must be finite positive scalars; the three Omega families are clamped at zero so no negative cells occur",
+    "assumptions": [
+      "The Alpha frequencies arrive from the molecular contraction and the SIG_H2_H2 matrix from the molecular collision-matrix assembly; this operator performs no assembly or gating of its own beyond the documented re-contraction.",
+      "The DeltaVx_tol=0.01 and Wpp_tol=0.001 floors are source hardcoded defaults; their physical adequacy is an expert-review item.",
+      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "fH2",
+      "description": "Molecular neutral H2 velocity distribution at branch time, one (nvr,nvx) slice per spatial cell.",
+      "units": "source-discrete distribution density",
+      "shape": "[nvr,nvx,nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; shape (nvr,nvx,nx) exactly; its leading axes define N = nvr*nvx for SIG_H2_H2."
+    },
+    {
+      "name": "nH2",
+      "description": "Molecular H2 density per spatial cell.",
+      "units": "m^-3",
+      "shape": "[nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 1-D of size nx; entries must be positive wherever any elastic channel is enabled (registered hardening: the saved arm silently skipped the Omega block and returned zeros)."
+    },
+    {
+      "name": "Alpha_H2_P",
+      "description": "H2-H+ elastic Alpha frequency field (molecular contraction output).",
+      "units": "s^-1 (subject to the caller's assembled measure)",
+      "shape": "[nvr,nvx,nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; shape (nvr,nvx,nx) exactly."
+    },
+    {
+      "name": "Alpha_H2_H",
+      "description": "H2-H elastic Alpha frequency field (molecular contraction output).",
+      "units": "s^-1 (subject to the caller's assembled measure)",
+      "shape": "[nvr,nvx,nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; shape (nvr,nvx,nx) exactly."
+    },
+    {
+      "name": "SIG_H2_H2",
+      "description": "H2-H2 elastic collision matrix (molecular collision-matrix assembly output), re-contracted against the branch-time fH2.",
+      "units": "source-discrete assembled collision-matrix measure",
+      "shape": "[N, N] with N = nvr*nvx",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; 2-D square with order exactly nvr*nvx."
+    },
+    {
+      "name": "Vr2pidVr",
+      "description": "Cylindrical radial finite-volume integration weight.",
+      "units": "source-discrete velocity-space measure",
+      "shape": "[nvr]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 1-D of size nvr; entries nonnegative."
+    },
+    {
+      "name": "dVx",
+      "description": "Axial cell widths.",
+      "units": "source-discrete velocity-space measure",
+      "shape": "[nvx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 1-D of size nvx; entries positive."
+    },
+    {
+      "name": "vr",
+      "description": "Radial velocity axis v/vth.",
+      "units": "v/vth",
+      "shape": "[nvr]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 1-D of size nvr."
+    },
+    {
+      "name": "vx",
+      "description": "Axial velocity axis v/vth.",
+      "units": "v/vth",
+      "shape": "[nvx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 1-D of size nvx."
+    },
+    {
+      "name": "Vth",
+      "description": "H2 thermal speed used to normalize the drift difference.",
+      "units": "m/s (or the caller's normalized speed)",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive (registered hardening: the saved arm validates nothing here and a zero Vth would silently produce non-finite outputs)."
+    },
+    {
+      "name": "vxi",
+      "description": "Ion flow velocity per spatial cell, the Omega_H2_P drift target.",
+      "units": "m/s",
+      "shape": "[nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 1-D of size nx."
+    },
+    {
+      "name": "VxH",
+      "description": "Atomic-H flow velocity per spatial cell, the Omega_H2_H drift target (kinetic_h2.py:1267).",
+      "units": "m/s",
+      "shape": "[nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 1-D of size nx."
+    },
+    {
+      "name": "MH2_H2_sum",
+      "description": "Accumulated H2-H2 elastic moment at branch time; its sign total selects the Wperp_paraH2 branch.",
+      "units": "source-discrete accumulated moment",
+      "shape": "[nvr,nvx,nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; shape (nvr,nvx,nx) exactly."
+    },
+    {
+      "name": "vr2_2vx2_2D",
+      "description": "vr^2 - 2*vx^2 projection kernel on the (vr,vx) mesh, used by the accumulated-moment branch.",
+      "units": "source-discrete",
+      "shape": "[nvr,nvx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; shape (nvr,nvx) exactly."
+    },
+    {
+      "name": "DeltaVx_tol",
+      "description": "Floor for |DeltaVx| (source hardcoded default 0.01).",
+      "units": "normalized speed difference",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": false,
+      "default": 0.01,
+      "constraints": "Finite and positive scalar (registered hardening: a NaN tolerance bypasses the saved arm's `tol <= 0` check)."
+    },
+    {
+      "name": "Wpp_tol",
+      "description": "Floor for |Wpp| (source hardcoded default 0.001).",
+      "units": "source-discrete second moment",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": false,
+      "default": 0.001,
+      "constraints": "Finite and positive scalar (registered hardening as for DeltaVx_tol)."
+    },
+    {
+      "name": "H2_P_EL",
+      "description": "Enable flag for the Omega_H2_P channel.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": false,
+      "default": true,
+      "constraints": "Interpreted as its truth value."
+    },
+    {
+      "name": "H2_H_EL",
+      "description": "Enable flag for the Omega_H2_H channel.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": false,
+      "default": true,
+      "constraints": "Interpreted as its truth value."
+    },
+    {
+      "name": "H2_H2_EL",
+      "description": "Enable flag for the Omega_H2_H2 channel and the Wperp_paraH2 projection.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": false,
+      "default": true,
+      "constraints": "Interpreted as its truth value."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "VxH2",
+      "description": "H2 bulk x-flow velocity per spatial cell.",
+      "units": "m/s",
+      "shape": "[nx]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite (fail closed otherwise); zero where all channels are disabled."
+    },
+    {
+      "name": "Omega_H2_P",
+      "description": "H2-H+ elastic collision frequency.",
+      "units": "s^-1 (subject to the caller's assembled measure)",
+      "shape": "[nx]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite; nonnegative (zero-clamped by the source semantics)."
+    },
+    {
+      "name": "Omega_H2_H",
+      "description": "H2-H elastic collision frequency (denominator inside the sum, source-exact).",
+      "units": "s^-1 (subject to the caller's assembled measure)",
+      "shape": "[nx]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite; nonnegative (zero-clamped)."
+    },
+    {
+      "name": "Omega_H2_H2",
+      "description": "H2-H2 elastic (viscosity) collision frequency from the branch-time SIG_H2_H2 re-contraction.",
+      "units": "s^-1 (subject to the caller's assembled measure)",
+      "shape": "[nx]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite; nonnegative (zero-clamped)."
+    },
+    {
+      "name": "Omega_EL",
+      "description": "Total elastic collision frequency, the exact channel sum.",
+      "units": "s^-1 (subject to the caller's assembled measure)",
+      "shape": "[nx]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite; equals Omega_H2_P + Omega_H2_H + Omega_H2_H2 exactly."
+    },
+    {
+      "name": "Wperp_paraH2",
+      "description": "Perpendicular second moment feeding the Wpp floor of the H2-H2 channel.",
+      "units": "source-discrete second moment",
+      "shape": "[nx]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite; selected by the sign of sum(MH2_H2_sum) (< 0: direct vr2 projection; >= 0: accumulated-moment reduction)."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Branch-time state (fH2, nH2, MH2_H2_sum), upstream Alpha fields and the assembled SIG_H2_H2 matrix exist with aligned shapes.",
+      "The caller supplies the mesh, weights, flow targets and floors; this operator performs no gridding or cache handling."
+    ],
+    "supported": [
+      "Molecular elastic Omega aggregation (Omega_H2_P, Omega_H2_H, Omega_H2_H2, Omega_EL) with VxH2 and Wperp_paraH2 on a declared velocity carrier."
+    ],
+    "excluded": [
+      "The atomic H aggregation, the Omega_* composition into scattered-source sums (elastic-frequency-channels / elastic-regeneration-aggregation consumers), Do_Alpha_*/Do_Sig_Gating, KH2.Internal cache lifecycle, and external physical validation."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when any array argument is misaligned (SIG_H2_H2 not (N,N) square for the carrier, nH2/vxi/VxH not (nx,), Alpha/MH2_H2_sum not (nvr,nvx,nx), weights/kernel mismatched), when any entry is non-finite, when nH2 has a non-positive entry while any elastic channel is enabled, when Vth/DeltaVx_tol/Wpp_tol is not a finite positive scalar, or when a tolerance is non-positive.",
+    "runtime_failure": "Raises ValueError if any returned field aggregates to a non-finite value; no partial results are returned.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy 分子氢弹性碰撞频率聚合 package, source anchor KN1DPy/kinetic_h2.py:1232-1296, as recorded by the saved bundle's own provenance section. Saved implementation file SHA-256 13b001078958fa6fd8a819e65340a3a4e22fbfb6a3dbb58e4451db92e81f78d9. The aggregation semantics, source-exact division ordering, legacy sign, clamps, dual Wperp branches and the branch-time SIG re-contraction are ported verbatim; the documented fail-closed hardenings (density gating, scalar Vth/tol validation, non-finite output gate) are registered divergences from the saved arm's silent behavior. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is provisional bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent recomputation witness (closed-form reduction oracle)",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.molecular_omega_aggregation",
+      "symbol": "assemble_molecular_hydrogen_omega_frequencies",
+      "signature": "assemble_molecular_hydrogen_omega_frequencies(fH2, nH2, Alpha_H2_P, Alpha_H2_H, SIG_H2_H2, Vr2pidVr, dVx, vr, vx, Vth, vxi, VxH, MH2_H2_sum, vr2_2vx2_2D, DeltaVx_tol=0.01, Wpp_tol=0.001, H2_P_EL=True, H2_H_EL=True, H2_H2_EL=True)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev42",
+    "dependencies": [
+      {
+        "asset_id": "scirel.kinetic.molecular-alpha-contraction"
+      },
+      {
+        "asset_id": "scirel.kinetic.molecular-collision-matrix-assembly"
+      }
+    ]
+  },
+  "example": {
+    "description": "Aggregate the molecular Omega family on a small carrier from the r66/r67 upstream outputs and check the total is the exact channel sum.",
+    "code": "import numpy as np\nfrom scirel.kinetic import (\n    assemble_molecular_hydrogen_collision_matrices,\n    contract_molecular_hydrogen_alpha_frequencies,\n    assemble_molecular_hydrogen_omega_frequencies,\n)\nnvr, nvx, nx = 2, 2, 1\ncarrier = dict(vr=[0.5, 1.0], vx=[-1.0, 1.0],\n               Vr2pidVr=[1.7671458676442586, 3.141592653589793],\n               dVx=[2.0, 2.0], Tnorm=1.0, mu=1.0)\nsig = assemble_molecular_hydrogen_collision_matrices(**carrier)\nfi = np.ones((nvr, nvx, nx))\nalpha = contract_molecular_hydrogen_alpha_frequencies(\n    sig[\"SIG_CX\"], sig[\"SIG_H2_H\"], sig[\"SIG_H2_P\"],\n    fi, fi, fi, np.full(nx, 1e18), np.full(nx, 5e17))\nkernel = np.asarray(carrier[\"vr\"])[:, None] ** 2 - 2.0 * np.asarray(carrier[\"vx\"])[None, :] ** 2\nout = assemble_molecular_hydrogen_omega_frequencies(\n    fi, np.full(nx, 1e18), alpha[\"Alpha_H2_P\"], alpha[\"Alpha_H2_H\"],\n    sig[\"SIG_H2_H2\"], np.asarray(carrier[\"Vr2pidVr\"]), np.asarray(carrier[\"dVx\"]),\n    np.asarray(carrier[\"vr\"]), np.asarray(carrier[\"vx\"]), 1.0,\n    np.full(nx, 0.1), np.full(nx, 0.05), fi, kernel)\nassert np.array_equal(out[\"Omega_EL\"], out[\"Omega_H2_P\"] + out[\"Omega_H2_H\"] + out[\"Omega_H2_H2\"])\nassert np.all(out[\"Omega_EL\"] >= 0.0)",
+    "expected": "The three channels aggregate to Omega_EL exactly and stay nonnegative; a non-positive density with an enabled channel raises ValueError."
+  },
+  "verification": {
+    "scope": [
+      "Bit-identical agreement with the saved KN1DPy implementation.",
+      "Input and failure contracts, including the registered hardenings."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_omega_aggregation.py",
+      "tests/operator_contracts/test_omega_aggregation_l1.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests establish every declared output against an independent closed-form reduction oracle built over manufactured inputs (the saved packages' 1e-12-relative/1e-9-absolute budgets), the source-exact inside/outside-the-sum division ordering for the H2-H versus H2-P channels, the branch-time SIG re-contraction against a Fortran-order versus C-order discriminating carrier, the zero clamps, the exact Omega_EL channel sum, channel-switch gating, input immutability, the Wperp branch selectors (including the < 0 versus <= 0 asymmetry between the arms), and the registered fail-closed hardenings. In the environment-gated replay all six outputs agree bit for bit with the saved KN1DPy implementation pinned by SHA-256 on fixtures covering both Wperp branch paths per arm. That replay is provisional historical development evidence, not qualified-L1 provenance. No test establishes the aggregation against an external atomic-physics reference; the saved package records that residual as validation_oracle_gap.",
+    "known_limitations": [
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "The registered fail-closed hardenings (positive-density gating, finite positive scalar Vth/tolerances, non-finite output gate) deliberately diverge from the saved arm's silent skip-through/NaN-returning behavior on those boundaries.",
+      "On a velocity carrier and flow targets whose drift difference is exactly zero, the source legacy sign(0)=0 makes the floored denominator 0*(...)=0.0 and the channel degenerates to NaN; the saved operator.md records this legitimate-input hazard. The port's non-finite output gate now rejects it with ValueError instead of returning NaN; whether to normalize the sign to a zero-protected np.sign form is an open expert question (registered by the saved package).",
+      "The DeltaVx_tol=0.01 and Wpp_tol=0.001 floors are source hardcoded defaults; their physical adequacy is an open expert question.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}
