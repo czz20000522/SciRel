@@ -92,6 +92,18 @@ def interpolate_scalar_across_mesh(fa, xa, xb, do_warn=0):
         raise ValueError("No values of Xb are within range of Xa")
 
     k0, k1 = okk[0], okk[-1]
+    # Declared r61 fail-closed narrowing: the saved arm assigns the
+    # interpolated values positionally into the fb[k0:k1+1] slice; when the
+    # in-range selection is non-contiguous the slice length differs from the
+    # selection length and the saved arm raises numpy's raw broadcast error.
+    # This asset fail-closes first with a named contract error; with a
+    # contiguous selection the positional assignment maps every node
+    # correctly, so no other behavior changes.
+    if k1 - k0 + 1 != okk.size:
+        raise ValueError(
+            "in-range mesh_b nodes must form one contiguous block: "
+            "the saved arm raises a raw broadcast error for this input"
+        )
     nxb = xb.size
     fb = np.zeros(nxb)
 

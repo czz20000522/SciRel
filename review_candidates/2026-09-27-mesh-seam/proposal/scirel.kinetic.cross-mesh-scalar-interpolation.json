@@ -26,7 +26,8 @@
     "boundary": "nonempty finite one-dimensional arrays; xa strictly increasing and aligned to fa; at least one in-range xb node; finite output",
     "assumptions": [
       "The out-of-range zero fill is the saved physics contract (interpolations outside the phase space are set to zero), not a defect.",
-      "Linear interpolation only; higher-order or conservative remaps are excluded."
+      "Linear interpolation only; higher-order or conservative remaps are excluded.",
+      "Declared r61 fail-closed narrowing: the saved arm assigns interpolated values positionally into the fb[k0:k1+1] slice, so a non-contiguous in-range selection (unsorted mesh_b with holes) raises numpy raw broadcast error on the saved arm; this asset fail-closes with a named contract error requiring the in-range mesh_b nodes to form one contiguous block. Contiguity refers to the selected index range, not sortedness of xb: an unsorted-but-contiguous xb maps correctly and stays legal. The saved-arm divergence is pinned by regression tests."
     ]
   },
   "inputs": [

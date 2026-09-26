@@ -91,13 +91,37 @@ def test_interpolation_contracts_fail_closed():
         interpolate_scalar_across_mesh(np.array([1.0, np.nan, 3.0]), xa, xb)
 
 
-def test_non_monotonic_xb_with_in_range_holes_keeps_the_saved_raw_error():
-    """The saved assignment fb[k0:k1+1] = interp1d(...)(xb[okk]) raises numpy's
-    raw broadcast ValueError when okk is non-contiguous (declared divergence
-    from a named contract message); the physically meaningful zero fill for
-    out-of-range nodes is unchanged."""
+def test_non_monotonic_xb_with_in_range_holes_fail_closed_named():
+    """Declared r61 narrowing: for a non-contiguous in-range selection the
+    saved arm raises numpy's raw broadcast error; this asset fail-closes
+    with a named contract error instead (same ValueError type, stable
+    message)."""
     xa = np.array([0.0, 1.0, 2.0])
     fa = np.array([0.0, 10.0, 20.0])
     xb = np.array([1.0, 5.0, 1.5])  # okk = [0, 2], non-contiguous
-    with pytest.raises(ValueError, match="could not broadcast"):
+    with pytest.raises(ValueError, match="in-range mesh_b nodes must form one contiguous block"):
         interpolate_scalar_across_mesh(fa, xa, xb, 0)
+
+
+def test_non_contiguous_in_range_selection_fails_closed_named():
+    """The reviewer counterexample: xb=[0.5, 2.0, 0.6] with xa=[0, 1] has a
+    non-contiguous in-range selection (okk=[0, 2]); the saved arm raised
+    numpy's raw broadcast error there.  This asset fail-closes with a named
+    contract error instead.  An unsorted-but-contiguous xb (xb=[0.8, 0.2]
+    with xa=[0, 1]) stays LEGAL: okk is contiguous, interp1d evaluates each
+    node independently, and the positional assignment maps every node
+    correctly."""
+    xa = np.array([0.0, 1.0])
+    fa = np.array([0.0, 1.0])
+    with pytest.raises(ValueError, match="contiguous block"):
+        interpolate_scalar_across_mesh(fa, xa, np.array([0.5, 2.0, 0.6]), 0)
+    # unsorted-but-contiguous in-range nodes stay legal and map correctly
+    np.testing.assert_array_equal(
+        interpolate_scalar_across_mesh(fa, xa, np.array([0.8, 0.2]), 0),
+        np.array([0.8, 0.2]),
+    )
+    # a genuinely sorted mesh_b still works, bit for bit
+    np.testing.assert_array_equal(
+        interpolate_scalar_across_mesh(fa, xa, np.array([0.5, 2.0]), 0),
+        np.array([0.5, 0.0]),
+    )

@@ -53,6 +53,32 @@ Successor of batch r60: the r60 candidate files below keep their frozen r60 byte
 - `proposal/test_mesh_and_seam.py` -- sha256 `9e301431a5881924477f8d4bc5faa1119e4668ebcb721e7162162e2da57e2dcb`
 - `proposal/test_mesh_and_seam_l1.py` -- sha256 `d6fe9485034d53d4b7283e6cc3033ce5f591732211d4b8b4629c8a4b74554bb4`
 
+
+## Batch r61: KN1DPy adaptive velocity mesh + cross-mesh scalar seam (two operators)
+
+Directory: `review_candidates/2026-09-27-mesh-seam/`
+Successor of batch r60: the r60 candidate files below keep their frozen r60 bytes and digests; this batch binds the new bytes.
+- `review.md` -- sha256 `e3974f0cdc54331feefc4d94ba55da536095eb8e7f9ec91638b61d7b1ea99f1e`
+- `proposal/adaptive_neutral_velocity_mesh.py` -- sha256 `4fee650ce4ff79c14a1fcba08fef6d2a4cddfb9422c0155b3351c75732e52157`
+- `proposal/cross_mesh_scalar_interpolation.py` -- sha256 `2e6d89584abe5deef6ecaec3e29561e6acd1ed2f622620336cef8787ea4f1abc`
+- `proposal/scirel.kinetic.adaptive-neutral-velocity-mesh.json` -- sha256 `bad9469a3ae3d0e2beb17befc673d88728cf6a78c93d1d68406ed7c1ddf64f8a`
+- `proposal/scirel.kinetic.cross-mesh-scalar-interpolation.json` -- sha256 `e4bd9d4fd70b9ae969d32c1911e6e026ac67b68dd5e63d326e9e1c67c1322cc2`
+- `proposal/test_mesh_and_seam.py` -- sha256 `54c0cdda250bb08202d1cc2cc50688c7dcd00e7f812eadd5899bb184acfff4d5`
+- `proposal/test_mesh_and_seam_l1.py` -- sha256 `d6fe9485034d53d4b7283e6cc3033ce5f591732211d4b8b4629c8a4b74554bb4`
+
+
+## Batch r61: KN1DPy adaptive velocity mesh + cross-mesh scalar seam (two operators)
+
+Directory: `review_candidates/2026-09-27-mesh-seam/`
+Successor of batch r60: the r60 candidate files below keep their frozen r60 bytes and digests; this batch binds the new bytes.
+- `review.md` -- sha256 `e3974f0cdc54331feefc4d94ba55da536095eb8e7f9ec91638b61d7b1ea99f1e`
+- `proposal/adaptive_neutral_velocity_mesh.py` -- sha256 `4fee650ce4ff79c14a1fcba08fef6d2a4cddfb9422c0155b3351c75732e52157`
+- `proposal/cross_mesh_scalar_interpolation.py` -- sha256 `610a00f45a2f86a8ae4aa844b1c47eb76a32fe0526b369ab30fcadfc7fae682c`
+- `proposal/scirel.kinetic.adaptive-neutral-velocity-mesh.json` -- sha256 `bad9469a3ae3d0e2beb17befc673d88728cf6a78c93d1d68406ed7c1ddf64f8a`
+- `proposal/scirel.kinetic.cross-mesh-scalar-interpolation.json` -- sha256 `b930e1cc87653d3d7dda5979c21cfe9b35698274cb90bc5078f5c71c522a110d`
+- `proposal/test_mesh_and_seam.py` -- sha256 `26acd851293c1e3a0132f994b8f5e68f4991fcfac70c908ef88d7e696ec02243`
+- `proposal/test_mesh_and_seam_l1.py` -- sha256 `d6fe9485034d53d4b7283e6cc3033ce5f591732211d4b8b4629c8a4b74554bb4`
+
 ## Batch r60: KN1DPy neutral-moment diagnostics family (eleven operators)
 
 Directory: `review_candidates/2026-09-26-neutral-moments/`
