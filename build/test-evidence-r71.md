@@ -2,12 +2,18 @@
 
 Base r70 `644b223` (137 assets, dev44, frozen snapshot
 `build/verification/review-2026-09-27-r70-fast-ion-kinematics-v3`) -> r71
-`0.1.0.dev45` (142 assets). Five new operators in `scirel.fusion`:
-`nbi-energy-component-velocity`, `nbi-component-initial-state`,
-`thermal-halo-velocity-sampling`, `beam-grid-cell-sampling` and
-`pitch-gyro-velocity-direction` — the deterministic birth/geometry leaves of
-the NBI chain, whose weight/kinematics consumers landed in r70. The r70
-snapshots are untouched.
+`0.1.0.dev45` (142 assets). Five new operators in `scirel.fusion`, spanning
+three framework nodes of the saved program_framework_map: N2
+neutral_beam_source_sampling (`nbi-energy-component-velocity`,
+`nbi-component-initial-state`, `beam-grid-cell-sampling`), N3
+neutral_population_transport (`thermal-halo-velocity-sampling`), and N7
+fast_ion_fida_response (`pitch-gyro-velocity-direction`, whose operator.md
+describes a fast-ion diagnostic magnetic frame, not an NBI birth relation).
+These are cross-node independent leaves, not a composed source pipeline;
+the framework map emits no TaskGraph composing them (e.g. the N7 frame is
+the local magnetic frame, not an NBI birth ray), so no cross-node
+composition test is included and that composition evidence gap stays
+declared. The r70 snapshots are untouched.
 
 ## Shell record
 
@@ -65,8 +71,20 @@ these digests provide the provenance linkage.
   domain unchanged), the halo/beam-grid overflow witnesses, and the
   velocity-scaling overflow witness (norm-overflowing finite ray with the
   max finite speed). Per-call seeded fixtures; no module-level RNG.
-- 9 new tests; full-tree delta reconciles exactly (1508 -> 1524 source with
-  replay; 1354/197 -> 1370/197 installed).
+- 9 new tests. Full-tree delta versus the true r70-v3 baseline
+  (commit `644b223`, measured directly in a temporary worktree at that
+  commit: **1515 passed, 43 skipped, 0 failed**, returncode 0, replay
+  active): +9 collected NBI tests, 1515 -> 1524. The earlier r70 evidence
+  numbers (1508 / 1354+197) were taken at the r70-v1 tree (`4969b42`)
+  BEFORE the review-scope consumer fix (`acef9c5`), which added exactly
+  7 collected scope tests (1 acceptance + 6 parametrized rejections;
+  `git show acef9c5`). Relative to the stale r70-v1 numbers (1508/1354)
+  the r71 totals appear as +16; the correct like-for-like comparison
+  against the r70-v3 baseline is +9 source. The r70-v3 installed baseline
+  was not directly re-run, so no derived installed-baseline number is
+  claimed; the r71 installed gate (1370 passed / 197 skipped,
+  returncode 0) was independently reproduced by the reviewer (the scope
+  tests do execute in the installed tree, so they are not source-only).
 
 ## Registered divergences exercised by tests
 
@@ -104,6 +122,7 @@ these digests provide the provenance linkage.
   freeze.
 - Internal wheel `scirel-0.1.0.dev45-py3-none-any.whl`, SHA-256
   `5fc36403906b3357bcf1e6971d46aefa2f0be6d64cc8446d4998810d691ae82e`.
-- Candidate review-material index: batch r71 added (7 entries covering
-  review.md and 6 proposal files), every entry resolves and matches its
-  recorded SHA-256 (script-verified).
+- Candidate review-material index: batch r71 added (12 entries covering
+  review.md, 6 proposal modules/tests and 5 proposal exact documents),
+  every entry resolves and matches its recorded SHA-256
+  (script-verified).

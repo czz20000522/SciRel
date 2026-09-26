@@ -9,7 +9,7 @@
   "summary": "Materialize one NBI energy component's initial six-level atomic state: the source's states(1) = nneutrals * fraction / dv density with only atomic level 1 populated.",
   "taxonomy": [
     "fusion",
-    "fast-ion-diagnostics",
+    "neutral-beam-source-sampling",
     "nbi-birth",
     "atomic-states"
   ],
@@ -19,7 +19,7 @@
   "identity": {
     "relation": "nneutrals = 1e6 * injected_power_mw / (1e3 * injection_energy_kev * e * sum_k(fraction_k / k)) with k in {1,2,3} and e = 1.60217733e-19 C (source fidasim.f90:69); states[0] = nneutrals * fraction_selected / beam_grid_cell_volume_cm3 and states[1:6] = 0.",
     "direction": "injected power + injection energy + full/half/third current fractions + beam-grid cell volume + selected component -> the component's total and per-component neutral rates and the six-level initial-state density vector",
-    "definition": "The saved FIDASIM initial-state materialization: the source's six atomic levels start with only level 1 populated per energy-component loop, and the full/half/third components independently begin from states(1) = nneutrals*fraction/dv. This relation is deliberately separate from the older three-component projection, whose CODATA e0 remains a distinct, explicitly documented contract.",
+    "definition": "The saved FIDASIM initial-state materialization (framework node N2 neutral_beam_source_sampling): the source's six atomic levels start with only level 1 populated per energy-component loop, and the full/half/third components independently begin from states(1) = nneutrals*fraction/dv. This relation is deliberately separate from the older three-component projection, whose CODATA e0 remains a distinct, explicitly documented contract.",
     "model": "the saved formal implementation, ported verbatim with registered finite-output gates on both the total rate and the per-cell density",
     "geometry": "one beam-grid cell; a length-6 state vector",
     "coordinates": "power in MW, energy in keV, volume in cm^3, densities in cm^-3, rates in s^-1; the source's cm-gram-second-derived unit bookkeeping is preserved verbatim",

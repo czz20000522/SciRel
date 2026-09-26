@@ -2,7 +2,9 @@
 
 状态:开发期冻结待审(`pending_unapproved`),不是领域专家认可、可信版本或公开发行。本版是 r70(`644b223`,`0.1.0.dev44`,137 资产,快照 `build/verification/review-2026-09-27-r70-fast-ion-kinematics-v3`)的 successor;既有快照(v1/v2/v3)原样保留。合格 L1 交付根在本轮开始与结束均复核为空,未消费任何合格 L1 输入。FIDASIM 保存包实际位于兄弟主仓库 checkout `D:/software/PyCharm 2025.3.3/workspace/SciRel/build/verification/neutral-harness-baseline-v3/inputs/l1/FIDASIM`(读取只,零写入),只支持 provisional 有界历史开发比较。
 
-## 性质:五项新 operator(NBI 出生/几何确定性叶)
+## 性质:五项新 operator(跨 N2/N3/N7 节点的独立确定性叶)
+
+按保存包 `program_framework_map.md` 的节点归属:N2 neutral_beam_source_sampling(能量分量速度缩放、六能级初态物化、束网格 cell 采样)、N3 neutral_population_transport(热 halo 速度采样)、N7 fast_ion_fida_response(俯仰/回旋角方向映射——保存 operator.md 明确这是快离子局域磁场标架方向,不是 NBI 中性束出生关系)。五叶是跨节点独立叶;框架图未发射组合它们的 TaskGraph(N7 标架是局域磁场标架,不是 NBI 出生射线),故不含跨节点组合测试,该组合证据缺口如实声明。
 
 1. `scirel.fusion.nbi-energy-component-velocity`(`scale_nbi_velocity_for_energy_component`):full/half/third 能量分量速度缩放,`sqrt(Float32(efrac))` 除数逐字保留。
 2. `scirel.fusion.nbi-component-initial-state`(`materialize_nbi_component_initial_state`):六能级初态物化,`states(1) = nneutrals*fraction/dv`,仅能级 1 有布居。
@@ -10,7 +12,7 @@
 4. `scirel.fusion.beam-grid-cell-sampling`(`sample_beam_grid_cell`):笛卡尔束网格 cell 出生位置,零均值仿射映射。
 5. `scirel.fusion.pitch-gyro-velocity-direction`(`pitch_gyro_to_velocity_direction`):俯仰/回旋角到单位速度方向,`sqrt(1-pitch^2)*cos*a + pitch*b + sqrt(1-pitch^2)*sin*c`(早期草稿的 `sin(gyro)*cos(angle)` 为转写错误,已更正)。
 
-本批是 r70 快离子运动学权重/修正消费者所需的确定性出生/几何叶;五个叶子互相独立,与 r70 无关系重叠。
+本批五叶与 r70 的权重/修正消费者无关系重叠,且彼此跨 N2/N3/N7 独立。
 
 ## 判重结论
 
@@ -43,9 +45,9 @@
 
 ## 验证(全部记录于 `build/test-evidence-r71.md`,所有子进程 returncode 已核)
 
-- 源码态全仓(复放激活):**1524 passed, 43 skipped, 0 failed**,returncode 0(r70 全树 1508)
+- 源码态全仓(复放激活):**1524 passed, 43 skipped, 0 failed**,returncode 0。真实 r70-v3 基线(commit `644b223`,在临时 worktree 直接实测 **1515 passed/43 skipped**,rc=0)+9 项 NBI 测试;r70 旧证据的 1508 是 v1 树(在 review-scope 修复 `acef9c5` 新增 7 项 collected 之前)的数,跨版本对账以 r70-v3 的 1515 为准
 - 142/142 文档源码态与安装态校验通过,含示例执行(`runtime_origin: installed`)
-- 安装态全树(干净 venv `build/venv-r71-clean`,自装 numpy 2.5.3 / scipy 1.18.1 / pytest 9.1.1,wheel `--no-index --no-deps`):**1370 passed, 197 skipped, 0 failed**,returncode 0(r70: 1354/197)
+- 安装态全树(干净 venv `build/venv-r71-clean`,自装 numpy 2.5.3 / scipy 1.18.1 / pytest 9.1.1,wheel `--no-index --no-deps`):**1370 passed, 197 skipped, 0 failed**,returncode 0。r70-v1 证据的 1354/197 是 v1 树的数(在 `acef9c5` +7 collected 之前),与 r71 的 1370 不可直接对账;r70-v3 的安装态基线未直接重跑,不在此推算任何派生数字;本安装态回执由审查者独立复跑通过
 - catalog `build/catalog/r71`:`complete: 142/142`,root digest `sha256:854cc403400d1b37443f14cf8807f46c84f5d458fe4dc34b8a26196c4ef1b4eb`
 - 内部 wheel `scirel-0.1.0.dev45-py3-none-any.whl`,SHA-256 `5fc36403906b3357bcf1e6971d46aefa2f0be6d64cc8446d4998810d691ae82e`
 

@@ -9,7 +9,7 @@
   "summary": "Scale one NBI birth particle's unit velocity ray by the injection speed divided by the square root of its full/half/third energy-component index, preserving the source's Float32 divisor.",
   "taxonomy": [
     "fusion",
-    "fast-ion-diagnostics",
+    "neutral-beam-source-sampling",
     "nbi-birth",
     "kinematics"
   ],
@@ -19,7 +19,7 @@
   "identity": {
     "relation": "vnbi = unit_ray * injection_speed_cm_s / sqrt(efrac) with efrac in {1, 2, 3} and the divisor evaluated as sqrt(Float32(efrac)) exactly as the source's default-REAL arithmetic.",
     "direction": "unit velocity ray + injection speed + energy component index -> scaled birth velocity vector",
-    "definition": "The saved FIDASIM mc_nbi/mc_nbi_cell velocity scaling: the full (efrac=1), half (efrac=2) and third (efrac=3) energy components carry speeds 1, 1/sqrt(2) and 1/sqrt(3) of the injection speed along the caller's unit ray. The Float32 divisor precision is a recorded source quirk, preserved verbatim and quantified in the exact document.",
+    "definition": "The saved FIDASIM mc_nbi/mc_nbi_cell velocity scaling (framework node N2 neutral_beam_source_sampling): the full (efrac=1), half (efrac=2) and third (efrac=3) energy components carry speeds 1, 1/sqrt(2) and 1/sqrt(3) of the injection speed along the caller's unit ray. The Float32 divisor precision is a recorded source quirk, preserved verbatim and quantified in the exact document.",
     "model": "the saved formal implementation, ported verbatim with registered input hardening and a finite-output gate",
     "geometry": "one birth particle; vector output in the caller's frame",
     "coordinates": "velocities in cm/s; the ray is dimensionless and unit-norm",

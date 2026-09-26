@@ -6,10 +6,11 @@
     "en": "Pitch and gyro-angle to velocity direction",
     "zh": "俯仰陀螺到速度方向"
   },
-  "summary": "Map one pitch and gyro-angle pair to a unit velocity direction in a caller-supplied orthonormal local frame: sqrt(1-pitch^2)*cos(gyroangle)*a_unit + pitch*b_unit + sqrt(1-pitch^2)*sin(gyroangle)*c_unit.",
+  "summary": "Map one pitch and gyro-angle pair to a unit fast-ion velocity direction in a caller-supplied orthonormal local magnetic frame: sqrt(1-pitch^2)*cos(gyroangle)*a_unit + pitch*b_unit + sqrt(1-pitch^2)*sin(gyroangle)*c_unit.",
   "taxonomy": [
     "fusion",
     "fast-ion-diagnostics",
+    "fida-response",
     "guiding-center",
     "geometry"
   ],
@@ -19,7 +20,7 @@
   "identity": {
     "relation": "direction = sqrt(1 - pitch^2) * cos(gyroangle) * a_unit + pitch * b_unit + sqrt(1 - pitch^2) * sin(gyroangle) * c_unit.",
     "direction": "pitch + gyro angle + orthonormal local frame (a_unit, b_unit, c_unit) -> one unit velocity direction",
-    "definition": "The saved FIDASIM pitch_to_vec mapping: the pitch fixes the component along b_unit (dot(direction, b_unit) == pitch in an exactly-orthonormal frame; within the accepted 1e-12 frame tolerance the identity holds to that tolerance), the gyro angle rotates the perpendicular remainder within the a_unit-c_unit plane, and the output is unit-norm by construction for |pitch| <= 1 in an orthonormal frame.",
+    "definition": "The saved FIDASIM pitch_to_vec mapping (framework node N7 fast_ion_fida_response): the pitch fixes the component along b_unit -- the local magnetic-field direction -- (dot(direction, b_unit) == pitch in an exactly-orthonormal frame; within the accepted 1e-12 frame tolerance the identity holds to that tolerance), the gyro angle rotates the perpendicular remainder within the a_unit-c_unit plane, and the output is unit-norm by construction for |pitch| <= 1 in an orthonormal frame. This is a fast-ion diagnostic-frame geometry leaf, not an NBI neutral-beam birth relation.",
     "model": "the saved formal implementation, ported verbatim",
     "geometry": "one direction; the local frame is caller-supplied",
     "coordinates": "pitch and the direction are dimensionless; the gyro angle in radians",
@@ -89,13 +90,13 @@
   ],
   "applicability": {
     "preconditions": [
-      "The caller supplies an orthonormal local frame at the birth position."
+      "The caller supplies an orthonormal local magnetic frame at the fast-ion marker position."
     ],
     "supported": [
-      "Per-particle pitch/gyro-angle to velocity-direction mapping for MC birth sampling."
+      "Per-particle pitch/gyro-angle to velocity-direction mapping for the fast-ion FIDA response frame geometry."
     ],
     "excluded": [
-      "Frame construction, pitch/gyro-angle distribution sampling, orbit physics, and the FLR position correction (scirel.fusion.first-order-larmor-correction)."
+      "Frame construction, pitch/gyro-angle distribution sampling, orbit physics, the FLR position correction (scirel.fusion.first-order-larmor-correction), and NBI neutral-beam birth sampling (energy-component scaling, initial-state materialization, halo and beam-grid sampling live in different framework nodes)."
     ]
   },
   "failure_semantics": {

@@ -1,4 +1,4 @@
-# Candidate: FIDASIM NBI birth/geometry leaf family (five operators)
+# Candidate: FIDASIM fast-ion/neutral cross-node leaf family (five operators)
 
 Status: development candidate prepared for expert review, to be frozen as the
 pending_unapproved r71 successor of r70. Nothing here is expert approval, a
@@ -42,11 +42,24 @@ trusted version, or a public release.
 
 ## Deduplication judgment and why these five are separate identities
 
+Composition gap (declared, not bridged): the five leaves span N2/N3/N7
+and the saved program_framework_map does not emit a TaskGraph composing
+e.g. the N7 pitch direction with the N2 energy scaling -- the N7 frame is
+the local magnetic frame, not an NBI birth ray. No cross-node composition
+test is included; any such composition requires the framework's own
+TaskGraph evidence and is left as an open frontier. The batch is bounded
+independent-leaf evidence, not a source-pipeline reproduction.
+
 - Versus r70: no relation overlap -- r70 covers DD neutron weighting and
-  the FLR position correction; this batch covers the birth state
-  (density/level population), birth position (grid cell) and birth
-  direction (pitch/gyro frame) for the same NBI chain, which r70 consumes
-  but does not provide.
+  the FLR position correction. This batch provides leaves from three
+  different framework nodes of the saved program_framework_map: N2
+  neutral_beam_source_sampling (energy-component velocity scaling,
+  six-level initial-state materialization, beam-grid cell sampling), N3
+  neutral_population_transport (thermal-halo velocity sampling), and N7
+  fast_ion_fida_response (pitch/gyro-angle direction map in the local
+  magnetic frame -- the saved operator.md describes a fast-ion diagnostic
+  frame, not an NBI birth relation). These are cross-node independent
+  leaves, not a composed source pipeline.
 - Versus the baseline `shifted-maxwellian-seed` (KN1DPy): that asset builds
   a normalized distribution on a cylindrical velocity mesh; the halo leaf
   maps one particle's caller-owned normal draws to a velocity -- different
@@ -109,8 +122,16 @@ trusted version, or a public release.
   implementations' content digests are recorded as reference evidence in
   `build/test-evidence-r71.md` (no automated drift detection runs against
   them).
-- 9 tests total; full-tree delta reconciles exactly (1508 -> 1524 source
-  with replay; 1354/197 -> 1370/197 installed).
+- 9 tests total. Full-tree delta versus the true r70-v3 baseline
+  (commit `644b223`, measured directly at that commit: 1515 passed / 43
+  skipped with replay, returncode 0): +9 collected NBI tests, 1515 ->
+  1524 source. The earlier r70 evidence numbers (1508/1354) were taken
+  at the r70-v1 tree before the review-scope consumer fix added 7
+  collected scope tests, so they are not directly comparable to the r71
+  totals; the r70-v3 installed baseline was not directly re-run and no
+  derived installed number is claimed. The r71 installed gate (1370
+  passed / 197 skipped, returncode 0) was independently reproduced by
+  the reviewer; the scope tests do execute in the installed tree.
 
 ## Files
 

@@ -27,16 +27,21 @@ needs a successor, not a silent edit.
 
 
 
-## Batch r71: FIDASIM NBI birth/geometry leaf family (five operators)
+## Batch r71: FIDASIM fast-ion/neutral cross-node leaf family (five operators)
 
 Directory: `review_candidates/2026-09-27-nbi-birth-leaves/`
-Successor of batch r70: the r70 candidate files below keep their frozen r70 v1 bytes and digests; this batch binds the new bytes.
-- `review.md` -- sha256 `294902dd9ab1df92196595ff1be4982e44f52e0e5cbbb4232c0f407c4d0e8406`
+Successor of batch r70: the r70 candidate files below keep their frozen r70 v1 bytes and digests; this batch binds the new bytes (r70-v3 is the comparison baseline).
+- `review.md` -- sha256 `ad82f6b8559e7b5719257f05251b9775cb1cce60036e6dfe9735509e58f19932`
 - `proposal/beam_grid_cell_sampling.py` -- sha256 `0058dd2e7e4b47bd3c79f6812c8c8e7e55fc3504c37d3c553d8d75d88717bdb8`
 - `proposal/halo_velocity_sampling.py` -- sha256 `a4c101f750eb41a1edde6beb794397fd744a8ac0c0f0bd0e54e9ea4eb827352b`
 - `proposal/nbi_component_initial_state.py` -- sha256 `ec1eaaed29b6b0c0d6f7416d05583ae9defc0a6083488dc78ed335e3a6671dd9`
 - `proposal/nbi_energy_component_velocity.py` -- sha256 `1aa61f268ed6ed0a3be349149d0f8a2db4d7e8ba53959c86747c2d7843039dd8`
 - `proposal/pitch_gyro_direction.py` -- sha256 `a4ac289c8932d45a37b7103008db41cdb54f335029fcea119d4efda3204601fb`
+- `proposal/scirel.fusion.beam-grid-cell-sampling.json` -- sha256 `a52bf837fa4c148faa2c8459ddc4df54dc2f660892e1ceefbb4f4ea8f6a22124`
+- `proposal/scirel.fusion.nbi-component-initial-state.json` -- sha256 `ebbe425fb1110548f39ed7db6c8017a254b51f396c393de4f45baff26e6a5d91`
+- `proposal/scirel.fusion.nbi-energy-component-velocity.json` -- sha256 `2b15c5682d20378db3fe97b5c45a634d1ab8ad95a70f63674a71319e390ba102`
+- `proposal/scirel.fusion.pitch-gyro-velocity-direction.json` -- sha256 `135defbed548bd4cd778e779ebc9fa483491667cf4b215c96183e383d6ddcbb8`
+- `proposal/scirel.fusion.thermal-halo-velocity-sampling.json` -- sha256 `219015acf1faaed581104ae7ef02cbca94cc0d5918f2c6a39888a3e162c8e4d4`
 - `proposal/test_nbi_birth_leaves.py` -- sha256 `3f975c3db1e858b57e7490c2017f741c0945fdbdd92b627e8a34e3961c0610de`
 
 ## Batch r70: FIDASIM fast-ion kinematics family (two operators; DD lab energy reused, no new identity)

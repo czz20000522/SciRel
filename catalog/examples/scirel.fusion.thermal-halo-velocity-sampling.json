@@ -9,8 +9,7 @@
   "summary": "Map caller-owned standard-normal variates to one thermal-halo neutral birth velocity: the plasma rotation velocity plus a thermal-speed-scaled draw, with the thermal speed from the source's Ti/2 form.",
   "taxonomy": [
     "fusion",
-    "fast-ion-diagnostics",
-    "nbi-birth",
+    "neutral-population-transport",
     "halo",
     "sampling"
   ],
@@ -20,7 +19,7 @@
   "identity": {
     "relation": "halo_velocity = plasma_rotation_cm_s + thermal_speed_cm_s * standard_normal_draw, with thermal_speed_cm_s = sqrt(Ti/2 / (velocity_squared_to_kev_per_amu * ion_mass_amu)) in the source's velocity-squared-to-keV-per-amu convention.",
     "direction": "plasma rotation velocity + ion temperature + ion mass + conversion factor + caller-owned standard-normal draw -> one halo birth velocity and the thermal speed",
-    "definition": "The saved FIDASIM mc_halo mapping. The randomness stays caller-owned: the standard-normal triplet is an explicit input, so the map is a deterministic, replayable function of its inputs and no RNG is bound.",
+    "definition": "The saved FIDASIM mc_halo mapping (framework node N3 neutral_population_transport): one thermal-halo neutral birth velocity is the plasma rotation velocity plus a thermal-speed-scaled standard-normal draw. The randomness stays caller-owned: the standard-normal triplet is an explicit input, so the map is a deterministic, replayable function of its inputs and no RNG is bound.",
     "model": "the saved formal implementation, ported verbatim with registered finite-output and denominator gates",
     "geometry": "one birth particle; a 3-vector output",
     "coordinates": "velocities in cm/s; temperature in keV; mass in amu; the conversion factor in keV amu^-1 (cm/s)^-2",
