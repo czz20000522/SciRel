@@ -74,14 +74,15 @@ def test_outer_seed_convergence_returns_dict_with_reentry_flag():
     curr2 = np.array([150.0, 200.0])
     result2 = evaluate_neutral_outer_seed_convergence(prev, curr2, truncate=0.1)
     assert result2["should_reiterate"] is False
-    # the reentry threshold is 10*truncate = 1.0; a per-node seed_error
-    # approaching 1.0 from below still does not re-enter
+    # the reentry threshold is 10*truncate = 1.0; the ratio-of-max formula
+    # gives seed_error = max(abs(diff))/max(curr) = 200/300 = 0.667, below
+    # the threshold, so no re-entry
     curr3 = np.array([300.0, 200.0])
     result3 = evaluate_neutral_outer_seed_convergence(prev, curr3, truncate=0.1)
     assert result3["should_reiterate"] is False
     assert result3["reentry_threshold"] == 1.0
     # a dramatic decrease crosses the threshold: prev=1000, curr=100 gives
-    # seed_error = |100-1000|/100 = 9.0 > 1.0 -> re-enters
+    # seed_error = max(abs(diff))/max(curr) = 900/200 = 4.5 > 1.0 -> re-enters
     prev2 = np.array([1000.0, 200.0])
     curr4 = np.array([100.0, 200.0])
     result4 = evaluate_neutral_outer_seed_convergence(prev2, curr4, truncate=0.1)
