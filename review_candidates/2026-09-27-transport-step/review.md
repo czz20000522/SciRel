@@ -25,9 +25,9 @@ approval, a trusted version, or a public release.
 
 | Saved callable | Disposition | Proposed SciRel identity | Material differences | Evidence (shared across the family) |
 | --- | --- | --- | --- | --- |
-| `assemble_neutral_upwind_transport_coefficients` (anchor `kinetic_h.py:1170-1249`) | add new capability | scirel.kinetic.neutral-upwind-transport-coefficients | **no repair** — the saved first-order upwind trapezoidal scheme (Ak/Bk/Fk/Ck/Dk/Gk) is reproduced bit for bit; the operator involves x and vx axes only (no vr) | shared: 10 direct + 4 replay |
-| `propagate_neutral_generation` (anchor `kinetic_h.py:1260-1275; kinetic_h2.py:1385-1415`) | add new capability | scirel.kinetic.neutral-generation-propagation | **no repair** — first_flight and scattered bidirectional propagation reproduced bit for bit; Bk is the scattered-branch forward source coefficient (not first-flight); Fk is the first-flight forward source term; incoming_boundary applies only to the positive-vx branch; negative-vx right boundary is fixed zero | shared: 10 direct + 4 replay |
-| `assemble_neutral_boltzmann_rhs` (anchor `kinetic_h.py:1636-1646; kinetic_h2.py:1794-1803`) | add new capability | scirel.kinetic.neutral-boltzmann-rhs | **no repair** — the signed sum Vth*(S + Beta_CX - alpha_c*f + OmegaM + Swall) is reproduced bit for bit; NaN thermal speed is rejected on both arms | shared: 10 direct + 4 replay |
+| `assemble_neutral_upwind_transport_coefficients` (anchor `kinetic_h.py:1170-1249`) | add new capability | scirel.kinetic.neutral-upwind-transport-coefficients | **no repair** — the saved first-order upwind trapezoidal scheme (Ak/Bk/Fk/Ck/Dk/Gk) is reproduced bit for bit; the operator involves x and vx axes only (no vr) | shared: 12 direct + 4 replay |
+| `propagate_neutral_generation` (anchor `kinetic_h.py:1260-1275; kinetic_h2.py:1385-1415`) | add new capability | scirel.kinetic.neutral-generation-propagation | **no repair** — first_flight and scattered bidirectional propagation reproduced bit for bit; Bk is the scattered-branch forward source coefficient (not first-flight); Fk is the first-flight forward source term; incoming_boundary applies only to the positive-vx branch; negative-vx right boundary is fixed zero | shared: 12 direct + 4 replay |
+| `assemble_neutral_boltzmann_rhs` (anchor `kinetic_h.py:1636-1646; kinetic_h2.py:1794-1803`) | add new capability | scirel.kinetic.neutral-boltzmann-rhs | **no repair** — the signed sum Vth*(S + Beta_CX - alpha_c*f + OmegaM + Swall) is reproduced bit for bit; NaN thermal speed is rejected on both arms | shared: 12 direct + 4 replay |
 
 Relations kept distinct and not merged: upwind coefficients produce the
 inputs to propagation; BoltzmannRHS is a diagnostic assembly consuming
@@ -67,7 +67,7 @@ and pinned by regression tests.
 - `proposal/upwind_transport_coefficients.py`,
   `proposal/neutral_generation_propagation.py`,
   `proposal/neutral_boltzmann_rhs.py`
-- `proposal/test_transport_step.py` (10 direct),
+- `proposal/test_transport_step.py` (12 direct),
   `proposal/test_transport_step_l1.py` (4 replay)
 - `proposal/scirel.kinetic.neutral-upwind-transport-coefficients.json`,
   `proposal/scirel.kinetic.neutral-generation-propagation.json`,

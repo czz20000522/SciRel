@@ -176,3 +176,41 @@ def test_propagate_rejects_nonfinite_vx():
             generation_kind="first_flight", incoming_boundary=np.ones((1, 3)),
         )
 
+def test_first_flight_uses_fk_not_bk():
+    """Pre-review regression: first_flight uses Fk as the forward source
+    term, not Bk; scattered uses Bk (positive) and Dk (negative).  This
+    distinguishes the two generation kinds by their coefficient usage."""
+    nvr, nvx, nx = 1, 2, 3
+    vx = np.array([-1.0, 1.0])
+    Ak = np.zeros((nvr, nvx, nx)); Bk = np.ones((nvr, nvx, nx)) * 10.0
+    Fk = np.ones((nvr, nvx, nx)) * 5.0
+    Ck = np.zeros((nvr, nvx, nx)); Dk = np.ones((nvr, nvx, nx)) * 20.0
+    Gk = np.ones((nvr, nvx, nx)) * 7.0
+    boundary = np.ones((nvr, nvx)); src = np.ones((nvr, nvx, nx))
+    gen_ff = propagate_neutral_generation(
+        vx, Ak, Bk, Fk, Ck, Dk, Gk, generation_kind="first_flight",
+        incoming_boundary=boundary,
+    )
+    gen_sc = propagate_neutral_generation(
+        vx, Ak, Bk, Fk, Ck, Dk, Gk, generation_kind="scattered",
+        scattered_source_distribution=src,
+    )
+    # first_flight positive branch uses Fk (5), not Bk (10)
+    np.testing.assert_allclose(gen_ff[0, 1, 1], 5.0)
+    # scattered positive branch uses Bk (10)
+    np.testing.assert_allclose(gen_sc[0, 1, 1], 20.0)
+
+
+def test_propagate_nx_zero_fail_closed():
+    """Pre-review regression: nx=0 raises a raw IndexError on the saved arm
+    (generation[:, positive, 0] with empty axis); this asset fail-closes
+    with a named ValueError instead."""
+    vx = np.array([-1.0, 1.0])
+    Ak = np.ones((1, 2, 0)); Bk = np.ones((1, 2, 0)); Fk = np.ones((1, 2, 0))
+    Ck = np.ones((1, 2, 0)); Dk = np.ones((1, 2, 0)); Gk = np.ones((1, 2, 0))
+    with pytest.raises(ValueError, match="nx must be at least one"):
+        propagate_neutral_generation(
+            vx, Ak, Bk, Fk, Ck, Dk, Gk,
+            generation_kind="first_flight", incoming_boundary=np.ones((1, 2)),
+        )
+
