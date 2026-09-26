@@ -94,3 +94,24 @@ freeze; the same discipline is applied here.
 - Domain draft `docs/domains/fusion.md` extended with the two relations and
   the explicit reuse disposition.
 - Candidate review-material index: batch r70 added (6 entries).
+
+## v2 addendum — review-scope consumer contract fix (tooling only)
+
+r70-v1 stays frozen and untouched; the v2 freeze
+(`review-2026-09-27-r70-fast-ion-kinematics-v2`, commit `acef9c5`) carries
+one engineering fix with a byte-identical science surface (137 exact
+documents, wheel, catalog and the six candidate material digests all
+verified identical to v1):
+
+- `scripts/review_scope.py` still validated review materials against the
+  pre-r66 docs-only contract while the freeze script has admitted exact
+  candidate-batch shapes since the r66 v2 freeze, so r69-v2 and r70-v1
+  failed the scope reader with `invalid material entry` while r65-v6
+  passed. The consumer now reuses
+  `freeze_review_version._is_candidate_material` directly — one
+  restricted material contract, not a second diverging rule.
+- `tests/test_review_scope.py` +8 regressions (38 file total): freeze-listed
+  candidate materials accepted; six out-of-shape candidate paths still fail
+  closed.
+- Verified against the real frozen snapshots: r70-v2, r70-v1 and r69-v2 all
+  read with returncode 0; r65-v6 still reads.
