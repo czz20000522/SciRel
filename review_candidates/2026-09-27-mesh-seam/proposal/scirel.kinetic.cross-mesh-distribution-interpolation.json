@@ -1,0 +1,217 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.cross-mesh-distribution-interpolation",
+  "kind": "operator",
+  "title": {
+    "en": "Cross-mesh distribution interpolation",
+    "zh": "跨网格分布插值"
+  },
+  "summary": "Transfer a velocity distribution between two phase-space meshes (the N5 H<->H2 handoff): 4-D cell-overlap volume weights in (vr,vx), x-space linear interpolation onto the target mesh, optional source moment-correction loop reproducing density/flow/energy moments, and density rescale.",
+  "taxonomy": [
+    "kinetic",
+    "neutral-transport",
+    "interpolation",
+    "mesh-handoff",
+    "distribution"
+  ],
+  "aliases": [
+    "interp_fvrvxx"
+  ],
+  "identity": {
+    "relation": "the saved interp_fvrvxx handoff: 4-D cell-overlap weights transfer the distribution from mesh_a velocity space onto mesh_b, x-space linear interpolation, then optional moment correction and density rescale",
+    "direction": "distribution plus two phase-space meshes and correct selector -> interpolated distribution on mesh_b",
+    "definition": "fV = sqrt(Tnorm_b/Tnorm_a) scales mesh_b velocity cells onto mesh_a; the weight matrix holds the 4-D cell-overlap volume integral; the transfer maps fa onto mesh_b velocity space evaluated on the mesh_a x grid; x-interpolation uses searchsorted location and linear weights; with correct=1 the saved AN/BN perturbation-moment loop iterates so the corrected distribution reproduces the source density/flow/energy moments; the density rescale renormalises fb where its own integrated total exceeds min(fb>0)",
+    "model": "the saved formal implementation of the N5 outer H<->H2 seam, stateless port recomputing the weight matrix per call (the original source cache lifecycle is a pure memoisation; the saved formal operator has no cache branch)",
+    "geometry": "two velocity dimensions over one spatial axis, per phase-space mesh",
+    "coordinates": "velocity nodes and distributions in the source normalized units, spatial nodes in m; Tnorm in eV",
+    "boundary": "finite one-dimensional velocity/spatial axes with strictly increasing vr and vx covering positive and negative axial nodes on mesh_a; at least 2 nodes per velocity axis; velocity-space and x-space overlap required between the meshes; positive Tnorm on both meshes; finite 3-D distribution aligned to mesh_a",
+    "assumptions": [
+      "The saved formal operator has no w_new/cache branch; it recomputes the weight matrix every call, exactly like this stateless port. The original source runtime's cache lifecycle is a pure memoisation and cannot change the result.",
+      "The saved arm raises a raw IndexError for a single-node vx_a (the correction branch indexes vx[1]); this integration declares that edge fail-closed in the domain (at least 2 vx nodes covering positive and negative axial velocities) and pins it by regression.",
+      "The saved arm only checks Tnorm <= 0, so NaN and inf pass silently; this asset additionally requires Tnorm to be finite, per the declared finite-input contract.",
+      "The moment correction targets the source density/flow/energy moments; it does not claim any external atomic-physics validation.",
+      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "fa",
+      "description": "The input distribution on mesh_a.",
+      "units": "source-normalized",
+      "shape": "[nvra,nvxa,nxa]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A finite three-dimensional array aligned to mesh_a."
+    },
+    {
+      "name": "vr_a",
+      "description": "Mesh_a radial velocity nodes.",
+      "units": "source-normalized",
+      "shape": "[nvra]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, strictly increasing, at least two nodes."
+    },
+    {
+      "name": "vx_a",
+      "description": "Mesh_a axial velocity nodes.",
+      "units": "source-normalized",
+      "shape": "[nvxa]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, strictly increasing, at least two nodes, covering positive and negative axial velocities."
+    },
+    {
+      "name": "x_a",
+      "description": "Mesh_a spatial nodes.",
+      "units": "m",
+      "shape": "[nxa]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, strictly increasing, at least two nodes."
+    },
+    {
+      "name": "Tnorm_a",
+      "description": "Mesh_a normalization temperature.",
+      "units": "eV",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "vr_b",
+      "description": "Mesh_b radial velocity nodes.",
+      "units": "source-normalized",
+      "shape": "[nvrb]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, strictly increasing, at least two nodes."
+    },
+    {
+      "name": "vx_b",
+      "description": "Mesh_b axial velocity nodes.",
+      "units": "source-normalized",
+      "shape": "[nvxb]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, strictly increasing, at least two nodes."
+    },
+    {
+      "name": "x_b",
+      "description": "Mesh_b spatial nodes.",
+      "units": "m",
+      "shape": "[nxb]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, strictly increasing, at least two nodes."
+    },
+    {
+      "name": "Tnorm_b",
+      "description": "Mesh_b normalization temperature.",
+      "units": "eV",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "correct",
+      "description": "The moment-correction branch selector.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer scalar",
+      "required": false,
+      "constraints": "1 applies the saved correction loop, 0 returns the raw interpolant.",
+      "default": 1
+    },
+    {
+      "name": "do_warn",
+      "description": "The source boundary-truncation warning switch.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer scalar",
+      "required": false,
+      "constraints": "None (default) skips warnings; other values trigger them (output unchanged).",
+      "default": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "fb",
+      "description": "The interpolated distribution on mesh_b.",
+      "units": "source-normalized",
+      "shape": "[nvrb,nvxb,nxb]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite; the corrected (or raw) transfer of fa onto mesh_b."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Both meshes satisfy the axis/shape contracts; velocity-space and x-space overlaps exist between them.",
+      "The caller accepts the saved moment-correction semantics and the out-of-range zero-fill contract."
+    ],
+    "supported": [
+      "H<->H2 handoff transfer of velocity distributions between phase-space meshes on a shared spatial domain.",
+      "Rejecting misaligned shapes, non-positive Tnorm, and missing overlaps before any computation."
+    ],
+    "excluded": [
+      "Conservative remap between non-overlapping velocity-space domains.",
+      "Two-dimensional spatial or 3V velocity grids.",
+      "External atomic-physics validation of the moment-correction targets."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when any axis is not a finite nonempty strictly-increasing one-dimensional array of at least two nodes, Tnorm_a or Tnorm_b is not positive and finite, the distribution is not a finite 3-D real array aligned to mesh_a, or no velocity-space or x-space overlap exists between the meshes.",
+    "runtime_failure": "Raises ValueError when the interpolated distribution is non-finite; on the declared domain the relation is finite by construction.",
+    "nonconvergence": "Not applicable; the saved moment-correction loop is bounded by the s=min(1,...) step and terminates deterministically.",
+    "partial_results": "Never returned; a rejected call produces no result."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy 跨网格分布插值 package, source anchor KN1DPy/interp_fvrvxx.py (consumed at kn1d.py:439, 475-476), as recorded by the saved bundle's own provenance section (the raw source tree was not re-read; the anchor is the saved candidate's). Saved implementation file SHA-256 c93f491369b36e237c35c10528a82af9f33de2db730f9a3a8054dace6dca5a43. The saved formal implementation is ported verbatim and reproduced bit for bit on the declared legal domain; no repair is claimed. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent moment-target recomputation using an independent analytic quadrature",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.cross_mesh_distribution_interpolation",
+      "symbol": "interp_distribution_across_mesh",
+      "signature": "interp_distribution_across_mesh(fa, vr_a, vx_a, x_a, Tnorm_a, vr_b, vx_b, x_b, Tnorm_b, correct=1, do_warn=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev35",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Transfer a distribution between two phase-space meshes; confirm shape, finiteness, and density-moment reproduction.",
+    "code": "import numpy as np\nfrom scirel.kinetic import interp_distribution_across_mesh\nfrom scirel.kinetic.cross_mesh_distribution_interpolation import _make_dvr_dvx\nvr_a = np.linspace(0.5, 2.0, 4)\nvx_a = np.linspace(-1.5, 1.5, 6)\nx_a = np.linspace(0.0, 1.0, 5)\nvr_b = np.linspace(0.4, 1.8, 5)\nvx_b = np.linspace(-1.2, 1.2, 7)\nx_b = np.linspace(0.1, 0.9, 4)\nvr2 = vr_a[:, None]**2 + vx_a[None, :]**2\nfa = np.exp(-vr2)[:, :, None] * np.ones((4, 6, 5))\nfb = interp_distribution_across_mesh(fa, vr_a, vx_a, x_a, 2.0, vr_b, vx_b, x_b, 1.5, correct=1)\nassert fb.shape == (5, 7, 4)\nassert np.all(np.isfinite(fb))\nVr2pidVra, _, dVxa, _, _, _, _ = _make_dvr_dvx(vr_a, vx_a)[:7]\nVr2pidVrb, _, dVxb, _, _, _, _ = _make_dvr_dvx(vr_b, vx_b)[:7]\nna = np.array([np.sum(Vr2pidVra * (fa[:, :, k] @ dVxa)) for k in range(x_a.size)])\nnb = np.array([np.sum(Vr2pidVrb * (fb[:, :, k] @ dVxb)) for k in range(x_b.size)])\nna_b = np.array([np.interp(x_b[k], x_a, na) for k in range(x_b.size)])\nnp.testing.assert_allclose(nb, na_b, rtol=1e-9, atol=0.0)",
+    "expected": "The interpolated distribution with mesh_b shape, finite everywhere; the density moment on mesh_b matches the mesh_a density profile interpolated onto mesh_b x nodes to 1e-9 relative tolerance."
+  },
+  "verification": {
+    "scope": [
+      "That the density moment on mesh_b (with the saved mesh_b quadrature) equals the mesh_a density profile linearly interpolated onto mesh_b x nodes to 1e-9 relative tolerance.",
+      "That the axial flow moment stays zero for a vx-symmetric input distribution.",
+      "That the correct=0 and correct=1 branches differ, confirming the correction loop is active.",
+      "That the stateless port is deterministic across repeated calls.",
+      "The declared fail-closed domain edges: single-node vx_a (raw IndexError, declared in this document as requiring at least two vx nodes covering positive and negative regions), missing velocity-space overlap, missing x-space overlap, non-positive Tnorm.",
+      "Exact bit-level replay against the saved KN1DPy implementation, pinned by SHA-256, across both correct branches and repeated calls (the saved formal operator has no cache branch; the stateless port matches it on every call), plus rejection-behavior agreement. Environment-gated; historical development evidence only."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_cross_mesh_distribution.py",
+      "tests/operator_contracts/test_cross_mesh_distribution_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the interpolation against independent moment-target recomputation using an independent analytic quadrature, the stateless-port determinism witness, the declared fail-closed domain edges, and -- in the environment-gated replay test -- bit-identical agreement with the saved KN1DPy implementation pinned by SHA-256, including rejection-behavior agreement. That replay is historical development evidence, not qualified-L1 provenance. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "known_limitations": [
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}
