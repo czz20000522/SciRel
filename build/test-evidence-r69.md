@@ -12,13 +12,20 @@ The r68 snapshots are untouched.
 
 ## Source-first intake from a second saved project
 
-The GSEQ bundle (`build/verification/neutral-harness-baseline-v3/inputs/l1/gseq`,
-137 operator packages) is the first non-KN1DPy source integrated in this
-chain. Saved implementations pinned by SHA-256 (replay):
+The GSEQ bundle lives in the sibling main SciRel checkout at
+`D:/software/PyCharm 2025.3.3/workspace/SciRel/build/verification/neutral-harness-baseline-v3/inputs/l1/gseq`
+(137 operator packages; read-only imports, zero writes) -- the first
+non-KN1DPy source integrated in this chain. The saved bundle is NOT inside
+this intake worktree. Source-implementation content digests recorded here
+for reference (no automated drift-detection runs against them; the saved
+packages ship package-level oracles rather than a pinned replay target):
 
-- 轴对称线圈几何模数 `coil_green_geometry.py` —
-  (pinned in `_PINNED` of the replay test)
-- 完全椭圆积分近似 / 环形线圈Green场响应 — likewise pinned.
+- 轴对称线圈几何模数 `scientific_operator.py` -- sha256
+  `d46667c54dcd901e0bc579bbac506a549b9ecc06e204a0b399d89e679a60aa3b`
+- 完全椭圆积分近似 `scientific_operator.py` -- sha256
+  `1fb09545af5684ba69340a0e0c8f18bfac9df38680af7f5354dc991ee0ccb55c`
+- 环形线圈Green场响应 `scientific_operator.py` -- sha256
+  `c29e18d9b4dfa8528c0eaa931d717b1a0bb52c2721be394c5de368f8c1dd480e`
 
 ## Deduplication record (review.md §Material differences, dossier)
 
@@ -74,8 +81,9 @@ failure semantics, known limitations).
 - No replay test file is added for this batch: the gseq saved packages ship
   package-level oracles rather than a pinned source-runtime replay target,
   and the cross-implementation comparison against the baseline scipy asset
-  provides the second arm. (The saved implementations are nonetheless
-  SHA-pinned in the direct test module docstring for drift detection.)
+  provides the second arm. No automated drift detection against the saved
+  bytes runs in the test suite; the saved digests above are reference
+  records only.
 - 12 new tests; full-tree delta reconciles exactly (1486 -> 1498 source with
   replay; 1332/197 -> 1344/197 installed).
 

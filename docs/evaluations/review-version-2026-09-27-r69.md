@@ -1,6 +1,6 @@
 # SciRel GSEQ filament-coil Green family r69
 
-状态:开发期冻结待审(`pending_unapproved`),不是领域专家认可、可信版本或公开发行。本版是 r68(`ad0331e`,`0.1.0.dev42`,132 资产,快照 `build/verification/review-2026-09-27-r68-omega-aggregation-v1`)的 successor;既有快照原样保留。合格 L1 交付根在本轮开始与结束均复核为空,未消费任何合格 L1 输入。**本批是首个非 KN1DPy 来源**:GSEQ 保存包(`build/verification/neutral-harness-baseline-v3/inputs/l1/gseq`)只支持 provisional 有界历史开发比较。
+状态:开发期冻结待审(`pending_unapproved`),不是领域专家认可、可信版本或公开发行。本版是 r68(`ad0331e`,`0.1.0.dev42`,132 资产,快照 `build/verification/review-2026-09-27-r68-omega-aggregation-v1`)的 successor;既有快照原样保留。合格 L1 交付根在本轮开始与结束均复核为空,未消费任何合格 L1 输入。**本批是首个非 KN1DPy 来源**:GSEQ 保存包只支持 provisional 有界历史开发比较;包实际位于兄弟主仓库 checkout `D:/software/PyCharm 2025.3.3/workspace/SciRel/build/verification/neutral-harness-baseline-v3/inputs/l1/gseq`(读取只,零写入),不在本 intake 工作树内。
 
 ## 性质:三项新 operator(GSEQ 环形线圈 Green 链)
 
@@ -21,7 +21,7 @@
 
 ## 组合证据
 
-- 12 项直接测试:几何/闭式/K-E 的独立复算(精确相等或 rtol=1e-15)、电流线性、镜像对中平面 B_r 抵消、同 K/E 下与基线 scipy 资产 rtol 1e-12 一致、源近似下 ≤1e-5 相对差(采样)、奇点链组合回归、负半径与溢出拒绝。fixture 每次调用重新播种。无独立复放文件:gseq 保存包以包级 oracle 为验证目标,跨实现对基线 scipy 资产提供第二臂;保存实现 SHA 在测试模块钉定用于漂移检测。
+- 12 项直接测试:几何/闭式/K-E 的独立复算(精确相等或 rtol=1e-15)、电流线性、镜像对中平面 B_r 抵消、同 K/E 下与基线 scipy 资产 rtol 1e-12 一致、源近似下 ≤1e-5 相对差(采样)、奇点链组合回归、负半径与溢出拒绝。fixture 每次调用重新播种。无独立复放文件:gseq 保存包以包级 oracle 为验证目标,跨实现对基线 scipy 资产提供第二臂;测试套件不对保存字节做自动漂移检测。三项保存实现的内容摘要(SHA-256,仅为证据参考记录,见 `build/test-evidence-r69.md`):轴对称线圈几何模数 `d46667c5…`、完全椭圆积分近似 `1fb09545…`、环形线圈Green场响应 `c29e18d9…`。
 - 新增领域草稿 `docs/domains/neutral-particle-transport.md`(KN1DPy 中性输运链导航,以 exact documents 为唯一合同引用,provenance 上限与专家待决如实声明),已链接进 `docs/domains/README.md`。
 
 ## 相对 r68 的增量

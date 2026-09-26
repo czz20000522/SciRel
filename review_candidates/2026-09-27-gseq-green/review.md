@@ -106,8 +106,11 @@ for any future unification.
 - No separate replay file: the gseq saved packages ship package-level
   oracles rather than a pinned source-runtime replay target; the
   cross-implementation comparison against the baseline scipy asset provides
-  the second arm. The saved implementations are SHA-pinned in the direct
-  test module for drift detection.
+  the second arm. The test suite performs no automated drift detection
+  against the saved bytes; the saved implementations' content digests are
+  recorded as reference evidence in `build/test-evidence-r69.md` (the GSEQ
+  bundle itself lives in the sibling main SciRel checkout, not in this
+  intake worktree).
 - 12 tests total; full-tree delta reconciles exactly (1486 -> 1498 source
   with replay; 1332/197 -> 1344/197 installed).
 
