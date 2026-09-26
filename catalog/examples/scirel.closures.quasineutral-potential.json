@@ -2,10 +2,20 @@
   "schema": "scirel.asset-document.v1",
   "asset_id": "scirel.closures.quasineutral-potential",
   "kind": "operator",
-  "title": {"en": "Quasineutral potential by bisection", "zh": "准中性电势二分求根"},
+  "title": {
+    "en": "Quasineutral potential by bisection",
+    "zh": "准中性电势二分求根"
+  },
   "summary": "Find a potential on each active surface by bounded bracket expansion and vectorized bisection of a caller-supplied logarithmic charge residual; retain the reference potential on inactive surfaces.",
-  "taxonomy": ["closures", "quasineutrality", "potential-root"],
-  "aliases": ["ambipolar potential bisection", "logarithmic charge residual root"],
+  "taxonomy": [
+    "closures",
+    "quasineutrality",
+    "potential-root"
+  ],
+  "aliases": [
+    "ambipolar potential bisection",
+    "logarithmic charge residual root"
+  ],
   "identity": {
     "relation": "Root of a supplied logarithmic ion-electron charge residual as a function of potential",
     "direction": "(reference potential, ion parallel thermal energy, electron thermal energy, positive ion charge, active mask, residual evaluator, solver controls) -> potential and final residual",
@@ -14,30 +24,159 @@
     "geometry": "No geometry is imposed. Elements of the common broadcast shape are treated as independent surfaces while sharing one vectorized iteration count and stopping decision.",
     "coordinates": "The caller supplies the array axes and physical alignment. NumPy broadcasting checks shape compatibility but does not validate coordinates or surface identity.",
     "boundary": "Inactive surfaces retain potential_reference_v and are excluded from bracket and stopping checks, but their final residual is evaluated and returned. Active brackets must have nonnegative residual at the lower endpoint and nonpositive residual at the upper endpoint after bounded expansion.",
-    "assumptions": ["The callback evaluates the intended dimensionless logarithmic charge residual at every supplied potential; the solver cannot verify its ion and electron density model.", "On active surfaces, the callback residual is finite and decreases through the selected root, with positive values below the root and negative values above it.", "Thermal energies in joules, charge in coulombs and potentials in volts refer to compatible states; the thermal voltage is a bracket scale, not a derived solution or an imposed boundary condition."]
+    "assumptions": [
+      "The callback evaluates the intended dimensionless logarithmic charge residual at every supplied potential; the solver cannot verify its ion and electron density model.",
+      "On active surfaces, the callback residual is finite and decreases through the selected root, with positive values below the root and negative values above it.",
+      "Thermal energies in joules, charge in coulombs and potentials in volts refer to compatible states; the thermal voltage is a bracket scale, not a derived solution or an imposed boundary condition."
+    ]
   },
   "inputs": [
-    {"name": "potential_reference_v", "description": "Reference potential and the returned potential on inactive surfaces.", "units": "V", "shape": "scalar or array; broadcast with both temperature fields and active", "dtype": "real array-like converted to float64", "required": true, "constraints": "Every converted element must be finite."},
-    {"name": "temperature_parallel_j", "description": "Ion parallel thermal-energy scale used in the initial bracket width.", "units": "J", "shape": "scalar or array; common broadcast shape", "dtype": "real array-like converted to float64", "required": true, "constraints": "Every converted element must be finite and strictly positive."},
-    {"name": "electron_temperature_j", "description": "Electron thermal-energy scale used in the initial bracket width.", "units": "J", "shape": "scalar or array; common broadcast shape", "dtype": "real array-like converted to float64", "required": true, "constraints": "Every converted element must be finite and strictly positive."},
-    {"name": "charge_c", "description": "Positive ion charge q used to convert ion thermal energy to volts.", "units": "C", "shape": "scalar", "dtype": "float-convertible scalar", "required": true, "constraints": "Must convert to a finite, strictly positive float."},
-    {"name": "active", "description": "Mask selecting surfaces to bracket and bisect.", "units": "dimensionless", "shape": "scalar or array; common broadcast shape", "dtype": "array-like converted to bool", "required": true, "constraints": "Every value is converted to bool; false positions are not required to have a root."},
-    {"name": "residual", "description": "Caller-owned evaluator receiving a float64 potential array of the common broadcast shape and returning a Mapping containing logarithmic_charge_residual.", "units": "input V; returned residual dimensionless", "shape": "callable returning a scalar or array broadcastable to the common surface shape", "dtype": "Python callable returning a Mapping with real values convertible to float64", "required": true, "constraints": "The returned logarithmic_charge_residual must be finite and broadcastable on every evaluation, including inactive positions. For active positions its sign must be positive on the lower-potential side of the root. During active bisection the callback sees inactive positions fixed at their reference potentials."},
-    {"name": "potential_tolerance_v", "description": "Maximum active bracket width allowed at convergence.", "units": "V", "shape": "scalar", "dtype": "float-convertible scalar", "required": false, "default": 1e-8, "constraints": "Must convert to a finite, strictly positive float."},
-    {"name": "quasineutral_tolerance", "description": "Maximum absolute active logarithmic charge residual allowed at convergence.", "units": "dimensionless", "shape": "scalar", "dtype": "float-convertible scalar", "required": false, "default": 1e-10, "constraints": "Must convert to a finite, strictly positive float."},
-    {"name": "max_iterations", "description": "Maximum number of vectorized bisection midpoint evaluations after bracketing.", "units": "iterations", "shape": "scalar", "dtype": "Python or NumPy integer, excluding bool", "required": false, "default": 100, "constraints": "Must be an integer at least 2; float values are not truncated."},
-    {"name": "initial_bracket_thermal", "description": "Multiplier of the combined ion and electron thermal voltage for the initial bracket half-width.", "units": "dimensionless", "shape": "scalar", "dtype": "float-convertible scalar", "required": false, "default": 8.0, "constraints": "Must convert to a finite, strictly positive float."}
+    {
+      "name": "potential_reference_v",
+      "description": "Reference potential and the returned potential on inactive surfaces.",
+      "units": "V",
+      "shape": "scalar or array; broadcast with both temperature fields and active",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Every converted element must be finite."
+    },
+    {
+      "name": "temperature_parallel_j",
+      "description": "Ion parallel thermal-energy scale used in the initial bracket width.",
+      "units": "J",
+      "shape": "scalar or array; common broadcast shape",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Every converted element must be finite and strictly positive."
+    },
+    {
+      "name": "electron_temperature_j",
+      "description": "Electron thermal-energy scale used in the initial bracket width.",
+      "units": "J",
+      "shape": "scalar or array; common broadcast shape",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Every converted element must be finite and strictly positive."
+    },
+    {
+      "name": "charge_c",
+      "description": "Positive ion charge q used to convert ion thermal energy to volts.",
+      "units": "C",
+      "shape": "scalar",
+      "dtype": "float-convertible scalar",
+      "required": true,
+      "constraints": "Must convert to a finite, strictly positive float."
+    },
+    {
+      "name": "active",
+      "description": "Mask selecting surfaces to bracket and bisect.",
+      "units": "dimensionless",
+      "shape": "scalar or array; common broadcast shape",
+      "dtype": "array-like converted to bool",
+      "required": true,
+      "constraints": "Every value is converted to bool; false positions are not required to have a root."
+    },
+    {
+      "name": "residual",
+      "description": "Caller-owned evaluator receiving a float64 potential array of the common broadcast shape and returning a Mapping containing logarithmic_charge_residual.",
+      "units": "input V; returned residual dimensionless",
+      "shape": "callable returning a scalar or array broadcastable to the common surface shape",
+      "dtype": "Python callable returning a Mapping with real values convertible to float64",
+      "required": true,
+      "constraints": "The returned logarithmic_charge_residual must be finite and broadcastable on every evaluation, including inactive positions. For active positions its sign must be positive on the lower-potential side of the root. During active bisection the callback sees inactive positions fixed at their reference potentials."
+    },
+    {
+      "name": "potential_tolerance_v",
+      "description": "Maximum active bracket width allowed at convergence.",
+      "units": "V",
+      "shape": "scalar",
+      "dtype": "float-convertible scalar",
+      "required": false,
+      "default": 1e-08,
+      "constraints": "Must convert to a finite, strictly positive float."
+    },
+    {
+      "name": "quasineutral_tolerance",
+      "description": "Maximum absolute active logarithmic charge residual allowed at convergence.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float-convertible scalar",
+      "required": false,
+      "default": 1e-10,
+      "constraints": "Must convert to a finite, strictly positive float."
+    },
+    {
+      "name": "max_iterations",
+      "description": "Maximum number of vectorized bisection midpoint evaluations after bracketing.",
+      "units": "iterations",
+      "shape": "scalar",
+      "dtype": "Python or NumPy integer, excluding bool",
+      "required": false,
+      "default": 100,
+      "constraints": "Must be an integer at least 2; float values are not truncated."
+    },
+    {
+      "name": "initial_bracket_thermal",
+      "description": "Multiplier of the combined ion and electron thermal voltage for the initial bracket half-width.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float-convertible scalar",
+      "required": false,
+      "default": 8.0,
+      "constraints": "Must convert to a finite, strictly positive float."
+    }
   ],
   "outputs": [
-    {"name": "potential_v", "description": "Converged active potential and unchanged reference potential at inactive positions.", "units": "V", "shape": "common broadcast shape", "dtype": "NumPy float64 array, including a zero-dimensional array for scalar inputs", "required": true, "constraints": "Returned only after all active positions meet both stopping conditions; all-inactive calls return the reference potential without bisection."},
-    {"name": "logarithmic_charge_residual", "description": "Callback residual evaluated at the complete returned potential field.", "units": "dimensionless", "shape": "common broadcast shape", "dtype": "NumPy float64 array", "required": true, "constraints": "Finite and broadcastable; inactive residuals are returned without a neutrality tolerance requirement."},
-    {"name": "iterations", "description": "Number of shared vectorized bisection iterations performed.", "units": "iterations", "shape": "scalar", "dtype": "Python int", "required": true, "constraints": "Zero if all positions are inactive; otherwise between 1 and max_iterations, not a per-surface count."},
-    {"name": "converged", "description": "Whether all active positions satisfied the two stopping conditions, or no positions were active.", "units": "dimensionless", "shape": "scalar", "dtype": "Python bool", "required": true, "constraints": "Always True in a returned mapping; failures raise instead of returning False."}
+    {
+      "name": "potential_v",
+      "description": "Converged active potential and unchanged reference potential at inactive positions.",
+      "units": "V",
+      "shape": "common broadcast shape",
+      "dtype": "NumPy float64 array, including a zero-dimensional array for scalar inputs",
+      "required": true,
+      "constraints": "Returned only after all active positions meet both stopping conditions; all-inactive calls return the reference potential without bisection."
+    },
+    {
+      "name": "logarithmic_charge_residual",
+      "description": "Callback residual evaluated at the complete returned potential field.",
+      "units": "dimensionless",
+      "shape": "common broadcast shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "Finite and broadcastable; inactive residuals are returned without a neutrality tolerance requirement."
+    },
+    {
+      "name": "iterations",
+      "description": "Number of shared vectorized bisection iterations performed.",
+      "units": "iterations",
+      "shape": "scalar",
+      "dtype": "Python int",
+      "required": true,
+      "constraints": "Zero if all positions are inactive; otherwise between 1 and max_iterations, not a per-surface count."
+    },
+    {
+      "name": "converged",
+      "description": "Whether all active positions satisfied the two stopping conditions, or no positions were active.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "Python bool",
+      "required": true,
+      "constraints": "Always True in a returned mapping; failures raise instead of returning False."
+    }
   ],
   "applicability": {
-    "preconditions": ["Potential, thermal energies and active mask are broadcast-compatible and describe the same caller-defined surfaces.", "The caller supplies a finite, broadcastable, monotone residual with the expected sign orientation and a root within the bounded bracket-expansion reach on each active surface."],
-    "supported": ["One or more independently evaluated active surfaces with a common vectorized stopping decision.", "Mixed active and inactive surfaces, or an all-inactive field that preserves reference potentials while still evaluating the callback residual."],
-    "excluded": ["Computing ion or electron density, selecting a physical electron response, or validating the callback's scientific model.", "Nonmonotone or oppositely oriented residuals, roots outside the bounded expansion reach, and any claim that inactive surfaces satisfy quasineutrality."]
+    "preconditions": [
+      "Potential, thermal energies and active mask are broadcast-compatible and describe the same caller-defined surfaces.",
+      "The caller supplies a finite, broadcastable, monotone residual with the expected sign orientation and a root within the bounded bracket-expansion reach on each active surface."
+    ],
+    "supported": [
+      "One or more independently evaluated active surfaces with a common vectorized stopping decision.",
+      "Mixed active and inactive surfaces, or an all-inactive field that preserves reference potentials while still evaluating the callback residual."
+    ],
+    "excluded": [
+      "Computing ion or electron density, selecting a physical electron response, or validating the callback's scientific model.",
+      "Nonmonotone or oppositely oriented residuals, roots outside the bounded expansion reach, and any claim that inactive surfaces satisfy quasineutrality."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for nonfinite potential or temperatures, nonpositive temperatures or charge, incompatible surface broadcasts, nonpositive or nonfinite controls, max_iterations outside the integer >= 2 contract, or a callback result lacking a Mapping and finite broadcastable logarithmic_charge_residual. Numeric conversion or a noncallable callback may also raise TypeError or ValueError; callback exceptions propagate.",
@@ -47,21 +186,44 @@
   },
   "provenance": {
     "lineage_summary": "SciRel-maintained potential-root operator corresponding to a saved Pleiades L1 quasineutral-potential description and maintained direct regressions. Historical source and admission labels are development provenance, not current expert recognition.",
-    "source_kinds": ["saved L1 operator description and implementation", "saved direct contract test", "SciRel direct scientific regression tests"],
+    "source_kinds": [
+      "saved L1 operator description and implementation",
+      "saved direct contract test",
+      "SciRel direct scientific regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
-  "public_api": {"python": {"module": "scirel.closures.quasineutral_potential", "symbol": "solve_quasineutral_potential", "signature": "solve_quasineutral_potential(potential_reference_v, temperature_parallel_j, electron_temperature_j, charge_c, active, residual, potential_tolerance_v=1e-08, quasineutral_tolerance=1e-10, max_iterations=100, initial_bracket_thermal=8.0)"}},
-  "version": {"implementation_version": "0.1.0.dev30", "dependencies": []},
+  "public_api": {
+    "python": {
+      "module": "scirel.closures.quasineutral_potential",
+      "symbol": "solve_quasineutral_potential",
+      "signature": "solve_quasineutral_potential(potential_reference_v, temperature_parallel_j, electron_temperature_j, charge_c, active, residual, potential_tolerance_v=1e-08, quasineutral_tolerance=1e-10, max_iterations=100, initial_bracket_thermal=8.0)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev31",
+    "dependencies": []
+  },
   "example": {
     "description": "Solve a decreasing residual on one active surface while leaving an inactive surface at its reference potential.",
     "code": "import numpy as np\nfrom scirel.closures import solve_quasineutral_potential\ne = 1.602176634e-19\ndef residual(phi):\n    return {'logarithmic_charge_residual': 0.5 - np.asarray(phi)}\nr = solve_quasineutral_potential([0.0, 17.0], 0.1*e, 0.1*e, e, [True, False], residual)\nnp.testing.assert_allclose(r['potential_v'], [0.5, 17.0], atol=1e-8)\nassert abs(r['logarithmic_charge_residual'][0]) <= 1e-10\nnp.testing.assert_allclose(r['logarithmic_charge_residual'][1], -16.5)\nassert r['converged'] and 1 <= r['iterations'] <= 100",
     "expected": "The active potential is approximately 0.5 V with absolute residual at most 1e-10; the inactive potential stays 17 V and its returned residual is -16.5 without a neutrality requirement."
   },
   "verification": {
-    "scope": ["Known-root monotone residual and selected active/inactive array behavior, including fixed inactive callback potentials.", "Selected malformed callback results, solver-control validation, bounded bracket failure and iteration-budget nonconvergence."],
-    "tests": ["tests/operator_contracts/test_quasineutral_potential.py"],
+    "scope": [
+      "Known-root monotone residual and selected active/inactive array behavior, including fixed inactive callback potentials.",
+      "Selected malformed callback results, solver-control validation, bounded bracket failure and iteration-budget nonconvergence."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_quasineutral_potential.py"
+    ],
     "evidence_ceiling": "Direct SciRel regressions establish selected known-root values, an expanding-bracket case, inactive behavior, callback mapping acceptance and rejection, and selected failure paths. A consuming mirror quasineutral TaskGraph has separate integration tests. These cases do not establish arbitrary kinetic or electron response correctness, all broadcast shapes, floating-point extremes, unique roots, or expert recognition.",
-    "known_limitations": ["A callback can provide a numerically well-formed residual that does not represent the claimed ion-electron physics; the solver cannot detect that mismatch.", "The finite expansion budget does not guarantee a root bracket, and the two stopping tolerances can fail within the iteration limit.", "Broadcasting alone does not establish physical coordinate alignment; extreme finite thermal scales may overflow bracket arithmetic.", "Public distribution licensing and expert recognition remain pending."]
+    "known_limitations": [
+      "A callback can provide a numerically well-formed residual that does not represent the claimed ion-electron physics; the solver cannot detect that mismatch.",
+      "The finite expansion budget does not guarantee a root bracket, and the two stopping tolerances can fail within the iteration limit.",
+      "Broadcasting alone does not establish physical coordinate alignment; extreme finite thermal scales may overflow bracket arithmetic.",
+      "Public distribution licensing and expert recognition remain pending."
+    ]
   }
 }

@@ -2,10 +2,20 @@
   "schema": "scirel.asset-document.v1",
   "asset_id": "scirel.closures.reduced-hall-drift",
   "kind": "operator",
-  "title": {"en": "Reduced Hall toroidal drift closure", "zh": "约化 Hall 环向漂移闭合"},
+  "title": {
+    "en": "Reduced Hall toroidal drift closure",
+    "zh": "约化 Hall 环向漂移闭合"
+  },
   "summary": "Project gyrotropic pressure force to toroidal current on an R-Z grid, solve an optional bounded local toroidal-inertia correction, and report ion/electron drifts, generalized-Ohm and scale diagnostics.",
-  "taxonomy": ["closures", "hall", "axisymmetric", "toroidal-drift"],
-  "aliases": ["reduced Hall drift and current closure"],
+  "taxonomy": [
+    "closures",
+    "hall",
+    "axisymmetric",
+    "toroidal-drift"
+  ],
+  "aliases": [
+    "reduced Hall drift and current closure"
+  ],
   "identity": {
     "relation": "R-Z field, ion pressure, electrostatic potential and species closure state to reduced Hall toroidal current and drifts",
     "direction": "R-Z grid, B_R, B_Z, p_parallel, p_perpendicular, closure_state, plasma_mask and ion properties -> J_phi, toroidal species velocities and diagnostics",
@@ -14,73 +24,550 @@
     "geometry": "rectilinear cylindrical R-Z grid, at least three nodes per axis",
     "coordinates": "R nonnegative, R and Z strictly increasing; arrays indexed [Z,R]",
     "boundary": "Second-order one-sided gradient stencils at grid ends; the radial pressure force and initial pressure-current projection are set to zero at an included R=0 axis. The inertia iteration recomputes a current candidate without reapplying that axis rule, so returned J_phi is not unconditionally axis-zero. Hall drift is inactive on the axis and outside the selected density, field and plasma mask.",
-    "assumptions": ["B_R and B_Z are poloidal field components in tesla, with no B_phi contribution in this relation.", "The pressure arrays and closure_state describe compatible ion/electron populations in SI units.", "The density floor, Mach cap and small-denominator branches are implemented numerical controls, not independent evidence that a low-density or low-field plasma model is physically valid."]
+    "assumptions": [
+      "B_R and B_Z are poloidal field components in tesla, with no B_phi contribution in this relation.",
+      "The pressure arrays and closure_state describe compatible ion/electron populations in SI units.",
+      "The density floor, Mach cap and small-denominator branches are implemented numerical controls, not independent evidence that a low-density or low-field plasma model is physically valid."
+    ]
   },
   "inputs": [
-    {"name":"r_grid","description":"Cylindrical radius mesh.","units":"m","shape":"[N_Z,N_R]","dtype":"real array-like converted to float64","required":true,"constraints":"Rectilinear, nonnegative increasing radial axis, at least three columns; same shape as z_grid and fields."},
-    {"name":"z_grid","description":"Axial coordinate mesh.","units":"m","shape":"[N_Z,N_R]","dtype":"real array-like converted to float64","required":true,"constraints":"Rectilinear increasing axial axis, at least three rows; same shape as r_grid and fields."},
-    {"name":"b_r","description":"Radial poloidal magnetic component.","units":"T","shape":"[N_Z,N_R]","dtype":"finite real array-like","required":true,"constraints":"Exactly grid-shaped after joint field/pressure broadcasting."},
-    {"name":"b_z","description":"Axial poloidal magnetic component.","units":"T","shape":"[N_Z,N_R]","dtype":"finite real array-like","required":true,"constraints":"Exactly grid-shaped after joint field/pressure broadcasting."},
-    {"name":"p_parallel","description":"Ion or total pressure parallel to the local poloidal field used in the force projection.","units":"Pa","shape":"[N_Z,N_R]","dtype":"finite real array-like","required":true,"constraints":"Exactly grid-shaped after joint broadcasting; physical use requires a consistent nonnegative pressure even though this primary array is checked only for finiteness."},
-    {"name":"p_perpendicular","description":"Pressure perpendicular to the local poloidal field used in the force projection.","units":"Pa","shape":"[N_Z,N_R]","dtype":"finite real array-like","required":true,"constraints":"Exactly grid-shaped after joint broadcasting; physical use requires a consistent nonnegative pressure even though this primary array is checked only for finiteness."},
-    {"name":"closure_state","description":"Species state with ion_density, electron_pressure and electrostatic_potential; optionally electron_p_parallel, electron_p_perpendicular, ion_p_parallel and ion_p_perpendicular.","units":"mixed SI: m^-3, Pa, V","shape":"mapping of scalars or [N_Z,N_R] arrays","dtype":"Python mapping containing finite real array-like values","required":true,"constraints":"Required keys broadcast to the grid; ion_density and electron pressures nonnegative. Optional electron pressure components default to electron_pressure; optional ion pressure components default to primary p_parallel/p_perpendicular and must be finite and nonnegative."},
-    {"name":"plasma_mask","description":"Cells used for current and Hall-drift support.","units":"boolean","shape":"[N_Z,N_R]","dtype":"boolean array-like","required":true,"constraints":"Exactly grid-shaped; J_phi is zero outside it. Hall drift additionally excludes R=0, low density and unresolved field cells."},
-    {"name":"ion_mass_kg","description":"Positive ion mass.","units":"kg","shape":"scalar","dtype":"finite real scalar","required":true,"constraints":"Strictly positive."},
-    {"name":"ion_charge_c","description":"Positive ion charge magnitude.","units":"C","shape":"scalar","dtype":"finite real scalar","required":true,"constraints":"Strictly positive."},
-    {"name":"hall_multiplier","description":"Multiplier applied in the Hall drift relation.","units":"dimensionless","shape":"scalar","dtype":"finite real scalar","required":false,"default":1.0,"constraints":"Nonnegative; zero disables its explicit Hall terms but does not by itself suppress the pressure-current projection."},
-    {"name":"include_toroidal_inertia","description":"Enable bounded local centrifugal-current iteration.","units":"boolean","shape":"scalar","dtype":"bool","required":false,"default":true,"constraints":"Actual boolean scalar, not a numeric 0/1 substitute."},
-    {"name":"hall_density_floor_fraction","description":"Fraction of peak in-mask ion density used as the Hall-active density floor.","units":"dimensionless","shape":"scalar","dtype":"finite real scalar","required":false,"default":0.1,"constraints":"0 <= value < 1; active cells require density strictly above this floor."},
-    {"name":"maximum_inertial_mach","description":"Ion thermal-speed fraction used as the drift-velocity cap.","units":"dimensionless","shape":"scalar","dtype":"finite real scalar","required":false,"default":0.5,"constraints":"Strictly positive."},
-    {"name":"inertia_relax","description":"Previous-current weight for the local inertia iteration.","units":"dimensionless","shape":"scalar","dtype":"finite real scalar","required":false,"default":0.5,"constraints":"0 <= value < 1."},
-    {"name":"inertia_tolerance","description":"Relative current-change stopping threshold for the local iteration.","units":"dimensionless","shape":"scalar","dtype":"finite real scalar","required":false,"default":1e-10,"constraints":"Strictly positive."},
-    {"name":"inertia_max_iterations","description":"Maximum local inertia-current updates.","units":"count","shape":"scalar","dtype":"integer scalar","required":false,"default":80,"constraints":"Integer >= 1; nonconvergence raises RuntimeError."}
+    {
+      "name": "r_grid",
+      "description": "Cylindrical radius mesh.",
+      "units": "m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Rectilinear, nonnegative increasing radial axis, at least three columns; same shape as z_grid and fields."
+    },
+    {
+      "name": "z_grid",
+      "description": "Axial coordinate mesh.",
+      "units": "m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Rectilinear increasing axial axis, at least three rows; same shape as r_grid and fields."
+    },
+    {
+      "name": "b_r",
+      "description": "Radial poloidal magnetic component.",
+      "units": "T",
+      "shape": "[N_Z,N_R]",
+      "dtype": "finite real array-like",
+      "required": true,
+      "constraints": "Exactly grid-shaped after joint field/pressure broadcasting."
+    },
+    {
+      "name": "b_z",
+      "description": "Axial poloidal magnetic component.",
+      "units": "T",
+      "shape": "[N_Z,N_R]",
+      "dtype": "finite real array-like",
+      "required": true,
+      "constraints": "Exactly grid-shaped after joint field/pressure broadcasting."
+    },
+    {
+      "name": "p_parallel",
+      "description": "Ion or total pressure parallel to the local poloidal field used in the force projection.",
+      "units": "Pa",
+      "shape": "[N_Z,N_R]",
+      "dtype": "finite real array-like",
+      "required": true,
+      "constraints": "Exactly grid-shaped after joint broadcasting; physical use requires a consistent nonnegative pressure even though this primary array is checked only for finiteness."
+    },
+    {
+      "name": "p_perpendicular",
+      "description": "Pressure perpendicular to the local poloidal field used in the force projection.",
+      "units": "Pa",
+      "shape": "[N_Z,N_R]",
+      "dtype": "finite real array-like",
+      "required": true,
+      "constraints": "Exactly grid-shaped after joint broadcasting; physical use requires a consistent nonnegative pressure even though this primary array is checked only for finiteness."
+    },
+    {
+      "name": "closure_state",
+      "description": "Species state with ion_density, electron_pressure and electrostatic_potential; optionally electron_p_parallel, electron_p_perpendicular, ion_p_parallel and ion_p_perpendicular.",
+      "units": "mixed SI: m^-3, Pa, V",
+      "shape": "mapping of scalars or [N_Z,N_R] arrays",
+      "dtype": "Python mapping containing finite real array-like values",
+      "required": true,
+      "constraints": "Required keys broadcast to the grid; ion_density and electron pressures nonnegative. Optional electron pressure components default to electron_pressure; optional ion pressure components default to primary p_parallel/p_perpendicular and must be finite and nonnegative."
+    },
+    {
+      "name": "plasma_mask",
+      "description": "Cells used for current and Hall-drift support.",
+      "units": "boolean",
+      "shape": "[N_Z,N_R]",
+      "dtype": "boolean array-like",
+      "required": true,
+      "constraints": "Exactly grid-shaped; J_phi is zero outside it. Hall drift additionally excludes R=0, low density and unresolved field cells."
+    },
+    {
+      "name": "ion_mass_kg",
+      "description": "Positive ion mass.",
+      "units": "kg",
+      "shape": "scalar",
+      "dtype": "finite real scalar",
+      "required": true,
+      "constraints": "Strictly positive."
+    },
+    {
+      "name": "ion_charge_c",
+      "description": "Positive ion charge magnitude.",
+      "units": "C",
+      "shape": "scalar",
+      "dtype": "finite real scalar",
+      "required": true,
+      "constraints": "Strictly positive."
+    },
+    {
+      "name": "hall_multiplier",
+      "description": "Multiplier applied in the Hall drift relation.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "finite real scalar",
+      "required": false,
+      "default": 1.0,
+      "constraints": "Nonnegative; zero disables its explicit Hall terms but does not by itself suppress the pressure-current projection."
+    },
+    {
+      "name": "include_toroidal_inertia",
+      "description": "Enable bounded local centrifugal-current iteration.",
+      "units": "boolean",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": false,
+      "default": true,
+      "constraints": "Actual boolean scalar, not a numeric 0/1 substitute."
+    },
+    {
+      "name": "hall_density_floor_fraction",
+      "description": "Fraction of peak in-mask ion density used as the Hall-active density floor.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "finite real scalar",
+      "required": false,
+      "default": 0.1,
+      "constraints": "0 <= value < 1; active cells require density strictly above this floor."
+    },
+    {
+      "name": "maximum_inertial_mach",
+      "description": "Ion thermal-speed fraction used as the drift-velocity cap.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "finite real scalar",
+      "required": false,
+      "default": 0.5,
+      "constraints": "Strictly positive."
+    },
+    {
+      "name": "inertia_relax",
+      "description": "Previous-current weight for the local inertia iteration.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "finite real scalar",
+      "required": false,
+      "default": 0.5,
+      "constraints": "0 <= value < 1."
+    },
+    {
+      "name": "inertia_tolerance",
+      "description": "Relative current-change stopping threshold for the local iteration.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "finite real scalar",
+      "required": false,
+      "default": 1e-10,
+      "constraints": "Strictly positive."
+    },
+    {
+      "name": "inertia_max_iterations",
+      "description": "Maximum local inertia-current updates.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "integer scalar",
+      "required": false,
+      "default": 80,
+      "constraints": "Integer >= 1; nonconvergence raises RuntimeError."
+    }
   ],
   "outputs": [
-    {"name":"J_phi","description":"Masked toroidal current-density projection including optional centrifugal correction.","units":"A/m^2","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Zero outside plasma_mask. The initial pressure-current axis projection is zero, but optional inertia mixing can produce a nonzero returned axis current when input fields are not axis-regular."},
-    {"name":"force_R","description":"Radial target force after subtracting the computed centrifugal term.","units":"Pa/m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Differs from pressure_force_R when inertia contributes."},
-    {"name":"force_Z","description":"Axial target force; no centrifugal Z term is applied.","units":"Pa/m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Equal to pressure_force_Z in this implementation."},
-    {"name":"pressure_force_R","description":"Uncorrected radial cylindrical pressure force.","units":"Pa/m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Computed before the inertia correction."},
-    {"name":"pressure_force_Z","description":"Uncorrected axial cylindrical pressure force.","units":"Pa/m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Computed before the inertia correction."},
-    {"name":"electron_pressure_force_R","description":"Radial force from optional electron pressure components.","units":"Pa/m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Uses electron_pressure for both components when optional components are absent."},
-    {"name":"electron_pressure_force_Z","description":"Axial force from optional electron pressure components.","units":"Pa/m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Uses the same grid stencil as the primary pressure force."},
-    {"name":"parallel_force","description":"Target force projected along the poloidal field.","units":"Pa/m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Uses zero where the field denominator is numerically unresolved."},
-    {"name":"parallel_force_error","description":"In-mask RMS parallel target force divided by RMS target-force magnitude.","units":"dimensionless","shape":"scalar","dtype":"float","required":true,"constraints":"Denominator uses the implementation's numeric tiny floor; zero for an empty plasma mask."},
-    {"name":"momentum_residual_R","description":"Radial residual J_phi B_Z minus target radial force.","units":"Pa/m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Diagnostic only."},
-    {"name":"momentum_residual_Z","description":"Axial residual -J_phi B_R minus target axial force.","units":"Pa/m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Diagnostic only."},
-    {"name":"momentum_error","description":"In-mask RMS momentum-residual magnitude divided by RMS target-force magnitude.","units":"dimensionless","shape":"scalar","dtype":"float","required":true,"constraints":"Diagnostic only; zero for an empty plasma mask."},
-    {"name":"ion_toroidal_velocity","description":"Capped ion toroidal drift on Hall-active cells.","units":"m/s","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Zero outside hall_active_mask."},
-    {"name":"electron_toroidal_velocity","description":"Ion drift minus J_phi/charge-density on Hall-active cells.","units":"m/s","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Zero outside hall_active_mask."},
-    {"name":"raw_ion_toroidal_velocity","description":"Unclipped ion toroidal velocity expression.","units":"m/s","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Not masked after evaluation; inspect hall_active_mask for physical support."},
-    {"name":"ion_toroidal_mach","description":"Capped ion velocity divided by modeled ion thermal speed.","units":"dimensionless","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Zero where thermal speed is zero."},
-    {"name":"raw_ion_toroidal_mach","description":"Unclipped ion velocity divided by ion thermal speed on active cells.","units":"dimensionless","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Zero outside the active, nonzero-thermal-speed branch."},
-    {"name":"centrifugal_force_R","description":"Local ion toroidal centrifugal correction.","units":"Pa/m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Zero when inertia is disabled or the cell is inactive."},
-    {"name":"electric_field_R","description":"Negative radial electrostatic-potential gradient.","units":"V/m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Second-order grid derivative."},
-    {"name":"electric_field_Z","description":"Negative axial electrostatic-potential gradient.","units":"V/m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Second-order grid derivative."},
-    {"name":"hall_electric_field_R","description":"Reduced Hall radial electric-field contribution.","units":"V/m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Computed with the safe charge-density denominator, including outside hall_active_mask."},
-    {"name":"hall_electric_field_Z","description":"Reduced Hall axial electric-field contribution.","units":"V/m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Computed with the safe charge-density denominator, including outside hall_active_mask."},
-    {"name":"ohm_residual_R","description":"Radial generalized-Ohm residual on Hall-active cells.","units":"V/m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Zero outside hall_active_mask."},
-    {"name":"ohm_residual_Z","description":"Axial generalized-Ohm residual on Hall-active cells.","units":"V/m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Zero outside hall_active_mask."},
-    {"name":"ohm_parallel","description":"Generalized-Ohm residual projected along the poloidal field.","units":"V/m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Zero outside hall_active_mask."},
-    {"name":"generalized_ohm_error","description":"Active-cell RMS generalized-Ohm residual divided by RMS electric/Hall/drift scale.","units":"dimensionless","shape":"scalar","dtype":"float","required":true,"constraints":"Diagnostic only; zero for an empty active mask."},
-    {"name":"firehose_margin","description":"Local 1-mu0*(p_parallel-p_perpendicular)/max(|B|^2,tiny).","units":"dimensionless","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Diagnostic only; no firehose rejection is performed here."},
-    {"name":"ion_skin_depth","description":"Ion inertial length from mass, charge and local density.","units":"m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Zero where density is zero."},
-    {"name":"electron_skin_depth","description":"Ion skin depth times square root of electron-to-ion mass ratio.","units":"m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Uses a fixed electron mass constant."},
-    {"name":"ion_gyroradius","description":"Ion thermal-speed gyroradius using the poloidal field magnitude.","units":"m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Zero where the magnetic magnitude is zero."},
-    {"name":"magnetic_scale_length","description":"Field magnitude divided by its R-Z gradient magnitude.","units":"m","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Infinity where the gradient magnitude is zero."},
-    {"name":"hall_scale_ratio","description":"Ion skin depth divided by finite positive magnetic scale length.","units":"dimensionless","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Zero where the scale length is infinite or nonpositive."},
-    {"name":"electron_inertia_scale_ratio","description":"Electron skin depth divided by finite positive magnetic scale length.","units":"dimensionless","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Zero where the scale length is infinite or nonpositive."},
-    {"name":"ion_gyroradius_scale_ratio","description":"Ion gyroradius divided by finite positive magnetic scale length.","units":"dimensionless","shape":"[N_Z,N_R]","dtype":"float64","required":true,"constraints":"Zero where the scale length is infinite or nonpositive."},
-    {"name":"hall_active_mask","description":"Plasma, non-axis, above-density-floor and resolvable-field intersection.","units":"boolean","shape":"[N_Z,N_R]","dtype":"bool","required":true,"constraints":"Selects drift evaluation and active-cell Ohm diagnostics."},
-    {"name":"density_floor_m3","description":"Peak in-mask ion density times hall_density_floor_fraction.","units":"m^-3","shape":"scalar","dtype":"float","required":true,"constraints":"Zero when plasma_mask is empty."},
-    {"name":"velocity_cap_fraction","description":"Fraction of Hall-active cells whose raw Mach magnitude exceeds the cap.","units":"dimensionless","shape":"scalar","dtype":"float","required":true,"constraints":"Zero when hall_active_mask is empty."},
-    {"name":"inertia_iterations","description":"Executed local current updates, including one pass when inertia is disabled.","units":"count","shape":"scalar","dtype":"integer","required":true,"constraints":"Between 1 and inertia_max_iterations for a returned result."},
-    {"name":"inertia_relative_change","description":"Last local current update's relative norm change.","units":"dimensionless","shape":"scalar","dtype":"float","required":true,"constraints":"Uses max(norm(next current),1) as denominator."},
-    {"name":"inertia_converged","description":"Whether local iteration stopped successfully or inertia was bypassed.","units":"boolean","shape":"scalar","dtype":"bool","required":true,"constraints":"A false state raises before the mapping is returned."}
+    {
+      "name": "J_phi",
+      "description": "Masked toroidal current-density projection including optional centrifugal correction.",
+      "units": "A/m^2",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Zero outside plasma_mask. The initial pressure-current axis projection is zero, but optional inertia mixing can produce a nonzero returned axis current when input fields are not axis-regular."
+    },
+    {
+      "name": "force_R",
+      "description": "Radial target force after subtracting the computed centrifugal term.",
+      "units": "Pa/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Differs from pressure_force_R when inertia contributes."
+    },
+    {
+      "name": "force_Z",
+      "description": "Axial target force; no centrifugal Z term is applied.",
+      "units": "Pa/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Equal to pressure_force_Z in this implementation."
+    },
+    {
+      "name": "pressure_force_R",
+      "description": "Uncorrected radial cylindrical pressure force.",
+      "units": "Pa/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Computed before the inertia correction."
+    },
+    {
+      "name": "pressure_force_Z",
+      "description": "Uncorrected axial cylindrical pressure force.",
+      "units": "Pa/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Computed before the inertia correction."
+    },
+    {
+      "name": "electron_pressure_force_R",
+      "description": "Radial force from optional electron pressure components.",
+      "units": "Pa/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Uses electron_pressure for both components when optional components are absent."
+    },
+    {
+      "name": "electron_pressure_force_Z",
+      "description": "Axial force from optional electron pressure components.",
+      "units": "Pa/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Uses the same grid stencil as the primary pressure force."
+    },
+    {
+      "name": "parallel_force",
+      "description": "Target force projected along the poloidal field.",
+      "units": "Pa/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Uses zero where the field denominator is numerically unresolved."
+    },
+    {
+      "name": "parallel_force_error",
+      "description": "In-mask RMS parallel target force divided by RMS target-force magnitude.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Denominator uses the implementation's numeric tiny floor; zero for an empty plasma mask."
+    },
+    {
+      "name": "momentum_residual_R",
+      "description": "Radial residual J_phi B_Z minus target radial force.",
+      "units": "Pa/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Diagnostic only."
+    },
+    {
+      "name": "momentum_residual_Z",
+      "description": "Axial residual -J_phi B_R minus target axial force.",
+      "units": "Pa/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Diagnostic only."
+    },
+    {
+      "name": "momentum_error",
+      "description": "In-mask RMS momentum-residual magnitude divided by RMS target-force magnitude.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Diagnostic only; zero for an empty plasma mask."
+    },
+    {
+      "name": "ion_toroidal_velocity",
+      "description": "Capped ion toroidal drift on Hall-active cells.",
+      "units": "m/s",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Zero outside hall_active_mask."
+    },
+    {
+      "name": "electron_toroidal_velocity",
+      "description": "Ion drift minus J_phi/charge-density on Hall-active cells.",
+      "units": "m/s",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Zero outside hall_active_mask."
+    },
+    {
+      "name": "raw_ion_toroidal_velocity",
+      "description": "Unclipped ion toroidal velocity expression.",
+      "units": "m/s",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Not masked after evaluation; inspect hall_active_mask for physical support."
+    },
+    {
+      "name": "ion_toroidal_mach",
+      "description": "Capped ion velocity divided by modeled ion thermal speed.",
+      "units": "dimensionless",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Zero where thermal speed is zero."
+    },
+    {
+      "name": "raw_ion_toroidal_mach",
+      "description": "Unclipped ion velocity divided by ion thermal speed on active cells.",
+      "units": "dimensionless",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Zero outside the active, nonzero-thermal-speed branch."
+    },
+    {
+      "name": "centrifugal_force_R",
+      "description": "Local ion toroidal centrifugal correction.",
+      "units": "Pa/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Zero when inertia is disabled or the cell is inactive."
+    },
+    {
+      "name": "electric_field_R",
+      "description": "Negative radial electrostatic-potential gradient.",
+      "units": "V/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Second-order grid derivative."
+    },
+    {
+      "name": "electric_field_Z",
+      "description": "Negative axial electrostatic-potential gradient.",
+      "units": "V/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Second-order grid derivative."
+    },
+    {
+      "name": "hall_electric_field_R",
+      "description": "Reduced Hall radial electric-field contribution.",
+      "units": "V/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Computed with the safe charge-density denominator, including outside hall_active_mask."
+    },
+    {
+      "name": "hall_electric_field_Z",
+      "description": "Reduced Hall axial electric-field contribution.",
+      "units": "V/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Computed with the safe charge-density denominator, including outside hall_active_mask."
+    },
+    {
+      "name": "ohm_residual_R",
+      "description": "Radial generalized-Ohm residual on Hall-active cells.",
+      "units": "V/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Zero outside hall_active_mask."
+    },
+    {
+      "name": "ohm_residual_Z",
+      "description": "Axial generalized-Ohm residual on Hall-active cells.",
+      "units": "V/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Zero outside hall_active_mask."
+    },
+    {
+      "name": "ohm_parallel",
+      "description": "Generalized-Ohm residual projected along the poloidal field.",
+      "units": "V/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Zero outside hall_active_mask."
+    },
+    {
+      "name": "generalized_ohm_error",
+      "description": "Active-cell RMS generalized-Ohm residual divided by RMS electric/Hall/drift scale.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Diagnostic only; zero for an empty active mask."
+    },
+    {
+      "name": "firehose_margin",
+      "description": "Local 1-mu0*(p_parallel-p_perpendicular)/max(|B|^2,tiny).",
+      "units": "dimensionless",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Diagnostic only; no firehose rejection is performed here."
+    },
+    {
+      "name": "ion_skin_depth",
+      "description": "Ion inertial length from mass, charge and local density.",
+      "units": "m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Zero where density is zero."
+    },
+    {
+      "name": "electron_skin_depth",
+      "description": "Ion skin depth times square root of electron-to-ion mass ratio.",
+      "units": "m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Uses a fixed electron mass constant."
+    },
+    {
+      "name": "ion_gyroradius",
+      "description": "Ion thermal-speed gyroradius using the poloidal field magnitude.",
+      "units": "m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Zero where the magnetic magnitude is zero."
+    },
+    {
+      "name": "magnetic_scale_length",
+      "description": "Field magnitude divided by its R-Z gradient magnitude.",
+      "units": "m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Infinity where the gradient magnitude is zero."
+    },
+    {
+      "name": "hall_scale_ratio",
+      "description": "Ion skin depth divided by finite positive magnetic scale length.",
+      "units": "dimensionless",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Zero where the scale length is infinite or nonpositive."
+    },
+    {
+      "name": "electron_inertia_scale_ratio",
+      "description": "Electron skin depth divided by finite positive magnetic scale length.",
+      "units": "dimensionless",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Zero where the scale length is infinite or nonpositive."
+    },
+    {
+      "name": "ion_gyroradius_scale_ratio",
+      "description": "Ion gyroradius divided by finite positive magnetic scale length.",
+      "units": "dimensionless",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Zero where the scale length is infinite or nonpositive."
+    },
+    {
+      "name": "hall_active_mask",
+      "description": "Plasma, non-axis, above-density-floor and resolvable-field intersection.",
+      "units": "boolean",
+      "shape": "[N_Z,N_R]",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "Selects drift evaluation and active-cell Ohm diagnostics."
+    },
+    {
+      "name": "density_floor_m3",
+      "description": "Peak in-mask ion density times hall_density_floor_fraction.",
+      "units": "m^-3",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Zero when plasma_mask is empty."
+    },
+    {
+      "name": "velocity_cap_fraction",
+      "description": "Fraction of Hall-active cells whose raw Mach magnitude exceeds the cap.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Zero when hall_active_mask is empty."
+    },
+    {
+      "name": "inertia_iterations",
+      "description": "Executed local current updates, including one pass when inertia is disabled.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": true,
+      "constraints": "Between 1 and inertia_max_iterations for a returned result."
+    },
+    {
+      "name": "inertia_relative_change",
+      "description": "Last local current update's relative norm change.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Uses max(norm(next current),1) as denominator."
+    },
+    {
+      "name": "inertia_converged",
+      "description": "Whether local iteration stopped successfully or inertia was bypassed.",
+      "units": "boolean",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "A false state raises before the mapping is returned."
+    }
   ],
   "applicability": {
-    "preconditions": ["Fields, pressures and species state refer to one consistent axisymmetric R-Z physical state in SI units.", "A strictly increasing rectilinear grid has at least three points per axis, with supplied field and pressure arrays matching its shape.", "The electron and ion state needed by the selected model is provided at each grid cell."],
-    "supported": ["Reduced-Hall toroidal drift/current and selected local inertia, Ohm, force and scale diagnostics on a supplied discrete poloidal field."],
-    "excluded": ["A complete equilibrium solve, generalized two-fluid transport or evolution of the electron/ion thermodynamic state.", "Automatic proof of physical validity in low-density, near-zero-field, firehose-unstable or high-Mach regions.", "Non-axisymmetric or toroidal-field pressure geometry."]
+    "preconditions": [
+      "Fields, pressures and species state refer to one consistent axisymmetric R-Z physical state in SI units.",
+      "A strictly increasing rectilinear grid has at least three points per axis, with supplied field and pressure arrays matching its shape.",
+      "The electron and ion state needed by the selected model is provided at each grid cell."
+    ],
+    "supported": [
+      "Reduced-Hall toroidal drift/current and selected local inertia, Ohm, force and scale diagnostics on a supplied discrete poloidal field."
+    ],
+    "excluded": [
+      "A complete equilibrium solve, generalized two-fluid transport or evolution of the electron/ion thermodynamic state.",
+      "Automatic proof of physical validity in low-density, near-zero-field, firehose-unstable or high-Mach regions.",
+      "Non-axisymmetric or toroidal-field pressure geometry."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for invalid mass, charge or scalar controls; a nonboolean inertia flag; malformed R-Z grid; nonfinite/mismatched field or pressure arrays; wrong-shaped mask; absent or nonfinite required closure_state fields; or negative density/electron and optional ion pressure components. Some malformed optional state arrays may propagate NumPy broadcasting errors.",
@@ -90,21 +577,44 @@
   },
   "provenance": {
     "lineage_summary": "Maintained SciRel relation mapped to a saved Pleiades L1 reduced-Hall drift Operator and direct regressions. Historical candidate labels are development provenance, not current SciRel expert recognition.",
-    "source_kinds": ["saved L1 Operator contract and implementation", "saved direct tests", "maintained SciRel scientific regression tests"],
+    "source_kinds": [
+      "saved L1 Operator contract and implementation",
+      "saved direct tests",
+      "maintained SciRel scientific regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
-  "public_api": {"python": {"module": "scirel.closures.reduced_hall_drift", "symbol": "close_reduced_hall_drift", "signature": "close_reduced_hall_drift(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular, closure_state, plasma_mask, ion_mass_kg, ion_charge_c, hall_multiplier=1.0, include_toroidal_inertia=True, hall_density_floor_fraction=0.1, maximum_inertial_mach=0.5, inertia_relax=0.5, inertia_tolerance=1e-10, inertia_max_iterations=80)"}},
-  "version": {"implementation_version": "0.1.0.dev30", "dependencies": []},
+  "public_api": {
+    "python": {
+      "module": "scirel.closures.reduced_hall_drift",
+      "symbol": "close_reduced_hall_drift",
+      "signature": "close_reduced_hall_drift(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular, closure_state, plasma_mask, ion_mass_kg, ion_charge_c, hall_multiplier=1.0, include_toroidal_inertia=True, hall_density_floor_fraction=0.1, maximum_inertial_mach=0.5, inertia_relax=0.5, inertia_tolerance=1e-10, inertia_max_iterations=80)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev31",
+    "dependencies": []
+  },
   "example": {
     "description": "Uniform isotropic pressure and potential in an axial field produce zero toroidal current and species drift.",
     "code": "import numpy as np\nfrom scirel.closures import close_reduced_hall_drift\nr_grid, z_grid = np.meshgrid([0.0, 0.2, 0.4], [-0.2, 0.0, 0.2])\nzeros = np.zeros_like(r_grid)\npressure = np.full_like(r_grid, 20.0)\nstate = {'ion_density': np.full_like(r_grid, 1e18), 'electron_pressure': zeros, 'electrostatic_potential': zeros}\nresult = close_reduced_hall_drift(r_grid, z_grid, zeros, np.full_like(r_grid, 2.0), pressure, pressure, state, np.ones_like(r_grid, dtype=bool), 1.67262192595e-27, 1.602176634e-19)\nnp.testing.assert_allclose(result['J_phi'], 0.0)\nnp.testing.assert_allclose(result['ion_toroidal_velocity'], 0.0)\nassert result['inertia_converged']",
     "expected": "The current and ion toroidal velocity vanish and the bounded local inertia calculation reports convergence."
   },
   "verification": {
-    "scope": ["Uniform isotropic zero-current and zero-drift limit.", "Manufactured electron-pressure/potential gradients and generalized-Ohm drift.", "Axis/vacuum mask handling, source-compatible field hypot extremes and invalid species/control rejection."],
-    "tests": ["tests/operator_contracts/test_reduced_hall_drift.py"],
+    "scope": [
+      "Uniform isotropic zero-current and zero-drift limit.",
+      "Manufactured electron-pressure/potential gradients and generalized-Ohm drift.",
+      "Axis/vacuum mask handling, source-compatible field hypot extremes and invalid species/control rejection."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_reduced_hall_drift.py"
+    ],
     "evidence_ceiling": "Direct SciRel regressions check selected discrete identities, mask behavior, a manufactured drift and input failures; they do not certify a complete two-fluid model, arbitrary equilibrium, general continuum accuracy, convergence for all inertia controls or current expert recognition.",
-    "known_limitations": ["The active mask excludes the axis and selected low-density/near-zero-field cells; inactive diagnostics may still contain computed unmasked values.", "The implementation uses the first-principles source-compatible discrete stencil and numerical floors; extreme finite values can still overflow.", "Public distribution licensing and SciRel expert recognition remain pending."]
+    "known_limitations": [
+      "The active mask excludes the axis and selected low-density/near-zero-field cells; inactive diagnostics may still contain computed unmasked values.",
+      "The implementation uses the first-principles source-compatible discrete stencil and numerical floors; extreme finite values can still overflow.",
+      "Public distribution licensing and SciRel expert recognition remain pending."
+    ]
   }
 }

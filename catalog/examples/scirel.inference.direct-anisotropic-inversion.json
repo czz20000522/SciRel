@@ -2,10 +2,20 @@
   "schema": "scirel.asset-document.v1",
   "asset_id": "scirel.inference.direct-anisotropic-inversion",
   "kind": "task_graph",
-  "title": {"en": "Direct anisotropic parameter inversion", "zh": "直接各向异性参数反演"},
+  "title": {
+    "en": "Direct anisotropic parameter inversion",
+    "zh": "直接各向异性参数反演"
+  },
   "summary": "Bind caller-owned equilibrium and synthetic-diagnostic callables to a SciRel trial residual relation and bounded parameter optimizer, optionally choosing an initial point from Latin-hypercube samples.",
-  "taxonomy": ["inference", "anisotropic-equilibrium", "task-graph", "parameter-fitting"],
-  "aliases": ["anisotropic equilibrium diagnostic fit"],
+  "taxonomy": [
+    "inference",
+    "anisotropic-equilibrium",
+    "task-graph",
+    "parameter-fitting"
+  ],
+  "aliases": [
+    "anisotropic equilibrium diagnostic fit"
+  ],
   "identity": {
     "relation": "caller forward equilibrium and diagnostic model plus observations to a fitted anisotropic parameter record",
     "direction": "initial_params, bounds, observations, solver_config, caller ports and controls -> best trial, residual/chi2, optimizer and failure diagnostics",
@@ -14,34 +24,195 @@
     "geometry": "defined by caller solver_config and ports, conventionally an axisymmetric cylindrical R-Z equilibrium grid",
     "coordinates": "solver_config.r_grid/z_grid are handed to diagnostic_evaluator as R/Z; optimizer vectors follow fit_keys or bounds insertion order",
     "boundary": "SciRel does not impose an N6 solver boundary or select its closure; caller solver_config and equilibrium_solver must enforce their own grid, vacuum/Green, convergence and physical bounds. The optimizer receives fitted parameter bounds but this graph does not independently validate them.",
-    "assumptions": ["The caller-owned equilibrium_solver and diagnostic_evaluator form a compatible scientific forward model with the supplied observations.", "A solver_config intended for SciRel free-boundary anisotropic Picard contains the required grid, vacuum field/flux, Green response and Picard controls; this wrapper only checks that it is a dict.", "Diagnostic values, sigma and parameter units are mutually consistent; SciRel does not convert them."]
+    "assumptions": [
+      "The caller-owned equilibrium_solver and diagnostic_evaluator form a compatible scientific forward model with the supplied observations.",
+      "A solver_config intended for SciRel free-boundary anisotropic Picard contains the required grid, vacuum field/flux, Green response and Picard controls; this wrapper only checks that it is a dict.",
+      "Diagnostic values, sigma and parameter units are mutually consistent; SciRel does not convert them."
+    ]
   },
   "inputs": [
-    {"name": "initial_params", "description": "Full initial profile-parameter mapping, copied before optimization.", "units": "mixed per-parameter caller units", "shape": "mapping", "dtype": "Python dict", "required": true, "constraints": "Must contain float-convertible fitted keys; nested solver defines parameter meaning."},
-    {"name": "bounds", "description": "Fitted-parameter interval mapping and default fit-key order.", "units": "same as each corresponding parameter", "shape": "mapping[key -> pair(low,high)]", "dtype": "Python dict with float-convertible endpoints", "required": true, "constraints": "Selected keys must exist; finite increasing intervals are required by LHS and meaningful SciPy fitting, although this wrapper does not check them."},
-    {"name": "observations", "description": "Diagnostic requests and measured values for the caller forward model and SciRel residual reducer.", "units": "mixed; each channel sigma shares its measurement units", "shape": "mapping with recognized flux_loops and/or thomson channels", "dtype": "Python dict", "required": true, "constraints": "At least one recognized prediction/observation match is needed for a nonpenalty trial; measurement points, when used by the caller, are [R,Z]."},
-    {"name": "solver_config", "description": "Fixed caller equilibrium inputs excluding trial params, copied for each trial.", "units": "caller solver contract; when bound to SciRel free-boundary anisotropic Picard: R/Z m, psi=R A_phi Wb/rad, field T, g_psi Wb/rad/A", "shape": "mapping", "dtype": "Python dict", "required": true, "constraints": "A successful trial requires r_grid/z_grid for diagnostic port; other required fields are specified by the caller solver. Wrapper only enforces dict type and does not convert units."},
-    {"name": "equilibrium_solver", "description": "Caller-owned equilibrium port invoked once for each trial with copied solver_config plus params.", "units": "caller equilibrium units", "shape": "callable(payload) -> equilibrium mapping", "dtype": "Python callable", "required": true, "constraints": "Should return converged and failure_reason plus fields needed by the diagnostic. A nonconverged dict without reason is annotated by wrapper."},
-    {"name": "diagnostic_evaluator", "description": "Caller-owned synthetic diagnostic port invoked with equilibrium, R, Z and observations.", "units": "predictions matching observation channel units", "shape": "callable({equilibrium,R,Z,observations}) -> predicted mapping", "dtype": "Python callable", "required": true, "constraints": "Must provide recognized matched predictions; the graph does not embed the synthesis-diagnostics TaskGraph."},
-    {"name": "method", "description": "Parameter optimizer selector.", "units": "identifier", "shape": "scalar", "dtype": "Python str", "required": true, "constraints": "Only least_squares or minimize selects SciPy; another string reaches optimizer fallback and is reported as failure."},
-    {"name": "fit_keys", "description": "Optional ordered subset of parameters to optimize.", "units": "identifier", "shape": "sequence or null", "dtype": "iterable of keys or None", "required": false, "default": null, "constraints": "Omitted uses bounds insertion order; selected keys must be in initial_params and bounds."},
-    {"name": "n_initial_samples", "description": "Optional number of LHS trial starts.", "units": "count", "shape": "scalar or null", "dtype": "int-convertible or None", "required": false, "default": null, "constraints": "If non-null, SciRel LHS sampler is loaded and requires a positive integer after optimizer conversion."},
-    {"name": "seed", "description": "Optional NumPy seed forwarded to LHS only.", "units": "dimensionless", "shape": "scalar or null", "dtype": "NumPy-compatible seed or None", "required": false, "default": null, "constraints": "No effect when LHS is omitted."}
+    {
+      "name": "initial_params",
+      "description": "Full initial profile-parameter mapping, copied before optimization.",
+      "units": "mixed per-parameter caller units",
+      "shape": "mapping",
+      "dtype": "Python dict",
+      "required": true,
+      "constraints": "Must contain float-convertible fitted keys; nested solver defines parameter meaning."
+    },
+    {
+      "name": "bounds",
+      "description": "Fitted-parameter interval mapping and default fit-key order.",
+      "units": "same as each corresponding parameter",
+      "shape": "mapping[key -> pair(low,high)]",
+      "dtype": "Python dict with float-convertible endpoints",
+      "required": true,
+      "constraints": "Selected keys must exist; finite increasing intervals are required by LHS and meaningful SciPy fitting, although this wrapper does not check them."
+    },
+    {
+      "name": "observations",
+      "description": "Diagnostic requests and measured values for the caller forward model and SciRel residual reducer.",
+      "units": "mixed; each channel sigma shares its measurement units",
+      "shape": "mapping with recognized flux_loops and/or thomson channels",
+      "dtype": "Python dict",
+      "required": true,
+      "constraints": "At least one recognized prediction/observation match is needed for a nonpenalty trial; measurement points, when used by the caller, are [R,Z]."
+    },
+    {
+      "name": "solver_config",
+      "description": "Fixed caller equilibrium inputs excluding trial params, copied for each trial.",
+      "units": "caller solver contract; when bound to SciRel free-boundary anisotropic Picard: R/Z m, psi=R A_phi Wb/rad, field T, g_psi Wb/rad/A",
+      "shape": "mapping",
+      "dtype": "Python dict",
+      "required": true,
+      "constraints": "A successful trial requires r_grid/z_grid for diagnostic port; other required fields are specified by the caller solver. Wrapper only enforces dict type and does not convert units."
+    },
+    {
+      "name": "equilibrium_solver",
+      "description": "Caller-owned equilibrium port invoked once for each trial with copied solver_config plus params.",
+      "units": "caller equilibrium units",
+      "shape": "callable(payload) -> equilibrium mapping",
+      "dtype": "Python callable",
+      "required": true,
+      "constraints": "Should return converged and failure_reason plus fields needed by the diagnostic. A nonconverged dict without reason is annotated by wrapper."
+    },
+    {
+      "name": "diagnostic_evaluator",
+      "description": "Caller-owned synthetic diagnostic port invoked with equilibrium, R, Z and observations.",
+      "units": "predictions matching observation channel units",
+      "shape": "callable({equilibrium,R,Z,observations}) -> predicted mapping",
+      "dtype": "Python callable",
+      "required": true,
+      "constraints": "Must provide recognized matched predictions; the graph does not embed the synthesis-diagnostics TaskGraph."
+    },
+    {
+      "name": "method",
+      "description": "Parameter optimizer selector.",
+      "units": "identifier",
+      "shape": "scalar",
+      "dtype": "Python str",
+      "required": true,
+      "constraints": "Only least_squares or minimize selects SciPy; another string reaches optimizer fallback and is reported as failure."
+    },
+    {
+      "name": "fit_keys",
+      "description": "Optional ordered subset of parameters to optimize.",
+      "units": "identifier",
+      "shape": "sequence or null",
+      "dtype": "iterable of keys or None",
+      "required": false,
+      "default": null,
+      "constraints": "Omitted uses bounds insertion order; selected keys must be in initial_params and bounds."
+    },
+    {
+      "name": "n_initial_samples",
+      "description": "Optional number of LHS trial starts.",
+      "units": "count",
+      "shape": "scalar or null",
+      "dtype": "int-convertible or None",
+      "required": false,
+      "default": null,
+      "constraints": "If non-null, SciRel LHS sampler is loaded and requires a positive integer after optimizer conversion."
+    },
+    {
+      "name": "seed",
+      "description": "Optional NumPy seed forwarded to LHS only.",
+      "units": "dimensionless",
+      "shape": "scalar or null",
+      "dtype": "NumPy-compatible seed or None",
+      "required": false,
+      "default": null,
+      "constraints": "No effect when LHS is omitted."
+    }
   ],
   "outputs": [
-    {"name": "best_parameters", "description": "Full parameters of the lowest recorded chi2 trial.", "units": "mixed per-parameter caller units", "shape": "mapping", "dtype": "dict", "required": true, "constraints": "Can come from LHS or SciPy evaluations."},
-    {"name": "chi2", "description": "Best normalized residual squared sum, or a trial penalty.", "units": "dimensionless", "shape": "scalar", "dtype": "float", "required": true, "constraints": "A caught nested evaluation exception records 1e24 for that trial; no graph-level chi2 threshold is imposed."},
-    {"name": "residual_vector", "description": "Best trial's ordered normalized residuals.", "units": "dimensionless", "shape": "[N_residual]", "dtype": "NumPy float array", "required": true, "constraints": "One element [1e12] for a penalty trial."},
-    {"name": "converged", "description": "SciPy optimizer success and best equilibrium converged, together.", "units": "boolean", "shape": "scalar", "dtype": "bool", "required": true, "constraints": "Does not assert a small residual or scientific validity."},
-    {"name": "equilibrium", "description": "Best trial caller equilibrium, or null for a penalty-only best trial.", "units": "mixed caller equilibrium units", "shape": "mapping or null", "dtype": "dict or None", "required": true, "constraints": "May be nonconverged when the optimizer result is false."},
-    {"name": "evaluation_log", "description": "Ordered LHS then optimizer trial summaries.", "units": "mixed; chi2 dimensionless", "shape": "list[N_eval]", "dtype": "list of dict", "required": true, "constraints": "Each entry records params, chi2, failure_reason and source."},
-    {"name": "failure_reason", "description": "Optimizer exception reason or wrapper-supplied equilibrium/optimizer nonconvergence reason.", "units": "dimensionless", "shape": "scalar", "dtype": "string or None", "required": true, "constraints": "If converged=False and optimizer supplied no reason, wrapper supplies an equilibrium reason or 'parameter optimizer did not converge'."},
-    {"name": "optimizer_summary", "description": "Serializable SciPy method/success/status/message/nfev fields or null after fallback.", "units": "mixed status/count", "shape": "mapping or null", "dtype": "dict or None", "required": true, "constraints": "No full SciPy result object is returned."}
+    {
+      "name": "best_parameters",
+      "description": "Full parameters of the lowest recorded chi2 trial.",
+      "units": "mixed per-parameter caller units",
+      "shape": "mapping",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "Can come from LHS or SciPy evaluations."
+    },
+    {
+      "name": "chi2",
+      "description": "Best normalized residual squared sum, or a trial penalty.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "A caught nested evaluation exception records 1e24 for that trial; no graph-level chi2 threshold is imposed."
+    },
+    {
+      "name": "residual_vector",
+      "description": "Best trial's ordered normalized residuals.",
+      "units": "dimensionless",
+      "shape": "[N_residual]",
+      "dtype": "NumPy float array",
+      "required": true,
+      "constraints": "One element [1e12] for a penalty trial."
+    },
+    {
+      "name": "converged",
+      "description": "SciPy optimizer success and best equilibrium converged, together.",
+      "units": "boolean",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "Does not assert a small residual or scientific validity."
+    },
+    {
+      "name": "equilibrium",
+      "description": "Best trial caller equilibrium, or null for a penalty-only best trial.",
+      "units": "mixed caller equilibrium units",
+      "shape": "mapping or null",
+      "dtype": "dict or None",
+      "required": true,
+      "constraints": "May be nonconverged when the optimizer result is false."
+    },
+    {
+      "name": "evaluation_log",
+      "description": "Ordered LHS then optimizer trial summaries.",
+      "units": "mixed; chi2 dimensionless",
+      "shape": "list[N_eval]",
+      "dtype": "list of dict",
+      "required": true,
+      "constraints": "Each entry records params, chi2, failure_reason and source."
+    },
+    {
+      "name": "failure_reason",
+      "description": "Optimizer exception reason or wrapper-supplied equilibrium/optimizer nonconvergence reason.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "string or None",
+      "required": true,
+      "constraints": "If converged=False and optimizer supplied no reason, wrapper supplies an equilibrium reason or 'parameter optimizer did not converge'."
+    },
+    {
+      "name": "optimizer_summary",
+      "description": "Serializable SciPy method/success/status/message/nfev fields or null after fallback.",
+      "units": "mixed status/count",
+      "shape": "mapping or null",
+      "dtype": "dict or None",
+      "required": true,
+      "constraints": "No full SciPy result object is returned."
+    }
   ],
   "applicability": {
-    "preconditions": ["The caller provides scientifically compatible equilibrium and diagnostic implementations and aligned observations.", "Selected fit parameters and bounds are meaningful to the caller model and acceptable to the chosen SciPy optimizer."],
-    "supported": ["Direct one-stage bounded fitting with optional LHS initialization against matched flux-loop/Thomson-like observations.", "Caller-owned N6-like equilibrium and N9-like diagnostic ports with an explicit failure/penalty record."],
-    "excluded": ["A built-in equilibrium solver, pressure closure, synthetic diagnostic or automatic instrument physics.", "Global optimality, physical correctness, uncertain parameter inference or a guarantee that a successful optimizer has small residual.", "Automatic source-model selection or independent validation of solver_config's physical fields."]
+    "preconditions": [
+      "The caller provides scientifically compatible equilibrium and diagnostic implementations and aligned observations.",
+      "Selected fit parameters and bounds are meaningful to the caller model and acceptable to the chosen SciPy optimizer."
+    ],
+    "supported": [
+      "Direct one-stage bounded fitting with optional LHS initialization against matched flux-loop/Thomson-like observations.",
+      "Caller-owned N6-like equilibrium and N9-like diagnostic ports with an explicit failure/penalty record."
+    ],
+    "excluded": [
+      "A built-in equilibrium solver, pressure closure, synthetic diagnostic or automatic instrument physics.",
+      "Global optimality, physical correctness, uncertain parameter inference or a guarantee that a successful optimizer has small residual.",
+      "Automatic source-model selection or independent validation of solver_config's physical fields."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "The wrapper raises ValueError for non-dict required mappings, absent/noncallable caller ports, missing method or non-string method. Selected-key and bound errors may arise from optimizer/LHS; recognized observation mismatches inside a trial become penalty records rather than direct exceptions.",
@@ -51,71 +222,667 @@
   },
   "provenance": {
     "lineage_summary": "Maintained SciRel composition mapped to a saved Pleiades L1 direct-inversion TaskGraph and direct graph tests. Historical candidate/admission labels are development provenance, not expert recognition of this version.",
-    "source_kinds": ["saved L1 TaskGraph contract and implementation", "saved direct graph tests", "maintained SciRel public graph regression tests"],
+    "source_kinds": [
+      "saved L1 TaskGraph contract and implementation",
+      "saved direct graph tests",
+      "maintained SciRel public graph regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
-  "public_api": {"python": {"module": "scirel.inference.direct_anisotropic_inversion", "symbol": "solve_direct_anisotropic_inversion", "signature": "solve_direct_anisotropic_inversion(inputs=None, **kwargs)"}},
-  "version": {"implementation_version": "0.1.0.dev30", "dependencies": [{"asset_id": "scirel.diagnostics.observation-residuals"}, {"asset_id": "scirel.inference.anisotropic-trial-evaluation"}, {"asset_id": "scirel.inference.anisotropic-parameter-optimization"}, {"asset_id": "scirel.inference.latin-hypercube-sampling"}]},
+  "public_api": {
+    "python": {
+      "module": "scirel.inference.direct_anisotropic_inversion",
+      "symbol": "solve_direct_anisotropic_inversion",
+      "signature": "solve_direct_anisotropic_inversion(inputs=None, **kwargs)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev31",
+    "dependencies": [
+      {
+        "asset_id": "scirel.diagnostics.observation-residuals"
+      },
+      {
+        "asset_id": "scirel.inference.anisotropic-trial-evaluation"
+      },
+      {
+        "asset_id": "scirel.inference.anisotropic-parameter-optimization"
+      },
+      {
+        "asset_id": "scirel.inference.latin-hypercube-sampling"
+      }
+    ]
+  },
   "example": {
     "description": "A simple injected forward model and diagnostic fit a scalar pressure-like parameter; this illustrates port wiring, not physical equilibrium validity.",
     "code": "import numpy as np\nfrom scirel.inference import solve_direct_anisotropic_inversion\nR, Z = np.meshgrid([0.2, 0.4], [-0.1, 0.1])\ndef solve(state):\n    return {'converged': True, 'failure_reason': None, 'profiles': {'p_perp': np.full_like(state['r_grid'], state['params']['p0'])}}\ndef diagnose(state):\n    return {'thomson': {'p_perp': state['equilibrium']['profiles']['p_perp']}}\nr = solve_direct_anisotropic_inversion(initial_params={'p0': 1.0}, bounds={'p0': (0.1, 10.0)}, method='least_squares', fit_keys=['p0'], solver_config={'r_grid': R, 'z_grid': Z}, observations={'thomson': {'p_perp': {'values': np.full_like(R, 4.0), 'sigma': 1.0}}}, equilibrium_solver=solve, diagnostic_evaluator=diagnose)\nassert r['converged'] and abs(r['best_parameters']['p0'] - 4.0) < 1e-6\nassert r['chi2'] < 1e-10",
     "expected": "The injected synthetic model recovers p0 near 4, with a small residual and converged optimizer/best-equilibrium flags."
   },
   "verification": {
-    "scope": ["Explicit caller solver/diagnostic ports and public dependency resolver.", "Synthetic one-parameter recovery with zero-G source fixture, a simple public callable example, and a nonzero-Green SciRel equilibrium in the isotropic-pressure limit with explicit circular-loop flux conversion.", "Optional LHS determinism, invalid method/bounds and nested port penalty behavior.", "Missing ports/method and nonconverged equilibrium reason handling."],
-    "tests": ["tests/graph_contracts/direct_anisotropic_inversion/test_graph_direct_anisotropic_inversion.py"],
+    "scope": [
+      "Explicit caller solver/diagnostic ports and public dependency resolver.",
+      "Synthetic one-parameter recovery with zero-G source fixture, a simple public callable example, and a nonzero-Green SciRel equilibrium in the isotropic-pressure limit with explicit circular-loop flux conversion.",
+      "Optional LHS determinism, invalid method/bounds and nested port penalty behavior.",
+      "Missing ports/method and nonconverged equilibrium reason handling."
+    ],
+    "tests": [
+      "tests/graph_contracts/direct_anisotropic_inversion/test_graph_direct_anisotropic_inversion.py"
+    ],
     "evidence_ceiling": "Direct graph and leaf tests cover selected synthetic fitting, port binding, a nonzero-Green SciRel equilibrium composition in the isotropic-pressure limit with an explicit 2π psi-to-loop-flux diagnostic, and failure paths; they do not certify a physical anisotropic equilibrium, real diagnostic calibration, global optimum or expert recognition.",
-    "known_limitations": ["The nonzero-Green composition test uses an isotropic-pressure limit and an injected circular-loop flux sampler, not a calibrated diagnostic or general anisotropic equilibrium.", "The equilibrium-synthesis-diagnostics graph's historical flux_loops key returns caller psi point samples, not automatically 2π psi; physical Wb loop observations require an explicit compatible diagnostic port when the equilibrium provides Wb/rad psi.", "A fitted result depends on caller-owned equilibrium and diagnostic implementations, not embedded SciRel N6/N9 physics.", "The optimizer's iteration policy is inside its SciPy Operator, not a TaskGraph feedback edge or a user-supplied graph-level iteration bound.", "Public distribution licensing and SciRel expert recognition remain pending."]
+    "known_limitations": [
+      "The nonzero-Green composition test uses an isotropic-pressure limit and an injected circular-loop flux sampler, not a calibrated diagnostic or general anisotropic equilibrium.",
+      "The equilibrium-synthesis-diagnostics graph's historical flux_loops key returns caller psi point samples, not automatically 2π psi; physical Wb loop observations require an explicit compatible diagnostic port when the equilibrium provides Wb/rad psi.",
+      "A fitted result depends on caller-owned equilibrium and diagnostic implementations, not embedded SciRel N6/N9 physics.",
+      "The optimizer's iteration policy is inside its SciPy Operator, not a TaskGraph feedback edge or a user-supplied graph-level iteration bound.",
+      "Public distribution licensing and SciRel expert recognition remain pending."
+    ]
   },
   "graph": {
     "nodes": [
-      {"id": "equilibrium_port", "kind": "caller_port", "description": "Require and retain caller equilibrium_solver; wrap a nonconverged mapping without a reason with the standard equilibrium reason.", "inputs": ["equilibrium_solver"], "outputs": ["equilibrium_solver"]},
-      {"id": "diagnostic_port", "kind": "caller_port", "description": "Require and retain caller diagnostic_evaluator callable.", "inputs": ["diagnostic_evaluator"], "outputs": ["diagnostic_evaluator"]},
-      {"id": "residual_relation", "kind": "operator", "asset_id": "scirel.diagnostics.observation-residuals", "description": "Bind the SciRel flux-first normalized residual callable for deferred trials.", "inputs": [], "outputs": ["residual_reducer"]},
-      {"id": "trial_relation", "kind": "operator", "asset_id": "scirel.inference.anisotropic-trial-evaluation", "description": "Partially bind observations, copied solver configuration and three callable ports to the SciRel trial Operator; it is evaluated by the optimizer, not pre-executed here.", "inputs": ["observations", "solver_config", "equilibrium_solver", "diagnostic_evaluator", "residual_reducer"], "outputs": ["trial_evaluator"]},
-      {"id": "lhs_sampler", "kind": "operator", "asset_id": "scirel.inference.latin-hypercube-sampling", "description": "Bind the SciRel sampler callable only when n_initial_samples is present; optimizer executes it with bounds, count, seed and fit keys.", "inputs": ["n_initial_samples"], "outputs": ["lhs_sampler"]},
-      {"id": "direct_optimizer", "kind": "operator", "asset_id": "scirel.inference.anisotropic-parameter-optimization", "description": "Run LHS-first optional initialization and SciPy parameter evaluations through the bound trial callable; retain best record and status.", "inputs": ["initial_params", "bounds", "method", "trial_evaluator", "fit_keys", "lhs_sampler", "n_initial_samples", "seed"], "outputs": ["best_parameters", "chi2", "residual_vector", "converged", "equilibrium", "evaluation_log", "failure_reason", "optimizer_summary"]},
-      {"id": "status_annotation", "kind": "controlled_glue", "description": "If optimizer result is nonconverged and lacks a reason, derive the available equilibrium reason or the generic optimizer reason; preserve all other fields.", "inputs": ["best_parameters", "chi2", "residual_vector", "converged", "equilibrium", "evaluation_log", "failure_reason", "optimizer_summary"], "outputs": ["best_parameters", "chi2", "residual_vector", "converged", "equilibrium", "evaluation_log", "failure_reason", "optimizer_summary"]}
+      {
+        "id": "equilibrium_port",
+        "kind": "caller_port",
+        "description": "Require and retain caller equilibrium_solver; wrap a nonconverged mapping without a reason with the standard equilibrium reason.",
+        "inputs": [
+          "equilibrium_solver"
+        ],
+        "outputs": [
+          "equilibrium_solver"
+        ]
+      },
+      {
+        "id": "diagnostic_port",
+        "kind": "caller_port",
+        "description": "Require and retain caller diagnostic_evaluator callable.",
+        "inputs": [
+          "diagnostic_evaluator"
+        ],
+        "outputs": [
+          "diagnostic_evaluator"
+        ]
+      },
+      {
+        "id": "residual_relation",
+        "kind": "operator",
+        "asset_id": "scirel.diagnostics.observation-residuals",
+        "description": "Bind the SciRel flux-first normalized residual callable for deferred trials.",
+        "inputs": [],
+        "outputs": [
+          "residual_reducer"
+        ]
+      },
+      {
+        "id": "trial_relation",
+        "kind": "operator",
+        "asset_id": "scirel.inference.anisotropic-trial-evaluation",
+        "description": "Partially bind observations, copied solver configuration and three callable ports to the SciRel trial Operator; it is evaluated by the optimizer, not pre-executed here.",
+        "inputs": [
+          "observations",
+          "solver_config",
+          "equilibrium_solver",
+          "diagnostic_evaluator",
+          "residual_reducer"
+        ],
+        "outputs": [
+          "trial_evaluator"
+        ]
+      },
+      {
+        "id": "lhs_sampler",
+        "kind": "operator",
+        "asset_id": "scirel.inference.latin-hypercube-sampling",
+        "description": "Bind the SciRel sampler callable only when n_initial_samples is present; optimizer executes it with bounds, count, seed and fit keys.",
+        "inputs": [
+          "n_initial_samples"
+        ],
+        "outputs": [
+          "lhs_sampler"
+        ]
+      },
+      {
+        "id": "direct_optimizer",
+        "kind": "operator",
+        "asset_id": "scirel.inference.anisotropic-parameter-optimization",
+        "description": "Run LHS-first optional initialization and SciPy parameter evaluations through the bound trial callable; retain best record and status.",
+        "inputs": [
+          "initial_params",
+          "bounds",
+          "method",
+          "trial_evaluator",
+          "fit_keys",
+          "lhs_sampler",
+          "n_initial_samples",
+          "seed"
+        ],
+        "outputs": [
+          "best_parameters",
+          "chi2",
+          "residual_vector",
+          "converged",
+          "equilibrium",
+          "evaluation_log",
+          "failure_reason",
+          "optimizer_summary"
+        ]
+      },
+      {
+        "id": "status_annotation",
+        "kind": "controlled_glue",
+        "description": "If optimizer result is nonconverged and lacks a reason, derive the available equilibrium reason or the generic optimizer reason; preserve all other fields.",
+        "inputs": [
+          "best_parameters",
+          "chi2",
+          "residual_vector",
+          "converged",
+          "equilibrium",
+          "evaluation_log",
+          "failure_reason",
+          "optimizer_summary"
+        ],
+        "outputs": [
+          "best_parameters",
+          "chi2",
+          "residual_vector",
+          "converged",
+          "equilibrium",
+          "evaluation_log",
+          "failure_reason",
+          "optimizer_summary"
+        ]
+      }
     ],
     "edges": [
-      {"from":{"node":"$input","port":"equilibrium_solver"},"to":{"node":"equilibrium_port","port":"equilibrium_solver"},"description":"Caller equilibrium callable.","condition":"Every graph call.","transform":"Validate callable and wrap missing nonconvergence reason.","kind":"data","required":true},
-      {"from":{"node":"$input","port":"diagnostic_evaluator"},"to":{"node":"diagnostic_port","port":"diagnostic_evaluator"},"description":"Caller diagnostic callable.","condition":"Every graph call.","transform":"Validate callable and retain.","kind":"data","required":true},
-      {"from":{"node":"$input","port":"observations"},"to":{"node":"trial_relation","port":"observations"},"description":"Requests and measured signals.","condition":"Every trial.","transform":"Retain mapping in partial binding.","kind":"data","required":true},
-      {"from":{"node":"$input","port":"solver_config"},"to":{"node":"trial_relation","port":"solver_config"},"description":"Fixed caller solver inputs.","condition":"Every trial.","transform":"Copy mapping once and each trial payload separately.","kind":"data","required":true},
-      {"from":{"node":"equilibrium_port","port":"equilibrium_solver"},"to":{"node":"trial_relation","port":"equilibrium_solver"},"description":"Validated equilibrium port.","condition":"Every trial.","transform":"Bind callable without early execution.","kind":"data","required":true},
-      {"from":{"node":"diagnostic_port","port":"diagnostic_evaluator"},"to":{"node":"trial_relation","port":"diagnostic_evaluator"},"description":"Validated diagnostic port.","condition":"Every trial.","transform":"Bind callable without early execution.","kind":"data","required":true},
-      {"from":{"node":"residual_relation","port":"residual_reducer"},"to":{"node":"trial_relation","port":"residual_reducer"},"description":"Normalized residual callable.","condition":"Every trial.","transform":"Bind callable without early execution.","kind":"data","required":true},
-      {"from":{"node":"trial_relation","port":"trial_evaluator"},"to":{"node":"direct_optimizer","port":"trial_evaluator"},"description":"Parameter-to-trial callable.","condition":"LHS and SciPy evaluations.","transform":"Python partial binding.","kind":"data","required":true},
-      {"from":{"node":"$input","port":"n_initial_samples"},"to":{"node":"lhs_sampler","port":"n_initial_samples"},"description":"Enable LHS branch.","condition":"Only if non-null.","transform":"Select declared sampler callable.","kind":"control","required":false},
-      {"from":{"node":"lhs_sampler","port":"lhs_sampler"},"to":{"node":"direct_optimizer","port":"lhs_sampler"},"description":"Optional LHS callable.","condition":"Only if n_initial_samples is non-null.","transform":"Retain callable for optimizer invocation.","kind":"data","required":false},
-      {"from":{"node":"$input","port":"initial_params"},"to":{"node":"direct_optimizer","port":"initial_params"},"description":"Initial full parameter mapping.","condition":"Every graph call.","transform":"Copy mapping.","kind":"data","required":true},
-      {"from":{"node":"$input","port":"bounds"},"to":{"node":"direct_optimizer","port":"bounds"},"description":"Parameter intervals.","condition":"Every graph call.","transform":"Copy mapping.","kind":"data","required":true},
-      {"from":{"node":"$input","port":"method"},"to":{"node":"direct_optimizer","port":"method"},"description":"SciPy method selector.","condition":"Every graph call.","transform":"Require Python string.","kind":"control","required":true},
-      {"from":{"node":"$input","port":"fit_keys"},"to":{"node":"direct_optimizer","port":"fit_keys"},"description":"Optional fit order.","condition":"If supplied; otherwise bounds order.","transform":"Identity or null default.","kind":"data","required":false},
-      {"from":{"node":"$input","port":"n_initial_samples"},"to":{"node":"direct_optimizer","port":"n_initial_samples"},"description":"Optional LHS sample count.","condition":"If supplied.","transform":"Identity or null default.","kind":"control","required":false},
-      {"from":{"node":"$input","port":"seed"},"to":{"node":"direct_optimizer","port":"seed"},"description":"Optional LHS RNG seed.","condition":"If supplied.","transform":"Identity or null default.","kind":"data","required":false},
-      {"from":{"node":"direct_optimizer","port":"best_parameters"},"to":{"node":"status_annotation","port":"best_parameters"},"description":"Best fit parameters.","condition":"After optimizer return.","transform":"Identity.","kind":"data","required":true},
-      {"from":{"node":"direct_optimizer","port":"chi2"},"to":{"node":"status_annotation","port":"chi2"},"description":"Best chi2.","condition":"After optimizer return.","transform":"Identity.","kind":"data","required":true},
-      {"from":{"node":"direct_optimizer","port":"residual_vector"},"to":{"node":"status_annotation","port":"residual_vector"},"description":"Best residual vector.","condition":"After optimizer return.","transform":"Identity.","kind":"data","required":true},
-      {"from":{"node":"direct_optimizer","port":"converged"},"to":{"node":"status_annotation","port":"converged"},"description":"Joint optimizer/equilibrium status.","condition":"After optimizer return.","transform":"Identity.","kind":"data","required":true},
-      {"from":{"node":"direct_optimizer","port":"equilibrium"},"to":{"node":"status_annotation","port":"equilibrium"},"description":"Best equilibrium or null.","condition":"After optimizer return.","transform":"Identity.","kind":"data","required":true},
-      {"from":{"node":"direct_optimizer","port":"evaluation_log"},"to":{"node":"status_annotation","port":"evaluation_log"},"description":"Ordered trial log.","condition":"After optimizer return.","transform":"Identity.","kind":"data","required":true},
-      {"from":{"node":"direct_optimizer","port":"failure_reason"},"to":{"node":"status_annotation","port":"failure_reason"},"description":"Optional optimizer error.","condition":"After optimizer return.","transform":"Add wrapper reason only if nonconverged and absent.","kind":"data","required":true},
-      {"from":{"node":"direct_optimizer","port":"optimizer_summary"},"to":{"node":"status_annotation","port":"optimizer_summary"},"description":"Serializable SciPy summary.","condition":"After optimizer return.","transform":"Identity.","kind":"data","required":true},
-      {"from":{"node":"status_annotation","port":"best_parameters"},"to":{"node":"$output","port":"best_parameters"},"description":"Best parameters result.","condition":"On successful graph return.","transform":"Identity.","kind":"data","required":true},
-      {"from":{"node":"status_annotation","port":"chi2"},"to":{"node":"$output","port":"chi2"},"description":"Best normalized squared residual.","condition":"On successful graph return.","transform":"Identity.","kind":"data","required":true},
-      {"from":{"node":"status_annotation","port":"residual_vector"},"to":{"node":"$output","port":"residual_vector"},"description":"Best residual vector.","condition":"On successful graph return.","transform":"Identity.","kind":"data","required":true},
-      {"from":{"node":"status_annotation","port":"converged"},"to":{"node":"$output","port":"converged"},"description":"Joint success flag.","condition":"On successful graph return.","transform":"Identity.","kind":"data","required":true},
-      {"from":{"node":"status_annotation","port":"equilibrium"},"to":{"node":"$output","port":"equilibrium"},"description":"Best equilibrium.","condition":"On successful graph return.","transform":"Identity.","kind":"data","required":true},
-      {"from":{"node":"status_annotation","port":"evaluation_log"},"to":{"node":"$output","port":"evaluation_log"},"description":"Ordered evaluation log.","condition":"On successful graph return.","transform":"Identity.","kind":"data","required":true},
-      {"from":{"node":"status_annotation","port":"failure_reason"},"to":{"node":"$output","port":"failure_reason"},"description":"Explicit failure status.","condition":"On successful graph return.","transform":"Identity.","kind":"data","required":true},
-      {"from":{"node":"status_annotation","port":"optimizer_summary"},"to":{"node":"$output","port":"optimizer_summary"},"description":"SciPy summary or null.","condition":"On successful graph return.","transform":"Identity.","kind":"data","required":true}
+      {
+        "from": {
+          "node": "$input",
+          "port": "equilibrium_solver"
+        },
+        "to": {
+          "node": "equilibrium_port",
+          "port": "equilibrium_solver"
+        },
+        "description": "Caller equilibrium callable.",
+        "condition": "Every graph call.",
+        "transform": "Validate callable and wrap missing nonconvergence reason.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "diagnostic_evaluator"
+        },
+        "to": {
+          "node": "diagnostic_port",
+          "port": "diagnostic_evaluator"
+        },
+        "description": "Caller diagnostic callable.",
+        "condition": "Every graph call.",
+        "transform": "Validate callable and retain.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "observations"
+        },
+        "to": {
+          "node": "trial_relation",
+          "port": "observations"
+        },
+        "description": "Requests and measured signals.",
+        "condition": "Every trial.",
+        "transform": "Retain mapping in partial binding.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "solver_config"
+        },
+        "to": {
+          "node": "trial_relation",
+          "port": "solver_config"
+        },
+        "description": "Fixed caller solver inputs.",
+        "condition": "Every trial.",
+        "transform": "Copy mapping once and each trial payload separately.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "equilibrium_port",
+          "port": "equilibrium_solver"
+        },
+        "to": {
+          "node": "trial_relation",
+          "port": "equilibrium_solver"
+        },
+        "description": "Validated equilibrium port.",
+        "condition": "Every trial.",
+        "transform": "Bind callable without early execution.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "diagnostic_port",
+          "port": "diagnostic_evaluator"
+        },
+        "to": {
+          "node": "trial_relation",
+          "port": "diagnostic_evaluator"
+        },
+        "description": "Validated diagnostic port.",
+        "condition": "Every trial.",
+        "transform": "Bind callable without early execution.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "residual_relation",
+          "port": "residual_reducer"
+        },
+        "to": {
+          "node": "trial_relation",
+          "port": "residual_reducer"
+        },
+        "description": "Normalized residual callable.",
+        "condition": "Every trial.",
+        "transform": "Bind callable without early execution.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "trial_relation",
+          "port": "trial_evaluator"
+        },
+        "to": {
+          "node": "direct_optimizer",
+          "port": "trial_evaluator"
+        },
+        "description": "Parameter-to-trial callable.",
+        "condition": "LHS and SciPy evaluations.",
+        "transform": "Python partial binding.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "n_initial_samples"
+        },
+        "to": {
+          "node": "lhs_sampler",
+          "port": "n_initial_samples"
+        },
+        "description": "Enable LHS branch.",
+        "condition": "Only if non-null.",
+        "transform": "Select declared sampler callable.",
+        "kind": "control",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "lhs_sampler",
+          "port": "lhs_sampler"
+        },
+        "to": {
+          "node": "direct_optimizer",
+          "port": "lhs_sampler"
+        },
+        "description": "Optional LHS callable.",
+        "condition": "Only if n_initial_samples is non-null.",
+        "transform": "Retain callable for optimizer invocation.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "initial_params"
+        },
+        "to": {
+          "node": "direct_optimizer",
+          "port": "initial_params"
+        },
+        "description": "Initial full parameter mapping.",
+        "condition": "Every graph call.",
+        "transform": "Copy mapping.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "bounds"
+        },
+        "to": {
+          "node": "direct_optimizer",
+          "port": "bounds"
+        },
+        "description": "Parameter intervals.",
+        "condition": "Every graph call.",
+        "transform": "Copy mapping.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "method"
+        },
+        "to": {
+          "node": "direct_optimizer",
+          "port": "method"
+        },
+        "description": "SciPy method selector.",
+        "condition": "Every graph call.",
+        "transform": "Require Python string.",
+        "kind": "control",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "fit_keys"
+        },
+        "to": {
+          "node": "direct_optimizer",
+          "port": "fit_keys"
+        },
+        "description": "Optional fit order.",
+        "condition": "If supplied; otherwise bounds order.",
+        "transform": "Identity or null default.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "n_initial_samples"
+        },
+        "to": {
+          "node": "direct_optimizer",
+          "port": "n_initial_samples"
+        },
+        "description": "Optional LHS sample count.",
+        "condition": "If supplied.",
+        "transform": "Identity or null default.",
+        "kind": "control",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "seed"
+        },
+        "to": {
+          "node": "direct_optimizer",
+          "port": "seed"
+        },
+        "description": "Optional LHS RNG seed.",
+        "condition": "If supplied.",
+        "transform": "Identity or null default.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "direct_optimizer",
+          "port": "best_parameters"
+        },
+        "to": {
+          "node": "status_annotation",
+          "port": "best_parameters"
+        },
+        "description": "Best fit parameters.",
+        "condition": "After optimizer return.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "direct_optimizer",
+          "port": "chi2"
+        },
+        "to": {
+          "node": "status_annotation",
+          "port": "chi2"
+        },
+        "description": "Best chi2.",
+        "condition": "After optimizer return.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "direct_optimizer",
+          "port": "residual_vector"
+        },
+        "to": {
+          "node": "status_annotation",
+          "port": "residual_vector"
+        },
+        "description": "Best residual vector.",
+        "condition": "After optimizer return.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "direct_optimizer",
+          "port": "converged"
+        },
+        "to": {
+          "node": "status_annotation",
+          "port": "converged"
+        },
+        "description": "Joint optimizer/equilibrium status.",
+        "condition": "After optimizer return.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "direct_optimizer",
+          "port": "equilibrium"
+        },
+        "to": {
+          "node": "status_annotation",
+          "port": "equilibrium"
+        },
+        "description": "Best equilibrium or null.",
+        "condition": "After optimizer return.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "direct_optimizer",
+          "port": "evaluation_log"
+        },
+        "to": {
+          "node": "status_annotation",
+          "port": "evaluation_log"
+        },
+        "description": "Ordered trial log.",
+        "condition": "After optimizer return.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "direct_optimizer",
+          "port": "failure_reason"
+        },
+        "to": {
+          "node": "status_annotation",
+          "port": "failure_reason"
+        },
+        "description": "Optional optimizer error.",
+        "condition": "After optimizer return.",
+        "transform": "Add wrapper reason only if nonconverged and absent.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "direct_optimizer",
+          "port": "optimizer_summary"
+        },
+        "to": {
+          "node": "status_annotation",
+          "port": "optimizer_summary"
+        },
+        "description": "Serializable SciPy summary.",
+        "condition": "After optimizer return.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "status_annotation",
+          "port": "best_parameters"
+        },
+        "to": {
+          "node": "$output",
+          "port": "best_parameters"
+        },
+        "description": "Best parameters result.",
+        "condition": "On successful graph return.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "status_annotation",
+          "port": "chi2"
+        },
+        "to": {
+          "node": "$output",
+          "port": "chi2"
+        },
+        "description": "Best normalized squared residual.",
+        "condition": "On successful graph return.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "status_annotation",
+          "port": "residual_vector"
+        },
+        "to": {
+          "node": "$output",
+          "port": "residual_vector"
+        },
+        "description": "Best residual vector.",
+        "condition": "On successful graph return.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "status_annotation",
+          "port": "converged"
+        },
+        "to": {
+          "node": "$output",
+          "port": "converged"
+        },
+        "description": "Joint success flag.",
+        "condition": "On successful graph return.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "status_annotation",
+          "port": "equilibrium"
+        },
+        "to": {
+          "node": "$output",
+          "port": "equilibrium"
+        },
+        "description": "Best equilibrium.",
+        "condition": "On successful graph return.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "status_annotation",
+          "port": "evaluation_log"
+        },
+        "to": {
+          "node": "$output",
+          "port": "evaluation_log"
+        },
+        "description": "Ordered evaluation log.",
+        "condition": "On successful graph return.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "status_annotation",
+          "port": "failure_reason"
+        },
+        "to": {
+          "node": "$output",
+          "port": "failure_reason"
+        },
+        "description": "Explicit failure status.",
+        "condition": "On successful graph return.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "status_annotation",
+          "port": "optimizer_summary"
+        },
+        "to": {
+          "node": "$output",
+          "port": "optimizer_summary"
+        },
+        "description": "SciPy summary or null.",
+        "condition": "On successful graph return.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      }
     ],
     "execution": {
       "mode": "ordered_dag_with_deferred_operator_calls",
       "ordering": "Validate required dict inputs and both caller callables plus method; bind residual and trial callables; if n_initial_samples is supplied bind LHS; optimizer evaluates LHS candidates first, then SciPy trials, then wrapper annotates missing nonconvergence reason.",
-      "branches": ["No LHS callable is passed when n_initial_samples is null.", "When LHS is present, its lowest recorded chi2 sample becomes the SciPy start.", "Nested trial exceptions become penalty records; caught optimizer exceptions trigger one fallback trial.", "A nonconverged result with no reason receives the equilibrium or generic optimizer reason."],
+      "branches": [
+        "No LHS callable is passed when n_initial_samples is null.",
+        "When LHS is present, its lowest recorded chi2 sample becomes the SciPy start.",
+        "Nested trial exceptions become penalty records; caught optimizer exceptions trigger one fallback trial.",
+        "A nonconverged result with no reason receives the equilibrium or generic optimizer reason."
+      ],
       "state_ownership": "The wrapper copies top-level initial_params, bounds and solver_config; each trial owns a new parameter mapping and solver payload. Caller callables own their forward-model state; the optimizer owns its evaluation log and SciPy search state.",
       "failure_propagation": "Required-input and port validation errors propagate; nested trial errors are penalized; pre-SciPy LHS and fallback failures propagate. The graph does not return partial output on an uncaught error.",
       "feedback": []

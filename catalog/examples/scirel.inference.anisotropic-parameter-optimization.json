@@ -2,10 +2,19 @@
   "schema": "scirel.asset-document.v1",
   "asset_id": "scirel.inference.anisotropic-parameter-optimization",
   "kind": "operator",
-  "title": {"en": "Bounded anisotropic trial parameter optimization", "zh": "有界各向异性试探参数优化"},
+  "title": {
+    "en": "Bounded anisotropic trial parameter optimization",
+    "zh": "有界各向异性试探参数优化"
+  },
   "summary": "Select an optional Latin-hypercube starting point, run a SciPy least-squares or minimize search through a caller trial evaluator, and retain the best recorded trial and optimizer status.",
-  "taxonomy": ["inference", "anisotropic-equilibrium", "bounded-optimization"],
-  "aliases": ["direct anisotropic residual fitting"],
+  "taxonomy": [
+    "inference",
+    "anisotropic-equilibrium",
+    "bounded-optimization"
+  ],
+  "aliases": [
+    "direct anisotropic residual fitting"
+  ],
   "identity": {
     "relation": "bounded fit parameters and trial residual relation to the lowest recorded chi-squared parameter record",
     "direction": "initial_params, bounds, method and trial_evaluator -> best_parameters, chi2, residual_vector, equilibrium and log/status",
@@ -14,32 +23,176 @@
     "geometry": "none internally; caller trial evaluator owns equilibrium geometry",
     "coordinates": "fit_keys order or bounds insertion order defines the optimizer vector; other initial_params keys are copied unchanged into each trial",
     "boundary": "Bounds are passed to SciPy; this function itself does not prove finite, increasing bounds or clamp the fallback trial. The optional LHS sampler owns its own bound validation.",
-    "assumptions": ["trial_evaluator(params=...) returns chi2, residuals, equilibrium and failure_reason, with residuals suitable for the selected SciPy routine.", "The caller selects scientifically meaningful fit parameters and ranges; numerical success alone does not establish a valid physical inversion."]
+    "assumptions": [
+      "trial_evaluator(params=...) returns chi2, residuals, equilibrium and failure_reason, with residuals suitable for the selected SciPy routine.",
+      "The caller selects scientifically meaningful fit parameters and ranges; numerical success alone does not establish a valid physical inversion."
+    ]
   },
   "inputs": [
-    {"name": "initial_params", "description": "Initial full parameter mapping; non-fitted keys are retained in trials.", "units": "per-parameter caller units", "shape": "mapping", "dtype": "dict-like with float-convertible fitted values", "required": true, "constraints": "Contains all selected keys; fitted values must be acceptable to the selected SciPy method and bounds."},
-    {"name": "bounds", "description": "Bounds for fitted parameters and default key order.", "units": "same as corresponding parameter", "shape": "mapping[key -> pair(low,high)]", "dtype": "mapping with float-convertible endpoints", "required": true, "constraints": "Selected keys must exist with pairs accepted by SciPy; the implementation does not independently validate finite increasing intervals."},
-    {"name": "method", "description": "SciPy optimization selector.", "units": "identifier", "shape": "scalar", "dtype": "string", "required": true, "constraints": "'least_squares' or 'minimize'; any other value enters the caught-exception fallback."},
-    {"name": "trial_evaluator", "description": "Caller-owned per-parameter residual and equilibrium evaluation.", "units": "dimensionless residuals; caller equilibrium units", "shape": "callable(*,params) -> trial mapping", "dtype": "Python callable", "required": true, "constraints": "Returns chi2, residuals, equilibrium and failure_reason keys; errors before the SciPy try block may propagate."},
-    {"name": "fit_keys", "description": "Optional ordered subset of parameters to fit.", "units": "identifier", "shape": "sequence or null", "dtype": "iterable of keys or None", "required": false, "default": null, "constraints": "Omitted selects all bounds keys; uniqueness/nonemptiness are not separately enforced."},
-    {"name": "lhs_sampler", "description": "Optional caller-supplied LHS callable for choosing the starting point.", "units": "parameter units", "shape": "callable(*,bounds,n_samples,seed,fit_keys) -> {initial_samples}", "dtype": "Python callable or None", "required": false, "default": null, "constraints": "Required when n_initial_samples is non-null; each sample should provide fitted keys."},
-    {"name": "n_initial_samples", "description": "Optional sample count passed as int to lhs_sampler.", "units": "count", "shape": "scalar or null", "dtype": "int-convertible or None", "required": false, "default": null, "constraints": "A non-null value triggers LHS before SciPy; sampler controls positivity validation and an empty sample list raises before fallback."},
-    {"name": "seed", "description": "Optional seed forwarded to lhs_sampler only.", "units": "dimensionless", "shape": "scalar or null", "dtype": "sampler-compatible seed or None", "required": false, "default": null, "constraints": "Has no effect when n_initial_samples is null."}
+    {
+      "name": "initial_params",
+      "description": "Initial full parameter mapping; non-fitted keys are retained in trials.",
+      "units": "per-parameter caller units",
+      "shape": "mapping",
+      "dtype": "dict-like with float-convertible fitted values",
+      "required": true,
+      "constraints": "Contains all selected keys; fitted values must be acceptable to the selected SciPy method and bounds."
+    },
+    {
+      "name": "bounds",
+      "description": "Bounds for fitted parameters and default key order.",
+      "units": "same as corresponding parameter",
+      "shape": "mapping[key -> pair(low,high)]",
+      "dtype": "mapping with float-convertible endpoints",
+      "required": true,
+      "constraints": "Selected keys must exist with pairs accepted by SciPy; the implementation does not independently validate finite increasing intervals."
+    },
+    {
+      "name": "method",
+      "description": "SciPy optimization selector.",
+      "units": "identifier",
+      "shape": "scalar",
+      "dtype": "string",
+      "required": true,
+      "constraints": "'least_squares' or 'minimize'; any other value enters the caught-exception fallback."
+    },
+    {
+      "name": "trial_evaluator",
+      "description": "Caller-owned per-parameter residual and equilibrium evaluation.",
+      "units": "dimensionless residuals; caller equilibrium units",
+      "shape": "callable(*,params) -> trial mapping",
+      "dtype": "Python callable",
+      "required": true,
+      "constraints": "Returns chi2, residuals, equilibrium and failure_reason keys; errors before the SciPy try block may propagate."
+    },
+    {
+      "name": "fit_keys",
+      "description": "Optional ordered subset of parameters to fit.",
+      "units": "identifier",
+      "shape": "sequence or null",
+      "dtype": "iterable of keys or None",
+      "required": false,
+      "default": null,
+      "constraints": "Omitted selects all bounds keys; uniqueness/nonemptiness are not separately enforced."
+    },
+    {
+      "name": "lhs_sampler",
+      "description": "Optional caller-supplied LHS callable for choosing the starting point.",
+      "units": "parameter units",
+      "shape": "callable(*,bounds,n_samples,seed,fit_keys) -> {initial_samples}",
+      "dtype": "Python callable or None",
+      "required": false,
+      "default": null,
+      "constraints": "Required when n_initial_samples is non-null; each sample should provide fitted keys."
+    },
+    {
+      "name": "n_initial_samples",
+      "description": "Optional sample count passed as int to lhs_sampler.",
+      "units": "count",
+      "shape": "scalar or null",
+      "dtype": "int-convertible or None",
+      "required": false,
+      "default": null,
+      "constraints": "A non-null value triggers LHS before SciPy; sampler controls positivity validation and an empty sample list raises before fallback."
+    },
+    {
+      "name": "seed",
+      "description": "Optional seed forwarded to lhs_sampler only.",
+      "units": "dimensionless",
+      "shape": "scalar or null",
+      "dtype": "sampler-compatible seed or None",
+      "required": false,
+      "default": null,
+      "constraints": "Has no effect when n_initial_samples is null."
+    }
   ],
   "outputs": [
-    {"name": "best_parameters", "description": "Full parameter mapping from the strictly lowest-chi2 recorded trial.", "units": "per-parameter caller units", "shape": "mapping", "dtype": "dict", "required": true, "constraints": "Defaults to initial_params until a trial improves infinity; LHS and optimizer trials compete."},
-    {"name": "chi2", "description": "Lowest recorded trial chi2.", "units": "dimensionless", "shape": "scalar", "dtype": "float", "required": true, "constraints": "Usually finite when trial_evaluator provides finite chi2; not independently checked here."},
-    {"name": "residual_vector", "description": "Residual vector of the best recorded trial.", "units": "dimensionless", "shape": "[N_residual]", "dtype": "NumPy float array", "required": true, "constraints": "Converted from best trial residuals; an unusable trial contract can produce conversion errors or nonfinite values."},
-    {"name": "converged", "description": "True only when SciPy reports success and the best retained equilibrium exists and reports converged.", "units": "boolean", "shape": "scalar", "dtype": "bool", "required": true, "constraints": "No residual threshold or separate physical validity check is applied."},
-    {"name": "equilibrium", "description": "Best trial's caller-owned equilibrium, or null if no trial improved the initial record.", "units": "mixed caller model units", "shape": "mapping or null", "dtype": "caller result or None", "required": true, "constraints": "May be nonconverged even when chi2 is best."},
-    {"name": "evaluation_log", "description": "Ordered parameter, chi2, failure_reason and source entries for each evaluated trial.", "units": "mixed; chi2 dimensionless", "shape": "list[N_eval]", "dtype": "list of dict", "required": true, "constraints": "LHS entries precede optimizer entries; source is latin_hypercube or optimizer."},
-    {"name": "failure_reason", "description": "Text of an exception caught during SciPy selection/execution, otherwise null.", "units": "dimensionless", "shape": "scalar", "dtype": "string or None", "required": true, "constraints": "May be null even when converged=False; outer graph may supply a clearer reason."},
-    {"name": "optimizer_summary", "description": "Selected SciPy result's method, success, status, message and nfev; null on caught exception.", "units": "mixed status/count", "shape": "mapping or null", "dtype": "dict or None", "required": true, "constraints": "Does not contain the complete SciPy result object."}
+    {
+      "name": "best_parameters",
+      "description": "Full parameter mapping from the strictly lowest-chi2 recorded trial.",
+      "units": "per-parameter caller units",
+      "shape": "mapping",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "Defaults to initial_params until a trial improves infinity; LHS and optimizer trials compete."
+    },
+    {
+      "name": "chi2",
+      "description": "Lowest recorded trial chi2.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Usually finite when trial_evaluator provides finite chi2; not independently checked here."
+    },
+    {
+      "name": "residual_vector",
+      "description": "Residual vector of the best recorded trial.",
+      "units": "dimensionless",
+      "shape": "[N_residual]",
+      "dtype": "NumPy float array",
+      "required": true,
+      "constraints": "Converted from best trial residuals; an unusable trial contract can produce conversion errors or nonfinite values."
+    },
+    {
+      "name": "converged",
+      "description": "True only when SciPy reports success and the best retained equilibrium exists and reports converged.",
+      "units": "boolean",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "No residual threshold or separate physical validity check is applied."
+    },
+    {
+      "name": "equilibrium",
+      "description": "Best trial's caller-owned equilibrium, or null if no trial improved the initial record.",
+      "units": "mixed caller model units",
+      "shape": "mapping or null",
+      "dtype": "caller result or None",
+      "required": true,
+      "constraints": "May be nonconverged even when chi2 is best."
+    },
+    {
+      "name": "evaluation_log",
+      "description": "Ordered parameter, chi2, failure_reason and source entries for each evaluated trial.",
+      "units": "mixed; chi2 dimensionless",
+      "shape": "list[N_eval]",
+      "dtype": "list of dict",
+      "required": true,
+      "constraints": "LHS entries precede optimizer entries; source is latin_hypercube or optimizer."
+    },
+    {
+      "name": "failure_reason",
+      "description": "Text of an exception caught during SciPy selection/execution, otherwise null.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "string or None",
+      "required": true,
+      "constraints": "May be null even when converged=False; outer graph may supply a clearer reason."
+    },
+    {
+      "name": "optimizer_summary",
+      "description": "Selected SciPy result's method, success, status, message and nfev; null on caught exception.",
+      "units": "mixed status/count",
+      "shape": "mapping or null",
+      "dtype": "dict or None",
+      "required": true,
+      "constraints": "Does not contain the complete SciPy result object."
+    }
   ],
   "applicability": {
-    "preconditions": ["The caller supplies a trial evaluator with consistent residual length and meaningful parameter bounds.", "Any injected LHS sampler returns at least one valid sample when requested."],
-    "supported": ["SciPy bounded least_squares or minimize with an optional sampled starting point and full evaluation log.", "A source-compatible fallback trial when method selection or SciPy execution raises."],
-    "excluded": ["Global optimality, guaranteed convergence, covariance estimation or automatic physical correctness of a caller model.", "Independent validation of parameter bounds, fitted-key uniqueness or every trial's returned structure."]
+    "preconditions": [
+      "The caller supplies a trial evaluator with consistent residual length and meaningful parameter bounds.",
+      "Any injected LHS sampler returns at least one valid sample when requested."
+    ],
+    "supported": [
+      "SciPy bounded least_squares or minimize with an optional sampled starting point and full evaluation log.",
+      "A source-compatible fallback trial when method selection or SciPy execution raises."
+    ],
+    "excluded": [
+      "Global optimality, guaranteed convergence, covariance estimation or automatic physical correctness of a caller model.",
+      "Independent validation of parameter bounds, fitted-key uniqueness or every trial's returned structure."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Missing keys, malformed bounds, nonconvertible values, missing lhs_sampler when samples are requested, malformed/empty sampler output or trial failure during LHS can raise before the SciPy try block. Unsupported method is caught inside that block, producing a fallback trial and failure_reason if that trial succeeds.",
@@ -49,21 +202,44 @@
   },
   "provenance": {
     "lineage_summary": "Maintained SciRel optimizer mapped to saved Pleiades L1 direct-inversion material and direct tests; historical candidate labels do not imply expert recognition.",
-    "source_kinds": ["saved L1 Operator contract and implementation", "saved direct tests", "maintained SciRel optimization regressions"],
+    "source_kinds": [
+      "saved L1 Operator contract and implementation",
+      "saved direct tests",
+      "maintained SciRel optimization regressions"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
-  "public_api": {"python": {"module": "scirel.inference.anisotropic_parameter_optimization", "symbol": "optimize_anisotropic_parameters", "signature": "optimize_anisotropic_parameters(*, initial_params, bounds, method, trial_evaluator, fit_keys=None, lhs_sampler=None, n_initial_samples=None, seed=None)"}},
-  "version": {"implementation_version": "0.1.0.dev30", "dependencies": []},
+  "public_api": {
+    "python": {
+      "module": "scirel.inference.anisotropic_parameter_optimization",
+      "symbol": "optimize_anisotropic_parameters",
+      "signature": "optimize_anisotropic_parameters(*, initial_params, bounds, method, trial_evaluator, fit_keys=None, lhs_sampler=None, n_initial_samples=None, seed=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev31",
+    "dependencies": []
+  },
   "example": {
     "description": "A one-parameter caller trial is minimized while a fixed extra parameter is retained.",
     "code": "import numpy as np\nfrom scirel.inference import optimize_anisotropic_parameters\ndef trial(*, params):\n    residuals = np.array([params['x'] - 3.0])\n    return {'chi2': float(residuals @ residuals), 'residuals': residuals, 'equilibrium': {'converged': True}, 'failure_reason': None}\nr = optimize_anisotropic_parameters(initial_params={'x': 0.0, 'fixed': 7.0}, bounds={'x': (-5.0, 5.0)}, fit_keys=['x'], method='least_squares', trial_evaluator=trial)\nassert abs(r['best_parameters']['x'] - 3.0) < 1e-6\nassert r['best_parameters']['fixed'] == 7.0 and r['converged']\nassert r['chi2'] == min(e['chi2'] for e in r['evaluation_log'])",
     "expected": "Least squares finds x near 3 while keeping fixed=7, and the best recorded trial is converged."
   },
   "verification": {
-    "scope": ["One-dimensional least-squares recovery and preservation of unfitted keys.", "LHS-first log order and minimum-chi2 start selection.", "Unknown-method fallback records a trial without claiming convergence."],
-    "tests": ["tests/operator_contracts/test_anisotropic_parameter_optimization.py"],
+    "scope": [
+      "One-dimensional least-squares recovery and preservation of unfitted keys.",
+      "LHS-first log order and minimum-chi2 start selection.",
+      "Unknown-method fallback records a trial without claiming convergence."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_anisotropic_parameter_optimization.py"
+    ],
     "evidence_ceiling": "Direct tests establish selected SciPy and fallback paths with simple synthetic residuals; they do not prove global optimum, robustness for arbitrary caller evaluators or scientific suitability of fitted parameters.",
-    "known_limitations": ["Bounds and LHS sampler records are largely delegated to SciPy or the injected sampler, and some malformed inputs fail before fallback.", "Best chi2 and optimizer success can refer to different trials; converged additionally checks the best equilibrium.", "Public distribution licensing and SciRel expert recognition remain pending."]
+    "known_limitations": [
+      "Bounds and LHS sampler records are largely delegated to SciPy or the injected sampler, and some malformed inputs fail before fallback.",
+      "Best chi2 and optimizer success can refer to different trials; converged additionally checks the best equilibrium.",
+      "Public distribution licensing and SciRel expert recognition remain pending."
+    ]
   }
 }

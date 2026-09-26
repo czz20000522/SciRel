@@ -98,7 +98,7 @@ def test_shared_composition_change_selects_every_task_graph():
     graph_assets = [
         asset for asset in result["affected_assets"] if ".solve_" in asset or ".synthesize_" in asset
     ]
-    assert len(graph_assets) == 11
+    assert len(graph_assets) == 14
     assert "tests/test_library_composition.py" in result["test_paths"]
     assert {
         "tests/graph_contracts/frank_egedal_pressure_closure/test_graph_frank_egedal_pressure_closure.py",
@@ -379,8 +379,8 @@ def test_current_asset_index_unions_legacy_samples_and_exact_documents():
     namespace = runpy.run_path(str(SELECTOR))
     assets = namespace["_load_assets"]()
 
-    assert len(assets) == 96
-    assert len({asset.public_callable for asset in assets}) == 96
+    assert len(assets) == 99
+    assert len({asset.public_callable for asset in assets}) == 99
 
 
 def test_catalog_asset_keeps_every_declared_direct_test(tmp_path):

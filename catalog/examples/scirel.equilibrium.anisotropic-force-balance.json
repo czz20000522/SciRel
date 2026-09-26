@@ -2,10 +2,20 @@
   "schema": "scirel.asset-document.v1",
   "asset_id": "scirel.equilibrium.anisotropic-force-balance",
   "kind": "operator",
-  "title": {"en": "Axisymmetric gyrotropic pressure force balance", "zh": "轴对称各向异性压强张量力平衡"},
+  "title": {
+    "en": "Axisymmetric gyrotropic pressure force balance",
+    "zh": "轴对称各向异性压强张量力平衡"
+  },
   "summary": "Evaluate cylindrical divergence of a gyrotropic pressure tensor, its perpendicular toroidal-current projection, parallel-force diagnostic and firehose margin on a supplied R-Z field grid.",
-  "taxonomy": ["equilibrium", "anisotropic-pressure", "force-balance", "axisymmetric"],
-  "aliases": ["gyrotropic div(P) current closure"],
+  "taxonomy": [
+    "equilibrium",
+    "anisotropic-pressure",
+    "force-balance",
+    "axisymmetric"
+  ],
+  "aliases": [
+    "gyrotropic div(P) current closure"
+  ],
   "identity": {
     "relation": "R-Z poloidal magnetic field and parallel/perpendicular pressure to cylindrical pressure force and toroidal current density",
     "direction": "R-Z grid, B_R, B_Z, p_parallel, p_perpendicular -> force_R, force_Z, parallel_force, J_phi and diagnostics",
@@ -14,30 +24,156 @@
     "geometry": "rectilinear cylindrical R-Z grid with at least three nodes per axis",
     "coordinates": "all arrays indexed [Z,R]; R is nonnegative and both axes strictly increase",
     "boundary": "Second-order one-sided derivatives at grid ends; if R starts at zero, force_R and J_phi are set to zero in the axis column. Tiny magnetic denominators use the implementation's zero/floor conventions.",
-    "assumptions": ["The supplied B_R and B_Z are components of the same poloidal field as the pressure arrays.", "Both pressure components are nonnegative Pa values at grid nodes.", "The optional active_mask selects cells for the parallel-force error metric only; this Operator does not zero J_phi outside it."]
+    "assumptions": [
+      "The supplied B_R and B_Z are components of the same poloidal field as the pressure arrays.",
+      "Both pressure components are nonnegative Pa values at grid nodes.",
+      "The optional active_mask selects cells for the parallel-force error metric only; this Operator does not zero J_phi outside it."
+    ]
   },
   "inputs": [
-    {"name": "r_grid", "description": "Cylindrical radius mesh.", "units": "m", "shape": "[N_Z,N_R]", "dtype": "finite real array-like", "required": true, "constraints": "Rectilinear, nonnegative R, strictly increasing radial axis, at least three columns; same shape as other arrays."},
-    {"name": "z_grid", "description": "Axial coordinate mesh.", "units": "m", "shape": "[N_Z,N_R]", "dtype": "finite real array-like", "required": true, "constraints": "Rectilinear, strictly increasing axial axis, at least three rows; same shape as other arrays."},
-    {"name": "b_r", "description": "Radial component of the poloidal magnetic field.", "units": "T", "shape": "[N_Z,N_R]", "dtype": "finite real array-like", "required": true, "constraints": "Same grid shape; no nonzero-field precondition is enforced by this Operator."},
-    {"name": "b_z", "description": "Axial component of the poloidal magnetic field.", "units": "T", "shape": "[N_Z,N_R]", "dtype": "finite real array-like", "required": true, "constraints": "Same grid shape; combined with b_r for field magnitude and direction."},
-    {"name": "p_parallel", "description": "Pressure parallel to the local poloidal magnetic field.", "units": "Pa", "shape": "[N_Z,N_R]", "dtype": "finite real array-like", "required": true, "constraints": "Same grid shape and nonnegative; scalar broadcasting is not performed here."},
-    {"name": "p_perpendicular", "description": "Pressure perpendicular to the local poloidal magnetic field.", "units": "Pa", "shape": "[N_Z,N_R]", "dtype": "finite real array-like", "required": true, "constraints": "Same grid shape and nonnegative; scalar broadcasting is not performed here."},
-    {"name": "active_mask", "description": "Cells included in the RMS parallel-force compatibility metric.", "units": "boolean", "shape": "[N_Z,N_R] or null", "dtype": "boolean array-like or None", "required": false, "default": null, "constraints": "If omitted, all cells are active; same shape when supplied. It does not suppress the returned force or current arrays."}
+    {
+      "name": "r_grid",
+      "description": "Cylindrical radius mesh.",
+      "units": "m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "finite real array-like",
+      "required": true,
+      "constraints": "Rectilinear, nonnegative R, strictly increasing radial axis, at least three columns; same shape as other arrays."
+    },
+    {
+      "name": "z_grid",
+      "description": "Axial coordinate mesh.",
+      "units": "m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "finite real array-like",
+      "required": true,
+      "constraints": "Rectilinear, strictly increasing axial axis, at least three rows; same shape as other arrays."
+    },
+    {
+      "name": "b_r",
+      "description": "Radial component of the poloidal magnetic field.",
+      "units": "T",
+      "shape": "[N_Z,N_R]",
+      "dtype": "finite real array-like",
+      "required": true,
+      "constraints": "Same grid shape; no nonzero-field precondition is enforced by this Operator."
+    },
+    {
+      "name": "b_z",
+      "description": "Axial component of the poloidal magnetic field.",
+      "units": "T",
+      "shape": "[N_Z,N_R]",
+      "dtype": "finite real array-like",
+      "required": true,
+      "constraints": "Same grid shape; combined with b_r for field magnitude and direction."
+    },
+    {
+      "name": "p_parallel",
+      "description": "Pressure parallel to the local poloidal magnetic field.",
+      "units": "Pa",
+      "shape": "[N_Z,N_R]",
+      "dtype": "finite real array-like",
+      "required": true,
+      "constraints": "Same grid shape and nonnegative; scalar broadcasting is not performed here."
+    },
+    {
+      "name": "p_perpendicular",
+      "description": "Pressure perpendicular to the local poloidal magnetic field.",
+      "units": "Pa",
+      "shape": "[N_Z,N_R]",
+      "dtype": "finite real array-like",
+      "required": true,
+      "constraints": "Same grid shape and nonnegative; scalar broadcasting is not performed here."
+    },
+    {
+      "name": "active_mask",
+      "description": "Cells included in the RMS parallel-force compatibility metric.",
+      "units": "boolean",
+      "shape": "[N_Z,N_R] or null",
+      "dtype": "boolean array-like or None",
+      "required": false,
+      "default": null,
+      "constraints": "If omitted, all cells are active; same shape when supplied. It does not suppress the returned force or current arrays."
+    }
   ],
   "outputs": [
-    {"name": "force_R", "description": "Radial component of cylindrical div(P).", "units": "Pa/m", "shape": "[N_Z,N_R]", "dtype": "float64", "required": true, "constraints": "Axis column is set to zero when the first radius is exactly zero."},
-    {"name": "force_Z", "description": "Axial component of cylindrical div(P).", "units": "Pa/m", "shape": "[N_Z,N_R]", "dtype": "float64", "required": true, "constraints": "Includes the off-axis P_RZ/R term."},
-    {"name": "parallel_force", "description": "Pressure force projected along the poloidal field.", "units": "Pa/m", "shape": "[N_Z,N_R]", "dtype": "float64", "required": true, "constraints": "Observational compatibility residual, not subtracted from the current relation."},
-    {"name": "J_phi", "description": "Toroidal current-density projection of pressure force.", "units": "A/m^2", "shape": "[N_Z,N_R]", "dtype": "float64", "required": true, "constraints": "Zero at the axis and where |B|^2 is at or below the numeric tiny threshold; active_mask does not zero it."},
-    {"name": "B", "description": "Magnitude of the supplied poloidal field.", "units": "T", "shape": "[N_Z,N_R]", "dtype": "float64", "required": true, "constraints": "Computed from B_R and B_Z using the maintained source-compatible hypot path."},
-    {"name": "parallel_force_error", "description": "RMS parallel-force divided by RMS total force on active cells.", "units": "dimensionless", "shape": "scalar", "dtype": "float", "required": true, "constraints": "Denominator floored at numeric tiny; returns 0.0 when no cell is active."},
-    {"name": "firehose_margin", "description": "Local 1 - mu0*(p_parallel-p_perpendicular)/max(|B|^2,tiny).", "units": "dimensionless", "shape": "[N_Z,N_R]", "dtype": "float64", "required": true, "constraints": "Diagnostic only; this Operator does not reject nonpositive margin."}
+    {
+      "name": "force_R",
+      "description": "Radial component of cylindrical div(P).",
+      "units": "Pa/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Axis column is set to zero when the first radius is exactly zero."
+    },
+    {
+      "name": "force_Z",
+      "description": "Axial component of cylindrical div(P).",
+      "units": "Pa/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Includes the off-axis P_RZ/R term."
+    },
+    {
+      "name": "parallel_force",
+      "description": "Pressure force projected along the poloidal field.",
+      "units": "Pa/m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Observational compatibility residual, not subtracted from the current relation."
+    },
+    {
+      "name": "J_phi",
+      "description": "Toroidal current-density projection of pressure force.",
+      "units": "A/m^2",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Zero at the axis and where |B|^2 is at or below the numeric tiny threshold; active_mask does not zero it."
+    },
+    {
+      "name": "B",
+      "description": "Magnitude of the supplied poloidal field.",
+      "units": "T",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Computed from B_R and B_Z using the maintained source-compatible hypot path."
+    },
+    {
+      "name": "parallel_force_error",
+      "description": "RMS parallel-force divided by RMS total force on active cells.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Denominator floored at numeric tiny; returns 0.0 when no cell is active."
+    },
+    {
+      "name": "firehose_margin",
+      "description": "Local 1 - mu0*(p_parallel-p_perpendicular)/max(|B|^2,tiny).",
+      "units": "dimensionless",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Diagnostic only; this Operator does not reject nonpositive margin."
+    }
   ],
   "applicability": {
-    "preconditions": ["All six field/grid arrays are finite and exactly same-shape 2-D arrays on the declared rectilinear grid.", "The supplied magnetic and pressure fields have a meaningful gyrotropic interpretation in cylindrical R-Z geometry."],
-    "supported": ["Evaluation of the specified discrete cylindrical pressure-force and current relation, including a tested constant-isotropic limit and manufactured varying-pressure and rotated-field examples."],
-    "excluded": ["A complete equilibrium solver or a guarantee of parallel force compatibility.", "Automatic field-floor or firehose failure enforcement; the calling TaskGraph makes those decisions.", "Non-axisymmetric geometry, scalar pressure broadcasting, or a field contribution from B_phi."]
+    "preconditions": [
+      "All six field/grid arrays are finite and exactly same-shape 2-D arrays on the declared rectilinear grid.",
+      "The supplied magnetic and pressure fields have a meaningful gyrotropic interpretation in cylindrical R-Z geometry."
+    ],
+    "supported": [
+      "Evaluation of the specified discrete cylindrical pressure-force and current relation, including a tested constant-isotropic limit and manufactured varying-pressure and rotated-field examples."
+    ],
+    "excluded": [
+      "A complete equilibrium solver or a guarantee of parallel force compatibility.",
+      "Automatic field-floor or firehose failure enforcement; the calling TaskGraph makes those decisions.",
+      "Non-axisymmetric geometry, scalar pressure broadcasting, or a field contribution from B_phi."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for nonfinite, wrong-rank or mismatched arrays; nonrectilinear, negative-radius, nonincreasing or too-small grids; negative pressure; or wrong-shaped active_mask.",
@@ -47,21 +183,45 @@
   },
   "provenance": {
     "lineage_summary": "Maintained SciRel relation mapped to a saved Pleiades L1 pressure-force Operator and direct regressions; historical candidate status is development provenance, not current expert recognition.",
-    "source_kinds": ["saved L1 Operator contract and implementation", "saved direct tests", "maintained SciRel scientific regression tests"],
+    "source_kinds": [
+      "saved L1 Operator contract and implementation",
+      "saved direct tests",
+      "maintained SciRel scientific regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
-  "public_api": {"python": {"module": "scirel.equilibrium.anisotropic_force_balance", "symbol": "compute_anisotropic_force_balance", "signature": "compute_anisotropic_force_balance(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular, active_mask=None)"}},
-  "version": {"implementation_version": "0.1.0.dev30", "dependencies": []},
+  "public_api": {
+    "python": {
+      "module": "scirel.equilibrium.anisotropic_force_balance",
+      "symbol": "compute_anisotropic_force_balance",
+      "signature": "compute_anisotropic_force_balance(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular, active_mask=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev31",
+    "dependencies": []
+  },
   "example": {
     "description": "A constant isotropic pressure in a uniform axial field produces no pressure force or current.",
     "code": "import numpy as np\nfrom scirel.equilibrium import compute_anisotropic_force_balance\nr_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.4, 5), np.linspace(-0.3, 0.3, 5))\nresult = compute_anisotropic_force_balance(r_grid, z_grid, np.zeros_like(r_grid), np.ones_like(r_grid), np.full_like(r_grid, 2.0), np.full_like(r_grid, 2.0))\nnp.testing.assert_allclose(result['force_R'], 0.0, atol=1e-12)\nnp.testing.assert_allclose(result['J_phi'], 0.0, atol=1e-12)\nnp.testing.assert_allclose(result['firehose_margin'], 1.0)",
     "expected": "Zero pressure force and toroidal current to the stated tolerance, with unit firehose margin."
   },
   "verification": {
-    "scope": ["Constant isotropic pressure yields zero force and current.", "Axis rule and active-mask shape failure.", "Manufactured rotating-field anisotropic force and variable isotropic pressure gradient.", "Finite subnormal and large field magnitudes in the internal source-compatible hypot path."],
-    "tests": ["tests/operator_contracts/test_anisotropic_force_balance.py"],
+    "scope": [
+      "Constant isotropic pressure yields zero force and current.",
+      "Axis rule and active-mask shape failure.",
+      "Manufactured rotating-field anisotropic force and variable isotropic pressure gradient.",
+      "Finite subnormal and large field magnitudes in the internal source-compatible hypot path."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_anisotropic_force_balance.py"
+    ],
     "evidence_ceiling": "Direct SciRel tests cover selected discrete gradients, axis behavior and manufactured values; they do not prove general continuum force balance, arbitrary extreme-value finite output or suitability of a caller's pressure closure. No expert recognition of this development record is implied.",
-    "known_limitations": ["The mask influences only parallel_force_error; downstream orchestration separately masks J_phi.", "A zero or tiny magnetic field is numerically handled, not physically validated as a gyrotropic closure.", "Public distribution licensing and SciRel expert recognition remain pending."]
+    "known_limitations": [
+      "The mask influences only parallel_force_error; downstream orchestration separately masks J_phi.",
+      "A zero or tiny magnetic field is numerically handled, not physically validated as a gyrotropic closure.",
+      "Public distribution licensing and SciRel expert recognition remain pending."
+    ]
   }
 }

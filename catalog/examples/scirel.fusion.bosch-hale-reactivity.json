@@ -2,10 +2,20 @@
   "schema": "scirel.asset-document.v1",
   "asset_id": "scirel.fusion.bosch-hale-reactivity",
   "kind": "operator",
-  "title": {"en": "Bosch-Hale Maxwellian fusion reactivity", "zh": "Bosch-Hale 麦克斯韦聚变反应率"},
+  "title": {
+    "en": "Bosch-Hale Maxwellian fusion reactivity",
+    "zh": "Bosch-Hale 麦克斯韦聚变反应率"
+  },
   "summary": "Evaluate the Bosch-Hale fitted Maxwellian reactivity for DT, D-He3 and the two D-D branches without silently clipping ion temperature.",
-  "taxonomy": ["fusion", "reaction-rate", "maxwellian"],
-  "aliases": ["Bosch-Hale sigmav", "thermal fusion reactivity"],
+  "taxonomy": [
+    "fusion",
+    "reaction-rate",
+    "maxwellian"
+  ],
+  "aliases": [
+    "Bosch-Hale sigmav",
+    "thermal fusion reactivity"
+  ],
   "identity": {
     "relation": "Ion temperature and reaction channel to Maxwellian-averaged fusion reactivity",
     "direction": "T_i [keV], reaction -> <sigma v> [m^3/s]",
@@ -14,19 +24,57 @@
     "geometry": "Local scalar relation evaluated elementwise; no plasma geometry",
     "coordinates": "Ion temperature in keV and four explicit reaction labels",
     "boundary": "No implicit temperature clipping; positive finite inputs are accepted only where the fitted result is finite and representable.",
-    "assumptions": ["The supplied temperature is the ion temperature for a Maxwellian reaction-rate model.", "Reactant densities, fuel composition and fusion power are separate relations."]
+    "assumptions": [
+      "The supplied temperature is the ion temperature for a Maxwellian reaction-rate model.",
+      "Reactant densities, fuel composition and fusion power are separate relations."
+    ]
   },
   "inputs": [
-    {"name": "ion_temperature_kev", "description": "Ion temperature evaluated elementwise.", "units": "keV", "shape": "scalar or any nonempty array shape", "dtype": "real numeric", "required": true, "constraints": "Finite and strictly positive; booleans, strings, complex values and empty arrays are rejected."},
-    {"name": "reaction", "description": "Fusion reaction channel.", "units": "enumeration", "shape": "scalar", "dtype": "string", "required": false, "default": "DT", "constraints": "Exactly DT, DHe3, DD_Tp or DD_He3n."}
+    {
+      "name": "ion_temperature_kev",
+      "description": "Ion temperature evaluated elementwise.",
+      "units": "keV",
+      "shape": "scalar or any nonempty array shape",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite and strictly positive; booleans, strings, complex values and empty arrays are rejected."
+    },
+    {
+      "name": "reaction",
+      "description": "Fusion reaction channel.",
+      "units": "enumeration",
+      "shape": "scalar",
+      "dtype": "string",
+      "required": false,
+      "default": "DT",
+      "constraints": "Exactly DT, DHe3, DD_Tp or DD_He3n."
+    }
   ],
   "outputs": [
-    {"name": "reactivity", "description": "Maxwellian-averaged reaction rate <sigma v>.", "units": "m^3/s", "shape": "float for scalar input, otherwise same shape as ion_temperature_kev", "dtype": "float64", "required": true, "constraints": "Finite for accepted input; zero may result from floating-point underflow at low temperature."}
+    {
+      "name": "reactivity",
+      "description": "Maxwellian-averaged reaction rate <sigma v>.",
+      "units": "m^3/s",
+      "shape": "float for scalar input, otherwise same shape as ion_temperature_kev",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite for accepted input; zero may result from floating-point underflow at low temperature."
+    }
   ],
   "applicability": {
-    "preconditions": ["The caller selects the appropriate reaction branch and supplies an ion temperature in keV.", "The Bosch-Hale Maxwellian fit is the intended model; independent physical validity for every accepted temperature is not established."],
-    "supported": ["Four named light-ion reaction channels with ASCOT5 coefficient precision.", "Scalar and nonempty array evaluation with shape preservation and no input mutation."],
-    "excluded": ["Fusion cross section as a function of projectile energy and reaction-product kinematics.", "TokaGrad's rounded DT coefficients, silent 0.2-200 keV clipping, fuel composition, power-density and fast-ion partition semantics.", "Claims of fit accuracy outside an independently established scientific domain."]
+    "preconditions": [
+      "The caller selects the appropriate reaction branch and supplies an ion temperature in keV.",
+      "The Bosch-Hale Maxwellian fit is the intended model; independent physical validity for every accepted temperature is not established."
+    ],
+    "supported": [
+      "Four named light-ion reaction channels with ASCOT5 coefficient precision.",
+      "Scalar and nonempty array evaluation with shape preservation and no input mutation."
+    ],
+    "excluded": [
+      "Fusion cross section as a function of projectile energy and reaction-product kinematics.",
+      "TokaGrad's rounded DT coefficients, silent 0.2-200 keV clipping, fuel composition, power-density and fast-ion partition semantics.",
+      "Claims of fit accuracy outside an independently established scientific domain."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for an unknown channel or nonnumeric, boolean, complex, empty, nonfinite or nonpositive temperature.",
@@ -36,21 +84,47 @@
   },
   "provenance": {
     "lineage_summary": "The standard four-channel fit uses the saved ASCOT5 boschhale reaction-rate coefficients. TokaGrad supplies a DT-only implementation of the same algebraic relation with rounded coefficients and 0.2-200 keV clipping; it is overlapping evidence, not exact implementation reuse. Independent whole-source review later withdrew both projects' former strict D1 qualification. Their archived candidate trees and bounded numerical comparisons remain historical development evidence, not current qualified L1 input; exact references and limits are in the 2026-09-25 extraction handoff and intake evaluation.",
-    "source_kinds": ["archived ASCOT5 and TokaGrad L1 operator contracts and implementations, pending renewed strict D1 review", "saved ASCOT5 compiled-source golden and direct L1 tests", "saved TokaGrad source-free equation tests and bounded numerical comparison"],
-    "public_references": ["Bosch and Hale, Nuclear Fusion 32 (1992), doi:10.1088/0029-5515/32/4/I07"],
+    "source_kinds": [
+      "archived ASCOT5 and TokaGrad L1 operator contracts and implementations, pending renewed strict D1 review",
+      "saved ASCOT5 compiled-source golden and direct L1 tests",
+      "saved TokaGrad source-free equation tests and bounded numerical comparison"
+    ],
+    "public_references": [
+      "Bosch and Hale, Nuclear Fusion 32 (1992), doi:10.1088/0029-5515/32/4/I07"
+    ],
     "license_status": "pending-human-decision"
   },
-  "public_api": {"python": {"module": "scirel.fusion.bosch_hale_reactivity", "symbol": "evaluate_bosch_hale_reactivity", "signature": "evaluate_bosch_hale_reactivity(ion_temperature_kev, *, reaction='DT')"}},
-  "version": {"implementation_version": "0.1.0.dev30", "dependencies": []},
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.bosch_hale_reactivity",
+      "symbol": "evaluate_bosch_hale_reactivity",
+      "signature": "evaluate_bosch_hale_reactivity(ion_temperature_kev, *, reaction='DT')"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev31",
+    "dependencies": []
+  },
   "example": {
     "description": "Evaluate DT Maxwellian reactivity at 10 keV.",
     "code": "from scirel.fusion import evaluate_bosch_hale_reactivity\nrate = evaluate_bosch_hale_reactivity(10.0, reaction='DT')\nassert abs(rate / 1.1361654705836232e-22 - 1) < 1e-11",
     "expected": "DT <sigma v> is approximately 1.1361654705836232e-22 m^3/s at 10 keV."
   },
   "verification": {
-    "scope": ["Four channel source-golden values, positive real scalar and array behavior, input validation and no clipping.", "Pinned ASCOT5 and TokaGrad saved implementations compared on finite temperatures; rounded DT discrepancy and clipping distinguished."],
-    "tests": ["tests/operator_contracts/test_bosch_hale_reactivity.py", "tests/operator_contracts/test_bosch_hale_reactivity_l1.py"],
+    "scope": [
+      "Four channel source-golden values, positive real scalar and array behavior, input validation and no clipping.",
+      "Pinned ASCOT5 and TokaGrad saved implementations compared on finite temperatures; rounded DT discrepancy and clipping distinguished."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_bosch_hale_reactivity.py",
+      "tests/operator_contracts/test_bosch_hale_reactivity_l1.py"
+    ],
     "evidence_ceiling": "ASCOT5's saved direct test reports compiled-source parity and historical SciRel replay checks the saved implementation at listed temperatures. TokaGrad's saved test is source-free only; its DT values differ by up to about 4.6e-5 relative on sampled 0.2-200 keV inputs. Both project-level strict D1 qualifications were withdrawn; neither comparison proves a current qualified source package, physical fit validity for all temperatures, complete source-project reproduction or expert approval.",
-    "known_limitations": ["No reaction cross section, product kinematics, fuel density or fusion power is exposed.", "No caller-specific temperature clipping or profile policy is inferred.", "TokaGrad's negative-density validation claim conflicts with its saved implementation and is not adopted.", "Distribution license and expert science approval remain pending."]
+    "known_limitations": [
+      "No reaction cross section, product kinematics, fuel density or fusion power is exposed.",
+      "No caller-specific temperature clipping or profile policy is inferred.",
+      "TokaGrad's negative-density validation claim conflicts with its saved implementation and is not adopted.",
+      "Distribution license and expert science approval remain pending."
+    ]
   }
 }

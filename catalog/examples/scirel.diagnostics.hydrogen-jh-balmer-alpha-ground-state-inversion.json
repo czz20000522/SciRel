@@ -1,0 +1,1324 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.diagnostics.hydrogen-jh-balmer-alpha-ground-state-inversion",
+  "kind": "task_graph",
+  "title": {
+    "en": "Atomic-hydrogen Balmer-alpha ground-state inversion",
+    "zh": "原子氢JH Balmer-alpha基态反演"
+  },
+  "summary": "Invert an observed Balmer-alpha volumetric emissivity into the ground-state neutral density and the ionization, recombination and net-source terms of an explicit one-dimensional hydrogen profile, composed from the bound r, s, alpha and Saha assets with the saved composition's frozen constants and operation order preserved bit for bit.",
+  "taxonomy": [
+    "diagnostics",
+    "atomic-hydrogen",
+    "johnson-hinnov",
+    "line-radiation",
+    "inversion",
+    "task-graph"
+  ],
+  "aliases": [
+    "N0_from_balmer_alpha",
+    "JH Balmer-alpha inversion"
+  ],
+  "identity": {
+    "relation": "the saved inversion: photon_rate = balmer / ((13.6057 * (0.25 - 1/9) eV) * 1.602177e-19), n3 = photon_rate / A_Balmer[0], n0 = (n3 / saha3 - r03) * saha1 / r13, ionization = n0 * (density * s), recombination = density * (density * alpha), net_source = ionization - recombination",
+    "direction": "observed Balmer-alpha emissivity, paired electron density and temperature, explicit JH payload -> ground-state density, photon rate, n=3 population, ionization, recombination and net source per sample",
+    "definition": "The bound r asset evaluates r03 and r13 (principal level 3) with the saved 1e32 sentinel density overwrite; the bound s asset consumes the caller's density; the bound alpha asset overwrites it with the sentinel; the bound Saha asset evaluates the level-1 and level-3 populations; the inversion applies the saved operation order to the observed emissivity and returns the diagnostic fields.",
+    "model": "the saved formal implementation's explicit-payload Balmer-alpha inversion (KN1DPy/jh_related/N0_from_balmer_alpha.py:12-70), re-expressed as an ordered composition of the bound SciRel assets; no hidden state",
+    "geometry": "none; a zero-dimensional profile relation",
+    "coordinates": "electron density in m^-3, electron temperature in eV, observed emissivity in W m^-3; ground-state density and n=3 population in m^-3, photon rate in m^-3 s^-1, source terms in m^-3 s^-1",
+    "boundary": "the composed domain is the intersection of the bound assets' contracts: density and temperature in (0, 1e32), the observed emissivity finite and strictly positive, non-empty one-dimensional paired arrays; only the source-complete no_null=1 branch is admitted; every returned field must be finite",
+    "assumptions": [
+      "The bound r and alpha assets' saved 1e32 sentinel density overwrite carries into the composition; the bound s asset consumes the caller's density, so the returned ionization and recombination terms carry the saved s/alpha density-semantics split.",
+      "The bound Saha asset enforces its documented < 1e32 domain, so the composed domain is narrower than the saved inversion's; on the shared domain the outputs are bit-identical.",
+      "The coefficient and Einstein tables are caller-supplied data; this graph composes them, it does not certify any table.",
+      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "balmer_alpha_w_m3",
+      "description": "The observed Balmer-alpha volumetric emissivity to invert.",
+      "units": "W m^-3",
+      "shape": "[n]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A one-dimensional array of the same shape as the densities, finite and strictly positive."
+    },
+    {
+      "name": "density_m3",
+      "description": "Electron densities; consumed by the Saha populations and validated by the bound r asset.",
+      "units": "m^-3",
+      "shape": "[n]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A non-empty one-dimensional array, finite and strictly positive and below 1e32 (the bound Saha asset's domain limit), paired with the temperatures."
+    },
+    {
+      "name": "temperature_ev",
+      "description": "Electron temperatures; clipped to the temperature-knot range by the bound assets.",
+      "units": "eV",
+      "shape": "[n]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A one-dimensional array of the same shape, finite and strictly positive and below 1e32."
+    },
+    {
+      "name": "jh_payload",
+      "description": "The read-only Johnson-Hinnov coefficient payload mapping with the exact fields DKnot, TKnot, order, LogR_BSCoef, LogS_BSCoef, LogAlpha_BSCoef, A_Lyman, A_Balmer.",
+      "units": "mixed (knots, coefficient tensors, Einstein coefficients)",
+      "shape": "mapping",
+      "dtype": "mapping of arrays and an integer",
+      "required": true,
+      "constraints": "Validated by this graph against the saved exact eight-field contract (the complete field set including fields the branch does not numerically consume, one-dimensional non-decreasing finite knots, order field 4 consumed by FITPACK as the spline degree describing exactly 77 coefficients, every field finite) before any evaluation; never mutated."
+    },
+    {
+      "name": "no_null",
+      "description": "The source branch selector passed through to the bound assets.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer scalar",
+      "required": false,
+      "constraints": "Only the source-complete no_null=1 branch is admitted; any other value fails closed.",
+      "default": 1
+    }
+  ],
+  "outputs": [
+    {
+      "name": "ground_state_density_m3",
+      "description": "The ground-state neutral density recovered from the observed emissivity.",
+      "units": "m^-3",
+      "shape": "[n]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite for every accepted input; strictly positive when the observed emissivity is consistent with the profile."
+    },
+    {
+      "name": "photon_rate_m3_s",
+      "description": "The recovered Balmer-alpha photon production rate.",
+      "units": "m^-3 s^-1",
+      "shape": "[n]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite and strictly positive for every accepted input (the observed emissivity is validated strictly positive)."
+    },
+    {
+      "name": "n3_population_m3",
+      "description": "The recovered n=3 population.",
+      "units": "m^-3",
+      "shape": "[n]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite for every accepted input."
+    },
+    {
+      "name": "ionization_rate_m3_s",
+      "description": "The electron-impact ionization source term n0 * (density * s).",
+      "units": "m^-3 s^-1",
+      "shape": "[n]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite for every accepted input."
+    },
+    {
+      "name": "recombination_rate_m3_s",
+      "description": "The recombination sink term density * (density * alpha).",
+      "units": "m^-3 s^-1",
+      "shape": "[n]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite for every accepted input."
+    },
+    {
+      "name": "net_source_m3_s",
+      "description": "The net hydrogen source ionization - recombination.",
+      "units": "m^-3 s^-1",
+      "shape": "[n]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite for every accepted input."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller supplies a complete, consistent JH payload; the graph composes it, it does not construct or certify one.",
+      "The profile inputs stay inside the composed domain (all values finite, positive and below 1e32) and the observed emissivity is finite and strictly positive."
+    ],
+    "supported": [
+      "Ground-state neutral densities and source-term diagnostics inverted from Balmer-alpha emissivities on any consistent caller-supplied payload.",
+      "Rejecting malformed profiles, nonpositive emissivities, incomplete payloads and non-1 no_null before any evaluation."
+    ],
+    "excluded": [
+      "Emissivities at or below zero: rejected by the saved contract.",
+      "Two-dimensional or spatially gridded profiles: the bound assets accept one-dimensional profiles only.",
+      "Coefficient or Einstein tables validated against an external atomic-physics reference; none is bound."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError with a message naming the condition when the profiles are not non-empty same-shaped 1-D finite positive arrays, when density or temperature reach 1e32 (the composed Saha domain), when the observed emissivity is not finite, strictly positive and shape-compatible, when no_null is not 1, or when required inputs are missing; bound-asset validation failures propagate unchanged.",
+    "runtime_failure": "Raises ValueError when the inversion produces a non-finite field; on the declared domain the relation is finite by construction, so this guards the payload boundary rather than expected inputs.",
+    "nonconvergence": "Not applicable; this TaskGraph is an ordered DAG with no feedback loop.",
+    "partial_results": "Never returned; a rejected call produces no diagnostic."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration composed from already-integrated SciRel assets: the r57 Johnson-Hinnov coefficient assets and the r56 Saha population asset. The relation itself is recovered from the saved KN1DPy 原子氢JH-r系数B样条评价 package, source anchor KN1DPy/jh_related/N0_from_balmer_alpha.py:12-70, as recorded by the saved bundle's own extraction report (the raw source tree was not re-read; the anchor is the saved candidate's). Saved implementation file SHA-256 253cda226c553cd5cd560914a6474b4b3572262b63aad61c76f91df8bafb6344. The saved composition's frozen constants and operation order are preserved bit for bit; no repair is claimed. The packaged payload producer is deferred because admitting the coefficient data as a SciRel artifact is an open expert decision. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "composition of already-integrated SciRel assets",
+      "independent FITPACK reevaluation of the same spline",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.diagnostics.hydrogen_jh_balmer_alpha_ground_state_inversion",
+      "symbol": "solve_hydrogen_jh_balmer_alpha_ground_state_inversion",
+      "signature": "solve_hydrogen_jh_balmer_alpha_ground_state_inversion(inputs=None, **kwargs)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev31",
+    "dependencies": [
+      {
+        "asset_id": "scirel.collisions.hydrogen-jh-r-coefficient"
+      },
+      {
+        "asset_id": "scirel.collisions.hydrogen-jh-s-coefficient"
+      },
+      {
+        "asset_id": "scirel.collisions.hydrogen-jh-alpha-coefficient"
+      },
+      {
+        "asset_id": "scirel.kinetic.hydrogen-saha-equilibrium-population"
+      }
+    ]
+  },
+  "example": {
+    "description": "Invert the forward Balmer-alpha emission of a known neutral density and confirm the round trip and the fail-closed rejections.",
+    "code": "import numpy as np\nfrom scipy.interpolate import RectBivariateSpline\nfrom scirel.diagnostics import solve_hydrogen_jh_balmer_alpha_emission, solve_hydrogen_jh_balmer_alpha_ground_state_inversion\n\ntemperature_axis = np.linspace(-1.0, 1.0, 11)\ndensity_axis = np.linspace(30.0, 32.0, 7)\nspline = RectBivariateSpline(temperature_axis, density_axis, np.add.outer(temperature_axis, density_axis), kx=4, ky=4)\ntemperature_knots, density_knots = spline.get_knots()\ncoefficients = spline.get_coeffs()\npayload = {\n    \"DKnot\": density_knots,\n    \"TKnot\": temperature_knots,\n    \"order\": 4,\n    \"LogR_BSCoef\": np.zeros((coefficients.size, 2, 5)),\n    \"LogS_BSCoef\": coefficients.copy(),\n    \"LogAlpha_BSCoef\": coefficients.copy() + 0.25,\n    \"A_Lyman\": np.linspace(3.0e8, 1.0e5, 15),\n    \"A_Balmer\": np.linspace(4.4e7, 2.0e4, 15),\n}\ndensity = np.array([1.0e20, 5.0e20])\ntemperature = np.array([5.0, 30.0])\nn0 = np.array([1.0e17, 2.0e18])\nforward = solve_hydrogen_jh_balmer_alpha_emission(density_m3=density, temperature_ev=temperature, n0_m3=n0, jh_payload=payload)\nresult = solve_hydrogen_jh_balmer_alpha_ground_state_inversion(\n    balmer_alpha_w_m3=forward[\"emissivity_w_m3\"], density_m3=density, temperature_ev=temperature, jh_payload=payload\n)\nassert set(result) == {\n    \"ground_state_density_m3\", \"photon_rate_m3_s\", \"n3_population_m3\",\n    \"ionization_rate_m3_s\", \"recombination_rate_m3_s\", \"net_source_m3_s\",\n}\nnp.testing.assert_allclose(result[\"ground_state_density_m3\"], n0, rtol=1.0e-12, atol=1.0e3)\ntry:\n    solve_hydrogen_jh_balmer_alpha_ground_state_inversion(\n        balmer_alpha_w_m3=np.zeros(2), density_m3=density, temperature_ev=temperature, jh_payload=payload\n    )\nexcept ValueError as error:\n    assert \"balmer_alpha_w_m3\" in str(error)\nelse:\n    raise AssertionError(\"a nonpositive emissivity must be rejected\")",
+    "expected": "The six diagnostic fields with the inputs' shape; the recovered ground-state density matches the forward n0 to rounding; a nonpositive emissivity is rejected."
+  },
+  "verification": {
+    "scope": [
+      "That every returned field equals an independent recomputation from the bound SciRel assets with the saved operation order, bit for bit.",
+      "That the inversion round-trips a known neutral density through the forward Balmer-alpha emission graph.",
+      "That the returned source terms carry the saved s/alpha density-semantics split.",
+      "That the composition fails closed on the composed-domain violations.",
+      "Exact bit-level replay against the saved KN1DPy inversion, pinned by SHA-256, on the packaged coefficient payload, plus the declared above-1e32 divergence and the shared rejection behavior. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance."
+    ],
+    "tests": [
+      "tests/graph_contracts/hydrogen_jh_balmer_alpha_ground_state_inversion/test_graph_hydrogen_jh_balmer_alpha_ground_state_inversion.py",
+      "tests/graph_contracts/hydrogen_jh_balmer_alpha_ground_state_inversion/test_graph_hydrogen_jh_balmer_alpha_ground_state_inversion_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the composition against independent recomputation from the bound SciRel assets and an independent FITPACK re-evaluation of the r spline, the frozen constants and operation order, and the full composed-domain input and failure contracts. The environment-gated replay establishes exact bit-level agreement with the saved KN1DPy composition on the packaged coefficient payload and the compared rejections only. No test establishes the coefficient table or the Einstein coefficients against an external atomic-physics reference: the saved package records that residual as validation_oracle_gap. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "known_limitations": [
+      "The composed domain narrows the saved composition: density and temperature must stay below 1e32 because the bound r56 Saha asset enforces its documented limit, while the saved radiation callable admits any positive finite values (only n0 is bounded on the saved arm). The narrowing is declared and witnessed by the replay tests.",
+      "The asset evaluates caller-supplied coefficient and Einstein tables; it does not certify any table's physics (validation_oracle_gap).",
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "profile_validation",
+        "kind": "controlled_glue",
+        "description": "Validate the composed-domain profile contract and expose the paired arrays, observed emissivity and branch selector.",
+        "inputs": [
+          "balmer_alpha_w_m3",
+          "density_m3",
+          "temperature_ev",
+          "no_null"
+        ],
+        "outputs": [
+          "balmer_alpha_w_m3",
+          "density",
+          "temperature",
+          "no_null"
+        ]
+      },
+      {
+        "id": "payload_field_extraction",
+        "kind": "controlled_glue",
+        "description": "Extract the read-only payload fields consumed by the bound assets.",
+        "inputs": [
+          "jh_payload"
+        ],
+        "outputs": [
+          "density_knots",
+          "temperature_knots",
+          "spline_order",
+          "log_r_bscoef",
+          "a_balmer"
+        ]
+      },
+      {
+        "id": "channel_level_selection",
+        "kind": "controlled_glue",
+        "description": "Fix the saved ion-channel and principal-level selectors of the composition.",
+        "inputs": [],
+        "outputs": [
+          "ion_channel_0",
+          "ion_channel_1",
+          "principal_level_1",
+          "principal_level_3"
+        ]
+      },
+      {
+        "id": "r03_evaluation",
+        "kind": "operator",
+        "asset_id": "scirel.collisions.hydrogen-jh-r-coefficient",
+        "description": "Evaluate the r coefficient for ion channel 0, principal level 3.",
+        "inputs": [
+          "density",
+          "temperature",
+          "ion_channel_0",
+          "principal_level_3",
+          "density_knots",
+          "temperature_knots",
+          "spline_order",
+          "log_r_bscoef",
+          "no_null"
+        ],
+        "outputs": [
+          "r03"
+        ]
+      },
+      {
+        "id": "r13_evaluation",
+        "kind": "operator",
+        "asset_id": "scirel.collisions.hydrogen-jh-r-coefficient",
+        "description": "Evaluate the r coefficient for ion channel 1, principal level 3.",
+        "inputs": [
+          "density",
+          "temperature",
+          "ion_channel_1",
+          "principal_level_3",
+          "density_knots",
+          "temperature_knots",
+          "spline_order",
+          "log_r_bscoef",
+          "no_null"
+        ],
+        "outputs": [
+          "r13"
+        ]
+      },
+      {
+        "id": "saha_level_1",
+        "kind": "operator",
+        "asset_id": "scirel.kinetic.hydrogen-saha-equilibrium-population",
+        "description": "Evaluate the Saha equilibrium population of principal level 1.",
+        "inputs": [
+          "density",
+          "temperature",
+          "principal_level_1"
+        ],
+        "outputs": [
+          "saha1"
+        ]
+      },
+      {
+        "id": "saha_level_3",
+        "kind": "operator",
+        "asset_id": "scirel.kinetic.hydrogen-saha-equilibrium-population",
+        "description": "Evaluate the Saha equilibrium population of principal level 3.",
+        "inputs": [
+          "density",
+          "temperature",
+          "principal_level_3"
+        ],
+        "outputs": [
+          "saha3"
+        ]
+      },
+      {
+        "id": "s_evaluation",
+        "kind": "operator",
+        "asset_id": "scirel.collisions.hydrogen-jh-s-coefficient",
+        "description": "Evaluate the s coefficient from the caller's density.",
+        "inputs": [
+          "density",
+          "temperature",
+          "jh_payload",
+          "no_null"
+        ],
+        "outputs": [
+          "s_rate"
+        ]
+      },
+      {
+        "id": "alpha_evaluation",
+        "kind": "operator",
+        "asset_id": "scirel.collisions.hydrogen-jh-alpha-coefficient",
+        "description": "Evaluate the alpha coefficient under the saved sentinel overwrite.",
+        "inputs": [
+          "density",
+          "temperature",
+          "jh_payload",
+          "no_null"
+        ],
+        "outputs": [
+          "alpha_rate"
+        ]
+      },
+      {
+        "id": "photon_rate_inversion",
+        "kind": "controlled_glue",
+        "description": "Recover the photon rate from the observed emissivity with the saved frozen factors.",
+        "inputs": [
+          "balmer_alpha_w_m3"
+        ],
+        "outputs": [
+          "photon_rate_m3_s"
+        ]
+      },
+      {
+        "id": "n3_contraction",
+        "kind": "controlled_glue",
+        "description": "Recover the n=3 population from the photon rate and the Einstein coefficient.",
+        "inputs": [
+          "photon_rate_m3_s",
+          "a_balmer"
+        ],
+        "outputs": [
+          "n3_population_m3"
+        ]
+      },
+      {
+        "id": "ground_state_inversion",
+        "kind": "controlled_glue",
+        "description": "Invert the level-3 balance into the ground-state neutral density.",
+        "inputs": [
+          "n3_population_m3",
+          "saha3",
+          "r03",
+          "saha1",
+          "r13"
+        ],
+        "outputs": [
+          "ground_state_density_m3"
+        ]
+      },
+      {
+        "id": "ionization_contraction",
+        "kind": "controlled_glue",
+        "description": "Form the ionization source term with the density-consuming s branch.",
+        "inputs": [
+          "n0",
+          "density",
+          "s_rate"
+        ],
+        "outputs": [
+          "ionization_rate_m3_s"
+        ]
+      },
+      {
+        "id": "recombination_contraction",
+        "kind": "controlled_glue",
+        "description": "Form the recombination sink term with the sentinel-overwritten alpha branch.",
+        "inputs": [
+          "density",
+          "alpha_rate"
+        ],
+        "outputs": [
+          "recombination_rate_m3_s"
+        ]
+      },
+      {
+        "id": "net_source_contraction",
+        "kind": "controlled_glue",
+        "description": "Form the net source and gate every returned field finite.",
+        "inputs": [
+          "ionization_rate_m3_s",
+          "recombination_rate_m3_s"
+        ],
+        "outputs": [
+          "net_source_m3_s"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": {
+          "node": "$input",
+          "port": "density_m3"
+        },
+        "to": {
+          "node": "profile_validation",
+          "port": "density_m3"
+        },
+        "description": "Caller electron-density profile.",
+        "condition": "Always.",
+        "transform": "Identity after finiteness, positivity and the 1e32 composed-domain check.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "temperature_ev"
+        },
+        "to": {
+          "node": "profile_validation",
+          "port": "temperature_ev"
+        },
+        "description": "Caller electron-temperature profile.",
+        "condition": "Always.",
+        "transform": "Identity after the same profile validation.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "balmer_alpha_w_m3"
+        },
+        "to": {
+          "node": "profile_validation",
+          "port": "balmer_alpha_w_m3"
+        },
+        "description": "Caller observed Balmer-alpha emissivity.",
+        "condition": "Always.",
+        "transform": "Identity after the saved finite-positive shape-compatible check.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "no_null"
+        },
+        "to": {
+          "node": "profile_validation",
+          "port": "no_null"
+        },
+        "description": "Caller branch selector.",
+        "condition": "Always; the port defaults to 1 when omitted.",
+        "transform": "Fail closed unless the value is 1.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "jh_payload"
+        },
+        "to": {
+          "node": "payload_field_extraction",
+          "port": "jh_payload"
+        },
+        "description": "Caller coefficient payload.",
+        "condition": "Always.",
+        "transform": "Read-only field extraction; the payload itself is validated by the bound assets.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "density"
+        },
+        "to": {
+          "node": "r03_evaluation",
+          "port": "density"
+        },
+        "description": "Paired profile for the bound r asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity; the bound asset applies its own saved sentinel overwrite.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "temperature"
+        },
+        "to": {
+          "node": "r03_evaluation",
+          "port": "temperature"
+        },
+        "description": "Paired profile for the bound r asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "channel_level_selection",
+          "port": "ion_channel_0"
+        },
+        "to": {
+          "node": "r03_evaluation",
+          "port": "ion_channel_0"
+        },
+        "description": "The saved ion channel 0.",
+        "condition": "Always.",
+        "transform": "Constant selector.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "channel_level_selection",
+          "port": "principal_level_3"
+        },
+        "to": {
+          "node": "r03_evaluation",
+          "port": "principal_level_3"
+        },
+        "description": "The level-3 r channel.",
+        "condition": "Always.",
+        "transform": "Constant selector.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "payload_field_extraction",
+          "port": "density_knots"
+        },
+        "to": {
+          "node": "r03_evaluation",
+          "port": "density_knots"
+        },
+        "description": "Density knots for the r spline.",
+        "condition": "After payload field extraction.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "payload_field_extraction",
+          "port": "temperature_knots"
+        },
+        "to": {
+          "node": "r03_evaluation",
+          "port": "temperature_knots"
+        },
+        "description": "Temperature knots for the r spline.",
+        "condition": "After payload field extraction.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "payload_field_extraction",
+          "port": "spline_order"
+        },
+        "to": {
+          "node": "r03_evaluation",
+          "port": "spline_order"
+        },
+        "description": "The payload's order field (FITPACK spline degree 4).",
+        "condition": "After payload field extraction.",
+        "transform": "Integer conversion only.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "payload_field_extraction",
+          "port": "log_r_bscoef"
+        },
+        "to": {
+          "node": "r03_evaluation",
+          "port": "log_r_bscoef"
+        },
+        "description": "The (n, 2, 5) r coefficient tensor.",
+        "condition": "After payload field extraction.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "no_null"
+        },
+        "to": {
+          "node": "r03_evaluation",
+          "port": "no_null"
+        },
+        "description": "The admitted branch selector.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "r03_evaluation",
+          "port": "r03"
+        },
+        "to": {
+          "node": "ground_state_inversion",
+          "port": "r03"
+        },
+        "description": "The level-3 ion-0 r coefficient.",
+        "condition": "After the r evaluation completes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "density"
+        },
+        "to": {
+          "node": "r13_evaluation",
+          "port": "density"
+        },
+        "description": "Paired profile for the bound r asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity; the bound asset applies its own saved sentinel overwrite.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "temperature"
+        },
+        "to": {
+          "node": "r13_evaluation",
+          "port": "temperature"
+        },
+        "description": "Paired profile for the bound r asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "channel_level_selection",
+          "port": "ion_channel_1"
+        },
+        "to": {
+          "node": "r13_evaluation",
+          "port": "ion_channel_1"
+        },
+        "description": "The saved ion channel 1.",
+        "condition": "Always.",
+        "transform": "Constant selector.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "channel_level_selection",
+          "port": "principal_level_3"
+        },
+        "to": {
+          "node": "r13_evaluation",
+          "port": "principal_level_3"
+        },
+        "description": "The level-3 r channel.",
+        "condition": "Always.",
+        "transform": "Constant selector.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "payload_field_extraction",
+          "port": "density_knots"
+        },
+        "to": {
+          "node": "r13_evaluation",
+          "port": "density_knots"
+        },
+        "description": "Density knots for the r spline.",
+        "condition": "After payload field extraction.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "payload_field_extraction",
+          "port": "temperature_knots"
+        },
+        "to": {
+          "node": "r13_evaluation",
+          "port": "temperature_knots"
+        },
+        "description": "Temperature knots for the r spline.",
+        "condition": "After payload field extraction.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "payload_field_extraction",
+          "port": "spline_order"
+        },
+        "to": {
+          "node": "r13_evaluation",
+          "port": "spline_order"
+        },
+        "description": "The payload's order field (FITPACK spline degree 4).",
+        "condition": "After payload field extraction.",
+        "transform": "Integer conversion only.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "payload_field_extraction",
+          "port": "log_r_bscoef"
+        },
+        "to": {
+          "node": "r13_evaluation",
+          "port": "log_r_bscoef"
+        },
+        "description": "The (n, 2, 5) r coefficient tensor.",
+        "condition": "After payload field extraction.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "no_null"
+        },
+        "to": {
+          "node": "r13_evaluation",
+          "port": "no_null"
+        },
+        "description": "The admitted branch selector.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "r13_evaluation",
+          "port": "r13"
+        },
+        "to": {
+          "node": "ground_state_inversion",
+          "port": "r13"
+        },
+        "description": "The level-3 ion-1 r coefficient.",
+        "condition": "After the r evaluation completes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "density"
+        },
+        "to": {
+          "node": "saha_level_1",
+          "port": "density"
+        },
+        "description": "Paired profile for the bound Saha asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity; the bound asset enforces its own < 1e32 domain.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "temperature"
+        },
+        "to": {
+          "node": "saha_level_1",
+          "port": "temperature"
+        },
+        "description": "Paired profile for the bound Saha asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "channel_level_selection",
+          "port": "principal_level_1"
+        },
+        "to": {
+          "node": "saha_level_1",
+          "port": "principal_level_1"
+        },
+        "description": "The principal level 1 selector.",
+        "condition": "Always.",
+        "transform": "Constant selector.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "saha_level_1",
+          "port": "saha1"
+        },
+        "to": {
+          "node": "ground_state_inversion",
+          "port": "saha1"
+        },
+        "description": "The level-1 Saha population.",
+        "condition": "After the Saha evaluation completes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "density"
+        },
+        "to": {
+          "node": "saha_level_3",
+          "port": "density"
+        },
+        "description": "Paired profile for the bound Saha asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity; the bound asset enforces its own < 1e32 domain.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "temperature"
+        },
+        "to": {
+          "node": "saha_level_3",
+          "port": "temperature"
+        },
+        "description": "Paired profile for the bound Saha asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "channel_level_selection",
+          "port": "principal_level_3"
+        },
+        "to": {
+          "node": "saha_level_3",
+          "port": "principal_level_3"
+        },
+        "description": "The principal level 3 selector.",
+        "condition": "Always.",
+        "transform": "Constant selector.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "saha_level_3",
+          "port": "saha3"
+        },
+        "to": {
+          "node": "ground_state_inversion",
+          "port": "saha3"
+        },
+        "description": "The level-3 Saha population.",
+        "condition": "After the Saha evaluation completes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "density"
+        },
+        "to": {
+          "node": "s_evaluation",
+          "port": "density"
+        },
+        "description": "Paired profile for the bound s asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity; the s branch consumes the caller density.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "temperature"
+        },
+        "to": {
+          "node": "s_evaluation",
+          "port": "temperature"
+        },
+        "description": "Paired profile for the bound s asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "jh_payload"
+        },
+        "to": {
+          "node": "s_evaluation",
+          "port": "jh_payload"
+        },
+        "description": "Payload for the bound s asset.",
+        "condition": "After payload field extraction.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "no_null"
+        },
+        "to": {
+          "node": "s_evaluation",
+          "port": "no_null"
+        },
+        "description": "The admitted branch selector.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "s_evaluation",
+          "port": "s_rate"
+        },
+        "to": {
+          "node": "ionization_contraction",
+          "port": "s_rate"
+        },
+        "description": "The s rate coefficient.",
+        "condition": "After the s evaluation completes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "density"
+        },
+        "to": {
+          "node": "alpha_evaluation",
+          "port": "density"
+        },
+        "description": "Paired profile for the bound alpha asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity; the bound asset applies its own saved sentinel overwrite.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "temperature"
+        },
+        "to": {
+          "node": "alpha_evaluation",
+          "port": "temperature"
+        },
+        "description": "Paired profile for the bound alpha asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "jh_payload"
+        },
+        "to": {
+          "node": "alpha_evaluation",
+          "port": "jh_payload"
+        },
+        "description": "Payload for the bound alpha asset.",
+        "condition": "After payload field extraction.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "no_null"
+        },
+        "to": {
+          "node": "alpha_evaluation",
+          "port": "no_null"
+        },
+        "description": "The admitted branch selector.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "alpha_evaluation",
+          "port": "alpha_rate"
+        },
+        "to": {
+          "node": "recombination_contraction",
+          "port": "alpha_rate"
+        },
+        "description": "The alpha rate coefficient.",
+        "condition": "After the alpha evaluation completes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "balmer_alpha_w_m3"
+        },
+        "to": {
+          "node": "photon_rate_inversion",
+          "port": "balmer_alpha_w_m3"
+        },
+        "description": "The observed emissivity.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "photon_rate_inversion",
+          "port": "photon_rate_m3_s"
+        },
+        "to": {
+          "node": "$output",
+          "port": "photon_rate_m3_s"
+        },
+        "description": "The recovered photon rate.",
+        "condition": "On successful inversion.",
+        "transform": "The saved operation order balmer / ((13.6057 * (0.25 - 1/9)) * 1.602177e-19).",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "photon_rate_inversion",
+          "port": "photon_rate_m3_s"
+        },
+        "to": {
+          "node": "n3_contraction",
+          "port": "photon_rate_m3_s"
+        },
+        "description": "The photon rate feeding the n=3 population recovery.",
+        "condition": "After the photon-rate inversion.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "payload_field_extraction",
+          "port": "a_balmer"
+        },
+        "to": {
+          "node": "n3_contraction",
+          "port": "a_balmer"
+        },
+        "description": "The packaged A_Balmer Einstein coefficient vector.",
+        "condition": "After payload field extraction.",
+        "transform": "Identity; only the first entry enters the contraction.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "n3_contraction",
+          "port": "n3_population_m3"
+        },
+        "to": {
+          "node": "$output",
+          "port": "n3_population_m3"
+        },
+        "description": "The recovered n=3 population.",
+        "condition": "On successful contraction.",
+        "transform": "The saved operation order photon_rate / A_Balmer[0].",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "n3_contraction",
+          "port": "n3_population_m3"
+        },
+        "to": {
+          "node": "ground_state_inversion",
+          "port": "n3_population_m3"
+        },
+        "description": "The n=3 population entering the inversion.",
+        "condition": "After the n=3 contraction.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "ground_state_inversion",
+          "port": "ground_state_density_m3"
+        },
+        "to": {
+          "node": "$output",
+          "port": "ground_state_density_m3"
+        },
+        "description": "The recovered ground-state neutral density.",
+        "condition": "On successful inversion.",
+        "transform": "The saved operation order (n3 / saha3 - r03) * saha1 / r13.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "ground_state_inversion",
+          "port": "ground_state_density_m3"
+        },
+        "to": {
+          "node": "ionization_contraction",
+          "port": "n0"
+        },
+        "description": "The recovered neutral density entering the ionization term.",
+        "condition": "After the ground-state inversion.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "density"
+        },
+        "to": {
+          "node": "ionization_contraction",
+          "port": "density"
+        },
+        "description": "The caller density entering the ionization term.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "ionization_contraction",
+          "port": "ionization_rate_m3_s"
+        },
+        "to": {
+          "node": "$output",
+          "port": "ionization_rate_m3_s"
+        },
+        "description": "The ionization source term.",
+        "condition": "On successful contraction.",
+        "transform": "The saved operation order n0 * (density * s).",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "density"
+        },
+        "to": {
+          "node": "recombination_contraction",
+          "port": "density"
+        },
+        "description": "The caller density entering the recombination term.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "recombination_contraction",
+          "port": "recombination_rate_m3_s"
+        },
+        "to": {
+          "node": "$output",
+          "port": "recombination_rate_m3_s"
+        },
+        "description": "The recombination sink term.",
+        "condition": "On successful contraction.",
+        "transform": "The saved operation order density * (density * alpha).",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "ionization_contraction",
+          "port": "ionization_rate_m3_s"
+        },
+        "to": {
+          "node": "net_source_contraction",
+          "port": "ionization_rate_m3_s"
+        },
+        "description": "The ionization term feeding the net source.",
+        "condition": "After the ionization contraction.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "recombination_contraction",
+          "port": "recombination_rate_m3_s"
+        },
+        "to": {
+          "node": "net_source_contraction",
+          "port": "recombination_rate_m3_s"
+        },
+        "description": "The recombination term feeding the net source.",
+        "condition": "After the recombination contraction.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "net_source_contraction",
+          "port": "net_source_m3_s"
+        },
+        "to": {
+          "node": "$output",
+          "port": "net_source_m3_s"
+        },
+        "description": "The net hydrogen source term.",
+        "condition": "On successful contraction.",
+        "transform": "The saved operation order ionization - recombination, then the finite gate on every returned field.",
+        "kind": "data",
+        "required": true
+      }
+    ],
+    "execution": {
+      "mode": "ordered_dag_composition",
+      "ordering": "Validate the composed-domain profile contract, extract the payload fields, evaluate the two r channels, the two Saha populations, the s and the alpha coefficients through the bound assets, recover the photon rate and n=3 population, invert the ground-state density, form the source terms, and gate every returned field finite.",
+      "branches": [],
+      "state_ownership": "Caller owns the profiles, the observed emissivity and the payload; the graph owns only local named values for the current call and retains no mutable state.",
+      "failure_propagation": "Validation or bound-asset failure aborts the call immediately; no fallback, retry or partial diagnostic is produced.",
+      "feedback": []
+    }
+  }
+}

@@ -7,8 +7,16 @@
     "zh": "物种吸收占比闭合"
   },
   "summary": "Close a four-species absorbed-power ledger into source-ordered percentage shares, failing closed when the derived total is zero instead of emitting an undefined split.",
-  "taxonomy": ["diagnostics", "power-ledger", "closure", "rf-absorption"],
-  "aliases": ["Wdot species fractions", "E-star-dot-J species fractions"],
+  "taxonomy": [
+    "diagnostics",
+    "power-ledger",
+    "closure",
+    "rf-absorption"
+  ],
+  "aliases": [
+    "Wdot species fractions",
+    "E-star-dot-J species fractions"
+  ],
   "identity": {
     "relation": "four-species absorbed-power ledger to source-ordered percentage shares and the closure residual",
     "direction": "species_power_values -> total_power, species_fraction_percent, total_fraction_percent, fraction_sum_residual_percent, branch",
@@ -120,7 +128,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev30",
+    "implementation_version": "0.1.0.dev31",
     "dependencies": []
   },
   "example": {
@@ -137,7 +145,9 @@
       "Fail-closed validation of ledger length, dtype, and finiteness.",
       "Exposure of exactly one public callable after the merge."
     ],
-    "tests": ["tests/operator_contracts/test_species_absorption_fraction.py"],
+    "tests": [
+      "tests/operator_contracts/test_species_absorption_fraction.py"
+    ],
     "evidence_ceiling": "Establishes that the merged relation reproduces both observed routes on the tested ledgers and that the zero-total boundary fails closed. It does not establish that the four supplied powers are the correct physical absorbed powers for any particular run.",
     "known_limitations": [
       "The species count is fixed at four; no general-length ledger is supported.",

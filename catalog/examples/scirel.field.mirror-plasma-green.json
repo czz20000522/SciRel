@@ -2,10 +2,19 @@
   "schema": "scirel.asset-document.v1",
   "asset_id": "scirel.field.mirror-plasma-green",
   "kind": "operator",
-  "title": {"en": "Reflection-symmetric plasma-cell flux Green matrix", "zh": "镜像对称等离子体 Green 磁通矩阵"},
+  "title": {
+    "en": "Reflection-symmetric plasma-cell flux Green matrix",
+    "zh": "镜像对称等离子体 Green 磁通矩阵"
+  },
   "summary": "Build a dense flux-response matrix for circular plasma-cell sources and targets sharing a reflection-symmetric rectilinear R-Z grid.",
-  "taxonomy": ["field", "green-function", "axisymmetric"],
-  "aliases": ["mirror plasma flux Green matrix"],
+  "taxonomy": [
+    "field",
+    "green-function",
+    "axisymmetric"
+  ],
+  "aliases": [
+    "mirror plasma flux Green matrix"
+  ],
   "identity": {
     "relation": "circular plasma-cell source currents to axisymmetric flux at the same R-Z grid points",
     "direction": "shared R-Z source/target grid -> g_psi[target_cell,source_cell]",
@@ -14,19 +23,55 @@
     "geometry": "source and target cells share a nonnegative-radius rectilinear R-Z mesh",
     "coordinates": "SI cylindrical R-Z coordinates; grid arrays indexed [Z,R], matrix target and source axes flattened in C order",
     "boundary": "A source radius within 1e-12 m of the axis yields a zero source column; nonfinite evaluated kernel elements, including unresolved singular values, are replaced by zero.",
-    "assumptions": ["The Z axis is strictly increasing, uniformly spaced and reflection-symmetric about zero within the implementation tolerances.", "Each source column is a psi=R A_phi response per ampere of that circular source, not complete linked flux; the caller applies current or cell-current weights separately."]
+    "assumptions": [
+      "The Z axis is strictly increasing, uniformly spaced and reflection-symmetric about zero within the implementation tolerances.",
+      "Each source column is a psi=R A_phi response per ampere of that circular source, not complete linked flux; the caller applies current or cell-current weights separately."
+    ]
   },
   "inputs": [
-    {"name": "r_grid", "description": "Cylindrical radius mesh shared by source and target cells.", "units": "m", "shape": "[N_Z,N_R]", "dtype": "real array-like, converted to float64", "required": true, "constraints": "Finite, rectilinear, nonnegative and strictly increasing R axis; same shape as z_grid and at least two points per axis."},
-    {"name": "z_grid", "description": "Axial coordinate mesh shared by source and target cells.", "units": "m", "shape": "[N_Z,N_R]", "dtype": "real array-like, converted to float64", "required": true, "constraints": "Finite rectilinear grid with a strictly increasing, uniformly spaced and reflection-symmetric Z axis; same shape as r_grid and at least two points per axis."}
+    {
+      "name": "r_grid",
+      "description": "Cylindrical radius mesh shared by source and target cells.",
+      "units": "m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array-like, converted to float64",
+      "required": true,
+      "constraints": "Finite, rectilinear, nonnegative and strictly increasing R axis; same shape as z_grid and at least two points per axis."
+    },
+    {
+      "name": "z_grid",
+      "description": "Axial coordinate mesh shared by source and target cells.",
+      "units": "m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array-like, converted to float64",
+      "required": true,
+      "constraints": "Finite rectilinear grid with a strictly increasing, uniformly spaced and reflection-symmetric Z axis; same shape as r_grid and at least two points per axis."
+    }
   ],
   "outputs": [
-    {"name": "g_psi", "description": "Psi=R A_phi response per source current for each target/source grid-cell pair.", "units": "Wb/rad/A", "shape": "[N_Z*N_R,N_Z*N_R]", "dtype": "float64", "required": true, "constraints": "Both axes follow C-order [Z,R] flattening; axis-source columns and nonfinite formula elements use the zero convention; no cell-area or 2*pi factor is included."}
+    {
+      "name": "g_psi",
+      "description": "Psi=R A_phi response per source current for each target/source grid-cell pair.",
+      "units": "Wb/rad/A",
+      "shape": "[N_Z*N_R,N_Z*N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Both axes follow C-order [Z,R] flattening; axis-source columns and nonfinite formula elements use the zero convention; no cell-area or 2*pi factor is included."
+    }
   ],
   "applicability": {
-    "preconditions": ["Source and target are the same cylindrical R-Z mesh, with SI metre coordinates.", "The axial grid is reflection-symmetric about zero and uniformly spaced at the declared numerical tolerances."],
-    "supported": ["Dense per-ampere flux Green matrices for the maintained ideal circular-source model on a symmetric R-Z grid."],
-    "excluded": ["Arbitrary nonuniform or nonsymmetric axial grids.", "Independent target and source point sets or a non-axisymmetric geometry.", "A resolved self-field, cell-area integration or automatic multiplication by source currents."]
+    "preconditions": [
+      "Source and target are the same cylindrical R-Z mesh, with SI metre coordinates.",
+      "The axial grid is reflection-symmetric about zero and uniformly spaced at the declared numerical tolerances."
+    ],
+    "supported": [
+      "Dense per-ampere flux Green matrices for the maintained ideal circular-source model on a symmetric R-Z grid."
+    ],
+    "excluded": [
+      "Arbitrary nonuniform or nonsymmetric axial grids.",
+      "Independent target and source point sets or a non-axisymmetric geometry.",
+      "A resolved self-field, cell-area integration or automatic multiplication by source currents."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for wrong grid rank/shape, fewer than two points per axis, nonfinite coordinates, nonrectilinear grids, negative or non-increasing R axis, non-increasing Z axis, or Z symmetry/uniform-spacing violations.",
@@ -36,21 +81,46 @@
   },
   "provenance": {
     "lineage_summary": "Maintained SciRel relation mapped to a saved Pleiades L1 operator and direct tests. The historical admission mapping is development provenance only, not approval in the current SciRel lifecycle.",
-    "source_kinds": ["saved L1 operator document and implementation", "saved direct tests", "maintained SciRel regression tests"],
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "saved direct tests",
+      "maintained SciRel regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
-  "public_api": {"python": {"module": "scirel.field.mirror_plasma_green", "symbol": "build_mirror_plasma_flux_green", "signature": "build_mirror_plasma_flux_green(r_grid, z_grid)"}},
-  "version": {"implementation_version": "0.1.0.dev30", "dependencies": []},
+  "public_api": {
+    "python": {
+      "module": "scirel.field.mirror_plasma_green",
+      "symbol": "build_mirror_plasma_flux_green",
+      "signature": "build_mirror_plasma_flux_green(r_grid, z_grid)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev31",
+    "dependencies": []
+  },
   "example": {
     "description": "Build a symmetric three-plane, four-radius response and check source-axis and axial-reflection blocks.",
     "code": "import numpy as np\nfrom scirel.field import build_mirror_plasma_flux_green\nr_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.3, 4), np.linspace(-0.4, 0.4, 3))\ng_psi = build_mirror_plasma_flux_green(r_grid, z_grid)['g_psi']\nassert g_psi.shape == (r_grid.size, r_grid.size)\nassert np.isfinite(g_psi).all()\nfor source_plane in range(3):\n    np.testing.assert_allclose(g_psi[:, source_plane*4], 0.0)\nnp.testing.assert_allclose(g_psi[0:4, 4:8], g_psi[4:8, 0:4])",
     "expected": "A finite 12-by-12 float64 flux-response matrix with zero axis-source columns and equal blocks for equal axial plane separation."
   },
   "verification": {
-    "scope": ["First source-plane columns against an independently written circular-filament formula.", "Whole-matrix equality with direct dense filament columns on a symmetric grid.", "Square shape, finite output and axis-source zero-column convention.", "Rejection of an axially nonsymmetric grid and reflection-block relation."],
-    "tests": ["tests/operator_contracts/test_mirror_plasma_green.py"],
+    "scope": [
+      "First source-plane columns against an independently written circular-filament formula.",
+      "Whole-matrix equality with direct dense filament columns on a symmetric grid.",
+      "Square shape, finite output and axis-source zero-column convention.",
+      "Rejection of an axially nonsymmetric grid and reflection-block relation."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_mirror_plasma_green.py"
+    ],
     "evidence_ceiling": "Direct SciRel tests establish selected source-plane formula values, indexing invariants and one invalid-grid case. They do not prove resolved self-fields, arbitrary-grid validity, whole-project reassembly or expert recognition of this development record.",
-    "known_limitations": ["The result is a dense O((N_Z*N_R)^2) matrix and may be costly on large grids.", "Near-axis source columns and nonfinite kernel values use a zero convention rather than a physical singularity model.", "Current contraction and cell-area factors are caller responsibilities.", "Public distribution licensing and SciRel expert recognition remain pending."]
+    "known_limitations": [
+      "The result is a dense O((N_Z*N_R)^2) matrix and may be costly on large grids.",
+      "Near-axis source columns and nonfinite kernel values use a zero convention rather than a physical singularity model.",
+      "Current contraction and cell-area factors are caller responsibilities.",
+      "Public distribution licensing and SciRel expert recognition remain pending."
+    ]
   }
 }

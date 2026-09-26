@@ -2,10 +2,20 @@
   "schema": "scirel.asset-document.v1",
   "asset_id": "scirel.closures.boltzmann-quasineutrality",
   "kind": "operator",
-  "title": {"en": "Boltzmann electron state and quasineutral residuals", "zh": "玻尔兹曼电子密度与准中性残差"},
+  "title": {
+    "en": "Boltzmann electron state and quasineutral residuals",
+    "zh": "玻尔兹曼电子密度与准中性残差"
+  },
   "summary": "Evaluate a clipped Boltzmann electron-density response from a supplied reference state, then return electron pressure and three positive-ion quasineutrality residuals on the common broadcast shape.",
-  "taxonomy": ["closures", "boltzmann-electrons", "quasineutrality"],
-  "aliases": ["Boltzmann electron response", "logarithmic charge residual"],
+  "taxonomy": [
+    "closures",
+    "boltzmann-electrons",
+    "quasineutrality"
+  ],
+  "aliases": [
+    "Boltzmann electron response",
+    "logarithmic charge residual"
+  ],
   "identity": {
     "relation": "Boltzmann electron density and residuals against a supplied positive-ion density",
     "direction": "(potential_v, electron_temperature_j, electron_density_ref_m3, electron_phi_ref_v, ion_density_m3, ion_charge_state) -> electron density, pressure and neutrality residuals",
@@ -14,27 +24,128 @@
     "geometry": "None imposed; each broadcast cell is evaluated independently.",
     "coordinates": "Caller-supplied scalar or array axes are combined by NumPy broadcasting, without coordinate validation.",
     "boundary": "The exponential argument is clipped to [-700, 700]. Zero densities are allowed; the logarithms and relative-residual denominator use float64 tiny floors. These numerical floors do not assert physical quasineutrality.",
-    "assumptions": ["electron_temperature_j is an electron thermal-energy scale in joules, so n_e*T_e has pressure units of pascals.", "ion_density_m3 is supplied by the caller or another moment producer; Z_i is a positive scalar ion charge-state multiplier.", "The potential, reference potential, temperature and densities refer to one compatible physical state and coordinate frame."]
+    "assumptions": [
+      "electron_temperature_j is an electron thermal-energy scale in joules, so n_e*T_e has pressure units of pascals.",
+      "ion_density_m3 is supplied by the caller or another moment producer; Z_i is a positive scalar ion charge-state multiplier.",
+      "The potential, reference potential, temperature and densities refer to one compatible physical state and coordinate frame."
+    ]
   },
   "inputs": [
-    {"name": "potential_v", "description": "Electrostatic potential at which to evaluate the electron response.", "units": "V", "shape": "scalar or array; common broadcast shape of five field inputs", "dtype": "real array-like converted to float64", "required": true, "constraints": "Every converted value must be finite."},
-    {"name": "electron_temperature_j", "description": "Electron thermal-energy scale T_e.", "units": "J", "shape": "scalar or array; common broadcast shape", "dtype": "real array-like converted to float64", "required": true, "constraints": "Every converted value must be finite and strictly positive."},
-    {"name": "electron_density_ref_m3", "description": "Electron density at the reference potential.", "units": "m^-3", "shape": "scalar or array; common broadcast shape", "dtype": "real array-like converted to float64", "required": true, "constraints": "Every converted value must be finite and nonnegative; zero is accepted."},
-    {"name": "electron_phi_ref_v", "description": "Reference potential for the exponential electron response.", "units": "V", "shape": "scalar or array; common broadcast shape", "dtype": "real array-like converted to float64", "required": true, "constraints": "Every converted value must be finite."},
-    {"name": "ion_density_m3", "description": "Positive-ion number density against which the electron response is compared.", "units": "m^-3", "shape": "scalar or array; common broadcast shape", "dtype": "real array-like converted to float64", "required": true, "constraints": "Every converted value must be finite and nonnegative; zero is accepted."},
-    {"name": "ion_charge_state", "description": "Single positive-ion charge-state multiplier Z_i.", "units": "dimensionless", "shape": "scalar converted by float()", "dtype": "finite positive float-convertible value", "required": true, "constraints": "Must convert to a finite, strictly positive float; integer charge state is not enforced. Nonscalar conversion failures propagate."}
+    {
+      "name": "potential_v",
+      "description": "Electrostatic potential at which to evaluate the electron response.",
+      "units": "V",
+      "shape": "scalar or array; common broadcast shape of five field inputs",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Every converted value must be finite."
+    },
+    {
+      "name": "electron_temperature_j",
+      "description": "Electron thermal-energy scale T_e.",
+      "units": "J",
+      "shape": "scalar or array; common broadcast shape",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Every converted value must be finite and strictly positive."
+    },
+    {
+      "name": "electron_density_ref_m3",
+      "description": "Electron density at the reference potential.",
+      "units": "m^-3",
+      "shape": "scalar or array; common broadcast shape",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Every converted value must be finite and nonnegative; zero is accepted."
+    },
+    {
+      "name": "electron_phi_ref_v",
+      "description": "Reference potential for the exponential electron response.",
+      "units": "V",
+      "shape": "scalar or array; common broadcast shape",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Every converted value must be finite."
+    },
+    {
+      "name": "ion_density_m3",
+      "description": "Positive-ion number density against which the electron response is compared.",
+      "units": "m^-3",
+      "shape": "scalar or array; common broadcast shape",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Every converted value must be finite and nonnegative; zero is accepted."
+    },
+    {
+      "name": "ion_charge_state",
+      "description": "Single positive-ion charge-state multiplier Z_i.",
+      "units": "dimensionless",
+      "shape": "scalar converted by float()",
+      "dtype": "finite positive float-convertible value",
+      "required": true,
+      "constraints": "Must convert to a finite, strictly positive float; integer charge state is not enforced. Nonscalar conversion failures propagate."
+    }
   ],
   "outputs": [
-    {"name": "electron_density_m3", "description": "Boltzmann electron number density n_e.", "units": "m^-3", "shape": "common broadcast shape of five field inputs", "dtype": "NumPy float64 array", "required": true, "constraints": "Computed from the clipped exponent; no post-computation finiteness check."},
-    {"name": "electron_pressure_pa", "description": "Electron pressure n_e*T_e.", "units": "Pa", "shape": "common broadcast shape", "dtype": "NumPy float64 array", "required": true, "constraints": "No independent post-computation finiteness check."},
-    {"name": "logarithmic_charge_residual", "description": "Logarithm of ion charge-weighted number density minus logarithm of electron number density, each floored at tiny.", "units": "dimensionless", "shape": "common broadcast shape", "dtype": "NumPy float64 array", "required": true, "constraints": "Uses log(max(Z_i*n_i,tiny))-log(max(n_e,tiny)); a zero-density result is floor-dependent rather than a physical log ratio."},
-    {"name": "charge_residual_m3", "description": "Charge-state-weighted ion number density minus electron number density.", "units": "m^-3", "shape": "common broadcast shape", "dtype": "NumPy float64 array", "required": true, "constraints": "A number-density residual Z_i*n_i-n_e, not charge density in C/m^3."},
-    {"name": "relative_charge_residual", "description": "Charge residual divided by the sum of ion charge-weighted and electron number densities.", "units": "dimensionless", "shape": "common broadcast shape", "dtype": "NumPy float64 array", "required": true, "constraints": "Denominator is max(Z_i*n_i+n_e,tiny); both densities zero give zero residual."}
+    {
+      "name": "electron_density_m3",
+      "description": "Boltzmann electron number density n_e.",
+      "units": "m^-3",
+      "shape": "common broadcast shape of five field inputs",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "Computed from the clipped exponent; no post-computation finiteness check."
+    },
+    {
+      "name": "electron_pressure_pa",
+      "description": "Electron pressure n_e*T_e.",
+      "units": "Pa",
+      "shape": "common broadcast shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "No independent post-computation finiteness check."
+    },
+    {
+      "name": "logarithmic_charge_residual",
+      "description": "Logarithm of ion charge-weighted number density minus logarithm of electron number density, each floored at tiny.",
+      "units": "dimensionless",
+      "shape": "common broadcast shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "Uses log(max(Z_i*n_i,tiny))-log(max(n_e,tiny)); a zero-density result is floor-dependent rather than a physical log ratio."
+    },
+    {
+      "name": "charge_residual_m3",
+      "description": "Charge-state-weighted ion number density minus electron number density.",
+      "units": "m^-3",
+      "shape": "common broadcast shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "A number-density residual Z_i*n_i-n_e, not charge density in C/m^3."
+    },
+    {
+      "name": "relative_charge_residual",
+      "description": "Charge residual divided by the sum of ion charge-weighted and electron number densities.",
+      "units": "dimensionless",
+      "shape": "common broadcast shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "Denominator is max(Z_i*n_i+n_e,tiny); both densities zero give zero residual."
+    }
   ],
   "applicability": {
-    "preconditions": ["Potential, reference potential, electron thermal energy and both densities have mutually broadcast-compatible shapes and the stated units.", "The ion density and positive scalar charge-state multiplier describe the same ion state."],
-    "supported": ["Pointwise Boltzmann electron response and quasineutral residual diagnostics, including zero-density cells.", "Evaluation at a supplied potential for an external bounded ambipolar root solver."],
-    "excluded": ["Solving for the potential or computing the ion density from kinetic moments.", "Multiple-ion charge sums, non-Boltzmann electron distributions, and physical interpretation of clipped or floor-dominated extreme values."]
+    "preconditions": [
+      "Potential, reference potential, electron thermal energy and both densities have mutually broadcast-compatible shapes and the stated units.",
+      "The ion density and positive scalar charge-state multiplier describe the same ion state."
+    ],
+    "supported": [
+      "Pointwise Boltzmann electron response and quasineutral residual diagnostics, including zero-density cells.",
+      "Evaluation at a supplied potential for an external bounded ambipolar root solver."
+    ],
+    "excluded": [
+      "Solving for the potential or computing the ion density from kinetic moments.",
+      "Multiple-ion charge sums, non-Boltzmann electron distributions, and physical interpretation of clipped or floor-dominated extreme values."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for nonfinite field inputs, nonpositive electron temperature, negative densities, or a nonfinite or nonpositive charge-state value. NumPy broadcasting and numeric conversion can raise ValueError or TypeError for incompatible shapes or nonnumeric values.",
@@ -44,21 +155,44 @@
   },
   "provenance": {
     "lineage_summary": "SciRel-maintained relation corresponding to a saved Pleiades L1 Boltzmann-electron and quasineutral-residual operator and maintained direct regressions. Historical source and admission labels do not establish current SciRel expert recognition.",
-    "source_kinds": ["saved L1 operator description and implementation", "saved direct contract test", "SciRel direct scientific regression tests"],
+    "source_kinds": [
+      "saved L1 operator description and implementation",
+      "saved direct contract test",
+      "SciRel direct scientific regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
-  "public_api": {"python": {"module": "scirel.closures.boltzmann_quasineutrality", "symbol": "compute_boltzmann_electron_state", "signature": "compute_boltzmann_electron_state(potential_v, electron_temperature_j, electron_density_ref_m3, electron_phi_ref_v, ion_density_m3, ion_charge_state)"}},
-  "version": {"implementation_version": "0.1.0.dev30", "dependencies": []},
+  "public_api": {
+    "python": {
+      "module": "scirel.closures.boltzmann_quasineutrality",
+      "symbol": "compute_boltzmann_electron_state",
+      "signature": "compute_boltzmann_electron_state(potential_v, electron_temperature_j, electron_density_ref_m3, electron_phi_ref_v, ion_density_m3, ion_charge_state)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev31",
+    "dependencies": []
+  },
   "example": {
     "description": "At one electron thermal voltage above the reference, the Boltzmann density matches the positive-ion charge-weighted density.",
     "code": "import numpy as np\nfrom scirel.closures import compute_boltzmann_electron_state\ne = 1.602176634e-19\nr = compute_boltzmann_electron_state(np.log(2.0), e, 3.0, 0.0, 3.0, 2.0)\nnp.testing.assert_allclose(r['electron_density_m3'], 6.0)\nnp.testing.assert_allclose(r['electron_pressure_pa'], 6.0 * e)\nnp.testing.assert_allclose(r['logarithmic_charge_residual'], 0.0, atol=1e-14)\nnp.testing.assert_allclose(r['charge_residual_m3'], 0.0, atol=1e-14)",
     "expected": "Electron density is 6 m^-3, electron pressure is 6e Pa, and both displayed quasineutral residuals are zero within floating-point tolerance."
   },
   "verification": {
-    "scope": ["A matched-density Boltzmann response and its pressure and charge residuals.", "A nonneutral reference case, array broadcasting, zero-density finite log residual and selected invalid inputs."],
-    "tests": ["tests/operator_contracts/test_boltzmann_quasineutrality.py"],
+    "scope": [
+      "A matched-density Boltzmann response and its pressure and charge residuals.",
+      "A nonneutral reference case, array broadcasting, zero-density finite log residual and selected invalid inputs."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_boltzmann_quasineutrality.py"
+    ],
     "evidence_ceiling": "Direct SciRel regressions establish selected scalar response and residual values, broadcast shape, zero-density finite log residual and two input rejection cases. They do not certify all extreme-float outputs, multi-ion physics, a root solve, or expert recognition.",
-    "known_limitations": ["Exponent clipping and tiny floors change the mathematical expression at extreme potentials or near-zero densities.", "Output finiteness is not guaranteed for all accepted finite inputs; no post-computation validation is performed.", "The caller must supply a consistent ion density and physical coordinate alignment; broadcasting checks only array shape.", "Public distribution licensing and expert recognition remain pending."]
+    "known_limitations": [
+      "Exponent clipping and tiny floors change the mathematical expression at extreme potentials or near-zero densities.",
+      "Output finiteness is not guaranteed for all accepted finite inputs; no post-computation validation is performed.",
+      "The caller must supply a consistent ion density and physical coordinate alignment; broadcasting checks only array shape.",
+      "Public distribution licensing and expert recognition remain pending."
+    ]
   }
 }

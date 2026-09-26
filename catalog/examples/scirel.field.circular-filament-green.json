@@ -7,8 +7,14 @@
     "zh": "轴对称圆电流丝 Green 响应"
   },
   "summary": "Evaluate poloidal flux and cylindrical poloidal-field Green responses from weighted circular filaments at finite R-Z target points.",
-  "taxonomy": ["field", "green-function", "axisymmetric"],
-  "aliases": ["circular loop Green response"],
+  "taxonomy": [
+    "field",
+    "green-function",
+    "axisymmetric"
+  ],
+  "aliases": [
+    "circular loop Green response"
+  ],
   "identity": {
     "relation": "weighted circular filaments to axisymmetric flux and poloidal-field response",
     "direction": "filament R-Z-weight rows and target R-Z points -> gpsi, gBR, gBZ",
@@ -17,21 +23,72 @@
     "geometry": "circular filaments and point targets in an axisymmetric domain",
     "coordinates": "cylindrical R-Z coordinates",
     "boundary": "source and target radii are nonnegative; nonfinite singular terms are replaced by zero under the maintained implementation convention",
-    "assumptions": ["Weights are dimensionless relative source strengths.", "The returned response is per external drive ampere applied later by the caller."]
+    "assumptions": [
+      "Weights are dimensionless relative source strengths.",
+      "The returned response is per external drive ampere applied later by the caller."
+    ]
   },
   "inputs": [
-    {"name": "rzw", "description": "Source rows [R_m,Z_m,weight].", "units": "m,m,dimensionless", "shape": "[N_filament,3]", "dtype": "real array-like", "required": true, "constraints": "Finite with nonnegative source radii; an empty source set is allowed."},
-    {"name": "rz_pts", "description": "Target rows [R_m,Z_m].", "units": "m,m", "shape": "[N_point,2]", "dtype": "real array-like", "required": true, "constraints": "Finite with nonnegative target radii."}
+    {
+      "name": "rzw",
+      "description": "Source rows [R_m,Z_m,weight].",
+      "units": "m,m,dimensionless",
+      "shape": "[N_filament,3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite with nonnegative source radii; an empty source set is allowed."
+    },
+    {
+      "name": "rz_pts",
+      "description": "Target rows [R_m,Z_m].",
+      "units": "m,m",
+      "shape": "[N_point,2]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite with nonnegative target radii."
+    }
   ],
   "outputs": [
-    {"name": "gpsi", "description": "Poloidal flux-function response psi = R A_phi per drive current, not full linked flux.", "units": "Wb/rad/A", "shape": "[N_point]", "dtype": "float64", "required": true, "constraints": "Finite under the maintained singular-value convention."},
-    {"name": "gBR", "description": "Radial field response per drive current.", "units": "T/A", "shape": "[N_point]", "dtype": "float64", "required": true, "constraints": "Finite under the maintained singular-value convention."},
-    {"name": "gBZ", "description": "Axial field response per drive current.", "units": "T/A", "shape": "[N_point]", "dtype": "float64", "required": true, "constraints": "Finite under the maintained singular-value convention."}
+    {
+      "name": "gpsi",
+      "description": "Poloidal flux-function response psi = R A_phi per drive current, not full linked flux.",
+      "units": "Wb/rad/A",
+      "shape": "[N_point]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite under the maintained singular-value convention."
+    },
+    {
+      "name": "gBR",
+      "description": "Radial field response per drive current.",
+      "units": "T/A",
+      "shape": "[N_point]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite under the maintained singular-value convention."
+    },
+    {
+      "name": "gBZ",
+      "description": "Axial field response per drive current.",
+      "units": "T/A",
+      "shape": "[N_point]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite under the maintained singular-value convention."
+    }
   ],
   "applicability": {
-    "preconditions": ["Inputs use SI cylindrical coordinates and finite numeric values."],
-    "supported": ["Axisymmetric vacuum response of weighted circular filaments."],
-    "excluded": ["Finite-conductor cross-section physics.", "Non-axisymmetric three-dimensional fields.", "Resolved self-field singularities."]
+    "preconditions": [
+      "Inputs use SI cylindrical coordinates and finite numeric values."
+    ],
+    "supported": [
+      "Axisymmetric vacuum response of weighted circular filaments."
+    ],
+    "excluded": [
+      "Finite-conductor cross-section physics.",
+      "Non-axisymmetric three-dimensional fields.",
+      "Resolved self-field singularities."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for wrong array rank/width, nonfinite values, or negative radii.",
@@ -41,7 +98,10 @@
   },
   "provenance": {
     "lineage_summary": "Maintained SciRel implementation with frozen internal admission evidence; private review identifiers are not part of the public contract.",
-    "source_kinds": ["reviewed scientific implementation", "scientific regression tests"],
+    "source_kinds": [
+      "reviewed scientific implementation",
+      "scientific regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
@@ -53,7 +113,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev30",
+    "implementation_version": "0.1.0.dev31",
     "dependencies": []
   },
   "example": {
@@ -62,9 +122,20 @@
     "expected": "Three finite float64 response vectors with two entries each."
   },
   "verification": {
-    "scope": ["Axis-source skip convention.", "Weighted-source linearity.", "Midplane symmetry and analytic axis BZ check.", "Off-axis finite-difference recovery of direct Green fields from gpsi without a 2 pi factor."],
-    "tests": ["tests/operator_contracts/test_circular_filament_green.py"],
+    "scope": [
+      "Axis-source skip convention.",
+      "Weighted-source linearity.",
+      "Midplane symmetry and analytic axis BZ check.",
+      "Off-axis finite-difference recovery of direct Green fields from gpsi without a 2 pi factor."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_circular_filament_green.py"
+    ],
     "evidence_ceiling": "Verified for the maintained axisymmetric circular-filament relation and tested finite points, including a sampled-grid flux-to-field normalization check; not an independent validation of arbitrary coil geometries or singular self-fields.",
-    "known_limitations": ["Targets exactly on a filament are not a resolved self-field model.", "Axis filaments within the maintained tolerance are skipped.", "Public distribution licensing remains pending a human decision."]
+    "known_limitations": [
+      "Targets exactly on a filament are not a resolved self-field model.",
+      "Axis filaments within the maintained tolerance are skipped.",
+      "Public distribution licensing remains pending a human decision."
+    ]
   }
 }

@@ -2,10 +2,19 @@
   "schema": "scirel.asset-document.v1",
   "asset_id": "scirel.diagnostics.parallel-pressure-residual",
   "kind": "operator",
-  "title": {"en": "Parallel-pressure equilibrium residual", "zh": "平行压强平衡残差"},
+  "title": {
+    "en": "Parallel-pressure equilibrium residual",
+    "zh": "平行压强平衡残差"
+  },
   "summary": "Compare perpendicular pressure samples with a value-space magnetic-field derivative of parallel pressure, reporting pointwise and aggregate residuals.",
-  "taxonomy": ["diagnostics", "anisotropic-pressure", "equilibrium-residual"],
-  "aliases": ["parallel pressure relation check"],
+  "taxonomy": [
+    "diagnostics",
+    "anisotropic-pressure",
+    "equilibrium-residual"
+  ],
+  "aliases": [
+    "parallel pressure relation check"
+  ],
   "identity": {
     "relation": "Parallel pressure and magnetic-field samples to an expected perpendicular pressure and residual",
     "direction": "(p_parallel, p_perp, B) -> rhs, error, relative_error, aggregate errors, passed",
@@ -14,28 +23,140 @@
     "geometry": "No spatial geometry is used; array dimensions are preserved only as sample layout",
     "coordinates": "Derivative coordinate is magnetic-field value B after flattening and sorting, not R, Z, arc length or array index",
     "boundary": "With one sample or magnetic-field range at most 1e-30, derivative is defined as zero. A nondegenerate field range requires sorted B samples separated by more than 1e-30.",
-    "assumptions": ["For a physically interpretable p_parallel/B relation, the caller supplies a meaningful positive magnetic-field magnitude, although the callable only checks finiteness.", "The finite-difference result depends on the supplied B-value sampling, including endpoint spacing."]
+    "assumptions": [
+      "For a physically interpretable p_parallel/B relation, the caller supplies a meaningful positive magnetic-field magnitude, although the callable only checks finiteness.",
+      "The finite-difference result depends on the supplied B-value sampling, including endpoint spacing."
+    ]
   },
   "inputs": [
-    {"name": "p_parallel", "description": "Parallel pressure samples.", "units": "Pa", "shape": "nonempty scalar or array; exactly the same shape as p_perp and magnetic_field", "dtype": "real numeric convertible to float64", "required": true, "constraints": "All values finite; negative values are not rejected."},
-    {"name": "p_perp", "description": "Perpendicular pressure samples compared with the derived right-hand side.", "units": "Pa", "shape": "exactly the same shape as p_parallel", "dtype": "real numeric convertible to float64", "required": true, "constraints": "All values finite; negative values are not rejected."},
-    {"name": "magnetic_field", "description": "Magnetic-field values used as the global value-space derivative coordinate.", "units": "T", "shape": "exactly the same shape as p_parallel", "dtype": "real numeric convertible to float64", "required": true, "constraints": "All values finite; the implementation does not require positivity. A nondegenerate sample set may not contain duplicate or near-duplicate B values within 1e-30."},
-    {"name": "rtol", "description": "Maximum allowed normalized residual for the passed flag.", "units": "dimensionless", "shape": "scalar", "dtype": "real numeric", "required": false, "default": 0.01, "constraints": "Finite and non-negative."},
-    {"name": "atol", "description": "Absolute pressure scale flooring the normalized-residual denominator.", "units": "Pa", "shape": "scalar", "dtype": "real numeric", "required": false, "default": 1e-06, "constraints": "Finite and strictly positive."},
-    {"name": "strict", "description": "When truthy, raise if the maximum normalized residual exceeds rtol.", "units": "boolean flag", "shape": "scalar", "dtype": "truth-valued value", "required": false, "default": false, "constraints": "Interpreted by Python truth value; the implementation does not enforce bool type."}
+    {
+      "name": "p_parallel",
+      "description": "Parallel pressure samples.",
+      "units": "Pa",
+      "shape": "nonempty scalar or array; exactly the same shape as p_perp and magnetic_field",
+      "dtype": "real numeric convertible to float64",
+      "required": true,
+      "constraints": "All values finite; negative values are not rejected."
+    },
+    {
+      "name": "p_perp",
+      "description": "Perpendicular pressure samples compared with the derived right-hand side.",
+      "units": "Pa",
+      "shape": "exactly the same shape as p_parallel",
+      "dtype": "real numeric convertible to float64",
+      "required": true,
+      "constraints": "All values finite; negative values are not rejected."
+    },
+    {
+      "name": "magnetic_field",
+      "description": "Magnetic-field values used as the global value-space derivative coordinate.",
+      "units": "T",
+      "shape": "exactly the same shape as p_parallel",
+      "dtype": "real numeric convertible to float64",
+      "required": true,
+      "constraints": "All values finite; the implementation does not require positivity. A nondegenerate sample set may not contain duplicate or near-duplicate B values within 1e-30."
+    },
+    {
+      "name": "rtol",
+      "description": "Maximum allowed normalized residual for the passed flag.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": false,
+      "default": 0.01,
+      "constraints": "Finite and non-negative."
+    },
+    {
+      "name": "atol",
+      "description": "Absolute pressure scale flooring the normalized-residual denominator.",
+      "units": "Pa",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": false,
+      "default": 1e-06,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "strict",
+      "description": "When truthy, raise if the maximum normalized residual exceeds rtol.",
+      "units": "boolean flag",
+      "shape": "scalar",
+      "dtype": "truth-valued value",
+      "required": false,
+      "default": false,
+      "constraints": "Interpreted by Python truth value; the implementation does not enforce bool type."
+    }
   ],
   "outputs": [
-    {"name": "rhs", "description": "Value-space estimate of -B^2 d(p_parallel/B)/dB, with a 1e-30 denominator floor on B.", "units": "Pa", "shape": "same shape as input samples", "dtype": "float64 array", "required": true, "constraints": "Finite on successful return; zero derivative when B has no resolved spread."},
-    {"name": "error", "description": "Signed perpendicular-pressure residual p_perp-rhs.", "units": "Pa", "shape": "same shape as input samples", "dtype": "float64 array", "required": true, "constraints": "Finite on successful return."},
-    {"name": "relative_error", "description": "Absolute residual divided by max(abs(p_perp),abs(rhs),atol).", "units": "dimensionless", "shape": "same shape as input samples", "dtype": "float64 array", "required": true, "constraints": "Finite and non-negative on successful return."},
-    {"name": "max_relative_error", "description": "Maximum of all pointwise relative errors.", "units": "dimensionless", "shape": "scalar", "dtype": "float", "required": true, "constraints": "Finite and non-negative."},
-    {"name": "mean_relative_error", "description": "Mean of all pointwise relative errors.", "units": "dimensionless", "shape": "scalar", "dtype": "float", "required": true, "constraints": "Finite and non-negative."},
-    {"name": "passed", "description": "Whether max_relative_error is at most rtol.", "units": "boolean", "shape": "scalar", "dtype": "bool", "required": true, "constraints": "No result is returned on failure when strict is truthy."}
+    {
+      "name": "rhs",
+      "description": "Value-space estimate of -B^2 d(p_parallel/B)/dB, with a 1e-30 denominator floor on B.",
+      "units": "Pa",
+      "shape": "same shape as input samples",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite on successful return; zero derivative when B has no resolved spread."
+    },
+    {
+      "name": "error",
+      "description": "Signed perpendicular-pressure residual p_perp-rhs.",
+      "units": "Pa",
+      "shape": "same shape as input samples",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite on successful return."
+    },
+    {
+      "name": "relative_error",
+      "description": "Absolute residual divided by max(abs(p_perp),abs(rhs),atol).",
+      "units": "dimensionless",
+      "shape": "same shape as input samples",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and non-negative on successful return."
+    },
+    {
+      "name": "max_relative_error",
+      "description": "Maximum of all pointwise relative errors.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and non-negative."
+    },
+    {
+      "name": "mean_relative_error",
+      "description": "Mean of all pointwise relative errors.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and non-negative."
+    },
+    {
+      "name": "passed",
+      "description": "Whether max_relative_error is at most rtol.",
+      "units": "boolean",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "No result is returned on failure when strict is truthy."
+    }
   ],
   "applicability": {
-    "preconditions": ["Pressure arrays and magnetic-field values describe the same nonempty sample set and share an exact shape.", "The caller has selected a physically meaningful magnetic-field coordinate and sampling for this value-space pressure relation."],
-    "supported": ["Scalar or array-shaped finite sample sets with a resolved, nonduplicate B-value range.", "Degenerate all-equal B samples under the explicit zero-derivative convention; non-strict reporting or strict rejection of tolerance failure."],
-    "excluded": ["A spatial derivative or local MHD force-balance test on a grid.", "Physical interpretation of negative or near-zero B values without an independently justified convention.", "Finite-difference convergence or equilibrium validity beyond the supplied sample set."]
+    "preconditions": [
+      "Pressure arrays and magnetic-field values describe the same nonempty sample set and share an exact shape.",
+      "The caller has selected a physically meaningful magnetic-field coordinate and sampling for this value-space pressure relation."
+    ],
+    "supported": [
+      "Scalar or array-shaped finite sample sets with a resolved, nonduplicate B-value range.",
+      "Degenerate all-equal B samples under the explicit zero-derivative convention; non-strict reporting or strict rejection of tolerance failure."
+    ],
+    "excluded": [
+      "A spatial derivative or local MHD force-balance test on a grid.",
+      "Physical interpretation of negative or near-zero B values without an independently justified convention.",
+      "Finite-difference convergence or equilibrium validity beyond the supplied sample set."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for mismatched shape, empty samples, nonfinite values, invalid rtol/atol, or duplicate B values in a nondegenerate sorted sample set. Conversion failures may propagate from NumPy.",
@@ -45,21 +166,43 @@
   },
   "provenance": {
     "lineage_summary": "SciRel maintains the parallel-pressure residual relation from saved Pleiades development-migration material. That historical candidate record is not an expert approval or a currently qualified D1 source freeze; the exact source qualification and scientific interpretation remain review questions.",
-    "source_kinds": ["saved Pleiades operator descriptor and migration provenance", "SciRel direct value-space and failure-behavior regression tests"],
+    "source_kinds": [
+      "saved Pleiades operator descriptor and migration provenance",
+      "SciRel direct value-space and failure-behavior regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
-  "public_api": {"python": {"module": "scirel.diagnostics.parallel_pressure_residual", "symbol": "compute_parallel_pressure_residual", "signature": "compute_parallel_pressure_residual(p_parallel, p_perp, magnetic_field, rtol=0.01, atol=1e-06, strict=False)"}},
-  "version": {"implementation_version": "0.1.0.dev30", "dependencies": []},
+  "public_api": {
+    "python": {
+      "module": "scirel.diagnostics.parallel_pressure_residual",
+      "symbol": "compute_parallel_pressure_residual",
+      "signature": "compute_parallel_pressure_residual(p_parallel, p_perp, magnetic_field, rtol=0.01, atol=1e-06, strict=False)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev31",
+    "dependencies": []
+  },
   "example": {
     "description": "Check the value-space relation on unsorted magnetic-field samples.",
     "code": "import numpy as np\nfrom scirel.diagnostics import compute_parallel_pressure_residual\nB = np.array([3.0, 1.0, 2.0, 4.0])\nr = compute_parallel_pressure_residual(B * B, -B * B, B, rtol=1e-12)\nnp.testing.assert_allclose(r['rhs'], -B * B, rtol=1e-12, atol=1e-12)\nassert r['passed'] and r['max_relative_error'] <= 1e-12",
     "expected": "Sorting by B recovers rhs=-B^2 in the original sample order; the supplied p_perp passes the selected residual threshold."
   },
   "verification": {
-    "scope": ["Constant p_parallel/B and zero perpendicular-pressure identity.", "Unsorted B-value example, all-equal B zero-derivative convention, strict-mode tolerance rejection and empty-input failure."],
-    "tests": ["tests/operator_contracts/test_parallel_pressure_residual.py"],
+    "scope": [
+      "Constant p_parallel/B and zero perpendicular-pressure identity.",
+      "Unsorted B-value example, all-equal B zero-derivative convention, strict-mode tolerance rejection and empty-input failure."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_parallel_pressure_residual.py"
+    ],
     "evidence_ceiling": "Direct tests establish the listed algebraic and finite-sample behavior only. They do not compare a current qualified source oracle, establish a spatial derivative, prove physical equilibrium on an arbitrary geometry, or constitute expert scientific approval.",
-    "known_limitations": ["All array positions are pooled into one B-sorted derivative; spatial adjacency is discarded.", "The B denominator is floored at 1e-30 and nonpositive B is not rejected, so callers must restrict physically meaningful usage themselves.", "Degenerate B sampling forces a zero derivative regardless of pressure variation.", "Public distribution licensing and expert recognition remain pending."]
+    "known_limitations": [
+      "All array positions are pooled into one B-sorted derivative; spatial adjacency is discarded.",
+      "The B denominator is floored at 1e-30 and nonpositive B is not rejected, so callers must restrict physically meaningful usage themselves.",
+      "Degenerate B sampling forces a zero derivative regardless of pressure variation.",
+      "Public distribution licensing and expert recognition remain pending."
+    ]
   }
 }

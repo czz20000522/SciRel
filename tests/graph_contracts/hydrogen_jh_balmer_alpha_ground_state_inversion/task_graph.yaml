@@ -1,0 +1,516 @@
+kind: scientific_task_graph
+name: 原子氢JH Balmer-alpha基态反演图
+entrypoint: graph.py::run_graph
+display_name:
+  zh: 原子氢JH Balmer-alpha基态反演
+  en: Atomic-hydrogen Balmer-alpha ground-state inversion
+framework_mapping:
+  primary_pfm_node: N0
+  coverage: full
+inputs:
+- name: balmer_alpha_w_m3
+  meaning: 观测的 Balmer-alpha 体发射率
+  shape: '[n]'
+  units: W m^-3
+  required: true
+  constraints: 与 density_m3 同形；有限且严格为正
+- name: density_m3
+  meaning: 电子数密度 profile
+  shape: '[n]'
+  units: m^-3
+  required: true
+  constraints: 非空一维数组；有限、严格为正且低于 1e32（组合域取 Saha 资产声明域的交集）
+- name: temperature_ev
+  meaning: 电子温度 profile
+  shape: '[n]'
+  units: eV
+  required: true
+  constraints: 与 density_m3 同形；有限、严格为正且低于 1e32
+- name: jh_payload
+  meaning: 只读 JH 系数载荷（DKnot、TKnot、order、LogR_BSCoef、LogS_BSCoef、LogAlpha_BSCoef、A_Lyman、A_Balmer）
+  shape: mapping
+  units: mixed
+  required: true
+  constraints: 由被绑定资产校验节点几何（order 4 按 FITPACK 次数约定描述 77 系数）与有限性；只读
+- name: no_null
+  meaning: 源分支选择器
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 仅接受 1；其他值 fail closed
+outputs:
+- name: ground_state_density_m3
+  meaning: 反演得到的基态中性数密度
+  shape: '[n]'
+  units: m^-3
+- name: photon_rate_m3_s
+  meaning: 由观测发射率恢复的 Balmer-alpha 光子率
+  shape: '[n]'
+  units: m^-3 s^-1
+- name: n3_population_m3
+  meaning: 恢复的 n=3 能级人口
+  shape: '[n]'
+  units: m^-3
+- name: ionization_rate_m3_s
+  meaning: 电子碰撞电离源项 n0 * (density * s)
+  shape: '[n]'
+  units: m^-3 s^-1
+- name: recombination_rate_m3_s
+  meaning: 复合汇项 density * (density * alpha)
+  shape: '[n]'
+  units: m^-3 s^-1
+- name: net_source_m3_s
+  meaning: 净氢源项 ionization - recombination
+  shape: '[n]'
+  units: m^-3 s^-1
+execution:
+  mode: ordered_dag_composition
+  order_policy: validate_profile_then_extract_payload_fields_then_evaluate_r03_r13_saha1_saha3_s_alpha_through_bound_assets_then_invert_photon_rate_n3_ground_state_then_form_source_terms
+  state_policy: no hidden state, cache, or mutable payload; caller owns profiles, emissivity and payload
+  failure_policy: composed-domain violation or bound-asset failure aborts before any output
+nodes:
+- id: profile_validation
+  name: 组合域 profile 校验
+  kind: controlled_glue
+  callable: glue:inline
+  inputs: [balmer_alpha_w_m3, density_m3, temperature_ev, no_null]
+  outputs: [balmer_alpha_w_m3, density, temperature, no_null]
+- id: payload_field_extraction
+  name: 载荷字段抽取
+  kind: controlled_glue
+  callable: glue:inline
+  inputs: [jh_payload]
+  outputs: [density_knots, temperature_knots, spline_order, log_r_bscoef, a_balmer]
+- id: channel_level_selection
+  name: 通道与能级选择
+  kind: controlled_glue
+  callable: glue:inline
+  inputs: []
+  outputs: [ion_channel_0, ion_channel_1, principal_level_1, principal_level_3]
+- id: r03_evaluation
+  name: JH-r ion0 level3 评价
+  kind: scientific_operator
+  asset_ref: scirel.collisions.hydrogen-jh-r-coefficient
+  callable: scirel.collisions.hydrogen_jh_r_coefficient::evaluate_h_jh_r_coefficient
+  inputs: [density, temperature, ion_channel_0, principal_level_3, density_knots, temperature_knots, spline_order, log_r_bscoef, no_null]
+  outputs: [r03]
+- id: r13_evaluation
+  name: JH-r ion1 level3 评价
+  kind: scientific_operator
+  asset_ref: scirel.collisions.hydrogen-jh-r-coefficient
+  callable: scirel.collisions.hydrogen_jh_r_coefficient::evaluate_h_jh_r_coefficient
+  inputs: [density, temperature, ion_channel_1, principal_level_3, density_knots, temperature_knots, spline_order, log_r_bscoef, no_null]
+  outputs: [r13]
+- id: saha_level_1
+  name: Saha level1 人口
+  kind: scientific_operator
+  asset_ref: scirel.kinetic.hydrogen-saha-equilibrium-population
+  callable: scirel.kinetic.hydrogen_saha_equilibrium_population::evaluate_h_saha_equilibrium_population
+  inputs: [density, temperature, principal_level_1]
+  outputs: [saha1]
+- id: saha_level_3
+  name: Saha level3 人口
+  kind: scientific_operator
+  asset_ref: scirel.kinetic.hydrogen-saha-equilibrium-population
+  callable: scirel.kinetic.hydrogen_saha_equilibrium_population::evaluate_h_saha_equilibrium_population
+  inputs: [density, temperature, principal_level_3]
+  outputs: [saha3]
+- id: s_evaluation
+  name: JH-s 系数评价（消费调用者密度）
+  kind: scientific_operator
+  asset_ref: scirel.collisions.hydrogen-jh-s-coefficient
+  callable: scirel.collisions.hydrogen_jh_s_coefficient::evaluate_h_jh_s_coefficient
+  inputs: [density, temperature, jh_payload, no_null]
+  outputs: [s_rate]
+- id: alpha_evaluation
+  name: JH-alpha 系数评价（哨兵覆盖）
+  kind: scientific_operator
+  asset_ref: scirel.collisions.hydrogen-jh-alpha-coefficient
+  callable: scirel.collisions.hydrogen_jh_alpha_coefficient::evaluate_h_jh_alpha_coefficient
+  inputs: [density, temperature, jh_payload, no_null]
+  outputs: [alpha_rate]
+- id: photon_rate_inversion
+  name: 光子率恢复（保存冻结因子）
+  kind: controlled_glue
+  callable: glue:inline
+  inputs: [balmer_alpha_w_m3]
+  outputs: [photon_rate_m3_s]
+- id: n3_contraction
+  name: n=3 人口恢复
+  kind: controlled_glue
+  callable: glue:inline
+  inputs: [photon_rate_m3_s, a_balmer]
+  outputs: [n3_population_m3]
+- id: ground_state_inversion
+  name: 基态密度反演
+  kind: controlled_glue
+  callable: glue:inline
+  inputs: [n3_population_m3, saha3, r03, saha1, r13]
+  outputs: [ground_state_density_m3]
+- id: ionization_contraction
+  name: 电离源项收缩
+  kind: controlled_glue
+  callable: glue:inline
+  inputs: [n0, density, s_rate]
+  outputs: [ionization_rate_m3_s]
+- id: recombination_contraction
+  name: 复合汇项收缩
+  kind: controlled_glue
+  callable: glue:inline
+  inputs: [density, alpha_rate]
+  outputs: [recombination_rate_m3_s]
+- id: net_source_contraction
+  name: 净源项收缩与有限门控
+  kind: controlled_glue
+  callable: glue:inline
+  inputs: [ionization_rate_m3_s, recombination_rate_m3_s]
+  outputs: [net_source_m3_s]
+edges:
+- from: {node: $input, port: balmer_alpha_w_m3}
+  to: {node: profile_validation, port: balmer_alpha_w_m3}
+  data: 观测发射率
+  condition: always
+  transform: 校验有限、严格为正、同形
+  closure: controlled_glue
+- from: {node: $input, port: density_m3}
+  to: {node: profile_validation, port: density_m3}
+  data: 调用方电子密度
+  condition: always
+  transform: 校验有限、为正、低于 1e32
+  closure: controlled_glue
+- from: {node: $input, port: temperature_ev}
+  to: {node: profile_validation, port: temperature_ev}
+  data: 调用方电子温度
+  condition: always
+  transform: 同 profile 校验
+  closure: controlled_glue
+- from: {node: $input, port: no_null}
+  to: {node: profile_validation, port: no_null}
+  data: 分支选择器（缺省 1）
+  condition: always
+  transform: 非 1 fail closed
+  closure: controlled_glue
+- from: {node: $input, port: jh_payload}
+  to: {node: payload_field_extraction, port: jh_payload}
+  data: 调用方系数载荷
+  condition: always
+  transform: 只读字段抽取
+  closure: controlled_glue
+- from: {node: payload_field_extraction, port: density_knots}
+  to: {node: r03_evaluation, port: density_knots}
+  data: 密度节点
+  condition: after payload extraction
+  transform: none
+  closure: controlled_glue
+- from: {node: payload_field_extraction, port: temperature_knots}
+  to: {node: r03_evaluation, port: temperature_knots}
+  data: 温度节点
+  condition: after payload extraction
+  transform: none
+  closure: controlled_glue
+- from: {node: payload_field_extraction, port: spline_order}
+  to: {node: r03_evaluation, port: spline_order}
+  data: order 字段
+  condition: after payload extraction
+  transform: 整数转换
+  closure: controlled_glue
+- from: {node: payload_field_extraction, port: log_r_bscoef}
+  to: {node: r03_evaluation, port: log_r_bscoef}
+  data: (n,2,5) r 系数张量
+  condition: after payload extraction
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: density}
+  to: {node: r03_evaluation, port: density}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none（绑定资产自身执行哨兵覆盖）
+  closure: controlled_glue
+- from: {node: profile_validation, port: temperature}
+  to: {node: r03_evaluation, port: temperature}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: channel_level_selection, port: ion_channel_0}
+  to: {node: r03_evaluation, port: ion_channel_0}
+  data: 通道 0
+  condition: always
+  transform: constant
+  closure: controlled_glue
+- from: {node: channel_level_selection, port: principal_level_3}
+  to: {node: r03_evaluation, port: principal_level_3}
+  data: level 3
+  condition: always
+  transform: constant
+  closure: controlled_glue
+- from: {node: profile_validation, port: no_null}
+  to: {node: r03_evaluation, port: no_null}
+  data: 分支选择器
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: r03_evaluation, port: r03}
+  to: {node: ground_state_inversion, port: r03}
+  data: level3 ion0 r 系数
+  condition: after r03 evaluation
+  transform: none
+  closure: controlled_glue
+- from: {node: payload_field_extraction, port: density_knots}
+  to: {node: r13_evaluation, port: density_knots}
+  data: 密度节点
+  condition: after payload extraction
+  transform: none
+  closure: controlled_glue
+- from: {node: payload_field_extraction, port: temperature_knots}
+  to: {node: r13_evaluation, port: temperature_knots}
+  data: 温度节点
+  condition: after payload extraction
+  transform: none
+  closure: controlled_glue
+- from: {node: payload_field_extraction, port: spline_order}
+  to: {node: r13_evaluation, port: spline_order}
+  data: order 字段
+  condition: after payload extraction
+  transform: 整数转换
+  closure: controlled_glue
+- from: {node: payload_field_extraction, port: log_r_bscoef}
+  to: {node: r13_evaluation, port: log_r_bscoef}
+  data: (n,2,5) r 系数张量
+  condition: after payload extraction
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: density}
+  to: {node: r13_evaluation, port: density}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: temperature}
+  to: {node: r13_evaluation, port: temperature}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: channel_level_selection, port: ion_channel_1}
+  to: {node: r13_evaluation, port: ion_channel_1}
+  data: 通道 1
+  condition: always
+  transform: constant
+  closure: controlled_glue
+- from: {node: channel_level_selection, port: principal_level_3}
+  to: {node: r13_evaluation, port: principal_level_3}
+  data: level 3
+  condition: always
+  transform: constant
+  closure: controlled_glue
+- from: {node: profile_validation, port: no_null}
+  to: {node: r13_evaluation, port: no_null}
+  data: 分支选择器
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: r13_evaluation, port: r13}
+  to: {node: ground_state_inversion, port: r13}
+  data: level3 ion1 r 系数
+  condition: after r13 evaluation
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: density}
+  to: {node: saha_level_1, port: density}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none（绑定资产执行自身 <1e32 域校验）
+  closure: controlled_glue
+- from: {node: profile_validation, port: temperature}
+  to: {node: saha_level_1, port: temperature}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: channel_level_selection, port: principal_level_1}
+  to: {node: saha_level_1, port: principal_level_1}
+  data: level 1
+  condition: always
+  transform: constant
+  closure: controlled_glue
+- from: {node: saha_level_1, port: saha1}
+  to: {node: ground_state_inversion, port: saha1}
+  data: level1 Saha 人口
+  condition: after saha1 evaluation
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: density}
+  to: {node: saha_level_3, port: density}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: temperature}
+  to: {node: saha_level_3, port: temperature}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: channel_level_selection, port: principal_level_3}
+  to: {node: saha_level_3, port: principal_level_3}
+  data: level 3
+  condition: always
+  transform: constant
+  closure: controlled_glue
+- from: {node: saha_level_3, port: saha3}
+  to: {node: ground_state_inversion, port: saha3}
+  data: level3 Saha 人口
+  condition: after saha3 evaluation
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: density}
+  to: {node: s_evaluation, port: density}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none（s 支路消费调用者密度）
+  closure: controlled_glue
+- from: {node: profile_validation, port: temperature}
+  to: {node: s_evaluation, port: temperature}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: $input, port: jh_payload}
+  to: {node: s_evaluation, port: jh_payload}
+  data: 系数载荷
+  condition: always
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: no_null}
+  to: {node: s_evaluation, port: no_null}
+  data: 分支选择器
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: s_evaluation, port: s_rate}
+  to: {node: ionization_contraction, port: s_rate}
+  data: s 系数
+  condition: after s evaluation
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: density}
+  to: {node: alpha_evaluation, port: density}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none（绑定资产自身执行哨兵覆盖）
+  closure: controlled_glue
+- from: {node: profile_validation, port: temperature}
+  to: {node: alpha_evaluation, port: temperature}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: $input, port: jh_payload}
+  to: {node: alpha_evaluation, port: jh_payload}
+  data: 系数载荷
+  condition: always
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: no_null}
+  to: {node: alpha_evaluation, port: no_null}
+  data: 分支选择器
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: alpha_evaluation, port: alpha_rate}
+  to: {node: recombination_contraction, port: alpha_rate}
+  data: alpha 系数
+  condition: after alpha evaluation
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: balmer_alpha_w_m3}
+  to: {node: photon_rate_inversion, port: balmer_alpha_w_m3}
+  data: 观测发射率
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: photon_rate_inversion, port: photon_rate_m3_s}
+  to: {node: $output, port: photon_rate_m3_s}
+  data: 恢复的光子率
+  condition: on success
+  transform: 保存运算次序 balmer / ((13.6057 * (0.25 - 1/9)) * 1.602177e-19)
+  closure: controlled_glue
+- from: {node: photon_rate_inversion, port: photon_rate_m3_s}
+  to: {node: n3_contraction, port: photon_rate_m3_s}
+  data: 光子率
+  condition: after photon-rate inversion
+  transform: none
+  closure: controlled_glue
+- from: {node: payload_field_extraction, port: a_balmer}
+  to: {node: n3_contraction, port: a_balmer}
+  data: A_Balmer 系数向量（仅首个分量进入收缩）
+  condition: after payload extraction
+  transform: none
+  closure: controlled_glue
+- from: {node: n3_contraction, port: n3_population_m3}
+  to: {node: $output, port: n3_population_m3}
+  data: 恢复的 n=3 人口
+  condition: on success
+  transform: 保存运算次序 photon_rate / A_Balmer[0]
+  closure: controlled_glue
+- from: {node: n3_contraction, port: n3_population_m3}
+  to: {node: ground_state_inversion, port: n3_population_m3}
+  data: n=3 人口
+  condition: after n3 contraction
+  transform: none
+  closure: controlled_glue
+- from: {node: ground_state_inversion, port: ground_state_density_m3}
+  to: {node: $output, port: ground_state_density_m3}
+  data: 反演的基态中性密度
+  condition: on success
+  transform: 保存运算次序 (n3 / saha3 - r03) * saha1 / r13
+  closure: controlled_glue
+- from: {node: ground_state_inversion, port: ground_state_density_m3}
+  to: {node: ionization_contraction, port: n0}
+  data: 反演的基态密度
+  condition: after ground-state inversion
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: density}
+  to: {node: ionization_contraction, port: density}
+  data: 调用者密度
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: ionization_contraction, port: ionization_rate_m3_s}
+  to: {node: $output, port: ionization_rate_m3_s}
+  data: 电离源项
+  condition: on success
+  transform: 保存运算次序 n0 * (density * s)
+  closure: controlled_glue
+- from: {node: profile_validation, port: density}
+  to: {node: recombination_contraction, port: density}
+  data: 调用者密度
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: recombination_contraction, port: recombination_rate_m3_s}
+  to: {node: $output, port: recombination_rate_m3_s}
+  data: 复合汇项
+  condition: on success
+  transform: 保存运算次序 density * (density * alpha)
+  closure: controlled_glue
+- from: {node: ionization_contraction, port: ionization_rate_m3_s}
+  to: {node: net_source_contraction, port: ionization_rate_m3_s}
+  data: 电离源项
+  condition: after ionization contraction
+  transform: none
+  closure: controlled_glue
+- from: {node: recombination_contraction, port: recombination_rate_m3_s}
+  to: {node: net_source_contraction, port: recombination_rate_m3_s}
+  data: 复合汇项
+  condition: after recombination contraction
+  transform: none
+  closure: controlled_glue
+- from: {node: net_source_contraction, port: net_source_m3_s}
+  to: {node: $output, port: net_source_m3_s}
+  data: 净氢源项
+  condition: on success
+  transform: 保存运算次序 ionization - recombination，随后对全部返回字段做有限门控
+  closure: controlled_glue

@@ -2,10 +2,19 @@
   "schema": "scirel.asset-document.v1",
   "asset_id": "scirel.geometry.flux-surface-profile",
   "kind": "operator",
-  "title": {"en": "Scalar profile on a flux coordinate", "zh": "磁通坐标上的标量剖面"},
+  "title": {
+    "en": "Scalar profile on a flux coordinate",
+    "zh": "磁通坐标上的标量剖面"
+  },
   "summary": "Sort and deduplicate paired flux-coordinate samples, interpolate a scalar profile linearly, and apply explicit constant endpoint values outside the sampled interval.",
-  "taxonomy": ["geometry", "flux-coordinate", "profile-interpolation"],
-  "aliases": ["flux-surface scalar profile extension"],
+  "taxonomy": [
+    "geometry",
+    "flux-coordinate",
+    "profile-interpolation"
+  ],
+  "aliases": [
+    "flux-surface scalar profile extension"
+  ],
   "identity": {
     "relation": "paired scalar profile samples on a flux coordinate to values at target flux coordinates",
     "direction": "psi_samples, values, target and endpoint policy -> interpolated values and normalized samples",
@@ -14,24 +23,102 @@
     "geometry": "sampled scalar relation indexed by flux, without a reconstructed spatial surface",
     "coordinates": "psi_samples and target use the same caller-selected poloidal-flux coordinate convention, either psi=R A_phi in Wb/rad or complete linked flux in Wb; the operator applies no conversion",
     "boundary": "default endpoint values are the first and last normalized samples; caller-supplied finite left/right scalars override them",
-    "assumptions": ["Paired psi_samples and values use the same flattened order.", "The caller establishes that values represent a single-valued profile in the chosen flux coordinate.", "All sample and target flux coordinates use the same Wb/rad or Wb convention; psi-dependent caller profiles must be defined in that coordinate."]
+    "assumptions": [
+      "Paired psi_samples and values use the same flattened order.",
+      "The caller establishes that values represent a single-valued profile in the chosen flux coordinate.",
+      "All sample and target flux coordinates use the same Wb/rad or Wb convention; psi-dependent caller profiles must be defined in that coordinate."
+    ]
   },
   "inputs": [
-    {"name": "psi_samples", "description": "Sample flux coordinates, flattened before sorting.", "units": "caller-consistent Wb/rad or Wb", "shape": "array-like, flattened to [N_sample]", "dtype": "real array-like", "required": true, "constraints": "Finite; paired with values; at least two original pairs and at least two unique coordinates."},
-    {"name": "values", "description": "Scalar profile samples paired with psi_samples.", "units": "caller-defined profile unit", "shape": "array-like, flattened to [N_sample]", "dtype": "real array-like", "required": true, "constraints": "Finite and exactly the same flattened length as psi_samples."},
-    {"name": "target", "description": "Query flux coordinates in the same convention as psi_samples.", "units": "same as psi_samples", "shape": "scalar or array-like", "dtype": "real array-like", "required": true, "constraints": "Finite; output values retain this shape."},
-    {"name": "left", "description": "Value returned below the minimum normalized sample coordinate.", "units": "same as values", "shape": "scalar or null", "dtype": "real scalar or None", "required": false, "default": null, "constraints": "None selects the first normalized profile value; otherwise convertible to finite float."},
-    {"name": "right", "description": "Value returned above the maximum normalized sample coordinate.", "units": "same as values", "shape": "scalar or null", "dtype": "real scalar or None", "required": false, "default": null, "constraints": "None selects the last normalized profile value; otherwise convertible to finite float."}
+    {
+      "name": "psi_samples",
+      "description": "Sample flux coordinates, flattened before sorting.",
+      "units": "caller-consistent Wb/rad or Wb",
+      "shape": "array-like, flattened to [N_sample]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; paired with values; at least two original pairs and at least two unique coordinates."
+    },
+    {
+      "name": "values",
+      "description": "Scalar profile samples paired with psi_samples.",
+      "units": "caller-defined profile unit",
+      "shape": "array-like, flattened to [N_sample]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and exactly the same flattened length as psi_samples."
+    },
+    {
+      "name": "target",
+      "description": "Query flux coordinates in the same convention as psi_samples.",
+      "units": "same as psi_samples",
+      "shape": "scalar or array-like",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; output values retain this shape."
+    },
+    {
+      "name": "left",
+      "description": "Value returned below the minimum normalized sample coordinate.",
+      "units": "same as values",
+      "shape": "scalar or null",
+      "dtype": "real scalar or None",
+      "required": false,
+      "default": null,
+      "constraints": "None selects the first normalized profile value; otherwise convertible to finite float."
+    },
+    {
+      "name": "right",
+      "description": "Value returned above the maximum normalized sample coordinate.",
+      "units": "same as values",
+      "shape": "scalar or null",
+      "dtype": "real scalar or None",
+      "required": false,
+      "default": null,
+      "constraints": "None selects the last normalized profile value; otherwise convertible to finite float."
+    }
   ],
   "outputs": [
-    {"name": "values", "description": "Linearly interpolated or constant-extended profile at target.", "units": "same as input values", "shape": "same as target", "dtype": "float64", "required": true, "constraints": "Follows the declared endpoint policy."},
-    {"name": "psi", "description": "Sorted unique sample coordinates used for interpolation, without unit conversion.", "units": "same as psi_samples", "shape": "[N_unique]", "dtype": "float64", "required": true, "constraints": "Strictly increasing with at least two entries."},
-    {"name": "profile_values", "description": "Sample values retained after sorting and coordinate deduplication.", "units": "same as input values", "shape": "[N_unique]", "dtype": "float64", "required": true, "constraints": "Aligned with psi; for duplicate coordinates retains the first sorted occurrence."}
+    {
+      "name": "values",
+      "description": "Linearly interpolated or constant-extended profile at target.",
+      "units": "same as input values",
+      "shape": "same as target",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Follows the declared endpoint policy."
+    },
+    {
+      "name": "psi",
+      "description": "Sorted unique sample coordinates used for interpolation, without unit conversion.",
+      "units": "same as psi_samples",
+      "shape": "[N_unique]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Strictly increasing with at least two entries."
+    },
+    {
+      "name": "profile_values",
+      "description": "Sample values retained after sorting and coordinate deduplication.",
+      "units": "same as input values",
+      "shape": "[N_unique]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Aligned with psi; for duplicate coordinates retains the first sorted occurrence."
+    }
   ],
   "applicability": {
-    "preconditions": ["Caller supplies finite, paired samples and target coordinates in one consistent Wb/rad or Wb flux convention and compatible scalar-value units."],
-    "supported": ["One-dimensional piecewise-linear interpolation and constant endpoint extension of a single-valued scalar flux profile."],
-    "excluded": ["Construction of magnetic surfaces or field-line geometry.", "Higher-order interpolation or extrapolation.", "Physical resolution of conflicting duplicate-coordinate values."]
+    "preconditions": [
+      "Caller supplies finite, paired samples and target coordinates in one consistent Wb/rad or Wb flux convention and compatible scalar-value units."
+    ],
+    "supported": [
+      "One-dimensional piecewise-linear interpolation and constant endpoint extension of a single-valued scalar flux profile."
+    ],
+    "excluded": [
+      "Construction of magnetic surfaces or field-line geometry.",
+      "Higher-order interpolation or extrapolation.",
+      "Physical resolution of conflicting duplicate-coordinate values."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for unequal or insufficient paired samples, fewer than two unique flux coordinates, nonfinite inputs or nonfinite endpoint values.",
@@ -41,21 +128,45 @@
   },
   "provenance": {
     "lineage_summary": "Maintained SciRel relation with internal source-derived development evidence; this exact record does not assert current expert approval.",
-    "source_kinds": ["source-derived candidate relation", "maintained scientific implementation", "scientific regression tests"],
+    "source_kinds": [
+      "source-derived candidate relation",
+      "maintained scientific implementation",
+      "scientific regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
-  "public_api": {"python": {"module": "scirel.geometry.flux_surface_profile", "symbol": "evaluate_flux_surface_profile", "signature": "evaluate_flux_surface_profile(*, psi_samples, values, target, left=None, right=None) -> 'dict[str, np.ndarray]'"}},
-  "version": {"implementation_version": "0.1.0.dev30", "dependencies": []},
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.flux_surface_profile",
+      "symbol": "evaluate_flux_surface_profile",
+      "signature": "evaluate_flux_surface_profile(*, psi_samples, values, target, left=None, right=None) -> 'dict[str, np.ndarray]'"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev31",
+    "dependencies": []
+  },
   "example": {
     "description": "Interpolate unsorted samples with a duplicate flux coordinate and explicit endpoint values.",
     "code": "import numpy as np\nfrom scirel.geometry.flux_surface_profile import evaluate_flux_surface_profile\nresult = evaluate_flux_surface_profile(psi_samples=[2.0, 0.0, 1.0, 1.0], values=[4.0, 0.0, 2.0, 3.0], target=[-1.0, 0.5, 3.0], left=-7.0, right=9.0)\nnp.testing.assert_allclose(result['values'], [-7.0, 1.0, 9.0])\nnp.testing.assert_allclose(result['psi'], [0.0, 1.0, 2.0])\nnp.testing.assert_allclose(result['profile_values'], [0.0, 2.0, 4.0])",
     "expected": "The sorted unique profile is [0,1,2] with values [0,2,4], and outside queries use the explicit endpoint values."
   },
   "verification": {
-    "scope": ["Sample sorting and duplicate-coordinate handling.", "Linear interpolation and default/explicit endpoint extension.", "Nonfinite input rejection.", "Caller-consistent Wb/rad versus Wb coordinate rescaling invariance."],
-    "tests": ["tests/operator_contracts/test_flux_surface_profile.py"],
+    "scope": [
+      "Sample sorting and duplicate-coordinate handling.",
+      "Linear interpolation and default/explicit endpoint extension.",
+      "Nonfinite input rejection.",
+      "Caller-consistent Wb/rad versus Wb coordinate rescaling invariance."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_flux_surface_profile.py"
+    ],
     "evidence_ceiling": "Direct tests establish the maintained interpolation and endpoint contract on finite examples, not the physical validity of any caller-supplied flux-profile data or source-project completeness.",
-    "known_limitations": ["Duplicate flux coordinates with different values are reduced by first sorted occurrence, not physically reconciled.", "The callable does not construct a flux surface, choose a flux normalization or convert between Wb/rad and Wb.", "Public distribution licensing and expert recognition remain pending."]
+    "known_limitations": [
+      "Duplicate flux coordinates with different values are reduced by first sorted occurrence, not physically reconciled.",
+      "The callable does not construct a flux surface, choose a flux normalization or convert between Wb/rad and Wb.",
+      "Public distribution licensing and expert recognition remain pending."
+    ]
   }
 }

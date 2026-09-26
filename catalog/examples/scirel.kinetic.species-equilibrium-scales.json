@@ -2,10 +2,19 @@
   "schema": "scirel.asset-document.v1",
   "asset_id": "scirel.kinetic.species-equilibrium-scales",
   "kind": "operator",
-  "title": {"en": "Magnetized species equilibrium scales", "zh": "磁化组分平衡尺度"},
+  "title": {
+    "en": "Magnetized species equilibrium scales",
+    "zh": "磁化组分平衡尺度"
+  },
   "summary": "Derive SI thermal, cyclotron, plasma-frequency, gyroradius and Debye scales for a nonempty species mixture from reference density and temperature.",
-  "taxonomy": ["kinetic", "plasma-wave", "equilibrium-scales"],
-  "aliases": ["fluidBW species equilibrium scales"],
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave",
+    "equilibrium-scales"
+  ],
+  "aliases": [
+    "fluidBW species equilibrium scales"
+  ],
   "identity": {
     "relation": "Species masses, charges, reference factors and magnetic field to equilibrium plasma scales",
     "direction": "(m_s, q_s, n_s/n00, T_s/T00, B0, n00, T00) -> SI species scales and scan-normalization scales",
@@ -14,42 +23,262 @@
     "geometry": "Local homogeneous equilibrium; no spatial grid or wavevector is an input",
     "coordinates": "One ordered species axis S; magnetic-field and charge signs determine signed cyclotron quantities",
     "boundary": "All derived scales must remain finite and representable; no zero magnetic field, charge, density, mass or temperature is allowed.",
-    "assumptions": ["The caller supplies species values in SI units and reference temperature in eV.", "Thermal speed contains sqrt(2), while the signed gyroradius uses sqrt(kB*T/m) without that factor."]
+    "assumptions": [
+      "The caller supplies species values in SI units and reference temperature in eV.",
+      "Thermal speed contains sqrt(2), while the signed gyroradius uses sqrt(kB*T/m) without that factor."
+    ]
   },
   "inputs": [
-    {"name": "ms", "description": "Species masses on the shared species axis.", "units": "kg", "shape": "(S,), S >= 1", "dtype": "real numeric", "required": true, "constraints": "Finite and strictly positive; boolean values are rejected."},
-    {"name": "qs", "description": "Signed species charges on the shared species axis.", "units": "C", "shape": "(S,), same S as ms", "dtype": "real numeric", "required": true, "constraints": "Finite and nonzero; boolean values are rejected."},
-    {"name": "ns_unit", "description": "Species density factor relative to n00.", "units": "dimensionless", "shape": "(S,), same S as ms", "dtype": "real numeric", "required": true, "constraints": "Finite and strictly positive; boolean values are rejected."},
-    {"name": "Ts_unit", "description": "Species temperature factor relative to T00.", "units": "dimensionless", "shape": "(S,), same S as ms", "dtype": "real numeric", "required": true, "constraints": "Finite and strictly positive; boolean values are rejected."},
-    {"name": "B0", "description": "Signed background magnetic field.", "units": "T", "shape": "scalar", "dtype": "real numeric", "required": true, "constraints": "Finite and nonzero; boolean values are rejected."},
-    {"name": "n00", "description": "Reference number density.", "units": "m^-3", "shape": "scalar", "dtype": "real numeric", "required": true, "constraints": "Finite and strictly positive; boolean values are rejected."},
-    {"name": "T00", "description": "Reference temperature before conversion to kelvin.", "units": "eV", "shape": "scalar", "dtype": "real numeric", "required": true, "constraints": "Finite and strictly positive; boolean values are rejected."}
+    {
+      "name": "ms",
+      "description": "Species masses on the shared species axis.",
+      "units": "kg",
+      "shape": "(S,), S >= 1",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite and strictly positive; boolean values are rejected."
+    },
+    {
+      "name": "qs",
+      "description": "Signed species charges on the shared species axis.",
+      "units": "C",
+      "shape": "(S,), same S as ms",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite and nonzero; boolean values are rejected."
+    },
+    {
+      "name": "ns_unit",
+      "description": "Species density factor relative to n00.",
+      "units": "dimensionless",
+      "shape": "(S,), same S as ms",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite and strictly positive; boolean values are rejected."
+    },
+    {
+      "name": "Ts_unit",
+      "description": "Species temperature factor relative to T00.",
+      "units": "dimensionless",
+      "shape": "(S,), same S as ms",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite and strictly positive; boolean values are rejected."
+    },
+    {
+      "name": "B0",
+      "description": "Signed background magnetic field.",
+      "units": "T",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite and nonzero; boolean values are rejected."
+    },
+    {
+      "name": "n00",
+      "description": "Reference number density.",
+      "units": "m^-3",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite and strictly positive; boolean values are rejected."
+    },
+    {
+      "name": "T00",
+      "description": "Reference temperature before conversion to kelvin.",
+      "units": "eV",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite and strictly positive; boolean values are rejected."
+    }
   ],
   "outputs": [
-    {"name": "c2", "description": "Fixed vacuum light-speed squared.", "units": "m^2/s^2", "shape": "scalar", "dtype": "float", "required": true, "constraints": "Equals (2.99792458e8)^2."},
-    {"name": "epsilon0", "description": "Fixed vacuum permittivity.", "units": "F/m", "shape": "scalar", "dtype": "float", "required": true, "constraints": "Equals 8.854187817e-12."},
-    {"name": "kB", "description": "Fixed Boltzmann constant.", "units": "J/K", "shape": "scalar", "dtype": "float", "required": true, "constraints": "Equals 1.38064852e-23."},
-    {"name": "c", "description": "Vacuum light speed from sqrt(c2).", "units": "m/s", "shape": "scalar", "dtype": "float", "required": true, "constraints": "Finite and positive."},
-    {"name": "ns0", "description": "Absolute species number density.", "units": "m^-3", "shape": "(S,)", "dtype": "float64", "required": true, "constraints": "Finite and strictly positive."},
-    {"name": "Ts0", "description": "Species temperature after eV-to-kelvin conversion.", "units": "K", "shape": "(S,)", "dtype": "float64", "required": true, "constraints": "Finite and strictly positive."},
-    {"name": "vts", "description": "Species thermal speed with sqrt(2) factor.", "units": "m/s", "shape": "(S,)", "dtype": "float64", "required": true, "constraints": "Finite and strictly positive."},
-    {"name": "wcs", "description": "Signed species cyclotron angular frequency.", "units": "rad/s", "shape": "(S,)", "dtype": "float64", "required": true, "constraints": "Finite and nonzero."},
-    {"name": "wps2", "description": "Species plasma angular-frequency squared.", "units": "rad^2/s^2", "shape": "(S,)", "dtype": "float64", "required": true, "constraints": "Finite and strictly positive."},
-    {"name": "wp2", "description": "Sum of species plasma angular-frequency squared.", "units": "rad^2/s^2", "shape": "scalar", "dtype": "float", "required": true, "constraints": "Finite and strictly positive."},
-    {"name": "rhocs", "description": "Signed species gyroradius using sqrt(kB*T/m)/wcs.", "units": "m", "shape": "(S,)", "dtype": "float64", "required": true, "constraints": "Finite and nonzero."},
-    {"name": "absrhocs", "description": "Absolute species gyroradius.", "units": "m", "shape": "(S,)", "dtype": "float64", "required": true, "constraints": "Finite and strictly positive."},
-    {"name": "sgns", "description": "Sign of signed species gyroradius.", "units": "dimensionless", "shape": "(S,)", "dtype": "float64", "required": true, "constraints": "Each value is -1 or +1."},
-    {"name": "lambdaDs", "description": "Species Debye length.", "units": "m", "shape": "(S,)", "dtype": "float64", "required": true, "constraints": "Finite and strictly positive."},
-    {"name": "kDs", "description": "Inverse species Debye length.", "units": "m^-1", "shape": "(S,)", "dtype": "float64", "required": true, "constraints": "Finite and strictly positive."},
-    {"name": "wcn", "description": "Minimum absolute species cyclotron angular frequency.", "units": "rad/s", "shape": "scalar", "dtype": "float", "required": true, "constraints": "Finite and strictly positive."},
-    {"name": "rhocn", "description": "Maximum absolute species gyroradius.", "units": "m", "shape": "scalar", "dtype": "float", "required": true, "constraints": "Finite and strictly positive."},
-    {"name": "kn", "description": "Inverse rhocn scan scale.", "units": "m^-1", "shape": "scalar", "dtype": "float", "required": true, "constraints": "Finite and strictly positive."},
-    {"name": "wn", "description": "Cyclotron-frequency scan scale equal to wcn.", "units": "rad/s", "shape": "scalar", "dtype": "float", "required": true, "constraints": "Finite and strictly positive."}
+    {
+      "name": "c2",
+      "description": "Fixed vacuum light-speed squared.",
+      "units": "m^2/s^2",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Equals (2.99792458e8)^2."
+    },
+    {
+      "name": "epsilon0",
+      "description": "Fixed vacuum permittivity.",
+      "units": "F/m",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Equals 8.854187817e-12."
+    },
+    {
+      "name": "kB",
+      "description": "Fixed Boltzmann constant.",
+      "units": "J/K",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Equals 1.38064852e-23."
+    },
+    {
+      "name": "c",
+      "description": "Vacuum light speed from sqrt(c2).",
+      "units": "m/s",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "ns0",
+      "description": "Absolute species number density.",
+      "units": "m^-3",
+      "shape": "(S,)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "Ts0",
+      "description": "Species temperature after eV-to-kelvin conversion.",
+      "units": "K",
+      "shape": "(S,)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "vts",
+      "description": "Species thermal speed with sqrt(2) factor.",
+      "units": "m/s",
+      "shape": "(S,)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "wcs",
+      "description": "Signed species cyclotron angular frequency.",
+      "units": "rad/s",
+      "shape": "(S,)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite and nonzero."
+    },
+    {
+      "name": "wps2",
+      "description": "Species plasma angular-frequency squared.",
+      "units": "rad^2/s^2",
+      "shape": "(S,)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "wp2",
+      "description": "Sum of species plasma angular-frequency squared.",
+      "units": "rad^2/s^2",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "rhocs",
+      "description": "Signed species gyroradius using sqrt(kB*T/m)/wcs.",
+      "units": "m",
+      "shape": "(S,)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite and nonzero."
+    },
+    {
+      "name": "absrhocs",
+      "description": "Absolute species gyroradius.",
+      "units": "m",
+      "shape": "(S,)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "sgns",
+      "description": "Sign of signed species gyroradius.",
+      "units": "dimensionless",
+      "shape": "(S,)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Each value is -1 or +1."
+    },
+    {
+      "name": "lambdaDs",
+      "description": "Species Debye length.",
+      "units": "m",
+      "shape": "(S,)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "kDs",
+      "description": "Inverse species Debye length.",
+      "units": "m^-1",
+      "shape": "(S,)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "wcn",
+      "description": "Minimum absolute species cyclotron angular frequency.",
+      "units": "rad/s",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "rhocn",
+      "description": "Maximum absolute species gyroradius.",
+      "units": "m",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "kn",
+      "description": "Inverse rhocn scan scale.",
+      "units": "m^-1",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "wn",
+      "description": "Cyclotron-frequency scan scale equal to wcn.",
+      "units": "rad/s",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    }
   ],
   "applicability": {
-    "preconditions": ["All four species vectors have the same nonzero length and the declared SI/eV units.", "Positive reference density and temperature, nonzero signed charge and field, and representable derived scales are required."],
-    "supported": ["One or more species with signed charge and magnetic-field orientation.", "Equilibrium scales reusable across wavevector and frequency scan points for the same case."],
-    "excluded": ["Wavevector or frequency solves, dielectric or dispersion tensor assembly.", "Automatic conversion of an alternate thermal-speed, gyroradius or reference-temperature convention."]
+    "preconditions": [
+      "All four species vectors have the same nonzero length and the declared SI/eV units.",
+      "Positive reference density and temperature, nonzero signed charge and field, and representable derived scales are required."
+    ],
+    "supported": [
+      "One or more species with signed charge and magnetic-field orientation.",
+      "Equilibrium scales reusable across wavevector and frequency scan points for the same case."
+    ],
+    "excluded": [
+      "Wavevector or frequency solves, dielectric or dispersion tensor assembly.",
+      "Automatic conversion of an alternate thermal-speed, gyroradius or reference-temperature convention."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for empty, non-one-dimensional, mismatched, nonnumeric, boolean, nonfinite or nonpositive vectors where positivity is required; zero charge or field and nonpositive n00/T00 also fail.",
@@ -59,21 +288,45 @@
   },
   "provenance": {
     "lineage_summary": "Standardized as a development relation from the saved fluidBW L1 species_equilibrium_scales candidate, now archived pending first-stage re-review. The saved source-oracle cases compare one electron and an electron/deuteron mixture; neither those comparisons nor the old D1 label establish current qualified delivery or expert scientific approval.",
-    "source_kinds": ["saved historical fluidBW L1 operator contract and implementation", "saved direct source-oracle cases and digest-bound L1 comparison", "SciRel scientific contract tests"],
+    "source_kinds": [
+      "saved historical fluidBW L1 operator contract and implementation",
+      "saved direct source-oracle cases and digest-bound L1 comparison",
+      "SciRel scientific contract tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
-  "public_api": {"python": {"module": "scirel.kinetic.species_equilibrium_scales", "symbol": "derive_species_equilibrium_scales", "signature": "derive_species_equilibrium_scales(*, ms, qs, ns_unit, Ts_unit, B0, n00, T00)"}},
-  "version": {"implementation_version": "0.1.0.dev30", "dependencies": []},
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.species_equilibrium_scales",
+      "symbol": "derive_species_equilibrium_scales",
+      "signature": "derive_species_equilibrium_scales(*, ms, qs, ns_unit, Ts_unit, B0, n00, T00)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev31",
+    "dependencies": []
+  },
   "example": {
     "description": "Derive single-electron scales with the saved fluidBW reference values.",
     "code": "from scirel.kinetic import derive_species_equilibrium_scales\nr = derive_species_equilibrium_scales(ms=[9.1094e-31], qs=[-1.60217662e-19], ns_unit=[1.0], Ts_unit=[1.0], B0=1.0, n00=6.075e19, T00=1000.0)\nassert r['wcs'][0] < 0 and r['rhocs'][0] < 0\nassert r['wn'] == r['wcn'] and r['kn'] == 1.0 / r['rhocn']",
     "expected": "The electron cyclotron frequency and gyroradius retain negative signs; scan scales are positive reciprocal/absolute conventions."
   },
   "verification": {
-    "scope": ["One- and two-species scale identities, signed orientation, shape and nonmutation.", "Saved fluidBW one- and two-species source-oracle values with digest-bound source execution when the L1 root is supplied.", "Invalid inputs and unrepresentable derived values fail closed."],
-    "tests": ["tests/operator_contracts/test_species_equilibrium_scales.py", "tests/operator_contracts/test_species_equilibrium_scales_l1.py"],
+    "scope": [
+      "One- and two-species scale identities, signed orientation, shape and nonmutation.",
+      "Saved fluidBW one- and two-species source-oracle values with digest-bound source execution when the L1 root is supplied.",
+      "Invalid inputs and unrepresentable derived values fail closed."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_species_equilibrium_scales.py",
+      "tests/operator_contracts/test_species_equilibrium_scales_l1.py"
+    ],
     "evidence_ceiling": "Direct SciRel tests establish these formulas and failure behavior. Optional digest-bound L1 replay checks all returned fields at two saved source-oracle cases, not all species mixtures or alternate normalizations. Neither test layer proves global physical applicability or expert approval.",
-    "known_limitations": ["Constants and eV-to-K factor intentionally retain the saved fluidBW numeric convention.", "No thermal distribution, wave dispersion or root result is returned.", "The first-stage fluidBW branch-coverage question and public distribution license remain open; expert recognition is pending."]
+    "known_limitations": [
+      "Constants and eV-to-K factor intentionally retain the saved fluidBW numeric convention.",
+      "No thermal distribution, wave dispersion or root result is returned.",
+      "The first-stage fluidBW branch-coverage question and public distribution license remain open; expert recognition is pending."
+    ]
   }
 }

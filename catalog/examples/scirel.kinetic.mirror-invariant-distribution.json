@@ -2,10 +2,20 @@
   "schema": "scirel.asset-document.v1",
   "asset_id": "scirel.kinetic.mirror-invariant-distribution",
   "kind": "operator",
-  "title": {"en": "Mirror invariant bi-Maxwellian distribution", "zh": "双温镜不变量分布函数"},
+  "title": {
+    "en": "Mirror invariant bi-Maxwellian distribution",
+    "zh": "双温镜不变量分布函数"
+  },
   "summary": "Evaluate a reference bi-Maxwellian phase-space density from energy and magnetic moment, optionally multiplying by a two-plug loss-cone occupation with fractional refill.",
-  "taxonomy": ["kinetic", "mirror-plasma", "phase-space-distribution"],
-  "aliases": ["invariant guiding-centre distribution", "two-plug bi-Maxwellian loss-cone distribution"],
+  "taxonomy": [
+    "kinetic",
+    "mirror-plasma",
+    "phase-space-distribution"
+  ],
+  "aliases": [
+    "invariant guiding-centre distribution",
+    "two-plug bi-Maxwellian loss-cone distribution"
+  ],
   "identity": {
     "relation": "Local velocity, field and potential with a reference bi-Maxwellian state to invariant distribution and particle invariants",
     "direction": "(v_parallel, v_perpendicular, B, psi, phi, species/reference profiles, optional two-plug state) -> f0, energy, magnetic moment, occupation",
@@ -14,37 +24,224 @@
     "geometry": "Local positive magnetic-field magnitude and optional positive left/right plug magnitudes; no field-line trajectory or spatial metric is reconstructed.",
     "coordinates": "v_parallel is signed and v_perpendicular enters squared; psi is a caller-owned flux-profile coordinate, historically labeled Wb. All five local quantities are NumPy-broadcast together, and profile callables are evaluated on that broadcast psi array; no flux normalization or axis convention is checked.",
     "boundary": "Both plug fields must be supplied together. No plugs give full occupation regardless of refill; with plugs the lower of the two energy barriers determines the strict trapped condition. The default refill is zero, an empty loss cone for particles at or above the barrier.",
-    "assumptions": ["The supplied reference profiles describe the same species, flux convention and potential reference as the local state.", "A signed nonzero charge is accepted; this operator does not restrict the species to positive ions.", "The positive integrability coefficient C is required everywhere, but no global finite-output or velocity-domain check is made."]
+    "assumptions": [
+      "The supplied reference profiles describe the same species, flux convention and potential reference as the local state.",
+      "A signed nonzero charge is accepted; this operator does not restrict the species to positive ions.",
+      "The positive integrability coefficient C is required everywhere, but no global finite-output or velocity-domain check is made."
+    ]
   },
   "inputs": [
-    {"name": "v_parallel_m_s", "description": "Signed velocity along the local magnetic field.", "units": "m/s", "shape": "scalar or array broadcasting with the other four local quantities", "dtype": "real array-like converted to float64", "required": true, "constraints": "No explicit finite-value check; sign reversal leaves the energy contribution unchanged."},
-    {"name": "v_perpendicular_m_s", "description": "Perpendicular speed argument used through its square.", "units": "m/s", "shape": "scalar or array broadcasting with the other four local quantities", "dtype": "real array-like converted to float64", "required": true, "constraints": "No explicit finite-value or nonnegative check; the sign does not change mu."},
-    {"name": "b_t", "description": "Local magnetic-field magnitude B.", "units": "T", "shape": "scalar or array broadcasting with the other four local quantities", "dtype": "real array-like converted to float64", "required": true, "constraints": "Checked strictly positive; NaN is not separately rejected before arithmetic."},
-    {"name": "psi", "description": "Caller flux-profile coordinate and shape carrier for profile evaluation.", "units": "Wb (historical source label, not runtime-enforced)", "shape": "scalar or array broadcasting with the other four local quantities", "dtype": "real array-like converted to float64", "required": true, "constraints": "No explicit finite-value, range or flux-normalization check."},
-    {"name": "potential_v", "description": "Local electrostatic potential phi in particle energy.", "units": "V", "shape": "scalar or array broadcasting with the other four local quantities", "dtype": "real array-like converted to float64", "required": true, "constraints": "No explicit finite-value check."},
-    {"name": "mass_kg", "description": "Particle mass m.", "units": "kg", "shape": "scalar", "dtype": "real numeric scalar", "required": true, "constraints": "Finite, strictly positive and not bool."},
-    {"name": "charge_c", "description": "Signed particle charge q.", "units": "C", "shape": "scalar", "dtype": "real numeric scalar", "required": true, "constraints": "Finite, nonzero and not bool; either sign is accepted."},
-    {"name": "density_ref_m3", "description": "Reference number-density profile n_ref.", "units": "m^-3", "shape": "scalar, broadcast-compatible array or callable(psi) returning such values", "dtype": "real array-like or callable yielding float64-convertible values", "required": true, "constraints": "Evaluated values finite and nonnegative."},
-    {"name": "temperature_parallel_j", "description": "Reference parallel thermal energy T_parallel.", "units": "J", "shape": "scalar, broadcast-compatible array or callable(psi) returning such values", "dtype": "real array-like or callable yielding float64-convertible values", "required": true, "constraints": "Evaluated values finite and strictly positive."},
-    {"name": "temperature_perpendicular_ref_j", "description": "Reference perpendicular thermal energy T_perp,ref.", "units": "J", "shape": "scalar, broadcast-compatible array or callable(psi) returning such values", "dtype": "real array-like or callable yielding float64-convertible values", "required": true, "constraints": "Evaluated values finite and strictly positive."},
-    {"name": "b_ref_t", "description": "Reference magnetic-field magnitude B_ref.", "units": "T", "shape": "scalar, broadcast-compatible array or callable(psi) returning such values", "dtype": "real array-like or callable yielding float64-convertible values", "required": true, "constraints": "Evaluated values finite and strictly positive; C must also be positive."},
-    {"name": "phi_ref_v", "description": "Reference electrostatic-potential profile phi_ref.", "units": "V", "shape": "scalar, broadcast-compatible array or callable(psi) returning such values", "dtype": "real array-like or callable yielding float64-convertible values", "required": false, "default": 0.0, "constraints": "Evaluated values finite."},
-    {"name": "b_plug_left_t", "description": "Left-end magnetic barrier field.", "units": "T or not applicable", "shape": "None, scalar, broadcast-compatible array or callable(psi)", "dtype": "null or real array-like/callable yielding float64-convertible values", "required": false, "default": null, "constraints": "Must be supplied together with b_plug_right_t; if supplied, evaluated values finite and strictly positive."},
-    {"name": "b_plug_right_t", "description": "Right-end magnetic barrier field.", "units": "T or not applicable", "shape": "None, scalar, broadcast-compatible array or callable(psi)", "dtype": "null or real array-like/callable yielding float64-convertible values", "required": false, "default": null, "constraints": "Must be supplied together with b_plug_left_t; if supplied, evaluated values finite and strictly positive."},
-    {"name": "phi_plug_left_v", "description": "Left-end electrostatic barrier potential.", "units": "V", "shape": "scalar, broadcast-compatible array or callable(psi)", "dtype": "real array-like or callable yielding float64-convertible values", "required": false, "default": 0.0, "constraints": "Evaluated for finiteness only when both plug fields are present."},
-    {"name": "phi_plug_right_v", "description": "Right-end electrostatic barrier potential.", "units": "V", "shape": "scalar, broadcast-compatible array or callable(psi)", "dtype": "real array-like or callable yielding float64-convertible values", "required": false, "default": 0.0, "constraints": "Evaluated for finiteness only when both plug fields are present."},
-    {"name": "loss_cone_refill", "description": "Fractional occupation of particles outside the trapped energy region.", "units": "dimensionless", "shape": "scalar", "dtype": "real numeric scalar", "required": false, "default": 0.0, "constraints": "Finite, not bool and within [0,1]; with no plugs it does not change the full occupation."}
+    {
+      "name": "v_parallel_m_s",
+      "description": "Signed velocity along the local magnetic field.",
+      "units": "m/s",
+      "shape": "scalar or array broadcasting with the other four local quantities",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "No explicit finite-value check; sign reversal leaves the energy contribution unchanged."
+    },
+    {
+      "name": "v_perpendicular_m_s",
+      "description": "Perpendicular speed argument used through its square.",
+      "units": "m/s",
+      "shape": "scalar or array broadcasting with the other four local quantities",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "No explicit finite-value or nonnegative check; the sign does not change mu."
+    },
+    {
+      "name": "b_t",
+      "description": "Local magnetic-field magnitude B.",
+      "units": "T",
+      "shape": "scalar or array broadcasting with the other four local quantities",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Checked strictly positive; NaN is not separately rejected before arithmetic."
+    },
+    {
+      "name": "psi",
+      "description": "Caller flux-profile coordinate and shape carrier for profile evaluation.",
+      "units": "Wb (historical source label, not runtime-enforced)",
+      "shape": "scalar or array broadcasting with the other four local quantities",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "No explicit finite-value, range or flux-normalization check."
+    },
+    {
+      "name": "potential_v",
+      "description": "Local electrostatic potential phi in particle energy.",
+      "units": "V",
+      "shape": "scalar or array broadcasting with the other four local quantities",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "No explicit finite-value check."
+    },
+    {
+      "name": "mass_kg",
+      "description": "Particle mass m.",
+      "units": "kg",
+      "shape": "scalar",
+      "dtype": "real numeric scalar",
+      "required": true,
+      "constraints": "Finite, strictly positive and not bool."
+    },
+    {
+      "name": "charge_c",
+      "description": "Signed particle charge q.",
+      "units": "C",
+      "shape": "scalar",
+      "dtype": "real numeric scalar",
+      "required": true,
+      "constraints": "Finite, nonzero and not bool; either sign is accepted."
+    },
+    {
+      "name": "density_ref_m3",
+      "description": "Reference number-density profile n_ref.",
+      "units": "m^-3",
+      "shape": "scalar, broadcast-compatible array or callable(psi) returning such values",
+      "dtype": "real array-like or callable yielding float64-convertible values",
+      "required": true,
+      "constraints": "Evaluated values finite and nonnegative."
+    },
+    {
+      "name": "temperature_parallel_j",
+      "description": "Reference parallel thermal energy T_parallel.",
+      "units": "J",
+      "shape": "scalar, broadcast-compatible array or callable(psi) returning such values",
+      "dtype": "real array-like or callable yielding float64-convertible values",
+      "required": true,
+      "constraints": "Evaluated values finite and strictly positive."
+    },
+    {
+      "name": "temperature_perpendicular_ref_j",
+      "description": "Reference perpendicular thermal energy T_perp,ref.",
+      "units": "J",
+      "shape": "scalar, broadcast-compatible array or callable(psi) returning such values",
+      "dtype": "real array-like or callable yielding float64-convertible values",
+      "required": true,
+      "constraints": "Evaluated values finite and strictly positive."
+    },
+    {
+      "name": "b_ref_t",
+      "description": "Reference magnetic-field magnitude B_ref.",
+      "units": "T",
+      "shape": "scalar, broadcast-compatible array or callable(psi) returning such values",
+      "dtype": "real array-like or callable yielding float64-convertible values",
+      "required": true,
+      "constraints": "Evaluated values finite and strictly positive; C must also be positive."
+    },
+    {
+      "name": "phi_ref_v",
+      "description": "Reference electrostatic-potential profile phi_ref.",
+      "units": "V",
+      "shape": "scalar, broadcast-compatible array or callable(psi) returning such values",
+      "dtype": "real array-like or callable yielding float64-convertible values",
+      "required": false,
+      "default": 0.0,
+      "constraints": "Evaluated values finite."
+    },
+    {
+      "name": "b_plug_left_t",
+      "description": "Left-end magnetic barrier field.",
+      "units": "T or not applicable",
+      "shape": "None, scalar, broadcast-compatible array or callable(psi)",
+      "dtype": "null or real array-like/callable yielding float64-convertible values",
+      "required": false,
+      "default": null,
+      "constraints": "Must be supplied together with b_plug_right_t; if supplied, evaluated values finite and strictly positive."
+    },
+    {
+      "name": "b_plug_right_t",
+      "description": "Right-end magnetic barrier field.",
+      "units": "T or not applicable",
+      "shape": "None, scalar, broadcast-compatible array or callable(psi)",
+      "dtype": "null or real array-like/callable yielding float64-convertible values",
+      "required": false,
+      "default": null,
+      "constraints": "Must be supplied together with b_plug_left_t; if supplied, evaluated values finite and strictly positive."
+    },
+    {
+      "name": "phi_plug_left_v",
+      "description": "Left-end electrostatic barrier potential.",
+      "units": "V",
+      "shape": "scalar, broadcast-compatible array or callable(psi)",
+      "dtype": "real array-like or callable yielding float64-convertible values",
+      "required": false,
+      "default": 0.0,
+      "constraints": "Evaluated for finiteness only when both plug fields are present."
+    },
+    {
+      "name": "phi_plug_right_v",
+      "description": "Right-end electrostatic barrier potential.",
+      "units": "V",
+      "shape": "scalar, broadcast-compatible array or callable(psi)",
+      "dtype": "real array-like or callable yielding float64-convertible values",
+      "required": false,
+      "default": 0.0,
+      "constraints": "Evaluated for finiteness only when both plug fields are present."
+    },
+    {
+      "name": "loss_cone_refill",
+      "description": "Fractional occupation of particles outside the trapped energy region.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real numeric scalar",
+      "required": false,
+      "default": 0.0,
+      "constraints": "Finite, not bool and within [0,1]; with no plugs it does not change the full occupation."
+    }
   ],
   "outputs": [
-    {"name": "f0_s3_m6", "description": "Physical phase-space density after the optional loss-cone occupation.", "units": "s^3/m^6", "shape": "common broadcast shape", "dtype": "float64 ndarray", "required": true, "constraints": "Uses a clipped exponent but has no general finite-output guarantee."},
-    {"name": "energy_j", "description": "Particle total energy E=mv_parallel^2/2+mu*B+q*phi.", "units": "J", "shape": "common broadcast shape", "dtype": "float64 ndarray", "required": true, "constraints": "No global finite-output check."},
-    {"name": "magnetic_moment_j_t", "description": "Magnetic moment mu=m*v_perpendicular^2/(2*B).", "units": "J/T", "shape": "common broadcast shape", "dtype": "float64 ndarray", "required": true, "constraints": "No global finite-output check."},
-    {"name": "occupation", "description": "One for trapped particles and refill for untrapped particles when plugs exist.", "units": "dimensionless", "shape": "scalar 1.0 without plugs; common broadcast shape with plugs", "dtype": "Python float or float64 ndarray", "required": true, "constraints": "The trapped comparison is strict; E equal to the lower barrier gets refill."}
+    {
+      "name": "f0_s3_m6",
+      "description": "Physical phase-space density after the optional loss-cone occupation.",
+      "units": "s^3/m^6",
+      "shape": "common broadcast shape",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Uses a clipped exponent but has no general finite-output guarantee."
+    },
+    {
+      "name": "energy_j",
+      "description": "Particle total energy E=mv_parallel^2/2+mu*B+q*phi.",
+      "units": "J",
+      "shape": "common broadcast shape",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "No global finite-output check."
+    },
+    {
+      "name": "magnetic_moment_j_t",
+      "description": "Magnetic moment mu=m*v_perpendicular^2/(2*B).",
+      "units": "J/T",
+      "shape": "common broadcast shape",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "No global finite-output check."
+    },
+    {
+      "name": "occupation",
+      "description": "One for trapped particles and refill for untrapped particles when plugs exist.",
+      "units": "dimensionless",
+      "shape": "scalar 1.0 without plugs; common broadcast shape with plugs",
+      "dtype": "Python float or float64 ndarray",
+      "required": true,
+      "constraints": "The trapped comparison is strict; E equal to the lower barrier gets refill."
+    }
   ],
   "applicability": {
-    "preconditions": ["Mass and reference state satisfy the documented positive/finite constraints, and C=(B-B_ref)/T_parallel+B_ref/T_perp,ref is positive at every sample.", "Local quantities and any caller profile(psi) outputs are mutually broadcastable and physically refer to the same species and flux convention."],
-    "supported": ["Scalar or broadcast-array evaluation of the source-defined invariant bi-Maxwellian distribution.", "Optional two-plug loss-cone depletion or fractional refill with scalar, array or psi-profile reference inputs."],
-    "excluded": ["Self-consistent potential, equilibrium, collision, transport or integrated moment solving.", "One-sided plugs, field-line geometry, automatic flux-unit conversion or proof of physical adequacy for a supplied source state."]
+    "preconditions": [
+      "Mass and reference state satisfy the documented positive/finite constraints, and C=(B-B_ref)/T_parallel+B_ref/T_perp,ref is positive at every sample.",
+      "Local quantities and any caller profile(psi) outputs are mutually broadcastable and physically refer to the same species and flux convention."
+    ],
+    "supported": [
+      "Scalar or broadcast-array evaluation of the source-defined invariant bi-Maxwellian distribution.",
+      "Optional two-plug loss-cone depletion or fractional refill with scalar, array or psi-profile reference inputs."
+    ],
+    "excluded": [
+      "Self-consistent potential, equilibrium, collision, transport or integrated moment solving.",
+      "One-sided plugs, field-line geometry, automatic flux-unit conversion or proof of physical adequacy for a supplied source state."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for invalid scalar mass/charge/refill, one-sided plug fields, nonbroadcastable reference or plug profiles, nonfinite profile values, nonpositive checked fields/temperatures, or negative reference density. Nonnumeric local-array conversion and callable errors may propagate as their native exceptions; local velocity, psi and potential nonfinite values are not explicitly rejected.",
@@ -54,21 +251,44 @@
   },
   "provenance": {
     "lineage_summary": "SciRel maintains a compatible public implementation associated with a saved historical Pleiades mirror-distribution operator. The old admitted-assets mapping is development lineage, not a qualified current L1 delivery or current expert recognition; maintained source bytes are not asserted identical to the saved source.",
-    "source_kinds": ["saved historical Pleiades operator description and implementation mapping", "SciRel direct invariant, plug and input-validation regression tests"],
+    "source_kinds": [
+      "saved historical Pleiades operator description and implementation mapping",
+      "SciRel direct invariant, plug and input-validation regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
-  "public_api": {"python": {"module": "scirel.kinetic.mirror_invariant_distribution", "symbol": "evaluate_mirror_invariant_distribution", "signature": "evaluate_mirror_invariant_distribution(v_parallel_m_s, v_perpendicular_m_s, b_t, psi, potential_v, mass_kg, charge_c, density_ref_m3, temperature_parallel_j, temperature_perpendicular_ref_j, b_ref_t, phi_ref_v=0.0, b_plug_left_t=None, b_plug_right_t=None, phi_plug_left_v=0.0, phi_plug_right_v=0.0, loss_cone_refill=0.0)"}},
-  "version": {"implementation_version": "0.1.0.dev30", "dependencies": []},
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.mirror_invariant_distribution",
+      "symbol": "evaluate_mirror_invariant_distribution",
+      "signature": "evaluate_mirror_invariant_distribution(v_parallel_m_s, v_perpendicular_m_s, b_t, psi, potential_v, mass_kg, charge_c, density_ref_m3, temperature_parallel_j, temperature_perpendicular_ref_j, b_ref_t, phi_ref_v=0.0, b_plug_left_t=None, b_plug_right_t=None, phi_plug_left_v=0.0, phi_plug_right_v=0.0, loss_cone_refill=0.0)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev31",
+    "dependencies": []
+  },
   "example": {
     "description": "At an unplugged reference field, verify the analytic bi-Maxwellian normalization and invariant energy/moment.",
     "code": "import math\nimport numpy as np\nfrom scirel.kinetic import evaluate_mirror_invariant_distribution\ne = 1.602176634e-19\nm = 1.67262192595e-27\nt_parallel, t_perp = 1200.0*e, 2400.0*e\nr = evaluate_mirror_invariant_distribution(0.0, 0.0, 1.0, 0.0, 0.0, m, e, 2.0e18, t_parallel, t_perp, 1.0)\nexpected = 2.0e18*(m/(2.0*math.pi))**1.5/(t_perp*math.sqrt(t_parallel))\nnp.testing.assert_allclose(r['f0_s3_m6'], expected)\nnp.testing.assert_allclose(r['energy_j'], 0.0)\nnp.testing.assert_allclose(r['magnetic_moment_j_t'], 0.0)\nassert r['occupation'] == 1.0",
     "expected": "At zero velocity and zero reference potential the distribution equals the reference normalization, both invariants vanish and unplugged occupation is one."
   },
   "verification": {
-    "scope": ["Distribution equality at two local states constructed to share energy and magnetic moment, with rtol=2e-14.", "Direct plugged occupation/refill and default empty-loss-cone checks on selected scalar states.", "Psi-profile versus explicit-array equivalence and selected mass/charge invalid-input cases."],
-    "tests": ["tests/operator_contracts/test_mirror_invariant_distribution.py"],
+    "scope": [
+      "Distribution equality at two local states constructed to share energy and magnetic moment, with rtol=2e-14.",
+      "Direct plugged occupation/refill and default empty-loss-cone checks on selected scalar states.",
+      "Psi-profile versus explicit-array equivalence and selected mass/charge invalid-input cases."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_mirror_invariant_distribution.py"
+    ],
     "evidence_ceiling": "The direct SciRel tests support selected invariant, loss-cone, profile and input-validation cases, including one explicit scalar normalization comparison. They do not establish universal physical validity of the prescribed distribution, all scalar/array domains, source-byte parity, expert approval or public release.",
-    "known_limitations": ["Velocity, psi, local potential and all computed outputs lack a uniform finite-value gate.", "The strict barrier comparison and zero-refill default are source-defined conventions; no trapped-orbit trajectory is computed.", "Historical psi labeling is Wb but does not establish compatibility with Wb/rad assets.", "Public distribution licensing and current-version expert recognition remain pending."]
+    "known_limitations": [
+      "Velocity, psi, local potential and all computed outputs lack a uniform finite-value gate.",
+      "The strict barrier comparison and zero-refill default are source-defined conventions; no trapped-orbit trajectory is computed.",
+      "Historical psi labeling is Wb but does not establish compatibility with Wb/rad assets.",
+      "Public distribution licensing and current-version expert recognition remain pending."
+    ]
   }
 }

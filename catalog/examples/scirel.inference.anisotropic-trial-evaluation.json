@@ -2,10 +2,19 @@
   "schema": "scirel.asset-document.v1",
   "asset_id": "scirel.inference.anisotropic-trial-evaluation",
   "kind": "operator",
-  "title": {"en": "One anisotropic inversion trial", "zh": "单次各向异性反演试探"},
+  "title": {
+    "en": "One anisotropic inversion trial",
+    "zh": "单次各向异性反演试探"
+  },
   "summary": "Evaluate one parameter mapping through caller-owned equilibrium and diagnostic callables, reduce its observation residuals, or record a fixed penalty if a nested evaluation fails.",
-  "taxonomy": ["inference", "anisotropic-equilibrium", "trial-evaluation"],
-  "aliases": ["parameter-to-diagnostic-residual trial"],
+  "taxonomy": [
+    "inference",
+    "anisotropic-equilibrium",
+    "trial-evaluation"
+  ],
+  "aliases": [
+    "parameter-to-diagnostic-residual trial"
+  ],
   "identity": {
     "relation": "one parameter proposal and caller-owned scientific ports to an inversion trial residual record",
     "direction": "params, observations, solver_config and three callables -> params, chi2, residuals, equilibrium, failure_reason",
@@ -14,27 +23,127 @@
     "geometry": "supplied by solver_config and caller callables; this Operator performs no geometric calculation",
     "coordinates": "R and Z are copied from solver_config.r_grid and z_grid without conversion; diagnostic channels retain caller order until reduced",
     "boundary": "No parameter bound check is performed here; the outer optimizer owns bounds. The fixed penalty is an exception response, not proof of physical infeasibility.",
-    "assumptions": ["The caller's equilibrium_solver accepts a single mapping and returns a mapping with converged and failure_reason.", "The diagnostic_evaluator accepts one mapping and the residual_reducer accepts predicted and observations keywords; these ports carry the scientific meaning of the forward calculation."]
+    "assumptions": [
+      "The caller's equilibrium_solver accepts a single mapping and returns a mapping with converged and failure_reason.",
+      "The diagnostic_evaluator accepts one mapping and the residual_reducer accepts predicted and observations keywords; these ports carry the scientific meaning of the forward calculation."
+    ]
   },
   "inputs": [
-    {"name": "params", "description": "Trial parameter mapping copied into solver payload and returned record.", "units": "mixed caller parameter units", "shape": "mapping", "dtype": "dict-convertible mapping", "required": true, "constraints": "Must support dict(params); individual scientific ranges are not checked here."},
-    {"name": "observations", "description": "Diagnostic requests and measured values passed unchanged to the diagnostic and reducer.", "units": "mixed caller observation units", "shape": "mapping", "dtype": "caller-defined mapping", "required": true, "constraints": "Must be accepted by both injected ports; this Operator does not inspect its structure."},
-    {"name": "solver_config", "description": "Fixed equilibrium configuration with r_grid and z_grid for the diagnostic call.", "units": "mixed; R/Z grids m when using cylindrical model", "shape": "mapping containing r_grid and z_grid", "dtype": "dict-convertible mapping", "required": true, "constraints": "Must support dict(solver_config) and keys r_grid/z_grid; its params key, if present, is overwritten by trial params in the copied payload."},
-    {"name": "equilibrium_solver", "description": "Caller-owned forward equilibrium calculation invoked with copied configuration plus trial params.", "units": "caller model units", "shape": "callable(payload) -> equilibrium mapping", "dtype": "Python callable", "required": true, "constraints": "Successful result provides converged and failure_reason keys; callable validity is enforced by invocation rather than an upfront check."},
-    {"name": "diagnostic_evaluator", "description": "Caller-owned synthetic diagnostic calculation on the trial equilibrium.", "units": "prediction units matching observations", "shape": "callable({equilibrium,R,Z,observations}) -> predicted", "dtype": "Python callable", "required": true, "constraints": "Receives the equilibrium even if it reports converged=False; scientific validity is caller-owned."},
-    {"name": "residual_reducer", "description": "Normalized diagnostic residual relation.", "units": "dimensionless output", "shape": "callable(*, predicted, observations) -> {residual_vector,chi2}", "dtype": "Python callable", "required": true, "constraints": "Must return float-convertible residual_vector and chi2; usually the SciRel observation-residuals Operator."}
+    {
+      "name": "params",
+      "description": "Trial parameter mapping copied into solver payload and returned record.",
+      "units": "mixed caller parameter units",
+      "shape": "mapping",
+      "dtype": "dict-convertible mapping",
+      "required": true,
+      "constraints": "Must support dict(params); individual scientific ranges are not checked here."
+    },
+    {
+      "name": "observations",
+      "description": "Diagnostic requests and measured values passed unchanged to the diagnostic and reducer.",
+      "units": "mixed caller observation units",
+      "shape": "mapping",
+      "dtype": "caller-defined mapping",
+      "required": true,
+      "constraints": "Must be accepted by both injected ports; this Operator does not inspect its structure."
+    },
+    {
+      "name": "solver_config",
+      "description": "Fixed equilibrium configuration with r_grid and z_grid for the diagnostic call.",
+      "units": "mixed; R/Z grids m when using cylindrical model",
+      "shape": "mapping containing r_grid and z_grid",
+      "dtype": "dict-convertible mapping",
+      "required": true,
+      "constraints": "Must support dict(solver_config) and keys r_grid/z_grid; its params key, if present, is overwritten by trial params in the copied payload."
+    },
+    {
+      "name": "equilibrium_solver",
+      "description": "Caller-owned forward equilibrium calculation invoked with copied configuration plus trial params.",
+      "units": "caller model units",
+      "shape": "callable(payload) -> equilibrium mapping",
+      "dtype": "Python callable",
+      "required": true,
+      "constraints": "Successful result provides converged and failure_reason keys; callable validity is enforced by invocation rather than an upfront check."
+    },
+    {
+      "name": "diagnostic_evaluator",
+      "description": "Caller-owned synthetic diagnostic calculation on the trial equilibrium.",
+      "units": "prediction units matching observations",
+      "shape": "callable({equilibrium,R,Z,observations}) -> predicted",
+      "dtype": "Python callable",
+      "required": true,
+      "constraints": "Receives the equilibrium even if it reports converged=False; scientific validity is caller-owned."
+    },
+    {
+      "name": "residual_reducer",
+      "description": "Normalized diagnostic residual relation.",
+      "units": "dimensionless output",
+      "shape": "callable(*, predicted, observations) -> {residual_vector,chi2}",
+      "dtype": "Python callable",
+      "required": true,
+      "constraints": "Must return float-convertible residual_vector and chi2; usually the SciRel observation-residuals Operator."
+    }
   ],
   "outputs": [
-    {"name": "params", "description": "Copy of the submitted parameter mapping.", "units": "mixed caller parameter units", "shape": "mapping", "dtype": "dict", "required": true, "constraints": "Copied after the nested evaluation or exception handler."},
-    {"name": "chi2", "description": "Reducer-supplied squared residual or fixed exception penalty.", "units": "dimensionless", "shape": "scalar", "dtype": "float", "required": true, "constraints": "1e24 on a caught nested exception; a successful reducer value is not recomputed here."},
-    {"name": "residuals", "description": "Reducer residual vector or a one-element fixed penalty.", "units": "dimensionless", "shape": "[N_residual] or [1] on exception", "dtype": "float64 NumPy array", "required": true, "constraints": "[1e12] after a caught nested exception."},
-    {"name": "equilibrium", "description": "Caller solver result on success; null after a caught nested exception.", "units": "mixed caller model units", "shape": "mapping or null", "dtype": "caller mapping or None", "required": true, "constraints": "Retained even when converged=False if no exception occurred."},
-    {"name": "failure_reason", "description": "Equilibrium failure_reason when not converged, exception text on a caught failure, or null for a converged trial.", "units": "dimensionless", "shape": "scalar", "dtype": "string or None", "required": true, "constraints": "An unconverged caller equilibrium may supply null; this Operator does not synthesize a reason."}
+    {
+      "name": "params",
+      "description": "Copy of the submitted parameter mapping.",
+      "units": "mixed caller parameter units",
+      "shape": "mapping",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "Copied after the nested evaluation or exception handler."
+    },
+    {
+      "name": "chi2",
+      "description": "Reducer-supplied squared residual or fixed exception penalty.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "1e24 on a caught nested exception; a successful reducer value is not recomputed here."
+    },
+    {
+      "name": "residuals",
+      "description": "Reducer residual vector or a one-element fixed penalty.",
+      "units": "dimensionless",
+      "shape": "[N_residual] or [1] on exception",
+      "dtype": "float64 NumPy array",
+      "required": true,
+      "constraints": "[1e12] after a caught nested exception."
+    },
+    {
+      "name": "equilibrium",
+      "description": "Caller solver result on success; null after a caught nested exception.",
+      "units": "mixed caller model units",
+      "shape": "mapping or null",
+      "dtype": "caller mapping or None",
+      "required": true,
+      "constraints": "Retained even when converged=False if no exception occurred."
+    },
+    {
+      "name": "failure_reason",
+      "description": "Equilibrium failure_reason when not converged, exception text on a caught failure, or null for a converged trial.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "string or None",
+      "required": true,
+      "constraints": "An unconverged caller equilibrium may supply null; this Operator does not synthesize a reason."
+    }
   ],
   "applicability": {
-    "preconditions": ["The three caller-selected ports have compatible payloads and scientific units.", "solver_config supplies diagnostic R/Z grids and the equilibrium result contains declared status fields."],
-    "supported": ["One ordered forward-solve, synthetic-diagnostic and residual-reduction trial.", "Conversion of a nested evaluation exception to the fixed one-element residual penalty."],
-    "excluded": ["An embedded equilibrium solver, diagnostic instrument model, parameter-bound enforcement or optimizer loop.", "Distinguishing numerical failure from scientifically inadmissible states by the penalty alone."]
+    "preconditions": [
+      "The three caller-selected ports have compatible payloads and scientific units.",
+      "solver_config supplies diagnostic R/Z grids and the equilibrium result contains declared status fields."
+    ],
+    "supported": [
+      "One ordered forward-solve, synthetic-diagnostic and residual-reduction trial.",
+      "Conversion of a nested evaluation exception to the fixed one-element residual penalty."
+    ],
+    "excluded": [
+      "An embedded equilibrium solver, diagnostic instrument model, parameter-bound enforcement or optimizer loop.",
+      "Distinguishing numerical failure from scientifically inadmissible states by the penalty alone."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "There is no upfront schema validation. Errors while copying solver_config or invoking/reading nested ports are caught and penalized; a params value that cannot be copied can still raise outside the handler when forming the returned record.",
@@ -44,21 +153,42 @@
   },
   "provenance": {
     "lineage_summary": "Maintained SciRel trial wiring from saved Pleiades inversion material with direct regression; historical candidate labels are not expert recognition.",
-    "source_kinds": ["saved L1 Operator contract and implementation", "maintained SciRel caller-port and penalty regression"],
+    "source_kinds": [
+      "saved L1 Operator contract and implementation",
+      "maintained SciRel caller-port and penalty regression"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
-  "public_api": {"python": {"module": "scirel.inference.anisotropic_trial_evaluation", "symbol": "evaluate_anisotropic_trial", "signature": "evaluate_anisotropic_trial(*, params, observations, solver_config, equilibrium_solver, diagnostic_evaluator, residual_reducer)"}},
-  "version": {"implementation_version": "0.1.0.dev30", "dependencies": []},
+  "public_api": {
+    "python": {
+      "module": "scirel.inference.anisotropic_trial_evaluation",
+      "symbol": "evaluate_anisotropic_trial",
+      "signature": "evaluate_anisotropic_trial(*, params, observations, solver_config, equilibrium_solver, diagnostic_evaluator, residual_reducer)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev31",
+    "dependencies": []
+  },
   "example": {
     "description": "Injected forward and diagnostic ports yield a two-unit normalized residual without requiring a real equilibrium solver.",
     "code": "import numpy as np\nfrom scirel.inference import evaluate_anisotropic_trial\nfrom scirel.diagnostics import reduce_observation_residuals\ndef solve(payload):\n    return {'converged': True, 'failure_reason': None, 'p': payload['params']['p']}\ndef diagnose(state):\n    return {'flux_loops': [state['equilibrium']['p']]}\nresult = evaluate_anisotropic_trial(params={'p': 3.0}, observations={'flux_loops': {'values': [1.0], 'sigma': [1.0]}}, solver_config={'r_grid': [0.0], 'z_grid': [0.0]}, equilibrium_solver=solve, diagnostic_evaluator=diagnose, residual_reducer=reduce_observation_residuals)\nnp.testing.assert_allclose(result['residuals'], [2.0])\nassert result['chi2'] == 4.0 and result['failure_reason'] is None",
     "expected": "One successful caller-owned trial produces residual [2], chi2=4 and retains its equilibrium mapping."
   },
   "verification": {
-    "scope": ["Caller-owned solver/diagnostic/reducer wiring on a small injected trial.", "Nested port exception becomes residual [1e12] and chi2=1e24."],
-    "tests": ["tests/test_incremental_admissions.py"],
+    "scope": [
+      "Caller-owned solver/diagnostic/reducer wiring on a small injected trial.",
+      "Nested port exception becomes residual [1e12] and chi2=1e24."
+    ],
+    "tests": [
+      "tests/test_incremental_admissions.py"
+    ],
     "evidence_ceiling": "Direct regression establishes selected port binding and penalty behavior; it does not validate the supplied forward physics, all malformed inputs, optimizer behavior or expert recognition.",
-    "known_limitations": ["The broad exception handler hides the exception class in a penalty record, while retaining only its message.", "A nonconverged equilibrium is still sent to diagnostics before status is read.", "Public distribution licensing and SciRel expert recognition remain pending."]
+    "known_limitations": [
+      "The broad exception handler hides the exception class in a penalty record, while retaining only its message.",
+      "A nonconverged equilibrium is still sent to diagnostics before status is read.",
+      "Public distribution licensing and SciRel expert recognition remain pending."
+    ]
   }
 }

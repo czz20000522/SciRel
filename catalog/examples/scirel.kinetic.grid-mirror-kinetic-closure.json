@@ -2,10 +2,22 @@
   "schema": "scirel.asset-document.v1",
   "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure",
   "kind": "task_graph",
-  "title": {"en": "Grid-aware mirror kinetic and ambipolar closure", "zh": "网格镜端动理学闭合"},
+  "title": {
+    "en": "Grid-aware mirror kinetic and ambipolar closure",
+    "zh": "网格镜端动理学闭合"
+  },
   "summary": "Select reference and plug planes on a rectilinear R-Z grid, interpolate their magnetic and potential profiles in flux, evaluate two end-loss states, run a nested local mirror quasineutral closure, and optionally mask selected returned density and pressure fields outside the plugs.",
-  "taxonomy": ["kinetic", "mirror-plasma", "quasineutrality", "grid-composition", "task-graph"],
-  "aliases": ["grid mirror end-loss closure", "R-Z mirror kinetic pressure assembly"],
+  "taxonomy": [
+    "kinetic",
+    "mirror-plasma",
+    "quasineutrality",
+    "grid-composition",
+    "task-graph"
+  ],
+  "aliases": [
+    "grid mirror end-loss closure",
+    "R-Z mirror kinetic pressure assembly"
+  ],
   "identity": {
     "relation": "Rectilinear mirror grid and reference/plug planes to end-loss-coupled local quasineutral pressure state",
     "direction": "(R-Z grid, B, psi, reference and plug planes, ion/electron state and controls) -> grid closure state, mapped end diagnostics and selected aliases",
@@ -14,78 +26,602 @@
     "geometry": "Caller-supplied rectilinear nonnegative-R, increasing-Z [N_Z,N_R] tensor grid with N_Z,N_R >= 2, positive B and three ordered nearest plane indices. Flux-surface interpolation assumes each selected row is representable as a single-valued scalar function of psi; the profile operator sorts and deduplicates samples with constant endpoint extension.",
     "coordinates": "R and Z are in m; arrays are [Z,R]. psi is a caller-owned flux-profile coordinate: the historical source label is Wb, while a nested SciRel Hall field supplies psi=R A_phi in Wb/rad. Every sampled row and caller profile must use the same convention; this graph does not convert between them. Requested plane coordinates map to the first nearest z-axis index and need not equal grid nodes.",
     "boundary": "Nearest selected left/reference/right indices must satisfy left < reference < right. Prescribed mode uses caller plug potentials or zero defaults; ambipolar_end_loss solves each endpoint independently and requires positive ion_loss_refill. Default confinement zeroes selected top-level fields outside the inclusive plug interval but leaves potentials, endpoint diagnostics, nested kinetic_moments, original moment-named fields and pitch integrals unmasked.",
-    "assumptions": ["All selected flux rows and the full grid use one compatible flux convention; if psi is rescaled, every psi-dependent caller profile must be defined in the rescaled coordinate. Interpolation does not establish physical flux-surface equivalence or uniqueness.", "Reference density and temperature profiles need to be meaningful on both one-dimensional reference psi and two-dimensional grid psi; scalar values or shape-aware callables satisfy that interface, while an arbitrary full-grid array may fail at the endpoint operator.", "The supplied species, electron and plug model is physically appropriate; a small numerical charge residual alone does not certify the source model or magnetic equilibrium."]
+    "assumptions": [
+      "All selected flux rows and the full grid use one compatible flux convention; if psi is rescaled, every psi-dependent caller profile must be defined in the rescaled coordinate. Interpolation does not establish physical flux-surface equivalence or uniqueness.",
+      "Reference density and temperature profiles need to be meaningful on both one-dimensional reference psi and two-dimensional grid psi; scalar values or shape-aware callables satisfy that interface, while an arbitrary full-grid array may fail at the endpoint operator.",
+      "The supplied species, electron and plug model is physically appropriate; a small numerical charge residual alone does not certify the source model or magnetic equilibrium."
+    ]
   },
   "inputs": [
-    {"name": "r_grid", "description": "Cylindrical radial mesh coordinate R.", "units": "m", "shape": "[N_Z,N_R], N_Z,N_R >= 2", "dtype": "real array-like converted to float64", "required": true, "constraints": "Finite, nonnegative first-row R axis strictly increasing; each row matches that axis within np.allclose."},
-    {"name": "z_grid", "description": "Axial mesh coordinate Z.", "units": "m", "shape": "same [N_Z,N_R] as r_grid", "dtype": "real array-like converted to float64", "required": true, "constraints": "Finite first-column Z axis strictly increasing; each column matches that axis within np.allclose."},
-    {"name": "b_t", "description": "Current local magnetic-field magnitude.", "units": "T", "shape": "same [N_Z,N_R] grid", "dtype": "real array-like converted to float64", "required": true, "constraints": "Finite and strictly positive."},
-    {"name": "psi", "description": "Caller-owned flux-profile coordinate on the grid.", "units": "caller-consistent Wb or Wb/rad", "shape": "same [N_Z,N_R] grid", "dtype": "real array-like converted to float64", "required": true, "constraints": "Finite; sampled rows need at least two distinct psi coordinates for the bound profile operator. The historical source label is Wb; nested Hall supplies Wb/rad, so all psi-dependent profiles must follow the supplied coordinate."},
-    {"name": "mass_kg", "description": "Positive-ion particle mass.", "units": "kg", "shape": "scalar", "dtype": "real numeric", "required": true, "constraints": "Nested ion and endpoint operators require finite strictly positive value."},
-    {"name": "charge_c", "description": "Positive ion charge.", "units": "C", "shape": "scalar", "dtype": "real numeric", "required": true, "constraints": "Nested quasineutral and endpoint operators require finite strictly positive charge."},
-    {"name": "density_ref_m3", "description": "Ion reference number density, reused at reference row and full grid.", "units": "m^-3", "shape": "scalar or callable(psi) yielding reference-row and full-grid shapes", "dtype": "real numeric or callable yielding float64-convertible arrays", "required": true, "constraints": "Finite nonnegative wherever evaluated; an [N_Z,N_R] fixed array generally cannot broadcast to the [N_R] endpoint psi and is not a universally supported form."},
-    {"name": "temperature_parallel_j", "description": "Ion parallel reference thermal energy.", "units": "J", "shape": "scalar or callable(psi) yielding reference-row and full-grid shapes", "dtype": "real numeric or callable yielding float64-convertible arrays", "required": true, "constraints": "Finite and strictly positive wherever evaluated; fixed 2-D arrays may fail endpoint broadcasting."},
-    {"name": "temperature_perpendicular_ref_j", "description": "Ion perpendicular reference thermal energy.", "units": "J", "shape": "scalar or callable(psi) yielding reference-row and full-grid shapes", "dtype": "real numeric or callable yielding float64-convertible arrays", "required": true, "constraints": "Finite and strictly positive wherever evaluated; fixed 2-D arrays may fail endpoint broadcasting."},
-    {"name": "electron_temperature_j", "description": "Prescribed Boltzmann electron thermal energy, also used in endpoint fluxes.", "units": "J", "shape": "scalar or callable(psi) yielding reference-row and full-grid shapes", "dtype": "real numeric or callable yielding float64-convertible arrays", "required": true, "constraints": "Finite and strictly positive wherever evaluated; fixed 2-D arrays may fail endpoint broadcasting."},
-    {"name": "reference_z", "description": "Requested reference plane coordinate, mapped to nearest Z index.", "units": "m", "shape": "scalar", "dtype": "real numeric scalar", "required": true, "constraints": "Finite and mapped strictly between mapped plug indices."},
-    {"name": "plug_left_z", "description": "Requested left plug plane coordinate.", "units": "m", "shape": "scalar", "dtype": "real numeric scalar", "required": true, "constraints": "Finite; nearest index strictly below reference index."},
-    {"name": "plug_right_z", "description": "Requested right plug plane coordinate.", "units": "m", "shape": "scalar", "dtype": "real numeric scalar", "required": true, "constraints": "Finite; nearest index strictly above reference index."},
-    {"name": "electron_density_ref_m3", "description": "Optional electron reference density for both endpoint and nested closures.", "units": "m^-3", "shape": "scalar or callable(psi) yielding reference-row and full-grid shapes", "dtype": "null, real numeric or callable yielding float64-convertible arrays", "required": false, "default": null, "constraints": "Omission derives charge-state times ion density; if provided, finite nonnegative and same active mask as ion reference density for the nested solve."},
-    {"name": "phi_ref_v", "description": "Reference potential sampled on the reference psi row, then interpolated over the full grid.", "units": "V", "shape": "scalar, [N_R] array or callable(reference-row psi)", "dtype": "real numeric or callable yielding float64-convertible values", "required": false, "default": 0.0, "constraints": "Finite and broadcastable to the one-dimensional reference row; a fixed [N_Z,N_R] array is not accepted."},
-    {"name": "phi_plug_left_v", "description": "Prescribed left endpoint potential in prescribed mode.", "units": "V", "shape": "scalar, [N_R] array or callable(reference-row psi)", "dtype": "real numeric or callable yielding float64-convertible values", "required": false, "default": 0.0, "constraints": "Finite and reference-row broadcastable if prescribed mode; ignored in ambipolar_end_loss mode."},
-    {"name": "phi_plug_right_v", "description": "Prescribed right endpoint potential in prescribed mode.", "units": "V", "shape": "scalar, [N_R] array or callable(reference-row psi)", "dtype": "real numeric or callable yielding float64-convertible values", "required": false, "default": 0.0, "constraints": "Finite and reference-row broadcastable if prescribed mode; ignored in ambipolar_end_loss mode."},
-    {"name": "plug_potential_mode", "description": "Endpoint potential evaluation or end-current-balance solve.", "units": "enum", "shape": "scalar string", "dtype": "str", "required": false, "default": "prescribed", "constraints": "Only 'prescribed' or 'ambipolar_end_loss'."},
-    {"name": "loss_cone_refill", "description": "Refill fraction passed to the nested mirror moments and used as default ion_loss_refill.", "units": "dimensionless", "shape": "scalar", "dtype": "real numeric", "required": false, "default": 0.0, "constraints": "Nested moments require finite [0,1]; ambipolar_end_loss requires a positive ion_loss_refill, supplied separately or inherited here."},
-    {"name": "quadrature_order", "description": "Finite pitch quadrature order for nested mirror moments.", "units": "count", "shape": "scalar", "dtype": "Python or NumPy integer, excluding bool", "required": false, "default": 32, "constraints": "At least 8; unlike the nested moment leaf, this parent rejects nonintegral values before dispatch."},
-    {"name": "ion_loss_refill", "description": "Ion one-way endpoint-flux refill, overriding the loss_cone_refill default.", "units": "dimensionless", "shape": "scalar", "dtype": "real numeric", "required": false, "default": "loss_cone_refill if supplied, otherwise 0.0", "constraints": "Finite [0,1]; strictly positive for ambipolar_end_loss mode. The endpoint operator itself defaults to 1.0, but this graph always passes the parent-derived value."},
-    {"name": "electron_loss_refill", "description": "Electron one-way endpoint-flux refill.", "units": "dimensionless", "shape": "scalar", "dtype": "real numeric", "required": false, "default": 1.0, "constraints": "Finite in (0,1]."},
-    {"name": "potential_tolerance_v", "description": "Absolute endpoint-potential tolerance for end-current solve.", "units": "V", "shape": "scalar", "dtype": "real numeric", "required": false, "default": 1e-6, "constraints": "Finite and strictly positive; independent of the nested quasineutral graph's default tolerance."},
-    {"name": "current_tolerance", "description": "Endpoint log-current-ratio convergence tolerance.", "units": "dimensionless", "shape": "scalar", "dtype": "real numeric", "required": false, "default": 1e-10, "constraints": "Finite and strictly positive."},
-    {"name": "max_iterations", "description": "Endpoint ambipolar bisection limit.", "units": "iterations", "shape": "scalar", "dtype": "Python or NumPy integer, excluding bool", "required": false, "default": 100, "constraints": "At least one; this parent passes it only to endpoint solves and does not override the nested graph's separate default 100."},
-    {"name": "initial_bracket_thermal", "description": "Initial endpoint-potential bracket half-width in thermal-voltage units.", "units": "dimensionless", "shape": "scalar", "dtype": "real numeric", "required": false, "default": 8.0, "constraints": "Finite and strictly positive; passed only to endpoint solves."},
-    {"name": "confine_to_plug_planes", "description": "Whether selected top-level returned fields are zeroed outside nearest plug rows.", "units": "bool", "shape": "scalar", "dtype": "Python or NumPy bool", "required": false, "default": true, "constraints": "A boolean scalar only, not numeric 0/1. It does not mask all returned fields."}
+    {
+      "name": "r_grid",
+      "description": "Cylindrical radial mesh coordinate R.",
+      "units": "m",
+      "shape": "[N_Z,N_R], N_Z,N_R >= 2",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Finite, nonnegative first-row R axis strictly increasing; each row matches that axis within np.allclose."
+    },
+    {
+      "name": "z_grid",
+      "description": "Axial mesh coordinate Z.",
+      "units": "m",
+      "shape": "same [N_Z,N_R] as r_grid",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Finite first-column Z axis strictly increasing; each column matches that axis within np.allclose."
+    },
+    {
+      "name": "b_t",
+      "description": "Current local magnetic-field magnitude.",
+      "units": "T",
+      "shape": "same [N_Z,N_R] grid",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "psi",
+      "description": "Caller-owned flux-profile coordinate on the grid.",
+      "units": "caller-consistent Wb or Wb/rad",
+      "shape": "same [N_Z,N_R] grid",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Finite; sampled rows need at least two distinct psi coordinates for the bound profile operator. The historical source label is Wb; nested Hall supplies Wb/rad, so all psi-dependent profiles must follow the supplied coordinate."
+    },
+    {
+      "name": "mass_kg",
+      "description": "Positive-ion particle mass.",
+      "units": "kg",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Nested ion and endpoint operators require finite strictly positive value."
+    },
+    {
+      "name": "charge_c",
+      "description": "Positive ion charge.",
+      "units": "C",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Nested quasineutral and endpoint operators require finite strictly positive charge."
+    },
+    {
+      "name": "density_ref_m3",
+      "description": "Ion reference number density, reused at reference row and full grid.",
+      "units": "m^-3",
+      "shape": "scalar or callable(psi) yielding reference-row and full-grid shapes",
+      "dtype": "real numeric or callable yielding float64-convertible arrays",
+      "required": true,
+      "constraints": "Finite nonnegative wherever evaluated; an [N_Z,N_R] fixed array generally cannot broadcast to the [N_R] endpoint psi and is not a universally supported form."
+    },
+    {
+      "name": "temperature_parallel_j",
+      "description": "Ion parallel reference thermal energy.",
+      "units": "J",
+      "shape": "scalar or callable(psi) yielding reference-row and full-grid shapes",
+      "dtype": "real numeric or callable yielding float64-convertible arrays",
+      "required": true,
+      "constraints": "Finite and strictly positive wherever evaluated; fixed 2-D arrays may fail endpoint broadcasting."
+    },
+    {
+      "name": "temperature_perpendicular_ref_j",
+      "description": "Ion perpendicular reference thermal energy.",
+      "units": "J",
+      "shape": "scalar or callable(psi) yielding reference-row and full-grid shapes",
+      "dtype": "real numeric or callable yielding float64-convertible arrays",
+      "required": true,
+      "constraints": "Finite and strictly positive wherever evaluated; fixed 2-D arrays may fail endpoint broadcasting."
+    },
+    {
+      "name": "electron_temperature_j",
+      "description": "Prescribed Boltzmann electron thermal energy, also used in endpoint fluxes.",
+      "units": "J",
+      "shape": "scalar or callable(psi) yielding reference-row and full-grid shapes",
+      "dtype": "real numeric or callable yielding float64-convertible arrays",
+      "required": true,
+      "constraints": "Finite and strictly positive wherever evaluated; fixed 2-D arrays may fail endpoint broadcasting."
+    },
+    {
+      "name": "reference_z",
+      "description": "Requested reference plane coordinate, mapped to nearest Z index.",
+      "units": "m",
+      "shape": "scalar",
+      "dtype": "real numeric scalar",
+      "required": true,
+      "constraints": "Finite and mapped strictly between mapped plug indices."
+    },
+    {
+      "name": "plug_left_z",
+      "description": "Requested left plug plane coordinate.",
+      "units": "m",
+      "shape": "scalar",
+      "dtype": "real numeric scalar",
+      "required": true,
+      "constraints": "Finite; nearest index strictly below reference index."
+    },
+    {
+      "name": "plug_right_z",
+      "description": "Requested right plug plane coordinate.",
+      "units": "m",
+      "shape": "scalar",
+      "dtype": "real numeric scalar",
+      "required": true,
+      "constraints": "Finite; nearest index strictly above reference index."
+    },
+    {
+      "name": "electron_density_ref_m3",
+      "description": "Optional electron reference density for both endpoint and nested closures.",
+      "units": "m^-3",
+      "shape": "scalar or callable(psi) yielding reference-row and full-grid shapes",
+      "dtype": "null, real numeric or callable yielding float64-convertible arrays",
+      "required": false,
+      "default": null,
+      "constraints": "Omission derives charge-state times ion density; if provided, finite nonnegative and same active mask as ion reference density for the nested solve."
+    },
+    {
+      "name": "phi_ref_v",
+      "description": "Reference potential sampled on the reference psi row, then interpolated over the full grid.",
+      "units": "V",
+      "shape": "scalar, [N_R] array or callable(reference-row psi)",
+      "dtype": "real numeric or callable yielding float64-convertible values",
+      "required": false,
+      "default": 0.0,
+      "constraints": "Finite and broadcastable to the one-dimensional reference row; a fixed [N_Z,N_R] array is not accepted."
+    },
+    {
+      "name": "phi_plug_left_v",
+      "description": "Prescribed left endpoint potential in prescribed mode.",
+      "units": "V",
+      "shape": "scalar, [N_R] array or callable(reference-row psi)",
+      "dtype": "real numeric or callable yielding float64-convertible values",
+      "required": false,
+      "default": 0.0,
+      "constraints": "Finite and reference-row broadcastable if prescribed mode; ignored in ambipolar_end_loss mode."
+    },
+    {
+      "name": "phi_plug_right_v",
+      "description": "Prescribed right endpoint potential in prescribed mode.",
+      "units": "V",
+      "shape": "scalar, [N_R] array or callable(reference-row psi)",
+      "dtype": "real numeric or callable yielding float64-convertible values",
+      "required": false,
+      "default": 0.0,
+      "constraints": "Finite and reference-row broadcastable if prescribed mode; ignored in ambipolar_end_loss mode."
+    },
+    {
+      "name": "plug_potential_mode",
+      "description": "Endpoint potential evaluation or end-current-balance solve.",
+      "units": "enum",
+      "shape": "scalar string",
+      "dtype": "str",
+      "required": false,
+      "default": "prescribed",
+      "constraints": "Only 'prescribed' or 'ambipolar_end_loss'."
+    },
+    {
+      "name": "loss_cone_refill",
+      "description": "Refill fraction passed to the nested mirror moments and used as default ion_loss_refill.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": false,
+      "default": 0.0,
+      "constraints": "Nested moments require finite [0,1]; ambipolar_end_loss requires a positive ion_loss_refill, supplied separately or inherited here."
+    },
+    {
+      "name": "quadrature_order",
+      "description": "Finite pitch quadrature order for nested mirror moments.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "Python or NumPy integer, excluding bool",
+      "required": false,
+      "default": 32,
+      "constraints": "At least 8; unlike the nested moment leaf, this parent rejects nonintegral values before dispatch."
+    },
+    {
+      "name": "ion_loss_refill",
+      "description": "Ion one-way endpoint-flux refill, overriding the loss_cone_refill default.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": false,
+      "default": "loss_cone_refill if supplied, otherwise 0.0",
+      "constraints": "Finite [0,1]; strictly positive for ambipolar_end_loss mode. The endpoint operator itself defaults to 1.0, but this graph always passes the parent-derived value."
+    },
+    {
+      "name": "electron_loss_refill",
+      "description": "Electron one-way endpoint-flux refill.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": false,
+      "default": 1.0,
+      "constraints": "Finite in (0,1]."
+    },
+    {
+      "name": "potential_tolerance_v",
+      "description": "Absolute endpoint-potential tolerance for end-current solve.",
+      "units": "V",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": false,
+      "default": 1e-06,
+      "constraints": "Finite and strictly positive; independent of the nested quasineutral graph's default tolerance."
+    },
+    {
+      "name": "current_tolerance",
+      "description": "Endpoint log-current-ratio convergence tolerance.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": false,
+      "default": 1e-10,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "max_iterations",
+      "description": "Endpoint ambipolar bisection limit.",
+      "units": "iterations",
+      "shape": "scalar",
+      "dtype": "Python or NumPy integer, excluding bool",
+      "required": false,
+      "default": 100,
+      "constraints": "At least one; this parent passes it only to endpoint solves and does not override the nested graph's separate default 100."
+    },
+    {
+      "name": "initial_bracket_thermal",
+      "description": "Initial endpoint-potential bracket half-width in thermal-voltage units.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": false,
+      "default": 8.0,
+      "constraints": "Finite and strictly positive; passed only to endpoint solves."
+    },
+    {
+      "name": "confine_to_plug_planes",
+      "description": "Whether selected top-level returned fields are zeroed outside nearest plug rows.",
+      "units": "bool",
+      "shape": "scalar",
+      "dtype": "Python or NumPy bool",
+      "required": false,
+      "default": true,
+      "constraints": "A boolean scalar only, not numeric 0/1. It does not mask all returned fields."
+    }
   ],
   "outputs": [
-    {"name": "p_parallel", "description": "Total ion-plus-electron parallel pressure, masked outside plugs by default.", "units": "Pa", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Top-level mask does not alter active rows."},
-    {"name": "p_perpendicular", "description": "Total ion-plus-electron perpendicular pressure, masked outside plugs by default.", "units": "Pa", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Top-level mask does not alter active rows."},
-    {"name": "ion_density", "description": "Ion density from nested closure, masked outside plugs by default.", "units": "m^-3", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "May differ from unmasked density_m3 outside plugs."},
-    {"name": "electron_density", "description": "Boltzmann electron density, masked outside plugs by default.", "units": "m^-3", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Nested state remains unmasked."},
-    {"name": "electrostatic_potential", "description": "Nested local quasineutral potential.", "units": "V", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Never masked by confine_to_plug_planes."},
-    {"name": "relative_charge_residual", "description": "Nested relative ion-charge/electron-density residual, masked outside plugs by default.", "units": "dimensionless", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Not the endpoint log-current ratio."},
-    {"name": "kinetic_moments", "description": "Full nested mirror ion-moment mapping.", "units": "mixed; see mirror-constrained-moments asset", "shape": "mapping of [N_Z,N_R] fields", "dtype": "dict", "required": true, "constraints": "Remains full-grid even when selected top-level aliases are masked."},
-    {"name": "ion_p_parallel", "description": "Ion parallel pressure component, masked outside plugs by default.", "units": "Pa", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Original p_parallel_pa remains unmasked."},
-    {"name": "ion_p_perpendicular", "description": "Ion perpendicular pressure component, masked outside plugs by default.", "units": "Pa", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Original p_perpendicular_pa remains unmasked."},
-    {"name": "electron_pressure", "description": "Electron pressure component, masked outside plugs by default.", "units": "Pa", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "No separate masked copy in kinetic_moments."},
-    {"name": "density_m3", "description": "Original nested ion density under moment-field name.", "units": "m^-3", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Unmasked even when ion_density and density are zeroed outside plugs."},
-    {"name": "p_parallel_pa", "description": "Original nested ion parallel pressure.", "units": "Pa", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Unmasked even when ion_p_parallel is zeroed outside plugs."},
-    {"name": "p_perpendicular_pa", "description": "Original nested ion perpendicular pressure.", "units": "Pa", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Unmasked even when ion_p_perpendicular is zeroed outside plugs."},
-    {"name": "temperature_parallel_j", "description": "Original nested ion parallel thermal-energy parameter.", "units": "J", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Unmasked; not pressure over depleted density."},
-    {"name": "temperature_perpendicular_local_j", "description": "Original nested local perpendicular thermal-energy parameter.", "units": "J", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Unmasked."},
-    {"name": "untruncated_density_m3", "description": "Original nested ion density before loss-cone pitch depletion.", "units": "m^-3", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Unmasked even when untruncated_density alias is masked."},
-    {"name": "density_pitch_integral", "description": "Density pitch-occupation integral factor.", "units": "dimensionless", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Full-grid diagnostic; never masked."},
-    {"name": "parallel_pitch_integral", "description": "Parallel-pressure pitch-occupation integral factor.", "units": "dimensionless", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Full-grid diagnostic; never masked."},
-    {"name": "perpendicular_pitch_integral", "description": "Perpendicular-pressure pitch-occupation integral factor.", "units": "dimensionless", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Full-grid diagnostic; never masked."},
-    {"name": "iterations", "description": "Nested local quasineutral bisection iteration count.", "units": "iterations", "shape": "scalar", "dtype": "int", "required": true, "constraints": "Not the two endpoint iteration counts, which are not exposed by this graph."},
-    {"name": "converged", "description": "Nested local quasineutral convergence flag.", "units": "bool", "shape": "scalar", "dtype": "bool", "required": true, "constraints": "Endpoint states must also have returned successfully, but their flags are not exposed."},
-    {"name": "end_left_potential_v", "description": "Left endpoint potential interpolated from reference-row psi to the full grid.", "units": "V", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Full-grid, unmasked."},
-    {"name": "end_left_ion_particle_flux_m2_s", "description": "Mapped left one-way ion particle flux.", "units": "m^-2 s^-1", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Interpolated in psi, not spatially propagated."},
-    {"name": "end_left_electron_particle_flux_m2_s", "description": "Mapped left one-way electron particle flux.", "units": "m^-2 s^-1", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Interpolated in psi, not spatially propagated."},
-    {"name": "end_left_log_current_ratio", "description": "Mapped left logarithmic ion/electron current ratio.", "units": "dimensionless", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Endpoint diagnostic, not nested charge residual."},
-    {"name": "end_left_relative_current_residual", "description": "Mapped left relative ion/electron current residual.", "units": "dimensionless", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Endpoint diagnostic, not nested charge residual."},
-    {"name": "end_right_potential_v", "description": "Right endpoint potential interpolated from reference-row psi to the full grid.", "units": "V", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Full-grid, unmasked."},
-    {"name": "end_right_ion_particle_flux_m2_s", "description": "Mapped right one-way ion particle flux.", "units": "m^-2 s^-1", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Interpolated in psi, not spatially propagated."},
-    {"name": "end_right_electron_particle_flux_m2_s", "description": "Mapped right one-way electron particle flux.", "units": "m^-2 s^-1", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Interpolated in psi, not spatially propagated."},
-    {"name": "end_right_log_current_ratio", "description": "Mapped right logarithmic ion/electron current ratio.", "units": "dimensionless", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Endpoint diagnostic, not nested charge residual."},
-    {"name": "end_right_relative_current_residual", "description": "Mapped right relative ion/electron current residual.", "units": "dimensionless", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Endpoint diagnostic, not nested charge residual."},
-    {"name": "density", "description": "Ion density alias for downstream Hall closure.", "units": "m^-3", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Alias of ion_density before optional masking; selected top-level field is masked by default."},
-    {"name": "T_parallel_J", "description": "Ion parallel thermal-energy alias from kinetic_moments.", "units": "J", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Unmasked; not recalculated from masked pressure/density."},
-    {"name": "T_perpendicular_local_J", "description": "Local ion perpendicular thermal-energy alias from kinetic_moments.", "units": "J", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Unmasked; not recalculated from masked pressure/density."},
-    {"name": "untruncated_density", "description": "Ion untruncated-density alias, masked outside plugs by default.", "units": "m^-3", "shape": "[N_Z,N_R]", "dtype": "float64 ndarray", "required": true, "constraints": "Original untruncated_density_m3 remains unmasked."}
+    {
+      "name": "p_parallel",
+      "description": "Total ion-plus-electron parallel pressure, masked outside plugs by default.",
+      "units": "Pa",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Top-level mask does not alter active rows."
+    },
+    {
+      "name": "p_perpendicular",
+      "description": "Total ion-plus-electron perpendicular pressure, masked outside plugs by default.",
+      "units": "Pa",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Top-level mask does not alter active rows."
+    },
+    {
+      "name": "ion_density",
+      "description": "Ion density from nested closure, masked outside plugs by default.",
+      "units": "m^-3",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "May differ from unmasked density_m3 outside plugs."
+    },
+    {
+      "name": "electron_density",
+      "description": "Boltzmann electron density, masked outside plugs by default.",
+      "units": "m^-3",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Nested state remains unmasked."
+    },
+    {
+      "name": "electrostatic_potential",
+      "description": "Nested local quasineutral potential.",
+      "units": "V",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Never masked by confine_to_plug_planes."
+    },
+    {
+      "name": "relative_charge_residual",
+      "description": "Nested relative ion-charge/electron-density residual, masked outside plugs by default.",
+      "units": "dimensionless",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Not the endpoint log-current ratio."
+    },
+    {
+      "name": "kinetic_moments",
+      "description": "Full nested mirror ion-moment mapping.",
+      "units": "mixed; see mirror-constrained-moments asset",
+      "shape": "mapping of [N_Z,N_R] fields",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "Remains full-grid even when selected top-level aliases are masked."
+    },
+    {
+      "name": "ion_p_parallel",
+      "description": "Ion parallel pressure component, masked outside plugs by default.",
+      "units": "Pa",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Original p_parallel_pa remains unmasked."
+    },
+    {
+      "name": "ion_p_perpendicular",
+      "description": "Ion perpendicular pressure component, masked outside plugs by default.",
+      "units": "Pa",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Original p_perpendicular_pa remains unmasked."
+    },
+    {
+      "name": "electron_pressure",
+      "description": "Electron pressure component, masked outside plugs by default.",
+      "units": "Pa",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "No separate masked copy in kinetic_moments."
+    },
+    {
+      "name": "density_m3",
+      "description": "Original nested ion density under moment-field name.",
+      "units": "m^-3",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Unmasked even when ion_density and density are zeroed outside plugs."
+    },
+    {
+      "name": "p_parallel_pa",
+      "description": "Original nested ion parallel pressure.",
+      "units": "Pa",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Unmasked even when ion_p_parallel is zeroed outside plugs."
+    },
+    {
+      "name": "p_perpendicular_pa",
+      "description": "Original nested ion perpendicular pressure.",
+      "units": "Pa",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Unmasked even when ion_p_perpendicular is zeroed outside plugs."
+    },
+    {
+      "name": "temperature_parallel_j",
+      "description": "Original nested ion parallel thermal-energy parameter.",
+      "units": "J",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Unmasked; not pressure over depleted density."
+    },
+    {
+      "name": "temperature_perpendicular_local_j",
+      "description": "Original nested local perpendicular thermal-energy parameter.",
+      "units": "J",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Unmasked."
+    },
+    {
+      "name": "untruncated_density_m3",
+      "description": "Original nested ion density before loss-cone pitch depletion.",
+      "units": "m^-3",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Unmasked even when untruncated_density alias is masked."
+    },
+    {
+      "name": "density_pitch_integral",
+      "description": "Density pitch-occupation integral factor.",
+      "units": "dimensionless",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Full-grid diagnostic; never masked."
+    },
+    {
+      "name": "parallel_pitch_integral",
+      "description": "Parallel-pressure pitch-occupation integral factor.",
+      "units": "dimensionless",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Full-grid diagnostic; never masked."
+    },
+    {
+      "name": "perpendicular_pitch_integral",
+      "description": "Perpendicular-pressure pitch-occupation integral factor.",
+      "units": "dimensionless",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Full-grid diagnostic; never masked."
+    },
+    {
+      "name": "iterations",
+      "description": "Nested local quasineutral bisection iteration count.",
+      "units": "iterations",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "Not the two endpoint iteration counts, which are not exposed by this graph."
+    },
+    {
+      "name": "converged",
+      "description": "Nested local quasineutral convergence flag.",
+      "units": "bool",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "Endpoint states must also have returned successfully, but their flags are not exposed."
+    },
+    {
+      "name": "end_left_potential_v",
+      "description": "Left endpoint potential interpolated from reference-row psi to the full grid.",
+      "units": "V",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Full-grid, unmasked."
+    },
+    {
+      "name": "end_left_ion_particle_flux_m2_s",
+      "description": "Mapped left one-way ion particle flux.",
+      "units": "m^-2 s^-1",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Interpolated in psi, not spatially propagated."
+    },
+    {
+      "name": "end_left_electron_particle_flux_m2_s",
+      "description": "Mapped left one-way electron particle flux.",
+      "units": "m^-2 s^-1",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Interpolated in psi, not spatially propagated."
+    },
+    {
+      "name": "end_left_log_current_ratio",
+      "description": "Mapped left logarithmic ion/electron current ratio.",
+      "units": "dimensionless",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Endpoint diagnostic, not nested charge residual."
+    },
+    {
+      "name": "end_left_relative_current_residual",
+      "description": "Mapped left relative ion/electron current residual.",
+      "units": "dimensionless",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Endpoint diagnostic, not nested charge residual."
+    },
+    {
+      "name": "end_right_potential_v",
+      "description": "Right endpoint potential interpolated from reference-row psi to the full grid.",
+      "units": "V",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Full-grid, unmasked."
+    },
+    {
+      "name": "end_right_ion_particle_flux_m2_s",
+      "description": "Mapped right one-way ion particle flux.",
+      "units": "m^-2 s^-1",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Interpolated in psi, not spatially propagated."
+    },
+    {
+      "name": "end_right_electron_particle_flux_m2_s",
+      "description": "Mapped right one-way electron particle flux.",
+      "units": "m^-2 s^-1",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Interpolated in psi, not spatially propagated."
+    },
+    {
+      "name": "end_right_log_current_ratio",
+      "description": "Mapped right logarithmic ion/electron current ratio.",
+      "units": "dimensionless",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Endpoint diagnostic, not nested charge residual."
+    },
+    {
+      "name": "end_right_relative_current_residual",
+      "description": "Mapped right relative ion/electron current residual.",
+      "units": "dimensionless",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Endpoint diagnostic, not nested charge residual."
+    },
+    {
+      "name": "density",
+      "description": "Ion density alias for downstream Hall closure.",
+      "units": "m^-3",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Alias of ion_density before optional masking; selected top-level field is masked by default."
+    },
+    {
+      "name": "T_parallel_J",
+      "description": "Ion parallel thermal-energy alias from kinetic_moments.",
+      "units": "J",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Unmasked; not recalculated from masked pressure/density."
+    },
+    {
+      "name": "T_perpendicular_local_J",
+      "description": "Local ion perpendicular thermal-energy alias from kinetic_moments.",
+      "units": "J",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Unmasked; not recalculated from masked pressure/density."
+    },
+    {
+      "name": "untruncated_density",
+      "description": "Ion untruncated-density alias, masked outside plugs by default.",
+      "units": "m^-3",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Original untruncated_density_m3 remains unmasked."
+    }
   ],
   "applicability": {
-    "preconditions": ["A finite rectilinear R-Z grid with positive B and three distinct ordered nearest plane indices is supplied.", "The three sampled psi rows contain enough distinct values for flux-profile interpolation, and caller reference profiles are evaluable on both reference-row and full-grid psi.", "The positive-ion and Boltzmann-electron states meet the bound endpoint and nested-closure contracts."],
-    "supported": ["Prescribed or separately solved two-end potentials mapped through a flux coordinate to a local grid quasineutral closure.", "Optional zeroing of selected top-level density, pressure and charge-residual fields outside the nearest plug rows."],
-    "excluded": ["A general R-Z equilibrium solve, magnetic-field construction, spatially resolved kinetic transport, or multi-ion/electron-anisotropy closure.", "Automatic reconciliation of Wb and Wb/rad flux conventions, arbitrary full-grid fixed reference profiles at the one-dimensional endpoint call, or a comprehensive masking guarantee for every returned field."]
+    "preconditions": [
+      "A finite rectilinear R-Z grid with positive B and three distinct ordered nearest plane indices is supplied.",
+      "The three sampled psi rows contain enough distinct values for flux-profile interpolation, and caller reference profiles are evaluable on both reference-row and full-grid psi.",
+      "The positive-ion and Boltzmann-electron states meet the bound endpoint and nested-closure contracts."
+    ],
+    "supported": [
+      "Prescribed or separately solved two-end potentials mapped through a flux coordinate to a local grid quasineutral closure.",
+      "Optional zeroing of selected top-level density, pressure and charge-residual fields outside the nearest plug rows."
+    ],
+    "excluded": [
+      "A general R-Z equilibrium solve, magnetic-field construction, spatially resolved kinetic transport, or multi-ion/electron-anisotropy closure.",
+      "Automatic reconciliation of Wb and Wb/rad flux conventions, arbitrary full-grid fixed reference profiles at the one-dimensional endpoint call, or a comprehensive masking guarantee for every returned field."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for nonmapping or missing required inputs, unequal/non-2-D/nonfinite grids, nonrectilinear or too-small axes, nonpositive B, nonfinite or unordered nearest plane indices, invalid mode, nonboolean confinement control, or quadrature_order that is not an integer >=8. Bound operators also reject invalid profile sample geometry, species, temperature, density, refill or potential controls; fixed 2-D profile arrays can fail at the one-dimensional endpoint call.",
@@ -95,111 +631,1304 @@
   },
   "provenance": {
     "lineage_summary": "SciRel maintains a compatible public TaskGraph associated with a saved historical Pleiades grid mirror kinetic closure. Historical admitted-assets entries and graph YAML are development lineage and contract evidence, not qualified current L1 delivery or current expert recognition; maintained graph source is not asserted byte-identical to the saved source.",
-    "source_kinds": ["saved historical Pleiades TaskGraph, implementation and dependency mapping", "SciRel grid-closure graph and composition regression tests"],
+    "source_kinds": [
+      "saved historical Pleiades TaskGraph, implementation and dependency mapping",
+      "SciRel grid-closure graph and composition regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
-  "public_api": {"python": {"module": "scirel.kinetic.grid_mirror_kinetic_closure", "symbol": "solve_grid_mirror_kinetic_closure", "signature": "solve_grid_mirror_kinetic_closure(inputs=None, **kwargs)"}},
-  "version": {"implementation_version": "0.1.0.dev30", "dependencies": [{"asset_id": "scirel.closures.mirror-ambipolar-potential"}, {"asset_id": "scirel.closures.mirror-quasineutral-closure"}, {"asset_id": "scirel.geometry.flux-surface-profile"}]},
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.grid_mirror_kinetic_closure",
+      "symbol": "solve_grid_mirror_kinetic_closure",
+      "signature": "solve_grid_mirror_kinetic_closure(inputs=None, **kwargs)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev31",
+    "dependencies": [
+      {
+        "asset_id": "scirel.closures.mirror-ambipolar-potential"
+      },
+      {
+        "asset_id": "scirel.closures.mirror-quasineutral-closure"
+      },
+      {
+        "asset_id": "scirel.geometry.flux-surface-profile"
+      }
+    ]
+  },
   "example": {
     "description": "Evaluate two end potentials and a quasineutral pressure state on a small rectilinear mirror grid.",
     "code": "import numpy as np\nfrom scirel.kinetic import solve_grid_mirror_kinetic_closure\ne = 1.602176634e-19\nr, z = np.linspace(0.0, 0.2, 5), np.linspace(-1.0, 1.0, 7)\nR, Z = np.meshgrid(r, z)\nstate = solve_grid_mirror_kinetic_closure({'r_grid': R, 'z_grid': Z, 'b_t': 1.0 + 3.0*np.abs(Z), 'psi': 0.5*R**2, 'mass_kg': 1.67262192595e-27, 'charge_c': e, 'density_ref_m3': 1.0e18, 'temperature_parallel_j': 1000.0*e, 'temperature_perpendicular_ref_j': 2000.0*e, 'electron_temperature_j': 500.0*e, 'reference_z': 0.0, 'plug_left_z': -1.0, 'plug_right_z': 1.0, 'loss_cone_refill': 0.05, 'quadrature_order': 24, 'plug_potential_mode': 'ambipolar_end_loss'})\nassert state['p_parallel'].shape == R.shape\nassert np.all(state['end_left_potential_v'] < 0.0)\nassert np.max(np.abs(state['relative_charge_residual'])) < 1e-9",
     "expected": "A [7,5] pressure field, negative mapped left end potential and small relative local charge residual for the selected test state."
   },
   "verification": {
-    "scope": ["Grid-aware endpoint mapping and nested local charge closure for one positive-ion mirror case, with relative charge residual below 1e-9.", "Fixed-profile pressure, density and endpoint-potential results are unchanged when the supplied psi interpolation coordinate is rescaled by 2*pi; a separate unadjusted psi-dependent density callback changes the returned density under the same rescaling.", "Nearest-plane confinement of selected ion-density rows and preservation of three full-grid pitch diagnostics.", "Callable reference-density profile evaluation and rejection of a 2-D reference-potential field, nonrectilinear/nonfinite grids, numeric confinement flag and quadrature order below eight or nonintegral."],
-    "tests": ["tests/graph_contracts/grid_mirror_kinetic_closure/test_graph_grid_mirror_kinetic_closure.py"],
+    "scope": [
+      "Grid-aware endpoint mapping and nested local charge closure for one positive-ion mirror case, with relative charge residual below 1e-9.",
+      "Fixed-profile pressure, density and endpoint-potential results are unchanged when the supplied psi interpolation coordinate is rescaled by 2*pi; a separate unadjusted psi-dependent density callback changes the returned density under the same rescaling.",
+      "Nearest-plane confinement of selected ion-density rows and preservation of three full-grid pitch diagnostics.",
+      "Callable reference-density profile evaluation and rejection of a 2-D reference-potential field, nonrectilinear/nonfinite grids, numeric confinement flag and quadrature order below eight or nonintegral."
+    ],
+    "tests": [
+      "tests/graph_contracts/grid_mirror_kinetic_closure/test_graph_grid_mirror_kinetic_closure.py"
+    ],
     "evidence_ceiling": "Direct SciRel graph tests support the stated selected [7,5] grid cases, endpoint and nested residual assertions, fixed-profile psi-coordinate rescaling and one unadjusted-callback counterexample, chosen masking behavior and input rejects. They do not establish all profile domains, end-current balance over all states, physical correctness of the mirror model, full-grid array-profile support, automatic conversion or arbitrary psi-dependent callback equivalence, current expert approval or public release.",
-    "known_limitations": ["Input YAML describes fixed full-grid reference profiles more broadly than the actual endpoint-plus-nested call chain supports; the shared profile must work on both one-dimensional and two-dimensional psi.", "Confinement masks only selected top-level fields; the nested kinetic mapping, original moment-named values, temperatures, potentials, pitch integrals and endpoint diagnostics stay full-grid.", "Nearest-plane selection can differ from the requested physical coordinate and the flux-profile operator uses source-defined sorting, deduplication and constant endpoint extension.", "Independent endpoint and nested nonlinear solves expose no combined convergence certificate; source licensing and current-version expert recognition remain pending."]
+    "known_limitations": [
+      "Input YAML describes fixed full-grid reference profiles more broadly than the actual endpoint-plus-nested call chain supports; the shared profile must work on both one-dimensional and two-dimensional psi.",
+      "Confinement masks only selected top-level fields; the nested kinetic mapping, original moment-named values, temperatures, potentials, pitch integrals and endpoint diagnostics stay full-grid.",
+      "Nearest-plane selection can differ from the requested physical coordinate and the flux-profile operator uses source-defined sorting, deduplication and constant endpoint extension.",
+      "Independent endpoint and nested nonlinear solves expose no combined convergence certificate; source licensing and current-version expert recognition remain pending."
+    ]
   },
   "graph": {
     "nodes": [
-      {"id": "grid_selection", "kind": "controlled_glue", "description": "Validate the rectangular grid and controls, select first-nearest ordered plane indices, extract psi/B rows, shape caller reference potential, and carry declared species/control values without introducing a physical closure.", "inputs": ["r_grid", "z_grid", "b_t", "psi", "mass_kg", "charge_c", "density_ref_m3", "temperature_parallel_j", "temperature_perpendicular_ref_j", "electron_temperature_j", "reference_z", "plug_left_z", "plug_right_z", "electron_density_ref_m3", "phi_ref_v", "phi_plug_left_v", "phi_plug_right_v", "plug_potential_mode", "loss_cone_refill", "quadrature_order", "ion_loss_refill", "electron_loss_refill", "potential_tolerance_v", "current_tolerance", "max_iterations", "initial_bracket_thermal", "confine_to_plug_planes"], "outputs": ["grid_and_rows", "sampled_profiles", "species_and_controls", "mask_indices"]},
-      {"id": "field_profile", "kind": "operator", "asset_id": "scirel.geometry.flux-surface-profile", "description": "Interpolate reference and plug B rows and reference potential against caller psi before endpoint evaluation; repeated invocations of one bound operator.", "inputs": ["sampled_profiles"], "outputs": ["field_profiles"]},
-      {"id": "end_loss", "kind": "operator", "asset_id": "scirel.closures.mirror-ambipolar-potential", "description": "Run the end-loss operator once per side in evaluate mode for prescribed plug potentials or solve mode for ambipolar_end_loss.", "inputs": ["field_profiles", "species_and_controls"], "outputs": ["endpoint_states"]},
-      {"id": "endpoint_profile", "kind": "operator", "asset_id": "scirel.geometry.flux-surface-profile", "description": "Map both endpoint potentials and flux/current diagnostics from reference-row psi onto full-grid psi.", "inputs": ["endpoint_states"], "outputs": ["mapped_end_states"]},
-      {"id": "local_quasineutral", "kind": "task_graph", "asset_id": "scirel.closures.mirror-quasineutral-closure", "description": "Solve the nested local quasineutral potential, ion/electron state and total pressure on the full grid.", "inputs": ["grid_and_rows", "field_profiles", "mapped_end_states", "species_and_controls"], "outputs": ["closure_state"]},
-      {"id": "return_projection", "kind": "controlled_glue", "description": "Add mapped end diagnostics and legacy aliases, and optionally zero only the declared top-level fields outside the inclusive plug interval.", "inputs": ["closure_state", "mapped_end_states", "mask_indices"], "outputs": ["p_parallel", "p_perpendicular", "ion_density", "electron_density", "electrostatic_potential", "relative_charge_residual", "kinetic_moments", "ion_p_parallel", "ion_p_perpendicular", "electron_pressure", "density_m3", "p_parallel_pa", "p_perpendicular_pa", "temperature_parallel_j", "temperature_perpendicular_local_j", "untruncated_density_m3", "density_pitch_integral", "parallel_pitch_integral", "perpendicular_pitch_integral", "iterations", "converged", "end_left_potential_v", "end_left_ion_particle_flux_m2_s", "end_left_electron_particle_flux_m2_s", "end_left_log_current_ratio", "end_left_relative_current_residual", "end_right_potential_v", "end_right_ion_particle_flux_m2_s", "end_right_electron_particle_flux_m2_s", "end_right_log_current_ratio", "end_right_relative_current_residual", "density", "T_parallel_J", "T_perpendicular_local_J", "untruncated_density"]}
+      {
+        "id": "grid_selection",
+        "kind": "controlled_glue",
+        "description": "Validate the rectangular grid and controls, select first-nearest ordered plane indices, extract psi/B rows, shape caller reference potential, and carry declared species/control values without introducing a physical closure.",
+        "inputs": [
+          "r_grid",
+          "z_grid",
+          "b_t",
+          "psi",
+          "mass_kg",
+          "charge_c",
+          "density_ref_m3",
+          "temperature_parallel_j",
+          "temperature_perpendicular_ref_j",
+          "electron_temperature_j",
+          "reference_z",
+          "plug_left_z",
+          "plug_right_z",
+          "electron_density_ref_m3",
+          "phi_ref_v",
+          "phi_plug_left_v",
+          "phi_plug_right_v",
+          "plug_potential_mode",
+          "loss_cone_refill",
+          "quadrature_order",
+          "ion_loss_refill",
+          "electron_loss_refill",
+          "potential_tolerance_v",
+          "current_tolerance",
+          "max_iterations",
+          "initial_bracket_thermal",
+          "confine_to_plug_planes"
+        ],
+        "outputs": [
+          "grid_and_rows",
+          "sampled_profiles",
+          "species_and_controls",
+          "mask_indices"
+        ]
+      },
+      {
+        "id": "field_profile",
+        "kind": "operator",
+        "asset_id": "scirel.geometry.flux-surface-profile",
+        "description": "Interpolate reference and plug B rows and reference potential against caller psi before endpoint evaluation; repeated invocations of one bound operator.",
+        "inputs": [
+          "sampled_profiles"
+        ],
+        "outputs": [
+          "field_profiles"
+        ]
+      },
+      {
+        "id": "end_loss",
+        "kind": "operator",
+        "asset_id": "scirel.closures.mirror-ambipolar-potential",
+        "description": "Run the end-loss operator once per side in evaluate mode for prescribed plug potentials or solve mode for ambipolar_end_loss.",
+        "inputs": [
+          "field_profiles",
+          "species_and_controls"
+        ],
+        "outputs": [
+          "endpoint_states"
+        ]
+      },
+      {
+        "id": "endpoint_profile",
+        "kind": "operator",
+        "asset_id": "scirel.geometry.flux-surface-profile",
+        "description": "Map both endpoint potentials and flux/current diagnostics from reference-row psi onto full-grid psi.",
+        "inputs": [
+          "endpoint_states"
+        ],
+        "outputs": [
+          "mapped_end_states"
+        ]
+      },
+      {
+        "id": "local_quasineutral",
+        "kind": "task_graph",
+        "asset_id": "scirel.closures.mirror-quasineutral-closure",
+        "description": "Solve the nested local quasineutral potential, ion/electron state and total pressure on the full grid.",
+        "inputs": [
+          "grid_and_rows",
+          "field_profiles",
+          "mapped_end_states",
+          "species_and_controls"
+        ],
+        "outputs": [
+          "closure_state"
+        ]
+      },
+      {
+        "id": "return_projection",
+        "kind": "controlled_glue",
+        "description": "Add mapped end diagnostics and legacy aliases, and optionally zero only the declared top-level fields outside the inclusive plug interval.",
+        "inputs": [
+          "closure_state",
+          "mapped_end_states",
+          "mask_indices"
+        ],
+        "outputs": [
+          "p_parallel",
+          "p_perpendicular",
+          "ion_density",
+          "electron_density",
+          "electrostatic_potential",
+          "relative_charge_residual",
+          "kinetic_moments",
+          "ion_p_parallel",
+          "ion_p_perpendicular",
+          "electron_pressure",
+          "density_m3",
+          "p_parallel_pa",
+          "p_perpendicular_pa",
+          "temperature_parallel_j",
+          "temperature_perpendicular_local_j",
+          "untruncated_density_m3",
+          "density_pitch_integral",
+          "parallel_pitch_integral",
+          "perpendicular_pitch_integral",
+          "iterations",
+          "converged",
+          "end_left_potential_v",
+          "end_left_ion_particle_flux_m2_s",
+          "end_left_electron_particle_flux_m2_s",
+          "end_left_log_current_ratio",
+          "end_left_relative_current_residual",
+          "end_right_potential_v",
+          "end_right_ion_particle_flux_m2_s",
+          "end_right_electron_particle_flux_m2_s",
+          "end_right_log_current_ratio",
+          "end_right_relative_current_residual",
+          "density",
+          "T_parallel_J",
+          "T_perpendicular_local_J",
+          "untruncated_density"
+        ]
+      }
     ],
     "edges": [
-      {"from": {"node": "$input", "port": "r_grid"}, "to": {"node": "grid_selection", "port": "r_grid"}, "description": "Caller R grid.", "condition": "Always.", "transform": "Identity.", "kind": "data", "required": true},
-      {"from": {"node": "$input", "port": "z_grid"}, "to": {"node": "grid_selection", "port": "z_grid"}, "description": "Caller Z grid.", "condition": "Always.", "transform": "Identity.", "kind": "data", "required": true},
-      {"from": {"node": "$input", "port": "b_t"}, "to": {"node": "grid_selection", "port": "b_t"}, "description": "Local B grid.", "condition": "Always.", "transform": "Identity.", "kind": "data", "required": true},
-      {"from": {"node": "$input", "port": "psi"}, "to": {"node": "grid_selection", "port": "psi"}, "description": "Flux-coordinate grid.", "condition": "Always.", "transform": "Identity.", "kind": "data", "required": true},
-      {"from": {"node": "$input", "port": "mass_kg"}, "to": {"node": "grid_selection", "port": "mass_kg"}, "description": "Ion mass.", "condition": "Always.", "transform": "Carry to dependencies.", "kind": "data", "required": true},
-      {"from": {"node": "$input", "port": "charge_c"}, "to": {"node": "grid_selection", "port": "charge_c"}, "description": "Ion charge.", "condition": "Always.", "transform": "Carry to dependencies.", "kind": "data", "required": true},
-      {"from": {"node": "$input", "port": "density_ref_m3"}, "to": {"node": "grid_selection", "port": "density_ref_m3"}, "description": "Ion reference density.", "condition": "Always.", "transform": "Carry same profile to row and grid evaluations.", "kind": "data", "required": true},
-      {"from": {"node": "$input", "port": "temperature_parallel_j"}, "to": {"node": "grid_selection", "port": "temperature_parallel_j"}, "description": "Ion parallel temperature.", "condition": "Always.", "transform": "Carry same profile to row and grid evaluations.", "kind": "data", "required": true},
-      {"from": {"node": "$input", "port": "temperature_perpendicular_ref_j"}, "to": {"node": "grid_selection", "port": "temperature_perpendicular_ref_j"}, "description": "Ion perpendicular temperature.", "condition": "Always.", "transform": "Carry same profile to row and grid evaluations.", "kind": "data", "required": true},
-      {"from": {"node": "$input", "port": "electron_temperature_j"}, "to": {"node": "grid_selection", "port": "electron_temperature_j"}, "description": "Electron temperature.", "condition": "Always.", "transform": "Carry same profile to row and grid evaluations.", "kind": "data", "required": true},
-      {"from": {"node": "$input", "port": "reference_z"}, "to": {"node": "grid_selection", "port": "reference_z"}, "description": "Reference plane coordinate.", "condition": "Always.", "transform": "First-nearest index selection.", "kind": "data", "required": true},
-      {"from": {"node": "$input", "port": "plug_left_z"}, "to": {"node": "grid_selection", "port": "plug_left_z"}, "description": "Left plane coordinate.", "condition": "Always.", "transform": "First-nearest index selection.", "kind": "data", "required": true},
-      {"from": {"node": "$input", "port": "plug_right_z"}, "to": {"node": "grid_selection", "port": "plug_right_z"}, "description": "Right plane coordinate.", "condition": "Always.", "transform": "First-nearest index selection.", "kind": "data", "required": true},
-      {"from": {"node": "$input", "port": "electron_density_ref_m3"}, "to": {"node": "grid_selection", "port": "electron_density_ref_m3"}, "description": "Optional electron reference density.", "condition": "If supplied.", "transform": "Preserve omission for dependency defaults.", "kind": "data", "required": false},
-      {"from": {"node": "$input", "port": "phi_ref_v"}, "to": {"node": "grid_selection", "port": "phi_ref_v"}, "description": "Reference potential.", "condition": "If supplied; otherwise zero.", "transform": "Shape against reference psi row.", "kind": "data", "required": false},
-      {"from": {"node": "$input", "port": "phi_plug_left_v"}, "to": {"node": "grid_selection", "port": "phi_plug_left_v"}, "description": "Prescribed left potential.", "condition": "Only used in prescribed mode.", "transform": "Shape against reference psi row.", "kind": "data", "required": false},
-      {"from": {"node": "$input", "port": "phi_plug_right_v"}, "to": {"node": "grid_selection", "port": "phi_plug_right_v"}, "description": "Prescribed right potential.", "condition": "Only used in prescribed mode.", "transform": "Shape against reference psi row.", "kind": "data", "required": false},
-      {"from": {"node": "$input", "port": "plug_potential_mode"}, "to": {"node": "grid_selection", "port": "plug_potential_mode"}, "description": "Endpoint branch selector.", "condition": "If supplied; otherwise prescribed.", "transform": "Select evaluate or solve mode.", "kind": "control", "required": false},
-      {"from": {"node": "$input", "port": "loss_cone_refill"}, "to": {"node": "grid_selection", "port": "loss_cone_refill"}, "description": "Moment refill and default endpoint ion refill.", "condition": "If supplied; otherwise zero.", "transform": "Preserve distinct dependency roles.", "kind": "data", "required": false},
-      {"from": {"node": "$input", "port": "quadrature_order"}, "to": {"node": "grid_selection", "port": "quadrature_order"}, "description": "Nested pitch quadrature order.", "condition": "If supplied; otherwise 32.", "transform": "Require integer at least eight.", "kind": "data", "required": false},
-      {"from": {"node": "$input", "port": "ion_loss_refill"}, "to": {"node": "grid_selection", "port": "ion_loss_refill"}, "description": "Optional endpoint ion refill override.", "condition": "If supplied; otherwise use loss_cone_refill.", "transform": "Endpoint control only.", "kind": "data", "required": false},
-      {"from": {"node": "$input", "port": "electron_loss_refill"}, "to": {"node": "grid_selection", "port": "electron_loss_refill"}, "description": "Endpoint electron refill.", "condition": "If supplied; otherwise endpoint default one.", "transform": "Endpoint control only.", "kind": "data", "required": false},
-      {"from": {"node": "$input", "port": "potential_tolerance_v"}, "to": {"node": "grid_selection", "port": "potential_tolerance_v"}, "description": "Endpoint potential tolerance.", "condition": "If supplied; otherwise endpoint default.", "transform": "Endpoint control only.", "kind": "data", "required": false},
-      {"from": {"node": "$input", "port": "current_tolerance"}, "to": {"node": "grid_selection", "port": "current_tolerance"}, "description": "Endpoint current tolerance.", "condition": "If supplied; otherwise endpoint default.", "transform": "Endpoint control only.", "kind": "data", "required": false},
-      {"from": {"node": "$input", "port": "max_iterations"}, "to": {"node": "grid_selection", "port": "max_iterations"}, "description": "Endpoint iteration limit.", "condition": "If supplied; otherwise endpoint default.", "transform": "Endpoint control only.", "kind": "data", "required": false},
-      {"from": {"node": "$input", "port": "initial_bracket_thermal"}, "to": {"node": "grid_selection", "port": "initial_bracket_thermal"}, "description": "Endpoint bracket scale.", "condition": "If supplied; otherwise endpoint default.", "transform": "Endpoint control only.", "kind": "data", "required": false},
-      {"from": {"node": "$input", "port": "confine_to_plug_planes"}, "to": {"node": "grid_selection", "port": "confine_to_plug_planes"}, "description": "Selected-field confinement switch.", "condition": "If supplied; otherwise true.", "transform": "Validate boolean without changing nested state.", "kind": "control", "required": false},
-      {"from": {"node": "grid_selection", "port": "sampled_profiles"}, "to": {"node": "field_profile", "port": "sampled_profiles"}, "description": "Three B rows and reference phi row keyed to psi.", "condition": "Always.", "transform": "Use each selected row as paired profile samples.", "kind": "data", "required": true},
-      {"from": {"node": "grid_selection", "port": "species_and_controls"}, "to": {"node": "end_loss", "port": "species_and_controls"}, "description": "Positive-ion, electron and endpoint controls.", "condition": "Both endpoint branches.", "transform": "Bind exact endpoint parameters, with parent-derived ion refill.", "kind": "data", "required": true},
-      {"from": {"node": "field_profile", "port": "field_profiles"}, "to": {"node": "end_loss", "port": "field_profiles"}, "description": "Reference B and left/right plug B on reference-row psi.", "condition": "Always.", "transform": "Select reference-row slice of interpolated B profiles.", "kind": "data", "required": true},
-      {"from": {"node": "end_loss", "port": "endpoint_states"}, "to": {"node": "endpoint_profile", "port": "endpoint_states"}, "description": "Endpoint potential and flux diagnostics to map over full-grid psi.", "condition": "After both endpoints succeed.", "transform": "Interpolate each scalar endpoint profile in psi.", "kind": "data", "required": true},
-      {"from": {"node": "grid_selection", "port": "grid_and_rows"}, "to": {"node": "local_quasineutral", "port": "grid_and_rows"}, "description": "Current B and psi grid.", "condition": "Always.", "transform": "Preserve [Z,R] alignment.", "kind": "data", "required": true},
-      {"from": {"node": "grid_selection", "port": "species_and_controls"}, "to": {"node": "local_quasineutral", "port": "species_and_controls"}, "description": "Ion and electron reference state and nested quadrature control.", "condition": "Always.", "transform": "Forward only declared nested controls.", "kind": "data", "required": true},
-      {"from": {"node": "field_profile", "port": "field_profiles"}, "to": {"node": "local_quasineutral", "port": "field_profiles"}, "description": "Full-grid reference and plug B/phi profiles.", "condition": "Always.", "transform": "Use interpolated profiles on the same psi grid.", "kind": "data", "required": true},
-      {"from": {"node": "endpoint_profile", "port": "mapped_end_states"}, "to": {"node": "local_quasineutral", "port": "mapped_end_states"}, "description": "Left and right potential fields.", "condition": "Always after endpoint evaluation/solve.", "transform": "Bind as nested plug potentials.", "kind": "data", "required": true},
-      {"from": {"node": "local_quasineutral", "port": "closure_state"}, "to": {"node": "return_projection", "port": "closure_state"}, "description": "Full-grid nested scientific state.", "condition": "After nested solve succeeds.", "transform": "Preserve original fields and add aliases.", "kind": "data", "required": true},
-      {"from": {"node": "endpoint_profile", "port": "mapped_end_states"}, "to": {"node": "return_projection", "port": "mapped_end_states"}, "description": "Full-grid endpoint potential and flux diagnostics.", "condition": "After endpoint mapping.", "transform": "Add side-prefixed fields.", "kind": "data", "required": true},
-      {"from": {"node": "grid_selection", "port": "mask_indices"}, "to": {"node": "return_projection", "port": "mask_indices"}, "description": "Inclusive nearest plug interval and boolean switch.", "condition": "After nested solve.", "transform": "Zero only selected top-level fields when enabled.", "kind": "control", "required": true},
-      {"from": {"node": "return_projection", "port": "p_parallel"}, "to": {"node": "$output", "port": "p_parallel"}, "description": "Total parallel pressure.", "condition": "On success.", "transform": "Selected mask applies.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "p_perpendicular"}, "to": {"node": "$output", "port": "p_perpendicular"}, "description": "Total perpendicular pressure.", "condition": "On success.", "transform": "Selected mask applies.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "ion_density"}, "to": {"node": "$output", "port": "ion_density"}, "description": "Selected ion density.", "condition": "On success.", "transform": "Selected mask applies.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "electron_density"}, "to": {"node": "$output", "port": "electron_density"}, "description": "Selected electron density.", "condition": "On success.", "transform": "Selected mask applies.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "electrostatic_potential"}, "to": {"node": "$output", "port": "electrostatic_potential"}, "description": "Nested potential.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "relative_charge_residual"}, "to": {"node": "$output", "port": "relative_charge_residual"}, "description": "Local charge residual.", "condition": "On success.", "transform": "Selected mask applies.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "kinetic_moments"}, "to": {"node": "$output", "port": "kinetic_moments"}, "description": "Complete nested ion mapping.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "ion_p_parallel"}, "to": {"node": "$output", "port": "ion_p_parallel"}, "description": "Ion parallel pressure component.", "condition": "On success.", "transform": "Selected mask applies.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "ion_p_perpendicular"}, "to": {"node": "$output", "port": "ion_p_perpendicular"}, "description": "Ion perpendicular pressure component.", "condition": "On success.", "transform": "Selected mask applies.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "electron_pressure"}, "to": {"node": "$output", "port": "electron_pressure"}, "description": "Electron pressure component.", "condition": "On success.", "transform": "Selected mask applies.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "density_m3"}, "to": {"node": "$output", "port": "density_m3"}, "description": "Original ion moment density.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "p_parallel_pa"}, "to": {"node": "$output", "port": "p_parallel_pa"}, "description": "Original ion moment parallel pressure.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "p_perpendicular_pa"}, "to": {"node": "$output", "port": "p_perpendicular_pa"}, "description": "Original ion moment perpendicular pressure.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "temperature_parallel_j"}, "to": {"node": "$output", "port": "temperature_parallel_j"}, "description": "Original parallel thermal parameter.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "temperature_perpendicular_local_j"}, "to": {"node": "$output", "port": "temperature_perpendicular_local_j"}, "description": "Original perpendicular thermal parameter.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "untruncated_density_m3"}, "to": {"node": "$output", "port": "untruncated_density_m3"}, "description": "Original untruncated ion density.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "density_pitch_integral"}, "to": {"node": "$output", "port": "density_pitch_integral"}, "description": "Full-grid density pitch factor.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "parallel_pitch_integral"}, "to": {"node": "$output", "port": "parallel_pitch_integral"}, "description": "Full-grid parallel pitch factor.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "perpendicular_pitch_integral"}, "to": {"node": "$output", "port": "perpendicular_pitch_integral"}, "description": "Full-grid perpendicular pitch factor.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "iterations"}, "to": {"node": "$output", "port": "iterations"}, "description": "Nested solve iterations.", "condition": "On success.", "transform": "Identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "converged"}, "to": {"node": "$output", "port": "converged"}, "description": "Nested solve convergence flag.", "condition": "On success.", "transform": "Identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "end_left_potential_v"}, "to": {"node": "$output", "port": "end_left_potential_v"}, "description": "Mapped left potential.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "end_left_ion_particle_flux_m2_s"}, "to": {"node": "$output", "port": "end_left_ion_particle_flux_m2_s"}, "description": "Mapped left ion flux.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "end_left_electron_particle_flux_m2_s"}, "to": {"node": "$output", "port": "end_left_electron_particle_flux_m2_s"}, "description": "Mapped left electron flux.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "end_left_log_current_ratio"}, "to": {"node": "$output", "port": "end_left_log_current_ratio"}, "description": "Mapped left log current ratio.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "end_left_relative_current_residual"}, "to": {"node": "$output", "port": "end_left_relative_current_residual"}, "description": "Mapped left relative current residual.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "end_right_potential_v"}, "to": {"node": "$output", "port": "end_right_potential_v"}, "description": "Mapped right potential.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "end_right_ion_particle_flux_m2_s"}, "to": {"node": "$output", "port": "end_right_ion_particle_flux_m2_s"}, "description": "Mapped right ion flux.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "end_right_electron_particle_flux_m2_s"}, "to": {"node": "$output", "port": "end_right_electron_particle_flux_m2_s"}, "description": "Mapped right electron flux.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "end_right_log_current_ratio"}, "to": {"node": "$output", "port": "end_right_log_current_ratio"}, "description": "Mapped right log current ratio.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "end_right_relative_current_residual"}, "to": {"node": "$output", "port": "end_right_relative_current_residual"}, "description": "Mapped right relative current residual.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "density"}, "to": {"node": "$output", "port": "density"}, "description": "Hall-facing ion-density alias.", "condition": "On success.", "transform": "Selected mask applies.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "T_parallel_J"}, "to": {"node": "$output", "port": "T_parallel_J"}, "description": "Parallel thermal-energy alias.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "T_perpendicular_local_J"}, "to": {"node": "$output", "port": "T_perpendicular_local_J"}, "description": "Perpendicular thermal-energy alias.", "condition": "On success.", "transform": "Unmasked identity.", "kind": "data", "required": true},
-      {"from": {"node": "return_projection", "port": "untruncated_density"}, "to": {"node": "$output", "port": "untruncated_density"}, "description": "Masked untruncated-density alias.", "condition": "On success.", "transform": "Selected mask applies.", "kind": "data", "required": true}
+      {
+        "from": {
+          "node": "$input",
+          "port": "r_grid"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "r_grid"
+        },
+        "description": "Caller R grid.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "z_grid"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "z_grid"
+        },
+        "description": "Caller Z grid.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "b_t"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "b_t"
+        },
+        "description": "Local B grid.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "psi"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "psi"
+        },
+        "description": "Flux-coordinate grid.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "mass_kg"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "mass_kg"
+        },
+        "description": "Ion mass.",
+        "condition": "Always.",
+        "transform": "Carry to dependencies.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "charge_c"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "charge_c"
+        },
+        "description": "Ion charge.",
+        "condition": "Always.",
+        "transform": "Carry to dependencies.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "density_ref_m3"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "density_ref_m3"
+        },
+        "description": "Ion reference density.",
+        "condition": "Always.",
+        "transform": "Carry same profile to row and grid evaluations.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "temperature_parallel_j"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "temperature_parallel_j"
+        },
+        "description": "Ion parallel temperature.",
+        "condition": "Always.",
+        "transform": "Carry same profile to row and grid evaluations.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "temperature_perpendicular_ref_j"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "temperature_perpendicular_ref_j"
+        },
+        "description": "Ion perpendicular temperature.",
+        "condition": "Always.",
+        "transform": "Carry same profile to row and grid evaluations.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "electron_temperature_j"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "electron_temperature_j"
+        },
+        "description": "Electron temperature.",
+        "condition": "Always.",
+        "transform": "Carry same profile to row and grid evaluations.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "reference_z"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "reference_z"
+        },
+        "description": "Reference plane coordinate.",
+        "condition": "Always.",
+        "transform": "First-nearest index selection.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "plug_left_z"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "plug_left_z"
+        },
+        "description": "Left plane coordinate.",
+        "condition": "Always.",
+        "transform": "First-nearest index selection.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "plug_right_z"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "plug_right_z"
+        },
+        "description": "Right plane coordinate.",
+        "condition": "Always.",
+        "transform": "First-nearest index selection.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "electron_density_ref_m3"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "electron_density_ref_m3"
+        },
+        "description": "Optional electron reference density.",
+        "condition": "If supplied.",
+        "transform": "Preserve omission for dependency defaults.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "phi_ref_v"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "phi_ref_v"
+        },
+        "description": "Reference potential.",
+        "condition": "If supplied; otherwise zero.",
+        "transform": "Shape against reference psi row.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "phi_plug_left_v"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "phi_plug_left_v"
+        },
+        "description": "Prescribed left potential.",
+        "condition": "Only used in prescribed mode.",
+        "transform": "Shape against reference psi row.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "phi_plug_right_v"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "phi_plug_right_v"
+        },
+        "description": "Prescribed right potential.",
+        "condition": "Only used in prescribed mode.",
+        "transform": "Shape against reference psi row.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "plug_potential_mode"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "plug_potential_mode"
+        },
+        "description": "Endpoint branch selector.",
+        "condition": "If supplied; otherwise prescribed.",
+        "transform": "Select evaluate or solve mode.",
+        "kind": "control",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "loss_cone_refill"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "loss_cone_refill"
+        },
+        "description": "Moment refill and default endpoint ion refill.",
+        "condition": "If supplied; otherwise zero.",
+        "transform": "Preserve distinct dependency roles.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "quadrature_order"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "quadrature_order"
+        },
+        "description": "Nested pitch quadrature order.",
+        "condition": "If supplied; otherwise 32.",
+        "transform": "Require integer at least eight.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "ion_loss_refill"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "ion_loss_refill"
+        },
+        "description": "Optional endpoint ion refill override.",
+        "condition": "If supplied; otherwise use loss_cone_refill.",
+        "transform": "Endpoint control only.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "electron_loss_refill"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "electron_loss_refill"
+        },
+        "description": "Endpoint electron refill.",
+        "condition": "If supplied; otherwise endpoint default one.",
+        "transform": "Endpoint control only.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "potential_tolerance_v"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "potential_tolerance_v"
+        },
+        "description": "Endpoint potential tolerance.",
+        "condition": "If supplied; otherwise endpoint default.",
+        "transform": "Endpoint control only.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "current_tolerance"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "current_tolerance"
+        },
+        "description": "Endpoint current tolerance.",
+        "condition": "If supplied; otherwise endpoint default.",
+        "transform": "Endpoint control only.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "max_iterations"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "max_iterations"
+        },
+        "description": "Endpoint iteration limit.",
+        "condition": "If supplied; otherwise endpoint default.",
+        "transform": "Endpoint control only.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "initial_bracket_thermal"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "initial_bracket_thermal"
+        },
+        "description": "Endpoint bracket scale.",
+        "condition": "If supplied; otherwise endpoint default.",
+        "transform": "Endpoint control only.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "confine_to_plug_planes"
+        },
+        "to": {
+          "node": "grid_selection",
+          "port": "confine_to_plug_planes"
+        },
+        "description": "Selected-field confinement switch.",
+        "condition": "If supplied; otherwise true.",
+        "transform": "Validate boolean without changing nested state.",
+        "kind": "control",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "grid_selection",
+          "port": "sampled_profiles"
+        },
+        "to": {
+          "node": "field_profile",
+          "port": "sampled_profiles"
+        },
+        "description": "Three B rows and reference phi row keyed to psi.",
+        "condition": "Always.",
+        "transform": "Use each selected row as paired profile samples.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "grid_selection",
+          "port": "species_and_controls"
+        },
+        "to": {
+          "node": "end_loss",
+          "port": "species_and_controls"
+        },
+        "description": "Positive-ion, electron and endpoint controls.",
+        "condition": "Both endpoint branches.",
+        "transform": "Bind exact endpoint parameters, with parent-derived ion refill.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "field_profile",
+          "port": "field_profiles"
+        },
+        "to": {
+          "node": "end_loss",
+          "port": "field_profiles"
+        },
+        "description": "Reference B and left/right plug B on reference-row psi.",
+        "condition": "Always.",
+        "transform": "Select reference-row slice of interpolated B profiles.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "end_loss",
+          "port": "endpoint_states"
+        },
+        "to": {
+          "node": "endpoint_profile",
+          "port": "endpoint_states"
+        },
+        "description": "Endpoint potential and flux diagnostics to map over full-grid psi.",
+        "condition": "After both endpoints succeed.",
+        "transform": "Interpolate each scalar endpoint profile in psi.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "grid_selection",
+          "port": "grid_and_rows"
+        },
+        "to": {
+          "node": "local_quasineutral",
+          "port": "grid_and_rows"
+        },
+        "description": "Current B and psi grid.",
+        "condition": "Always.",
+        "transform": "Preserve [Z,R] alignment.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "grid_selection",
+          "port": "species_and_controls"
+        },
+        "to": {
+          "node": "local_quasineutral",
+          "port": "species_and_controls"
+        },
+        "description": "Ion and electron reference state and nested quadrature control.",
+        "condition": "Always.",
+        "transform": "Forward only declared nested controls.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "field_profile",
+          "port": "field_profiles"
+        },
+        "to": {
+          "node": "local_quasineutral",
+          "port": "field_profiles"
+        },
+        "description": "Full-grid reference and plug B/phi profiles.",
+        "condition": "Always.",
+        "transform": "Use interpolated profiles on the same psi grid.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "endpoint_profile",
+          "port": "mapped_end_states"
+        },
+        "to": {
+          "node": "local_quasineutral",
+          "port": "mapped_end_states"
+        },
+        "description": "Left and right potential fields.",
+        "condition": "Always after endpoint evaluation/solve.",
+        "transform": "Bind as nested plug potentials.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "local_quasineutral",
+          "port": "closure_state"
+        },
+        "to": {
+          "node": "return_projection",
+          "port": "closure_state"
+        },
+        "description": "Full-grid nested scientific state.",
+        "condition": "After nested solve succeeds.",
+        "transform": "Preserve original fields and add aliases.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "endpoint_profile",
+          "port": "mapped_end_states"
+        },
+        "to": {
+          "node": "return_projection",
+          "port": "mapped_end_states"
+        },
+        "description": "Full-grid endpoint potential and flux diagnostics.",
+        "condition": "After endpoint mapping.",
+        "transform": "Add side-prefixed fields.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "grid_selection",
+          "port": "mask_indices"
+        },
+        "to": {
+          "node": "return_projection",
+          "port": "mask_indices"
+        },
+        "description": "Inclusive nearest plug interval and boolean switch.",
+        "condition": "After nested solve.",
+        "transform": "Zero only selected top-level fields when enabled.",
+        "kind": "control",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "p_parallel"
+        },
+        "to": {
+          "node": "$output",
+          "port": "p_parallel"
+        },
+        "description": "Total parallel pressure.",
+        "condition": "On success.",
+        "transform": "Selected mask applies.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "p_perpendicular"
+        },
+        "to": {
+          "node": "$output",
+          "port": "p_perpendicular"
+        },
+        "description": "Total perpendicular pressure.",
+        "condition": "On success.",
+        "transform": "Selected mask applies.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "ion_density"
+        },
+        "to": {
+          "node": "$output",
+          "port": "ion_density"
+        },
+        "description": "Selected ion density.",
+        "condition": "On success.",
+        "transform": "Selected mask applies.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "electron_density"
+        },
+        "to": {
+          "node": "$output",
+          "port": "electron_density"
+        },
+        "description": "Selected electron density.",
+        "condition": "On success.",
+        "transform": "Selected mask applies.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "electrostatic_potential"
+        },
+        "to": {
+          "node": "$output",
+          "port": "electrostatic_potential"
+        },
+        "description": "Nested potential.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "relative_charge_residual"
+        },
+        "to": {
+          "node": "$output",
+          "port": "relative_charge_residual"
+        },
+        "description": "Local charge residual.",
+        "condition": "On success.",
+        "transform": "Selected mask applies.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "kinetic_moments"
+        },
+        "to": {
+          "node": "$output",
+          "port": "kinetic_moments"
+        },
+        "description": "Complete nested ion mapping.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "ion_p_parallel"
+        },
+        "to": {
+          "node": "$output",
+          "port": "ion_p_parallel"
+        },
+        "description": "Ion parallel pressure component.",
+        "condition": "On success.",
+        "transform": "Selected mask applies.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "ion_p_perpendicular"
+        },
+        "to": {
+          "node": "$output",
+          "port": "ion_p_perpendicular"
+        },
+        "description": "Ion perpendicular pressure component.",
+        "condition": "On success.",
+        "transform": "Selected mask applies.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "electron_pressure"
+        },
+        "to": {
+          "node": "$output",
+          "port": "electron_pressure"
+        },
+        "description": "Electron pressure component.",
+        "condition": "On success.",
+        "transform": "Selected mask applies.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "density_m3"
+        },
+        "to": {
+          "node": "$output",
+          "port": "density_m3"
+        },
+        "description": "Original ion moment density.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "p_parallel_pa"
+        },
+        "to": {
+          "node": "$output",
+          "port": "p_parallel_pa"
+        },
+        "description": "Original ion moment parallel pressure.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "p_perpendicular_pa"
+        },
+        "to": {
+          "node": "$output",
+          "port": "p_perpendicular_pa"
+        },
+        "description": "Original ion moment perpendicular pressure.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "temperature_parallel_j"
+        },
+        "to": {
+          "node": "$output",
+          "port": "temperature_parallel_j"
+        },
+        "description": "Original parallel thermal parameter.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "temperature_perpendicular_local_j"
+        },
+        "to": {
+          "node": "$output",
+          "port": "temperature_perpendicular_local_j"
+        },
+        "description": "Original perpendicular thermal parameter.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "untruncated_density_m3"
+        },
+        "to": {
+          "node": "$output",
+          "port": "untruncated_density_m3"
+        },
+        "description": "Original untruncated ion density.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "density_pitch_integral"
+        },
+        "to": {
+          "node": "$output",
+          "port": "density_pitch_integral"
+        },
+        "description": "Full-grid density pitch factor.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "parallel_pitch_integral"
+        },
+        "to": {
+          "node": "$output",
+          "port": "parallel_pitch_integral"
+        },
+        "description": "Full-grid parallel pitch factor.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "perpendicular_pitch_integral"
+        },
+        "to": {
+          "node": "$output",
+          "port": "perpendicular_pitch_integral"
+        },
+        "description": "Full-grid perpendicular pitch factor.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "iterations"
+        },
+        "to": {
+          "node": "$output",
+          "port": "iterations"
+        },
+        "description": "Nested solve iterations.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "converged"
+        },
+        "to": {
+          "node": "$output",
+          "port": "converged"
+        },
+        "description": "Nested solve convergence flag.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "end_left_potential_v"
+        },
+        "to": {
+          "node": "$output",
+          "port": "end_left_potential_v"
+        },
+        "description": "Mapped left potential.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "end_left_ion_particle_flux_m2_s"
+        },
+        "to": {
+          "node": "$output",
+          "port": "end_left_ion_particle_flux_m2_s"
+        },
+        "description": "Mapped left ion flux.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "end_left_electron_particle_flux_m2_s"
+        },
+        "to": {
+          "node": "$output",
+          "port": "end_left_electron_particle_flux_m2_s"
+        },
+        "description": "Mapped left electron flux.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "end_left_log_current_ratio"
+        },
+        "to": {
+          "node": "$output",
+          "port": "end_left_log_current_ratio"
+        },
+        "description": "Mapped left log current ratio.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "end_left_relative_current_residual"
+        },
+        "to": {
+          "node": "$output",
+          "port": "end_left_relative_current_residual"
+        },
+        "description": "Mapped left relative current residual.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "end_right_potential_v"
+        },
+        "to": {
+          "node": "$output",
+          "port": "end_right_potential_v"
+        },
+        "description": "Mapped right potential.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "end_right_ion_particle_flux_m2_s"
+        },
+        "to": {
+          "node": "$output",
+          "port": "end_right_ion_particle_flux_m2_s"
+        },
+        "description": "Mapped right ion flux.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "end_right_electron_particle_flux_m2_s"
+        },
+        "to": {
+          "node": "$output",
+          "port": "end_right_electron_particle_flux_m2_s"
+        },
+        "description": "Mapped right electron flux.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "end_right_log_current_ratio"
+        },
+        "to": {
+          "node": "$output",
+          "port": "end_right_log_current_ratio"
+        },
+        "description": "Mapped right log current ratio.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "end_right_relative_current_residual"
+        },
+        "to": {
+          "node": "$output",
+          "port": "end_right_relative_current_residual"
+        },
+        "description": "Mapped right relative current residual.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "density"
+        },
+        "to": {
+          "node": "$output",
+          "port": "density"
+        },
+        "description": "Hall-facing ion-density alias.",
+        "condition": "On success.",
+        "transform": "Selected mask applies.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "T_parallel_J"
+        },
+        "to": {
+          "node": "$output",
+          "port": "T_parallel_J"
+        },
+        "description": "Parallel thermal-energy alias.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "T_perpendicular_local_J"
+        },
+        "to": {
+          "node": "$output",
+          "port": "T_perpendicular_local_J"
+        },
+        "description": "Perpendicular thermal-energy alias.",
+        "condition": "On success.",
+        "transform": "Unmasked identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "untruncated_density"
+        },
+        "to": {
+          "node": "$output",
+          "port": "untruncated_density"
+        },
+        "description": "Masked untruncated-density alias.",
+        "condition": "On success.",
+        "transform": "Selected mask applies.",
+        "kind": "data",
+        "required": true
+      }
     ],
     "execution": {
       "mode": "acyclic_sequential_composition_with_nested_bounded_solver",
       "ordering": "Validate grid and select first-nearest ordered plane rows; interpolate B and phi_ref in psi; evaluate/solve left and right endpoint states; interpolate endpoint potential and diagnostics to the grid; run nested local quasineutral closure; append aliases and optionally confine selected top-level fields. Scientific dependencies are acyclic; endpoint and nested bisection are owned by their bound assets.",
-      "branches": ["prescribed calls endpoint mode=evaluate at caller potentials or zero defaults; ambipolar_end_loss calls endpoint mode=solve and requires positive ion_loss_refill.", "Absent electron_density_ref_m3 lets each bound closure derive the charge-state-scaled electron reference density.", "confine_to_plug_planes defaults true and masks only the named top-level fields; false preserves all full-grid scientific fields."],
+      "branches": [
+        "prescribed calls endpoint mode=evaluate at caller potentials or zero defaults; ambipolar_end_loss calls endpoint mode=solve and requires positive ion_loss_refill.",
+        "Absent electron_density_ref_m3 lets each bound closure derive the charge-state-scaled electron reference density.",
+        "confine_to_plug_planes defaults true and masks only the named top-level fields; false preserves all full-grid scientific fields."
+      ],
       "state_ownership": "The caller owns input arrays and profile callables. The graph holds local array views/conversions, nearest indices, interpolated profiles, endpoint mappings and a returned nested state; it adds and selectively replaces top-level arrays but does not mutate caller inputs or persist state between calls.",
       "failure_propagation": "Any grid, profile, endpoint or nested closure failure propagates without fallback or partial result. The parent does not turn endpoint or nested nonconvergence into a successful pressure state.",
       "feedback": []

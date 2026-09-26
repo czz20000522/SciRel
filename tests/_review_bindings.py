@@ -43,6 +43,10 @@ _OPERATORS = {
     'scirel.field.dense_axisymmetric_green': ('scirel.field.dense_axisymmetric_green', 'dense_axisymmetric_green_response'),
     'scirel.field.mirror_plasma_green': ('scirel.field.mirror_plasma_green', 'build_mirror_plasma_flux_green'),
     'scirel.closures.mirror_ambipolar_potential': ('scirel.closures.mirror_ambipolar_potential', 'solve_mirror_ambipolar_potential'),
+    'scirel.collisions.hydrogen_jh_r_coefficient': ('scirel.collisions.hydrogen_jh_r_coefficient', 'evaluate_h_jh_r_coefficient'),
+    'scirel.collisions.hydrogen_jh_s_coefficient': ('scirel.collisions.hydrogen_jh_s_coefficient', 'evaluate_h_jh_s_coefficient'),
+    'scirel.collisions.hydrogen_jh_alpha_coefficient': ('scirel.collisions.hydrogen_jh_alpha_coefficient', 'evaluate_h_jh_alpha_coefficient'),
+    'scirel.kinetic.hydrogen_saha_equilibrium_population': ('scirel.kinetic.hydrogen_saha_equilibrium_population', 'evaluate_h_saha_equilibrium_population'),
 }
 
 _GRAPHS = {

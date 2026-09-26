@@ -1,0 +1,905 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.diagnostics.hydrogen-jh-balmer-alpha-emission",
+  "kind": "task_graph",
+  "title": {
+    "en": "Atomic-hydrogen Johnson-Hinnov Balmer-alpha line emission",
+    "zh": "原子氢JH Balmer-alpha谱线发射"
+  },
+  "summary": "Compose the Johnson-Hinnov hydrogen Balmer-alpha photon rate and line emissivity of an explicit one-dimensional profile from the bound r-coefficient and Saha-population assets, with the saved composition's frozen constants and operation order preserved bit for bit.",
+  "taxonomy": [
+    "diagnostics",
+    "atomic-hydrogen",
+    "johnson-hinnov",
+    "line-radiation",
+    "task-graph"
+  ],
+  "aliases": [
+    "evaluate_balmer_Balmer_alpha",
+    "JH Balmer-alpha emissivity"
+  ],
+  "identity": {
+    "relation": "the saved Balmer-alpha relation: photon_rate = A[0] * (r_ion0 + r_ion1 * n0 / saha1) * saha_level3 and emissivity = (13.6057 * (0.25 - 1/9) eV) * photon_rate * 1.602177e-19, with the r coefficients and Saha populations bound from the already-integrated SciRel assets",
+    "direction": "paired electron density and temperature, ground-state neutral density, explicit JH payload -> Balmer-alpha emissivity and photon rate per sample",
+    "definition": "The bound r asset evaluates r02 (ion 0) and r12 (ion 1) for principal level 3 with the saved 1e32 sentinel density overwrite; the bound Saha asset evaluates the level-1 and level-3 populations from the caller's density and temperature; the contraction applies the saved Einstein coefficient A[0] and the frozen emissivity factors in the saved operation order.",
+    "model": "the saved formal implementation's explicit-payload radiation composition (KN1DPy/jh_related/balmer_alpha.py:40-64), re-expressed as an ordered composition of the bound SciRel assets; no hidden state",
+    "geometry": "none; a zero-dimensional profile relation",
+    "coordinates": "electron density in m^-3, electron temperature in eV, ground-state neutral density in m^-3; emissivity in W m^-3, photon rate in m^-3 s^-1",
+    "boundary": "the composed domain is the intersection of the bound assets' contracts: density and temperature in (0, 1e32), n0 in (0, 1e32), non-empty one-dimensional paired arrays; only the source-complete no_null=1 branch is admitted; outputs must be finite and strictly positive",
+    "assumptions": [
+      "The bound r asset's saved 1e32 sentinel density overwrite carries into the composition: the r channels do not depend on the caller's density values beyond shape and validation.",
+      "The bound Saha asset enforces its documented < 1e32 domain, so the composed domain is narrower than the saved radiation callable's; on the shared domain the outputs are bit-identical.",
+      "The coefficient and Einstein tables are caller-supplied data; this graph composes them, it does not certify any table.",
+      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "density_m3",
+      "description": "Electron densities; consumed by the Saha populations and validated by the bound r asset.",
+      "units": "m^-3",
+      "shape": "[n]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A non-empty one-dimensional array, finite and strictly positive and below 1e32 (the bound Saha asset's domain limit), paired with the temperatures."
+    },
+    {
+      "name": "temperature_ev",
+      "description": "Electron temperatures; clipped to the temperature-knot range by the bound assets.",
+      "units": "eV",
+      "shape": "[n]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A one-dimensional array of the same shape, finite and strictly positive and below 1e32."
+    },
+    {
+      "name": "n0_m3",
+      "description": "Ground-state neutral densities entering the excited-population correction term.",
+      "units": "m^-3",
+      "shape": "[n]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A one-dimensional array of the same shape, finite and strictly positive and below the 1e32 source null sentinel."
+    },
+    {
+      "name": "jh_payload",
+      "description": "The read-only Johnson-Hinnov coefficient payload mapping with the exact fields DKnot, TKnot, order, LogR_BSCoef, LogS_BSCoef, LogAlpha_BSCoef, A_Lyman, A_Balmer.",
+      "units": "mixed (knots, coefficient tensors, Einstein coefficients)",
+      "shape": "mapping",
+      "dtype": "mapping of arrays and an integer",
+      "required": true,
+      "constraints": "Validated by this graph against the saved exact eight-field contract (the complete field set including fields the branch does not numerically consume, one-dimensional non-decreasing finite knots, order field 4 consumed by FITPACK as the spline degree describing exactly 77 coefficients, every field finite) before any evaluation; never mutated."
+    },
+    {
+      "name": "no_null",
+      "description": "The source branch selector passed through to the bound assets.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer scalar",
+      "required": false,
+      "constraints": "Only the source-complete no_null=1 branch is admitted; any other value fails closed.",
+      "default": 1
+    }
+  ],
+  "outputs": [
+    {
+      "name": "emissivity_w_m3",
+      "description": "The Balmer-alpha line emissivity with the saved energy factor.",
+      "units": "W m^-3",
+      "shape": "[n]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite for every accepted input; the saved composition gates finiteness only, so a caller-supplied Einstein coefficient of zero returns zero rates (no emission) and a negative one returns negative values (source parity)."
+    },
+    {
+      "name": "photon_rate_m3_s",
+      "description": "The Balmer-alpha photon production rate.",
+      "units": "m^-3 s^-1",
+      "shape": "[n]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite for every accepted input; the saved composition gates finiteness only, so a caller-supplied Einstein coefficient of zero returns zero rates (no emission) and a negative one returns negative values (source parity)."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller supplies a complete, consistent JH payload; the graph composes it, it does not construct or certify one.",
+      "The profile inputs stay inside the composed domain (all values finite, positive and below 1e32)."
+    ],
+    "supported": [
+      "Balmer-alpha photon rates and emissivities for explicit hydrogen profiles on any consistent caller-supplied payload.",
+      "Rejecting malformed profiles, n0 outside the saved contract, incomplete payloads and non-1 no_null before any evaluation."
+    ],
+    "excluded": [
+      "Emissivities whose energy factor differs from the saved frozen factor; the saved arithmetic is preserved, not repaired.",
+      "Two-dimensional or spatially gridded profiles: the bound assets accept one-dimensional profiles only.",
+      "Coefficient or Einstein tables validated against an external atomic-physics reference; none is bound."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError with a message naming the condition when the profiles are not non-empty same-shaped 1-D finite positive arrays, when density or temperature reach 1e32 (the composed Saha domain), when n0 is not finite, positive and below the 1e32 sentinel, when no_null is not 1, when the payload violates the saved exact eight-field contract (field set, knots, order, 77-coefficient geometry, finiteness), or when required inputs are missing; bound-asset validation failures propagate unchanged.",
+    "runtime_failure": "Raises ValueError when the composition produces a non-finite photon rate or emissivity; per source parity the gate is finiteness-only, so a zero or negative caller-supplied Einstein coefficient returns zero or negative values rather than being rejected.",
+    "nonconvergence": "Not applicable; this TaskGraph is an ordered DAG with no feedback loop.",
+    "partial_results": "Never returned; a rejected call produces no diagnostic."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration composed from already-integrated SciRel assets: the r57 Johnson-Hinnov coefficient assets and the r56 Saha population asset. The relation itself is recovered from the saved KN1DPy 原子氢JH-r系数B样条评价 package, source anchor KN1DPy/jh_related/balmer_alpha.py:40-64, as recorded by the saved bundle's own extraction report (the raw source tree was not re-read; the anchor is the saved candidate's). Saved implementation file SHA-256 253cda226c553cd5cd560914a6474b4b3572262b63aad61c76f91df8bafb6344. The saved composition's frozen constants and operation order are preserved bit for bit; no repair is claimed. The packaged payload producer is deferred because admitting the coefficient data as a SciRel artifact is an open expert decision. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "composition of already-integrated SciRel assets",
+      "independent FITPACK reevaluation of the same spline",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.diagnostics.hydrogen_jh_balmer_alpha_emission",
+      "symbol": "solve_hydrogen_jh_balmer_alpha_emission",
+      "signature": "solve_hydrogen_jh_balmer_alpha_emission(inputs=None, **kwargs)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev31",
+    "dependencies": [
+      {
+        "asset_id": "scirel.collisions.hydrogen-jh-r-coefficient"
+      },
+      {
+        "asset_id": "scirel.kinetic.hydrogen-saha-equilibrium-population"
+      }
+    ]
+  },
+  "example": {
+    "description": "Evaluate the Balmer-alpha emission on a synthetic validated payload and confirm the saved energy factor and the composed-domain rejections.",
+    "code": "import numpy as np\nfrom scipy.interpolate import RectBivariateSpline\nfrom scirel.diagnostics import solve_hydrogen_jh_balmer_alpha_emission\n\ntemperature_axis = np.linspace(-1.0, 1.0, 11)\ndensity_axis = np.linspace(30.0, 32.0, 7)\nspline = RectBivariateSpline(temperature_axis, density_axis, np.add.outer(temperature_axis, density_axis), kx=4, ky=4)\ntemperature_knots, density_knots = spline.get_knots()\ncoefficients = spline.get_coeffs()\npayload = {\n    \"DKnot\": density_knots,\n    \"TKnot\": temperature_knots,\n    \"order\": 4,\n    \"LogR_BSCoef\": np.zeros((coefficients.size, 2, 5)),\n    \"LogS_BSCoef\": coefficients.copy(),\n    \"LogAlpha_BSCoef\": coefficients.copy() + 0.25,\n    \"A_Lyman\": np.linspace(3.0e8, 1.0e5, 15),\n    \"A_Balmer\": np.linspace(4.4e7, 2.0e4, 15),\n}\ndensity = np.array([1.0e20, 5.0e20])\ntemperature = np.array([5.0, 30.0])\nn0 = np.array([1.0e17, 2.0e18])\nresult = solve_hydrogen_jh_balmer_alpha_emission(density_m3=density, temperature_ev=temperature, n0_m3=n0, jh_payload=payload)\nassert result[\"photon_rate_m3_s\"].shape == density.shape\nassert np.all(np.isfinite(result[\"emissivity_w_m3\"])) and np.all(result[\"emissivity_w_m3\"] > 0.0)\nsaved_factor = 13.6057 * (0.25 - 1.0 / 9.0)\nnp.testing.assert_array_equal(result[\"emissivity_w_m3\"], saved_factor * result[\"photon_rate_m3_s\"] * 1.602177e-19)\ntry:\n    solve_hydrogen_jh_balmer_alpha_emission(density_m3=density, temperature_ev=temperature, n0_m3=np.full(2, 1.0e32), jh_payload=payload)\nexcept ValueError as error:\n    assert \"n0_m3\" in str(error)\nelse:\n    raise AssertionError(\"an n0 at the 1e32 sentinel must be rejected\")\ntry:\n    solve_hydrogen_jh_balmer_alpha_emission(density_m3=density, temperature_ev=temperature, n0_m3=n0, jh_payload=payload, no_null=0)\nexcept ValueError as error:\n    assert \"no_null=1\" in str(error)\nelse:\n    raise AssertionError(\"no_null=0 must be rejected\")",
+    "expected": "Finite strictly positive emissivity and photon rate with the inputs' shape; the emissivity equals the saved frozen factor times the photon rate times the elementary charge; an n0 at the 1e32 sentinel and no_null=0 are rejected."
+  },
+  "verification": {
+    "scope": [
+      "That the photon rate equals an independent recomputation from the bound SciRel assets with the saved operation order, bit for bit.",
+      "That the emissivity carries the saved frozen energy factor (13.6057 * (0.25 - 1/9) eV), recorded as an open expert question for the Lyman line.",
+      "That the r channels reach the bound asset through the declared dependency binding (asset-loader resolution witness).",
+      "That n0 enters the photon rate and the composition fails closed on the composed-domain violations.",
+      "That the payload contract is enforced on the full eight-field set (a field the branch does not consume may not be dropped) and that a zero Einstein coefficient returns zero rates on both replay arms (pre-review regressions).",
+      "Exact bit-level replay against the saved KN1DPy composition, pinned by SHA-256, on the packaged coefficient payload, plus the declared above-1e32 divergence and the shared rejection behavior. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance."
+    ],
+    "tests": [
+      "tests/graph_contracts/hydrogen_jh_balmer_alpha_emission/test_graph_hydrogen_jh_balmer_alpha_emission.py",
+      "tests/graph_contracts/hydrogen_jh_balmer_alpha_emission/test_graph_hydrogen_jh_balmer_alpha_emission_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the composition against independent recomputation from the bound SciRel assets and an independent FITPACK re-evaluation of the r spline, the frozen constants and operation order, and the full composed-domain input and failure contracts. The environment-gated replay establishes exact bit-level agreement with the saved KN1DPy composition on the packaged coefficient payload and the compared rejections only. No test establishes the coefficient table or the Einstein coefficients against an external atomic-physics reference: the saved package records that residual as validation_oracle_gap. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "known_limitations": [
+      "The output gate is finiteness-only, exactly as saved: a caller-supplied Einstein coefficient of zero returns zero photon rate and emissivity (no emission) and a negative one returns negative values; sign and scale of the line are the caller's data responsibility.",
+      "The composed domain narrows the saved composition: density and temperature must stay below 1e32 because the bound r56 Saha asset enforces its documented limit, while the saved radiation callable admits any positive finite values (only n0 is bounded on the saved arm). The narrowing is declared and witnessed by the replay tests.",
+      "The asset evaluates caller-supplied coefficient and Einstein tables; it does not certify any table's physics (validation_oracle_gap).",
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "profile_validation",
+        "kind": "controlled_glue",
+        "description": "Validate the composed-domain profile contract and expose the paired arrays and branch selector.",
+        "inputs": [
+          "density_m3",
+          "temperature_ev",
+          "n0_m3",
+          "no_null"
+        ],
+        "outputs": [
+          "density",
+          "temperature",
+          "n0",
+          "no_null"
+        ]
+      },
+      {
+        "id": "payload_field_extraction",
+        "kind": "controlled_glue",
+        "description": "Extract the read-only payload fields consumed by the bound assets.",
+        "inputs": [
+          "jh_payload"
+        ],
+        "outputs": [
+          "density_knots",
+          "temperature_knots",
+          "spline_order",
+          "log_r_bscoef",
+          "a_lyman"
+        ]
+      },
+      {
+        "id": "channel_level_selection",
+        "kind": "controlled_glue",
+        "description": "Fix the saved ion-channel and principal-level selectors of the composition.",
+        "inputs": [],
+        "outputs": [
+          "ion_channel_0",
+          "ion_channel_1",
+          "principal_level_1",
+          "principal_level_3"
+        ]
+      },
+      {
+        "id": "r02_evaluation",
+        "kind": "operator",
+        "asset_id": "scirel.collisions.hydrogen-jh-r-coefficient",
+        "description": "Evaluate the r coefficient for ion channel 0, principal level 3.",
+        "inputs": [
+          "density",
+          "temperature",
+          "ion_channel_0",
+          "principal_level_3",
+          "density_knots",
+          "temperature_knots",
+          "spline_order",
+          "log_r_bscoef",
+          "no_null"
+        ],
+        "outputs": [
+          "r03"
+        ]
+      },
+      {
+        "id": "r12_evaluation",
+        "kind": "operator",
+        "asset_id": "scirel.collisions.hydrogen-jh-r-coefficient",
+        "description": "Evaluate the r coefficient for ion channel 1, principal level 3.",
+        "inputs": [
+          "density",
+          "temperature",
+          "ion_channel_1",
+          "principal_level_3",
+          "density_knots",
+          "temperature_knots",
+          "spline_order",
+          "log_r_bscoef",
+          "no_null"
+        ],
+        "outputs": [
+          "r13"
+        ]
+      },
+      {
+        "id": "saha_level_1",
+        "kind": "operator",
+        "asset_id": "scirel.kinetic.hydrogen-saha-equilibrium-population",
+        "description": "Evaluate the Saha equilibrium population of principal level 1.",
+        "inputs": [
+          "density",
+          "temperature",
+          "principal_level_1"
+        ],
+        "outputs": [
+          "saha1"
+        ]
+      },
+      {
+        "id": "saha_level_3",
+        "kind": "operator",
+        "asset_id": "scirel.kinetic.hydrogen-saha-equilibrium-population",
+        "description": "Evaluate the Saha equilibrium population of principal level 3.",
+        "inputs": [
+          "density",
+          "temperature",
+          "principal_level_3"
+        ],
+        "outputs": [
+          "saha3"
+        ]
+      },
+      {
+        "id": "photon_rate_contraction",
+        "kind": "controlled_glue",
+        "description": "Contract the r channels, n0, the Saha populations and the Einstein coefficient in the saved operation order, then gate the result finite and positive.",
+        "inputs": [
+          "r02",
+          "r12",
+          "n0",
+          "saha1",
+          "saha3",
+          "a_lyman"
+        ],
+        "outputs": [
+          "photon_rate_m3_s"
+        ]
+      },
+      {
+        "id": "emissivity_contraction",
+        "kind": "controlled_glue",
+        "description": "Apply the saved frozen emissivity factors and gate the result finite and positive.",
+        "inputs": [
+          "photon_rate_m3_s"
+        ],
+        "outputs": [
+          "emissivity_w_m3"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": {
+          "node": "$input",
+          "port": "density_m3"
+        },
+        "to": {
+          "node": "profile_validation",
+          "port": "density_m3"
+        },
+        "description": "Caller electron-density profile.",
+        "condition": "Always.",
+        "transform": "Identity after finiteness, positivity and the 1e32 composed-domain check.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "temperature_ev"
+        },
+        "to": {
+          "node": "profile_validation",
+          "port": "temperature_ev"
+        },
+        "description": "Caller electron-temperature profile.",
+        "condition": "Always.",
+        "transform": "Identity after the same profile validation.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "n0_m3"
+        },
+        "to": {
+          "node": "profile_validation",
+          "port": "n0_m3"
+        },
+        "description": "Caller ground-state neutral-density profile.",
+        "condition": "Always.",
+        "transform": "Identity after the saved n0 contract check (finite, positive, below 1e32).",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "no_null"
+        },
+        "to": {
+          "node": "profile_validation",
+          "port": "no_null"
+        },
+        "description": "Caller branch selector.",
+        "condition": "Always; the port defaults to 1 when omitted.",
+        "transform": "Fail closed unless the value is 1.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "jh_payload"
+        },
+        "to": {
+          "node": "payload_field_extraction",
+          "port": "jh_payload"
+        },
+        "description": "Caller coefficient payload.",
+        "condition": "Always.",
+        "transform": "Read-only field extraction; the payload itself is validated by the bound assets.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "density"
+        },
+        "to": {
+          "node": "r02_evaluation",
+          "port": "density"
+        },
+        "description": "Paired profile for the bound r asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity; the bound asset applies its own saved sentinel overwrite.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "temperature"
+        },
+        "to": {
+          "node": "r02_evaluation",
+          "port": "temperature"
+        },
+        "description": "Paired profile for the bound r asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "channel_level_selection",
+          "port": "ion_channel_0"
+        },
+        "to": {
+          "node": "r02_evaluation",
+          "port": "ion_channel_0"
+        },
+        "description": "The saved ion channel 0.",
+        "condition": "Always.",
+        "transform": "Constant selector.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "channel_level_selection",
+          "port": "principal_level_3"
+        },
+        "to": {
+          "node": "r02_evaluation",
+          "port": "principal_level_3"
+        },
+        "description": "The level-3 r channel.",
+        "condition": "Always.",
+        "transform": "Constant selector.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "payload_field_extraction",
+          "port": "density_knots"
+        },
+        "to": {
+          "node": "r02_evaluation",
+          "port": "density_knots"
+        },
+        "description": "Density knots for the r spline.",
+        "condition": "After payload field extraction.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "payload_field_extraction",
+          "port": "temperature_knots"
+        },
+        "to": {
+          "node": "r02_evaluation",
+          "port": "temperature_knots"
+        },
+        "description": "Temperature knots for the r spline.",
+        "condition": "After payload field extraction.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "payload_field_extraction",
+          "port": "spline_order"
+        },
+        "to": {
+          "node": "r02_evaluation",
+          "port": "spline_order"
+        },
+        "description": "The payload's order field (FITPACK spline degree 4).",
+        "condition": "After payload field extraction.",
+        "transform": "Integer conversion only.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "payload_field_extraction",
+          "port": "log_r_bscoef"
+        },
+        "to": {
+          "node": "r02_evaluation",
+          "port": "log_r_bscoef"
+        },
+        "description": "The (n, 2, 5) r coefficient tensor.",
+        "condition": "After payload field extraction.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "no_null"
+        },
+        "to": {
+          "node": "r02_evaluation",
+          "port": "no_null"
+        },
+        "description": "The admitted branch selector.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "r02_evaluation",
+          "port": "r03"
+        },
+        "to": {
+          "node": "photon_rate_contraction",
+          "port": "r02"
+        },
+        "description": "The level-2 ion-0 r coefficient.",
+        "condition": "After the r02 evaluation completes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "density"
+        },
+        "to": {
+          "node": "r12_evaluation",
+          "port": "density"
+        },
+        "description": "Paired profile for the bound r asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "temperature"
+        },
+        "to": {
+          "node": "r12_evaluation",
+          "port": "temperature"
+        },
+        "description": "Paired profile for the bound r asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "channel_level_selection",
+          "port": "ion_channel_1"
+        },
+        "to": {
+          "node": "r12_evaluation",
+          "port": "ion_channel_1"
+        },
+        "description": "The saved ion channel 1.",
+        "condition": "Always.",
+        "transform": "Constant selector.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "channel_level_selection",
+          "port": "principal_level_3"
+        },
+        "to": {
+          "node": "r12_evaluation",
+          "port": "principal_level_3"
+        },
+        "description": "The level-3 r channel.",
+        "condition": "Always.",
+        "transform": "Constant selector.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "payload_field_extraction",
+          "port": "density_knots"
+        },
+        "to": {
+          "node": "r12_evaluation",
+          "port": "density_knots"
+        },
+        "description": "Density knots for the r spline.",
+        "condition": "After payload field extraction.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "payload_field_extraction",
+          "port": "temperature_knots"
+        },
+        "to": {
+          "node": "r12_evaluation",
+          "port": "temperature_knots"
+        },
+        "description": "Temperature knots for the r spline.",
+        "condition": "After payload field extraction.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "payload_field_extraction",
+          "port": "spline_order"
+        },
+        "to": {
+          "node": "r12_evaluation",
+          "port": "spline_order"
+        },
+        "description": "The payload's order field (FITPACK spline degree 4).",
+        "condition": "After payload field extraction.",
+        "transform": "Integer conversion only.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "payload_field_extraction",
+          "port": "log_r_bscoef"
+        },
+        "to": {
+          "node": "r12_evaluation",
+          "port": "log_r_bscoef"
+        },
+        "description": "The (n, 2, 5) r coefficient tensor.",
+        "condition": "After payload field extraction.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "no_null"
+        },
+        "to": {
+          "node": "r12_evaluation",
+          "port": "no_null"
+        },
+        "description": "The admitted branch selector.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "r12_evaluation",
+          "port": "r13"
+        },
+        "to": {
+          "node": "photon_rate_contraction",
+          "port": "r12"
+        },
+        "description": "The level-2 ion-1 r coefficient.",
+        "condition": "After the r12 evaluation completes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "density"
+        },
+        "to": {
+          "node": "saha_level_1",
+          "port": "density"
+        },
+        "description": "Paired profile for the bound Saha asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity; the bound asset enforces its own < 1e32 domain.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "temperature"
+        },
+        "to": {
+          "node": "saha_level_1",
+          "port": "temperature"
+        },
+        "description": "Paired profile for the bound Saha asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "channel_level_selection",
+          "port": "principal_level_1"
+        },
+        "to": {
+          "node": "saha_level_1",
+          "port": "principal_level_1"
+        },
+        "description": "The principal level 1 selector.",
+        "condition": "Always.",
+        "transform": "Constant selector.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "saha_level_1",
+          "port": "saha1"
+        },
+        "to": {
+          "node": "photon_rate_contraction",
+          "port": "saha1"
+        },
+        "description": "The level-1 Saha population.",
+        "condition": "After the Saha evaluation completes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "density"
+        },
+        "to": {
+          "node": "saha_level_3",
+          "port": "density"
+        },
+        "description": "Paired profile for the bound Saha asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity; the bound asset enforces its own < 1e32 domain.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "temperature"
+        },
+        "to": {
+          "node": "saha_level_3",
+          "port": "temperature"
+        },
+        "description": "Paired profile for the bound Saha asset.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "channel_level_selection",
+          "port": "principal_level_3"
+        },
+        "to": {
+          "node": "saha_level_3",
+          "port": "principal_level_3"
+        },
+        "description": "The principal level 3 selector.",
+        "condition": "Always.",
+        "transform": "Constant selector.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "saha_level_3",
+          "port": "saha3"
+        },
+        "to": {
+          "node": "photon_rate_contraction",
+          "port": "saha3"
+        },
+        "description": "The level-3 Saha population.",
+        "condition": "After the Saha evaluation completes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_validation",
+          "port": "n0"
+        },
+        "to": {
+          "node": "photon_rate_contraction",
+          "port": "n0"
+        },
+        "description": "The ground-state neutral density of the correction term.",
+        "condition": "After profile validation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "payload_field_extraction",
+          "port": "a_lyman"
+        },
+        "to": {
+          "node": "photon_rate_contraction",
+          "port": "a_lyman"
+        },
+        "description": "The packaged A_Lyman Einstein coefficient vector.",
+        "condition": "After payload field extraction.",
+        "transform": "Identity; only the first entry enters the contraction.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "photon_rate_contraction",
+          "port": "photon_rate_m3_s"
+        },
+        "to": {
+          "node": "$output",
+          "port": "photon_rate_m3_s"
+        },
+        "description": "The Lyman-alpha photon rate.",
+        "condition": "On successful contraction.",
+        "transform": "The saved operation order A_Lyman[0] * (r02 + r12 * n0 / saha1) * saha2, then the finite positive gate.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "photon_rate_contraction",
+          "port": "photon_rate_m3_s"
+        },
+        "to": {
+          "node": "emissivity_contraction",
+          "port": "photon_rate_m3_s"
+        },
+        "description": "The photon rate feeding the emissivity factor.",
+        "condition": "After the photon-rate gate.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "emissivity_contraction",
+          "port": "emissivity_w_m3"
+        },
+        "to": {
+          "node": "$output",
+          "port": "emissivity_w_m3"
+        },
+        "description": "The Lyman-alpha line emissivity.",
+        "condition": "On successful contraction.",
+        "transform": "The saved frozen factors (13.6057 * (0.25 - 1/9)) * photon_rate * 1.602177e-19, then the finite positive gate.",
+        "kind": "data",
+        "required": true
+      }
+    ],
+    "execution": {
+      "mode": "ordered_dag_composition",
+      "ordering": "Validate the composed-domain profile contract, extract the payload fields, evaluate the two r channels and the two Saha populations through the bound assets, contract the photon rate, apply the emissivity factors, and gate both outputs finite and positive.",
+      "branches": [],
+      "state_ownership": "Caller owns the profiles and the payload; the graph owns only local named values for the current call and retains no mutable state.",
+      "failure_propagation": "Validation or bound-asset failure aborts the call immediately; no fallback, retry or partial diagnostic is produced.",
+      "feedback": []
+    }
+  }
+}

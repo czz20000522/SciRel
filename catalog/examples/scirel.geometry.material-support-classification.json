@@ -7,8 +7,16 @@
     "zh": "闭合磁通面与磁轴材料支撑分类"
   },
   "summary": "Classify which points of a solver grid carry cold-plasma material support from the poloidal flux already sampled on that grid, the cylindrical coordinates of the grid, the separatrix flux and the selected flux-surface side, the PML frame thickness, and the caller-owned PEC mask.",
-  "taxonomy": ["geometry", "material-support", "flux-surface", "pml"],
-  "aliases": ["material support mask", "cold plasma support classification"],
+  "taxonomy": [
+    "geometry",
+    "material-support",
+    "flux-surface",
+    "pml"
+  ],
+  "aliases": [
+    "material support mask",
+    "cold plasma support classification"
+  ],
   "identity": {
     "relation": "a sampled poloidal flux, the cylindrical coordinates of the sampling grid, a separatrix flux with a selected side, a PML frame thickness, and a PEC mask to the set of grid points with cold-plasma material support",
     "direction": "poloidal_flux_wb_per_rad, covered_mask, radii_m, axial_coordinate_m, separatrix_flux_wb_per_rad, closed_flux_side, xpoint_half_length_m, pml_cells, pec_mask -> material_support_mask, closed_flux_mask, axis_segment_mask",
@@ -183,7 +191,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev30",
+    "implementation_version": "0.1.0.dev31",
     "dependencies": []
   },
   "example": {
@@ -202,7 +210,9 @@
       "Fail-closed validation of every parameter.",
       "Exact agreement with the retained support mask for the same sampled flux and coordinates."
     ],
-    "tests": ["tests/operator_contracts/test_material_support.py"],
+    "tests": [
+      "tests/operator_contracts/test_material_support.py"
+    ],
     "evidence_ceiling": "Establishes that the declared classification reproduces the retained support mask, that the zero-thickness defect is replaced by an explicit precondition, and that the innermost-radius segment's interaction with the coverage mask is preserved and documented. It does not establish that the selected side of the separatrix flux is physically the confined region for any device, nor that the innermost grid radius coincides with the magnetic axis.",
     "known_limitations": [
       "The magnetic axis is identified with the grid's innermost radius, which is the grid's r = 0 only when the grid contains the origin. On a grid that does not, the axis term marks a thin column at the smallest sampled radius instead of the axis.",

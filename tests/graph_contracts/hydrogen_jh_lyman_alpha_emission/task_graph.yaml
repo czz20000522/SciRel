@@ -1,0 +1,342 @@
+kind: scientific_task_graph
+name: 原子氢JH Lyman-alpha谱线发射图
+entrypoint: graph.py::run_graph
+display_name:
+  zh: 原子氢JH Lyman-alpha谱线发射
+  en: Atomic-hydrogen Johnson-Hinnov Lyman-alpha line emission
+framework_mapping:
+  primary_pfm_node: N0
+  coverage: full
+inputs:
+- name: density_m3
+  meaning: 电子数密度 profile
+  shape: '[n]'
+  units: m^-3
+  required: true
+  constraints: 非空一维数组；有限、严格为正且低于 1e32（组合域取 Saha 资产声明域的交集）
+- name: temperature_ev
+  meaning: 电子温度 profile
+  shape: '[n]'
+  units: eV
+  required: true
+  constraints: 与 density_m3 同形；有限、严格为正且低于 1e32
+- name: n0_m3
+  meaning: 基态中性数密度 profile
+  shape: '[n]'
+  units: m^-3
+  required: true
+  constraints: 与 density_m3 同形；有限、严格为正且低于 1e32 源空值哨兵
+- name: jh_payload
+  meaning: 只读 JH 系数载荷（DKnot、TKnot、order、LogR_BSCoef、LogS_BSCoef、LogAlpha_BSCoef、A_Lyman、A_Balmer）
+  shape: mapping
+  units: mixed
+  required: true
+  constraints: 由被绑定资产校验节点几何（order 4 按 FITPACK 次数约定描述 77 系数）与有限性；只读
+- name: no_null
+  meaning: 源分支选择器
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 仅接受 1；其他值 fail closed
+outputs:
+- name: emissivity_w_m3
+  meaning: Lyman-alpha 谱线发射率（保存的冻结能量因子）
+  shape: '[n]'
+  units: W m^-3
+- name: photon_rate_m3_s
+  meaning: Lyman-alpha 光子产生率
+  shape: '[n]'
+  units: m^-3 s^-1
+execution:
+  mode: ordered_dag_composition
+  order_policy: validate_profile_then_extract_payload_fields_then_evaluate_r02_and_r12_and_saha1_and_saha2_through_bound_assets_then_contract_photon_rate_then_apply_emissivity_factors
+  state_policy: no hidden state, cache, or mutable payload; caller owns profiles and payload
+  failure_policy: composed-domain violation or bound-asset failure aborts before any output
+nodes:
+- id: profile_validation
+  name: 组合域 profile 校验
+  kind: controlled_glue
+  callable: glue:inline
+  inputs: [density_m3, temperature_ev, n0_m3, no_null]
+  outputs: [density, temperature, n0, no_null]
+- id: payload_field_extraction
+  name: 载荷字段抽取
+  kind: controlled_glue
+  callable: glue:inline
+  inputs: [jh_payload]
+  outputs: [density_knots, temperature_knots, spline_order, log_r_bscoef, a_lyman]
+- id: channel_level_selection
+  name: 通道与能级选择
+  kind: controlled_glue
+  callable: glue:inline
+  inputs: []
+  outputs: [ion_channel_0, ion_channel_1, principal_level_1, principal_level_2]
+- id: r02_evaluation
+  name: JH-r ion0 level2 评价
+  kind: scientific_operator
+  asset_ref: scirel.collisions.hydrogen-jh-r-coefficient
+  callable: scirel.collisions.hydrogen_jh_r_coefficient::evaluate_h_jh_r_coefficient
+  inputs: [density, temperature, ion_channel_0, principal_level_2, density_knots, temperature_knots, spline_order, log_r_bscoef, no_null]
+  outputs: [r02]
+- id: r12_evaluation
+  name: JH-r ion1 level2 评价
+  kind: scientific_operator
+  asset_ref: scirel.collisions.hydrogen-jh-r-coefficient
+  callable: scirel.collisions.hydrogen_jh_r_coefficient::evaluate_h_jh_r_coefficient
+  inputs: [density, temperature, ion_channel_1, principal_level_2, density_knots, temperature_knots, spline_order, log_r_bscoef, no_null]
+  outputs: [r12]
+- id: saha_level_1
+  name: Saha level1 人口
+  kind: scientific_operator
+  asset_ref: scirel.kinetic.hydrogen-saha-equilibrium-population
+  callable: scirel.kinetic.hydrogen_saha_equilibrium_population::evaluate_h_saha_equilibrium_population
+  inputs: [density, temperature, principal_level_1]
+  outputs: [saha1]
+- id: saha_level_2
+  name: Saha level2 人口
+  kind: scientific_operator
+  asset_ref: scirel.kinetic.hydrogen-saha-equilibrium-population
+  callable: scirel.kinetic.hydrogen_saha_equilibrium_population::evaluate_h_saha_equilibrium_population
+  inputs: [density, temperature, principal_level_2]
+  outputs: [saha2]
+- id: photon_rate_contraction
+  name: 光子率收缩（保存运算次序）
+  kind: controlled_glue
+  callable: glue:inline
+  inputs: [r02, r12, n0, saha1, saha2, a_lyman]
+  outputs: [photon_rate_m3_s]
+- id: emissivity_contraction
+  name: 发射率收缩（保存冻结因子）
+  kind: controlled_glue
+  callable: glue:inline
+  inputs: [photon_rate_m3_s]
+  outputs: [emissivity_w_m3]
+edges:
+- from: {node: $input, port: density_m3}
+  to: {node: profile_validation, port: density_m3}
+  data: 调用方电子密度
+  condition: always
+  transform: 校验有限、为正、低于 1e32
+  closure: controlled_glue
+- from: {node: $input, port: temperature_ev}
+  to: {node: profile_validation, port: temperature_ev}
+  data: 调用方电子温度
+  condition: always
+  transform: 同 profile 校验
+  closure: controlled_glue
+- from: {node: $input, port: n0_m3}
+  to: {node: profile_validation, port: n0_m3}
+  data: 调用方基态中性密度
+  condition: always
+  transform: 校验有限、为正、低于 1e32
+  closure: controlled_glue
+- from: {node: $input, port: no_null}
+  to: {node: profile_validation, port: no_null}
+  data: 分支选择器（缺省 1）
+  condition: always
+  transform: 非 1 fail closed
+  closure: controlled_glue
+- from: {node: $input, port: jh_payload}
+  to: {node: payload_field_extraction, port: jh_payload}
+  data: 调用方系数载荷
+  condition: always
+  transform: 只读字段抽取
+  closure: controlled_glue
+- from: {node: profile_validation, port: density}
+  to: {node: r02_evaluation, port: density}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none（绑定资产自身执行哨兵覆盖）
+  closure: controlled_glue
+- from: {node: profile_validation, port: temperature}
+  to: {node: r02_evaluation, port: temperature}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: channel_level_selection, port: ion_channel_0}
+  to: {node: r02_evaluation, port: ion_channel_0}
+  data: 通道 0
+  condition: always
+  transform: constant
+  closure: controlled_glue
+- from: {node: channel_level_selection, port: principal_level_2}
+  to: {node: r02_evaluation, port: principal_level_2}
+  data: level 2
+  condition: always
+  transform: constant
+  closure: controlled_glue
+- from: {node: payload_field_extraction, port: density_knots}
+  to: {node: r02_evaluation, port: density_knots}
+  data: 密度节点
+  condition: after payload extraction
+  transform: none
+  closure: controlled_glue
+- from: {node: payload_field_extraction, port: temperature_knots}
+  to: {node: r02_evaluation, port: temperature_knots}
+  data: 温度节点
+  condition: after payload extraction
+  transform: none
+  closure: controlled_glue
+- from: {node: payload_field_extraction, port: spline_order}
+  to: {node: r02_evaluation, port: spline_order}
+  data: order 字段（FITPACK 次数 4）
+  condition: after payload extraction
+  transform: 整数转换
+  closure: controlled_glue
+- from: {node: payload_field_extraction, port: log_r_bscoef}
+  to: {node: r02_evaluation, port: log_r_bscoef}
+  data: (n,2,5) r 系数张量
+  condition: after payload extraction
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: no_null}
+  to: {node: r02_evaluation, port: no_null}
+  data: 分支选择器
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: r02_evaluation, port: r02}
+  to: {node: photon_rate_contraction, port: r02}
+  data: level2 ion0 r 系数
+  condition: after r02 evaluation
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: density}
+  to: {node: r12_evaluation, port: density}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: temperature}
+  to: {node: r12_evaluation, port: temperature}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: channel_level_selection, port: ion_channel_1}
+  to: {node: r12_evaluation, port: ion_channel_1}
+  data: 通道 1
+  condition: always
+  transform: constant
+  closure: controlled_glue
+- from: {node: channel_level_selection, port: principal_level_2}
+  to: {node: r12_evaluation, port: principal_level_2}
+  data: level 2
+  condition: always
+  transform: constant
+  closure: controlled_glue
+- from: {node: payload_field_extraction, port: density_knots}
+  to: {node: r12_evaluation, port: density_knots}
+  data: 密度节点
+  condition: after payload extraction
+  transform: none
+  closure: controlled_glue
+- from: {node: payload_field_extraction, port: temperature_knots}
+  to: {node: r12_evaluation, port: temperature_knots}
+  data: 温度节点
+  condition: after payload extraction
+  transform: none
+  closure: controlled_glue
+- from: {node: payload_field_extraction, port: spline_order}
+  to: {node: r12_evaluation, port: spline_order}
+  data: order 字段
+  condition: after payload extraction
+  transform: 整数转换
+  closure: controlled_glue
+- from: {node: payload_field_extraction, port: log_r_bscoef}
+  to: {node: r12_evaluation, port: log_r_bscoef}
+  data: (n,2,5) r 系数张量
+  condition: after payload extraction
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: no_null}
+  to: {node: r12_evaluation, port: no_null}
+  data: 分支选择器
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: r12_evaluation, port: r12}
+  to: {node: photon_rate_contraction, port: r12}
+  data: level2 ion1 r 系数
+  condition: after r12 evaluation
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: density}
+  to: {node: saha_level_1, port: density}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none（绑定资产执行自身 <1e32 域校验）
+  closure: controlled_glue
+- from: {node: profile_validation, port: temperature}
+  to: {node: saha_level_1, port: temperature}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: channel_level_selection, port: principal_level_1}
+  to: {node: saha_level_1, port: principal_level_1}
+  data: level 1
+  condition: always
+  transform: constant
+  closure: controlled_glue
+- from: {node: saha_level_1, port: saha1}
+  to: {node: photon_rate_contraction, port: saha1}
+  data: level1 Saha 人口
+  condition: after saha1 evaluation
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: density}
+  to: {node: saha_level_2, port: density}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: temperature}
+  to: {node: saha_level_2, port: temperature}
+  data: 校验后的 profile
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: channel_level_selection, port: principal_level_2}
+  to: {node: saha_level_2, port: principal_level_2}
+  data: level 2
+  condition: always
+  transform: constant
+  closure: controlled_glue
+- from: {node: saha_level_2, port: saha2}
+  to: {node: photon_rate_contraction, port: saha2}
+  data: level2 Saha 人口
+  condition: after saha2 evaluation
+  transform: none
+  closure: controlled_glue
+- from: {node: profile_validation, port: n0}
+  to: {node: photon_rate_contraction, port: n0}
+  data: 基态中性密度
+  condition: after profile validation
+  transform: none
+  closure: controlled_glue
+- from: {node: payload_field_extraction, port: a_lyman}
+  to: {node: photon_rate_contraction, port: a_lyman}
+  data: A_Lyman 系数向量（仅首个分量进入收缩）
+  condition: after payload extraction
+  transform: none
+  closure: controlled_glue
+- from: {node: photon_rate_contraction, port: photon_rate_m3_s}
+  to: {node: $output, port: photon_rate_m3_s}
+  data: Lyman-alpha 光子率
+  condition: on success
+  transform: 保存运算次序 A_Lyman[0] * (r02 + r12 * n0 / saha1) * saha2，随后有限且为正门控
+  closure: controlled_glue
+- from: {node: photon_rate_contraction, port: photon_rate_m3_s}
+  to: {node: emissivity_contraction, port: photon_rate_m3_s}
+  data: 光子率
+  condition: after photon-rate gate
+  transform: none
+  closure: controlled_glue
+- from: {node: emissivity_contraction, port: emissivity_w_m3}
+  to: {node: $output, port: emissivity_w_m3}
+  data: Lyman-alpha 发射率
+  condition: on success
+  transform: 保存冻结因子 (13.6057 * (0.25 - 1/9)) * 光子率 * 1.602177e-19，随后门控
+  closure: controlled_glue

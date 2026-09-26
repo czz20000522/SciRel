@@ -2,10 +2,19 @@
   "schema": "scirel.asset-document.v1",
   "asset_id": "scirel.geometry.planar-wavevector-projection",
   "kind": "operator",
-  "title": {"en": "Planar real wavevector projection", "zh": "平面实波矢投影"},
+  "title": {
+    "en": "Planar real wavevector projection",
+    "zh": "平面实波矢投影"
+  },
   "summary": "Project a real x-z wavevector from a nonnegative magnitude and angle, or compute magnitude from paired components already expressed in inverse metres.",
-  "taxonomy": ["geometry", "plasma-wave", "wavevector"],
-  "aliases": ["x-z wavevector projection"],
+  "taxonomy": [
+    "geometry",
+    "plasma-wave",
+    "wavevector"
+  ],
+  "aliases": [
+    "x-z wavevector projection"
+  ],
   "identity": {
     "relation": "Real x-z plane wavevector declaration to perpendicular and parallel components and magnitude",
     "direction": "k and theta_rad -> kx, kz, k; or paired kx and kz -> kx, kz, k",
@@ -14,25 +23,112 @@
     "geometry": "Background field along z; real wavevector in the x-z plane",
     "coordinates": "Cartesian x-z components with z parallel to the background field",
     "boundary": "Magnitude is nonnegative; zero magnitude keeps the supplied polar angle, whereas Cartesian mode returns no angle.",
-    "assumptions": ["The caller has converted source-specific wave numbers to consistent inverse-metre units.", "The operation does not rotate coordinates or handle a y component."]
+    "assumptions": [
+      "The caller has converted source-specific wave numbers to consistent inverse-metre units.",
+      "The operation does not rotate coordinates or handle a y component."
+    ]
   },
   "inputs": [
-    {"name": "k_grid", "description": "Wavevector magnitude sweep in polar mode.", "units": "1/m", "shape": "[N]", "dtype": "real array-like", "required": false, "default": null, "constraints": "Nonempty, one-dimensional, finite and nonnegative; exclusive with component grids."},
-    {"name": "theta_rad", "description": "Propagation angle from +z toward +x; ignored in Cartesian mode.", "units": "rad", "shape": "scalar", "dtype": "real scalar", "required": false, "default": null, "constraints": "Defaults to zero in polar mode and must be finite there."},
-    {"name": "kx_grid", "description": "Perpendicular component sweep in Cartesian mode.", "units": "1/m", "shape": "[N]", "dtype": "real array-like", "required": false, "default": null, "constraints": "Requires a same-length kz_grid; exclusive with k_grid."},
-    {"name": "kz_grid", "description": "Parallel component sweep in Cartesian mode.", "units": "1/m", "shape": "[N]", "dtype": "real array-like", "required": false, "default": null, "constraints": "Requires a same-length kx_grid; exclusive with k_grid."}
+    {
+      "name": "k_grid",
+      "description": "Wavevector magnitude sweep in polar mode.",
+      "units": "1/m",
+      "shape": "[N]",
+      "dtype": "real array-like",
+      "required": false,
+      "default": null,
+      "constraints": "Nonempty, one-dimensional, finite and nonnegative; exclusive with component grids."
+    },
+    {
+      "name": "theta_rad",
+      "description": "Propagation angle from +z toward +x; ignored in Cartesian mode.",
+      "units": "rad",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": false,
+      "default": null,
+      "constraints": "Defaults to zero in polar mode and must be finite there."
+    },
+    {
+      "name": "kx_grid",
+      "description": "Perpendicular component sweep in Cartesian mode.",
+      "units": "1/m",
+      "shape": "[N]",
+      "dtype": "real array-like",
+      "required": false,
+      "default": null,
+      "constraints": "Requires a same-length kz_grid; exclusive with k_grid."
+    },
+    {
+      "name": "kz_grid",
+      "description": "Parallel component sweep in Cartesian mode.",
+      "units": "1/m",
+      "shape": "[N]",
+      "dtype": "real array-like",
+      "required": false,
+      "default": null,
+      "constraints": "Requires a same-length kx_grid; exclusive with k_grid."
+    }
   ],
   "outputs": [
-    {"name": "kx", "description": "Perpendicular x component.", "units": "1/m", "shape": "[N]", "dtype": "float64", "required": true, "constraints": "Finite for accepted input."},
-    {"name": "kz", "description": "Parallel z component.", "units": "1/m", "shape": "[N]", "dtype": "float64", "required": true, "constraints": "Finite for accepted input."},
-    {"name": "k", "description": "Nonnegative wavevector magnitude.", "units": "1/m", "shape": "[N]", "dtype": "float64", "required": true, "constraints": "Finite for accepted input."},
-    {"name": "theta_rad", "description": "Declared polar angle or null in Cartesian mode.", "units": "rad or null", "shape": "scalar or null", "dtype": "float or null", "required": true, "constraints": "Not a derived Cartesian angle."},
-    {"name": "projection_mode", "description": "Selected declaration mode.", "units": "dimensionless", "shape": "scalar", "dtype": "string", "required": true, "constraints": "polar or cartesian."}
+    {
+      "name": "kx",
+      "description": "Perpendicular x component.",
+      "units": "1/m",
+      "shape": "[N]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite for accepted input."
+    },
+    {
+      "name": "kz",
+      "description": "Parallel z component.",
+      "units": "1/m",
+      "shape": "[N]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite for accepted input."
+    },
+    {
+      "name": "k",
+      "description": "Nonnegative wavevector magnitude.",
+      "units": "1/m",
+      "shape": "[N]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite for accepted input."
+    },
+    {
+      "name": "theta_rad",
+      "description": "Declared polar angle or null in Cartesian mode.",
+      "units": "rad or null",
+      "shape": "scalar or null",
+      "dtype": "float or null",
+      "required": true,
+      "constraints": "Not a derived Cartesian angle."
+    },
+    {
+      "name": "projection_mode",
+      "description": "Selected declaration mode.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "string",
+      "required": true,
+      "constraints": "polar or cartesian."
+    }
   ],
   "applicability": {
-    "preconditions": ["Caller has already converted all wave numbers to 1/m.", "Arrays are finite real vectors; paired components have equal length."],
-    "supported": ["Single-angle polar sweeps and paired Cartesian component sweeps in the x-z plane."],
-    "excluded": ["PDRK scan selection, logarithmic controls, par state updates and derived angle output.", "Complex wavevectors, y components, coordinate rotations and dispersion physics."]
+    "preconditions": [
+      "Caller has already converted all wave numbers to 1/m.",
+      "Arrays are finite real vectors; paired components have equal length."
+    ],
+    "supported": [
+      "Single-angle polar sweeps and paired Cartesian component sweeps in the x-z plane."
+    ],
+    "excluded": [
+      "PDRK scan selection, logarithmic controls, par state updates and derived angle output.",
+      "Complex wavevectors, y components, coordinate rotations and dispersion physics."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for missing or mixed modes, non-real or nonfinite vectors, negative polar magnitude, non-real or nonfinite polar angle, invalid component shape, or nonfinite computed Cartesian magnitude.",
@@ -42,21 +138,47 @@
   },
   "provenance": {
     "lineage_summary": "Development integration from the saved PDRF planar projection and bounded comparison with the overlapping PDRK scan relation. Later whole-source review withdrew both projects' former strict D1 qualification: PDRF's public SI output/reassembly denominator remains open, while PDRK has additional executable source paths requiring disposition. Both retained candidates support bounded historical development comparison only, not current qualified L1 provenance or SciRel expert recognition. The source-package digests and port mapping remain in the intake evaluation.",
-    "source_kinds": ["saved L1 operator documents and implementations", "saved direct tests", "cross-source development comparison"],
+    "source_kinds": [
+      "saved L1 operator documents and implementations",
+      "saved direct tests",
+      "cross-source development comparison"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
-  "public_api": {"python": {"module": "scirel.geometry.planar_wavevector", "symbol": "project_planar_wavevector", "signature": "project_planar_wavevector(*, k_grid=None, theta_rad=None, kx_grid=None, kz_grid=None)"}},
-  "version": {"implementation_version": "0.1.0.dev30", "dependencies": []},
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.planar_wavevector",
+      "symbol": "project_planar_wavevector",
+      "signature": "project_planar_wavevector(*, k_grid=None, theta_rad=None, kx_grid=None, kz_grid=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev31",
+    "dependencies": []
+  },
   "example": {
     "description": "Measure a 3-4-5 Cartesian wavevector after caller-side SI conversion.",
     "code": "from scirel.geometry import project_planar_wavevector\nresult = project_planar_wavevector(kx_grid=[3.0], kz_grid=[4.0])\nassert result['k'][0] == 5.0",
     "expected": "kx=[3], kz=[4], k=[5] in 1/m, with theta_rad=None."
   },
   "verification": {
-    "scope": ["Polar and Cartesian projection contract.", "Zero-magnitude angle and mode distinction.", "Non-real input rejection, nonfinite magnitude rejection and large finite hypot behavior."],
-    "tests": ["tests/operator_contracts/test_planar_wavevector.py", "tests/operator_contracts/test_planar_wavevector_l1.py"],
+    "scope": [
+      "Polar and Cartesian projection contract.",
+      "Zero-magnitude angle and mode distinction.",
+      "Non-real input rejection, nonfinite magnitude rejection and large finite hypot behavior."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_planar_wavevector.py",
+      "tests/operator_contracts/test_planar_wavevector_l1.py"
+    ],
     "evidence_ceiling": "Source-free direct tests establish this development callable's declared bounded arithmetic and failures. Saved PDRF and PDRK implementations support only historical bounded comparisons on the tested mapped domain; neither project currently has a qualified strict D1 delivery. These comparisons do not establish complete source-project reproduction, physical validity or SciRel expert approval of this standardized relation.",
-    "known_limitations": ["PDRF normalized input-card wave numbers lack a verified conversion to 1/m.", "SciRel rejects string/boolean numeric surrogates; the source comparison covers only the declared real numeric domain.", "Cartesian hypot intentionally differs from the PDRF square-and-sum overflow at large finite components.", "PDRK scan-state semantics require a separate relation.", "SciRel expert recognition and distribution licensing remain pending."]
+    "known_limitations": [
+      "PDRF normalized input-card wave numbers lack a verified conversion to 1/m.",
+      "SciRel rejects string/boolean numeric surrogates; the source comparison covers only the declared real numeric domain.",
+      "Cartesian hypot intentionally differs from the PDRF square-and-sum overflow at large finite components.",
+      "PDRK scan-state semantics require a separate relation.",
+      "SciRel expert recognition and distribution licensing remain pending."
+    ]
   }
 }
