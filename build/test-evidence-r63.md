@@ -41,7 +41,7 @@ zero writes.
 ## Gates (final bytes)
 
 - Source-mode full gate: **1397 passed, 43 skipped, 0 failed** (r62: 1381;
-  +18; log line `1397 passed, 43 skipped, 7 warnings in 215.04s`).
+  +16; log line `1397 passed, 43 skipped, 7 warnings in 215.04s`).
 - Document validation, source state: **116/116**, `runtime_origin: source`,
   `examples_executed: true`.
 - Same validator from the clean venv with `--installed-runtime`: **116/116**,
