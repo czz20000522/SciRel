@@ -37,22 +37,24 @@ SciRel 侧资产与消费关系(已核):
 
 需求(对 `run-worker.sh` 或其后续部署版本;由 Spark 原负责人实现,SciRel 不代改):
 
-0. **会话内 receipt 时序合同(堵住 -08 veto 的核心窗口)。** 冻结不能只在 worker 退出后做:同一 worker 会话完全可能先发 receipt 再继续运行,该窗口内本次与旧 attempt 仍可被写——这正是 -08 veto V1/V2 的阻塞事实。要求满足其一(由负责人选择并在文档中声明):
-   - **方案甲(单 attempt 持有)**:一次 worker 会话只拥有恰好一个新 attempt 根的写权(启动时分配,不在会话内切换);worker 在**仍持有写权时不得宣告可审计 receipt**——prompt 与 runner 合同明确:回执由 runner 在检测到 worker 结束输出(进程退出或 `output-last-message` 落盘)后,由 runner(或独立 owner)代为生成/封存,worker 自身只能产出"待封存的证据内容"。若业务上必须由 worker 写 receipt 文件,则 runner 必须在 worker 仍存活期间通过 Landlock 规则动态收权(如 `landlock-policy-exec` 支持的规则更新或双层 landlock 包装),使 receipt 路径在写入后立即对 worker 变为不可写。
-   - **方案乙(seal-before-audit)**:worker 结束后、receipt 宣告为可审计前,由 runner/独立 owner 先对整个 attempt 根执行封存(seal:内容 digest 快照 + 权限只读 + 独立 owner 校验),再发出绑定 seal digest 的可审计 receipt。worker 存活期间产出的任何文件都视为未封存草稿。
-   两方案的共同不变式:**不存在"回执已发出且 worker 仍持该回执所在 attempt 写权"的状态**。
+0. **会话内 receipt 时序合同(堵住 -08 veto 的核心窗口;单一方案,无可选分支)。** 冻结不能只在 worker 退出后做:同一 worker 会话完全可能先宣告 receipt 再继续运行,该窗口内本次与旧 attempt 仍可被写——这正是 -08 veto V1/V2 的阻塞事实。合同是**一 worker 会话仅拥有一个新 attempt 根的写权**,且时序固定为:
+   1. worker 只产出**待封存内容**(draft evidence);worker 写的任何 receipt 命名文件在 seal 前一律只是草稿,系统不承认其为可审计回执;
+   2. runner 等待 **worker 进程确实退出**并回收其写权——`output-last-message` 落盘**不等于**进程退出,不得作为收权时点;
+   3. 由 worker 无法撤销的独立 owner/封存副本机制对整个 attempt 根 seal(内容 digest 快照 + worker 不可撤销的只读强制,见需求 2);
+   4. seal 完成后,runner 发布**绑定 seal digest 的 auditable receipt**。
+   不变式:**不存在"可审计 receipt 已被系统承认而其写入者(或同 attempt 的任何写入者)仍持写权"的状态**。不引入"运行中动态收权/双层 landlock wrapper"等未经验证的实现猜测(普通 Landlock 规则不能由 runner 事后收紧另一存活进程的已授规则);除非负责人给出部署实证,不得列为备选。
 1. **Per-attempt 写根,而非 lane 级 attempts 写根。** `LANDLOCK_ARGS` 不得再包含 `--rw "$LANE_DIR/attempts"`(现 :300)。改为:启动前由 runner 生成本次 attempt 的独立根 `$LANE_DIR/attempts/$ATTEMPT_ID/`(含 `{scratch,evidence}`),只把 `--rw "$LANE_DIR/attempts/$ATTEMPT_ID"` 授予 worker;若 worker 需读旧 attempt 作对照,以 `--ro` 只读授予显式列出的旧 attempt 路径(默认不授)。
-2. **Post-receipt 冻结(方法 :96 的实现),且强制机制必须独立于 worker 的撤销能力。** runner 在 worker 进程退出(或按需求 0 的时序点)立即把该 attempt 根转为只读。注意:`chmod -R a-w` 单独**不构成持久强制隔离**——同 uid 的文件 owner 可以随时 `chmod +w` 撤销,worker 若与 runner 同 uid(当前部署即如此)则该机制形同虚设。可接受机制(以部署环境可用为准,可组合):独立非特权 owner 持有 attempt 根(worker uid 无写权,root 或专用 seal-owner 所有)、只读 bind mount/`chattr +i`(具备 CAP_FILE_ATTR 的 seal-owner 施加,worker 无法解除)、或 seal 时把 attempt 内容复制到 worker 永不可写的封存路径并只对外发布封存副本 digest。冻结动作与结果(路径、机制、时间、前后 digest、施加者 uid)写入该 attempt 的 receipt 或 runner 日志;冻结完成前 runner 不得向 coordinator 报告该 attempt 的 handoff 为可审计。
+2. **Seal 机制必须独立于 worker 的撤销能力。** runner 在 worker 进程确实退出并回收写权后立即 seal 该 attempt 根。注意:`chmod -R a-w` 单独**不构成持久强制隔离**——同 uid 的文件 owner 可以随时 `chmod +w` 撤销,worker 若与 runner 同 uid(当前部署即如此)则该机制形同虚设。可接受机制(以部署环境可用为准,可组合):独立非特权 owner 持有 attempt 根(worker uid 无写权,root 或专用 seal-owner 所有)、只读 bind mount/`chattr +i`(具备 CAP_FILE_ATTR 的 seal-owner 施加,worker 无法解除)、或 seal 时把 attempt 内容复制到 worker 永不可写的封存路径并只对外发布封存副本 digest。seal 动作与结果(路径、机制、时间、前后 digest、施加者 uid)写入 auditable receipt 或 runner 日志;seal 完成前 runner 不得向 coordinator 报告该 attempt 的 handoff 为可审计。
 3. **跨会话持久性。** 冻结必须在文件系统层持久(而非仅 Landlock 进程策略),使下一次 `run-worker.sh` 会话(哪怕同 lane 新 attempt、同 uid)也无法以读写方式写旧 attempt 根;`--ro` 重挂载读旧 attempt 时应能在 runner 日志中区分"只读对照读"与"写"。
 4. **守卫扩展。** 现 :96-99 的单会话守卫保持;新增:若 `$LANE_DIR/attempts/$ATTEMPT_ID` 已存在且未冻结(例如上次运行崩溃在冻结前),拒绝复用该 ATTEMPT_ID,要求新 attempt ID(与 prompt 中 exit 73/74 语义一致)。
 5. **不改语义。** 本需求只收缩写权限与增加冻结动作,不改变 read allowlist(:243-247)、handoff 合同(:255-267)或 slot-manager 合同;`.orig` 变体同步与否由负责人决定,但部署副本必须以 digest 记录进 run 协调记录。
 
 验收证据(全部由 Spark 侧产生,SciRel 只消费结论;每项需可复跑并给出 receipt/digest):
 
-- **A(同会话 post-receipt 写拒绝——-08 veto 的直接反例)**:同一 worker 会话在发出(或代为封存)receipt 后、进程仍存活的窗口内,尝试写本次 attempt 根的任何文件必须失败;并尝试写同 lane 旧 attempt 的任何文件同样必须失败。两种尝试的拒绝都需留痕(receipt/digest)。
-- **B(跨会话、同 uid 反例)**:第二次 worker 会话(与第一次同 uid)尝试写第一个已封存 attempt 的任何文件必须失败——证明强制不依赖 `chmod a-w` 可被同 uid owner 撤销的性质,而依赖独立 owner/只读挂载/封存副本等机制。
-- **C(对照读可用)**:后续会话按 packet 显式 allowlist 以只读方式读已封存 attempt 的 receipt 文件成功(证明封存不是简单屏蔽),而写尝试被拒。
-- **D(崩溃恢复)**:模拟 worker 在 receipt 后、封存前被 kill;下次 launcher 启动同 ATTEMPT_ID 必须以"未封存"拒绝(exit 73/74 语义),新 attempt ID 正常。
+- **A(worker 存活期间不存在被系统承认的可审计 receipt;同会话写旧 attempt 必拒)**:worker 进程存活的整个窗口内,系统层面不存在承认该会话任何输出为可审计 receipt 的记录(运行中宣告的 receipt 只是草稿);worker 自写 receipt 同名文件不改变这一点,内容仍按待封存草稿处理;同会话尝试写同 lane 旧 attempt 的任何文件必须失败。所有拒绝与草稿定性均需留痕(receipt/digest)。
+- **B(跨会话、同 uid 反例)**:第二次 worker 会话(与第一次同 uid)尝试写第一个已 seal attempt 的任何文件必须失败——证明强制不依赖 `chmod a-w` 可被同 uid owner 撤销的性质,而依赖独立 owner/只读挂载/封存副本等机制。
+- **C(对照读可用)**:后续会话按 packet 显式 allowlist 以只读方式读已 seal attempt 的 receipt 文件成功(证明 seal 不是简单屏蔽),而写尝试被拒。
+- **D(崩溃恢复,时序点 = seal 前)**:模拟 worker 已产出待封存内容后、runner seal 前被 kill;该 attempt 不可被复用(下次 launcher 启动同 ATTEMPT_ID 以"未封存"拒绝,exit 73/74 语义),且**不存在该 attempt 的任何可审计 receipt**;新 attempt ID 正常。
 - **E(canary 回归,不干扰活跃 lane)**:在隔离 canary lane(真实 packet 形状、真实 runner 参数,不挂在任何现役科学 run 下)完成回归:read allowlist 行为不变、handoff 合同不变、slot-manager 计数不变。现役 FIDASIM/fluidBW/PDRF 活跃 lane **不做空载试运行**;其新 runner 行为验证由原负责人在各 run 实际进入下一自然阶段时按本合同核对。
 - **F(digest 记录)**:新 `run-worker.sh` 的 SHA-256 与部署位置记入 run 协调记录(与 `scirel-d1-skill-bundle-deployed-20260925.txt` 同等级别的通知),SciRel 侧凭该记录更新 -08 状态评估。
 
