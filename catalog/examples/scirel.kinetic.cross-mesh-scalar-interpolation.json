@@ -23,7 +23,7 @@
     "model": "the saved formal implementation of the N5 H<->H2 seam interpolation",
     "geometry": "one-dimensional spatial meshes",
     "coordinates": "nodes in m; profile in the caller's units",
-    "boundary": "nonempty finite one-dimensional arrays; xa strictly increasing and aligned to fa; at least one in-range xb node; finite output The in-range mesh_b nodes must form one contiguous block.",
+    "boundary": "nonempty finite one-dimensional arrays; xa strictly increasing and aligned to fa; at least one in-range xb node; finite output. The in-range mesh_b nodes must form one contiguous block.",
     "assumptions": [
       "The out-of-range zero fill is the saved physics contract (interpolations outside the phase space are set to zero), not a defect.",
       "Linear interpolation only; higher-order or conservative remaps are excluded.",
