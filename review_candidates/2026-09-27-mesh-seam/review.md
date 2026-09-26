@@ -50,10 +50,8 @@ trusted version, or a public release.
   pi*(edges[1:]^2 - edges[:-1]^2) computed from first principles (not from
   the implementation's _make_dvr_dvx), so an error in either would surface
   as a mismatch.
-- Moment-target assertions: density on mesh_b matches mesh_a density
-  interpolated onto mesh_b x nodes to 1e-9 rtol; axial flow stays zero for
-  vx-symmetric input.
-- 9 tests total (6 direct + 3 replay); `pytest --collect-only` verified.
+- Moment-target assertions (independent analytic quadrature, not from the implementation): density on mesh_b matches mesh_a density interpolated onto mesh_b x nodes to 1e-9 rtol; axial flow stays zero for vx-symmetric input (atol 1e-12). Energy-moment reproduction is handled by the saved correction loop but is not independently asserted; no external atomic-physics validation is claimed.
+- 10 tests total (7 direct + 3 replay); `pytest --collect-only` verified.
 
 ## Files
 
@@ -66,3 +64,12 @@ trusted version, or a public release.
 Version `0.1.0.dev34` -> `0.1.0.dev35`; catalog 112 -> 113 exact documents.
 The other 112 documents change only in the mechanical `implementation_version`
 bump.
+
+## Snapshot-path disclosure (r62 freeze history)
+
+The r62 batch was frozen twice at the same output path
+`build/verification/review-2026-09-27-r62-dist-interp-v2/` (the second
+freeze overwrote the first in place, violating the fresh-path convention).
+Both r62-v2 snapshots are superseded by this r62-v3 successor at a fresh
+path. The original manifest bytes of the overwritten attempt cannot be
+re-verified.

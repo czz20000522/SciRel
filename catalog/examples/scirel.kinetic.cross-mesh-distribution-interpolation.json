@@ -6,7 +6,7 @@
     "en": "Cross-mesh distribution interpolation",
     "zh": "跨网格分布插值"
   },
-  "summary": "Transfer a velocity distribution between two phase-space meshes (the N5 H<->H2 handoff): 4-D cell-overlap volume weights in (vr,vx), x-space linear interpolation onto the target mesh, optional source moment-correction loop reproducing density/flow/energy moments, and density rescale.",
+  "summary": "Transfer a velocity distribution between two phase-space meshes (the N5 H<->H2 handoff): 4-D cell-overlap volume weights in (vr,vx), x-space linear interpolation onto the target mesh, optional source moment-correction loop reproducing density and flow moments, and density rescale.",
   "taxonomy": [
     "kinetic",
     "neutral-transport",
@@ -20,8 +20,8 @@
   "identity": {
     "relation": "the saved interp_fvrvxx handoff: 4-D cell-overlap weights transfer the distribution from mesh_a velocity space onto mesh_b, x-space linear interpolation, then optional moment correction and density rescale",
     "direction": "distribution plus two phase-space meshes and correct selector -> interpolated distribution on mesh_b",
-    "definition": "fV = sqrt(Tnorm_b/Tnorm_a) scales mesh_b velocity cells onto mesh_a; the weight matrix holds the 4-D cell-overlap volume integral; the transfer maps fa onto mesh_b velocity space evaluated on the mesh_a x grid; x-interpolation uses searchsorted location and linear weights; with correct=1 the saved AN/BN perturbation-moment loop iterates so the corrected distribution reproduces the source density/flow/energy moments; the density rescale renormalises fb where its own integrated total exceeds min(fb>0)",
-    "model": "the saved formal implementation of the N5 outer H<->H2 seam, stateless port recomputing the weight matrix per call (the original source cache lifecycle is a pure memoisation; the saved formal operator has no cache branch)",
+    "definition": "fV = sqrt(Tnorm_b/Tnorm_a) scales mesh_b velocity cells onto mesh_a; the weight matrix holds the 4-D cell-overlap volume integral; the transfer maps fa onto mesh_b velocity space evaluated on the mesh_a x grid; x-interpolation uses searchsorted location and linear weights; with correct=1 the saved AN/BN perturbation-moment loop iterates so the corrected distribution reproduces the source density and flow moments; the density rescale renormalises fb where its own integrated total exceeds min(fb>0)",
+    "model": "the saved formal implementation of the N5 outer H<->H2 seam, stateless port recomputing the weight matrix per call (the saved formal operator has no cache branch)",
     "geometry": "two velocity dimensions over one spatial axis, per phase-space mesh",
     "coordinates": "velocity nodes and distributions in the source normalized units, spatial nodes in m; Tnorm in eV",
     "boundary": "finite one-dimensional velocity/spatial axes with strictly increasing vr and vx covering positive and negative axial nodes on mesh_a; at least 2 nodes per velocity axis; velocity-space and x-space overlap required between the meshes; positive Tnorm on both meshes; finite 3-D distribution aligned to mesh_a",
@@ -29,7 +29,7 @@
       "The saved formal operator has no w_new/cache branch; it recomputes the weight matrix every call, exactly like this stateless port. The original source runtime also has a cache lifecycle, but the saved formal operator does not carry it, so cache-state parity is out of scope for this replay.",
       "The saved arm raises a raw IndexError for a single-node vx_a (the correction branch indexes vx[1]); this asset fail-closes with a named ValueError instead, requiring at least 2 vx nodes covering positive and negative axial velocities. The saved-arm divergence is pinned by regression.",
       "The saved arm only checks Tnorm <= 0, so NaN and inf pass silently; this asset additionally requires Tnorm to be finite, per the declared finite-input contract.",
-      "The moment correction targets the source density/flow/energy moments; it does not claim any external atomic-physics validation.",
+      "The moment correction targets the source density and flow moments (energy-moment reproduction is handled by the saved correction loop but is not independently asserted). No external atomic-physics validation is claimed.",
       "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
     ]
   },
@@ -187,7 +187,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev35",
+    "implementation_version": "0.1.0.dev36",
     "dependencies": []
   },
   "example": {
