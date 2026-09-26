@@ -1,0 +1,131 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.beam-grid-cell-sampling",
+  "kind": "operator",
+  "title": {
+    "en": "Beam-grid Cartesian cell sampling",
+    "zh": "主动束网格均匀采样"
+  },
+  "summary": "Map caller-owned uniform draws in [0,1) to one birth position inside a Cartesian beam-grid cell via the source's zero-mean affine map.",
+  "taxonomy": [
+    "fusion",
+    "fast-ion-diagnostics",
+    "nbi-birth",
+    "beam-grid",
+    "sampling"
+  ],
+  "aliases": [
+    "sample_beam_grid_cell"
+  ],
+  "identity": {
+    "relation": "position = cell_center_cm + cell_width_cm * (uniform_draws - 0.5), evaluated per axis.",
+    "direction": "cell center + cell widths + caller-owned uniform draws -> one birth position inside the cell",
+    "definition": "The saved FIDASIM mc_beam_grid explicit-uniform Cartesian cell sample. The randomness stays caller-owned (deterministic, replayable mapping); draws must lie in [0, 1) and widths are nonnegative.",
+    "model": "the saved formal implementation, ported verbatim with a registered finite-output gate",
+    "geometry": "one Cartesian beam-grid cell; a 3-vector output",
+    "coordinates": "positions and widths in cm; draws dimensionless in [0, 1)",
+    "boundary": "finite shape-(3,) center/width/draws; nonnegative widths; draws in [0, 1); the output must remain finite",
+    "assumptions": [
+      "The caller owns the random stream and supplies the uniform variates.",
+      "The Cartesian cell axes align with the coordinate axes of center and width.",
+      "No external physics reference is bound beyond the source closed form."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "cell_center_cm",
+      "description": "Cartesian center of the beam-grid cell.",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "cell_width_cm",
+      "description": "Cartesian widths of the beam-grid cell.",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative."
+    },
+    {
+      "name": "uniform_draws",
+      "description": "Caller-owned uniform variates, one per axis.",
+      "units": "dimensionless",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; every entry in [0, 1)."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "position_cm",
+      "description": "One birth position inside the cell.",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite (registered hardening: raises instead of returning Inf/NaN for finite extreme inputs)."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller owns the random stream and supplies the uniform variates."
+    ],
+    "supported": [
+      "Per-particle Cartesian beam-grid cell birth-position sampling."
+    ],
+    "excluded": [
+      "Cell-volume weighting, birth-velocity scaling, initial-state materialization, ionization paths, and any RNG ownership."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when any vector is non-finite or misshaped, when a width is negative, or when any draw lies outside [0, 1).",
+    "runtime_failure": "Raises ValueError if the sampled position is non-finite for finite but extreme input magnitudes (registered hardening; the saved arm returns Inf silently).",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM 主动束网格均匀采样 package, source anchor FIDASIM mc_beam_grid, as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 1d590eecca6b546dcd7be9e1f04f72ad6525d4283c26c022d8b2c1343bc13729 (reference record; the test suite performs no automated drift detection). Arithmetic ported verbatim; the finite-output gate is a registered hardening. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.beam_grid_cell_sampling",
+      "symbol": "sample_beam_grid_cell",
+      "signature": "sample_beam_grid_cell(*, cell_center_cm, cell_width_cm, uniform_draws)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev45",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Sample one birth position with fixed draws; the midpoint draw maps exactly to the cell center and a zero-width axis keeps the center coordinate.",
+    "code": "import numpy as np\nfrom scirel.fusion import sample_beam_grid_cell\ncenter = np.array([10.0, -20.0, 30.0])\nwidth = np.array([2.0, 4.0, 6.0])\nu = np.array([0.25, 0.75, 0.5])\nresult = sample_beam_grid_cell(cell_center_cm=center, cell_width_cm=width, uniform_draws=u)\nnp.testing.assert_array_equal(result, center + width * (u - 0.5))\nmid = sample_beam_grid_cell(cell_center_cm=center, cell_width_cm=width, uniform_draws=np.array([0.5, 0.5, 0.5]))\nnp.testing.assert_array_equal(mid, center)\ntry:\n    sample_beam_grid_cell(cell_center_cm=center, cell_width_cm=width, uniform_draws=np.array([1.0, 0.5, 0.5]))\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('a draw at 1.0 must be rejected')",
+    "expected": "The affine map holds per axis; the midpoint draw lands exactly on the center; a draw at the exclusive upper bound raises ValueError."
+  },
+  "verification": {
+    "scope": [
+      "Source affine map against independent closed-form recomputation.",
+      "Boundary and failure contracts, including the registered hardenings."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_nbi_birth_leaves.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests establish the affine map against independent closed-form recomputation (exact array equality), the midpoint and zero-width identities, the exclusive [0,1) draw domain, and the finite-output gate with a discriminating overflow witness (a center near the float ceiling with a wide cell and a draw above the midpoint). Environment-gated saved-arm parity is not replayed here; the FIDASIM saved packages ship package-level oracles rather than a pinned source-runtime replay target, and the recorded implementation digest provides the provenance linkage. No test establishes the sampling against an external physics reference beyond the source closed form.",
+    "known_limitations": [
+      "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+      "The registered overflow gate deliberately diverges from the saved arm's silent Inf returns.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

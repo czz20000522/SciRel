@@ -1,0 +1,129 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.nbi-energy-component-velocity",
+  "kind": "operator",
+  "title": {
+    "en": "NBI energy-component velocity scaling",
+    "zh": "NBI能量分量速度缩放"
+  },
+  "summary": "Scale one NBI birth particle's unit velocity ray by the injection speed divided by the square root of its full/half/third energy-component index, preserving the source's Float32 divisor.",
+  "taxonomy": [
+    "fusion",
+    "fast-ion-diagnostics",
+    "nbi-birth",
+    "kinematics"
+  ],
+  "aliases": [
+    "scale_nbi_velocity_for_energy_component"
+  ],
+  "identity": {
+    "relation": "vnbi = unit_ray * injection_speed_cm_s / sqrt(efrac) with efrac in {1, 2, 3} and the divisor evaluated as sqrt(Float32(efrac)) exactly as the source's default-REAL arithmetic.",
+    "direction": "unit velocity ray + injection speed + energy component index -> scaled birth velocity vector",
+    "definition": "The saved FIDASIM mc_nbi/mc_nbi_cell velocity scaling: the full (efrac=1), half (efrac=2) and third (efrac=3) energy components carry speeds 1, 1/sqrt(2) and 1/sqrt(3) of the injection speed along the caller's unit ray. The Float32 divisor precision is a recorded source quirk, preserved verbatim and quantified in the exact document.",
+    "model": "the saved formal implementation, ported verbatim with registered input hardening and a finite-output gate",
+    "geometry": "one birth particle; vector output in the caller's frame",
+    "coordinates": "velocities in cm/s; the ray is dimensionless and unit-norm",
+    "boundary": "finite unit-norm ray; finite positive scalar injection speed; energy component exactly the integer 1, 2 or 3 (registered hardening: bools and float 1.0 pass the source's tuple-membership test); the result must remain finite",
+    "assumptions": [
+      "Non-relativistic birth kinematics; no energy spread within a component.",
+      "No external physics reference is bound beyond the source closed form."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "unit_ray",
+      "description": "Unit velocity direction of the birth particle.",
+      "units": "dimensionless",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite with unit norm (rtol/atol 1e-12)."
+    },
+    {
+      "name": "injection_speed_cm_s",
+      "description": "NBI injection speed for the full-energy component.",
+      "units": "cm/s",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive scalar (registered hardening: the source's `vinj <= 0` check lets NaN through)."
+    },
+    {
+      "name": "energy_component",
+      "description": "Energy component index: 1 full, 2 half, 3 third.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "Exactly the integer 1, 2 or 3 (registered hardening: bools and float 1.0 pass the source's tuple-membership equality)."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "velocity_cm_s",
+      "description": "Scaled birth velocity vector.",
+      "units": "cm/s",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite (registered hardening: raises instead of returning Inf/NaN for finite extreme inputs)."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "A unit ray and positive injection speed from the caller's NBI geometry."
+    ],
+    "supported": [
+      "Per-particle NBI birth velocity scaling across the three energy components."
+    ],
+    "excluded": [
+      "Beam-grid position sampling, initial-state density materialization, ionization/redistribution physics, and MC weight bookkeeping."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when the ray is non-finite, not unit-norm or misshaped, when the speed is not a finite positive scalar, or when the component is not exactly the integer 1, 2 or 3.",
+    "runtime_failure": "Raises ValueError if the scaled velocity is non-finite (registered hardening; a direct witness exists: a ray whose norm passes the 1e-12 isclose window but exceeds 1.0 multiplied by the max finite speed overflows).",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM NBI能量分量速度缩放 package, source anchor FIDASIM mc_nbi/mc_nbi_cell, as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 234599ca49e06d5fb908f885569c39d70a5245f543008076e119cb20514598a0 (reference record; the test suite performs no automated drift detection). Arithmetic ported verbatim including the Float32 divisor; input strictness and the finite-output gate are registered hardenings. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.nbi_energy_component_velocity",
+      "symbol": "scale_nbi_velocity_for_energy_component",
+      "signature": "scale_nbi_velocity_for_energy_component(unit_ray, injection_speed_cm_s, energy_component)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev45",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Scale a unit ray for the full and third energy components; the full-energy result equals the speed times the ray, the third is shorter by sqrt(3); a NaN speed and a norm-overflowing finite ray are both rejected.",
+    "code": "import numpy as np\nfrom scirel.fusion import scale_nbi_velocity_for_energy_component\nray = np.array([1.0, 0.0, 0.0])\nfull = scale_nbi_velocity_for_energy_component(ray, 2.0e8, 1)\nthird = scale_nbi_velocity_for_energy_component(ray, 2.0e8, 3)\nnp.testing.assert_array_equal(full, ray * 2.0e8)\nassert abs(np.linalg.norm(third) - 2.0e8 / np.sqrt(3.0)) < 3.0\ntry:\n    scale_nbi_velocity_for_energy_component(ray, float('nan'), 1)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('a NaN speed must be rejected')\ntilted = np.array([1.0 + 1e-12, 0.0, 0.0])\ntry:\n    scale_nbi_velocity_for_energy_component(tilted, np.finfo(float).max, 1)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('a norm-overflowing finite ray must be rejected')",
+    "expected": "The full-energy scaling is exact; the third component is shorter by sqrt(3) (within the Float32 divisor quirk, ~2.1 cm/s at 2e8); a NaN speed raises ValueError; a finite ray that overflows the product with the max finite speed raises ValueError (registered hardening)."
+  },
+  "verification": {
+    "scope": [
+      "Source scaling against independent closed-form recomputation including the Float32 divisor.",
+      "Input strictness, boundary and failure contracts, including the registered hardenings."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_nbi_birth_leaves.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests establish the scaling against independent closed-form recomputation with exact array equality (including the Float32 divisor quirk and its last-ulp deviation from a Float64 divisor), the full/half/third length ratios, the strict input contracts (NaN/Inf speed, bool and float component indices, non-unit and misshaped rays), and the finite-output gate with a direct overflow witness: a finite ray whose norm passes the 1e-12 isclose window but exceeds 1.0 (e.g. 1+1e-12 on the first axis) multiplied by the max finite speed overflows and is rejected. Environment-gated saved-arm parity is not replayed here; the FIDASIM saved packages ship package-level oracles rather than a pinned source-runtime replay target, and the recorded implementation digest provides the provenance linkage. No test establishes the scaling against an external physics reference beyond the source closed form.",
+    "known_limitations": [
+      "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+      "The Float32 divisor is a recorded source quirk: results differ from a Float64 divisor in the last ulps and are not re-rounded.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

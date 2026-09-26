@@ -26,6 +26,19 @@ needs a successor, not a silent edit.
 
 
 
+
+## Batch r71: FIDASIM NBI birth/geometry leaf family (five operators)
+
+Directory: `review_candidates/2026-09-27-nbi-birth-leaves/`
+Successor of batch r70: the r70 candidate files below keep their frozen r70 v1 bytes and digests; this batch binds the new bytes.
+- `review.md` -- sha256 `294902dd9ab1df92196595ff1be4982e44f52e0e5cbbb4232c0f407c4d0e8406`
+- `proposal/beam_grid_cell_sampling.py` -- sha256 `0058dd2e7e4b47bd3c79f6812c8c8e7e55fc3504c37d3c553d8d75d88717bdb8`
+- `proposal/halo_velocity_sampling.py` -- sha256 `a4c101f750eb41a1edde6beb794397fd744a8ac0c0f0bd0e54e9ea4eb827352b`
+- `proposal/nbi_component_initial_state.py` -- sha256 `ec1eaaed29b6b0c0d6f7416d05583ae9defc0a6083488dc78ed335e3a6671dd9`
+- `proposal/nbi_energy_component_velocity.py` -- sha256 `1aa61f268ed6ed0a3be349149d0f8a2db4d7e8ba53959c86747c2d7843039dd8`
+- `proposal/pitch_gyro_direction.py` -- sha256 `a4ac289c8932d45a37b7103008db41cdb54f335029fcea119d4efda3204601fb`
+- `proposal/test_nbi_birth_leaves.py` -- sha256 `3f975c3db1e858b57e7490c2017f741c0945fdbdd92b627e8a34e3961c0610de`
+
 ## Batch r70: FIDASIM fast-ion kinematics family (two operators; DD lab energy reused, no new identity)
 
 Directory: `review_candidates/2026-09-27-fast-ion-kinematics/`

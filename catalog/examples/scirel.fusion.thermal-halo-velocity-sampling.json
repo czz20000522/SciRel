@@ -1,0 +1,158 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.thermal-halo-velocity-sampling",
+  "kind": "operator",
+  "title": {
+    "en": "Thermal-Maxwellian halo velocity sampling",
+    "zh": "热MaxwellianHalo速度采样"
+  },
+  "summary": "Map caller-owned standard-normal variates to one thermal-halo neutral birth velocity: the plasma rotation velocity plus a thermal-speed-scaled draw, with the thermal speed from the source's Ti/2 form.",
+  "taxonomy": [
+    "fusion",
+    "fast-ion-diagnostics",
+    "nbi-birth",
+    "halo",
+    "sampling"
+  ],
+  "aliases": [
+    "sample_halo_velocity"
+  ],
+  "identity": {
+    "relation": "halo_velocity = plasma_rotation_cm_s + thermal_speed_cm_s * standard_normal_draw, with thermal_speed_cm_s = sqrt(Ti/2 / (velocity_squared_to_kev_per_amu * ion_mass_amu)) in the source's velocity-squared-to-keV-per-amu convention.",
+    "direction": "plasma rotation velocity + ion temperature + ion mass + conversion factor + caller-owned standard-normal draw -> one halo birth velocity and the thermal speed",
+    "definition": "The saved FIDASIM mc_halo mapping. The randomness stays caller-owned: the standard-normal triplet is an explicit input, so the map is a deterministic, replayable function of its inputs and no RNG is bound.",
+    "model": "the saved formal implementation, ported verbatim with registered finite-output and denominator gates",
+    "geometry": "one birth particle; a 3-vector output",
+    "coordinates": "velocities in cm/s; temperature in keV; mass in amu; the conversion factor in keV amu^-1 (cm/s)^-2",
+    "boundary": "finite 3-vectors; nonnegative temperature; positive mass and conversion factor; the denominator product must not underflow to zero or overflow (registered hardening); outputs must remain finite",
+    "assumptions": [
+      "The thermal halo is a Maxwellian at the ion temperature drifting with the plasma rotation; no fast-ion or beam component is included.",
+      "No external physics reference is bound beyond the source closed form."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "plasma_rotation_cm_s",
+      "description": "Plasma rotation velocity.",
+      "units": "cm/s",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "ion_temperature_kev",
+      "description": "Ion temperature of the thermal halo.",
+      "units": "keV",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and nonnegative; zero temperature collapses the halo onto the rotation velocity."
+    },
+    {
+      "name": "ion_mass_amu",
+      "description": "Ion mass.",
+      "units": "amu",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "velocity_squared_to_kev_per_amu",
+      "description": "Conversion factor from squared speed to keV per amu.",
+      "units": "keV amu^-1 (cm/s)^-2",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "standard_normal_draw",
+      "description": "Caller-owned standard-normal variate triplet.",
+      "units": "dimensionless",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; identical draws give identical outputs."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "halo_velocity_cm_s",
+      "description": "One thermal-halo birth velocity.",
+      "units": "cm/s",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite (registered hardening: raises instead of returning Inf/NaN for finite extreme inputs)."
+    },
+    {
+      "name": "thermal_speed_cm_s",
+      "description": "The thermal speed used in the scaling.",
+      "units": "cm/s",
+      "shape": "scalar",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite (registered hardening)."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller owns the random stream and supplies the normal variates."
+    ],
+    "supported": [
+      "Per-particle thermal-halo birth velocity sampling for the FIDASIM halo population."
+    ],
+    "excluded": [
+      "Beam and birth-cloud populations, charge-exchange and ionization paths, NBI geometry sampling, and any RNG ownership."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when any vector is non-finite or misshaped, when the temperature is negative or non-finite, when the mass or conversion factor is non-positive or non-finite, when the denominator product underflows to exactly zero or overflows to Inf (registered contract normalization: the saved arm raises a bare ZeroDivisionError on the underflowed product), or when the outputs are non-finite for finite extreme inputs.",
+    "runtime_failure": "Raises ValueError if the halo velocity or thermal speed is non-finite (registered hardening; the saved arm returns Inf silently).",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM 热MaxwellianHalo速度采样 package, source anchor FIDASIM mc_halo, as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 ab8744af352887f780943ed1d0745f8c9351d4c682c6c85e131af202f17c3d8e (reference record; the test suite performs no automated drift detection). Arithmetic ported verbatim; the denominator-underflow normalization and the finite-output gates are registered hardenings. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.halo_velocity_sampling",
+      "symbol": "sample_halo_velocity",
+      "signature": "sample_halo_velocity(*, plasma_rotation_cm_s, ion_temperature_kev, ion_mass_amu, velocity_squared_to_kev_per_amu, standard_normal_draw)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev45",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Sample one halo velocity from fixed draws; the output is the rotation velocity plus the thermal-speed-scaled draw, and identical draws replay identically.",
+    "code": "import numpy as np\nfrom scirel.fusion import sample_halo_velocity\nrotation = np.array([1.0e5, 0.0, -2.0e5])\ndraw = np.array([0.5, -0.5, 1.0])\nout = sample_halo_velocity(\n    plasma_rotation_cm_s=rotation, ion_temperature_kev=10.0,\n    ion_mass_amu=2.0, velocity_squared_to_kev_per_amu=0.01,\n    standard_normal_draw=draw)\nexpected_thermal = np.sqrt(10.0 * 0.5 / (0.01 * 2.0))\nassert out['thermal_speed_cm_s'] == expected_thermal\nnp.testing.assert_array_equal(out['halo_velocity_cm_s'], rotation + expected_thermal * draw)\nagain = sample_halo_velocity(\n    plasma_rotation_cm_s=rotation, ion_temperature_kev=10.0,\n    ion_mass_amu=2.0, velocity_squared_to_kev_per_amu=0.01,\n    standard_normal_draw=draw)\nnp.testing.assert_array_equal(again['halo_velocity_cm_s'], out['halo_velocity_cm_s'])\ntry:\n    sample_halo_velocity(\n        plasma_rotation_cm_s=rotation, ion_temperature_kev=-1.0,\n        ion_mass_amu=2.0, velocity_squared_to_kev_per_amu=0.01,\n        standard_normal_draw=draw)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('a negative temperature must be rejected')",
+    "expected": "The thermal speed matches the source formula and the halo velocity is the rotation plus the scaled draw; identical draws replay identically; a negative temperature raises ValueError."
+  },
+  "verification": {
+    "scope": [
+      "Source thermal-speed formula and velocity mapping against independent closed-form recomputation.",
+      "Caller-owned-draw determinism, boundary and failure contracts, including the registered hardenings."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_nbi_birth_leaves.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests establish the thermal-speed formula and the velocity mapping against independent closed-form recomputation (exact equality), replay determinism for identical draws, the zero-temperature collapse onto the rotation velocity, the fail-closed input contracts (negative temperature, non-positive mass/conversion, non-finite or misshaped draws), the denominator-underflow contract normalization (registered: the saved arm raises a bare ZeroDivisionError where this port raises ValueError), and the finite-output gates with a discriminating overflow witness. Environment-gated saved-arm parity is not replayed here; the FIDASIM saved packages ship package-level oracles rather than a pinned source-runtime replay target, and the recorded implementation digest provides the provenance linkage. No test establishes the sampling against an external physics reference beyond the source closed form.",
+    "known_limitations": [
+      "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+      "The denominator-underflow exception-type normalization (ZeroDivisionError to ValueError) deliberately diverges from the saved arm's failure surface; the accepted domain is unchanged.",
+      "The registered overflow gates deliberately diverge from the saved arm's silent Inf returns.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

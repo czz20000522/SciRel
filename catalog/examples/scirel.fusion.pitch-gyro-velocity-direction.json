@@ -1,0 +1,148 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.pitch-gyro-velocity-direction",
+  "kind": "operator",
+  "title": {
+    "en": "Pitch and gyro-angle to velocity direction",
+    "zh": "俯仰陀螺到速度方向"
+  },
+  "summary": "Map one pitch and gyro-angle pair to a unit velocity direction in a caller-supplied orthonormal local frame: sqrt(1-pitch^2)*cos(gyroangle)*a_unit + pitch*b_unit + sqrt(1-pitch^2)*sin(gyroangle)*c_unit.",
+  "taxonomy": [
+    "fusion",
+    "fast-ion-diagnostics",
+    "guiding-center",
+    "geometry"
+  ],
+  "aliases": [
+    "pitch_gyro_to_velocity_direction"
+  ],
+  "identity": {
+    "relation": "direction = sqrt(1 - pitch^2) * cos(gyroangle) * a_unit + pitch * b_unit + sqrt(1 - pitch^2) * sin(gyroangle) * c_unit.",
+    "direction": "pitch + gyro angle + orthonormal local frame (a_unit, b_unit, c_unit) -> one unit velocity direction",
+    "definition": "The saved FIDASIM pitch_to_vec mapping: the pitch fixes the component along b_unit (dot(direction, b_unit) == pitch in an exactly-orthonormal frame; within the accepted 1e-12 frame tolerance the identity holds to that tolerance), the gyro angle rotates the perpendicular remainder within the a_unit-c_unit plane, and the output is unit-norm by construction for |pitch| <= 1 in an orthonormal frame.",
+    "model": "the saved formal implementation, ported verbatim",
+    "geometry": "one direction; the local frame is caller-supplied",
+    "coordinates": "pitch and the direction are dimensionless; the gyro angle in radians",
+    "boundary": "finite pitch in [-1, 1] and finite gyro angle; the frame must be orthonormal (unit norms and pairwise orthogonality within 1e-12)",
+    "assumptions": [
+      "The caller supplies a physically meaningful local frame (e.g. a perpendicular and field-aligned basis at the birth position).",
+      "No external physics reference is bound beyond the source closed form."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "pitch",
+      "description": "Pitch value (velocity component along b_unit).",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite; in [-1, 1]."
+    },
+    {
+      "name": "gyroangle_rad",
+      "description": "Gyro angle in radians.",
+      "units": "rad",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "a_unit",
+      "description": "First orthonormal frame axis.",
+      "units": "dimensionless",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; unit norm; orthogonal to the other two."
+    },
+    {
+      "name": "b_unit",
+      "description": "Second orthonormal frame axis (the pitch axis).",
+      "units": "dimensionless",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; unit norm; orthogonal to the other two."
+    },
+    {
+      "name": "c_unit",
+      "description": "Third orthonormal frame axis.",
+      "units": "dimensionless",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; unit norm; orthogonal to the other two."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "velocity_direction",
+      "description": "Unit velocity direction.",
+      "units": "dimensionless",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Unit norm for |pitch| <= 1 in an orthonormal frame. dot(direction, b_unit) equals the pitch exactly in an exactly-orthonormal frame; within the accepted 1e-12 frame tolerance the identity holds to that tolerance (a frame with orthogonality error up to 1e-12 shifts the dot product by up to the same order)."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller supplies an orthonormal local frame at the birth position."
+    ],
+    "supported": [
+      "Per-particle pitch/gyro-angle to velocity-direction mapping for MC birth sampling."
+    ],
+    "excluded": [
+      "Frame construction, pitch/gyro-angle distribution sampling, orbit physics, and the FLR position correction (scirel.fusion.first-order-larmor-correction)."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when any frame vector is non-finite, misshaped, non-unit or non-orthogonal (within 1e-12), when the pitch is outside [-1, 1] or non-finite, or when the gyro angle is non-finite.",
+    "runtime_failure": "Not applicable; the closed form is bounded for accepted inputs.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM 俯仰陀螺到速度方向 package, source anchor FIDASIM pitch_to_vec, as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 3e6db088f1f6fded322fcfe8f60480ee9113a015b3725d79fb14ff54b2067718 (reference record; the test suite performs no automated drift detection). Arithmetic ported verbatim. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.pitch_gyro_direction",
+      "symbol": "pitch_gyro_to_velocity_direction",
+      "signature": "pitch_gyro_to_velocity_direction(*, pitch, gyroangle_rad, a_unit, b_unit, c_unit)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev45",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Map a pitch/gyro pair in the canonical frame and check the unit norm and the pitch-as-b-component identity; pitch = +-1 collapses onto the b axis.",
+    "code": "import numpy as np\nfrom scirel.fusion import pitch_gyro_to_velocity_direction\na = np.array([1.0, 0.0, 0.0])\nb = np.array([0.0, 1.0, 0.0])\nc = np.array([0.0, 0.0, 1.0])\ndirection = pitch_gyro_to_velocity_direction(pitch=0.5, gyroangle_rad=np.pi / 3, a_unit=a, b_unit=b, c_unit=c)\nassert direction[1] == 0.5\nassert abs(np.linalg.norm(direction) - 1.0) < 1e-15\nplus = pitch_gyro_to_velocity_direction(pitch=1.0, gyroangle_rad=0.7, a_unit=a, b_unit=b, c_unit=c)\nnp.testing.assert_allclose(plus, b, atol=1e-15)\ntry:\n    pitch_gyro_to_velocity_direction(pitch=1.5, gyroangle_rad=0.0, a_unit=a, b_unit=b, c_unit=c)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('a pitch beyond [-1,1] must be rejected')",
+    "expected": "The b-component equals the pitch and the direction is unit-norm; pitch = 1 collapses onto the b axis; a pitch outside [-1, 1] raises ValueError."
+  },
+  "verification": {
+    "scope": [
+      "Source direction map against independent closed-form recomputation.",
+      "Frame orthonormality, pitch domain and failure contracts."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_nbi_birth_leaves.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests establish the direction map against independent closed-form recomputation (exact b-component, unit norm within 1e-15 over a pitch/angle sweep), the pitch = +-1 axis collapse independent of the gyro angle, and the fail-closed contracts for non-unit frames, non-orthogonal frames, pitches outside [-1, 1] and non-finite inputs. Environment-gated saved-arm parity is not replayed here; the FIDASIM saved packages ship package-level oracles rather than a pinned source-runtime replay target, and the recorded implementation digest provides the provenance linkage. No test establishes the mapping against an external physics reference beyond the source closed form.",
+    "known_limitations": [
+      "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+      "The dot(direction, b_unit) == pitch identity is exact only in an exactly-orthonormal frame; the accepted frames are validated to a 1e-12 orthonormality tolerance, so the identity carries that tolerance. The direct tests assert the exact identity only in the canonical frame and the tolerance-bounded identity in random QR frames.",
+      "The frame's physical meaning (which axis is field-aligned) is a caller convention; this operator validates orthonormality only.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}
