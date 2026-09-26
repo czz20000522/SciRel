@@ -50,7 +50,9 @@ NaN/inf thermal speed with a ValueError; this asset reproduces the same
 behavior. Both arms agree (confirmed by the saved-arm probe and
 `test_the_saved_rejection_behavior_agrees_exactly`).
 
-All three divergences are documented in the exact documents' assumptions
+4. **Propagation nx=0**: the saved arm raises a raw IndexError (generation[:, positive, 0] with empty axis); this asset fail-closes with a named ValueError requiring nx >= 1.
+
+All four divergences are documented in the exact documents' assumptions
 and pinned by regression tests.
 
 ## Boundary semantics (documented)

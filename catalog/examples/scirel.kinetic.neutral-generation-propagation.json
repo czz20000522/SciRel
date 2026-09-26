@@ -23,7 +23,7 @@
     "model": "the saved formal implementation's bidirectional first-order upwind propagation",
     "geometry": "one spatial dimension, two velocity branches",
     "coordinates": "vx and generation in the source's own discrete units; the dimensional convention is source-defined",
-    "boundary": "vx one-dimensional with both positive and negative branches; six coefficient fields finite aligned 3-D; generation_kind in {first_flight, scattered}; first_flight requires incoming_boundary; scattered requires scattered_source_distribution",
+    "boundary": "vx one-dimensional with both positive and negative branches; six coefficient fields finite aligned 3-D; generation_kind in {first_flight, scattered}; first_flight requires incoming_boundary; scattered requires scattered_source_distribution; nx must be at least one (a zero-node spatial axis fails closed with a named ValueError rather than the saved arm raw IndexError)",
     "assumptions": [
       "The saved first-order upwind propagation is the published contract.",
       "The two generation kinds are mutually exclusive: first_flight uses incoming_boundary, scattered uses scattered_source_distribution.",
@@ -31,7 +31,8 @@
       "The vx axis units are the source's own discrete convention (not independently calibrated); the dimensional relationship between vx, collision frequency, and spatial step is defined by the saved upwind scheme itself.",
       "The vx axis must be finite (NaN/inf rejected); a NaN vx node would be silently left zero by the saved arm.",
       "The incoming_boundary applies only to the positive-vx branch (forward propagation entry point); the negative-vx branch starts from zero at the right boundary.",
-      "first_flight uses Fk as the forward source term; scattered uses Bk (positive) and Dk (negative) as source coefficients. The two kinds are distinguished by which coefficient enters the recurrence, confirmed by a regression test."
+      "first_flight uses Fk as the forward source term; scattered uses Bk (positive) and Dk (negative) as source coefficients. The two kinds are distinguished by which coefficient enters the recurrence, confirmed by a regression test.",
+      "The saved arm raises a raw IndexError for nx=0 (generation[:, positive, 0] with empty axis); this asset fail-closes with a named ValueError requiring nx >= 1."
     ]
   },
   "inputs": [
