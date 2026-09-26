@@ -29,8 +29,15 @@ approval, a trusted version, or a public release.
 | `reduce_terminal_molecular_ion_state` (`kinetic_h2.py:1800-1868`) | add new capability | scirel.kinetic.terminal-ion-state-reduction | **no repair** — nHP/THP/NuDis/NuE |
 | `reduce_qh2_total_conservation_diagnostic` (`kinetic_h2.py:1755-1790`) | add new capability | scirel.kinetic.terminal-conservation-diagnostic | **no repair** — QH2_total conservation error |
 
-Relations kept distinct: each produces a different diagnostic from the same
-terminal distribution, with different output types and target quantities.
+Relations kept distinct: the first four (flux/velocity, pressure/temperature,
+heat flux, energy transfer) are distribution integral relations sharing the
+cylindrical velocity mesh contract and terminal fH2 distribution; the ion
+state reduction is a profile/rate algebraic relation (no terminal
+distribution, velocity mesh, thermal speed, or axial spacing); the
+conservation diagnostic is an axial conservation check (three finite
+same-shape 1-D profiles with at least two nodes and nonzero axial spacing).
+Each produces a different diagnostic with different output types and target
+quantities.
 
 ## Composition and analytic evidence
 

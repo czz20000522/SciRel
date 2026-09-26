@@ -22,7 +22,7 @@ silent edit.
 
 Directory: `review_candidates/2026-09-26-terminal-molecular/`
 Successor of batch r64: the r64 candidate files below keep their frozen r64 bytes and digests; this batch binds the new bytes.
-- `review.md` -- sha256 `68e4b5bdbcee06c175c81eec5f5a6659a13dbfbd3c9fb4f89924720de70df0e8`
+- `review.md` -- sha256 `96d9dfebe222842d819d8b7f8245c084c2c9fed1f1800d414ebcaeb3469dc5d2`
 - `proposal/scirel.kinetic.terminal-conservation-diagnostic.json` -- sha256 `c53a3f87af24b8e6c07948e6a724192c2ccb330d1c4c855401c366dabdd1b2e2`
 - `proposal/scirel.kinetic.terminal-energy-transfer-reduction.json` -- sha256 `44358a0c23e833380941949d1808518790af7a76898f3ba8bc43dba836bb5ec0`
 - `proposal/scirel.kinetic.terminal-flux-velocity-reduction.json` -- sha256 `c0c2a7af06c49db3421864b61f90a3ee6ead398857150e3acccefe4730a15d4e`

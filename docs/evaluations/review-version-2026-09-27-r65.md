@@ -15,7 +15,7 @@
 
 ## 科学条件与依赖
 
-前四项（flux/velocity、pressure/temperature、heat flux、energy transfer）为分布积分关系：共享同一柱坐标速度/空间网格合同，输入为 caller-owned terminal fH2 分布及柱坐标权重；输入合同：有限非负分布、正热速度、非零空间步长（heat flux 和 energy transfer 还要求 mass_ratio 和径向/轴向速度两轴；energy transfer 另接收 Boltzmann RHS 场和外部分子源 profile）。
+前四项（flux/velocity、pressure/temperature、heat flux、energy transfer）为分布积分关系：共享同一柱坐标速度网格合同，输入为 caller-owned terminal fH2 分布及速度积分权重（`cylindrical_weight` 为径向环形权重，`dvx` 为轴向速度积分宽度）；输入合同：有限非负分布、正热速度、非负速度积分权重（heat flux 和 energy transfer 还要求 mass_ratio 和径向/轴向速度两轴；energy transfer 另接收 Boltzmann RHS 场和外部分子源 profile）。
 
 第五项（ion state）为 profile/rate 代数关系：接收分子/中性密度、离子温度、质量比、离化率、反应率表和损失频率，不接收 terminal fH2 分布、柱坐标权重、速度网格、热速度或轴向间距。
 
