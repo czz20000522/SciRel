@@ -57,7 +57,7 @@
 - 源码态全仓:**1395 passed, 43 skipped, 0 failed**(log `1395 passed, 43 skipped, 7 warnings in 217.95s`)。
 - 116/116 文档源码态与安装态校验通过,含示例执行。
 - 安装态全树:**1266 passed, 172 skipped, 0 failed**(log `1266 passed, 172 skipped, 7 warnings in 188.48s`)。
-- catalog `build/catalog/r63`:`complete: 116/116`,root digest `sha256:9bb68e645c60564a431d71029245f5aa2eb559ba81e8e8fbd0e2571699d9133e`。
+- catalog `build/catalog/r63`:`complete: 116/116`,root digest `sha256:6381eabba952ca206cafa119b6524602a944b02d58dfcb2dcb447f05081e8ce1`。
 - 内部 wheel `scirel-0.1.0.dev37-py3-none-any.whl`,SHA-256 见 manifest。
 
 ## 边界与待决
