@@ -15,8 +15,10 @@
 
 ## 科学条件与依赖
 
-- 全部六个算子共享同一柱坐标速度/空间网格合同;输入为 caller-owned terminal fH2 分布及柱坐标权重
-- 输入合同:有限非负分布、正热速度、非零空间步长
+前五个算子（flux/velocity、pressure/temperature、heat flux、energy transfer、ion state）共享同一柱坐标速度/空间网格合同；输入为 caller-owned terminal fH2 分布及柱坐标权重；输入合同：有限非负分布、正热速度、非零空间步长。
+
+第六项（conservation diagnostic）仅接受 `axial_position_m`、`total_heat_flux_profile_w_m2`、`total_energy_transfer_rate_profile_w_m3` 三组有限同形 1-D 序列（至少两点、非零轴向间距），不接收 fH2 分布、速度网格或热速度。
+
 - 无修复:保存 formal operator 逐字移植(含 make_dvr_dvx 环形面积/轴向宽度、积分循环、守恒差比)
 
 ## 组合证据
