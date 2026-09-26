@@ -120,7 +120,10 @@ these digests provide the provenance linkage.
   `r66-stale-placeholder-docs`) are preserved and unreferenced by this
   freeze.
 - Internal wheel `scirel-0.1.0.dev45-py3-none-any.whl`, SHA-256
-  `5fc36403906b3357bcf1e6971d46aefa2f0be6d64cc8446d4998810d691ae82e`.
+  `40e78fe13c05a1229e1eb54782f6c76becce8563ae8683b36b395a8808e291b8`
+  (rebuilt at the corrected HEAD after the pitch docstring formula fix;
+  the earlier `5fc36403...` build predated that docstring change and was
+  replaced before freezing).
 - Candidate review-material index: batch r71 added (12 entries covering
   review.md, 6 proposal modules/tests and 5 proposal exact documents),
   every entry resolves and matches its recorded SHA-256

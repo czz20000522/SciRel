@@ -49,7 +49,7 @@
 - 142/142 文档源码态与安装态校验通过,含示例执行(`runtime_origin: installed`)
 - 安装态全树(干净 venv `build/venv-r71-clean`,自装 numpy 2.5.3 / scipy 1.18.1 / pytest 9.1.1,wheel `--no-index --no-deps`):**1370 passed, 197 skipped, 0 failed**,returncode 0。r70-v1 证据的 1354/197 是 v1 树的数(在 `acef9c5` +7 collected 之前),与 r71 的 1370 不可直接对账;r70-v3 的安装态基线未直接重跑,不在此推算任何派生数字;本安装态回执由审查者独立复跑通过
 - catalog `build/catalog/r71`:`complete: 142/142`,root digest `sha256:854cc403400d1b37443f14cf8807f46c84f5d458fe4dc34b8a26196c4ef1b4eb`
-- 内部 wheel `scirel-0.1.0.dev45-py3-none-any.whl`,SHA-256 `5fc36403906b3357bcf1e6971d46aefa2f0be6d64cc8446d4998810d691ae82e`
+- 内部 wheel `scirel-0.1.0.dev45-py3-none-any.whl`,SHA-256 `40e78fe13c05a1229e1eb54782f6c76becce8563ae8683b36b395a8808e291b8`(pitch docstring 公式修正后于当前 HEAD 重建;早期 `5fc36403…` 构建先于该修正,已在冻结前替换)
 
 ## 边界与待决
 
