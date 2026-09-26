@@ -58,7 +58,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from scirel._validation import validate_jh_payload as _validate_jh_payload
+from scirel.diagnostics._jh_payload_validation import validate_jh_payload as _validate_jh_payload
 
 __all__ = [
     "solve_hydrogen_jh_lyman_alpha_emission",

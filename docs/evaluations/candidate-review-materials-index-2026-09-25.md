@@ -12,6 +12,26 @@ drift between a digest below and the working tree means the candidate text
 changed after this index was written and the batch needs a successor, not a
 silent edit.
 
+
+## Batch r59: Johnson-Hinnov hydrogen radiation diagnostics family (three task graphs)
+
+Directory: `review_candidates/2026-09-25-jh-radiation/`
+Successor of batch r58: binds the composition batch the r57 candidate deferred; the r57/r58 candidate files above keep their frozen bytes and digests.
+- `proposal/hydrogen_jh_balmer_alpha_emission.py` -- sha256 `c3331bdf82d789c0b8975a0e9b7b129e66a196b5e58df2414be821ed0202c4ea`
+- `proposal/hydrogen_jh_balmer_alpha_ground_state_inversion.py` -- sha256 `dc794ba58b6569fc4baa4023d80b5dae6b097afd2c91971952e2990c33a9b2d7`
+- `proposal/hydrogen_jh_lyman_alpha_emission.py` -- sha256 `ec903fae0248898955c8b3a4fb0eaa37f266d566f920f3e6cc1f02fb5d494b2a`
+- `proposal/scirel.diagnostics.hydrogen-jh-balmer-alpha-emission.json` -- sha256 `c8348645ac90a76b05988fbfdd23ee2b0cb20c00626c1912e4b95d9e8826016c`
+- `proposal/scirel.diagnostics.hydrogen-jh-balmer-alpha-ground-state-inversion.json` -- sha256 `8359d66a49f6151d165c330d55d905cc1fe263527817cf23b16e5b22f1340747`
+- `proposal/scirel.diagnostics.hydrogen-jh-lyman-alpha-emission.json` -- sha256 `a5a745d9b93cc4b5df7229bfcf671b3b30c10400813cd0b618c4171dc5c48268`
+- `proposal/test_graph_hydrogen_jh_balmer_alpha_emission.py` -- sha256 `6d5d1b2e463b64e8a8e625176bfda817c4921ada383123abfabd2524a287d6b1`
+- `proposal/test_graph_hydrogen_jh_balmer_alpha_emission_l1.py` -- sha256 `496137d2730f9d5cf222f39ca4f0b5e3fd3a421067fd184981f099e6a42f8822`
+- `proposal/test_graph_hydrogen_jh_balmer_alpha_ground_state_inversion.py` -- sha256 `188b44fe013539d695ccd798e9157275babba90c192f8fc87ddde7b92f56582a`
+- `proposal/test_graph_hydrogen_jh_balmer_alpha_ground_state_inversion_l1.py` -- sha256 `6cc369c7d9bc64755e17f54575f3903584fc3604ce209e94ddb717fc6366ec93`
+- `proposal/test_graph_hydrogen_jh_lyman_alpha_emission.py` -- sha256 `7059e12184f0888544c858181707bfcf1b79c875fe9185fe1529b858196273f4`
+- `proposal/test_graph_hydrogen_jh_lyman_alpha_emission_l1.py` -- sha256 `4b25ccea9195d4fc56cf6aac019d8f2bdfc0346b8a7d937c223b56c5cbeb6740`
+- `README.md` -- sha256 `d5d3b0ed656c9a17ed707f576bfa79fa8cca093f4c329c92ad766083cd9bf30c`
+- `review.md` -- sha256 `88b731de0c24657a14de79add992d8f1a6b7e0d2fd9114a64e590455a2e18982`
+
 ## Batch r58: Johnson-Hinnov degree-convention correction (description only)
 
 Directory: `review_candidates/2026-09-25-jh-degree-correction/`
