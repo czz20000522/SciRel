@@ -18,6 +18,18 @@ silent edit.
 
 
 
+## Batch r66: KN1DPy collision frequency contraction family (two operators)
+
+Directory: `review_candidates/2026-09-27-alpha-contraction/`
+Successor of batch r65: the r65 candidate files below keep their frozen r65 bytes and digests; this batch binds the new bytes.
+- `review.md` -- sha256 `acefef2614152800606d7975acb353b0d51dbe795a9e2262f48628f04d623aeb`
+- `proposal/scirel.kinetic.atomic-alpha-contraction.json` -- sha256 `67e645db317078af6546d7711b8e118e5ebfc23591aa19ffeec49282b85f4e0a`
+- `proposal/scirel.kinetic.molecular-alpha-contraction.json` -- sha256 `f51fe25907add7643737ae140c00fde66d6f89f06bd222b39c526ee3dc9fa2c4`
+- `proposal/atomic_alpha_contraction.py` -- sha256 `3cc121f1325fd9faaa58e566f6d5d6a98544247cb9fa20d8b208ea792efe7a34`
+- `proposal/molecular_alpha_contraction.py` -- sha256 `9bac6b3857d3dee377a77b6ac29ace02efee4ff0287618e67f1a8c6837b7f4ce`
+- `proposal/test_alpha_contraction.py` -- sha256 `6b51921c90e563b7a06e907f5535a412a27619d6020bb8d94e96b4aced61d2d2`
+- `proposal/test_alpha_contraction_l1.py` -- sha256 `c6ac9dc550757aef8823d3a28d924ee84bf4efcb4db3fd7447208ebca59502b5`
+
 ## Batch r65: KN1DPy terminal molecular diagnostics family (six operators)
 
 Directory: `review_candidates/2026-09-26-terminal-molecular/`
