@@ -13,6 +13,108 @@ changed after this index was written and the batch needs a successor, not a
 silent edit.
 
 
+
+## Batch r60: KN1DPy neutral-moment diagnostics family (eleven operators)
+
+Directory: `review_candidates/2026-09-26-neutral-moments/`
+Successor of batch r59: the r59 candidate files below keep their frozen r59 bytes and digests; this batch binds the new bytes.
+- `review.md` -- sha256 `77860b8c5e0c58b59d863792de27431a5186fd5f37623d3d69e1384ea127c0cc`
+- `proposal/atomic_scattered_sources_reduction.py` -- sha256 `2f33d3f228be3d784972ad1e8412ae37997227ffa0796e772181231ccd51ac9c`
+- `proposal/axisymmetric_neutral_moments.py` -- sha256 `a1b2e460bc89872d802a51474698e3e8eb160aa57db43dedb796a940f4a0adb6`
+- `proposal/elastic_frequency_channels.py` -- sha256 `e68b718635e07dac5c5a0ecd3c190d0e3856c6e228d1c4c66b3510e6bede8ea5`
+- `proposal/elastic_regeneration_aggregation.py` -- sha256 `6f3e17b0d1e389849e8f346a289c190d65b1de16e4df8a2cd8ab40109095e39a`
+- `proposal/generation_density_reduction.py` -- sha256 `969cf48386dbea3cfee4e1b068e2337eb0e32e3db15896a8ca119955ab1447e6`
+- `proposal/incoming_boundary_flux_normalization.py` -- sha256 `73fce1038e71a770de0e8e4a6796cb9564ecc6742d79a93073fe2aa386e4b2a6`
+- `proposal/molecular_scattered_sources_reduction.py` -- sha256 `619235b17cf45f0d2345327bdcb98a5e6cc3c3c847a32ccabafb0def6605f289`
+- `proposal/neutral_total_collision_frequency.py` -- sha256 `6269f3b9e3780b06396ee66160ea65178cf866e02f6be3dcd5cd4d71243fd2d5`
+- `proposal/scirel.kinetic.atomic-scattered-sources-reduction.json` -- sha256 `c1dcabfd9143f67c054bb22ff689400dc2c4f02996eb5d84f64574ed8a6cb7ad`
+- `proposal/scirel.kinetic.axisymmetric-neutral-moments.json` -- sha256 `db431b3617f7be4f637465236736d89124bc6efba827e4aa0eb5b73e790b7e6a`
+- `proposal/scirel.kinetic.elastic-frequency-channels.json` -- sha256 `bb6333ab3700616b15eb247eae9b61bc85b2f38878474810570dc34e1a64bd9c`
+- `proposal/scirel.kinetic.elastic-regeneration-aggregation.json` -- sha256 `dd8ecc48240713635aa2c06713044edf0fffc76a52f531ab1bdbc30480bdc3e8`
+- `proposal/scirel.kinetic.generation-density-reduction.json` -- sha256 `ec85636df1989cc636cc88225cbf13fa66e70c67e7f619ed43c0057889cef8a1`
+- `proposal/scirel.kinetic.incoming-boundary-flux-normalization.json` -- sha256 `1b727f713145f3f2f9f63b68ec985ff5d52486e294a3591c3eb7f0506e7cd49e`
+- `proposal/scirel.kinetic.molecular-scattered-sources-reduction.json` -- sha256 `8bf8ec071a5017fef18c7ca4df6003e7e672ec55d72c4e031d23e20bcd057a15`
+- `proposal/scirel.kinetic.neutral-total-collision-frequency.json` -- sha256 `aea8070b4501a5add1d564d757b037570432048af0afa0d8bac0957ef27b355f`
+- `proposal/scirel.kinetic.simple-charge-exchange-source.json` -- sha256 `d1e199253ca359bb4ec7ac95cf7faa99253743c028c715cc50c2e0b1bbdaf0cf`
+- `proposal/scirel.kinetic.spatial-source-shape-normalization.json` -- sha256 `9fe8459b7142eaf3c87a8e4b60f28c42928bc67cd54959e6820b8ec5a5568685`
+- `proposal/scirel.kinetic.thermal-speed-scale.json` -- sha256 `ef86322b69c297274ca78629c3930ff5599430b5f69e93c441f1dcf56d749e85`
+- `proposal/simple_charge_exchange_source.py` -- sha256 `489f791c095fbfc7b8dbb1131f6a511476ada7893a3f5a471521676c352e6913`
+- `proposal/spatial_source_shape_normalization.py` -- sha256 `6b82a4168acebce2331a72ba5f03d694c91b576245089fe39e4336299e73d71d`
+- `proposal/test_axisymmetric_neutral_moments.py` -- sha256 `3c3e1cdb3a69c58e0a22e97c88a8cdd380299a8660b5450ffc8028b7bb11ab39`
+- `proposal/test_neutral_moments_family_l1.py` -- sha256 `77b6b1fa506281d1f1a97370103db1d8382793ad59821cee8d2427daaa8c367e`
+- `proposal/test_neutral_transport_reductions.py` -- sha256 `555b9f074ae535556bc14d7c753c9993c88bb9bc5480f70312b96774031791d2`
+- `proposal/test_scattered_source_reductions.py` -- sha256 `cd0547e65dfbde6bdcdf18c880f32d8e3faff281a74fff2030afe6bae02831a9`
+- `proposal/test_thermal_speed_and_density_reduction.py` -- sha256 `efb41729b09e29851979202f0327f900d1720ae95564b893f1f7a0fe78a0321f`
+- `proposal/thermal_speed_scale.py` -- sha256 `dbcf1e96e5437fd080b9b2be229c76a7a4cc51515dfe074307b92f174b312f0c`
+
+
+## Batch r60: KN1DPy neutral-moment diagnostics family (eleven operators)
+
+Directory: `review_candidates/2026-09-26-neutral-moments/`
+Successor of batch r59: the r59 candidate files below keep their frozen r59 bytes and digests; this batch binds the new bytes.
+- `review.md` -- sha256 `77860b8c5e0c58b59d863792de27431a5186fd5f37623d3d69e1384ea127c0cc`
+- `proposal/atomic_scattered_sources_reduction.py` -- sha256 `2add8a48273ccda8ccc98a6efc5ac375671c264c2c2e9a6eb78d81ac796213b6`
+- `proposal/axisymmetric_neutral_moments.py` -- sha256 `a1b2e460bc89872d802a51474698e3e8eb160aa57db43dedb796a940f4a0adb6`
+- `proposal/elastic_frequency_channels.py` -- sha256 `e68b718635e07dac5c5a0ecd3c190d0e3856c6e228d1c4c66b3510e6bede8ea5`
+- `proposal/elastic_regeneration_aggregation.py` -- sha256 `e7711eca11016548c44d9d5146ffea2e3dea8d8472dab3e14d2a9354d4a4f1f6`
+- `proposal/generation_density_reduction.py` -- sha256 `8dfa16d9a38f417d80d40e265dc28ab536a77dac600fa519bdfad5b83c1a7fa3`
+- `proposal/incoming_boundary_flux_normalization.py` -- sha256 `73fce1038e71a770de0e8e4a6796cb9564ecc6742d79a93073fe2aa386e4b2a6`
+- `proposal/molecular_scattered_sources_reduction.py` -- sha256 `13c23364255e84413c605fe202a06be9258259a5b4d88ed605edd79e7aba743c`
+- `proposal/neutral_total_collision_frequency.py` -- sha256 `b0e51a91145b1998439c7c65d0a1275ad63ec6bde4061c2eb6a4d3c1611ce09a`
+- `proposal/scirel.kinetic.atomic-scattered-sources-reduction.json` -- sha256 `4d34b840d371d0b36dfddd831228535c217c327a10015c536a7e11b2f9b0c23e`
+- `proposal/scirel.kinetic.axisymmetric-neutral-moments.json` -- sha256 `db431b3617f7be4f637465236736d89124bc6efba827e4aa0eb5b73e790b7e6a`
+- `proposal/scirel.kinetic.elastic-frequency-channels.json` -- sha256 `bb6333ab3700616b15eb247eae9b61bc85b2f38878474810570dc34e1a64bd9c`
+- `proposal/scirel.kinetic.elastic-regeneration-aggregation.json` -- sha256 `44ec9f41b265e8be59e7f6829153239719a24073003628807661bcfd74acb740`
+- `proposal/scirel.kinetic.generation-density-reduction.json` -- sha256 `5edad4b0b7721ccff7e2820753b005c8c476c992527c5cedd6504e012f47f274`
+- `proposal/scirel.kinetic.incoming-boundary-flux-normalization.json` -- sha256 `1b727f713145f3f2f9f63b68ec985ff5d52486e294a3591c3eb7f0506e7cd49e`
+- `proposal/scirel.kinetic.molecular-scattered-sources-reduction.json` -- sha256 `e3c1bb54b7ee750f6a73d50f491911d8b2dd207a494359aaaf98e022a9a6b718`
+- `proposal/scirel.kinetic.neutral-total-collision-frequency.json` -- sha256 `1f29492c0c9ede847472a604d736beb2f9a0581ad15fc24a1a5b39312ac3c1f1`
+- `proposal/scirel.kinetic.simple-charge-exchange-source.json` -- sha256 `13ce29d5f2119ff1ffa6a6f209a8670b5c8ada51366236626961e03e42a6586f`
+- `proposal/scirel.kinetic.spatial-source-shape-normalization.json` -- sha256 `9fe8459b7142eaf3c87a8e4b60f28c42928bc67cd54959e6820b8ec5a5568685`
+- `proposal/scirel.kinetic.thermal-speed-scale.json` -- sha256 `ef86322b69c297274ca78629c3930ff5599430b5f69e93c441f1dcf56d749e85`
+- `proposal/simple_charge_exchange_source.py` -- sha256 `a51293ec7a3afbc209224cb3fd889474c2c343a72d17f3e1680280432efbca0d`
+- `proposal/spatial_source_shape_normalization.py` -- sha256 `6b82a4168acebce2331a72ba5f03d694c91b576245089fe39e4336299e73d71d`
+- `proposal/test_axisymmetric_neutral_moments.py` -- sha256 `3c3e1cdb3a69c58e0a22e97c88a8cdd380299a8660b5450ffc8028b7bb11ab39`
+- `proposal/test_neutral_moments_family_l1.py` -- sha256 `494420128c6ef183016e245965d0d330961d28e843ffdfec512a013717fb9397`
+- `proposal/test_neutral_transport_reductions.py` -- sha256 `555b9f074ae535556bc14d7c753c9993c88bb9bc5480f70312b96774031791d2`
+- `proposal/test_scattered_source_reductions.py` -- sha256 `cd0547e65dfbde6bdcdf18c880f32d8e3faff281a74fff2030afe6bae02831a9`
+- `proposal/test_thermal_speed_and_density_reduction.py` -- sha256 `efb41729b09e29851979202f0327f900d1720ae95564b893f1f7a0fe78a0321f`
+- `proposal/thermal_speed_scale.py` -- sha256 `dbcf1e96e5437fd080b9b2be229c76a7a4cc51515dfe074307b92f174b312f0c`
+
+
+## Batch r60: KN1DPy neutral-moment diagnostics family (eleven operators)
+
+Directory: `review_candidates/2026-09-26-neutral-moments/`
+Successor of batch r59: the r59 candidate files below keep their frozen r59 bytes and digests; this batch binds the new bytes.
+- `review.md` -- sha256 `77860b8c5e0c58b59d863792de27431a5186fd5f37623d3d69e1384ea127c0cc`
+- `proposal/atomic_scattered_sources_reduction.py` -- sha256 `2add8a48273ccda8ccc98a6efc5ac375671c264c2c2e9a6eb78d81ac796213b6`
+- `proposal/axisymmetric_neutral_moments.py` -- sha256 `a1b2e460bc89872d802a51474698e3e8eb160aa57db43dedb796a940f4a0adb6`
+- `proposal/elastic_frequency_channels.py` -- sha256 `e68b718635e07dac5c5a0ecd3c190d0e3856c6e228d1c4c66b3510e6bede8ea5`
+- `proposal/elastic_regeneration_aggregation.py` -- sha256 `e7711eca11016548c44d9d5146ffea2e3dea8d8472dab3e14d2a9354d4a4f1f6`
+- `proposal/generation_density_reduction.py` -- sha256 `8dfa16d9a38f417d80d40e265dc28ab536a77dac600fa519bdfad5b83c1a7fa3`
+- `proposal/incoming_boundary_flux_normalization.py` -- sha256 `73fce1038e71a770de0e8e4a6796cb9564ecc6742d79a93073fe2aa386e4b2a6`
+- `proposal/molecular_scattered_sources_reduction.py` -- sha256 `13c23364255e84413c605fe202a06be9258259a5b4d88ed605edd79e7aba743c`
+- `proposal/neutral_total_collision_frequency.py` -- sha256 `b0e51a91145b1998439c7c65d0a1275ad63ec6bde4061c2eb6a4d3c1611ce09a`
+- `proposal/scirel.kinetic.atomic-scattered-sources-reduction.json` -- sha256 `4d34b840d371d0b36dfddd831228535c217c327a10015c536a7e11b2f9b0c23e`
+- `proposal/scirel.kinetic.axisymmetric-neutral-moments.json` -- sha256 `db431b3617f7be4f637465236736d89124bc6efba827e4aa0eb5b73e790b7e6a`
+- `proposal/scirel.kinetic.elastic-frequency-channels.json` -- sha256 `bb6333ab3700616b15eb247eae9b61bc85b2f38878474810570dc34e1a64bd9c`
+- `proposal/scirel.kinetic.elastic-regeneration-aggregation.json` -- sha256 `44ec9f41b265e8be59e7f6829153239719a24073003628807661bcfd74acb740`
+- `proposal/scirel.kinetic.generation-density-reduction.json` -- sha256 `5edad4b0b7721ccff7e2820753b005c8c476c992527c5cedd6504e012f47f274`
+- `proposal/scirel.kinetic.incoming-boundary-flux-normalization.json` -- sha256 `1b727f713145f3f2f9f63b68ec985ff5d52486e294a3591c3eb7f0506e7cd49e`
+- `proposal/scirel.kinetic.molecular-scattered-sources-reduction.json` -- sha256 `e3c1bb54b7ee750f6a73d50f491911d8b2dd207a494359aaaf98e022a9a6b718`
+- `proposal/scirel.kinetic.neutral-total-collision-frequency.json` -- sha256 `1f29492c0c9ede847472a604d736beb2f9a0581ad15fc24a1a5b39312ac3c1f1`
+- `proposal/scirel.kinetic.simple-charge-exchange-source.json` -- sha256 `13ce29d5f2119ff1ffa6a6f209a8670b5c8ada51366236626961e03e42a6586f`
+- `proposal/scirel.kinetic.spatial-source-shape-normalization.json` -- sha256 `9fe8459b7142eaf3c87a8e4b60f28c42928bc67cd54959e6820b8ec5a5568685`
+- `proposal/scirel.kinetic.thermal-speed-scale.json` -- sha256 `ef86322b69c297274ca78629c3930ff5599430b5f69e93c441f1dcf56d749e85`
+- `proposal/simple_charge_exchange_source.py` -- sha256 `a51293ec7a3afbc209224cb3fd889474c2c343a72d17f3e1680280432efbca0d`
+- `proposal/spatial_source_shape_normalization.py` -- sha256 `6b82a4168acebce2331a72ba5f03d694c91b576245089fe39e4336299e73d71d`
+- `proposal/test_axisymmetric_neutral_moments.py` -- sha256 `3c3e1cdb3a69c58e0a22e97c88a8cdd380299a8660b5450ffc8028b7bb11ab39`
+- `proposal/test_neutral_moments_family_l1.py` -- sha256 `494420128c6ef183016e245965d0d330961d28e843ffdfec512a013717fb9397`
+- `proposal/test_neutral_transport_reductions.py` -- sha256 `555b9f074ae535556bc14d7c753c9993c88bb9bc5480f70312b96774031791d2`
+- `proposal/test_scattered_source_reductions.py` -- sha256 `cd0547e65dfbde6bdcdf18c880f32d8e3faff281a74fff2030afe6bae02831a9`
+- `proposal/test_thermal_speed_and_density_reduction.py` -- sha256 `efb41729b09e29851979202f0327f900d1720ae95564b893f1f7a0fe78a0321f`
+- `proposal/thermal_speed_scale.py` -- sha256 `dbcf1e96e5437fd080b9b2be229c76a7a4cc51515dfe074307b92f174b312f0c`
+
 ## Batch r59: Johnson-Hinnov hydrogen radiation diagnostics family (three task graphs)
 
 Directory: `review_candidates/2026-09-25-jh-radiation/`

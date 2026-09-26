@@ -1,0 +1,124 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.thermal-speed-scale",
+  "kind": "operator",
+  "title": {
+    "en": "Neutral species thermal-speed scale",
+    "zh": "中性物种热速度标度"
+  },
+  "summary": "The explicit second-moment thermal speed sqrt(2 e T / m) of a neutral species from its temperature in eV and mass in amu, with the saved source's frozen constants (hydrogen mass 1.6726231e-27 kg, elementary charge 1.602177e-19 J/eV).",
+  "taxonomy": [
+    "kinetic",
+    "neutral-transport",
+    "thermal-speed",
+    "scale"
+  ],
+  "aliases": [
+    "compute_thermal_speed_m_s"
+  ],
+  "identity": {
+    "relation": "the second-moment thermal speed scale v = sqrt(2 e T_ev / (m_amu m_H)) with frozen constants",
+    "direction": "temperature and mass -> one thermal-speed scalar",
+    "definition": "v = sqrt(2 * 1.602177e-19 * T_ev / (m_amu * 1.6726231e-27)); the same Vth normalization the saved moment-reduction and boundary-flux relations consume",
+    "model": "the saved formal implementation's explicit scalar relation",
+    "geometry": "none; a scalar material scale",
+    "coordinates": "temperature in eV, mass in amu; speed in m/s",
+    "boundary": "both scalars finite and strictly positive; the result finite and strictly positive",
+    "assumptions": [
+      "The frozen hydrogen mass and elementary charge are the saved source's values, not CODATA-current values.",
+      "This is a normalization scale, not a measured temperature diagnostic."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "temperature_ev",
+      "description": "Temperature of the species.",
+      "units": "eV",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": true,
+      "constraints": "A finite strictly positive scalar."
+    },
+    {
+      "name": "mass_amu",
+      "description": "Particle mass in multiples of the hydrogen mass.",
+      "units": "amu",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": true,
+      "constraints": "A finite strictly positive scalar."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "The thermal-speed mapping.",
+      "units": "m/s",
+      "shape": "mapping",
+      "dtype": "mapping with one float64 scalar",
+      "required": true,
+      "constraints": "Carries exactly one field thermal_speed_m_s; finite and strictly positive."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite positive temperature and mass scalars."
+    ],
+    "supported": [
+      "Thermal-speed normalization for any neutral species declared by its amu mass."
+    ],
+    "excluded": [
+      "Non-finite or nonpositive inputs; a non-finite result."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when temperature_ev or mass_amu is non-finite or nonpositive, or the result is not finite and positive.",
+    "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned; a rejected call produces no result."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy 热速度标度换算 package, source anchor KN1DPy/kinetic_h2.py:1360-1371 (the source-entry thermal-speed port), as recorded by the saved bundle's own provenance section (the raw source tree was not re-read; the anchor is the saved candidate's). Saved implementation file SHA-256 9867b3fbc30317e519d0b1ed62d885c8550d00337d889542b5653c267b82fda8. The saved formal implementation is reproduced bit for bit with its documented validation contract and error messages; no repair is claimed. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent recomputation witness",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.thermal_speed_scale",
+      "symbol": "compute_thermal_speed_m_s",
+      "signature": "compute_thermal_speed_m_s(temperature_ev, mass_amu)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev32",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate the thermal speed for one temperature/mass pair and confirm the frozen-constant relation and the rejections.",
+    "code": "import math\nfrom scirel.kinetic import compute_thermal_speed_m_s\nresult = compute_thermal_speed_m_s(1.0, 2.0)\nassert result['thermal_speed_m_s'] == math.sqrt(2.0 * 1.602177e-19 / (2.0 * 1.6726231e-27))\nassert compute_thermal_speed_m_s(4.0, 2.0)['thermal_speed_m_s'] == 2.0 * result['thermal_speed_m_s']\ntry:\n    compute_thermal_speed_m_s(0.0, 1.0)\nexcept ValueError as error:\n    assert 'temperature_ev' in str(error)\nelse:\n    raise AssertionError('a nonpositive temperature must be rejected')",
+    "expected": "The mapping with the frozen-constant thermal speed; doubling the temperature doubles the speed; a nonpositive temperature is rejected."
+  },
+  "verification": {
+    "scope": [
+      "That the speed equals the independent frozen-constant relation exactly.",
+      "That the speed scales with the square root of temperature and inversely with mass.",
+      "The input and failure contracts (nonpositive and non-finite scalars).",
+      "Exact bit-level replay against the saved KN1DPy implementation, pinned by SHA-256. Environment-gated; historical development evidence only."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_thermal_speed_and_density_reduction.py",
+      "tests/operator_contracts/test_neutral_moments_family_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the relation against independent recomputation with the same frozen constants and operation order, the documented fail-closed contracts, and -- in the environment-gated replay test -- bit-identical agreement with the saved KN1DPy implementation pinned by SHA-256, including rejection-behavior agreement. That replay is historical development evidence, not qualified-L1 provenance. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "known_limitations": [
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

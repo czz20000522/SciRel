@@ -1,0 +1,124 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.elastic-regeneration-aggregation",
+  "kind": "operator",
+  "title": {
+    "en": "Elastic regeneration-source channel aggregation",
+    "zh": "弹性重生散射源聚合"
+  },
+  "summary": "The channel-keyed elastic regeneration sum sum_q Omega_q[x] * M_q(vr,vx,x): each named channel contributes its one-dimensional frequency profile multiplied into its three-dimensional regenerated distribution.",
+  "taxonomy": [
+    "kinetic",
+    "neutral-transport",
+    "elastic-scattering",
+    "aggregation"
+  ],
+  "aliases": [
+    "aggregate_elastic_regeneration_source"
+  ],
+  "identity": {
+    "relation": "Beta_EL = sum over channels q of Omega_q[x] * M_q[vr,vx,x]",
+    "direction": "named channel frequency profiles plus regenerated distributions -> one aggregated source",
+    "definition": "The frequency and distribution key sets must match exactly; each term multiplies the (nx,) profile into the last axis; the saved dict iteration order defines the float summation order",
+    "model": "the saved formal implementation's channel aggregation",
+    "geometry": "two velocity dimensions over one spatial axis, one term per declared channel",
+    "coordinates": "frequencies in s^-1; distributions in the source's discrete units",
+    "boundary": "matching nonempty key sets; finite nonnegative (nx,) frequencies; finite nonnegative (nvr,nvx,nx) distributions with a matching spatial axis",
+    "assumptions": [
+      "Channel keys are caller-declared identifiers (e.g. species-pair names); the asset does not interpret them.",
+      "Distributions and frequencies are expected nonnegative by physics and enforced so, as saved.",
+      "Declared r60 pre-review tightening: the saved arm does not gate its output for finiteness, so extreme-but-valid inputs can overflow to non-finite results; this asset fail-closes on a non-finite result, per the exact document's finite-output contract. The saved-arm divergence is pinned by a bounded regression test."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "frequencies_s_inv",
+      "description": "The per-channel elastic frequency profiles.",
+      "units": "s^-1",
+      "shape": "mapping name->[nx]",
+      "dtype": "mapping of real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative; keys must match the distribution mapping exactly."
+    },
+    {
+      "name": "regenerated_distributions",
+      "description": "The per-channel regenerated distributions.",
+      "units": "source-discrete",
+      "shape": "mapping name->[nvr,nvx,nx]",
+      "dtype": "mapping of real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative; each spatial axis must match its frequency profile."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "regeneration_source",
+      "description": "The aggregated regeneration source.",
+      "units": "source-discrete s^-1",
+      "shape": "[nvr,nvx,nx]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and nonnegative; the saved-order channel sum."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Matching nonempty channel key sets with aligned finite nonnegative fields."
+    ],
+    "supported": [
+      "Elastic regeneration aggregation over caller-declared species-pair channels."
+    ],
+    "excluded": [
+      "Mismatched key sets; empty channel sets; negative or non-finite fields; spatial-axis mismatches."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when the key sets do not match, no channel is present, or any field violates the finiteness, nonnegativity, or alignment contract.",
+    "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned; a rejected call produces no result."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy 弹性重生散射源聚合 package, source anchor KN1DPy/kinetic_h.py:1340-1398; kinetic_h2.py:1468-1538, as recorded by the saved bundle's own provenance section (the raw source tree was not re-read; the anchor is the saved candidate's). Saved implementation file SHA-256 8957adc7a5f0cd11cbdc6b3c6738057adbab660285c38fb2da490db09f7919c0. The saved formal implementation is reproduced bit for bit with its documented validation contract and error messages; no repair is claimed. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent recomputation witness",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.elastic_regeneration_aggregation",
+      "symbol": "aggregate_elastic_regeneration_source",
+      "signature": "aggregate_elastic_regeneration_source(frequencies_s_inv, regenerated_distributions)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev32",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Aggregate two named channels and confirm the key and field fail-closed contracts.",
+    "code": "import numpy as np\nfrom scirel.kinetic import aggregate_elastic_regeneration_source\nfreqs = {'a': np.array([1.0, 2.0]), 'b': np.array([0.5, 1.0])}\ndists = {'a': np.ones((1, 1, 2)), 'b': np.ones((1, 1, 2))}\nresult = aggregate_elastic_regeneration_source(freqs, dists)\nnp.testing.assert_array_equal(result, [[[1.5, 3.0]]])\ntry:\n    aggregate_elastic_regeneration_source(freqs, {'a': np.ones((1, 1, 2))})\nexcept ValueError as error:\n    assert 'channel keys must match' in str(error)\nelse:\n    raise AssertionError('mismatched keys must be rejected')",
+    "expected": "The channel-weighted sum; mismatched keys are rejected."
+  },
+  "verification": {
+    "scope": [
+      "That the aggregation equals an independent channel-weighted sum in the saved iteration order.",
+      "The key-set, alignment, and nonnegativity failure contracts.",
+      "Exact bit-level replay against the saved KN1DPy implementation, pinned by SHA-256. Environment-gated; historical development evidence only."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_scattered_source_reductions.py",
+      "tests/operator_contracts/test_neutral_moments_family_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the relation against independent recomputation with the same frozen constants and operation order, the documented fail-closed contracts, and -- in the environment-gated replay test -- bit-identical agreement with the saved KN1DPy implementation pinned by SHA-256, including rejection-behavior agreement. That replay is historical development evidence, not qualified-L1 provenance. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "known_limitations": [
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}
