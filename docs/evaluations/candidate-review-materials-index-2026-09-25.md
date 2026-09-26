@@ -30,7 +30,7 @@ Successor of batch r58: binds the composition batch the r57 candidate deferred; 
 - `proposal/test_graph_hydrogen_jh_lyman_alpha_emission.py` -- sha256 `7059e12184f0888544c858181707bfcf1b79c875fe9185fe1529b858196273f4`
 - `proposal/test_graph_hydrogen_jh_lyman_alpha_emission_l1.py` -- sha256 `4b25ccea9195d4fc56cf6aac019d8f2bdfc0346b8a7d937c223b56c5cbeb6740`
 - `README.md` -- sha256 `d5d3b0ed656c9a17ed707f576bfa79fa8cca093f4c329c92ad766083cd9bf30c`
-- `review.md` -- sha256 `88b731de0c24657a14de79add992d8f1a6b7e0d2fd9114a64e590455a2e18982`
+- `review.md` -- sha256 `7d2030f1646352b6f33bb3e238efb92c2d2cd234e68d4b8c9ad8cd6836d2eb8a`
 
 ## Batch r58: Johnson-Hinnov degree-convention correction (description only)
 

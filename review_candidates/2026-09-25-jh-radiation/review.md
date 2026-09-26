@@ -99,8 +99,9 @@ are preserved bit for bit.
 
 ## Evidence
 
-Source-free maintained tests (24 direct graph tests + doc-catalog engineering
-tests; per-file counts `pytest --collect-only`-verified at freeze time)
+Source-free maintained tests (16 direct graph tests + 11 environment-gated
+replay tests = 27 total, per-file 6+5+5 direct and 4+4+3 replay,
+`pytest --collect-only`-verified at freeze time)
 establish each relation against an independent recomputation from the bound
 SciRel assets with the saved operation order (bit-exact `assert_array_equal`),
 the frozen constants, the channel/level selection, the dependency-binding
