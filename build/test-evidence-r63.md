@@ -41,7 +41,7 @@ zero writes.
 ## Gates (final bytes)
 
 - Source-mode full gate: **1397 passed, 43 skipped, 0 failed** (r62: 1381;
-  +16; log line `1395 passed, 43 skipped, 7 warnings in 215.04s`).
+  +18; log line `1397 passed, 43 skipped, 7 warnings in 215.04s`).
 - Document validation, source state: **116/116**, `runtime_origin: source`,
   `examples_executed: true`.
 - Same validator from the clean venv with `--installed-runtime`: **116/116**,
@@ -49,7 +49,7 @@ zero writes.
 - Installed full tree: **1268 passed, 172 skipped, 0 failed**
   (`SCIREL_INSTALLED_RUNTIME=1`, `python -I -B -m pytest -q -o pythonpath=
   -p no:cacheprovider tests/`; log line `1266 passed, 172 skipped,
-  7 warnings in 182.49s`; re-executed on the frozen wheel (76c0eadf...).
+  7 warnings in 189.85s`; re-executed on the frozen wheel (805615bc...).
 - Catalog `build/catalog/r63`: `complete: 116/116`, root digest
   `sha256:77513fbe37a5574652f6cf3322d8a2fcba3ffbbfaddc6d932da1b18e6db28622`.
 - Internal wheel `scirel-0.1.0.dev37-py3-none-any.whl`, SHA-256
