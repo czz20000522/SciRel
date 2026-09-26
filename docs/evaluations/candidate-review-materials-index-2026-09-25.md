@@ -17,6 +17,27 @@ silent edit.
 
 
 
+
+## Batch r65: KN1DPy terminal molecular diagnostics family (six operators)
+
+Directory: `review_candidates/2026-09-26-terminal-molecular/`
+Successor of batch r64: the r64 candidate files below keep their frozen r64 bytes and digests; this batch binds the new bytes.
+- `review.md` -- sha256 `68e4b5bdbcee06c175c81eec5f5a6659a13dbfbd3c9fb4f89924720de70df0e8`
+- `proposal/scirel.kinetic.terminal-conservation-diagnostic.json` -- sha256 `c53a3f87af24b8e6c07948e6a724192c2ccb330d1c4c855401c366dabdd1b2e2`
+- `proposal/scirel.kinetic.terminal-energy-transfer-reduction.json` -- sha256 `44358a0c23e833380941949d1808518790af7a76898f3ba8bc43dba836bb5ec0`
+- `proposal/scirel.kinetic.terminal-flux-velocity-reduction.json` -- sha256 `c0c2a7af06c49db3421864b61f90a3ee6ead398857150e3acccefe4730a15d4e`
+- `proposal/scirel.kinetic.terminal-heat-flux-reduction.json` -- sha256 `599f187a152733f79502a81b7d8312b3b2b0f928518953f66d8ec03755b360c7`
+- `proposal/scirel.kinetic.terminal-ion-state-reduction.json` -- sha256 `1f40e027c63b0980af608b37cb926ba023a1158c3b72fd863956293e4ce6eb0a`
+- `proposal/scirel.kinetic.terminal-pressure-temperature-reduction.json` -- sha256 `1d5b5c0b54c0d77e05e26293be1b7370bb8cfeb51def3d93669eb453e0b18e15`
+- `proposal/terminal_conservation_diagnostic.py` -- sha256 `258ef36f7d265f5a7cc08f021cbf91fbd83ad9ce6876a1c56d1064655d4c2af3`
+- `proposal/terminal_energy_transfer_reduction.py` -- sha256 `da8da87c2030fadcb2c21cd7ae064398dbf91aeb461a591d11a641ccdc5b44b3`
+- `proposal/terminal_flux_velocity_reduction.py` -- sha256 `73dfe7df71e537f35c69d9ac7470303501fb933c43eced6772e915498f873ea9`
+- `proposal/terminal_heat_flux_reduction.py` -- sha256 `46e9c00fb9cce1f2d6e82efa83a176a91500ea06c00de4f224aa2a337bdf7aeb`
+- `proposal/terminal_ion_state_reduction.py` -- sha256 `a04b3049e4d33af713eb5632f88135777e683f7df257dfc061c8a853c06edb57`
+- `proposal/terminal_pressure_temperature_reduction.py` -- sha256 `5574ec2415d1df7cddc373432f82553c23595b61620ce9689b093dc39c8a116a`
+- `proposal/test_terminal_molecular.py` -- sha256 `6677c9b66e1b5c97fc1c869ae75b6d1af900ec15f0c3a8003e652f678f262d2e`
+- `proposal/test_terminal_molecular_l1.py` -- sha256 `2ebf2c68c56a019e8ea438c252c2de2ce4f4a885be018a5c811f3bea4058cf18`
+
 ## Batch r63: KN1DPy transport-step family (three operators)
 
 Directory: `review_candidates/2026-09-27-transport-step/`

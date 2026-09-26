@@ -1,0 +1,185 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.terminal-energy-transfer-reduction",
+  "kind": "operator",
+  "title": {
+    "en": "Terminal molecular energy transfer rate reduction",
+    "zh": "终态分子能量转移率归约"
+  },
+  "summary": "Reduce caller-owned terminal distribution and Boltzmann RHS to QH2 energy-transfer profiles.",
+  "taxonomy": [
+    "kinetic",
+    "neutral-transport",
+    "terminal-diagnostics",
+    "energy-transfer"
+  ],
+  "aliases": [
+    "reduce_terminal_molecular_energy_transfer"
+  ],
+  "identity": {
+    "relation": "reduce caller-owned terminal distribution and boltzmann rhs to qh2 energy-transfer profiles.",
+    "direction": "terminal distribution/moments -> physical diagnostic profiles",
+    "definition": "Reduce caller-owned terminal distribution and Boltzmann RHS to QH2 energy-transfer profiles.",
+    "model": "the saved formal implementation, ported verbatim and reproduced bit for bit on the declared legal domain",
+    "geometry": "zero-dimensional profile relation over 1-D spatial/velocity axes",
+    "coordinates": "positions in m, velocities in normalized units, temperature in eV; diagnostics in source-defined units",
+    "boundary": "finite nonnegative aligned input profiles; positive thermal speed; nonzero spatial spacing",
+    "assumptions": [
+      "The saved formal operator is ported verbatim; no repair is claimed.",
+      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "radial_velocity_normalized",
+      "description": "Mesh_a radial velocity nodes.",
+      "units": "source-discrete",
+      "shape": "[nvr]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, one-dimensional."
+    },
+    {
+      "name": "axial_velocity_normalized",
+      "description": "Mesh_a axial velocity nodes.",
+      "units": "source-discrete",
+      "shape": "[nvx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, one-dimensional."
+    },
+    {
+      "name": "mass_ratio",
+      "description": "The molecular mass ratio.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "thermal_speed_m_s",
+      "description": "The thermal speed.",
+      "units": "m/s",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "terminal_distribution",
+      "description": "The terminal distribution.",
+      "units": "source-discrete",
+      "shape": "[nvr,nvx,nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 3-D array."
+    },
+    {
+      "name": "collision_rhs",
+      "description": "The Boltzmann RHS field.",
+      "units": "source-discrete",
+      "shape": "[nvr,nvx,nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 3-D array."
+    },
+    {
+      "name": "cylindrical_weight",
+      "description": "The cylindrical weight.",
+      "units": "source-discrete",
+      "shape": "[nvr,nvx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 2-D array."
+    },
+    {
+      "name": "dvx",
+      "description": "The axial cell sizes.",
+      "units": "source-discrete",
+      "shape": "[nvx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite nonnegative 1-D array."
+    },
+    {
+      "name": "external_molecular_source_profile_m3_s",
+      "description": "The external molecular source profile.",
+      "units": "m^-3 s^-1",
+      "shape": "[nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 1-D array."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "The diagnostic result mapping.",
+      "units": "source-defined",
+      "shape": "mapping",
+      "dtype": "mapping of profiles",
+      "required": true,
+      "constraints": "Finite; the saved return structure."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite nonnegative aligned input profiles; positive thermal speed where applicable."
+    ],
+    "supported": [
+      "Terminal molecular diagnostics for H2 neutral transport."
+    ],
+    "excluded": [
+      "External physical validation; non-terminal distributions."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when inputs are non-finite, shape-incompatible, or violate nonnegativity constraints.",
+    "runtime_failure": "Raises ValueError when the diagnostic produces a non-finite result.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned; a rejected call produces no result."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy terminal energy transfer reduction package, source anchor KN1DPy/kinetic_h2.py:1700-1780, as recorded by the saved bundle's own provenance section. Saved implementation file SHA-256 da8da87c2030fadcb2c21cd7ae064398dbf91aeb461a591d11a641ccdc5b44b3. The saved formal implementation is ported verbatim and reproduced bit for bit on the declared legal domain; no repair is claimed. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent recomputation witness",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.terminal_energy_transfer_reduction",
+      "symbol": "reduce_terminal_molecular_energy_transfer",
+      "signature": "reduce_terminal_molecular_energy_transfer(radial_velocity_normalized, axial_velocity_normalized, mass_ratio, thermal_speed_m_s, terminal_distribution, collision_rhs, cylindrical_weight, dvx, external_molecular_source_profile_m3_s)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev39",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate with small finite inputs.",
+    "code": "from scirel.kinetic import reduce_terminal_molecular_energy_transfer\nprint(reduce_terminal_molecular_energy_transfer.__doc__ is not None)",
+    "expected": "The callable exists and returns a finite result."
+  },
+  "verification": {
+    "scope": [
+      "Bit-identical agreement with the saved KN1DPy implementation.",
+      "Input and failure contracts."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_terminal_molecular.py",
+      "tests/operator_contracts/test_terminal_molecular_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the relation against independent recomputation, the documented fail-closed contracts, and -- in the environment-gated replay test -- bit-identical agreement with the saved KN1DPy implementation pinned by SHA-256, including rejection-behavior agreement. That replay is historical development evidence, not qualified-L1 provenance.",
+    "known_limitations": [
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}
