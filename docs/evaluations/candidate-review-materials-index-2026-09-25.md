@@ -16,6 +16,21 @@ silent edit.
 
 
 
+
+## Batch r63: KN1DPy transport-step family (three operators)
+
+Directory: `review_candidates/2026-09-27-transport-step/`
+Successor of batch r62: the r62 candidate files below keep their frozen r62 bytes and digests; this batch binds the new bytes.
+- `review.md` -- sha256 `84e4bb9f828a3c72d669be2f9caebe8a4bb24071113c719baefa900df147a555`
+- `proposal/neutral_boltzmann_rhs.py` -- sha256 `9ccae2821f3cdf0006a15d2d852d218e557089f4b8962df6d2e90d959f20c6b5`
+- `proposal/neutral_generation_propagation.py` -- sha256 `d56cb0811dbab665c6aff04a342974fddb9957301f0e85e7af85078de995f0ca`
+- `proposal/scirel.kinetic.neutral-boltzmann-rhs.json` -- sha256 `1d9c0284416bc9f08c104a36d48bfd8f40b6e8a2f61634fc3ba2192da7b14bec`
+- `proposal/scirel.kinetic.neutral-generation-propagation.json` -- sha256 `430c47cc5635864ae96f458efcd36b2ee8e674f8a91b2b1eff09172690972e7a`
+- `proposal/scirel.kinetic.neutral-upwind-transport-coefficients.json` -- sha256 `91321bcef01becbffcda76cdfbe1c5affb44287df34b4c034a7987ee76cd759a`
+- `proposal/test_transport_step.py` -- sha256 `8abe7410b58eff02c1790b2f2be226e7af259dfd5756eca89b249c5b93d3f4b3`
+- `proposal/test_transport_step_l1.py` -- sha256 `8dec764e96e2b1384c6255b07d3a4dbfa02d25596e9fe49c7dc7fc58e8d5a743`
+- `proposal/upwind_transport_coefficients.py` -- sha256 `13b496fe0bb7a8b163aa699d6c2ab56ea6f3c4535ca78b723939121cd7a881cd`
+
 ## Batch r62: KN1DPy cross-mesh distribution interpolation (one operator)
 
 Directory: `review_candidates/2026-09-27-mesh-seam/`
