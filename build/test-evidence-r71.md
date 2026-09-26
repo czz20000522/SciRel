@@ -103,10 +103,9 @@ these digests provide the provenance linkage.
 ## Gates (final bytes, returncode-checked)
 
 - Source-mode full gate (replay active): **1524 passed, 43 skipped, 0
-  failed**, pytest returncode 0 (r70 full tree: 1508, +16? no: +9 tests and
-  +7 QR-frame parametrization count; the delta reconciles to the new file's
-  9 collected tests plus frame-sweep expansions — exact totals recorded
-  here as 1524/43 with returncode 0).
+  failed**, pytest returncode 0. Like-for-like delta versus the true
+  r70-v3 baseline (measured at commit `644b223` in a temporary worktree:
+  1515 passed / 43 skipped, returncode 0): **+9** collected NBI tests.
 - Document validation, source state: **142/142**, `runtime_origin: source`,
   `examples_executed: true`.
 - Clean venv `build/venv-r71-clean` (own numpy 2.5.3 / scipy 1.18.1 /
