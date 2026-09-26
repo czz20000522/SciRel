@@ -162,3 +162,17 @@ def test_upwind_rejects_nonfinite_x():
         assemble_neutral_upwind_transport_coefficients(
             np.array([0.0, float("inf"), 1.0]), vx, alpha, source
         )
+
+def test_propagate_rejects_nonfinite_vx():
+    """Pre-review regression: the saved arm accepts a NaN vx node and
+    silently leaves the corresponding generation slice zero; the exact
+    document requires finite vx, so this asset fail-closes."""
+    vx = np.array([-1.0, float("nan"), 1.0])
+    Ak = np.ones((1, 3, 3)); Bk = np.ones((1, 3, 3)); Fk = np.ones((1, 3, 3))
+    Ck = np.ones((1, 3, 3)); Dk = np.ones((1, 3, 3)); Gk = np.ones((1, 3, 3))
+    with pytest.raises(ValueError, match="invalid"):
+        propagate_neutral_generation(
+            vx, Ak, Bk, Fk, Ck, Dk, Gk,
+            generation_kind="first_flight", incoming_boundary=np.ones((1, 3)),
+        )
+

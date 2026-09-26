@@ -9,7 +9,7 @@ def propagate_neutral_generation(vx, Ak, Bk, Fk, Ck, Dk, Gk, generation_kind, in
     axial = np.asarray(vx, dtype=float)
     coefficients = [np.asarray(value, dtype=float) for value in (Ak, Bk, Fk, Ck, Dk, Gk)]
     a, b, f, c, d, g = coefficients
-    if axial.ndim != 1 or any(value.ndim != 3 or value.shape != a.shape for value in coefficients) or a.shape[1] != axial.size or not np.all(np.isfinite(a)) or not np.all(np.isfinite(b)) or not np.all(np.isfinite(f)) or not np.all(np.isfinite(c)) or not np.all(np.isfinite(d)) or not np.all(np.isfinite(g)):
+    if axial.ndim != 1 or any(value.ndim != 3 or value.shape != a.shape for value in coefficients) or a.shape[1] != axial.size or not np.all(np.isfinite(a)) or not np.all(np.isfinite(b)) or not np.all(np.isfinite(f)) or not np.all(np.isfinite(c)) or not np.all(np.isfinite(d)) or not np.all(np.isfinite(g)) or not np.all(np.isfinite(axial)):
         raise ValueError("vx and coefficient fields are invalid")
     positive, negative = axial > 0.0, axial < 0.0
     if not np.any(positive) or not np.any(negative) or generation_kind not in ("first_flight", "scattered"):

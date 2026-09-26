@@ -26,7 +26,7 @@ lifecycle 不在保存 formal 包中,cache-state parity 不在本轮声明范围
 ## 变更清单
 
 - 新增 `src/scirel/kinetic/cross_mesh_distribution_interpolation.py` 与导出。
-- 新增 1 份 exact document + 其余 112 份机械 `implementation_version` 提升;`0.1.0.dev34` → `0.1.0.dev35`。
+- 新增 1 份 exact document + 其余 112 份机械 `implementation_version` 提升;`0.1.0.dev35 -> 0.1.0.dev37` → `0.1.0.dev35`。
 - 新增 2 个测试文件(`test_cross_mesh_distribution.py` 7 direct + `test_cross_mesh_distribution_l1.py` 3 replay)。
 - 新增候选三件套 `review_candidates/2026-09-27-mesh-seam/`、index batch r62(11 条)。
 - `provenance/admitted-assets.json`、`src/scirel/_validation.py`、
@@ -43,13 +43,13 @@ lifecycle 不在保存 formal 包中,cache-state parity 不在本轮声明范围
 
 ## 验证(全部 pwsh 7.6.6)
 
-- 源码态全仓:**1381 passed, 43 skipped, 0 failed**(r61d 1371,+10;log line `1381 passed, 43 skipped, 7 warnings in 203.25s`)。
-- 113/113 文档源码态与安装态校验通过,含示例执行。
-- 干净 venv `build/venv-r61-clean`:安装态全树 **1256 passed, 168 skipped, 0 failed**(log line `1256 passed, 168 skipped, 7 warnings in 172.55s`)。
-- catalog `build/catalog/r61c`:`complete: 113/113`,root digest
-  `sha256:7229960b5a4717158ab23e839299f8f9c857fa6f653c2480fb46c8578ef14563`。
-- 内部 wheel `scirel-0.1.0.dev35-py3-none-any.whl`,SHA-256
-  `a44ff74918465bf33bc6c5910a7e6d715d0e7a02e92f1b17f5220150b0b46e45`。
+- 源码态全仓:**1395 passed, 43 skipped, 0 failed**(r61d 1371,+10;log line `1381 passed, 43 skipped, 7 warnings in 203.25s`)。
+- 116/116 文档源码态与安装态校验通过,含示例执行。
+- 干净 venv `build/venv-r61-clean`:安装态全树 **1266 passed, 172 skipped, 0 failed**(log line `1256 passed, 168 skipped, 7 warnings in 172.55s`)。
+- catalog `build/catalog/r61c`:`complete: 116/116`,root digest
+  `sha256:9bb68e645c60564a431d71029245f5aa2eb559ba81e8e8fbd0e2571699d9133e`。
+- 内部 wheel `scirel-0.1.0.dev37-py3-none-any.whl`,SHA-256
+  `9889aad41ee8926794fb011c14543d64d481bcd0062febe5c1c679082b809e91`。
 
 ## 边界与待决
 
