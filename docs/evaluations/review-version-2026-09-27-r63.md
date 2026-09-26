@@ -41,8 +41,11 @@
 
 - 新增 3 个模块 + 导出;新增 3 份 exact document + 其余 113 份机械提升;`dev36` → `dev37`。
 - 新增 2 个测试文件(`test_transport_step.py` 10 direct + `test_transport_step_l1.py` 4 replay)。
-- 候选审核材料:本批 3 个 transport 算子尚无独立候选评审文档或 index batch;
-  精确描述见本文件与 `build/test-evidence-r63.md`,待后续批次补充。
+- 候选审核材料:`review_candidates/2026-09-27-transport-step/` 含 review.md
+  与 8 个 proposal 副本,经 candidate-review-materials-index batch r63(9 条
+  SHA-256)绑定;由于 freeze API 仅接受 tracked docs/*.md,这些文件不出现在
+  manifest 的 review_materials 列表中(该列表为 107 个 tracked docs 文件),
+  其完整性由 index 保证。
 - 账本与 _validation/_composition 字节零变化。
 
 ## 科学证据
