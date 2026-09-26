@@ -51,7 +51,7 @@ zero writes.
   -p no:cacheprovider tests/`; log line `1268 passed, 172 skipped,
   7 warnings in 189.85s`; re-executed on the frozen wheel (805615bc...).
 - Catalog `build/catalog/r63`: `complete: 116/116`, root digest
-  `sha256:77513fbe37a5574652f6cf3322d8a2fcba3ffbbfaddc6d932da1b18e6db28622`.
+  `sha256:49ad53fb3a9e0645be69a03dcf98c34f19dbe216a54561f1c79f8eb82331a398`.
 - Internal wheel `scirel-0.1.0.dev37-py3-none-any.whl`, SHA-256
   `805615bcec33d4ad45354db0d6320208fc4e4fc9181e584a1f3293053bff338e`.
 - Snapshot deletion disclosure: `review-2026-09-27-r63-final/`,
