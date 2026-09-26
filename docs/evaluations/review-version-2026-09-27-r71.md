@@ -48,7 +48,7 @@
 - 源码态全仓(复放激活):**1524 passed, 43 skipped, 0 failed**,returncode 0。真实 r70-v3 基线(commit `644b223`,在临时 worktree 直接实测 **1515 passed/43 skipped**,rc=0)+9 项 NBI 测试;r70 旧证据的 1508 是 v1 树(在 review-scope 修复 `acef9c5` 新增 7 项 collected 之前)的数,跨版本对账以 r70-v3 的 1515 为准
 - 142/142 文档源码态与安装态校验通过,含示例执行(`runtime_origin: installed`)
 - 安装态全树(干净 venv `build/venv-r71-clean`,自装 numpy 2.5.3 / scipy 1.18.1 / pytest 9.1.1,wheel `--no-index --no-deps`):**1370 passed, 197 skipped, 0 failed**,returncode 0。r70-v1 证据的 1354/197 是 v1 树的数(在 `acef9c5` +7 collected 之前),与 r71 的 1370 不可直接对账;r70-v3 的安装态基线未直接重跑,不在此推算任何派生数字;本安装态回执由审查者独立复跑通过
-- catalog `build/catalog/r71`:`complete: 142/142`,root digest `sha256:854cc403400d1b37443f14cf8807f46c84f5d458fe4dc34b8a26196c4ef1b4eb`
+- catalog `build/catalog/r71`:`complete: 142/142`,root digest `sha256:b7a1e31a7f23b3740b9a095857b4486118d11f6986e1ba8b15f4f193a1aa6144`(于修正后 HEAD 与 wheel 一同重建;早期 `854cc403…` 构建先于 pitch docstring 修正,已在冻结前替换)
 - 内部 wheel `scirel-0.1.0.dev45-py3-none-any.whl`,SHA-256 `40e78fe13c05a1229e1eb54782f6c76becce8563ae8683b36b395a8808e291b8`(pitch docstring 公式修正后于当前 HEAD 重建;早期 `5fc36403…` 构建先于该修正,已在冻结前替换)
 
 ## 边界与待决

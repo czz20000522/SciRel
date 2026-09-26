@@ -115,7 +115,10 @@ these digests provide the provenance linkage.
 - Installed full tree: **1370 passed, 197 skipped, 0 failed**, pytest
   returncode 0 (r70: 1354 passed, 197 skipped).
 - Catalog `build/catalog/r71`: `complete: 142/142`, root digest
-  `sha256:854cc403400d1b37443f14cf8807f46c84f5d458fe4dc34b8a26196c4ef1b4eb`.
+  `sha256:b7a1e31a7f23b3740b9a095857b4486118d11f6986e1ba8b15f4f193a1aa6144`
+  (rebuilt at the corrected HEAD alongside the wheel; the earlier
+  `854cc403...` build predated the pitch docstring fix and was replaced
+  before freezing).
   Prior catalog builds (`r70`, `r69`, `r68`, `r67`, `r66-v2`, `r66`,
   `r66-stale-placeholder-docs`) are preserved and unreferenced by this
   freeze.
