@@ -60,13 +60,22 @@
 
 ## 验证(全部 pwsh 7.6.6)
 
+- 源码态全仓(`python -B -m pytest -q -p no:cacheprovider tests/`,
+  `PYTHONPATH=src;tests`,复放根已配置):**1353 passed, 43 skipped,
+  0 failed**(r59 1301,+51,skip 计数不变;日志行 `1353 passed, 43 skipped,
+  6 warnings in 184.14s`)。
 - 110/110 文档源码态与安装态(`--installed-runtime`)校验通过,含示例执行。
-- 干净 venv `build/venv-r60-clean`:r45 子集 **955 passed, 159 skipped, 0 failed**;全树见下。
+- 干净 venv `build/venv-r60-clean`:r45 子集 **955 passed, 159 skipped,
+  0 failed**;安装态全树(`SCIREL_INSTALLED_RUNTIME=1`,`python -I -B -m
+  pytest -q -o pythonpath= -p no:cacheprovider tests/`)**1234 passed,
+  162 skipped, 0 failed**(日志行 `1234 passed, 162 skipped, 6 warnings in
+  163.49s`;跳过数为无 `SCIREL_KN1DPY_REVIEW_ROOT` 时环境门控复放跳过)。
 - catalog `build/catalog/r60`:`complete: 110/110`,root digest
   `sha256:1c982a546a392b2e60a4c9e026344f82502918c25609e96c905836ee9a53c8dd`。
 - 内部 wheel `scirel-0.1.0.dev32-py3-none-any.whl`,SHA-256
   `e89eccc362ad030473721395e66497a545bbe5c0499f3473038153669967680e`。
-- 源码态全仓与安装态全树计数以冻结时实际运行为准(见 test-evidence-r60.md)。
+- 候选审核材料索引:batch r60 唯一段 28 条,逐条按 Directory 解析且摘要
+  与候选文件一致(脚本核验)。
 
 ## 边界与待决
 
