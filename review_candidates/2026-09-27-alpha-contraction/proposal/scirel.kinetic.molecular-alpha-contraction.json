@@ -199,7 +199,7 @@
       "tests/operator_contracts/test_alpha_contraction.py",
       "tests/operator_contracts/test_alpha_contraction_l1.py"
     ],
-    "evidence_ceiling": "The maintained tests establish the relation against independent recomputation, the documented fail-closed contracts, and -- in the environment-gated replay test -- bit-identical agreement with the saved KN1DPy implementation pinned by SHA-256, including rejection-behavior agreement. That replay is provisional historical development evidence, not qualified-L1 provenance.",
+    "evidence_ceiling": "The maintained direct tests establish the output keys and shapes, the documented fail-closed contracts, and ni_correct branch discrimination; no independent first-principles recomputation witness covers the molecular arm or its Alpha families. The remaining scientific assurance is the environment-gated replay test's bit-identical agreement with the saved KN1DPy implementation pinned by SHA-256, including rejection-behavior agreement and asymmetric-SIG parity across both ni_correct branches. That replay is provisional historical development evidence, not qualified-L1 provenance. No test establishes the relation against an external atomic-physics reference; the saved package records that residual as validation_oracle_gap.",
     "known_limitations": [
       "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
       "The Alpha_CX reshape repair relative to the raw kinetic_h2.py source is registered, not silently absorbed; its scientific framing remains an expert-review item.",

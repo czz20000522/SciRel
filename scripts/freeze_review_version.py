@@ -118,8 +118,14 @@ def freeze_review_version(
     material_refs: dict[str, tuple[Path, str]] = {}
     for material in review_materials or []:
         relative = _tracked_path(material)
-        if not relative.startswith("docs/") or not relative.endswith(".md"):
-            raise ValueError(f"review material must be a tracked docs Markdown file: {relative}")
+        if not (
+            (relative.startswith("docs/") and relative.endswith(".md"))
+            or relative.startswith("review_candidates/")
+        ):
+            raise ValueError(
+                "review material must be a tracked docs Markdown file or a "
+                f"review-candidate file: {relative}"
+            )
         if relative in material_refs:
             raise ValueError(f"review material is repeated: {relative}")
         material_refs[relative] = (material, _digest(material))

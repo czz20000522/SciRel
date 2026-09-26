@@ -1,16 +1,19 @@
 # Candidate review-material index (r56)
 
-The freeze script binds review materials to tracked `docs/*.md` files only,
-so the expert-review entry point for each integration batch -- the candidate
-document, its comparison inventory (README) and the proposal files under
-`review_candidates/` -- is not listed in any snapshot manifest material list,
-even though the frozen commit tree contains the bytes. This index binds those
-files by exact SHA-256 at the r56 freeze commit so the manifest chain points
-an expert to them. Every entry path is relative to its batch Directory and
-resolvable from it (verified by script after the r55 path correction); any
-drift between a digest below and the working tree means the candidate text
-changed after this index was written and the batch needs a successor, not a
-silent edit.
+The freeze script originally bound review materials to tracked `docs/*.md`
+files only, so the expert-review entry point for each integration batch --
+the candidate document, its comparison inventory (README) and the proposal
+files under `review_candidates/` -- is not listed in any snapshot manifest
+material list, even though the frozen commit tree contains the bytes. This
+index binds those files by exact SHA-256 at the batch's freeze commit so the
+manifest chain points an expert to them. Since the r66 v2 freeze the script
+also accepts tracked `review_candidates/` files as `--review-material`
+arguments, and the r66 batch's seven candidate files are snapshotted directly
+in `review-2026-09-27-r66-alpha-contraction-v2`. Every entry path is relative
+to its batch Directory and resolvable from it (verified by script after the
+r55 path correction); any drift between a digest below and the working tree
+means the candidate text changed after this index was written and the batch
+needs a successor, not a silent edit.
 
 
 
@@ -21,13 +24,13 @@ silent edit.
 ## Batch r66: KN1DPy collision frequency contraction family (two operators)
 
 Directory: `review_candidates/2026-09-27-alpha-contraction/`
-Successor of batch r65: the r65 candidate files below keep their frozen r65 bytes and digests; this batch binds the new bytes.
-- `review.md` -- sha256 `acefef2614152800606d7975acb353b0d51dbe795a9e2262f48628f04d623aeb`
-- `proposal/scirel.kinetic.atomic-alpha-contraction.json` -- sha256 `67e645db317078af6546d7711b8e118e5ebfc23591aa19ffeec49282b85f4e0a`
-- `proposal/scirel.kinetic.molecular-alpha-contraction.json` -- sha256 `f51fe25907add7643737ae140c00fde66d6f89f06bd222b39c526ee3dc9fa2c4`
+Successor of batch r65: the r65 candidate files below keep their frozen r65 bytes and digests; this batch binds the new bytes. r66 v1 (`review-2026-09-27-r66-alpha-contraction-v1`) froze the r66 bytes listed here in their original form; the v2 freeze (`review-2026-09-27-r66-alpha-contraction-v2`) binds the corrected bytes below and snapshots all seven files directly.
+- `review.md` -- sha256 `89bfd2d64db6c5d986cdf6c83a4f00457901f4c2bda6b4282746f9c82450eb6b`
+- `proposal/scirel.kinetic.atomic-alpha-contraction.json` -- sha256 `956b2a9136440f12f9bb08d2559b36c9887c9ad6d389fd4c44e952a8e62bbc79`
+- `proposal/scirel.kinetic.molecular-alpha-contraction.json` -- sha256 `baad00637887f9cbed6bbe9c1ad0ad3f9c4c8c1a8516233c23d56bd9f7f40464`
 - `proposal/atomic_alpha_contraction.py` -- sha256 `3cc121f1325fd9faaa58e566f6d5d6a98544247cb9fa20d8b208ea792efe7a34`
 - `proposal/molecular_alpha_contraction.py` -- sha256 `9bac6b3857d3dee377a77b6ac29ace02efee4ff0287618e67f1a8c6837b7f4ce`
-- `proposal/test_alpha_contraction.py` -- sha256 `6b51921c90e563b7a06e907f5535a412a27619d6020bb8d94e96b4aced61d2d2`
+- `proposal/test_alpha_contraction.py` -- sha256 `2d53ba24395a362a1c49d16a53abf5a8cb2f1757d406a5ce725c62adecdb7712`
 - `proposal/test_alpha_contraction_l1.py` -- sha256 `c6ac9dc550757aef8823d3a28d924ee84bf4efcb4db3fd7447208ebca59502b5`
 
 ## Batch r65: KN1DPy terminal molecular diagnostics family (six operators)

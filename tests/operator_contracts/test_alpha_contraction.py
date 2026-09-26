@@ -98,14 +98,14 @@ def test_atomic_contraction_discriminating_inputs_with_asymmetric_sig():
 
     # F-order carrier witness: one-hot SIG[5,3]=1, fH nodes labelled by F-order
     # flat index. Alpha_H_H output at flat 5 equals fH_flat[3].
-    # F-order: flat 5 -> (2,1), flat 3 -> (1,1). C-order would map differently.
+    # F-order: flat 5 -> (2,1), flat 3 -> (0,1). C-order would map differently.
     SIG_onehot = np.zeros((N, N))
     SIG_onehot[5, 3] = 1.0
     fH_labelled = np.arange(N, dtype=float).reshape(nvr, nvx, nx, order="F")
     r_onehot = contract_atomic_hydrogen_alpha_frequencies(
         SIG_onehot, SIG_onehot, SIG_onehot, SIG_onehot, fi_hat, ni, fH2, fH_labelled
     )
-    # F-order: out[2,1,0] = SIG_onehot[5,3] * fH_flat[3] = 1.0 * fH_labelled[1,1,0] = 3.0
+    # F-order: out[2,1,0] = SIG_onehot[5,3] * fH_flat[3] = 1.0 * fH_labelled[0,1,0] = 3.0
     assert r_onehot["Alpha_H_H"][2, 1, 0] == 3.0
     # all other output positions are zero
     r_flat = r_onehot["Alpha_H_H"][:, :, 0].ravel(order="F")

@@ -8,7 +8,8 @@ trusted version, or a public release.
 
 - SciRel base: `c8c3a988` (r64-v3 frozen, 120 assets dev38) plus the r65
   batch; the r65 freeze
-  (`build/verification/review-2026-09-27-r64-convergence-v3`) is untouched.
+  (`build/verification/review-2026-09-26-r65-terminal-molecular-v6`,
+  commit `228a2d6`) is untouched.
   r66 increments the catalog to 128 exact documents, version
   `0.1.0.dev39` -> `0.1.0.dev40`.
 - Unpublished candidate pool: re-checked by relation for Alpha collision
@@ -67,13 +68,21 @@ trusted version, or a public release.
 
 ## Evidence
 
-- Independent recomputation witness: the direct tests build the Fortran-order
-  contraction from first principles (one-hot identity matrices and labelled
-  distributions), so a wrong flatten/restore order in either arm surfaces as
-  a mismatch.
-- Environment-gated replay (5 tests): bit-for-bit saved-arm parity for both
+- Direct-test ceiling: the only independent first-principles recomputation
+  witness is the atomic arm's one-hot F-order carrier test (`SIG[5,3]=1`
+  with an F-order-labelled `fH`), which pins the flatten/restore order for
+  the `Alpha_H_H` family only. No equivalent independent recomputation
+  covers the atomic CX/H-H2/H-P families or the molecular arm; the
+  remaining direct tests establish output keys and shapes, the documented
+  fail-closed rejections, and branch discrimination (`ni_correct`) only.
+- Cross-arm assurance otherwise comes from the environment-gated replay
+  (5 tests): SHA-256-pinned bit-for-bit saved-arm parity for both
   operators, rejection-behavior agreement, and asymmetric-SIG parity runs
-  across both `ni_correct` branches.
+  across both `ni_correct` branches. This is provisional historical
+  development evidence, not qualified-L1 provenance.
+- External physics gap: no test establishes agreement with an external
+  atomic-physics reference; the saved package records that residual as
+  `validation_oracle_gap`.
 - 12 tests total (7 direct + 5 replay); `pytest --collect-only` verified.
 
 ## Files
