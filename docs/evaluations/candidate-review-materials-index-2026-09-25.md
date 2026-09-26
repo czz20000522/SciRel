@@ -6,10 +6,11 @@ the candidate document, its comparison inventory (README) and the proposal
 files under `review_candidates/` -- is not listed in any snapshot manifest
 material list, even though the frozen commit tree contains the bytes. This
 index binds those files by exact SHA-256 at the batch's freeze commit so the
-manifest chain points an expert to them. Since the r66 v2 freeze the script
-also accepts tracked `review_candidates/` files as `--review-material`
+manifest chain points an expert to them. Since the r66 v3 freeze the script
+also accepts exactly `review_candidates/<batch>/review.md` and
+`review_candidates/<batch>/proposal/*.py|*.json` as `--review-material`
 arguments, and the r66 batch's seven candidate files are snapshotted directly
-in `review-2026-09-27-r66-alpha-contraction-v2`. Every entry path is relative
+in `review-2026-09-27-r66-alpha-contraction-v3`. Every entry path is relative
 to its batch Directory and resolvable from it (verified by script after the
 r55 path correction); any drift between a digest below and the working tree
 means the candidate text changed after this index was written and the batch
@@ -24,7 +25,7 @@ needs a successor, not a silent edit.
 ## Batch r66: KN1DPy collision frequency contraction family (two operators)
 
 Directory: `review_candidates/2026-09-27-alpha-contraction/`
-Successor of batch r65: the r65 candidate files below keep their frozen r65 bytes and digests; this batch binds the new bytes. r66 v1 (`review-2026-09-27-r66-alpha-contraction-v1`) froze the r66 bytes listed here in their original form; the v2 freeze (`review-2026-09-27-r66-alpha-contraction-v2`) binds the corrected bytes below and snapshots all seven files directly.
+Successor of batch r65: the r65 candidate files below keep their frozen r65 bytes and digests; this batch binds the new bytes. r66 v1 (`review-2026-09-27-r66-alpha-contraction-v1`) froze the r66 bytes listed here in their original form; the v3 freeze (`review-2026-09-27-r66-alpha-contraction-v3`) binds the corrected bytes below and snapshots all seven files directly (v2 is preserved but superseded: its freeze script allowed any tracked file under `review_candidates/`; the tightened rule admits exactly the same 7-file set).
 - `review.md` -- sha256 `89bfd2d64db6c5d986cdf6c83a4f00457901f4c2bda6b4282746f9c82450eb6b`
 - `proposal/scirel.kinetic.atomic-alpha-contraction.json` -- sha256 `956b2a9136440f12f9bb08d2559b36c9887c9ad6d389fd4c44e952a8e62bbc79`
 - `proposal/scirel.kinetic.molecular-alpha-contraction.json` -- sha256 `baad00637887f9cbed6bbe9c1ad0ad3f9c4c8c1a8516233c23d56bd9f7f40464`

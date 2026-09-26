@@ -45,6 +45,16 @@ def _tracked_path(path: Path) -> str:
     return relative
 
 
+def _is_candidate_material(relative: str) -> bool:
+    parts = relative.split("/")
+    if len(parts) == 3 and parts[0] == "review_candidates" and parts[2] == "review.md":
+        return True
+    if len(parts) == 4 and parts[0] == "review_candidates" and parts[2] == "proposal":
+        name = parts[3]
+        return name.endswith((".py", ".json")) and name not in (".py", ".json")
+    return False
+
+
 def _wheel_version(wheel: Path) -> str:
     with zipfile.ZipFile(wheel) as archive:
         metadata_paths = [
@@ -120,11 +130,14 @@ def freeze_review_version(
         relative = _tracked_path(material)
         if not (
             (relative.startswith("docs/") and relative.endswith(".md"))
-            or relative.startswith("review_candidates/")
+            or _is_candidate_material(relative)
         ):
             raise ValueError(
-                "review material must be a tracked docs Markdown file or a "
-                f"review-candidate file: {relative}"
+                "review material must be a tracked docs Markdown file, or a "
+                "candidate batch review.md (review_candidates/<batch>/review.md) "
+                "or proposal module/document (review_candidates/<batch>/proposal/"
+                "*.py|*.json): "
+                f"{relative}"
             )
         if relative in material_refs:
             raise ValueError(f"review material is repeated: {relative}")

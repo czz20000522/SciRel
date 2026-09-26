@@ -2,7 +2,7 @@
 
 状态:开发期冻结待审(`pending_unapproved`),不是领域专家认可、可信版本或公开发行。本版是 r65(`228a2d6fc936b425574c0d837dbfa4a3ae1b9759`,快照 `build/verification/review-2026-09-26-r65-terminal-molecular-v6`)的 successor;既有快照原样保留。合格 L1 交付根本轮复核为空,未消费任何合格 L1 输入。
 
-当前待审快照为 v2:`build/verification/review-2026-09-27-r66-alpha-contraction-v2`。v1 快照(`review-2026-09-27-r66-alpha-contraction-v1`,commit `33653d5`)原样保留、不可改写,但不再是最终待审交付:v1 的候选 review.md 把 r65 冻结路径误写成 r64-v3 快照;其证据表述把仅覆盖原子 H_H 族的 one-hot F-order 载子见证扩大成两项算子全部族的独立重算;109 项 review materials 未含候选三件套。v2 冻结修正以上三点并直接收录候选三件套(见下),版本与科学行为不变(`0.1.0.dev40`,128 资产)。
+当前待审快照为 v3:`build/verification/review-2026-09-27-r66-alpha-contraction-v3`。v1(`review-2026-09-27-r66-alpha-contraction-v1`,commit `33653d5`)与 v2(commit `09096b3`)原样保留、不可改写,但不再是最终待审交付。v1 的候选 review.md 把 r65 冻结路径误写成 r64-v3 快照;其证据表述把仅覆盖原子 H_H 族的 one-hot F-order 载子见证扩大成两项算子全部族的独立重算;109 项 review materials 未含候选三件套。v2 修正以上三点并直接收录候选三件套,但其冻结脚本的材料校验把 `review_candidates/` 下任意 tracked 文件都放行,超出三件套的必要面;v3 收紧校验为确切结构并补回归测试(材料集合在两种规则下完全相同,均为 7 文件)。版本与科学行为在 v1→v2→v3 全程不变(`0.1.0.dev40`,128 资产)。
 
 ## 性质:两项新 operator(碰撞频率收缩家族)
 
@@ -32,12 +32,12 @@
 - r66: collision frequency contraction family(2 项),128 资产 dev40
 - 版本 `0.1.0.dev39` → `0.1.0.dev40`
 
-## v2 预审修正(科学行为与版本不变)
+## v2/v3 预审修正(科学行为与版本不变)
 
 - `review_candidates/2026-09-27-alpha-contraction/review.md`:r65 冻结路径改为 `build/verification/review-2026-09-26-r65-terminal-molecular-v6`(commit `228a2d6`);Evidence 段收窄为"实际直接测试 + SHA-pinned 保存 formal 历史复放",保留外部物理缺口。
 - 两份 exact doc(`catalog/examples` 与 proposal 副本字节一致):`evidence_ceiling` 同步收窄,不宣称全族独立重算。
 - `test_alpha_contraction.py` 注释修正:nvr=3 时 F-order flat 3 为 `(0,1)` 而非 `(1,1)`(含 `fH_labelled[0,1,0]`),断言未动。
-- `scripts/freeze_review_version.py`:review materials 在 tracked `docs/*.md` 之外接受 `review_candidates/` 文件;v2 快照直接收录候选三件套 7 文件(`review.md`、两份代码、两份测试、两份 exact doc)。
+- `scripts/freeze_review_version.py`:review materials 在 tracked `docs/*.md` 之外,仅接受确切候选结构——`review_candidates/<batch>/review.md` 与 `review_candidates/<batch>/proposal/*.py|*.json`;`tests/test_review_version_freeze.py` 补接受 7 类当前文件与拒绝其他候选路径/扩展名的回归;clean Git、仓内路径、重复拒绝、复制后摘要复核不变。v3 快照直接收录候选三件套 7 文件(`review.md`、两份代码、两份测试、两份 exact doc)。
 - 材料/证据同步:候选材料索引 r66 批次摘要更新(脚本逐条核验 7/7 吻合;更旧批次的既有漂移不属于本批)。
 
 ## 验证(全部记录于 `build/test-evidence-r66.md`)

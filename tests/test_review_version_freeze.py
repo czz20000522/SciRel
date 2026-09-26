@@ -189,6 +189,84 @@ def test_freeze_rejects_review_material_changed_while_copying(
         freeze_module.freeze_review_version(**inputs, review_materials=[material])
 
 
+def _commit_candidate_files(repo: Path, files: list[Path]) -> None:
+    for path in files:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("candidate bytes\n", encoding="utf-8")
+    _git(repo, "add", ".")
+    _git(
+        repo, "-c", "user.name=SciRel Test", "-c", "user.email=test@example.invalid",
+        "commit", "-m", "candidate materials",
+    )
+
+
+def test_freeze_accepts_candidate_three_piece_set_materials(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    inputs = _inputs(tmp_path, monkeypatch)
+    repo = inputs["review_dossier"].parent
+    batch = repo / "review_candidates" / "2026-09-27-alpha-contraction"
+    files = [
+        batch / "review.md",
+        batch / "proposal" / "atomic_alpha_contraction.py",
+        batch / "proposal" / "molecular_alpha_contraction.py",
+        batch / "proposal" / "test_alpha_contraction.py",
+        batch / "proposal" / "test_alpha_contraction_l1.py",
+        batch / "proposal" / "scirel.kinetic.atomic-alpha-contraction.json",
+        batch / "proposal" / "scirel.kinetic.molecular-alpha-contraction.json",
+    ]
+    _commit_candidate_files(repo, files)
+    inputs["review_materials"] = files
+
+    manifest = freeze_module.freeze_review_version(**inputs)
+    archived = tmp_path / "detached-review"
+    inputs["output_dir"].rename(archived)
+    repo.rename(tmp_path / "source-away")
+
+    assert len(manifest["review_materials"]) == 7
+    entries = {entry["path"]: entry for entry in manifest["review_materials"]}
+    for source in files:
+        entry = entries[source.relative_to(repo).as_posix()]
+        snapshot = archived / entry["snapshot_path"]
+        assert snapshot.is_file()
+        assert entry["sha256"] == "sha256:" + hashlib.sha256(snapshot.read_bytes()).hexdigest()
+
+
+@pytest.mark.parametrize("relative", [
+    "review_candidates/2026-09-27-alpha-contraction/README.md",
+    "review_candidates/2026-09-27-alpha-contraction/notes/review.md",
+    "review_candidates/2026-09-27-alpha-contraction/proposal/extra.md",
+    "review_candidates/2026-09-27-alpha-contraction/proposal/nested/x.py",
+    "review_candidates/2026-09-27-alpha-contraction/proposal/data.csv",
+    "review_candidates/proposal/x.py",
+    "other/review_candidates/2026-09-27-alpha-contraction/review.md",
+])
+def test_freeze_rejects_candidate_material_outside_declared_shape(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, relative: str
+) -> None:
+    inputs = _inputs(tmp_path, monkeypatch)
+    repo = inputs["review_dossier"].parent
+    _commit_candidate_files(repo, [repo / relative])
+    inputs["review_materials"] = [repo / relative]
+
+    with pytest.raises(ValueError, match="candidate batch review.md"):
+        freeze_module.freeze_review_version(**inputs)
+
+
+def test_freeze_rejects_untracked_candidate_material(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    inputs = _inputs(tmp_path, monkeypatch)
+    repo = inputs["review_dossier"].parent
+    draft = repo / "review_candidates" / "2026-09-27-alpha-contraction" / "review.md"
+    draft.parent.mkdir(parents=True)
+    draft.write_text("draft\n", encoding="utf-8")
+    inputs["review_materials"] = [draft]
+
+    with pytest.raises(ValueError, match="clean Git worktree"):
+        freeze_module.freeze_review_version(**inputs)
+
+
 def test_freeze_rejects_committed_document_change_without_rebuilt_catalog(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
