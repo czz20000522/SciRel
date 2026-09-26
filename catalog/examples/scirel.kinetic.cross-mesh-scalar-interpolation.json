@@ -6,7 +6,7 @@
     "en": "Cross-mesh scalar interpolation",
     "zh": "跨网格标量插值"
   },
-  "summary": "Interpolate a 1-D spatial scalar profile from one species' spatial mesh onto another's: in-range mesh_b nodes take the scipy linear interpolation of the profile, out-of-range nodes stay exactly zero (the source's phase-space contract), with the optional source boundary warnings.",
+  "summary": "Interpolate a 1-D spatial scalar profile from one species' spatial mesh onto another's: in-range mesh_b nodes take the scipy linear interpolation of the profile, out-of-range nodes stay exactly zero (the source's phase-space contract), with the optional source boundary warnings. The in-range mesh_b nodes must form one contiguous block; a non-contiguous selection fails closed with a named contract error (the saved arm raises a raw numpy broadcast error there; declared local divergence).",
   "taxonomy": [
     "kinetic",
     "neutral-transport",
@@ -23,7 +23,7 @@
     "model": "the saved formal implementation of the N5 H<->H2 seam interpolation",
     "geometry": "one-dimensional spatial meshes",
     "coordinates": "nodes in m; profile in the caller's units",
-    "boundary": "nonempty finite one-dimensional arrays; xa strictly increasing and aligned to fa; at least one in-range xb node; finite output",
+    "boundary": "nonempty finite one-dimensional arrays; xa strictly increasing and aligned to fa; at least one in-range xb node; finite output The in-range mesh_b nodes must form one contiguous block.",
     "assumptions": [
       "The out-of-range zero fill is the saved physics contract (interpolations outside the phase space are set to zero), not a defect.",
       "Linear interpolation only; higher-order or conservative remaps are excluded.",

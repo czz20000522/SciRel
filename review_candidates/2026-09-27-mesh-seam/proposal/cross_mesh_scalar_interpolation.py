@@ -14,11 +14,18 @@ interpolation of the profile; out-of-range mesh_b nodes stay exactly zero
 zero); the optional ``do_warn`` mode reproduces the source's boundary
 warnings without changing the output.
 
-**No repair is claimed.**  The saved formal implementation enforces its
-declared contract (non-empty finite one-dimensional arrays, strictly
-increasing ``xa``, fa/xa length agreement, at least one in-range mesh_b node,
-finite output) and is reproduced bit for bit, messages included.  The
-out-of-range zero fill is the saved physics contract, not a defect.
+**No repair is claimed on the declared legal domain; one documented local
+divergence exists outside it.**  On the legal domain (contiguous in-range
+mesh_b selection) the saved formal implementation's contract is enforced
+and its behavior is reproduced bit for bit, messages included: non-empty
+finite one-dimensional arrays, strictly increasing ``xa``, fa/xa length
+agreement, at least one in-range mesh_b node, finite output.  The
+out-of-range zero fill is the saved physics contract, not a defect.  The
+divergence: for a non-contiguous in-range selection (unsorted mesh_b with
+holes) the saved arm raises numpy's raw broadcast error; this asset
+fail-closes first with a named contract error requiring the in-range
+mesh_b nodes to form one contiguous block.  The saved arm's raw error is
+pinned as evidence by a regression test.
 
 Evidence ceiling: this module establishes the interpolation against a
 manufactured closed-form oracle (linear profiles, exact knot reproduction,
