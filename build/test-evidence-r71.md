@@ -108,12 +108,20 @@ these digests provide the provenance linkage.
   1515 passed / 43 skipped, returncode 0): **+9** collected NBI tests.
 - Document validation, source state: **142/142**, `runtime_origin: source`,
   `examples_executed: true`.
-- Clean venv `build/venv-r71-clean` (own numpy 2.5.3 / scipy 1.18.1 /
-  pytest 9.1.1), wheel installed `--no-index --no-deps`.
-- Installed document validation: **142/142**, `runtime_origin: installed`,
-  `examples_executed: true`, subprocess returncode 0.
-- Installed full tree: **1370 passed, 197 skipped, 0 failed**, pytest
-  returncode 0 (r70: 1354 passed, 197 skipped).
+- Clean venv `build/venv-r71-clean` recreated AFTER the wheel rebuild
+  (own numpy 2.5.3 / scipy 1.18.1 / pytest 9.1.1), wheel installed
+  `--no-index --no-deps`; the installed
+  `scirel/fusion/pitch_gyro_direction.py` is the corrected 1607-byte
+  version, matching committed source. The earlier installed receipts
+  (1370/197 taken against the superseded `5fc36403...` wheel) were
+  discarded, not reused.
+- Installed document validation on the rebuilt wheel: **142/142**,
+  `runtime_origin: installed`, `examples_executed: true`, subprocess
+  returncode 0.
+- Installed full tree on the rebuilt wheel: **1370 passed, 197 skipped,
+  0 failed**, pytest returncode 0 (coincidentally the same totals as the
+  earlier superseded-wheel run; this receipt binds the new wheel by the
+  digest above and a fresh venv install).
 - Catalog `build/catalog/r71`: `complete: 142/142`, root digest
   `sha256:b7a1e31a7f23b3740b9a095857b4486118d11f6986e1ba8b15f4f193a1aa6144`
   (rebuilt at the corrected HEAD alongside the wheel; the earlier
