@@ -281,6 +281,60 @@ def test_review_material_entry_must_be_structured(tmp_path: Path):
         scope_module.review_scope(snapshot)
 
 
+def test_candidate_batch_materials_are_accepted_as_listed_by_the_freeze(tmp_path: Path):
+    """Since the r66 v2 freeze the manifest may list exact candidate-batch
+    shapes (review.md + proposal/*.py|*.json); the scope reader must accept
+    the same restricted contract the freeze script writes."""
+    snapshot = _snapshot(tmp_path / "candidate", "a" * 40, [_document("a")])
+    manifest_path = snapshot / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    accepted = []
+    for relative in (
+        "review_candidates/2026-09-27-batch/review.md",
+        "review_candidates/2026-09-27-batch/proposal/module.py",
+        "review_candidates/2026-09-27-batch/proposal/doc.json",
+        "review_candidates/2026-09-27-batch/proposal/test_module.py",
+    ):
+        material = snapshot / "review-materials" / relative
+        material.parent.mkdir(parents=True, exist_ok=True)
+        material.write_bytes(relative.encode("utf-8"))
+        accepted.append({
+            "path": relative,
+            "snapshot_path": f"review-materials/{relative}",
+            "sha256": "sha256:" + hashlib.sha256(material.read_bytes()).hexdigest(),
+        })
+    manifest["review_materials"] = accepted
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    assert scope_module.review_scope(snapshot)["review_asset_ids"] == ["a"]
+
+
+@pytest.mark.parametrize("relative", [
+    "review_candidates/2026-09-27-batch/README.md",
+    "review_candidates/2026-09-27-batch/notes/review.md",
+    "review_candidates/2026-09-27-batch/proposal/extra.md",
+    "review_candidates/2026-09-27-batch/proposal/nested/x.py",
+    "review_candidates/2026-09-27-batch/proposal/data.csv",
+    "other/review_candidates/2026-09-27-batch/review.md",
+])
+def test_candidate_material_outside_the_freeze_shape_is_rejected(tmp_path: Path, relative: str):
+    """Paths the freeze script would refuse must also fail closed here; the
+    consumer reuses the freeze predicate instead of a second diverging rule."""
+    snapshot = _snapshot(tmp_path / "candidate", "a" * 40, [_document("a")])
+    material = snapshot / "review-materials" / relative
+    material.parent.mkdir(parents=True, exist_ok=True)
+    material.write_bytes(b"x")
+    manifest_path = snapshot / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["review_materials"] = [{
+        "path": relative,
+        "snapshot_path": f"review-materials/{relative}",
+        "sha256": "sha256:" + hashlib.sha256(material.read_bytes()).hexdigest(),
+    }]
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="invalid material entry"):
+        scope_module.review_scope(snapshot)
+
+
 def test_tampered_catalog_partition_is_rejected(tmp_path: Path):
     snapshot = _snapshot(tmp_path / "candidate", "a" * 40, [_document("a")])
     path = snapshot / "catalog/records/a.json"

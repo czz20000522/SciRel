@@ -18,6 +18,7 @@ from typing import Any
 import zipfile
 
 from finalize_release import _validate_catalog
+from freeze_review_version import _is_candidate_material
 from select_affected_tests import ROOT, select
 
 
@@ -68,10 +69,15 @@ def _read_snapshot(root: Path) -> tuple[dict[str, Any], dict[str, dict[str, Any]
         if not isinstance(entry, dict):
             raise ValueError("review snapshot has an invalid material entry")
         relative = entry.get("path")
+        # Same restricted material contract as the freeze script: tracked
+        # docs/*.md files plus exact candidate-batch shapes
+        # (review_candidates/<batch>/review.md, <batch>/proposal/*.py|*.json).
         if (
             not isinstance(relative, str)
-            or not relative.startswith("docs/")
-            or not relative.endswith(".md")
+            or not (
+                (relative.startswith("docs/") and relative.endswith(".md"))
+                or _is_candidate_material(relative)
+            )
             or relative in material_paths
             or entry.get("snapshot_path") != f"review-materials/{relative}"
         ):
