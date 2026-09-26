@@ -173,3 +173,87 @@ def test_the_saved_rejection_behavior_agrees_exactly():
         saved_cons.reduce_qh2_total_conservation_diagnostic(np.linspace(0, 1, 3), np.full(3, np.nan), np.ones(3))
     with pytest.raises(ValueError):
         reduce_qh2_total_conservation_diagnostic(np.linspace(0, 1, 3), np.full(3, np.nan), np.ones(3))
+
+def test_terminal_pressure_temperature_matches_saved_bit_for_bit():
+    """Saved-arm parity for the terminal pressure/temperature reduction."""
+    saved = _saved("终态分子压力与温度归约")
+    vr = np.linspace(0.5, 2.0, 4)
+    vx = np.linspace(-1.5, 1.5, 6)
+    dvx = np.full(6, 0.5)
+    weight = np.ones(4)
+    dist = np.exp(-(vr[:, None] ** 2 + vx[None, :] ** 2))[:, :, None] * np.ones((4, 6, 3))
+    saved_result = saved.reduce_terminal_molecular_pressure_temperature(
+        vr, vx, 2.0, 5000.0, dist, weight, dvx
+    )
+    port_result = reduce_terminal_molecular_pressure_temperature(
+        vr, vx, 2.0, 5000.0, dist, weight, dvx
+    )
+    for key in saved_result:
+        np.testing.assert_array_equal(saved_result[key], port_result[key])
+
+
+
+def test_terminal_heat_flux_matches_saved_bit_for_bit():
+    """Saved-arm parity for the terminal heat flux reduction."""
+    saved = _saved("终态分子随机与总热通量归约")
+    vr = np.linspace(0.5, 2.0, 4)
+    vx = np.linspace(-1.5, 1.5, 6)
+    dvx = np.full(6, 0.5)
+    weight = np.ones(4)
+    dist = np.exp(-(vr[:, None] ** 2 + vx[None, :] ** 2))[:, :, None] * np.ones((4, 6, 3))
+    saved_result = saved.reduce_terminal_molecular_heat_flux(
+        vr, vx, 2.0, 5000.0, dist, weight, dvx
+    )
+    port_result = reduce_terminal_molecular_heat_flux(
+        vr, vx, 2.0, 5000.0, dist, weight, dvx
+    )
+    for key in saved_result:
+        np.testing.assert_array_equal(saved_result[key], port_result[key])
+
+
+
+def test_terminal_energy_transfer_matches_saved_bit_for_bit():
+    """Saved-arm parity for the terminal energy transfer reduction."""
+    saved = _saved("终态分子能量转移率归约")
+    vr = np.linspace(0.5, 2.0, 4)
+    vx = np.linspace(-1.5, 1.5, 6)
+    dvx = np.full(6, 0.5)
+    weight = np.ones(4)
+    nx = 3
+    dist = np.exp(-(vr[:, None] ** 2 + vx[None, :] ** 2))[:, :, None] * np.ones((4, 6, nx))
+    rhs = np.ones((4, 6, nx))
+    ext_src = np.ones(nx)
+    saved_result = saved.reduce_terminal_molecular_energy_transfer(
+        vr, vx, 2.0, 5000.0, dist, rhs, weight, dvx, ext_src
+    )
+    port_result = reduce_terminal_molecular_energy_transfer(
+        vr, vx, 2.0, 5000.0, dist, rhs, weight, dvx, ext_src
+    )
+    for key in saved_result:
+        np.testing.assert_array_equal(saved_result[key], port_result[key])
+
+
+
+def test_terminal_ion_state_matches_saved_bit_for_bit():
+    """Saved-arm parity for the terminal ion state reduction."""
+    saved = _saved("终态分子离子密度与温度归约")
+    nx = 3
+    molecular_density = np.full(nx, 1.0e18)
+    neutral_density = np.full(nx, 5.0e17)
+    ion_temperature = np.full(nx, 3.0)
+    mass_ratio = 2.0
+    ionization_rate = np.full(nx, 1.0e-14)
+    reaction_rate = np.full((nx, 11), 5.0e-15)
+    loss_frequency = np.full(nx, 100.0)
+    saved_result = saved.reduce_terminal_molecular_ion_state(
+        molecular_density, neutral_density, ion_temperature,
+        mass_ratio, ionization_rate, reaction_rate, loss_frequency,
+    )
+    port_result = reduce_terminal_molecular_ion_state(
+        molecular_density, neutral_density, ion_temperature,
+        mass_ratio, ionization_rate, reaction_rate, loss_frequency,
+    )
+    for key in saved_result:
+        np.testing.assert_array_equal(saved_result[key], port_result[key])
+
+

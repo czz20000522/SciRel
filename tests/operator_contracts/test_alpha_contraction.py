@@ -70,8 +70,8 @@ def test_molecular_contraction_rejects_misaligned_shapes():
 
 def test_atomic_contraction_discriminating_inputs_with_asymmetric_sig():
     """Use asymmetric SIG matrices, distinct distributions, and a Fortran-order
-    carrier mapping witness (one-hot SIG + unique F-order node values)."""
-    nvr, nvx, nx = 2, 3, 1
+    carrier mapping witness (one-hot SIG[5,3]=1 + F-order labelled fH)."""
+    nvr, nvx, nx = 3, 4, 1
     N = nvr * nvx
     rng = np.random.default_rng(61)
     vr = np.linspace(0.5, 2.0, nvr)
@@ -94,20 +94,22 @@ def test_atomic_contraction_discriminating_inputs_with_asymmetric_sig():
     assert not np.array_equal(result["Alpha_CX"], result["Alpha_H_H"])
     assert not np.array_equal(result["Alpha_H_H"], result["Alpha_H_H2"])
 
-    # F-order carrier witness: SIG=eye, fH nodes labelled by F-order flat index
-    SIG_eye = np.eye(N)
+    # F-order carrier witness: one-hot SIG[5,3]=1, fH nodes labelled by F-order
+    # flat index. Alpha_H_H output at flat 5 equals fH_flat[3].
+    # F-order: flat 5 -> (2,1), flat 3 -> (1,1). C-order would map differently.
+    SIG_onehot = np.zeros((N, N))
+    SIG_onehot[5, 3] = 1.0
     fH_labelled = np.arange(N, dtype=float).reshape(nvr, nvx, nx, order="F")
-    r_eye = contract_atomic_hydrogen_alpha_frequencies(
-        SIG_eye, SIG_eye, SIG_eye, SIG_eye, fi_hat, ni, fH2, fH_labelled
+    r_onehot = contract_atomic_hydrogen_alpha_frequencies(
+        SIG_onehot, SIG_onehot, SIG_onehot, SIG_onehot, fi_hat, ni, fH2, fH_labelled
     )
-    # Alpha_H_H is the identity of fH under F-order: out.flat = fH.flat (F-order)
-    np.testing.assert_array_equal(
-        r_eye["Alpha_H_H"][:, :, 0].ravel(order="F"), np.arange(N, dtype=float)
-    )
-    # this also proves fH2 is NOT the input for Alpha_H_H (fH2 is nonzero)
-    assert not np.array_equal(
-        r_eye["Alpha_H_H2"][:, :, 0], np.zeros((nvr, nvx))
-    )
+    # F-order: out[2,1,0] = SIG_onehot[5,3] * fH_flat[3] = 1.0 * fH_labelled[1,1,0] = 3.0
+    assert r_onehot["Alpha_H_H"][2, 1, 0] == 3.0
+    # all other output positions are zero
+    r_flat = r_onehot["Alpha_H_H"][:, :, 0].ravel(order="F")
+    r_flat[5] = 0.0  # exclude the one-hot result
+    np.testing.assert_array_equal(r_flat, np.zeros(N))
+
 def test_molecular_contraction_ni_correct_both_branches():
     """Cover both ni_correct branches with distinct results."""
     nvr, nvx, nx = 3, 4, 2
