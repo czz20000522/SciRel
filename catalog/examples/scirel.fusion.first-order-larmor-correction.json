@@ -1,0 +1,218 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.first-order-larmor-correction",
+  "kind": "operator",
+  "title": {
+    "en": "First-order Larmor guiding-center to particle correction",
+    "zh": "一阶Larmor引导中心修正"
+  },
+  "summary": "Map one guiding-center state to a particle state under the source's FLR orders 0, 1 or 2: identity, the m/(qB) v-b gyro-radius displacement, or the same displacement scaled by the source's first-order magnetic-field correction evaluated from a caller-supplied cylindrical magnetic state.",
+  "taxonomy": [
+    "fusion",
+    "fast-ion-diagnostics",
+    "guiding-center",
+    "larmor-radius"
+  ],
+  "aliases": [
+    "first_order_larmor_guiding_center_correction"
+  ],
+  "identity": {
+    "relation": "order 0: particle_position = guiding_center_position, radius = 0; order 1: radius = (v x b_unit) * m_amu*m_H/(q B), particle_position = position - radius; order 2: radius is scaled by scale = 1 - (v.b_unit)*(m/qB)*(b_hat.curl b_hat) - (r_cyl.grad|B|)/(2B) evaluated from the caller-supplied cylindrical magnetic state and coordinate rotation, with the source rejecting scale outside (0, 2).",
+    "direction": "guiding-center position + ion velocity + magnetic unit vector/magnitude + ion mass + FLR order (+ machine position, rotation matrix and cylindrical magnetic state for order 2) -> particle position, gyro-radius vector, gyro scale factor",
+    "definition": "The saved FIDASIM gyro_step mapping. flr_order=None reproduces the historical contract (order 1 when flr_enabled else order 0). The order-2 correction consumes 12 declared cylindrical magnetic-field and derivative components (br/bt/bz and their dr/dphi/dz derivatives) plus the coordinate-to-machine rotation matrix; it is undefined on the cylindrical axis. The source's (0, 2) scale acceptance window is preserved verbatim as fail-closed.",
+    "model": "the saved formal implementation, ported verbatim with registered non-finite output gates (see verification)",
+    "geometry": "one particle state; vector outputs in the caller's coordinate frame",
+    "coordinates": "positions in cm, velocities in cm/s, magnetic field in tesla; ion mass in amu; outputs in the caller's coordinate frame",
+    "boundary": "finite shape-(3,) vectors; unit-norm magnetic direction; positive magnetic magnitude and ion mass; integer flr_order in (0, 1, 2); order-2 requires the full cylindrical state and an off-axis machine position; outputs must remain finite (registered hardening)",
+    "assumptions": [
+      "The caller supplies a consistent cylindrical magnetic state (field components and spatial derivatives) and the coordinate-to-machine rotation; this operator validates shapes and finiteness but not geometric consistency of the supplied state.",
+      "Non-relativistic gyro motion; no drift corrections beyond the source's first-order terms.",
+      "No external physics reference is bound beyond the source closed forms."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "guiding_center_position_cm",
+      "description": "Guiding-center position in the caller's coordinate frame.",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; extreme magnitudes that overflow the final position subtraction are rejected (registered hardening)."
+    },
+    {
+      "name": "ion_velocity_cm_s",
+      "description": "Ion velocity.",
+      "units": "cm/s",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "magnetic_unit_vector",
+      "description": "Unit vector along the magnetic field.",
+      "units": "dimensionless",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite with unit norm (atol 1e-12)."
+    },
+    {
+      "name": "magnetic_magnitude_t",
+      "description": "Magnetic-field magnitude.",
+      "units": "T",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "ion_mass_amu",
+      "description": "Ion mass.",
+      "units": "amu",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "flr_enabled",
+      "description": "Historical FLR switch used when flr_order is omitted.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": false,
+      "default": true,
+      "constraints": "Interpreted as its truth value; ignored when flr_order is given."
+    },
+    {
+      "name": "flr_order",
+      "description": "Explicit FLR order (0, 1 or 2); None selects the historical 1/0 contract from flr_enabled.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": false,
+      "constraints": "Exactly int type with value 0, 1 or 2 (bools and floats rejected). Default: None (the saved contract uses None to select the historical flr_enabled path).",
+      "default": null
+    },
+    {
+      "name": "guiding_center_machine_position_cm",
+      "description": "Guiding-center position in machine coordinates (order 2).",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": false,
+      "constraints": "Finite; required for order 2; its cylindrical radius must be positive. Default: None, which means the argument is absent; required (non-None) for flr_order=2 and ignored at orders 0/1 -- passing None at order 2 raises ValueError (missing machine position).",
+      "default": null
+    },
+    {
+      "name": "coordinate_to_machine_matrix",
+      "description": "Rotation from the caller's frame to machine coordinates (order 2).",
+      "units": "dimensionless",
+      "shape": "[3,3]",
+      "dtype": "real array-like",
+      "required": false,
+      "constraints": "Finite (3, 3); required for order 2. Default: None, which means the argument is absent; required (non-None) for flr_order=2 and ignored at orders 0/1 -- passing None at order 2 raises ValueError (missing rotation matrix).",
+      "default": null
+    },
+    {
+      "name": "cylindrical_magnetic_state",
+      "description": "Cylindrical magnetic state: br_t, bt_t, bz_t and the nine dr/dphi/dz derivatives (12 named scalars, order 2).",
+      "units": "T and T/cm, T/rad as labeled",
+      "shape": "mapping of 12 named scalars",
+      "dtype": "real",
+      "required": false,
+      "constraints": "All 12 named keys present and finite; required for order 2. Default: None, which means the argument is absent; required (non-None, with all 12 named keys) for flr_order=2 and ignored at orders 0/1 -- passing None at order 2 raises ValueError (missing cylindrical state).",
+      "default": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "particle_position_cm",
+      "description": "Particle position after the gyro displacement.",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite (registered hardening: the position-radius subtraction can overflow for finite extreme inputs and raises instead of returning Inf)."
+    },
+    {
+      "name": "gyro_radius_vector_cm",
+      "description": "Gyro-radius vector (zero at order 0).",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite (registered hardening); perpendicular to b_unit at order 1."
+    },
+    {
+      "name": "gyro_scale_factor",
+      "description": "FLR scale factor (1 at orders 0 and 1).",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite; strictly inside (0, 2) at order 2 by the source's acceptance window."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "A guiding-center state with consistent velocity and magnetic geometry.",
+      "For order 2: a complete cylindrical magnetic state, machine position and rotation matrix supplied by the caller."
+    ],
+    "supported": [
+      "Per-particle guiding-center to particle mapping under the source's FLR orders 0/1/2 for fast-ion diagnostics."
+    ],
+    "excluded": [
+      "Orbit following, drift precession beyond the source's first-order terms, NBI birth sampling, neutron emission weighting (scirel.fusion.dd-neutron-emission-anisotropy), and relativistic kinematics."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when any vector is non-finite or misshaped, when the magnetic direction is not unit or the magnitude/mass non-positive, when flr_order is not exactly 0/1/2, when order 2 lacks the machine position, rotation matrix or any of the 12 cylindrical state keys, when the machine position lies on the cylindrical axis, or when the order-2 scale falls outside (0, 2).",
+    "runtime_failure": "Raises ValueError if any returned field is non-finite for finite but extreme input magnitudes (registered hardening; the saved implementation would return Inf silently).",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM 一阶Larmor引导中心修正 package, source anchor FIDASIM gyro_step, as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 60fb8ad0f2e9cf6ef5cc5f53bb215a1857fd184ff49813f25bc1cf64516fce7b (reference record; the test suite performs no automated drift detection). Arithmetic ported verbatim; the radius and returned-field non-finite gates are registered hardenings. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.first_order_larmor_correction",
+      "symbol": "first_order_larmor_guiding_center_correction",
+      "signature": "first_order_larmor_guiding_center_correction(*, guiding_center_position_cm, ion_velocity_cm_s, magnetic_unit_vector, magnetic_magnitude_t, ion_mass_amu, flr_enabled=True, flr_order=None, guiding_center_machine_position_cm=None, coordinate_to_machine_matrix=None, cylindrical_magnetic_state=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev44",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Order-1 mapping on a straight uniform field: the gyro radius is the m/(qB) v-b cross product and the particle position is displaced by minus it.",
+    "code": "import numpy as np\nfrom scirel.fusion import first_order_larmor_guiding_center_correction\nout = first_order_larmor_guiding_center_correction(\n    guiding_center_position_cm=np.array([10.0, 20.0, 30.0]),\n    ion_velocity_cm_s=np.array([1e7, 0.0, 0.0]),\n    magnetic_unit_vector=np.array([0.0, 0.0, 1.0]),\n    magnetic_magnitude_t=2.0, ion_mass_amu=2.0, flr_order=1)\nexpected = np.cross(np.array([1e7, 0.0, 0.0]), np.array([0.0, 0.0, 1.0])) * (2.0 * 1.660539040e-27 / (2.0 * 1.60217733e-19))\nnp.testing.assert_array_equal(out[\"gyro_radius_vector_cm\"], expected)\nnp.testing.assert_array_equal(out[\"particle_position_cm\"], np.array([10.0, 20.0, 30.0]) - expected)\nassert out[\"gyro_scale_factor\"] == 1.0",
+    "expected": "Order-1 displacement equals the cross-product gyro radius; order 0 is the identity; an overflowing position-radius subtraction raises ValueError."
+  },
+  "verification": {
+    "scope": [
+      "Source gyro mapping against independent closed-form recomputation.",
+      "Branch, boundary and failure contracts, including the registered hardenings."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_fast_ion_kinematics.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests establish order 0 as the identity, the order-1 radius as the exact m/(qB) cross product with perpendicularity and position displacement, the order-2 scale's structural properties (uniform field gives exactly 1; the recorded extreme-gradient case lands outside the source's (0, 2) window and is rejected), the historical flr_enabled contract, and the fail-closed input contracts including the recorded position-subtraction overflow chain (finite position 1e308 with finite radius about -1.04e308 raises instead of returning Inf). Environment-gated saved-arm parity is not replayed here; the saved bundle ships package-level oracles rather than a pinned source-runtime replay target, and the recorded implementation digest provides the provenance linkage. No test establishes the mapping against an external physics reference beyond the source closed forms.",
+    "known_limitations": [
+      "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+      "The order-2 correction consumes a caller-supplied cylindrical magnetic state whose geometric consistency (same field, same point) is not validated by this operator.",
+      "The registered output gates (radius and returned fields) deliberately diverge from the saved implementation's silent Inf/NaN returns on overflow boundaries.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

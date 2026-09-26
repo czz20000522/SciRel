@@ -25,6 +25,18 @@ needs a successor, not a silent edit.
 
 
 
+
+## Batch r70: FIDASIM fast-ion kinematics family (two operators; DD lab energy reused, no new identity)
+
+Directory: `review_candidates/2026-09-27-fast-ion-kinematics/`
+Successor of batch r69: the r69 candidate files below keep their frozen r69 v2 bytes and digests; this batch binds the new bytes.
+- `review.md` -- sha256 `c90bd63ec45e981d859a9381cd7a6068eb4c612dc17d14bfb6e71c035b7bc6ed`
+- `proposal/dd_neutron_kinematic_anisotropy.py` -- sha256 `713809f148888d7b9dbb16d262e9cb3ef91ae1a406c3335c8c0db1573d7baa03`
+- `proposal/first_order_larmor_correction.py` -- sha256 `9d9cbf88b2dd4b4b51fbe6123429fc6184eda50a90e3489f5a0f8eda3fbc2acb`
+- `proposal/scirel.fusion.dd-neutron-emission-anisotropy.json` -- sha256 `b84312ef8bde0524ea9f926270716d1b1a55d4e5cf25ec35ead6ecacdbaeeaa3`
+- `proposal/scirel.fusion.first-order-larmor-correction.json` -- sha256 `5bbd776e7a91dc84b93e2ee1cc5a58ff739775d952e6338d9cf4154d4719a494`
+- `proposal/test_fast_ion_kinematics.py` -- sha256 `d25903db3e23cf9fd95523d9ca3d8aac0b27fb56c533382dca2994306a4f6e14`
+
 ## Batch r69: GSEQ filament-coil Green family (three operators)
 
 Directory: `review_candidates/2026-09-27-gseq-green/`

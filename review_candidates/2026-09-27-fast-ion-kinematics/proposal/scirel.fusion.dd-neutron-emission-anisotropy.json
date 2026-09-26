@@ -1,0 +1,141 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.dd-neutron-emission-anisotropy",
+  "kind": "operator",
+  "title": {
+    "en": "D-D neutron emission anisotropy factor",
+    "zh": "DD中子运动学各向异性"
+  },
+  "summary": "Map reactant-ion, neutron and plasma-rotation velocities to the D-D neutron emission anisotropy factor by Brown-Jarmie coefficient-table interpolation and directional normalization for one emission event.",
+  "taxonomy": [
+    "fusion",
+    "neutron-kinematics",
+    "fast-ion-diagnostics"
+  ],
+  "aliases": [
+    "dd_neutron_kinematic_anisotropy"
+  ],
+  "identity": {
+    "relation": "kappa = (a + b*cos(theta)^2 + c*cos(theta)^4) / (a + b/3 + c/5), where (a, b, c) interpolate the frozen Brown-Jarmie coefficient tables (with the source's correction column) at the ion source energy ehalf = 0.5 * scale * |v1 - vrot|^2, and theta is the CM-to-lab emission angle derived from the center-of-mass velocity, the neutron direction and the source's k0 kinematic factor.",
+    "direction": "reactant-ion velocity + neutron velocity + plasma rotation velocity + velocity-squared-to-keV scale -> scalar anisotropy factor kappa",
+    "definition": "The saved FIDASIM get_ddnhe_anisotropy mapping (fidasim.f90:10994-11078). The source's 1-D table interpolator is reproduced verbatim including its array-overload behavior of using the first table spacing as a uniform grid on a non-uniform energy table. The source fidasim.f90 uses the proton mass constant (H1_amu), not the neutral atomic-hydrogen mass, in the kinematic scaling; preserved. The ion source energy at or above the table top (116.909 keV) has no valid interpolation interval and is rejected fail-closed.",
+    "model": "the saved formal implementation, ported verbatim with a non-finite output gate (registered hardening)",
+    "geometry": "one emission event; scalar output",
+    "coordinates": "velocity vectors in cm/s, axis order (x, y, z); the velocity-squared scale in keV amu^-1 (cm/s)^-2; output dimensionless",
+    "boundary": "finite velocity vectors; positive scale; ion source energy below the table top: the general domain condition is 0.5*scale*|v1 - vrot|^2 < 116.909 keV, i.e. |v1 - vrot| < sqrt(2*116.909/scale); the anisotropy is bounded around 1 by the table content, never clamped",
+    "assumptions": [
+      "The Brown-Jarmie table and correction column are frozen constants of the saved source, not caller inputs.",
+      "The non-relativistic two-body kinematics of the D(d,n)3He branch; no relativistic correction is claimed.",
+      "No external nuclear-data reference is bound beyond the frozen table: the saved package records no validation_oracle_gap beyond source anchoring."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "ion_velocity_cm_s",
+      "description": "Reactant-ion velocity vector.",
+      "units": "cm/s",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; axis order (x, y, z). Its magnitude against plasma_rotation_cm_s determines the ion source energy, which must stay below the Brown-Jarmie table top."
+    },
+    {
+      "name": "neutron_velocity_cm_s",
+      "description": "Neutron velocity vector (emission direction carrier).",
+      "units": "cm/s",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; only its direction enters the angle algebra (extreme magnitudes overflow the norms but are contained by the angle fallback; see verification)."
+    },
+    {
+      "name": "plasma_rotation_cm_s",
+      "description": "Plasma rotation velocity vector.",
+      "units": "cm/s",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "velocity_squared_to_kev_per_amu",
+      "description": "Conversion factor from squared speed to keV per amu.",
+      "units": "keV amu^-1 (cm/s)^-2",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "anisotropy_factor",
+      "description": "D-D neutron emission anisotropy factor kappa.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and positive on accepted inputs; bounded around 1 by the table content; never clamped; a non-finite result raises (registered hardening)."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "One D(d,n)3He emission event with finite reactant, neutron and rotation velocities.",
+      "The ion source energy (ehalf) must lie below the frozen Brown-Jarmie table top."
+    ],
+    "supported": [
+      "Per-event D-D neutron emission anisotropy weighting for fast-ion diagnostics."
+    ],
+    "excluded": [
+      "The D-D neutron lab-energy relation (covered by scirel.fusion.dd-neutron-lab-energy), neutron spectrum binning, Monte Carlo sampling, the D-T and D-He3 branches' angular distributions, and relativistic kinematics."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when any velocity vector is non-finite or not shape (3,), when the scale is non-finite or non-positive, or when the ion source energy reaches the Brown-Jarmie table top (no valid upper interpolation interval).",
+    "runtime_failure": "Raises ValueError if the anisotropy evaluates to a non-finite value (registered hardening; on the declared domain the angle algebra's fallback contains norm overflow).",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM DD中子运动学各向异性 package, source anchor fidasim.f90:10994-11078, as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 f3bb91df84e8a10af9f0725a64f602c1d37a7362ede8b12f994b1a1e6831c16a (reference record; the test suite performs no automated drift detection). Arithmetic ported verbatim; a non-finite output gate is registered. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests",
+      "frozen Brown-Jarmie coefficient table"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.dd_neutron_kinematic_anisotropy",
+      "symbol": "dd_neutron_kinematic_anisotropy",
+      "signature": "dd_neutron_kinematic_anisotropy(*, ion_velocity_cm_s, neutron_velocity_cm_s, plasma_rotation_cm_s, velocity_squared_to_kev_per_amu)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev44",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate the anisotropy on the saved package's forward probe and reject a source energy beyond the table top (the rejected probe's ehalf = 200 keV exceeds the 116.909 keV table top).",
+    "code": "from scirel.fusion import dd_neutron_kinematic_anisotropy\nkappa = dd_neutron_kinematic_anisotropy(\n    ion_velocity_cm_s=[2e8, 0, 0],\n    neutron_velocity_cm_s=[1, 0, 0],\n    plasma_rotation_cm_s=[0, 0, 0],\n    velocity_squared_to_kev_per_amu=1e-15)\nassert abs(kappa - 1.3312066426953741) < 1e-12 * kappa\ntry:\n    dd_neutron_kinematic_anisotropy(\n        ion_velocity_cm_s=[100, 0, 0],\n        neutron_velocity_cm_s=[0, 1, 0],\n        plasma_rotation_cm_s=[-100, 0, 0],\n        velocity_squared_to_kev_per_amu=0.01)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError(\"source energy at the table top must be rejected\")",
+    "expected": "The forward probe reproduces the frozen value to 1e-12 relative; a source energy beyond the Brown-Jarmie table top raises ValueError."
+  },
+  "verification": {
+    "scope": [
+      "Source table interpolation and angle algebra against the saved formal implementation.",
+      "Input, boundary and failure contracts."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_fast_ion_kinematics.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests establish the forward probe value from the saved package (rtol 1e-14), the rotational symmetry of the anisotropy in the transverse neutron direction, positivity and finiteness over in-domain random fixtures, the upper-table rejection (including the extreme-ion-velocity overflow path into it), the documented containment of norm overflow in the angle algebra's costheta fallback, and the fail-closed input contracts. Environment-gated saved-arm parity is not replayed here; the saved bundle ships package-level oracles rather than a pinned source-runtime replay target, and the frozen forward probe plus the recorded implementation digest provide the provenance linkage. No test establishes the anisotropy against an external nuclear-data reference beyond the frozen table.",
+    "known_limitations": [
+      "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+      "The Brown-Jarmie table bounds the valid ion source energy (ehalf < 116.909 keV); inputs beyond it are rejected, not extrapolated.",
+      "The source interpolator's uniform-spacing assumption on a non-uniform table is reproduced verbatim as recorded source behavior, not presented as an accurate interpolation.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

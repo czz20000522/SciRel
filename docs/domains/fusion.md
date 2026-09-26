@@ -6,8 +6,10 @@
 
 - [Bosch-Hale 热反应率](../../catalog/examples/scirel.fusion.bosch-hale-reactivity.json)：按四个反应通道，以离子温度求 Maxwellian `<sigma v>`。输入为 keV，输出为 `m^3/s`。这是局部反应率，不处理燃料组成、密度、反应功率或快离子能量沉积。
 - [DD 中子实验室能量](../../catalog/examples/scirel.fusion.dd-neutron-lab-energy.json)：从两个 D 离子速度和探测方向计算 D(d,n)3He 中子实验室动能。这是非相对论二体运动学，不提供反应率、角分布权重或谱强度。
+- [DD 中子发射各向异性因子](../../catalog/examples/scirel.fusion.dd-neutron-emission-anisotropy.json)：按 Brown-Jarmie 冻结系数表逐事件把反应物/中子/旋转速度映射为各向异性因子。与上条同源 FIDASIM 但关系不同（能量 vs 角分布归一），输入域受表顶约束（一般条件 `0.5*scale*|v1-vrot|^2 < 116.909 keV`）。
+- [一阶 Larmor 引导中心修正](../../catalog/examples/scirel.fusion.first-order-larmor-correction.json)：按源 FLR 0/1/2 阶把引导中心状态映射为粒子状态；order-2 消费调用方供给的 12 项柱坐标磁场态。同属 FIDASIM 快离子运动学链，但合同独立于前两条。
 
-两个关系可能参与同一上层诊断，但目前不存在已审核的公共组合图把它们连接起来。DT 功率源项、alpha 电子/离子沉积、快离子减速、燃料/杂质密度与截面仍属待整合能力；不能仅凭这两条关系推断这些功能已具备。
+两个关系可能参与同一上层诊断，但目前不存在已审核的公共组合图把它们连接起来。DT 功率源项、alpha 电子/离子沉积、快离子减速、燃料/杂质密度与截面仍属待整合能力；不能仅凭这些关系推断这些功能已具备。
 
 ## 模型条件与证据
 
