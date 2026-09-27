@@ -36,6 +36,16 @@ def test_operator_change_selects_only_its_contract_and_dependent_graphs():
     assert "tests/operator_contracts/test_dense_axisymmetric_green.py" not in result["test_paths"]
 
 
+def test_cylindrical_quadrature_change_selects_distribution_handoff():
+    result = select("src/scirel/kinetic/cylindrical_velocity_quadrature.py")
+
+    assert result["full_suite_required"] is False
+    assert {
+        "tests/operator_contracts/test_cylindrical_velocity_quadrature.py",
+        "tests/operator_contracts/test_cross_mesh_distribution.py",
+    } <= set(result["test_paths"])
+
+
 def test_nested_task_graph_dependents_are_selected_transitively():
     result = select("src/scirel/closures/reduced_hall_drift.py")
 
@@ -429,8 +439,8 @@ def test_current_asset_index_unions_legacy_samples_and_exact_documents():
     namespace = runpy.run_path(str(SELECTOR))
     assets = namespace["_load_assets"]()
 
-    assert len(assets) == 77
-    assert len({asset.public_callable for asset in assets}) == 77
+    assert len(assets) == 78
+    assert len({asset.public_callable for asset in assets}) == 78
 
 
 def test_catalog_asset_keeps_every_declared_direct_test(tmp_path):
