@@ -23,6 +23,7 @@ from scirel.diagnostics.observation_residuals import reduce_observation_residual
 from scirel.diagnostics.parallel_pressure_residual import compute_parallel_pressure_residual
 from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum
 from scirel.kinetic.plasma_dispersion import evaluate_plasma_dispersion
+from scirel.kinetic.bessel_gamma import evaluate_bessel_gamma
 from scirel.field.poloidal_field_magnitude import compute_poloidal_field_magnitude
 from scirel.field.permanent_ring_filaments import discretize_permanent_ring
 from scirel.diagnostics.firehose_mirror_margins import compute_firehose_mirror_margins
@@ -161,6 +162,13 @@ def test_plasma_dispersion_is_exported_from_both_public_namespaces():
     assert scirel.kinetic.evaluate_plasma_dispersion is evaluate_plasma_dispersion
     assert "evaluate_plasma_dispersion" in scirel.__all__
     assert "evaluate_plasma_dispersion" in scirel.kinetic.__all__
+
+
+def test_bessel_gamma_is_exported_from_both_public_namespaces():
+    assert scirel.evaluate_bessel_gamma is evaluate_bessel_gamma
+    assert scirel.kinetic.evaluate_bessel_gamma is evaluate_bessel_gamma
+    assert "evaluate_bessel_gamma" in scirel.__all__
+    assert "evaluate_bessel_gamma" in scirel.kinetic.__all__
 
 
 def test_poloidal_field_and_magnitude_smoke():
