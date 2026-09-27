@@ -21,6 +21,8 @@
 - [弹性重生散射源聚合](../../catalog/examples/scirel.kinetic.elastic-regeneration-aggregation.json)按通道映射顺序累计频率剖面与重生分布乘积，要求各通道共用速度网格。
 - [原子双通道散射源归约](../../catalog/examples/scirel.kinetic.atomic-scattered-sources-reduction.json)按 CX、弹性顺序合并两个带符号源场。
 - [分子三通道散射源归约](../../catalog/examples/scirel.kinetic.molecular-scattered-sources-reduction.json)按管壁、CX、弹性顺序合并三个带符号源场。
+- [原子氢 Alpha 频率收缩](../../catalog/examples/scirel.kinetic.atomic-alpha-contraction.json)将调用方给出的四个 SIG 矩阵与离子种子、分子及原子中性分布按 Fortran 顺序收缩；不在内部组装碰撞矩阵。
+- [分子氢 Alpha 频率收缩](../../catalog/examples/scirel.kinetic.molecular-alpha-contraction.json)将三个 SIG 矩阵与 H2+、H、H+ 分布收缩；`ni_correct` 决定 H+ 密度是否按 `max(n-nHP, 0)` 修正。原始来源的 CX reshape 缺陷已在 exact document 中登记。
 - [单代中性分布密度归约](../../catalog/examples/scirel.kinetic.generation-density-reduction.json)按调用方提供的柱坐标权重和轴向单元宽度，将 `(nvr, nvx, nx)` 分布归约为 `(nx,)` 密度；它不构造速度网格或求解输运方程。
 - [入射中性边界通量归一化](../../catalog/examples/scirel.kinetic.incoming-boundary-flux-normalization.json)按正向轴向速度半空间的预缩放通量，将调用方的边界形状缩放到目标通量的绝对值；目标为零时返回零尺度与零边界。
 - [空间源形状归一化](../../catalog/examples/scirel.kinetic.spatial-source-shape-normalization.json)用调用方空间坐标的梯形积分将非负源剖面归一化，并返回原始积分。
@@ -28,7 +30,7 @@
 - [平移 Maxwellian 离散种子](../../catalog/examples/scirel.kinetic.shifted-maxwellian-seed.json)在调用方速度网格和体积权重上构造逐 shift 归一化指数初值，保留来源的严格内部 `-80` clamp；输出尚未经过离散矩补偿。
 - [轴对称中性分布矩归约](../../catalog/examples/scirel.kinetic.axisymmetric-neutral-moments.json)在调用方分布与圆柱积分权重上归约密度、轴向流、压力、温度、应力和随机热通量；`sigma_zz = sigma_yy` 与零密度切片的 `source_default` 值沿用保存实现，仍待专家确认。
 
-跨网格分布插值复用圆柱速度空间积分权重。其余二十二项没有直接 callable 依赖；单代传播由调用方传入上风推进系数，停止判据由调用方传入累计密度，Boltzmann RHS 接收各上游源项，这些函数不在内部调用其他资产。累计更新只处理一次显式状态转移；重入决定未绑定反馈顺序或迭代上限，不能被解释为完整 TaskGraph。边界归一化接收调用方提供的热速度和柱坐标权重。自适应网格、积分权重、种子与矩归约的端口组合由直接测试覆盖。链接指向 `catalog/examples/` 开发 pilot 的 exact documents，不代表专家批准或公开发布。
+跨网格分布插值复用圆柱速度空间积分权重。其余二十四项没有直接 callable 依赖；单代传播由调用方传入上风推进系数，停止判据由调用方传入累计密度，Boltzmann RHS 接收各上游源项，这些函数不在内部调用其他资产。Alpha 收缩接收调用方矩阵，未绑定矩阵来源或完整碰撞图。累计更新只处理一次显式状态转移；重入决定未绑定反馈顺序或迭代上限，不能被解释为完整 TaskGraph。边界归一化接收调用方提供的热速度和柱坐标权重。自适应网格、积分权重、种子与矩归约的端口组合由直接测试覆盖。链接指向 `catalog/examples/` 开发 pilot 的 exact documents，不代表专家批准或公开发布。
 
 ## 证据与待整理项
 
