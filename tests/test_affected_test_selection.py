@@ -34,7 +34,6 @@ def test_operator_change_selects_only_its_contract_and_dependent_graphs():
         "test_graph_free_boundary_anisotropic_picard.py"
     ) in result["test_paths"]
     assert "tests/operator_contracts/test_dense_axisymmetric_green.py" not in result["test_paths"]
-    assert "tests/test_admitted_integrations.py" in result["test_paths"]
 
 
 def test_nested_task_graph_dependents_are_selected_transitively():
@@ -58,7 +57,6 @@ def test_task_graph_change_does_not_select_unrelated_graphs():
     assert result["test_paths"] == [
         "tests/graph_contracts/multi_coil_vacuum_field/"
         "test_graph_multi_coil_vacuum_field.py",
-        "tests/test_admitted_integrations.py",
     ]
 
 
@@ -98,7 +96,7 @@ def test_shared_composition_change_selects_every_task_graph():
     ]
     assert len(graph_assets) == 11
     assert "tests/test_library_composition.py" in result["test_paths"]
-    assert len(result["test_paths"]) == 13
+    assert len(result["test_paths"]) == 12
 
 
 def test_documentation_change_needs_no_scientific_tests():
@@ -174,6 +172,71 @@ def test_scirel_solving_skill_change_selects_workflow_method_contract():
     assert result["reasons"][0]["classification"] == "engineering_contract"
 
 
+def test_extraction_skill_bundle_tools_select_their_contract_test():
+    result = select(
+        "scripts/build_extraction_skill_bundle.py",
+        "scripts/install_extraction_skill_bundle.py",
+        "skills/extraction/tests/test_extraction_skill_bundle.py",
+    )
+
+    assert result["full_suite_required"] is False
+    assert result["affected_assets"] == []
+    assert result["test_paths"] == [
+        "skills/extraction/tests/test_extraction_skill_bundle.py"
+    ]
+    assert {
+        reason["classification"] for reason in result["reasons"]
+    } == {"external_tooling"}
+
+
+def test_capability_progress_validator_is_outside_library_checks():
+    result = select(
+        "skills/extraction/scientific-computation-asset-extraction/scripts/"
+        "validate_capability_progress.py",
+        "skills/extraction/scientific-computation-asset-extraction/scripts/"
+        "test_validate_capability_progress.py",
+    )
+
+    assert result["full_suite_required"] is False
+    assert result["affected_assets"] == []
+    assert result["test_paths"] == []
+    assert {
+        reason["classification"] for reason in result["reasons"]
+    } == {"external_tooling"}
+
+
+def test_historical_admission_builder_selects_its_provenance_test():
+    result = select(
+        "scripts/build_admitted_distribution.py",
+        "provenance/admitted-assets.json",
+        "provenance/tests/test_admitted_distribution_builder.py",
+    )
+
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == [
+        "provenance/tests/test_admitted_distribution_builder.py"
+    ]
+    assert {reason["classification"] for reason in result["reasons"]} == {
+        "external_tooling"
+    }
+
+
+def test_review_item_schema_selects_workflow_and_plugin_contracts():
+    result = select("contracts/review-item-dev.schema.json")
+
+    assert result["full_suite_required"] is False
+    assert "tests/test_workflow_contracts.py" in result["test_paths"]
+    assert "tests/plugin/test_codefusion_plugin_contract.py" in result["test_paths"]
+
+
+def test_unknown_script_still_fails_closed_to_the_full_suite():
+    result = select("scripts/unknown_maintenance_tool.py")
+
+    assert result["full_suite_required"] is True
+    assert result["test_paths"] == ["tests"]
+    assert result["reasons"][0]["classification"] == "unclassified_change"
+
+
 def test_https_runner_selects_only_listener_test():
     result = select("scripts/run_scirel_https.py")
 
@@ -190,6 +253,8 @@ def test_workflow_source_change_selects_workflow_boundary_without_full_suite():
         "tests/workflow/test_workflow.py",
         "tests/workflow/test_vertical_slice.py",
         "tests/workflow/test_l1_inventory.py",
+        "tests/workflow/test_l1_bundle.py",
+        "tests/workflow/test_standardization_submission.py",
         "tests/test_workflow_contracts.py",
     }
 
@@ -221,6 +286,8 @@ def test_workflow_contract_change_selects_all_workflow_boundaries():
         "tests/workflow/test_workflow.py",
         "tests/workflow/test_vertical_slice.py",
         "tests/workflow/test_l1_inventory.py",
+        "tests/workflow/test_l1_bundle.py",
+        "tests/workflow/test_standardization_submission.py",
         "tests/test_workflow_contracts.py",
         "tests/plugin/test_codefusion_plugin_contract.py",
         "tests/plugin/test_http_listener.py",
@@ -283,7 +350,6 @@ def test_documented_operator_selects_its_own_direct_test():
     assert result["reasons"][0]["classification"] == "asset_and_reverse_dependencies"
     assert result["test_paths"] == [
         "tests/operator_contracts/test_complex_rectilinear_interpolation.py",
-        "tests/test_admitted_integrations.py",
     ]
 
 
@@ -313,7 +379,6 @@ def test_documented_u1_operators_reverse_select_the_task_graph_test():
             "tests/graph_contracts/axisymmetric_equilibrium_grid_support/"
             "test_graph_axisymmetric_equilibrium_grid_support.py"
         ) in result["test_paths"], operator
-        assert "tests/test_admitted_integrations.py" in result["test_paths"], operator
 
 
 def test_catalog_asset_ids_drive_reverse_dependencies_without_import_inference():
@@ -402,7 +467,6 @@ def test_documented_task_graph_selects_only_its_own_direct_test():
     assert result["test_paths"] == [
         "tests/graph_contracts/axisymmetric_equilibrium_grid_support/"
         "test_graph_axisymmetric_equilibrium_grid_support.py",
-        "tests/test_admitted_integrations.py",
     ]
 
 
@@ -416,7 +480,6 @@ def test_documented_diagnostics_operator_selects_its_own_direct_test():
     ]
     assert result["test_paths"] == [
         "tests/operator_contracts/test_species_absorption_fraction.py",
-        "tests/test_admitted_integrations.py",
     ]
 
 

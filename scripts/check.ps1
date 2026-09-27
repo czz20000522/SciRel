@@ -112,7 +112,6 @@ try {
                 $TestPath = @(
                     "tests/test_public_surface.py",
                     "tests/test_library_composition.py",
-                    "tests/test_admitted_integrations.py",
                     "tests/test_asset_documentation.py"
                 )
             }

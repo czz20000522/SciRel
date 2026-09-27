@@ -17,5 +17,6 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+norecursedirs = ["build", "provenance", "skills"]
 addopts = "-p no:cacheprovider"
 pythonpath = ["src", "tests"]

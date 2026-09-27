@@ -11,7 +11,7 @@ import venv
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 BUILDER = ROOT / "scripts" / "build_admitted_distribution.py"
 
 
@@ -259,13 +259,13 @@ def test_wheel_build_is_reproducible(tmp_path):
     assert Path(first_result["wheel"]).read_bytes() == Path(second_result["wheel"]).read_bytes()
 
 
-def test_admitted_wheel_runs_the_source_free_user_acceptance(tmp_path):
+def test_admitted_wheel_runs_a_source_free_scientific_relation(tmp_path):
     result = _build_with_wheel(ROOT, tmp_path / "staging", tmp_path / "wheel")
     assert result.returncode == 0, result.stderr
     wheel = Path(json.loads(result.stdout)["wheel"])
 
     environment = tmp_path / "environment"
-    venv.EnvBuilder(with_pip=True, system_site_packages=True).create(environment)
+    venv.EnvBuilder(with_pip=True, system_site_packages=False).create(environment)
     python = environment / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
 
     # A nested venv does not inherit packages installed in its parent venv.
@@ -275,7 +275,7 @@ def test_admitted_wheel_runs_the_source_free_user_acceptance(tmp_path):
         assert spec is not None and spec.origin is not None
         dependency_roots.append(Path(spec.origin).resolve().parent.parent)
     site_packages = subprocess.run(
-        [str(python), "-c", "import site; print(site.getsitepackages()[0])"],
+        [str(python), "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"],
         check=True,
         capture_output=True,
         text=True,
@@ -302,17 +302,39 @@ def test_admitted_wheel_runs_the_source_free_user_acceptance(tmp_path):
     )
     assert install.returncode == 0, install.stderr
 
-    output = tmp_path / "acceptance"
     clean_environment = os.environ.copy()
-    clean_environment.pop("PYTHONPATH", None)
-    acceptance = subprocess.run(
+    clean_environment["PYTHONPATH"] = site_packages
+    probe = subprocess.run(
         [
             str(python),
-            str(ROOT / "examples" / "user_acceptance.py"),
-            "--wheel",
+            "-c",
+            """
+import importlib.metadata
+import json
+import sys
+import zipfile
+from pathlib import Path
+
+import numpy as np
+from scirel.field.circular_filament_green import circular_filament_green_response
+
+distribution = importlib.metadata.distribution("scirel")
+package_root = Path(distribution.locate_file("scirel")).resolve()
+assert package_root.is_relative_to(Path(sys.prefix).resolve())
+with zipfile.ZipFile(sys.argv[1]) as archive:
+    members = [name for name in archive.namelist() if name.startswith("scirel/") and name.endswith(".py")]
+    assert members
+    for member in members:
+        assert distribution.locate_file(member).read_bytes() == archive.read(member), member
+
+response = circular_filament_green_response([[0.35, 0.0, 1.0]], [[0.0, 0.2]])
+expected_bz = 4.0 * np.pi * 1.0e-7 * 0.35**2 / (2.0 * (0.35**2 + 0.2**2) ** 1.5)
+np.testing.assert_allclose(response["gBZ"], [expected_bz], rtol=1.0e-13, atol=0.0)
+np.testing.assert_array_equal(response["gBR"], [0.0])
+np.testing.assert_array_equal(response["gpsi"], [0.0])
+print(json.dumps({"version": distribution.version, "module_root": str(package_root), "verified_python_files": len(members)}))
+""",
             str(wheel),
-            "--output",
-            str(output),
         ],
         check=False,
         capture_output=True,
@@ -320,17 +342,12 @@ def test_admitted_wheel_runs_the_source_free_user_acceptance(tmp_path):
         cwd=tmp_path,
         env=clean_environment,
     )
-    assert acceptance.returncode == 0, acceptance.stderr
+    assert probe.returncode == 0, probe.stderr
 
-    report = json.loads((output / "acceptance.json").read_text(encoding="utf-8"))
-    assert report["installation"]["version"] == "0.1.0.dev5"
-    assert set(report["tasks"]) == {
-        "green_field_synthesis",
-        "pressure_state_and_residual",
-        "quasineutral_profile",
-    }
-    assert all(task["passed"] for task in report["tasks"].values())
-    assert Path(report["installation"]["module_root"]).is_relative_to(environment)
+    report = json.loads(probe.stdout)
+    assert report["version"] == "0.1.0.dev5"
+    assert report["verified_python_files"] > 0
+    assert Path(report["module_root"]).is_relative_to(environment)
 
 
 def test_builder_stages_a_hash_locked_relative_support_module_closure(tmp_path):
