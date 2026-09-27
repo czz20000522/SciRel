@@ -110,7 +110,7 @@
       "units": "nm",
       "shape": "[component_count]",
       "dtype": "real tuple",
-      "constraints": "Finite and positive when the inputs stay inside the representable Stark-Zeeman range; inputs whose quadrature frequencies or Doppler-shifted wavelengths are not finite fail closed with ValueError (r80-v2 repair).",
+      "constraints": "Finite and positive when the inputs stay inside the representable Stark-Zeeman range; inputs whose quadrature frequencies or Doppler-shifted wavelengths are not finite fail closed with ValueError (r80-v2 repair), and inputs that would drive any component wavelength to zero or below -- e.g. an electric field whose quadrature displacement exceeds the reference wavelength -- fail closed with ValueError (r81 repair: the saved arm returned negative components such as -218.4 nm).",
       "required": true
     }
   ],
@@ -126,7 +126,7 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError when any vector or scalar input is non-finite or non-numeric, when the sightline is zero, when the reference wavelength is not positive, when a scalar magnitude or a vector entry is boolean, when component_count is not the genuine integer 3 or 15, or when the Stark-Zeeman quadrature frequencies or the final component wavelengths are not finite for the supplied field magnitudes (r80-v2 repair: the saved arm returned nan).",
+    "invalid_input": "Raises ValueError when any vector or scalar input is non-finite or non-numeric, when the sightline is zero, when the reference wavelength is not positive, when a scalar magnitude or a vector entry is boolean, when component_count is not the genuine integer 3 or 15, when the Stark-Zeeman quadrature frequencies or the final component wavelengths are not finite for the supplied field magnitudes (r80-v2 repair: the saved arm returned nan), or when any component wavelength is not positive -- inputs whose quadrature displacement exceeds the reference wavelength are outside the declared representable spectral range and fail closed (r81 repair: the saved arm returned negative components such as -218.4 nm for E = 1e11 V/m at 121.57 nm).",
     "runtime_failure": "Not applicable; bounded arithmetic over finite inputs.",
     "nonconvergence": "Not applicable; closed-form evaluation.",
     "partial_results": "Never returned."
@@ -161,6 +161,7 @@
       "Saved-package oracles: the zero-field Doppler degeneracy over all 15 Balmer components (one cm/s -> m/s conversion), the electric-only Lyman ordering with wavenumber symmetry below 1e-14, and the zero-sightline / unsupported-transition rejections.",
       "Registered hardenings: finite checks on every vector and scalar input (the saved arm propagated NaN/inf silently despite its own contract), positive reference wavelength (the saved arm accepted nonpositive references), boolean scalar magnitudes rejected, and component_count must be a genuine integer (the saved arm's `not in (3, 15)` accepted whole-number floats such as 3.0).",
       "r80-v2 repairs: an overflowing finite sightline such as (1e308, 1e308, 0) keeps its nonzero Doppler shift via max-abs scaling (the r80-v1 arm collapsed the direction to zero and silently returned the bare reference); B = 1e308 and E = 1e308 raise ValueError instead of returning nan components; the vector boolean check runs before the float conversion (the r80-v1 placement after asarray(..., dtype=float) was dead code), covering container entries, bool dtype arrays and object arrays.",
+      "r81 repair: inputs that drive any component wavelength to zero or below fail closed with ValueError -- e.g. E = 1e11 V/m at the 121.57 nm Lyman reference returned (-218.4, 121.57, 47.6) nm from the saved arm's quadrature displacement exceeding the reference wavelength; the relation's applicability is the representable positive-wavelength spectral range, not merely finite arithmetic.",
       "Source relation pins: E' = ||E + v x B|| enters through a nonzero magnetic magnitude, and the sightline normalization is internal."
     ],
     "tests": [

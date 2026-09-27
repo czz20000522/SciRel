@@ -507,3 +507,14 @@ The proposal files are byte-identical to the integrated files under `src/`,
 r49-r55 manifests named only docs materials; the candidate bytes were in the
 frozen trees but not named by any manifest. This index closes that gap from
 r53 onward.
+
+
+## Batch r81: FIDASIM NPA store_npa energy-bin leaf (one operator)
+
+Directory: `review_candidates/2026-09-27-npa-store-family/`
+Successor of batch r80: the r80 candidate files keep their frozen
+r80-v3 bytes and digests; this batch binds the new bytes.
+- `review.md` -- sha256 `8b14e4e7d3ddbe25ffc5348dc00982500e8a91c0f9500883179b5e110635ff36`
+- `proposal/npa_energy_bin_increment.py` -- sha256 `a7b0c2d46a202577c4fcdce8b69f775ac08069d0c40c2544d482522b1428c320`
+- `proposal/test_npa_store_family.py` -- sha256 `6da61c789b040374ea2bd906e613f7bf988f1b2267d26d4c3b800b695dc8e85a`
+- `proposal/scirel.fusion.npa-energy-bin-increment.json` -- sha256 `e41d672e0d09bcf36955316d6f1ee86218a48ef9263ae3620b5b00ecca079085`

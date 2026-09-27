@@ -59,3 +59,28 @@ def test_review_gate_keeps_two_coil_source_blocks_and_currents_independent():
     for name in ("psi_vac", "b_r_vac", "b_z_vac"):
         np.testing.assert_allclose(total[name], one[name] + two[name], rtol=2.0e-14, atol=1.0e-300)
     assert total["filaments"].shape == (8, 3)
+
+
+def test_weights_scale_per_filament_drive_current_discriminating():
+    # r81 clarification: the effective per-filament drive is
+    # current_a * weights[i]. With weights 0.5 on a 2x2 section the field
+    # is exactly half of the default-weights run at the same current_a.
+    # This is the discriminating check for the two conditional readings
+    # documented in the exact document: a caller modelling a total section
+    # current must distribute weights summing to 1 (0.25 each here), which
+    # reproduces the 0.25x-the-all-turns run, not the 1x run.
+    one = run_graph(_inputs(1000.0), asset_loader=_assets)
+    half = _inputs(1000.0)
+    half["rectangular_coils"][0]["weights"] = [0.5] * 4
+    half_result = run_graph(half, asset_loader=_assets)
+    for name in ("psi_vac", "b_r_vac", "b_z_vac"):
+        np.testing.assert_allclose(half_result[name], 0.5 * one[name], rtol=2.0e-14, atol=1.0e-300)
+    # the even split of a 1000 A total over 4 filaments (0.25 each)
+    # reproduces a 250 A all-turns run exactly
+    spread = _inputs(1000.0)
+    spread["rectangular_coils"][0]["weights"] = [0.25] * 4
+    spread_result = run_graph(spread, asset_loader=_assets)
+    quarter = run_graph(_inputs(250.0), asset_loader=_assets)
+    for name in ("psi_vac", "b_r_vac", "b_z_vac"):
+        np.testing.assert_allclose(spread_result[name], quarter[name], rtol=2.0e-14, atol=1.0e-300)
+    np.testing.assert_allclose(half_result["filaments"][:, 2], [0.5] * 4)

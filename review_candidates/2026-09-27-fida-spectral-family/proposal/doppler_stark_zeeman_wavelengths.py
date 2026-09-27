@@ -176,4 +176,11 @@ def doppler_stark_zeeman_wavelengths(
             "component wavelengths are not finite for the supplied inputs (r80-v2 repair:"
             " the saved arm could return nan/inf)"
         )
+    if any(value <= 0.0 for value in result):
+        raise ValueError(
+            "a component wavelength is not positive for the supplied inputs (r81 repair:"
+            " the saved arm returned negative or zero wavelengths from large electric-"
+            " field quadrature displacements; such inputs are outside this relation's"
+            " declared representable spectral range)"
+        )
     return result

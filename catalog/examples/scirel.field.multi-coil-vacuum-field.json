@@ -25,8 +25,9 @@
     "coordinates": "strictly increasing rectilinear cylindrical R-Z grid with C-order target flattening",
     "boundary": "target radii and all generated filament radii are nonnegative",
     "assumptions": [
-      "Each current_a is a source-set drive current, not a per-filament current.",
-      "Optional weights are dimensionless multipliers within one coil block."
+      "Two equivalent usages are supported; the caller must know which one applies. (a) Independent turns: if each generated filament represents an independently charged turn (or the caller simply wants each filament driven at current_a), keep the default weights of 1 and the field response is current_a summed over filaments. (b) Total section current: if current_a is the total current of one coil section shared by nr*nz filaments, the caller must supply explicit per-filament weights summing to 1 (1/(nr*nz) each only when the section current splits evenly); the response is then the same total-current field.",
+      "Optional weights are dimensionless per-filament multipliers inside one coil block; the effective per-filament drive is current_a * weights[i]. The default weights of 1 reproduce (a); no sum(weights)=1 validation is imposed, because (a) legitimately uses any number of filaments at weight 1.",
+      "The port cannot detect which interpretation the caller intends; a wrong choice changes the effective ampere-turns and the source weighting, so the field amplitude and its spatial distribution can both change (uniform special case: a 2x2 section's total current read at the default weights of 1 overdrives that coil 4x)."
     ]
   },
   "inputs": [
@@ -55,7 +56,7 @@
       "shape": "list[mapping]",
       "dtype": "Python sequence of mappings",
       "required": true,
-      "constraints": "Nonempty; one finite drive current and one optional finite weight per generated filament."
+      "constraints": "Nonempty; one finite drive current and one optional finite weight per generated filament. current_a semantics are conditional (see assumptions): with default weights of 1 every filament is driven at current_a; to model current_a as one section total, supply weights summing to 1 over the nr*nz filaments (1/(nr*nz) for even splitting)."
     }
   ],
   "outputs": [
@@ -134,7 +135,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev57",
+    "implementation_version": "0.1.0.dev58",
     "dependencies": [
       {
         "asset_id": "scirel.field.circular-filament-green"

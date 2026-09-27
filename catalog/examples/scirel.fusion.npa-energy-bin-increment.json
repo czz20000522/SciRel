@@ -1,0 +1,213 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.npa-energy-bin-increment",
+  "kind": "operator",
+  "title": {
+    "en": "NPA energy-bin and spectral-flux increment record",
+    "zh": "NPA能量通道通量增量"
+  },
+  "summary": "Replay the stateless scalar slice of store_npa: convert one neutral-particle velocity to keV, select the nearest energy channel with the source's first-of-tie minloc, cap the orbit class by the available class count, and return the non-accumulated flux/dE record for the caller's own (energy, detector, class) storage.",
+  "taxonomy": [
+    "fusion",
+    "npa-detection-chain",
+    "energy-binning",
+    "spectral-flux"
+  ],
+  "aliases": [
+    "select_npa_energy_bin_increment"
+  ],
+  "identity": {
+    "relation": "energy = beam_mass * v2_to_E_per_amu * dot(v, v); dE = energy_grid(2) - energy_grid(1) (the source's first-adjacent-center convention, not the local cell width); the channel is Fortran minloc(abs(energy_grid - energy)) one-based with the first channel winning ties; the class record is min(orbit_class, nclass); the returned spectral increment is flux/dE, non-accumulated.",
+    "direction": "one neutral velocity + beam mass + velocity-to-energy conversion + the caller's active/passive energy centers + detector/orbit-class/class-count indices + one hit flux -> one non-accumulated {energy, energy bin, detector, capped class, flux/dE} record",
+    "definition": "The saved FIDASIM NPA能量通道通量增量 operator (source anchor src/fidasim.f90:10600-10724, the scalar part of store_npa): it reads and mutates no storage -- the caller owns the (energy, detector, class) accumulator, the active/passive grid choice, coordinate transforms, hit production and the whole NPA Monte Carlo. The saved bundle's ledger additionally records a native source microprobe (npa_store_flux_audit against frozen source 9019e945...) claiming three real store_npa replays with max_abs = 0; that evidence directory is outside the frozen saved input and could not be re-verified byte-wise, so SciRel's review ceiling for this integration remains the package-level equation/boundary oracle plus the historical ledger claim, not re-verified Fortran runtime parity.",
+    "model": "the saved formal implementation, ported verbatim with registered integer/boolean/spacing/increment hardenings",
+    "geometry": "one hit record; no spatial geometry -- the caller owns hit production and storage",
+    "coordinates": "velocity in cm/s (axis order x,y,z); masses in amu; energies in keV; the conversion constant in keV/(amu*(cm/s)^2); flux in neutrals/s; increments in neutrals/(s*keV); bin and class indices are one-based exactly as in the source",
+    "boundary": "finite 3-vector velocity; positive finite mass and conversion; finite nonnegative flux; finite strictly increasing energy centers with at least two entries and a positive finite first spacing dE; positive genuine integers for the detector, orbit class and class count; the computed energy and the returned increment must be finite; no accumulator access, no xyz_to_uvw reconstruction, no get_fields pitch, no OpenMP/MPI and no whole-program replay",
+    "assumptions": [
+      "The caller selects the active or passive NPA energy grid and accumulates the returned record itself; this leaf is stateless.",
+      "The first adjacent center pair defines dE even on non-uniform grids and for hits binned far from the first two centers, exactly as in the source."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "velocity_cm_s",
+      "description": "The neutral particle velocity (source vn).",
+      "units": "cm/s",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite shape-(3,); boolean entries rejected in container, bool dtype and object form before numpy coercion (registered hardening; a bool already lost inside a constructed float64 array is not recoverable)."
+    },
+    {
+      "name": "beam_mass_amu",
+      "description": "The beam/neutral mass (source beam_mass).",
+      "units": "amu",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive (booleans rejected -- registered hardening)."
+    },
+    {
+      "name": "velocity_squared_to_energy_per_amu_kev_s2_cm_minus2",
+      "description": "The source v2_to_E_per_amu conversion constant.",
+      "units": "keV/(amu*(cm/s)^2)",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive (booleans rejected -- registered hardening)."
+    },
+    {
+      "name": "energy_centers_kev",
+      "description": "The caller's active or passive NPA energy centers (source energy_grid).",
+      "units": "keV",
+      "shape": "[nenergy], nenergy >= 2",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and strictly increasing; boolean entries rejected in container, bool dtype and object form (registered hardening); the first adjacent spacing must be a positive finite float (r81 repair)."
+    },
+    {
+      "name": "detector_index_one_based",
+      "description": "The caller's detector channel number (source detector index, passed through).",
+      "units": "index (one-based)",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "A genuine positive integer (np.integer accepted; bools rejected -- registered hardening: the saved arm's isinstance(value, int) also rejected whole-number floats and np.integer, so float rejection is continuity)."
+    },
+    {
+      "name": "orbit_class_one_based",
+      "description": "The hit's orbit class number (source orbit_class).",
+      "units": "index (one-based)",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "A genuine positive integer; capped by class_count in the output."
+    },
+    {
+      "name": "class_count",
+      "description": "The number of orbit classes available for this detector (source nclass).",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "A genuine positive integer."
+    },
+    {
+      "name": "flux_neutrals_per_s",
+      "description": "The single hit's flux after the caller's N8 hit/attenuation/geometry reductions.",
+      "units": "neutrals/s",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and nonnegative (booleans rejected -- registered hardening)."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "energy_kev",
+      "description": "The particle energy beam_mass * v2_to_E_per_amu * dot(v, v).",
+      "units": "keV",
+      "shape": "scalar",
+      "dtype": "real",
+      "constraints": "Finite and nonnegative; an overflowing velocity/mass product fails closed (registered hardening).",
+      "required": true
+    },
+    {
+      "name": "energy_bin_one_based",
+      "description": "The one-based nearest energy channel, first channel on exact ties (source minloc).",
+      "units": "index (one-based)",
+      "shape": "scalar",
+      "dtype": "int",
+      "constraints": "In 1..nenergy.",
+      "required": true
+    },
+    {
+      "name": "detector_index_one_based",
+      "description": "The detector channel number, passed through verbatim.",
+      "units": "index (one-based)",
+      "shape": "scalar",
+      "dtype": "int",
+      "constraints": "Equals the input.",
+      "required": true
+    },
+    {
+      "name": "class_index_one_based",
+      "description": "The orbit class capped by class_count (source min(orbit_class, nclass)).",
+      "units": "index (one-based)",
+      "shape": "scalar",
+      "dtype": "int",
+      "constraints": "Positive and at most class_count.",
+      "required": true
+    },
+    {
+      "name": "spectral_flux_increment_per_kev",
+      "description": "The non-accumulated flux/dE increment (source flux/dE with dE = grid(2) - grid(1)).",
+      "units": "neutrals/(s*keV)",
+      "shape": "scalar",
+      "dtype": "real",
+      "constraints": "Finite and nonnegative; a subnormal or overflowing first spacing or a non-finite quotient fails closed (r81 repair: the saved arm returned inf for dE = 5e-324 and silent 0.0 when dE overflowed).",
+      "required": true
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller supplies the energy grid, indices and one hit's flux; the record is accumulated by the caller."
+    ],
+    "supported": [
+      "One stateless store_npa scalar record: energy, nearest bin (first-of-tie), detector passthrough, class cap and flux/dE increment."
+    ],
+    "excluded": [
+      "The global NPA accumulator, xyz_to_uvw and get_fields pitch reconstruction, hit/attenuation production, OpenMP/MPI reduction, HDF5 writers and whole-program replay."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when the velocity is not a finite boolean-free 3-vector, when the centers are not finite boolean-free strictly increasing with a positive finite first spacing, when mass/conversion are not positive finite or the flux negative or boolean, when any index is not a genuine positive integer, or when the computed energy or the flux/dE increment is not finite (r81 repairs).",
+    "runtime_failure": "Not applicable; bounded arithmetic over the declared contracts.",
+    "nonconvergence": "Not applicable; closed-form record.",
+    "partial_results": "Never returned; the caller's storage is never touched."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM NPA能量通道通量增量 package, source anchor src/fidasim.f90:10600-10724 (store_npa scalar slice). The saved bundle's ledger records a native source microprobe (npa_store_flux_audit, three real store_npa replays, max_abs = 0) as source_behavior_verified evidence; that probe directory lies outside the frozen saved input (inputs/l1/FIDASIM, whose live bytes were re-verified against the input-manifest scope digest sha256:cd0010b8...) and its receipt could not be independently re-verified here, so this integration's review ceiling is the package-level equation/boundary oracle plus the historical ledger claim. The saved FIDASIM bundle supports bounded historical development comparison; the qualified-L1 delivery root is empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests",
+      "historical ledger source-microprobe claim (not re-verifiable from the frozen input)"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.npa_energy_bin_increment",
+      "symbol": "select_npa_energy_bin_increment",
+      "signature": "select_npa_energy_bin_increment(velocity_cm_s, beam_mass_amu, velocity_squared_to_energy_per_amu_kev_s2_cm_minus2, energy_centers_kev, detector_index_one_based, orbit_class_one_based, class_count, flux_neutrals_per_s)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev58",
+    "dependencies": []
+  },
+  "example": {
+    "description": "The saved package's tie-first minloc and class-cap probe.",
+    "code": "from scirel.fusion import select_npa_energy_bin_increment\nresult = select_npa_energy_bin_increment(\n    (3.0, 4.0, 0.0), 2.0, 1.0, (40.0, 60.0, 80.0), 2, 5, 3, 10.0)\nassert result == {\n    'energy_kev': 50.0,\n    'energy_bin_one_based': 1,\n    'detector_index_one_based': 2,\n    'class_index_one_based': 3,\n    'spectral_flux_increment_per_kev': 0.5,\n}\ntry:\n    select_npa_energy_bin_increment((0, 0, 0), 1, 1, (0.0, 5e-324), 1, 1, 1, 1.0)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('a subnormal first spacing must fail closed (r81 repair)')",
+    "expected": "The saved probe reproduces (50 keV tie selects the first channel; orbit class 5 caps to 3); the subnormal-spacing window raises ValueError per the r81 repair."
+  },
+  "verification": {
+    "scope": [
+      "Saved-package oracles: the 50 keV first-of-tie minloc with the class cap, the implicit-grid/index rejections, and the energy/increment formulas on a non-uniform grid.",
+      "Source quirk pins: the first-adjacent-center dE convention (not the local cell width), the verbatim detector passthrough, and exact-tie selection of the first channel.",
+      "Registered hardenings: genuine-integer indices with np.integer acceptance and bool rejection (the saved arm's isinstance(value, int) accepted True while rejecting whole-number floats and np.integer; float rejection is continuity, np.integer acceptance is the hardening); boolean velocity/center entries and boolean/non-finite scalars rejected; the computed energy must be finite; dE must be a positive finite float and the increment finite (r81 repairs covering dE = 5e-324 -> inf and dE overflow -> silent 0.0).",
+      "N8 composition witness: the caller accumulates three returned records into its own (energy, detector, class) storage and reproduces the per-(bin, class) partial sums including the class cap."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_npa_store_family.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests reproduce the saved package's equation/boundary oracles. The bundle ledger's historical source-microprobe claim (npa_store_flux_audit, max_abs = 0) is recorded as provenance but is outside the frozen saved input and was not re-verified here; no re-verified Fortran runtime parity, external physical correctness, expert approval, trusted promotion or public release is claimed. The saved FIDASIM bundle supports bounded historical development comparison only.",
+    "known_limitations": [
+      "The historical source-microprobe receipt is not re-verifiable from the frozen saved input; if the external FIDASIM_evidence/source_probe/npa_store_flux_audit receipt is later located and digest-bound, the evidence level may be raised in a successor.",
+      "The saved FIDASIM bundle supports bounded historical development comparison only; the qualified-L1 delivery root is empty.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

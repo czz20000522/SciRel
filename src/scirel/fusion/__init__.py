@@ -32,6 +32,7 @@ from .neutral_reservoir_merge import merge_neutral_reservoirs
 from .neutral_population_state_merge import merge_neutral_population_state
 from .doppler_stark_zeeman_wavelengths import doppler_stark_zeeman_wavelengths
 from .fida_wavelength_binning import bin_fida_los_components
+from .npa_energy_bin_increment import select_npa_energy_bin_increment
 
 __all__ = [
     'calculate_dd_neutron_lab_energy_kev',
@@ -69,4 +70,5 @@ __all__ = [
     'merge_neutral_population_state',
     'doppler_stark_zeeman_wavelengths',
     'bin_fida_los_components',
+    'select_npa_energy_bin_increment',
 ]

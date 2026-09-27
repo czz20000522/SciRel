@@ -365,6 +365,25 @@ def test_extreme_field_magnitudes_fail_closed_instead_of_returning_nan():
         )
 
 
+def test_nonpositive_component_wavelengths_fail_closed():
+    # r80-v3 review finding: a large but finite electric field pushes the
+    # Lyman Stark quadrature displacement past the reference wavelength,
+    # and the saved arm returned a negative component wavelength (e.g.
+    # (-218.4, 121.57, 47.55) nm for E = 1e11 V/m) although the exact
+    # document promises positive outputs inside the representable range
+    with pytest.raises(ValueError):
+        doppler_stark_zeeman_wavelengths(
+            (1.0, 0.0, 0.0), (0.0, 0.0, 0.0), (0.0, 0.0, 1.0), 0.0,
+            (1.0, 0.0, 0.0), 1e11, 121.57, 3,
+        )
+    # the electric-only Lyman probe at 1e5 V/m stays inside the domain
+    inside = doppler_stark_zeeman_wavelengths(
+        (1.0, 0.0, 0.0), (0.0, 0.0, 0.0), (0.0, 0.0, 1.0), 0.0,
+        (1.0, 0.0, 0.0), 1e5, 121.57, 3,
+    )
+    assert all(value > 0.0 for value in inside)
+
+
 def test_boolean_vector_entries_are_rejected():
     # r80-v1 defect: the vector boolean check ran after the dtype=float
     # conversion and was dead code; bool vectors silently numerified
