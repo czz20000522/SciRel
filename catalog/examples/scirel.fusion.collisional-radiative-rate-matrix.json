@@ -1,0 +1,207 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.collisional-radiative-rate-matrix",
+  "kind": "operator",
+  "title": {
+    "en": "Collisional-radiative rate-matrix assembly",
+    "zh": "碰撞辐射速率矩阵组装"
+  },
+  "summary": "Assemble the FIDASIM colrad real rate matrix for one cell from explicit plasma densities and three caller-owned transition tables, preserving the source's table coordinates, bilinear interpolation, low-rate thresholds, same-mass fast-ion addition and Einstein diagonal rewrite.",
+  "taxonomy": ["fusion", "neutral-population-transport", "colrad", "rate-matrix"],
+  "aliases": ["assemble_collisional_radiative_rate_matrix"],
+  "identity": {
+    "relation": "Per thermal ion and per table: bilinear interpolation of log10 rate coefficients in (log10(E_b/A_b), log10(T)) table coordinates, floored at the table minimum and zero beyond the upper table edge; rates scaled by the effective density (thermal density plus fast-ion density only for masses exactly equal to beam_mass_amu); population = sum of interpolated pop terms, depopulation = sum of loss terms; matrix = einstein + population with diagonal rewritten to -(column sums of einstein) - depopulation.",
+    "direction": "thermal densities/masses + ion/electron temperatures + electron/impurity/fast-ion densities + beam mass/energy + three transition tables + Einstein matrix -> real rate matrix",
+    "definition": "The saved FIDASIM 碰撞辐射速率矩阵组装 operator (framework node N3), feeding the eigenstate advance. All tables and plasma state are caller-owned explicit contracts; the operator generates no rates itself. Upper-table-edge queries yield zero rates per the source policy.",
+    "model": "the saved formal implementation, ported verbatim with registered finite/type gates",
+    "geometry": "one local cell; level axes ordered by the caller's state convention and table layout",
+    "coordinates": "table coordinates are log10(E_b/A_b) and log10(T) in keV with uniform spacing; densities in cm^-3; rates in s^-1",
+    "boundary": "finite nonnegative densities, finite positive masses and temperatures; finite square Einstein matrix; complete finite transition-table mappings with positive table spacings; the assembled matrix must stay finite (registered)",
+    "assumptions": [
+      "The caller supplies complete transition-table snapshots (log_pop, log_depop, coordinate fields) from one declared atomic-data source.",
+      "The impurity table is evaluated at the ion temperature, per the source."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "thermal_density_cm3",
+      "description": "Thermal-ion number densities.",
+      "units": "cm^-3",
+      "shape": "[n_thermal]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative."
+    },
+    {
+      "name": "thermal_mass_amu",
+      "description": "Thermal-ion masses, same axis as the densities.",
+      "units": "amu",
+      "shape": "[n_thermal]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and strictly positive; masses equal to beam_mass_amu receive the fast-ion density."
+    },
+    {
+      "name": "ion_temperature_kev",
+      "description": "Thermal-ion temperature.",
+      "units": "keV",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "electron_density_cm3",
+      "description": "Electron number density.",
+      "units": "cm^-3",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and nonnegative (registered)."
+    },
+    {
+      "name": "electron_temperature_kev",
+      "description": "Electron temperature.",
+      "units": "keV",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "impurity_density_cm3",
+      "description": "Impurity-ion number density.",
+      "units": "cm^-3",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and nonnegative (registered)."
+    },
+    {
+      "name": "fast_ion_density_cm3",
+      "description": "Fast-ion number density.",
+      "units": "cm^-3",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and nonnegative (registered)."
+    },
+    {
+      "name": "beam_mass_amu",
+      "description": "Fast-neutral/beam-ion mass.",
+      "units": "amu",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "beam_energy_kev",
+      "description": "Fast-neutral energy.",
+      "units": "keV",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "hydrogen_table",
+      "description": "H-H transition table mapping.",
+      "units": "log10 rate coefficient inside the table",
+      "shape": "mapping",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "Fields log_pop[n_levels,n_levels,nenergy,ntemp], log_depop[n_levels,nenergy,ntemp], nenergy, ntemp, logemin, logtmin, dlogE, dlogT, minlog_pop, minlog_depop; finite; positive spacings."
+    },
+    {
+      "name": "electron_table",
+      "description": "H-e transition table mapping (temperature coordinate is log10 of the electron temperature).",
+      "units": "log10 rate coefficient inside the table",
+      "shape": "mapping",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "Same fields as hydrogen_table."
+    },
+    {
+      "name": "impurity_table",
+      "description": "Impurity transition table mapping (evaluated at the ion temperature).",
+      "units": "log10 rate coefficient inside the table",
+      "shape": "mapping",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "Same fields as hydrogen_table."
+    },
+    {
+      "name": "einstein_s_inv",
+      "description": "Einstein transition-rate matrix.",
+      "units": "s^-1",
+      "shape": "[n_levels, n_levels]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite square matrix."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "rate_matrix_s_inv",
+      "description": "Real collisional-radiative rate matrix (target-state rows, source-state columns).",
+      "units": "s^-1",
+      "shape": "[n_levels, n_levels]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite (registered); Einstein column conservation on the diagonal per the source rewrite."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Complete caller-owned transition-table snapshots and a local plasma state."
+    ],
+    "supported": [
+      "Per-cell colrad rate-matrix assembly for hydrogen beam neutrals with thermal, electron and impurity collision partners."
+    ],
+    "excluded": [
+      "Eigenstate advancement, table generation or interpolation outside the declared log-grid, molecular species and HDF5 table drivers."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when any density/mass/temperature violates its bound or is non-finite, when the Einstein matrix is not a finite square matrix, or when a transition table is missing fields, misshaped, non-finite or has non-positive spacings.",
+    "runtime_failure": "Raises ValueError when the assembled matrix or interpolated rates overflow to non-finite for finite but extreme table entries (registered hardening); the saved arm propagates NaN and Inf silently.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM 碰撞辐射速率矩阵组装 package, as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 38f1eb0c345546f3cca6c1e6119054a19ecea82459c32e58daef917f529ef1cc (reference record; the test suite performs no automated drift detection). Arithmetic ported verbatim including the interpolation order, threshold policies, fast-ion addition and diagonal rewrite; the finite/type gates are registered hardenings. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": ["saved L1 operator document and implementation", "scientific regression tests"],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.collisional_radiative_rate_matrix",
+      "symbol": "assemble_collisional_radiative_rate_matrix",
+      "signature": "assemble_collisional_radiative_rate_matrix(thermal_density_cm3, thermal_mass_amu, ion_temperature_kev, electron_density_cm3, electron_temperature_kev, impurity_density_cm3, fast_ion_density_cm3, beam_mass_amu, beam_energy_kev, hydrogen_table, electron_table, impurity_table, einstein_s_inv)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev52",
+    "dependencies": []
+  },
+  "example": {
+    "description": "The saved package's oracle: same-mass fast-ion addition with the Einstein diagonal rewrite, and the upper-table-edge zero-rate policy.",
+    "code": "import numpy as np\nfrom scirel.fusion import assemble_collisional_radiative_rate_matrix\ndef table(log_pop, log_depop):\n    return {'nenergy': 2, 'ntemp': 2, 'logemin': 0.0, 'logtmin': 0.0, 'dlogE': 1.0, 'dlogT': 1.0,\n            'minlog_pop': -99.0, 'minlog_depop': -99.0,\n            'log_pop': np.full((2, 2, 2, 2), log_pop), 'log_depop': np.full((2, 2, 2), log_depop)}\nresult = assemble_collisional_radiative_rate_matrix(\n    (3.0,), (2.0,), 2.0, 4.0, 1.0, 5.0, 1.0, 2.0, 2.0,\n    table(np.log10(2.0), np.log10(2.0)), table(np.log10(3.0), np.log10(3.0)), table(0.0, 0.0),\n    ((0.0, 7.0), (11.0, 0.0)))\nassert np.array_equal(result, ((-36.0, 32.0), (36.0, -32.0)))\nedge = assemble_collisional_radiative_rate_matrix(\n    (1.0,), (1.0,), 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 100.0,\n    table(0.0, 0.0), table(0.0, 0.0), table(0.0, 0.0), ((0.0, 7.0), (11.0, 0.0)))\nassert np.array_equal(edge, ((-11.0, 7.0), (11.0, -7.0)))",
+    "expected": "Both saved probes reproduce exactly."
+  },
+  "verification": {
+    "scope": [
+      "Saved-package oracles: fast-ion density addition, Einstein diagonal rewrite, upper-edge zero-rate policy.",
+      "Registered finite/type gates on plasma scalars, tables and the assembled matrix."
+    ],
+    "tests": ["tests/operator_contracts/test_dcx_colrad_family.py"],
+    "evidence_ceiling": "The maintained direct tests reproduce the saved oracles on constant synthetic tables and exercise the fail-closed contracts. No real atomic-data table is bundled, no eigen-advancement or spectral composition is asserted here, and no bit-level comparison against the Fortran balance+QR eigensolver pipeline is claimed. The saved FIDASIM bundle supports bounded historical development comparison only.",
+    "known_limitations": [
+      "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+      "The registered finite/type gates deliberately diverge from the saved arm's silent NaN/Inf propagation.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

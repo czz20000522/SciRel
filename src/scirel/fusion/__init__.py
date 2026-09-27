@@ -17,6 +17,11 @@ from .nbi_source_plane_ray import construct_nbi_source_ray
 from .nbi_trajectory_initialization import initialize_nbi_trajectory
 from .halo_iteration_feedback import advance_halo_iteration_feedback
 from .halo_iteration_feedback_sequence import advance_halo_iteration_feedback_sequence
+from .dcx_thermal_species_selection import select_dcx_thermal_species_mass
+from .dcx_halo_colrad_initial_state import prepare_dcx_colrad_initial_state
+from .collisional_radiative_rate_matrix import assemble_collisional_radiative_rate_matrix
+from .collisional_radiative_state_advance import advance_collisional_radiative_states
+from .dcx_halo_marker_initialization import initialize_dcx_halo_marker
 
 __all__ = [
     'calculate_dd_neutron_lab_energy_kev',
@@ -38,4 +43,9 @@ __all__ = [
     'initialize_nbi_trajectory',
     'advance_halo_iteration_feedback',
     'advance_halo_iteration_feedback_sequence',
+    'select_dcx_thermal_species_mass',
+    'prepare_dcx_colrad_initial_state',
+    'assemble_collisional_radiative_rate_matrix',
+    'advance_collisional_radiative_states',
+    'initialize_dcx_halo_marker',
 ]
