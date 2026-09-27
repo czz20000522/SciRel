@@ -5,3 +5,6 @@ __pycache__/
 .venv/
 build/
 dist/
+
+# Local machine configuration, credentials and runtime scratch are never source.
+/.runtime/
