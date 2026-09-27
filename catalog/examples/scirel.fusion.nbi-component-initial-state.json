@@ -6,7 +6,7 @@
     "en": "NBI energy-component initial-state materialization",
     "zh": "NBI能量分量六能级初态物化"
   },
-  "summary": "Materialize one NBI energy component's initial six-level atomic state: the source's states(1) = nneutrals * fraction / dv density with only atomic level 1 populated.",
+  "summary": "Materialize one NBI energy component's initial six-level atomic state: the source's states(1) = nneutrals * fraction / dv source rate per volume with only atomic level 1 populated.",
   "taxonomy": [
     "fusion",
     "neutral-beam-source-sampling",
@@ -18,11 +18,11 @@
   ],
   "identity": {
     "relation": "nneutrals = 1e6 * injected_power_mw / (1e3 * injection_energy_kev * e * sum_k(fraction_k / k)) with k in {1,2,3} and e = 1.60217733e-19 C (source fidasim.f90:69); states[0] = nneutrals * fraction_selected / beam_grid_cell_volume_cm3 and states[1:6] = 0.",
-    "direction": "injected power + injection energy + full/half/third current fractions + beam-grid cell volume + selected component -> the component's total and per-component neutral rates and the six-level initial-state density vector",
+    "direction": "injected power + injection energy + full/half/third current fractions + beam-grid cell volume + selected component -> the component's total and per-component neutral rates and the six-level initial-state source-rate-per-volume vector",
     "definition": "The saved FIDASIM initial-state materialization (framework node N2 neutral_beam_source_sampling): the source's six atomic levels start with only level 1 populated per energy-component loop, and the full/half/third components independently begin from states(1) = nneutrals*fraction/dv. This relation is deliberately separate from the older three-component projection, whose CODATA e0 remains a distinct, explicitly documented contract.",
-    "model": "the saved formal implementation, ported verbatim with registered finite-output gates on both the total rate and the per-cell density",
+    "model": "the saved formal implementation, ported verbatim with registered finite-output gates on both the total rate and the per-cell source-rate-per-volume value",
     "geometry": "one beam-grid cell; a length-6 state vector",
-    "coordinates": "power in MW, energy in keV, volume in cm^3, densities in cm^-3, rates in s^-1; the source's cm-gram-second-derived unit bookkeeping is preserved verbatim",
+    "coordinates": "power in MW, energy in keV, volume in cm^3, source rates per volume in cm^-3 s^-1, rates in s^-1; the source's cm-gram-second-derived unit bookkeeping is preserved verbatim",
     "boundary": "finite nonnegative power, positive energy and volume; finite nonnegative current fractions with a positive selected-component fraction and a positive total weight factor; nlevels exactly the source's six-level contract",
     "assumptions": [
       "The six-level atomic model and the level-1-only start are the source's declared discrete contract.",
@@ -37,7 +37,7 @@
       "shape": "scalar",
       "dtype": "real",
       "required": true,
-      "constraints": "Finite and nonnegative; zero power yields an all-zero initial state (the rate and density stay finite and zero)."
+      "constraints": "Finite and nonnegative; zero power yields an all-zero initial state (the rate and source-rate-per-volume stay finite and zero)."
     },
     {
       "name": "injection_energy_kev",
@@ -118,7 +118,7 @@
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError when any scalar is non-finite or of the wrong sign, when the energy weight factor overflows to non-finite for finite but extreme fractions, when the fractions are misshaped, negative or sum to a nonpositive weight, when the selected component's fraction is nonpositive, when nlevels is not exactly 6, or when energy_component is not exactly the integer 1, 2 or 3.",
-    "runtime_failure": "Raises ValueError if the total rate, the per-component rate or the level-1 density overflows to non-finite values for finite but extreme input magnitudes (registered hardening; the saved arm returns Inf silently).",
+    "runtime_failure": "Raises ValueError if the total rate, the per-component rate or the level-1 source-rate-per-volume overflows to non-finite values for finite but extreme input magnitudes (registered hardening; the saved arm returns Inf silently).",
     "nonconvergence": "Not applicable.",
     "partial_results": "Never returned."
   },
@@ -139,13 +139,13 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev46",
+    "implementation_version": "0.1.0.dev47",
     "dependencies": []
   },
   "example": {
-    "description": "Materialize the half-energy component on a known cell and check the level-1 density against the source formula.",
+    "description": "Materialize the half-energy component on a known cell and check the level-1 source-rate-per-volume against the source formula.",
     "code": "import numpy as np\nfrom scirel.fusion import materialize_nbi_component_initial_state\nout = materialize_nbi_component_initial_state(\n    injected_power_mw=1.0, injection_energy_kev=50.0,\n    current_fractions=np.array([0.6, 0.3, 0.1]),\n    beam_grid_cell_volume_cm3=1.0e-6, energy_component=2, nlevels=6)\nexpected_rate = 1.0e6 * 1.0 / (1.0e3 * 50.0 * 1.60217733e-19 * (0.6 + 0.15 + 0.1 / 3.0))\nassert out['total_neutral_rate_s_inv'] == expected_rate\nassert out['initial_state_rate_per_volume_cm_inv3_s_inv'][0] == expected_rate * 0.3 / 1.0e-6\nassert np.all(out['initial_state_rate_per_volume_cm_inv3_s_inv'][1:] == 0.0)\ntry:\n    materialize_nbi_component_initial_state(\n        injected_power_mw=1.0, injection_energy_kev=50.0,\n        current_fractions=np.array([0.6, 0.3, 0.1]),\n        beam_grid_cell_volume_cm3=1.0e-6, energy_component=2, nlevels=3)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError(\"nlevels must equal the source six-level contract\")",
-    "expected": "The rate and level-1 density match the source formula exactly; levels 2-6 stay zero; nlevels != 6 raises ValueError."
+    "expected": "The rate and level-1 source-rate-per-volume match the source formula exactly; levels 2-6 stay zero; nlevels != 6 raises ValueError."
   },
   "verification": {
     "scope": [
@@ -155,7 +155,7 @@
     "tests": [
       "tests/operator_contracts/test_nbi_birth_leaves.py"
     ],
-    "evidence_ceiling": "The maintained direct tests establish the materialization against an independent closed-form recomputation (exact equality on the weight factor, total rate, per-component rate and level-1 density), the level-1-only population contract, the strict nlevels/component type contracts, and the registered overflow gates with two discriminating witnesses: an extreme power overflowing the total rate, and a finite rate whose per-cell density overflows through a tiny volume (the density gate catches what the rate gate misses). Environment-gated saved-arm parity is not replayed here; the FIDASIM saved packages ship package-level oracles rather than a pinned source-runtime replay target, and the recorded implementation digest provides the provenance linkage. No test establishes the materialization against an external atomic-physics reference beyond the frozen source formula.",
+    "evidence_ceiling": "The maintained direct tests establish the materialization against an independent closed-form recomputation (exact equality on the weight factor, total rate, per-component rate and level-1 source-rate-per-volume), the level-1-only population contract, the strict nlevels/component type contracts, and the registered overflow gates with two discriminating witnesses: an extreme power overflowing the total rate, and a finite rate whose per-cell source-rate-per-volume overflows through a tiny volume (the source-rate-per-volume gate catches what the rate gate misses). Environment-gated saved-arm parity is not replayed here; the FIDASIM saved packages ship package-level oracles rather than a pinned source-runtime replay target, and the recorded implementation digest provides the provenance linkage. No test establishes the materialization against an external atomic-physics reference beyond the frozen source formula.",
     "known_limitations": [
       "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
       "The six-level, level-1-only start is the source's discrete contract, not a full atomic-kinetics solution.",

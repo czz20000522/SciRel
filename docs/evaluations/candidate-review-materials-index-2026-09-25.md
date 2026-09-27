@@ -32,17 +32,17 @@ needs a successor, not a silent edit.
 
 Directory: `review_candidates/2026-09-27-cross-node-leaves/`
 Successor of batch r71: the r71 candidate files below keep their frozen r71 v2 bytes and digests; this batch binds the new bytes.
-- `review.md` -- sha256 `17af20e3d086b66dcc5f7dbb1e1133ca9ef259f6a10b6a6aedc6103d9e86642f`
+- `review.md` -- sha256 `d5fcdd5f49925cecee7a1347ae3b9ad4f2c986abd171ec5468a3403dccb41a44`
 - `proposal/dd_rate_table_interpolation.py` -- sha256 `c840d5051f013f170d67819b256f4d399a38fe6d105df7f7f1a61dcb29f40b68`
 - `proposal/fast_ion_relative_energy.py` -- sha256 `29a4f0c5f61c57c746dbbe15fa5610f15e12301691bc074171276e70dba095ff`
 - `proposal/mc_marker_weight_allocation.py` -- sha256 `9d751ea51949b32608e95506611a8e7f8b8024ab9c51fc39d6a86da70a885139`
 - `proposal/nbi_cell_directed_ray.py` -- sha256 `be045ae284bd1ec4f1fec71f9b99c57d3979a17087d0e9fd83fb7891b0198fcb`
-- `proposal/nbi_injected_neutrals_normalization.py` -- sha256 `4d09c5df122b3e5ae0af30d3a8c13b7b5a1ac2a9731daf0fef388b102946e426`
-- `proposal/scirel.fusion.dd-rate-table-interpolation.json` -- sha256 `40c49476e46e38cdc61ee9e7ea7aa3ab018a1fd3b105062932f5e2af1eac9e55`
-- `proposal/scirel.fusion.fast-ion-relative-energy.json` -- sha256 `4ca127a08ba534e11cf8bbbd81615cecf05e779eb448d35c7cb81c0b2769e3e1`
-- `proposal/scirel.fusion.mc-marker-weight-allocation.json` -- sha256 `686e9cc6fc347236786239c79786a1d0b25afd27285bd4e10c6bffc562a1565f`
-- `proposal/scirel.fusion.nbi-cell-directed-ray.json` -- sha256 `c944ce30e599f1698e2b1dcf45f060f875bc8b175b0d37100f36caf7ebbf4b70`
-- `proposal/scirel.fusion.nbi-injected-neutrals-normalization.json` -- sha256 `a9d40107db2471330b13390ad39ca8df68cb49b9345cea7f5995a1e3a3c290b9`
+- `proposal/nbi_injected_neutrals_normalization.py` -- sha256 `98167771be31a9592e38f603e34c1ccd5131f7a0faf789c119710dda1c6ab4de`
+- `proposal/scirel.fusion.dd-rate-table-interpolation.json` -- sha256 `5e65c05906fdb310704580b9aaa1f123e0b11057dee80378fcffefd93d9ee555`
+- `proposal/scirel.fusion.fast-ion-relative-energy.json` -- sha256 `bf990a879e1ef069ba087f22fe848f797502a9ce54314112ce758e348fb167a4`
+- `proposal/scirel.fusion.mc-marker-weight-allocation.json` -- sha256 `b107bbf994e34204ee3b83bb908e6bf75e22a7b09958896b4336eaa8d61887a1`
+- `proposal/scirel.fusion.nbi-cell-directed-ray.json` -- sha256 `6d7ca0dd17acc4ee9c0be4d550e7bfdec0cc0cd403f16c848c8545d11609545d`
+- `proposal/scirel.fusion.nbi-injected-neutrals-normalization.json` -- sha256 `a47e75dabf5b6ace9c58a5df5a4a5e3b0ececebca70d3a01ed03f3b6442bcd06`
 - `proposal/test_cross_node_leaves.py` -- sha256 `d86883545ee5cf3da9fb1f3409efaf54634c91e5bb4005fe0f5a5f04597fdafe`
 
 ## Batch r71: FIDASIM fast-ion/neutral cross-node leaf family (five operators)

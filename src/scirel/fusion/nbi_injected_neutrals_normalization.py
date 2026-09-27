@@ -22,7 +22,7 @@ ELEMENTARY_CHARGE_C = 1.602176634e-19
 
 
 def normalize_nbi_injected_neutrals(injected_power_mw, injection_energy_kev, current_fractions, beam_grid_cell_volume_cm3):
-    """Return total neutral rate and full/half/third initial state density."""
+    """Return total neutral rate and full/half/third initial state source rate per volume."""
     fractions = np.asarray(current_fractions, dtype=float)
     if (fractions.shape != (3,) or not np.all(np.isfinite(fractions))
             or np.any(fractions < 0)
@@ -42,7 +42,7 @@ def normalize_nbi_injected_neutrals(injected_power_mw, injection_energy_kev, cur
     densities = total * fractions / beam_grid_cell_volume_cm3
     if not np.isfinite(total) or not np.all(np.isfinite(densities)):
         raise ValueError(
-            "NBI normalization overflowed to non-finite rates/densities for "
+            "NBI normalization overflowed to non-finite rates/source-rate-per-volume values for "
             "finite but extreme input magnitudes (registered hardening)")
     return {
         "total_neutral_rate_s_inv": total,

@@ -23,7 +23,7 @@ trusted version, or a public release.
 
 - `scirel.fusion.dd-rate-table-interpolation`
   (`dd_reaction_rate_per_s`, N9) — bilinear log10 rate table interpolation
-  with per-branch axis and density scaling.
+  with per-branch axis and source-rate-per-volume scaling.
 - `scirel.fusion.fast-ion-relative-energy`
   (`calculate_fast_ion_relative_energy`, N9) — E_rel =
   v2_to_E_per_amu * A * |v_i - v_rot|^2.
@@ -66,7 +66,7 @@ declared.
 1. **Registered overflow/finite-output gates** with discriminating
    witnesses: DD rate exponentiation (finite extreme table contents → Inf
    in the saved arm), relative-beam energy (max-finite velocities), NBI
-   normalization (weight factor and rate/density overflow), cell-ray
+   normalization (weight factor and rate/source-rate-per-volume overflow), cell-ray
    outputs.
 2. **Registered conservation gate**: marker allocation conserves
    requested_markers; the saved arm has no such check.

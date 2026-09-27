@@ -6,7 +6,7 @@
     "en": "NBI injected neutral normalization",
     "zh": "NBI注入粒子数与初始态归一化"
   },
-  "summary": "Normalize NBI injected power to a total neutral rate and per-component rates/densities over the full/half/third energy components using the CODATA 2018 elementary charge.",
+  "summary": "Normalize NBI injected power to a total neutral rate and per-component rates and source-rate-per-volume values over the full/half/third energy components using the CODATA 2018 elementary charge.",
   "taxonomy": [
     "fusion",
     "neutral-beam-source-sampling",
@@ -17,13 +17,13 @@
     "normalize_nbi_injected_neutrals"
   ],
   "identity": {
-    "relation": "nneutrals = 1e6 * P_MW / (1e3 * E_keV * e * sum_k(fraction_k / k)) with e = 1.602176634e-19 C and k in {1,2,3}; component rates = nneutrals * fraction_k; densities = component rates / cell volume.",
-    "direction": "injected power + injection energy + full/half/third current fractions + beam-grid cell volume -> total neutral rate, per-component rates, per-cell densities, weight factor",
+    "relation": "nneutrals = 1e6 * P_MW / (1e3 * E_keV * e * sum_k(fraction_k / k)) with e = 1.602176634e-19 C and k in {1,2,3}; component rates = nneutrals * fraction_k; source_rate_per_volume = component rates / cell volume.",
+    "direction": "injected power + injection energy + full/half/third current fractions + beam-grid cell volume -> total neutral rate, per-component rates, per-cell source-rate-per-volume values, weight factor",
     "definition": "The saved FIDASIM ndmc normalization (framework node N2 neutral_beam_source_sampling). This leaf keeps the CODATA 2018 elementary charge 1.602176634e-19 C; the older scirel.fusion.nbi-component-initial-state leaf keeps the source's 1.60217733e-19 as a distinct, explicitly documented contract (the e0 difference is an open expert adjudication).",
     "model": "the saved formal implementation, ported verbatim with registered finite-output gates",
     "geometry": "one beam-grid cell; 3-vector outputs",
-    "coordinates": "power in MW, energy in keV, volume in cm^3, densities in cm^-3, rates in s^-1",
-    "boundary": "finite nonnegative power and fractions; positive energy and volume; the weight factor, total rate and densities must all remain finite",
+    "coordinates": "power in MW, energy in keV, volume in cm^3, source rates per volume in cm^-3 s^-1, rates in s^-1",
+    "boundary": "finite nonnegative power and fractions; positive energy and volume; the weight factor, total rate and source-rate-per-volume values must all remain finite",
     "assumptions": [
       "The CODATA 2018 elementary charge is this leaf's declared contract.",
       "No external physics reference is bound beyond the source formula."
@@ -88,7 +88,7 @@
     },
     {
       "name": "initial_state_rate_per_volume_cm_inv3_s_inv",
-      "description": "Per-cell initial-state densities.",
+      "description": "Per-cell initial-state source rate per volume (the saved source's legacy 'initial_state_density' key name is a misnomer for this quantity).",
       "units": "cm^-3 s^-1 (neutral source rate per unit volume; the source's implicit 1 s convention is not proven)",
       "shape": "[3]",
       "dtype": "float64 array",
@@ -139,7 +139,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev46",
+    "implementation_version": "0.1.0.dev47",
     "dependencies": []
   },
   "example": {

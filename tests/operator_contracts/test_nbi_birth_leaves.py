@@ -114,8 +114,8 @@ def test_initial_state_rejects_bad_levels_components_and_extremes():
         dict(good, energy_component=2, nlevels=6,
              current_fractions=np.array([0.6, 0.3, 0.1]) * -1.0),
         # recorded overflow chains: (a) huge power overflows the total rate;
-        # (b) a finite rate times a tiny volume overflows the per-cell density
-        # even though the rate itself stays finite -- the density gate catches
+        # (b) a finite rate times a tiny volume overflows the per-cell source-rate-per-volume value
+        # even though the rate itself stays finite -- the source-rate-per-volume gate catches
         # what the rate gate misses
         dict(good, energy_component=2, nlevels=6,
              injected_power_mw=1e308, beam_grid_cell_volume_cm3=1e-300),

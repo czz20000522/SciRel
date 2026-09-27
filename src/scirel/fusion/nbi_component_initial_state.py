@@ -70,8 +70,8 @@ def materialize_nbi_component_initial_state(
         raise ValueError("selected energy component and total current fraction must be positive")
     nneutrals = 1.0e6 * power / (1.0e3 * energy * ELEMENTARY_CHARGE_C * energy_factor)
     # Registered hardening: finite extreme power/volume ratios can overflow;
-    # the saved arm would return Inf densities silently.  Both the total rate
-    # and the per-cell density (rate * fraction / volume) are checked.
+    # the saved arm would return Inf source-rate-per-volume values silently.  Both the total rate
+    # and the per-cell source-rate-per-volume (rate * fraction / volume) are checked.
     if not np.isfinite(nneutrals):
         raise ValueError(
             'initial-state materialization overflowed to a non-finite rate '
