@@ -1,6 +1,6 @@
 # 有限谐波动理学色散张量开发整合记录
 
-状态：隔离开发候选；不是合格 whole-source D1 接纳、专家批准或公开发行。
+状态：已进入 SciRel 开发基线；不是合格 whole-source D1 接纳、专家批准或公开发行。
 本批以主仓 `11baa5e` 为基线，逐项对照 intake `647d5db` 的
 `scirel.kinetic.kinetic-dispersion-sum`。公共科学合同在
 [exact document](../../catalog/examples/scirel.kinetic.kinetic-dispersion-sum.json)。
@@ -58,4 +58,9 @@ fluidBW r6 保存产物因 `bonk/fDtensor.m` 的九个终端 `Kij` 和 `DD`
 - `python -m pytest tests/operator_contracts/test_kinetic_dispersion_sum_n.py -q`：
   修复后 **19 passed**；来源行列式、九个张量分量与容差未弱化。
 - 19 份 dev5 exact documents 的签名与示例通过 runtime 校验。
-- 最终 affected、catalog 和差异检查以主仓本批提交结果为准。
+- 主仓 `pwsh ./scripts/check.ps1 -Mode affected -BaseRef 11baa5e`：
+  精确选择 5 个测试文件，**98 passed**，无全套回退。
+- 主仓 `python scripts/validate_asset_documents.py catalog/examples --check-runtime --execute-examples`：
+  19 份 exact documents 均通过，运行时签名和示例已检查。
+- 主仓 `git diff --check 11baa5e..HEAD`：通过；科学关系和文档提交为
+  `b4b4e92`，README 两处计数提交为 `3439229`。
