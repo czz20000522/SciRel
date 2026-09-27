@@ -26,7 +26,7 @@
 ## 登记的分歧与加固
 
 - **登记加固**(带判别见证):genuine-integer 轨道限制、sample 下标与 grid shape(bool、`np.bool_`、整值浮点拒绝——保存臂 `isinstance(int)`/`astype(int)` 接受 bool、截断浮点);`nlaunch`/体积/时长/prior 沉积的 genuine finite scalar 门(含 graph-internal 初始化与快照助手);非数值 N4 记录字段抛 ValueError 而非裸 TypeError;负 `dens_cm_inv3` 或 `photons_per_cm3_s` fail closed(保存臂自身合同声明非负但实现只拒绝负 next states);快照助手跃迁表 knot 数为 genuine integer(保存臂 `int()` 静默截断);NDMC 累积群体必须保持有限。
-- **源 quirk 逐字保留**:零速度空遍历、50 步穿越二分、crossing-limit pop、自适应计数/上限公式、沉积图源节点顺序(不可交换)、真空段零温接受、in-grid `store_neutrals` 累积顺序。
+- **源 quirk 逐字保留**:零速度空遍历、50 次固定细分定位穿越、crossing-limit pop、自适应计数/上限公式、沉积图源节点顺序(不可交换)、真空段零温接受、in-grid `store_neutrals` 累积顺序。
 
 ## 组合证据
 
