@@ -1,0 +1,210 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.molecular-alpha-contraction",
+  "kind": "operator",
+  "title": {
+    "en": "Molecular alpha collision frequency contraction",
+    "zh": "分子氢碰撞频率收缩"
+  },
+  "summary": "Per spatial cell, contract the molecular three-family assembled SIG collision matrices (CX, H2-H, H2-H+) with the Fortran-order flattened predecessor distributions to three (nvr,nvx,nx) Alpha collision-frequency fields; ni_correct selects the source's max(n - nHP, 0) ion-density correction.",
+  "taxonomy": [
+    "kinetic",
+    "neutral-transport",
+    "collision",
+    "contraction"
+  ],
+  "aliases": [
+    "contract_molecular_hydrogen_alpha_frequencies"
+  ],
+  "identity": {
+    "relation": "Alpha_CX[:,:,k] = F^-1(SIG_CX @ F(fHp_hat[:,:,k]*nHP[k])), Alpha_H2_H[:,:,k] = F^-1(SIG_H2_H @ F(fH[:,:,k])), Alpha_H2_P[:,:,k] = F^-1(SIG_H2_P @ F(fi_hat[:,:,k]*ni[k])), with ni = n, or ni = max(n - nHP, 0) when ni_correct is set; F/F^-1 are the source's legacy Fortran-order (order='F') flatten/restore between the (nvr,nvx) slice and the (nvr*nvx,) Work carrier.",
+    "direction": "three assembled SIG collision matrices + explicit predecessor distributions and densities (fH, fHp_hat, fi_hat, n, nHP) -> three Alpha collision-frequency fields (Alpha_CX, Alpha_H2_H, Alpha_H2_P)",
+    "definition": "The saved source's per-k matrix-vector contraction: each family multiplies one assembled (N,N) SIG matrix by the Fortran-order flattening of one predecessor distribution carried on the (nvr*nvx,) Work buffer and restores the product to the (nvr,nvx) slice. The CX family carries fHp_hat (the H2+ Maxwellian seeded with drift vxi and temperature THP) scaled cell-wise by nHP[k]; the H2-H family carries the bare atomic distribution fH; the H2-P family carries the proton seed fi_hat scaled by ni, where ni = n or, when ni_correct is set, ni = max(n - nHP, 0) cell-wise.",
+    "model": "the saved formal implementation, which reproduces the intended Fortran-order contraction with the minimal reshape repair of the registered kinetic_h2.py:1204 Alpha_CX defect; reproduced bit for bit on the declared legal domain (SHA-256-pinned environment-gated replay)",
+    "geometry": "per spatial cell k: an (nvr,nvx) cylindrical velocity slice Fortran-order flattened to an (N,) carrier (N = nvr*nvx), contracted against an (N,N) assembled collision matrix, restored to (nvr,nvx); iterated over nx slices",
+    "coordinates": "cylindrical (vr,vx) velocity space per spatial slice x; velocity axes in the caller's normalized units, densities in m^-3; the callable performs no implicit unit conversion",
+    "boundary": "finite aligned inputs of the declared shapes; negative or zero densities are not rejected at runtime -- every finite density profile is contracted as given (the ni_correct branch clamps n - nHP at zero cell-wise, which is a source-defined density correction, not a positivity gate); bounded negative output cells inherited from the signed elastic SIG families (vx_vx factors) are reproduced as-is, never clamped",
+    "assumptions": [
+      "Registered source defect, repaired in the saved formal implementation: kinetic_h2.py:1204 writes Alpha_CX[:,:,k] = SIG_CX @ Work without the Fortran-order restore reshape, which fails on the canonical nvr*nvx carrier. The saved formal implementation applies the minimal .reshape(..., order='F') repair; this port reproduces the repaired saved implementation bit for bit, and the original defect stays registered verbatim in the immutable source for expert review.",
+      "The SIG matrices arrive already assembled (molecular three-family collision-matrix assembly): entries are cross section times relative speed times the velocity-space quadrature weight evaluated on the (vr,vx) energy carrier, including the signed elastic vx_vx factors; this operator only contracts and never clamps or re-scales them.",
+      "Bounded negative cells inherited from the signed elastic SIG families are reproduced as-is; whether they correspond to physically acceptable diffusion behavior is left to expert review.",
+      "Negative or zero densities are not rejected at runtime; the saved domain assumes physically meaningful finite profiles, and the fail-closed contract covers only shape/alignment and non-finite values.",
+      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "SIG_CX",
+      "description": "Assembled H2 + H2+ charge-exchange collision matrix from the molecular three-family assembly: sigma_cx_hh evaluated on the velocity-carrier energy grid, multiplied by the relative speed and the (Vr2pidVr*dVx) quadrature weight, laid out on the Fortran-order flattened (nvr*nvx) velocity carrier.",
+      "units": "source-discrete assembled collision-matrix measure (cross section x relative speed x velocity-space weight); no implicit conversion",
+      "shape": "[N, N] with N = nvr*nvx",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; must be 2-D square with order exactly nvr*nvx. The saved assembly produces a nonnegative SIG_CX; the contraction preserves whatever sign pattern the caller supplies."
+    },
+    {
+      "name": "SIG_H2_H",
+      "description": "Assembled H2-H elastic collision matrix: sigma_el_h_hh with weight Vr2pidVr*dVx times the signed vx_vx factor, on the same Fortran-order velocity carrier.",
+      "units": "source-discrete assembled collision-matrix measure (cross section x relative speed x velocity-space weight); no implicit conversion",
+      "shape": "[N, N] with N = nvr*nvx",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; 2-D square with order exactly nvr*nvx. Contains bounded negative cells from the signed vx_vx factor; reproduced as-is."
+    },
+    {
+      "name": "SIG_H2_P",
+      "description": "Assembled H2-H+ elastic collision matrix: sigma_el_p_h (two energy branches) with weight Vr2pidVr*dVx times the signed vx_vx factor, on the same Fortran-order velocity carrier.",
+      "units": "source-discrete assembled collision-matrix measure (cross section x relative speed x velocity-space weight); no implicit conversion",
+      "shape": "[N, N] with N = nvr*nvx",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; 2-D square with order exactly nvr*nvx. Contains bounded negative cells from the signed vx_vx factor; reproduced as-is."
+    },
+    {
+      "name": "fH",
+      "description": "Atomic neutral velocity distribution on the cylindrical (vr,vx) mesh, the predecessor carried unchanged into the Alpha_H2_H contraction.",
+      "units": "source-discrete distribution density",
+      "shape": "[nvr,nvx,nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; shape (nvr,nvx,nx) exactly; its leading axes define N = nvr*nvx for every SIG matrix."
+    },
+    {
+      "name": "fHp_hat",
+      "description": "H2+ molecular-ion Maxwellian seed distribution on the cylindrical (vr,vx) mesh (drift vxi, temperature THP); scaled cell-wise by nHP[k] inside the Alpha_CX contraction.",
+      "units": "source-discrete normalized distribution density",
+      "shape": "[nvr,nvx,nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; shape (nvr,nvx,nx) exactly."
+    },
+    {
+      "name": "fi_hat",
+      "description": "H+ proton Maxwellian seed distribution on the cylindrical (vr,vx) mesh (drift vxi, temperature Ti); scaled cell-wise by ni[k] inside the Alpha_H2_P contraction.",
+      "units": "source-discrete normalized distribution density",
+      "shape": "[nvr,nvx,nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; shape (nvr,nvx,nx) exactly."
+    },
+    {
+      "name": "n",
+      "description": "Electron density profile (source mesh.ne), used as the ion density ni in the Alpha_H2_P contraction unless ni_correct is set.",
+      "units": "m^-3",
+      "shape": "[nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; 1-D with size nx. Negative or zero entries are not rejected at runtime: the contraction uses each value as given."
+    },
+    {
+      "name": "nHP",
+      "description": "H2+ molecular-ion density profile scaling the fHp_hat carrier in the Alpha_CX contraction and entering the ni_correct density correction.",
+      "units": "m^-3",
+      "shape": "[nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; 1-D with size nx. Negative or zero entries are not rejected at runtime."
+    },
+    {
+      "name": "ni_correct",
+      "description": "Branch selector for the source's ion-density correction: when set, ni = max(n - nHP, 0) instead of ni = n (kinetic_h2.py:1221-1223).",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "boolean scalar",
+      "required": false,
+      "constraints": "Truthiness selects the corrected-density branch; both branches are exercised by the maintained tests.",
+      "default": false
+    }
+  ],
+  "outputs": [
+    {
+      "name": "Alpha_CX",
+      "description": "H2 + H2+ charge-exchange collision-frequency field: SIG_CX contracted with the Fortran-order flattened (fHp_hat*nHP) carrier, one (nvr,nvx) slice per spatial cell.",
+      "units": "s^-1 (subject to the caller's assembled SIG measure; no implicit conversion)",
+      "shape": "[nvr,nvx,nx]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite (fail closed otherwise); nonnegative on the saved domain where SIG_CX is nonnegative; never clamped."
+    },
+    {
+      "name": "Alpha_H2_H",
+      "description": "H2-H elastic collision-frequency field: SIG_H2_H contracted with the Fortran-order flattened fH slice.",
+      "units": "s^-1 (subject to the caller's assembled SIG measure; no implicit conversion)",
+      "shape": "[nvr,nvx,nx]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite (fail closed otherwise); bounded negative cells inherited from the signed vx_vx SIG factor are reproduced as-is, never clamped."
+    },
+    {
+      "name": "Alpha_H2_P",
+      "description": "H2-H+ elastic collision-frequency field: SIG_H2_P contracted with the Fortran-order flattened (fi_hat*ni) carrier, ni = n or max(n - nHP, 0) per the ni_correct branch.",
+      "units": "s^-1 (subject to the caller's assembled SIG measure; no implicit conversion)",
+      "shape": "[nvr,nvx,nx]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite (fail closed otherwise); bounded negative cells inherited from the signed vx_vx SIG factor are reproduced as-is, never clamped."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite aligned SIG matrices of common order nvr*nvx, finite (nvr,nvx,nx) distributions, and finite 1-D density profiles of size nx.",
+      "The predecessor distributions and the assembled SIG matrices already exist; this operator performs no assembly, gating, or cache handling."
+    ],
+    "supported": [
+      "Molecular three-family Alpha collision-frequency contraction (Alpha_CX, Alpha_H2_H, Alpha_H2_P) on a declared velocity carrier, with both ni_correct branches."
+    ],
+    "excluded": [
+      "Atomic four-family contraction, the Omega_* downstream aggregation inside fH2_iterate, Do_Alpha_* gating, KH2.Internal cache lifecycle, and external physical validation."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when a SIG matrix is not 2-D square, when any SIG order differs from the nvr*nvx carrier, when any distribution is not (nvr,nvx,nx), when n or nHP is not 1-D of size nx, or when any input contains a non-finite value.",
+    "runtime_failure": "Raises ValueError if any contracted family produces a non-finite array; no partial results are returned.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy 分子氢碰撞频率收缩 package, source anchor KN1DPy/kinetic_h2.py:1136-1226, as recorded by the saved bundle's own provenance section. Saved implementation file SHA-256 bbf1f1edc4c82ddda57ac7cb32730d4bfb5749670151f73ff2de370313366915. The saved formal implementation itself carries the minimal reshape repair of the registered kinetic_h2.py:1204 Alpha_CX source defect, and this port reproduces the repaired saved implementation bit for bit on the declared legal domain; the original defect stays registered verbatim in the immutable source. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is provisional bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent recomputation witness",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.molecular_alpha_contraction",
+      "symbol": "contract_molecular_hydrogen_alpha_frequencies",
+      "signature": "contract_molecular_hydrogen_alpha_frequencies(SIG_CX, SIG_H2_H, SIG_H2_P, fH, fHp_hat, fi_hat, n, nHP, ni_correct=False)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev5",
+    "dependencies": []
+  },
+  "example": {
+    "description": "With identity SIG matrices each Alpha family equals its carrier scaled by the matching density, and the ni_correct branch shifts the Alpha_H2_P carrier to max(n - nHP, 0).",
+    "code": "import numpy as np\nfrom scirel.kinetic import contract_molecular_hydrogen_alpha_frequencies\nnvr, nvx, nx = 2, 3, 2\nN = nvr * nvx\nfH = np.ones((nvr, nvx, nx))\nfHp_hat = np.ones((nvr, nvx, nx))\nfi_hat = np.ones((nvr, nvx, nx))\nn = np.full(nx, 1e18)\nnHP = np.full(nx, 4e17)\nresult = contract_molecular_hydrogen_alpha_frequencies(\n    np.eye(N), np.eye(N), np.eye(N), fH, fHp_hat, fi_hat, n, nHP,\n)\nassert set(result) == {\"Alpha_CX\", \"Alpha_H2_H\", \"Alpha_H2_P\"}\nnp.testing.assert_array_equal(result[\"Alpha_CX\"], fHp_hat * 4e17)\nnp.testing.assert_array_equal(result[\"Alpha_H2_P\"], fi_hat * 1e18)\ncorrected = contract_molecular_hydrogen_alpha_frequencies(\n    np.eye(N), np.eye(N), np.eye(N), fH, fHp_hat, fi_hat, n, nHP, ni_correct=True,\n)\nnp.testing.assert_array_equal(corrected[\"Alpha_H2_P\"], fi_hat * 6e17)",
+    "expected": "Alpha_CX carries fHp_hat scaled by nHP, Alpha_H2_P carries fi_hat scaled by n, and the ni_correct branch rescales it to fi_hat scaled by max(n - nHP, 0)."
+  },
+  "verification": {
+    "scope": [
+      "Bit-identical agreement with the saved KN1DPy implementation.",
+      "Input and failure contracts."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_alpha_contraction.py",
+      "tests/operator_contracts/test_alpha_contraction_l1.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests establish output keys and shapes, finite real and alignment failures, exact small diagonal-matrix witnesses for all three family/carrier bindings, and both ni_correct branches including clipping at zero. The environment-gated replay test can establish bit-identical agreement with the SHA-256-pinned saved KN1DPy implementation on its finite samples after the registered Alpha_CX reshape repair. That replay is provisional historical development evidence, not qualified-L1 provenance. No test establishes the relation against an external atomic-physics reference; the saved package records that residual as validation_oracle_gap.",
+    "known_limitations": [
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "The Alpha_CX reshape repair relative to the raw kinetic_h2.py source is registered, not silently absorbed; its scientific framing remains an expert-review item.",
+      "Negative cells in the elastic families and negative densities are reproduced or contracted as given; their physical acceptability is an open expert question, not a runtime gate.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

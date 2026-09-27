@@ -33,6 +33,8 @@ from .atomic_scattered_sources_reduction import reduce_atomic_scattered_sources
 from .molecular_scattered_sources_reduction import reduce_molecular_scattered_sources
 from .elastic_regeneration_aggregation import aggregate_elastic_regeneration_source
 from .simple_charge_exchange_source import assemble_simple_charge_exchange_source
+from .atomic_alpha_contraction import contract_atomic_hydrogen_alpha_frequencies
+from .molecular_alpha_contraction import contract_molecular_hydrogen_alpha_frequencies
 from .grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
 from .frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure
 
@@ -48,3 +50,4 @@ __all__.extend(['assemble_neutral_upwind_transport_coefficients', 'propagate_neu
 __all__.extend(['evaluate_neutral_generation_stopping', 'update_neutral_generation_accumulation', 'evaluate_neutral_outer_seed_convergence', 'evaluate_kn1d_outer_convergence'])
 __all__.extend(['sum_elastic_frequency_channels', 'assemble_neutral_total_collision_frequency'])
 __all__.extend(['reduce_atomic_scattered_sources', 'reduce_molecular_scattered_sources', 'aggregate_elastic_regeneration_source', 'assemble_simple_charge_exchange_source'])
+__all__.extend(['contract_atomic_hydrogen_alpha_frequencies', 'contract_molecular_hydrogen_alpha_frequencies'])
