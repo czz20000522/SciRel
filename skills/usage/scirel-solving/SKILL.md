@@ -35,6 +35,12 @@ they matter for this problem.
 Separate user facts, explicit assumptions, defaults, and unresolved questions. Ask for clarification when an unknown
 would change the model, applicability, boundary, closure, units, or meaning of the result. A harmless presentation
 choice should not block the scientific work. Never silently choose a materially different model.
+When two applicable ways to evaluate or reuse a result would give different numbers and the request does not choose
+between them, treat the result definition as unresolved even if both calculations are scientifically valid. Ask one
+focused question while continuing independent preparation. If the host cannot obtain an answer and a choice can be
+reversed without losing prior work, state the narrow assumption before delivery, label the result by that choice, and
+keep enough inputs and prior output to correct it later. A later clarification changes the requested result; it does
+not retroactively make a correctly executed alternative calculation a scientific error.
 For each material input, distinguish a user statement, a fact read from a user file, an exact-document default, and
 your own proposal. Keep a file location or artifact reference for file facts. Connect the user's goal to the expected
 outputs and checks; do not describe a proposed assumption as a user requirement.
@@ -176,6 +182,12 @@ conservation, residuals, convergence, positivity, symmetry, limits, or another p
 that passed, failed, were inapplicable, or were not performed. A successful call is not proof of physical correctness,
 and a local check does not expand an asset's evidence ceiling. Do not run the full repository test suite as part of an
 ordinary user calculation.
+For a numeric file or table delivered to the user, read the written artifact through a consumer path independent of
+the production serializer and its in-memory values. Check that numeric cells parse as numbers, that representative
+source-derived values and units survive serialization, and that missing or unavailable rows retain their declared
+meaning. Rerun the ordinary user entrypoint with unchanged inputs and check the files it actually regenerates; a
+passing in-memory result or optional test does not establish a readable, repeatable delivery. If every rerun is
+claimed to enforce file quality, include this check in that ordinary path before promoting new user-facing results.
 For a planned material source-to-port witness, compare the independently derived expected value with the actual
 port passed to the asset, not merely with another result computed from that port. Repeat it for materially changed
 input rows and, when available, compare a raw-source-derived observable with the delivered one. If independence is
@@ -193,6 +205,8 @@ Classify a failure as an input/port or environment error, an applicability or ca
 result check. You may repair a non-scientific execution error and rerun affected steps and checks, recording what
 changed. Revalidate the plan when a repair changes a model, asset, unit, boundary, tolerance, or connection. Preserve
 failed scientific checks and stop when the result cannot be justified; do not silently switch assets or relax checks.
+Keep an unresolved or corrected user result definition separate from those failures. Preserve the first interpretation
+and its checks, record the clarification or changed assumption, and validate the new result on its own terms.
 
 ## Explain and hand off
 

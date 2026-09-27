@@ -63,7 +63,11 @@ answer. If the user delegated the choice, select the narrowest defensible model 
    failure proves a new material scientific ambiguity.
 7. Read back the primary user-facing files, not only test summaries. Trace a representative value and, when
    present, an unavailable row from supplied input through the declared units, applicability and displayed
-   result or reason. Check that physical conclusions follow from quantities actually computed; sampling a
+   result or reason. Use the format's ordinary independent reader to parse written numeric columns, rather than
+   trusting the serializer's in-memory values or its own round-trip helper. Rerun the user-facing entrypoint with
+   unchanged inputs and check the files it actually regenerates. If the project promises this file check on every
+   rerun, put it in the ordinary delivery path; an optional test alone does not establish that guarantee. Check that
+   physical conclusions follow from quantities actually computed; sampling a
    field at a new location does not establish that every other material input is defined there. Report only
    commands, exit states, output, and artifacts actually observed. Do not claim success from generated text alone.
 
