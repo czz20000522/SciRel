@@ -2,7 +2,7 @@
 
 Base r71 `f1f07e6` (142 assets, dev45, frozen snapshot
 `build/verification/review-2026-09-27-r71-nbi-birth-leaves-v2`) -> r72
-`0.1.0.dev46` (147 assets). Five new operators in `scirel.fusion` spanning
+`0.1.0.dev47` (147 assets). Five new operators in `scirel.fusion` spanning
 three framework nodes of the saved program_framework_map: N2
 neutral_beam_source_sampling (`nbi-injected-neutrals-normalization`,
 `nbi-cell-directed-ray`), N7 fast_ion_fida_response

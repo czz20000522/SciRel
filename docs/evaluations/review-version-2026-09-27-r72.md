@@ -34,8 +34,8 @@
 ## 相对 r71 的增量
 
 - r71: NBI birth/geometry leaf family(5 项),142 资产 dev45
-- r72: cross-node leaf family(5 项),147 资产 dev46
-- 版本 `0.1.0.dev45` → `0.1.0.dev47`(dev46→dev47 为 density 误名修正)
+- r72: cross-node leaf family(5 项),147 资产 dev47(dev46 为 superseded 中间版本)
+- 版本 `0.1.0.dev45` → `0.1.0.dev47`(dev45→dev46 为科学叶新增;dev46→dev47 为 density 误名修正,dev46 为 superseded 中间版本)
 
 ## 验证(全部记录于 `build/test-evidence-r72.md`,所有子进程 returncode 已核)
 

@@ -32,7 +32,7 @@ needs a successor, not a silent edit.
 
 Directory: `review_candidates/2026-09-27-cross-node-leaves/`
 Successor of batch r71: the r71 candidate files below keep their frozen r71 v2 bytes and digests; this batch binds the new bytes.
-- `review.md` -- sha256 `d5fcdd5f49925cecee7a1347ae3b9ad4f2c986abd171ec5468a3403dccb41a44`
+- `review.md` -- sha256 `b1db6b3c3762c7767555432985a6d1d482c600800ee42908e113a5a123c53ae6`
 - `proposal/dd_rate_table_interpolation.py` -- sha256 `c840d5051f013f170d67819b256f4d399a38fe6d105df7f7f1a61dcb29f40b68`
 - `proposal/fast_ion_relative_energy.py` -- sha256 `29a4f0c5f61c57c746dbbe15fa5610f15e12301691bc074171276e70dba095ff`
 - `proposal/mc_marker_weight_allocation.py` -- sha256 `9d751ea51949b32608e95506611a8e7f8b8024ab9c51fc39d6a86da70a885139`

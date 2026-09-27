@@ -9,7 +9,7 @@ trusted version, or a public release.
 - SciRel base: `f1f07e6` (r71-v2 frozen, 142 assets dev45, snapshot
   `build/verification/review-2026-09-27-r71-nbi-birth-leaves-v2`; v1
   preserved). r72 increments the catalog to 147 exact documents, version
-  `0.1.0.dev45` -> `0.1.0.dev46`.
+  `0.1.0.dev45` -> `0.1.0.dev46` -> `0.1.0.dev47` (dev46 was a superseded intermediate version before the density-misnomer key rename and prose cleanup).
 - Unpublished candidate pool: re-checked by relation — none exists; the
   baseline has no D-D rate-table interpolation, no relative-energy leaf, no
   marker allocation, no NBI normalization with the CODATA e0 contract, and
@@ -110,6 +110,6 @@ declared.
 
 ## Version and impact
 
-Version `0.1.0.dev45` -> `0.1.0.dev46`; catalog 142 -> 147 exact documents.
+Version `0.1.0.dev45` -> `0.1.0.dev46` -> `0.1.0.dev47`; catalog 142 -> 147 exact documents (dev46 is a superseded intermediate version).
 The other 142 documents change only in the mechanical
 `implementation_version` bump. No other asset's contract changes.
