@@ -1,9 +1,21 @@
 ---
 name: scientific-computation-asset-extraction
-description: Use when extracting one source project into a complete frozen bundle of source-shaped scientific operators, local task graphs, project coverage, and source-free provenance.
+description: Use when extracting one source project into a complete frozen bundle of source-shaped scientific operators, local task graphs, project coverage, and source-free provenance, or when diagnosing that extraction's current progress without changing it.
 ---
 
 # Scientific Computation Asset Extraction
+
+## Select one primary mode
+
+- **Production extraction:** use the production line below when the task creates, continues, repairs, or reopens an
+  extraction bundle.
+- **Read-only progress diagnosis:** when the request asks what is complete, blocked, at risk, or next, read
+  [progress diagnosis](references/progress_diagnosis.md) first. Inspect one exact snapshot and do not run production
+  steps, edit artifacts, retry work, approve candidates, or publish a bundle.
+
+Do not combine diagnosis and mutation merely because the diagnosis identifies a repair. A later implementation task
+must receive its own scope and write authority. The remainder of this entry defines production extraction; diagnostic
+mode uses its contracts only to interpret observed evidence.
 
 ## Mission and completion boundary
 
@@ -25,6 +37,27 @@ The output is a complete extraction bundle, not a source clone, tutorial, genera
 cross-project generality. Preserve the bundle shape from
 [the artifact template pack](references/artifact_template_pack.md).
 
+For a new project, the first delivery may intentionally stop at `bounded_delivery`. In that mode, extract and
+reassemble only the selected source-backed target paths, and record other source capabilities in the root
+`extraction_report.md` section `Deferred Source Capability Register`. A deferred row is a source locator and
+reopen hint only; it is not an operator, TaskGraph, callable asset, or expert-review item. Do not create a fake
+package or machine-readable `asset_ref` for a deferred capability. Promote a deferred row to extraction only when
+SciRel assembly shows that the capability is missing or a project-level `full_freeze` claim is required.
+
+`bounded_delivery` is a finite delivery gate, not a cheaper completion claim. Before setting it, the coordinator must
+request an independent bounded-delivery review from a separate read-only subagent. The reviewer reads the exact source
+snapshot, source-derived census/index, selected bundle assets, progress snapshot, reassembly evidence, and deferred
+register; it returns a digest-bound receipt listing the reviewed target ids, source and bundle digests, findings, claim
+ceiling, and `verdict=pass|fail`. The coordinator may set `bounded_delivery` only with `verdict=pass`. The reviewed
+targets must be traced and runnable source-backed paths with canonical and sealed-holdout evidence; a report-only
+capability or a deferred row cannot be approved. Deterministic validation remains limited to schema, digest, reference,
+and receipt-shape checks when such validation is available; the subagent owns the semantic exit decision. The minimum receipt fields are `review_id`,
+`reviewer_role=independent_subagent`, `source_scope_digest`, `bundle_digest`, `reviewed_target_ids`,
+`reviewed_evidence_refs`, `claim_ceiling`, `reopen_condition`, `findings`, and `verdict`. A bounded batch must state
+its claim ceiling and reopen condition and must not imply that unlisted source capabilities were extracted.
+The receipt's ceiling and reopen condition must match the closure signal; its reviewed refs must include the
+signal evidence and each delivered case's source, bundle, comparison, and tolerance evidence.
+
 Read [stage_boundary_contract.md](references/stage_boundary_contract.md) before coordinating
 a project. D1 owns source-backed identification, source-free candidate extraction, and the
 project freeze; it does not perform correctness disposition, cross-source normalization,
@@ -37,6 +70,10 @@ Before a project freeze, run the complete-bundle dependency closure gate in
 `task_graphs/...` and `operators/...` `asset_ref` and reject every nested TaskGraph
 cycle. A package-local test can pass while a sibling reference is dangling; that is a
 project self-consistency failure and keeps the snapshot `active` or `reopened`.
+The frozen bundle must also expose the discovery-only root `asset_entry.py` contract
+from the artifact pack and pass `validate_asset_entry.py` inside the fixed asset
+sandbox. Bind that exit-0 sandbox run to the exact entry and bundle digests in
+`closure_signal.asset_entry_validation`; working snapshots may omit the entry.
 
 ## Two work planes
 
@@ -61,7 +98,51 @@ the existing `closure_signal.kind` values: `active`, `bounded_delivery`, `blocke
 affected frontier and does not stop other ready work. Only `full_freeze` represents completion of the declared
 whole-project extraction scope.
 
-Never use package counts, tests, model calls, elapsed time, or worker activity as scientific completion.
+For the new-project bounded-first mode, the selected bounded-scope target-path denominator must still be complete
+and every delivered target must pass its declared reassembly gates; this denominator is not a claim about the whole
+source project. The deferred register is an internal capability-repository
+aid and does not enlarge the candidate bundle or the expert-review queue. A later assembly gap may reopen the same
+run using the recorded source anchor and reopen condition.
+
+Do not self-review the bounded exit. The coordinator that produced the batch cannot be the bounded-delivery reviewer;
+the reviewer must have read-only access to the same run and must not modify the candidate bundle or progress snapshot.
+
+Never use package counts, tests, model calls, elapsed time, or worker activity as scientific completion. They may be
+recorded separately to compare workflow cost when the scientific scope and freeze gates remain unchanged.
+
+## Gate ownership
+
+Keep deterministic gates narrow: schema shape, content digests, path containment, cross-reference closure, and
+declared receipt consistency are suitable for scripts. Do not try to enumerate every scientific shortcut or semantic
+failure mode in validators. Delegate non-enumerable judgments to an independent read-only subagent that can inspect
+the source, evidence index, bundle implementation, tests, and runtime receipts together. Typical delegated judgments
+include whether a target is genuinely source-backed, whether a deferred row hides a required core relation, whether
+state/branches/terminal outputs are represented honestly, and whether the claim ceiling matches the evidence. The
+subagent must record findings, uncertainty, reviewed digests, and a verdict; it may reject a delivery without editing
+the bundle. For `full_freeze`, the reviewer first derives terminal scientific outputs and material model branches
+from the bound source, public entry points, tests/examples, and nested source versions without using the candidate
+target list as the discovery denominator. It then reconciles those findings against target paths, assets, and
+non-candidate dispositions; it must not limit review to paths the candidate already declares. A parameter fixture
+covered by the same generic relation need not become a new asset, but its coverage claim must be source-supported.
+A validator pass never substitutes for this semantic review.
+
+## Evidence navigation and reuse
+
+Before the thin scientific pass, build or reuse a run-scoped structural evidence index bound to the exact source
+digest. It may record file and language inventory, parse status, symbols, static references and call edges, candidate
+entry points, tests/examples/documents, explicit reads and writes, source anchors, tool identity, failures, and
+uncertainty. Prefer structured queries and progressive disclosure over repeatedly loading broad source regions.
+
+The index is navigation evidence, not a scientific census or boundary decision. It cannot by itself establish public
+scientific inputs/outputs, equation identity, hidden runtime state, document authority, runnable coverage, candidate
+kind, or completeness. Use it to select relevant anchors, then inspect the governing source and documents and run
+bounded probes where static evidence is incomplete or conflicting. Code-graph, AST, language-server, lexical, and
+runtime-trace tools are interchangeable producers behind this boundary; no one tool is required.
+
+Reuse an observation only when its source/input digest, runtime-relevant conditions, claim, and consumer remain
+unchanged. Invalidate the affected slice rather than rescanning unrelated evidence. Read
+[workflow optimization](references/workflow_optimization.md) when introducing a preprocessor, changing the production
+sequence, or comparing extraction efficiency.
 
 ## Scientific boundary decision
 
@@ -123,22 +204,32 @@ process receipts inside the candidate package.
 
 1. **Freeze the source/evidence universe.** Record the source snapshot, available documents, fixtures,
    runnable cases, runtime identity, scope ceiling, and owned scratch/evidence roots. Keep source immutable.
-2. **Make a thin scientific pass.** From declared terminal outputs work backward to central equations,
+2. **Make a thin scientific pass.** Create or reuse the digest-bound structural evidence index, then from declared
+   terminal outputs work backward to central equations,
    closures, boundaries, numerical transforms, diagnostics, primary state, and external inputs; trace explicit
    inputs forward. Build enough of the project map to choose work without pretending the census is complete.
 3. **Choose the first closed path.** Prefer a high-value target path with a runnable case, observable terminal
    result, explicit or recoverable state, and useful dependency fan-out. Select only the minimum relations
    required to make that path well posed.
 4. **Derive the dependency queue.** Create candidate and evidence work items from scientific identities and
-   explicit handoffs. A ready item has either caller-owned inputs or a frozen upstream contract. A TaskGraph
-   waits for the exact node versions it binds; unrelated candidates do not wait for it.
+   explicit handoffs. A ready item has either caller-owned inputs or a frozen upstream contract. Derive TaskGraph
+   readiness from current contracts rather than maintaining a second manual list: `probe_ready` means enough nodes
+   and provisional ports exist to exercise composition and discover missing science; `freeze_ready` requires every
+   exact bound version, compatible complete ports, dependency closure, and declared graph-level gates. Probes may run
+   before freeze readiness; unrelated candidates do not wait for the graph.
 5. **Run the candidate microcycle.** For one work item:
-   - draft the scientific identity, applicability envelope, provisional port table, claim, and evidence plan;
+   - draft the scientific identity, applicability envelope, provisional port table, claim, and evidence plan; keep
+     source fidelity (`direct`, `indirect`, or `unavailable`) separate from independent scientific validation
+     (`analytic`, `invariant`, `trusted_reference`, `behavioral_only`, or `none`) because both may apply;
    - trace formulas, branches, state reads/writes, initialization, boundaries, indices, and failure behavior;
    - decide operator, TaskGraph, non-candidate disposition, or named gap using the boundary rules above;
+   - confirm the scientific definition, purpose, real inputs/outputs, applicability, and failure behavior from
+     source evidence; write the candidate contract and tests against that meaning before implementation;
    - extract the smallest source-free callable without premature generalization;
    - run candidate tests and only directly affected dependency/composition tests;
-   - reconcile actual behavior, tests, and ports, then write the final contract from that evidence;
+   - reconcile observed behavior against the contract; correct implementation errors without changing the
+     physical meaning to fit a computed result. A genuine contract defect gets an explicit revision, source
+     rationale, and revalidation of the affected candidate and dependent slices;
    - bind dependencies and provenance, verify source-free execution, freeze the content digest in the project
      staging ledger, and continue with the next ready item.
 6. **Assemble local TaskGraphs when ready.** Bind exact operator/nested-graph versions, validate every external
@@ -151,11 +242,13 @@ process receipts inside the candidate package.
    dispositions, close material branches and state lifecycles, and run canonical plus sealed-holdout functional
    reassembly from identical explicit inputs to declared terminal outputs against one bundle digest. This gate
    establishes `full_freeze`. Preserve every candidate's exact digest, dependency closure, and evidence identity
-   inside the completed project bundle.
+   inside the completed project bundle. A project-specific runner may sequence the deterministic gates and write a
+   receipt, but successful process exits do not replace census, target-path, claim, oracle, or reassembly evidence.
 
-The provisional port table prevents blind implementation, but it is not the final document. Stabilize the
-callable and tests before freezing `operator.md` or `task_graph.md`; do not write an idealized final contract
-first and repeatedly force code to match speculation.
+The provisional port table prevents blind implementation; it becomes a stable contract only after source-backed
+input, output, definition, purpose, and applicability are confirmed. Freeze `operator.md` or `task_graph.md`
+with the corresponding candidate version after targeted evidence closes. Computed results may reveal a defect,
+but do not silently redefine a physical quantity, port, or boundary to match them.
 
 ## Evidence and blockers
 
@@ -188,11 +281,28 @@ expectations. Preserve the source-shaped relation and record the exact anomaly, 
 claim ceiling, and reopen condition. Fix an extraction mismatch when the callable fails to reproduce its declared
 source behavior; do not change an equation, closure, boundary, or physical meaning to correct the source itself.
 
+When a source path cannot produce its declared terminal scientific result, first distinguish a source-local
+non-executable path from a missing installable dependency, wrong invocation, recoverable hidden state, difficult
+numerics, or absent tests. Use exact source anchors, call-site tracing, and a bounded source probe where possible;
+none of those latter obstacles alone justifies exclusion. For a genuinely non-executable path, preserve its intended
+scientific role, concrete defect evidence, and any independently executable physics subrelations. Give the broken
+path an explicit non-candidate disposition rather than fabricating a runnable asset or treating source completion as
+a D1 prerequisite. Revise the source-derived census and executable target-path denominator explicitly, retaining
+the path in source coverage records, then create a fresh strict `1.0` snapshot and re-run all remaining whole-project
+freeze gates. Do not remove an executable but unfinished core path or shrink scope to fit the current bundle. A later
+source repair or SciRel scientific completion can reopen the recorded gap without changing what D1 actually proved.
+
 ## Coordination and resource ownership
 
 The main agent is the project coordinator. It chooses scientific work from the dependency queue, owns the live
 bundle/project sidecars, integrates results, and makes candidate or project claims. Its caller supplies the
 project objective and scope ceiling, not a precomputed worker split.
+
+For a wide project, partition ready work by source-backed scientific region or target-path dependency, not by
+file count. The coordinator may delegate region discovery, candidate work, and contract/report drafting as
+separate packets while retaining one writer for shared bundle and project state. Region and document workers
+return bounded, source-anchored handoffs; their parallelism does not establish census completeness or review
+independence by itself.
 
 Use whatever delegation capability is actually available. Dispatch independent ready work when workers exist;
 keep the same queue and execute work items serially when they do not. Worker availability changes throughput,
@@ -222,6 +332,8 @@ exact writer has terminated and the prior contents are explicitly discarded beca
 
 Load references only when their condition applies:
 
+- Diagnosing current extraction progress without changing source, bundle, candidates, or owner state:
+  [progress diagnosis](references/progress_diagnosis.md).
 - Writing or validating the formal extraction bundle: [artifact template pack](references/artifact_template_pack.md)
   and [intake directory contract](references/intake_directory_contract.md).
 - Choosing between operator, TaskGraph, support kernel, or disposition when the rules above are insufficient:
@@ -233,6 +345,10 @@ Load references only when their condition applies:
   test design here.
 - Making a whole-project coverage or completion claim: [capability closure and progress](references/scientific_capability_closure_and_progress.md)
   and [framework closure priority](references/framework_closure_priority.md).
+- Introducing structural preprocessing, reusing repeated evidence, or running a bounded baseline/candidate
+  comparison: [workflow optimization](references/workflow_optimization.md).
+- Deciding whether a bounded batch is genuinely deliverable: obtain the independent subagent review receipt before
+  writing `closure_signal.kind=bounded_delivery`.
 
 ## Closeout
 

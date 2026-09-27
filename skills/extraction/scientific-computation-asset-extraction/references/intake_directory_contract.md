@@ -50,13 +50,18 @@ separate callable package or whole-project completion shortcut.
   program_framework_map.md
   extraction_report.md
   extraction_ledger.md
-  asset_entry.py                     # optional path loader; no scientific logic
+  asset_entry.py                     # required at full_freeze; discovery-only, no scientific logic
 ```
 
 A project bundle contains at least one operator or TaskGraph package. Do not add a second project
 directory under `operators/` or `task_graphs/`. Package directories contain only their callable
 contract, implementation, runtime-required data, and tests. Source copies, reports, validation
 logs, generated caches, and private probes stay outside the formal package tree.
+
+An incomplete working bundle may omit `asset_entry.py`. A bundle claiming `full_freeze` must contain
+that root entry and pass `scripts/validate_asset_entry.py` in the fixed source-free asset sandbox.
+The entry is a discovery and dispatch surface only; it must not contain scientific relations, hidden
+state construction, project orchestration, or evidence-generation logic.
 
 ## Standalone Asset Layout
 

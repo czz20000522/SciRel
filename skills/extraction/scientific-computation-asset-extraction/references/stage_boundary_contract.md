@@ -22,6 +22,11 @@ deduplication, public namespace design, expert approval, or release work. Those 
 material invalid by definition: record recoverable format, test, evidence, and scientific gaps with enough detail for
 a later SciRel workflow to diagnose them without rewriting the saved source record.
 
+For a `bounded_delivery` handoff, D1 requires an independent read-only subagent review of the exact source-derived
+census, selected bundle assets, reassembly evidence, and deferred capability register. The review receipt is a finite
+exit decision for that batch, not expert approval and not a `full_freeze` claim. The producing coordinator must not
+also act as this reviewer, and the reviewer must not edit the bundle or progress snapshot.
+
 ## Preserved material and gaps
 
 - Preserve the source snapshot, raw evidence, L1 bundle, and their content identities.
