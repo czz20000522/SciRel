@@ -46,7 +46,7 @@ Every successful response carries:
     "catalog_id": "scirel-development-pilot",
     "release_version": "0.1.0.dev5",
     "root_digest": "sha256:<catalog-release-root>",
-    "coverage": {"status": "partial", "included_asset_count": 20, "declared_total_asset_count": 67}
+    "coverage": {"status": "partial", "included_asset_count": 22, "declared_total_asset_count": 69}
   }
 }
 ```
