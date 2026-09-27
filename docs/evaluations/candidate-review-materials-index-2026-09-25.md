@@ -27,6 +27,24 @@ needs a successor, not a silent edit.
 
 
 
+## Batch r78: FIDASIM beam-neutral multi-segment deposition family (three operators + one composition graph)
+
+Directory: `review_candidates/2026-09-27-beam-deposition-family/`
+Successor of batch r77: the r77 candidate files below keep their frozen
+r77-v3 bytes and digests; this batch binds the new bytes (including the
+unit-label contract repair on the frozen r77 colrad advance document,
+recorded in the batch's review.md).
+- `review.md` -- sha256 `507be3f08771ed1ccfe922a64539af01467ade2ff8d9a5b47de4e5207d11977b`
+- `proposal/beam_grid_ray_segment_tracking.py` -- sha256 `bc930ac95dda10c724b4ead2df6e319e8e7238a29bcac6a000ef124b622b30d4`
+- `proposal/n3_n4_segment_deposition.py` -- sha256 `45db564bbe9e63a06cc234a9cc0caef34cb64fa8f550ff3d1dffa1ec1034427b`
+- `proposal/ndmc_deposition_producer.py` -- sha256 `b3392e81a6996295e47f5034ada088eeff07cdfa9f47fdac868b2720a64c9f63`
+- `proposal/beam_neutral_segment_deposition_loop.py` -- sha256 `0e0eb5a6565f77fe6983f7e80ad510966ee9a50b7e2e9c03f2b859f6d1041fc5`
+- `proposal/test_beam_deposition_family.py` -- sha256 `615032633154f43b1fa78d14289be2ae11ab5cb98d473bb59fc84ce848129d31`
+- `proposal/scirel.fusion.beam-grid-ray-segment-tracking.json` -- sha256 `b94fde4082eba9cdcff12ec9d2f7a32940403426479e86f9442a711a059c4af8`
+- `proposal/scirel.fusion.n3-n4-segment-deposition.json` -- sha256 `b2043728ffe46a3d88ed28ca2a974ed49cc9a0b2aa016c51c0c50da0186b0e7d`
+- `proposal/scirel.fusion.ndmc-deposition-producer.json` -- sha256 `a6dd2aba3a1a55975e66e94d251107fe90d2a4049fb63e6b0a9a0e80ba88fba6`
+- `proposal/scirel.fusion.beam-neutral-segment-deposition-loop.json` -- sha256 `e210ec54df4d7b050c84026a7ffa5043aedfa8662650fe1441c72cb71656605f`
+
 ## Batch r77: FIDASIM DCX/HALO colrad family (four operators + one composition graph)
 
 Directory: `review_candidates/2026-09-27-dcx-colrad-family/`

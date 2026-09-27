@@ -140,7 +140,7 @@ vacuum-segment zero-temperature acceptance, and the in-grid
 
 ## Evidence
 
-- 29 direct tests in `tests/operator_contracts/test_beam_deposition_family.py`:
+- 28 direct tests in `tests/operator_contracts/test_beam_deposition_family.py`:
   saved probes for all four assets, an end-to-end colrad witness (the
   integrated eigen-advance drives a net population gain through a
   physically shaped matrix and the signed handoff flows into the
