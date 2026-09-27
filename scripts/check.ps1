@@ -216,8 +216,8 @@ print(json.dumps(roots))
         }
 
         $catalogCoverageStatus = "partial"
-        $catalogIncludedAssetCount = 34
-        $catalogDeclaredTotalAssetCount = 81
+        $catalogIncludedAssetCount = 38
+        $catalogDeclaredTotalAssetCount = 85
         $catalogPath = Join-Path $releaseOutputPath "catalog"
         $catalogOutput = & $Python "scripts/build_catalog.py" `
             "catalog/examples" `

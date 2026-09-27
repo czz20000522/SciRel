@@ -10,6 +10,10 @@
 - [跨网格分布插值](../../catalog/examples/scirel.kinetic.cross-mesh-distribution-interpolation.json)以圆柱速度单元重叠权重及空间线性插值转移三维分布，可执行有上限的保存矩补偿并作密度重标定。补偿不保证结果非负，下游需核对该前提。
 - [中性上风空间推进系数](../../catalog/examples/scirel.kinetic.neutral-upwind-transport-coefficients.json)按空间步长、轴向速度、碰撞频率与源分布构造正向和反向的六个离散推进系数。
 - [单代中性分布传播](../../catalog/examples/scirel.kinetic.neutral-generation-propagation.json)接收六个推进系数，分别计算首次入射与散射代际的双向传播；入射边界只用于正向速度，负向速度的右边界固定为零。
+- [中性代际停止判据](../../catalog/examples/scirel.kinetic.neutral-generation-stopping.json)以本代与累计密度各自最大值之比判定普通截断或 seed 相对停止；它只返回决定，不推进下一代。
+- [中性代际累计状态更新](../../catalog/examples/scirel.kinetic.generation-accumulation-update.json)将单代分布和密度追加到显式状态，保留分布的有符号单元及非负密度；不修改调用方状态。
+- [中性外层种子收敛](../../catalog/examples/scirel.kinetic.outer-seed-convergence.json)用前后密度的最大绝对差除以当前最大密度，并以严格大于 `10*truncate` 判定 seed 重入。
+- [KN1DPy 顶层外层收敛](../../catalog/examples/scirel.kinetic.kn1d-outer-convergence.json)使用同一比值形式，但顶层重入阈值是 `truncate`，与内层 seed 关系分离。
 - [中性 Boltzmann RHS 组装](../../catalog/examples/scirel.kinetic.neutral-boltzmann-rhs.json)把源项、碰撞损失与热速度按保存的有符号关系组装为 RHS；不求解输运方程。
 - [单代中性分布密度归约](../../catalog/examples/scirel.kinetic.generation-density-reduction.json)按调用方提供的柱坐标权重和轴向单元宽度，将 `(nvr, nvx, nx)` 分布归约为 `(nx,)` 密度；它不构造速度网格或求解输运方程。
 - [入射中性边界通量归一化](../../catalog/examples/scirel.kinetic.incoming-boundary-flux-normalization.json)按正向轴向速度半空间的预缩放通量，将调用方的边界形状缩放到目标通量的绝对值；目标为零时返回零尺度与零边界。
@@ -18,8 +22,8 @@
 - [平移 Maxwellian 离散种子](../../catalog/examples/scirel.kinetic.shifted-maxwellian-seed.json)在调用方速度网格和体积权重上构造逐 shift 归一化指数初值，保留来源的严格内部 `-80` clamp；输出尚未经过离散矩补偿。
 - [轴对称中性分布矩归约](../../catalog/examples/scirel.kinetic.axisymmetric-neutral-moments.json)在调用方分布与圆柱积分权重上归约密度、轴向流、压力、温度、应力和随机热通量；`sigma_zz = sigma_yy` 与零密度切片的 `source_default` 值沿用保存实现，仍待专家确认。
 
-跨网格分布插值复用圆柱速度空间积分权重。其余十二项没有直接 callable 依赖；单代传播由调用方传入上风推进系数，Boltzmann RHS 接收各上游源项，但两者不在函数内部调用其他资产。边界归一化接收调用方提供的热速度和柱坐标权重，不在函数内部构造它们。自适应网格、积分权重、种子与矩归约的端口组合由直接测试覆盖。链接指向 `catalog/examples/` 开发 pilot 的 exact documents，不代表专家批准或公开发布。
+跨网格分布插值复用圆柱速度空间积分权重。其余十六项没有直接 callable 依赖；单代传播由调用方传入上风推进系数，停止判据由调用方传入累计密度，Boltzmann RHS 接收各上游源项，这些函数不在内部调用其他资产。累计更新只处理一次显式状态转移；重入决定未绑定反馈顺序或迭代上限，不能被解释为完整 TaskGraph。边界归一化接收调用方提供的热速度和柱坐标权重。自适应网格、积分权重、种子与矩归约的端口组合由直接测试覆盖。链接指向 `catalog/examples/` 开发 pilot 的 exact documents，不代表专家批准或公开发布。
 
 ## 证据与待整理项
 
-有效实数输入上的有限保存点与摘要锁定的 KN1DPy 归档实现精确相等；SciRel 对非实数输入、热速度派生质量下溢、密度溢出以及非有限输入和输出采用已声明的失败合同。来源项目的 whole-source D1 资格已撤回，有限点比较不能替代重新冻结、科学审核或许可证决定。其余中性输运算子、组合顺序、状态与停止条件仍待逐项核对。
+有效实数输入上的有限保存点与摘要锁定的 KN1DPy 归档实现精确相等；SciRel 对非实数输入、热速度派生质量下溢、密度溢出、累计状态不一致以及非有限输入和输出采用已声明的失败合同。来源项目的 whole-source D1 资格已撤回，有限点比较不能替代重新冻结、科学审核或许可证决定。其余中性输运算子、组合顺序、反馈状态和停止上限仍待逐项核对。

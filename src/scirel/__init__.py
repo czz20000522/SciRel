@@ -47,6 +47,10 @@ from .kinetic.cross_mesh_distribution_interpolation import interp_distribution_a
 from .kinetic.upwind_transport_coefficients import assemble_neutral_upwind_transport_coefficients
 from .kinetic.neutral_generation_propagation import propagate_neutral_generation
 from .kinetic.neutral_boltzmann_rhs import assemble_neutral_boltzmann_rhs
+from .kinetic.neutral_generation_stopping import evaluate_neutral_generation_stopping
+from .kinetic.generation_accumulation_update import update_neutral_generation_accumulation
+from .kinetic.outer_seed_convergence import evaluate_neutral_outer_seed_convergence
+from .kinetic.kn1d_outer_convergence import evaluate_kn1d_outer_convergence
 from .field.poloidal_field_magnitude import compute_poloidal_field_magnitude
 from .field.permanent_ring_filaments import discretize_permanent_ring
 from .diagnostics.firehose_mirror_margins import compute_firehose_mirror_margins
@@ -107,3 +111,4 @@ __all__.append('create_adaptive_neutral_velocity_mesh')
 __all__.append('interpolate_scalar_across_mesh')
 __all__.append('interp_distribution_across_mesh')
 __all__.extend(['assemble_neutral_upwind_transport_coefficients', 'propagate_neutral_generation', 'assemble_neutral_boltzmann_rhs'])
+__all__.extend(['evaluate_neutral_generation_stopping', 'update_neutral_generation_accumulation', 'evaluate_neutral_outer_seed_convergence', 'evaluate_kn1d_outer_convergence'])
