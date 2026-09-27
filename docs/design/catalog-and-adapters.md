@@ -18,7 +18,7 @@ The snapshot contains:
 - `records/<prefix>/<asset-id>.json`: exact standardized documents; and
 - `reverse-dependencies/*.jsonl`: direct consumers used for impact and closure analysis.
 
-The v1 release schema is [`contracts/scientific-catalog-release.schema.json`](../../contracts/scientific-catalog-release.schema.json). An output directory must be new; a failed build cannot replace the previous snapshot. `coverage.status=complete` is valid only when included and declared totals match. The pilot must remain `partial` with 22 included assets and 69 declared current assets.
+The v1 release schema is [`contracts/scientific-catalog-release.schema.json`](../../contracts/scientific-catalog-release.schema.json). An output directory must be new; a failed build cannot replace the previous snapshot. `coverage.status=complete` is valid only when included and declared totals match. The pilot must remain `partial` with 24 included assets and 71 declared current assets.
 
 The catalog does not participate in `import scirel` and does not import every module at startup. Exact runtime callable resolution occurs only after selection and must match the selected record's module, symbol, signature and implementation version. Exact content binding belongs to the enclosing catalog release, whose partition and root digests cover the record.
 

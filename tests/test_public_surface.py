@@ -28,6 +28,8 @@ from scirel.kinetic.kinetic_dispersion_sum_n import evaluate_kinetic_dispersion_
 from scirel.kinetic.species_equilibrium_scales import derive_species_equilibrium_scales
 from scirel.kinetic.thermal_speed_scale import compute_thermal_speed_m_s
 from scirel.kinetic.generation_density_reduction import reduce_generation_density
+from scirel.kinetic.incoming_boundary_flux_normalization import normalize_incoming_neutral_boundary
+from scirel.kinetic.spatial_source_shape_normalization import normalize_spatial_source_shape
 from scirel.field.poloidal_field_magnitude import compute_poloidal_field_magnitude
 from scirel.field.permanent_ring_filaments import discretize_permanent_ring
 from scirel.diagnostics.firehose_mirror_margins import compute_firehose_mirror_margins
@@ -193,6 +195,17 @@ def test_neutral_scale_and_density_are_exported_from_both_public_namespaces():
     for name, function in (
         ("compute_thermal_speed_m_s", compute_thermal_speed_m_s),
         ("reduce_generation_density", reduce_generation_density),
+    ):
+        assert getattr(scirel, name) is function
+        assert getattr(scirel.kinetic, name) is function
+        assert name in scirel.__all__
+        assert name in scirel.kinetic.__all__
+
+
+def test_neutral_normalizations_are_exported_from_both_public_namespaces():
+    for name, function in (
+        ("normalize_incoming_neutral_boundary", normalize_incoming_neutral_boundary),
+        ("normalize_spatial_source_shape", normalize_spatial_source_shape),
     ):
         assert getattr(scirel, name) is function
         assert getattr(scirel.kinetic, name) is function
