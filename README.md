@@ -55,7 +55,7 @@ assert result["B"][0, 0] == 5.0
 - `provenance/`：来源关系和审核状态，不参与运行时加载。
 - `docs/architecture.md`：Operator、TaskGraph、公共接口、科学身份和目录投影的权威边界。
 - `docs/catalog.md`：面向数万 Operator、数千 TaskGraph 的分片目录和渐进检索合同。
-- `contracts/` 与 `catalog/examples/`：标准资产/catalog Schema，以及依赖闭合的 29/76 开发 pilot。
+- `contracts/` 与 `catalog/examples/`：标准资产/catalog Schema，以及依赖闭合的 30/77 开发 pilot。
 - `docs/development-process.md`：首次/增量整合、验证分层和发行候选流程。
 - `docs/requirements/scirel-workflow.md` 与 `docs/design/scirel-workflow.md`：L1 到 release 的领域需求和设计。
 - `docs/requirements/scientific-request-workflow.md` 与 `docs/design/scientific-request-workflow.md`：从用户需求到 SciRel 计算结果和审计解释的出库流程。
@@ -71,7 +71,7 @@ assert result["B"][0, 0] == 5.0
 
 ```powershell
 python scripts/validate_asset_documents.py catalog/examples --check-runtime --execute-examples
-python scripts/build_catalog.py catalog/examples --output-dir build/catalog/<new-run> --catalog-id scirel-development-pilot --release-version 0.1.0.dev5 --coverage-status partial --declared-total 76
+python scripts/build_catalog.py catalog/examples --output-dir build/catalog/<new-run> --catalog-id scirel-development-pilot --release-version 0.1.0.dev5 --coverage-status partial --declared-total 77
 ```
 
 L1 workflow 的本地 fixture 使用 `tests/fixtures/l1/pleiades-minimal.json`，不读取源项目 checkout、数据库或网络；它只验证 candidate、draft、审核和 release artifact 的确定性关联，不代替模型完成真实科学整合。
@@ -120,7 +120,7 @@ SciRel 源码或公共基线变更会 fail closed 到全套测试。`focused` �
 干净离线 wheelhouse 重装全部依赖，也不证明同目录的其他包不可见。正式发行门禁仍需固定依赖 wheelhouse。
 安装后的测试不得依赖 editable 安装或把 src 放进 PYTHONPATH。上面的版本号随 pyproject.toml 更新，不是永久发行版本。
 
-当前 catalog 仍是 `partial: 29/76` 开发 pilot，因此这条 release 链证明的是已批准资产、catalog 与普通 wheel
+当前 catalog 仍是 `partial: 30/77` 开发 pilot，因此这条 release 链证明的是已批准资产、catalog 与普通 wheel
 可以被精确绑定，不代表一个候选的批准自动批准 wheel 中其余维护代码。正式首发前必须让可见发布基线获得
 对应的批量/逐项专家批准并补齐 exact documents，同时把开发期 `.dev` workflow 合同统一冻结为 `v1`。
 
