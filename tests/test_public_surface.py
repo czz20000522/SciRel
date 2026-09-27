@@ -25,6 +25,7 @@ from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum
 from scirel.kinetic.plasma_dispersion import evaluate_plasma_dispersion
 from scirel.kinetic.bessel_gamma import evaluate_bessel_gamma
 from scirel.kinetic.kinetic_dispersion_sum_n import evaluate_kinetic_dispersion_sum
+from scirel.kinetic.species_equilibrium_scales import derive_species_equilibrium_scales
 from scirel.field.poloidal_field_magnitude import compute_poloidal_field_magnitude
 from scirel.field.permanent_ring_filaments import discretize_permanent_ring
 from scirel.diagnostics.firehose_mirror_margins import compute_firehose_mirror_margins
@@ -177,6 +178,13 @@ def test_kinetic_dispersion_sum_is_exported_from_both_public_namespaces():
     assert scirel.kinetic.evaluate_kinetic_dispersion_sum is evaluate_kinetic_dispersion_sum
     assert "evaluate_kinetic_dispersion_sum" in scirel.__all__
     assert "evaluate_kinetic_dispersion_sum" in scirel.kinetic.__all__
+
+
+def test_species_equilibrium_scales_is_exported_from_both_public_namespaces():
+    assert scirel.derive_species_equilibrium_scales is derive_species_equilibrium_scales
+    assert scirel.kinetic.derive_species_equilibrium_scales is derive_species_equilibrium_scales
+    assert "derive_species_equilibrium_scales" in scirel.__all__
+    assert "derive_species_equilibrium_scales" in scirel.kinetic.__all__
 
 
 def test_poloidal_field_and_magnitude_smoke():
