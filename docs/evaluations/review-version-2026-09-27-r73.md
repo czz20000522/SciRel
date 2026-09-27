@@ -40,11 +40,11 @@
 - r73: pointwise firehose-margin relation(1 项),148 资产 dev48
 - 版本 `0.1.0.dev47` → `0.1.0.dev48`;其余 147 份文档仅机械 `implementation_version` 提升;组合诊断的源码字节、文档语义与测试原样未动。
 
-## 验证(全部记录于 `build/test-evidence-r73.md`,所有子进程 returncode 已核)
+## 验证(全部记录于 `build/test-evidence-r73.md`,post-freeze review-scope 对账另记于 `build/test-evidence-r73-scope-addendum.md`,所有子进程 returncode 已核)
 
-- 源码态全仓(复放激活):**1550 passed, 43 skipped, 0 failed**,returncode 0(r72 全树 1540,+10:9 项直接测试 + 1 项 mu0 评审回归;无复放根的同树实测 1398/194,两项均为预期状态)
+- 源码态全仓(复放激活):**1550 passed, 43 skipped, 0 failed**,returncode 0(r72 全树 1540,+10:9 项直接测试 + 1 项 mu0 评审回归;无复放根的同树实测 1399/194(隔离修复后最终实测),两项均为预期状态)
 - 148/148 文档源码态与安装态校验通过,含示例执行(`runtime_origin: installed`)
-- 安装态全树(干净 venv `build/venv-r73-clean`,自装 numpy 2.5.1 / scipy 1.18.0 / pytest 9.1.1 + setuptools,wheel `--no-index --no-deps`,`-I -o pythonpath=`):**1406 passed, 194 skipped, 0 failed**,returncode 0(r72 干净 venv 回执 1386/197;本轮回执在含 setuptools 的 venv 中运行,`test_admitted_wheel_runs_the_source_free_user_acceptance` 实际执行并通过,并附显式 import 路径检查)
+- 安装态全树(干净 venv `build/venv-r73-clean`,自装 numpy 2.5.3 / scipy 1.18.1 / pytest 9.1.1 + setuptools 84.0.0,wheel `--no-index --no-deps`,`-I -o pythonpath=`):**1398 passed, 195 skipped, 0 failed**,returncode 0(对账:r72 干净 venv 回执 1386/197 因缺 setuptools 跳过两项 wheel 构建测试;含 setuptools 后两项实跑通过,+10 项新测试 +2 项恢复 = 1398/195);本轮回执在含 setuptools 的 venv 中运行,`test_admitted_wheel_runs_the_source_free_user_acceptance` 实际执行并通过,并附显式 import 路径检查)
 - catalog `build/catalog/r73`:`complete: 148/148`,root digest 见 manifest
 - 内部 wheel `scirel-0.1.0.dev48-py3-none-any.whl`,SHA-256 见 manifest
 
