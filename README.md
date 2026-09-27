@@ -13,7 +13,7 @@ SciRel 以独立插件和发布 wheel 交付；CodeFusion 可以预装或加载�
 平台维护者在受控 Python runtime 镜像准备阶段预装经过验证的 wheel；运行任务时直接调用现有能力，
 不临时下载或让用户配置依赖。独立源码项目服务于库维护和版本管理，不改变这一用户体验边界。
 
-开发树版本号随 `pyproject.toml` 演进（撰写本文时为 `0.1.0.dev30`），属开发期候选，而非公开发行。保存的 L1 产物是新 workflow 的重跑输入；
+开发树版本号随 `pyproject.toml` 演进，属开发期候选，而非公开发行。保存的 L1 产物是新 workflow 的重跑输入；
 旧的 `provenance/admitted-assets.json` 仅作为历史开发样本和来源证据，不再定义新的准入流程。
 
 当前 `provenance/admitted-assets.json` 是旧流程留下的 52 条完整迁移样本，其中包含 41 条 operator
@@ -70,10 +70,10 @@ assert result["B"][0, 0] == 5.0
 
 ```powershell
 python scripts/validate_asset_documents.py catalog/examples --check-runtime --execute-examples
-python scripts/build_catalog.py catalog/examples --output-dir build/catalog/<new-run> --catalog-id scirel-development-pilot --release-version 0.1.0.dev30 --coverage-status complete --declared-total <当前 exact document 数>
+python scripts/build_catalog.py catalog/examples --output-dir build/catalog/<new-run> --catalog-id scirel-development-pilot --release-version <当前开发版本> --coverage-status complete --declared-total <当前 exact document 数>
 ```
 
-`--declared-total` 在 `--coverage-status complete` 时必须等于 `catalog/examples` 中的 exact document 数；当前数量不写在本文中，以最新冻结 review-version manifest 为准（见上文）。
+示例中的占位符按当前开发树填写：`--release-version` 必须与全部 exact documents 的 `version.implementation_version` 一致，即当前 `pyproject.toml` 版本；`--declared-total` 在 `--coverage-status complete` 时必须等于 `catalog/examples` 中的 exact document 数。两者的当前值不写在本文中，以 `pyproject.toml` 和最新冻结 review-version manifest 为准（见上文）。
 
 L1 workflow 的本地 fixture 使用 `tests/fixtures/l1/pleiades-minimal.json`，不读取源项目 checkout、数据库或网络；它只验证 candidate、draft、审核和 release artifact 的确定性关联，不代替模型完成真实科学整合。
 
