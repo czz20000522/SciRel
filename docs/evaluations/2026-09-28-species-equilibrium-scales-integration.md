@@ -1,6 +1,6 @@
 # 磁化物种平衡尺度开发整合记录
 
-状态：隔离开发候选；不是合格 whole-source D1 接纳、专家批准或公开发行。
+状态：已进入 SciRel 开发基线；不是合格 whole-source D1 接纳、专家批准或公开发行。
 本批以主仓 `cf78403` 为基线，逐项对照 intake `647d5db` 的
 `scirel.kinetic.species-equilibrium-scales`。公共科学合同在
 [exact document](../../catalog/examples/scirel.kinetic.species-equilibrium-scales.json)。
@@ -53,4 +53,9 @@ release 环境测试从实际 exact documents 和资产索引计算期望计数�
 - 隔离工作树 `pwsh ./scripts/check.ps1 -Mode affected`：选择 7 个
   测试文件，**115 passed**，无全套回退。
 - 20 份 dev5 exact documents 的签名与示例通过 runtime 校验。
-- 最终 affected、exact document 和差异检查以主仓本批提交结果为准。
+- 主仓 `pwsh ./scripts/check.ps1 -Mode affected -BaseRef cf78403`：
+  精确选择 7 个测试文件，**115 passed**，无全套回退。
+- 主仓 `python scripts/validate_asset_documents.py catalog/examples --check-runtime --execute-examples`：
+  20 份 exact documents 均通过，运行时签名和示例已检查。
+- 主仓 `git diff --check cf78403..HEAD`：通过；科学关系、目录与 release
+  计数提交为 `a8233e9`，README 三处计数提交为 `cb43dd2`。
