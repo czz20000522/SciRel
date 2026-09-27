@@ -87,9 +87,9 @@
       "constraints": "Finite (registered hardening)."
     },
     {
-      "name": "initial_state_density_cm_inv3",
+      "name": "initial_state_rate_per_volume_cm_inv3_s_inv",
       "description": "Per-cell initial-state densities.",
-      "units": "cm^-3",
+      "units": "cm^-3 s^-1 (neutral source rate per unit volume; the source's implicit 1 s convention is not proven)",
       "shape": "[3]",
       "dtype": "float64 array",
       "required": true,

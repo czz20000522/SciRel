@@ -102,6 +102,12 @@ def test_dd_rate_rejects_bad_table_and_branch():
         dict(base, deuterium_target_density_cm3=-1.0),
         dict(base, energy_log_step=0.0),
         dict(base, log_rate_table=np.full_like(table, np.nan)),
+        # recorded hardening: extreme axis step overflows the normalized
+        # coordinates; the saved arm raises a bare OverflowError from
+        # int(floor(inf)), this port raises the common ValueError.
+        # beam_energy_kev=10^1.5 with energy_log_min=1.0 gives
+        # u=(1.5-1.0)/1e-320 = Inf
+        dict(base, beam_energy_kev=10.0 ** 1.5, energy_log_step=1e-320),
     ):
         with pytest.raises(ValueError):
             dd_reaction_rate_per_s(**bad)
@@ -206,6 +212,13 @@ def test_marker_allocation_consumes_remainder_draws_and_conserves():
         allocate_mc_markers_by_weight(
             approximate_cell_weight=weight, requested_markers=6,
             cdf_uniform_draws=np.array([1.0]), minimum_per_active_cell=5)
+    # recorded hardening: minimum allocation exceeding the request fails
+    # closed instead of silently returning the overshoot (saved arm returns
+    # count 5 for requested_markers=2 with minimum 5)
+    with pytest.raises(ValueError, match="cannot be fulfilled"):
+        allocate_mc_markers_by_weight(
+            approximate_cell_weight=np.ones((1, 1, 1)), requested_markers=2,
+            cdf_uniform_draws=np.array([]), minimum_per_active_cell=5)
 
 
 def test_marker_allocation_rejects_bad_inputs_and_nonconservation_is_gated():
@@ -237,7 +250,7 @@ def test_nbi_normalization_matches_the_source_formula():
     assert out["total_neutral_rate_s_inv"] == expected_total
     np.testing.assert_array_equal(out["component_neutral_rate_s_inv"],
                                   expected_total * np.array([0.6, 0.3, 0.1]))
-    np.testing.assert_array_equal(out["initial_state_density_cm_inv3"],
+    np.testing.assert_array_equal(out["initial_state_rate_per_volume_cm_inv3_s_inv"],
                                   expected_total * np.array([0.6, 0.3, 0.1]) / 2.0e-6)
 
 
@@ -245,7 +258,7 @@ def test_nbi_normalization_zero_power_is_valid_and_extremes_fail_closed():
     out = normalize_nbi_injected_neutrals(
         0.0, 50.0, np.array([0.6, 0.3, 0.1]), 2.0e-6)
     assert out["total_neutral_rate_s_inv"] == 0.0
-    np.testing.assert_array_equal(out["initial_state_density_cm_inv3"],
+    np.testing.assert_array_equal(out["initial_state_rate_per_volume_cm_inv3_s_inv"],
                                   np.zeros(3))
     for bad in (
         (np.nan, 50.0, np.array([0.6, 0.3, 0.1]), 2.0e-6),
@@ -255,6 +268,10 @@ def test_nbi_normalization_zero_power_is_valid_and_extremes_fail_closed():
         (1.0, 50.0, np.array([0.6, 0.3, 0.1]), 0.0),
         (1.0, 50.0, np.array([np.finfo(float).max] * 3), 2.0e-6),
         (1e308, 50.0, np.array([0.6, 0.3, 0.1]), 1e-300),
+        # recorded hardening: non-finite energy passes a naive `<= 0` check
+        # and returns rate 0; this port rejects it
+        (1.0, float("inf"), np.array([0.6, 0.3, 0.1]), 1.0),
+        (1.0, float("nan"), np.array([0.6, 0.3, 0.1]), 1.0),
     ):
         with pytest.raises(ValueError):
             normalize_nbi_injected_neutrals(*bad)
@@ -315,3 +332,27 @@ def test_ray_rejects_bad_contracts_and_extremes():
             [np.finfo(float).max, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0],
             np.eye(3), np.eye(3), 100, 1, [5], [1], [0], [0], [2], [2],
             100, 100, [.1, .1, .1], [.1, .1, .1])
+    # recorded hardening: py and pz each finite but their product overflows
+    # to Inf (divergences near the float underflow); the saved arm returns
+    # Inf silently
+    with pytest.raises(ValueError, match="overflowed"):
+        nbi_cell_directed_ray(
+            [10, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], np.eye(3), np.eye(3),
+            100, 1, [5], [1], [0], [0], [2], [2], 100, 100,
+            [1e-160, 1e-160, 1e-160], [1e-160, 1e-160, 1e-160])
+    # non-finite focus lengths are rejected (the saved arm checks only zero)
+    with pytest.raises(ValueError):
+        nbi_cell_directed_ray(**_ray_kwargs(focus_z_cm=float("inf")))
+    # recorded hardening: extreme divergences underflow the Gaussian
+    # exponentials to 0.0, making an accepted ray carry weight 0.0 (the
+    # saved arm returns accepted=True, weight=0.0 silently)
+    with pytest.raises(ValueError, match="non-positive trajectory weight"):
+        nbi_cell_directed_ray(
+            [10, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], np.eye(3), np.eye(3),
+            100, 1, [5], [1], [0], [0], [2], [2], 100, 100,
+            [1e308, 1e308, 1e308], [1e308, 1e308, 1e308])
+    # recorded hardening: NaN aperture distance passes the saved arm (only
+    # the acceptance flag flips to False); the finite-input check rejects it
+    with pytest.raises(ValueError):
+        nbi_cell_directed_ray(**_ray_kwargs(
+            aperture_distance_cm=[float("nan")]))

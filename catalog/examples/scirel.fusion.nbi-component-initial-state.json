@@ -87,9 +87,9 @@
   ],
   "outputs": [
     {
-      "name": "initial_state_density_cm_inv3",
-      "description": "Six-level initial-state density vector; only level 1 is populated.",
-      "units": "cm^-3",
+      "name": "initial_state_rate_per_volume_cm_inv3_s_inv",
+      "description": "Six-level initial-state source-rate-per-volume vector; only level 1 is populated.",
+      "units": "cm^-3 s^-1 (neutral source rate per unit volume; the source's implicit 1 s convention is not proven)",
       "shape": "[6]",
       "dtype": "float64 array",
       "required": true,
@@ -144,7 +144,7 @@
   },
   "example": {
     "description": "Materialize the half-energy component on a known cell and check the level-1 density against the source formula.",
-    "code": "import numpy as np\nfrom scirel.fusion import materialize_nbi_component_initial_state\nout = materialize_nbi_component_initial_state(\n    injected_power_mw=1.0, injection_energy_kev=50.0,\n    current_fractions=np.array([0.6, 0.3, 0.1]),\n    beam_grid_cell_volume_cm3=1.0e-6, energy_component=2, nlevels=6)\nexpected_rate = 1.0e6 * 1.0 / (1.0e3 * 50.0 * 1.60217733e-19 * (0.6 + 0.15 + 0.1 / 3.0))\nassert out['total_neutral_rate_s_inv'] == expected_rate\nassert out['initial_state_density_cm_inv3'][0] == expected_rate * 0.3 / 1.0e-6\nassert np.all(out['initial_state_density_cm_inv3'][1:] == 0.0)\ntry:\n    materialize_nbi_component_initial_state(\n        injected_power_mw=1.0, injection_energy_kev=50.0,\n        current_fractions=np.array([0.6, 0.3, 0.1]),\n        beam_grid_cell_volume_cm3=1.0e-6, energy_component=2, nlevels=3)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError(\"nlevels must equal the source six-level contract\")",
+    "code": "import numpy as np\nfrom scirel.fusion import materialize_nbi_component_initial_state\nout = materialize_nbi_component_initial_state(\n    injected_power_mw=1.0, injection_energy_kev=50.0,\n    current_fractions=np.array([0.6, 0.3, 0.1]),\n    beam_grid_cell_volume_cm3=1.0e-6, energy_component=2, nlevels=6)\nexpected_rate = 1.0e6 * 1.0 / (1.0e3 * 50.0 * 1.60217733e-19 * (0.6 + 0.15 + 0.1 / 3.0))\nassert out['total_neutral_rate_s_inv'] == expected_rate\nassert out['initial_state_rate_per_volume_cm_inv3_s_inv'][0] == expected_rate * 0.3 / 1.0e-6\nassert np.all(out['initial_state_rate_per_volume_cm_inv3_s_inv'][1:] == 0.0)\ntry:\n    materialize_nbi_component_initial_state(\n        injected_power_mw=1.0, injection_energy_kev=50.0,\n        current_fractions=np.array([0.6, 0.3, 0.1]),\n        beam_grid_cell_volume_cm3=1.0e-6, energy_component=2, nlevels=3)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError(\"nlevels must equal the source six-level contract\")",
     "expected": "The rate and level-1 density match the source formula exactly; levels 2-6 stay zero; nlevels != 6 raises ValueError."
   },
   "verification": {

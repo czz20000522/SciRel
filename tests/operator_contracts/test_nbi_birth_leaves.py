@@ -89,7 +89,7 @@ def test_initial_state_materialization_matches_the_source_formula():
     expected_rate = 1.0e6 * 1.0 / (1.0e3 * 50.0 * 1.60217733e-19 * expected_factor)
     assert out["total_neutral_rate_s_inv"] == expected_rate
     assert out["component_neutral_rate_s_inv"] == expected_rate * 0.3
-    states = out["initial_state_density_cm_inv3"]
+    states = out["initial_state_rate_per_volume_cm_inv3_s_inv"]
     assert states.shape == (6,)
     assert states[0] == expected_rate * 0.3 / 1.0e-6
     assert np.all(states[1:] == 0.0)

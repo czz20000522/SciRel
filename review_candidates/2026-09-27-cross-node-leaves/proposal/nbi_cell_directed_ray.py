@@ -27,9 +27,11 @@ def nbi_cell_directed_ray(cell_center_uvw_cm, cell_offset_cm, source_xyz_cm, bea
     if (any(x.shape != (3,) or not np.all(np.isfinite(x)) for x in (c, o, s, b))
             or inv.shape != (3, 3) or bas.shape != (3, 3)
             or neutral_type not in (1, 2, 3) or injection_speed_cm_s <= 0
+            or not np.isfinite(focus_y_cm) or not np.isfinite(focus_z_cm)
             or focus_y_cm == 0 or focus_z_cm == 0 or dy.shape != (3,) or dz.shape != (3,)
             or np.any(dy <= 0) or np.any(dz <= 0)
-            or any(x.ndim != 1 or x.shape != ap[0].shape for x in ap)):
+            or any(x.ndim != 1 or x.shape != ap[0].shape for x in ap)
+            or not all(np.all(np.isfinite(x)) for x in ap)):
         raise ValueError("invalid NBI cell-ray contract")
     receiver = inv @ (c + o - b)
     ray = receiver - s
@@ -59,4 +61,21 @@ def nbi_cell_directed_ray(cell_center_uvw_cm, cell_offset_cm, source_xyz_cm, bea
         raise ValueError(
             "NBI cell-ray outputs are non-finite for finite but extreme "
             "input magnitudes (registered hardening)")
-    return {"receiver_xyz_cm": receiver, "unit_ray_xyz": ray, "velocity_uvw_cm_s": velocity, "accepted": bool(accepted), "trajectory_weight": py * pz}
+    weight = py * pz
+    # Registered hardening: py and pz can each be finite while their product
+    # overflows (e.g. divergences near the float underflow make the
+    # normalization denominators tiny); the saved arm returns Inf silently.
+    # Non-finite focus lengths are also rejected (the saved arm checks only
+    # for exact zero).
+    if not np.isfinite(weight):
+        raise ValueError(
+            "trajectory weight overflowed to a non-finite value for finite "
+            "but extreme input magnitudes (registered hardening)")
+    # Registered hardening: accepted rays must carry a strictly positive
+    # weight; extreme divergences underflow the Gaussian exponentials to 0.0
+    # (the saved arm returns accepted=True with weight 0.0 silently).
+    if accepted and weight <= 0.0:
+        raise ValueError(
+            "accepted ray has a non-positive trajectory weight for finite "
+            "but extreme divergences (registered hardening)")
+    return {"receiver_xyz_cm": receiver, "unit_ray_xyz": ray, "velocity_uvw_cm_s": velocity, "accepted": bool(accepted), "trajectory_weight": weight}

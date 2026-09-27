@@ -39,6 +39,16 @@ def dd_reaction_rate_per_s(*, beam_energy_kev, ion_temperature_kev, deuterium_ta
     x = max(np.log10(beam_energy_kev), energy_log_min)
     y = max(np.log10(ion_temperature_kev), temperature_log_min)
     u, v = (x - energy_log_min) / energy_log_step, (y - temperature_log_min) / temperature_log_step
+    # Registered hardening: finite but extreme axis steps can overflow the
+    # normalized coordinates to Inf; the saved arm raises a bare
+    # OverflowError from int(floor(inf)), violating the declared
+    # ValueError-only failure contract.  This port detects the overflow and
+    # raises ValueError instead.
+    if not np.isfinite(u) or not np.isfinite(v):
+        raise ValueError(
+            "normalized table coordinates overflowed for finite but extreme "
+            "axis steps (registered hardening; the saved arm raises a bare "
+            "OverflowError here)")
     i, j = int(np.floor(u)), int(np.floor(v))
     if i < 0 or j < 0 or i >= table.shape[0] - 1 or j >= table.shape[1] - 1:
         return 0.0

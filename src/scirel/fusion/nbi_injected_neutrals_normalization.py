@@ -25,9 +25,12 @@ def normalize_nbi_injected_neutrals(injected_power_mw, injection_energy_kev, cur
     """Return total neutral rate and full/half/third initial state density."""
     fractions = np.asarray(current_fractions, dtype=float)
     if (fractions.shape != (3,) or not np.all(np.isfinite(fractions))
-            or np.any(fractions < 0) or injected_power_mw < 0
-            or injection_energy_kev <= 0 or beam_grid_cell_volume_cm3 <= 0):
-        raise ValueError("power/fractions must be nonnegative and energy/volume positive")
+            or np.any(fractions < 0)
+            or not np.isfinite(injected_power_mw) or injected_power_mw < 0
+            or not np.isfinite(injection_energy_kev) or injection_energy_kev <= 0
+            or not np.isfinite(beam_grid_cell_volume_cm3)
+            or beam_grid_cell_volume_cm3 <= 0):
+        raise ValueError("power/fractions must be finite nonnegative and energy/volume finite positive")
     energy_factor = fractions @ np.array([1., .5, 1. / 3.])
     if energy_factor == 0:
         raise ValueError("at least one current fraction must be positive")
@@ -44,6 +47,6 @@ def normalize_nbi_injected_neutrals(injected_power_mw, injection_energy_kev, cur
     return {
         "total_neutral_rate_s_inv": total,
         "component_neutral_rate_s_inv": total * fractions,
-        "initial_state_density_cm_inv3": densities,
+        "initial_state_rate_per_volume_cm_inv3_s_inv": densities,
         "energy_weight_factor": energy_factor,
     }

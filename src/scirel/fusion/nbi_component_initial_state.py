@@ -91,7 +91,7 @@ def materialize_nbi_component_initial_state(
         "energy_weight_factor": energy_factor,
         "total_neutral_rate_s_inv": float(nneutrals),
         "component_neutral_rate_s_inv": float(component_rate),
-        "initial_state_density_cm_inv3": states,
+        "initial_state_rate_per_volume_cm_inv3_s_inv": states,
         "initial_state_index_one_based": 1,
         "nlevels": 6,
     }

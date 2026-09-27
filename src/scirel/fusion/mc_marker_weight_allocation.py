@@ -31,7 +31,15 @@ def allocate_mc_markers_by_weight(*, approximate_cell_weight, requested_markers,
     counts = np.zeros(weight.shape, dtype=np.int64)
     counts[mask] = int(minimum_per_active_cell)
     remainder = int(requested_markers) - int(counts.sum())
-    if remainder <= 0:
+    if remainder < 0:
+        # Registered contract: the total allocated count must equal
+        # requested_markers exactly.  When the minimum allocation exceeds
+        # the request the saved arm silently returns the overshoot; this
+        # port fails closed on the unfulfillable request instead.
+        raise ValueError(
+            "minimum_per_active_cell allocation exceeds requested_markers: "
+            "the request cannot be fulfilled (registered hardening)")
+    if remainder == 0:
         return counts
     if (draws.shape != (remainder,) or not np.all(np.isfinite(draws))
             or np.any(draws < 0) or np.any(draws >= 1)):
