@@ -27,6 +27,15 @@ needs a successor, not a silent edit.
 
 
 
+## Batch r73: pointwise firehose-margin relation (one operator)
+
+Directory: `review_candidates/2026-09-27-pointwise-firehose-margin/`
+Successor of batch r72: the r72 candidate files below keep their frozen r72 v3 bytes and digests; this batch binds the new bytes.
+- `review.md` -- sha256 `230a013a90658b97eae5cc0679e4c0e5fd282bf1a4e5ae6303837b7b64516079`
+- `proposal/pointwise_firehose_margin.py` -- sha256 `9f622a0527ae31788158b6f7e1b6fa7e0af696cd3508f317005cdb628fa6bba2`
+- `proposal/test_pointwise_firehose_margin.py` -- sha256 `447e9101a379076f60b6b6e82937895e947db2e38de90bc6609b7fcac10d70e1`
+- `proposal/scirel.diagnostics.pointwise-firehose-margin.json` -- sha256 `a011d39533006cfe3ee0124fa2b734e756f039d91ea45d400d92ae1947eefb63`
+
 
 ## Batch r72: FIDASIM cross-node leaf family (five operators)
 

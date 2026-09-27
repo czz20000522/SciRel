@@ -30,7 +30,7 @@ def catalog(tmp_path):
         catalog_id="scirel-development-pilot",
         release_version=CURRENT_VERSION,
         coverage_status="complete",
-        declared_total=147,
+        declared_total=148,
     )
     return output, result["root_digest"]
 

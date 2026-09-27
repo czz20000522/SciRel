@@ -289,7 +289,11 @@ def test_admitted_wheel_runs_the_source_free_user_acceptance(tmp_path):
     wheel = Path(json.loads(result.stdout)["wheel"])
 
     environment = tmp_path / "environment"
-    venv.EnvBuilder(with_pip=True, system_site_packages=True).create(environment)
+    # Without system site packages the nested interpreter cannot see the host
+    # (possibly polluted) global site-packages at all; the reused dependency
+    # roots below are added explicitly via .pth, so the historical wheel is
+    # imported from inside the environment, never from a host install.
+    venv.EnvBuilder(with_pip=True, system_site_packages=False).create(environment)
     python = environment / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
 
     # A nested venv does not inherit packages installed in its parent venv.
@@ -298,8 +302,12 @@ def test_admitted_wheel_runs_the_source_free_user_acceptance(tmp_path):
         spec = importlib.util.find_spec(module_name)
         assert spec is not None and spec.origin is not None
         dependency_roots.append(Path(spec.origin).resolve().parent.parent)
+    # Query the pure site-packages directory inside the nested interpreter:
+    # on Windows getsitepackages()[0] is the venv root, where a .pth file is
+    # never processed, which once let a host-installed scirel shadow the
+    # wheel under test (site-packages ordered before the environment path).
     site_packages = subprocess.run(
-        [str(python), "-c", "import site; print(site.getsitepackages()[0])"],
+        [str(python), "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"],
         check=True,
         capture_output=True,
         text=True,
