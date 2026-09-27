@@ -46,7 +46,7 @@
       "shape": "[n_levels, n_levels]",
       "dtype": "real array-like",
       "required": true,
-      "constraints": "Finite (registered); must admit a real eigen-decomposition within 1e-12 imaginary parts; validated in all cases but consumed only when in_plasma is true."
+      "constraints": "Finite (registered) with shape (n_levels, n_levels); shape and finiteness are validated in all cases (registered hardening; the saved arm validated only on the in-plasma branch) while the real-eigenstate contract within 1e-12 imaginary parts is enforced on the in-plasma branch, where the matrix is consumed; the ballistic branch never runs the eigensolve."
     },
     {
       "name": "dt_s",
@@ -126,7 +126,7 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError when states are misshaped or negative, when dt_s is negative or not a genuine scalar, when the matrix is misshaped or fails the real-eigenstate contract, or when the emitting index is out of range, a bool or a non-integer.",
+    "invalid_input": "Raises ValueError when states are misshaped or negative, when dt_s is negative or not a genuine scalar, when the matrix is misshaped or non-finite (validated in both branches, registered), when the matrix fails the real-eigenstate contract on the in-plasma branch, or when the emitting index is out of range, a bool or a non-integer.",
     "runtime_failure": "Raises ValueError when states, dt, the matrix or the Einstein rate are non-finite (registered), when the advanced outputs are non-finite for finite but extreme input magnitudes (registered hardening; the saved arm returns Inf and NaN silently), or when the ballistic outputs state*dt overflow (registered hardening; the saved arm returns Inf silently there and never validates the emitting index on that branch).",
     "nonconvergence": "Not applicable; one fixed time step.",
     "partial_results": "Never returned; the ballistic branch is the source-defined complete answer outside the plasma."
@@ -148,7 +148,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev53",
+    "implementation_version": "0.1.0.dev54",
     "dependencies": []
   },
   "example": {
@@ -160,7 +160,7 @@
     "scope": [
       "Saved-package oracles: diagonal eigen-advance with photon projection, outside-plasma ballistic rule.",
       "Zero-eigenvalue branch pinned as a registered saved-arm divergence from the Fortran +1-before-exp rule (untriggered in the bundle's 823 bounded replay events).",
-      "Registered hardenings: finite/type input gates, strict integer emitting index enforced in both branches, ballistic finite outputs, finite in-plasma outputs."
+      "Registered hardenings: finite/type input gates, strict integer emitting index enforced in both branches, ballistic finite outputs, finite in-plasma outputs, matrix shape/finiteness validated in both branches (r77-v3 review repair; the saved arm validated only in plasma and never consumes the matrix outside plasma)."
     ],
     "tests": [
       "tests/operator_contracts/test_dcx_colrad_family.py"

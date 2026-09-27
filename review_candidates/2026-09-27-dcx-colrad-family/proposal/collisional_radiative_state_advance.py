@@ -14,7 +14,9 @@ matrix entries or Einstein rate pass the saved comparisons silently and
 propagate NaN, ``exp`` of extreme eigenvalues can overflow to Inf, and
 ``np.maximum(NaN, 0.0)`` stays NaN; the emitting index accepts bools and
 floats; all returned values must be finite and the index must be a strict
-in-range integer.
+in-range integer.  The matrix shape/finiteness contract is validated in
+both branches (r77-v3 review repair); the saved arm validated it only in
+plasma, and the ballistic branch still never consumes the matrix.
 """
 from __future__ import annotations
 
@@ -42,6 +44,14 @@ def advance_collisional_radiative_states(states, rate_matrix_s_inv, dt_s, in_pla
         # both branches; the saved arm never validates the index on the
         # ballistic branch.
         raise ValueError("emitting_state_index must be a zero-based in-range integer")
+    matrix = np.asarray(rate_matrix_s_inv, dtype=float)
+    if matrix.shape != (state.size, state.size) or not np.all(np.isfinite(matrix)):
+        # Registered hardening: shape and finiteness are validated in both
+        # branches (the exact document promises matrix validation in all
+        # cases); the saved arm validated only on the in-plasma branch.  The
+        # ballistic branch still never consumes the matrix -- the
+        # real-eigenstate gate and the eigensolve stay in plasma.
+        raise ValueError("rate_matrix_s_inv must be (n_levels, n_levels) with finite entries (registered hardening)")
     if not in_plasma:
         next_state = state.copy()
         integrated_density = state * dt_s
@@ -52,9 +62,6 @@ def advance_collisional_radiative_states(states, rate_matrix_s_inv, dt_s, in_pla
                 "ballistic outputs are non-finite for finite but extreme "
                 "input magnitudes (registered hardening)")
         return next_state, integrated_density, 0.0
-    matrix = np.asarray(rate_matrix_s_inv, dtype=float)
-    if (matrix.shape != (state.size, state.size) or not np.all(np.isfinite(matrix))):
-        raise ValueError("rate_matrix_s_inv must be (n_levels, n_levels) with finite entries (registered hardening)")
     eigval, eigvec = np.linalg.eig(matrix)
     if np.max(np.abs(eigval.imag)) > 1.0e-12 or np.max(np.abs(eigvec.imag)) > 1.0e-12:
         raise ValueError("source real-eigenstate contract is not satisfied")

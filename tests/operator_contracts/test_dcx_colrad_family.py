@@ -226,6 +226,25 @@ def test_advance_ballistic_branch_fails_closed_per_contract():
         advance_collisional_radiative_states((1.0,), ((-1.0,),), 0.5, False, True, 7.0)
 
 
+def test_advance_ballistic_branch_validates_the_matrix_contract():
+    # r77-v3 post-freeze review finding, pinned: the exact document claims
+    # the matrix is validated in all cases, but the ballistic branch used to
+    # return before the shape/finiteness check while never consuming the
+    # matrix.  The port now validates shape and finiteness in both branches
+    # (registered hardening; the saved arm validated only in plasma) while
+    # the real-eigenstate gate stays on the in-plasma branch because the
+    # ballistic branch still never runs the eigensolve.
+    with pytest.raises(ValueError, match="rate_matrix_s_inv"):
+        advance_collisional_radiative_states(
+            (1.0,), ((-1.0, 0.0), (0.0, -1.0)), 0.5, False, 0, 7.0)
+    with pytest.raises(ValueError, match="rate_matrix_s_inv"):
+        advance_collisional_radiative_states(
+            (1.0,), ((np.nan, 0.0), (0.0, -1.0)), 0.5, False, 0, 7.0)
+    with pytest.raises(ValueError, match="rate_matrix_s_inv"):
+        advance_collisional_radiative_states(
+            (1.0,), ((np.inf, 0.0), (0.0, -1.0)), 0.5, False, 0, 7.0)
+
+
 # --------------------------- marker-initialization graph ---------------------------
 
 def _plasma_provider(position):
