@@ -23,6 +23,16 @@ runnable baseline. L1 is expected to follow the extraction contract, but it may 
 dangling graph references, ambiguous science, or source-specific assumptions. Diagnose those facts rather than
 assuming either perfection or invalidity.
 
+Accept bounded deliveries in explicit batches. A batch is a finite handoff of one or more exact L1 bundles, each
+with its source scope digest, bundle digest, closure signal, delivered target ids, and candidate inventory. Batch
+submission does not require waiting for the source project to reach `full_freeze`; it does require that every item
+claimed as delivered has the extraction gate's runnable asset and reassembly evidence. Keep the batch manifest and
+per-item dispositions together, and allow later batches from the same project to reference the same source lineage.
+For `bounded_delivery`, require the independent read-only subagent's pass receipt in the batch manifest; do not accept
+the coordinator's own report as that review. A later batch may reopen the same D1 run when assembly identifies a real
+missing capability.
+Do not turn a deferred source capability row into a review item merely to make a batch appear complete.
+
 This skill does not change, approve, or release SciRel assets. It prepares a candidate document, candidate code, and
 candidate tests for later expert review. Approval is what authorizes a separate task to apply the accepted candidate
 to SciRel.
@@ -34,16 +44,28 @@ Establish what each candidate computes, its direction, assumptions, ports, units
 applicability, dependencies, tests, provenance, and evidence ceiling. Use the implementation and tests to challenge
 the prose; do not infer missing science from names.
 
+When an extraction report contains a `Deferred Source Capability Register`, treat it as internal source-location
+metadata, not as an L1 asset list or an expert-review queue. Do not prepare review items, package directories, or
+`asset_ref` values for deferred rows. Consult a row only when assembly comparison indicates a possible missing
+capability and the original extraction run must be reopened.
+
 Read SciRel's architecture and catalog guidance, then inspect the maintained implementation, public exports,
 scientific tests, TaskGraph bindings, asset documents, and provenance relevant to the incoming families. The catalog
 may be partial, so absence from `catalog/examples/` is not evidence that SciRel lacks a capability. Discover the
 actual baseline progressively rather than loading the whole library into context.
 
+Build a digest-bound comparison index before broad semantic reading when the batch is large. It may join L1 asset
+documents, exact dependencies, ports, scientific fingerprints, provenance, current SciRel asset documents, public
+exports, and unpublished-candidate identities to produce likely comparison sets. Reuse unchanged rows and expand only
+the affected scientific family. The index is a navigation and bookkeeping aid: names, hashes, embeddings, AST/token
+similarity, shared tests, or sample outputs cannot decide reuse, equivalence, variants, adapters, or conflicts.
+
 Compare incoming candidates with one another, the unpublished candidate pool, and SciRel. A repeated project should
 normally resolve to existing identities, variants, or explicit unresolved differences instead of generating another
-copy. Prefer merging, replacing, or withdrawing a candidate that no expert has opened when that removes duplicate
-expert work. A queue entry alone does not freeze the candidate. Never silently rewrite a candidate after expert
-observation, review, or approval.
+copy. During upload preparation, prefer merging, replacing, or withdrawing drafts when that removes duplicate expert
+work. Upload fixes each review item's initial document/code/test version; the workbench has no background model that
+rewrites queued content. Later AI rework is a separate preparation task whose linked result the uploader must submit
+explicitly.
 
 ## Compare scientific meaning
 
@@ -82,6 +104,16 @@ usually an `overlaps` relation, not duplication.
 
 ## Prepare the review candidate
 
+### Batch handoff
+
+For each bounded batch, first reconcile the delivered operators and TaskGraphs against the current SciRel baseline
+and unpublished candidate pool. Record three separate counts: `inventoried` (all delivered assets have a row),
+`triaged` (each row has an evidence-bounded disposition), and `candidate-ready` (the document/code/test trio or
+explicit no-code rationale is ready for expert review). Deferred source capabilities remain outside all three
+counts; they are reopened only if assembly identifies a real missing capability. Submit the batch after the exact
+candidate artifacts and comparison inventory are immutable for that handoff, then close the integration handoff for
+that batch.
+
 Keep the frozen SciRel baseline unchanged. Prepare proposed code and tests in an isolated candidate worktree, patch,
 or review directory; do not bulk-copy an L1 bundle over maintained SciRel source. Reuse an existing public capability
 when its contract already fits. Propose code only for the selected scientific disposition, and keep domain-organized
@@ -105,10 +137,11 @@ have no runtime-code patch, but the document must say so explicitly and comparis
 the claim; do not create meaningless code merely to fill a slot.
 
 Record the exact frozen SciRel Git base and unpublished candidate-pool snapshot used for the comparison in the
-candidate document or harness run evidence. An unobserved candidate may be edited in place even after it enters the
-review queue so its document, code, and tests converge into one review unit. The workbench must atomically freeze the
-trio before returning its full detail to an expert. Later material changes require rework or a linked replacement
-candidate. Candidate generation ends after the trio enters the review queue; do not
+candidate document or harness run evidence. Before upload, a draft may be edited in place so its document, code, and
+tests converge into one review unit. Upload atomically records that exact trio as the item's initial version. After
+upload, only explicit human edits under the workbench's item lease create new content versions; whether an expert has
+opened the item does not change this boundary. Later AI rework requires a separate preparation task and an explicitly
+submitted linked candidate. Candidate generation ends after the trio enters the review queue; do not
 keep an agent session open while waiting for an expert. Approval starts a separate integration task against the
 then-current SciRel baseline.
 
@@ -169,3 +202,12 @@ scientifically reviewable candidate.
 
 Stop at an expert-reviewable candidate outside the frozen SciRel baseline. Model execution, passing tests, a generated
 report, or a clean build does not approve the science, apply the candidate, or authorize release.
+
+For an actual workflow upload, serialize the final handoff as
+`scirel.standardization-submission.dev` using
+[`contracts/standardization-submission-dev.schema.json`](../../../contracts/standardization-submission-dev.schema.json).
+This final envelope binds the exact candidate/source, SciRel Git base, unpublished-candidate snapshot,
+harness/model/skill identity, and each review unit's document, code or no-code rationale, tests, disposition,
+dependencies, evidence, and gaps. It is not a prescribed reasoning pipeline or workspace layout. Use
+`scripts/submit_standardization.py` (or the equivalent workflow API) only after the semantic work is complete to
+validate the handoff and produce `review_pending`; never put invented automated-check results in the submission.

@@ -48,6 +48,12 @@ Use [the decision rubric](references/deduplication-decision-rubric.md) for exact
 parameterized variants, lossless adapters, compositions, conflicts, and unresolved relations. Names, taxonomy,
 AST/token similarity, or a few matching outputs cannot establish equivalence.
 
+Use machine-generated fingerprints, indexes, signatures, and similarity only to form comparison candidate sets and
+to eliminate byte-identical work. Bind cached comparison rows to exact candidate, dependency, contract, and evidence
+digests; reuse them only while those inputs remain unchanged. Spend semantic review on the material discriminators
+above and on ambiguous or high-impact families. A prefilter may reduce pairwise comparisons, but it cannot merge,
+parameterize, compose, or discard a scientific identity.
+
 ## Normalization workflow
 
 1. **Account for the batch.** Give every input one inventory row and preserve its exact dependency closure,

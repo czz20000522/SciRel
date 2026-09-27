@@ -11,15 +11,19 @@ scientific proposal through three linked materials:
 The document is the primary surface. It must let the expert understand the proposal before opening implementation or
 machine records. Missing science remains a visible question; it is not filled from names, similarity, or model output.
 
-## Queue and observation boundary
+## Upload and review boundary
 
-`review_pending` means only that an item is discoverable in the review queue. Until an expert opens the full trio,
-the model may merge, replace, or withdraw it to reduce duplicate review work. The queue may show a minimal index, but
-that index is not scientific review.
+Before upload, the external agent may merge, replace, or withdraw drafts to reduce duplicate review work. Upload
+records the exact initial document/code/test version for each `review_pending` item and ends that agent run. The
+workbench has no background model that changes queued content, whether or not an expert has opened the item.
 
-On first open, the host sends `start_review` to SciRel before displaying detail. SciRel returns one
-`review_in_progress` snapshot containing the exact document/code/test view. From then on, do not change that view in
-place. New evidence or code becomes a linked rework or replacement candidate.
+Opening full detail is read-only and records the exact version shown. Claiming an item is a separate action: the host
+grants an exclusive write lease and binds the current version as the reset point. Human edits create linked content
+versions; returning the item saves the current version and releases the lease without completing review. Only an
+explicit submit action binds the final version and review decision.
+
+If AI rework is needed, the uploader starts a separate external-agent task and explicitly uploads or links its result.
+It never silently replaces an existing queued version.
 
 The host owns identity, authorization, artifact storage, CAS/current-pointer updates, and UI delivery. SciRel owns
 the meanings of draft, gap, review action, approval, and release. Host run success is not scientific approval.

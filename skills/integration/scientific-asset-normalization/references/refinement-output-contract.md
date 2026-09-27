@@ -41,11 +41,16 @@ larger TaskGraph does not automatically make a smaller graph redundant, and part
 Record the SciRel baseline and unpublished-candidate view used for comparison. Keep candidate files excluded from
 public imports, catalog generation, and wheels.
 
-An unobserved draft may be edited, merged, replaced, or withdrawn, including while it is `review_pending`. The first
-full expert open creates the exact `review_in_progress` snapshot. After observation, material changes require a linked
-new draft and another review.
+Before upload, a draft may be edited, merged, replaced, or withdrawn. Upload records the exact initial
+document/code/test version for each review item; the workbench does not run a model that rewrites queued content.
+After upload, only explicit human edits under an item lease create content versions. Later AI rework is a separate
+preparation task whose result the uploader must explicitly submit or link.
 
-See [human review handoff](human-review-handoff.md) for the observation boundary and approval consequences.
+When this work enters the SciRel workflow, encode the final units in
+`contracts/standardization-submission-dev.schema.json`. The schema fixes the reviewed content and its input
+bindings; it does not constrain the comparison method, temporary probes, or candidate workspace layout.
+
+See [human review handoff](human-review-handoff.md) for the upload boundary and approval consequences.
 
 ## Evidence and completion
 
