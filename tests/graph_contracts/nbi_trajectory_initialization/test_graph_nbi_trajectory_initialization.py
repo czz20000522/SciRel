@@ -124,11 +124,28 @@ def test_source_ray_branch_optional_grid_entry_handoff_matches_the_leaf():
 
 
 def test_source_ray_branch_returns_rejected_ray_without_raising():
-    result = initialize_nbi_trajectory(_inputs(
-        source_ray_state=_source_ray_state(aperture_offset_y_cm=[50.0])))
+    entry_state = {"grid_center_cm": [0.0, 0.0, 0.0], "grid_lengths_cm": [4.0, 4.0, 4.0]}
+    state = _source_ray_state(aperture_offset_y_cm=[50.0])
+    result = initialize_nbi_trajectory(_inputs(source_ray_state=state, beam_grid_entry_state=entry_state))
     assert result["accepted"] is False
-    # The rejected branch still reports the sampled geometry for the caller.
-    np.testing.assert_allclose(result["unit_ray_beam"][0], 1.0, rtol=1e-15)
+    # Saved caller-random parity, pinned (pre-freeze review finding): the
+    # rejected candidate geometry is still computed and returned -- the
+    # velocity is the scaled candidate unit ray and the optional grid handoff
+    # still runs.  Downstream consumers must gate on the accepted flag, and
+    # the caller owns variate resampling/retry.
+    _, ray, _ = construct_nbi_source_ray(**_operator_state_from(state))
+    np.testing.assert_allclose(result["unit_ray_beam"], ray, rtol=1e-15)
+    np.testing.assert_allclose(
+        result["velocity_cm_s"],
+        scale_nbi_velocity_for_energy_component(ray, 1.0e8, 1), rtol=1e-15)
+    np.testing.assert_allclose(result["initial_grid_entry_cm"], [-2.0, 0.0, 0.0], rtol=1e-15)
+    np.testing.assert_allclose(result["grid_exit_cm"], [2.0, 0.0, 0.0], rtol=1e-15)
+
+
+def _operator_state_from(state):
+    state = dict(state)
+    del state["injection_speed_cm_s"], state["energy_component"]
+    return state
 
 
 def test_cell_directed_branch_uses_the_cell_leaf_and_nulls_source_fields():

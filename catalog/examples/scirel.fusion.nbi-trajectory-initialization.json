@@ -17,7 +17,7 @@
     "initialize_nbi_trajectory"
   ],
   "identity": {
-    "relation": "Ordered branching DAG: injection_normalization -> {source_ray -> energy_velocity -> (optional) beam_grid_entry | cell_directed_ray}. The source_ray branch consumes the same accepted unit ray in the velocity scaling edge (source_ray.unit_ray_beam -> energy_velocity.unit_ray); the optional beam_grid_entry node maps the accepted source point/unit ray to the finite-grid entry/exit handoff; the cell_directed branch aliases the cell leaf's velocity and weight. The branches are mutually exclusive; normalization is a shared predecessor, not a numeric data edge into the ray geometry (the source's nneutrals-first order is scheduling).",
+    "relation": "Ordered branching DAG: injection_normalization -> {source_ray -> energy_velocity -> (optional) beam_grid_entry | cell_directed_ray}. The source_ray branch feeds the same candidate unit ray into the velocity scaling edge and the optional beam_grid_entry node regardless of the aperture flag; on rejection the outputs are the rejected candidate geometry, and downstream consumers must gate on the `accepted` flag (the caller owns variate resampling/retry). The cell_directed branch aliases the cell leaf's velocity and weight. The branches are mutually exclusive; normalization is a shared predecessor, not a numeric data edge into the ray geometry (the source's nneutrals-first order is scheduling).",
     "direction": "NBI power/energy/component fractions + cell volume + one branch's explicit geometric state (with caller random variates) -> neutral rates, initial-state source-rate projection, and the branch's ray/velocity/acceptance (and optional grid entry) outputs",
     "definition": "The saved FIDASIM NBI轨迹初始化图 caller-random paths (framework node N2 neutral_beam_source_sampling), composed from already-integrated SciRel leaves. The saved graph's serial utilities.f90 two-word RNG modes (seed, captured per-event state, 1000-rejection fallback) are controlled runtime glue, not a scientific relation; consistent with the NBI leaf family's caller-owned randomness convention they are a declared non-ported boundary and their state keys are rejected.",
     "model": "composition of the named SciRel leaves following the saved graph's node/edge contract; no new scientific rule is introduced in glue",
@@ -145,7 +145,7 @@
     },
     {
       "name": "source_beam_cm",
-      "description": "Accepted source-plane point in beam coordinates (source_ray branch; null on the cell_directed branch).",
+      "description": "Candidate source-plane point in beam coordinates (source_ray branch; null on the cell_directed branch). Not gated on the aperture flag; downstream consumers must check accepted.",
       "units": "cm",
       "shape": "[3] or null",
       "dtype": "float64 array",
@@ -154,7 +154,7 @@
     },
     {
       "name": "unit_ray_beam",
-      "description": "Accepted ray's unit direction in beam coordinates (source_ray branch; null on the cell_directed branch).",
+      "description": "Candidate unit ray direction in beam coordinates (source_ray branch; null on the cell_directed branch). Not gated on the aperture flag; downstream consumers must check accepted.",
       "units": "dimensionless",
       "shape": "[3] or null",
       "dtype": "float64 array",
@@ -163,7 +163,7 @@
     },
     {
       "name": "velocity_cm_s",
-      "description": "Selected energy-component birth velocity (source_ray: scaled accepted unit ray; cell_directed: cell leaf's beam-grid uvw velocity).",
+      "description": "Selected energy-component birth velocity (source_ray: the candidate unit ray scaled regardless of the aperture flag; cell_directed: cell leaf's beam-grid uvw velocity). Gate on accepted before consuming as a birth trajectory.",
       "units": "cm/s",
       "shape": "[3]",
       "dtype": "float64 array",
@@ -329,7 +329,7 @@
         "id": "energy_velocity",
         "kind": "operator",
         "asset_id": "scirel.fusion.nbi-energy-component-velocity",
-        "description": "Scale the same accepted unit ray by the injection speed over the Float32 energy-component divisor; source_ray branch only.",
+        "description": "Scale the same candidate unit ray by the injection speed over the Float32 energy-component divisor, regardless of the aperture flag; source_ray branch only. Consumers must gate on accepted.",
         "inputs": [
           "unit_ray_beam",
           "injection_speed_cm_s",
@@ -343,7 +343,7 @@
         "id": "beam_grid_entry",
         "kind": "operator",
         "asset_id": "scirel.fusion.beam-grid-ray-intersection",
-        "description": "Optional finite-grid entry/exit handoff from the accepted source point and unit ray; runs only when beam_grid_entry_state is supplied on the source_ray branch. Follows the intersection leaf's source-ordered infinite-line face-pair semantics (no forward-only guarantee; see its identity.relation). The N1 in_plasma check remains outside this graph.",
+        "description": "Optional finite-grid entry/exit handoff from the candidate source point and unit ray, computed regardless of the aperture flag; runs only when beam_grid_entry_state is supplied on the source_ray branch. Follows the intersection leaf's source-ordered infinite-line face-pair semantics (no forward-only guarantee; see its identity.relation). The N1 in_plasma check remains outside this graph.",
         "inputs": [
           "source_beam_cm",
           "unit_ray_beam",
@@ -532,7 +532,7 @@
           "node": "energy_velocity",
           "port": "unit_ray_beam"
         },
-        "description": "The same accepted unit ray must be consumed before velocity scaling.",
+        "description": "The same candidate unit ray must be consumed before velocity scaling, regardless of the aperture flag.",
         "condition": "sampling_mode == 'source_ray'.",
         "transform": "Identity.",
         "kind": "data",
@@ -844,8 +844,9 @@
   },
   "verification": {
     "scope": [
-      "Composition order: normalization precedes both branches; the same accepted unit ray feeds the velocity scaling and the optional grid handoff.",
+      "Composition order: normalization precedes both branches; the same candidate unit ray feeds the velocity scaling and the optional grid handoff regardless of the aperture flag.",
       "Branch exclusivity, null projections of the non-selected branch, deterministic same-variate replay.",
+      "Rejected-candidate parity: velocity and grid handoff are computed on rejected rays; consumers gate on accepted; caller owns retry.",
       "Declared non-ported boundary: serial-RNG state keys rejected; normalization/ray leaf fail-closed contracts propagate."
     ],
     "tests": [
@@ -854,6 +855,7 @@
     "evidence_ceiling": "The maintained graph tests verify the composed data flow against direct calls of the five integrated leaves, the branch exclusivity and null projections, same-variate bit-identical replay, and the declared RNG-boundary rejection. The saved bundle's 16-marker captured-thread-state replay is not inherited: that evidence covers the serial RNG glue, which this port deliberately does not implement. No N3 transport, in_plasma masking, MPI/OpenMP scheduling or whole-program parity is asserted. The saved FIDASIM bundle supports bounded historical development comparison; the recorded graph/YAML digests provide the provenance linkage.",
     "known_limitations": [
       "The serial RNG paths (seed, captured state, 1000-rejection fallback with beam-axis fallback) are a declared non-ported runtime boundary, not an integrated capability.",
+      "On a rejected ray the graph still returns the candidate velocity and grid geometry (saved caller-random parity); every downstream consumer must gate on the accepted flag before treating the outputs as a birth trajectory.",
       "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
       "Public distribution licensing remains pending a human decision."
     ]
