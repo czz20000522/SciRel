@@ -1,0 +1,667 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.halo-iteration-feedback-sequence",
+  "kind": "task_graph",
+  "title": {
+    "en": "DCX/HALO iteration feedback sequence graph",
+    "zh": "DCX/HALO迭代反馈序列图"
+  },
+  "summary": "Bounded explicit multi-round N3 HALO population feedback: replay the one-round density feedback in source order over a caller-provided current-density sequence, enforce the marker-budget recurrence, and stop exactly at a source stop branch.",
+  "taxonomy": [
+    "fusion",
+    "neutral-population-transport",
+    "halo-population",
+    "task-graph"
+  ],
+  "aliases": [
+    "advance_halo_iteration_feedback_sequence"
+  ],
+  "identity": {
+    "relation": "Ordered bounded feedback sequence: initialize previous/merged recurrence state from the caller's initial values, then per round call the one-round feedback operator with the fixed DCX seed density and base budget; the requested marker budget must follow the source recurrence (base budget at round 1, each previous round's next_halo_marker_count afterwards) and drift fails closed; after an accepted round previous <- current and merged <- merged + current; the sequence must end exactly at a source stop branch (density_growth_exceeded or seed_below_threshold).",
+    "direction": "DCX seed density + initial previous/merged HALO state + explicit current-density sequence + requested marker budgets + fixed base budget -> ordered per-round feedback records, terminal previous/merged/marker state with stop branch, and diagnostics",
+    "definition": "The saved FIDASIM DCXHalo迭代反馈序列图 TaskGraph (framework node N3 neutral_population_transport, src/fidasim.f90:13293-13420), composed from the integrated halo-iteration-feedback operator. The feedback is explicit and bounded: state, order, stop branches and the iteration bound (the provided sequence length) are declared; MC markers, plasma, track, colrad, reservoir, MPI and HDF5 producers stay outside this graph. The saved single-step delegation graph (DCXHalo迭代反馈图) is deliberately not ported as a separate asset: its ports equal the operator's contract one-to-one and add no composition, so that layer is folded into the operator document.",
+    "model": "composition of the named SciRel operator following the saved graph's node/edge contract; no new scientific rule is introduced in glue",
+    "geometry": "scalar population densities for one beam-grid cell or rank-local aggregation point, iterated over explicit generations",
+    "coordinates": "densities in cm^-3; marker counts dimensionless; the base budget is the fixed inputs%n_halo, not the previous round's actual count",
+    "boundary": "finite nonnegative current densities; positive DCX/previous; nonnegative initial cumulative density; positive integral base budget; nonnegative integral requested budgets matching the sequence length; the sequence must terminate at a source stop branch; no hidden state beyond the declared recurrence",
+    "assumptions": [
+      "The caller owns the explicit current-generation density sequence in source order.",
+      "MC marker production, reservoir sampling and MPI/OpenMP scheduling remain caller-owned runtime mechanics."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "dcx_density_cm3",
+      "description": "Fixed source DCX seed density for every round's seed fraction.",
+      "units": "cm^-3",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "initial_previous_halo_density_cm3",
+      "description": "Previous-generation density before the first feedback step.",
+      "units": "cm^-3",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "initial_merged_halo_density_cm3",
+      "description": "Cumulative HALO density before the first merge.",
+      "units": "cm^-3",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and nonnegative."
+    },
+    {
+      "name": "current_halo_densities_cm3",
+      "description": "Explicit caller-owned current-generation density sequence.",
+      "units": "cm^-3",
+      "shape": "[n]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Non-empty, finite, nonnegative."
+    },
+    {
+      "name": "requested_halo_marker_budgets",
+      "description": "Requested markers used by each corresponding source generation.",
+      "units": "count",
+      "shape": "[n]",
+      "dtype": "int array-like",
+      "required": true,
+      "constraints": "Non-negative integers, same length as the density sequence, following the source feedback recurrence."
+    },
+    {
+      "name": "source_halo_marker_budget",
+      "description": "Fixed source inputs%n_halo base budget used for seed scaling.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "Positive integer."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "iterations",
+      "description": "Ordered one-step feedback records: per-round inputs, ratio, seed fraction, marker count, updated state, merge flag, continuation selector and stop reason.",
+      "units": "mixed scientific state",
+      "shape": "sequence of mappings",
+      "dtype": "list[dict]",
+      "required": true,
+      "constraints": "Length equals the number of rounds consumed by the source stop branch."
+    },
+    {
+      "name": "final_state",
+      "description": "Terminal previous/merged/marker state, iterations completed, stop reason and continuation selector.",
+      "units": "mixed scientific state",
+      "shape": "mapping",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "Records the source-defined terminal branch."
+    },
+    {
+      "name": "diagnostics",
+      "description": "Graph order, iteration order, framework mapping, branch counts and the explicit-state boundary flags.",
+      "units": "dimensionless",
+      "shape": "mapping",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "cross_pfm_edges is empty."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "A caller-owned explicit current-generation density sequence in source order with its marker-budget recurrence."
+    ],
+    "supported": [
+      "Bounded multi-round N3 HALO population-iteration feedback with explicit state, order, stop conditions and iteration bound."
+    ],
+    "excluded": [
+      "MC marker production, plasma/track/colrad evaluation, reservoir sampling, MPI/OpenMP ownership, HDF5 writers, downstream terminals and whole-program parity."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when inputs is not a mapping or a required key is missing, when any scalar/vector contract is violated, when the requested budget vector mismatches the density sequence, when a requested budget drifts from the source recurrence, when inputs continue after a source stop branch, or when the sequence ends while the source would continue.",
+    "runtime_failure": "Propagates the feedback operator's fail-closed ValueError contracts, including the registered overflow gates.",
+    "nonconvergence": "Not applicable: there is no numerical convergence criterion; termination is the source's explicit stop branches, bounded by the provided sequence length, and an end without a stop branch fails closed rather than extrapolating.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM DCXHalo迭代反馈序列图 TaskGraph package (framework node N3 neutral_population_transport; source anchor src/fidasim.f90:13293-13420), as recorded by the saved bundle's own provenance section. Saved graph.py content digest sha256 a48424e0d4e3c810e8e0cec3d5db3dddc9165a12e384303b4e77f58e6c31f33c; saved task_graph.yaml digest sha256 385833ebadc0d2f4e378e62ae508f023a7914625ff8ff15900f327097cd9acab; saved task_graph.md digest sha256 1fbad7ff7dd1c6409e9a45f11a9db3ab0a13a050d753fcce7e8fb00721292a69 (reference records; the test suite performs no automated drift detection). The saved single-step delegation graph DCXHalo迭代反馈图 (graph.py digest sha256 59a0d902e79e8d46325bdeef5de985533b07f404df2347aef8adb5dd8284137a) is deliberately not ported as a separate asset: its ports equal the operator's contract one-to-one. Composition follows the saved sequence graph's contract from the integrated operator; the caller-random/RNG and producer boundaries remain outside. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 task graph document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.halo_iteration_feedback_sequence",
+      "symbol": "advance_halo_iteration_feedback_sequence",
+      "signature": "advance_halo_iteration_feedback_sequence(inputs=None, **kwargs)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev51",
+    "dependencies": [
+      {
+        "asset_id": "scirel.fusion.halo-iteration-feedback"
+      }
+    ]
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "initial_state",
+        "kind": "controlled_glue",
+        "description": "Initialize the recurrence state pair from the caller's initial previous and merged densities; no scientific transformation.",
+        "inputs": [
+          "initial_previous_halo_density_cm3",
+          "initial_merged_halo_density_cm3"
+        ],
+        "outputs": [
+          "previous_halo_density_cm3",
+          "merged_halo_density_cm3"
+        ]
+      },
+      {
+        "id": "current_sequence",
+        "kind": "controlled_glue",
+        "description": "Project the caller's explicit density sequence to the per-round current density; no scientific transformation.",
+        "inputs": [
+          "current_halo_densities_cm3"
+        ],
+        "outputs": [
+          "current_halo_density_cm3"
+        ]
+      },
+      {
+        "id": "feedback",
+        "kind": "operator",
+        "asset_id": "scirel.fusion.halo-iteration-feedback",
+        "description": "One source halo density-feedback round: growth guard, merge, seed fraction and next marker count.",
+        "inputs": [
+          "dcx_density_cm3",
+          "previous_halo_density_cm3",
+          "current_halo_density_cm3",
+          "previous_merged_halo_density_cm3",
+          "source_halo_marker_budget"
+        ],
+        "outputs": [
+          "density_ratio",
+          "seed_dcx_fraction",
+          "next_halo_marker_count",
+          "next_previous_halo_density_cm3",
+          "merged_halo_density_after_cm3",
+          "merge_applied",
+          "continue_iteration",
+          "stop_reason"
+        ]
+      },
+      {
+        "id": "requested_budget_check",
+        "kind": "controlled_glue",
+        "description": "Verify the caller's requested marker budget follows the source recurrence (base budget at round 1, the previous round's next_halo_marker_count afterwards); fail closed on drift; no scientific transformation.",
+        "inputs": [
+          "requested_halo_marker_budgets",
+          "source_halo_marker_budget",
+          "next_halo_marker_count"
+        ],
+        "outputs": [
+          "requested_halo_marker_budget"
+        ]
+      },
+      {
+        "id": "terminal",
+        "kind": "controlled_glue",
+        "description": "Assemble the ordered records, terminal state and diagnostics from the per-round results; no scientific transformation.",
+        "inputs": [
+          "density_ratio",
+          "seed_dcx_fraction",
+          "next_halo_marker_count",
+          "next_previous_halo_density_cm3",
+          "merged_halo_density_after_cm3",
+          "merge_applied",
+          "continue_iteration",
+          "stop_reason",
+          "requested_halo_marker_budget"
+        ],
+        "outputs": [
+          "iterations",
+          "final_state",
+          "diagnostics"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": {
+          "node": "$input",
+          "port": "dcx_density_cm3"
+        },
+        "to": {
+          "node": "feedback",
+          "port": "dcx_density_cm3"
+        },
+        "description": "Fixed DCX seed density for every round.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "source_halo_marker_budget"
+        },
+        "to": {
+          "node": "feedback",
+          "port": "source_halo_marker_budget"
+        },
+        "description": "Fixed base budget for seed scaling.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "source_halo_marker_budget"
+        },
+        "to": {
+          "node": "requested_budget_check",
+          "port": "source_halo_marker_budget"
+        },
+        "description": "Base budget anchor for the round-1 recurrence check.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "control",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "initial_previous_halo_density_cm3"
+        },
+        "to": {
+          "node": "initial_state",
+          "port": "initial_previous_halo_density_cm3"
+        },
+        "description": "Initial previous-generation density.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "initial_merged_halo_density_cm3"
+        },
+        "to": {
+          "node": "initial_state",
+          "port": "initial_merged_halo_density_cm3"
+        },
+        "description": "Initial cumulative merge density.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "initial_state",
+          "port": "previous_halo_density_cm3"
+        },
+        "to": {
+          "node": "feedback",
+          "port": "previous_halo_density_cm3"
+        },
+        "description": "Recurrence state before the first round.",
+        "condition": "First round.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "initial_state",
+          "port": "merged_halo_density_cm3"
+        },
+        "to": {
+          "node": "feedback",
+          "port": "previous_merged_halo_density_cm3"
+        },
+        "description": "Cumulative density before the first merge.",
+        "condition": "First round.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "feedback",
+          "port": "next_previous_halo_density_cm3"
+        },
+        "to": {
+          "node": "feedback",
+          "port": "previous_halo_density_cm3"
+        },
+        "description": "Accepted-round previous update: previous <- current.",
+        "condition": "After an accepted round (density_ratio <= 1).",
+        "transform": "State recurrence update.",
+        "kind": "feedback",
+        "required": false,
+        "feedback_id": "halo_population_recurrence"
+      },
+      {
+        "from": {
+          "node": "feedback",
+          "port": "merged_halo_density_after_cm3"
+        },
+        "to": {
+          "node": "feedback",
+          "port": "previous_merged_halo_density_cm3"
+        },
+        "description": "Accepted-round cumulative merge update: merged <- merged + current.",
+        "condition": "After an accepted round (density_ratio <= 1).",
+        "transform": "State accumulation update.",
+        "kind": "feedback",
+        "required": false,
+        "feedback_id": "halo_population_recurrence"
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "current_halo_densities_cm3"
+        },
+        "to": {
+          "node": "current_sequence",
+          "port": "current_halo_densities_cm3"
+        },
+        "description": "Explicit current-generation density sequence.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "current_sequence",
+          "port": "current_halo_density_cm3"
+        },
+        "to": {
+          "node": "feedback",
+          "port": "current_halo_density_cm3"
+        },
+        "description": "Per-round current density.",
+        "condition": "Each round.",
+        "transform": "Element projection in sequence order.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "requested_halo_marker_budgets"
+        },
+        "to": {
+          "node": "requested_budget_check",
+          "port": "requested_halo_marker_budgets"
+        },
+        "description": "Explicit requested marker budgets.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "feedback",
+          "port": "next_halo_marker_count"
+        },
+        "to": {
+          "node": "requested_budget_check",
+          "port": "next_halo_marker_count"
+        },
+        "description": "Previous round's next marker count anchors the recurrence check.",
+        "condition": "Rounds after the first.",
+        "transform": "Identity.",
+        "kind": "control",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "requested_budget_check",
+          "port": "requested_halo_marker_budget"
+        },
+        "to": {
+          "node": "terminal",
+          "port": "requested_halo_marker_budget"
+        },
+        "description": "Verified per-round requested budget.",
+        "condition": "Each round.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "feedback",
+          "port": "density_ratio"
+        },
+        "to": {
+          "node": "terminal",
+          "port": "density_ratio"
+        },
+        "description": "Per-round ratio.",
+        "condition": "Each round.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "feedback",
+          "port": "seed_dcx_fraction"
+        },
+        "to": {
+          "node": "terminal",
+          "port": "seed_dcx_fraction"
+        },
+        "description": "Per-round seed fraction.",
+        "condition": "Each round.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "feedback",
+          "port": "next_halo_marker_count"
+        },
+        "to": {
+          "node": "terminal",
+          "port": "next_halo_marker_count"
+        },
+        "description": "Per-round next marker count.",
+        "condition": "Each round.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "feedback",
+          "port": "next_previous_halo_density_cm3"
+        },
+        "to": {
+          "node": "terminal",
+          "port": "next_previous_halo_density_cm3"
+        },
+        "description": "Per-round updated previous state.",
+        "condition": "Each round.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "feedback",
+          "port": "merged_halo_density_after_cm3"
+        },
+        "to": {
+          "node": "terminal",
+          "port": "merged_halo_density_after_cm3"
+        },
+        "description": "Per-round merged density.",
+        "condition": "Each round.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "feedback",
+          "port": "merge_applied"
+        },
+        "to": {
+          "node": "terminal",
+          "port": "merge_applied"
+        },
+        "description": "Per-round merge flag.",
+        "condition": "Each round.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "feedback",
+          "port": "continue_iteration"
+        },
+        "to": {
+          "node": "terminal",
+          "port": "continue_iteration"
+        },
+        "description": "Per-round continuation selector.",
+        "condition": "Each round.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "feedback",
+          "port": "stop_reason"
+        },
+        "to": {
+          "node": "terminal",
+          "port": "stop_reason"
+        },
+        "description": "Per-round explicit stop branch.",
+        "condition": "Each round.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "terminal",
+          "port": "iterations"
+        },
+        "to": {
+          "node": "$output",
+          "port": "iterations"
+        },
+        "description": "Ordered one-step feedback records.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "terminal",
+          "port": "final_state"
+        },
+        "to": {
+          "node": "$output",
+          "port": "final_state"
+        },
+        "description": "Terminal previous/merged/marker state and stop branch.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "terminal",
+          "port": "diagnostics"
+        },
+        "to": {
+          "node": "$output",
+          "port": "diagnostics"
+        },
+        "description": "Graph order, branch counts and explicit-state boundary flags.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      }
+    ],
+    "execution": {
+      "mode": "bounded_explicit_feedback_sequence",
+      "ordering": "Initialize the recurrence state pair, then consume the caller's density sequence in source order; each round verifies the requested marker budget against the source recurrence, runs the one-round feedback operator, and updates previous/merged only after an accepted round; the graph returns when the operator reports a source stop branch.",
+      "branches": [
+        "density_ratio > 1: the round exits before the merge (growth guard); the graph stops with stop_reason 'density_growth_exceeded'.",
+        "seed_dcx_fraction < 0.01 after an accepted round: the graph stops with stop_reason 'seed_below_threshold'.",
+        "Otherwise the graph continues to the next round while inputs remain; running out of inputs while continuing, or continuing after a stop, fails closed."
+      ],
+      "state_ownership": "The graph owns only the declared recurrence state pair (previous, merged) and the per-round record list; densities and budgets are caller-owned explicit inputs.",
+      "failure_propagation": "The feedback operator's ValueError contracts propagate directly; there is no extrapolation, fallback state or partial result.",
+      "feedback": [
+        {
+          "id": "halo_population_recurrence",
+          "state": "The pair (previous_halo_density_cm3, previous_merged_halo_density_cm3).",
+          "initialization": "From the caller's initial_previous_halo_density_cm3 and initial_merged_halo_density_cm3.",
+          "update_order": "After an accepted round only (density_ratio <= 1): previous <- current, merged <- merged + current, in the source's merge addition order.",
+          "continue_when": "The operator reports stop_reason 'continue' (seed_dcx_fraction >= 0.01) and further sequence inputs remain.",
+          "stop_when": "The operator reports 'density_growth_exceeded' or 'seed_below_threshold'; the sequence must end exactly at that stop branch.",
+          "iteration_bound": "The length of the caller-provided current_halo_densities_cm3 sequence; an end without a stop branch fails closed.",
+          "nonconvergence": "Not applicable: no numerical convergence criterion; termination is the source's explicit stop branches."
+        }
+      ]
+    }
+  },
+  "example": {
+    "description": "The saved package's bounded sequence probe: five explicit densities with the marker-budget recurrence stop at the seed threshold with branch counts 4 continue / 1 seed stop.",
+    "code": "from scirel.fusion import advance_halo_iteration_feedback_sequence\nresult = advance_halo_iteration_feedback_sequence({\n    'dcx_density_cm3': 100.0,\n    'initial_previous_halo_density_cm3': 100.0,\n    'initial_merged_halo_density_cm3': 0.0,\n    'current_halo_densities_cm3': [55.9, 27.4, 15.7, 3.55, 0.315],\n    'requested_halo_marker_budgets': [40, 22, 10, 6, 1],\n    'source_halo_marker_budget': 40,\n})\nassert result['final_state']['stop_reason'] == 'seed_below_threshold'\nassert result['diagnostics']['branch_counts'] == {'continue': 4, 'seed_below_threshold': 1}\nassert [r['requested_halo_marker_budget'] for r in result['iterations']] == [40, 22, 10, 6, 1]\ntry:\n    advance_halo_iteration_feedback_sequence({'dcx_density_cm3': 100.0, 'initial_previous_halo_density_cm3': 100.0, 'initial_merged_halo_density_cm3': 0.0, 'current_halo_densities_cm3': [55.9, 27.4], 'requested_halo_marker_budgets': [40, 40], 'source_halo_marker_budget': 40})\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('marker-budget drift must fail closed')",
+    "expected": "The saved sequence probe reproduces the seed-threshold stop and branch counts; budget drift raises ValueError."
+  },
+  "verification": {
+    "scope": [
+      "Saved sequence probe reproduction: budget recurrence preserved per round, branch counts, terminal state.",
+      "Fail-closed contract: budget drift, sequence continuing after a stop, sequence ending without a stop, shape/type mismatches.",
+      "Per-round equivalence to direct one-round operator calls and deterministic same-input replay."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_halo_iteration_feedback.py"
+    ],
+    "evidence_ceiling": "The maintained graph tests verify the bounded recurrence against direct one-round operator calls, the saved probes (seed-threshold stop with branch counts, growth stop), the fail-closed sequence contracts (drift, post-stop continuation, unterminated sequence) and deterministic replay. No MC marker production, colrad evaluation, reservoir, MPI/OpenMP or HDF5 composition is asserted. The saved FIDASIM bundle supports bounded historical development comparison; the recorded graph/YAML digests provide the provenance linkage.",
+    "known_limitations": [
+      "The graph covers the single-cell/rank-local scalar recurrence; the saved bundle's multi-cell population merge, MC generation and producer handoffs remain framework boundaries.",
+      "The saved single-step delegation graph is folded into the operator contract and not ported as a separate asset.",
+      "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

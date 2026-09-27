@@ -15,6 +15,8 @@ from .pitch_gyro_direction import pitch_gyro_to_velocity_direction
 from .beam_grid_ray_intersection import intersect_ray_with_rectilinear_grid
 from .nbi_source_plane_ray import construct_nbi_source_ray
 from .nbi_trajectory_initialization import initialize_nbi_trajectory
+from .halo_iteration_feedback import advance_halo_iteration_feedback
+from .halo_iteration_feedback_sequence import advance_halo_iteration_feedback_sequence
 
 __all__ = [
     'calculate_dd_neutron_lab_energy_kev',
@@ -34,4 +36,6 @@ __all__ = [
     'intersect_ray_with_rectilinear_grid',
     'construct_nbi_source_ray',
     'initialize_nbi_trajectory',
+    'advance_halo_iteration_feedback',
+    'advance_halo_iteration_feedback_sequence',
 ]
