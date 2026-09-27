@@ -1,5 +1,8 @@
 from pathlib import Path
+import runpy
 import subprocess
+
+from scripts.validate_asset_documents import load_document_set
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -67,8 +70,10 @@ def test_release_gate_uses_the_current_baseline_and_an_approved_workflow():
     assert "scripts/build_catalog.py" in script
     assert "scripts/finalize_release.py" in script
     assert '$catalogCoverageStatus = "partial"' in script
-    assert "$catalogIncludedAssetCount = 14" in script
-    assert "$catalogDeclaredTotalAssetCount = 62" in script
+    included = len(load_document_set(ROOT / "catalog/examples"))
+    declared = len(runpy.run_path(str(ROOT / "scripts/select_affected_tests.py"))["_load_assets"]())
+    assert f"$catalogIncludedAssetCount = {included}" in script
+    assert f"$catalogDeclaredTotalAssetCount = {declared}" in script
     assert '"--expected-coverage-status" $catalogCoverageStatus' in script
     assert '"--expected-included-asset-count" $catalogIncludedAssetCount' in script
     assert (

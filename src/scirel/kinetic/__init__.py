@@ -9,7 +9,8 @@ from .loss_cone_spectrum import solve_loss_cone_spectrum
 from .plasma_dispersion import evaluate_plasma_dispersion
 from .bessel_gamma import evaluate_bessel_gamma
 from .kinetic_dispersion_sum_n import evaluate_kinetic_dispersion_sum
+from .species_equilibrium_scales import derive_species_equilibrium_scales
 from .grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
 from .frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure
 
-__all__ = ['assemble_frank_egedal_pressure', 'evaluate_frank_egedal_radial_envelope', 'project_frank_egedal_source_modes', 'evaluate_frank_egedal_hot_ion_moments', 'evaluate_mirror_invariant_distribution', 'assemble_mirror_total_pressure', 'evaluate_mirror_constrained_moments', 'solve_loss_cone_spectrum', 'evaluate_plasma_dispersion', 'evaluate_bessel_gamma', 'evaluate_kinetic_dispersion_sum', 'solve_grid_mirror_kinetic_closure', 'solve_frank_egedal_pressure_closure']
+__all__ = ['assemble_frank_egedal_pressure', 'evaluate_frank_egedal_radial_envelope', 'project_frank_egedal_source_modes', 'evaluate_frank_egedal_hot_ion_moments', 'evaluate_mirror_invariant_distribution', 'assemble_mirror_total_pressure', 'evaluate_mirror_constrained_moments', 'solve_loss_cone_spectrum', 'evaluate_plasma_dispersion', 'evaluate_bessel_gamma', 'evaluate_kinetic_dispersion_sum', 'derive_species_equilibrium_scales', 'solve_grid_mirror_kinetic_closure', 'solve_frank_egedal_pressure_closure']

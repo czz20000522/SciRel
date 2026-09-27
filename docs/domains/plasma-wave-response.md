@@ -9,6 +9,7 @@
 ## 开发样例关系与组合
 
 - [局部冷等离子体介电张量](../../catalog/examples/scirel.dielectric.cold-plasma-tensor.json)给出 Stix 冷等离子体响应及其数值证据边界。
+- [磁化物种平衡尺度](../../catalog/examples/scirel.kinetic.species-equilibrium-scales.json)从物种质量、电荷、参考密度及 eV 温度导出 SI 热速度、回旋频率、德拜长度和扫描尺度；它不组装波张量。
 - [解析等离子体色散函数](../../catalog/examples/scirel.kinetic.plasma-dispersion-function.json)返回 `w(z)` 与 `Z(z)`；调用方负责频率、波数、漂移和热速度到无量纲 `z` 的映射。它不推断模态或色散根。
 - [指数缩放 Bessel-Gamma 项](../../catalog/examples/scirel.kinetic.bessel-gamma.json)返回整数阶数和无量纲参数的函数值与导数；调用方负责选择参数和谐波截断。
 - [有限谐波动理学色散张量](../../catalog/examples/scirel.kinetic.kinetic-dispersion-sum.json)在均匀 z 向磁场、Maxwellian 物种和 x-z 平面实波点上组装 `K`、`D` 与行列式；调用方负责 SI 单位、谐波截断充分性和后续求根。
@@ -18,4 +19,4 @@
 
 ## 证据、限制与待整理项
 
-冷介电张量文档明确排除温/动理学与有限拉莫尔半径修正，也不负责将张量旋转到其他基；返回有限张量不等于为某个实际装置证明模型适用。解析色散函数与 Bessel-Gamma 项没有绑定冷张量或任何具体归一化；有限谐波张量仅覆盖其 exact document 的实波点和有限截断，不推断模态根。领域专家需确定典型问题、模型选择条件和组合验证。相对上一可信版的变化：待建立可信版后填写。
+冷介电张量文档明确排除温/动理学与有限拉莫尔半径修正，也不负责将张量旋转到其他基；返回有限张量不等于为某个实际装置证明模型适用。物种平衡尺度保留 fluidBW 的常数与热速度约定，不选择波点；解析色散函数与 Bessel-Gamma 项没有绑定冷张量或任何具体归一化；有限谐波张量仅覆盖其 exact document 的实波点和有限截断，不推断模态根。领域专家需确定典型问题、模型选择条件和组合验证。相对上一可信版的变化：待建立可信版后填写。
