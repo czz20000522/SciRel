@@ -8,8 +8,9 @@
 - [单代中性分布密度归约](../../catalog/examples/scirel.kinetic.generation-density-reduction.json)按调用方提供的柱坐标权重和轴向单元宽度，将 `(nvr, nvx, nx)` 分布归约为 `(nx,)` 密度；它不构造速度网格或求解输运方程。
 - [入射中性边界通量归一化](../../catalog/examples/scirel.kinetic.incoming-boundary-flux-normalization.json)按正向轴向速度半空间的预缩放通量，将调用方的边界形状缩放到目标通量的绝对值；目标为零时返回零尺度与零边界。
 - [空间源形状归一化](../../catalog/examples/scirel.kinetic.spatial-source-shape-normalization.json)用调用方空间坐标的梯形积分将非负源剖面归一化，并返回原始积分。
+- [圆柱速度空间积分权重](../../catalog/examples/scirel.kinetic.cylindrical-velocity-quadrature.json)从归一化 `vr`、`vx` 网格构造 ghost 面、环形径向测度、体积权重和差分系数；`volume` 可作为 Maxwellian 速率平均的 `cylindrical_volume` 输入。
 
-这四项没有直接资产依赖；边界归一化接收调用方提供的热速度和柱坐标权重，不在函数内部构造它们。链接指向 `catalog/examples/` 开发 pilot 的 exact documents，不代表专家批准或公开发布。
+这五项没有直接资产依赖；边界归一化接收调用方提供的热速度和柱坐标权重，不在函数内部构造它们。积分权重与速率平均的端口组合由直接测试覆盖。链接指向 `catalog/examples/` 开发 pilot 的 exact documents，不代表专家批准或公开发布。
 
 ## 证据与待整理项
 
