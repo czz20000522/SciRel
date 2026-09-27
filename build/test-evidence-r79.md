@@ -160,14 +160,22 @@ sys.path carries no repository-root or `/src` entry and the repo
 `tests` package is not importable (a first attempt failed with exit
 code 1 on an over-broad sys.path assertion that banned the venv root
 path too; the corrected check is entry-wise and the failure record is
-retained). Representative calls, all asserting saved-oracle values:
+retained). Representative calls with constructed-input expected values
+-- this smoke does not assert saved-package parity; the saved-oracle
+parity claims belong to the direct science tests in
+`tests/operator_contracts/test_neutral_merge_family.py` only:
 `merge_neutral_population_density` (signed componentwise addition +
 source ownership), `merge_neutral_population_cells` (cell shape/count),
 `merge_neutral_reservoirs` (both_nonfull append with the
 source-prefix slot rewrite and the res2=res1 broadcast), and the
 composition task graph `merge_neutral_population_state`
 (source_empty branch, graph_order diagnostics, non-mapping
-reservoir-state fail-closed). **Exit code 0**
+reservoir-state fail-closed). The exact script executed is preserved
+in the repository as the verifiable one-off artifact
+`build/r79-sourcefree-usage-script.py` (SHA-256
+`e1df4aab2ecc9a56381e1e8f93704f09b295bea370a84d9dada85c767a9dc681`,
+byte-identical to the file run at the isolated path; a one-off
+verification record, not a maintained process script). **Exit code 0**
 (`R79-SOURCE-FREE-USAGE-PASSED`).
 
 ### Reuse basis for the other gates
