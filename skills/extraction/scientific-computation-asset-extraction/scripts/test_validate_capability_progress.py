@@ -275,6 +275,13 @@ def main() -> None:
         for error in validate_progress_document(missing_review, require_closure_signal=True)
     )
 
+    malformed_delivered = deepcopy(bounded_signal)
+    malformed_delivered["closure_signal"]["delivered_target_ids"] = None
+    assert any(
+        "closure_signal.delivered_target_ids must be a list" in error
+        for error in validate_progress_document(malformed_delivered, require_closure_signal=True)
+    )
+
     partial_delivered = deepcopy(bounded_signal)
     partial_delivered["target_paths"][0]["status"] = "partial"
     partial_delivered["target_paths"][0]["earliest_unresolved"] = "C-EQUATION"

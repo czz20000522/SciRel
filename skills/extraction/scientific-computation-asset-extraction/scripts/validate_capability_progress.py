@@ -317,10 +317,10 @@ def _validate_closure_signal(
             )
         target_by_id = {
             target.get("target_id"): target
-            for target in document.get("target_paths", [])
+            for target in target_paths
             if isinstance(target, dict) and isinstance(target.get("target_id"), str)
         }
-        for target_id in signal.get("delivered_target_ids", []):
+        for target_id in delivered_target_ids:
             target = target_by_id.get(target_id)
             if target is None:
                 continue
