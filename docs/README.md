@@ -1,6 +1,8 @@
 # SciRel 项目文档
 
-SciRel 按长期独立 Python 项目维护。文档只保存稳定合同、可复用流程和当前实现边界；单次任务参数、临时进度与重复状态不进入这里。
+SciRel 按长期独立 Python 项目维护。文档只保存稳定合同、可复用流程和当前实现边界；单次任务参数、临时进度与重复状态不进入这里。本页是稳定目录入口：指向各权威文档，并给出"当前实现边界"以最新冻结 review-version 证据为准的读取规则。
+
+## 权威文档目录
 
 - [架构与科学资产合同](architecture.md)：Operator、TaskGraph、科学身份、公共 API 和治理边界。
 - [规模化目录合同](catalog.md)：数万资产下的分片、渐进检索、依赖索引与一致性要求。
@@ -21,10 +23,21 @@ SciRel 按长期独立 Python 项目维护。文档只保存稳定合同、可�
 - [SciRel 求解 skill](../skills/usage/scirel-solving/SKILL.md)：供不同 harness 规范化、规划、执行和解释用户科学请求的共同方法。
 - [L1 wire smoke](../scripts/run_l1_wire_smoke.py)：开发期确定性 body 合同测试工具，不是语义整合入口。
 - [贡献指南](../CONTRIBUTING.md)：开发环境、改动分类、兼容性和提交前检查。
-- [科学领域导航](domains/README.md)：当前 10 份领域草稿的问题入口、科学边界与专家待决事项。
+- [科学领域导航](domains/README.md)：领域草稿的问题入口、科学边界与专家待决事项。
 
-## 当前实现边界
+## 当前实现边界（以最新冻结证据为准）
 
-当前 `0.1.0.dev18` 开发树包含 52 条历史资产候选和 16 条后续开发资产；68 条公共资产均有 catalog exact document，但尚未经整版专家认可。workflow 已具备 host-independent 状态协调、artifact 关联和逐项审核；旧逐项批准到 release 的入口已阻断。真实 L1 的理解与整合由 skill 驱动的模型完成，不属于状态机能力。当前合格 L1 交付根为空；版本级专家认可、生产审核插件接线、完整 L1 整合、v1 合同冻结、固定发行工具链和正式发布授权尚未完成。
+当前开发树版本、资产数量与 exact-document 覆盖**不写死在本页**，以最新冻结 review-version manifest 为准。撰写本文时为 r81-v1：`0.1.0.dev58`、169/169 exact documents、`pending_unapproved`、无可信基线，快照 `build/verification/review-2026-09-27-r81-npa-store-family-v1/manifest.json`，专家版本说明 `evaluations/review-version-2026-09-27-r81.md`。后续冻结版落地后，更新本节指向新的快照与说明即可，其余链接保持稳定。
 
-新增长期机制时，优先扩展上述权威文档和可执行检查。只有出现独立 owner、不同生命周期或明显不同读者时才拆新文档，避免用报告数量代替项目治理。
+## 各类材料的职责与读取方式
+
+- **冻结证据（`build/verification/…`，不入库目录树）**：每个 pending_unapproved 版本的 manifest、exact documents 摘要、wheel、catalog、review dossier 与 test evidence 的精确字节绑定。manifest 是该版本"当前实现边界"的唯一权威；`pending_unapproved` 只表示等待专家审核，不表示任何 D1 资格或专家认可。历史版本的快照原样保留，是治理记录，不是当前能力声明。
+- **历史 provisional 来源**：`provenance/` 下的旧迁移样本（如 `admitted-assets.json`）与兄弟 checkout 中的保存 L1 包（KN1DPy、FIDASIM、GSEQ 等）只支持有界历史开发比较。旧 `admission`/决定标签与保存包的 ledger 声明都不是当前批准事实，也不是合格 L1 消费；合格 L1 交付根以当轮冻结记录的复核为准（近期各轮均复核为空）。
+- **workflow/plugin 文档**：`requirements/`、`design/`、`integration/` 中的 workflow、catalog、插件与适配合同描述稳定机制与边界，不描述单批资产。旧逐项批准到 release 的 workflow/插件/脚本入口已阻断，现存实现只用于迁移与测试，不作为可用发行入口。
+- **tests 与门禁**：`tests/` 中的领域回归、合同测试、计数同步测试与受影响选择器是开发门禁；`scripts/check.ps1`（affected/focused/full）与冻结脚本产生的实测回执记录在各版 `build/test-evidence-*.md`。测试通过不扩张科学合同，也不等于专家认可。
+- **评估记录（`evaluations/`）**：`review-version-2026-09-27-r6x…r81.md` 是各冻结版的专家入口说明（增量、对照裁定、证据上限、开放问题）；`candidate-review-materials-index-2026-09-25.md` 按批绑定候选三件套的路径与 SHA-256。这些记录描述证据与待决，不伪造任何人工审核结论。
+- **review_candidates/**：各批候选 proposal（代码副本、exact document 副本、family 测试）与 review.md，是专家审阅入口；digest 以索引与冻结 manifest 绑定为准。
+
+## 边界速记
+
+真实 L1 的理解与整合由 skill 驱动的模型完成，不属于状态机能力。版本级专家认可、生产审核插件接线、完整 L1 整合、v1 合同冻结、固定发行工具链和正式发布授权均未完成。新增长期机制时，优先扩展上述权威文档和可执行检查；只有出现独立 owner、不同生命周期或明显不同读者时才拆新文档，避免用报告数量代替项目治理。
