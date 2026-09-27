@@ -15,9 +15,11 @@ from .generation_density_reduction import reduce_generation_density
 from .incoming_boundary_flux_normalization import normalize_incoming_neutral_boundary
 from .spatial_source_shape_normalization import normalize_spatial_source_shape
 from .cylindrical_velocity_quadrature import make_cylindrical_velocity_quadrature
+from .shifted_maxwellian_seed import build_shifted_maxwellian_seed
 from .grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
 from .frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure
 
 __all__ = ['assemble_frank_egedal_pressure', 'evaluate_frank_egedal_radial_envelope', 'project_frank_egedal_source_modes', 'evaluate_frank_egedal_hot_ion_moments', 'evaluate_mirror_invariant_distribution', 'assemble_mirror_total_pressure', 'evaluate_mirror_constrained_moments', 'solve_loss_cone_spectrum', 'evaluate_plasma_dispersion', 'evaluate_bessel_gamma', 'evaluate_kinetic_dispersion_sum', 'derive_species_equilibrium_scales', 'compute_thermal_speed_m_s', 'reduce_generation_density', 'solve_grid_mirror_kinetic_closure', 'solve_frank_egedal_pressure_closure']
 __all__.extend(['normalize_incoming_neutral_boundary', 'normalize_spatial_source_shape'])
 __all__.append('make_cylindrical_velocity_quadrature')
+__all__.append('build_shifted_maxwellian_seed')
