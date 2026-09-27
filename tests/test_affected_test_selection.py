@@ -109,6 +109,25 @@ def test_documentation_change_needs_no_scientific_tests():
     assert result["test_paths"] == []
 
 
+def test_outbound_evaluation_manifest_change_selects_manifest_contract_test():
+    result = select(
+        "docs/evaluations/outbound-progressive-projects/manifests/"
+        "2026-09-25-p3-reactivation-claude.json"
+    )
+
+    assert result["full_suite_required"] is False
+    assert result["affected_assets"] == []
+    assert result["test_paths"] == ["tests/test_outbound_evaluation_manifests.py"]
+
+
+def test_outbound_evaluation_manifest_verifier_selects_manifest_contract_test():
+    result = select("scripts/verify_outbound_evaluation_manifests.py")
+
+    assert result["full_suite_required"] is False
+    assert result["affected_assets"] == []
+    assert result["test_paths"] == ["tests/test_outbound_evaluation_manifests.py"]
+
+
 def test_asset_schema_and_example_changes_select_contract_tests():
     result = select(
         "contracts/scientific-asset-document.schema.json",
@@ -138,6 +157,21 @@ def test_wire_fixture_builder_selects_only_wire_smoke_test():
 
     assert result["full_suite_required"] is False
     assert result["test_paths"] == ["tests/test_l1_wire_smoke.py"]
+
+
+def test_user_acceptance_change_selects_current_tasks():
+    result = select("examples/user_acceptance.py")
+
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == ["tests/test_user_acceptance.py"]
+
+
+def test_scirel_solving_skill_change_selects_workflow_method_contract():
+    result = select("skills/usage/scirel-solving/SKILL.md")
+
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == ["tests/test_scientific_request_workflow_docs.py"]
+    assert result["reasons"][0]["classification"] == "engineering_contract"
 
 
 def test_https_runner_selects_only_listener_test():
