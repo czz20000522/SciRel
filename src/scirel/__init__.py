@@ -42,6 +42,7 @@ from .kinetic.cylindrical_velocity_quadrature import make_cylindrical_velocity_q
 from .kinetic.shifted_maxwellian_seed import build_shifted_maxwellian_seed
 from .kinetic.axisymmetric_neutral_moments import reduce_axisymmetric_neutral_moments
 from .kinetic.adaptive_neutral_velocity_mesh import create_adaptive_neutral_velocity_mesh
+from .kinetic.cross_mesh_scalar_interpolation import interpolate_scalar_across_mesh
 from .field.poloidal_field_magnitude import compute_poloidal_field_magnitude
 from .field.permanent_ring_filaments import discretize_permanent_ring
 from .diagnostics.firehose_mirror_margins import compute_firehose_mirror_margins
@@ -99,3 +100,4 @@ __all__.extend(['make_cylindrical_velocity_quadrature', 'average_cross_section_o
 __all__.append('build_shifted_maxwellian_seed')
 __all__.append('reduce_axisymmetric_neutral_moments')
 __all__.append('create_adaptive_neutral_velocity_mesh')
+__all__.append('interpolate_scalar_across_mesh')
