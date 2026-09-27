@@ -68,7 +68,7 @@ r80-v1 冻结后,独立只读复核在安装态 dev57 复现三处实际合同�
 
 1. **sightline norm 溢出静默丢 Doppler**:doppler_stark_zeeman_wavelengths((1e308,1e308,0),(1e5,0,0),(0,0,1),0,(1,0,0),0,656.28,3) 返回全 656.28——`sqrt(1e308^2+1e308^2)` 溢出为 inf 后方向归零,丢失非零 Doppler 位移,违背声明的 Doppler 关系。修复:sightline 范数改为 max-abs 缩放(精确算术下同一归一化),任意有限输入保住 Doppler;判别回归 `test_overflowing_sightline_keeps_the_nonzero_doppler_shift`。
 2. **B=1e308 返回 nan**:有限输入下四周平方溢出、分母 inf-inf 产生 nan,违背 exact document 的有限输出承诺。修复:q0/q1 与最终分量波长做有限值校验,非法域 fail closed 抛 `ValueError`;判别回归 `test_extreme_field_magnitudes_fail_closed_instead_of_returning_nan`(B 与 E 各一)。
-3. **dlambda 下溢抛 ZeroDivisionError**:in_fida_los_components(...,lambdamin=0.,lambdamax=5e-324,nlambda=2)` 的 bin 宽下溢为 0,`1/(4*pi*dlambda)` 抛未声明的 `ZeroDivisionError`。修复:bin 宽必须为正有限浮点,下溢抛声明的 `ValueError`、溢出为 inf 同样 fail closed(否则归一化因子静默为 0);判别回归 `test_degenerate_bin_width_fails_closed_as_declared` 与 `test_overflowing_bin_width_fails_closed`。
+3. **dlambda 下溢抛 ZeroDivisionError**:`bin_fida_los_components(...,lambdamin=0.,lambdamax=5e-324,nlambda=2)` 的 bin 宽下溢为 0,`1/(4*pi*dlambda)` 抛未声明的 `ZeroDivisionError`。修复:bin 宽必须为正有限浮点,下溢抛声明的 `ValueError`、溢出为 inf 同样 fail closed(否则归一化因子静默为 0);判别回归 `test_degenerate_bin_width_fails_closed_as_declared` 与 `test_overflowing_bin_width_fails_closed`。
 
 复核同时发现 r80-v1 的向量布尔检查是死代码(`np.asarray(...,dtype=float)` 之后才查 bool dtype)。修复:检查前移到浮点转换之前,覆盖容器条目、bool dtype 数组与 object 数组三种形式(`test_boolean_vector_entries_are_rejected`);已构造的混合 numpy 数组(`np.array([True,0.0,0.0])` 构造时即 float64)在端口不可检测,作为合同边界记入文档。
 
@@ -88,6 +88,15 @@ r80-v1 冻结后,独立只读复核在安装态 dev57 复现三处实际合同�
 在首个 v2 修复提交 `3091bbb` 的工作树上、任何 v2 门禁记录之前,独立复核对最终输出合同再复现两处缺口,一并修复:
 
 6. **因子静默为 0.0**:`bin_fida_los_components(...,lambdamin=0.,lambdamax=1e308,nlambda=1)` 的 `dlambda=1e308` 为正且有限,但 `4*pi*dlambda` 溢出为 inf,因子变为静默 `0.0`,违背 positive finite 承诺。修复:因子必须严格为正且有限(`test_extreme_window_span_zeroes_the_factor_and_fails_closed`)。
-7. **加权累加溢出 inf**:窗口 0..1e-300、`nlambda=1`、强度 `[1e20]*3` 时因子约 `7.96e299` 有限,但 `intensity*factor` 使 `weight_bins=[inf]`,违背有限输出承诺。修复:累加后的 weight bins 必须有限,否则 fail closed(`test_intensity_factor_product_overflow_failclosed`;测试名 `test_intensity_factor_product_overflow_fails_closed`)。
+7. **加权累加溢出 inf**:窗口 0..1e-300、`nlambda=1`、强度 `[1e20]*3` 时因子约 `7.96e299` 有限,但 `intensity*factor` 使 `weight_bins=[inf]`,违背有限输出承诺。修复:累加后的 weight bins 必须有限,否则 fail closed(`test_intensity_factor_product_overflow_fails_closed`)。
 
 直接测试 26 → 28(+2 判别回归;既有 26 项逐字保留)。门禁前的两次源码全仓运行(修复前字节 1681/43;junit 1724/0 errors/43 skipped;`3091bbb` 字节 1683/43)均作为 superseded probe 记录于 `build/test-evidence-r80.md`;正式 v2 门禁在最终修复字节上运行。
+
+
+### r80-v3:纯文档差异(控制字节修复)
+
+独立只读核对确认 r80-v2 冻结的 manifest 177 项引用、catalog 171 分片、wheel 与源码摘要及 v1 快照均匹配,但审核文本含真实控制字节:`build/test-evidence-r80.md` 及 v2 snapshot 的 `test-evidence.md` 副本各 16-18 个 NUL/BS/ESC/CR(如 "Version stays NUL.1.0.dev57"、"BSuild/..."、被 CR 破坏的 `runtime_origin`),本 dossier 含 1 个 BS。根因:v2 追加段落经双引号 here-string 写入,markdown 反引号被 PowerShell 当作转义(`0→NUL、`b→BS、`e→ESC、`r→CR)。
+
+v2 快照原样保留为历史,不改写。本版只修复工作树中的审核文本:控制字节逐字节还原为意图的反引号序列,受影响的 v2 门禁段落随后以配对完整的代码 span 重写;修复后全文无非换行/制表控制字符(扫描 0 命中),文字路径与版本复核正确(`0.1.0.dev57`、`build/r80v2-*`、`runtime_origin: installed`、两个 wheel 摘要)。
+
+科学代码、wheel 与 catalog 相对 r80-v2 逐字节未变,按既有证据复用流程,v2 的科学与安装态门禁回执(源码全仓 1685 passed / 43 skipped,安装态 1684 / 44 且 junit 0 errors,文档 168/168 两种模式,wheel SHA-256 `41c6c812...`,catalog root `sha256:473a0109...`)即为 v3 门禁回执,不做无关重跑;v3 冻结由 freeze 脚本自行逐项校验新 manifest 的全部引用。
