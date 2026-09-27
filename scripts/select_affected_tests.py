@@ -28,6 +28,11 @@ FULL_SUITE_PATHS = {
     "pyproject.toml",
 }
 
+EXTERNAL_TOOLING_FILES = {
+    "scripts/build_extraction_skill_bundle.py",
+    "scripts/install_extraction_skill_bundle.py",
+}
+
 ENGINEERING_TESTS = {
     "docs/integration/codefusion-consumer-contract.md": (
         "tests/test_codefusion_consumer_contract.py",
@@ -346,7 +351,9 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
         path_tests: set[str] = set()
         reason = ""
 
-        if path in FULL_SUITE_PATHS:
+        if path in EXTERNAL_TOOLING_FILES or path.startswith("skills/extraction/"):
+            reason = "external_tooling"
+        elif path in FULL_SUITE_PATHS:
             full_suite_reasons.append(f"{path} changes the test/dependency baseline")
             reason = "full_suite_baseline"
         elif path in ENGINEERING_TESTS:

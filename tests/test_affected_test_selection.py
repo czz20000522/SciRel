@@ -174,6 +174,36 @@ def test_scirel_solving_skill_change_selects_workflow_method_contract():
     assert result["reasons"][0]["classification"] == "engineering_contract"
 
 
+def test_extraction_skill_bundle_tools_are_outside_library_checks():
+    result = select(
+        "scripts/build_extraction_skill_bundle.py",
+        "scripts/install_extraction_skill_bundle.py",
+    )
+
+    assert result["full_suite_required"] is False
+    assert result["affected_assets"] == []
+    assert result["test_paths"] == []
+    assert {
+        reason["classification"] for reason in result["reasons"]
+    } == {"external_tooling"}
+
+
+def test_capability_progress_validator_is_outside_library_checks():
+    result = select(
+        "skills/extraction/scientific-computation-asset-extraction/scripts/"
+        "validate_capability_progress.py",
+        "skills/extraction/scientific-computation-asset-extraction/scripts/"
+        "test_validate_capability_progress.py",
+    )
+
+    assert result["full_suite_required"] is False
+    assert result["affected_assets"] == []
+    assert result["test_paths"] == []
+    assert {
+        reason["classification"] for reason in result["reasons"]
+    } == {"external_tooling"}
+
+
 def test_https_runner_selects_only_listener_test():
     result = select("scripts/run_scirel_https.py")
 
