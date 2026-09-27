@@ -1,0 +1,184 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.fida-wavelength-binning",
+  "kind": "operator",
+  "title": {
+    "en": "FIDA Stark-component wavelength bin accumulation",
+    "zh": "FIDA权重谱线分箱"
+  },
+  "summary": "Replay store_fw_photons_at_chan's final numerical boundary: place Stark component wavelengths with their normalized intensities into the FIDA wavelength bins, applying the 1/(4*pi*dlambda) solid-angle/wavelength factor and dropping out-of-range components while retaining their raw bin indices for boundary audit.",
+  "taxonomy": [
+    "fusion",
+    "spectral-bin-accumulation",
+    "fida-weight-chain",
+    "wavelength-binning"
+  ],
+  "aliases": [
+    "bin_fida_los_components"
+  ],
+  "identity": {
+    "relation": "dlambda = (lambdamax - lambdamin) / nlambda; bin = floor((lambda - lambdamin) / dlambda); a component inside the half-open interval [lambdamin, lambdamax) adds intensity / (4*pi*dlambda) to its bin (equivalent to the source's bin < 1 / bin > nlambda discard branches); accepted_component_count counts in-range components; intensity_factor_per_sr_nm is the constant 1/(4*pi*dlambda).",
+    "direction": "Stark component wavelengths + component intensities + wavelength window + bin count -> weight bins, zero-based raw bin indices, accepted component count, bin width and normalization factor",
+    "definition": "The saved FIDASIM FIDA权重谱线分箱 operator (source anchor src/fidasim.f90:12297-12347, store_fw_photons_at_chan): the terminal wavelength-bin boundary of the FIDA weight production. The operator computes no Doppler/Stark/Zeeman wavelengths and produces no photons -- the upstream component wavelengths come from the caller or from scirel.fusion.doppler-stark-zeeman-wavelengths; it accepts no weight or mean_f arrays.",
+    "model": "the saved formal implementation, ported verbatim with the registered boolean-entry hardening",
+    "geometry": "one wavelength axis with uniform bins; no spatial geometry",
+    "coordinates": "wavelengths and window bounds in nm; intensities in photons*cm^-3 as carried by the caller; bins zero-based over nlambda; the factor unit is sr^-1 nm^-1",
+    "boundary": "component arrays of length exactly 3 or 15; finite wavelengths and finite nonnegative intensities; finite window with lambdamax > lambdamin; positive genuine integer nlambda; out-of-range components contribute nothing but keep their raw computed index; no writer, no answer-array input and no whole-program replay",
+    "assumptions": [
+      "The intensities are the source's normalized Stark component spectrum carrier produced upstream by colrad; the operator does not validate their physical origin.",
+      "The half-open interval [lambdamin, lambdamax) is the source's own boundary convention."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "wavelength_nm",
+      "description": "The Stark component wavelengths in source component order.",
+      "units": "nm",
+      "shape": "[3] or [15]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, length exactly 3 or 15; boolean entries rejected in both bool dtype and mixed object form (registered hardening)."
+    },
+    {
+      "name": "component_intensity",
+      "description": "The source spectrum intensities per Stark component.",
+      "units": "photons*cm^-3",
+      "shape": "[3] or [15]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative, same length as wavelength_nm; boolean entries rejected (registered hardening)."
+    },
+    {
+      "name": "lambdamin_nm",
+      "description": "The wavelength window lower bound.",
+      "units": "nm",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and smaller than lambdamax_nm (booleans rejected -- registered hardening)."
+    },
+    {
+      "name": "lambdamax_nm",
+      "description": "The wavelength window upper bound.",
+      "units": "nm",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and larger than lambdamin_nm (booleans rejected -- registered hardening)."
+    },
+    {
+      "name": "nlambda",
+      "description": "The number of wavelength bins on the output axis.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "A positive genuine integer (bools rejected, np.integer accepted)."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "weight_bins",
+      "description": "The accumulated FIDA weight contribution per wavelength bin.",
+      "units": "source FIDA weight contribution",
+      "shape": "[nlambda]",
+      "dtype": "real array",
+      "constraints": "Finite and nonnegative; out-of-range components contribute nothing.",
+      "required": true
+    },
+    {
+      "name": "bin_index_zero_based",
+      "description": "The raw zero-based bin index per component, including out-of-range values.",
+      "units": "zero_based_index",
+      "shape": "[n_stark]",
+      "dtype": "integer array",
+      "constraints": "Finite integers retained for boundary audit; in-range values lie in [0, nlambda).",
+      "required": true
+    },
+    {
+      "name": "accepted_component_count",
+      "description": "The number of components inside [lambdamin, lambdamax).",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "int",
+      "constraints": "In [0, n_stark].",
+      "required": true
+    },
+    {
+      "name": "dlambda_nm",
+      "description": "The uniform bin width (lambdamax - lambdamin) / nlambda.",
+      "units": "nm",
+      "shape": "scalar",
+      "dtype": "real",
+      "constraints": "Positive and finite.",
+      "required": true
+    },
+    {
+      "name": "intensity_factor_per_sr_nm",
+      "description": "The normalization factor 1 / (4*pi*dlambda).",
+      "units": "sr^-1 nm^-1",
+      "shape": "scalar",
+      "dtype": "real",
+      "constraints": "Positive and finite.",
+      "required": true
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller supplies Stark component wavelengths and intensities produced by the same physical snapshot (colrad upstream)."
+    ],
+    "supported": [
+      "One store_fw_photons_at_chan binning boundary evaluation for one channel's wavelength axis."
+    ],
+    "excluded": [
+      "Doppler/Stark/Zeeman wavelength production (see scirel.fusion.doppler-stark-zeeman-wavelengths), photon generation, colrad state advance, weight/mean_f inputs, multiple channels, instrument response and whole-program replay."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when the component arrays are not finite length-3/15 matching vectors, when intensities are negative or non-finite, when the window bounds are non-finite boolean or reversed, or when nlambda is not a positive genuine integer.",
+    "runtime_failure": "Not applicable; bounded accumulation over finite inputs.",
+    "nonconvergence": "Not applicable; single pass.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM FIDA权重谱线分箱 package, source anchor src/fidasim.f90:12297-12347 (store_fw_photons_at_chan), as recorded by the saved bundle's own provenance section. The saved FIDASIM bundle supports bounded historical development comparison; the qualified-L1 delivery root is empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.fida_wavelength_binning",
+      "symbol": "bin_fida_los_components",
+      "signature": "bin_fida_los_components(*, wavelength_nm, component_intensity, lambdamin_nm, lambdamax_nm, nlambda)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev57",
+    "dependencies": []
+  },
+  "example": {
+    "description": "The saved package's floor-binning and out-of-range drop probes.",
+    "code": "import numpy as np\nfrom scirel.fusion import bin_fida_los_components\nresult = bin_fida_los_components(\n    wavelength_nm=[650.0, 650.5, 651.999999],\n    component_intensity=[1.0, 2.0, 3.0],\n    lambdamin_nm=650.0, lambdamax_nm=652.0, nlambda=4)\nassert result['bin_index_zero_based'].tolist() == [0, 1, 3]\nassert result['accepted_component_count'] == 3\nassert np.sum(result['weight_bins']) == float(6.0 / (4.0 * np.pi * 0.5))\ndropped = bin_fida_los_components(\n    wavelength_nm=[649.0, 650.25, 653.0],\n    component_intensity=[1.0, 2.0, 4.0],\n    lambdamin_nm=650.0, lambdamax_nm=652.0, nlambda=2)\nassert dropped['accepted_component_count'] == 1\nassert dropped['bin_index_zero_based'].tolist() == [-1, 0, 3]\ntry:\n    bin_fida_los_components(\n        wavelength_nm=np.asarray([True, 1.0, 1.0], dtype=object),\n        component_intensity=[1.0, 1.0, 1.0],\n        lambdamin_nm=650.0, lambdamax_nm=652.0, nlambda=4)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('boolean entries must be rejected (registered hardening)')",
+    "expected": "The saved probes reproduce, the raw out-of-range indices are retained, and the boolean-entry array raises ValueError per the registered hardening."
+  },
+  "verification": {
+    "scope": [
+      "Saved-package oracles: source floor binning with the conservation factor, out-of-range drop with retained raw indices, and the malformed fail-closed contracts.",
+      "Registered hardening: wavelength and intensity inputs reject boolean entries in both bool dtype and mixed object form such as np.asarray([True, 1.0], dtype=object) (the saved arm's np.asarray(..., dtype=float) silently coerced True to 1.0); boolean window bounds rejected; the saved arm's nlambda genuine-integer contract kept and pinned.",
+      "Source relation pins: the upper window edge is exclusive (a component at lambdamax maps to discarded bin nlambda), and the accepted bins conserve the total intensity / (4*pi*dlambda)."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_fida_spectral_family.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests reproduce the saved oracles and exercise the fail-closed contracts. No Fortran runtime parity is asserted; the saved FIDASIM bundle supports bounded historical development comparison only.",
+    "known_limitations": [
+      "The operator trusts the caller's intensity normalization; no independent photon-transport validation is claimed.",
+      "The saved FIDASIM bundle supports bounded historical development comparison only; the qualified-L1 delivery root is empty.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}
