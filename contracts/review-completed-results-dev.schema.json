@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scirel.dev/contracts/review-completed-results-dev.schema.json",
+  "title": "SciRel development completed and approved review result projection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "completed_items", "approved_items"],
+  "properties": {
+    "schema": {"const": "scirel.review-completed-results.dev"},
+    "completed_items": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/completedItem"}
+    },
+    "approved_items": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/completedItem"}
+    }
+  },
+  "$defs": {
+    "completedItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "item_ref",
+        "revision",
+        "asset",
+        "dependency_asset_ids",
+        "evidence",
+        "decision"
+      ],
+      "properties": {
+        "item_ref": {"type": "string", "minLength": 1},
+        "revision": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-fA-F]{64}$"
+        },
+        "asset": {"type": "object"},
+        "dependency_asset_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "evidence": {"type": "array", "items": {"type": "object"}},
+        "decision": {"$ref": "review-item-decision-dev.schema.json"}
+      }
+    }
+  }
+}

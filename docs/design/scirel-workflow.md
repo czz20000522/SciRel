@@ -8,11 +8,19 @@ workflow 不执行科学标准化，也不规定模型必须使用的探针、�
 `scirel-integration` skill 的模型负责理解 L1、比较当前 SciRel 与未发布候选池、修改隔离工作树和形成证据；
 workflow 只记录其结果，并执行可确定验证的状态、摘要、文档结构和发布门禁。
 
-`WorkflowRecord` 保存当前 draft/review，以及本次 run 的 draft/review history。这里的 draft 是冻结基线之外的候选三件套，不是已经写入 SciRel 的资产。`draft` 和尚未被专家打开的 `review_pending` 可以原位替换并复用 `draft_id`；工作台在首次返回完整详情前调用 `start_review`，进入 `review_in_progress` 后内容冻结。返工只创建新的 draft 记录并保留前一次 action。任何操作都不覆盖 L1 source、冻结基线或已经被专家观测的 artifact。
+模型交接使用 `scirel.standardization-submission.dev`。每个 review unit 绑定一个目标 asset document、
+一个面向专家的候选文档、候选代码或明确的无代码理由、候选测试与实际结果、来源 L1 asset IDs、
+处置和依赖。外层绑定 candidate/source digest、Git base、候选池快照及 producer 身份。
+`submit_standardization()` 校验这些事实及全部 L1 asset 的覆盖后直接生成 `review_pending` draft；
+submission 不能声明或改写 automated checks。
 
-模型的比较视图由“冻结 SciRel 基线 + 全部当前未发布候选 + 本次 L1”组成。候选池用于语义去重、合并和冲突预判，不进入公共 import、catalog 或 wheel，因此不成为第二套权威基线。
+下述 `WorkflowRecord` 与 transition API 仍描述单 draft release fixture。实际 reviewer body 已在插件边界把 batch 投影为逐个 Operator/TaskGraph item，支持只读打开、逐项结论、完整 successor 和批准子集取回；它复用 CodeFusion 中性 workbench 的 lease/CAS，不把平台协调字段写回 `WorkflowRecord`。
 
-未观测候选的撤回由候选 artifact/队列层取消引用，不增加 `WorkflowStatus`。这样保留必要的通用运行证据，同时不把专家从未看到的版本升级为科学审核历史。
+`WorkflowRecord` 保存当前 draft/review，以及本次 run 的 draft/review history。这里的 draft 是冻结基线之外的候选三件套，不是已经写入 SciRel 的资产。当前开发 fixture 只允许在 `draft` 状态原位替换并复用 `draft_id`；`submit_for_review` 代表上传边界，之后初始版本固定。fixture 仍在 `start_review` 时把单个 draft 推进到 `review_in_progress`，这只是内部人工审核状态，不是目标工作台的“首次打开才冻结”合同。目标流程中查看只记录所见版本，返工另记版本和决定，任何操作都不覆盖 L1 source、冻结基线或已存版本。
+
+模型的比较视图由“冻结 SciRel 基线 + 全部当前未发布候选 + 本次 L1”组成。候选池用于上传前的语义去重、合并和冲突预判，不进入公共 import、catalog 或 wheel，因此不成为第二套权威基线。上传后的 item 没有后台模型更新；领取绑定的起始版本在本轮必须保持可恢复。新的 AI 准备运行只能产生关联候选，由上传者明确提交，不能覆盖已上传版本。
+
+上传前草稿撤回由候选 artifact 层取消引用，不增加 `WorkflowStatus`。已上传项的撤回必须是上传者的显式队列操作，保留初始内容引用和事件，而非基于“尚未观测”静默删除。
 
 候选生成进程在提交 draft 后结束。工作台随后独立承载人工审核；`approved` 只把候选送入批准后固化队列，不要求原模型会话继续存活。
 
@@ -36,6 +44,16 @@ approved + 构建完成 -> released
 ```
 
 状态由领域对象和 workflow transition 推导，不由 UI 文案或 CodeFusion job 状态直接替代。
+
+### 批次与逐项审核目标
+
+批次固定 L1 来源、SciRel 比较基线、候选池引用和上传者交接关系；每个 Operator/TaskGraph 在上传时得到可独立检索的 item ref、初始三件套版本、依赖 refs 和审核状态。专家可以浏览整批，领取不同 item 并行处理。未领取的授权人员只有只读权限；打开完整详情记录所见版本，不改写内容或锁定同批其它项。同项的有效写租约只有一个。CodeFusion 通用工作台负责领取/续租/放回的 holder、generation、expiry，内容版本指针、通用事件和 diff UI；SciRel 提供候选内容及科学审核动作，并对 item revision、依赖和科学前置条件再验证。放回队列不删除已发生的查看或审核记录，也不表示审核完成。
+
+已观测的候选版本不覆写。通用领取事件绑定当前版本作为本轮基点；持租约的专家保存修改时产生关联前一版本的内容提案，清空本轮修改则把工作指针恢复到领取基点，历史仍可看。放回保存当前内容指针、记录事件并释放租约，内容不变时复用旧快照；该项继续待审，可由另一专家领取。提交则保存最终版本、记录 SciRel 审核动作和决定、释放租约，才是该项审核完成。领取、放回和提交可以指向同一内容版本，但事件各自保留；通用工作台展示各版本的文档、代码、测试差异，SciRel 负责解释科学变更。多名专家可以只读同一 item，但本轮主要并行性来自不同 item 的领取，不要求每个算子都由多人审批。若逐项意见不一致，只有有权限的科学裁决者能形成最终决定，平台租约或投票数不能替代该决定。上传者可取回已完成的批准子集及各项证据；TaskGraph 固化仍要求其依赖闭包已批准或已在维护基线中。
+
+因为上传时已有固定初始版本，`scirel.review.open_item` 只读返回 exact item detail，不推进 current snapshot；不需要特殊的首读 pin 或无租约 mutation。领取和内容编辑仍用通用 lease、expected revision 和 CAS。fixture 的 `start_review` 只供旧 transition/release 测试，不参与工作台 open。
+
+reviewer body 的 item ref 由 candidate、draft、资产位置和 asset ID 生成，一个 batch 可投影多个稳定 item。`plugin.review.action` 要求精确 current revision 和 host reviewer context，返回带 exact predecessor 的 CodeFusion v1 successor；successor opaque payload 保留完整 SciRel item，不能只返回展示投影。`record_review()` 仍会关闭整 draft，但仅属于旧 release fixture，不参与工作台逐项审核。
 Candidate 和 draft 在每次构造及 snapshot 恢复时重新推导 inventory/scientific contract gaps，
 不信任 L1 或序列化 payload 自报的空 gaps。恢复出的 approved/released draft 如果重新检查后
 存在 gap，整个 snapshot 视为非法。
@@ -48,9 +66,9 @@ release→candidate/draft/digest/approved-assets 的关系完整性，并要求�
 更一般地，只要 snapshot 已包含 draft 历史，candidate 就必须仍为 automated-ready，
 不能通过改写 candidate 检查结果恢复出本来无法创建的 draft 或 review 状态。
 
-## Transition API
+## 当前开发 fixture 的 Transition API
 
-最小 API 为：
+下列最小 API 只描述当前单 draft fixture，用于验证候选、审核决定和 release 的基本绑定；它不是上传后批量逐项审核的目标接口：
 
 - `CandidatePackage.from_l1(payload, source_artifact_ref, source_digest, run_id)`；
 - `SciRelWorkflow(candidate)`；
@@ -61,6 +79,16 @@ release→candidate/draft/digest/approved-assets 的关系完整性，并要求�
 - `record_review(ReviewDecision(...))`；
 - `release(release_id, catalog_ref, catalog_digest, wheel_ref, wheel_digest, release_version)`。
 
+正式模型交接不调用上述低层 `create_draft()`/`submit_for_review()` 组合，而调用
+`submit_standardization(StandardizationSubmission, expected_...)`。源码 checkout 下的确定性入口为：
+
+```powershell
+python scripts/submit_standardization.py <candidate.json> <submission.json> <candidate-pool.json> <new-workflow.json>
+```
+
+它从当前 checkout 读取 exact Git HEAD 和 `scirel-integration` skill 文件摘要，重新计算候选池的
+canonical JSON 摘要，并拒绝覆盖已有输出。工作区布局、探针和语义比较仍由模型决定；该命令只处理最终交接。
+
 插件侧消费已完成的 generic run 使用
 `SciRelPlugin.consume_automated_result_into_workflow(workflow, run_result)`：它先校验
 平台 receipt、唯一 result artifact 和正文 digest，再把领域结果应用到 workflow，并保存
@@ -68,7 +96,7 @@ release→candidate/draft/digest/approved-assets 的关系完整性，并要求�
 被修改。相同 `result_id` 与 `result_digest` 的重放是领域幂等 no-op，即使 workflow 已经
 创建 draft 也返回当前 candidate；相同 `result_id` 携带不同正文则拒绝，不能覆盖第一次结果。
 
-`create_draft` 只允许自动检查通过，或允许在 `needs_evidence`/`rework_requested` 后重新创建。`update_open_draft` 在 `draft` 或未被观测的 `review_pending` 状态替换当前内容，复用 `draft_id` 并替换 history 末项；它不保留专家从未看到的中间编辑版本。`start_review` 是观测边界：工作台必须先完成该 transition，再把同一个 `review_in_progress` 快照展示给专家。候选文档、代码和测试可以作为 task-local artifact/patch 被 draft 证据引用，不要求统一文件 schema。`release` 只允许最新 draft 获得 `approved`，并要求调用方先完成批准后整合，再提供 candidate/draft digest、asset ID、catalog ref/digest 和 wheel ref/digest。
+在这个 fixture 中，`create_draft` 只允许自动检查通过，或允许在 `needs_evidence`/`rework_requested` 后重新创建；`update_open_draft` 只可在上传前的 `draft` 状态替换当前内容，复用 `draft_id` 并替换 history 末项。`submit_for_review` 后禁止模型更新。`start_review` 会把整个 draft 推进为 `review_in_progress`，这是旧单项测试夹具的人工审核状态机，不得解释为目标工作台的“首次打开即冻结”要求。目标工作台遵循前述规则：上传固定逐项初始版本，只读打开不改内容，领取后由人工修改产生新版本。候选文档、代码和测试可以作为 task-local artifact/patch 被 draft 证据引用，不要求统一文件 schema。fixture 的 `release` 只允许最新 draft 获得 `approved`，并要求调用方先完成批准后整合，再提供 candidate/draft digest、asset ID、catalog ref/digest 和 wheel ref/digest。
 release 还逐项要求资产文档的 `version.implementation_version` 精确等于请求的
 `release_version`；snapshot 恢复时重复执行同一检查，不能通过改写 manifest 版本绕过。
 
@@ -91,14 +119,21 @@ release 还逐项要求资产文档的 `version.implementation_version` 精确�
 保存领域快照。它把领域对象序列化为以下 artifact：
 
 ```text
+scirel.l1-bundle.dev
 scirel.candidate-package.dev
+scirel.standardization-submission.dev
 scirel.standardized-draft.dev
 scirel.review-decision.dev
 scirel.release-manifest.dev
 scirel.workflow-state.dev
+scirel.review-item.dev
+scirel.review-item-decision.dev
+scirel.review-item-detail.dev
+scirel.review-completed-results.dev
+codefusion.plugin-reviewer-successor-snapshot.v1
 ```
 
-artifact 的 digest 和 reference 由 host 生成；领域 payload 由 SciRel contract 定义。正式发布前将这些开发期 media/schema 名称统一冻结为 `v1`。
+artifact 的 digest 和 reference 由 host 生成；领域 payload 由 SciRel contract 定义。最后一项是 CodeFusion 已冻结的中性宿主 envelope，SciRel 领域内容只位于其 opaque `payload`。正式发布前将 SciRel 自有的开发期 media/schema 名称统一冻结为 `v1`。
 
 ## 构建与运行绑定
 

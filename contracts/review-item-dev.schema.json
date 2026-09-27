@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scirel.dev/contracts/review-item-dev.schema.json",
+  "title": "SciRel development per-asset review item",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "item_ref",
+    "candidate_id",
+    "draft_id",
+    "asset_index",
+    "asset",
+    "dependency_asset_ids",
+    "evidence",
+    "gaps",
+    "status",
+    "decision"
+  ],
+  "properties": {
+    "schema": {"const": "scirel.review-item.dev"},
+    "item_ref": {"type": "string", "minLength": 1},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "draft_id": {"type": "string", "minLength": 1},
+    "asset_index": {"type": "integer", "minimum": 0},
+    "asset": {"type": "object"},
+    "dependency_asset_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "evidence": {"type": "array", "items": {"type": "object"}},
+    "gaps": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "status": {
+      "enum": [
+        "review_pending",
+        "approved",
+        "needs_evidence",
+        "rework_requested",
+        "rejected"
+      ]
+    },
+    "decision": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "review-item-decision-dev.schema.json"}
+      ]
+    }
+  }
+}

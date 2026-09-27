@@ -143,20 +143,68 @@ class PluginReleaseSnapshot:
 
 
 @dataclass(frozen=True)
-class PluginViewDescriptor:
-    view_ref: str
-    open_operation: str
+class PluginReviewerIntakeDescriptor:
+    intake_ref: str
+    label: str
+    operation: str
 
     def validate(self) -> None:
-        _required(self.view_ref, "view_ref")
-        _required(self.open_operation, "open_operation")
+        _required(self.intake_ref, "intake_ref")
+        _required(self.label, "reviewer_intake.label")
+        _required(self.operation, "reviewer_intake.operation")
 
     def to_dict(self) -> dict[str, str]:
         self.validate()
         return {
+            "intake_ref": self.intake_ref,
+            "label": self.label,
+            "operation": self.operation,
+        }
+
+
+@dataclass(frozen=True)
+class PluginReviewerEntryDescriptor:
+    label: str
+    intakes: tuple[PluginReviewerIntakeDescriptor, ...]
+
+    def validate(self) -> None:
+        _required(self.label, "reviewer_entry.label")
+        intake_refs = []
+        for intake in self.intakes:
+            intake.validate()
+            intake_refs.append(intake.intake_ref)
+        if len(intake_refs) != len(set(intake_refs)):
+            raise PluginContractError("reviewer intake refs must be unique")
+
+    def to_dict(self) -> dict[str, Any]:
+        self.validate()
+        return {
+            "label": self.label,
+            "intakes": [intake.to_dict() for intake in self.intakes],
+        }
+
+
+@dataclass(frozen=True)
+class PluginViewDescriptor:
+    view_ref: str
+    open_operation: str
+    reviewer_entry: PluginReviewerEntryDescriptor | None = None
+
+    def validate(self) -> None:
+        _required(self.view_ref, "view_ref")
+        _required(self.open_operation, "open_operation")
+        if self.reviewer_entry is not None:
+            self.reviewer_entry.validate()
+
+    def to_dict(self) -> dict[str, Any]:
+        self.validate()
+        payload: dict[str, Any] = {
             "view_ref": self.view_ref,
             "open_operation": self.open_operation,
         }
+        if self.reviewer_entry is not None:
+            payload["reviewer_entry"] = self.reviewer_entry.to_dict()
+        return payload
 
 
 @dataclass(frozen=True)
@@ -206,13 +254,13 @@ class PluginScope:
     tenant_id: str
     project_id: str
     plugin_id: str
-    workflow_run_id: str
+    plugin_context_ref: str
 
     def validate(self) -> None:
         _required(self.tenant_id, "tenant_id")
         _required(self.project_id, "project_id")
         _required(self.plugin_id, "plugin_id")
-        _required(self.workflow_run_id, "workflow_run_id")
+        _required(self.plugin_context_ref, "plugin_context_ref")
 
     def to_dict(self) -> dict[str, str]:
         self.validate()
@@ -220,7 +268,7 @@ class PluginScope:
             "tenant_id": self.tenant_id,
             "project_id": self.project_id,
             "plugin_id": self.plugin_id,
-            "workflow_run_id": self.workflow_run_id,
+            "plugin_context_ref": self.plugin_context_ref,
         }
 
 

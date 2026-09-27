@@ -59,7 +59,7 @@ class HostServices(Protocol):
         input_refs: tuple[str, ...],
         *,
         plugin_id: str,
-        workflow_run_id: str,
+        plugin_context_ref: str,
         payload: Mapping[str, Any],
     ) -> JobRef: ...
 
@@ -74,7 +74,7 @@ class HostServices(Protocol):
         *,
         plugin_id: str,
         event_type: str,
-        workflow_run_id: str,
+        plugin_context_ref: str,
         correlation_id: str,
         artifact_refs: tuple[str, ...] = (),
         payload: Mapping[str, Any] | None = None,
@@ -124,7 +124,7 @@ class FakeHost:
         input_refs: tuple[str, ...],
         *,
         plugin_id: str,
-        workflow_run_id: str,
+        plugin_context_ref: str,
         payload: Mapping[str, Any],
     ) -> JobRef:
         registration = self.registrations[plugin_id]
@@ -137,7 +137,7 @@ class FakeHost:
                 tenant_id=self.tenant_id,
                 project_id=self.project_id,
                 plugin_id=plugin_id,
-                workflow_run_id=workflow_run_id,
+                plugin_context_ref=plugin_context_ref,
             ),
             idempotency_key=f"{plugin_id}:command:{len(self.commands) + 1}",
             input_artifacts=input_artifacts,
@@ -155,7 +155,7 @@ class FakeHost:
         *,
         plugin_id: str,
         event_type: str,
-        workflow_run_id: str,
+        plugin_context_ref: str,
         correlation_id: str,
         artifact_refs: tuple[str, ...] = (),
         payload: Mapping[str, Any] | None = None,
@@ -169,7 +169,7 @@ class FakeHost:
                 tenant_id=self.tenant_id,
                 project_id=self.project_id,
                 plugin_id=plugin_id,
-                workflow_run_id=workflow_run_id,
+                plugin_context_ref=plugin_context_ref,
             ),
             correlation_id=correlation_id,
             idempotency_key=f"{plugin_id}:event:{len(self.events) + 1}",

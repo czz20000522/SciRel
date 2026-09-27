@@ -7,7 +7,7 @@ import http.client
 import json
 from threading import Thread
 
-from scirel_plugin import create_server
+from scirel_plugin import DEFAULT_MAX_BODY_BYTES, create_server
 from scirel_workflow import CandidatePackage, SciRelWorkflow
 
 
@@ -27,6 +27,41 @@ def _post(server, value: dict[str, object]) -> tuple[int, dict[str, object]]:
     result = json.loads(response.read().decode("utf-8"))
     connection.close()
     return response.status, result
+
+
+def test_default_listener_limit_matches_codefusion_body_wire():
+    assert DEFAULT_MAX_BODY_BYTES == 16 * 1024 * 1024
+
+
+def test_default_listener_accepts_utf8_wire_above_the_old_one_mib_limit():
+    source = json.dumps(
+        {
+            "assets": [],
+            "automated_checks": [],
+            "fixture_padding": "x" * (1024 * 1024),
+        },
+        separators=(",", ":"),
+    ).encode("utf-8")
+    server = create_server()
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        status, payload = _post(
+            server,
+            {
+                "operation": "scirel.import_l1",
+                "artifact_ref": "cf://l1/large-wire",
+                "artifact_digest": _digest(source),
+                "media_type": "application/json",
+                "body": source.decode("utf-8"),
+            },
+        )
+        assert status == 200
+        assert payload["artifact_kind"] == "scirel.candidate-package.dev"
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
 
 
 def test_http_listener_executes_l1_wire_and_returns_domain_artifact():
@@ -178,8 +213,13 @@ def test_http_listener_exposes_single_state_review_list_and_open_wire():
         )
         assert list_status == 200
         index = json.loads(listed["body"])
-        assert listed["artifact_kind"] == "scirel.review-item-index.dev"
+        assert listed["artifact_kind"] == "codefusion.plugin-view-index.v1"
         item = index["items"][0]
+        action = next(
+            action
+            for action in item["actions"]
+            if action["payload"]["outcome"] == "needs_evidence"
+        )
 
         open_status, opened = _post(
             server,
@@ -193,10 +233,36 @@ def test_http_listener_exposes_single_state_review_list_and_open_wire():
             },
         )
         assert open_status == 200
-        assert opened["artifact_kind"] == "scirel.review-item-snapshot.dev"
+        assert opened["artifact_kind"] == "scirel.review-item-detail.dev"
         snapshot = json.loads(opened["body"])
-        assert snapshot["opened_from"]["revision"] == state_digest
-        assert snapshot["view"]["workflow"]["status"] == "review_in_progress"
+        assert snapshot["current_artifact"]["digest"] == state_digest
+        assert snapshot["item"]["status"] == "review_pending"
+
+        action_status, action_result = _post(
+            server,
+            {
+                "operation": "plugin.review.action",
+                **base,
+                "operation_payload": {
+                    "item_ref": item["item_ref"],
+                    "revision": item["revision"],
+                    "extension_ref": "scirel.review",
+                    "action_ref": action["action_ref"],
+                    "reviewer": {"actor_ref": "actor://reviewer/http"},
+                    "payload": action["payload"],
+                },
+            },
+        )
+        assert action_status == 200
+        assert action_result["artifact_kind"] == (
+            "codefusion.plugin-reviewer-successor-snapshot.v1"
+        )
+        successor = json.loads(action_result["body"])
+        assert successor["predecessor"]["digest"] == state_digest
+        assert successor["payload"]["status"] == "needs_evidence"
+        assert successor["payload"]["decision"]["reviewer_actor_ref"] == (
+            "actor://reviewer/http"
+        )
     finally:
         server.shutdown()
         server.server_close()

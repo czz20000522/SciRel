@@ -11,9 +11,11 @@ from scirel_workflow import (
     ReviewDecision,
     ReviewOutcome,
     SciRelWorkflow,
+    StandardizationSubmission,
     WorkflowError,
     WorkflowStatus,
 )
+from scirel_workflow.models import digest
 
 
 ASSET_DOCUMENT = json.loads(
@@ -30,6 +32,68 @@ def ready_candidate() -> CandidatePackage:
         source_artifact_ref="artifact://l1/pleiades",
         source_digest="sha256:l1",
         run_id="run-1",
+    )
+
+
+def standardization_submission(
+    candidate: CandidatePackage,
+    *,
+    source_asset_ids: tuple[str, ...] = ("candidate-field",),
+) -> StandardizationSubmission:
+    candidate_document = {"content": "# Candidate\n\nReview the normalized relation."}
+    candidate_document["digest"] = digest(candidate_document)
+    candidate_code = {
+        "kind": "none",
+        "content": None,
+        "rationale": "The existing public implementation is reused unchanged.",
+    }
+    candidate_code["digest"] = digest(candidate_code)
+    candidate_tests = {
+        "content": {"files": {"tests/test_relation.py": "def test_relation(): pass\n"}},
+        "commands": [{"command": "pytest tests/test_relation.py"}],
+        "results": [{"command": "pytest tests/test_relation.py", "exit_code": 0}],
+    }
+    candidate_tests["digest"] = digest(candidate_tests)
+    return StandardizationSubmission.from_mapping(
+        {
+            "schema": "scirel.standardization-submission.dev",
+            "submission_id": "submission-1",
+            "draft_id": "draft-submission-1",
+            "candidate_id": candidate.candidate_id,
+            "candidate_digest": candidate.package_digest,
+            "source_digest": candidate.source_digest,
+            "scirel_git_base": "a" * 40,
+            "candidate_pool_ref": "artifact://scirel/candidate-pool/empty",
+            "candidate_pool_digest": "sha256:" + "b" * 64,
+            "producer": {
+                "harness": {"name": "claude-code", "version": "1"},
+                "model": {"name": "deepseek-v4.1-flash", "version": "proxy"},
+                "skill": {
+                    "name": "scirel-integration",
+                    "version": "dev",
+                    "digest": "sha256:" + "c" * 64,
+                },
+            },
+            "review_units": [
+                {
+                    "review_unit_id": "unit-field",
+                    "source_asset_ids": list(source_asset_ids),
+                    "disposition": "reuse",
+                    "asset_document": ASSET_DOCUMENT,
+                    "candidate_document": candidate_document,
+                    "candidate_code": candidate_code,
+                    "candidate_tests": candidate_tests,
+                    "dependency_asset_ids": [
+                        item["asset_id"]
+                        for item in ASSET_DOCUMENT["version"]["dependencies"]
+                    ],
+                    "evidence": [{"kind": "comparison", "ref": "run://comparison/1"}],
+                    "gaps": [],
+                }
+            ],
+            "run_evidence": [{"kind": "harness_run", "ref": "run://standardize/1"}],
+            "gaps": [],
+        }
     )
 
 
@@ -68,6 +132,127 @@ def test_l1_candidate_moves_through_review_and_release():
     assert release.release_digest.startswith("sha256:")
 
 
+def test_model_submission_is_bound_and_queued_for_item_review():
+    candidate = CandidatePackage.from_l1(
+        {
+            "assets": [{"candidate_asset_id": "candidate-field"}],
+            "automated_checks": [{"name": "replay", "status": "passed"}],
+        },
+        source_artifact_ref="artifact://l1/standardization",
+        source_digest="sha256:" + "1" * 64,
+        run_id="run-standardization",
+    )
+    submission = standardization_submission(candidate)
+    workflow = SciRelWorkflow(candidate)
+
+    draft = workflow.submit_standardization(
+        submission,
+        expected_scirel_git_base="a" * 40,
+        expected_candidate_pool_digest="sha256:" + "b" * 64,
+        expected_skill_digest="sha256:" + "c" * 64,
+    )
+
+    assert workflow.status is WorkflowStatus.REVIEW_PENDING
+    assert draft.status is WorkflowStatus.REVIEW_PENDING
+    assert draft.assets == (ASSET_DOCUMENT,)
+    batch_evidence, unit_evidence = draft.evidence
+    assert batch_evidence["submission_digest"] == submission.submission_digest
+    assert unit_evidence["asset_id"] == ASSET_DOCUMENT["asset_id"]
+    assert unit_evidence["candidate_document"]["content"].startswith("# Candidate")
+    assert unit_evidence["candidate_code"]["kind"] == "none"
+    assert unit_evidence["candidate_tests"]["results"][0]["exit_code"] == 0
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("candidate_digest", "sha256:" + "0" * 64, "candidate digest"),
+        ("source_digest", "sha256:" + "0" * 64, "source digest"),
+        ("scirel_git_base", "d" * 40, "Git base"),
+        ("candidate_pool_digest", "sha256:" + "d" * 64, "candidate-pool digest"),
+    ],
+)
+def test_model_submission_rejects_stale_or_unrelated_bindings(field, value, message):
+    candidate = CandidatePackage.from_l1(
+        {
+            "assets": [{"candidate_asset_id": "candidate-field"}],
+            "automated_checks": [{"name": "replay", "status": "passed"}],
+        },
+        source_artifact_ref="artifact://l1/standardization",
+        source_digest="sha256:" + "1" * 64,
+        run_id="run-standardization-bindings",
+    )
+    payload = standardization_submission(candidate).to_dict()
+    payload[field] = value
+    submission = StandardizationSubmission.from_mapping(payload)
+
+    with pytest.raises(WorkflowError, match=message):
+        SciRelWorkflow(candidate).submit_standardization(
+            submission,
+            expected_scirel_git_base="a" * 40,
+            expected_candidate_pool_digest="sha256:" + "b" * 64,
+            expected_skill_digest="sha256:" + "c" * 64,
+        )
+
+
+def test_model_submission_must_account_for_every_candidate_asset():
+    candidate = CandidatePackage.from_l1(
+        {
+            "assets": [
+                {"candidate_asset_id": "candidate-field"},
+                {"candidate_asset_id": "candidate-unaccounted"},
+            ],
+            "automated_checks": [{"name": "replay", "status": "passed"}],
+        },
+        source_artifact_ref="artifact://l1/standardization",
+        source_digest="sha256:" + "1" * 64,
+        run_id="run-standardization-coverage",
+    )
+
+    with pytest.raises(WorkflowError, match="does not account"):
+        SciRelWorkflow(candidate).submit_standardization(
+            standardization_submission(candidate)
+        )
+
+
+def test_model_submission_rejects_source_claimed_by_multiple_review_units():
+    candidate = CandidatePackage.from_l1(
+        {
+            "assets": [{"candidate_asset_id": "candidate-field"}],
+            "automated_checks": [{"name": "replay", "status": "passed"}],
+        },
+        source_artifact_ref="artifact://l1/standardization",
+        source_digest="sha256:" + "1" * 64,
+        run_id="run-standardization-duplicate-source",
+    )
+    payload = standardization_submission(candidate).to_dict()
+    second = dict(payload["review_units"][0])
+    second["review_unit_id"] = "unit-second"
+    second["asset_document"] = {**ASSET_DOCUMENT, "asset_id": "scirel.field.second"}
+    payload["review_units"].append(second)
+    submission = StandardizationSubmission.from_mapping(payload)
+
+    with pytest.raises(WorkflowError, match="more than once"):
+        SciRelWorkflow(candidate).submit_standardization(submission)
+
+
+def test_model_submission_rejects_modified_three_piece_content():
+    candidate = CandidatePackage.from_l1(
+        {
+            "assets": [{"candidate_asset_id": "candidate-field"}],
+            "automated_checks": [{"name": "replay", "status": "passed"}],
+        },
+        source_artifact_ref="artifact://l1/standardization",
+        source_digest="sha256:" + "1" * 64,
+        run_id="run-standardization-materials",
+    )
+    payload = standardization_submission(candidate).to_dict()
+    payload["review_units"][0]["candidate_tests"]["content"] = {"files": {}}
+
+    with pytest.raises(ValueError, match="candidate_tests.digest does not match"):
+        StandardizationSubmission.from_mapping(payload)
+
+
 def test_open_draft_can_be_replaced_without_creating_review_history():
     workflow = SciRelWorkflow(ready_candidate())
     original = workflow.create_draft(
@@ -96,32 +281,22 @@ def test_open_draft_can_be_replaced_without_creating_review_history():
     assert len(restored.record.drafts) == 1
 
 
-def test_queued_draft_can_be_updated_until_expert_observes_it():
+def test_uploaded_draft_cannot_be_updated_before_expert_opens_it():
     workflow = SciRelWorkflow(ready_candidate())
-    original = workflow.create_draft(
+    workflow.create_draft(
         draft_id="draft-frozen", assets=[ASSET_DOCUMENT]
     )
     workflow.submit_for_review()
 
-    updated = workflow.update_open_draft(
-        assets=[ASSET_DOCUMENT],
-        evidence=[{"kind": "queue-revision", "ref": "artifact://candidate/a-plus"}],
-    )
+    with pytest.raises(WorkflowError, match="only a pre-upload draft"):
+        workflow.update_open_draft(
+            assets=[ASSET_DOCUMENT],
+            evidence=[
+                {"kind": "queue-revision", "ref": "artifact://candidate/a-plus"}
+            ],
+        )
 
-    assert updated.draft_id == original.draft_id
-    assert updated.draft_digest != original.draft_digest
     assert workflow.status is WorkflowStatus.REVIEW_PENDING
-
-    workflow = SciRelWorkflow.from_dict(workflow.to_dict())
-    assert workflow.status is WorkflowStatus.REVIEW_PENDING
-    assert len(workflow.record.drafts) == 1
-    assert workflow.record.draft is not None
-    assert workflow.record.draft.draft_digest == updated.draft_digest
-
-    workflow.start_review()
-
-    with pytest.raises(WorkflowError, match="only an open draft"):
-        workflow.update_open_draft(assets=[ASSET_DOCUMENT])
 
 
 def test_l1_candidate_preserves_one_project_id():
@@ -763,6 +938,6 @@ def test_review_event_requires_registered_plugin():
         host.emit_event(
             plugin_id="unregistered",
             event_type="scirel.test",
-            workflow_run_id="run-1",
+            plugin_context_ref="run-1",
             correlation_id="job-1",
         )

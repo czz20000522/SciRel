@@ -11,6 +11,7 @@ from .models import (
     ReleaseManifest,
     ReviewDecision,
     ReviewOutcome,
+    StandardizationSubmission,
     StandardizedDraft,
     WorkflowStatus,
 )
@@ -371,14 +372,11 @@ class SciRelWorkflow:
         evidence: list[Mapping[str, Any]] | tuple[Mapping[str, Any], ...] = (),
         gaps: list[str] | tuple[str, ...] = (),
     ) -> StandardizedDraft:
-        """Replace an unsubmitted draft while preserving its review identity."""
+        """Replace a pre-upload draft while preserving its candidate identity."""
 
         current = self._require_draft()
-        if self.status not in (
-            WorkflowStatus.DRAFT,
-            WorkflowStatus.REVIEW_PENDING,
-        ):
-            raise WorkflowError("only an open draft can be updated")
+        if self.status is not WorkflowStatus.DRAFT:
+            raise WorkflowError("only a pre-upload draft can be updated")
         if (
             not self.record.drafts
             or self.record.drafts[-1].draft_id != current.draft_id
@@ -426,8 +424,131 @@ class SciRelWorkflow:
         draft.status = WorkflowStatus.REVIEW_PENDING
         return draft
 
+    def submit_standardization(
+        self,
+        submission: StandardizationSubmission,
+        *,
+        expected_scirel_git_base: str | None = None,
+        expected_candidate_pool_digest: str | None = None,
+        expected_skill_digest: str | None = None,
+    ) -> StandardizedDraft:
+        """Validate one model submission and atomically queue its review units.
+
+        The model owns the semantic comparison and proposed materials. This
+        transition only verifies exact bindings, input coverage, and the trio
+        structure before producing the host-independent review snapshot.
+        """
+
+        candidate = self.record.candidate
+        if not candidate.automated_ready:
+            raise WorkflowError("candidate automated checks are not ready")
+        if self.record.draft is not None:
+            raise WorkflowError("workflow already has a standardized draft")
+        if submission.candidate_id != candidate.candidate_id:
+            raise WorkflowError("standardization submission refers to another candidate")
+        if submission.candidate_digest != candidate.package_digest:
+            raise WorkflowError("standardization submission candidate digest does not match")
+        if submission.source_digest != candidate.source_digest:
+            raise WorkflowError("standardization submission source digest does not match")
+        if (
+            expected_scirel_git_base is not None
+            and submission.scirel_git_base != expected_scirel_git_base
+        ):
+            raise WorkflowError("standardization submission SciRel Git base does not match")
+        if (
+            expected_candidate_pool_digest is not None
+            and submission.candidate_pool_digest != expected_candidate_pool_digest
+        ):
+            raise WorkflowError("standardization submission candidate-pool digest does not match")
+        skill_digest = submission.producer["skill"]["digest"]
+        if expected_skill_digest is not None and skill_digest != expected_skill_digest:
+            raise WorkflowError("standardization submission skill digest does not match")
+
+        candidate_asset_ids: set[str] = set()
+        for index, asset in enumerate(candidate.assets):
+            asset_id = asset.get("l1_asset_id") or asset.get("candidate_asset_id")
+            if not isinstance(asset_id, str) or not asset_id.strip():
+                raise WorkflowError(
+                    f"candidate asset[{index}] has no stable source asset id"
+                )
+            candidate_asset_ids.add(asset_id)
+        submitted_source_ids: set[str] = set()
+        duplicate_source_ids: set[str] = set()
+        for unit in submission.review_units:
+            for source_asset_id in unit.source_asset_ids:
+                if source_asset_id in submitted_source_ids:
+                    duplicate_source_ids.add(source_asset_id)
+                submitted_source_ids.add(source_asset_id)
+        if duplicate_source_ids:
+            raise WorkflowError(
+                "standardization submission claims source assets more than once: "
+                + ", ".join(sorted(duplicate_source_ids))
+            )
+        unknown = submitted_source_ids.difference(candidate_asset_ids)
+        if unknown:
+            raise WorkflowError(
+                "standardization submission refers to unknown source assets: "
+                + ", ".join(sorted(unknown))
+            )
+        missing = candidate_asset_ids.difference(submitted_source_ids)
+        if missing:
+            raise WorkflowError(
+                "standardization submission does not account for source assets: "
+                + ", ".join(sorted(missing))
+            )
+
+        evidence: list[dict[str, Any]] = [
+            {
+                "kind": "standardization_submission",
+                "submission_id": submission.submission_id,
+                "submission_digest": submission.submission_digest,
+                "candidate_digest": submission.candidate_digest,
+                "source_digest": submission.source_digest,
+                "scirel_git_base": submission.scirel_git_base,
+                "candidate_pool_ref": submission.candidate_pool_ref,
+                "candidate_pool_digest": submission.candidate_pool_digest,
+                "producer": dict(submission.producer),
+                "run_evidence": list(submission.run_evidence),
+            }
+        ]
+        gaps = list(submission.gaps)
+        assets: list[dict[str, Any]] = []
+        for unit in submission.review_units:
+            asset = dict(unit.asset_document)
+            asset_id = str(asset["asset_id"])
+            assets.append(asset)
+            evidence.append(
+                {
+                    "kind": "standardization_review_unit",
+                    "asset_id": asset_id,
+                    "review_unit_id": unit.review_unit_id,
+                    "source_asset_ids": list(unit.source_asset_ids),
+                    "disposition": unit.disposition,
+                    "candidate_document": dict(unit.candidate_document),
+                    "candidate_code": dict(unit.candidate_code),
+                    "candidate_tests": dict(unit.candidate_tests),
+                    "dependency_asset_ids": list(unit.dependency_asset_ids),
+                    "comparison_evidence": list(unit.evidence),
+                    "gaps": list(unit.gaps),
+                }
+            )
+            gaps.extend(f"{asset_id}:{gap}" for gap in unit.gaps)
+
+        draft = self.create_draft(
+            draft_id=submission.draft_id,
+            assets=assets,
+            evidence=evidence,
+            gaps=gaps,
+        )
+        return self.submit_for_review()
+
     def start_review(self) -> StandardizedDraft:
-        """Freeze the queued draft immediately before an expert sees it."""
+        """Advance the current single-draft fixture into manual review.
+
+        Upload has already fixed the draft content. This transition is not the
+        target batch workbench's observation boundary; its item open is
+        read-only and human edits are versioned under a separate item lease.
+        """
 
         draft = self._require_draft()
         if self.status is not WorkflowStatus.REVIEW_PENDING:

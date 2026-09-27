@@ -2,7 +2,7 @@
 
 本文定义 SciRel 自身的长期边界。SciRel 从保存的 L1 产物开始拥有 candidate、自动检查、标准化、专家审核和 release 的领域流程；CodeFusion 只提供 artifact、job runner、身份、队列和审核 UI 等宿主能力。CodeFusion 的数据库、Rust owner、宿主审核状态和源项目目录都不是 SciRel core 的运行时依赖。
 
-保存的多项目 L1 目录先经过项目级 inventory 适配器，再进入 candidate。inventory 只保留来源路径、摘要、测试归属和显式依赖缺口；它不把拆解项目源码复制进 SciRel，也不把候选来源记录解释为专家批准。适配器的合同和当前六项目盘点见 [`l1-inventory.md`](design/l1-inventory.md)。
+保存的多项目 L1 目录可以使用项目级 inventory 作为结构探针，模型也可以直接检查保存的产物并形成候选。inventory 只保留来源路径、摘要、测试归属和显式依赖缺口；它不把拆解项目源码复制进 SciRel，也不把候选来源记录解释为专家批准。参考探针和不同批次的历史盘点见 [`l1-inventory.md`](design/l1-inventory.md)。
 
 新流程的权威需求和设计分别见 [`scirel-workflow.md`](requirements/scirel-workflow.md) 与 [`scirel-workflow.md`](design/scirel-workflow.md)。本文件中的历史 admitted 记录仍可作为开发期 provenance fixture，但不再是新 workflow 的唯一输入。
 

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scirel.dev/contracts/review-item-decision-dev.schema.json",
+  "title": "SciRel development exact item review decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "item_ref",
+    "draft_id",
+    "asset_id",
+    "outcome",
+    "reviewer_actor_ref",
+    "notes",
+    "submitted_revision",
+    "submitted_artifact"
+  ],
+  "properties": {
+    "schema": {"const": "scirel.review-item-decision.dev"},
+    "item_ref": {"type": "string", "minLength": 1},
+    "draft_id": {"type": "string", "minLength": 1},
+    "asset_id": {"type": "string", "minLength": 1},
+    "outcome": {
+      "enum": [
+        "approved",
+        "needs_evidence",
+        "rework_requested",
+        "rejected"
+      ]
+    },
+    "reviewer_actor_ref": {"type": "string", "minLength": 1},
+    "notes": {"type": "string"},
+    "submitted_revision": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-fA-F]{64}$"
+    },
+    "submitted_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_ref", "digest", "media_type"],
+      "properties": {
+        "artifact_ref": {"type": "string", "minLength": 1},
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-fA-F]{64}$"
+        },
+        "media_type": {"const": "application/json"}
+      }
+    }
+  }
+}

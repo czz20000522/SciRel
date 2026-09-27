@@ -612,6 +612,334 @@ class AutomatedCheckResult:
         return digest(self.to_dict())
 
 
+_STANDARDIZATION_DISPOSITIONS = frozenset({
+    "reuse",
+    "exact_duplicate",
+    "semantic_equivalence",
+    "subsumes",
+    "overlaps",
+    "parameterized_variant",
+    "lossless_adapter",
+    "composition",
+    "new_capability",
+    "conflict",
+    "unresolved",
+})
+
+
+def _exact_record(
+    value: Any,
+    field: str,
+    *,
+    required: set[str],
+    optional: set[str] | None = None,
+) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        raise ValueError(f"{field} must be an object")
+    record = dict(value)
+    missing = required.difference(record)
+    unknown = set(record).difference(required | (optional or set()))
+    if missing:
+        raise ValueError(f"{field} is missing fields: " + ", ".join(sorted(missing)))
+    if unknown:
+        raise ValueError(f"{field} has unknown fields: " + ", ".join(sorted(unknown)))
+    return record
+
+
+def _verify_embedded_digest(record: Mapping[str, Any], field: str) -> None:
+    supplied = _digest_text(record.get("digest"), f"{field}.digest")
+    try:
+        expected = digest({key: value for key, value in record.items() if key != "digest"})
+    except (TypeError, ValueError) as error:
+        raise ValueError(f"{field} must contain JSON-compatible content") from error
+    if supplied != expected:
+        raise ValueError(f"{field}.digest does not match its content")
+
+
+def _producer_record(value: Any) -> dict[str, Any]:
+    producer = _exact_record(
+        value,
+        "producer",
+        required={"harness", "model", "skill"},
+    )
+    for field in ("harness", "model"):
+        entry = _exact_record(
+            producer[field],
+            f"producer.{field}",
+            required={"name", "version"},
+        )
+        entry["name"] = _text(entry["name"], f"producer.{field}.name")
+        entry["version"] = _text(entry["version"], f"producer.{field}.version")
+        producer[field] = entry
+    skill = _exact_record(
+        producer["skill"],
+        "producer.skill",
+        required={"name", "version", "digest"},
+    )
+    skill["name"] = _text(skill["name"], "producer.skill.name")
+    skill["version"] = _text(skill["version"], "producer.skill.version")
+    skill["digest"] = _digest_text(skill["digest"], "producer.skill.digest")
+    producer["skill"] = skill
+    return producer
+
+
+@dataclass
+class StandardizationReviewUnit:
+    """One exact document/code/test proposal prepared by a model run."""
+
+    review_unit_id: str
+    source_asset_ids: tuple[str, ...]
+    disposition: str
+    asset_document: dict[str, Any]
+    candidate_document: dict[str, Any]
+    candidate_code: dict[str, Any]
+    candidate_tests: dict[str, Any]
+    dependency_asset_ids: tuple[str, ...]
+    evidence: tuple[dict[str, Any], ...] = ()
+    gaps: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        self.review_unit_id = _text(self.review_unit_id, "review_unit_id")
+        self.source_asset_ids = _strings(self.source_asset_ids, "source_asset_ids")
+        if not self.source_asset_ids:
+            raise ValueError("source_asset_ids must not be empty")
+        self.disposition = _text(self.disposition, "disposition")
+        if self.disposition not in _STANDARDIZATION_DISPOSITIONS:
+            raise ValueError(f"unsupported standardization disposition: {self.disposition}")
+        if not isinstance(self.asset_document, Mapping):
+            raise ValueError("asset_document must be an object")
+        self.asset_document = dict(self.asset_document)
+        _text(self.asset_document.get("asset_id"), "asset_document.asset_id")
+
+        self.candidate_document = _exact_record(
+            self.candidate_document,
+            "candidate_document",
+            required={"content", "digest"},
+        )
+        _text(self.candidate_document["content"], "candidate_document.content")
+        _verify_embedded_digest(self.candidate_document, "candidate_document")
+
+        self.candidate_code = _exact_record(
+            self.candidate_code,
+            "candidate_code",
+            required={"kind", "content", "rationale", "digest"},
+        )
+        code_kind = _text(self.candidate_code["kind"], "candidate_code.kind")
+        if code_kind not in {"patch", "files", "none"}:
+            raise ValueError("candidate_code.kind must be patch, files, or none")
+        if not isinstance(self.candidate_code["rationale"], str):
+            raise ValueError("candidate_code.rationale must be a string")
+        if code_kind == "none":
+            if self.candidate_code["content"] is not None:
+                raise ValueError("candidate_code.content must be null when kind is none")
+            _text(self.candidate_code["rationale"], "candidate_code.rationale")
+        elif self.candidate_code["content"] in (None, "", [], {}):
+            raise ValueError("candidate_code.content must not be empty")
+        _verify_embedded_digest(self.candidate_code, "candidate_code")
+
+        self.candidate_tests = _exact_record(
+            self.candidate_tests,
+            "candidate_tests",
+            required={"content", "commands", "results", "digest"},
+        )
+        if self.candidate_tests["content"] in (None, "", [], {}):
+            raise ValueError("candidate_tests.content must not be empty")
+        commands = _records(self.candidate_tests["commands"], "candidate_tests.commands")
+        results = _records(self.candidate_tests["results"], "candidate_tests.results")
+        if not commands or not results:
+            raise ValueError("candidate_tests must include commands and observed results")
+        self.candidate_tests["commands"] = list(commands)
+        self.candidate_tests["results"] = list(results)
+        _verify_embedded_digest(self.candidate_tests, "candidate_tests")
+
+        self.dependency_asset_ids = _strings(
+            self.dependency_asset_ids, "dependency_asset_ids"
+        )
+        version = self.asset_document.get("version")
+        document_dependencies = ()
+        if isinstance(version, Mapping) and isinstance(
+            version.get("dependencies"), (list, tuple)
+        ):
+            document_dependencies = tuple(
+                dependency.get("asset_id")
+                for dependency in version["dependencies"]
+                if isinstance(dependency, Mapping)
+                and isinstance(dependency.get("asset_id"), str)
+                and dependency.get("asset_id")
+            )
+        if set(document_dependencies) != set(self.dependency_asset_ids):
+            raise ValueError(
+                "dependency_asset_ids must match asset_document version dependencies"
+            )
+        self.evidence = _records(self.evidence, "evidence")
+        self.gaps = _strings(self.gaps, "gaps")
+
+    @classmethod
+    def from_mapping(cls, payload: Mapping[str, Any]) -> "StandardizationReviewUnit":
+        record = _exact_record(
+            payload,
+            "review_unit",
+            required={
+                "review_unit_id",
+                "source_asset_ids",
+                "disposition",
+                "asset_document",
+                "candidate_document",
+                "candidate_code",
+                "candidate_tests",
+                "dependency_asset_ids",
+                "evidence",
+                "gaps",
+            },
+        )
+        return cls(
+            review_unit_id=record["review_unit_id"],
+            source_asset_ids=tuple(record["source_asset_ids"]),
+            disposition=record["disposition"],
+            asset_document=dict(record["asset_document"]),
+            candidate_document=dict(record["candidate_document"]),
+            candidate_code=dict(record["candidate_code"]),
+            candidate_tests=dict(record["candidate_tests"]),
+            dependency_asset_ids=tuple(record["dependency_asset_ids"]),
+            evidence=tuple(record["evidence"]),
+            gaps=tuple(record["gaps"]),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "review_unit_id": self.review_unit_id,
+            "source_asset_ids": list(self.source_asset_ids),
+            "disposition": self.disposition,
+            "asset_document": dict(self.asset_document),
+            "candidate_document": dict(self.candidate_document),
+            "candidate_code": dict(self.candidate_code),
+            "candidate_tests": dict(self.candidate_tests),
+            "dependency_asset_ids": list(self.dependency_asset_ids),
+            "evidence": list(self.evidence),
+            "gaps": list(self.gaps),
+        }
+
+
+@dataclass
+class StandardizationSubmission:
+    """Digest-bound model output accepted by the deterministic review gate."""
+
+    submission_id: str
+    draft_id: str
+    candidate_id: str
+    candidate_digest: str
+    source_digest: str
+    scirel_git_base: str
+    candidate_pool_ref: str
+    candidate_pool_digest: str
+    producer: dict[str, Any]
+    review_units: tuple[StandardizationReviewUnit, ...]
+    run_evidence: tuple[dict[str, Any], ...] = ()
+    gaps: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        self.submission_id = _text(self.submission_id, "submission_id")
+        self.draft_id = _text(self.draft_id, "draft_id")
+        self.candidate_id = _text(self.candidate_id, "candidate_id")
+        self.candidate_digest = _digest_text(self.candidate_digest, "candidate_digest")
+        self.source_digest = _digest_text(self.source_digest, "source_digest")
+        self.scirel_git_base = _text(self.scirel_git_base, "scirel_git_base")
+        if len(self.scirel_git_base) not in {40, 64} or not all(
+            char in "0123456789abcdefABCDEF" for char in self.scirel_git_base
+        ):
+            raise ValueError("scirel_git_base must be a full Git commit id")
+        self.candidate_pool_ref = _text(self.candidate_pool_ref, "candidate_pool_ref")
+        self.candidate_pool_digest = _digest_text(
+            self.candidate_pool_digest, "candidate_pool_digest"
+        )
+        self.producer = _producer_record(self.producer)
+        units: list[StandardizationReviewUnit] = []
+        for index, unit in enumerate(self.review_units):
+            try:
+                units.append(
+                    unit
+                    if isinstance(unit, StandardizationReviewUnit)
+                    else StandardizationReviewUnit.from_mapping(unit)
+                )
+            except (TypeError, ValueError) as error:
+                raise ValueError(f"review_units[{index}] is invalid: {error}") from error
+        if not units:
+            raise ValueError("review_units must not be empty")
+        self.review_units = tuple(units)
+        unit_ids = [unit.review_unit_id for unit in units]
+        asset_ids = [str(unit.asset_document["asset_id"]) for unit in units]
+        if len(unit_ids) != len(set(unit_ids)):
+            raise ValueError("review_unit_id values must be unique")
+        if len(asset_ids) != len(set(asset_ids)):
+            raise ValueError("review unit asset_id values must be unique")
+        self.run_evidence = _records(self.run_evidence, "run_evidence")
+        self.gaps = _strings(self.gaps, "gaps")
+
+    @classmethod
+    def from_mapping(cls, payload: Mapping[str, Any]) -> "StandardizationSubmission":
+        record = _exact_record(
+            payload,
+            "standardization submission",
+            required={
+                "schema",
+                "submission_id",
+                "draft_id",
+                "candidate_id",
+                "candidate_digest",
+                "source_digest",
+                "scirel_git_base",
+                "candidate_pool_ref",
+                "candidate_pool_digest",
+                "producer",
+                "review_units",
+                "run_evidence",
+                "gaps",
+            },
+        )
+        if record["schema"] != "scirel.standardization-submission.dev":
+            raise ValueError(
+                "unsupported standardization submission schema: "
+                + str(record["schema"])
+            )
+        if not isinstance(record["review_units"], (list, tuple)):
+            raise ValueError("review_units must be an array")
+        return cls(
+            submission_id=record["submission_id"],
+            draft_id=record["draft_id"],
+            candidate_id=record["candidate_id"],
+            candidate_digest=record["candidate_digest"],
+            source_digest=record["source_digest"],
+            scirel_git_base=record["scirel_git_base"],
+            candidate_pool_ref=record["candidate_pool_ref"],
+            candidate_pool_digest=record["candidate_pool_digest"],
+            producer=dict(record["producer"]),
+            review_units=tuple(record["review_units"]),
+            run_evidence=tuple(record["run_evidence"]),
+            gaps=tuple(record["gaps"]),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "schema": "scirel.standardization-submission.dev",
+            "submission_id": self.submission_id,
+            "draft_id": self.draft_id,
+            "candidate_id": self.candidate_id,
+            "candidate_digest": self.candidate_digest,
+            "source_digest": self.source_digest,
+            "scirel_git_base": self.scirel_git_base,
+            "candidate_pool_ref": self.candidate_pool_ref,
+            "candidate_pool_digest": self.candidate_pool_digest,
+            "producer": dict(self.producer),
+            "review_units": [unit.to_dict() for unit in self.review_units],
+            "run_evidence": list(self.run_evidence),
+            "gaps": list(self.gaps),
+        }
+
+    @property
+    def submission_digest(self) -> str:
+        return digest(self.to_dict())
+
+
 @dataclass
 class StandardizedDraft:
     """A SciRel standardization result awaiting expert review."""
