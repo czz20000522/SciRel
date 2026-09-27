@@ -40,17 +40,32 @@ answer. If the user delegated the choice, select the narrowest defensible model 
    catalog is relevant, read only the matching manifest and capability detail needed for this request, then
    use `scientific-asset-navigation` for a real applicability decision. Do not browse internal
    candidates or require the user to know platform package names.
+   An explicitly staged development wheel/catalog may be used for an isolated evaluation, but its results remain
+   unapproved. When the task calls for a matched SciRel relation, the ordinary rerun path must invoke that asset;
+   project code may adapt inputs and outputs, not replace its equations with a handwritten approximation.
+   If the request selects or composes SciRel assets, read the owner-resolved `scirel-solving` skill body and use
+   it for scientific normalization, renewed discovery when a later request changes the relation or evaluation
+   location, and evidence-bounded interpretation; a skill name in a host snapshot alone is not method execution.
+   This skill still owns the runnable project files.
 4. Treat unit, field-name, dtype, axis, index-base, and lossless shape conversions as adapters. A change to
    equations, closure, boundary physics, interpolation, discretization, solver update, or reconstructed state
    is a scientific change; use `scientific-relation-implementation` for that bounded relation.
+   For a file-backed SciRel project with a scientifically material parse, join or unit conversion, decide how a
+   source-file field will be checked against the actual asset-port value before building the adapter. The check
+   cannot start from the same parsed object that production uses. If the project claims its ordinary rerun checks
+   this mapping, run that check before replacing user-facing outputs; an optional passing test suite is not a
+   substitute. Cover materially distinct input paths, such as different source units, when making that claim.
 5. Create or update the actual source, tests, configuration, run instructions, and requested result files in
    the current project. Keep scientific relations in project-native modules and keep serialization and plots
    at their normal output boundary.
 6. Run the user-facing entrypoint and focused tests. On failure, localize the earliest broken contract, add or
    strengthen a focused test, make the smallest correction, and rerun. Reopen the user decision only when the
    failure proves a new material scientific ambiguity.
-7. Read back changed files and observable outputs. Report only commands, exit states, output, and artifacts
-   actually observed. Do not claim success from generated text alone.
+7. Read back the primary user-facing files, not only test summaries. Trace a representative value and, when
+   present, an unavailable row from supplied input through the declared units, applicability and displayed
+   result or reason. Check that physical conclusions follow from quantities actually computed; sampling a
+   field at a new location does not establish that every other material input is defined there. Report only
+   commands, exit states, output, and artifacts actually observed. Do not claim success from generated text alone.
 
 Keep interim chat concise. Do not narrate every tool call, and do not substitute displayed snippets for
 writing the requested files into the project.

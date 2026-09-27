@@ -32,6 +32,24 @@ ENGINEERING_TESTS = {
     "docs/integration/codefusion-consumer-contract.md": (
         "tests/test_codefusion_consumer_contract.py",
     ),
+    "docs/design/scientific-request-workflow.md": (
+        "tests/test_scientific_request_workflow_docs.py",
+    ),
+    "docs/requirements/scientific-request-workflow.md": (
+        "tests/test_scientific_request_workflow_docs.py",
+    ),
+    "skills/usage/scirel-solving/SKILL.md": (
+        "tests/test_scientific_request_workflow_docs.py",
+    ),
+    "skills/usage/scirel-solving/references/thin-adapter-run.md": (
+        "tests/test_scientific_request_workflow_docs.py",
+    ),
+    "skills/usage/scientific-asset-navigation/SKILL.md": (
+        "tests/test_scientific_request_workflow_docs.py",
+    ),
+    "skills/usage/scientific-project-implementation/SKILL.md": (
+        "tests/test_scientific_request_workflow_docs.py",
+    ),
     "examples/user_acceptance.py": ("tests/test_admitted_distribution_builder.py",),
     "scripts/build_admitted_distribution.py": (
         "tests/test_admitted_distribution_builder.py",
