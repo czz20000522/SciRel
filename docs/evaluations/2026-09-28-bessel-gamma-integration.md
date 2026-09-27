@@ -43,4 +43,6 @@ fluidBW 保存目录位于待重审历史归档，合格 D1 交付根在本批�
 - 新直接回归先因模块缺失在收集阶段失败；加入实现后 15 项通过。
 - exact document 的 dev5 签名和示例通过本仓验证器；当前开发 catalog
   由 17/64 增至 18/65。
-- 最终 affected、catalog 和差异检查以本批主仓提交结果为准。
+- 主仓 `pwsh ./scripts/check.ps1 -Mode affected -BaseRef 2f73d31` 选择五个测试文件，
+  **93 passed**，未回退全套。18 份 exact documents 通过 runtime/example
+  校验；`git diff --check 2f73d31..HEAD` 通过。这些只构成开发验证。
