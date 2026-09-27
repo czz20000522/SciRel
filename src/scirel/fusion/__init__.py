@@ -26,6 +26,10 @@ from .beam_grid_ray_segment_tracking import trace_beam_grid_ray_segments
 from .n3_n4_segment_deposition import assemble_n3_n4_segment_deposition
 from .ndmc_deposition_producer import run_ndmc_deposition_producer, ELEMENTARY_CHARGE_C
 from .beam_neutral_segment_deposition_loop import deposit_beam_neutral_segments
+from .neutral_population_density_merge import merge_neutral_population_density
+from .neutral_population_grid_merge import merge_neutral_population_cells
+from .neutral_reservoir_merge import merge_neutral_reservoirs
+from .neutral_population_state_merge import merge_neutral_population_state
 
 __all__ = [
     'calculate_dd_neutron_lab_energy_kev',
@@ -57,4 +61,8 @@ __all__ = [
     'run_ndmc_deposition_producer',
     'ELEMENTARY_CHARGE_C',
     'deposit_beam_neutral_segments',
+    'merge_neutral_population_density',
+    'merge_neutral_population_cells',
+    'merge_neutral_reservoirs',
+    'merge_neutral_population_state',
 ]

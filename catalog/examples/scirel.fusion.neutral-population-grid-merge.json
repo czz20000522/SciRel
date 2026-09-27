@@ -1,0 +1,183 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.neutral-population-grid-merge",
+  "kind": "operator",
+  "title": {
+    "en": "Beam-grid neutral population density merge",
+    "zh": "中性库种群网格合并"
+  },
+  "summary": "Replay the population-density part of the source merge_neutral_populations over an explicit (6,nx,ny,nz) beam-grid state: per-cell, per-level addition with the target owning the written result, the source observed and never modified, and no cross-cell mixing.",
+  "taxonomy": [
+    "fusion",
+    "neutral-population-transport",
+    "neutral-merge",
+    "population-density"
+  ],
+  "aliases": [
+    "merge_neutral_population_cells"
+  ],
+  "identity": {
+    "relation": "For every cell (i,j,k) and level l: target_population_density_after[l,i,j,k] = target_population_density_before[l,i,j,k] + source_population_density[l,i,j,k]; source_population_density_after = source_population_density (never written); density_contribution = source_population_density; density_contribution_sum = sum over all levels and cells; cell_shape = (nx,ny,nz) and cell_count = nx*ny*nz reported.",
+    "direction": "target (6,nx,ny,nz) density grid + source (6,nx,ny,nz) density grid -> target/source before and after grids, source contribution grid and total, cell shape and cell count",
+    "definition": "The saved FIDASIM 中性库种群网格合并 operator (framework node N3 neutral_population_transport; source anchor src/fidasim.f90:10484-10498 merge_neutral_populations density half, pop1%dens = pop1%dens + pop2%dens at :10493). The array form of the single-cell relation neutral-population-density-merge: shape, six-level order and source ownership are preserved and no normalization, clipping or cross-cell mixing occurs. Signed finite source components are added as-is; the caller owns the physical interpretation.",
+    "model": "the saved formal implementation, ported verbatim with one registered hardening",
+    "geometry": "one explicit Cartesian beam-grid state of caller-declared positive cell dimensions (nx,ny,nz >= 1)",
+    "coordinates": "densities in the caller's source density units (the operator performs no unit conversion); level axis first, then x, y, z cells",
+    "boundary": "both inputs finite (6,nx,ny,nz) real grids with identical shapes and positive cell dimensions; no reservoir state, ind2sub scheduling, MPI allreduce, rank ownership, HDF5 or N1->N3 handoff",
+    "assumptions": [
+      "Both grids describe the same beam grid and level convention (e.g. two NDMC-produced six-level population grids for different marker batches).",
+      "The caller owns any downstream physical interpretation of merged negative components."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "target_population_density",
+      "description": "The written target six-level density grid before the merge.",
+      "units": "source population density",
+      "shape": "[6,nx,ny,nz]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, level axis exactly 6, positive cell dimensions; boolean entries rejected (registered hardening)."
+    },
+    {
+      "name": "source_population_density",
+      "description": "The observed source six-level density grid added into the target.",
+      "units": "source population density",
+      "shape": "[6,nx,ny,nz]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Same shape as the target; finite; finite negative values accepted without truncation; boolean entries rejected (registered hardening)."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "target_population_density_before",
+      "description": "The pre-merge target grid copy.",
+      "units": "source population density",
+      "shape": "[6,nx,ny,nz]",
+      "dtype": "real array",
+      "constraints": "Elementwise equal to the input target grid.",
+      "required": true
+    },
+    {
+      "name": "source_population_density_before",
+      "description": "The pre-merge source grid copy.",
+      "units": "source population density",
+      "shape": "[6,nx,ny,nz]",
+      "dtype": "real array",
+      "constraints": "Elementwise equal to the input source grid.",
+      "required": true
+    },
+    {
+      "name": "target_population_density_after",
+      "description": "The merged target grid.",
+      "units": "source population density",
+      "shape": "[6,nx,ny,nz]",
+      "dtype": "real array",
+      "constraints": "Elementwise equal to target + source and finite.",
+      "required": true
+    },
+    {
+      "name": "source_population_density_after",
+      "description": "The post-merge source grid: never written.",
+      "units": "source population density",
+      "shape": "[6,nx,ny,nz]",
+      "dtype": "real array",
+      "constraints": "Elementwise equal to the input source grid.",
+      "required": true
+    },
+    {
+      "name": "density_contribution",
+      "description": "The source contribution grid of this merge.",
+      "units": "source population density",
+      "shape": "[6,nx,ny,nz]",
+      "dtype": "real array",
+      "constraints": "Elementwise equal to the input source grid.",
+      "required": true
+    },
+    {
+      "name": "density_contribution_sum",
+      "description": "The total source contribution over all levels and cells.",
+      "units": "source population density",
+      "shape": "scalar",
+      "dtype": "real",
+      "constraints": "Finite and equal to the contribution-grid sum.",
+      "required": true
+    },
+    {
+      "name": "cell_shape",
+      "description": "The beam-grid cell dimensions (nx,ny,nz).",
+      "units": "dimensionless",
+      "shape": "[3]",
+      "dtype": "integer list",
+      "constraints": "Equal to the input grid's cell dimensions.",
+      "required": true
+    },
+    {
+      "name": "cell_count",
+      "description": "The number of merged cells nx*ny*nz.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "integer",
+      "constraints": "Positive.",
+      "required": true
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Both grids describe the same beam grid and level convention."
+    ],
+    "supported": [
+      "One explicit beam-grid population merge with per-cell ownership bookkeeping."
+    ],
+    "excluded": [
+      "Reservoir payload ownership, ind2sub iteration scheduling, MPI allreduce, rank ownership, HDF5 output, N1->N3 handoff and whole-program replay."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when either input is not numeric, not a finite (6,nx,ny,nz) grid, has a zero or negative cell dimension, carries boolean entries (registered hardening), or when the two grids have different shapes.",
+    "runtime_failure": "Not applicable; the addition of finite grids is finite for finite inputs.",
+    "nonconvergence": "Not applicable; deterministic single addition.",
+    "partial_results": "Never returned; a failed call leaves the caller's arrays untouched (the merge works on internal copies)."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM 中性库种群网格合并 package, source anchor src/fidasim.f90:10484-10498 (merge_neutral_populations density half over the beam-grid state), as recorded by the saved bundle's own provenance section. The saved FIDASIM bundle supports bounded historical development comparison; the qualified-L1 delivery root is empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.neutral_population_grid_merge",
+      "symbol": "merge_neutral_population_cells",
+      "signature": "merge_neutral_population_cells(*, target_population_density, source_population_density)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev56",
+    "dependencies": []
+  },
+  "example": {
+    "description": "The saved package's per-cell addition over a (6,4,1,1) state with signed source values.",
+    "code": "import numpy as np\nfrom scirel.fusion import merge_neutral_population_cells\ntarget = np.arange(24.0).reshape(6, 4, 1, 1)\nsource = np.full((6, 4, 1, 1), -0.25)\nresult = merge_neutral_population_cells(\n    target_population_density=target, source_population_density=source)\nassert np.array_equal(result['target_population_density_after'], target + source)\nassert np.array_equal(result['source_population_density_after'], source)\nassert result['cell_shape'] == [4, 1, 1] and result['cell_count'] == 4\nassert np.isclose(result['density_contribution_sum'], -6.0)\ntry:\n    merge_neutral_population_cells(\n        target_population_density=np.ones((6, 4, 1, 1)),\n        source_population_density=np.ones((6, 3, 1, 1)))\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('a shape mismatch must be rejected')",
+    "expected": "The saved probes reproduce; the shape mismatch raises ValueError."
+  },
+  "verification": {
+    "scope": [
+      "Saved-package oracles: per-cell addition without mixing or clipping, source preservation, cell shape/count, contribution sum, shape/level/non-finite rejection.",
+      "Registered hardenings: boolean grid entries rejected (the saved arm silently coerced True to 1.0); zero-extent cell dimensions rejected."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_neutral_merge_family.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests reproduce the saved oracles and exercise the fail-closed contracts, plus the end-to-end witness merging two NDMC-produced six-level population grids. No reservoir sampling, MPI reduction or HDF5 handling is asserted. The saved FIDASIM bundle supports bounded historical development comparison only.",
+    "known_limitations": [
+      "The relation performs no physical unit conversion and cannot verify that the two grids describe the same beam grid.",
+      "The saved FIDASIM bundle supports bounded historical development comparison only; the qualified-L1 delivery root is empty.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

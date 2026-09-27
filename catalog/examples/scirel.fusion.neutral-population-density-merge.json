@@ -1,0 +1,165 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.neutral-population-density-merge",
+  "kind": "operator",
+  "title": {
+    "en": "Single-cell neutral population density merge",
+    "zh": "中性库种群密度合并"
+  },
+  "summary": "Replay the density half of the source merge_neutral_populations for one explicit grid cell: componentwise six-level addition with the target owning the written result, the source observed and never modified, and before/after/contribution bookkeeping exposed.",
+  "taxonomy": [
+    "fusion",
+    "neutral-population-transport",
+    "neutral-merge",
+    "population-density"
+  ],
+  "aliases": [
+    "merge_neutral_population_density"
+  ],
+  "identity": {
+    "relation": "target_population_density_after = target_population_density_before + source_population_density (componentwise over the six levels); source_population_density_after = source_population_density (the source is never written); density_contribution = source_population_density; density_contribution_sum = sum(source_population_density). No truncation, normalization, clipping or implicit global population state.",
+    "direction": "target six-level density + source six-level density -> target/source before and after densities, source contribution vector and its level sum",
+    "definition": "The saved FIDASIM 中性库种群合并 operator (framework node N3 neutral_population_transport; source anchor src/fidasim.f90:10484-10498 merge_neutral_populations density half, pop1%dens = pop1%dens + pop2%dens at :10493). The relation is the density half of one source call; the reservoir-sampling half is the integrated neutral-reservoir-merge and the source-ordered composition of both halves is the task graph neutral-population-state-merge. Signed finite source components are added without clipping: the caller owns the physical interpretation of any negative component, and the merge never re-normalizes.",
+    "model": "the saved formal implementation, ported verbatim with one registered hardening",
+    "geometry": "one explicit grid cell; no spatial transport, cell indexing or grid shape",
+    "coordinates": "densities in the caller's source density units (the operator performs no unit conversion); the caller owns the physical unit interpretation",
+    "boundary": "both inputs exactly six finite real levels; level-resolved addition only; no reservoir state, spatial transport, reservoir lifecycle, MPI reduction, HDF5 output or whole-program replay",
+    "assumptions": [
+      "The caller supplies densities already accumulated by upstream producers (e.g. the NDMC store_neutrals accumulation).",
+      "Both vectors describe the same cell under the same level convention; the operator cannot verify physical correspondence."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "target_population_density",
+      "description": "The written target six-level density before the merge.",
+      "units": "source population density",
+      "shape": "[6]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Exactly six finite real levels; boolean entries rejected (registered hardening)."
+    },
+    {
+      "name": "source_population_density",
+      "description": "The observed source six-level density added into the target.",
+      "units": "source population density",
+      "shape": "[6]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Exactly six finite real levels; finite negative values are accepted without truncation; boolean entries rejected (registered hardening)."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "target_population_density_before",
+      "description": "The pre-merge target density copy.",
+      "units": "source population density",
+      "shape": "[6]",
+      "dtype": "real array",
+      "constraints": "Elementwise equal to the input target density.",
+      "required": true
+    },
+    {
+      "name": "source_population_density_before",
+      "description": "The pre-merge source density copy.",
+      "units": "source population density",
+      "shape": "[6]",
+      "dtype": "real array",
+      "constraints": "Elementwise equal to the input source density.",
+      "required": true
+    },
+    {
+      "name": "target_population_density_after",
+      "description": "The merged target density.",
+      "units": "source population density",
+      "shape": "[6]",
+      "dtype": "real array",
+      "constraints": "Elementwise equal to target + source and finite.",
+      "required": true
+    },
+    {
+      "name": "source_population_density_after",
+      "description": "The post-merge source density: never written.",
+      "units": "source population density",
+      "shape": "[6]",
+      "dtype": "real array",
+      "constraints": "Elementwise equal to the input source density.",
+      "required": true
+    },
+    {
+      "name": "density_contribution",
+      "description": "The source contribution vector of this merge.",
+      "units": "source population density",
+      "shape": "[6]",
+      "dtype": "real array",
+      "constraints": "Elementwise equal to the input source density.",
+      "required": true
+    },
+    {
+      "name": "density_contribution_sum",
+      "description": "The six-level sum of the source contribution.",
+      "units": "source population density",
+      "shape": "scalar",
+      "dtype": "real",
+      "constraints": "Finite and equal to the contribution sum.",
+      "required": true
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Both density vectors describe the same cell and level convention."
+    ],
+    "supported": [
+      "One cell's six-level population-density merge with explicit write/read ownership."
+    ],
+    "excluded": [
+      "Spatial transport, reservoir sampling, reservoir lifecycle, MPI reduction, HDF5 output and whole-program replay."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when either input is not numeric, not exactly six levels, non-finite, or carries boolean entries (registered hardening: the saved arm's np.asarray(dtype=float) silently coerced True to 1.0).",
+    "runtime_failure": "Not applicable; the addition of finite vectors is finite for finite inputs.",
+    "nonconvergence": "Not applicable; deterministic single addition.",
+    "partial_results": "Never returned; a failed call leaves the caller's arrays untouched (the merge works on internal copies)."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM 中性库种群合并 package, source anchor src/fidasim.f90:10484-10498 (merge_neutral_populations density half, addition at :10493), as recorded by the saved bundle's own provenance section. The saved FIDASIM bundle supports bounded historical development comparison; the qualified-L1 delivery root is empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.neutral_population_density_merge",
+      "symbol": "merge_neutral_population_density",
+      "signature": "merge_neutral_population_density(*, target_population_density, source_population_density)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev56",
+    "dependencies": []
+  },
+  "example": {
+    "description": "The saved package's componentwise addition, source ownership and signed-value probes.",
+    "code": "import numpy as np\nfrom scirel.fusion import merge_neutral_population_density\ntarget = np.asarray([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])\nsource = np.asarray([1.0, -1.0, 0.0, 2.0, -2.0, 0.5])\nresult = merge_neutral_population_density(\n    target_population_density=target, source_population_density=source)\nassert np.array_equal(result['target_population_density_after'], [2.0, 1.0, 3.0, 6.0, 3.0, 6.5])\nassert np.array_equal(result['source_population_density_after'], source)\nassert np.isclose(result['density_contribution_sum'], 0.5)\nassert np.array_equal(target, [1.0, 2.0, 3.0, 4.0, 5.0, 6.0])\ntry:\n    merge_neutral_population_density(\n        target_population_density=np.ones(6, dtype=bool),\n        source_population_density=np.ones(6))\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('a boolean density vector must be rejected (registered hardening)')",
+    "expected": "The saved probes reproduce; the boolean density vector raises ValueError per the registered hardening."
+  },
+  "verification": {
+    "scope": [
+      "Saved-package oracles: componentwise addition, source preservation, contribution sum, signed-value non-clipping, shape and non-finite rejection.",
+      "Registered hardening: boolean density entries rejected (the saved arm silently coerced True to 1.0)."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_neutral_merge_family.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests reproduce the saved oracles and exercise the fail-closed contracts. No reservoir sampling, MPI reduction or HDF5 handling is asserted. The saved FIDASIM bundle supports bounded historical development comparison only.",
+    "known_limitations": [
+      "The relation performs no physical unit conversion and cannot verify that the two vectors describe the same cell.",
+      "The saved FIDASIM bundle supports bounded historical development comparison only; the qualified-L1 delivery root is empty.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

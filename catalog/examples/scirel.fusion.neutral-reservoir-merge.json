@@ -1,0 +1,365 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.neutral-reservoir-merge",
+  "kind": "operator",
+  "title": {
+    "en": "Local neutral-reservoir merge",
+    "zh": "中性库合并"
+  },
+  "summary": "Replay one source merge_reservoirs(res1,res2) call with fully explicit state and RNG records: source-empty lazy initialization, ordered nonfull appends, the full/nonfull orientation swap, and the both-full per-slot source selection by the float32 seen-record probability.",
+  "taxonomy": [
+    "fusion",
+    "neutral-population-transport",
+    "neutral-merge",
+    "reservoir-sampling"
+  ],
+  "aliases": [
+    "merge_neutral_reservoirs"
+  ],
+  "identity": {
+    "relation": "One local reservoir merge over explicit metadata (n, i, W), slot weights and slot velocities for a target and a source reservoir of capacity k: an empty target lazily initializes from the uniform pair (W = exp(log(u0)/k), i = k + floor(log(u1)/log(1-W)) + 1, n = 1); an empty source returns the target untouched; two nonfull reservoirs append the source prefix in slot order; the full/nonfull orientation swaps local roles so the nonfull reservoir appends into the full one; both-full reservoirs select per slot from the source only when uniform > float32(n1)/float32(n1+n2). Appended records follow the source update_reservoir walk (fill at slot n-1 while n <= k; replace at the explicit replacement index when n == i, multiplying W by exp(log(a)/k) before drawing the next horizon i += floor(log(b)/log(1-W_updated)) + 1; otherwise skip). After any nonempty merge the source state output is the merged target state broadcast back (res2 = res1).",
+    "direction": "target/source reservoir metadata + complete slot weights and velocities + caller-owned RNG records (initialization uniform pair, replacement indices/uniform pairs, both-full per-slot uniforms) + capacity k -> final target/source states, selected branch, per-record transfer actions/slots, replacement count and both-full probability",
+    "definition": "The saved FIDASIM 中性库合并 operator (framework node N3 neutral_population_transport; source anchor src/fidasim.f90:10343-10392 merge_reservoirs with the inline update_reservoir fill/replace/skip semantics). Every random number the merge could consume is an explicit caller input; no RNG is drawn internally. All k slot weights/velocities of both reservoirs are explicit inputs -- no unobserved slot state is synthesized. The declared RNG record contracts are exact: both-full merges consume exactly k per-slot uniforms in [0,1); every other branch must receive empty both-full records; replacement records must match the consumed replacement events exactly (insufficient and unused records both fail closed). The density half of the source relation is neutral-population-density-merge / neutral-population-grid-merge; the source-ordered composition is the task graph neutral-population-state-merge.",
+    "model": "the saved formal implementation, ported verbatim with registered integer/bool hardenings",
+    "geometry": "one explicit local reservoir pair; no cell indexing, MPI owner or cross-rank coordination",
+    "coordinates": "slot velocities in cm/s; slot weights and the sampling weight W dimensionless; n/i counts; uniforms dimensionless; slot indices 0-based (the source's 1-based R indices are mapped at the port)",
+    "boundary": "genuine nonnegative integer n/i for both reservoirs; genuine finite nonnegative W; genuine positive integer capacity k; finite nonnegative slot weights and finite slot velocities of shape (k,) and (k,3); uniform pairs in (0,1); both-full uniforms in [0,1); no reservoir payload synthesis, MPI allreduce, HDF5 writer or whole-program replay",
+    "assumptions": [
+      "The caller owns the reservoir lifecycle and supplies complete slot states (the source's NeutralParticle defaults are part of the explicit slot arrays).",
+      "The caller pre-draws the RNG records in source consumption order; a record mismatch is a caller sequencing defect and fails closed."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "target_n",
+      "description": "The target reservoir's seen-record counter (source res1%n).",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "A genuine nonnegative integer (bools, np.bool_ and whole-number floats rejected; np.integer accepted)."
+    },
+    {
+      "name": "target_i",
+      "description": "The target reservoir's next replacement index (source res1%i).",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "A genuine nonnegative integer (same hardening as target_n)."
+    },
+    {
+      "name": "target_W",
+      "description": "The target reservoir's sampling weight (source res1%W).",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Genuine finite and nonnegative (booleans rejected -- registered hardening: the saved arm's isinstance accepted W=True)."
+    },
+    {
+      "name": "target_slot_weights",
+      "description": "The complete target slot weights (source res1%R%W).",
+      "units": "source record weight",
+      "shape": "[k]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative, length exactly k; boolean entries rejected (registered hardening)."
+    },
+    {
+      "name": "target_slot_velocities_cm_s",
+      "description": "The complete target slot velocities (source res1%R%v).",
+      "units": "cm/s",
+      "shape": "[k,3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, shape (k,3); boolean entries rejected (registered hardening)."
+    },
+    {
+      "name": "source_n",
+      "description": "The source reservoir's seen-record counter (source res2%n).",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "A genuine nonnegative integer."
+    },
+    {
+      "name": "source_i",
+      "description": "The source reservoir's next replacement index (source res2%i).",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "A genuine nonnegative integer."
+    },
+    {
+      "name": "source_W",
+      "description": "The source reservoir's sampling weight (source res2%W).",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Genuine finite and nonnegative."
+    },
+    {
+      "name": "source_slot_weights",
+      "description": "The complete source slot weights (source res2%R%W).",
+      "units": "source record weight",
+      "shape": "[k]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative, length exactly k; boolean entries rejected."
+    },
+    {
+      "name": "source_slot_velocities_cm_s",
+      "description": "The complete source slot velocities (source res2%R%v).",
+      "units": "cm/s",
+      "shape": "[k,3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, shape (k,3); boolean entries rejected."
+    },
+    {
+      "name": "target_initialization_uniforms",
+      "description": "The caller's lazy-initialization uniform pair (u0,u1), consumed only when target_n <= 0.",
+      "units": "dimensionless",
+      "shape": "[2]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Shape (2,) with both values in the open interval (0,1)."
+    },
+    {
+      "name": "transfer_replacement_indices",
+      "description": "The 0-based slots consumed by appended full-target replacements, in consumption order.",
+      "units": "index",
+      "shape": "[n_replacements]",
+      "dtype": "integer array-like",
+      "required": true,
+      "constraints": "Genuine integers in [0,k) (registered hardening: the saved arm's astype(int) silently truncated whole-number floats and coerced bools); empty when no replacement is hit."
+    },
+    {
+      "name": "transfer_replacement_uniforms",
+      "description": "The uniform pairs (a,b) consumed after each appended replacement.",
+      "units": "dimensionless",
+      "shape": "[n_replacements,2]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Shape matching the replacement indices with both values in (0,1)."
+    },
+    {
+      "name": "full_full_uniforms",
+      "description": "The per-slot source-selection uniforms for the both-full branch.",
+      "units": "dimensionless",
+      "shape": "[k]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Exactly k values in [0,1) for a both-full merge; empty for every other branch."
+    },
+    {
+      "name": "reservoir_size",
+      "description": "The reservoir capacity k; the source default is 50.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": false,
+      "constraints": "A genuine positive integer (default 50).",
+      "default": 50
+    }
+  ],
+  "outputs": [
+    {
+      "name": "target_n",
+      "description": "The final target seen-record counter.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "integer",
+      "constraints": "Consistent with the selected branch.",
+      "required": true
+    },
+    {
+      "name": "target_i",
+      "description": "The final target next replacement index.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "integer",
+      "constraints": "Consistent with the selected branch.",
+      "required": true
+    },
+    {
+      "name": "target_W",
+      "description": "The final target sampling weight.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real",
+      "constraints": "Finite and nonnegative.",
+      "required": true
+    },
+    {
+      "name": "target_slot_weights",
+      "description": "The complete final target slot weights.",
+      "units": "source record weight",
+      "shape": "[k]",
+      "dtype": "real array",
+      "constraints": "Finite and nonnegative.",
+      "required": true
+    },
+    {
+      "name": "target_slot_velocities_cm_s",
+      "description": "The complete final target slot velocities.",
+      "units": "cm/s",
+      "shape": "[k,3]",
+      "dtype": "real array",
+      "constraints": "Finite.",
+      "required": true
+    },
+    {
+      "name": "source_n",
+      "description": "The final source counter after the res2 = res1 broadcast (source-empty branch: unchanged).",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "integer",
+      "constraints": "Equals target_n after any nonempty merge.",
+      "required": true
+    },
+    {
+      "name": "source_i",
+      "description": "The final source next replacement index after the res2 = res1 broadcast.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "integer",
+      "constraints": "Equals target_i after any nonempty merge.",
+      "required": true
+    },
+    {
+      "name": "source_W",
+      "description": "The final source sampling weight after the res2 = res1 broadcast.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real",
+      "constraints": "Equals target_W after any nonempty merge.",
+      "required": true
+    },
+    {
+      "name": "source_slot_weights",
+      "description": "The final source slot weights after the res2 = res1 broadcast.",
+      "units": "source record weight",
+      "shape": "[k]",
+      "dtype": "real array",
+      "constraints": "Equal to the final target slot weights after any nonempty merge.",
+      "required": true
+    },
+    {
+      "name": "source_slot_velocities_cm_s",
+      "description": "The final source slot velocities after the res2 = res1 broadcast.",
+      "units": "cm/s",
+      "shape": "[k,3]",
+      "dtype": "real array",
+      "constraints": "Equal to the final target slot velocities after any nonempty merge.",
+      "required": true
+    },
+    {
+      "name": "branch",
+      "description": "The selected source merge branch.",
+      "units": "enum",
+      "shape": "scalar",
+      "dtype": "string",
+      "constraints": "One of source_empty, both_nonfull, target_nonfull_source_full, target_full_source_nonfull, both_full.",
+      "required": true
+    },
+    {
+      "name": "transfer_actions",
+      "description": "The append action per transferred source slot: fill, replace or skip.",
+      "units": "enum",
+      "shape": "[n_transferred]",
+      "dtype": "string list",
+      "constraints": "Consistent with the source's update_reservoir walk.",
+      "required": true
+    },
+    {
+      "name": "transfer_updated_slots",
+      "description": "The 0-based updated slot per transferred record, or -1 for a skipped transfer.",
+      "units": "index",
+      "shape": "[n_transferred]",
+      "dtype": "integer array",
+      "constraints": "In [0,k) or exactly -1 for skips.",
+      "required": true
+    },
+    {
+      "name": "transfer_replacement_count",
+      "description": "The actual appended replacement count.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "integer",
+      "constraints": "Equals the number of consumed replacement records.",
+      "required": true
+    },
+    {
+      "name": "full_full_probability",
+      "description": "The both-full source-selection threshold float32(n1)/float32(n1+n2); None for other branches.",
+      "units": "dimensionless",
+      "shape": "scalar or null",
+      "dtype": "real",
+      "constraints": "In [0,1] when present.",
+      "required": true
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller supplies both complete reservoir states and every RNG record the selected branch consumes, in source order."
+    ],
+    "supported": [
+      "One local reservoir-sampling merge with explicit branch, walk and probability provenance."
+    ],
+    "excluded": [
+      "Reservoir payload synthesis, the neutral-bank lifecycle, MPI allreduce and owner coordination, HDF5 writers, the population-density merge and whole-program replay."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when any metadata, capacity, slot array, uniform or replacement record violates its declared contract, when replacement records are insufficient or unused, when both-full uniforms are supplied to another branch or are not exactly k, or when a genuine-integer hardening is violated.",
+    "runtime_failure": "Not applicable; the branch arithmetic is bounded by the declared contracts.",
+    "nonconvergence": "Not applicable; deterministic single merge.",
+    "partial_results": "Never returned; a failed call leaves the caller's arrays untouched (the merge works on internal copies)."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM 中性库合并 package, source anchor src/fidasim.f90:10343-10392 (merge_reservoirs) with the inline update_reservoir fill/replace/skip walk, as recorded by the saved bundle's own provenance section. The saved FIDASIM bundle supports bounded historical development comparison; the qualified-L1 delivery root is empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.neutral_reservoir_merge",
+      "symbol": "merge_neutral_reservoirs",
+      "signature": "merge_neutral_reservoirs(*, target_n, target_i, target_W, target_slot_weights, target_slot_velocities_cm_s, source_n, source_i, source_W, source_slot_weights, source_slot_velocities_cm_s, target_initialization_uniforms, transfer_replacement_indices, transfer_replacement_uniforms, full_full_uniforms, reservoir_size=50)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev56",
+    "dependencies": []
+  },
+  "example": {
+    "description": "The saved package's ordered nonfull append with the res2 = res1 broadcast.",
+    "code": "import numpy as np\nfrom scirel.fusion import merge_neutral_reservoirs\nk = 50\ndef state(n, offset):\n    weights = np.ones(k)\n    velocities = np.zeros((k, 3))\n    for index in range(1, min(n, k) + 1):\n        weights[index - 1] = offset + index\n        velocities[index - 1] = [offset + index, 2.0 * offset + index, -offset - index]\n    return n, 101, 0.91, weights, velocities\nn1, i1, w1, sw1, sv1 = state(4, 0)\nn2, i2, w2, sw2, sv2 = state(5, 100)\nresult = merge_neutral_reservoirs(\n    target_n=n1, target_i=i1, target_W=w1,\n    target_slot_weights=sw1, target_slot_velocities_cm_s=sv1,\n    source_n=n2, source_i=i2, source_W=w2,\n    source_slot_weights=sw2, source_slot_velocities_cm_s=sv2,\n    target_initialization_uniforms=[0.5, 0.5],\n    transfer_replacement_indices=np.asarray([], dtype=np.int64),\n    transfer_replacement_uniforms=np.empty((0, 2)),\n    full_full_uniforms=np.asarray([]))\nassert result['branch'] == 'both_nonfull' and result['target_n'] == 9\nassert np.array_equal(result['target_slot_weights'][3:8], [101, 102, 103, 104, 105])\nassert np.array_equal(result['source_slot_weights'], result['target_slot_weights'])\ntry:\n    merge_neutral_reservoirs(\n        target_n=4, target_i=101, target_W=0.91,\n        target_slot_weights=sw1, target_slot_velocities_cm_s=sv1,\n        source_n=5, source_i=101, source_W=0.91,\n        source_slot_weights=sw2, source_slot_velocities_cm_s=sv2,\n        target_initialization_uniforms=[0.5, 0.5],\n        transfer_replacement_indices=np.asarray([7.0]),\n        transfer_replacement_uniforms=[[0.5, 0.5]],\n        full_full_uniforms=np.asarray([]))\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('a whole-number float replacement index must be rejected (registered hardening)')",
+    "expected": "The saved probes reproduce; the float replacement index raises ValueError per the registered hardening."
+  },
+  "verification": {
+    "scope": [
+      "Saved-package oracles: ordered both-nonfull append with the source-prefix slot rewrite, both orientations of the full/nonfull swap with skipped updates, the strict float32 both-full probability with per-slot source selection, source-empty return, and RNG-record shape failures.",
+      "Source quirk pins: lazy-init formula, replacement W-update-before-horizon order, res2 = res1 broadcast, strict uniform > probability selection.",
+      "Registered hardenings: genuine-integer metadata/capacity including np.integer acceptance (the saved arm's type(...) is int rejected np.int64); W and every slot/uniform array reject boolean entries -- bool dtype arrays and mixed object arrays such as [True, 1.0] alike (the saved arm's np.asarray(..., dtype=float) silently coerced True to 1.0); replacement indices must be genuine integers (the saved arm truncated whole-number floats and coerced bools)."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_neutral_merge_family.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests reproduce the saved oracles and exercise the fail-closed contracts. No RNG drawing, MPI reduction or HDF5 handling is asserted. The saved FIDASIM bundle supports bounded historical development comparison only.",
+    "known_limitations": [
+      "The declared transfer_replacement_indices/uniforms pair is caller-sequenced; a physically different RNG stream cannot be detected, only a record-count/consumption mismatch.",
+      "The saved FIDASIM bundle supports bounded historical development comparison only; the qualified-L1 delivery root is empty.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

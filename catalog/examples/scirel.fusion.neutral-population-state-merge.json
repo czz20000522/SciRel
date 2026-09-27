@@ -1,0 +1,335 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.neutral-population-state-merge",
+  "kind": "task_graph",
+  "title": {
+    "en": "Neutral population and reservoir state merge graph",
+    "zh": "中性库种群合并图"
+  },
+  "summary": "Compose the N3 source merge_neutral_populations halves in source order: the six-level population-density addition and the explicit-state local reservoir merge with the res2 = res1 feedback, over fully caller-owned state and RNG records.",
+  "taxonomy": [
+    "fusion",
+    "neutral-population-transport",
+    "neutral-merge",
+    "task-graph"
+  ],
+  "aliases": [
+    "merge_neutral_population_state"
+  ],
+  "identity": {
+    "relation": "Source-ordered two-node composition: population_density_merge -> reservoir_merge. The density node adds the caller's six-level source density into the target (componentwise, source preserved, before/after/contribution exposed); the reservoir node consumes the caller's explicit reservoir state mapping and RNG records and replays one merge_reservoirs call with its declared branch and res2 = res1 local feedback. The two nodes operate on independent explicit state pieces and neither result feeds the other's arithmetic -- the same separation the source relation keeps between the population-density half and the reservoir-sampling half.",
+    "direction": "explicit target/source six-level densities + explicit target/source reservoir states and caller-owned RNG records -> density before/after and contribution outputs + the reservoir merge result (branch, final states, transfer provenance) + graph-order diagnostics",
+    "definition": "The saved FIDASIM 中性库种群合并图 TaskGraph (framework node N3 neutral_population_transport, coverage slice, cross_pfm_edges=[]; source anchors src/fidasim.f90:10484-10498 density half and 10343-10392 reservoir merge). Registered deviation from the saved packaging: the saved bundle's single-step delegation graph 中性库合并图 (one node calling merge_neutral_reservoirs and attaching diagnostics) is not ported as a separate asset -- its ports equal the operator's contract one-to-one, following the established DCXHalo迭代反馈图 precedent -- so the reservoir node binds directly to the integrated scirel.fusion.neutral-reservoir-merge operator and the res2 = res1 feedback stays declared in the diagnostics. All population/reservoir/RNG state is caller-owned; the graph reads no neutral bank, beam grid or cross-cell global owner, and MPI ownership, HDF5 writers and full terminal output stay outside this slice.",
+    "model": "the saved graph composition, ported with the registered delegation-node deviation",
+    "geometry": "one explicit local merge slice; no spatial transport or grid shape",
+    "coordinates": "density vectors in the caller's source population-density units; reservoir slot velocities in cm/s; reservoir weights dimensionless",
+    "boundary": "the density ports are validated by the density leaf (exactly six finite levels); the reservoir state must be an explicit mapping consumed by the reservoir leaf's contract; node order is fixed (density addition, then reservoir merge) and reported via graph_order",
+    "assumptions": [
+      "The density vectors and the reservoir pair describe the same local merge slice under the source convention; the graph cannot verify physical correspondence.",
+      "The caller pre-draws the RNG records; the reservoir leaf's record contracts apply unchanged."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "target_population_density",
+      "description": "The explicit target six-level density before the merge.",
+      "units": "source population density",
+      "shape": "[6]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "The density leaf's target contract."
+    },
+    {
+      "name": "source_population_density",
+      "description": "The explicit source six-level density added into the target.",
+      "units": "source population density",
+      "shape": "[6]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "The density leaf's source contract."
+    },
+    {
+      "name": "reservoir_merge_inputs",
+      "description": "The explicit target/source reservoir states and caller-owned RNG records passed to the reservoir leaf.",
+      "units": "source reservoir state",
+      "shape": "mapping",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "A real mapping matching the scirel.fusion.neutral-reservoir-merge keyword contract; list or other non-mapping input rejected."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "target_population_density_after",
+      "description": "The target density after the componentwise source addition.",
+      "units": "source population density",
+      "shape": "[6]",
+      "dtype": "real array",
+      "constraints": "The density leaf's merged target.",
+      "required": true
+    },
+    {
+      "name": "source_population_density_after",
+      "description": "The unchanged source density.",
+      "units": "source population density",
+      "shape": "[6]",
+      "dtype": "real array",
+      "constraints": "Elementwise equal to the input source density.",
+      "required": true
+    },
+    {
+      "name": "density_contribution_sum",
+      "description": "The six-level sum of the source density contribution.",
+      "units": "source population density",
+      "shape": "scalar",
+      "dtype": "real",
+      "constraints": "Finite.",
+      "required": true
+    },
+    {
+      "name": "reservoir_merge",
+      "description": "The explicit local reservoir merge result.",
+      "units": "source reservoir state",
+      "shape": "mapping",
+      "dtype": "mapping",
+      "constraints": "The reservoir leaf's full result mapping, including the declared branch.",
+      "required": true
+    },
+    {
+      "name": "diagnostics",
+      "description": "Graph order, framework mapping, ownership and local-feedback boundary.",
+      "units": "none",
+      "shape": "mapping",
+      "dtype": "mapping",
+      "constraints": "Declares graph_order [population_density_merge, reservoir_merge], the N3 mapping, the res2 = res1 local feedback and source-density ownership.",
+      "required": true
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller owns both state pieces and supplies the reservoir RNG records in source consumption order."
+    ],
+    "supported": [
+      "One local merge slice composing the density and reservoir halves with explicit ownership and feedback boundaries."
+    ],
+    "excluded": [
+      "MPI owners, cross-PFM edges, HDF5 writers, the neutral-bank lifecycle and whole-program replay."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "The leaves' ValueError contracts propagate directly; the reservoir state must be a real mapping, and the reservoir result's branch must be one of the five declared branches.",
+    "runtime_failure": "Not applicable; the composition adds no arithmetic of its own.",
+    "nonconvergence": "Not applicable; deterministic two-node composition.",
+    "partial_results": "Never returned; a failed node leaves no partial state (both leaves work on internal copies)."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM 中性库种群合并图 TaskGraph package (framework node N3 neutral_population_transport; source anchors src/fidasim.f90:10484-10498 and 10343-10392), as recorded by the saved bundle's own provenance section. The saved 中性库合并图 single-step delegation graph is deliberately not ported as a separate asset (ports equal the reservoir operator's contract one-to-one; registered deviation). The saved FIDASIM bundle supports bounded historical development comparison; the qualified-L1 delivery root is empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 task-graph document, YAML contract and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.neutral_population_state_merge",
+      "symbol": "merge_neutral_population_state",
+      "signature": "merge_neutral_population_state(*, target_population_density, source_population_density, reservoir_merge_inputs)"
+    }
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "population_density_merge",
+        "kind": "operator",
+        "asset_id": "scirel.fusion.neutral-population-density-merge",
+        "description": "Six-level componentwise density addition with explicit write/read ownership.",
+        "inputs": [
+          "target_population_density",
+          "source_population_density"
+        ],
+        "outputs": [
+          "target_population_density_after",
+          "source_population_density_after",
+          "density_contribution_sum"
+        ]
+      },
+      {
+        "id": "reservoir_merge",
+        "kind": "operator",
+        "asset_id": "scirel.fusion.neutral-reservoir-merge",
+        "description": "One local reservoir-sampling merge over the caller's explicit state and RNG records (registered deviation: binds the operator directly instead of the saved single-node delegation graph).",
+        "inputs": [
+          "reservoir_merge_inputs"
+        ],
+        "outputs": [
+          "reservoir_merge"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": {
+          "node": "$input",
+          "port": "target_population_density"
+        },
+        "to": {
+          "node": "population_density_merge",
+          "port": "target_population_density"
+        },
+        "description": "Caller-owned target density.",
+        "condition": "Once, before the reservoir node.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "source_population_density"
+        },
+        "to": {
+          "node": "population_density_merge",
+          "port": "source_population_density"
+        },
+        "description": "Caller-owned source density.",
+        "condition": "Once, before the reservoir node.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "reservoir_merge_inputs"
+        },
+        "to": {
+          "node": "reservoir_merge",
+          "port": "reservoir_merge_inputs"
+        },
+        "description": "Caller-owned reservoir states and RNG records.",
+        "condition": "After the density node completes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "population_density_merge",
+          "port": "target_population_density_after"
+        },
+        "to": {
+          "node": "$output",
+          "port": "target_population_density_after"
+        },
+        "description": "Merged target density.",
+        "condition": "After the density node.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "population_density_merge",
+          "port": "source_population_density_after"
+        },
+        "to": {
+          "node": "$output",
+          "port": "source_population_density_after"
+        },
+        "description": "Unchanged source density (observation ownership).",
+        "condition": "After the density node.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "population_density_merge",
+          "port": "density_contribution_sum"
+        },
+        "to": {
+          "node": "$output",
+          "port": "density_contribution_sum"
+        },
+        "description": "Six-level sum of the source density contribution.",
+        "condition": "After the density node.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "reservoir_merge",
+          "port": "reservoir_merge"
+        },
+        "to": {
+          "node": "$output",
+          "port": "reservoir_merge"
+        },
+        "description": "The reservoir merge result mapping.",
+        "condition": "After the reservoir node.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "reservoir_merge",
+          "port": "reservoir_merge"
+        },
+        "to": {
+          "node": "$output",
+          "port": "diagnostics"
+        },
+        "description": "Graph-order diagnostics; no scientific transformation.",
+        "condition": "After the reservoir node.",
+        "transform": "Declared node-order listing.",
+        "kind": "data",
+        "required": true
+      }
+    ],
+    "execution": {
+      "mode": "two_local_nodes_with_explicit_state",
+      "ordering": "Run the density leaf first, then the reservoir leaf on the caller's explicit mapping; the node order is fixed and reported via graph_order.",
+      "branches": [
+        "The reservoir leaf selects one of the five declared merge branches; the density addition runs unconditionally."
+      ],
+      "state_ownership": "Both state pieces and all RNG records are caller-owned explicit inputs; the graph owns only the diagnostics assembly.",
+      "failure_propagation": "The leaves' ValueError contracts propagate directly; there is no fallback state or partial result.",
+      "feedback": []
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev56",
+    "dependencies": [
+      {
+        "asset_id": "scirel.fusion.neutral-population-density-merge"
+      },
+      {
+        "asset_id": "scirel.fusion.neutral-reservoir-merge"
+      }
+    ]
+  },
+  "example": {
+    "description": "The saved graph's density addition with a nonfull reservoir merge and the declared diagnostics.",
+    "code": "import numpy as np\nfrom scirel.fusion import merge_neutral_population_state\nk = 50\ndef state(n, offset):\n    weights = np.ones(k)\n    velocities = np.zeros((k, 3))\n    for index in range(1, min(n, k) + 1):\n        weights[index - 1] = offset + index\n        velocities[index - 1] = [offset + index, 2.0 * offset + index, -offset - index]\n    return {'n': n, 'i': 101, 'W': 0.91, 'slot_weights': weights, 'slot_velocities_cm_s': velocities}\ndef inputs(left, right):\n    return {\n        'target_n': left['n'], 'target_i': left['i'], 'target_W': left['W'],\n        'target_slot_weights': left['slot_weights'],\n        'target_slot_velocities_cm_s': left['slot_velocities_cm_s'],\n        'source_n': right['n'], 'source_i': right['i'], 'source_W': right['W'],\n        'source_slot_weights': right['slot_weights'],\n        'source_slot_velocities_cm_s': right['slot_velocities_cm_s'],\n        'target_initialization_uniforms': [0.5, 0.5],\n        'transfer_replacement_indices': np.asarray([], dtype=np.int64),\n        'transfer_replacement_uniforms': np.empty((0, 2)),\n        'full_full_uniforms': np.asarray([])}\nresult = merge_neutral_population_state(\n    target_population_density=np.arange(1.0, 7.0),\n    source_population_density=np.arange(0.5, 6.5, 1.0),\n    reservoir_merge_inputs=inputs(state(4, 0), state(5, 100)))\nassert np.array_equal(result['target_population_density_after'], np.arange(1.0, 7.0) + np.arange(0.5, 6.5, 1.0))\nassert np.array_equal(result['source_population_density_after'], np.arange(0.5, 6.5, 1.0))\nassert result['reservoir_merge']['branch'] == 'both_nonfull'\nassert result['diagnostics']['graph_order'] == ['population_density_merge', 'reservoir_merge']\ntry:\n    merge_neutral_population_state(\n        target_population_density=np.ones(6),\n        source_population_density=np.ones(6),\n        reservoir_merge_inputs=None)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('a non-mapping reservoir state must be rejected')",
+    "expected": "The saved graph probes reproduce; the non-mapping reservoir state raises ValueError."
+  },
+  "verification": {
+    "scope": [
+      "Saved-graph oracles: density addition with nonfull reservoir merge, density independence of the source-empty branch, both-full delegation with explicit k uniforms, non-six-level density and non-mapping reservoir state rejection.",
+      "Registered deviation: the reservoir node binds the integrated operator directly (saved single-node delegation graph not ported); node order and res2 = res1 feedback declared in the diagnostics."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_neutral_merge_family.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests reproduce the saved graph oracles and exercise the fail-closed contracts. No RNG drawing, MPI reduction or HDF5 handling is asserted. The saved FIDASIM bundle supports bounded historical development comparison only.",
+    "known_limitations": [
+      "The graph cannot verify physical correspondence between the density vectors and the reservoir pair.",
+      "The saved FIDASIM bundle supports bounded historical development comparison only; the qualified-L1 delivery root is empty.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}
