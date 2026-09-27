@@ -332,3 +332,123 @@ def test_lyman_triplet_partially_outside_the_window_is_split():
     )
     assert out["accepted_component_count"] == 1
     assert np.sum(out["weight_bins"]) == pytest.approx(2.0 / (4.0 * np.pi * 1.0e-4))
+
+
+# ------------------- r80-v2 repairs (read-only expert review findings) -------------------
+
+def test_overflowing_sightline_keeps_the_nonzero_doppler_shift():
+    # r80-v1 defect: sqrt(1e308^2 + 1e308^2) overflowed to inf and the
+    # direction collapsed to zero, silently returning the bare 656.28 and
+    # dropping the nonzero Doppler shift the declared relation requires
+    result = doppler_stark_zeeman_wavelengths(
+        (1e308, 1e308, 0.0), (1e5, 0.0, 0.0), (0.0, 0.0, 1.0), 0.0,
+        (1.0, 0.0, 0.0), 0.0, 656.28, 3,
+    )
+    expected = 656.28 * (1.0 + (1e5 * 0.01 * (0.5 ** 0.5)) / 2.99792458e8)
+    assert len(set(result)) == 1  # zero fields keep the components degenerate
+    assert result[0] == pytest.approx(expected, rel=1e-12)
+    assert result[0] != 656.28
+
+
+def test_extreme_field_magnitudes_fail_closed_instead_of_returning_nan():
+    # r80-v1 defect: B = 1e308 overflowed the quadrature and the saved
+    # arm's arithmetic produced nan components for finite inputs
+    with pytest.raises(ValueError):
+        doppler_stark_zeeman_wavelengths(
+            (1.0, 0.0, 0.0), (1e5, 0.0, 0.0), (0.0, 0.0, 1.0), 1e308,
+            (1.0, 0.0, 0.0), 0.0, 656.28, 3,
+        )
+    with pytest.raises(ValueError):
+        doppler_stark_zeeman_wavelengths(
+            (1.0, 0.0, 0.0), (1e5, 0.0, 0.0), (0.0, 0.0, 1.0), 0.0,
+            (1.0, 0.0, 0.0), 1e308, 656.28, 3,
+        )
+
+
+def test_boolean_vector_entries_are_rejected():
+    # r80-v1 defect: the vector boolean check ran after the dtype=float
+    # conversion and was dead code; bool vectors silently numerified
+    with pytest.raises(ValueError):
+        doppler_stark_zeeman_wavelengths(
+            (True, 0.0, 0.0), (0.0, 0.0, 0.0), (0.0, 0.0, 1.0), 0.0,
+            (1.0, 0.0, 0.0), 0.0, 656.28, 3,
+        )
+    with pytest.raises(ValueError):
+        doppler_stark_zeeman_wavelengths(
+            (1.0, 0.0, 0.0), (0.0, 0.0, 0.0), np.array([True, False, False]), 1.0,
+            (1.0, 0.0, 0.0), 0.0, 656.28, 3,
+        )
+    with pytest.raises(ValueError):
+        doppler_stark_zeeman_wavelengths(
+            (1.0, 0.0, 0.0), (0.0, 0.0, 0.0), (0.0, 0.0, 1.0), 0.0,
+            np.asarray([True, 0.0, 0.0], dtype=object), 1.0, 656.28, 3,
+        )
+    # note: np.array([True, 0.0, 0.0]) is float64 at construction time, so
+    # a bool hidden in a mixed numpy array is not detectable at the port;
+    # the contract covers the container, bool-dtype and object forms
+
+
+def test_degenerate_bin_width_fails_closed_as_declared():
+    # r80-v1 defect: dlambda = 5e-324 / 2 underflowed to 0.0 and the
+    # saved arm raised ZeroDivisionError instead of the declared ValueError
+    with pytest.raises(ValueError) as excinfo:
+        bin_fida_los_components(
+            wavelength_nm=[0.0, 0.0, 0.0],
+            component_intensity=[1.0, 1.0, 1.0],
+            lambdamin_nm=0.0,
+            lambdamax_nm=5e-324,
+            nlambda=2,
+        )
+    assert not isinstance(excinfo.value, ZeroDivisionError)
+
+
+def test_overflowing_bin_width_fails_closed():
+    # the window width overflows to inf and the normalization factor
+    # would silently become zero
+    with pytest.raises(ValueError):
+        bin_fida_los_components(
+            wavelength_nm=[0.0, 0.0, 0.0],
+            component_intensity=[1.0, 1.0, 1.0],
+            lambdamin_nm=-1e308,
+            lambdamax_nm=1e308,
+            nlambda=2,
+        )
+
+
+def test_subnormal_bin_width_fails_closed_before_inf_factor():
+    # r80-v1 defect (second review reproduction): dlambda = 1e-320 is
+    # positive and finite, but 1/(4*pi*dlambda) overflows to inf and the
+    # weight bins silently carried inf despite the document's finite
+    # factor/bins promise
+    with pytest.raises(ValueError):
+        bin_fida_los_components(
+            wavelength_nm=[0.0, 0.0, 0.0],
+            component_intensity=[1.0, 1.0, 1.0],
+            lambdamin_nm=0.0,
+            lambdamax_nm=1e-320,
+            nlambda=1,
+        )
+
+
+def test_unrepresentable_bin_index_fails_closed_instead_of_int64_sentinel():
+    # r80-v1 defect (second review reproduction): (1e308 - 650)/0.5
+    # overflowed to inf and the int cast wrote the int64 sentinel
+    # -9223372036854775808 as the component's "raw index"
+    with pytest.raises(ValueError):
+        bin_fida_los_components(
+            wavelength_nm=[1e308, 650.0, 651.0],
+            component_intensity=[1.0, 1.0, 1.0],
+            lambdamin_nm=650.0,
+            lambdamax_nm=652.0,
+            nlambda=4,
+        )
+    # a large-but-representable out-of-range index is still kept raw
+    out = bin_fida_los_components(
+        wavelength_nm=[1e6, 650.0, 651.0],
+        component_intensity=[1.0, 1.0, 1.0],
+        lambdamin_nm=650.0,
+        lambdamax_nm=652.0,
+        nlambda=4,
+    )
+    assert out["bin_index_zero_based"].tolist()[0] == 1998700
+    assert out["accepted_component_count"] == 2

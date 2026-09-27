@@ -20,7 +20,7 @@
     "relation": "dlambda = (lambdamax - lambdamin) / nlambda; bin = floor((lambda - lambdamin) / dlambda); a component inside the half-open interval [lambdamin, lambdamax) adds intensity / (4*pi*dlambda) to its bin (equivalent to the source's bin < 1 / bin > nlambda discard branches); accepted_component_count counts in-range components; intensity_factor_per_sr_nm is the constant 1/(4*pi*dlambda).",
     "direction": "Stark component wavelengths + component intensities + wavelength window + bin count -> weight bins, zero-based raw bin indices, accepted component count, bin width and normalization factor",
     "definition": "The saved FIDASIM FIDA权重谱线分箱 operator (source anchor src/fidasim.f90:12297-12347, store_fw_photons_at_chan): the terminal wavelength-bin boundary of the FIDA weight production. The operator computes no Doppler/Stark/Zeeman wavelengths and produces no photons -- the upstream component wavelengths come from the caller or from scirel.fusion.doppler-stark-zeeman-wavelengths; it accepts no weight or mean_f arrays.",
-    "model": "the saved formal implementation, ported verbatim with the registered boolean-entry hardening",
+    "model": "the saved formal implementation, ported verbatim with the registered boolean-entry hardening and the r80-v2 bin-width fail-closed repair",
     "geometry": "one wavelength axis with uniform bins; no spatial geometry",
     "coordinates": "wavelengths and window bounds in nm; intensities in photons*cm^-3 as carried by the caller; bins zero-based over nlambda; the factor unit is sr^-1 nm^-1",
     "boundary": "component arrays of length exactly 3 or 15; finite wavelengths and finite nonnegative intensities; finite window with lambdamax > lambdamin; positive genuine integer nlambda; out-of-range components contribute nothing but keep their raw computed index; no writer, no answer-array input and no whole-program replay",
@@ -92,7 +92,7 @@
       "units": "zero_based_index",
       "shape": "[n_stark]",
       "dtype": "integer array",
-      "constraints": "Finite integers retained for boundary audit; in-range values lie in [0, nlambda).",
+      "constraints": "Finite integers retained for boundary audit; in-range values lie in [0, nlambda); a component whose raw index is not representable as a finite integer fails closed instead of reporting the int64 overflow sentinel (r80-v2 repair).",
       "required": true
     },
     {
@@ -135,7 +135,7 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError when the component arrays are not finite length-3/15 matching vectors, when intensities are negative or non-finite, when the window bounds are non-finite boolean or reversed, or when nlambda is not a positive genuine integer.",
+    "invalid_input": "Raises ValueError when the component arrays are not finite length-3/15 matching vectors, when intensities are negative or non-finite, when the window bounds are non-finite boolean or reversed, when nlambda is not a positive genuine integer, when the window width does not produce a positive finite bin width (r80-v2 repair: width underflow to zero raised ZeroDivisionError in the saved arm and width overflow to inf silently zeroed the factor), when the normalization factor 1/(4*pi*dlambda) is not finite for a positive but subnormal width such as 1e-320 (r80-v2 repair: the saved arm returned inf factors and inf weight bins), or when a component wavelength's bin index is not representable as a finite integer (r80-v2 repair: the saved arm wrote the int64 overflow sentinel -9223372036854775808).",
     "runtime_failure": "Not applicable; bounded accumulation over finite inputs.",
     "nonconvergence": "Not applicable; single pass.",
     "partial_results": "Never returned."
@@ -169,6 +169,7 @@
     "scope": [
       "Saved-package oracles: source floor binning with the conservation factor, out-of-range drop with retained raw indices, and the malformed fail-closed contracts.",
       "Registered hardening: wavelength and intensity inputs reject boolean entries in both bool dtype and mixed object form such as np.asarray([True, 1.0], dtype=object) (the saved arm's np.asarray(..., dtype=float) silently coerced True to 1.0); boolean window bounds rejected; the saved arm's nlambda genuine-integer contract kept and pinned.",
+      "r80-v2 repairs: a window whose width underflows to zero (e.g. lambdamin=0, lambdamax=5e-324, nlambda=2) raises the declared ValueError instead of ZeroDivisionError, and a window whose width overflows to inf (e.g. +-1e308 bounds) fails closed instead of silently producing a zero normalization factor; a positive but subnormal width such as 1e-320 with nlambda=1 fails closed before the factor overflows to inf (the second review reproduction returned intensity_factor_per_sr_nm=inf and weight_bins=[inf]); a component whose bin index is not representable (e.g. wavelength 1e308) fails closed instead of reporting the int64 sentinel -9223372036854775808, while large-but-representable out-of-range indices are still kept raw.",
       "Source relation pins: the upper window edge is exclusive (a component at lambdamax maps to discarded bin nlambda), and the accepted bins conserve the total intensity / (4*pi*dlambda)."
     ],
     "tests": [

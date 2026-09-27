@@ -22,6 +22,21 @@ following the same numerification gap closed for the r79 merge
 family).  The saved arm's own ``nlambda`` genuine-integer contract
 (bools rejected, ``np.integer`` accepted) is kept and pinned.
 
+r80-v2 repairs (read-only expert review findings on the r80-v1 freeze):
+the bin width is checked to be a positive finite float before the
+factor is formed, so a window whose width underflows to zero (e.g.
+``lambdamax = 5e-324`` with ``nlambda = 2``) raises the declared
+``ValueError`` instead of ``ZeroDivisionError``, and a window whose
+width overflows to ``inf`` fails closed instead of silently producing
+a zero normalization factor; the normalization factor itself must
+stay finite, so a positive but subnormal width such as ``1e-320``
+(with ``nlambda = 1``) fails closed instead of returning ``inf``
+factors and ``inf`` weight bins; and the per-component bin index is
+computed in float and checked representable before the integer cast,
+so a huge out-of-range wavelength fails closed instead of reporting
+the int64 overflow sentinel ``-9223372036854775808`` as its "raw
+index".
+
 The upstream component-wavelength relation is
 ``scirel.fusion.doppler-stark-zeeman-wavelengths``; the full
 ``fida_weights_los`` phase producer around both remains deferred.
@@ -84,8 +99,27 @@ def bin_fida_los_components(
         raise ValueError("nlambda must be a positive integer")
     nlambda = int(nlambda)
     dlambda = (high - low) / nlambda
+    if not math.isfinite(dlambda) or dlambda <= 0.0:
+        raise ValueError(
+            "the wavelength window does not produce a positive finite bin width"
+            " (r80-v2 repair: the saved arm raised ZeroDivisionError on underflow"
+            " and silently produced a zero factor on overflow)"
+        )
     factor = 1.0 / (4.0 * math.pi * dlambda)
-    bins = np.floor((wavelength - low) / dlambda).astype(int)
+    if not math.isfinite(factor):
+        raise ValueError(
+            "the normalization factor 1/(4*pi*dlambda) is not finite for the supplied"
+            " window (r80-v2 repair: a positive but subnormal bin width such as"
+            " 1e-320 overflowed the factor and the weight bins to inf)"
+        )
+    scaled = (wavelength - low) / dlambda
+    if not np.all(np.isfinite(scaled)) or np.any(np.abs(scaled) >= 9.223372036854776e18):
+        raise ValueError(
+            "a component wavelength's bin index is not representable as a finite"
+            " integer (r80-v2 repair: the saved arm wrote the int64 overflow sentinel"
+            " -9223372036854775808 instead of a meaningful raw index)"
+        )
+    bins = np.floor(scaled).astype(int)
     output = np.zeros(nlambda, dtype=float)
     accepted = (bins >= 0) & (bins < nlambda)
     np.add.at(output, bins[accepted], intensity[accepted] * factor)

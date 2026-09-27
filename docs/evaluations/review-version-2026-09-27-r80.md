@@ -1,6 +1,6 @@
 # SciRel FIDASIM FIDA spectral-component family r80
 
-状态:开发期冻结待审(`pending_unapproved`),不是领域专家认可、可信版本或公开发行。本版是 r79-v3(`f562536`,科学 HEAD `e509afb`,`0.1.0.dev56`,166 资产,快照 `build/verification/review-2026-09-27-r79-neutral-merge-family-v3`)的 successor;既有快照原样保留。合格 L1 交付根在本轮开始复核为空(0 项,含隐藏项),未消费任何合格 L1 输入。FIDASIM 保存包位于兄弟主仓库 checkout `build/verification/neutral-harness-baseline-v2/inputs/l1/FIDASIM`(读取零写入),只支持 provisional 有界历史开发比较。
+状态:开发期冻结待审(`pending_unapproved`),不是领域专家认可、可信版本或公开发行。r80-v2 是 r80-v1(科学 HEAD `fa80272`,快照 `build/verification/review-2026-09-27-r80-fida-spectral-family-v1`,v1 快照原样保留)的 successor,v1 的三处实际合同缺口由独立只读复核发现并在本版最小范围修复(见文末 v2 小节);r80 批次整体是 r79-v3(`f562536`,科学 HEAD `e509afb`,`0.1.0.dev56`,166 资产,快照 `build/verification/review-2026-09-27-r79-neutral-merge-family-v3`)的 successor。既有 r79-v3 快照原样保留。合格 L1 交付根在本轮开始复核为空(0 项,含隐藏项),未消费任何合格 L1 输入。FIDASIM 保存包位于兄弟主仓库 checkout `build/verification/neutral-harness-baseline-v2/inputs/l1/FIDASIM`(读取零写入),只支持 provisional 有界历史开发比较。
 
 ## 性质:两项新 operator(N5 谱线分量波长 + N6 FIDA 波长分箱)
 
@@ -61,3 +61,24 @@
 - 不宣称合格 L1 消费、外部物理正确性、专家认可、可信晋级、公开发行
 - 继续缓付:`fida_weights_los` 相位生产者(CX→colrad→Doppler/Stark/Zeeman→bin)、NPA 阶段 B 权重生产者(`NPA权重物理生产`)、三项 MPI 权重归约(NPA 五数组、主动 FIDA 双数组、中子三数组)、真实 HDF5 表驱动、MC marker 生产、并行(MPI 秩)reservoir 合并图、中性库生命周期
 - 开放专家问题:(1) 波长算子沿用调用方参考波长与源的非相对论/四周组合近似,不宣称独立原子物理验证——该证据上限对未来可信版本是否可接受由专家裁定。(2) 保存臂的 equation-oracle 证据类别(两叶均无 Fortran runtime parity)原样继承。(3) 许可证状态均为 `pending-human-decision`
+
+## r80-v2:独立只读复核发现的三处合同缺口与最小修复
+
+r80-v1 冻结后,独立只读复核在安装态 dev57 复现三处实际合同缺口;v1 快照与其证据原样保留,本版在同一工作树最小范围修复,版本保持 `0.1.0.dev57`(r77-v2/v3 修复先例),不弱化任何既有数值断言:
+
+1. **sightline norm 溢出静默丢 Doppler**:doppler_stark_zeeman_wavelengths((1e308,1e308,0),(1e5,0,0),(0,0,1),0,(1,0,0),0,656.28,3) 返回全 656.28——`sqrt(1e308^2+1e308^2)` 溢出为 inf 后方向归零,丢失非零 Doppler 位移,违背声明的 Doppler 关系。修复:sightline 范数改为 max-abs 缩放(精确算术下同一归一化),任意有限输入保住 Doppler;判别回归 `test_overflowing_sightline_keeps_the_nonzero_doppler_shift`。
+2. **B=1e308 返回 nan**:有限输入下四周平方溢出、分母 inf-inf 产生 nan,违背 exact document 的有限输出承诺。修复:q0/q1 与最终分量波长做有限值校验,非法域 fail closed 抛 `ValueError`;判别回归 `test_extreme_field_magnitudes_fail_closed_instead_of_returning_nan`(B 与 E 各一)。
+3. **dlambda 下溢抛 ZeroDivisionError**:in_fida_los_components(...,lambdamin=0.,lambdamax=5e-324,nlambda=2)` 的 bin 宽下溢为 0,`1/(4*pi*dlambda)` 抛未声明的 `ZeroDivisionError`。修复:bin 宽必须为正有限浮点,下溢抛声明的 `ValueError`、溢出为 inf 同样 fail closed(否则归一化因子静默为 0);判别回归 `test_degenerate_bin_width_fails_closed_as_declared` 与 `test_overflowing_bin_width_fails_closed`。
+
+复核同时发现 r80-v1 的向量布尔检查是死代码(`np.asarray(...,dtype=float)` 之后才查 bool dtype)。修复:检查前移到浮点转换之前,覆盖容器条目、bool dtype 数组与 object 数组三种形式(`test_boolean_vector_entries_are_rejected`);已构造的混合 numpy 数组(`np.array([True,0.0,0.0])` 构造时即 float64)在端口不可检测,作为合同边界记入文档。
+
+直接测试 19 → 24(+5 判别回归,原 19 项逐字保留)。两份 exact documents 的 definition/model/边界/失败语义/verification 同步 v2 修复;其余 166 份文档与 v1 字节一致。
+
+### r80-v2 追补:同一分箱边界的第二次独立复现(冻结前闭合)
+
+第一次 v2 门禁启动前,独立复核在安装态 dev57(r80-v1 wheel)对同一边界再复现两处缺口,已在本版一并修复,v2 冻结未发生在错误字节上:
+
+4. **子正规 bin 宽使 factor 与 weight 溢出为 inf**:`bin_fida_los_components(...,lambdamin=0.,lambdamax=1e-320,nlambda=1)` 的 `dlambda=1e-320` 为正且有限,但 `1/(4*pi*dlambda)` 溢出,返回 `intensity_factor_per_sr_nm=inf`、`weight_bins=[inf]`,违背 exact document 对两者的有限承诺。修复:归一化因子必须有限,该窗口 fail closed 抛 `ValueError`;判别回归 `test_subnormal_bin_width_fails_closed_before_inf_factor`。
+5. **越界分量的 raw index 变 int64 溢出哨兵**:`wavelength_nm=[1e308,650.,651.]`、窗口 650..652、`nlambda=4` 时 `(1e308-650)/0.5` 溢出为 inf,整型转换写出哨兵 `-9223372036854775808`,并非"原计算索引"。修复:bin 下标以浮点计算并在整型转换前校验可表示性;不可表示 fail closed,大而可表示的越界下标仍按原样保留(`test_unrepresentable_bin_index_fails_closed_instead_of_int64_sentinel`)。
+
+直接测试 24 → 26(+2 判别回归;第一次 v2 修复的 5 项与原 19 项逐字保留)。v2 首次 gate 1 在修复前字节上运行(1681 passed / 43 skipped,junit 1724 tests / 0 errors),已作为 superseded probe 记录于 `build/test-evidence-r80.md`;正式 v2 门禁在最终修复字节上重跑。

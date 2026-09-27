@@ -22,9 +22,19 @@ terms in quadrature, and the 15 Balmer components follow the fixed
 Registered hardenings against the saved arm (whose own contract already
 promised fail-closed behavior it did not implement): every scalar and
 vector input is checked finite, the reference wavelength must be
-positive, scalar magnitudes reject booleans, and ``component_count``
-must be a genuine integer (the saved arm's ``not in (3, 15)`` accepted
-whole-number floats such as ``3.0``).
+positive, scalar magnitudes and vector entries reject booleans, and
+``component_count`` must be a genuine integer (the saved arm's
+``not in (3, 15)`` accepted whole-number floats such as ``3.0``).
+
+r80-v2 repairs (read-only expert review findings on the r80-v1 freeze):
+the sightline norm is computed by max-abs scaling so a finite but huge
+sightline (e.g. ``(1e308, 1e308, 0)``) keeps its nonzero Doppler shift
+instead of collapsing the direction to zero through a ``inf`` norm; the
+Stark--Zeeman frequencies and the final component wavelengths are
+checked finite, so field magnitudes whose quadrature overflows (e.g.
+``B = 1e308``) raise ``ValueError`` instead of returning ``nan``; and
+the vector boolean check now runs before the float conversion, where
+the r80-v1 placement after ``asarray(..., dtype=float)`` was dead code.
 """
 from __future__ import annotations
 
@@ -49,14 +59,26 @@ _BALMER_SHIFTS = (
 
 
 def _finite_vector(value, *, name: str) -> tuple[float, float, float]:
+    # booleans must be inspected before numpy coerces them: a mixed
+    # list/tuple such as (True, 0.0, 0.0) becomes float64 at asarray time
+    if isinstance(value, (list, tuple)) and any(
+        isinstance(item, (bool, np.bool_)) for item in value
+    ):
+        raise ValueError(f"{name} must not contain boolean entries (registered hardening)")
     try:
-        array = np.asarray(value, dtype=float)
+        raw = np.asarray(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} must be numeric") from exc
+    if raw.dtype == np.bool_ or (
+        raw.dtype == np.object_ and any(isinstance(item, (bool, np.bool_)) for item in raw)
+    ):
+        raise ValueError(f"{name} must not contain boolean entries (registered hardening)")
+    try:
+        array = raw.astype(float)
     except (TypeError, ValueError) as exc:
         raise ValueError(f"{name} must be numeric") from exc
     if array.shape != (3,) or not np.all(np.isfinite(array)):
         raise ValueError(f"{name} must be a finite 3-vector")
-    if array.dtype == np.bool_:
-        raise ValueError(f"{name} must not be boolean (registered hardening)")
     return (float(array[0]), float(array[1]), float(array[2]))
 
 
@@ -94,9 +116,11 @@ def doppler_stark_zeeman_wavelengths(
     if component_count not in (3, 15):
         raise ValueError("component_count must be 3 or 15")
     direction = _finite_vector(sightline_to_head, name="sightline_to_head")
-    norm = math.sqrt(sum(value * value for value in direction))
-    if norm == 0.0:
+    scale = max(abs(value) for value in direction)
+    if scale == 0.0:
         raise ValueError("sightline_to_head must be nonzero")
+    direction = tuple(value / scale for value in direction)
+    norm = math.sqrt(sum(value * value for value in direction))
     direction = tuple(value / norm for value in direction)
     velocity = _finite_vector(ion_velocity_cm_s, name="ion_velocity_cm_s")
     velocity = tuple(value * 0.01 for value in velocity)
@@ -128,6 +152,11 @@ def doppler_stark_zeeman_wavelengths(
         4.0 * (_E0 * _H * magnetic / (4.0 * pi * _ME)) ** 2
         + 9.0 * (3.0 * _A0 * _E0 * electric) ** 2
     )
+    if not (math.isfinite(q0) and math.isfinite(q1)):
+        raise ValueError(
+            "magnetic/electric magnitudes are outside the representable Stark-Zeeman"
+            " range (r80-v2 repair: the saved arm returned nan)"
+        )
     if component_count == 3:
         shifts = _LYMAN_SHIFTS
         wavelengths_m = tuple(
@@ -141,4 +170,10 @@ def doppler_stark_zeeman_wavelengths(
             / (2.0 * _C0 * _H + (-2.0 * q0 * lower + q1 * upper) * wavelength_m)
             for lower, upper in shifts
         )
-    return tuple(doppler_nm + (value - wavelength_m) * 1.0e9 for value in wavelengths_m)
+    result = tuple(doppler_nm + (value - wavelength_m) * 1.0e9 for value in wavelengths_m)
+    if not all(math.isfinite(value) for value in result):
+        raise ValueError(
+            "component wavelengths are not finite for the supplied inputs (r80-v2 repair:"
+            " the saved arm could return nan/inf)"
+        )
+    return result

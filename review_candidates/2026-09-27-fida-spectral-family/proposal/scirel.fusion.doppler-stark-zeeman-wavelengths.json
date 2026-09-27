@@ -19,8 +19,8 @@
   "identity": {
     "relation": "lambda_D = lambda0 * (1 + v . p_hat / c) with the ion velocity converted once from cm/s to m/s and the sightline normalized internally; E' = ||E + v x B|| with the source's y-component sign convention; the combined Stark-Zeeman frequencies q0 = sqrt((e*h*B/(4*pi*m_e))^2 + (3*a0*e*E')^2) and q1 = sqrt(4*(e*h*B/(4*pi*m_e))^2 + 9*(3*a0*e*E')^2) shift the level differences relative to lambda0. The 3-component Lyman-alpha table applies lower sublevels (-1, 0, 1); the 15-component Balmer-alpha table follows the fixed (lower, upper) sublevel order ((-1,2),(0,2),(-1,1),(1,2),(0,1),(-1,0),(1,1),(0,0),(-1,-1),(1,0),(0,-1),(-1,-2),(1,-1),(0,-2),(1,-2)).",
     "direction": "sightline direction + ion velocity + magnetic direction/magnitude + electric direction/magnitude + reference wavelength + component count -> fixed-order component wavelengths",
-    "definition": "The saved FIDASIM 多普勒StarkZeeman谱线波长 operator (framework node N5 spectral_component_wavelength_producer; source anchors src/fidasim.f90:69-81 for the constants and the single cm/s -> m/s velocity conversion, :11891-11963 for the moving electric field, the Stark-Zeeman level shifts and the fixed component ordering). The saved implementation is ported verbatim; the registered hardenings below only add the fail-closed input contracts its own document already declared.",
-    "model": "the saved formal implementation, ported verbatim with registered finite/positivity/integer hardenings",
+    "definition": "The saved FIDASIM 多普勒StarkZeeman谱线波长 operator (framework node N5 spectral_component_wavelength_producer; source anchors src/fidasim.f90:69-81 for the constants and the single cm/s -> m/s velocity conversion, :11891-11963 for the moving electric field, the Stark-Zeeman level shifts and the fixed component ordering). The saved implementation is ported verbatim; the registered hardenings below only add the fail-closed input contracts its own document already declared. r80-v2 repairs from the read-only expert review of the r80-v1 freeze: the sightline norm is computed by max-abs scaling so a finite but huge sightline keeps its nonzero Doppler shift instead of collapsing the direction to zero through an inf norm, the Stark-Zeeman frequencies and the final component wavelengths are checked finite so overflowing field magnitudes raise ValueError instead of returning nan, and the vector boolean check runs before the float conversion.",
+    "model": "the saved formal implementation, ported verbatim with registered finite/positivity/integer hardenings and the r80-v2 overflow-stability and fail-closed repairs",
     "geometry": "one sightline point with one locally uniform magnetic field and one moving electric field; no field interpolation or grid",
     "coordinates": "velocity in cm/s (converted to m/s once, as in the source); magnetic magnitude in T; electric magnitude in V/m; wavelengths in nm; the sightline vector is normalized internally; component order is the source's fixed table order",
     "boundary": "finite 3-vectors for the sightline, velocity, magnetic and electric directions; finite scalar magnitudes and reference wavelength; reference wavelength positive; component_count exactly 3 or 15; zero-field zero-velocity inputs degenerate all components onto lambda0; no field interpolation, HDF5 reading, instrument broadening or whole-program replay",
@@ -37,7 +37,7 @@
       "shape": "[3]",
       "dtype": "real array-like",
       "required": true,
-      "constraints": "A finite nonzero 3-vector; normalized internally."
+      "constraints": "A finite nonzero 3-vector; normalized internally by max-abs scaling (r80-v2 repair: stable against overflow). Boolean container entries, bool dtype arrays and object arrays with boolean entries rejected."
     },
     {
       "name": "ion_velocity_cm_s",
@@ -110,7 +110,7 @@
       "units": "nm",
       "shape": "[component_count]",
       "dtype": "real tuple",
-      "constraints": "Finite for finite inputs; with zero fields and zero velocity every component degenerates to the reference wavelength.",
+      "constraints": "Finite and positive when the inputs stay inside the representable Stark-Zeeman range; inputs whose quadrature frequencies or Doppler-shifted wavelengths are not finite fail closed with ValueError (r80-v2 repair).",
       "required": true
     }
   ],
@@ -126,7 +126,7 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError when any vector or scalar input is non-finite or non-numeric, when the sightline is zero, when the reference wavelength is not positive, when a scalar magnitude is boolean, or when component_count is not the genuine integer 3 or 15.",
+    "invalid_input": "Raises ValueError when any vector or scalar input is non-finite or non-numeric, when the sightline is zero, when the reference wavelength is not positive, when a scalar magnitude or a vector entry is boolean, when component_count is not the genuine integer 3 or 15, or when the Stark-Zeeman quadrature frequencies or the final component wavelengths are not finite for the supplied field magnitudes (r80-v2 repair: the saved arm returned nan).",
     "runtime_failure": "Not applicable; bounded arithmetic over finite inputs.",
     "nonconvergence": "Not applicable; closed-form evaluation.",
     "partial_results": "Never returned."
@@ -160,6 +160,7 @@
     "scope": [
       "Saved-package oracles: the zero-field Doppler degeneracy over all 15 Balmer components (one cm/s -> m/s conversion), the electric-only Lyman ordering with wavenumber symmetry below 1e-14, and the zero-sightline / unsupported-transition rejections.",
       "Registered hardenings: finite checks on every vector and scalar input (the saved arm propagated NaN/inf silently despite its own contract), positive reference wavelength (the saved arm accepted nonpositive references), boolean scalar magnitudes rejected, and component_count must be a genuine integer (the saved arm's `not in (3, 15)` accepted whole-number floats such as 3.0).",
+      "r80-v2 repairs: an overflowing finite sightline such as (1e308, 1e308, 0) keeps its nonzero Doppler shift via max-abs scaling (the r80-v1 arm collapsed the direction to zero and silently returned the bare reference); B = 1e308 and E = 1e308 raise ValueError instead of returning nan components; the vector boolean check runs before the float conversion (the r80-v1 placement after asarray(..., dtype=float) was dead code), covering container entries, bool dtype arrays and object arrays.",
       "Source relation pins: E' = ||E + v x B|| enters through a nonzero magnetic magnitude, and the sightline normalization is internal."
     ],
     "tests": [
