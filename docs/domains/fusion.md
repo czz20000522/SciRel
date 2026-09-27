@@ -21,3 +21,8 @@
 反应率采用 Bosch-Hale Maxwellian 拟合，温度必须已经以 keV 给出。SciRel 不隐式截断温度；正温度的数值可计算性不等于拟合在全域具备物理精度。ASCOT5 保存的编译源码金值与 TokaGrad 的 source-free DT 方程/不变量测试仍是有界开发证据；两项目原严格 D1 资格均已撤回，不能视为当前合格原料。TokaGrad 实现另有舍入系数与夹取，具体比较及资格更正见[开发整合记录](../evaluations/intake-2026-09-25-bosch-hale-reactivity.md)。DD 能量关系的常量和非相对论适用性限制见其 exact document。
 
 专家待决：各反应拟合的可信温度范围、来源许可证、TokaGrad 变体是否保留、聚变功率及快离子分配的标准身份和组合边界。文档未覆盖的科学关系不能由下游 Agent 自行补造为可信资产。
+- [DCX 热物种选择](../../catalog/examples/scirel.fusion.dcx-thermal-species-selection.json)：按源码物种循环下标选取热离子质量（N3）。
+- [DCX/HALO colrad 初态加权](../../catalog/examples/scirel.fusion.dcx-halo-colrad-initial-state.json)：单标记初态密度加权与光子快离子修正；同位素分支按束质量严格相等判定。
+- [碰撞辐射速率矩阵组装](../../catalog/examples/scirel.fusion.collisional-radiative-rate-matrix.json)：由调用方三张跃迁表与局域等离子体态组装 colrad 实速率矩阵，保留表坐标插值、低率阈值与 Einstein 对角重写。
+- [碰撞辐射本征态推进](../../catalog/examples/scirel.fusion.collisional-radiative-state-advance.json)：本征分解推进一个时间步并投影光子率；零特征值分支按保存臂规则钉定（与 Fortran 源的分歧已登记待专家裁定），等离子体外走弹道分支。
+- [DCX/HALO 标记初始化图](../../catalog/examples/scirel.fusion.dcx-halo-marker-initialization.json)：N3 组合图——按源顺序组合位置采样、调用方 plasma/ CX-rate 能力、物种选择、halo 速度与初态加权；colrad 推进与 reservoir 仍在图外。

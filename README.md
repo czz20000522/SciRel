@@ -54,7 +54,7 @@ assert result["B"][0, 0] == 5.0
 - `provenance/`：来源关系和审核状态，不参与运行时加载。
 - `docs/architecture.md`：Operator、TaskGraph、公共接口、科学身份和目录投影的权威边界。
 - `docs/catalog.md`：面向数万 Operator、数千 TaskGraph 的分片目录和渐进检索合同。
-- `contracts/` 与 `catalog/examples/`：标准资产/catalog Schema，以及当前公共资产的依赖闭合开发文档；当前资产数量与 exact-document 覆盖状态以最新冻结 review-version manifest 为准（撰写本文时为 r76-v1 的 153/153 complete，见 `docs/evaluations/review-version-2026-09-27-r76.md` 及其记录的快照 manifest）；文档覆盖完整不等于科学认可。
+- `contracts/` 与 `catalog/examples/`：标准资产/catalog Schema，以及当前公共资产的依赖闭合开发文档；当前资产数量与 exact-document 覆盖状态以最新冻结 review-version manifest 为准（撰写本文时为 r77-v1 的 158/158 complete，见 `docs/evaluations/review-version-2026-09-27-r77.md` 及其记录的快照 manifest）；文档覆盖完整不等于科学认可。
 - `docs/development-process.md`：首次/增量整合、验证分层和发行候选流程。
 - `docs/requirements/scirel-workflow.md` 与 `docs/design/scirel-workflow.md`：L1 到 release 的领域需求和设计。
 - `docs/requirements/scientific-request-workflow.md` 与 `docs/design/scientific-request-workflow.md`：从用户需求到 SciRel 计算结果和审计解释的出库流程。
@@ -119,7 +119,7 @@ SciRel 源码或公共基线变更会 fail closed 到全套测试。`focused` �
 干净离线 wheelhouse 重装全部依赖，也不证明同目录的其他包不可见。正式发行门禁仍需固定依赖 wheelhouse。
 安装后的测试不得依赖 editable 安装或把 src 放进 PYTHONPATH。上面的版本号随 pyproject.toml 更新，不是永久发行版本。
 
-当前开发 catalog 的 exact-document 覆盖为 complete；资产数量与覆盖状态以最新冻结 review-version manifest 为准（撰写本文时为 r76-v1 的 153/153，见 `docs/evaluations/review-version-2026-09-27-r76.md` 及其记录的快照 manifest），complete 只表示当前公共资产的 exact-document 覆盖，不是可信发布目录或完整科学能力。合格 L1 交付根是第一阶段的外部输入状态，会随交付变化；截至 r76-v1 冻结记录该根开始与结束均复核为空，fluidBW 和 PDRF、KN1DPy、ASCOT5、TokaGrad、PDRK、aorsa3d 的保存产物只能按确切身份作为历史开发对照，不能据此获科学认可。D1 验证也不等于 SciRel 专家认可；现有 release fixture 只验证逐项审核记录、catalog 与 wheel 的工程绑定，不证明整个开发版本可信。正式首发前必须让可见发布基线获得
+当前开发 catalog 的 exact-document 覆盖为 complete；资产数量与覆盖状态以最新冻结 review-version manifest 为准（撰写本文时为 r77-v1 的 158/158，见 `docs/evaluations/review-version-2026-09-27-r77.md` 及其记录的快照 manifest），complete 只表示当前公共资产的 exact-document 覆盖，不是可信发布目录或完整科学能力。合格 L1 交付根是第一阶段的外部输入状态，会随交付变化；截至 r77-v1 冻结记录该根开始与结束均复核为空，fluidBW 和 PDRF、KN1DPy、ASCOT5、TokaGrad、PDRK、aorsa3d 的保存产物只能按确切身份作为历史开发对照，不能据此获科学认可。D1 验证也不等于 SciRel 专家认可；现有 release fixture 只验证逐项审核记录、catalog 与 wheel 的工程绑定，不证明整个开发版本可信。正式首发前必须让可见发布基线获得
 相对上一可信版的专家审核（无可信版时为首次审核集合），保持 exact-document 覆盖完整（如有未覆盖资产则补齐），并把开发期 `.dev` workflow 合同统一冻结为 `v1`。
 
 项目尚未声明独立分发许可证，保留来源对应关系；正式分发前需确认输入资产与项目许可证选择。

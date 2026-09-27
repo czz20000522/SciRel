@@ -1,0 +1,164 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.collisional-radiative-state-advance",
+  "kind": "operator",
+  "title": {
+    "en": "Collisional-radiative eigenstate advance",
+    "zh": "碰撞辐射本征态推进"
+  },
+  "summary": "Advance neutral level densities one time step with the FIDASIM colrad real eigen-decomposition order, project the time-integrated densities, and emit the transition photon rate; outside the plasma the ballistic rule applies unchanged.",
+  "taxonomy": ["fusion", "neutral-population-transport", "colrad", "eigen-advance"],
+  "aliases": ["advance_collisional_radiative_states"],
+  "identity": {
+    "relation": "In plasma: R = V diag(lambda) V^-1 (real eigen-decomposition, imaginary parts at most 1e-12); s_next = clip0(V (exp(lambda dt) (V^-1 s))); integrated = clip0(V (((exp(lambda dt) - 1)/lambda_with_zero_guard) (V^-1 s))); photons = integrated[emitting_index] * A. Outside plasma: s_next = s, integrated = s * dt, photons = 0 (the ballistic rule; the rate matrix is not consumed).",
+    "direction": "level densities + real rate matrix + time step + plasma gate + emitting index + Einstein rate -> next states, time-integrated densities, photon rate",
+    "definition": "The saved FIDASIM 碰撞辐射本征态推进 operator (framework node N3/N4 seam): one colrad time step as a stable numerical leaf after rate-matrix assembly. Registered saved-arm divergence at exact zero eigenvalues: the Fortran source adds +1 before the exponential for a zero eigenvalue (an avoidance quirk with a different integrated-density value), while the saved arm and this port use the (exp(0)-1)/1 -> 0 rule; the saved bundle's ledger shows the branch never triggered in 823 bounded replay events and flags it for expert adjudication. This port reproduces the saved arm and does not silently repair the divergence.",
+    "model": "the saved formal implementation, ported verbatim with registered finite/type gates",
+    "geometry": "one local cell; level axis ordered by the caller's state convention",
+    "coordinates": "densities in cm^-3, rates in s^-1, dt in s; the emitting index is Python zero-based",
+    "boundary": "finite nonnegative states; finite nonnegative scalar dt; a genuine bool plasma gate; finite square matrix satisfying the real-eigenstate contract; finite nonnegative Einstein rate; strict in-range integer emitting index (bools rejected); all outputs finite (registered)",
+    "assumptions": [
+      "The caller supplies a rate matrix from the same declared table snapshot as the Einstein rate.",
+      "The real-eigenstate contract is a source semantics gate, not a general-matrix guarantee."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "states",
+      "description": "Current neutral level densities.",
+      "units": "cm^-3",
+      "shape": "[n_levels]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative (registered: finiteness)."
+    },
+    {
+      "name": "rate_matrix_s_inv",
+      "description": "Real rate matrix, target-state rows and source-state columns.",
+      "units": "s^-1",
+      "shape": "[n_levels, n_levels]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite (registered); must admit a real eigen-decomposition within 1e-12 imaginary parts; validated in all cases but consumed only when in_plasma is true."
+    },
+    {
+      "name": "dt_s",
+      "description": "Time step of the spatial segment.",
+      "units": "s",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and nonnegative; a genuine scalar (registered)."
+    },
+    {
+      "name": "in_plasma",
+      "description": "Local plasma gate.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "A genuine bool (registered); false takes the ballistic branch."
+    },
+    {
+      "name": "emitting_state_index",
+      "description": "Observed transition's initial state.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "In [0, n_levels); bools and non-integers rejected (registered)."
+    },
+    {
+      "name": "einstein_transition_rate_s_inv",
+      "description": "Einstein coefficient of the observed transition.",
+      "units": "s^-1",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and nonnegative (registered)."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "next_states",
+      "description": "Advanced, negativity-clipped level densities.",
+      "units": "cm^-3",
+      "shape": "[n_levels]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and nonnegative (registered)."
+    },
+    {
+      "name": "integrated_densities",
+      "description": "Time-integrated level densities over the step.",
+      "units": "cm^-3 s",
+      "shape": "[n_levels]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and nonnegative (registered); zero for an exact zero eigenvalue per the pinned saved-arm rule."
+    },
+    {
+      "name": "photons",
+      "description": "Transition photon rate from the emitting state.",
+      "units": "s^-1",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite; zero outside the plasma."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "A real rate matrix from the caller's table snapshot and level densities in the same convention."
+    ],
+    "supported": [
+      "One colrad time step with photon projection for a single cell/segment."
+    ],
+    "excluded": [
+      "Rate-matrix assembly, table handling, spatial transport, multi-segment loops, photon storage and HDF5 drivers."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when states are misshaped or negative, when dt_s is negative or not a genuine scalar, when the matrix is misshaped or fails the real-eigenstate contract, or when the emitting index is out of range, a bool or a non-integer.",
+    "runtime_failure": "Raises ValueError when states, dt, the matrix or the Einstein rate are non-finite (registered), or when the advanced outputs are non-finite for finite but extreme input magnitudes (registered hardening; the saved arm returns Inf and NaN silently).",
+    "nonconvergence": "Not applicable; one fixed time step.",
+    "partial_results": "Never returned; the ballistic branch is the source-defined complete answer outside the plasma."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM 碰撞辐射本征态推进 package, source anchor src/fidasim.f90:11776-11837 (colrad plasma gate, eigen-advance, zero-eigenvalue rule, negativity clip and photon projection), as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 fbc4d987119a8e99165e2d960ffefd26c2e5a45fedb814e9a9958fa20226ca6a (reference record; the test suite performs no automated drift detection). Arithmetic ported verbatim including the zero-guard denominator rule; the finite/type gates are registered hardenings. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": ["saved L1 operator document and implementation", "scientific regression tests"],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.collisional_radiative_state_advance",
+      "symbol": "advance_collisional_radiative_states",
+      "signature": "advance_collisional_radiative_states(states, rate_matrix_s_inv, dt_s, in_plasma, emitting_state_index, einstein_transition_rate_s_inv)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev52",
+    "dependencies": []
+  },
+  "example": {
+    "description": "The saved package's diagonal oracle and the ballistic rule, plus the pinned zero-eigen boundary.",
+    "code": "from math import exp\nfrom scirel.fusion import advance_collisional_radiative_states\nnext_state, density, photons = advance_collisional_radiative_states(\n    (1.0, 3.0), ((-2.0, 0.0), (0.0, -1.0)), 0.5, True, 0, 7.0)\nassert abs(photons - ((1.0 - exp(-1.0)) / 2.0) * 7.0) < 1e-14\nballistic = advance_collisional_radiative_states((2.0, 1.0), ((-1.0, 0.0), (0.0, -1.0)), 0.25, False, 0, 3.0)\nassert list(ballistic[0]) == [2.0, 1.0] and ballistic[2] == 0.0\npinned = advance_collisional_radiative_states((2.0, 3.0), ((0.0, 0.0), (0.0, -1.0)), 0.5, True, 0, 7.0)\nassert list(pinned[1])[0] == 0.0\ntry:\n    advance_collisional_radiative_states((1.0, 3.0), ((2.0, 0.0), (0.0, -1.0)), 500.0, True, 0, 7.0)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('an overflowing exponential must fail closed (registered hardening)')",
+    "expected": "The saved probes reproduce; the zero-eigen integrated density is 0 per the pinned saved-arm rule; the overflowing exponential raises ValueError."
+  },
+  "verification": {
+    "scope": [
+      "Saved-package oracles: diagonal eigen-advance with photon projection, outside-plasma ballistic rule.",
+      "Zero-eigenvalue branch pinned as a registered saved-arm divergence from the Fortran +1-before-exp rule (untriggered in the bundle's 823 bounded replay events).",
+      "Registered hardenings: finite/type input gates, strict integer emitting index, finite outputs."
+    ],
+    "tests": ["tests/operator_contracts/test_dcx_colrad_family.py"],
+    "evidence_ceiling": "The maintained direct tests reproduce the saved oracles, pin the zero-eigen boundary and exercise the fail-closed contracts. No real atomic-data driver, no Fortran eigensolver bit-parity (the bundle's own ledger records a ~5e-6 conditioning floor between the source balance+QR solver and LAPACK on stiff matrices over 583 real-table events), no multi-segment transport or spectral composition is asserted. The saved FIDASIM bundle supports bounded historical development comparison only.",
+    "known_limitations": [
+      "Zero-eigenvalue divergence from the Fortran source is pinned as saved-arm behavior and requires expert adjudication; consumers with exactly singular rate matrices must not treat the integrated zero mode as source-parity.",
+      "This port uses numpy/LAPACK eigensolvers, not the source's balance+QR eigensystem; stiff matrices carry the bundle-ledger conditioning floor rather than bit-parity.",
+      "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}
