@@ -30,19 +30,18 @@ needs a successor, not a silent edit.
 ## Batch r77: FIDASIM DCX/HALO colrad family (four operators + one composition graph)
 
 Directory: `review_candidates/2026-09-27-dcx-colrad-family/`
-Successor of batch r76: the r76 candidate files below keep their frozen
-r76-v1 bytes and digests; this batch binds the new bytes.
+Successor of batch r76: the r76 candidate files below keep their frozen r76-v1 bytes and digests; this batch binds the corrected r77-v2 bytes (the r77-v1 freeze bound the original bytes before three post-freeze review repairs; r77-v1 is preserved).
 - `review.md` -- sha256 `80554ca9f2b844575ae8e1efd572f12f0b09f05510e4ba02f311aacba8efb8bc`
 - `proposal/dcx_thermal_species_selection.py` -- sha256 `882ff1a906f705b75708307d6779a703c6f35d3954bff60fcfe9d35387ab84cd`
-- `proposal/dcx_halo_colrad_initial_state.py` -- sha256 `e8dbed09b5888052f694a56b3cd3a9db9b7e15d507b4f6bbfe8085ece6c44f4a`
+- `proposal/dcx_halo_colrad_initial_state.py` -- sha256 `d6c8144a699fd043f862c1ef740c58d47825a8320bbcb2247497c22b0b4ebbc8`
 - `proposal/collisional_radiative_rate_matrix.py` -- sha256 `35e3cd9c7882a0ce224ca3d4a6f15342a53bad07d719d8a74142243244eeb4b0`
-- `proposal/collisional_radiative_state_advance.py` -- sha256 `3bfb728dcf9277fd63dc668897556d1908ade26958451293a9bf18afdee9628b`
+- `proposal/collisional_radiative_state_advance.py` -- sha256 `92b8077b1f868931ed8a760bd7a138e1e86766de4439cc6c5581d91f01ec60b7`
 - `proposal/dcx_halo_marker_initialization.py` -- sha256 `825c4b8d56a928ebc9841d2033b3f7d6ab384b58b353c1065eed7ebb40df070c`
-- `proposal/test_dcx_colrad_family.py` -- sha256 `9e8146b486f215295898d5ca900193853bacff3aaa35f1d3f8701fc751be4779`
+- `proposal/test_dcx_colrad_family.py` -- sha256 `b61b002dc3d109179d87dc0dcb09c4c6b2b05911893688a5047124976d9cf5c0`
 - `proposal/scirel.fusion.dcx-thermal-species-selection.json` -- sha256 `edd47d3eb4568baa09be16c459706e4860c5e7b738e241869be052bd5df647a1`
-- `proposal/scirel.fusion.dcx-halo-colrad-initial-state.json` -- sha256 `5c2a66cfe4348f0082a1e1058f602bbba5627a2a7ce1d258008c280124113fee`
+- `proposal/scirel.fusion.dcx-halo-colrad-initial-state.json` -- sha256 `bfff8798544611d585b3a0f72dc444dca425fe7850d51d8268dc802b47a95a4f`
 - `proposal/scirel.fusion.collisional-radiative-rate-matrix.json` -- sha256 `17a32618e01e86d208c6b3710f92063c02426f67e6a6e2ae1831437ca0a0ff3b`
-- `proposal/scirel.fusion.collisional-radiative-state-advance.json` -- sha256 `a8a0d58cdae0ea297f51fe2cb4f89a8f8fa72195faf3c96a270b1d20712f6fd2`
+- `proposal/scirel.fusion.collisional-radiative-state-advance.json` -- sha256 `1cae30af870add5eabb1a3d9bb2269fda663555fb3b7d67d3196dd082ea74fd3`
 - `proposal/scirel.fusion.dcx-halo-marker-initialization.json` -- sha256 `eafa221f68b6c696ecabece12ac7c4ee79d233939afdb682f473272fe4bc6b0b`
 
 ## Batch r76: FIDASIM DCX/HALO iteration-feedback family (one operator + one bounded sequence graph)
