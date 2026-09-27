@@ -80,6 +80,13 @@ def test_package_export_change_checks_public_surface_and_asset_examples():
     ]
 
 
+def test_collision_package_export_change_checks_momentum_namespace_contract():
+    result = select("src/scirel/collisions/__init__.py")
+
+    assert result["full_suite_required"] is False
+    assert "tests/operator_contracts/test_momentum_scales.py" in result["test_paths"]
+
+
 def test_mcp_adapter_change_selects_only_its_boundary_tests():
     result = select("src/scirel_adapter/mcp.py")
 
@@ -439,8 +446,8 @@ def test_current_asset_index_unions_legacy_samples_and_exact_documents():
     namespace = runpy.run_path(str(SELECTOR))
     assets = namespace["_load_assets"]()
 
-    assert len(assets) == 93
-    assert len({asset.public_callable for asset in assets}) == 93
+    assert len(assets) == 100
+    assert len({asset.public_callable for asset in assets}) == 100
 
 
 def test_catalog_asset_keeps_every_declared_direct_test(tmp_path):

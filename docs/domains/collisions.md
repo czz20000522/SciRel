@@ -11,9 +11,16 @@
 - [热电子归一化动量](../../catalog/examples/scirel.collisions.thermal-electron-momentum.json)给出该定义及直接测试的证据范围。
 - [归一化动量映射](../../catalog/examples/scirel.collisions.normalized-momentum.json)是相关但不同的关系；不能仅凭名称将两者直接串接。端口和量纲以各自 exact document 为准。
 - [Maxwellian 相对速度速率平均](../../catalog/examples/scirel.collisions.maxwellian-relative-speed-rate-average.json)在调用方圆柱速度网格和截面模型上计算逐粒子能量的 `<sigma v>`。历史 `*_mass_amu` 参数表示保存氢质量 `1.6726231e-27 kg` 的倍数；碰撞能量使用粒子质量，未提供约化质量模型。
+- [原子氢电荷交换截面](../../catalog/examples/scirel.collisions.atomic-hydrogen-charge-exchange-cross-section.json)给出 H 与 H+ 的 Janev 拟合及可选 Freeman–Jones 分支，两个分支有各自的能量截断区间。
+- [分子氢电荷交换截面](../../catalog/examples/scirel.collisions.molecular-hydrogen-charge-exchange-cross-section.json)给出 H2 与 H2+ 的 Janev 拟合，不能与原子氢同名通道互换。
+- [原子氢弹性截面](../../catalog/examples/scirel.collisions.atomic-hydrogen-elastic-cross-section.json)保留 H–H 动量转移和黏滞两组不同系数。
+- [原子氢与分子氢弹性截面](../../catalog/examples/scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section.json)保留保存实现的前置单例输出轴。
+- [质子与原子氢弹性截面](../../catalog/examples/scirel.collisions.proton-atomic-hydrogen-elastic-cross-section.json)保留 10 eV 处严格分支产生的零值及前置单例输出轴；该断点仍待专家判定。
+- [质子与分子氢弹性截面](../../catalog/examples/scirel.collisions.proton-molecular-hydrogen-elastic-cross-section.json)给出 H2–H+ 的动量转移拟合。
+- [分子氢弹性截面](../../catalog/examples/scirel.collisions.molecular-hydrogen-elastic-cross-section.json)保留 H2–H2 的同一拟合及 `viscosity=True` 的来源回退语义。
 
 这些链接来自 `catalog/examples/` 开发 pilot，不表示专家已认可或可公开发布。
 
 ## 证据、限制与待整理项
 
-热电子归一化动量文档明确排除将其直接作为归一化动量映射的 `vnorm`：那会重复除以光速。速率平均可消费圆柱速度空间积分权重的 `volume`，但不验证截面模型或网格收敛。其它碰撞关系、跨资产的合法组合和适用域仍**未整理**，不能解释为已证实缺口。相对上一可信版的变化：待建立可信版后填写。
+热电子归一化动量文档明确排除将其直接作为归一化动量映射的 `vnorm`：那会重复除以光速。速率平均可消费圆柱速度空间积分权重的 `volume`，但不验证截面模型或网格收敛。上述七项截面仍只是在保存拟合上的开发期算子，矩阵组装与物理截面外部校验尚未完成。其它碰撞关系、跨资产的合法组合和适用域仍**未整理**，不能解释为已证实缺口。相对上一可信版的变化：待建立可信版后填写。

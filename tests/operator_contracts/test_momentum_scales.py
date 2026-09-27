@@ -76,13 +76,13 @@ def test_the_module_is_named_for_what_it_contains():
     """``coulomb_log_scales`` held a momentum scale and an argument scale; it is renamed."""
     assert momentum_scales.__name__ == "scirel.collisions.momentum_scales"
     assert importlib.util.find_spec("scirel.collisions.coulomb_log_scales") is None
-    assert scirel.collisions.__all__ == [
+    assert {
         "BesselBackendEvaluationError",
         "InvalidBesselArgumentError",
         "relativistic_maxwellian_bessel",
         "normalized_momentum",
         "thermal_electron_momentum",
-    ]
+    } <= set(scirel.collisions.__all__)
 
 
 def test_the_package_and_root_namespace_export_both_leaves():

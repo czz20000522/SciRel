@@ -442,6 +442,8 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
             path_tests.update(
                 ("tests/test_asset_documentation.py", "tests/test_public_surface.py")
             )
+            if path == "src/scirel/collisions/__init__.py":
+                path_tests.add("tests/operator_contracts/test_momentum_scales.py")
             reason = "public_exports"
         elif path.startswith("src/scirel/") and path.endswith(".py"):
             direct_source_tests = SOURCE_DIRECT_TESTS.get(path, ())

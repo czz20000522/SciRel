@@ -1,0 +1,144 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.collisions.atomic-hydrogen-elastic-cross-section",
+  "kind": "operator",
+  "title": {
+    "en": "Atomic-hydrogen elastic cross section (momentum transfer and viscosity)",
+    "zh": "原子氢弹性动量转移截面"
+  },
+  "summary": "H-on-H elastic cross section in m^2 as a function of collision energy in eV: the source's five-coefficient momentum-transfer logarithmic polynomial by default, with the source's distinct five-coefficient viscosity fit under viscosity=True. Both branches use the source-clipped [0.03, 1.01e4] eV domain. Negative energies are rejected and the branch selector must be a 0-d scalar, closing gaps the saved document declared but its implementation did not enforce.",
+  "taxonomy": [
+    "collisions",
+    "cross-section",
+    "elastic",
+    "momentum-transfer",
+    "hydrogen",
+    "tabulated-fit"
+  ],
+  "aliases": [
+    "sigma_el_h_h",
+    "H-H elastic momentum-transfer cross section",
+    "H-H viscosity cross section"
+  ],
+  "identity": {
+    "relation": "the H-on-H elastic cross section (momentum-transfer or viscosity fit) as a function of collision energy",
+    "direction": "collision energies and branch selector -> cross section per energy",
+    "definition": "Energies are clipped to [0.03, 1.01e4] eV and the cross section is exp(polyval(log(E_clipped), a)) * 1e-4 m^2 with the frozen five coefficients of the selected branch (momentum transfer by default, viscosity under truthy selector). Endpoint values repeat outside the clipped range.",
+    "model": "two independent source-faithful cross-section fits; no interpolation of external data and no rate integration",
+    "geometry": "none; a scalar material function of collision energy",
+    "coordinates": "collision energy in eV; output cross section in m^2",
+    "boundary": "energies must be finite and nonnegative; in-domain values outside the fit range clip to the range endpoints; the selector must be a zero-dimensional scalar; both fits are strictly positive and finite on their clipped domains",
+    "assumptions": [
+      "The two coefficient sets are the saved source's frozen values, evaluated with the saved source's expressions; they are not re-derived from any external reference.",
+      "The two branches are different fits (momentum transfer vs viscosity cross sections), not equivalent parameterizations; selecting one is a caller decision.",
+      "Endpoint clipping is the saved source's declared behavior and is kept.",
+      "No external physical cross-section reference is bound: the saved package records that residual as validation_oracle_gap."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "energy_ev",
+      "description": "Collision energies at which the cross section is evaluated.",
+      "units": "eV",
+      "shape": "any (scalar or array)",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative. Values above or below the fit range are clipped to the range endpoints."
+    },
+    {
+      "name": "viscosity",
+      "description": "Branch selector: the source viscosity fit when truthy, otherwise the momentum-transfer fit.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "scalar selector",
+      "required": false,
+      "default": false,
+      "constraints": "A zero-dimensional scalar interpreted as its truth value; higher-rank arrays are rejected."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "cross_section_m2",
+      "description": "Elastic cross section of the selected branch, one value per energy.",
+      "units": "m^2",
+      "shape": "same as energy_ev",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and strictly positive for every accepted input."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller accepts the saved source's clipping convention: energies outside the fit range silently return the endpoint value.",
+      "The caller chooses the branch; the two fits are different quantities."
+    ],
+    "supported": [
+      "H-on-H elastic momentum-transfer and viscosity cross sections on either saved fit within (or clamped to) its declared energy range.",
+      "Scalar and array evaluation of any shape, including zero-dimensional inputs.",
+      "Rejecting negative energies and higher-rank selectors."
+    ],
+    "excluded": [
+      "Maxwellian averaging of this cross section: use scirel.collisions.maxwellian-relative-speed-rate-average, which accepts this callable as its cross_section_m2 port.",
+      "Charge-exchange or ionization channels: different relations, provided by sibling assets.",
+      "Elastic cross sections for other species pairs: separate assets, not variants of this relation.",
+      "A cross-section model validated against an external atomic-physics reference; none is bound."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError naming energy_ev for non-real, non-finite or negative energy inputs, or naming viscosity when that selector is not a zero-dimensional scalar.",
+    "runtime_failure": "Not reachable on the declared domain: both fits are evaluated only on their clipped positive range. No iteration, no state and no partial results.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy sigma_el_h_h slice, package 原子氢弹性动量转移截面, source anchor KN1DPy/sigma/sigma_el_h_h.py:19-38 with caller evidence KN1DPy/kinetic_h.py:957 (saved implementation file SHA-256 129bc8e2d541e1ecde21584b01c89e6ebfc48115b5c582b0e15452e2f753c42c). Two documented repairs relative to the saved implementation, whose own document declares both contracts: negative energies are rejected instead of being silently clipped into the fit domain, and the viscosity selector must be a zero-dimensional scalar -- the saved implementation relied on bool() coercion, silently accepting 0-d and single-element arrays and failing on multi-element arrays with NumPy's generic ambiguity error that does not name the quantity. The branch arithmetic is preserved bit for bit on the declared domain. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent reevaluation of the saved formulas",
+      "environment-gated historical replay test",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.collisions.atomic_hydrogen_elastic_cross_section",
+      "symbol": "evaluate_atomic_hydrogen_elastic_cross_section",
+      "signature": "evaluate_atomic_hydrogen_elastic_cross_section(energy_ev, viscosity=False)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev5",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate both branches, confirm the endpoint clipping, and confirm the negative-energy and array-selector rejections.",
+    "code": "import numpy as np\nfrom scirel.collisions import evaluate_atomic_hydrogen_elastic_cross_section\n\nenergy = np.array([0.03, 1.0, 10.0, 100.0, 1.0e3, 1.01e4])\nmomentum = evaluate_atomic_hydrogen_elastic_cross_section(energy)\nviscosity = evaluate_atomic_hydrogen_elastic_cross_section(energy, viscosity=True)\nassert momentum.shape == energy.shape\nassert np.all(np.isfinite(momentum)) and np.all(momentum > 0.0)\nassert not np.allclose(momentum, viscosity, rtol=1e-12, atol=0.0)\nclipped = evaluate_atomic_hydrogen_elastic_cross_section(np.array([0.01, 0.03, 2.0e4, 1.01e4]))\nassert clipped[0] == clipped[1] and clipped[-1] == clipped[-2]\ntry:\n    evaluate_atomic_hydrogen_elastic_cross_section(np.array([1.0, -0.5]))\nexcept ValueError as error:\n    assert 'nonnegative' in str(error)\nelse:\n    raise AssertionError('a negative energy must be rejected')\ntry:\n    evaluate_atomic_hydrogen_elastic_cross_section(energy, viscosity=np.ones((2, 2)))\nexcept ValueError as error:\n    assert 'viscosity' in str(error)\nelse:\n    raise AssertionError('an array selector must be rejected')",
+    "expected": "Finite strictly positive cross sections in m^2 on both branches, disagreeing with each other; endpoint repetition outside the clipped range; ValueError naming nonnegativity for a negative energy and naming viscosity for an array selector."
+  },
+  "verification": {
+    "scope": [
+      "That both branches equal independent evaluations of their frozen coefficient sets on the clipped domain to a relative tolerance of 1e-15, and that the two branches disagree.",
+      "The endpoint clipping: values below and above the fit range repeat the endpoint values exactly.",
+      "The input contract: non-finite and negative energies rejected; higher-rank selectors rejected with a message naming viscosity. Both rejections are documented repairs; the selector repair replaces silent 0-d/size-1 acceptance and a generic NumPy ambiguity failure with a named 0-d-scalar requirement.",
+      "Exact bit-level replay of both branches against the saved KN1DPy implementation, pinned by SHA-256, plus repair witnesses (the saved implementation returns the clipped endpoint for a negative energy and accepts a single-element array selector where this asset rejects the energy and requires a 0-d scalar). This replay is environment-gated and is historical development evidence, not qualified-L1 provenance.",
+      "The composition contract: this callable serves directly as the cross_section_m2 port of scirel.collisions.maxwellian-relative-speed-rate-average and yields finite positive rate coefficients."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_atomic_hydrogen_elastic_cross_section.py",
+      "tests/operator_contracts/test_collision_cross_section_input_types.py",
+      "tests/operator_contracts/test_atomic_hydrogen_elastic_cross_section_l1.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish both fits against in-file independent evaluations, the clipping, the full input and failure contracts including the two documented repairs, and the composition with the retained Maxwellian rate average. The environment-gated replay establishes exact agreement with the saved KN1DPy implementation on the compared grids only. No test establishes either fit against an external physical cross-section reference: the saved package records that residual as validation_oracle_gap. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "known_limitations": [
+      "The integrated input check rejects complex, boolean and numeric-string energies before float conversion; the saved arm could coerce them. Valid real-input fit arithmetic is unchanged.",
+      "Neither branch is validated against an external atomic-physics reference; the saved package's own validation gap carries over unchanged.",
+      "Energies outside the fit range silently return the endpoint value; this is the saved source's declared clipping convention, not an error.",
+      "The two branches are different quantities, not equivalent forms; selecting the wrong one is a scientific error no runtime check can detect.",
+      "The negative-energy and 0-d-scalar requirements are documented development repairs, not source behavior: a caller migrating from the saved implementation sees a ValueError where it previously saw the clipped endpoint, a silently accepted size-1 array selector, or a generic ambiguity failure.",
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}
