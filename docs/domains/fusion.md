@@ -11,6 +11,8 @@
 - [NBI 源面射线与孔径接受](../../catalog/examples/scirel.fusion.nbi-source-plane-ray.json)：把调用方提供的源面均匀/发散变量(variate)映射为束坐标源点与单位射线，并按矩形/椭圆孔径逐个判定接受（FIDASIM `mc_nbi` 源面分支，N2）。
 - [有限直角束网格射线交点](../../catalog/examples/scirel.fusion.beam-grid-ray-intersection.json)：按源码六面枚举顺序求射线与有限直角束网格的入口/出口与弦长（FIDASIM `grid_intersect` 有限分支）；`in_plasma` 判定仍由框架边拥有。
 - [NBI 轨迹初始化图](../../catalog/examples/scirel.fusion.nbi-trajectory-initialization.json)：N2 组合图——归一化先行，`source_ray` 与 `cell_directed` 两分支互斥执行；串行 RNG 状态路径是声明未移植的运行时边界，拒绝重采样由调用方驱动。
+- [DCX/HALO 迭代密度反馈](../../catalog/examples/scirel.fusion.halo-iteration-feedback.json)：halo 种群迭代的一轮密度反馈——增长守卫、种群合并、`seed_dcx` 份额与 Fortran 截断的下一轮 marker 数（N3，`src/fidasim.f90:13293-13420`）。
+- [DCX/HALO 迭代反馈序列图](../../catalog/examples/scirel.fusion.halo-iteration-feedback-sequence.json)：N3 有界显式反馈序列——状态、顺序、停止分支与迭代上限全部显式声明，序列必须恰好在源停止分支结束；MC marker、reservoir、MPI 与 HDF5 仍在图外。
 
 两个关系可能参与同一上层诊断，但目前不存在已审核的公共组合图把它们连接起来。DT 功率源项、alpha 电子/离子沉积、快离子减速、燃料/杂质密度与截面仍属待整合能力；不能仅凭这些关系推断这些功能已具备。
 

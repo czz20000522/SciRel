@@ -80,12 +80,25 @@ def advance_halo_iteration_feedback(dcx_density_cm3, previous_halo_density_cm3, 
 
     seed = current / dcx
     # Registered hardening: seed and merge overflow fail closed; the saved
-    # arm crashes inside int(Inf) or returns Inf silently.
+    # arm crashes inside int(Inf) or returns Inf silently.  The marker
+    # product budget*seed is computed in double precision (the source's own
+    # default-REAL counting arithmetic) and must stay representable: a
+    # finite seed times a large budget can still overflow the product.
     if not math.isfinite(seed):
         raise ValueError(
             "seed fraction overflowed to a non-finite value for finite but "
             "extreme input magnitudes (registered hardening)")
-    next_markers = int(budget * seed)
+    try:
+        product = budget * seed
+    except OverflowError as exc:
+        raise ValueError(
+            "marker product budget*seed is not representable in double "
+            "precision (registered hardening)") from exc
+    if not math.isfinite(product):
+        raise ValueError(
+            "marker product budget*seed overflowed to a non-finite value "
+            "for finite but extreme input magnitudes (registered hardening)")
+    next_markers = int(product)
     merged_after = merged_before + current
     if not math.isfinite(merged_after):
         raise ValueError(

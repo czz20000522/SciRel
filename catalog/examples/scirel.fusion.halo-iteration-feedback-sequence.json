@@ -73,7 +73,7 @@
       "shape": "[n]",
       "dtype": "int array-like",
       "required": true,
-      "constraints": "Non-negative integers, same length as the density sequence, following the source feedback recurrence."
+      "constraints": "Non-negative exact integers (int entries keep full precision at any magnitude; float entries are accepted only when finite and exactly integral in double precision, so an integer beyond 2^53 given as a float cannot match its exact-int base and drifts fail-closed; bools rejected), same length as the density sequence, following the source feedback recurrence."
     },
     {
       "name": "source_halo_marker_budget",
@@ -650,6 +650,7 @@
   "verification": {
     "scope": [
       "Saved sequence probe reproduction: budget recurrence preserved per round, branch counts, terminal state.",
+      "Exact-integer budget preservation beyond double precision (int entries exact; float64-unrepresentable integers drift fail-closed); bool entries rejected.",
       "Fail-closed contract: budget drift, sequence continuing after a stop, sequence ending without a stop, shape/type mismatches.",
       "Per-round equivalence to direct one-round operator calls and deterministic same-input replay."
     ],

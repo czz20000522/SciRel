@@ -102,7 +102,7 @@
       "shape": "scalar or null",
       "dtype": "int",
       "required": true,
-      "constraints": "Nonnegative when present."
+      "constraints": "Nonnegative when present; computed in double precision - the product source_budget * seed must stay finite and representable (registered hardening; the exact-integer domain of the product is |budget * seed| within double-precision range, and budgets beyond 2^53 round in that product exactly as in the source's default-REAL arithmetic)."
     },
     {
       "name": "next_previous_halo_density_cm3",
@@ -163,12 +163,12 @@
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError when any density is non-finite or mis-typed, when dcx or previous is non-positive, when current or the pre-merge cumulative density is negative, or when the marker budget is not a positive integer (bools and non-integrals rejected).",
-    "runtime_failure": "Raises ValueError when the density ratio, seed fraction or merged density overflows to non-finite for finite but extreme input magnitudes (registered hardening); the saved arm returns Inf silently or crashes inside int(Inf) with OverflowError.",
+    "runtime_failure": "Raises ValueError when the density ratio, seed fraction, marker product budget*seed, or merged density overflows to non-finite (or the product is not representable in double precision) for finite but extreme input magnitudes (registered hardening); the saved arm returns Inf silently or crashes inside int(Inf) with a bare OverflowError.",
     "nonconvergence": "Not applicable; the operator executes one round and reports the source's explicit continuation selector.",
     "partial_results": "Never returned; the growth-exit mapping is the source-defined complete answer for that branch."
   },
   "provenance": {
-    "lineage_summary": "Development integration from the saved FIDASIM DCXHalo迭代反馈 package, source anchors src/fidasim.f90:13293-13420 (halo iteration feedback) and 10484-10500 (population density merge addition order), as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 627743a9d48a25eadf6e68f3221d06c0d7ca7e1908acd75b97f077291686753f; saved operator document digest sha256 2a163a604c03c61ec84db4c868a80c5e059da4aabadb8cdfab7c5968813d32d1 (reference records; the test suite performs no automated drift detection). Arithmetic ported verbatim including the growth guard, the 0.01 seed-equality boundary and the Fortran marker truncation; the real-scalar type check and the finite ratio/seed/merge gates are registered hardenings. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
+    "lineage_summary": "Development integration from the saved FIDASIM DCXHalo迭代反馈 package, source anchors src/fidasim.f90:13293-13420 (halo iteration feedback) and 10484-10500 (population density merge addition order), as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 627743a9d48a25eadf6e68f3221d06c0d7ca7e1908acd75b97f077291686753f; saved operator document digest sha256 2a163a604c03c61ec84db4c868a80c5e059da4aabadb8cdfab7c5968813d32d1 (reference records; the test suite performs no automated drift detection). Arithmetic ported verbatim including the growth guard, the 0.01 seed-equality boundary and the Fortran marker truncation; the real-scalar type check and the finite ratio/seed/merge/marker-product gates are registered hardenings. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
     "source_kinds": [
       "saved L1 operator document and implementation",
       "scientific regression tests"
@@ -196,7 +196,7 @@
     "scope": [
       "Saved-package probe reproduction (0.559 seed case, ratio=1 continuation, 0.01 seed-equality boundary, growth exit with null projections, merge-conserving stop).",
       "Fortran marker-count truncation identity.",
-      "Registered hardenings: real-scalar type check, finite ratio/seed/merged outputs."
+      "Registered hardenings: real-scalar type check, finite ratio/seed/merged outputs, finite and representable double-precision marker product."
     ],
     "tests": [
       "tests/operator_contracts/test_halo_iteration_feedback.py"

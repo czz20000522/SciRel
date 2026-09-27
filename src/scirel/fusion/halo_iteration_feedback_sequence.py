@@ -18,7 +18,9 @@ colrad, reservoir, MPI and HDF5 producers stay outside this graph.
 """
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
+from numbers import Integral
 
 import numpy as np
 
@@ -44,16 +46,39 @@ def _scalar(value, name: str, *, positive: bool = False, nonnegative: bool = Fal
     return result
 
 
-def _integer_vector(value, name: str, *, nonnegative: bool) -> np.ndarray:
+def _integer_vector(value, name: str, *, nonnegative: bool) -> list:
+    """Parse a vector of exact integers.
+
+    Integer entries keep full precision regardless of magnitude; float
+    entries are accepted only when finite and exactly integral (float64
+    integrality, the saved arm's semantics); bools are rejected even though
+    they would convert to 0/1.
+    """
+    if isinstance(value, (str, bytes, Mapping)):
+        raise ValueError(f"{name} must be a sequence of integers")
     try:
-        array = np.asarray(value, dtype=float)
-    except (TypeError, ValueError) as exc:
-        raise ValueError(f"{name} must be numeric") from exc
-    if array.ndim != 1 or array.size < 1 or not np.all(np.isfinite(array)):
-        raise ValueError(f"{name} must be a non-empty finite vector")
-    if np.any(array != array.astype(np.int64)) or (nonnegative and np.any(array < 0.0)):
-        raise ValueError(f"{name} must contain nonnegative integers")
-    return array.astype(np.int64)
+        raw = list(value)
+    except TypeError as exc:
+        raise ValueError(f"{name} must be a sequence of integers") from exc
+    if len(raw) < 1:
+        raise ValueError(f"{name} must be a non-empty vector")
+    integers = []
+    for element in raw:
+        if isinstance(element, (bool, np.bool_)):
+            raise ValueError(f"{name} must contain nonnegative integers")
+        if isinstance(element, Integral):
+            result = int(element)
+        elif isinstance(element, (float, np.floating)):
+            converted = float(element)
+            if not math.isfinite(converted) or converted != int(converted):
+                raise ValueError(f"{name} must contain nonnegative integers")
+            result = int(converted)
+        else:
+            raise ValueError(f"{name} must contain nonnegative integers")
+        if nonnegative and result < 0:
+            raise ValueError(f"{name} must contain nonnegative integers")
+        integers.append(result)
+    return integers
 
 
 def run_graph(inputs, *, asset_loader):
@@ -78,7 +103,7 @@ def run_graph(inputs, *, asset_loader):
     if current.ndim != 1 or current.size < 1 or (not np.all(np.isfinite(current))) or np.any(current < 0.0):
         raise ValueError("current_halo_densities_cm3 must be a non-empty finite nonnegative vector")
     requested = _integer_vector(inputs["requested_halo_marker_budgets"], "requested_halo_marker_budgets", nonnegative=True)
-    if requested.shape != current.shape:
+    if len(requested) != current.size:
         raise ValueError("requested_halo_marker_budgets must match current_halo_densities_cm3")
     feedback = asset_loader("scirel.fusion.halo_iteration_feedback")
     records: list[dict[str, object]] = []
