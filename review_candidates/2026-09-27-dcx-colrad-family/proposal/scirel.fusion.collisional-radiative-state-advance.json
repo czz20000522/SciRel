@@ -59,14 +59,13 @@
       "required": true,
       "constraints": "A genuine bool (registered); false takes the ballistic branch."
     },
-    {
       "name": "emitting_state_index",
       "description": "Observed transition's initial state.",
       "units": "dimensionless",
       "shape": "scalar",
       "dtype": "int",
       "required": true,
-      "constraints": "In [0, n_levels); bools and non-integers rejected (registered)."
+      "constraints": "In [0, n_levels); bools and non-integers rejected (registered) in both the in-plasma and ballistic branches."
     },
     {
       "name": "einstein_transition_rate_s_inv",
@@ -120,7 +119,7 @@
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError when states are misshaped or negative, when dt_s is negative or not a genuine scalar, when the matrix is misshaped or fails the real-eigenstate contract, or when the emitting index is out of range, a bool or a non-integer.",
-    "runtime_failure": "Raises ValueError when states, dt, the matrix or the Einstein rate are non-finite (registered), or when the advanced outputs are non-finite for finite but extreme input magnitudes (registered hardening; the saved arm returns Inf and NaN silently).",
+    "runtime_failure": "Raises ValueError when states, dt, the matrix or the Einstein rate are non-finite (registered), when the advanced outputs are non-finite for finite but extreme input magnitudes (registered hardening; the saved arm returns Inf and NaN silently), or when the ballistic outputs state*dt overflow (registered hardening; the saved arm returns Inf silently there and never validates the emitting index on that branch).",
     "nonconvergence": "Not applicable; one fixed time step.",
     "partial_results": "Never returned; the ballistic branch is the source-defined complete answer outside the plasma."
   },
@@ -150,7 +149,7 @@
     "scope": [
       "Saved-package oracles: diagonal eigen-advance with photon projection, outside-plasma ballistic rule.",
       "Zero-eigenvalue branch pinned as a registered saved-arm divergence from the Fortran +1-before-exp rule (untriggered in the bundle's 823 bounded replay events).",
-      "Registered hardenings: finite/type input gates, strict integer emitting index, finite outputs."
+      "Registered hardenings: finite/type input gates, strict integer emitting index enforced in both branches, ballistic finite outputs, finite in-plasma outputs."
     ],
     "tests": ["tests/operator_contracts/test_dcx_colrad_family.py"],
     "evidence_ceiling": "The maintained direct tests reproduce the saved oracles, pin the zero-eigen boundary and exercise the fail-closed contracts. No real atomic-data driver, no Fortran eigensolver bit-parity (the bundle's own ledger records a ~5e-6 conditioning floor between the source balance+QR solver and LAPACK on stiff matrices over 583 real-table events), no multi-segment transport or spectral composition is asserted. The saved FIDASIM bundle supports bounded historical development comparison only.",

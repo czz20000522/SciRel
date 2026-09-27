@@ -7,8 +7,15 @@
     "zh": "DCXHalo标记初态图"
   },
   "summary": "Compose the N3 DCX/halo marker-initialization slice in source order: beam-grid cell position, caller plasma snapshot, thermal-species selection, thermal Maxwellian halo velocity, caller level-resolved CX rates, and the collisional-radiative initial-state weighting.",
-  "taxonomy": ["fusion", "neutral-population-transport", "dcx-halo", "task-graph"],
-  "aliases": ["initialize_dcx_halo_marker"],
+  "taxonomy": [
+    "fusion",
+    "neutral-population-transport",
+    "dcx-halo",
+    "task-graph"
+  ],
+  "aliases": [
+    "initialize_dcx_halo_marker"
+  ],
   "identity": {
     "relation": "Source-ordered non-interchangeable composition: cell_position -> local_plasma -> thermal_species_selection -> halo_velocity -> cx_rate -> initial_state. The position is sampled from the caller's cell and uniform draws; the plasma provider is invoked at the sampled position; the species mass is selected; the halo velocity is sampled from the plasma snapshot and caller normal draws; the CX-rate provider is invoked at the sampled position and velocity; the initial state weights those rates with the selected source density and isotope correction.",
     "direction": "beam-grid cell + caller uniform/normal draws + two caller provider callables (plasma snapshot, level-resolved CX rates) + species index + beam mass + fast-ion density + energy conversion -> sampled position, plasma snapshot, halo velocity and thermal speed, CX rates, and the colrad initial-state weighting",
@@ -234,7 +241,10 @@
   },
   "provenance": {
     "lineage_summary": "Development integration from the saved FIDASIM DCXHalo标记初态图 TaskGraph package (framework node N3 neutral_population_transport; source anchors src/fidasim.f90:12649-12663, 12763-12778, 13172-13182, 13337-13355), as recorded by the saved bundle's own provenance section. Saved graph.py content digest sha256 7cde57eb19a81dfc68e92ff42412bcbb85d44b8fae885b0d768351e4d68b3cfc; saved task_graph.yaml digest sha256 52453e6cf4fdd4911e1229f486d4ae14a524176e69cd979be054d515d02d123f; saved task_graph.md digest sha256 c65bc5795e388cfde12610d39e9fd7324035f8c890710d5e8c2197be1c0d8688 (reference records; the test suite performs no automated drift detection). The composition binds four integrated SciRel leaves (beam-grid-cell-sampling, thermal-halo-velocity-sampling, dcx-thermal-species-selection, dcx-halo-colrad-initial-state) in the saved node order with the two caller capabilities as explicit inputs. RNG/track parity, reservoir updates and MPI reduction remain external. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
-    "source_kinds": ["saved L1 task graph document and implementation", "scientific regression tests"],
+    "source_kinds": [
+      "saved L1 task graph document and implementation",
+      "scientific regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
@@ -246,12 +256,20 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev52",
+    "implementation_version": "0.1.0.dev53",
     "dependencies": [
-      { "asset_id": "scirel.fusion.beam-grid-cell-sampling" },
-      { "asset_id": "scirel.fusion.dcx-thermal-species-selection" },
-      { "asset_id": "scirel.fusion.thermal-halo-velocity-sampling" },
-      { "asset_id": "scirel.fusion.dcx-halo-colrad-initial-state" }
+      {
+        "asset_id": "scirel.fusion.beam-grid-cell-sampling"
+      },
+      {
+        "asset_id": "scirel.fusion.dcx-thermal-species-selection"
+      },
+      {
+        "asset_id": "scirel.fusion.thermal-halo-velocity-sampling"
+      },
+      {
+        "asset_id": "scirel.fusion.dcx-halo-colrad-initial-state"
+      }
     ]
   },
   "graph": {
@@ -261,59 +279,117 @@
         "kind": "operator",
         "asset_id": "scirel.fusion.beam-grid-cell-sampling",
         "description": "Sample the marker position inside the caller's cell from the uniform draws.",
-        "inputs": ["cell_center_cm", "cell_width_cm", "uniform_draws"],
-        "outputs": ["guiding_center_position_cm"]
+        "inputs": [
+          "cell_center_cm",
+          "cell_width_cm",
+          "uniform_draws"
+        ],
+        "outputs": [
+          "guiding_center_position_cm"
+        ]
       },
       {
         "id": "local_plasma",
         "kind": "controlled_glue",
         "description": "Invoke the caller plasma provider at the sampled position; the snapshot is passed through without hidden caching.",
-        "inputs": ["plasma_state_provider", "position_cm"],
-        "outputs": ["plasma_state", "thermal_ion_density_cm3", "thermal_mass_amu", "plasma_rotation_cm_s", "ion_temperature_kev"]
+        "inputs": [
+          "plasma_state_provider",
+          "position_cm"
+        ],
+        "outputs": [
+          "plasma_state",
+          "thermal_ion_density_cm3",
+          "thermal_mass_amu",
+          "plasma_rotation_cm_s",
+          "ion_temperature_kev"
+        ]
       },
       {
         "id": "thermal_species_selection",
         "kind": "operator",
         "asset_id": "scirel.fusion.dcx-thermal-species-selection",
         "description": "Select the declared thermal-ion mass for the source species loop.",
-        "inputs": ["thermal_mass_amu", "selected_thermal_species_index"],
-        "outputs": ["selected_ion_mass_amu"]
+        "inputs": [
+          "thermal_mass_amu",
+          "selected_thermal_species_index"
+        ],
+        "outputs": [
+          "selected_ion_mass_amu"
+        ]
       },
       {
         "id": "halo_velocity",
         "kind": "operator",
         "asset_id": "scirel.fusion.thermal-halo-velocity-sampling",
         "description": "Sample the thermal Maxwellian halo velocity from the plasma snapshot and the caller normal draws.",
-        "inputs": ["plasma_rotation_cm_s", "ion_temperature_kev", "ion_mass_amu", "velocity_squared_to_kev_per_amu", "standard_normal_draw"],
-        "outputs": ["halo_velocity_cm_s", "thermal_speed_cm_s"]
+        "inputs": [
+          "plasma_rotation_cm_s",
+          "ion_temperature_kev",
+          "ion_mass_amu",
+          "velocity_squared_to_kev_per_amu",
+          "standard_normal_draw"
+        ],
+        "outputs": [
+          "halo_velocity_cm_s",
+          "thermal_speed_cm_s"
+        ]
       },
       {
         "id": "cx_rate",
         "kind": "controlled_glue",
         "description": "Invoke the caller CX-rate provider at the sampled position and halo velocity; the rate receipt is passed through without hidden caching.",
-        "inputs": ["cx_rate_provider", "position_cm", "halo_velocity_cm_s"],
-        "outputs": ["cx_rate_per_s"]
+        "inputs": [
+          "cx_rate_provider",
+          "position_cm",
+          "halo_velocity_cm_s"
+        ],
+        "outputs": [
+          "cx_rate_per_s"
+        ]
       },
       {
         "id": "initial_state",
         "kind": "operator",
         "asset_id": "scirel.fusion.dcx-halo-colrad-initial-state",
         "description": "Weight the level-resolved CX rates into the colrad initial state with the selected source density and isotope correction.",
-        "inputs": ["cx_rate_per_s", "thermal_ion_density_cm3", "thermal_mass_amu", "selected_thermal_species_index", "fast_ion_density_cm3", "beam_mass_amu"],
-        "outputs": ["initial_states", "photon_fast_ion_correction", "source_density_cm3", "same_isotope", "eligible"]
+        "inputs": [
+          "cx_rate_per_s",
+          "thermal_ion_density_cm3",
+          "thermal_mass_amu",
+          "selected_thermal_species_index",
+          "fast_ion_density_cm3",
+          "beam_mass_amu"
+        ],
+        "outputs": [
+          "initial_states",
+          "photon_fast_ion_correction",
+          "source_density_cm3",
+          "same_isotope",
+          "eligible"
+        ]
       },
       {
         "id": "diagnostics",
         "kind": "controlled_glue",
         "description": "Assemble the graph-order diagnostics; no scientific transformation.",
-        "inputs": ["eligible"],
-        "outputs": ["diagnostics"]
+        "inputs": [
+          "eligible"
+        ],
+        "outputs": [
+          "diagnostics"
+        ]
       }
     ],
     "edges": [
       {
-        "from": { "node": "$input", "port": "cell_center_cm" },
-        "to": { "node": "cell_position", "port": "cell_center_cm" },
+        "from": {
+          "node": "$input",
+          "port": "cell_center_cm"
+        },
+        "to": {
+          "node": "cell_position",
+          "port": "cell_center_cm"
+        },
         "description": "Declared cell center.",
         "condition": "Always.",
         "transform": "Identity.",
@@ -321,8 +397,14 @@
         "required": true
       },
       {
-        "from": { "node": "$input", "port": "cell_width_cm" },
-        "to": { "node": "cell_position", "port": "cell_width_cm" },
+        "from": {
+          "node": "$input",
+          "port": "cell_width_cm"
+        },
+        "to": {
+          "node": "cell_position",
+          "port": "cell_width_cm"
+        },
         "description": "Declared cell widths.",
         "condition": "Always.",
         "transform": "Identity.",
@@ -330,8 +412,14 @@
         "required": true
       },
       {
-        "from": { "node": "$input", "port": "uniform_draws" },
-        "to": { "node": "cell_position", "port": "uniform_draws" },
+        "from": {
+          "node": "$input",
+          "port": "uniform_draws"
+        },
+        "to": {
+          "node": "cell_position",
+          "port": "uniform_draws"
+        },
         "description": "Caller-owned uniform record.",
         "condition": "Always.",
         "transform": "Identity.",
@@ -339,8 +427,14 @@
         "required": true
       },
       {
-        "from": { "node": "$input", "port": "plasma_state_provider" },
-        "to": { "node": "local_plasma", "port": "plasma_state_provider" },
+        "from": {
+          "node": "$input",
+          "port": "plasma_state_provider"
+        },
+        "to": {
+          "node": "local_plasma",
+          "port": "plasma_state_provider"
+        },
         "description": "Caller plasma capability.",
         "condition": "After cell_position.",
         "transform": "Invoke at the sampled position.",
@@ -348,8 +442,14 @@
         "required": true
       },
       {
-        "from": { "node": "cell_position", "port": "guiding_center_position_cm" },
-        "to": { "node": "local_plasma", "port": "position_cm" },
+        "from": {
+          "node": "cell_position",
+          "port": "guiding_center_position_cm"
+        },
+        "to": {
+          "node": "local_plasma",
+          "port": "position_cm"
+        },
         "description": "Sampled position for the plasma lookup.",
         "condition": "After cell_position.",
         "transform": "Identity.",
@@ -357,8 +457,14 @@
         "required": true
       },
       {
-        "from": { "node": "local_plasma", "port": "plasma_state" },
-        "to": { "node": "$output", "port": "plasma_state" },
+        "from": {
+          "node": "local_plasma",
+          "port": "plasma_state"
+        },
+        "to": {
+          "node": "$output",
+          "port": "plasma_state"
+        },
         "description": "Exact provider snapshot.",
         "condition": "After local_plasma.",
         "transform": "Identity.",
@@ -366,8 +472,14 @@
         "required": true
       },
       {
-        "from": { "node": "cell_position", "port": "guiding_center_position_cm" },
-        "to": { "node": "$output", "port": "guiding_center_position_cm" },
+        "from": {
+          "node": "cell_position",
+          "port": "guiding_center_position_cm"
+        },
+        "to": {
+          "node": "$output",
+          "port": "guiding_center_position_cm"
+        },
         "description": "Sampled position.",
         "condition": "After cell_position.",
         "transform": "Identity.",
@@ -375,8 +487,14 @@
         "required": true
       },
       {
-        "from": { "node": "$input", "port": "selected_thermal_species_index" },
-        "to": { "node": "thermal_species_selection", "port": "selected_thermal_species_index" },
+        "from": {
+          "node": "$input",
+          "port": "selected_thermal_species_index"
+        },
+        "to": {
+          "node": "thermal_species_selection",
+          "port": "selected_thermal_species_index"
+        },
         "description": "Source species-loop selection.",
         "condition": "Always.",
         "transform": "Identity.",
@@ -384,8 +502,14 @@
         "required": true
       },
       {
-        "from": { "node": "local_plasma", "port": "thermal_mass_amu" },
-        "to": { "node": "thermal_species_selection", "port": "thermal_mass_amu" },
+        "from": {
+          "node": "local_plasma",
+          "port": "thermal_mass_amu"
+        },
+        "to": {
+          "node": "thermal_species_selection",
+          "port": "thermal_mass_amu"
+        },
         "description": "Snapshot masses for the selection.",
         "condition": "After local_plasma.",
         "transform": "Identity.",
@@ -393,8 +517,14 @@
         "required": true
       },
       {
-        "from": { "node": "thermal_species_selection", "port": "selected_ion_mass_amu" },
-        "to": { "node": "halo_velocity", "port": "ion_mass_amu" },
+        "from": {
+          "node": "thermal_species_selection",
+          "port": "selected_ion_mass_amu"
+        },
+        "to": {
+          "node": "halo_velocity",
+          "port": "ion_mass_amu"
+        },
         "description": "Selected mass for the halo sampling.",
         "condition": "After thermal_species_selection.",
         "transform": "Identity.",
@@ -402,8 +532,14 @@
         "required": true
       },
       {
-        "from": { "node": "local_plasma", "port": "plasma_rotation_cm_s" },
-        "to": { "node": "halo_velocity", "port": "plasma_rotation_cm_s" },
+        "from": {
+          "node": "local_plasma",
+          "port": "plasma_rotation_cm_s"
+        },
+        "to": {
+          "node": "halo_velocity",
+          "port": "plasma_rotation_cm_s"
+        },
         "description": "Snapshot rotation.",
         "condition": "After local_plasma.",
         "transform": "Identity.",
@@ -411,8 +547,14 @@
         "required": true
       },
       {
-        "from": { "node": "local_plasma", "port": "ion_temperature_kev" },
-        "to": { "node": "halo_velocity", "port": "ion_temperature_kev" },
+        "from": {
+          "node": "local_plasma",
+          "port": "ion_temperature_kev"
+        },
+        "to": {
+          "node": "halo_velocity",
+          "port": "ion_temperature_kev"
+        },
         "description": "Snapshot ion temperature.",
         "condition": "After local_plasma.",
         "transform": "Identity.",
@@ -420,8 +562,14 @@
         "required": true
       },
       {
-        "from": { "node": "$input", "port": "velocity_squared_to_kev_per_amu" },
-        "to": { "node": "halo_velocity", "port": "velocity_squared_to_kev_per_amu" },
+        "from": {
+          "node": "$input",
+          "port": "velocity_squared_to_kev_per_amu"
+        },
+        "to": {
+          "node": "halo_velocity",
+          "port": "velocity_squared_to_kev_per_amu"
+        },
         "description": "Energy conversion constant.",
         "condition": "Always.",
         "transform": "Identity.",
@@ -429,8 +577,14 @@
         "required": true
       },
       {
-        "from": { "node": "$input", "port": "standard_normal_draw" },
-        "to": { "node": "halo_velocity", "port": "standard_normal_draw" },
+        "from": {
+          "node": "$input",
+          "port": "standard_normal_draw"
+        },
+        "to": {
+          "node": "halo_velocity",
+          "port": "standard_normal_draw"
+        },
         "description": "Caller-owned normal record.",
         "condition": "Always.",
         "transform": "Identity.",
@@ -438,8 +592,14 @@
         "required": true
       },
       {
-        "from": { "node": "halo_velocity", "port": "halo_velocity_cm_s" },
-        "to": { "node": "$output", "port": "halo_velocity_cm_s" },
+        "from": {
+          "node": "halo_velocity",
+          "port": "halo_velocity_cm_s"
+        },
+        "to": {
+          "node": "$output",
+          "port": "halo_velocity_cm_s"
+        },
         "description": "Sampled halo velocity.",
         "condition": "After halo_velocity.",
         "transform": "Identity.",
@@ -447,8 +607,14 @@
         "required": true
       },
       {
-        "from": { "node": "halo_velocity", "port": "thermal_speed_cm_s" },
-        "to": { "node": "$output", "port": "thermal_speed_cm_s" },
+        "from": {
+          "node": "halo_velocity",
+          "port": "thermal_speed_cm_s"
+        },
+        "to": {
+          "node": "$output",
+          "port": "thermal_speed_cm_s"
+        },
         "description": "Thermal speed.",
         "condition": "After halo_velocity.",
         "transform": "Identity.",
@@ -456,8 +622,14 @@
         "required": true
       },
       {
-        "from": { "node": "$input", "port": "cx_rate_provider" },
-        "to": { "node": "cx_rate", "port": "cx_rate_provider" },
+        "from": {
+          "node": "$input",
+          "port": "cx_rate_provider"
+        },
+        "to": {
+          "node": "cx_rate",
+          "port": "cx_rate_provider"
+        },
         "description": "Caller CX-rate capability.",
         "condition": "After halo_velocity.",
         "transform": "Invoke at the sampled position and velocity.",
@@ -465,8 +637,14 @@
         "required": true
       },
       {
-        "from": { "node": "cell_position", "port": "guiding_center_position_cm" },
-        "to": { "node": "cx_rate", "port": "position_cm" },
+        "from": {
+          "node": "cell_position",
+          "port": "guiding_center_position_cm"
+        },
+        "to": {
+          "node": "cx_rate",
+          "port": "position_cm"
+        },
         "description": "Sampled position for the rate lookup.",
         "condition": "After halo_velocity.",
         "transform": "Identity.",
@@ -474,8 +652,14 @@
         "required": true
       },
       {
-        "from": { "node": "halo_velocity", "port": "halo_velocity_cm_s" },
-        "to": { "node": "cx_rate", "port": "halo_velocity_cm_s" },
+        "from": {
+          "node": "halo_velocity",
+          "port": "halo_velocity_cm_s"
+        },
+        "to": {
+          "node": "cx_rate",
+          "port": "halo_velocity_cm_s"
+        },
         "description": "Sampled velocity for the rate lookup.",
         "condition": "After halo_velocity.",
         "transform": "Identity.",
@@ -483,8 +667,14 @@
         "required": true
       },
       {
-        "from": { "node": "cx_rate", "port": "cx_rate_per_s" },
-        "to": { "node": "$output", "port": "cx_rate_per_s" },
+        "from": {
+          "node": "cx_rate",
+          "port": "cx_rate_per_s"
+        },
+        "to": {
+          "node": "$output",
+          "port": "cx_rate_per_s"
+        },
         "description": "Level-resolved rate receipt.",
         "condition": "After cx_rate.",
         "transform": "Identity.",
@@ -492,8 +682,14 @@
         "required": true
       },
       {
-        "from": { "node": "cx_rate", "port": "cx_rate_per_s" },
-        "to": { "node": "initial_state", "port": "cx_rate_per_s" },
+        "from": {
+          "node": "cx_rate",
+          "port": "cx_rate_per_s"
+        },
+        "to": {
+          "node": "initial_state",
+          "port": "cx_rate_per_s"
+        },
         "description": "Rates for the initial-state weighting.",
         "condition": "After cx_rate.",
         "transform": "Identity.",
@@ -501,8 +697,14 @@
         "required": true
       },
       {
-        "from": { "node": "local_plasma", "port": "thermal_ion_density_cm3" },
-        "to": { "node": "initial_state", "port": "thermal_ion_density_cm3" },
+        "from": {
+          "node": "local_plasma",
+          "port": "thermal_ion_density_cm3"
+        },
+        "to": {
+          "node": "initial_state",
+          "port": "thermal_ion_density_cm3"
+        },
         "description": "Snapshot densities.",
         "condition": "After cx_rate.",
         "transform": "Identity.",
@@ -510,8 +712,14 @@
         "required": true
       },
       {
-        "from": { "node": "local_plasma", "port": "thermal_mass_amu" },
-        "to": { "node": "initial_state", "port": "thermal_mass_amu" },
+        "from": {
+          "node": "local_plasma",
+          "port": "thermal_mass_amu"
+        },
+        "to": {
+          "node": "initial_state",
+          "port": "thermal_mass_amu"
+        },
         "description": "Snapshot masses.",
         "condition": "After cx_rate.",
         "transform": "Identity.",
@@ -519,8 +727,14 @@
         "required": true
       },
       {
-        "from": { "node": "$input", "port": "selected_thermal_species_index" },
-        "to": { "node": "initial_state", "port": "selected_thermal_species_index" },
+        "from": {
+          "node": "$input",
+          "port": "selected_thermal_species_index"
+        },
+        "to": {
+          "node": "initial_state",
+          "port": "selected_thermal_species_index"
+        },
         "description": "Same species selection.",
         "condition": "Always.",
         "transform": "Identity.",
@@ -528,8 +742,14 @@
         "required": true
       },
       {
-        "from": { "node": "$input", "port": "fast_ion_density_cm3" },
-        "to": { "node": "initial_state", "port": "fast_ion_density_cm3" },
+        "from": {
+          "node": "$input",
+          "port": "fast_ion_density_cm3"
+        },
+        "to": {
+          "node": "initial_state",
+          "port": "fast_ion_density_cm3"
+        },
         "description": "Local fast-ion density.",
         "condition": "Always.",
         "transform": "Identity.",
@@ -537,8 +757,14 @@
         "required": true
       },
       {
-        "from": { "node": "$input", "port": "beam_mass_amu" },
-        "to": { "node": "initial_state", "port": "beam_mass_amu" },
+        "from": {
+          "node": "$input",
+          "port": "beam_mass_amu"
+        },
+        "to": {
+          "node": "initial_state",
+          "port": "beam_mass_amu"
+        },
         "description": "Beam mass for the isotope branch.",
         "condition": "Always.",
         "transform": "Identity.",
@@ -546,8 +772,14 @@
         "required": true
       },
       {
-        "from": { "node": "initial_state", "port": "initial_states" },
-        "to": { "node": "$output", "port": "initial_states" },
+        "from": {
+          "node": "initial_state",
+          "port": "initial_states"
+        },
+        "to": {
+          "node": "$output",
+          "port": "initial_states"
+        },
         "description": "colrad initial state.",
         "condition": "After initial_state.",
         "transform": "Identity.",
@@ -555,8 +787,14 @@
         "required": true
       },
       {
-        "from": { "node": "initial_state", "port": "photon_fast_ion_correction" },
-        "to": { "node": "$output", "port": "photon_fast_ion_correction" },
+        "from": {
+          "node": "initial_state",
+          "port": "photon_fast_ion_correction"
+        },
+        "to": {
+          "node": "$output",
+          "port": "photon_fast_ion_correction"
+        },
         "description": "Photon correction.",
         "condition": "After initial_state.",
         "transform": "Identity.",
@@ -564,8 +802,14 @@
         "required": true
       },
       {
-        "from": { "node": "initial_state", "port": "source_density_cm3" },
-        "to": { "node": "$output", "port": "source_density_cm3" },
+        "from": {
+          "node": "initial_state",
+          "port": "source_density_cm3"
+        },
+        "to": {
+          "node": "$output",
+          "port": "source_density_cm3"
+        },
         "description": "Selected source density.",
         "condition": "After initial_state.",
         "transform": "Identity.",
@@ -573,8 +817,14 @@
         "required": true
       },
       {
-        "from": { "node": "initial_state", "port": "same_isotope" },
-        "to": { "node": "$output", "port": "same_isotope" },
+        "from": {
+          "node": "initial_state",
+          "port": "same_isotope"
+        },
+        "to": {
+          "node": "$output",
+          "port": "same_isotope"
+        },
         "description": "Isotope flag.",
         "condition": "After initial_state.",
         "transform": "Identity.",
@@ -582,8 +832,14 @@
         "required": true
       },
       {
-        "from": { "node": "initial_state", "port": "eligible" },
-        "to": { "node": "$output", "port": "eligible" },
+        "from": {
+          "node": "initial_state",
+          "port": "eligible"
+        },
+        "to": {
+          "node": "$output",
+          "port": "eligible"
+        },
         "description": "Marker processability flag.",
         "condition": "After initial_state.",
         "transform": "Identity.",
@@ -591,8 +847,14 @@
         "required": true
       },
       {
-        "from": { "node": "initial_state", "port": "eligible" },
-        "to": { "node": "diagnostics", "port": "eligible" },
+        "from": {
+          "node": "initial_state",
+          "port": "eligible"
+        },
+        "to": {
+          "node": "diagnostics",
+          "port": "eligible"
+        },
         "description": "Terminal flag consumed by the diagnostics assembly.",
         "condition": "After initial_state.",
         "transform": "Identity.",
@@ -600,8 +862,14 @@
         "required": true
       },
       {
-        "from": { "node": "diagnostics", "port": "diagnostics" },
-        "to": { "node": "$output", "port": "diagnostics" },
+        "from": {
+          "node": "diagnostics",
+          "port": "diagnostics"
+        },
+        "to": {
+          "node": "$output",
+          "port": "diagnostics"
+        },
         "description": "Graph-order diagnostics.",
         "condition": "On success.",
         "transform": "Identity.",
@@ -632,7 +900,9 @@
       "Provider contract enforcement: callable checks, declared plasma fields, finite nonnegative rates.",
       "Registered hardening: provider violations raise ValueError instead of the saved arm's raw TypeError/KeyError."
     ],
-    "tests": ["tests/operator_contracts/test_dcx_colrad_family.py"],
+    "tests": [
+      "tests/operator_contracts/test_dcx_colrad_family.py"
+    ],
     "evidence_ceiling": "The maintained graph tests verify the source-ordered data flow, direct-leaf equivalence of the initial state, the provider contract enforcement and fail-closed behavior. No colrad advancement, track parity, reservoir update, photon storage or Monte-Carlo composition is asserted; the two provider callables remain caller-owned capabilities. The saved FIDASIM bundle supports bounded historical development comparison only.",
     "known_limitations": [
       "The graph covers one marker's initialization; multi-marker loops and the segment-wise colrad deposition remain framework boundaries.",

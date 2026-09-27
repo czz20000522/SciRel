@@ -7,8 +7,15 @@
     "zh": "碰撞辐射速率矩阵组装"
   },
   "summary": "Assemble the FIDASIM colrad real rate matrix for one cell from explicit plasma densities and three caller-owned transition tables, preserving the source's table coordinates, bilinear interpolation, low-rate thresholds, same-mass fast-ion addition and Einstein diagonal rewrite.",
-  "taxonomy": ["fusion", "neutral-population-transport", "colrad", "rate-matrix"],
-  "aliases": ["assemble_collisional_radiative_rate_matrix"],
+  "taxonomy": [
+    "fusion",
+    "neutral-population-transport",
+    "colrad",
+    "rate-matrix"
+  ],
+  "aliases": [
+    "assemble_collisional_radiative_rate_matrix"
+  ],
   "identity": {
     "relation": "Per thermal ion and per table: bilinear interpolation of log10 rate coefficients in (log10(E_b/A_b), log10(T)) table coordinates, floored at the table minimum and zero beyond the upper table edge; rates scaled by the effective density (thermal density plus fast-ion density only for masses exactly equal to beam_mass_amu); population = sum of interpolated pop terms, depopulation = sum of loss terms; matrix = einstein + population with diagonal rewritten to -(column sums of einstein) - depopulation.",
     "direction": "thermal densities/masses + ion/electron temperatures + electron/impurity/fast-ion densities + beam mass/energy + three transition tables + Einstein matrix -> real rate matrix",
@@ -171,7 +178,10 @@
   },
   "provenance": {
     "lineage_summary": "Development integration from the saved FIDASIM 碰撞辐射速率矩阵组装 package, as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 38f1eb0c345546f3cca6c1e6119054a19ecea82459c32e58daef917f529ef1cc (reference record; the test suite performs no automated drift detection). Arithmetic ported verbatim including the interpolation order, threshold policies, fast-ion addition and diagonal rewrite; the finite/type gates are registered hardenings. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
-    "source_kinds": ["saved L1 operator document and implementation", "scientific regression tests"],
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
@@ -183,7 +193,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev52",
+    "implementation_version": "0.1.0.dev53",
     "dependencies": []
   },
   "example": {
@@ -196,7 +206,9 @@
       "Saved-package oracles: fast-ion density addition, Einstein diagonal rewrite, upper-edge zero-rate policy.",
       "Registered finite/type gates on plasma scalars, tables and the assembled matrix."
     ],
-    "tests": ["tests/operator_contracts/test_dcx_colrad_family.py"],
+    "tests": [
+      "tests/operator_contracts/test_dcx_colrad_family.py"
+    ],
     "evidence_ceiling": "The maintained direct tests reproduce the saved oracles on constant synthetic tables and exercise the fail-closed contracts. No real atomic-data table is bundled, no eigen-advancement or spectral composition is asserted here, and no bit-level comparison against the Fortran balance+QR eigensolver pipeline is claimed. The saved FIDASIM bundle supports bounded historical development comparison only.",
     "known_limitations": [
       "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",

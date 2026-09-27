@@ -7,8 +7,15 @@
     "zh": "碰撞辐射本征态推进"
   },
   "summary": "Advance neutral level densities one time step with the FIDASIM colrad real eigen-decomposition order, project the time-integrated densities, and emit the transition photon rate; outside the plasma the ballistic rule applies unchanged.",
-  "taxonomy": ["fusion", "neutral-population-transport", "colrad", "eigen-advance"],
-  "aliases": ["advance_collisional_radiative_states"],
+  "taxonomy": [
+    "fusion",
+    "neutral-population-transport",
+    "colrad",
+    "eigen-advance"
+  ],
+  "aliases": [
+    "advance_collisional_radiative_states"
+  ],
   "identity": {
     "relation": "In plasma: R = V diag(lambda) V^-1 (real eigen-decomposition, imaginary parts at most 1e-12); s_next = clip0(V (exp(lambda dt) (V^-1 s))); integrated = clip0(V (((exp(lambda dt) - 1)/lambda_with_zero_guard) (V^-1 s))); photons = integrated[emitting_index] * A. Outside plasma: s_next = s, integrated = s * dt, photons = 0 (the ballistic rule; the rate matrix is not consumed).",
     "direction": "level densities + real rate matrix + time step + plasma gate + emitting index + Einstein rate -> next states, time-integrated densities, photon rate",
@@ -66,7 +73,7 @@
       "shape": "scalar",
       "dtype": "int",
       "required": true,
-      "constraints": "In [0, n_levels); bools and non-integers rejected (registered)."
+      "constraints": "In [0, n_levels); bools and non-integers rejected (registered) in both the in-plasma and ballistic branches."
     },
     {
       "name": "einstein_transition_rate_s_inv",
@@ -120,13 +127,16 @@
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError when states are misshaped or negative, when dt_s is negative or not a genuine scalar, when the matrix is misshaped or fails the real-eigenstate contract, or when the emitting index is out of range, a bool or a non-integer.",
-    "runtime_failure": "Raises ValueError when states, dt, the matrix or the Einstein rate are non-finite (registered), or when the advanced outputs are non-finite for finite but extreme input magnitudes (registered hardening; the saved arm returns Inf and NaN silently).",
+    "runtime_failure": "Raises ValueError when states, dt, the matrix or the Einstein rate are non-finite (registered), when the advanced outputs are non-finite for finite but extreme input magnitudes (registered hardening; the saved arm returns Inf and NaN silently), or when the ballistic outputs state*dt overflow (registered hardening; the saved arm returns Inf silently there and never validates the emitting index on that branch).",
     "nonconvergence": "Not applicable; one fixed time step.",
     "partial_results": "Never returned; the ballistic branch is the source-defined complete answer outside the plasma."
   },
   "provenance": {
     "lineage_summary": "Development integration from the saved FIDASIM 碰撞辐射本征态推进 package, source anchor src/fidasim.f90:11776-11837 (colrad plasma gate, eigen-advance, zero-eigenvalue rule, negativity clip and photon projection), as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 fbc4d987119a8e99165e2d960ffefd26c2e5a45fedb814e9a9958fa20226ca6a (reference record; the test suite performs no automated drift detection). Arithmetic ported verbatim including the zero-guard denominator rule; the finite/type gates are registered hardenings. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
-    "source_kinds": ["saved L1 operator document and implementation", "scientific regression tests"],
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
@@ -138,7 +148,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev52",
+    "implementation_version": "0.1.0.dev53",
     "dependencies": []
   },
   "example": {
@@ -150,9 +160,11 @@
     "scope": [
       "Saved-package oracles: diagonal eigen-advance with photon projection, outside-plasma ballistic rule.",
       "Zero-eigenvalue branch pinned as a registered saved-arm divergence from the Fortran +1-before-exp rule (untriggered in the bundle's 823 bounded replay events).",
-      "Registered hardenings: finite/type input gates, strict integer emitting index, finite outputs."
+      "Registered hardenings: finite/type input gates, strict integer emitting index enforced in both branches, ballistic finite outputs, finite in-plasma outputs."
     ],
-    "tests": ["tests/operator_contracts/test_dcx_colrad_family.py"],
+    "tests": [
+      "tests/operator_contracts/test_dcx_colrad_family.py"
+    ],
     "evidence_ceiling": "The maintained direct tests reproduce the saved oracles, pin the zero-eigen boundary and exercise the fail-closed contracts. No real atomic-data driver, no Fortran eigensolver bit-parity (the bundle's own ledger records a ~5e-6 conditioning floor between the source balance+QR solver and LAPACK on stiff matrices over 583 real-table events), no multi-segment transport or spectral composition is asserted. The saved FIDASIM bundle supports bounded historical development comparison only.",
     "known_limitations": [
       "Zero-eigenvalue divergence from the Fortran source is pinned as saved-arm behavior and requires expert adjudication; consumers with exactly singular rate matrices must not treat the integrated zero mode as source-parity.",

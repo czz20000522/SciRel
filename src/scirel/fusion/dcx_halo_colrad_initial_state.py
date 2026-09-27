@@ -28,15 +28,17 @@ def prepare_dcx_colrad_initial_state(*, cx_rate_per_s, thermal_ion_density_cm3,
     rates = np.asarray(cx_rate_per_s, dtype=float)
     density = np.asarray(thermal_ion_density_cm3, dtype=float)
     masses = np.asarray(thermal_mass_amu, dtype=float)
-    index = int(selected_thermal_species_index)
+    index = selected_thermal_species_index
     if (rates.ndim != 1 or rates.size == 0 or density.ndim != 1 or masses.shape != density.shape):
         raise ValueError("rates and aligned thermal density/mass vectors are required")
     if (not np.all(np.isfinite(rates)) or not np.all(np.isfinite(density)) or not np.all(np.isfinite(masses))
             or np.any(rates < 0.0) or np.any(density < 0.0) or np.any(masses <= 0.0)
             or fast_ion_density_cm3 < 0.0 or beam_mass_amu <= 0.0 or not np.isfinite(fast_ion_density_cm3)
-            or not np.isfinite(beam_mass_amu) or isinstance(selected_thermal_species_index, (bool, np.bool_))
-            or index != selected_thermal_species_index or index < 0 or index >= density.size):
+            or not np.isfinite(beam_mass_amu) or isinstance(index, (bool, np.bool_))
+            or not isinstance(index, (int, np.integer))
+            or not 0 <= index < density.size):
         raise ValueError("finite nonnegative rates/densities and a valid selected species are required")
+    index = int(index)
     thermal_density = float(density[index])
     same_isotope = bool(beam_mass_amu == masses[index])
     source_density = thermal_density + (float(fast_ion_density_cm3) if same_isotope else 0.0)

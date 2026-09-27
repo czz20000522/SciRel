@@ -7,8 +7,15 @@
     "zh": "DCX热物种选择"
   },
   "summary": "Select one declared thermal-ion mass by the source species-loop index for the DCX/halo initial-state weighting.",
-  "taxonomy": ["fusion", "neutral-population-transport", "dcx-halo", "species-selection"],
-  "aliases": ["select_dcx_thermal_species_mass"],
+  "taxonomy": [
+    "fusion",
+    "neutral-population-transport",
+    "dcx-halo",
+    "species-selection"
+  ],
+  "aliases": [
+    "select_dcx_thermal_species_mass"
+  ],
   "identity": {
     "relation": "selected_mass = thermal_mass_amu[selected_thermal_species_index] with strict in-range integer validation.",
     "direction": "thermal-ion mass vector + zero-based species index -> selected mass",
@@ -17,7 +24,9 @@
     "geometry": "scalar selection over the declared thermal-species axis",
     "coordinates": "masses in amu; the index is Python zero-based",
     "boundary": "finite positive masses; the index must be a genuine in-range integer (bools rejected)",
-    "assumptions": ["The caller supplies the declared thermal-species mass vector."]
+    "assumptions": [
+      "The caller supplies the declared thermal-species mass vector."
+    ]
   },
   "inputs": [
     {
@@ -51,9 +60,15 @@
     }
   ],
   "applicability": {
-    "preconditions": ["A declared thermal-species mass vector."],
-    "supported": ["Index-based species selection for the DCX/halo marker-initialization slice."],
-    "excluded": ["Rate generation, isotope physics and trajectory handling."]
+    "preconditions": [
+      "A declared thermal-species mass vector."
+    ],
+    "supported": [
+      "Index-based species selection for the DCX/halo marker-initialization slice."
+    ],
+    "excluded": [
+      "Rate generation, isotope physics and trajectory handling."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError when the mass vector is empty, non-finite, non-positive or not one-dimensional, or when the index is out of range, a bool or a non-integer.",
@@ -63,7 +78,10 @@
   },
   "provenance": {
     "lineage_summary": "Development integration from the saved FIDASIM DCX热物种选择 package, as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 9d9c6def530d583297dbece0a46c81ef68b085e889a2be7b1462ad3887c05181 (reference record; the test suite performs no automated drift detection). Arithmetic ported verbatim. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
-    "source_kinds": ["saved L1 operator document and implementation", "scientific regression tests"],
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
@@ -75,7 +93,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev52",
+    "implementation_version": "0.1.0.dev53",
     "dependencies": []
   },
   "example": {
@@ -84,8 +102,13 @@
     "expected": "Index 1 selects 2.0; a bool index raises ValueError."
   },
   "verification": {
-    "scope": ["Saved-package selection probe.", "Strict in-range integer contract."],
-    "tests": ["tests/operator_contracts/test_dcx_colrad_family.py"],
+    "scope": [
+      "Saved-package selection probe.",
+      "Strict in-range integer contract."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_dcx_colrad_family.py"
+    ],
     "evidence_ceiling": "The maintained direct tests reproduce the saved probe and the fail-closed contract. No rate generation or isotope physics is asserted. The saved FIDASIM bundle supports bounded historical development comparison only.",
     "known_limitations": [
       "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",

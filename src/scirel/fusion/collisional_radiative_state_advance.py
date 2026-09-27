@@ -35,8 +35,23 @@ def advance_collisional_radiative_states(states, rate_matrix_s_inv, dt_s, in_pla
             or not np.isfinite(einstein_transition_rate_s_inv)
             or einstein_transition_rate_s_inv < 0.0):
         raise ValueError("states, dt_s and the Einstein rate must be finite and the plasma gate a bool (registered hardening)")
+    index = emitting_state_index
+    if (isinstance(index, (bool, np.bool_)) or not isinstance(index, (int, np.integer))
+            or not 0 <= index < state.size):
+        # Registered hardening: the strict in-range integer contract holds in
+        # both branches; the saved arm never validates the index on the
+        # ballistic branch.
+        raise ValueError("emitting_state_index must be a zero-based in-range integer")
     if not in_plasma:
-        return state.copy(), state * dt_s, 0.0
+        next_state = state.copy()
+        integrated_density = state * dt_s
+        # Registered hardening: state*dt can overflow for finite extremes;
+        # the saved arm returns Inf silently on the ballistic branch.
+        if not (np.all(np.isfinite(next_state)) and np.all(np.isfinite(integrated_density))):
+            raise ValueError(
+                "ballistic outputs are non-finite for finite but extreme "
+                "input magnitudes (registered hardening)")
+        return next_state, integrated_density, 0.0
     matrix = np.asarray(rate_matrix_s_inv, dtype=float)
     if (matrix.shape != (state.size, state.size) or not np.all(np.isfinite(matrix))):
         raise ValueError("rate_matrix_s_inv must be (n_levels, n_levels) with finite entries (registered hardening)")
@@ -49,10 +64,6 @@ def advance_collisional_radiative_states(states, rate_matrix_s_inv, dt_s, in_pla
     denominator = np.where(eigval == 0.0, 1.0, eigval)
     next_state = np.maximum(eigvec @ (coefficient * exponential), 0.0)
     integrated_density = np.maximum(eigvec @ (coefficient * (exponential - 1.0) / denominator), 0.0)
-    index = emitting_state_index
-    if (isinstance(index, (bool, np.bool_)) or not isinstance(index, (int, np.integer))
-            or not 0 <= index < state.size):
-        raise ValueError("emitting_state_index must be a zero-based in-range integer")
     photons = float(integrated_density[index] * einstein_transition_rate_s_inv)
     # Registered hardening: extreme eigenvalues overflow exp to Inf and NaN
     # survives np.maximum; the saved arm returns them silently.

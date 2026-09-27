@@ -57,7 +57,7 @@
       "shape": "scalar",
       "dtype": "int",
       "required": true,
-      "constraints": "In [0, n_thermal); bools and fractions rejected."
+      "constraints": "A genuine in-range integer in [0, n_thermal); bools, fractions and whole-number floats (e.g. 0.0) rejected (registered)."
     },
     {
       "name": "fast_ion_density_cm3",

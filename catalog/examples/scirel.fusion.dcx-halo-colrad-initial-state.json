@@ -7,8 +7,15 @@
     "zh": "DCX/CX初态与光子快离子修正"
   },
   "summary": "Build the collisional-radiative initial state for one DCX/halo marker: select the thermal species, add the fast-ion density only on the exact-isotope branch, weight the caller's level-resolved CX rates, and derive the photon fast-ion correction.",
-  "taxonomy": ["fusion", "neutral-population-transport", "dcx-halo", "colrad"],
-  "aliases": ["prepare_dcx_colrad_initial_state"],
+  "taxonomy": [
+    "fusion",
+    "neutral-population-transport",
+    "dcx-halo",
+    "colrad"
+  ],
+  "aliases": [
+    "prepare_dcx_colrad_initial_state"
+  ],
   "identity": {
     "relation": "source_density = thermal_density[selected] + (fast_ion_density if beam_mass_amu == thermal_mass_amu[selected] else 0); initial_states = cx_rates * source_density (elementwise); photon_fast_ion_correction = thermal_density/source_density on the exact-isotope branch with positive source density, else 1, clamped at 0; eligible = sum(initial_states) > 0.",
     "direction": "level-resolved CX rates + aligned thermal density/mass vectors + selected species index + fast-ion density + beam mass -> initial-state density vector, photon correction, source density, isotope flag, eligibility flag",
@@ -57,7 +64,7 @@
       "shape": "scalar",
       "dtype": "int",
       "required": true,
-      "constraints": "In [0, n_thermal); bools and fractions rejected."
+      "constraints": "A genuine in-range integer in [0, n_thermal); bools, fractions and whole-number floats (e.g. 0.0) rejected (registered)."
     },
     {
       "name": "fast_ion_density_cm3",
@@ -126,9 +133,15 @@
     }
   ],
   "applicability": {
-    "preconditions": ["Caller-owned level-resolved CX rates and an aligned thermal plasma snapshot."],
-    "supported": ["Per-marker DCX/halo colrad initial-state weighting with the source isotope correction."],
-    "excluded": ["CX-rate reduction, track geometry, colrad time advancement, photon storage and Monte-Carlo loops."]
+    "preconditions": [
+      "Caller-owned level-resolved CX rates and an aligned thermal plasma snapshot."
+    ],
+    "supported": [
+      "Per-marker DCX/halo colrad initial-state weighting with the source isotope correction."
+    ],
+    "excluded": [
+      "CX-rate reduction, track geometry, colrad time advancement, photon storage and Monte-Carlo loops."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError when any vector is misshaped or contains non-finite/negative/non-positive values where required, when the species index is not a strict in-range integer, or when the fast-ion density or beam mass violates its bound.",
@@ -138,7 +151,10 @@
   },
   "provenance": {
     "lineage_summary": "Development integration from the saved FIDASIM DCXCX初态与光子快离子修正 package, as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 f642cfed3e87c06632da857aad2ae87beb9bcfd1cde2b37618567593dd1508bf (reference record; the test suite performs no automated drift detection). Arithmetic ported verbatim including the strict-equality isotope branch; the finite-output gate is a registered hardening. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
-    "source_kinds": ["saved L1 operator document and implementation", "scientific regression tests"],
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
@@ -150,7 +166,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev52",
+    "implementation_version": "0.1.0.dev53",
     "dependencies": []
   },
   "example": {
@@ -163,7 +179,9 @@
       "Saved-package isotope probes (same-isotope share, different-species pass-through, ineligible zero state, fractional index rejection).",
       "Registered finite-output gate on extreme products."
     ],
-    "tests": ["tests/operator_contracts/test_dcx_colrad_family.py"],
+    "tests": [
+      "tests/operator_contracts/test_dcx_colrad_family.py"
+    ],
     "evidence_ceiling": "The maintained direct tests reproduce the saved probes and exercise the fail-closed contracts including the finite-output gate. No rate reduction, colrad advancement or photon storage is asserted. The saved FIDASIM bundle supports bounded historical development comparison only.",
     "known_limitations": [
       "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",

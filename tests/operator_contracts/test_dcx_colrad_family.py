@@ -90,6 +90,7 @@ def test_initial_state_rejects_bad_contracts():
         {"thermal_mass_amu": [1.0, 2.0]},
         {"selected_thermal_species_index": 0.5}, {"selected_thermal_species_index": True},
         {"selected_thermal_species_index": 2}, {"selected_thermal_species_index": -1},
+        {"selected_thermal_species_index": 0.0},
         {"fast_ion_density_cm3": -1.0}, {"beam_mass_amu": 0.0},
         {"beam_mass_amu": np.nan}, {"fast_ion_density_cm3": np.inf},
     ):
@@ -210,6 +211,19 @@ def test_advance_rejects_bad_contracts_and_extremes():
         advance_collisional_radiative_states((1.0, 3.0), ((-np.inf, 0.0), (0.0, -1.0)), 0.5, True, 0, 7.0)
     with pytest.raises(ValueError, match="registered hardening"):
         advance_collisional_radiative_states((1.0, 3.0), ((-2.0, 0.0), (0.0, -1.0)), np.nan, True, 0, 7.0)
+
+
+def test_advance_ballistic_branch_fails_closed_per_contract():
+    # Post-freeze review findings, pinned: the ballistic branch must obey
+    # the same finite-output and strict-index contracts as the in-plasma
+    # branch.  The saved arm returns Inf (state*dt overflow) and accepts an
+    # out-of-range emitting index there because it never validates them.
+    with pytest.raises(ValueError, match="registered hardening"):
+        advance_collisional_radiative_states((1.0e308,), ((-1.0,),), 2.0, False, 0, 7.0)
+    with pytest.raises(ValueError, match="emitting_state_index"):
+        advance_collisional_radiative_states((1.0,), ((-1.0,),), 0.5, False, 99, 7.0)
+    with pytest.raises(ValueError, match="emitting_state_index"):
+        advance_collisional_radiative_states((1.0,), ((-1.0,),), 0.5, False, True, 7.0)
 
 
 # --------------------------- marker-initialization graph ---------------------------
