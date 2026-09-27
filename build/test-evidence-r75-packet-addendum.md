@@ -1,5 +1,13 @@
 # r75 expert-review packet and evidence-only successor addendum
 
+Count correction (post-commit, labeled): this addendum originally said the
+index binds "ten packet files" and that `proposal/` holds "nine
+byte-identical copies". Correct counts: **nine packet files** (review.md
+plus eight proposal copies) and **eight** proposal copies; the r75-v2
+manifest's ten review materials are `docs/domains/fusion.md` plus those
+nine packet files. The frozen r75-v2 snapshot is unchanged; only this
+build-side evidence wording was corrected.
+
 Read-only review found that the r75 freeze bound 151 exact documents and
 only `docs/domains/fusion.md` as review material, with no r75 directory
 under `review_candidates/` and no r75 entry in the candidate-materials
@@ -16,7 +24,7 @@ assets, so the packet requirement applies.
   declared divergences (non-ported RNG boundary, candidate-ray parity,
   pinned infinite-line pair semantics, registered hardenings, preserved
   quirks), evidence reconciliation, and the file list.
-- `review_candidates/2026-09-27-nbi-source-geometry/proposal/` — nine
+- `review_candidates/2026-09-27-nbi-source-geometry/proposal/` — eight
   byte-identical copies of the integrated three-piece at the same commit:
   the three modules (`nbi_source_plane_ray.py`,
   `beam_grid_ray_intersection.py`, `nbi_trajectory_initialization.py`),
@@ -25,7 +33,8 @@ assets, so the packet requirement applies.
   documents. Byte identity verified 8/8 by SHA-256 against the integrated
   files at commit `2b922fb`.
 - `docs/evaluations/candidate-review-materials-index-2026-09-25.md` — new
-  "Batch r75" section binding the ten packet files by SHA-256, noting that
+  "Batch r75" section binding the nine packet files by SHA-256 (review.md
+  plus the eight proposal copies), noting that
   r75's science bytes were frozen (r75-v1) before the packet existed and
   that r74 was a wording-only round without a packet.
 
