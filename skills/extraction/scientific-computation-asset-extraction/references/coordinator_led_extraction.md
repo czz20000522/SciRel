@@ -36,11 +36,12 @@ The coordinator continuously performs these actions:
 
 Useful work-item kinds include:
 
-- read-only relation/source/state discovery;
+- read-only relation/source/state discovery for a named scientific region or target path;
 - hidden-state or runtime-observation recovery;
 - operator contract and source-free implementation;
 - source-fidelity and relation-sensitive extraction checks;
-- TaskGraph composition after exact dependencies are ready; and
+- TaskGraph composition after exact dependencies are ready;
+- contract or root-document drafting from already confirmed scientific facts; and
 - integration or repair of a named candidate/edge.
 
 An item moves through the states appropriate to its kind:
@@ -72,6 +73,9 @@ targeted validation and required handoff fields
 Do not assign broad ownership such as "all operators" when a scientific relation or source/state question can be
 named. Discovery workers are normally read-only. Candidate workers write private staging paths. Only the
 coordinator changes the live bundle, project map, ledger, aggregate progress, current digests, or lifecycle signal.
+For parallel regions, name the target outputs, source anchors, dependencies, and expected handoff separately so
+overlapping physics is reconciled once by the coordinator. A document worker may prepare a private draft from a
+confirmed contract or validated snapshot; it may not infer missing physics or edit the shared root report.
 
 Shared reads are part of the ownership contract. Allowlist the frozen source and only the exact frozen references
 needed by the item; exclude coordinator state, unrelated lanes, and aggregate evidence. Candidate workers may
@@ -125,6 +129,10 @@ Before integration, verify that source, candidate, and dependency digests still 
 unrelated overlap; rebase or rerun when the owned candidate or a consumed contract changed. Workers run targeted
 candidate and direct-dependent tests. The coordinator reruns the affected integration slice after accepting the
 handoff. Bundle-wide gates run at a declared bounded-delivery or project-freeze boundary, not after every packet.
+Reuse unchanged, digest-bound source probes, frozen candidate evidence, and prior test receipts only when their
+inputs, runtime conditions, claim, and consumer still match. A source, contract, dependency, or implementation
+change invalidates its affected slice and downstream consumers, not every unrelated region. Reuse never turns a
+canonical case into an independently sealed holdout or bypasses a required final whole-bundle gate.
 
 An accepted implementation handoff is not automatically a staged candidate. Freeze a candidate only after its scientific
 contract, source-free callable, dependency closure, provenance, targeted evidence, and claim ceiling agree in one
