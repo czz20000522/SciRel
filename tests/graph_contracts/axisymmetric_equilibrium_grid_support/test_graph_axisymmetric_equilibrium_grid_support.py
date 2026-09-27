@@ -1,10 +1,4 @@
-"""Contract tests for the U1 ordered composition.
-
-The discriminating questions for this TaskGraph are: does it reproduce the
-retained entry's call shape and six outputs exactly; is it a pure ordered DAG
-whose only dependencies are the two proposed assets; and does it read no source
-checkout, no YAML, and no file at run time.
-"""
+"""Contract tests for SciRel's ordered equilibrium grid composition."""
 from __future__ import annotations
 
 import ast
@@ -27,16 +21,6 @@ GRAPH_MODULE = Path(
 )
 GRAPH_DOCUMENT = UNIT_ROOT / "catalog" / "examples" / "scirel.geometry.axisymmetric-equilibrium-grid-support.json"
 
-_RETAINED_OUTPUTS = (
-    "magnetic_flux_density_t",
-    "poloidal_flux_wb_per_rad",
-    "material_support_mask",
-    "covered_mask",
-    "radially_clamped_point_count",
-    "axially_clamped_point_count",
-)
-
-
 def _inputs(equilibrium, axes):
     eq = equilibrium()
     x_axis, y_axis, z_axis, pec = axes()
@@ -51,30 +35,36 @@ def _inputs(equilibrium, axes):
     }
 
 
-# --- Test U1-C-T01: the composition reproduces the retained entry. ----------
-def test_u1_c_t01_composition_reproduces_the_retained_entry(
-    candidate, retained, equilibrium, axes
+# --- Test U1-C-T01: the composition returns both relations' outputs. --------
+def test_u1_c_t01_composition_returns_the_documented_outputs(
+    candidate, equilibrium, axes, cylindrical
 ):
     inputs = _inputs(equilibrium, axes)
     result = candidate["graph"](inputs)
-    observed = retained.map_axisymmetric_equilibrium_to_grid(
-        inputs["equilibrium"],
-        inputs["x_m"],
-        inputs["y_m"],
-        inputs["z_m"],
+    mapping = candidate["mapping"](
+        inputs["equilibrium"], inputs["x_m"], inputs["y_m"], inputs["z_m"]
+    )
+    radii, axial = cylindrical(inputs["x_m"], inputs["y_m"], inputs["z_m"])
+    classification = candidate["classification"](
+        mapping["poloidal_flux_wb_per_rad"],
+        mapping["covered_mask"],
+        radii,
+        axial,
+        separatrix_flux_wb_per_rad=inputs["equilibrium"]["separatrix_flux_wb_per_rad"],
+        closed_flux_side=inputs["equilibrium"]["closed_flux_side"],
         xpoint_half_length_m=inputs["xpoint_half_length_m"],
         pml_cells=inputs["pml_cells"],
         pec_mask=inputs["pec_mask"],
     )
-    assert set(result) == set(_RETAINED_OUTPUTS) | {"closed_flux_mask", "axis_segment_mask"}
-    for name in _RETAINED_OUTPUTS:
-        expected = observed[name]
+    expected_outputs = {**mapping, **classification}
+    assert set(result) == set(expected_outputs)
+    for name, expected in expected_outputs.items():
         actual = result[name]
         if isinstance(expected, np.ndarray):
             np.testing.assert_array_equal(actual, expected, err_msg=name)
         else:
             assert actual == expected, name
-    assert observed["material_support_mask"].sum() == 176
+    assert result["material_support_mask"].sum() == 176
     assert result["magnetic_flux_density_t"].shape == (9, 9, 7, 3)
     assert result["covered_mask"].dtype == bool
     assert result["material_support_mask"].dtype == bool

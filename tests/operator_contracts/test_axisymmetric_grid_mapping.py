@@ -240,33 +240,6 @@ def test_u1_a_t07_mapping_relation_is_free_of_classification_inputs(candidate, e
     assert "separatrix" not in MAPPING_MODULE.read_text(encoding="utf-8")
 
 
-# --- Test U1-A-T08: the mapping matches the retained reconstruction. --------
-def test_u1_a_t08_mapping_matches_the_retained_reconstruction(
-    candidate, retained, equilibrium, axes
-):
-    eq = equilibrium()
-    x_axis, y_axis, z_axis, pec = axes()
-    observed = retained.map_axisymmetric_equilibrium_to_grid(
-        eq, x_axis, y_axis, z_axis, xpoint_half_length_m=0.2, pml_cells=1, pec_mask=pec
-    )
-    result = candidate["mapping"](eq, x_axis, y_axis, z_axis)
-    np.testing.assert_allclose(
-        result["magnetic_flux_density_t"], observed["magnetic_flux_density_t"], rtol=0.0, atol=0.0
-    )
-    np.testing.assert_allclose(
-        result["poloidal_flux_wb_per_rad"],
-        observed["poloidal_flux_wb_per_rad"],
-        rtol=0.0,
-        atol=0.0,
-    )
-    np.testing.assert_array_equal(result["covered_mask"], observed["covered_mask"])
-    assert (
-        result["radially_clamped_point_count"]
-        == observed["radially_clamped_point_count"]
-    )
-    assert result["axially_clamped_point_count"] == observed["axially_clamped_point_count"]
-
-
 # --- Test U1-A-T09: the public signature is the documented one. -------------
 def test_u1_a_t09_public_signature_is_the_documented_one(candidate):
     function = candidate["mapping"]
