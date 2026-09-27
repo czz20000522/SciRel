@@ -50,7 +50,7 @@ ENGINEERING_TESTS = {
     "skills/usage/scientific-project-implementation/SKILL.md": (
         "tests/test_scientific_request_workflow_docs.py",
     ),
-    "examples/user_acceptance.py": ("tests/test_admitted_distribution_builder.py",),
+    "examples/user_acceptance.py": ("tests/test_user_acceptance.py",),
     "scripts/build_admitted_distribution.py": (
         "tests/test_admitted_distribution_builder.py",
     ),
