@@ -27,7 +27,7 @@ def catalog(tmp_path):
         catalog_id="scirel-development-pilot",
         release_version="0.1.0.dev5",
         coverage_status="partial",
-        declared_total=63,
+        declared_total=64,
     )
     return output, result["root_digest"]
 
