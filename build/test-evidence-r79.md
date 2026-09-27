@@ -130,3 +130,61 @@ expert approval, no trusted promotion, no public release are claimed.
 Deferred from this round: real-HDF5 table drivers, the NPA/FIDA
 weight-production chain, MC marker production, the parallel (MPI-rank)
 reservoir merge graphs, and the neutral-bank lifecycle.
+
+## r79-v2 successor evidence addendum — source-free usage gate (no science change)
+
+r79-v1 (freeze commit `ef095e2`, science HEAD `987c7f2`, snapshot
+`build/verification/review-2026-09-27-r79-neutral-merge-family-v1`) is
+preserved untouched. Read-only review of the v1 freeze verified the
+manifest digests (166 documents, wheel, catalog root) and confirmed a
+review-scope gap in the usage evidence: gates 5/6 import from the venv
+site-packages but run with the repository checkout as the working
+directory, so they do not by themselves demonstrate that the four new
+assets are callable outside the source tree.
+
+### Gate 10 — source-free public API usage (final pwsh 7+ receipt)
+
+`build/r79-gate-10-sourcefree-usage.ps1` (PARSE-OK first, log
+`build/r79-pwsh-sourcefree-usage.log`): the clean venv's
+`build/venv-r75-clean/Scripts/python.exe` (numpy 2.5.3 / scipy 1.18.1 /
+pytest 9.1.1, no system site-packages) ran
+`-I -B r79_sourcefree_usage.py` from the isolated directory
+`C:\Users\26569\.claude\jobs\d48db198\tmp\scirel-r79-sourcefree`
+(outside the repository), with `PYTHONPATH` unset (verified None at
+runtime), `PYTHONDONTWRITEBYTECODE=1`, and the installed dev56 wheel
+(SHA-256 `1a30d6582ac98478790c3712ea0914aabab3918c13a6f73e5249498343df9df6`,
+byte-identical to the frozen v1 wheel). Recorded at runtime: cwd =
+the isolated directory; `scirel.__file__` =
+`...\build\venv-r75-clean\Lib\site-packages\scirel\__init__.py`;
+sys.path carries no repository-root or `/src` entry and the repo
+`tests` package is not importable (a first attempt failed with exit
+code 1 on an over-broad sys.path assertion that banned the venv root
+path too; the corrected check is entry-wise and the failure record is
+retained). Representative calls, all asserting saved-oracle values:
+`merge_neutral_population_density` (signed componentwise addition +
+source ownership), `merge_neutral_population_cells` (cell shape/count),
+`merge_neutral_reservoirs` (both_nonfull append with the
+source-prefix slot rewrite and the res2=res1 broadcast), and the
+composition task graph `merge_neutral_population_state`
+(source_empty branch, graph_order diagnostics, non-mapping
+reservoir-state fail-closed). **Exit code 0**
+(`R79-SOURCE-FREE-USAGE-PASSED`).
+
+### Reuse basis for the other gates
+
+No code, exact-document, wheel or catalog byte changed for v2: all 166
+exact documents re-hashed against the frozen v1 manifest (zero
+mismatches), the dev56 wheel re-hashed (unchanged), and the catalog
+root digest re-read (unchanged), measured by
+`build/r79v2-byte-identity.ps1` after the v1 freeze. The measured
+gates 1-7 in the shell record above therefore remain the receipts for
+r79-v2; no test population or runtime changed and the full scientific
+suite is not re-run.
+
+### Boundary
+
+No qualified L1 consumption, no expert approval, no trusted promotion,
+no public release are claimed. r79-v1 remains frozen and preserved;
+r79-v2 is the current pending_unapproved successor and differs from
+r79-v1 in the test-evidence text only (the dossier and every exact
+document are unchanged bytes).
