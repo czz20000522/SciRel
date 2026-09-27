@@ -19,6 +19,7 @@ from .shifted_maxwellian_seed import build_shifted_maxwellian_seed
 from .axisymmetric_neutral_moments import reduce_axisymmetric_neutral_moments
 from .adaptive_neutral_velocity_mesh import create_adaptive_neutral_velocity_mesh
 from .cross_mesh_scalar_interpolation import interpolate_scalar_across_mesh
+from .cross_mesh_distribution_interpolation import interp_distribution_across_mesh
 from .grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
 from .frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure
 
@@ -29,3 +30,4 @@ __all__.append('build_shifted_maxwellian_seed')
 __all__.append('reduce_axisymmetric_neutral_moments')
 __all__.append('create_adaptive_neutral_velocity_mesh')
 __all__.append('interpolate_scalar_across_mesh')
+__all__.append('interp_distribution_across_mesh')
