@@ -1,0 +1,55 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-28-field-margin-dev58-rebind",
+  "status": "development_compatibility_replay_of_two_review_assisted_project",
+  "not_claims": [
+    "fresh_autonomous_pass",
+    "whole_package_agent_approval",
+    "expert_approval",
+    "trusted_release",
+    "public_v1",
+    "device_physics_or_stability_verdict",
+    "crash_atomic_pair_delivery",
+    "codefusion_comparison"
+  ],
+  "prior_project": {
+    "archive": "build/verification/field-margin-compose-20260927/stage6-reviewed.tgz",
+    "archive_sha256": "e80b298046bd4763e977545c04d505c9ace704ca16008c820c17c0cc0e8f3ca0",
+    "review_rounds": 2,
+    "runtime_version": "0.1.0.dev49"
+  },
+  "r81_science_boundary": {
+    "manifest_sha256": "a9924e8926ad240b1e6c3aaaf57cc2896a262c3776ea33daa786cd6884ab4dc0",
+    "wheel_sha256": "60ce811067e2c808b7ed0176bdb4572bf8bea322badc40b7eca3e8f42bc7090a",
+    "catalog_root_digest": "sha256:61bb7e828098e244a0285bfb772f59a9f43e3d3576caa907d9ca769c09e5ae4d",
+    "catalog_coverage": "complete 169/169, pending_unapproved",
+    "review_scope": "multi-coil current_a/weights contract and three direct dependencies only",
+    "review_decision": "bounded_go_for_contract_clarification_only"
+  },
+  "rebound_inputs": {
+    "wheel": "build/verification/field-margin-dev58-rebind-20260928/solver/host-assets/scirel-0.1.0.dev58-py3-none-any.whl",
+    "wheel_sha256": "60ce811067e2c808b7ed0176bdb4572bf8bea322badc40b7eca3e8f42bc7090a"
+  },
+  "evidence": {
+    "archive": "build/verification/field-margin-dev58-rebind-20260928/field-margin-dev58-rebound.tgz",
+    "archive_sha256": "e77513a4d73a2a4d46d8190bdadf43a010738a57bb4cee64d2a04896d78542f7",
+    "receipt": "build/verification/field-margin-dev58-rebind-20260928/freeze-receipt.json",
+    "receipt_sha256": "18acb1165d771fd78c7e949924cfd27bcd5223865eb412f785c402b76c47fed2",
+    "file_manifest": "build/verification/field-margin-dev58-rebind-20260928/file-manifest.json",
+    "file_manifest_sha256": "c5164db4f1c23dc0792a9f88264bdf9cbd4a266f6f4c4c1e073373bbc3b79785",
+    "replay_transcript": "build/verification/field-margin-dev58-rebind-20260928/replay-transcript.txt",
+    "replay_transcript_sha256": "f57b53fee7fba91d5a965348a27afd9d06f5f8046757433838103697a7bd1995",
+    "junit": "build/verification/field-margin-dev58-rebind-20260928/tests-dev58.xml",
+    "junit_sha256": "5c91cbb97084f5160a5f6aac0bcd9dd47e1c48baeb1c0cbc945c2e217d96788d",
+    "weight_probe": "build/verification/field-margin-dev58-rebind-20260928/weight_probe.py",
+    "weight_probe_sha256": "ceb0c7874be5d6cf7d29ef58bb84f3df06e56ba0ddc39917538344117c8e8fd9"
+  },
+  "observed": {
+    "project_tests_passed": 24,
+    "ordinary_entrypoint_exit_code": 0,
+    "weight_probe_exit_code": 0,
+    "old_result_csv_bytes_preserved": true,
+    "reviewed_archive_members_verified": 377,
+    "first_pass_failures_preserved_in_prior_manifest": true
+  }
+}
