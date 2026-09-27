@@ -1,6 +1,6 @@
 # KN1DPy 中性热速度与单代密度归约开发整合记录
 
-状态：隔离开发候选；不是合格 whole-source D1 接纳、专家批准或公开发行。
+状态：已进入 SciRel 开发主仓；不是合格 whole-source D1 接纳、专家批准或公开发行。
 本批以主仓 `4e264b7` 为基线，逐项对照 intake `647d5db` 的
 `scirel.kinetic.thermal-speed-scale` 和
 `scirel.kinetic.generation-density-reduction`。两个独立叶子关系均无
@@ -48,4 +48,11 @@ KN1DPy 严格 D1 资格已撤回；归档来源及有限点回放仅是历史开
 - 两项直接科学测试：显式隔离源码路径下 **23 passed**。
 - 摘要锁定的只读来源回放：热速度 3 点、密度 3 条权重路径精确相等；
   溢出与类型差异已单独观察。
-- 最终 affected、exact document 与差异检查以主仓本批提交结果为准。
+- 隔离候选提交 `4d5511a`；主仓整合提交 `12bed57`，仅暂存本批
+  20 个文件，README 的其他 owner 改动仍未暂存。
+- 主仓 `pwsh ./scripts/check.ps1 -Mode affected -BaseRef 4e264b7`
+  精确选中 7 个测试文件、**119 passed**，无全套回退。
+- 主仓 22 份 exact document 通过 `--check-runtime --execute-examples`；
+  `git diff --check 4e264b7..12bed57` 通过。
+- 集成后再核查，合格 whole-source D1 交付根仍为空；intake
+  `647d5db` 工作树干净，其 `pending_unapproved` 状态不变。
