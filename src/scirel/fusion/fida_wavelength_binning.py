@@ -35,7 +35,11 @@ factors and ``inf`` weight bins; and the per-component bin index is
 computed in float and checked representable before the integer cast,
 so a huge out-of-range wavelength fails closed instead of reporting
 the int64 overflow sentinel ``-9223372036854775808`` as its "raw
-index".
+index"; and the output contracts are enforced on both sides: the
+factor must be strictly positive as well as finite (a window spanning
+``1e308`` nm turned ``4*pi*dlambda`` into ``inf`` and the factor into
+silent ``0.0``), and the accumulated weight bins must stay finite (an
+``intensity*factor`` product overflowing to ``inf`` fails closed).
 
 The upstream component-wavelength relation is
 ``scirel.fusion.doppler-stark-zeeman-wavelengths``; the full
@@ -106,11 +110,13 @@ def bin_fida_los_components(
             " and silently produced a zero factor on overflow)"
         )
     factor = 1.0 / (4.0 * math.pi * dlambda)
-    if not math.isfinite(factor):
+    if not math.isfinite(factor) or factor <= 0.0:
         raise ValueError(
-            "the normalization factor 1/(4*pi*dlambda) is not finite for the supplied"
-            " window (r80-v2 repair: a positive but subnormal bin width such as"
-            " 1e-320 overflowed the factor and the weight bins to inf)"
+            "the normalization factor 1/(4*pi*dlambda) must be positive and finite"
+            " for the supplied window (r80-v2 repair: a positive but subnormal bin"
+            " width such as 1e-320 overflowed the factor and the weight bins to inf,"
+            " and a window spanning 1e308 nm turned 4*pi*dlambda into inf and the"
+            " factor into silent 0.0)"
         )
     scaled = (wavelength - low) / dlambda
     if not np.all(np.isfinite(scaled)) or np.any(np.abs(scaled) >= 9.223372036854776e18):
@@ -123,6 +129,12 @@ def bin_fida_los_components(
     output = np.zeros(nlambda, dtype=float)
     accepted = (bins >= 0) & (bins < nlambda)
     np.add.at(output, bins[accepted], intensity[accepted] * factor)
+    if not np.all(np.isfinite(output)):
+        raise ValueError(
+            "the accumulated weight bins are not finite for the supplied intensities"
+            " (r80-v2 repair: intensity*factor overflowed to inf despite a finite"
+            " factor)"
+        )
     return {
         "weight_bins": output,
         "bin_index_zero_based": bins,

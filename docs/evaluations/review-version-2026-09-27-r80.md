@@ -82,3 +82,12 @@ r80-v1 冻结后,独立只读复核在安装态 dev57 复现三处实际合同�
 5. **越界分量的 raw index 变 int64 溢出哨兵**:`wavelength_nm=[1e308,650.,651.]`、窗口 650..652、`nlambda=4` 时 `(1e308-650)/0.5` 溢出为 inf,整型转换写出哨兵 `-9223372036854775808`,并非"原计算索引"。修复:bin 下标以浮点计算并在整型转换前校验可表示性;不可表示 fail closed,大而可表示的越界下标仍按原样保留(`test_unrepresentable_bin_index_fails_closed_instead_of_int64_sentinel`)。
 
 直接测试 24 → 26(+2 判别回归;第一次 v2 修复的 5 项与原 19 项逐字保留)。v2 首次 gate 1 在修复前字节上运行(1681 passed / 43 skipped,junit 1724 tests / 0 errors),已作为 superseded probe 记录于 `build/test-evidence-r80.md`;正式 v2 门禁在最终修复字节上重跑。
+
+### r80-v2 追补:最终输出合同的第三次独立复现(门禁记录前闭合)
+
+在首个 v2 修复提交 `3091bbb` 的工作树上、任何 v2 门禁记录之前,独立复核对最终输出合同再复现两处缺口,一并修复:
+
+6. **因子静默为 0.0**:`bin_fida_los_components(...,lambdamin=0.,lambdamax=1e308,nlambda=1)` 的 `dlambda=1e308` 为正且有限,但 `4*pi*dlambda` 溢出为 inf,因子变为静默 `0.0`,违背 positive finite 承诺。修复:因子必须严格为正且有限(`test_extreme_window_span_zeroes_the_factor_and_fails_closed`)。
+7. **加权累加溢出 inf**:窗口 0..1e-300、`nlambda=1`、强度 `[1e20]*3` 时因子约 `7.96e299` 有限,但 `intensity*factor` 使 `weight_bins=[inf]`,违背有限输出承诺。修复:累加后的 weight bins 必须有限,否则 fail closed(`test_intensity_factor_product_overflow_failclosed`;测试名 `test_intensity_factor_product_overflow_fails_closed`)。
+
+直接测试 26 → 28(+2 判别回归;既有 26 项逐字保留)。门禁前的两次源码全仓运行(修复前字节 1681/43;junit 1724/0 errors/43 skipped;`3091bbb` 字节 1683/43)均作为 superseded probe 记录于 `build/test-evidence-r80.md`;正式 v2 门禁在最终修复字节上运行。

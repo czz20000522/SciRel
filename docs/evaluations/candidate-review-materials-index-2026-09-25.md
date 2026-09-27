@@ -36,12 +36,12 @@ r80-v2 (repairs from the independent read-only review of r80-v1): the
 digests below are the current v2 candidate bytes; the frozen r80-v1
 bytes remain bound by the v1 snapshot manifest
 `build/verification/review-2026-09-27-r80-fida-spectral-family-v1`.
-- `review.md` -- sha256 `cb7a42691b5b8e8487d9f63495b09a22c8e047757bcd737d274dd31eb92ff838`
+- `review.md` -- sha256 `d7037a57b0e6da5efcfef8780b401d2a02d2e174c443e12825dcbf2e82b01895`
 - `proposal/doppler_stark_zeeman_wavelengths.py` -- sha256 `ea99c93a7247b81e48d4dd2f1195fcd5e73c47446ce698cc2da32683ee23b043`
-- `proposal/fida_wavelength_binning.py` -- sha256 `b1a26b6d672742d2f92d9cd9a47e3254525370922915f8f92c28b0ba7ca2268c`
-- `proposal/test_fida_spectral_family.py` -- sha256 `9260d71f83842404b1efdc540b25d9830678fc14b0c5036285d7bf9f6ce11160`
+- `proposal/fida_wavelength_binning.py` -- sha256 `ab30f3c392b0ff61dcfb7c3a70ccad21a5ddf917e892f28c49a273c0d2d7fce2`
+- `proposal/test_fida_spectral_family.py` -- sha256 `00f184d6642bcb14ced97f7e1d3924d03ac069c921e61af4b8728fa217678138`
 - `proposal/scirel.fusion.doppler-stark-zeeman-wavelengths.json` -- sha256 `30f3f636624233bc5150be3b4054833344d789a006cbb20ef5902083a285f0e1`
-- `proposal/scirel.fusion.fida-wavelength-binning.json` -- sha256 `01f04d19b03245540429c4ddf554799fde62a0fa1558f67bd9fc11ce6f91026e`
+- `proposal/scirel.fusion.fida-wavelength-binning.json` -- sha256 `2968c8c9d70184fb63a628334adb28d20b4b82a6da99f82f631805d3cdd4b34a`
 
 ## Batch r79: FIDASIM neutral-reservoir/population merge family (three operators + one composition graph)
 

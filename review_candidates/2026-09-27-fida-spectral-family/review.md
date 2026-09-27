@@ -223,13 +223,31 @@ frozen:
    still kept raw
    (`test_unrepresentable_bin_index_fails_closed_instead_of_int64_sentinel`).
 
-The first gate-1 run for v2 (1681 passed / 43 skipped at the pre-fix
-bytes, junit 1724 tests / 0 errors / 43 skipped) is retained in
-`build/test-evidence-r80.md` as a superseded probe; the recorded v2
+Third independent reproduction on the final output contract (working
+tree at the first r80-v2 repair commit `3091bbb`, before any v2 gate
+was recorded), repaired the same way:
+
+6. `bin_fida_los_components(..., lambdamin=0, lambdamax=1e308,
+   nlambda=1)`: `dlambda = 1e308` is positive and finite, but
+   `4*pi*dlambda` overflows to `inf` and the factor silently became
+   `0.0`, violating the positive-finite factor promise. Repair: the
+   factor must be strictly positive as well as finite
+   (`test_extreme_window_span_zeroes_the_factor_and_fails_closed`).
+7. `bin_fida_los_components(..., bounds 0..1e-300, nlambda=1,
+   intensity=[1e20]*3)`: the factor `~7.96e299` is finite, but
+   `intensity*factor` overflowed the accumulation to
+   `weight_bins = [inf]`, violating the finite-output promise. Repair:
+   the accumulated weight bins must stay finite and fail closed
+   (`test_intensity_factor_product_overflow_fails_closed`).
+
+The gate-1 runs made before the final bytes (1681 passed / 43 skipped
+at the pre-fix bytes, junit 1724 tests / 0 errors / 43 skipped; 1683
+passed / 43 skipped at `3091bbb`) are retained in
+`build/test-evidence-r80.md` as superseded probes; the recorded v2
 gates below run at the final repair bytes.
 
 - `proposal/doppler_stark_zeeman_wavelengths.py` -- sha256 `ea99c93a7247b81e48d4dd2f1195fcd5e73c47446ce698cc2da32683ee23b043`
-- `proposal/fida_wavelength_binning.py` -- sha256 `b1a26b6d672742d2f92d9cd9a47e3254525370922915f8f92c28b0ba7ca2268c`
-- `proposal/test_fida_spectral_family.py` -- sha256 `9260d71f83842404b1efdc540b25d9830678fc14b0c5036285d7bf9f6ce11160`
+- `proposal/fida_wavelength_binning.py` -- sha256 `ab30f3c392b0ff61dcfb7c3a70ccad21a5ddf917e892f28c49a273c0d2d7fce2`
+- `proposal/test_fida_spectral_family.py` -- sha256 `00f184d6642bcb14ced97f7e1d3924d03ac069c921e61af4b8728fa217678138`
 - `proposal/scirel.fusion.doppler-stark-zeeman-wavelengths.json` -- sha256 `30f3f636624233bc5150be3b4054833344d789a006cbb20ef5902083a285f0e1`
-- `proposal/scirel.fusion.fida-wavelength-binning.json` -- sha256 `01f04d19b03245540429c4ddf554799fde62a0fa1558f67bd9fc11ce6f91026e`
+- `proposal/scirel.fusion.fida-wavelength-binning.json` -- sha256 `2968c8c9d70184fb63a628334adb28d20b4b82a6da99f82f631805d3cdd4b34a`

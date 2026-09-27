@@ -452,3 +452,31 @@ def test_unrepresentable_bin_index_fails_closed_instead_of_int64_sentinel():
     )
     assert out["bin_index_zero_based"].tolist()[0] == 1998700
     assert out["accepted_component_count"] == 2
+
+
+def test_extreme_window_span_zeroes_the_factor_and_fails_closed():
+    # r80-v1 defect (third review reproduction): dlambda = 1e308 is
+    # positive and finite, but 4*pi*dlambda overflows to inf and the
+    # factor becomes silent 0.0, violating the positive-finite promise
+    with pytest.raises(ValueError):
+        bin_fida_los_components(
+            wavelength_nm=[0.0, 0.0, 0.0],
+            component_intensity=[1.0, 1.0, 1.0],
+            lambdamin_nm=0.0,
+            lambdamax_nm=1e308,
+            nlambda=1,
+        )
+
+
+def test_intensity_factor_product_overflow_fails_closed():
+    # r80-v1 defect (third review reproduction): a finite factor
+    # ~7.96e299 times intensity 1e20 overflows the accumulation to
+    # weight_bins=[inf], violating the finite-output promise
+    with pytest.raises(ValueError):
+        bin_fida_los_components(
+            wavelength_nm=[0.0, 0.0, 0.0],
+            component_intensity=[1e20, 1e20, 1e20],
+            lambdamin_nm=0.0,
+            lambdamax_nm=1e-300,
+            nlambda=1,
+        )
