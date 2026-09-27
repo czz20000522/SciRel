@@ -50,7 +50,7 @@
     },
     {
       "name": "magnetic_field",
-      "description": "Magnetic-field samples for the B^2/mu0 magnetic-pressure term.",
+      "description": "Magnetic-field samples for the B^2/mu0 term, the magnetic-tension contribution in pressure units (SI magnetic pressure itself is B^2/(2*mu0), a different quantity).",
       "units": "T",
       "shape": "exactly the same shape as p_parallel",
       "dtype": "real numeric convertible to float64",
@@ -117,7 +117,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev48",
+    "implementation_version": "0.1.0.dev49",
     "dependencies": []
   },
   "example": {
