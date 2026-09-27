@@ -1,6 +1,6 @@
 # KN1DPy 中性边界与空间源归一化开发整合记录
 
-状态：隔离开发候选；不是合格 whole-source D1 接纳、专家批准或公开发行。
+状态：已进入 SciRel 开发主仓；不是合格 whole-source D1 接纳、专家批准或公开发行。
 本批以主仓 `b2535a2` 为基线，逐项对照 intake `647d5db` 的
 `scirel.kinetic.incoming-boundary-flux-normalization` 和
 `scirel.kinetic.spatial-source-shape-normalization`。两项均为无直接资产
@@ -37,7 +37,8 @@ exact documents。
 输入和有限输出合同拒绝这些情况，统一抛 `ValueError`。边界 exact
 document 还修正了 intake 将零目标的尺度误写为正数的矛盾，保留来源
 实际的零尺度行为。修正前，校正过手算期望值的回归在来源实现上
-**16 failed、10 passed**；修正后直接测试 **26 passed**。有效数值路径
+**16 failed、10 passed**；补入两个派生输出极值回归后，直接测试
+**28 passed**。有效数值路径
 的公式和运算顺序未变，旧数值断言与容差未弱化。
 
 KN1DPy 严格 D1 资格已撤回；摘要锁定的有限点比较只是历史开发证据，
@@ -46,7 +47,14 @@ KN1DPy 严格 D1 资格已撤回；摘要锁定的有限点比较只是历史开
 
 ## 本批验证
 
-- 直接科学测试：隔离源码路径下 **26 passed**。
+- 直接科学测试：隔离源码路径下 **28 passed**。
 - 摘要锁定的只读来源回放：两种关系各 3 个有限有效点精确相等；
   NaN 热速度和数值字符串源剖面的差异已单独观察。
-- 最终 affected、exact document 与差异检查以主仓本批提交结果为准。
+- 隔离候选提交 `559850c`；主仓整合提交 `84d78e1`，仅暂存本批
+  20 个文件，README 的其他 owner 改动仍未暂存。
+- 主仓 `pwsh ./scripts/check.ps1 -Mode affected -BaseRef b2535a2`
+  精确选中 7 个测试文件、**125 passed**，无全套回退。
+- 主仓 24 份 exact document 通过 `--check-runtime --execute-examples`；
+  `git diff --check b2535a2..84d78e1` 通过。
+- 集成后再核查，合格 whole-source D1 交付根仍为空；intake
+  `647d5db` 工作树干净，其 `pending_unapproved` 状态不变。
