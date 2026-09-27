@@ -1,0 +1,64 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-27-margin-cross-rig",
+  "status": "development_claude_two_autonomous_turns_with_independent_negative_probe",
+  "harness": {
+    "kind": "claude_code",
+    "version": "2.1.281",
+    "session_id": "8e199e49-11e3-4fa6-b346-2248b31eb637",
+    "cli_model_label": "claude-fable-5",
+    "underlying_model_confirmed": false,
+    "skill_body_reads_observed": true,
+    "review_feedback_given": false
+  },
+  "scirel_inputs": {
+    "wheel_version": "0.1.0.dev39",
+    "wheel_digest": "sha256:be5a2a2b40461ded5c486d9c9689ceaaed987923b9ba428da73ab59ca1eef9b8",
+    "catalog_root_digest": "sha256:434249fe5f6df457b712992182a0d5631918a1002861db9d415723fcd86e3fca",
+    "solving_skill_digest": "sha256:bf1eb354a523404f91537c6fa7ef4d23ad35e225a571e42cb2322a0898dd22f3"
+  },
+  "fixtures": {
+    "request_stage1": "build/verification/margin-cross-rig-20260927/fixtures/request-stage1.txt",
+    "request_stage1_sha256": "7bea6ab9a12658eb6de1c2274a5ce33e8619749725fd0f755295e1b5d7082562",
+    "readings": "build/verification/margin-cross-rig-20260927/fixtures/readings.tsv",
+    "readings_sha256": "d3c0da737ff87f36b5d62508ab2a609668a9a0a89b5884a639d4cfc90e700c74",
+    "request_stage2": "build/verification/margin-cross-rig-20260927/fixtures/request-stage2.txt",
+    "request_stage2_sha256": "8d4a2395359c559c3dd94998ebbb79b1c376b6c8e9f1bfe9ff4f083c6f2f0f15",
+    "row_origin": "build/verification/margin-cross-rig-20260927/fixtures/row-origin.csv",
+    "row_origin_sha256": "150defc8fc0d27f320a17ff1b36d621cfc6824823d0f09d59b1bf45ab7e52d9a"
+  },
+  "artifacts": {
+    "stage1_trace": "build/verification/margin-cross-rig-20260927/stage1-trace.jsonl",
+    "stage1_trace_sha256": "1a0de518d2c0b84f2142e34a69bf0c6a38f6dd8ee119e60c45f613d3f475b3f3",
+    "stage1_archive": "build/verification/margin-cross-rig-20260927/stage1-autonomous.tgz",
+    "stage1_archive_sha256": "97f487ee16b8cea41ec6925d00a3904e0e1d54468c66ff257625dff579014377",
+    "stage2_trace": "build/verification/margin-cross-rig-20260927/stage2-trace.jsonl",
+    "stage2_trace_sha256": "598803f6f86b68e137bad83b2bf9f00081872db4282cf65042e950d4f0a3f0ca",
+    "stage2_archive": "build/verification/margin-cross-rig-20260927/stage2-autonomous.tgz",
+    "stage2_archive_sha256": "0aa5831c6ce7219337e214702d8cba35d38167482acb42b434c7cbf2f6af2db6"
+  },
+  "output_member_digests": {
+    "stage1_csv": "sha256:5ebb615c9d95e921f5069b842325dfe78271887fd5e97c1a6622776df70ce5ca",
+    "stage1_report": "sha256:f780ccdc45550983ced1461dbcf0c820facae0ad651144c24228944e0de225e1",
+    "stage2_csv": "sha256:2adc0696ace85cbd860bea1f6ac6e7977cf39898a9f5fd9ba73ded2322a89987",
+    "stage2_report": "sha256:ca8accff840375498b4515963e1f605ec2ab34251c5b0fbd6ba0c7588761d9e2"
+  },
+  "outcome": {
+    "stage1_numeric_replay": true,
+    "stage1_scientific_premises_confirmed": false,
+    "stage2_retracted_cross_rig_mirror_interpretation": true,
+    "stage1_csv_report_bytes_retained": true,
+    "independent_extracted_tests_passed": 13,
+    "independent_duplicate_b_partial_case_exit": 1,
+    "stage2_code_did_not_invoke_inapplicable_mirror_branch": false,
+    "physical_applicability_established": false
+  },
+  "not_claims": [
+    "autonomous_scientific_applicability_reliability",
+    "physical_stability_validation",
+    "trusted_release",
+    "public_v1",
+    "codefusion_integration",
+    "strict_examiner_isolation"
+  ]
+}

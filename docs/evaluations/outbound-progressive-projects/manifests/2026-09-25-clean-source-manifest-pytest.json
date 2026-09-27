@@ -1,0 +1,30 @@
+{
+  "schema": "scirel.outbound-evaluation-artifact.v1",
+  "status": "development_evaluation",
+  "not_claims": [
+    "trusted_release",
+    "expert_approval",
+    "public_v1",
+    "codefusion_integration",
+    "device_physics_validation"
+  ],
+  "purpose": "Freeze the clean-source manifest pytest simulation after adding a frozen archive for the unseen P4 Codex evolution variant.",
+  "evidence": {
+    "path": "build/verification/clean-artifact-manifest-pytest-20260925-v11.json",
+    "sha256": "90c78e0df48239ce37823920fbf13707953e46a02acbbfedcad9c3dfd89acf2b"
+  },
+  "clean_source_result": {
+    "schema": "scirel.clean-source-manifest-test.v1",
+    "simulation_dir": "D:\\software\\PyCharm 2025.3.3\\workspace\\SciRel\\build\\verification\\clean-artifact-manifest-pytest-20260925-v11",
+    "has_build_directory": false,
+    "copied_sources": [
+      "tests/test_outbound_evaluation_manifests.py",
+      "scripts/verify_outbound_evaluation_manifests.py",
+      "docs/evaluations/outbound-progressive-projects/manifests/*.json"
+    ],
+    "command": "python -m pytest tests/test_outbound_evaluation_manifests.py -q",
+    "exit_code": 0,
+    "output": ".................                                                        [100%]\n17 passed in 0.44s",
+    "manifest_count": 11
+  }
+}

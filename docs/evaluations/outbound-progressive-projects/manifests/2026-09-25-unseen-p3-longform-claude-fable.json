@@ -1,0 +1,94 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-25-unseen-p3-longform-claude-fable",
+  "status": "development_evaluation_three_reviewed_repairs",
+  "not_claims": [
+    "trusted_release",
+    "expert_approval",
+    "public_v1",
+    "codefusion_integration",
+    "unassisted_location_sampling",
+    "unassisted_scientific_explanation",
+    "strict_blind_isolation",
+    "offline_dependency_reinstallation",
+    "rf_absorption_prediction",
+    "physical_interpolation_error_bound",
+    "stable_generalization"
+  ],
+  "harness": {
+    "kind": "claude_code",
+    "version": "2.1.281",
+    "cli_canonical_model": "claude-fable-5",
+    "assistant_message_model_tag": "GLM-5.3-Flash",
+    "model_tag_discrepancy_unresolved": true,
+    "session_id": "159099bb-97cb-49f9-87b8-69961433a525",
+    "permission_mode": "auto",
+    "reviewer_feedback_before_first_two_deliveries": false,
+    "reviewer_feedback_before_final_delivery": true
+  },
+  "scirel_inputs": {
+    "wheel_version": "0.1.0.dev5",
+    "wheel_digest": "09521a918b875e81c9f17b236f52f4c225fad538155dc9e1b78ed1da7efb23a6",
+    "catalog_coverage": "14/62 partial",
+    "catalog_release_digest": "8c96bfa5180f030c88af1bbccd62568b87e1f6ad17c3c1df599a23705616c577",
+    "solver_skill_digest": "d0a30da09b0b757307754c4e7a4e1f04d6603b42583a17285ad04def813092b3"
+  },
+  "archives": {
+    "stage1_first_delivery": "build/verification/p3-longform-claude-fable-evaluation/stage1-first-delivery.tgz",
+    "stage1_first_delivery_sha256": "9dfe4b7e4adde66c4b4915b51d8936a230f3f42ee86656df6813a76868403f84",
+    "stage2_autonomous_followup": "build/verification/p3-longform-claude-fable-evaluation/stage2-autonomous-followup.tgz",
+    "stage2_autonomous_followup_sha256": "5fbe191c445ddfcd1979f866ca413c81f8d26d19d98018eeda28bcc8b4b87ddb",
+    "stage3_first_reviewed_science_failure": "build/verification/p3-longform-claude-fable-evaluation/stage3-first-reviewed-science-failure.tgz",
+    "stage3_first_reviewed_science_failure_sha256": "9dbf91e5e2b1987d0c91020edbdd66205e607e2fc5cfe172b05cd701d0cad60b",
+    "stage4_reviewed_dataflow_repair": "build/verification/p3-longform-claude-fable-evaluation/stage4-reviewed-dataflow-repair.tgz",
+    "stage4_reviewed_dataflow_repair_sha256": "c67744269d691dfe7d398b7c873239242b74cb3966332ee72150cd8569f8e707",
+    "stage5_reviewed_final": "build/verification/p3-longform-claude-fable-evaluation/stage5-reviewed-final.tgz",
+    "stage5_reviewed_final_sha256": "e94afab7054cf0f98f973f01db2bf39145f218ee7cb193ae7150073035f4a712"
+  },
+  "traces": {
+    "round1": "build/verification/p3-longform-claude-fable-evaluation/round1.jsonl",
+    "round1_sha256": "0f1d6820dbc5b43cace23d15d85dfd473bd260e1a1517bd44b0f14b6c6b97219",
+    "round2": "build/verification/p3-longform-claude-fable-evaluation/round2.jsonl",
+    "round2_sha256": "50fae7d83396639b4b056f5d2e3d123c2cc4472dc64e0a1ef70e0cc4cf26f27d",
+    "round3_review_feedback": "build/verification/p3-longform-claude-fable-evaluation/round3-review-feedback.jsonl",
+    "round3_review_feedback_sha256": "28b05f37b62622e143d9827c9742235ac28a702509ffc638c0aa67875e31c35a",
+    "round4_scientific_dataflow_feedback": "build/verification/p3-longform-claude-fable-evaluation/round4-scientific-dataflow-feedback.jsonl",
+    "round4_scientific_dataflow_feedback_sha256": "826912230def02179930905bf537ddeb042e19c459095a9d32ac9fba1f61d32d",
+    "round5_scientific_wording_feedback": "build/verification/p3-longform-claude-fable-evaluation/round5-scientific-wording-feedback.jsonl",
+    "round5_scientific_wording_feedback_sha256": "fb1bc3afc79926a10fa764bd47cad6548d6634754952428192fd0f5bcdef61a9"
+  },
+  "independent_evidence": {
+    "location_checker": "build/verification/p3-longform-claude-fable-evaluation/verify_locations_independent.py",
+    "location_checker_sha256": "c891510329c6f03afe245733212af606aeff6991fad0e261fb81b520ca332452"
+  },
+  "result": {
+    "first_stage_project_checks": "9/9",
+    "autonomous_followup_project_checks": "8/8",
+    "first_reviewed_project_checks_despite_science_failure": "12/12",
+    "final_project_checks": "14/14",
+    "location_rows": 6,
+    "supported_location_rows": 3,
+    "partly_unsupported_pec_stencil_rows": 1,
+    "out_of_box_rows": 1,
+    "unknown_height_rows": 1,
+    "independent_saved_scalar_samples": 6,
+    "correct_grid_only_tensor_calls": 471,
+    "superseded_off_grid_tensor_calls": 477,
+    "stage1_historical_files_byte_identical": 3,
+    "stage2_v1_historical_files_byte_identical": 5,
+    "stage3_v2_historical_files_byte_identical": 5,
+    "stage4_v3_historical_files_byte_identical": 5,
+    "source_free_replay_user_entry_runs": 2,
+    "source_free_replay_output_files_byte_stable": 26
+  },
+  "limitations": [
+    "The autonomous second delivery used nearest-grid-point values up to 87.7 mm away and left three supported CSV rows blank despite numeric Markdown values; its green checks missed both.",
+    "The first reviewer-assisted repair selected and called the catalog sampler but recomputed tensors at off-grid locations using species density defined only at supported grid points; 12 green checks missed the data-flow error.",
+    "The second reviewer-assisted repair changed to sampling a grid-derived scalar indicator, not the tensor itself, but its report initially mislabeled the route difference as interpolation error; a third reviewer comment corrected the wording.",
+    "The independent verifier checks saved-grid eight-corner reconstruction and instrumented tensor-call count, not the cold-plasma tensor physics or resolution adequacy of the coarse grid.",
+    "Examiner materials were staged but lacked operating-system-enforced read isolation.",
+    "The replay venv used system site packages. Pip initially skipped the bundled wheel due to matching system distribution metadata; an explicit local reinstall made SciRel import from the replay venv site-packages. Offline dependency reinstallation remains unproved.",
+    "The Claude CLI init and usage report claude-fable-5, while assistant message events identify GLM-5.3-Flash; the underlying model identity is not independently resolved.",
+    "Synthetic local response and geometric material support do not establish RF wave propagation, absorbed power, a real device, or a physical interpolation-error bound."
+  ]
+}

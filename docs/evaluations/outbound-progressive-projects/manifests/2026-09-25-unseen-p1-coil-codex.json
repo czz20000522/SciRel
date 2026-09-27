@@ -1,0 +1,82 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-25-unseen-p1-coil-codex",
+  "status": "development_evaluation_followup_permission_rescue",
+  "not_claims": [
+    "trusted_release",
+    "expert_approval",
+    "public_v1",
+    "codefusion_integration",
+    "claude_code_success",
+    "strict_blind_isolation",
+    "uninterrupted_followup_autonomy",
+    "offline_dependency_reinstallation",
+    "device_physics_validation",
+    "stable_generalization"
+  ],
+  "harness": {
+    "kind": "codex_cli",
+    "version": "0.156.1",
+    "configured_model": "gpt-6-sol",
+    "thread_id": "01a0d842-6cde-7121-843a-bf6f582fe48b",
+    "first_followup_read_only": true,
+    "writable_continuation_supplied_scientific_answer_or_patch": false
+  },
+  "scirel_inputs": {
+    "wheel_version": "0.1.0.dev15",
+    "wheel_digest": "7b9c0b17d2fc24650055edda4e6cab6aa67c75df1b458abccfb43059a1d204af",
+    "catalog_coverage": "68/68 pending_unapproved",
+    "catalog_release_digest": "aa8c19884887682713a99c7cc9d33ded3acc99b2356254e8191af93ee0ba8d20",
+    "solver_skill_digest": "d0a30da09b0b757307754c4e7a4e1f04d6603b42583a17285ad04def813092b3"
+  },
+  "archives": {
+    "stage0_inputs": "build/verification/p1-coil-variant-evaluation/stage0-inputs.tgz",
+    "stage0_inputs_sha256": "09fdd32919721d9eeb2d2fb801de1e1808733649c6dad361ffcd6854a9650f9e",
+    "stage1_first_delivery": "build/verification/p1-coil-variant-evaluation/stage1-first-delivery.tgz",
+    "stage1_first_delivery_sha256": "f7562f80141d53b9814080c605c5649f8f923ce7b2e08ed03c5a513f1e52c1e4",
+    "stage2_writable_delivery": "build/verification/p1-coil-variant-evaluation/stage2-writable-delivery.tgz",
+    "stage2_writable_delivery_sha256": "98044a4e1623b40741daa31564b16d4562c0c21c78647579b2d5724e3cf841b6"
+  },
+  "examiner_inputs": {
+    "opening": "build/verification/p1-coil-variant-evaluation/examiner-private/opening.txt",
+    "opening_sha256": "2904ddc1123b8dfbe8ca5c74f4a760191309d155bfd052e4931e89074ec7c772",
+    "followup": "build/verification/p1-coil-variant-evaluation/examiner-private/followup.txt",
+    "followup_sha256": "da7e4c489ea24db3bea2f2b2cff34552689d50687e797a87c74d229ff424b38f",
+    "drive_more": "build/verification/p1-coil-variant-evaluation/examiner-private/drive-more.csv",
+    "drive_more_sha256": "6eee80b67ec8b6143fa5931dfab9a3bfb0d7034d835710971a30e25daafc7ab8",
+    "axis_reference": "build/verification/p1-coil-variant-evaluation/examiner-private/axis_reference.py",
+    "axis_reference_sha256": "b78f70e35774707a7f1d10a2d11102d9be30452440c799ae8f68792543f0206d",
+    "off_axis_checker": "build/verification/p1-coil-variant-evaluation/examiner-private/verify_off_axis.py",
+    "off_axis_checker_sha256": "d97f847995d40407a5674d9461507a942214e6af6f14c290babcdf9ebd97f844",
+    "replay_evidence": "build/verification/p1-coil-variant-evaluation/examiner-private/replay-evidence.md",
+    "replay_evidence_sha256": "6695e73339ea1f4b61e7a9f2dd1c89b796b0a862d0cabac9dbbdd402ac1d84d5"
+  },
+  "traces": {
+    "round1_first": "build/verification/p1-coil-variant-evaluation/examiner-private/round1-first.jsonl",
+    "round1_first_sha256": "76bd371bc125de046335f4d4bb94f0cfa09c8d2299146aeed34c053ca70210ee",
+    "round2_read_only": "build/verification/p1-coil-variant-evaluation/examiner-private/round2-followup.jsonl",
+    "round2_read_only_sha256": "3fd3334f8a067bbce3963c2d5c5ed40674a87b5d0d1e283eafc19cf214988785",
+    "round2_writable": "build/verification/p1-coil-variant-evaluation/examiner-private/round2-writable-continuation.jsonl",
+    "round2_writable_sha256": "06f4bf742eb9cca83af56171f59c5726a276a92d4a9fe2aec051c0f0f9fe1d84"
+  },
+  "result": {
+    "first_delivery_grid_points": 3479,
+    "first_delivery_project_tests": "4 passed",
+    "followup_complete_cases": ["baseline", "tilt", "off"],
+    "followup_skipped_case": "draft missing lower drive",
+    "followup_grid_points_per_case": 2091,
+    "followup_project_tests": "6 passed",
+    "original_three_results_byte_preserved": true,
+    "comparison_result_files_repeat_byte_stable": 4,
+    "independent_off_axis_locations_checked": 27,
+    "independent_off_axis_components_checked": 54,
+    "independent_off_axis_max_abs_error_t": 4.81e-15
+  },
+  "limitations": [
+    "The first follow-up resumed read-only and delivered no project files; a later workspace-write restoration was necessary.",
+    "Evaluator materials lacked OS-enforced isolation from the solver workspace.",
+    "Replay venvs used system site packages, so offline dependency reinstallation is unproved.",
+    "The inputs are synthetic ideal circular filaments; plasma, measured fields and actual conductor effects are outside scope.",
+    "The historical first baseline outputs were preserved, but an arbitrary later change to the comparison sheets was not tested for historical-result retention."
+  ]
+}

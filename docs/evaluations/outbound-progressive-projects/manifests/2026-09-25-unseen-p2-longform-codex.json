@@ -1,0 +1,88 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-25-unseen-p2-longform-codex",
+  "status": "development_evaluation_codex_success_after_two_review_interventions",
+  "not_claims": [
+    "trusted_release",
+    "expert_approval",
+    "public_v1",
+    "codefusion_integration",
+    "claude_code_success",
+    "strict_blind_isolation",
+    "unassisted_scientific_note_handling",
+    "stable_generalization",
+    "device_physics_validation",
+    "total_magnetic_field_validation",
+    "offline_dependency_reinstallation"
+  ],
+  "solver_workspace": "C:/Users/26569/AppData/Local/Temp/scirel-outbound-20260925-unseen-p2-longform/solver-workspace",
+  "harness": {
+    "successful_kind": "codex_cli",
+    "version": "0.156.1",
+    "configured_model": "gpt-6-sol",
+    "thread_id": "01a0d594-d883-7230-8e24-3a083f04a6b6",
+    "claude_connectivity": "Claude Code 2.1.281 / DeepSeek-V4.1-Flash returned unrecognized_model before task work; this was a connectivity check, not a Claude attempt at this fixture."
+  },
+  "scirel_inputs": {
+    "wheel_version": "0.1.0.dev12",
+    "wheel_sha256": "b36fb62709a3151fceb0276c5c7db260c24802e52a5bda07b5def74794c662db",
+    "partial_catalog_assets": "53/68",
+    "catalog_release_sha256": "75e7c29a704f108312171ddc9f84e2dd02016866c496fbddcad931f39b270774",
+    "scirel_solving_skill_sha256": "c484c9587efd941e9b26b053bdcce676447f96bb783b37081a4d3acdbc0e341a"
+  },
+  "archives": {
+    "stage1": "build/verification/scirel-outbound-p2-longform-stage1-20260925.tgz",
+    "stage1_sha256": "7f3cd24b77923b25095ea3fa5c742b512e9c63a3820b5d53b0e2c5fc45c88a84",
+    "stage2_first": "build/verification/scirel-outbound-p2-longform-stage2-first-20260925.tgz",
+    "stage2_first_sha256": "a2247dcf55c3d571c138739da667c7c8797ee39b996680024331a0230c66074b",
+    "reviewed_parser": "build/verification/scirel-outbound-p2-longform-reviewed-parser-20260925.tgz",
+    "reviewed_parser_sha256": "7914ecee877684af50d52cc3796df05941a913167d924c2959e65425b7036db0",
+    "final": "build/verification/scirel-outbound-p2-longform-final-20260925.tgz",
+    "final_sha256": "c6aacefe4784e6900de15f16b758ab8f41ecfc426304f4145b5f257e985766ae"
+  },
+  "traces": {
+    "claude_connectivity": "build/verification/p2-longform-evaluation/examiner-private/claude-connectivity.jsonl",
+    "claude_connectivity_sha256": "183ce06a069bf73d91fefc04c173f013f20fa07002d31f8caf286859fc994474",
+    "round1_502": "build/verification/p2-longform-evaluation/examiner-private/codex-round1.jsonl",
+    "round1_502_sha256": "ae56f72c16324f8e9058f5a9bd070437c995df7b1f74798be611ff0271dcfc12",
+    "round1_resume": "build/verification/p2-longform-evaluation/examiner-private/codex-round1-resume.jsonl",
+    "round1_resume_sha256": "5e0dde818bca6d0ff337acf62b5cd2b6c81db2fa32eb10232cfe13969e46d821",
+    "round2_first": "build/verification/p2-longform-evaluation/examiner-private/codex-round2.jsonl",
+    "round2_first_sha256": "6378a7a002130278cb73364b92e49f0b3cc1d7ba728e099286d449a2ffa837ac",
+    "review_fix": "build/verification/p2-longform-evaluation/examiner-private/codex-review-fix.jsonl",
+    "review_fix_sha256": "c79183b495a7a987efa37f796af0ba009bde2f49692e55d1d093d78deb8e4e09",
+    "boundary_fix": "build/verification/p2-longform-evaluation/examiner-private/codex-boundary-fix.jsonl",
+    "boundary_fix_sha256": "4baaf4f514893d7a2001b318126bb0ba6213f35b478dfdae4127e583662b8a57"
+  },
+  "progressive_request": {
+    "stage1": "Convert two synthetic equilibrium exports in different table layouts to the target Cartesian grid format; do not invent a missing flux-side declaration.",
+    "stage2": "A later beta note and a revised grid arrive; preserve the first output and distinguish old and new results.",
+    "first_stage_failure": "The initial Codex call ended on upstream 502 before project delivery; the same thread was resumed.",
+    "first_stage2_error": "The first follow-up parser accepted an uncertain note containing less_than? as a definite scientific declaration.",
+    "review_interventions": [
+      "An examiner negative note exposed the false ready result and prompted a parser repair.",
+      "A second examiner review rejected exact prose matching and prompted Agent-authored, source-bound structured declarations."
+    ]
+  },
+  "final_result": {
+    "entrypoint_exit_code": 0,
+    "project_tests": "Ran 9 tests, OK",
+    "ready_cases": ["alpha", "beta"],
+    "grid_shape_per_case": [7, 7, 5],
+    "material_support_points_per_case": 66,
+    "outside_source_rz_points_per_case": 25,
+    "prior_output_hashes_unchanged": true,
+    "declaration_binds_note_export_and_csv_hashes": true,
+    "uncertain_note_and_changed_source_rejected_at_entrypoint": true,
+    "field_scope": "poloidal-only B_R/B_Z; B_phi was not supplied"
+  },
+  "independent_replay": "Final archive extracted elsewhere; its bundled dev12 wheel was installed into a new venv and imported from that venv's site-packages. User entrypoint and nine tests passed, and final alpha/beta NPZ files were byte-identical to the solver workspace. The venv used --system-site-packages.",
+  "limitations": [
+    "The fixture is synthetic and not a device-physics or total-field validation.",
+    "New natural-language notes still require Agent interpretation before the deterministic tool can rerun with a structured declaration.",
+    "The first stage2 result was unsafe for uncertain scientific wording; the final result needed two examiner interventions.",
+    "The solver did not have operating-system-enforced read isolation from all examiner materials.",
+    "Twenty-five target nodes per case lie outside the source R-Z map and use boundary-clamped values, not source-covered field samples.",
+    "The replay venv used system site packages and does not prove offline reinstallation of all dependencies."
+  ]
+}

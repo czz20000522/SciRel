@@ -1,0 +1,89 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-26-axisline-bank-forward",
+  "status": "autonomous_correct_numbers_with_invalid_self-check; two-review-assisted_final_validation",
+  "not_claims": [
+    "trusted_release",
+    "expert_approval",
+    "public_v1",
+    "autonomous_complete_delivery",
+    "stable_generalization",
+    "real_device_validation",
+    "codefusion_integration",
+    "confirmed_underlying_model_identity"
+  ],
+  "harness": {
+    "kind": "claude_code",
+    "version": "2.1.281",
+    "session_id": "b9cad140-190b-4bd9-bf19-92080cc3173f",
+    "cli_model_label": "claude-fable-5",
+    "assistant_message_model_label": "GLM-5.3-Flash",
+    "underlying_model_confirmed": false,
+    "permission_mode": "bypassPermissions",
+    "budget_or_call_limit_set": false,
+    "review_feedback_rounds": 2
+  },
+  "scirel_inputs": {
+    "wheel_version": "0.1.0.dev24",
+    "wheel": "build/verification/p4-grid-sampling-forward/independent/stage4-run/wheel/scirel-0.1.0.dev24-py3-none-any.whl",
+    "wheel_sha256": "a0c665a7d2920650fce832c448c49d4c866260daec0cba0102dd60e3e56c95a0",
+    "catalog_coverage": "74/74 complete development catalog",
+    "catalog_release": "build/verification/p4-grid-sampling-forward/independent/stage4-run/catalog/release.json",
+    "catalog_release_sha256": "6e2aa58e731777620d060452354b60aa777996ab3c7e529f0a3fc4ebf69f87df",
+    "solver_skill": "build/verification/axisline-bank-forward/solver-skill-used.md",
+    "solver_skill_sha256": "0a5d2db75177be3752fffb27060a0fd67c72a3faaff80555a35b90b06c3414af",
+    "later_method_revision_not_forward_tested": "build/verification/axisline-bank-forward/method-next.md",
+    "later_method_revision_not_forward_tested_sha256": "7cb5830190df12df8f7214b1f59ddd05d989aeca7387f911468f223c38a9742d"
+  },
+  "fixture": {
+    "banks": "docs/evaluations/outbound-progressive-projects/fixtures/axisline-bank-variant/banks.csv",
+    "banks_sha256": "631010475e4f52e3f503fc1d96fef3659bec5a86361afdbb6cdbc4409ee4183b",
+    "axisline": "docs/evaluations/outbound-progressive-projects/fixtures/axisline-bank-variant/axisline.csv",
+    "axisline_sha256": "4ba14ac987e14825356ac0bb8506a206a2759dc1c135b0f576def2bfa542fc7f",
+    "source_note": "docs/evaluations/outbound-progressive-projects/fixtures/axisline-bank-variant/source-note.md",
+    "source_note_sha256": "517e0f044ea6d438eafd78cc787b4ff0cb3c20dadc576bc2ca5d0cc010d306ef",
+    "opening": "docs/evaluations/outbound-progressive-projects/fixtures/axisline-bank-variant/opening.txt",
+    "opening_sha256": "8792b999232765e1a6d628c33f7bac8242719968d985b0b548ed5340299c035c",
+    "examiner_oracle_not_visible_to_solver": "docs/evaluations/outbound-progressive-projects/fixtures/axisline-bank-variant/examiner-oracle.csv",
+    "examiner_oracle_not_visible_to_solver_sha256": "7efa6166f78ec819ae3619014887796e953db5479a3aa94801e0f05605b42812",
+    "independent_checker_not_visible_to_solver": "docs/evaluations/outbound-progressive-projects/fixtures/axisline-bank-variant/check_result.py",
+    "independent_checker_not_visible_to_solver_sha256": "de3999269c2cac71011e8cbf22ab217a898a3a2b8c84140c4327bee8a3fa3cfc"
+  },
+  "archives": {
+    "stage1_autonomous": "build/verification/axisline-bank-forward/stage1-autonomous.tgz",
+    "stage1_autonomous_sha256": "0b120d1e27fba6fb79c723dc8fbf85ce12dac8be29b279d0fb1df4dacd426aa6",
+    "stage2_wording_reviewed": "build/verification/axisline-bank-forward/stage2-reviewed.tgz",
+    "stage2_wording_reviewed_sha256": "ed82f1446368ac849b316854c746f5cf09c274d10a56acbadd59b4b43ad3c755",
+    "stage3_independent_check_reviewed": "build/verification/axisline-bank-forward/stage3-reviewed-final.tgz",
+    "stage3_independent_check_reviewed_sha256": "ce7e130142a0fa6f2c863d1ca6cee21588b40058351dda37e4e6853f8d890222"
+  },
+  "traces": {
+    "round1_autonomous": "build/verification/axisline-bank-forward/round1-autonomous.jsonl",
+    "round1_autonomous_sha256": "e43c92535a02f895a30e603fcf1a6a795abd5c5ee53018ea0aed0b76e6b354e3",
+    "round2_wording_reviewed": "build/verification/axisline-bank-forward/round2-reviewed.jsonl",
+    "round2_wording_reviewed_sha256": "f9dddec44f4d0753eb4315e63b51a82f503f0396673fc27d54ebfaeded99cab9",
+    "round3_independent_check_reviewed": "build/verification/axisline-bank-forward/round3-reviewed.jsonl",
+    "round3_independent_check_reviewed_sha256": "685e8411b1184c519c6452918009dde3f8ef8ef0c8b9433817aa57b340175012"
+  },
+  "review_evidence": {
+    "feedback1": "build/verification/axisline-bank-forward/review-feedback.txt",
+    "feedback1_sha256": "74eaafd8783145a387daeb2695c11a551224770216386066886017740b394288",
+    "stage2_independence_finding": "build/verification/axisline-bank-forward/independent-stage2-finding.txt",
+    "stage2_independence_finding_sha256": "ab10d74c347718a0b33333e366898db6e0832b039dce8d6451f110f6e84864c2",
+    "feedback2": "build/verification/axisline-bank-forward/review-feedback-2.txt",
+    "feedback2_sha256": "a1eda543be65852657c90c8fec4b9cafd60466e81123875f864ccee9c253ed07"
+  },
+  "outcome": {
+    "autonomous_numerical_mapping_correct_against_external_oracle": true,
+    "autonomous_self_check_independent_for_mapping": false,
+    "first_review_only_wording_and_geometry_distance": true,
+    "final_reviewed_self_check_rejects_wrong_current_mutation": true,
+    "final_source_free_focused_tests_passed": 7,
+    "final_independent_raw_input_rows_passed": 5,
+    "final_max_absolute_oracle_difference_t": 4.525e-13,
+    "first_and_final_deliverable_bytes_equal": true,
+    "trusted_release_or_real_device_validation": false,
+    "autonomous_complete_delivery": false,
+    "stable_generalization_established": false
+  }
+}

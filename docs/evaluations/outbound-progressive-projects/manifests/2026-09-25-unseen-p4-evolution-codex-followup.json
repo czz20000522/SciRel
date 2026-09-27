@@ -1,0 +1,82 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-25-unseen-p4-evolution-codex-followup",
+  "status": "development_evaluation_codex_progressive_project_success_after_resume_recovery",
+  "not_claims": [
+    "trusted_release",
+    "expert_approval",
+    "public_v1",
+    "codefusion_integration",
+    "claude_code_success",
+    "stable_generalization",
+    "device_physics_validation",
+    "equilibrium_coupling_approval",
+    "heating_validation",
+    "plasma_shape_prediction",
+    "unassisted_resume_success",
+    "offline_dependency_reinstallation"
+  ],
+  "harness": {
+    "successful_kind": "codex_cli",
+    "version": "0.156.1",
+    "configured_model": "gpt-6-sol",
+    "thread_id": "01a0d56e-4a1d-7610-a9e7-7dde05dfc495",
+    "claude_connectivity": "Claude Code 2.1.281 / DeepSeek-V4.1-Flash returned unrecognized_model before any task work; this was a connectivity check, not a Claude attempt at this fixture."
+  },
+  "scientific_package": {
+    "version": "0.1.0.dev12",
+    "wheel_sha256": "b36fb62709a3151fceb0276c5c7db260c24802e52a5bda07b5def74794c662db",
+    "catalog_release_sha256": "75e7c29a704f108312171ddc9f84e2dd02016866c496fbddcad931f39b270774",
+    "catalog_coverage": "partial 53/68",
+    "scirel_solving_skill_sha256": "c484c9587efd941e9b26b053bdcce676447f96bb783b37081a4d3acdbc0e341a"
+  },
+  "stage1_project_archive": "build/verification/scirel-outbound-unseen-p4-evolution-codex-final-20260925.tgz",
+  "stage1_project_archive_sha256": "c0917631584f47daa798a40fdd975bf68eccfb1de43e22101daa1785d76a079c",
+  "final_project_archive": "build/verification/scirel-outbound-unseen-p4-evolution-codex-final-v2-20260925.tgz",
+  "final_project_archive_sha256": "7ae5a93fc445a953cfd0e3ad02ecbb0e50fbb46cc66f6627259e53540fa6f3bc",
+  "traces": {
+    "round1": "build/verification/scirel-outbound-unseen-p4-evolution-codex-20260925-round1.jsonl",
+    "round1_sha256": "6fd889a07405cb8809f936ef8b5be4bb26efb46a3b6cceee6036db82b3f1fc2e",
+    "round2_read_only": "build/verification/scirel-outbound-unseen-p4-evolution-codex-20260925-round2.jsonl",
+    "round2_read_only_sha256": "1ccb7ba78b2804e1e74cfe99573bb05b18f1e44cf396d73b62473a1fa40e571d",
+    "round2_write_recovery": "build/verification/scirel-outbound-unseen-p4-evolution-codex-20260925-round2b.jsonl",
+    "round2_write_recovery_sha256": "c0df1e77b04d4d6cc610044456e64287926708d11abba2140ea03638366d8d0a",
+    "claude_connectivity": "build/verification/scirel-outbound-unseen-p4-evolution-claude-connectivity-20260925.jsonl",
+    "claude_connectivity_sha256": "69d87cd34b21bc89a1dab22417e2a6cae6df4894cf3c03e814b78c49c25b5cd0"
+  },
+  "progressive_request": {
+    "stage1": "Two synthetic coil settings from a wide current table; deliver a reusable vacuum-field comparison without claiming plasma shape or heating.",
+    "followup": "A later table contains complete reverse and idle settings plus lab-note with blank D_kA; preserve first outputs, process usable rows and summarize a specified inner viewing window.",
+    "resume_failure": "The first resumed Codex turn was read-only, computed an in-memory preview and changed no project files. The same session was resumed with workspace-write permission; only then was the follow-up implemented and rerun."
+  },
+  "result": {
+    "usable_new_states": ["reverse", "idle"],
+    "skipped_state": "lab-note",
+    "missing_column": "D_kA",
+    "window_RZ_m": [0.15, 0.35, -0.1, 0.1],
+    "window_grid_nodes_per_state": 1681,
+    "reverse_mean_B_Z_mT": -2.131120,
+    "idle_mean_B_Z_mT": 0.0,
+    "project_tests": "5 passed",
+    "original_output_files_unchanged": true,
+    "initial_output_sha256": {
+      "field_samples_csv": "8e024794136d5727b3fd71596021c69bc2221d3b05c8a4df24630d9599c41ab2",
+      "vacuum_field_png": "e02818fe7f4d53cd404558cd891b85a2727c64155d6656d8a19df797aaf46269",
+      "checks_json": "bb8552aaf20d952a43005b3e17363b8e8213fc8ebf13dad58728a8169ad4a199"
+    },
+    "analytic_axis_check_mT": {
+      "balanced": 2.189330583,
+      "shifted": 2.241269984,
+      "reverse": -2.018059114,
+      "idle": 0.0
+    }
+  },
+  "independent_archive_verification": "Extracted the final archive elsewhere, installed the included dev12 wheel into a new venv with --ignore-installed and --force-reinstall, confirmed scirel imports from that venv, ran both original and follow-up user entrypoints and five tests. Original and follow-up CSV/PNG outputs were byte-identical to the solver workspace; checks.json contains absolute paths and is not byte-portable across extraction paths.",
+  "limitations": [
+    "Synthetic ideal-filament vacuum field, not a real device or conductor-interior model.",
+    "Only finite/shape and axis radial-field project checks; the independent axial-loop formula supports normalization at the axis, not full-grid device physics.",
+    "The initial Codex resume was read-only; success required an explicit permission recovery, so this is not a seamless user experience.",
+    "The fresh verification venv used system site packages; it does not prove offline reinstallation of all dependencies.",
+    "The partial catalog cannot establish a vacuum-to-equilibrium or heating connection; missing plasma and heating inputs were not invented."
+  ]
+}

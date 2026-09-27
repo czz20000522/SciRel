@@ -1,0 +1,104 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-25-unseen-p1-coil-claude-fable",
+  "status": "development_evaluation_reviewed_export_and_claim_repair",
+  "not_claims": [
+    "trusted_release",
+    "expert_approval",
+    "public_v1",
+    "codefusion_integration",
+    "unassisted_scientific_interpretation",
+    "unassisted_correct_numeric_export",
+    "strict_blind_isolation",
+    "offline_dependency_reinstallation",
+    "device_physics_validation",
+    "stable_generalization"
+  ],
+  "harness": {
+    "kind": "claude_code",
+    "version": "2.1.281",
+    "canonical_model": "claude-fable-5",
+    "provider": "firstParty",
+    "assistant_message_model_tag": "GLM-5.3-Flash",
+    "model_tag_discrepancy_unresolved": true,
+    "session_id": "a22f0f46-445f-4a96-a716-99a99733a7e4",
+    "permission_mode": "auto",
+    "permission_denials": 0,
+    "reviewer_feedback_before_first_two_deliveries": false,
+    "reviewer_feedback_before_final_repair": true
+  },
+  "scirel_inputs": {
+    "wheel_version": "0.1.0.dev15",
+    "wheel_digest": "7b9c0b17d2fc24650055edda4e6cab6aa67c75df1b458abccfb43059a1d204af",
+    "catalog_coverage": "68/68 pending_unapproved",
+    "catalog_release_digest": "aa8c19884887682713a99c7cc9d33ded3acc99b2356254e8191af93ee0ba8d20",
+    "solver_skill_digest": "d0a30da09b0b757307754c4e7a4e1f04d6603b42583a17285ad04def813092b3"
+  },
+  "archives": {
+    "stage0_inputs": "build/verification/p1-coil-variant-evaluation/stage0-inputs.tgz",
+    "stage0_inputs_sha256": "09fdd32919721d9eeb2d2fb801de1e1808733649c6dad361ffcd6854a9650f9e",
+    "stage1_first_delivery": "build/verification/p1-coil-claude-fable-evaluation/stage1-first-delivery.tgz",
+    "stage1_first_delivery_sha256": "f204769a9c6463eac7f6e724adc05512677afc8fbbdc2fc04ac4c9c3a85024e8",
+    "stage2_autonomous_followup": "build/verification/p1-coil-claude-fable-evaluation/stage2-autonomous-followup.tgz",
+    "stage2_autonomous_followup_sha256": "ccf589b7e9dac5a62700d34776801bf79f462649198dffeda422dcb4b29f0646",
+    "stage3_reviewed_repair": "build/verification/p1-coil-claude-fable-evaluation/stage3-reviewed-repair.tgz",
+    "stage3_reviewed_repair_sha256": "b8a2c36a156e442a63a90d19dd80cdaafa021d95f1b04ec16f2cbcb577a69240"
+  },
+  "examiner_inputs": {
+    "opening": "build/verification/p1-coil-variant-evaluation/examiner-private/opening.txt",
+    "opening_sha256": "2904ddc1123b8dfbe8ca5c74f4a760191309d155bfd052e4931e89074ec7c772",
+    "followup": "build/verification/p1-coil-variant-evaluation/examiner-private/followup.txt",
+    "followup_sha256": "da7e4c489ea24db3bea2f2b2cff34552689d50687e797a87c74d229ff424b38f",
+    "drive_more": "build/verification/p1-coil-variant-evaluation/examiner-private/drive-more.csv",
+    "drive_more_sha256": "6eee80b67ec8b6143fa5931dfab9a3bfb0d7034d835710971a30e25daafc7ab8",
+    "axis_reference": "build/verification/p1-coil-variant-evaluation/examiner-private/axis_reference.py",
+    "axis_reference_sha256": "b78f70e35774707a7f1d10a2d11102d9be30452440c799ae8f68792543f0206d",
+    "off_axis_reference": "build/verification/p1-coil-variant-evaluation/examiner-private/verify_off_axis.py",
+    "off_axis_reference_sha256": "d97f847995d40407a5674d9461507a942214e6af6f14c290babcdf9ebd97f844"
+  },
+  "traces": {
+    "round1": "build/verification/p1-coil-claude-fable-evaluation/round1.jsonl",
+    "round1_sha256": "9d608dfd961c8ee58d2d5d2c24660d1734afd15a990c7508d690ecc4d4ab5a56",
+    "round2": "build/verification/p1-coil-claude-fable-evaluation/round2.jsonl",
+    "round2_sha256": "6401994d71d8c690ded37d8ff32de6b6418789b2efdca5febb4bb2c5b7ebe8e8",
+    "round3_reviewer_feedback": "build/verification/p1-coil-claude-fable-evaluation/round3-reviewer-feedback.jsonl",
+    "round3_reviewer_feedback_sha256": "c0410f96d13bf2800751a56cceb606d83358e6207e8c20ff6c6b53dcf88185b8"
+  },
+  "independent_evidence": {
+    "numeric_checker": "build/verification/p1-coil-claude-fable-evaluation/verify_numeric.py",
+    "numeric_checker_sha256": "89f5c6a748036759da80ee7339455ba003581ac0aec9b8b57287f7bd03913b37",
+    "numeric_check": "build/verification/p1-coil-claude-fable-evaluation/numeric-check.json",
+    "numeric_check_sha256": "8ee8e31d7ad36e163be1d9e154aed2f6a37ea549b44e38faed57c8d1c99b926b",
+    "replay_first": "build/verification/p1-coil-claude-fable-evaluation/replay-first.txt",
+    "replay_first_sha256": "f5c15a53570ea1b0fa3ae003017650ea622a17bec29136ad2710050f2411a4f7",
+    "replay_second": "build/verification/p1-coil-claude-fable-evaluation/replay-second.txt",
+    "replay_second_sha256": "f5c15a53570ea1b0fa3ae003017650ea622a17bec29136ad2710050f2411a4f7"
+  },
+  "result": {
+    "first_delivery_project_tests": "8 passed",
+    "autonomous_followup_project_tests": "11 passed",
+    "reviewed_project_tests": "13 passed",
+    "autonomous_followup_complete_cases": ["baseline", "tilt", "off"],
+    "autonomous_followup_skipped_case": "draft missing lower drive",
+    "first_narrative_axis_trend_wrong": true,
+    "first_and_second_grid_csv_extra_prose_row": true,
+    "first_and_second_grid_csv_cm_labels_contained_m_values": true,
+    "reviewed_grid_rows": [3479, 2091, 2091, 2091],
+    "independent_off_axis_locations": 27,
+    "independent_off_axis_components": 54,
+    "independent_max_abs_error_t_at_csv_precision": 4.886072544826869e-10,
+    "stage1_historical_files_match_terminal_archive": 3,
+    "stage2_historical_files_match_terminal_archive": 9,
+    "source_free_replay_output_files_byte_stable": 22,
+    "source_free_replay_user_entry_runs": 2
+  },
+  "limitations": [
+    "The first two deliveries had a wrong axis-field interpretation and a factor-100 coordinate-label error in numeric CSVs; green project tests did not catch them.",
+    "Explicit reviewer feedback was needed for the scientific wording, CSV structure and units, plot framing, and precise history accounting.",
+    "The examiner initially treated a transient in-progress run_summary.json digest as a final stage-2 artifact. The terminal stage-2 archive and the reviewed history match exactly; no historical summary rescue was supplied.",
+    "Examiner files were staged outside the solver directory but not protected by OS-enforced read isolation.",
+    "The replay venv used system site packages; SciRel itself imported from the installed dev15 wheel, but offline dependency reinstallation is unproved.",
+    "The Claude CLI init/usage records claude-fable-5 and firstParty, but assistant message events record GLM-5.3-Flash; the underlying model identity is not independently resolved.",
+    "This synthetic ideal-filament vacuum field does not validate a real device, plasma equilibrium, heating, or general reliability."
+  ]
+}

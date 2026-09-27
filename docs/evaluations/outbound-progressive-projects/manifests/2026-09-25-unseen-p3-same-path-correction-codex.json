@@ -1,0 +1,86 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-25-unseen-p3-same-path-correction-codex",
+  "status": "development_evaluation_fresh_session_unassisted_same_path_output_history",
+  "not_claims": [
+    "trusted_release",
+    "expert_approval",
+    "public_v1",
+    "codefusion_integration",
+    "claude_code_success",
+    "strict_blind_isolation",
+    "greenfield_project_creation",
+    "complete_historical_input_byte_provenance",
+    "autonomous_second_correction_session",
+    "stable_generalization",
+    "device_physics_validation",
+    "rf_absorption_validation",
+    "offline_dependency_reinstallation"
+  ],
+  "harness": {
+    "kind": "codex_cli",
+    "version": "0.156.1",
+    "configured_model": "gpt-6-sol",
+    "thread_id": "01a0d7ea-2a94-7e40-9924-0fcb7d50329b",
+    "fresh_session_on_previously_reviewed_project": true,
+    "reviewer_feedback_during_session": false
+  },
+  "scirel_inputs": {
+    "wheel_version": "0.1.0.dev5",
+    "wheel_digest": "09521a918b875e81c9f17b236f52f4c225fad538155dc9e1b78ed1da7efb23a6",
+    "catalog_coverage": "partial 14/62",
+    "catalog_release_digest": "8c96bfa5180f030c88af1bbccd62568b87e1f6ad17c3c1df599a23705616c577",
+    "solver_skill_digest": "d0a30da09b0b757307754c4e7a4e1f04d6603b42583a17285ad04def813092b3"
+  },
+  "archives": {
+    "inherited_project": "build/verification/p3-takeover-variant-evaluation/stage2-reviewed-final.tgz",
+    "inherited_project_sha256": "87f9e2e1ff48a48ff2c17521657c843c79dc3dc4c2c347dc780b06f0f86c01f7",
+    "stage0_corrected_request": "build/verification/p3-correction-variant-evaluation/stage0-corrected-request.tgz",
+    "stage0_corrected_request_sha256": "ed1956dd7d9d8b166a0a4171daf49960ff1a7845e94787f384a4507f08ce3aac",
+    "stage1_unassisted_correction": "build/verification/p3-correction-variant-evaluation/stage1-unassisted-correction.tgz",
+    "stage1_unassisted_correction_sha256": "0e7d079e5a8e54ad0da7a22f0d99323e59784d85e171dd97f2ea9f1766ea4992",
+    "independent_second_correction_probe": "build/verification/p3-correction-variant-evaluation/probe-second-correction.tgz",
+    "independent_second_correction_probe_sha256": "f9ed2f7788a5e0bb04fd61615420dfb9901523a9ea716c2701e6deaf4880df37"
+  },
+  "examiner_inputs": {
+    "prior_location_request": "build/verification/p3-correction-variant-evaluation/examiner-private/prior-locations.json",
+    "prior_location_request_sha256": "53436a94b38025c335368a9350222f5b2f52d06af7335581c60f4c4f8a8775b1",
+    "opening": "build/verification/p3-correction-variant-evaluation/examiner-private/opening.txt",
+    "opening_sha256": "7d82af190564b694c7a671f9964c35da51aeb81f66f1a79f89ca2a43e3abca04",
+    "independent_checker": "build/verification/p3-correction-variant-evaluation/examiner-private/verify_corrected.py",
+    "independent_checker_sha256": "392f935c7d302e5c14e271dff80654a0a96b713888398104a93df583add02240"
+  },
+  "trace": {
+    "solver": "build/verification/p3-correction-variant-evaluation/examiner-private/round1.jsonl",
+    "solver_sha256": "c23638810c787ec14f3b05b49af13d87739de4e8d9b5eca86d5965c91efebf5b"
+  },
+  "result": {
+    "corrected_request_digest": "f8312cf973d56fe41bfb8b24b078995098b282828913b03fcb224615856ba590",
+    "prior_location_table_digest": "df5a6d93c7c655e34c5f053d82205f017b3814a0efdf5411c4c9ad4b2d3eaac9",
+    "prior_location_report_digest": "acebca781fcae96de335ff4dd1d1201ddffaa8d58539164b5f6c529ea1a99379",
+    "archived_location_pair_byte_matches_previous_current": true,
+    "unchanged_grid_outputs": 3,
+    "corrected_rows": 6,
+    "corrected_estimates": 4,
+    "corrected_unavailable": 2,
+    "independent_real_imag_components_checked": 48,
+    "independent_max_abs_interpolation_error": 4.55e-13,
+    "missing_z_key_failure_self_repaired": true,
+    "stage1_project_tests": "9 passed",
+    "stage1_run_checks": "20 passed",
+    "stage1_replay_output_files_stable_on_repeat": 16,
+    "stage1_output_index_links_resolve": 10,
+    "independent_second_correction_created_revision_2": true,
+    "independent_second_correction_preserved_revision_1": true,
+    "independent_second_correction_repeated_run_changed_files": 0
+  },
+  "independent_replay": "Stage0 and stage1 archives were extracted separately. The old location pair in stage1 revision-1 matched the prior stage0 current pair byte for byte; all three grid outputs were unchanged. An examiner-only standard-library eight-corner calculation from stage0 grid CSV checked six row classifications and 48 real/imag components, with maximum absolute difference 4.55e-13. From stage1 archive, the bundled dev5 wheel was installed in a fresh venv and imported from that venv's site-packages. The ordinary entrypoint ran twice with exit 0, 20 run checks and nine project tests passed, and all 16 output files retained their hashes and modification times. A separate extraction changed one coordinate at the same request path without a model turn; the ordinary entrypoint created revision-2 with the previous current table bytes, left revision-1 intact, and a repeat changed no files. The venv used --system-site-packages.",
+  "limitations": [
+    "The solver session was fresh, but it inherited the previously reviewer-repaired project, including its artifact-history structure. This is not unassisted greenfield creation or evidence that the prior repair was autonomous.",
+    "The project archived exact prior output bytes but did not retain the pre-correction same-path request JSON bytes. That source is held only in the examiner evidence and the inherited archive; project-native historical input-byte provenance remains incomplete.",
+    "The second correction was an independent command-level probe of the delivered project, not a second natural-language Agent continuation.",
+    "Examiner-private materials were not protected by operating-system read permissions, so this was staged disclosure, not strict blind isolation.",
+    "The synthetic local dielectric-response calculation has no RF wave or field solution and does not identify deposited power or an absorption location.",
+    "The replay venv used system site packages, so this does not prove offline dependency reinstallation."
+  ]
+}

@@ -1,0 +1,143 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-25-unseen-p4-evolution-codex",
+  "status": "development_evaluation_codex_stage1_success",
+  "archive_scope": "first user request only; later mixed-row/window follow-up is indexed separately",
+  "continuation_manifest": "2026-09-25-unseen-p4-evolution-codex-followup.json",
+  "not_claims": [
+    "trusted_release",
+    "expert_approval",
+    "public_v1",
+    "codefusion_integration",
+    "claude_code_success",
+    "stable_generalization",
+    "device_physics_validation",
+    "equilibrium_coupling_approval",
+    "heating_validation",
+    "plasma_shape_prediction"
+  ],
+  "workspace": "C:/Users/26569/AppData/Local/Temp/scirel-outbound-20260925-unseen-p4-evolution",
+  "solver_workspace": "C:/Users/26569/AppData/Local/Temp/scirel-outbound-20260925-unseen-p4-evolution/solver-workspace",
+  "final_project_archive": "build/verification/scirel-outbound-unseen-p4-evolution-codex-final-20260925.tgz",
+  "final_project_archive_sha256": "c0917631584f47daa798a40fdd975bf68eccfb1de43e22101daa1785d76a079c",
+  "codex_trace": "build/verification/scirel-outbound-unseen-p4-evolution-codex-20260925-round1.jsonl",
+  "codex_trace_sha256": "6fd889a07405cb8809f936ef8b5be4bb26efb46a3b6cceee6036db82b3f1fc2e",
+  "harness": {
+    "successful_kind": "codex_cli",
+    "trace_status": "turn.completed",
+    "entrypoint_rerun_after_trace": true,
+    "claude_code_attempted": false
+  },
+  "scirel_inputs": {
+    "wheel_version": "0.1.0.dev12",
+    "wheel_sha256": "b36fb62709a3151fceb0276c5c7db260c24802e52a5bda07b5def74794c662db",
+    "partial_catalog_assets": "53/68",
+    "catalog_release_json_sha256": "75e7c29a704f108312171ddc9f84e2dd02016866c496fbddcad931f39b270774",
+    "scirel_solving_skill_sha256": "c484c9587efd941e9b26b053bdcce676447f96bb783b37081a4d3acdbc0e341a",
+    "pip_show_after_run": {
+      "package": "scirel",
+      "version": "0.1.0.dev12",
+      "location": "solver-workspace/.venv/Lib/site-packages"
+    },
+    "install_limitation": "the original pip install attempt in the trace exited nonzero while trying to uninstall a user-site dev5 package outside the venv; the final venv nevertheless imported and reported scirel 0.1.0.dev12"
+  },
+  "entrypoint_commands": [
+    ".venv/Scripts/python.exe compare_coils.py",
+    ".venv/Scripts/python.exe -m unittest discover -s tests -v",
+    ".venv/Scripts/python.exe -m pip show scirel"
+  ],
+  "entrypoint_result": {
+    "exit_code": 0,
+    "unittest_summary": "Ran 3 tests, OK",
+    "states": [
+      "balanced",
+      "shifted"
+    ],
+    "sample_rows": 6,
+    "checks_passed": [
+      "finite fields and expected grid shape",
+      "zero radial field on axis"
+    ],
+    "outputs": [
+      "output/vacuum_field.png",
+      "output/field_samples.csv",
+      "output/checks.json"
+    ]
+  },
+  "scientific_result": {
+    "model": "axisymmetric circular-filament vacuum field",
+    "asset": "scirel.field.multi-coil-vacuum-field",
+    "current_interpretation": "total kA-turns per coil section divided equally among numerical filaments",
+    "balanced_axis_center": {
+      "R_m": 0.0,
+      "Z_m": 0.0,
+      "B_Z_mT": 2.189331,
+      "B_poloidal_mT": 2.189331
+    },
+    "shifted_axis_center": {
+      "R_m": 0.0,
+      "Z_m": 0.0,
+      "B_Z_mT": 2.24127,
+      "B_poloidal_mT": 2.24127
+    },
+    "outer_sample_comparison": {
+      "R_m": 0.5,
+      "Z_m": 0.0,
+      "balanced_B_Z_mT": 2.677617,
+      "shifted_B_R_mT": -0.302385,
+      "shifted_B_Z_mT": 3.299848,
+      "shifted_B_poloidal_mT": 3.313673
+    },
+    "later_complete_current_table_supported_without_python_edits": true
+  },
+  "files": [
+    {
+      "path": "solver-workspace/compare_coils.py",
+      "bytes": 8295,
+      "sha256": "c209e2c811a6cc04f89ca45a4ac28521e10c5e4b524a12f846dbff7e4966d616"
+    },
+    {
+      "path": "solver-workspace/README.md",
+      "bytes": 2333,
+      "sha256": "55edb6f9b72fa2b64c7a5523b22e52a248e7f3f1ee846840d5d725c7a90f9ce5"
+    },
+    {
+      "path": "solver-workspace/tests/test_compare_coils.py",
+      "bytes": 1464,
+      "sha256": "77fc1d110983c254890e3308e9a358e1f484b1ec18be75ebb59b6736e50a01c6"
+    },
+    {
+      "path": "solver-workspace/input/coil-layout.csv",
+      "sha256": "8be7deb8801f25003774bb2c5fe201c5961789e959f9ff0f48dbad37a5ad0fe4"
+    },
+    {
+      "path": "solver-workspace/input/currents-initial.csv",
+      "sha256": "b4c5f7f17b5ef1ab45bbbbda3cd7c413f1fd94c239a2c71e32f0d5db61c2355d"
+    },
+    {
+      "path": "solver-workspace/output/field_samples.csv",
+      "bytes": 326,
+      "sha256": "8e024794136d5727b3fd71596021c69bc2221d3b05c8a4df24630d9599c41ab2"
+    },
+    {
+      "path": "solver-workspace/output/checks.json",
+      "bytes": 758,
+      "sha256": "bb8552aaf20d952a43005b3e17363b8e8213fc8ebf13dad58728a8169ad4a199"
+    },
+    {
+      "path": "solver-workspace/output/vacuum_field.png",
+      "bytes": 83815,
+      "sha256": "e02818fe7f4d53cd404558cd891b85a2727c64155d6656d8a19df797aaf46269"
+    }
+  ],
+  "limitations": [
+    "This archive predates the user's mixed complete/incomplete current table and window request; it is not the final progressive project.",
+    "development dev12 wheel and partial catalog only",
+    "Codex CLI success, not Claude Code success",
+    "archive excludes .venv and Python caches; it includes wheel, catalog, skills, inputs, code, tests and outputs",
+    "synthetic vacuum-field fixture only",
+    "no plasma current, pressure/current profiles, vessel boundary, toroidal field, discharge or heating setup",
+    "checks do not establish coil-hardware validation, plasma shape, confinement or heating success",
+    "does not approve direct coupling from vacuum flux into equilibrium or heating workflows"
+  ]
+}

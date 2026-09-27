@@ -1,0 +1,89 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-27-balmer-forward",
+  "status": "three_autonomous_turns_with_first_pass_errors_then_one_review_assisted_repair_and_evaluator_document_correction",
+  "not_claims": [
+    "autonomous_source_to_port_reliability",
+    "autonomous_future_output_ownership_reliability",
+    "strict_examiner_isolation",
+    "confirmed_underlying_model_identity",
+    "offline_dependency_installation",
+    "external_atomic_physics_validation",
+    "expert_approval",
+    "trusted_release",
+    "public_v1",
+    "codefusion_integration"
+  ],
+  "harness": {
+    "kind": "claude_code",
+    "version": "2.1.281",
+    "session_id": "72a46846-7ef3-4960-9cf2-0ffb4af29418",
+    "cli_model_label": "claude-fable-5",
+    "assistant_message_model_label": "GLM-5.3-Flash",
+    "underlying_model_confirmed": false,
+    "skill_names_in_init": true,
+    "skill_invocation_or_body_read_observed": false,
+    "budget_or_call_limit_set": false,
+    "formal_review_rounds": 1,
+    "evaluator_document_corrections": 1
+  },
+  "scirel_inputs": {
+    "wheel_version": "0.1.0.dev39",
+    "wheel_digest": "sha256:be5a2a2b40461ded5c486d9c9689ceaaed987923b9ba428da73ab59ca1eef9b8",
+    "catalog_coverage": "complete 126/126, pending_unapproved",
+    "catalog_root_digest": "sha256:434249fe5f6df457b712992182a0d5631918a1002861db9d415723fcd86e3fca",
+    "solver_skill_digests": {
+      "scirel-solving": "sha256:d1739f71c9b5258a1fc33475df38f91fb38b7b08ea77606d1d57b89b0b403705",
+      "scientific-asset-navigation": "sha256:049146ae5eac80eab72c4b0024d1a34505e7032c75953ced85f0cefe4c4e644f",
+      "scientific-project-implementation": "sha256:fa5330a867133f032452338605e4fe27087aa4e08550d36a975e48ab7916e5ab",
+      "scientific-computation-validation": "sha256:eb90496efaf5cd6bf8ffc2d624823f59d3c9d8a6dc298a7d5de623b0da66941f"
+    }
+  },
+  "fixture_member_digests": {
+    "request_stage1": "sha256:d243bd948064ee69add0638302a6dd96a04ffdc98a240f031856dd524a39f206",
+    "request_stage2": "sha256:aca295fe8fada43253ed8971f7a1dda2a606ad5bfe6c2daddef8f91299b3f30e",
+    "request_stage3": "sha256:5cc40c2925e1f490897502b1d62f2c3ea2f2d5c81a87125894e16abcaa873d0e",
+    "readings": "sha256:4bcd491e97f891653f2145fcad3c2d9ef75b877ff1cd7d8c95301c5506b710c6",
+    "check_sheet": "sha256:c9632930f397e7a0b12245e4c755f158f135626f1fbb2d6cdc5369c6cc125019",
+    "revised_check_sheet": "sha256:5bd3457b8ce2f43ade16eea987a5ecabc0e7051fe9372af6bb1f7ddc5eab2996",
+    "historical_payload": "sha256:a9cc5b902fcb2263a60a6e60a90fdfbba9b4afccbebf0b19215bbb30b3fdb02a"
+  },
+  "artifacts": {
+    "host_assets": "build/verification/balmer-forward-20260927-host-assets.tgz",
+    "host_assets_sha256": "d0e1655a000aa18e2ea4f38612feea53ac126ca204b1f4440e4de63aeeaaed10",
+    "examiner_fixtures": "build/verification/balmer-forward-20260927-examiner-fixtures.tgz",
+    "examiner_fixtures_sha256": "d1f4689ed44afd79b54ce501a3fdcf636ada6ee3f4e6c23fda66d67c4ea555fc",
+    "stage1_autonomous": "build/verification/balmer-forward-20260927-stage1-autonomous.tgz",
+    "stage1_autonomous_sha256": "acbfef417e67bfaac8aeed468f42149e3b17320f6ae74832d335da3281ceb3d2",
+    "stage1_trace": "build/verification/balmer-forward-20260927-stage1-trace.jsonl",
+    "stage1_trace_sha256": "4f54805cd5212950722e83e3ba1193ff0db08c7ba89648305034c43382c9335a",
+    "stage2_autonomous": "build/verification/balmer-forward-20260927-stage2-autonomous.tgz",
+    "stage2_autonomous_sha256": "32cd354a8f98fc6f56986b9d3cfd01646dbad7eb8705789ec5a79e354b2917ee",
+    "stage2_trace": "build/verification/balmer-forward-20260927-stage2-trace.jsonl",
+    "stage2_trace_sha256": "b6dfd26617fab1f34427dbfdbf110822c5534c958afd08cf42fa027d567bae3c",
+    "stage3_autonomous": "build/verification/balmer-forward-20260927-stage3-autonomous.tgz",
+    "stage3_autonomous_sha256": "c427adee0f88c6c462c740c308360eae9f460ca9e2d7a3958c47a647bad6efb1",
+    "stage3_trace": "build/verification/balmer-forward-20260927-stage3-trace.jsonl",
+    "stage3_trace_sha256": "40816edd472bc7e7c0fb7fb83359958694b06df642a0f675aefa6d8d583a76c1",
+    "review_feedback": "build/verification/balmer-forward-20260927-review-feedback.txt",
+    "review_feedback_sha256": "dd01fb21d01f980e0b0edfaf7e361f9ac03757942f0209b6c16f9e948e69af35",
+    "review_trace": "build/verification/balmer-forward-20260927-review-trace.jsonl",
+    "review_trace_sha256": "5ec4b165cf7e53e085f8da8b0b806e218733e1e342cd35b7732ade90ff144b57",
+    "reviewed_archive": "build/verification/balmer-forward-20260927-reviewed.tgz",
+    "reviewed_archive_sha256": "d6d3b354161a3a48978230d9449b9e5b352fea2b5007d5a220fe89af2e1f78b8",
+    "final_archive": "build/verification/balmer-forward-20260927-final-evaluator-corrected.tgz",
+    "final_archive_sha256": "740c870838a90e1c63564a258debe403ac42066a7f493025238cc171cefb9fd6",
+    "independent_finding": "build/verification/balmer-forward-20260927-independent-finding.md",
+    "independent_finding_sha256": "350db00f25d13f80ddf60b62f8883402a24c5c326971d4d78467d4755b4b0f44"
+  },
+  "outcome": {
+    "autonomous_nominal_graph_invocations_and_three_deliverables": true,
+    "autonomous_scientific_report_and_duplicate_join_reliable": false,
+    "autonomous_future_output_ownership_reliable": false,
+    "stage3_historical_result_bytes_preserved": true,
+    "final_extracted_project_tests_passed": 14,
+    "final_changed_input_old_path_refused": true,
+    "final_ambiguous_id_unavailable": true,
+    "trusted_release_or_physical_validation": false
+  }
+}

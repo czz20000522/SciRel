@@ -1,0 +1,107 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-26-mount-catalog-forward",
+  "status": "two_autonomous_turns_with_label_and_repeat-overwrite_defects; two-review-assisted_bounded_delivery",
+  "not_claims": [
+    "autonomous_complete_delivery",
+    "trusted_release",
+    "expert_approval",
+    "public_v1",
+    "physical_device_validation",
+    "flux_or_spectrum",
+    "strict_examiner_isolation",
+    "confirmed_underlying_model_identity",
+    "codefusion_integration"
+  ],
+  "harness": {
+    "kind": "claude_code",
+    "version": "2.1.281",
+    "autonomous_session_id": "0973175e-3eb4-457e-bfed-122f100f430e",
+    "final_review_session_id": "7f83c53f-c8cd-476b-9da2-d9f62f16d633",
+    "model_flag_passed": false,
+    "assistant_message_model_label": "GLM-5.3-Flash",
+    "underlying_model_confirmed": false,
+    "budget_or_call_limit_set": false,
+    "review_feedback_rounds": 2
+  },
+  "scirel_inputs": {
+    "wheel_version": "0.1.0.dev24",
+    "host_assets_archive": "build/verification/mount-catalog-forward/host-mounted-assets.tgz",
+    "host_assets_archive_sha256": "5a0854b00017fdae26ddbf292d65a11f67330cb436a2539dc1df342b33cafcb8",
+    "wheel_member": "wheel/scirel-0.1.0.dev24-py3-none-any.whl",
+    "wheel_member_digest": "sha256:a0c665a7d2920650fce832c448c49d4c866260daec0cba0102dd60e3e56c95a0",
+    "catalog_coverage": "74/74 development catalog",
+    "catalog_release_member": "catalog/release.json",
+    "catalog_release_member_digest": "sha256:6e2aa58e731777620d060452354b60aa777996ab3c7e529f0a3fc4ebf69f87df",
+    "host_declaration": "SCIREL_EVAL_ASSETS_ROOT",
+    "selected_asset_id": "scirel.fusion.dd-neutron-lab-energy",
+    "solver_skill_members": {
+      "scirel-solving/SKILL.md": "sha256:d1739f71c9b5258a1fc33475df38f91fb38b7b08ea77606d1d57b89b0b403705",
+      "scientific-project-implementation/SKILL.md": "sha256:fa5330a867133f032452338605e4fe27087aa4e08550d36a975e48ab7916e5ab",
+      "scientific-asset-navigation/SKILL.md": "sha256:049146ae5eac80eab72c4b0024d1a34505e7032c75953ced85f0cefe4c4e644f",
+      "scientific-computation-validation/SKILL.md": "sha256:eb90496efaf5cd6bf8ffc2d624823f59d3c9d8a6dc298a7d5de623b0da66941f"
+    }
+  },
+  "fixture_member_digests": {
+    "request-stage1.txt": "sha256:adcde43a3a775f1707d26ac3717d291ca374cc8c6a41dc09220b16d9b54a755d",
+    "request-stage2.txt": "sha256:4fcaf74fc9afd15c47bd7fe71a32d50365f110875b2712f0389167f479b546b2",
+    "input/events.ndjson": "sha256:bcc01315d757c2fe2785355bbb6a7cb4a915a07a6ab3b0fb9b0a80f03337198a",
+    "input/events_followup.ndjson": "sha256:07681926c5a6072e4b372c8c3aaa0a42d5c59ccafce80e5ad18174deb0977dd9"
+  },
+  "archives": {
+    "stage1_autonomous": "build/verification/mount-catalog-forward/stage1-autonomous.tgz",
+    "stage1_autonomous_sha256": "d9b9322555f5815d5aeb31ed720041427a864698ef9d32d5e04bc5dce1a7432b",
+    "stage2_autonomous": "build/verification/mount-catalog-forward/stage2-autonomous.tgz",
+    "stage2_autonomous_sha256": "3d89dc1b6b0c8d9fdada71df06d1e503010ac6b5eeb3f262390eec29750b228c",
+    "stage3_reviewed": "build/verification/mount-catalog-forward/stage3-reviewed-final.tgz",
+    "stage3_reviewed_sha256": "ff43bab3271b98009d4d70408d8385aab8dee60fec2779ca58d3ed49b86d5edf",
+    "stage4_final": "build/verification/mount-catalog-forward/stage4-reviewed-final.tgz",
+    "stage4_final_sha256": "fcf17976113652c21589c786f2d7cafb9d21a2b970a6e73bdadffec9e3e73c06"
+  },
+  "traces": {
+    "round1_autonomous": "build/verification/mount-catalog-forward/round1-autonomous.jsonl",
+    "round1_autonomous_sha256": "0855190037dfb9e85d6dfeb1811e748fc72d879f2867ade2010cc609fa0222dd",
+    "round2_autonomous": "build/verification/mount-catalog-forward/round2-autonomous.jsonl",
+    "round2_autonomous_sha256": "8c09571dbafd2d48d5fefdef4d8bc198ddaa79ce548f8e594862860d2bae5871",
+    "round3_reviewed": "build/verification/mount-catalog-forward/round3-reviewed.jsonl",
+    "round3_reviewed_sha256": "bad3268f848b1ce5d73fceedaf104bc1e33e0a0d05bd4d8a05fd29538291612e",
+    "round4_reviewed": "build/verification/mount-catalog-forward/round4-reviewed.jsonl",
+    "round4_reviewed_sha256": "ac3173c492f98ad12612a5675f6469ffceebf3a4eec8f2af1056510100197031"
+  },
+  "review_evidence": {
+    "feedback1": "build/verification/mount-catalog-forward/review-feedback-1.txt",
+    "feedback1_sha256": "4b8cd1c8d39ef989e41113ee662b35bbc8849fdd1c96be9e43fb1c9943ca0839",
+    "feedback2": "build/verification/mount-catalog-forward/review-feedback-2.txt",
+    "feedback2_sha256": "07a4e386f18edc7d7164356d4410b4058fa802894de6e98eaa08700cd2b50881"
+  },
+  "independent_evidence": {
+    "raw_checker": "build/verification/mount-catalog-forward/examiner_raw_check.py",
+    "raw_checker_sha256": "554b4fe8798ef593e0742300cc9a3bdfd6fb4852cc4ec0a13204c69c5f6afd61",
+    "followup_checker": "build/verification/mount-catalog-forward/examiner_followup.py",
+    "followup_checker_sha256": "d96477e2299bf6148bd742364d3e1589db8023ad8cb6c6bba742ace003c4a54f"
+  },
+  "archived_output_sha256": {
+    "output/neutron_energies.csv": "b111475a6807d08d78291ef7fdcd386080eccd4127ba08549e3ca1e8fe25737b",
+    "output/summary.md": "f6ecb83f5d4263fb243a9c000c2230f8a4a5f7a6f4faadb292107be70694bc7f",
+    "output_followup/neutron_energies.csv": "7919473538e90127d1f62d4d56a7796d92ecfc8a1ebc65ca740e8373afb9c364",
+    "output_followup/summary.md": "b37f8ded83757bf1a2d1f672d1b1f30deee190084602176d452e27fea4775d71"
+  },
+  "outcome": {
+    "autonomous_stage1_rows": 3,
+    "autonomous_stage2_rows": 2,
+    "autonomous_selected_asset_actually_called": true,
+    "autonomous_mount_discovery_succeeded": true,
+    "autonomous_stage1_files_preserved_after_stage2": true,
+    "autonomous_rejected_row_correct": true,
+    "autonomous_summary_label_correct": false,
+    "stage3_repeat_run_kept_old_delivery": false,
+    "final_project_tests_passed": 19,
+    "final_default_repeat_exit_code": 2,
+    "final_first_delivery_files_byte_preserved": true,
+    "final_fresh_run_energy_rows_checked": 3,
+    "final_followup_accepted_rows": 1,
+    "final_followup_rejected_rows": 1,
+    "autonomous_complete_delivery": false,
+    "trusted_release_or_physical_validation": false
+  }
+}

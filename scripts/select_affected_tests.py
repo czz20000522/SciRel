@@ -66,6 +66,9 @@ ENGINEERING_TESTS = {
     "scripts/build_l1_inventory.py": ("tests/workflow/test_l1_inventory.py",),
     "scripts/build_l1_wire_fixture.py": ("tests/test_l1_wire_smoke.py",),
     "scripts/run_l1_wire_smoke.py": ("tests/test_l1_wire_smoke.py",),
+    "scripts/verify_outbound_evaluation_manifests.py": (
+        "tests/test_outbound_evaluation_manifests.py",
+    ),
     "scripts/run_scirel_https.py": ("tests/plugin/test_http_listener.py",),
     "scripts/validate_asset_documents.py": ("tests/test_asset_documentation.py",),
 }
@@ -352,6 +355,9 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
         elif path in WORKFLOW_CONTRACTS:
             path_tests.update((*WORKFLOW_TESTS, *PLUGIN_TESTS))
             reason = "workflow_contract"
+        elif path.startswith("docs/evaluations/outbound-progressive-projects/manifests/"):
+            path_tests.add("tests/test_outbound_evaluation_manifests.py")
+            reason = "evaluation_manifest_contract"
         elif path.startswith("contracts/") or path.startswith("catalog/examples/"):
             path_tests.add("tests/test_asset_documentation.py")
             reason = "asset_document_contract"

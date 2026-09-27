@@ -1,0 +1,80 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-27-synthesis-residual-history",
+  "parent_case_id": "2026-09-27-synthesis-residual-followup",
+  "status": "two_review_assisted_fourth_turn_of_previously_reviewed_project",
+  "not_claims": [
+    "autonomous_history_protection",
+    "fresh_unassisted_project",
+    "general_multi_asset_reliability",
+    "multi_file_transaction",
+    "confirmed_underlying_model_identity",
+    "strict_examiner_isolation",
+    "offline_dependency_installation",
+    "physical_equilibrium_validation",
+    "expert_approval",
+    "trusted_release",
+    "public_v1",
+    "codefusion_integration"
+  ],
+  "harness": {
+    "kind": "claude_code",
+    "version": "2.1.281",
+    "session_id": "6f73b86f-24cf-4e39-a492-b68e87cb0f9c",
+    "cli_model_label": "claude-fable-5",
+    "assistant_message_model_label": "GLM-5.3-Flash",
+    "underlying_model_confirmed": false,
+    "budget_or_call_limit_set": false,
+    "review_feedback_rounds_in_this_turn": 2
+  },
+  "scirel_inputs": {
+    "wheel_version": "0.1.0.dev39",
+    "wheel_digest": "sha256:be5a2a2b40461ded5c486d9c9689ceaaed987923b9ba428da73ab59ca1eef9b8",
+    "catalog_coverage": "complete 126/126, pending_unapproved",
+    "catalog_root_digest": "sha256:434249fe5f6df457b712992182a0d5631918a1002861db9d415723fcd86e3fca",
+    "solver_skill_digests": {
+      "scirel-solving": "sha256:d1739f71c9b5258a1fc33475df38f91fb38b7b08ea77606d1d57b89b0b403705",
+      "scientific-asset-navigation": "sha256:049146ae5eac80eab72c4b0024d1a34505e7032c75953ced85f0cefe4c4e644f",
+      "scientific-project-implementation": "sha256:fa5330a867133f032452338605e4fe27087aa4e08550d36a975e48ab7916e5ab",
+      "scientific-computation-validation": "sha256:eb90496efaf5cd6bf8ffc2d624823f59d3c9d8a6dc298a7d5de623b0da66941f"
+    }
+  },
+  "fixture_member_digests": {
+    "request_stage4": "sha256:25ecdf6322d6cf6e8b468f2c43e2a715d781aef902d4dbb35f6397041cc2efbc",
+    "next_measurements_csv": "sha256:d81616662bb08730be95df6fad885ac3015c9a072a2d779826b5cc249c12f7e8",
+    "original_measurements_csv": "sha256:38ae0560b3a217d4e06b60c5dee92345c903bb45e044a3d9724145f36092984e",
+    "original_comparison_csv": "sha256:801a7feca2e9280a74dfd02016cb3f5dec303a3023a6ff24f7e49b72f2fe02dc",
+    "original_comparison_summary": "sha256:49aadd410bc61782c8d7d6e694982974f05c022f0a8629484d79afbb0a231e9e"
+  },
+  "artifacts": {
+    "autonomous_archive": "build/verification/synthesis-residual-history-20260927/stage4-autonomous.tgz",
+    "autonomous_archive_sha256": "3f44c17c154bb90f564c8fb5611a137593521881ad6ffa7e4d02fa538f3a2387",
+    "autonomous_trace": "build/verification/synthesis-residual-history-20260927/stage4-autonomous-trace.jsonl",
+    "autonomous_trace_sha256": "686a79bae4ae63f1558b97d3e98ad3254a9a8446dfc2c2ff3792e8495d78413b",
+    "feedback_first": "build/verification/synthesis-residual-history-20260927/review-feedback-1.txt",
+    "feedback_first_sha256": "eccdbca8d351ef030931cc60b4d655da45fe079181d6c2cb4ae4b070ec8f38b0",
+    "feedback_second": "build/verification/synthesis-residual-history-20260927/review-feedback-2.txt",
+    "feedback_second_sha256": "39de1c9ad6e1217713e25cea3ab7ba4e3004be0cab19c413e9b5880f6ea53b3f",
+    "second_review_archive": "build/verification/synthesis-residual-history-20260927/stage4-second-review-final.tgz",
+    "second_review_archive_sha256": "15924efa0495908baecbc2e6ff921404700ad8bc0ca9661e2f2c15e6ce7bf617",
+    "final_archive": "build/verification/synthesis-residual-history-20260927/stage4-final-doc-corrected.tgz",
+    "final_archive_sha256": "9d7548d569ef0866da5f30613287a68c28878ab7e5607ceabfb26e5d1733ab24",
+    "full_trace": "build/verification/synthesis-residual-history-20260927/claude-session-final.jsonl",
+    "full_trace_sha256": "b2bf59c3587cc09aa86e4e505e81bd99ccf9d9a9d5a5b080928eda45811ac58b"
+  },
+  "outcome": {
+    "first_delivery_old_history_protected": false,
+    "first_review_old_summary_bytes_preserved": false,
+    "post_review_editorial_change": "reviewer corrected one stale output path in the entrypoint docstring; no behavior change",
+    "second_review_archive_replay_project_tests_passed": 38,
+    "independent_unchanged_legacy_rerun_exit_code": 1,
+    "independent_changed_legacy_rerun_exit_code": 1,
+    "independent_ordinary_next_sheet_exit_code": 0,
+    "compared_rows": 6,
+    "excluded_rows": 1,
+    "next_sheet_chi2_unreduced": 2.752777777777782,
+    "legacy_archive_bytes_preserved_after_replays": true,
+    "failed_attempts_preserved_last_success_bytes": true,
+    "trusted_release_or_physical_validation": false
+  }
+}

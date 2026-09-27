@@ -1,0 +1,80 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "status": "development_evaluation_codex_success_after_claude_startup_failure",
+  "not_claims": [
+    "trusted_release",
+    "expert_approval",
+    "public_v1",
+    "codefusion_integration",
+    "claude_code_success",
+    "stable_generalization",
+    "device_physics_validation"
+  ],
+  "scenario": "P3 follow-up line-profile request over an existing RF preview/dashboard project",
+  "solver_workspace": "C:/Users/26569/AppData/Local/Temp/scirel-outbound-20260925-append-claude",
+  "independent_verification_workspace": "C:/Users/26569/AppData/Local/Temp/scirel-outbound-20260925-append-codex-independent-verify",
+  "initial_claude_attempt": {
+    "harness": "Claude Code 2.1.281 / configured DeepSeek-V4.1-Flash",
+    "result": "startup_failed_model_not_found_404",
+    "trace": "build/verification/scirel-outbound-p3-append-claude-20260925-round1.jsonl",
+    "trace_sha256": "7062d0457b24fbd87743193b3769084a99257c3e38496694744450496bf60250"
+  },
+  "successful_harness": "Codex CLI 0.156.1",
+  "codex_thread_id": "01a0d513-23b0-7cd1-a192-ebbb047f6c66",
+  "codex_trace": "build/verification/scirel-outbound-p3-append-codex-20260925-round1.jsonl",
+  "codex_trace_sha256": "77b9266c2b503203e5e1a135a105a24c1231f546a8735694aedbc9aba1c1a293",
+  "wheel": {
+    "version": "0.1.0.dev5",
+    "sha256": "09521a918b875e81c9f17b236f52f4c225fad538155dc9e1b78ed1da7efb23a6"
+  },
+  "catalog": {
+    "release_sha256": "8c96bfa5180f030c88af1bbccd62568b87e1f6ad17c3c1df599a23705616c577",
+    "sampling_asset_id": "scirel.geometry.complex-rectilinear-interpolation",
+    "sampling_record_sha256": "sha256:518258625a1a70272b2cca53c93548f8a2b018cd72f22bcd57e0e6852cb256b6"
+  },
+  "final_project_archive": "build/verification/scirel-outbound-p3-append-codex-final-20260925.tgz",
+  "final_project_archive_sha256": "e31b52f29ba98188cd9d06cb3bac65a7e9abc308cf0a5bb17c6c03d1920ceb93",
+  "result": {
+    "rows": 10,
+    "available_rows": 4,
+    "exact_cell_rows": 2,
+    "interpolated_rows": 2,
+    "unavailable_rows": 6,
+    "reason_codes": {
+      "near_pec_gap": "stencil_touches_undefined_cell",
+      "edge_pml": "on_pml_face",
+      "outside_x": "outside_grid_box"
+    },
+    "old_file_count_checked": 25,
+    "changed_old_file_count": 0
+  },
+  "verification": {
+    "pytest": "py -3.14 -m pytest tests -q -> 33 passed",
+    "user_entry": "py -3.14 -m rfprep --config config/rf-preview.json --config config/line-profile.json --keep rf-preview --force -> exit 0",
+    "summary_checks": "11 checks, 0 failed",
+    "independent_exact_delta_eps_xx": 0.0,
+    "independent_exact_delta_d": 0.0,
+    "independent_offgrid_delta_eps_xx": 0.0
+  },
+  "limitations": [
+    "Codex success, not Claude Code success; Claude failed at startup with model_not_found/404.",
+    "Development wheel/catalog only; not trusted v1 or expert-approved physics.",
+    "Synthetic P3 slice; interpolation accuracy and grid adequacy are not bounded.",
+    "The old RF preview NPZ does not store grid axes, so the profile run records and checks the current grid file digest and array shapes but cannot prove byte-identical coordinates from the original preview run."
+  ],
+  "file_sha256": {
+    "README.md": "d09447f3b205a5a0c21b8f45f4ce816f0a0697c0e7b1c88466fafd54cc819ed5",
+    "config/line-profile.json": "7a822d01251b2afe028076e93515b53d176716688665c5076f4866b028e5caa2",
+    "rfprep/config.py": "8251b4ed8bef35bce91c9b22d67045df85e0722a2670afb52337c655ac6e9154",
+    "rfprep/cli.py": "2143dfcbc43fa66e2900486d63b51f083f2dfef4bb7a1d42fb8d79ac81d66e77",
+    "rfprep/profile.py": "3d185f6e973be191729ee88ead38723991151eb92e54e1e35126e16a1b72495d",
+    "tests/test_rfprep.py": "be51bbd311018a233d72268bec475480d5cd0eb92fdb64c1f27710c053bb39fe",
+    "output/line-profile/profile.csv": "562e4bb39d842f12e9810f29320de32956a600d8bb429b7d6ad5876507f47c15",
+    "output/line-profile/profile.json": "42de4d8f3c662154cdac99171e6913f4d7828ad15666fc011a0082a1c692487d",
+    "output/line-profile/notes.md": "4faee96fbece336fb68c2fa315cb265d13d42c844b17d4eefe8a85e48c001e46",
+    "runs/line-profile/report.md": "066a656a9b9a2a3f5855b7eb660aefb3d707057958e9b9e4fd49134e30a40490",
+    "runs/line-profile/summary.json": "c053c24ff0ef27e00f45a27f82241bf9d7ca0049c16d5678094b863d2355d3bc",
+    "runs/manifest.json": "1385bcf9ee0f178bb7359b81eadb27fba644275c8aa6554f112ce0f9579902f4",
+    "prompt-round1.md": "05e8f7c26ffeffd36463404a4b3e9482a6a890a720d1f7ca5f19d4ee9eb87692"
+  }
+}
