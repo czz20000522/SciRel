@@ -45,6 +45,8 @@ Required shape:
 - progress_vector: <census maturity, extraction resolution, usable core closure, composition-edge closure, branch/domain coverage, target-path reassembly; overall only for a frozen census>
 - active_frontier: <earliest unresolved node or edge per incomplete target path, summarized>
 - closure_signal: <active | bounded_delivery | blocked_external | full_freeze, with claim ceiling, owner, evidence refs, and exact reopen condition>
+- delivery_batch: <batch id, sequence, source scope digest, bundle digest, and integration handoff status>
+- bounded_delivery_review: <independent subagent receipt path, reviewer identity, verdict, reviewed target ids, source/bundle digests, and receipt digest; required only for bounded_delivery>
 
 <one paragraph summary>
 
@@ -84,6 +86,10 @@ Rules:
 - A report alone is never completed extraction.
 - Counts and historical prose are not current progress. The report must quote one validated external progress snapshot bound to the current source scope and bundle revision.
 - Every current report must quote the snapshot's `closure_signal`; `active`, `bounded_delivery`, and `blocked_external` are finite status handoffs, while only `full_freeze` can support the final-extraction claim.
+- A `bounded_delivery` report must identify each delivered target and its canonical/sealed-holdout evidence; a
+  deferred capability register is supplemental source-location metadata and cannot replace delivered assets.
+- A `bounded_delivery` report must cite the independent read-only subagent's pass receipt. The coordinator's own
+  narrative or a generated report is not a review substitute.
 - `final_extraction` is allowed only when the census is frozen, the ledger shows no package-worthy candidate remains merely unprocessed, every target path is resolved, and the same-revision progress snapshot passes validation.
 
 ## extraction_ledger.md

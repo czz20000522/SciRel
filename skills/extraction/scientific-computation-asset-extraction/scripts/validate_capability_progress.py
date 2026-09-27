@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import string
 from pathlib import Path
 from typing import Any
@@ -297,6 +298,42 @@ def _validate_closure_signal(
         errors.append(
             "closure_signal.kind=bounded_delivery requires delivered_target_ids"
         )
+    if kind == "bounded_delivery":
+        review = signal.get("bounded_delivery_review")
+        if not isinstance(review, dict):
+            errors.append(
+                "closure_signal.kind=bounded_delivery requires bounded_delivery_review"
+            )
+        else:
+            _require_nonempty_string(
+                review.get("receipt_ref"),
+                "closure_signal.bounded_delivery_review.receipt_ref",
+                errors,
+            )
+            _require_sha256(
+                review.get("receipt_sha256"),
+                "closure_signal.bounded_delivery_review.receipt_sha256",
+                errors,
+            )
+        target_by_id = {
+            target.get("target_id"): target
+            for target in document.get("target_paths", [])
+            if isinstance(target, dict) and isinstance(target.get("target_id"), str)
+        }
+        for target_id in signal.get("delivered_target_ids", []):
+            target = target_by_id.get(target_id)
+            if target is None:
+                continue
+            if target.get("status") != "passed":
+                errors.append(
+                    "closure_signal.kind=bounded_delivery requires every delivered "
+                    f"target to have status=passed: {target_id}"
+                )
+            if target.get("trace_status") != "traced":
+                errors.append(
+                    "closure_signal.kind=bounded_delivery requires every delivered "
+                    f"target to be traced: {target_id}"
+                )
     if kind == "full_freeze":
         scope = document.get("scope")
         progress = document.get("progress")
@@ -481,10 +518,12 @@ def _resolve_bound_evidence_file(
 def _validate_comparison_receipt(
     path: Path,
     *,
+    run_root: Path,
     target_id: Any,
     case: dict[str, Any],
     scope_manifest_digest: Any,
     bundle_digest: Any,
+    require_detailed: bool,
     errors: list[str],
 ) -> None:
     field = f"comparison receipt {path}"
@@ -494,7 +533,6 @@ def _validate_comparison_receipt(
         errors.append(f"{field} is not readable JSON: {exc}")
         return
     expected = {
-        "schema_version": "scirel.extraction-reassembly-comparison.v1",
         "status": "passed",
         "target_id": target_id,
         "case_id": case.get("case_id"),
@@ -508,9 +546,46 @@ def _validate_comparison_receipt(
     if not isinstance(receipt, dict):
         errors.append(f"{field} must contain a JSON object")
         return
+    receipt_version = receipt.get("schema_version")
+    if receipt_version not in (
+        "scirel.extraction-reassembly-comparison.v1",
+        "scirel.extraction-reassembly-comparison.v2",
+    ):
+        errors.append(f"{field}.schema_version is unsupported")
+    if require_detailed and receipt_version != "scirel.extraction-reassembly-comparison.v2":
+        errors.append(f"{field}.schema_version requires v2 for delivery closure")
     for name, value in expected.items():
         if receipt.get(name) != value:
             errors.append(f"{field}.{name} does not match the capability-progress record")
+
+    if receipt_version == "scirel.extraction-reassembly-comparison.v2":
+        for name in ("bundle_execution_ref", "bundle_execution_sha256"):
+            if receipt.get(name) != case.get(name):
+                errors.append(f"{field}.{name} does not match the capability-progress record")
+        execution_ref = receipt.get("bundle_execution_receipt_ref")
+        if not isinstance(execution_ref, str) or not execution_ref:
+            errors.append(f"{field}.bundle_execution_receipt_ref is required")
+            execution_path = None
+        else:
+            execution_path = _resolve_bound_evidence_file(
+                run_root,
+                execution_ref,
+                receipt.get("bundle_execution_receipt_sha256"),
+                f"{field}.bundle_execution_receipt_ref",
+                errors,
+            )
+        if execution_path is not None:
+            try:
+                execution = json.loads(execution_path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+                errors.append(f"{field}.bundle_execution_receipt is not readable JSON: {exc}")
+            else:
+                if (
+                    not isinstance(execution, dict)
+                    or type(execution.get("exit_code")) is not int
+                    or execution["exit_code"] != 0
+                ):
+                    errors.append(f"{field}.bundle_execution_receipt.exit_code must equal 0")
 
     expected_outputs = case.get("compared_terminal_output_ids")
     receipt_outputs = receipt.get("terminal_output_ids")
@@ -529,8 +604,115 @@ def _validate_comparison_receipt(
         comparison_ids.append(output_id)
         if comparison.get("status") != "passed":
             errors.append(f"{field}.comparisons[{index}].status must equal passed")
+        if receipt_version == "scirel.extraction-reassembly-comparison.v2":
+            if not isinstance(comparison.get("metric"), str) or not comparison["metric"].strip():
+                errors.append(f"{field}.comparisons[{index}].metric must be non-empty")
+            observed = comparison.get("observed_error")
+            allowed = comparison.get("allowed_error")
+            valid_errors = []
+            for name, value in (("observed_error", observed), ("allowed_error", allowed)):
+                try:
+                    valid = type(value) in (int, float) and math.isfinite(value) and value >= 0
+                except OverflowError:
+                    valid = False
+                valid_errors.append(valid)
+                if not valid:
+                    errors.append(
+                        f"{field}.comparisons[{index}].{name} must be finite and non-negative"
+                    )
+            if all(valid_errors) and observed > allowed:
+                errors.append(f"{field}.comparisons[{index}].observed_error exceeds allowed_error")
     if comparison_ids != expected_outputs:
         errors.append(f"{field}.comparisons must cover every declared output exactly once and in order")
+
+
+def _validate_bounded_delivery_review(
+    document: dict[str, Any], run_root: Path, errors: list[str]
+) -> None:
+    signal = document.get("closure_signal")
+    if not isinstance(signal, dict) or signal.get("kind") != "bounded_delivery":
+        return
+    review = signal.get("bounded_delivery_review")
+    if not isinstance(review, dict):
+        return
+    path = _resolve_bound_evidence_file(
+        run_root,
+        review.get("receipt_ref"),
+        review.get("receipt_sha256"),
+        "closure_signal.bounded_delivery_review.receipt_ref",
+        errors,
+    )
+    if path is None:
+        return
+    field = f"bounded delivery review {path}"
+    try:
+        receipt = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        errors.append(f"{field} is not readable JSON: {exc}")
+        return
+    if not isinstance(receipt, dict):
+        errors.append(f"{field} must contain a JSON object")
+        return
+    if receipt.get("reviewer_role") != "independent_subagent":
+        errors.append(f"{field}.reviewer_role must equal independent_subagent")
+    if receipt.get("verdict") != "pass":
+        errors.append(f"{field}.verdict must equal pass")
+    scope = document.get("scope")
+    if isinstance(scope, dict):
+        for name, expected in (
+            ("source_scope_digest", scope.get("scope_manifest_digest")),
+            ("bundle_digest", scope.get("bundle_digest")),
+        ):
+            if receipt.get(name) != expected:
+                errors.append(f"{field}.{name} does not match the progress snapshot")
+    delivered = signal.get("delivered_target_ids", [])
+    reviewed = receipt.get("reviewed_target_ids")
+    if not isinstance(reviewed, list) or any(
+        not isinstance(value, str) or not value for value in reviewed
+    ):
+        errors.append(f"{field}.reviewed_target_ids must be a non-empty list of strings")
+    elif set(reviewed) != set(delivered):
+        errors.append(f"{field}.reviewed_target_ids must equal delivered_target_ids")
+    for name in ("review_id", "claim_ceiling", "reopen_condition"):
+        _require_nonempty_string(receipt.get(name), f"{field}.{name}", errors)
+    for name in ("claim_ceiling", "reopen_condition"):
+        if receipt.get(name) != signal.get(name):
+            errors.append(f"{field}.{name} does not match closure_signal.{name}")
+    reviewed_refs = receipt.get("reviewed_evidence_refs")
+    if not isinstance(reviewed_refs, list) or not reviewed_refs or any(
+        not isinstance(value, str) or not value for value in reviewed_refs
+    ) or len(reviewed_refs) != len(set(reviewed_refs)):
+        errors.append(f"{field}.reviewed_evidence_refs must be a non-empty unique list of strings")
+    else:
+        signal_refs = signal.get("evidence_refs")
+        required_refs = {
+            value for value in signal_refs if isinstance(value, str) and value
+        } if isinstance(signal_refs, list) else set()
+        for target in document.get("target_paths", []):
+            if not isinstance(target, dict) or target.get("target_id") not in delivered:
+                continue
+            reassembly = target.get("reassembly_evidence")
+            if not isinstance(reassembly, dict):
+                continue
+            for case in reassembly.get("cases", []):
+                if isinstance(case, dict):
+                    required_refs.update(
+                        case[name]
+                        for name in (
+                            "source_oracle_ref",
+                            "bundle_execution_ref",
+                            "comparison_receipt_ref",
+                            "tolerance_contract_ref",
+                        )
+                        if isinstance(case.get(name), str) and case[name]
+                    )
+        if not required_refs.issubset(reviewed_refs):
+            errors.append(f"{field}.reviewed_evidence_refs must include closure and reassembly evidence")
+    findings = receipt.get("findings")
+    if not isinstance(findings, list) or any(
+        not isinstance(value, str) or not value for value in findings
+    ):
+        errors.append(f"{field}.findings must be a list of non-empty strings")
 
 
 def _validate_reassembly_external_bindings(
@@ -539,6 +721,10 @@ def _validate_reassembly_external_bindings(
     scope = document.get("scope")
     if not isinstance(scope, dict):
         return
+    signal = document.get("closure_signal")
+    require_detailed = document.get("state") == "full_freeze" or (
+        isinstance(signal, dict) and signal.get("kind") in ("bounded_delivery", "full_freeze")
+    )
     for target_index, target in enumerate(document.get("target_paths", [])):
         if not isinstance(target, dict) or target.get("status") != "passed":
             continue
@@ -569,12 +755,62 @@ def _validate_reassembly_external_bindings(
             if receipt_path is not None:
                 _validate_comparison_receipt(
                     receipt_path,
+                    run_root=run_root,
                     target_id=target.get("target_id"),
                     case=case,
                     scope_manifest_digest=scope.get("scope_manifest_digest"),
                     bundle_digest=scope.get("bundle_digest"),
+                    require_detailed=require_detailed,
                     errors=errors,
                 )
+
+
+def _validate_full_freeze_delivery_surface(
+    document: dict[str, Any], bundle_root: Path, errors: list[str]
+) -> None:
+    signal = document.get("closure_signal")
+    if not isinstance(signal, dict) or signal.get("kind") != "full_freeze":
+        return
+    entry = bundle_root / "asset_entry.py"
+    if entry.is_symlink() or not entry.is_file():
+        errors.append(
+            "closure_signal.kind=full_freeze requires a regular, non-symlinked "
+            "root asset_entry.py"
+        )
+        return
+    binding = signal.get("asset_entry_validation")
+    if not isinstance(binding, dict):
+        errors.append("closure_signal.kind=full_freeze requires asset_entry_validation")
+        return
+    path = _resolve_bound_evidence_file(
+        bundle_root.parent,
+        binding.get("receipt_ref"),
+        binding.get("receipt_sha256"),
+        "closure_signal.asset_entry_validation.receipt_ref",
+        errors,
+    )
+    if path is None:
+        return
+    try:
+        receipt = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        errors.append(f"asset_entry_validation receipt is not readable JSON: {exc}")
+        return
+    if not isinstance(receipt, dict):
+        errors.append("asset_entry_validation receipt must contain a JSON object")
+        return
+    for name, expected in (
+        ("validator", "validate_asset_entry.py"),
+        ("sandbox", "CODEFUSION_ASSET_SANDBOX=1"),
+        ("exit_code", 0),
+        ("asset_entry_sha256", compute_file_sha256(entry)),
+        ("bundle_digest", document["scope"].get("bundle_digest")),
+    ):
+        if receipt.get(name) != expected or (name == "exit_code" and type(receipt.get(name)) is not int):
+            errors.append(f"asset_entry_validation.{name} must equal {expected}")
+    for name in ("operators", "task_graphs"):
+        if type(receipt.get(name)) is not int or receipt[name] < 0:
+            errors.append(f"asset_entry_validation.{name} must be a non-negative integer")
 
 
 def validate_external_bindings(
@@ -595,6 +831,8 @@ def validate_external_bindings(
         ("bundle_digest", bundle_root, True),
     )
     errors: list[str] = []
+    _validate_full_freeze_delivery_surface(document, bundle_root, errors)
+    _validate_bounded_delivery_review(document, bundle_root.parent, errors)
     for field, path, is_bundle in checks:
         try:
             actual = compute_bundle_digest(path) if is_bundle else compute_file_sha256(path)
