@@ -82,8 +82,8 @@ def test_invalid_inputs_are_rejected():
         scientific_operator(good, good, good, mu0=float("nan"))
 
 
-# 验证：B²/mu0 溢出 float64 时必须 fail closed，不得静默返回 Inf 裕度。
-def test_overflowing_magnetic_pressure_fails_closed():
+# 验证：B²/mu0 磁张力项溢出 float64 时必须 fail closed，不得静默返回 Inf 裕度。
+def test_overflowing_magnetic_tension_term_fails_closed():
     with pytest.raises(ValueError, match="must be finite"):
         scientific_operator(np.zeros(1), np.zeros(1), np.array([1.0e200]))
 
@@ -96,8 +96,8 @@ def test_scalar_inputs_preserve_zero_dimensional_shape():
     np.testing.assert_allclose(float(result["firehose_margin"]), 1.0 / MU0 - 50000.0)
 
 
-# 验证：mu0 覆盖参数生效（与默认值的差恰为磁压项的换算）。
-def test_mu0_override_changes_only_the_magnetic_pressure_term():
+# 验证：mu0 覆盖参数生效（与默认值的差恰为 B²/mu0 磁张力项的换算；SI 磁压是 B²/(2mu0)，不是本项）。
+def test_mu0_override_changes_only_the_magnetic_tension_term():
     p_parallel, p_perp, b = 1.0e5, 2.0e5, 2.0
     default = scientific_operator(p_parallel, p_perp, b)["firehose_margin"]
     overridden = scientific_operator(p_parallel, p_perp, b, mu0=1.0e-6)["firehose_margin"]
