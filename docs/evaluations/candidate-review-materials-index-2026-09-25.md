@@ -27,6 +27,18 @@ needs a successor, not a silent edit.
 
 
 
+## Batch r76: FIDASIM DCX/HALO iteration-feedback family (one operator + one bounded sequence graph)
+
+Directory: `review_candidates/2026-09-27-halo-iteration-feedback/`
+Successor of batch r75: the r75 candidate files below keep their frozen
+r75-v2 bytes and digests; this batch binds the new bytes.
+- `review.md` -- sha256 `169e650f6748807b54d51fc15dbf9c9b464f4a7daf0bb8e673cdb5402c39c46e`
+- `proposal/halo_iteration_feedback.py` -- sha256 `94b6add329557bb9f574b2880965620507d966a8c6228cb4557119daf68d0560`
+- `proposal/halo_iteration_feedback_sequence.py` -- sha256 `4108066910e3bfc887f6b8624ec90912b4d15338365c2c54485b537a96efe3ec`
+- `proposal/test_halo_iteration_feedback.py` -- sha256 `453a49f06eeb742fbe7eefca24a31235ff926413a52e04a4294d3066aa49686a`
+- `proposal/scirel.fusion.halo-iteration-feedback.json` -- sha256 `ec4992310954bd9db039f1b01652628990bb77b1089d81d60a8517828250d646`
+- `proposal/scirel.fusion.halo-iteration-feedback-sequence.json` -- sha256 `c2ccb9a4095bff2b6295fb12652500cbdacb7c2116e669ec1c4b5010d6cdc2a6`
+
 ## Batch r75: FIDASIM NBI source-geometry family (two operators + one task graph)
 
 Directory: `review_candidates/2026-09-27-nbi-source-geometry/`
