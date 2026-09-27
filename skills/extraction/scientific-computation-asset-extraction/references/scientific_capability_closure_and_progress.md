@@ -440,6 +440,18 @@ slice with a fresh attempt.
 
 The identical-input requirement is within each case: source and candidate receive the same explicit inputs.
 Canonical and sealed-holdout evidence must remain independently prepared and sealed from candidate tuning.
+When a candidate-aware coordinator has already seen comparison results, a hash written before the next probe
+proves only that the case was fixed for that probe. To establish independence for a new variable-input case,
+use a source-only author or a source-derived selection rule insulated from candidate code, digests, prior results,
+known failing branches, and target-output hints that could steer the choice. Give the author the source's
+admissible input domain without those candidate-specific cues. Retain the exact case bytes, selection rationale,
+and a commitment made before that case's source/candidate comparison or tolerance/harness adjustment. After the
+author exits, seal an independently owned copy that the author cannot rewrite; verify its digest and chronology
+before candidate-aware reassembly. If choosing from several sealed cases after seeing candidate results,
+predeclare the selection rule or compare the whole sealed set rather than selecting a convenient pass.
+An independently fixed case or source-derived reference established before candidate feedback need not use a
+separate author when its origin and immutable seal are verifiable. If the runtime cannot isolate case authoring
+or seal its output, leave independence open while continuing other source-led work.
 If the source exposes only one fixed admissible input, do not invent a tunable parameter or label an identical
 rerun as a new holdout case. A separately established, source-derived reference or independent observation may
 support a holdout for that fixed domain only when its origin, sealing, and distinct evidentiary role are recorded;
