@@ -1,0 +1,139 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.mc-marker-weight-allocation",
+  "kind": "operator",
+  "title": {
+    "en": "MC marker allocation by cell weight",
+    "zh": "MC标记按权重分配"
+  },
+  "summary": "Allocate Monte Carlo marker counts over a 3-D cell volume: every active cell (positive weight) receives the minimum per-cell count, and the remainder is distributed by inverse-CDF sampling over the Fortran-order flattened weight volume with caller-owned uniform draws.",
+  "taxonomy": [
+    "fusion",
+    "fast-ion-diagnostics",
+    "fida-response",
+    "mc-sampling"
+  ],
+  "aliases": [
+    "allocate_mc_markers_by_weight"
+  ],
+  "identity": {
+    "relation": "counts[cell] = minimum_per_active_cell for every cell with weight > 0; the remaining requested_markers - base markers are distributed by searchsorted(cdf(draws * total)) over the F-order flattened weight volume.",
+    "direction": "3-D approximate cell weight + requested marker count + caller-owned CDF uniform draws + minimum per active cell -> per-cell marker counts (int64)",
+    "definition": "The saved FIDASIM get_nlaunch mapping (framework node N7 fast_ion_fida_response). The randomness stays caller-owned (deterministic, replayable mapping; no RNG is bound). The total allocated count must equal requested_markers.",
+    "model": "the saved formal implementation, ported verbatim with a registered marker-count conservation gate",
+    "geometry": "one 3-D weight volume; an int64 count volume of the same shape",
+    "coordinates": "weights dimensionless; counts are integers",
+    "boundary": "finite nonnegative weights; nonnegative integer requested_markers and minimum_per_active_cell; remainder draws finite in [0, 1); the total allocated count must equal requested_markers (registered hardening)",
+    "assumptions": [
+      "The caller owns the random stream and supplies the CDF uniform variates.",
+      "No external physics reference is bound beyond the source closed form."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "approximate_cell_weight",
+      "description": "3-D approximate cell weights.",
+      "units": "dimensionless",
+      "shape": "[nx,ny,nz]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative."
+    },
+    {
+      "name": "requested_markers",
+      "description": "Total markers to allocate.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "Exactly an integer >= 0 (bools rejected)."
+    },
+    {
+      "name": "cdf_uniform_draws",
+      "description": "Caller-owned uniform CDF variates for the remainder.",
+      "units": "dimensionless",
+      "shape": "[remainder]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; every entry in [0, 1); length equals the remainder after the minimum allocation."
+    },
+    {
+      "name": "minimum_per_active_cell",
+      "description": "Minimum markers per active cell.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": false,
+      "default": 5,
+      "constraints": "Exactly an integer >= 0 (bools rejected)."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "marker_counts",
+      "description": "Per-cell allocated marker counts.",
+      "units": "count",
+      "shape": "[nx,ny,nz]",
+      "dtype": "int64 array",
+      "required": true,
+      "constraints": "Nonnegative; total exactly equals requested_markers (registered conservation gate); zero in every inactive cell."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller owns the random stream and supplies the CDF uniform variates."
+    ],
+    "supported": [
+      "Deterministic MC marker allocation over a beam-cell weight volume."
+    ],
+    "excluded": [
+      "Weight-volume construction, the CDF/RNG stream itself, and MC trajectory following."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when weights are non-finite, negative or not 3-D, when requested_markers or minimum_per_active_cell is not exactly a nonnegative integer, when remainder draws are non-finite or outside [0, 1), or when the total weight is zero with a positive remainder.",
+    "runtime_failure": "Raises ValueError if the allocated total does not equal requested_markers (registered conservation gate).",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM MC标记按权重分配 package, source anchor FIDASIM get_nlaunch, as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 5bdfe6b11c9d39bc0d2c726d6de8b36a1a668fe47e157f86b4404c27c66bbc17 (reference record; the test suite performs no automated drift detection). Arithmetic ported verbatim; the conservation gate is a registered hardening. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.mc_marker_weight_allocation",
+      "symbol": "allocate_mc_markers_by_weight",
+      "signature": "allocate_mc_markers_by_weight(*, approximate_cell_weight, requested_markers, cdf_uniform_draws, minimum_per_active_cell=5)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev46",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Allocate six markers over a single active cell: five from the minimum and one from the CDF remainder draw.",
+    "code": "import numpy as np\nfrom scirel.fusion import allocate_mc_markers_by_weight\nweight = np.ones((1, 1, 1))\ncounts = allocate_mc_markers_by_weight(\n    approximate_cell_weight=weight, requested_markers=6,\n    cdf_uniform_draws=np.array([0.5]), minimum_per_active_cell=5)\nassert counts[0, 0, 0] == 6\nassert int(counts.sum()) == 6\ntry:\n    allocate_mc_markers_by_weight(\n        approximate_cell_weight=weight, requested_markers=6,\n        cdf_uniform_draws=np.array([1.0]), minimum_per_active_cell=5)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('a draw at 1.0 must be rejected')",
+    "expected": "Five minimum markers plus one CDF-distributed marker gives 6; a draw at the exclusive upper bound raises ValueError."
+  },
+  "verification": {
+    "scope": [
+      "Source allocation against an independent F-order CDF recomputation.",
+      "Conservation, boundary and failure contracts."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_cross_node_leaves.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests establish the allocation against an independent F-order CDF recomputation (exact count equality), count conservation, the minimum-per-active-cell baseline, the zero-remainder early return (draws not validated when the remainder is zero), and the fail-closed input contracts including the exclusive draw domain. Environment-gated saved-arm parity is not replayed here; the FIDASIM saved packages ship package-level oracles rather than a pinned source-runtime replay target, and the recorded implementation digest provides the provenance linkage. No test establishes the allocation against an external physics reference beyond the source closed form.",
+    "known_limitations": [
+      "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+      "The registered overflow/finite-output gates deliberately diverge from the saved arm's silent Inf returns.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

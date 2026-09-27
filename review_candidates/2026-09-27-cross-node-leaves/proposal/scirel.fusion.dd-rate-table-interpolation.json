@@ -1,0 +1,192 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.dd-rate-table-interpolation",
+  "kind": "operator",
+  "title": {
+    "en": "D-D reaction rate table interpolation",
+    "zh": "DD反应率表插值"
+  },
+  "summary": "Bilinearly interpolate a log10 D-D reaction rate table over (beam energy, ion temperature) with a per-branch third axis and exponentiate to a rate scaled by the target deuterium density.",
+  "taxonomy": [
+    "fusion",
+    "neutron-response",
+    "dd-reaction",
+    "table-interpolation"
+  ],
+  "aliases": [
+    "dd_reaction_rate_per_s"
+  ],
+  "identity": {
+    "relation": "log_rate = bilinear(table)[E_log, T_log, branch]; rate = density_cm3 * 10^log_rate, with energies/temperatures below the axis minima clamped to the first cell and beyond the last interval returning 0 (source behavior).",
+    "direction": "beam energy + ion temperature + target density + log-rate table (nE>=2, nT>=2, n_branch) + axis minima/steps + minimum log rate + branch index -> D-D reaction rate per second",
+    "definition": "The saved FIDASIM get_dd_rate mapping (framework node N9 neutron_response): bilinear interpolation in log10 space over the beam-energy and ion-temperature axes for one selected D-D branch, then linear scaling by the neutral deuterium density. branch_index is zero-based here (the source's branch 2 corresponds to 1).",
+    "model": "the saved formal implementation, ported verbatim with registered fail-closed hardenings (see verification)",
+    "geometry": "one evaluation; scalar output",
+    "coordinates": "energies in keV, temperature in keV, density in cm^-3, rate in s^-1; table axes are log10",
+    "boundary": "finite table and scalars; positive beam energy, temperature and axis steps; nonnegative density; branch_index exactly the integer within [0, n_branch)",
+    "assumptions": [
+      "The caller supplies the frozen log-rate table; this operator performs no table generation."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "beam_energy_kev",
+      "description": "Beam energy.",
+      "units": "keV",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "ion_temperature_kev",
+      "description": "Ion temperature.",
+      "units": "keV",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "deuterium_target_density_cm3",
+      "description": "Target deuterium density.",
+      "units": "cm^-3",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and nonnegative."
+    },
+    {
+      "name": "energy_log_min",
+      "description": "First log10 energy axis value.",
+      "units": "log10 keV",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "energy_log_step",
+      "description": "Energy axis log10 step.",
+      "units": "log10 keV",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "temperature_log_min",
+      "description": "First log10 temperature axis value.",
+      "units": "log10 keV",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "temperature_log_step",
+      "description": "Temperature axis log10 step.",
+      "units": "log10 keV",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "log_rate_table",
+      "description": "Log10 rate table (nE, nT, n_branch).",
+      "units": "log10 s^-3/m^6",
+      "shape": "[nE,nT,n_branch]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; first two axes length >= 2."
+    },
+    {
+      "name": "min_log_rate",
+      "description": "Minimum log10 rate; below it the rate is zero.",
+      "units": "log10 s^-3/m^6",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "branch_index",
+      "description": "Zero-based branch index into the third table axis.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": false,
+      "default": 1,
+      "constraints": "Exactly the integer in [0, n_branch) (bools and floats rejected)."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "rate_per_s",
+      "description": "Interpolated and density-scaled D-D reaction rate.",
+      "units": "s^-1",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite (registered hardening: exponentiating finite extreme table values raises instead of returning Inf); exactly 0 below min_log_rate or beyond the last interval."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "A caller-supplied log-rate table with consistent axis metadata."
+    ],
+    "supported": [
+      "Per-evaluation D-D reaction-rate lookup for the neutron response chain."
+    ],
+    "excluded": [
+      "Table generation, Bosch-Hale analytic reactivity, D-T and D-He3 branches, and Monte Carlo spectrum accumulation."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when the table is not 3-D with first two axes >= 2, when branch_index is not exactly the integer within range, when any input is non-finite, when beam energy/temperature/axis steps are non-positive, or when the density is negative.",
+    "runtime_failure": "Raises ValueError if the exponentiated rate overflows to non-finite for finite but extreme table contents (registered hardening).",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM DD反应率表插值 package, source anchor FIDASIM get_dd_rate, as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 2a63275b1ecb68f67354409239758de097a4689073b39dceaf07cc2e6fb36648 (reference record; the test suite performs no automated drift detection). Arithmetic ported verbatim; the strict branch-index type contract and the finite-output gate are registered hardenings. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.dd_rate_table_interpolation",
+      "symbol": "dd_reaction_rate_per_s",
+      "signature": "dd_reaction_rate_per_s(*, beam_energy_kev, ion_temperature_kev, deuterium_target_density_cm3, energy_log_min, energy_log_step, temperature_log_min, temperature_log_step, log_rate_table, min_log_rate, branch_index=1)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev46",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Axis-corner evaluation gives rate = density * 10^table_value; a bool branch index is rejected.",
+    "code": "import numpy as np\nfrom scirel.fusion import dd_reaction_rate_per_s\ntable = np.zeros((2, 2, 2))\ntable[0, 0, 0] = 1.0\ntable[1, 0, 0] = 2.0\ntable[0, 1, 0] = 3.0\ntable[1, 1, 0] = 4.0\nrate = dd_reaction_rate_per_s(\n    beam_energy_kev=10.0, ion_temperature_kev=10.0,\n    deuterium_target_density_cm3=2.0,\n    energy_log_min=1.0, energy_log_step=1.0,\n    temperature_log_min=1.0, temperature_log_step=1.0,\n    log_rate_table=table, min_log_rate=-10.0, branch_index=0)\nnp.testing.assert_allclose(rate, 20.0, rtol=1e-13)\ntry:\n    dd_reaction_rate_per_s(\n        beam_energy_kev=10.0, ion_temperature_kev=10.0,\n        deuterium_target_density_cm3=2.0,\n        energy_log_min=1.0, energy_log_step=1.0,\n        temperature_log_min=1.0, temperature_log_step=1.0,\n        log_rate_table=table, min_log_rate=-10.0, branch_index=True)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('a bool branch index must be rejected')",
+    "expected": "Axis-corner evaluation gives rate = density * 10^table_value (to round-off); a bool branch index is rejected."
+  },
+  "verification": {
+    "scope": [
+      "Source table interpolation against independent bilinear recomputation.",
+      "Boundary, gate and failure contracts."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_cross_node_leaves.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests establish the bilinear interpolation against an independent recomputation (rtol 1e-15), the beyond-table zero return, the min_log_rate gate, the strict branch-index contract, and the exponentiation overflow gate with a discriminating witness. Environment-gated saved-arm parity is not replayed here; the FIDASIM saved packages ship package-level oracles rather than a pinned source-runtime replay target, and the recorded implementation digest provides the provenance linkage. No test establishes the rate against an external nuclear-data reference beyond the caller-supplied table.",
+    "known_limitations": [
+      "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+      "The registered overflow/finite-output gates deliberately diverge from the saved arm's silent Inf returns.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

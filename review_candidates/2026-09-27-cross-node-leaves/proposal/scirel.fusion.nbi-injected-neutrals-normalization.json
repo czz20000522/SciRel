@@ -1,0 +1,165 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.nbi-injected-neutrals-normalization",
+  "kind": "operator",
+  "title": {
+    "en": "NBI injected neutral normalization",
+    "zh": "NBI注入粒子数与初始态归一化"
+  },
+  "summary": "Normalize NBI injected power to a total neutral rate and per-component rates/densities over the full/half/third energy components using the CODATA 2018 elementary charge.",
+  "taxonomy": [
+    "fusion",
+    "neutral-beam-source-sampling",
+    "nbi-birth",
+    "normalization"
+  ],
+  "aliases": [
+    "normalize_nbi_injected_neutrals"
+  ],
+  "identity": {
+    "relation": "nneutrals = 1e6 * P_MW / (1e3 * E_keV * e * sum_k(fraction_k / k)) with e = 1.602176634e-19 C and k in {1,2,3}; component rates = nneutrals * fraction_k; densities = component rates / cell volume.",
+    "direction": "injected power + injection energy + full/half/third current fractions + beam-grid cell volume -> total neutral rate, per-component rates, per-cell densities, weight factor",
+    "definition": "The saved FIDASIM ndmc normalization (framework node N2 neutral_beam_source_sampling). This leaf keeps the CODATA 2018 elementary charge 1.602176634e-19 C; the older scirel.fusion.nbi-component-initial-state leaf keeps the source's 1.60217733e-19 as a distinct, explicitly documented contract (the e0 difference is an open expert adjudication).",
+    "model": "the saved formal implementation, ported verbatim with registered finite-output gates",
+    "geometry": "one beam-grid cell; 3-vector outputs",
+    "coordinates": "power in MW, energy in keV, volume in cm^3, densities in cm^-3, rates in s^-1",
+    "boundary": "finite nonnegative power and fractions; positive energy and volume; the weight factor, total rate and densities must all remain finite",
+    "assumptions": [
+      "The CODATA 2018 elementary charge is this leaf's declared contract.",
+      "No external physics reference is bound beyond the source formula."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "injected_power_mw",
+      "description": "Injected beam power.",
+      "units": "MW",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and nonnegative; zero power yields an all-zero result."
+    },
+    {
+      "name": "injection_energy_kev",
+      "description": "NBI injection energy.",
+      "units": "keV",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "current_fractions",
+      "description": "Full/half/third current fractions.",
+      "units": "dimensionless",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative."
+    },
+    {
+      "name": "beam_grid_cell_volume_cm3",
+      "description": "Beam-grid cell volume.",
+      "units": "cm^3",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "total_neutral_rate_s_inv",
+      "description": "Total neutral rate.",
+      "units": "s^-1",
+      "shape": "scalar",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite and nonnegative (registered hardening)."
+    },
+    {
+      "name": "component_neutral_rate_s_inv",
+      "description": "Per-component neutral rates.",
+      "units": "s^-1",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite (registered hardening)."
+    },
+    {
+      "name": "initial_state_density_cm_inv3",
+      "description": "Per-cell initial-state densities.",
+      "units": "cm^-3",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite (registered hardening)."
+    },
+    {
+      "name": "energy_weight_factor",
+      "description": "Weight factor sum_k(fraction_k/k).",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite and positive (registered hardening)."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite power/fractions, positive energy/volume."
+    ],
+    "supported": [
+      "NBI power-to-neutral-state normalization for the beam-source sampling chain."
+    ],
+    "excluded": [
+      "The six-level initial-state materialization with the source e0, birth-position sampling, and ionization physics."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when fractions are misshaped, negative or non-finite, when power is negative, when energy or volume is non-positive, when the weight factor overflows to non-finite, or when the factor is zero.",
+    "runtime_failure": "Raises ValueError if the total rate or densities overflow to non-finite for finite but extreme input magnitudes (registered hardening).",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM NBI注入粒子数与初始态归一化 package, source anchor FIDASIM ndmc, as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 3c4df8c23177edea67b19931679898b27ae84e2c8663f5363667912450489b5a (reference record; the test suite performs no automated drift detection). Arithmetic ported verbatim; the finite-output gates are registered hardenings. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.nbi_injected_neutrals_normalization",
+      "symbol": "normalize_nbi_injected_neutrals",
+      "signature": "normalize_nbi_injected_neutrals(injected_power_mw, injection_energy_kev, current_fractions, beam_grid_cell_volume_cm3)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev46",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Normalize 1 MW at 50 keV with the canonical fractions; zero power yields an all-zero result.",
+    "code": "import numpy as np\nfrom scirel.fusion import normalize_nbi_injected_neutrals\nout = normalize_nbi_injected_neutrals(1.0, 50.0, np.array([0.6, 0.3, 0.1]), 2.0e-6)\nexpected = 1e6 * 1.0 / (1e3 * 50.0 * 1.602176634e-19 * (0.6 + 0.15 + 0.1 / 3.0))\nassert out['total_neutral_rate_s_inv'] == expected\nzero = normalize_nbi_injected_neutrals(0.0, 50.0, np.array([0.6, 0.3, 0.1]), 2.0e-6)\nassert zero['total_neutral_rate_s_inv'] == 0.0\ntry:\n    normalize_nbi_injected_neutrals(-1.0, 50.0, np.array([0.6, 0.3, 0.1]), 2.0e-6)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('negative power must be rejected')",
+    "expected": "The rate matches the source formula; zero power gives an all-zero result; negative power raises ValueError."
+  },
+  "verification": {
+    "scope": [
+      "Source formula against independent recomputation.",
+      "Sign, overflow and failure contracts."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_cross_node_leaves.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests establish the formula against independent recomputation (exact equality), the zero-power identity, the sign contracts, and the overflow gates with two discriminating witnesses (max-float fractions overflow the weight factor; an extreme power/volume ratio overflows the rate). Environment-gated saved-arm parity is not replayed here; the FIDASIM saved packages ship package-level oracles rather than a pinned source-runtime replay target, and the recorded implementation digest provides the provenance linkage. No test establishes the normalization against an external physics reference beyond the source closed form.",
+    "known_limitations": [
+      "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+      "The registered overflow/finite-output gates deliberately diverge from the saved arm's silent Inf returns.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

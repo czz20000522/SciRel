@@ -1,0 +1,300 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.nbi-cell-directed-ray",
+  "kind": "operator",
+  "title": {
+    "en": "NBI cell-directed ray with aperture and divergence weight",
+    "zh": "NBI单元定向射线与概率"
+  },
+  "summary": "For one beam-grid cell, form the source-to-cell unit ray in beam coordinates, test aperture acceptance (rectangle or ellipse), and compute the Gaussian divergence trajectory weight with the Float32 energy-component velocity scaling.",
+  "taxonomy": [
+    "fusion",
+    "neutral-beam-source-sampling",
+    "nbi-birth",
+    "beam-geometry"
+  ],
+  "aliases": [
+    "nbi_cell_directed_ray"
+  ],
+  "identity": {
+    "relation": "receiver = inv_basis @ (cell_center + cell_offset - beam_origin); ray = normalize(receiver - source); per aperture: rectangle (shape=1) or ellipse (shape=2) acceptance test; velocity = speed * (basis @ ray) / sqrt(Float32(neutral_type)); weight = py * pz with ty/tz = atan(vy + s_y/focy, vz + s_z/focy) -- the source's theta_z uses focy, a recorded quirk.",
+    "direction": "cell center/offset + source/beam origin + beam bases + injection speed + neutral type + apertures + focus lengths + divergences -> receiver position, unit ray, velocity, acceptance flag, trajectory weight",
+    "definition": "The saved FIDASIM mc_nbi_cell deterministic core (framework node N2 neutral_beam_source_sampling). The Float32 divisor and the theta_z-uses-focy quirk are preserved verbatim and pinned by the saved package's own probe tests.",
+    "model": "the saved formal implementation, ported verbatim with a registered finite-output gate",
+    "geometry": "one beam-grid cell; scalar/vector outputs in beam and machine frames",
+    "coordinates": "positions and velocities in cm and cm/s; angles in radians; the Float32 divisor is dimensionless",
+    "boundary": "finite shape-(3,) geometry vectors; (3,3) bases; neutral_type in {1,2,3}; positive speed and divergences; nonzero focus lengths; aperture_shape values exactly 1 or 2; outputs must remain finite",
+    "assumptions": [
+      "The caller supplies a geometrically consistent beam basis and aperture set.",
+      "No external physics reference is bound beyond the source closed form."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "cell_center_uvw_cm",
+      "description": "Beam-grid cell center.",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "cell_offset_cm",
+      "description": "Offset within the cell.",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "source_xyz_cm",
+      "description": "NBI source point.",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "beam_origin_uvw_cm",
+      "description": "Beam-grid origin.",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "inverse_beam_basis",
+      "description": "Inverse beam-coordinate basis.",
+      "units": "dimensionless",
+      "shape": "[3,3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "beam_basis",
+      "description": "Beam-coordinate basis.",
+      "units": "dimensionless",
+      "shape": "[3,3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "injection_speed_cm_s",
+      "description": "Full-energy injection speed.",
+      "units": "cm/s",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "neutral_type",
+      "description": "Energy component index 1/2/3.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "Exactly 1, 2 or 3."
+    },
+    {
+      "name": "aperture_distance_cm",
+      "description": "Per-aperture distance from the source.",
+      "units": "cm",
+      "shape": "[naperture]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; same length as the other aperture vectors."
+    },
+    {
+      "name": "aperture_shape",
+      "description": "Per-aperture shape: 1 rectangle, 2 ellipse.",
+      "units": "dimensionless",
+      "shape": "[naperture]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Every value exactly 1 or 2."
+    },
+    {
+      "name": "aperture_offset_y_cm",
+      "description": "Per-aperture y offset.",
+      "units": "cm",
+      "shape": "[naperture]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "aperture_offset_z_cm",
+      "description": "Per-aperture z offset.",
+      "units": "cm",
+      "shape": "[naperture]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "aperture_half_width_y_cm",
+      "description": "Per-aperture y half-width.",
+      "units": "cm",
+      "shape": "[naperture]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "aperture_half_width_z_cm",
+      "description": "Per-aperture z half-width.",
+      "units": "cm",
+      "shape": "[naperture]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "focus_y_cm",
+      "description": "Y focal length.",
+      "units": "cm",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Nonzero (registered: zero raises)."
+    },
+    {
+      "name": "focus_z_cm",
+      "description": "Z focal length.",
+      "units": "cm",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Nonzero (registered: zero raises)."
+    },
+    {
+      "name": "divergence_y_rad",
+      "description": "Per-component y divergence.",
+      "units": "rad",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "divergence_z_rad",
+      "description": "Per-component z divergence.",
+      "units": "rad",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and positive."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "receiver_xyz_cm",
+      "description": "Cell position in beam coordinates.",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "unit_ray_xyz",
+      "description": "Unit ray from source to receiver.",
+      "units": "dimensionless",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite; unit norm."
+    },
+    {
+      "name": "velocity_uvw_cm_s",
+      "description": "Scaled birth velocity in beam coordinates.",
+      "units": "cm/s",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite; norm = speed/sqrt(Float32(neutral_type))."
+    },
+    {
+      "name": "accepted",
+      "description": "Whether the ray passes all apertures.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "True/False."
+    },
+    {
+      "name": "trajectory_weight",
+      "description": "Gaussian divergence trajectory weight.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and positive on accepted rays (registered hardening)."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "A geometrically consistent beam basis, source and aperture set."
+    ],
+    "supported": [
+      "Per-cell deterministic NBI ray geometry, aperture acceptance and divergence weighting."
+    ],
+    "excluded": [
+      "Beam-grid position sampling from draws, full NBI trajectory following, MC randomness, and ionization physics."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when any geometry vector is non-finite or misshaped, when the bases are not (3,3), when neutral_type is not 1/2/3, when the speed is non-positive, when a focus length is zero, when divergences are non-positive, when aperture vectors are misaligned, when aperture_shape is not 1 or 2, or when the source and receiver coincide.",
+    "runtime_failure": "Raises ValueError if the velocity, unit ray or weight is non-finite for finite but extreme input magnitudes (registered hardening).",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM NBI单元定向射线与概率 package, source anchor src/fidasim.f90:12883-12985 (mc_nbi_cell), as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 0d3b9526b8fd805d0d0e41843daee00a217f50e6fc1cd3e3d702f6502c3c81ac (reference record; the test suite performs no automated drift detection). Arithmetic ported verbatim including the theta_z-uses-focy quirk and the Float32 divisor; the finite-output gate is a registered hardening. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.nbi_cell_directed_ray",
+      "symbol": "nbi_cell_directed_ray",
+      "signature": "nbi_cell_directed_ray(cell_center_uvw_cm, cell_offset_cm, source_xyz_cm, beam_origin_uvw_cm, inverse_beam_basis, beam_basis, injection_speed_cm_s, neutral_type, aperture_distance_cm, aperture_shape, aperture_offset_y_cm, aperture_offset_z_cm, aperture_half_width_y_cm, aperture_half_width_z_cm, focus_y_cm, focus_z_cm, divergence_y_rad, divergence_z_rad)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev46",
+    "dependencies": []
+  },
+  "example": {
+    "description": "The saved package's centerline probe: a straight ray through a rectangular aperture is accepted with unit-norm velocity and finite positive weight.",
+    "code": "import numpy as np\nfrom scirel.fusion import nbi_cell_directed_ray\nout = nbi_cell_directed_ray(\n    [10, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], np.eye(3), np.eye(3),\n    100, 1, [5], [1], [0], [0], [2], [2], 100, 100,\n    [.1, .1, .1], [.1, .1, .1])\nassert out['accepted']\nassert np.isclose(np.linalg.norm(out['velocity_uvw_cm_s']), 100)\nassert out['trajectory_weight'] > 0\ntry:\n    nbi_cell_directed_ray(\n        [10, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], np.eye(3), np.eye(3),\n        100, 4, [5], [1], [0], [0], [2], [2], 100, 100,\n        [.1, .1, .1], [.1, .1, .1])\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('neutral_type 4 must be rejected')",
+    "expected": "The centerline ray is accepted with speed 100 and finite weight; neutral_type 4 raises ValueError."
+  },
+  "verification": {
+    "scope": [
+      "Saved-package probe reproduction (centerline acceptance, theta_z quirk).",
+      "Float32 divisor identity, aperture acceptance, and failure contracts."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_cross_node_leaves.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests reproduce the saved package's own probes (centerline acceptance with finite positive weight; theta_z uses focy, not focz), establish the Float32 component-divisor identity, and exercise the fail-closed contracts including the finite-output gate. The aperture acceptance and divergence weight are closed-form geometry; no cross-cell or whole-source MC composition is asserted. Environment-gated saved-arm parity is not replayed here; the FIDASIM saved packages ship package-level oracles rather than a pinned source-runtime replay target, and the recorded implementation digest provides the provenance linkage. No test establishes the ray relation against an external physics reference beyond the source closed form.",
+    "known_limitations": [
+      "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+      "The registered overflow/finite-output gates deliberately diverge from the saved arm's silent Inf returns.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

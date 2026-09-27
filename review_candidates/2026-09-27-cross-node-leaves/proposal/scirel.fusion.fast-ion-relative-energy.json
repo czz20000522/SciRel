@@ -1,0 +1,147 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.fast-ion-relative-energy",
+  "kind": "operator",
+  "title": {
+    "en": "Fast-ion energy relative to plasma rotation",
+    "zh": "快离子相对能量"
+  },
+  "summary": "Compute one fast ion's kinetic energy in the local plasma-rotation frame: E_rel = v2_to_E_per_amu * A * |v_i - v_rot|^2 in keV, with the relative velocity vector returned alongside.",
+  "taxonomy": [
+    "fusion",
+    "neutron-response",
+    "fast-ion",
+    "kinematics"
+  ],
+  "aliases": [
+    "calculate_fast_ion_relative_energy"
+  ],
+  "identity": {
+    "relation": "E_rel = velocity_squared_to_kev_per_amu * ion_mass_amu * |ion_velocity - plasma_rotation|^2; relative_velocity = ion_velocity - plasma_rotation.",
+    "direction": "ion velocity + plasma rotation velocity + ion mass + conversion factor -> relative velocity vector and relative beam energy in keV",
+    "definition": "The saved FIDASIM erel mapping (framework node N9 neutron_response): the ion's kinetic energy in the rotating plasma frame is the non-relativistic squared relative speed scaled by mass and the velocity-squared-to-keV-per-amu conversion factor.",
+    "model": "the saved formal implementation, ported verbatim with a registered finite-output gate",
+    "geometry": "one particle; scalar energy plus a 3-vector",
+    "coordinates": "velocities in cm/s; mass in amu; the conversion factor in keV amu^-1 (cm/s)^-2; energy in keV",
+    "boundary": "finite shape-(3,) velocities; positive mass and conversion factor; the energy must remain finite",
+    "assumptions": [
+      "Non-relativistic kinematics.",
+      "No external physics reference is bound beyond the source closed form."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "ion_velocity_cm_s",
+      "description": "Fast-ion velocity.",
+      "units": "cm/s",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "plasma_rotation_cm_s",
+      "description": "Plasma rotation velocity.",
+      "units": "cm/s",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "ion_mass_amu",
+      "description": "Ion mass.",
+      "units": "amu",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "velocity_squared_to_kev_per_amu",
+      "description": "Conversion factor from squared speed to keV per amu.",
+      "units": "keV amu^-1 (cm/s)^-2",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "relative_velocity_cm_s",
+      "description": "Ion velocity minus plasma rotation.",
+      "units": "cm/s",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "relative_beam_energy_kev",
+      "description": "Relative beam energy.",
+      "units": "keV",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and nonnegative (registered hardening: overflow raises instead of returning Inf)."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite velocities, positive mass and conversion factor."
+    ],
+    "supported": [
+      "Per-particle fast-ion relative-energy evaluation for the neutron response chain."
+    ],
+    "excluded": [
+      "DD reaction-rate lookup, neutron emission weighting, relativistic kinematics, and orbit following."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when any velocity is non-finite or misshaped, or when the mass or conversion factor is non-positive or non-finite.",
+    "runtime_failure": "Raises ValueError if the relative energy overflows to non-finite for finite but extreme input magnitudes (registered hardening).",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM 快离子相对能量 package, source anchor FIDASIM erel, as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 24ff46151da3fb019880738a264816f154e53d2af2db74c70fb158e53be68a08 (reference record; the test suite performs no automated drift detection). Arithmetic ported verbatim; the finite-output gate is a registered hardening. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.fast_ion_relative_energy",
+      "symbol": "calculate_fast_ion_relative_energy",
+      "signature": "calculate_fast_ion_relative_energy(*, ion_velocity_cm_s, plasma_rotation_cm_s, ion_mass_amu, velocity_squared_to_kev_per_amu)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev46",
+    "dependencies": []
+  },
+  "example": {
+    "description": "The relative energy of an ion at rest in the rotating frame is exactly zero.",
+    "code": "import numpy as np\nfrom scirel.fusion import calculate_fast_ion_relative_energy\nrotation = np.array([1.0e5, 0.0, 0.0])\nout = calculate_fast_ion_relative_energy(\n    ion_velocity_cm_s=rotation, plasma_rotation_cm_s=rotation,\n    ion_mass_amu=2.0, velocity_squared_to_kev_per_amu=0.01)\nassert out['relative_beam_energy_kev'] == 0.0\nnp.testing.assert_array_equal(out['relative_velocity_cm_s'], np.zeros(3))",
+    "expected": "An ion co-moving with the rotation has zero relative energy and zero relative velocity."
+  },
+  "verification": {
+    "scope": [
+      "Source closed form against independent recomputation.",
+      "Failure contracts including the registered overflow gate."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_cross_node_leaves.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests establish the closed form against independent recomputation (exact equality), the zero-at-rest identity, the fail-closed input contracts, and the overflow gate with a max-finite-velocity witness. Environment-gated saved-arm parity is not replayed here; the FIDASIM saved packages ship package-level oracles rather than a pinned source-runtime replay target, and the recorded implementation digest provides the provenance linkage. No test establishes the energy against an external physics reference beyond the source closed form.",
+    "known_limitations": [
+      "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+      "The registered overflow/finite-output gates deliberately diverge from the saved arm's silent Inf returns.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}
