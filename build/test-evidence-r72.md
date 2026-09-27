@@ -69,14 +69,29 @@ No automated drift detection runs against the saved bytes.
   pytest 9.1.1), wheel installed `--no-index --no-deps`.
 - Installed document validation: **147/147**, `runtime_origin: installed`,
   `examples_executed: true`, subprocess returncode 0.
-- Installed full tree: **1386 passed, 197 skipped, 0 failed**, pytest
-  returncode 0 (r71: 1370 passed, 197 skipped).
+- Installed full tree (dev47 wheel in clean venv): **1386 passed,
+  197 skipped, 0 failed**, pytest returncode 0 (r71: 1370 passed,
+  197 skipped; the dev46 installed receipts were superseded by the dev47
+  rebuild).
 - Catalog `build/catalog/r72`: `complete: 147/147`, root digest
-  `sha256:08827967326d798de0f39980e874c39adcffb1f478e823db43682d372c237b2a`.
+  `sha256:bf0e24fce337d56dbc8974aebb56ce110baff60961ab0de34ed101d97b33cfd6`
+  (rebuilt at dev47 alongside the wheel).
   Prior catalog builds are preserved and unreferenced by this freeze.
-- Internal wheel `scirel-0.1.0.dev46-py3-none-any.whl`, SHA-256
-  `85742b791bbb7e068f62c9693edbd0530f274055cae994bbda2baaa7f7931c58`.
+- Internal wheel `scirel-0.1.0.dev47-py3-none-any.whl`, SHA-256
+  `11f6f6149208b52ea0774686ccc6b9fb9b315d9f700333f23113ae8059a780ca`
+  (rebuilt at dev47 after the density-misnomer key rename and prose cleanup;
+  the earlier dev46 wheel `85742b79...` was superseded).
 - Candidate review-material index: batch r72 added (12 entries covering
   review.md, 6 proposal modules/tests and 5 proposal exact documents),
   every entry resolves and matches its recorded SHA-256
   (script-verified).
+
+## Correction history within this batch (successor commits after initial r72 development commit)
+
+- `017ca39`: fixed the three independently reproduced blockers (marker
+  allocation contract, ray py*pz overflow, DD rate OverflowError→ValueError
+  contract normalization); renamed `initial_state_density_cm_inv3` to
+  `initial_state_rate_per_volume_cm_inv3_s_inv`; added regression tests.
+- `5a61c1d`: systematically cleaned the density misnomer across both exact
+  documents, source modules, review.md and test comments; bumped to dev47.
+- This file (test evidence) updated to bind the dev47 wheel/catalog.

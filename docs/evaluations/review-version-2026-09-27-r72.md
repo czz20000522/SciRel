@@ -35,15 +35,15 @@
 
 - r71: NBI birth/geometry leaf family(5 项),142 资产 dev45
 - r72: cross-node leaf family(5 项),147 资产 dev46
-- 版本 `0.1.0.dev45` → `0.1.0.dev46`
+- 版本 `0.1.0.dev45` → `0.1.0.dev47`(dev46→dev47 为 density 误名修正)
 
 ## 验证(全部记录于 `build/test-evidence-r72.md`,所有子进程 returncode 已核)
 
 - 源码态全仓(复放激活):**1540 passed, 43 skipped, 0 failed**,returncode 0(r71 全树 1524,+16)
 - 147/147 文档源码态与安装态校验通过,含示例执行(`runtime_origin: installed`)
 - 安装态全树(干净 venv `build/venv-r72-clean`,自装 numpy 2.5.3 / scipy 1.18.1 / pytest 9.1.1,wheel `--no-index --no-deps`):**1386 passed, 197 skipped, 0 failed**,returncode 0(r71: 1370/197)
-- catalog `build/catalog/r72`:`complete: 147/147`,root digest `sha256:08827967326d798de0f39980e874c39adcffb1f478e823db43682d372c237b2a`
-- 内部 wheel `scirel-0.1.0.dev46-py3-none-any.whl`,SHA-256 `85742b791bbb7e068f62c9693edbd0530f274055cae994bbda2baaa7f7931c58`
+- catalog `build/catalog/r72`:`complete: 147/147`,root digest `sha256:bf0e24fce337d56dbc8974aebb56ce110baff60961ab0de34ed101d97b33cfd6`
+- 内部 wheel `scirel-0.1.0.dev47-py3-none-any.whl`,SHA-256 `11f6f6149208b52ea0774686ccc6b9fb9b315d9f700333f23113ae8059a780ca`
 
 ## 边界与待决
 
