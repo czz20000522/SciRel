@@ -10,8 +10,9 @@
 - [空间源形状归一化](../../catalog/examples/scirel.kinetic.spatial-source-shape-normalization.json)用调用方空间坐标的梯形积分将非负源剖面归一化，并返回原始积分。
 - [圆柱速度空间积分权重](../../catalog/examples/scirel.kinetic.cylindrical-velocity-quadrature.json)从归一化 `vr`、`vx` 网格构造 ghost 面、环形径向测度、体积权重和差分系数；`volume` 可作为 Maxwellian 速率平均的 `cylindrical_volume` 输入。
 - [平移 Maxwellian 离散种子](../../catalog/examples/scirel.kinetic.shifted-maxwellian-seed.json)在调用方速度网格和体积权重上构造逐 shift 归一化指数初值，保留来源的严格内部 `-80` clamp；输出尚未经过离散矩补偿。
+- [轴对称中性分布矩归约](../../catalog/examples/scirel.kinetic.axisymmetric-neutral-moments.json)在调用方分布与圆柱积分权重上归约密度、轴向流、压力、温度、应力和随机热通量；`sigma_zz = sigma_yy` 与零密度切片的 `source_default` 值沿用保存实现，仍待专家确认。
 
-这六项没有直接资产依赖；边界归一化接收调用方提供的热速度和柱坐标权重，不在函数内部构造它们。积分权重与种子、速率平均的端口组合由直接测试覆盖。链接指向 `catalog/examples/` 开发 pilot 的 exact documents，不代表专家批准或公开发布。
+这七项没有直接资产依赖；边界归一化接收调用方提供的热速度和柱坐标权重，不在函数内部构造它们。积分权重、种子与矩归约的端口组合由直接测试覆盖。链接指向 `catalog/examples/` 开发 pilot 的 exact documents，不代表专家批准或公开发布。
 
 ## 证据与待整理项
 
