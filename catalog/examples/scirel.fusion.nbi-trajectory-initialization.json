@@ -343,7 +343,7 @@
         "id": "beam_grid_entry",
         "kind": "operator",
         "asset_id": "scirel.fusion.beam-grid-ray-intersection",
-        "description": "Optional finite-grid entry/exit handoff from the accepted source point and unit ray; runs only when beam_grid_entry_state is supplied on the source_ray branch. The N1 in_plasma check remains outside this graph.",
+        "description": "Optional finite-grid entry/exit handoff from the accepted source point and unit ray; runs only when beam_grid_entry_state is supplied on the source_ray branch. Follows the intersection leaf's source-ordered infinite-line face-pair semantics (no forward-only guarantee; see its identity.relation). The N1 in_plasma check remains outside this graph.",
         "inputs": [
           "source_beam_cm",
           "unit_ray_beam",

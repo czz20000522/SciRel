@@ -193,3 +193,27 @@ def test_intersection_chord_through_an_off_axis_diagonal():
         ray_origin_cm=[-4, 3.0, 0], ray_direction=[1, 0, 0],
         grid_center_cm=[0, 0, 0], grid_lengths_cm=[2, 4, 6])
     assert not result["intersects_grid"]
+
+
+def test_intersection_pins_source_infinite_line_pair_semantics():
+    # Saved-arm parity, pinned as a contract (pre-freeze review finding):
+    # the six-face enumeration is an infinite-line face-pair test ordered by
+    # dot(direction, delta); the source performs no origin-side check.  A ray
+    # starting outside the slab and pointing away still reports the pair --
+    # both points lie behind the ray origin, and intersects_grid stays True.
+    result = intersect_ray_with_rectilinear_grid(
+        ray_origin_cm=[2, 0, 0], ray_direction=[1, 0, 0],
+        grid_center_cm=[0, 0, 0], grid_lengths_cm=[2, 2, 2])
+    assert result["intersects_grid"] is True
+    np.testing.assert_allclose(result["entry_point_cm"], [-1, 0, 0])
+    np.testing.assert_allclose(result["exit_point_cm"], [1, 0, 0])
+    assert result["intersection_length_cm"] == 2.0
+    # The same semantics are what let a track already inside the grid report
+    # its entry point behind the origin; changing the arithmetic would break
+    # that legitimate case, so the behavior is documented, not hardened.
+    result = intersect_ray_with_rectilinear_grid(
+        ray_origin_cm=[0, 0, 0], ray_direction=[1, 0, 0],
+        grid_center_cm=[0, 0, 0], grid_lengths_cm=[2, 2, 2])
+    assert result["intersects_grid"] is True
+    np.testing.assert_allclose(result["entry_point_cm"], [-1, 0, 0])
+    np.testing.assert_allclose(result["exit_point_cm"], [1, 0, 0])

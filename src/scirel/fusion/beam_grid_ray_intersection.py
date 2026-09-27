@@ -6,7 +6,13 @@ keep faces whose parallel coordinates stay inside the closed side bounds, and
 pair the first valid face with the first later valid face more than ``0.001``
 cm away.  ``dot(direction, delta)`` then orders entry and exit along the ray.
 This discrete face order is part of the contract and is not replaced by a
-generic slab test.  No intersection, a tangential degeneracy, or a missing
+generic slab test.  The enumeration is an infinite-line face-pair test with
+no origin-side check (a pinned saved-arm semantic): the ordered pair may lie
+entirely behind the ray origin -- an origin inside the grid legitimately
+reports its entry behind the origin, and a ray pointing away from the grid
+still reports ``intersects_grid=True`` -- so callers needing forward-only
+geometry must validate the returned points themselves.  No intersection, a
+tangential degeneracy, or a missing
 second distinct face returns the input origin for both points with zero
 length and ``intersects_grid=False``.
 
