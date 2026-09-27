@@ -27,6 +27,22 @@ needs a successor, not a silent edit.
 
 
 
+## Batch r79: FIDASIM neutral-reservoir/population merge family (three operators + one composition graph)
+
+Directory: `review_candidates/2026-09-27-neutral-merge-family/`
+Successor of batch r78: the r78 candidate files below keep their frozen
+r78-v2 bytes and digests; this batch binds the new bytes.
+- `review.md` -- sha256 `211002926f3a1adf41704a0fda2d3858c7e69a50cc37d0f7aa9fdc226d401697`
+- `proposal/neutral_population_density_merge.py` -- sha256 `23c7576d6adc39a6d63c1cc594b2a8768c2fcc086d7311bcf9de2bdecf56db8d`
+- `proposal/neutral_population_grid_merge.py` -- sha256 `ba2d3764364def5f4c265fea74043dac4d1ebe655d63b60520d0143d6119f580`
+- `proposal/neutral_reservoir_merge.py` -- sha256 `ac152905cbaa7bc58ebc0074d2e995f8d8e170c5d05debc23166b94584f9ace1`
+- `proposal/neutral_population_state_merge.py` -- sha256 `a915a50b2082c184b5b10f6e10ead9f6b8e1885769ff6b4f6a4dae3ea0a873bc`
+- `proposal/test_neutral_merge_family.py` -- sha256 `783d46e163b3aff6e5b3eb4fce1cd7b72c0b1ec3b292b57588d619518e4e316c`
+- `proposal/scirel.fusion.neutral-population-density-merge.json` -- sha256 `e9a58c0750e2d3a0dc48ebc2d09609647b4de946f4bb9b7a444144b5e0abb33d`
+- `proposal/scirel.fusion.neutral-population-grid-merge.json` -- sha256 `beeb91a787f482b03a791bd59adbe58a79b1ba0cc05f368270a28c3666eea5a4`
+- `proposal/scirel.fusion.neutral-reservoir-merge.json` -- sha256 `dc4dddb658971e32f8bdeea89cb1027a51f886918e31f743cc77f329292ed4a7`
+- `proposal/scirel.fusion.neutral-population-state-merge.json` -- sha256 `85c46625c2bf647ed25d39e9a62835d76850a37283ebe7b3d2f76c0ea6a63612`
+
 ## Batch r78: FIDASIM beam-neutral multi-segment deposition family (three operators + one composition graph)
 
 Directory: `review_candidates/2026-09-27-beam-deposition-family/`
