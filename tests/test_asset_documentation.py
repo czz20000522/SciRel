@@ -228,7 +228,7 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
         "catalog_id": "scirel-development-pilot",
         "release_version": "0.1.0.dev5",
         "coverage_status": "partial",
-        "declared_total": 91,
+        "declared_total": 93,
     }
     first_result = build_catalog(EXAMPLES, first, **arguments)
     second_result = build_catalog(EXAMPLES, second, **arguments)
@@ -250,7 +250,7 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
     assert release["coverage"] == {
         "status": "partial",
         "included_asset_count": 46,
-        "declared_total_asset_count": 91,
+        "declared_total_asset_count": 93,
     }
     digest = release.pop("root_digest")
     assert digest == "sha256:" + hashlib.sha256(_canonical(release)).hexdigest()

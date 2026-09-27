@@ -41,8 +41,8 @@ atomic-physics validation or renewed D1 qualification.
 exact-document and public-surface checks without full-suite fallback: 37
 passed and 5 replay tests skipped without the optional saved-root environment
 variable. All 46 exact documents passed source-runtime and executable-example
-validation. The catalog remains `partial: 46/91` at `0.1.0.dev5`; no release
-gate or wheel build was run.
+validation. The catalog is `partial: 46/93` at `0.1.0.dev5`, corrected after
+checking the current asset union. No release gate or wheel build was run.
 
 Expert recognition, the molecular reshape interpretation, distribution
 licensing, and complete collision-matrix/Omega composition remain open.
