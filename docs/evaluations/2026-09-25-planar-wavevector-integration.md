@@ -31,8 +31,10 @@ intake 实现的 `_finite_real_vector` 只在 `np.asarray` 之后检查 `dtype.k
 只逐项整合批次相关文件：实现、领域导出、直接合同测试（含混合布尔回归）、
 exact document 与 15/63 catalog/selector 测试计数。intake 提交中的无关改动
 （docs 批量措辞、`scripts/check.ps1`、`tests/test_release_environment.py`）和
-依赖保存 L1 源码的 `test_planar_wavevector_l1.py` 均**未**引入：后者需要
-`SCIREL_L1_ROOT` 指向源项目 checkout 才能执行，违反源码无关测试边界。intake
+依赖保存来源源码的 `test_planar_wavevector_l1.py` 均**未**引入：后者在
+intake 当前 HEAD（647d5db）经 `SCIREL_HISTORICAL_PDRF_ROOT` /
+`SCIREL_HISTORICAL_PDRK_ROOT` 指向保存的 PDRF/PDRK 源码根目录才能执行，
+违反源码无关测试边界。intake
 记录的 PDRF/PDRK 数值对照（极坐标正模长相合、直角分量相合、零模长角度/负模长/
 `par` 状态/大分量溢出/负 `cwp` 方向不同）作为一次性 provisional 证据保留在本记录，
 不在本仓重跑，也不扩大为严格 D1 冻结证据。
