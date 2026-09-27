@@ -27,6 +27,25 @@ needs a successor, not a silent edit.
 
 
 
+## Batch r75: FIDASIM NBI source-geometry family (two operators + one task graph)
+
+Directory: `review_candidates/2026-09-27-nbi-source-geometry/`
+Successor of batch r73 in this index: the r73 candidate files below keep
+their frozen r73 bytes and digests (r74 was a wording-only round with no
+candidate packet; r75's science bytes were frozen as r75-v1 at commit
+`6f57c69` before this packet existed, so this index binds the packet bytes
+at the r75-v2 evidence-only successor freeze, which snapshots them directly
+as review materials).
+- `review.md` -- sha256 `c11d94039fe8d9f841fb70c0cbfc8a201b75986fe82338c30366fccfa05a3eac`
+- `proposal/nbi_source_plane_ray.py` -- sha256 `1f0d49ce4cdd1e24a8d3c63a4386b997571bbca1b4a043a6fb95a010d22159de`
+- `proposal/beam_grid_ray_intersection.py` -- sha256 `b3d8a93de492f8b1a1df32bf8a0a7c3186767cbd2392448ecc8fe9612cd3a279`
+- `proposal/nbi_trajectory_initialization.py` -- sha256 `5ec1bb75cbcc3d50326dfe785f9d3ae698341dfa6c4e6be8de12d6cd69e7344f`
+- `proposal/test_nbi_source_geometry.py` -- sha256 `9dc368c413829ef0d701ef86238e9f0c6e757c56cbba72290c6d1edb9c3d19c3`
+- `proposal/test_graph_nbi_trajectory_initialization.py` -- sha256 `0e0b9cb8730975f78b534c07e279c6f28ad5edf15b13e81ac77815d5777fbbaa`
+- `proposal/scirel.fusion.nbi-source-plane-ray.json` -- sha256 `78b5ca56783bb6f6ccdf09f06d2d96598a8c7e5c8a92a24a000cf19aa889619f`
+- `proposal/scirel.fusion.beam-grid-ray-intersection.json` -- sha256 `d7a6cc760da64430e512c05851bb67163972c8e66e1b1212b6837f1f78bf66c9`
+- `proposal/scirel.fusion.nbi-trajectory-initialization.json` -- sha256 `0dde8f74df59a6264f6282f57748d8287974cab86b3165df99b61db42c907365`
+
 ## Batch r73: pointwise firehose-margin relation (one operator)
 
 Directory: `review_candidates/2026-09-27-pointwise-firehose-margin/`

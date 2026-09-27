@@ -1,0 +1,274 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.nbi-source-plane-ray",
+  "kind": "operator",
+  "title": {
+    "en": "NBI source-plane ray with aperture acceptance",
+    "zh": "NBI源面射线与孔径接受"
+  },
+  "summary": "Map caller-provided uniform source samples and standard-normal divergence samples into the FIDASIM beam-coordinate source point and unit ray, then accept the ray only if it passes every rectangular or elliptical aperture.",
+  "taxonomy": [
+    "fusion",
+    "neutral-beam-source-sampling",
+    "nbi-birth",
+    "beam-geometry"
+  ],
+  "aliases": [
+    "construct_nbi_source_ray"
+  ],
+  "identity": {
+    "relation": "rectangle source: xyz_source = [0, hy*2*(u0-0.5), hz*2*(u1-0.5)]; ellipse source: xyz_source = [0, hy*sqrt(u0)*cos(2*pi*u1), hz*sqrt(u0)*sin(2*pi*u1)]; xyz_ray = [1, -y_src/focy + tan(divy*n0), -z_src/focz + tan(divz*n1)]; per aperture at point = xyz_ray*d + xyz_source: rectangle (shape=1) or ellipse (shape=2) closed acceptance test; source_beam = basis @ xyz_source + origin; unit_ray = normalize(basis @ xyz_ray).",
+    "direction": "source uniform/normal variates + source shape/half-widths + focus lengths + divergences + aperture set + beam basis/origin -> source point, unit ray, acceptance flag",
+    "definition": "The saved FIDASIM mc_nbi source-plane branch (framework node N2 neutral_beam_source_sampling): the deterministic geometry between caller random variates and the aperture-accepted beam-coordinate ray. Randomness is caller-owned; the 1000-attempt rejection loop and the serial two-word RNG are runtime sampling mechanics outside this relation.",
+    "model": "the saved formal implementation, ported verbatim with registered finite/norm hardenings",
+    "geometry": "one NBI source plane with lateral focusing and divergence, projected through an ordered aperture set into beam coordinates",
+    "coordinates": "positions in cm; angles and divergences in radians; the beam basis maps xyz to beam-grid uvw; outputs are dimensionless unit rays",
+    "boundary": "uniform samples exactly in [0,1]; finite shape-(2,) variate pairs; source_shape exactly 1 or 2 (bools rejected); positive finite half-widths; nonzero finite focus lengths; finite divergence standard deviations; finite (3,3) basis and (3,) origin; aligned finite aperture vectors; the transformed ray norm must stay finite and nonzero; all outputs finite",
+    "assumptions": [
+      "The caller supplies a geometrically consistent beam basis, source geometry and aperture set.",
+      "Rejection resampling, the 1000-attempt cap and the source serial RNG remain caller-owned runtime mechanics."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "source_uniform",
+      "description": "Source-plane uniform random samples.",
+      "units": "dimensionless",
+      "shape": "[2]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Each value in [0, 1]."
+    },
+    {
+      "name": "divergence_normal",
+      "description": "Two caller-owned standard-normal divergence samples.",
+      "units": "dimensionless",
+      "shape": "[2]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "source_shape",
+      "description": "Source shape: 1 rectangle, 2 ellipse.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "Exactly 1 or 2 (registered: Python and NumPy bools rejected)."
+    },
+    {
+      "name": "half_width_y_cm",
+      "description": "Source half-width in y.",
+      "units": "cm",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "half_width_z_cm",
+      "description": "Source half-width in z.",
+      "units": "cm",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "focus_y_cm",
+      "description": "Y lateral focal length.",
+      "units": "cm",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and nonzero (registered: NaN rejected)."
+    },
+    {
+      "name": "focus_z_cm",
+      "description": "Z lateral focal length.",
+      "units": "cm",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and nonzero (registered: NaN rejected)."
+    },
+    {
+      "name": "divergence_y_rad",
+      "description": "Y divergence standard deviation.",
+      "units": "rad",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite (registered: the saved arm propagates NaN silently)."
+    },
+    {
+      "name": "divergence_z_rad",
+      "description": "Z divergence standard deviation.",
+      "units": "rad",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite (registered: the saved arm propagates NaN silently)."
+    },
+    {
+      "name": "aperture_distance_cm",
+      "description": "Per-aperture distance from the source.",
+      "units": "cm",
+      "shape": "[n_aperture]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; same length as the other aperture vectors."
+    },
+    {
+      "name": "aperture_shape",
+      "description": "Per-aperture shape: 1 rectangle, 2 ellipse.",
+      "units": "dimensionless",
+      "shape": "[n_aperture]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Every value exactly 1 or 2."
+    },
+    {
+      "name": "aperture_offset_y_cm",
+      "description": "Per-aperture y center offset.",
+      "units": "cm",
+      "shape": "[n_aperture]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "aperture_offset_z_cm",
+      "description": "Per-aperture z center offset.",
+      "units": "cm",
+      "shape": "[n_aperture]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "aperture_half_width_y_cm",
+      "description": "Per-aperture y half-width (ellipse semi-axis).",
+      "units": "cm",
+      "shape": "[n_aperture]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "aperture_half_width_z_cm",
+      "description": "Per-aperture z half-width (ellipse semi-axis).",
+      "units": "cm",
+      "shape": "[n_aperture]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "beam_basis",
+      "description": "xyz -> beam-grid uvw coordinate basis.",
+      "units": "dimensionless",
+      "shape": "[3,3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; transformed ray norm must stay finite and nonzero."
+    },
+    {
+      "name": "beam_source_cm",
+      "description": "Beam-coordinate origin (nbi%src).",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "source_beam_cm",
+      "description": "Source point in beam coordinates: basis @ xyz_source + origin.",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "unit_ray_beam",
+      "description": "Normalized basis @ xyz_ray in beam coordinates.",
+      "units": "dimensionless",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite; unit norm (registered: an overflowing squared norm raises instead of collapsing to a zero vector)."
+    },
+    {
+      "name": "accepted",
+      "description": "Whether the ray passes every aperture.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "True/False."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "A geometrically consistent beam basis, source geometry and aperture set."
+    ],
+    "supported": [
+      "Per-event deterministic NBI source-plane ray geometry, aperture acceptance and beam-coordinate projection."
+    ],
+    "excluded": [
+      "Random-variates generation, rejection resampling loops, cell-targeted sampling, trajectory following and ionization physics."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when any variate pair, geometry vector, basis, origin or aperture entry is non-finite or misshaped, when uniform samples leave [0,1], when source_shape is not exactly 1 or 2 (including Python and NumPy bools), when a half-width is non-positive, when a focus length is zero or non-finite, when a divergence is non-finite, or when aperture_shape values are not 1 or 2.",
+    "runtime_failure": "Raises ValueError when the transformed ray norm is non-finite or zero, or when any output is non-finite, for finite but extreme input magnitudes (registered hardening); the saved arm silently returns a collapsed zero 'unit' ray or NaN geometry.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM NBI源面射线与孔径接受 package, source anchor src/fidasim.f90:12780-12860 (mc_nbi source-plane branch), as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 2647ae3cea4a68466996eee5ca522195b536dccce36ca66df507a47edd7a32d4; saved operator document digest sha256 bd13f0d56a78f093dc9ed2e5114d94b72a16733a8273f4bca9129ca52fa320f1 (reference records; the test suite performs no automated drift detection). Arithmetic ported verbatim; the finite-focus/divergence/half-width checks, the bool source-shape rejection, the finite-and-nonzero ray-norm gate and the finite-output gate are registered hardenings. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.nbi_source_plane_ray",
+      "symbol": "construct_nbi_source_ray",
+      "signature": "construct_nbi_source_ray(source_uniform, divergence_normal, source_shape, half_width_y_cm, half_width_z_cm, focus_y_cm, focus_z_cm, divergence_y_rad, divergence_z_rad, aperture_distance_cm, aperture_shape, aperture_offset_y_cm, aperture_offset_z_cm, aperture_half_width_y_cm, aperture_half_width_z_cm, beam_basis, beam_source_cm)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev50",
+    "dependencies": []
+  },
+  "example": {
+    "description": "The saved package's centerline probe: a centered rectangle sample maps to the beam origin and the unit centerline passes the aperture.",
+    "code": "import numpy as np\nfrom scirel.fusion import construct_nbi_source_ray\nsource, ray, accepted = construct_nbi_source_ray(\n    [0.5, 0.5], [0.0, 0.0], 1, 2.0, 3.0, 10.0, 10.0, 0.1, 0.1,\n    [5.0], [1], [0.0], [0.0], [1.0], [1.0], np.eye(3), [1.0, 2.0, 3.0])\nassert np.allclose(source, [1.0, 2.0, 3.0])\nassert np.allclose(ray, [1.0, 0.0, 0.0])\nassert accepted\ntry:\n    construct_nbi_source_ray(\n        [1, 0.5], [0, 0], 1, 1e200, 1, 1, 1, 0, 0,\n        [], [], [], [], [], [], np.eye(3), np.zeros(3))\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('an overflowing ray norm must be rejected (registered hardening)')",
+    "expected": "The centerline probe reproduces the saved mapping; the extreme-geometry call that collapses the saved arm's unit ray to a zero vector raises ValueError."
+  },
+  "verification": {
+    "scope": [
+      "Saved-package probe reproduction (centerline rectangle acceptance and beam-coordinate mapping).",
+      "Closed-form rectangle/ellipse source mappings, focus and divergence ray terms, aperture acceptance bounds.",
+      "Registered hardenings: finite focus/divergence/half-widths, Python- and NumPy-bool source-shape rejection, finite-and-nonzero ray norm, finite outputs."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_nbi_source_geometry.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests reproduce the saved package's own centerline probe, recompute the rectangle/ellipse source mappings and the ray focusing/divergence terms in closed form, verify the beam-basis transform identity, and exercise the aperture acceptance bounds plus the fail-closed contracts including the norm-overflow gate added after independent pre-freeze review. The aperture test is closed-form geometry; no source MC replay, rejection-loop or whole-source composition is asserted. The saved FIDASIM packages ship package-level oracles rather than a pinned source-runtime replay target, and the recorded implementation digest provides the provenance linkage. No test establishes the relation against an external physics reference beyond the source closed form.",
+    "known_limitations": [
+      "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+      "The registered finite/norm gates deliberately diverge from the saved arm's silent NaN/Inf returns.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

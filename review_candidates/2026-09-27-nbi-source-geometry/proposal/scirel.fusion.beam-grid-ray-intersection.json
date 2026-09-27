@@ -1,0 +1,167 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.beam-grid-ray-intersection",
+  "kind": "operator",
+  "title": {
+    "en": "Finite rectilinear beam-grid ray intersection",
+    "zh": "有限直角束网格射线交点"
+  },
+  "summary": "Replay the FIDASIM finite rectilinear grid_intersect branch: enumerate the six box faces in the source's +x,-x,+y,-y,+z,-z order, pair the first valid face with the first later distinct valid face, and order entry/exit along the ray.",
+  "taxonomy": [
+    "fusion",
+    "neutral-beam-source-sampling",
+    "beam-grid",
+    "ray-geometry"
+  ],
+  "aliases": [
+    "intersect_ray_with_rectilinear_grid"
+  ],
+  "identity": {
+    "relation": "For side s in (+x,-x,+y,-y,+z,-z): a candidate face point exists only when the direction component on the face axis is nonzero and the other two coordinates of the point stay inside the closed side bounds; the first valid face and the first later valid face more than 0.001 cm away form the unique pair; dot(direction, delta) orders entry and exit along the ray direction. No pair means length 0, both points backfilled with the input origin and intersects_grid=False. This discrete face order is part of the contract, not a generic slab test. The enumeration is an infinite-line face-pair test with no origin-side check: the ordered pair may lie entirely behind the ray origin (e.g. an origin outside the slab with the direction pointing away still reports intersects_grid=True), and an origin inside the grid legitimately reports its entry behind the origin. The 'entry' output is ordered relative to the pair, not guaranteed forward of the origin; callers needing forward-only geometry must validate the returned points themselves.",
+    "direction": "ray origin/direction + grid center/full lengths -> entry point, exit point, chord length, intersection flag",
+    "definition": "The saved FIDASIM grid_intersect finite rectilinear branch (src/fidasim.f90:8685-8814), consumed by the mc_nbi initial grid entry and reusable for any caller-owned finite-grid ray handoff. The operator does not judge in_plasma; that remains a framework-side decision.",
+    "model": "the saved formal implementation, ported verbatim with registered finite-length and finite-output gates",
+    "geometry": "one finite axis-aligned rectilinear box; source-ordered face enumeration",
+    "coordinates": "positions in cm; ray direction/velocity scale does not affect the ordered pair",
+    "boundary": "finite shape-[3] origin/direction/center; grid lengths finite and strictly positive (registered: NaN lengths rejected); tangential degeneracy or missing distinct pair yields the origin-backfilled zero-length result",
+    "assumptions": [
+      "The caller supplies a finite rectilinear grid state and a continuous ray.",
+      "The in_plasma decision on the entry point is owned by the consuming framework edge, not this operator."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "ray_origin_cm",
+      "description": "Ray origin.",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "ray_direction",
+      "description": "Ray direction or velocity; scale does not affect the ordered pair.",
+      "units": "dimensionless or cm/s",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "grid_center_cm",
+      "description": "Finite rectilinear grid center.",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "grid_lengths_cm",
+      "description": "Full x/y/z grid lengths.",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and strictly positive (registered: NaN lengths rejected)."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "entry_point_cm",
+      "description": "First valid face intersection in the dot(direction, delta) pair ordering; backfilled with the input origin when no distinct pair exists. Not guaranteed forward of the ray origin (the source performs no origin-side check; see identity.relation).",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite; may lie behind the ray origin for origins inside the grid or pairs behind the origin."
+    },
+    {
+      "name": "exit_point_cm",
+      "description": "Second distinct valid face intersection; backfilled with the input origin when no distinct pair exists.",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "intersection_length_cm",
+      "description": "Euclidean chord length between the two intersections.",
+      "units": "cm",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and nonnegative; zero when no distinct pair exists."
+    },
+    {
+      "name": "intersects_grid",
+      "description": "Whether two distinct valid face intersections exist.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "True/False."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "A finite axis-aligned rectilinear grid state and a continuous finite ray."
+    ],
+    "supported": [
+      "Single-ray finite-grid entry/exit handoff for NBI birth trajectories, lines of sight or particle tracks."
+    ],
+    "excluded": [
+      "Field interpolation inside the grid, trajectory advancement, in_plasma masking and native runtime equivalence."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when any ray or grid vector is non-finite or misshaped, or when a grid length is non-positive or non-finite (registered hardening; the saved arm's positivity test lets NaN lengths through to a silent no-intersection result).",
+    "runtime_failure": "Raises ValueError if the selected intersection geometry is non-finite for finite but extreme input magnitudes (registered hardening).",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned; the no-intersection result is the source-defined complete answer."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM 有限直角束网格射线交点 package, source anchor src/fidasim.f90:8685-8814 (grid_intersect finite rectilinear branch; NBI consumption 12780-12881), as recorded by the saved bundle's own provenance section. Saved implementation content digest sha256 e7e7294ef8bfce2f407ac197ed3724dadb60b991cddb6fde49c290b97286c675; saved operator document digest sha256 9564c4612ed673b4f3a5d6cfea82c2ea49f4b7f3d8a9ac26f74f54cf1850545a (reference records; the test suite performs no automated drift detection). Arithmetic and the six-face enumeration order ported verbatim; the finite grid-length check and the finite-output gate are registered hardenings. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.beam_grid_ray_intersection",
+      "symbol": "intersect_ray_with_rectilinear_grid",
+      "signature": "intersect_ray_with_rectilinear_grid(ray_origin_cm, ray_direction, grid_center_cm, grid_lengths_cm)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev50",
+    "dependencies": []
+  },
+  "example": {
+    "description": "The saved package's forward probe: a ray entering through -x and leaving +x returns the source-ordered pair.",
+    "code": "from scirel.fusion import intersect_ray_with_rectilinear_grid\nresult = intersect_ray_with_rectilinear_grid(\n    ray_origin_cm=[-2, 0, 0], ray_direction=[1, 0, 0],\n    grid_center_cm=[0, 0, 0], grid_lengths_cm=[2, 4, 6])\nassert result['intersects_grid'] and result['intersection_length_cm'] == 2.0\nassert list(result['entry_point_cm']) == [-1.0, 0.0, 0.0]\nassert list(result['exit_point_cm']) == [1.0, 0.0, 0.0]\ntry:\n    intersect_ray_with_rectilinear_grid(\n        ray_origin_cm=[0, 0, 0], ray_direction=[1, 0, 0],\n        grid_center_cm=[0, 0, 0], grid_lengths_cm=[2, float('nan'), 2])\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('NaN grid lengths must be rejected (registered hardening)')",
+    "expected": "The forward probe reproduces the saved ordering and chord; NaN grid lengths raise ValueError."
+  },
+  "verification": {
+    "scope": [
+      "Saved-package probe reproduction (forward/reverse ordering, miss and degenerate zero-length returns).",
+      "Saved infinite-line pair semantics pinned as a contract: no origin-side check, pair may lie behind the origin.",
+      "Registered hardenings: finite grid lengths and finite intersection geometry."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_nbi_source_geometry.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests reproduce the saved package's own probes (forward and reverse face ordering, tangential and missing-second-face degeneracies) and exercise the fail-closed contracts including the finite-length gate. The face enumeration is closed-form geometry; no grid-internal interpolation, in_plasma masking or whole-trajectory composition is asserted. The saved FIDASIM packages ship package-level oracles rather than a pinned source-runtime replay target, and the recorded implementation digest provides the provenance linkage. No test establishes the relation against an external physics reference beyond the source closed form.",
+    "known_limitations": [
+      "No forward-only guarantee: intersects_grid and the ordered pair follow the source's infinite-line face enumeration, so a ray pointing away from the grid can still report a pair behind the origin; forward-only callers must validate the returned geometry.",
+      "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+      "The registered finite-length/finite-output gates deliberately diverge from the saved arm's silent no-intersection results on NaN lengths.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}
