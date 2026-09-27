@@ -1,0 +1,714 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.beam-neutral-segment-deposition-loop",
+  "kind": "task_graph",
+  "title": {
+    "en": "Beam-neutral segment deposition loop graph",
+    "zh": "束中性逐段碰撞辐射沉积图"
+  },
+  "summary": "Compose the N3 beam-neutral per-segment deposition slice in source order: deposition initialization, DDA beam-grid track, per-segment local plasma/atomic snapshot validation, explicit N4 cell-update handoff, and marker-normalized deposition records with carried-state feedback.",
+  "taxonomy": [
+    "fusion",
+    "neutral-population-transport",
+    "beam-deposition",
+    "task-graph"
+  ],
+  "aliases": [
+    "deposit_beam_neutral_segments"
+  ],
+  "identity": {
+    "relation": "Source-ordered non-interchangeable composition: deposition_initialization -> beam_grid_track -> (per segment) local_state_sequence -> n4_cell_update_handoff -> deposition. The initialization materializes the carried rate-density state and the fixed nlaunch/cell-volume normalization scalars with a zero deposition start; the track leaf produces source-order segments; per segment the local snapshot record is validated at the track midpoint, the caller's N4 result record is bound to the same midpoint, duration and carried state, and the deposition leaf normalizes density, photons and population-loss flux while feeding the next state and accumulated deposition forward.",
+    "direction": "N2 accepted ray origin + component velocity + initial cell + caller beam-grid track contract + pre-first-segment level-state rate densities + nlaunch + cell volume + per-segment local plasma/atomic snapshot records + per-segment N4 result records -> source-order normalized deposition records, final carried state, total deposition, DDA terminal reason and graph-order diagnostics",
+    "definition": "The saved FIDASIM 束中性逐段碰撞辐射沉积图 TaskGraph (framework node N3 neutral_population_transport, related N4 collisional_radiative_photon_source via data handoff only; source anchors src/fidasim.f90:9346-9461 track midpoint/duration/index and termination, 9980-10067 local profile refresh, 11776-11837 N4 cell update, 13041-13057 track -> get_plasma -> colrad -> dens/nlaunch -> flux*dv). All lengths, positions, zero-based sample indices, dt values, carried states and provenances are runtime fail-closed conditions; no array shape, HDF5 path or callback fills them implicitly. Graph-internal validation nodes (registered deviation from the saved packaging, reviewer finding): the saved bundle declares the deposition initial-state materialization (N3逐段沉积初态规范化) and the local plasma/atomic snapshot normalization (N3局域等离子体原子快照规范化) as separate operators, but both are data-edge validation gates returning caller data essentially unchanged, and no integrated SciRel public operator is a pure pass-through validator, so they execute here as graph-internal helpers reproducing the saved contracts verbatim; promotion to public operators is deferred until a second standalone consumer exists. External boundary: the N4 colrad cell update is an explicit caller capability and is not composed here. Under the frozen r77 collisional-radiative-state-advance document contract (states labeled cm^-3, photons s^-1) its outputs could not legally populate the N4 records as declared here (rate-density states cm^-3 s^-1, cm^-3 integrated density, cm^-3 s^-1 photons); that label correction is carried by the r78 successor documents, not the old freeze, and no direct composition is implied.",
+    "model": "composition of the named SciRel leaves plus declared graph-internal validation helpers following the saved graph's node/edge contract; no new scientific rule is introduced in glue",
+    "geometry": "one ray through the caller-declared Cartesian beam grid, one record per track segment",
+    "coordinates": "positions in cm, durations in s, level states in cm^-3 s^-1 (source rate density), integrated densities in cm^-3, photon rate densities in cm^-3 s^-1, fluxes in cm^-3 s^-1, deposition in s^-1; cell indices one-based",
+    "boundary": "caller-owned get_plasma state (per-field snapshot records), N4 colrad execution (per-record results), HDF5/grid interpolation, RNG, MPI, reservoir updates and photon storage stay outside; the node order is non-interchangeable and enforced at runtime",
+    "assumptions": [
+      "One local snapshot record and one N4 result record exist per track segment, in source order.",
+      "The N4 records were produced with the exact carried state and segment duration they are bound to."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "start_position_cm",
+      "description": "N2 accepted ray origin.",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "neutral_velocity_cm_s",
+      "description": "N2 component neutral velocity.",
+      "units": "cm/s",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; the zero vector yields the source's empty traversal."
+    },
+    {
+      "name": "initial_grid_index_one_based",
+      "description": "First beam-grid cell.",
+      "units": "one_based_index",
+      "shape": "[3]",
+      "dtype": "integer array-like",
+      "required": true,
+      "constraints": "Positive integers inside the declared grid."
+    },
+    {
+      "name": "beam_grid",
+      "description": "Explicit DDA grid and boundary contract for the track leaf.",
+      "units": "cm",
+      "shape": "mapping",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "Exactly the scirel.fusion.beam-grid-ray-segment-tracking input contract (centers, widths, limits, in_plasma_at predicate, optional adaptive fields); a callable in_plasma_at is required."
+    },
+    {
+      "name": "initial_states_cm_inv3_s_inv",
+      "description": "Pre-first-segment neutral level-state rate densities.",
+      "units": "cm^-3 s^-1",
+      "shape": "[n_levels]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative."
+    },
+    {
+      "name": "nlaunch",
+      "description": "Source marker normalization denominator.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite positive genuine scalar."
+    },
+    {
+      "name": "beam_grid_cell_volume_cm3",
+      "description": "Source beam-grid cell volume.",
+      "units": "cm^3",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite positive genuine scalar."
+    },
+    {
+      "name": "local_state_samples",
+      "description": "Per-track local plasma/atomic snapshot records.",
+      "units": "mixed",
+      "shape": "[n_track, mapping]",
+      "dtype": "sequence of mappings",
+      "required": true,
+      "constraints": "One source-order record per track midpoint; each record carries the full snapshot contract (position_cm[3], in_plasma, thermal density/mass axes, ion/electron temperatures, impurity/fast-ion densities, beam mass/energy, three transition tables, einstein_s_inv and nonempty snapshot_provenance)."
+    },
+    {
+      "name": "n4_cell_update_records",
+      "description": "Per-track N4 cell-update result records.",
+      "units": "mixed",
+      "shape": "[n_track, mapping]",
+      "dtype": "sequence of mappings",
+      "required": true,
+      "constraints": "One source-order record per segment with zero-based local_state_sample_index, exact input_neutral_states_cm_inv3_s_inv, dt_s equal to the segment duration, finite nonnegative next_states_cm_inv3_s_inv/dens_cm_inv3/photons_per_cm3_s and nonempty n4_result_provenance; the caller separately composes N4."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "segment_depositions",
+      "description": "Source-order normalized deposition records.",
+      "units": "mixed",
+      "shape": "[n_track, mapping]",
+      "dtype": "list of dicts",
+      "required": true,
+      "constraints": "Source-order midpoint/duration/one-based cell plus normalized density (cm^-3), photon rate density (cm^-3 s^-1) and segment flux (cm^-3 s^-1)."
+    },
+    {
+      "name": "final_states_cm_inv3_s_inv",
+      "description": "Post-final-segment carried level-state rate densities.",
+      "units": "cm^-3 s^-1",
+      "shape": "[n_levels]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and nonnegative."
+    },
+    {
+      "name": "deposited_particles_per_s",
+      "description": "Source-normalized total deposition.",
+      "units": "s^-1",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite; the accumulated segment-flux*volume sum."
+    },
+    {
+      "name": "track_terminal_reason",
+      "description": "DDA terminal policy result from the track leaf.",
+      "units": "enum",
+      "shape": "scalar",
+      "dtype": "str",
+      "required": true,
+      "constraints": "One of the track leaf's terminal reasons."
+    },
+    {
+      "name": "diagnostics",
+      "description": "Graph-order diagnostics listing the enforced source node order.",
+      "units": "dimensionless",
+      "shape": "mapping",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "graph_order lists deposition_initialization, beam_grid_track, local_state_sequence, n4_cell_update_handoff, deposition."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Caller-owned per-segment snapshot and N4 result records aligned with the DDA traversal."
+    ],
+    "supported": [
+      "One ray's ordered track -> snapshot -> N4 result -> normalized deposition composition."
+    ],
+    "excluded": [
+      "N4 colrad execution, get_plasma interpolation, RNG, MPI, reservoir writes, photon storage and whole-program parity."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when inputs is not a mapping or misses a required key, when beam_grid is not a mapping with a callable in_plasma_at, when the record inputs are not ordered sequences, when the initialization or snapshot validation contracts fail, or when the track, snapshot and N4 record counts differ (registered hardening).",
+    "runtime_failure": "Delegates to the leaves' fail-closed contracts; a failed segment leaves the caller's data untouched.",
+    "nonconvergence": "Not applicable; the traversal is bounded by the track leaf's terminal policies.",
+    "partial_results": "Never returned; a failed call produces no deposition records."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM 束中性逐段碰撞辐射沉积图 TaskGraph package (framework node N3), source anchors src/fidasim.f90:9346-9461, 9980-10067, 11776-11837, 13041-13057, as recorded by the saved bundle's own provenance section. Composed from the integrated SciRel leaves scirel.fusion.beam-grid-ray-segment-tracking and scirel.fusion.n3-n4-segment-deposition, with the saved N3逐段沉积初态规范化 and N3局域等离子体原子快照规范化 validation contracts reproduced as graph-internal helpers (registered deviation from the saved packaging; saved implementations are not published as standalone assets). The saved FIDASIM bundle supports bounded historical development comparison; the qualified-L1 delivery root is empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 task-graph document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.beam_neutral_segment_deposition_loop",
+      "symbol": "deposit_beam_neutral_segments",
+      "signature": "deposit_beam_neutral_segments(inputs=None, **kwargs)"
+    }
+  },
+  "graph": {
+  "nodes": [
+    {
+      "id": "deposition_initialization",
+      "kind": "controlled_glue",
+      "description": "Graph-internal executable form of the saved N3逐段沉积初态规范化 contract: materialize the carried level-state rate densities and the fixed nlaunch/cell-volume normalization scalars with a zero deposition start (registered deviation from the saved packaging: data-edge validation node, not a standalone public operator).",
+      "inputs": [
+        "initial_states_cm_inv3_s_inv",
+        "nlaunch",
+        "beam_grid_cell_volume_cm3"
+      ],
+      "outputs": [
+        "carried_states_cm_inv3_s_inv",
+        "normalization_nlaunch",
+        "normalization_cell_volume_cm3",
+        "deposited_particles_per_s"
+      ]
+    },
+    {
+      "id": "beam_grid_track",
+      "kind": "operator",
+      "asset_id": "scirel.fusion.beam-grid-ray-segment-tracking",
+      "description": "Deterministic DDA segment traversal of the caller's beam grid.",
+      "inputs": [
+        "start_position_cm",
+        "velocity_cm_s",
+        "initial_grid_index_one_based",
+        "beam_grid"
+      ],
+      "outputs": [
+        "segments",
+        "ntrack",
+        "plasma_crossings",
+        "track_terminal_reason"
+      ]
+    },
+    {
+      "id": "local_state_sequence",
+      "kind": "controlled_glue",
+      "description": "Graph-internal executable form of the saved N3局域等离子体原子快照规范化 contract: per segment, validate the caller's local plasma/atomic snapshot record at the track midpoint without file or global-state access (registered deviation from the saved packaging: data-edge validation node, not a standalone public operator).",
+      "inputs": [
+        "local_state_samples",
+        "segments"
+      ],
+      "outputs": [
+        "validated_snapshot_position_cm"
+      ]
+    },
+    {
+      "id": "n4_cell_update_handoff",
+      "kind": "controlled_glue",
+      "description": "Bind the caller's explicit N4 cell-update result record to the same midpoint, duration and carried state; the N4 colrad execution stays an external caller capability.",
+      "inputs": [
+        "n4_cell_update_records",
+        "segments",
+        "validated_snapshot_position_cm",
+        "carried_states_cm_inv3_s_inv"
+      ],
+      "outputs": [
+        "bound_n4_record"
+      ]
+    },
+    {
+      "id": "deposition",
+      "kind": "operator",
+      "asset_id": "scirel.fusion.n3-n4-segment-deposition",
+      "description": "Marker-normalized N3 deposition of the bound N4 record with carried-state feedback and accumulated deposition.",
+      "inputs": [
+        "bound_n4_record",
+        "carried_states_cm_inv3_s_inv",
+        "nlaunch",
+        "beam_grid_cell_volume_cm3",
+        "previous_deposited_particles_per_s"
+      ],
+      "outputs": [
+        "next_states_cm_inv3_s_inv",
+        "normalized_density_cm_inv3",
+        "normalized_photons_per_cm3_s",
+        "segment_flux_per_cm3_s",
+        "deposited_particles_per_s"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": {
+        "node": "$input",
+        "port": "initial_states_cm_inv3_s_inv"
+      },
+      "to": {
+        "node": "deposition_initialization",
+        "port": "initial_states_cm_inv3_s_inv"
+      },
+      "description": "Pre-first-segment carried state.",
+      "condition": "Always.",
+      "transform": "Identity.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "$input",
+        "port": "nlaunch"
+      },
+      "to": {
+        "node": "deposition_initialization",
+        "port": "nlaunch"
+      },
+      "description": "Marker normalization denominator.",
+      "condition": "Always.",
+      "transform": "Identity.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "$input",
+        "port": "beam_grid_cell_volume_cm3"
+      },
+      "to": {
+        "node": "deposition_initialization",
+        "port": "beam_grid_cell_volume_cm3"
+      },
+      "description": "Cell volume normalization.",
+      "condition": "Always.",
+      "transform": "Identity.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "$input",
+        "port": "start_position_cm"
+      },
+      "to": {
+        "node": "beam_grid_track",
+        "port": "start_position_cm"
+      },
+      "description": "N2 accepted ray origin.",
+      "condition": "Always.",
+      "transform": "Identity.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "$input",
+        "port": "neutral_velocity_cm_s"
+      },
+      "to": {
+        "node": "beam_grid_track",
+        "port": "velocity_cm_s"
+      },
+      "description": "N2 component neutral velocity.",
+      "condition": "Always.",
+      "transform": "Identity.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "$input",
+        "port": "initial_grid_index_one_based"
+      },
+      "to": {
+        "node": "beam_grid_track",
+        "port": "initial_grid_index_one_based"
+      },
+      "description": "First beam-grid cell.",
+      "condition": "Always.",
+      "transform": "Identity.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "$input",
+        "port": "beam_grid"
+      },
+      "to": {
+        "node": "beam_grid_track",
+        "port": "beam_grid"
+      },
+      "description": "Explicit DDA grid contract expanded into the track leaf inputs.",
+      "condition": "Always.",
+      "transform": "Mapping expansion.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "beam_grid_track",
+        "port": "segments"
+      },
+      "to": {
+        "node": "local_state_sequence",
+        "port": "segments"
+      },
+      "description": "Source-order segments drive the per-segment snapshot validation.",
+      "condition": "After the track leaf returns.",
+      "transform": "Elementwise pairing.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "$input",
+        "port": "local_state_samples"
+      },
+      "to": {
+        "node": "local_state_sequence",
+        "port": "local_state_samples"
+      },
+      "description": "Caller-owned snapshot records.",
+      "condition": "Always.",
+      "transform": "Elementwise validation.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "local_state_sequence",
+        "port": "validated_snapshot_position_cm"
+      },
+      "to": {
+        "node": "n4_cell_update_handoff",
+        "port": "validated_snapshot_position_cm"
+      },
+      "description": "Snapshot midpoint alignment for the N4 record binding.",
+      "condition": "Per segment.",
+      "transform": "Elementwise pairing.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "$input",
+        "port": "n4_cell_update_records"
+      },
+      "to": {
+        "node": "n4_cell_update_handoff",
+        "port": "n4_cell_update_records"
+      },
+      "description": "Caller-owned N4 result records.",
+      "condition": "Always.",
+      "transform": "Elementwise pairing.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "beam_grid_track",
+        "port": "segments"
+      },
+      "to": {
+        "node": "n4_cell_update_handoff",
+        "port": "segments"
+      },
+      "description": "Segment midpoints and durations for the record binding.",
+      "condition": "After the track leaf returns.",
+      "transform": "Elementwise pairing.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "deposition_initialization",
+        "port": "carried_states_cm_inv3_s_inv"
+      },
+      "to": {
+        "node": "n4_cell_update_handoff",
+        "port": "carried_states_cm_inv3_s_inv"
+      },
+      "description": "Initial carried state for the first segment.",
+      "condition": "Before the first deposition.",
+      "transform": "State feedback.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "n4_cell_update_handoff",
+        "port": "bound_n4_record"
+      },
+      "to": {
+        "node": "deposition",
+        "port": "bound_n4_record"
+      },
+      "description": "Verified N4 record for the segment.",
+      "condition": "Per segment.",
+      "transform": "Identity.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "deposition_initialization",
+        "port": "carried_states_cm_inv3_s_inv"
+      },
+      "to": {
+        "node": "deposition",
+        "port": "carried_states_cm_inv3_s_inv"
+      },
+      "description": "Prior carried state for the segment deposition.",
+      "condition": "Per segment; feedback from the previous deposition replaces it after the first.",
+      "transform": "State feedback.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "deposition_initialization",
+        "port": "normalization_nlaunch"
+      },
+      "to": {
+        "node": "deposition",
+        "port": "nlaunch"
+      },
+      "description": "Fixed marker normalization denominator.",
+      "condition": "Per segment.",
+      "transform": "Identity.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "deposition_initialization",
+        "port": "normalization_cell_volume_cm3"
+      },
+      "to": {
+        "node": "deposition",
+        "port": "beam_grid_cell_volume_cm3"
+      },
+      "description": "Fixed cell volume normalization.",
+      "condition": "Per segment.",
+      "transform": "Identity.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "deposition_initialization",
+        "port": "deposited_particles_per_s"
+      },
+      "to": {
+        "node": "deposition",
+        "port": "previous_deposited_particles_per_s"
+      },
+      "description": "Zero deposition start; feedback from the previous deposition replaces it after the first.",
+      "condition": "Per segment.",
+      "transform": "State feedback.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "deposition",
+        "port": "next_states_cm_inv3_s_inv"
+      },
+      "to": {
+        "node": "deposition",
+        "port": "carried_states_cm_inv3_s_inv"
+      },
+      "description": "Carried-state feedback to the next segment.",
+      "condition": "After each segment.",
+      "transform": "State feedback.",
+      "kind": "feedback",
+      "required": false,
+      "feedback_id": "beam_deposition_state_feedback"
+    },
+    {
+      "from": {
+        "node": "deposition",
+        "port": "deposited_particles_per_s"
+      },
+      "to": {
+        "node": "deposition",
+        "port": "previous_deposited_particles_per_s"
+      },
+      "description": "Accumulated deposition feedback to the next segment.",
+      "condition": "After each segment.",
+      "transform": "State feedback.",
+      "kind": "feedback",
+      "required": false,
+      "feedback_id": "beam_deposition_state_feedback"
+    },
+    {
+      "from": {
+        "node": "deposition",
+        "port": "normalized_density_cm_inv3"
+      },
+      "to": {
+        "node": "$output",
+        "port": "segment_depositions"
+      },
+      "description": "Per-segment normalized deposition record accumulation.",
+      "condition": "Per segment.",
+      "transform": "Record assembly with the segment midpoint, duration and cell index.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "deposition",
+        "port": "deposited_particles_per_s"
+      },
+      "to": {
+        "node": "$output",
+        "port": "deposited_particles_per_s"
+      },
+      "description": "Total source-normalized deposition.",
+      "condition": "After the final segment.",
+      "transform": "Identity.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "deposition",
+        "port": "next_states_cm_inv3_s_inv"
+      },
+      "to": {
+        "node": "$output",
+        "port": "final_states_cm_inv3_s_inv"
+      },
+      "description": "Post-final-segment carried state.",
+      "condition": "After the final segment.",
+      "transform": "Identity.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "beam_grid_track",
+        "port": "track_terminal_reason"
+      },
+      "to": {
+        "node": "$output",
+        "port": "track_terminal_reason"
+      },
+      "description": "DDA terminal policy result.",
+      "condition": "After the track leaf returns.",
+      "transform": "Identity.",
+      "kind": "data",
+      "required": true
+    },
+    {
+      "from": {
+        "node": "deposition_initialization",
+        "port": "carried_states_cm_inv3_s_inv"
+      },
+      "to": {
+        "node": "$output",
+        "port": "diagnostics"
+      },
+      "description": "Graph-order diagnostics; no scientific transformation.",
+      "condition": "After the final segment.",
+      "transform": "Declared node-order listing.",
+      "kind": "data",
+      "required": true
+    }
+  ],
+  "execution": {
+    "mode": "source_ordered_segment_deposition_sequence",
+    "ordering": "Materialize the carried rate-density state and the fixed nlaunch/cell-volume normalization scalars, run the DDA track leaf once, then consume the source-ordered segments; per segment validate the caller's local snapshot record at the midpoint, bind the caller's N4 result record to the same midpoint, duration and carried state, and run the deposition leaf; the next carried state and accumulated deposition feed the next segment.",
+    "branches": [
+      "A plasma-flag change inside a segment: the track leaf stores two source records for the crossing and the loop continues.",
+      "Zero velocity: the track leaf returns the empty traversal and the graph returns the initialization state unchanged with terminal_reason 'zero_velocity'.",
+      "Record-count mismatch between tracks, snapshots and N4 records, or any leaf validation failure: the graph fails closed."
+    ],
+    "state_ownership": "The graph owns only the carried level-state rate densities, the accumulated deposition and the per-segment record list; the grid, snapshots, N4 results and normalization scalars are caller-owned explicit inputs.",
+    "failure_propagation": "The leaves' ValueError contracts propagate directly; there is no interpolation, fallback state or partial result.",
+    "feedback": [
+      {
+        "id": "beam_deposition_state_feedback",
+        "state": "The pair (carried level-state rate densities, accumulated deposition).",
+        "initialization": "From the caller's initial_states_cm_inv3_s_inv and a zero deposition start.",
+        "update_order": "After each verified N4 handoff: states <- next_states_cm_inv3_s_inv, deposited <- deposited + segment_flux*cell_volume, in the source's per-segment order.",
+        "continue_when": "Track segments remain.",
+        "stop_when": "The traversal reaches a declared terminal reason; no segment remains.",
+        "iteration_bound": "The DDA track leaf's segment count under the caller's max_track_segments limit.",
+        "nonconvergence": "Not applicable; the traversal is bounded by the track leaf's terminal policies."
+      }
+    ]
+  }
+},
+  "version": {
+    "implementation_version": "0.1.0.dev55",
+    "dependencies": [
+      {
+        "asset_id": "scirel.fusion.beam-grid-ray-segment-tracking"
+      },
+      {
+        "asset_id": "scirel.fusion.n3-n4-segment-deposition"
+      }
+    ]
+  },
+  "example": {
+    "description": "The saved graph's two-segment oracle with explicit N4 handoff records.",
+    "code": "import numpy as np\nfrom scirel.fusion import deposit_beam_neutral_segments\ntable = {'nenergy': 2, 'ntemp': 2, 'logemin': 0.0, 'logtmin': 0.0, 'dlogE': 1.0, 'dlogT': 1.0,\n         'minlog_pop': -99.0, 'minlog_depop': -99.0, 'log_pop': np.full((2, 2, 2, 2), -99.0),\n         'log_depop': np.full((2, 2, 2), -99.0)}\ndef snapshot(position):\n    return {'position_cm': position, 'in_plasma': True, 'thermal_density_cm3': (1.0,),\n            'thermal_mass_amu': (2.0,), 'ion_temperature_kev': 1.0, 'electron_density_cm3': 1.0,\n            'electron_temperature_kev': 1.0, 'impurity_density_cm3': 0.0, 'fast_ion_density_cm3': 0.0,\n            'beam_mass_amu': 2.0, 'beam_energy_kev': 1.0, 'hydrogen_table': table,\n            'electron_table': table, 'impurity_table': table, 'einstein_s_inv': ((0.0, 0.0), (0.0, 0.0)),\n            'snapshot_provenance': 'case:nbi-local-state-v1'}\ndef update(index, previous, duration):\n    nxt = np.asarray(previous, float) - np.array([duration, 2.0 * duration])\n    return {'local_state_sample_index': index, 'input_neutral_states_cm_inv3_s_inv': previous,\n            'dt_s': duration, 'next_states_cm_inv3_s_inv': nxt, 'dens_cm_inv3': nxt * 3.0,\n            'photons_per_cm3_s': 5.0 * duration, 'n4_result_provenance': 'case:n4-v1'}\nbeam_grid = dict(x_cell_centers_cm=[0.0, 1.0, 2.0], y_cell_centers_cm=[0.0], z_cell_centers_cm=[0.0],\n                 cell_width_cm=[1.0, 1.0, 1.0], max_track_segments=2, max_crossings=2,\n                 in_plasma_at=lambda p: True)\nfirst = update(0, [10.0, 20.0], 0.5)\nsecond = update(1, first['next_states_cm_inv3_s_inv'], 1.0)\nout = deposit_beam_neutral_segments(\n    start_position_cm=[0.0, 0.0, 0.0], neutral_velocity_cm_s=[1.0, 0.1, 0.1],\n    initial_grid_index_one_based=[1, 1, 1], beam_grid=beam_grid,\n    initial_states_cm_inv3_s_inv=[10.0, 20.0], nlaunch=2.0, beam_grid_cell_volume_cm3=4.0,\n    local_state_samples=[snapshot((0.25, 0.025, 0.025)), snapshot((1.0, 0.1, 0.1))],\n    n4_cell_update_records=[first, second])\nassert np.isclose(out['deposited_particles_per_s'], 9.0)\nassert np.allclose([r['segment_flux_per_cm3_s'] for r in out['segment_depositions']], [0.75, 1.5])",
+    "expected": "The saved two-segment oracle reproduces: state feedback, per-segment normalization and the 9.0 particles/s total deposition."
+  },
+  "verification": {
+    "scope": [
+      "Saved-graph oracle: two-segment exact N4 handoff, state feedback, normalization and total deposition.",
+      "Fail-closed contracts: record-count mismatch, carried-state mismatch, snapshot field and table-axis violations, vacuum temperature payload acceptance (source quirk).",
+      "Node order enforced and reported via graph_order diagnostics."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_beam_deposition_family.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests reproduce the saved graph oracle and exercise the fail-closed contracts. No N4 colrad execution, real atomic-data driver, multi-ray accumulation, MPI or HDF5 handling is asserted. The saved FIDASIM bundle supports bounded historical development comparison only.",
+    "known_limitations": [
+      "The N4 colrad update stays external; the unit-label question of the frozen r77 colrad advance document is retained for expert adjudication and no direct composition is implied.",
+      "The two saved validation operators are consumed graph-internally; standalone promotion is deferred until a second consumer exists (registered deviation).",
+      "The saved FIDASIM bundle supports bounded historical development comparison only; the qualified-L1 delivery root is empty.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

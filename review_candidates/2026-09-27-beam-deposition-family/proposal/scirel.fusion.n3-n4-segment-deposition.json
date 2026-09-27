@@ -1,0 +1,220 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.n3-n4-segment-deposition",
+  "kind": "operator",
+  "title": {
+    "en": "N3/N4 segment-state deposition handoff",
+    "zh": "N3逐段N4状态沉积"
+  },
+  "summary": "Verify one per-track N4 cell-update result record against the source track midpoint, carried state and duration, then apply the source marker normalization: dens/nlaunch, photons/nlaunch, segment population-loss flux and the accumulated deposition.",
+  "taxonomy": [
+    "fusion",
+    "neutral-population-transport",
+    "beam-deposition",
+    "n3-n4-handoff"
+  ],
+  "aliases": [
+    "assemble_n3_n4_segment_deposition"
+  ],
+  "identity": {
+    "relation": "Verify actual_position == expected_position within 1e-12-relative tolerance, the record's sample index equals the zero-based source index, the record's input states equal the exact prior carried state, and the record's dt_s equals the segment duration (rtol 1e-12). Then normalized_density = dens/nlaunch, normalized_photons = photons/nlaunch, segment_flux = (sum(previous_states) - sum(next_states))/nlaunch and deposited = previous_deposited + segment_flux*cell_volume.",
+    "direction": "track midpoint + local snapshot position + caller N4 result record + zero-based sample index + prior level states + segment duration + nlaunch + cell volume + prior deposition -> next level states, normalized density and photon records, segment flux, accumulated deposition",
+    "definition": "The saved FIDASIM N3逐段N4状态沉积 operator (framework node N3/N4 seam; source anchor src/fidasim.f90:13041-13057, the per-track consumption of colrad: track -> get_plasma -> colrad -> dens/nlaunch -> flux*dv). The N4 record is an explicit external caller capability - the caller separately composes the N4 colrad update and this asset never executes colrad. Unit reconciliation (reviewer finding, pending expert adjudication): the level states in this chain are source RATE DENSITIES in cm^-3 s^-1, seeded as states(1) = nneutrals*fraction/dv with nneutrals in particles/s, matching the integrated nbi-component-initial-state asset's initial_state_rate_per_volume_cm_inv3_s_inv; the record's dens_cm_inv3 (the colrad time-integrated density) is a true cm^-3 density and photons_per_cm3_s is cm^-3 s^-1, so deposited_particles_per_s is particles/s. The saved arm's *_cm_inv3 field names for the states mislabel that unit; public names here use the precise *_cm_inv3_s_inv form. Under the frozen r77 collisional-radiative-state-advance document contract (states labeled cm^-3, photons s^-1) its outputs could not legally populate this record; that label correction is carried by the r78 successor documents.",
+    "model": "the saved formal implementation, ported verbatim with registered hardenings",
+    "geometry": "one beam-grid segment of one neutral ray; the midpoint comes from the DDA track leaf",
+    "coordinates": "level states in cm^-3 s^-1 (source rate density; the source's implicit 1 s convention is not proven), integrated density in cm^-3, photon rate density in cm^-3 s^-1, flux in cm^-3 s^-1, deposition in s^-1, dt in s",
+    "boundary": "finite aligned position vectors; finite nonnegative prior states; genuine finite positive scalars nlaunch and cell volume (bools, np.bool_ and arrays rejected); genuine nonnegative integer sample index; a mapping N4 record with all declared fields; trajectory generation, local plasma sampling, the colrad solve and cross-ray accumulation stay outside",
+    "assumptions": [
+      "The caller's N4 record was produced with the exact prior carried state and the same segment duration.",
+      "The record's density is the colrad time-integrated density in cm^-3 and its photons a production rate density in cm^-3 s^-1."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "expected_position_cm",
+      "description": "Track midpoint from the DDA traversal.",
+      "units": "cm",
+      "shape": "[n_pos]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite one-dimensional, same shape as actual_position_cm."
+    },
+    {
+      "name": "actual_position_cm",
+      "description": "Local snapshot position.",
+      "units": "cm",
+      "shape": "[n_pos]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, aligned, equal to the expected midpoint within 1e-12-relative tolerance."
+    },
+    {
+      "name": "n4_cell_update_record",
+      "description": "Caller-owned N4 colrad cell-update result record.",
+      "units": "mixed",
+      "shape": "mapping",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "Must carry local_state_sample_index, input_neutral_states_cm_inv3_s_inv, dt_s, next_states_cm_inv3_s_inv, dens_cm_inv3, photons_per_cm3_s and a nonempty n4_result_provenance string; missing fields fail closed."
+    },
+    {
+      "name": "local_state_sample_index",
+      "description": "Zero-based source-order sample index.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "A genuine nonnegative integer (registered hardening: bools and np.bool_ rejected; the saved arm compared int(record) != index and accepted bools)."
+    },
+    {
+      "name": "previous_states_cm_inv3_s_inv",
+      "description": "Prior carried level-state rate densities.",
+      "units": "cm^-3 s^-1",
+      "shape": "[n_levels]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative; must equal the record's input states exactly."
+    },
+    {
+      "name": "segment_duration_s",
+      "description": "Track segment residence time.",
+      "units": "s",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Genuine finite scalar; equal to the record's dt_s within rtol 1e-12."
+    },
+    {
+      "name": "nlaunch",
+      "description": "Source marker normalization denominator.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Genuine finite positive scalar (registered hardening: bools and np.bool_ rejected)."
+    },
+    {
+      "name": "beam_grid_cell_volume_cm3",
+      "description": "Beam-grid cell volume.",
+      "units": "cm^3",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Genuine finite positive scalar (registered hardening: bools and np.bool_ rejected)."
+    },
+    {
+      "name": "previous_deposited_particles_per_s",
+      "description": "Accumulated deposition from earlier segments.",
+      "units": "s^-1",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Genuine finite scalar (registered hardening)."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "next_states_cm_inv3_s_inv",
+      "description": "N4-advanced carried level-state rate densities.",
+      "units": "cm^-3 s^-1",
+      "shape": "[n_levels]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and nonnegative; equal to the record's next states."
+    },
+    {
+      "name": "normalized_density_cm_inv3",
+      "description": "Marker-normalized time-integrated density record.",
+      "units": "cm^-3",
+      "shape": "[n_levels]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and nonnegative; equals the record's dens_cm_inv3 divided by nlaunch."
+    },
+    {
+      "name": "normalized_photons_per_cm3_s",
+      "description": "Marker-normalized photon production rate density.",
+      "units": "cm^-3 s^-1",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and nonnegative; equals the record's photons_per_cm3_s divided by nlaunch."
+    },
+    {
+      "name": "segment_flux_per_cm3_s",
+      "description": "Population-loss flux of this segment.",
+      "units": "cm^-3 s^-1",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite; equals (sum(previous_states) - sum(next_states))/nlaunch."
+    },
+    {
+      "name": "deposited_particles_per_s",
+      "description": "Updated accumulated deposition.",
+      "units": "s^-1",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite; equals previous_deposited + segment_flux * cell_volume."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "A caller-produced N4 result record for the same carried state and segment duration."
+    ],
+    "supported": [
+      "One track record's N4 handoff verification and source-normalized N3 deposition."
+    ],
+    "excluded": [
+      "Trajectory generation, local plasma sampling, the colrad solve itself, cross-ray accumulation, photon storage and HDF5 drivers."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when the position vectors are misshaped, non-finite or drifted beyond tolerance, when the prior states are negative or non-finite, when nlaunch, the cell volume, the duration or the prior deposition are not genuine finite scalars (registered: bools and np.bool_ rejected), when the sample index is not a genuine nonnegative integer (registered), when the N4 record is not a mapping or misses a declared field (including the renamed rate-density fields), when the record's sample index differs, when the provenance is empty, when the record's input states differ from the carried state, when the record's dt_s differs from the segment duration, or when the record's next states, density or photons are non-finite, negative (registered hardening; the saved arm's own contract declares them nonnegative but its implementation only rejected negative next states) or misshaped.",
+    "runtime_failure": "Not separately raised beyond the invalid-input gates; the arithmetic cannot overflow for finite inputs within the declared magnitudes.",
+    "nonconvergence": "Not applicable; one fixed record.",
+    "partial_results": "Never returned; a failed handoff leaves the caller's accumulation untouched."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM N3逐段N4状态沉积 package, source anchor src/fidasim.f90:13041-13057 (track -> get_plasma -> colrad -> dens/nlaunch -> flux*dv), as recorded by the saved bundle's own provenance section. The saved FIDASIM bundle supports bounded historical development comparison; the qualified-L1 delivery root is empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.n3_n4_segment_deposition",
+      "symbol": "assemble_n3_n4_segment_deposition",
+      "signature": "assemble_n3_n4_segment_deposition(*, expected_position_cm, actual_position_cm, n4_cell_update_record, local_state_sample_index, previous_states_cm_inv3_s_inv, segment_duration_s, nlaunch, beam_grid_cell_volume_cm3, previous_deposited_particles_per_s)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev55",
+    "dependencies": []
+  },
+  "example": {
+    "description": "The saved package's state-feedback and normalization oracle with the precise rate-density field names.",
+    "code": "import numpy as np\nfrom scirel.fusion import assemble_n3_n4_segment_deposition\nrecord = {\n    'local_state_sample_index': 0,\n    'input_neutral_states_cm_inv3_s_inv': [10.0, 20.0],\n    'dt_s': 0.5,\n    'next_states_cm_inv3_s_inv': [9.5, 19.0],\n    'dens_cm_inv3': np.asarray([9.5, 19.0]) * 3.0,\n    'photons_per_cm3_s': 2.5,\n    'n4_result_provenance': 'case:n4-v1',\n}\nout = assemble_n3_n4_segment_deposition(\n    expected_position_cm=[1.0, 0.0, 0.0], actual_position_cm=[1.0, 0.0, 0.0],\n    n4_cell_update_record=record, local_state_sample_index=0,\n    previous_states_cm_inv3_s_inv=[10.0, 20.0], segment_duration_s=0.5,\n    nlaunch=2.0, beam_grid_cell_volume_cm3=4.0,\n    previous_deposited_particles_per_s=1.0)\nassert np.isclose(out['segment_flux_per_cm3_s'], 0.75)\nassert np.isclose(out['deposited_particles_per_s'], 4.0)\ntry:\n    assemble_n3_n4_segment_deposition(\n        expected_position_cm=[1.0, 0.0, 0.0], actual_position_cm=[1.0, 0.0, 0.0],\n        n4_cell_update_record=dict(record, dens_cm_inv3=[-1.0, -1.0]),\n        local_state_sample_index=0, previous_states_cm_inv3_s_inv=[10.0, 20.0],\n        segment_duration_s=0.5, nlaunch=2.0, beam_grid_cell_volume_cm3=4.0,\n        previous_deposited_particles_per_s=0.0)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('a negative density handoff must fail closed (registered hardening)')",
+    "expected": "The saved probe reproduces with the precise field names; the negative density handoff raises ValueError."
+  },
+  "verification": {
+    "scope": [
+      "Saved-package oracles: state feedback, marker normalization conservation, position/state drift rejection.",
+      "Registered hardenings: strict integer sample index, genuine scalar gates with bool and np.bool_ rejection, ValueError for non-numeric record fields, negative density/photons fail closed (reviewer finding; the saved arm checked only negative next states)."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_beam_deposition_family.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests reproduce the saved oracles and exercise the fail-closed contracts. No colrad execution, real atomic-data driver, multi-ray accumulation or HDF5 handling is asserted. The saved FIDASIM bundle supports bounded historical development comparison only.",
+    "known_limitations": [
+      "The N4 record is caller-owned; the unit semantics of its fields rest on the source seeding chain (nneutrals in particles/s) and stay with expert adjudication.",
+      "The saved arm's *_cm_inv3 state field names mislabel the rate-density carried unit; public names use *_cm_inv3_s_inv (registered renaming).",
+      "The saved FIDASIM bundle supports bounded historical development comparison only; the qualified-L1 delivery root is empty.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

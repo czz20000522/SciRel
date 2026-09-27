@@ -22,6 +22,10 @@ from .dcx_halo_colrad_initial_state import prepare_dcx_colrad_initial_state
 from .collisional_radiative_rate_matrix import assemble_collisional_radiative_rate_matrix
 from .collisional_radiative_state_advance import advance_collisional_radiative_states
 from .dcx_halo_marker_initialization import initialize_dcx_halo_marker
+from .beam_grid_ray_segment_tracking import trace_beam_grid_ray_segments
+from .n3_n4_segment_deposition import assemble_n3_n4_segment_deposition
+from .ndmc_deposition_producer import run_ndmc_deposition_producer, ELEMENTARY_CHARGE_C
+from .beam_neutral_segment_deposition_loop import deposit_beam_neutral_segments
 
 __all__ = [
     'calculate_dd_neutron_lab_energy_kev',
@@ -48,4 +52,9 @@ __all__ = [
     'assemble_collisional_radiative_rate_matrix',
     'advance_collisional_radiative_states',
     'initialize_dcx_halo_marker',
+    'trace_beam_grid_ray_segments',
+    'assemble_n3_n4_segment_deposition',
+    'run_ndmc_deposition_producer',
+    'ELEMENTARY_CHARGE_C',
+    'deposit_beam_neutral_segments',
 ]

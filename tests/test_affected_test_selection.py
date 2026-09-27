@@ -379,8 +379,8 @@ def test_current_asset_index_unions_legacy_samples_and_exact_documents():
     namespace = runpy.run_path(str(SELECTOR))
     assets = namespace["_load_assets"]()
 
-    assert len(assets) == 158
-    assert len({asset.public_callable for asset in assets}) == 158
+    assert len(assets) == 162
+    assert len({asset.public_callable for asset in assets}) == 162
 
 
 def test_catalog_asset_keeps_every_declared_direct_test(tmp_path):

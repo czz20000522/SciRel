@@ -6,7 +6,7 @@
     "en": "Collisional-radiative eigenstate advance",
     "zh": "碰撞辐射本征态推进"
   },
-  "summary": "Advance neutral level densities one time step with the FIDASIM colrad real eigen-decomposition order, project the time-integrated densities, and emit the transition photon rate; outside the plasma the ballistic rule applies unchanged.",
+  "summary": "Advance the FIDASIM neutral level-state rate densities one time step with the colrad real eigen-decomposition order, project the time-integrated densities, and emit the transition photon rate; outside the plasma the ballistic rule applies unchanged.",
   "taxonomy": [
     "fusion",
     "neutral-population-transport",
@@ -22,7 +22,7 @@
     "definition": "The saved FIDASIM 碰撞辐射本征态推进 operator (framework node N3/N4 seam): one colrad time step as a stable numerical leaf after rate-matrix assembly. Registered saved-arm divergence at exact zero eigenvalues: the Fortran source adds +1 before the exponential for a zero eigenvalue (an avoidance quirk with a different integrated-density value), while the saved arm and this port use the (exp(0)-1)/1 -> 0 rule; the saved bundle's ledger shows the branch never triggered in 823 bounded replay events and flags it for expert adjudication. This port reproduces the saved arm and does not silently repair the divergence.",
     "model": "the saved formal implementation, ported verbatim with registered finite/type gates",
     "geometry": "one local cell; level axis ordered by the caller's state convention",
-    "coordinates": "densities in cm^-3, rates in s^-1, dt in s; the emitting index is Python zero-based",
+    "coordinates": "level states are source rate densities in cm^-3 s^-1, the time-integrated density is cm^-3, photon rates are cm^-3 s^-1, matrix rates in s^-1, dt in s; the emitting index is Python zero-based",
     "boundary": "finite nonnegative states; finite nonnegative scalar dt; a genuine bool plasma gate; finite square matrix satisfying the real-eigenstate contract; finite nonnegative Einstein rate; strict in-range integer emitting index (bools rejected); all outputs finite (registered)",
     "assumptions": [
       "The caller supplies a rate matrix from the same declared table snapshot as the Einstein rate.",
@@ -32,12 +32,12 @@
   "inputs": [
     {
       "name": "states",
-      "description": "Current neutral level densities.",
-      "units": "cm^-3",
+      "description": "Current neutral level-state rate densities, as seeded by the source's states(1) = nneutrals*fraction/dv and the DCX cx-rate-by-density weighting.",
+      "units": "cm^-3 s^-1",
       "shape": "[n_levels]",
       "dtype": "real array-like",
       "required": true,
-      "constraints": "Finite and nonnegative (registered: finiteness)."
+      "constraints": "Finite and nonnegative (registered: finiteness). Unit labels corrected in r78 from the frozen r77-v3 'cm^-3' label per the reviewer dimensional finding; the arithmetic is unchanged."
     },
     {
       "name": "rate_matrix_s_inv",
@@ -88,8 +88,8 @@
   "outputs": [
     {
       "name": "next_states",
-      "description": "Advanced, negativity-clipped level densities.",
-      "units": "cm^-3",
+      "description": "Advanced, negativity-clipped level-state rate densities.",
+      "units": "cm^-3 s^-1",
       "shape": "[n_levels]",
       "dtype": "float64 array",
       "required": true,
@@ -98,7 +98,7 @@
     {
       "name": "integrated_densities",
       "description": "Time-integrated level densities over the step.",
-      "units": "cm^-3 s",
+      "units": "cm^-3",
       "shape": "[n_levels]",
       "dtype": "float64 array",
       "required": true,
@@ -106,8 +106,8 @@
     },
     {
       "name": "photons",
-      "description": "Transition photon rate from the emitting state.",
-      "units": "s^-1",
+      "description": "Transition photon production rate density from the emitting state.",
+      "units": "cm^-3 s^-1",
       "shape": "scalar",
       "dtype": "float",
       "required": true,
@@ -148,7 +148,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev54",
+    "implementation_version": "0.1.0.dev55",
     "dependencies": []
   },
   "example": {

@@ -1,0 +1,359 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.ndmc-deposition-producer",
+  "kind": "operator",
+  "title": {
+    "en": "NDMC beam-neutral deposition producer",
+    "zh": "NDMC束中性沉积生产者"
+  },
+  "summary": "Replay the ndmc main-loop producer side for one marker slice: source-faithful nneutrals from beam power/energy/fractions, per-fraction initial level-state validation, and the store_neutrals full/half/third population accumulation plus flux_tot from per-segment deposition records.",
+  "taxonomy": [
+    "fusion",
+    "neutral-population-transport",
+    "beam-deposition",
+    "ndmc-producer"
+  ],
+  "aliases": [
+    "run_ndmc_deposition_producer",
+    "ELEMENTARY_CHARGE_C"
+  ],
+  "identity": {
+    "relation": "nneutrals = 1e6*injected_power_mw / (1e3*injection_energy_kev*e0*(f1 + f2/2 + f3/3)) with the source-faithful e0 = 1.60217733e-19 (src/fidasim.f90:69); reference initial level state states[q,0] = nneutrals*fraction_q/cell_volume with all other levels zero; per fraction q in {1,2,3}: pop[q][:,cell] += normalized_density per record (store_neutrals), flux_tot[q] += segment_flux*cell_volume per record, deposited = sum(flux_tot).",
+    "direction": "beam power + energy + current fractions + cell volume + nlaunch + level count + grid shape + initial states + three initial population arrays + per-fraction ordered segment deposition records (+ optional expected flux totals) -> nneutrals, energy weight factor, reference initial states, accumulated full/half/third populations, per-fraction and total deposited particles per s, layout diagnostics",
+    "definition": "The saved FIDASIM NDMC束中性沉积生产者 operator (framework node N3; source anchors src/fidasim.f90:12990-13119 ndmc main loop, 10428-10482 update_neutrals/store_neutrals, 69 e0). Single-rank, bounded to one marker slice: no random numbers, no plasma/field projections, no MPI/OpenMP runtime. The e0 fork is an existing inter-asset divergence: nbi-injected-neutrals-normalization uses the CODATA 2018 value 1.602176634e-19 (rel ~4.34e-7 off the frozen trace) while nbi-component-initial-state uses the source value like this producer; the initial-state gate deliberately rejects a CODATA-e0 normalization and the fork stays with expert adjudication. nlaunch semantics (reviewer finding, pending expert adjudication): the source divides dens by nlaunch before store_neutrals, so the consumed records carry per-marker-normalized densities; callers must not re-normalize. Unit reconciliation: the seeded level states are source rate densities in cm^-3 s^-1 (nneutrals in particles/s per volume), the consumed normalized_density_cm_inv3 records are true cm^-3 densities, and flux*volume accumulates particles/s; the saved arm's initial_states_cm_inv3 field name mislabels that carried unit, so the public name uses the precise *_cm_inv3_s_inv form.",
+    "model": "the saved formal implementation, ported verbatim with registered hardenings except the registered signed-flux acceptance: the saved arm's document declares nonnegative segment records and its implementation rejects negative ones, while the source-signed arithmetic is kept here (bounded incompatibility, pending expert adjudication)",
+    "geometry": "one marker slice over the caller-declared Cartesian beam grid; population arrays of shape (n_levels, nx, ny, nz)",
+    "coordinates": "power in MW, energy in keV, cell volume in cm^3, states in cm^-3 s^-1 (source rate density), population densities in cm^-3, deposition in s^-1; cell indices one-based",
+    "boundary": "finite nonnegative power; finite positive energy, cell volume and nlaunch; finite nonnegative fractions with at least one positive; genuine positive integer nlevels and grid shape; finite nonnegative initial states and population arrays; records keyed exactly by neutral type 1..3 with in-grid one-based integer cell indices; no colrad execution, track generation, MC sampling, reservoir writes, MPI/OpenMP runtime or HDF5 schema",
+    "assumptions": [
+      "Per-segment deposition records come from the N3 beam-neutral deposition loop with dens/nlaunch already applied.",
+      "A brand-new marker slice typically passes all-zero initial population arrays; the accumulation carries any prior content forward."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "injected_power_mw",
+      "description": "Source nbi%pinj.",
+      "units": "MW",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and nonnegative."
+    },
+    {
+      "name": "injection_energy_kev",
+      "description": "Source nbi%einj.",
+      "units": "keV",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "current_fractions",
+      "description": "Source nbi%current_fractions.",
+      "units": "dimensionless",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative; at least one positive."
+    },
+    {
+      "name": "beam_grid_cell_volume_cm3",
+      "description": "Source beam_grid%dv.",
+      "units": "cm^3",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Genuine finite positive scalar."
+    },
+    {
+      "name": "nlaunch",
+      "description": "Source marker count denominator.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Genuine finite positive scalar."
+    },
+    {
+      "name": "nlevels",
+      "description": "Source nlevs.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "A genuine positive integer (bools rejected)."
+    },
+    {
+      "name": "grid_shape",
+      "description": "Source beam_grid%nx/ny/nz.",
+      "units": "dimensionless",
+      "shape": "[3]",
+      "dtype": "integer array-like",
+      "required": true,
+      "constraints": "A genuine positive integer triple (registered hardening: the saved arm's astype(int) silently truncated whole-number floats such as 2.0)."
+    },
+    {
+      "name": "initial_states_cm_inv3_s_inv",
+      "description": "Per-fraction main-loop entry level-state rate densities.",
+      "units": "cm^-3 s^-1",
+      "shape": "[3, n_levels]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative; must equal nneutrals*current_fraction/cell_volume with the source-faithful e0 (rtol 1e-9); a CODATA-e0 NBI normalization is rejected by this gate (registered source-faithful choice)."
+    },
+    {
+      "name": "initial_population_density_full",
+      "description": "Full-energy population density before this slice.",
+      "units": "cm^-3",
+      "shape": "[n_levels, nx, ny, nz]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative."
+    },
+    {
+      "name": "initial_population_density_half",
+      "description": "Half-energy population density before this slice.",
+      "units": "cm^-3",
+      "shape": "[n_levels, nx, ny, nz]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative."
+    },
+    {
+      "name": "initial_population_density_third",
+      "description": "Third-energy population density before this slice.",
+      "units": "cm^-3",
+      "shape": "[n_levels, nx, ny, nz]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and nonnegative."
+    },
+    {
+      "name": "per_fraction_segment_depositions",
+      "description": "Ordered per-segment deposition records keyed by neutral type 1..3.",
+      "units": "mixed",
+      "shape": "mapping of sequences",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "Keys genuine integer neutral types 1..3 (bools rejected); a zero current_fraction rejects supplied records (source cycle); each record carries grid_index_one_based (in-grid one-based integer triple), normalized_density_cm_inv3 (finite nonnegative [n_levels]) and segment_flux_per_cm3_s (finite scalar, sign carried: (iflux - sum(states))/nlaunch is signed and a net level-population gain over a segment yields a negative flux)."
+    },
+    {
+      "name": "expected_deposited_particles_per_s_per_fraction",
+      "description": "Optional caller cross-check of the flux totals.",
+      "units": "s^-1",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": false,
+      "default": null,
+      "constraints": "Finite (signed, matching the signed accumulation); flux_tot must match componentwise within rtol 1e-9."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "elementary_charge_c",
+      "description": "The source-faithful e0 constant used.",
+      "units": "C",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Exactly 1.60217733e-19."
+    },
+    {
+      "name": "nneutrals_s_inv",
+      "description": "Injected neutral particle rate.",
+      "units": "s^-1",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and positive for positive power."
+    },
+    {
+      "name": "energy_weight_factor",
+      "description": "f1 + f2/2 + f3/3.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "initial_state_rate_per_volume_cm_inv3_s_inv",
+      "description": "Per-fraction reference initial level-state rate densities.",
+      "units": "cm^-3 s^-1",
+      "shape": "[3, n_levels]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Zero except entry [q,0] = nneutrals*fraction_q/cell_volume."
+    },
+    {
+      "name": "initial_state_validated",
+      "description": "Initial-state gate outcome.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "True whenever the call returns; mismatches raise instead."
+    },
+    {
+      "name": "population_density_full",
+      "description": "Accumulated full-energy population density.",
+      "units": "cm^-3",
+      "shape": "[n_levels, nx, ny, nz]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and nonnegative; initial content carried forward."
+    },
+    {
+      "name": "population_density_half",
+      "description": "Accumulated half-energy population density.",
+      "units": "cm^-3",
+      "shape": "[n_levels, nx, ny, nz]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and nonnegative; initial content carried forward."
+    },
+    {
+      "name": "population_density_third",
+      "description": "Accumulated third-energy population density.",
+      "units": "cm^-3",
+      "shape": "[n_levels, nx, ny, nz]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and nonnegative; initial content carried forward."
+    },
+    {
+      "name": "flux_tot_per_fraction",
+      "description": "Per-fraction summed segment flux times cell volume.",
+      "units": "s^-1",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite (signed; a net level-population gain over segments yields a negative component); accumulation order matches the source (per-record flux*dv, unpermuted)."
+    },
+    {
+      "name": "deposited_particles_per_s",
+      "description": "Total deposition, equivalent to the source flux_tot.",
+      "units": "s^-1",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite (signed); equals sum(flux_tot_per_fraction)."
+    },
+    {
+      "name": "segment_count_per_fraction",
+      "description": "Per-fraction consumed record counts.",
+      "units": "dimensionless",
+      "shape": "mapping",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "Nonnegative integers."
+    },
+    {
+      "name": "store_neutral_event_count_per_fraction",
+      "description": "Per-fraction store_neutrals event counts.",
+      "units": "dimensionless",
+      "shape": "mapping",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "Equal to the segment counts here."
+    },
+    {
+      "name": "population_shape",
+      "description": "Population array layout.",
+      "units": "dimensionless",
+      "shape": "[4]",
+      "dtype": "tuple of ints",
+      "required": true,
+      "constraints": "(n_levels, nx, ny, nz)."
+    },
+    {
+      "name": "grid_shape",
+      "description": "Declared grid shape.",
+      "units": "dimensionless",
+      "shape": "[3]",
+      "dtype": "tuple of ints",
+      "required": true,
+      "constraints": "The validated caller grid shape."
+    },
+    {
+      "name": "single_rank_unpartitioned",
+      "description": "Layout declaration.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "Always true; MPI partitioning stays outside."
+    },
+    {
+      "name": "source_anchor",
+      "description": "Source anchor of the producer loop.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "str",
+      "required": true,
+      "constraints": "src/fidasim.f90:12990-13119."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Per-segment deposition records from the N3 beam-neutral deposition loop for the same marker slice and grid."
+    ],
+    "supported": [
+      "One marker slice's population accumulation and flux-total deposition bookkeeping."
+    ],
+    "excluded": [
+      "colrad execution, track generation, MC sampling, reservoir updates, writer ownership, MPI/OpenMP runtime and HDF5 schema."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when any scalar, vector, array or record fails its declared constraints, when neutral-type keys are not genuine integers 1..3, when a zero current_fraction supplies records, when a cell index leaves the grid, when the initial states do not reproduce the source-faithful e0 formula (a CODATA-e0 normalization is rejected), or when the optional expected flux totals disagree.",
+    "runtime_failure": "Raises ValueError when the accumulated populations become non-finite.",
+    "nonconvergence": "Not applicable; deterministic accumulation.",
+    "partial_results": "Never returned; a failed call leaves the caller's arrays untouched (the accumulation works on internal copies)."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM NDMC束中性沉积生产者 package, source anchors src/fidasim.f90:12990-13119 (ndmc producer loop), 10428-10482 (update_neutrals/store_neutrals) and 69 (e0 = 1.60217733d-19), as recorded by the saved bundle's own provenance section. The saved bundle's frozen trace fidasim_ndmc_single_marker_trace_20260812 reproduces the initial states with the source e0 at rel 0.0. The saved FIDASIM bundle supports bounded historical development comparison; the qualified-L1 delivery root is empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.ndmc_deposition_producer",
+      "symbol": "run_ndmc_deposition_producer",
+      "signature": "run_ndmc_deposition_producer(*, injected_power_mw, injection_energy_kev, current_fractions, beam_grid_cell_volume_cm3, nlaunch, nlevels, grid_shape, initial_states_cm_inv3_s_inv, initial_population_density_full, initial_population_density_half, initial_population_density_third, per_fraction_segment_depositions, expected_deposited_particles_per_s_per_fraction=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev55",
+    "dependencies": []
+  },
+  "example": {
+    "description": "The saved package's source-e0 initial-state oracle and population accumulation.",
+    "code": "import numpy as np\nfrom scirel.fusion import ELEMENTARY_CHARGE_C, run_ndmc_deposition_producer\nfractions = (0.528113, 0.268704, 0.203183)\nenergy_factor = fractions[0] + fractions[1] / 2 + fractions[2] / 3\nnneutrals = 1e6 * 1.7 / (1e3 * 72.5 * ELEMENTARY_CHARGE_C * energy_factor)\nstates = np.zeros((3, 2))\nfor q in (1, 2, 3):\n    states[q - 1, 0] = nneutrals * fractions[q - 1] / 8.0\nzero = np.zeros((2, 2, 2, 2))\nresult = run_ndmc_deposition_producer(\n    injected_power_mw=1.7, injection_energy_kev=72.5, current_fractions=fractions,\n    beam_grid_cell_volume_cm3=8.0, nlaunch=10.0, nlevels=2, grid_shape=(2, 2, 2),\n    initial_states_cm_inv3_s_inv=states,\n    initial_population_density_full=zero, initial_population_density_half=zero,\n    initial_population_density_third=zero,\n    per_fraction_segment_depositions={1: [{'grid_index_one_based': (1, 1, 1),\n        'normalized_density_cm_inv3': np.full(2, 2.0), 'segment_flux_per_cm3_s': 0.5}]})\nassert np.isclose(result['deposited_particles_per_s'], 4.0)\nassert np.allclose(result['population_density_full'][:, 0, 0, 0], 2.0)\ntry:\n    run_ndmc_deposition_producer(\n        injected_power_mw=1.7, injection_energy_kev=72.5, current_fractions=fractions,\n        beam_grid_cell_volume_cm3=8.0, nlaunch=10.0, nlevels=2, grid_shape=(2.0, 2, 2),\n        initial_states_cm_inv3_s_inv=states, initial_population_density_full=zero,\n        initial_population_density_half=zero, initial_population_density_third=zero,\n        per_fraction_segment_depositions={})\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('a float grid_shape must be rejected (registered hardening)')",
+    "expected": "The saved probes reproduce; the float grid_shape raises ValueError per the registered hardening."
+  },
+  "verification": {
+    "scope": [
+      "Saved-package oracles: source-e0 nneutrals and initial states (frozen-trace values), population accumulation, initial-population continuation, expected flux cross-check, out-of-grid index rejection, zero-fraction rejection, CODATA-e0 rejection.",
+      "Registered hardenings: genuine integer grid shape (the saved arm silently truncated floats); finite accumulated populations."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_beam_deposition_family.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests reproduce the saved oracles and exercise the fail-closed contracts. No colrad execution, MC sampling, MPI reduction or HDF5 handling is asserted. The saved FIDASIM bundle supports bounded historical development comparison only.",
+    "known_limitations": [
+      "Bounded incompatibility (cross-asset review finding, pending expert adjudication): the saved arm's operator document declares segment_flux_per_cm3_s nonnegative and its implementation rejects negative records, but the source flux = (iflux - sum(states))/nlaunch is signed and the N3/N4 handoff's (sum(previous) - sum(next))/nlaunch can legitimately go negative when the colrad advance's rate matrix has inflow (population) terms that outweigh its losses (a loss-only matrix with all column sums <= 0 cannot produce a gain). This port keeps the source-signed arithmetic and requires only finiteness, so a valid N3 handoff that the saved arm would reject is accepted here.",
+      "The e0 fork between nbi-injected-neutrals-normalization (CODATA 2018) and this producer's source-faithful constant is an open expert-adjudication item; the source's implicit 1 s convention for the rate-density states is not proven.",
+      "The nlaunch normalization semantics (dens/nlaunch applied before store_neutrals) require callers to pass already-normalized records; the declaration form stays with expert adjudication.",
+      "Single-rank, one-marker-slice scope; no MPI/OpenMP or full-program parity is claimed.",
+      "The saved FIDASIM bundle supports bounded historical development comparison only; the qualified-L1 delivery root is empty.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

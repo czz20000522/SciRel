@@ -1,0 +1,259 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.beam-grid-ray-segment-tracking",
+  "kind": "operator",
+  "title": {
+    "en": "Beam-grid ray segment tracking",
+    "zh": "束网格射线分段跟踪"
+  },
+  "summary": "Deterministically traverse the caller's Cartesian beam grid cell by cell: per-axis exit times, the source two-record plasma-crossing split, adaptive subsegments from a caller parameter callback, one-based cell indices and the DDA terminal policy.",
+  "taxonomy": [
+    "fusion",
+    "neutral-population-transport",
+    "beam-grid",
+    "segment-tracking"
+  ],
+  "aliases": [
+    "trace_beam_grid_ray_segments"
+  ],
+  "identity": {
+    "relation": "DDA traversal of a Cartesian beam grid from a start position and velocity: exit the current cell at the earliest half-width crossing over the axes (dt_axis = |(cell_center + 0.5*width*sign(v)) - position| / |v| with zero components replaced by the source 1e-3 cm/s working velocity), record the segment midpoint and duration with the one-based cell index, advance to the next cell, and stop on the segment limit, grid exit, or crossing limit. A plasma-flag change between cell endpoints splits the segment into two records at the crossing time located by 50 fixed subdivisions of the duration; adaptive modes (0-7, enabled only with a nonzero split tolerance) replace the single record with ceil-based subsegments capped at max_cell_splits.",
+    "direction": "start position + velocity + one-based initial cell + caller grid centers/widths + plasma predicate + limits -> source-ordered track segments (midpoint, duration, cell index), crossing count and terminal reason",
+    "definition": "The saved FIDASIM 束网格射线分段跟踪 operator (framework node N3; source anchor src/fidasim.f90:9271-9466, track): cell order, the 50-step crossing split, the adaptive count/cap and one-based indices are ported verbatim. Source quirks preserved: zero velocity returns the empty traversal with terminal_reason zero_velocity; a crossing-limit hit pops the last segment once (the source cc decrement). No get_indices, get_plasma, LOS/Doppler or whole-program neutral transport parity is claimed.",
+    "model": "the saved formal implementation, ported verbatim with registered hardenings",
+    "geometry": "one ray through the caller-declared Cartesian beam grid; cell centers and widths are caller-owned state",
+    "coordinates": "positions in cm, velocity in cm/s, durations in s; cell indices are one-based source order",
+    "boundary": "finite 3-vectors; positive finite cell widths; finite one-dimensional center axes; a fractional-free one-based initial index inside the grid; genuine positive integer max_track_segments, max_crossings and max_cell_splits; adaptive_mode an integer in 0..7; a callable plasma predicate; adaptive mode additionally requires a positive finite split tolerance and a callable adaptive parameter callback",
+    "assumptions": [
+      "The plasma predicate is a pure function of position; the caller owns the plasma state it closes over.",
+      "Segment records carry the caller's grid state; no grid or HDF5 access happens inside."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "start_position_cm",
+      "description": "Ray origin.",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "velocity_cm_s",
+      "description": "Neutral velocity; zero velocity returns the empty traversal.",
+      "units": "cm/s",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; the zero vector is the source's zero_velocity terminal."
+    },
+    {
+      "name": "initial_grid_index_one_based",
+      "description": "First beam-grid cell.",
+      "units": "one_based_index",
+      "shape": "[3]",
+      "dtype": "integer array-like",
+      "required": true,
+      "constraints": "Fractional-free positive integers inside the declared axes (registered: fractional values rejected)."
+    },
+    {
+      "name": "x_cell_centers_cm",
+      "description": "X axis cell centers.",
+      "units": "cm",
+      "shape": "[nx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, nonempty, one-dimensional."
+    },
+    {
+      "name": "y_cell_centers_cm",
+      "description": "Y axis cell centers.",
+      "units": "cm",
+      "shape": "[ny]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, nonempty, one-dimensional."
+    },
+    {
+      "name": "z_cell_centers_cm",
+      "description": "Z axis cell centers.",
+      "units": "cm",
+      "shape": "[nz]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, nonempty, one-dimensional."
+    },
+    {
+      "name": "cell_width_cm",
+      "description": "Cell widths per axis.",
+      "units": "cm",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "max_track_segments",
+      "description": "Stored-segment limit.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "A genuine positive integer; bools rejected (registered hardening)."
+    },
+    {
+      "name": "max_crossings",
+      "description": "Plasma-crossing limit.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "A genuine positive integer; bools rejected (registered hardening)."
+    },
+    {
+      "name": "in_plasma_at",
+      "description": "Caller plasma predicate at a position.",
+      "units": "dimensionless",
+      "shape": "callable",
+      "dtype": "callable",
+      "required": true,
+      "constraints": "callable(position_cm) -> truth value; the caller owns the plasma state."
+    },
+    {
+      "name": "adaptive_mode",
+      "description": "Source adaptive-track mode.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": false,
+      "default": 0,
+      "constraints": "Integer 0..7 (registered: bools rejected); nonzero enables adaptive splitting only with a nonzero split tolerance."
+    },
+    {
+      "name": "max_cell_splits",
+      "description": "Adaptive subsegment cap.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": false,
+      "default": 1,
+      "constraints": "A genuine positive integer; bools rejected (registered hardening)."
+    },
+    {
+      "name": "split_tolerance",
+      "description": "Adaptive split tolerance.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": false,
+      "default": 0.0,
+      "constraints": "Zero (or omitted) keeps the fixed-cell traversal; adaptive mode requires a positive finite value."
+    },
+    {
+      "name": "adaptive_parameter_at",
+      "description": "Caller parameter callback for adaptive splitting.",
+      "units": "mixed",
+      "shape": "callable",
+      "dtype": "callable",
+      "required": false,
+      "default": null,
+      "constraints": "callable(position_cm, mode) -> finite real; required when adaptive mode is active."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "segments",
+      "description": "Source-ordered track records: midpoint position, duration, one-based cell index.",
+      "units": "mixed (cm, s, one_based_index)",
+      "shape": "[n_track, mapping]",
+      "dtype": "list of dicts",
+      "required": true,
+      "constraints": "Midpoints and durations finite; indices one-based source-order cells."
+    },
+    {
+      "name": "ntrack",
+      "description": "Stored segment count.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "Nonnegative."
+    },
+    {
+      "name": "plasma_crossings",
+      "description": "Plasma-boundary crossing count.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "Nonnegative; each crossing stores two source records."
+    },
+    {
+      "name": "terminal_reason",
+      "description": "DDA terminal policy result.",
+      "units": "enum",
+      "shape": "scalar",
+      "dtype": "str",
+      "required": true,
+      "constraints": "One of ntrack_limit, grid_exit, max_crossings, zero_velocity."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "A caller-declared Cartesian beam grid with a pure plasma predicate."
+    ],
+    "supported": [
+      "Deterministic source-order segment traversal for one neutral ray."
+    ],
+    "excluded": [
+      "Plasma sampling, colrad execution, N4 records, RNG, MPI, reservoir updates and whole-program neutral transport."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when vectors are misshaped or non-finite, widths are non-positive, the initial index is fractional or outside the grid, the limits are not genuine positive integers (registered: bools rejected), the adaptive mode is outside 0..7 or not an integer, the plasma predicate is not callable, or an active adaptive mode lacks a positive finite tolerance or a callable parameter callback.",
+    "runtime_failure": "Raises ValueError when a crossing or adaptive split cannot be stored within max_track_segments, or when the adaptive parameter callback returns non-finite values.",
+    "nonconvergence": "Not applicable; the traversal stops on the declared terminal policies.",
+    "partial_results": "Never returned; the returned records are the complete traversal for the declared limits."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM 束网格射线分段跟踪 package, source anchor src/fidasim.f90:9271-9466 (track: DDA cell order, 50-step crossing split, adaptive count/cap, one-based indices), as recorded by the saved bundle's own provenance section. The saved FIDASIM bundle supports bounded historical development comparison; the qualified-L1 delivery root is empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.beam_grid_ray_segment_tracking",
+      "symbol": "trace_beam_grid_ray_segments",
+      "signature": "trace_beam_grid_ray_segments(start_position_cm, velocity_cm_s, initial_grid_index_one_based, x_cell_centers_cm, y_cell_centers_cm, z_cell_centers_cm, cell_width_cm, max_track_segments, max_crossings, in_plasma_at, adaptive_mode=0, max_cell_splits=1, split_tolerance=0.0, adaptive_parameter_at=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev55",
+    "dependencies": []
+  },
+  "example": {
+    "description": "The saved package's regular two-cell traversal and its plasma-crossing split.",
+    "code": "from scirel.fusion import trace_beam_grid_ray_segments\ngrid = dict(x_cell_centers_cm=[0.0, 1.0, 2.0], y_cell_centers_cm=[0.0, 1.0, 2.0],\n            z_cell_centers_cm=[0.0, 1.0, 2.0], cell_width_cm=[1.0, 1.0, 1.0],\n            in_plasma_at=lambda p: False)\nregular = trace_beam_grid_ray_segments(start_position_cm=[0.0, 0.1, 0.1], velocity_cm_s=[1.0, 0.1, 0.1],\n                                       initial_grid_index_one_based=[1, 1, 1],\n                                       max_track_segments=2, max_crossings=2, **grid)\nassert regular['ntrack'] == 2 and regular['segments'][1]['grid_index_one_based'] == (2, 1, 1)\ncrossing = trace_beam_grid_ray_segments(start_position_cm=[0.0, 0.1, 0.1], velocity_cm_s=[1.0, 0.1, 0.1],\n                                        initial_grid_index_one_based=[1, 1, 1],\n                                        max_track_segments=2, max_crossings=2,\n                                        in_plasma_at=lambda p: p[0] < 0.25,\n                                        x_cell_centers_cm=grid['x_cell_centers_cm'], y_cell_centers_cm=grid['y_cell_centers_cm'],\n                                        z_cell_centers_cm=grid['z_cell_centers_cm'], cell_width_cm=grid['cell_width_cm'])\nassert crossing['plasma_crossings'] == 1 and crossing['ntrack'] == 2\ntry:\n    trace_beam_grid_ray_segments(start_position_cm=[0.0, 0.1, 0.1], velocity_cm_s=[1.0, 0.1, 0.1],\n                                 initial_grid_index_one_based=[1.5, 1, 1], max_track_segments=2,\n                                 max_crossings=1, **{k: v for k, v in grid.items() if k != 'in_plasma_at'},\n                                 in_plasma_at=grid['in_plasma_at'])\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('a fractional one-based grid index must be rejected')",
+    "expected": "The saved regular and crossing probes reproduce; the fractional index is rejected."
+  },
+  "verification": {
+    "scope": [
+      "Saved-package oracles: regular two-cell traversal, two-record plasma-crossing split, adaptive subsegment timing, zero-velocity empty traversal.",
+      "Registered hardenings: genuine integer limits with bool rejection (the saved arm's isinstance(int) accepted True)."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_beam_deposition_family.py"
+    ],
+    "evidence_ceiling": "The maintained direct tests reproduce the saved oracles and exercise the fail-closed contracts. No get_indices, get_plasma interpolation, LOS/Doppler diagnostics or whole-program neutral transport parity is asserted. The saved FIDASIM bundle supports bounded historical development comparison only.",
+    "known_limitations": [
+      "The plasma predicate is caller-owned; no plasma-state correctness is claimed.",
+      "The saved FIDASIM bundle supports bounded historical development comparison only; the qualified-L1 delivery root is empty.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}
