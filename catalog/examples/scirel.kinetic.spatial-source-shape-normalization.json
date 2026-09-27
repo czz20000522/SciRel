@@ -1,0 +1,131 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.spatial-source-shape-normalization",
+  "kind": "operator",
+  "title": {
+    "en": "Spatial source-shape normalization",
+    "zh": "空间源形状归一化"
+  },
+  "summary": "Normalize a nonnegative one-dimensional spatial source profile to unit integral under the trapezoidal measure, returning the unit-integral shape and the original integral.",
+  "taxonomy": [
+    "kinetic",
+    "neutral-transport",
+    "source-normalization"
+  ],
+  "aliases": [
+    "normalize_spatial_source_shape"
+  ],
+  "identity": {
+    "relation": "shape = source / integral(source, x) with the trapezoidal measure; the normalized shape re-integrates to 1 within the saved tolerance",
+    "direction": "source profile plus coordinates -> unit-integral shape and original integral",
+    "definition": "The saved numpy trapezoidal rule on the caller's coordinates; the saved unit-integral re-check uses rtol 1e-12, atol 1e-14; a zero profile is rejected, never silently replaced",
+    "model": "the saved formal implementation's profile normalization",
+    "geometry": "one-dimensional space",
+    "coordinates": "coordinates in m; shape in m^-1; integral in the source's profile unit times m",
+    "boundary": "aligned finite one-dimensional profile and strictly increasing coordinates with at least two nodes; nonnegative source; finite positive integral",
+    "assumptions": [
+      "The trapezoidal measure is the saved spatial discretization; other quadratures are excluded.",
+      "The strict positivity precondition is what lets the shape rebuild a total source."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "source",
+      "description": "The source profile.",
+      "units": "source units",
+      "shape": "[n]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A finite nonnegative real numeric one-dimensional array; boolean, string and complex coercions are rejected."
+    },
+    {
+      "name": "x_m",
+      "description": "The spatial coordinates.",
+      "units": "m",
+      "shape": "[n]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite real numeric values, strictly increasing, at least two nodes, aligned to the source; boolean, string and complex coercions are rejected."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "shape_m_inv",
+      "description": "The unit-integral source shape.",
+      "units": "m^-1",
+      "shape": "[n]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and nonnegative; trapezoidal integral exactly re-checked to 1."
+    },
+    {
+      "name": "integral_source",
+      "description": "The original spatial integral.",
+      "units": "source units times m",
+      "shape": "scalar",
+      "dtype": "float scalar",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Aligned finite nonnegative profile on a strictly increasing coordinate mesh."
+    ],
+    "supported": [
+      "Wall-source and volumetric source shapes needing unit spatial integrals."
+    ],
+    "excluded": [
+      "Zero or negative profiles; non-monotonic coordinates; fewer than two nodes."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for boolean, string or complex coercions, or when the alignment, finiteness, monotonicity or positivity contract is violated, or the normalized shape fails its unit-integral re-check.",
+    "runtime_failure": "Raises ValueError when the integral or normalized shape is non-finite or the integral is nonpositive; no fallback is selected.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Never returned; a rejected call produces no result."
+  },
+  "provenance": {
+    "lineage_summary": "Development relation from the saved KN1DPy 空间源形状归一化 package. Its bundle cites KN1DPy/kn1d.py:520-577; the raw source tree was not re-read. The archived formal implementation SHA-256 is 83b2d7b9e860d8ee57cef6b5332b97fe31a6269a861c6e2a6df42506bfd18629. Three finite valid profiles match it exactly; SciRel rejects non-real coercions that the archived implementation accepted or raised inconsistently. KN1DPy's strict D1 qualification has been withdrawn; this is bounded historical development evidence, not qualified-L1 provenance or expert approval. See docs/evaluations/2026-09-28-neutral-normalization-integration.md.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent recomputation witness",
+      "read-only digest-bound archived-source replay during integration",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.spatial_source_shape_normalization",
+      "symbol": "normalize_spatial_source_shape",
+      "signature": "normalize_spatial_source_shape(source, x_m)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev5",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Normalize one profile and confirm the independent trapezoidal measure and fail-closed contracts.",
+    "code": "import numpy as np\nfrom scirel.kinetic import normalize_spatial_source_shape\nsource = np.array([1.0, 2.0, 1.0])\nx_m = np.array([0.0, 1.0, 2.0])\nresult = normalize_spatial_source_shape(source, x_m)\nassert result['integral_source'] == 3.0\nnp.testing.assert_array_equal(result['shape_m_inv'], source / 3.0)\nassert np.trapezoid(result['shape_m_inv'], x_m) == 1.0\ntry:\n    normalize_spatial_source_shape(np.array([0.0, 0.0]), np.array([0.0, 1.0]))\nexcept ValueError as error:\n    assert 'positive spatial integral' in str(error)\nelse:\n    raise AssertionError('a zero profile must be rejected')",
+    "expected": "The unit-integral shape and original integral; a zero profile is rejected, never silently replaced."
+  },
+  "verification": {
+    "scope": [
+      "That the shape equals the independent trapezoidal normalization and re-integrates to exactly 1.",
+      "The alignment, monotonicity, real-input and positivity failure contracts.",
+      "Read-only digest-bound archived-source replay on three finite valid profiles during integration."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_neutral_normalizations.py"
+    ],
+    "evidence_ceiling": "Maintained tests establish the trapezoidal normalization and declared failure behavior. Read-only digest-bound archived-source replay found exact agreement on three finite valid profiles; coercion behavior differs as declared. This does not prove all-input source parity, qualified D1, global applicability, expert approval or release.",
+    "known_limitations": [
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "The historical function accepts boolean and numeric-string coercions, and complex input may raise TypeError; SciRel consistently rejects these as invalid real-array inputs.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}
