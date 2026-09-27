@@ -27,6 +27,18 @@ needs a successor, not a silent edit.
 
 
 
+## Batch r80: FIDASIM FIDA spectral-component family (two operators)
+
+Directory: `review_candidates/2026-09-27-fida-spectral-family/`
+Successor of batch r79: the r79 candidate files below keep their frozen
+r79-v3 bytes and digests; this batch binds the new bytes.
+- `review.md` -- sha256 `e00f9e26d2fa99fe13f2ceff7cd2910e1f260c69e1b55de36f04c7ed63f8b186`
+- `proposal/doppler_stark_zeeman_wavelengths.py` -- sha256 `53253181abc7fdab691e9edd245fa5c36f2ea722654242ec78674cd39464103b`
+- `proposal/fida_wavelength_binning.py` -- sha256 `3b7f32da41f7082df0cce582dc69cb4a9196ed6d7fb5a0338db0ad26cfc54c2a`
+- `proposal/test_fida_spectral_family.py` -- sha256 `432d5eb2c80221168923b6bffd7771c4bebad81b5c47bd469e76a5ca1b1ebbf7`
+- `proposal/scirel.fusion.doppler-stark-zeeman-wavelengths.json` -- sha256 `ba41d11dffba09eed178f20644555cf9896506be97edd9a9c5931396d4378d8c`
+- `proposal/scirel.fusion.fida-wavelength-binning.json` -- sha256 `93939e0eb09d849f76e2df1b7df6dd081e8ce9e7a2cf56327ba293a3ed48952d`
+
 ## Batch r79: FIDASIM neutral-reservoir/population merge family (three operators + one composition graph)
 
 Directory: `review_candidates/2026-09-27-neutral-merge-family/`
