@@ -16,6 +16,7 @@ from .incoming_boundary_flux_normalization import normalize_incoming_neutral_bou
 from .spatial_source_shape_normalization import normalize_spatial_source_shape
 from .cylindrical_velocity_quadrature import make_cylindrical_velocity_quadrature
 from .shifted_maxwellian_seed import build_shifted_maxwellian_seed
+from .axisymmetric_neutral_moments import reduce_axisymmetric_neutral_moments
 from .grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
 from .frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure
 
@@ -23,3 +24,4 @@ __all__ = ['assemble_frank_egedal_pressure', 'evaluate_frank_egedal_radial_envel
 __all__.extend(['normalize_incoming_neutral_boundary', 'normalize_spatial_source_shape'])
 __all__.append('make_cylindrical_velocity_quadrature')
 __all__.append('build_shifted_maxwellian_seed')
+__all__.append('reduce_axisymmetric_neutral_moments')
