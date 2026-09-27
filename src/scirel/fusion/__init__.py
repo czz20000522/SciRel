@@ -12,6 +12,9 @@ from .nbi_injected_neutrals_normalization import normalize_nbi_injected_neutrals
 from .halo_velocity_sampling import sample_halo_velocity
 from .beam_grid_cell_sampling import sample_beam_grid_cell
 from .pitch_gyro_direction import pitch_gyro_to_velocity_direction
+from .beam_grid_ray_intersection import intersect_ray_with_rectilinear_grid
+from .nbi_source_plane_ray import construct_nbi_source_ray
+from .nbi_trajectory_initialization import initialize_nbi_trajectory
 
 __all__ = [
     'calculate_dd_neutron_lab_energy_kev',
@@ -28,4 +31,7 @@ __all__ = [
     'sample_halo_velocity',
     'sample_beam_grid_cell',
     'pitch_gyro_to_velocity_direction',
+    'intersect_ray_with_rectilinear_grid',
+    'construct_nbi_source_ray',
+    'initialize_nbi_trajectory',
 ]

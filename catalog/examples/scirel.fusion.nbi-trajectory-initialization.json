@@ -1,0 +1,861 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fusion.nbi-trajectory-initialization",
+  "kind": "task_graph",
+  "title": {
+    "en": "NBI trajectory initialization graph",
+    "zh": "NBI轨迹初始化图"
+  },
+  "summary": "Compose the N2 NBI initialization slice: the ndmc neutral-rate normalization runs first, then exactly one of the two source-mutually-exclusive trajectory branches - the mc_nbi source-plane ray with optional finite beam-grid entry handoff, or the mc_nbi_cell cell-directed ray with divergence weight.",
+  "taxonomy": [
+    "fusion",
+    "neutral-beam-source-sampling",
+    "nbi-birth",
+    "task-graph"
+  ],
+  "aliases": [
+    "initialize_nbi_trajectory"
+  ],
+  "identity": {
+    "relation": "Ordered branching DAG: injection_normalization -> {source_ray -> energy_velocity -> (optional) beam_grid_entry | cell_directed_ray}. The source_ray branch consumes the same accepted unit ray in the velocity scaling edge (source_ray.unit_ray_beam -> energy_velocity.unit_ray); the optional beam_grid_entry node maps the accepted source point/unit ray to the finite-grid entry/exit handoff; the cell_directed branch aliases the cell leaf's velocity and weight. The branches are mutually exclusive; normalization is a shared predecessor, not a numeric data edge into the ray geometry (the source's nneutrals-first order is scheduling).",
+    "direction": "NBI power/energy/component fractions + cell volume + one branch's explicit geometric state (with caller random variates) -> neutral rates, initial-state source-rate projection, and the branch's ray/velocity/acceptance (and optional grid entry) outputs",
+    "definition": "The saved FIDASIM NBI轨迹初始化图 caller-random paths (framework node N2 neutral_beam_source_sampling), composed from already-integrated SciRel leaves. The saved graph's serial utilities.f90 two-word RNG modes (seed, captured per-event state, 1000-rejection fallback) are controlled runtime glue, not a scientific relation; consistent with the NBI leaf family's caller-owned randomness convention they are a declared non-ported boundary and their state keys are rejected.",
+    "model": "composition of the named SciRel leaves following the saved graph's node/edge contract; no new scientific rule is introduced in glue",
+    "geometry": "one frozen NBI configuration snapshot; beam coordinates xyz/uvw per the leaf contracts",
+    "coordinates": "positions in cm, velocities in cm/s, angles in radians, rates in s^-1 and cm^-3 s^-1 per the leaf contracts",
+    "boundary": "sampling_mode exactly source_ray or cell_directed; the chosen branch's state mapping is required and complete; serial-RNG state keys are rejected as a declared non-ported runtime boundary; N1 in_plasma masking, MPI/OpenMP scheduling and N3 transport remain explicit framework edges",
+    "assumptions": [
+      "The caller supplies a frozen NBI configuration snapshot and caller-owned random variates for the source_ray branch.",
+      "Rejection resampling stays with the caller, who resupplies variates and consumes the accepted flag."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "sampling_mode",
+      "description": "Deterministic initialization branch selector.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "str",
+      "required": true,
+      "constraints": "Exactly 'source_ray' or 'cell_directed'."
+    },
+    {
+      "name": "injected_power_mw",
+      "description": "NBI injected power.",
+      "units": "MW",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and nonnegative; zero is legal and yields an all-zero normalization."
+    },
+    {
+      "name": "injection_energy_kev",
+      "description": "Full-energy NBI injection energy.",
+      "units": "keV",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "current_fractions",
+      "description": "Full/half/third component current fractions, axis order 1/2/3.",
+      "units": "dimensionless",
+      "shape": "[3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, nonnegative, at least one positive."
+    },
+    {
+      "name": "beam_grid_cell_volume_cm3",
+      "description": "Declared initial-state volume normalization denominator.",
+      "units": "cm3",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "source_ray_state",
+      "description": "Complete explicit source-plane, optics, aperture and coordinate state for the source_ray branch, including the caller variates source_uniform/divergence_normal plus injection_speed_cm_s and energy_component; exact operator keys otherwise.",
+      "units": "mixed",
+      "shape": "mapping",
+      "dtype": "mapping",
+      "required": false,
+      "default": null,
+      "constraints": "Required iff sampling_mode='source_ray'; serial-RNG state keys (source_serial_rng_seed, source_rng_state, source_fallback_axis_beam) are rejected."
+    },
+    {
+      "name": "cell_directed_state",
+      "description": "Complete explicit cell, source, optics, aperture and coordinate state for the cell_directed branch; exact nbi_cell_directed_ray keys.",
+      "units": "mixed",
+      "shape": "mapping",
+      "dtype": "mapping",
+      "required": false,
+      "default": null,
+      "constraints": "Required iff sampling_mode='cell_directed'."
+    },
+    {
+      "name": "beam_grid_entry_state",
+      "description": "Optional finite beam-grid center and full lengths for the source_ray entry/exit handoff.",
+      "units": "cm",
+      "shape": "mapping",
+      "dtype": "mapping",
+      "required": false,
+      "default": null,
+      "constraints": "Keys grid_center_cm and grid_lengths_cm per the intersection leaf; only consumed on the source_ray branch."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "total_neutral_rate_s_inv",
+      "description": "Total neutral rate after the three-component energy weighting.",
+      "units": "s^-1",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite per the normalization leaf."
+    },
+    {
+      "name": "component_neutral_rate_s_inv",
+      "description": "Per-component neutral rates projected from current_fractions.",
+      "units": "s^-1",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite per the normalization leaf."
+    },
+    {
+      "name": "initial_state_rate_per_volume_cm_inv3_s_inv",
+      "description": "Per-component source rate per declared volume (the saved graph's initial-state density projection).",
+      "units": "cm^-3 s^-1",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite per the normalization leaf."
+    },
+    {
+      "name": "energy_weight_factor",
+      "description": "The normalization leaf's energy weight factor.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "source_beam_cm",
+      "description": "Accepted source-plane point in beam coordinates (source_ray branch; null on the cell_directed branch).",
+      "units": "cm",
+      "shape": "[3] or null",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite when present."
+    },
+    {
+      "name": "unit_ray_beam",
+      "description": "Accepted ray's unit direction in beam coordinates (source_ray branch; null on the cell_directed branch).",
+      "units": "dimensionless",
+      "shape": "[3] or null",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite; unit norm when present."
+    },
+    {
+      "name": "velocity_cm_s",
+      "description": "Selected energy-component birth velocity (source_ray: scaled accepted unit ray; cell_directed: cell leaf's beam-grid uvw velocity).",
+      "units": "cm/s",
+      "shape": "[3]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "accepted",
+      "description": "Aperture (source_ray) or target-cell branch acceptance flag.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "True/False."
+    },
+    {
+      "name": "trajectory_weight",
+      "description": "Cell-directed divergence probability-density weight (cell_directed branch; null on the source_ray branch).",
+      "units": "source probability-density convention",
+      "shape": "scalar or null",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and positive on accepted cell rays."
+    },
+    {
+      "name": "initial_grid_entry_cm",
+      "description": "Finite-grid entry from the optional handoff (source_ray branch with beam_grid_entry_state; null otherwise).",
+      "units": "cm",
+      "shape": "[3] or null",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite when present."
+    },
+    {
+      "name": "grid_exit_cm",
+      "description": "Finite-grid exit paired with initial_grid_entry_cm; null when the handoff is absent or on the cell_directed branch.",
+      "units": "cm",
+      "shape": "[3] or null",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite when present."
+    },
+    {
+      "name": "grid_intersection_length_cm",
+      "description": "Chord length inside the finite grid; null when the handoff is absent or on the cell_directed branch; zero means no distinct pair.",
+      "units": "cm",
+      "shape": "scalar or null",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and nonnegative when present."
+    },
+    {
+      "name": "intersects_beam_grid",
+      "description": "Whether the finite grid has a valid entry/exit pair; null when the handoff is absent or on the cell_directed branch.",
+      "units": "dimensionless",
+      "shape": "scalar or null",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "True/False when present."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "A frozen NBI configuration snapshot with explicit caller-owned random variates for the source_ray branch."
+    ],
+    "supported": [
+      "Deterministic NBI trajectory initialization for downstream neutral-population transport consumption."
+    ],
+    "excluded": [
+      "Serial RNG replay and the 1000-rejection fallback (declared non-ported runtime boundary), in_plasma masking, MPI/OpenMP scheduling, N3 transport and whole-program parity."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when inputs is not a mapping, when a required top-level key is missing, when sampling_mode is not source_ray or cell_directed, when the chosen branch's state mapping is missing or incomplete, or when a serial-RNG state key is supplied (declared non-ported boundary).",
+    "runtime_failure": "Propagates the composed leaves' fail-closed ValueError contracts (normalization overflow gates, source-ray norm/finite gates, velocity scaling gates, cell-ray weight gates, intersection finite gates).",
+    "nonconvergence": "Not applicable; the graph executes each node exactly once.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved FIDASIM NBI轨迹初始化图 TaskGraph package (framework node N2 neutral_beam_source_sampling; source anchors src/fidasim.f90:12780-12881 mc_nbi, 12883-12985 mc_nbi_cell, 13023-13045 ndmc, 8685-8814 grid_intersect), as recorded by the saved bundle's own provenance section. Saved graph.py content digest sha256 f7eb0ccab6a38383be1a7e82bce89872f43d3c6176332a13e8854b13f11649af; saved task_graph.yaml digest sha256 3152e4c836ba5bf157fb384269353b4d5e0ca9b884b1c2bffcbb8fa2802b8d57; saved task_graph.md digest sha256 01d11bcb3a9d96dd25fedc897a6b4d127b5a258b873834c5d1f0e10ad374acb9 (reference records; the test suite performs no automated drift detection). The saved bundle replayed a 16-marker x three-energy-component captured-thread-state sequence with entry max_abs 3.552713678800501e-15 cm and velocity max_abs 1.862645149230957e-09 cm/s; this port composes the same node/edge contract from integrated leaves on the caller-random paths and does not port the serial RNG glue, so that replay evidence is not inherited. The saved FIDASIM bundle supports bounded historical development comparison; qualified-L1 delivery root remains empty, so this is not qualified-L1 provenance and not expert approval.",
+    "source_kinds": [
+      "saved L1 task graph document and implementation",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fusion.nbi_trajectory_initialization",
+      "symbol": "initialize_nbi_trajectory",
+      "signature": "initialize_nbi_trajectory(inputs=None, **kwargs)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev50",
+    "dependencies": [
+      {
+        "asset_id": "scirel.fusion.nbi-injected-neutrals-normalization"
+      },
+      {
+        "asset_id": "scirel.fusion.nbi-source-plane-ray"
+      },
+      {
+        "asset_id": "scirel.fusion.nbi-energy-component-velocity"
+      },
+      {
+        "asset_id": "scirel.fusion.beam-grid-ray-intersection"
+      },
+      {
+        "asset_id": "scirel.fusion.nbi-cell-directed-ray"
+      }
+    ]
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "normalization",
+        "kind": "task_graph",
+        "asset_id": "scirel.fusion.nbi-injected-neutrals-normalization",
+        "description": "Form the marker-loop neutral-rate normalization first: total and per-component rates and the declared-volume initial-state projection, shared by both sampling branches.",
+        "inputs": [
+          "injected_power_mw",
+          "injection_energy_kev",
+          "current_fractions",
+          "beam_grid_cell_volume_cm3"
+        ],
+        "outputs": [
+          "total_neutral_rate_s_inv",
+          "component_neutral_rate_s_inv",
+          "initial_state_rate_per_volume_cm_inv3_s_inv",
+          "energy_weight_factor"
+        ]
+      },
+      {
+        "id": "source_ray",
+        "kind": "operator",
+        "asset_id": "scirel.fusion.nbi-source-plane-ray",
+        "description": "Construct the mc_nbi source-plane ray from the caller's uniform/normal variates and test every aperture; executed only on the source_ray branch.",
+        "inputs": [
+          "sampling_mode",
+          "source_ray_state"
+        ],
+        "outputs": [
+          "source_beam_cm",
+          "unit_ray_beam",
+          "accepted"
+        ]
+      },
+      {
+        "id": "velocity_projection",
+        "kind": "controlled_glue",
+        "description": "Read the caller-declared injection_speed_cm_s and energy_component keys out of source_ray_state; no scientific transformation.",
+        "inputs": [
+          "source_ray_state"
+        ],
+        "outputs": [
+          "injection_speed_cm_s",
+          "energy_component"
+        ]
+      },
+      {
+        "id": "energy_velocity",
+        "kind": "operator",
+        "asset_id": "scirel.fusion.nbi-energy-component-velocity",
+        "description": "Scale the same accepted unit ray by the injection speed over the Float32 energy-component divisor; source_ray branch only.",
+        "inputs": [
+          "unit_ray_beam",
+          "injection_speed_cm_s",
+          "energy_component"
+        ],
+        "outputs": [
+          "velocity_cm_s"
+        ]
+      },
+      {
+        "id": "beam_grid_entry",
+        "kind": "operator",
+        "asset_id": "scirel.fusion.beam-grid-ray-intersection",
+        "description": "Optional finite-grid entry/exit handoff from the accepted source point and unit ray; runs only when beam_grid_entry_state is supplied on the source_ray branch. The N1 in_plasma check remains outside this graph.",
+        "inputs": [
+          "source_beam_cm",
+          "unit_ray_beam",
+          "beam_grid_entry_state"
+        ],
+        "outputs": [
+          "entry_point_cm",
+          "exit_point_cm",
+          "intersection_length_cm",
+          "intersects_grid"
+        ]
+      },
+      {
+        "id": "cell_directed_ray",
+        "kind": "operator",
+        "asset_id": "scirel.fusion.nbi-cell-directed-ray",
+        "description": "The mc_nbi_cell cell-targeted ray with aperture acceptance and Gaussian divergence weight; executed only on the cell_directed branch.",
+        "inputs": [
+          "sampling_mode",
+          "cell_directed_state"
+        ],
+        "outputs": [
+          "velocity_cm_s",
+          "accepted",
+          "trajectory_weight"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": {
+          "node": "$input",
+          "port": "injected_power_mw"
+        },
+        "to": {
+          "node": "normalization",
+          "port": "injected_power_mw"
+        },
+        "description": "NBI injected power.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "injection_energy_kev"
+        },
+        "to": {
+          "node": "normalization",
+          "port": "injection_energy_kev"
+        },
+        "description": "Full-energy injection energy.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "current_fractions"
+        },
+        "to": {
+          "node": "normalization",
+          "port": "current_fractions"
+        },
+        "description": "Full/half/third current fractions.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "beam_grid_cell_volume_cm3"
+        },
+        "to": {
+          "node": "normalization",
+          "port": "beam_grid_cell_volume_cm3"
+        },
+        "description": "Declared volume normalization denominator.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "sampling_mode"
+        },
+        "to": {
+          "node": "source_ray",
+          "port": "sampling_mode"
+        },
+        "description": "Branch selector consumed by the source_ray node.",
+        "condition": "Selector for the source_ray branch.",
+        "transform": "Identity; select or skip the branch.",
+        "kind": "control",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "sampling_mode"
+        },
+        "to": {
+          "node": "cell_directed_ray",
+          "port": "sampling_mode"
+        },
+        "description": "Branch selector consumed by the cell_directed node.",
+        "condition": "Selector for the cell_directed branch.",
+        "transform": "Identity; select or skip the branch.",
+        "kind": "control",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "source_ray_state"
+        },
+        "to": {
+          "node": "source_ray",
+          "port": "source_ray_state"
+        },
+        "description": "Complete source-plane state with caller variates.",
+        "condition": "sampling_mode == 'source_ray'.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "source_ray_state"
+        },
+        "to": {
+          "node": "velocity_projection",
+          "port": "source_ray_state"
+        },
+        "description": "Same state mapping read for the two velocity keys.",
+        "condition": "sampling_mode == 'source_ray'.",
+        "transform": "Key projection, no numeric change.",
+        "kind": "control",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "cell_directed_state"
+        },
+        "to": {
+          "node": "cell_directed_ray",
+          "port": "cell_directed_state"
+        },
+        "description": "Complete cell-directed state.",
+        "condition": "sampling_mode == 'cell_directed'.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "beam_grid_entry_state"
+        },
+        "to": {
+          "node": "beam_grid_entry",
+          "port": "beam_grid_entry_state"
+        },
+        "description": "Optional finite-grid center and lengths.",
+        "condition": "sampling_mode == 'source_ray' and beam_grid_entry_state is supplied.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "source_ray",
+          "port": "unit_ray_beam"
+        },
+        "to": {
+          "node": "energy_velocity",
+          "port": "unit_ray_beam"
+        },
+        "description": "The same accepted unit ray must be consumed before velocity scaling.",
+        "condition": "sampling_mode == 'source_ray'.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "source_ray",
+          "port": "unit_ray_beam"
+        },
+        "to": {
+          "node": "beam_grid_entry",
+          "port": "unit_ray_beam"
+        },
+        "description": "Accepted unit ray as the grid-intersection direction.",
+        "condition": "sampling_mode == 'source_ray' and beam_grid_entry_state is supplied.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "source_ray",
+          "port": "source_beam_cm"
+        },
+        "to": {
+          "node": "beam_grid_entry",
+          "port": "source_beam_cm"
+        },
+        "description": "Accepted source point as the grid-intersection origin.",
+        "condition": "sampling_mode == 'source_ray' and beam_grid_entry_state is supplied.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "velocity_projection",
+          "port": "injection_speed_cm_s"
+        },
+        "to": {
+          "node": "energy_velocity",
+          "port": "injection_speed_cm_s"
+        },
+        "description": "Caller-declared full-energy injection speed.",
+        "condition": "sampling_mode == 'source_ray'.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "velocity_projection",
+          "port": "energy_component"
+        },
+        "to": {
+          "node": "energy_velocity",
+          "port": "energy_component"
+        },
+        "description": "Caller-declared energy-component index.",
+        "condition": "sampling_mode == 'source_ray'.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "energy_velocity",
+          "port": "velocity_cm_s"
+        },
+        "to": {
+          "node": "$output",
+          "port": "velocity_cm_s"
+        },
+        "description": "Source_ray branch birth velocity.",
+        "condition": "sampling_mode == 'source_ray'.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "cell_directed_ray",
+          "port": "velocity_cm_s"
+        },
+        "to": {
+          "node": "$output",
+          "port": "velocity_cm_s"
+        },
+        "description": "Cell_directed branch birth velocity in beam-grid uvw.",
+        "condition": "sampling_mode == 'cell_directed'.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "source_ray",
+          "port": "source_beam_cm"
+        },
+        "to": {
+          "node": "$output",
+          "port": "source_beam_cm"
+        },
+        "description": "Accepted source-plane point.",
+        "condition": "sampling_mode == 'source_ray'.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "source_ray",
+          "port": "unit_ray_beam"
+        },
+        "to": {
+          "node": "$output",
+          "port": "unit_ray_beam"
+        },
+        "description": "Accepted unit ray.",
+        "condition": "sampling_mode == 'source_ray'.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "source_ray",
+          "port": "accepted"
+        },
+        "to": {
+          "node": "$output",
+          "port": "accepted"
+        },
+        "description": "Aperture acceptance flag.",
+        "condition": "sampling_mode == 'source_ray'.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "cell_directed_ray",
+          "port": "accepted"
+        },
+        "to": {
+          "node": "$output",
+          "port": "accepted"
+        },
+        "description": "Target-cell branch acceptance flag.",
+        "condition": "sampling_mode == 'cell_directed'.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "cell_directed_ray",
+          "port": "trajectory_weight"
+        },
+        "to": {
+          "node": "$output",
+          "port": "trajectory_weight"
+        },
+        "description": "Gaussian divergence trajectory weight.",
+        "condition": "sampling_mode == 'cell_directed'.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "beam_grid_entry",
+          "port": "entry_point_cm"
+        },
+        "to": {
+          "node": "$output",
+          "port": "initial_grid_entry_cm"
+        },
+        "description": "Finite-grid entry for the N2->N3 handoff.",
+        "condition": "sampling_mode == 'source_ray' and beam_grid_entry_state is supplied.",
+        "transform": "Port rename entry_point_cm -> initial_grid_entry_cm.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "beam_grid_entry",
+          "port": "exit_point_cm"
+        },
+        "to": {
+          "node": "$output",
+          "port": "grid_exit_cm"
+        },
+        "description": "Finite-grid exit paired with the entry.",
+        "condition": "sampling_mode == 'source_ray' and beam_grid_entry_state is supplied.",
+        "transform": "Port rename exit_point_cm -> grid_exit_cm.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "beam_grid_entry",
+          "port": "intersection_length_cm"
+        },
+        "to": {
+          "node": "$output",
+          "port": "grid_intersection_length_cm"
+        },
+        "description": "Chord length inside the finite grid.",
+        "condition": "sampling_mode == 'source_ray' and beam_grid_entry_state is supplied.",
+        "transform": "Port rename intersection_length_cm -> grid_intersection_length_cm.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "beam_grid_entry",
+          "port": "intersects_grid"
+        },
+        "to": {
+          "node": "$output",
+          "port": "intersects_beam_grid"
+        },
+        "description": "Whether a valid entry/exit pair exists.",
+        "condition": "sampling_mode == 'source_ray' and beam_grid_entry_state is supplied.",
+        "transform": "Port rename intersects_grid -> intersects_beam_grid.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "normalization",
+          "port": "total_neutral_rate_s_inv"
+        },
+        "to": {
+          "node": "$output",
+          "port": "total_neutral_rate_s_inv"
+        },
+        "description": "Total neutral rate.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "normalization",
+          "port": "component_neutral_rate_s_inv"
+        },
+        "to": {
+          "node": "$output",
+          "port": "component_neutral_rate_s_inv"
+        },
+        "description": "Per-component neutral rates.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "normalization",
+          "port": "initial_state_rate_per_volume_cm_inv3_s_inv"
+        },
+        "to": {
+          "node": "$output",
+          "port": "initial_state_rate_per_volume_cm_inv3_s_inv"
+        },
+        "description": "Initial-state source-rate projection per declared volume.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "normalization",
+          "port": "energy_weight_factor"
+        },
+        "to": {
+          "node": "$output",
+          "port": "energy_weight_factor"
+        },
+        "description": "Energy weight factor.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      }
+    ],
+    "execution": {
+      "mode": "ordered_branching_dag_with_mutually_exclusive_branches",
+      "ordering": "Run the normalization first (the source's nneutrals-first order is scheduling, not a numeric data edge into the ray geometry); then execute exactly one branch selected by sampling_mode: source_ray constructs and accepts the source-plane ray, projects the speed/component keys, scales the same accepted unit ray, and optionally intersects the finite grid; cell_directed runs the cell leaf. Each node executes at most once.",
+      "branches": [
+        "sampling_mode == 'source_ray': normalization -> source_ray -> energy_velocity -> optional beam_grid_entry; source_beam_cm, unit_ray_beam, accepted and grid outputs are produced and trajectory_weight is null.",
+        "sampling_mode == 'cell_directed': normalization -> cell_directed_ray; velocity_cm_s, accepted and trajectory_weight are produced and the source-ray/grid outputs are null.",
+        "Any other sampling_mode value raises ValueError; the serial RNG state keys raise ValueError as a declared non-ported runtime boundary."
+      ],
+      "state_ownership": "The graph owns no evolving state; one frozen NBI configuration snapshot per call, with caller-owned random variates and rejection resampling.",
+      "failure_propagation": "Child leaf ValueError contracts propagate directly; there is no fallback geometry or partial result.",
+      "feedback": []
+    }
+  },
+  "example": {
+    "description": "The source_ray branch on an identity basis: normalization precedes the accepted centerline ray and its velocity; the RNG boundary key is rejected.",
+    "code": "import numpy as np\nfrom scirel.fusion import initialize_nbi_trajectory\nresult = initialize_nbi_trajectory({\n    'sampling_mode': 'source_ray',\n    'injected_power_mw': 2.0, 'injection_energy_kev': 80.0,\n    'current_fractions': [0.5, 0.3, 0.2], 'beam_grid_cell_volume_cm3': 125.0,\n    'source_ray_state': {\n        'source_uniform': [0.5, 0.5], 'divergence_normal': [0.0, 0.0],\n        'source_shape': 1, 'half_width_y_cm': 2.0, 'half_width_z_cm': 3.0,\n        'focus_y_cm': 100.0, 'focus_z_cm': 100.0,\n        'divergence_y_rad': 0.1, 'divergence_z_rad': 0.1,\n        'aperture_distance_cm': [5.0], 'aperture_shape': [1],\n        'aperture_offset_y_cm': [0.0], 'aperture_offset_z_cm': [0.0],\n        'aperture_half_width_y_cm': [2.0], 'aperture_half_width_z_cm': [2.0],\n        'beam_basis': np.eye(3), 'beam_source_cm': [0.0, 0.0, 0.0],\n        'injection_speed_cm_s': 1.0e8, 'energy_component': 1,\n    },\n})\nassert result['accepted'] and result['trajectory_weight'] is None\nassert np.allclose(result['unit_ray_beam'], [1.0, 0.0, 0.0])\nassert np.isclose(result['total_neutral_rate_s_inv'], 2.0e6 / (8.0e4 * 1.602176634e-19 * (0.5 + 0.15 + 0.2 / 3.0)), rtol=1e-12)\ntry:\n    initialize_nbi_trajectory({'sampling_mode': 'source_ray', 'injected_power_mw': 2.0, 'injection_energy_kev': 80.0, 'current_fractions': [0.5, 0.3, 0.2], 'beam_grid_cell_volume_cm3': 125.0, 'source_ray_state': {'source_serial_rng_seed': 42}})\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('serial RNG state keys are a declared non-ported boundary')",
+    "expected": "The centerline source_ray branch composes normalization, ray and velocity; serial-RNG state keys raise ValueError."
+  },
+  "verification": {
+    "scope": [
+      "Composition order: normalization precedes both branches; the same accepted unit ray feeds the velocity scaling and the optional grid handoff.",
+      "Branch exclusivity, null projections of the non-selected branch, deterministic same-variate replay.",
+      "Declared non-ported boundary: serial-RNG state keys rejected; normalization/ray leaf fail-closed contracts propagate."
+    ],
+    "tests": [
+      "tests/graph_contracts/nbi_trajectory_initialization/test_graph_nbi_trajectory_initialization.py"
+    ],
+    "evidence_ceiling": "The maintained graph tests verify the composed data flow against direct calls of the five integrated leaves, the branch exclusivity and null projections, same-variate bit-identical replay, and the declared RNG-boundary rejection. The saved bundle's 16-marker captured-thread-state replay is not inherited: that evidence covers the serial RNG glue, which this port deliberately does not implement. No N3 transport, in_plasma masking, MPI/OpenMP scheduling or whole-program parity is asserted. The saved FIDASIM bundle supports bounded historical development comparison; the recorded graph/YAML digests provide the provenance linkage.",
+    "known_limitations": [
+      "The serial RNG paths (seed, captured state, 1000-rejection fallback with beam-axis fallback) are a declared non-ported runtime boundary, not an integrated capability.",
+      "The saved FIDASIM bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}
