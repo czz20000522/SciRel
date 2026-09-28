@@ -198,7 +198,7 @@
       "shape": "`(S,)`",
       "dtype": "complex128",
       "required": true,
-      "constraints": "有限，可正可负。"
+      "constraints": "有限；实 kx 时可正可负，复 kx 时为复数且不定义正负。"
     },
     {
       "name": "b",
@@ -207,7 +207,7 @@
       "shape": "`(S,)`",
       "dtype": "complex128",
       "required": true,
-      "constraints": "非负。"
+      "constraints": "实 kx 时为非负实数；复 kx 时可为复数，不定义非负序。"
     },
     {
       "name": "bzj",
