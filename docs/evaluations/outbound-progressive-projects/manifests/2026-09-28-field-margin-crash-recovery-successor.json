@@ -1,0 +1,50 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-28-field-margin-crash-recovery-successor",
+  "status": "agent_repair_of_independent_p2_in_prior_d3_freeze",
+  "not_claims": [
+    "crash_atomic_pair_delivery",
+    "general_outbound_reliability",
+    "fresh_autonomous_pass",
+    "full_d1_or_d2_scientific_revalidation",
+    "expert_approval",
+    "trusted_release",
+    "public_v1",
+    "device_physics_or_stability_verdict"
+  ],
+  "predecessor": {
+    "git_commit": "2d802d08efb35a91cf2169a60ba1b132fedf5eed",
+    "archive": "build/verification/field-margin-crash-recovery-20260928/field-margin-crash-recovery.tgz",
+    "archive_sha256": "e0851619a1d7ab1da438f3b336787bfca352af8af7384d9cb34d126a652b99b9"
+  },
+  "runtime": {
+    "version": "0.1.0.dev58",
+    "wheel": "build/verification/field-margin-crash-recovery-successor-20260928/solver/host-assets/scirel-0.1.0.dev58-py3-none-any.whl",
+    "wheel_sha256": "60ce811067e2c808b7ed0176bdb4572bf8bea322badc40b7eca3e8f42bc7090a",
+    "catalog_coverage": "complete 169/169, pending_unapproved"
+  },
+  "evidence": {
+    "archive": "build/verification/field-margin-crash-recovery-successor-20260928/field-margin-crash-recovery-successor.tgz",
+    "archive_sha256": "b491bf9a9713e8566eef93c2381b1aeb071941d59bcc746da1da3a455fb0128b",
+    "receipt": "build/verification/field-margin-crash-recovery-successor-20260928/successor-freeze-receipt.json",
+    "receipt_sha256": "74ad1212565c54587373cb84ddbc50adca34e9a5c1a22ffa7715adc9b3e26fee",
+    "file_manifest": "build/verification/field-margin-crash-recovery-successor-20260928/successor-file-manifest.json",
+    "file_manifest_sha256": "f5cf389d30d17d6483e1715e8b3d5c56170b1c71ad4a54d3105bd96a6a456859",
+    "junit": "build/verification/field-margin-crash-recovery-successor-20260928/tests-successor.xml",
+    "junit_sha256": "e4636f779484ad93a42a1a72bcefe6f48834b5c98b2dffcf02152d87e1861879",
+    "successor_record": "build/verification/field-margin-crash-recovery-successor-20260928/successor-evidence.md",
+    "successor_record_sha256": "41a46d87819d53cad5bd73a6216745b12a258b1908147f1ee331afe5a93b6c53",
+    "independent_reproducer": "build/verification/d3-independent-review-20260928/reproduce_historical_bytes_retry.py",
+    "independent_reproducer_sha256": "cebb28c4a605e38882178981a211dadee0594a79f5725c83c386d006b21c8bfb",
+    "independent_observation": "build/verification/d3-independent-review-20260928/historical-bytes-retry-observed.json",
+    "independent_observation_sha256": "92953eac340b54a764e4884112c5eb545d9b2da83028da489c4930804fbf2cad"
+  },
+  "observed": {
+    "pre_fix_regression_failed": true,
+    "focused_tests_passed": 15,
+    "ordinary_entrypoint_exit_code": 0,
+    "result_rows_per_file": 4,
+    "unchanged_rerun_preserved_result_and_manifest_bytes": true,
+    "archive_members_content_verified": 375
+  }
+}
