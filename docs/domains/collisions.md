@@ -12,6 +12,7 @@
 - [归一化动量映射](../../catalog/examples/scirel.collisions.normalized-momentum.json)是相关但不同的关系；不能仅凭名称将两者直接串接。端口和量纲以各自 exact document 为准。
 - [Maxwellian 相对速度速率平均](../../catalog/examples/scirel.collisions.maxwellian-relative-speed-rate-average.json)在调用方圆柱速度网格和截面模型上计算逐粒子能量的 `<sigma v>`。历史 `*_mass_amu` 参数表示保存氢质量 `1.6726231e-27 kg` 的倍数；碰撞能量使用粒子质量，未提供约化质量模型。
 - [原子氢电荷交换截面](../../catalog/examples/scirel.collisions.atomic-hydrogen-charge-exchange-cross-section.json)给出 H 与 H+ 的 Janev 拟合及可选 Freeman–Jones 分支，两个分支有各自的能量截断区间。
+- [原子氢电荷交换速率系数](../../catalog/examples/scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient.json)按温度和撞击能量评价独立的双变量拟合；它不是上述截面的运行时 Maxwellian 积分，超出拟合区间沿用端点剪裁。
 - [分子氢电荷交换截面](../../catalog/examples/scirel.collisions.molecular-hydrogen-charge-exchange-cross-section.json)给出 H2 与 H2+ 的 Janev 拟合，不能与原子氢同名通道互换。
 - [原子氢弹性截面](../../catalog/examples/scirel.collisions.atomic-hydrogen-elastic-cross-section.json)保留 H–H 动量转移和黏滞两组不同系数。
 - [原子氢与分子氢弹性截面](../../catalog/examples/scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section.json)保留保存实现的前置单例输出轴。
