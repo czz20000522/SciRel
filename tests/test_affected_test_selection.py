@@ -123,6 +123,19 @@ def test_molecular_cx_rate_change_selects_its_direct_tests():
     } <= set(result["test_paths"])
 
 
+def test_janev_ionization_rate_change_selects_its_direct_tests():
+    result = select("src/scirel/collisions/janev_electron_impact_ionization_rate.py")
+
+    assert result["full_suite_required"] is False
+    assert result["affected_assets"] == [
+        "scirel.collisions.janev_electron_impact_ionization_rate.evaluate_janev_electron_impact_ionization_rate"
+    ]
+    assert {
+        "tests/operator_contracts/test_janev_electron_impact_ionization_rate.py",
+        "tests/operator_contracts/test_janev_electron_impact_ionization_rate_l1.py",
+    } <= set(result["test_paths"])
+
+
 def test_alpha_change_selects_omega_dependent_and_direct_replay():
     result = select("src/scirel/kinetic/atomic_alpha_contraction.py")
 
@@ -571,8 +584,8 @@ def test_current_asset_index_unions_legacy_samples_and_exact_documents():
     namespace = runpy.run_path(str(SELECTOR))
     assets = namespace["_load_assets"]()
 
-    assert len(assets) == 112
-    assert len({asset.public_callable for asset in assets}) == 112
+    assert len(assets) == 113
+    assert len({asset.public_callable for asset in assets}) == 113
 
 
 def test_catalog_asset_keeps_every_declared_direct_test(tmp_path):
