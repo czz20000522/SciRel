@@ -16,3 +16,5 @@
 镜面准中性 TaskGraph 还消费[双温镜约束速度矩](../../catalog/examples/scirel.kinetic.mirror-constrained-moments.json)和[双温镜总压强状态组装](../../catalog/examples/scirel.kinetic.mirror-total-pressure.json)。前者从调用方剖面计算离子密度与各向异性压强，可选择双端塞损失锥求积；后者只检查压强字段，离子/电子密度和残差原样透传。[镜面准中性图](../../catalog/examples/scirel.closures.mirror-quasineutral-closure.json)显式声明五个叶子、局部电势反馈与有界停止条件，求解失败不返回终态。现有直接测试与图测试证明选定输入上的可执行关系，不构成完整物理闭包校验或专家批准。相对上一可信版的变化待建立可信版后填写。
 
 [网格镜端动理学闭合](../../catalog/examples/scirel.kinetic.grid-mirror-kinetic-closure.json)在调用方的 R-Z 网格上选择参考与端塞行，通过磁通剖面插值映射端态，再调用镜面准中性图。端塞电势可规定或分别求解；默认只屏蔽端塞外的指定顶层密度、压强和电荷残差字段，原始矩与端态诊断保留全网格。磁通坐标须由调用方统一约定。
+
+[约化 Hall 漂移闭合](../../catalog/examples/scirel.closures.reduced-hall-drift.json)在给定极向场、各向异性压强、电子态和等离子体掩码上评价环向电流、物种漂移及局部惯性修正。其速度和广义 Ohm 诊断使用更严格的活跃掩码；返回值不证明整体平衡或低密度区域的模型适用性。
