@@ -19,6 +19,8 @@
 
 [约化 Hall 漂移闭合](../../catalog/examples/scirel.closures.reduced-hall-drift.json)在给定极向场、各向异性压强、电子态和等离子体掩码上评价环向电流、物种漂移及局部惯性修正。其速度和广义 Ohm 诊断使用更严格的活跃掩码；返回值不证明整体平衡或低密度区域的模型适用性。
 
+[Hall 双流体压强状态](../../catalog/examples/scirel.closures.hall-two-fluid-pressure.json)把调用方的总压强律、密度、电子压强与电势广播为组分状态；默认离子压强为总量减电子分量，显式覆盖值不校验求和一致性。
+
 [约化 Hall 各向异性 Picard 图](../../catalog/examples/scirel.equilibrium.reduced-hall-anisotropic-picard.json)在调用方提供的压强闭合与 Green 响应上反馈磁通，逐轮调用极向场、Hall 漂移和磁通更新三个叶子，达到容差或迭代上限后复算终态。外层未收敛可返回带 `converged=false` 的终态；内层惯性未收敛会抛错。真空场文档的 `Wb` 与本图要求的 `Wb/rad` 接线仍待科学裁决。
 
 [动理学镜端 Hall 平衡组合](../../catalog/examples/scirel.equilibrium.kinetic-mirror-hall-equilibrium.json)把当前 Hall 图的磁场与磁通传给网格镜端动理学闭合，并把其返回状态作为每轮压强闭合。外层只绑定两个子图，磁通反馈仍由 Hall 子图控制；调用方必须保证动理学剖面、离子参数和 `psi=R A_phi` 坐标约定一致，组合器不会自动换算。

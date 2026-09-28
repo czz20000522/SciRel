@@ -21,6 +21,8 @@
 - [折线逆磁场测度与加权平均](../../catalog/examples/scirel.geometry.flux-surface-inverse-field-average.json)在调用方给定的 R-Z 折线点上插值磁场和可选标量，沿折线以梯形法积分 `dl/B`；它不追踪或闭合磁面。
 - [轴对称磁通导出极向场](../../catalog/examples/scirel.field.poloidal-field-from-flux.json)从调用方 `psi = R A_phi` 的 R-Z 网格值离散恢复 `B_R`、`B_Z` 和幅值，包含明确的轴上规则；它不解决真空场输出 `Wb` 与平衡侧 `Wb/rad` 标签之间尚待裁决的接线问题。
 - [轴对称 Picard 磁通 Green 更新](../../catalog/examples/scirel.equilibrium.axisymmetric-picard-update.json)以首个网格间距形成单元电流，用稠密 Green 矩阵产生候选磁通，再对磁通而非电流做一次松弛；这是单步更新，求解循环由调用方负责。
+- [精确中平面压强磁通状态](../../catalog/examples/scirel.equilibrium.pressure-flux-state.json)以唯一的精确 `Z=0` 行和首个精确零压样本构造 `P(psi)` 样条、导数及零电流初态；不搜索物理磁轴或自动确定磁通规范。
+- [各向同性压强磁通 Picard 单步](../../catalog/examples/scirel.equilibrium.isotropic-picard-step.json)按单元面积和松弛系数更新电流，经给定 Green 矩阵得到磁通与相对边界磁通归一化残差；收敛循环由上层控制。
 - [轴对称各向异性压强张量力平衡](../../catalog/examples/scirel.equilibrium.anisotropic-force-balance.json)在调用方给定的 R-Z 场与压强网格上计算张量散度、环向电流和沿场力诊断；活动掩码只影响诊断 RMS，函数不自行裁决压力闭包或低场物理有效性。
 - [平行压强平衡残差](../../catalog/examples/scirel.diagnostics.parallel-pressure-residual.json)按磁场数值排序估计 `p_parallel/B` 对 `B` 的导数，比较给定 `p_perp` 与关系右侧；这是样本值空间诊断，不是 R-Z 空间力平衡。
 - [各向异性压强环向电流分解](../../catalog/examples/scirel.equilibrium.anisotropic-toroidal-current.json)两次调用上述力平衡关系，以全压强态与各向同性 `p_perp` 对照的差值定义各向异性分项；分项名称不表示独立离散的纯曲率公式。
