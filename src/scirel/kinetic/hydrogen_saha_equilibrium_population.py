@@ -2,8 +2,9 @@
 
 The saved KN1DPy ``nh_saha`` slice uses constants 3.310e-28 and 13.6057 eV.
 Its non-scientific branches use a 1e32 sentinel; this callable rejects those
-inputs. The comparison is historical development evidence, not a qualified D1
-freeze or external validation of the Saha model.
+inputs. Its two density factors assume hydrogen-ion density equals electron
+density. The comparison is historical development evidence, not a qualified
+D1 freeze or external validation of the Saha model.
 """
 
 from __future__ import annotations
@@ -41,14 +42,26 @@ def evaluate_h_saha_equilibrium_population(
         raise ValueError("electron density and temperature must be finite")
 
     try:
-        raw_level = np.asarray(principal_level)
-        if raw_level.ndim != 0 or raw_level.dtype.kind not in "iuf":
-            raise ValueError
-        if raw_level.dtype.kind in "iu":
-            level = int(raw_level)
+        if isinstance(principal_level, (int, np.integer)) and not isinstance(
+            principal_level, (bool, np.bool_)
+        ):
+            level = int(principal_level)
             level_value = None
         else:
-            level_value = float(raw_level)
+            raw_level = np.asarray(principal_level)
+            if raw_level.ndim != 0:
+                raise ValueError
+            if raw_level.dtype.kind in "iu" or (
+                raw_level.dtype.kind == "O"
+                and isinstance(raw_level.item(), int)
+                and not isinstance(raw_level.item(), bool)
+            ):
+                level = int(raw_level.item())
+                level_value = None
+            elif raw_level.dtype.kind == "f":
+                level_value = float(raw_level)
+            else:
+                raise ValueError
     except (TypeError, ValueError, OverflowError) as exc:
         raise ValueError("principal_level must be a scalar integer") from exc
     if level_value is not None:
@@ -67,11 +80,12 @@ def evaluate_h_saha_equilibrium_population(
         level_squared = float(level * level)
     except OverflowError as exc:
         raise ValueError("principal_level is outside the representable domain") from exc
-    population = (
-        density * (3.310e-28 * density) * level_squared
-        * np.exp(13.6057 / (level_squared * temperature))
-        / temperature**1.5
-    )
+    with np.errstate(all="ignore"):
+        population = (
+            density * (3.310e-28 * density) * level_squared
+            * np.exp(13.6057 / (level_squared * temperature))
+            / temperature**1.5
+        )
     if not np.all(np.isfinite(population)) or np.any(population <= 0.0):
         raise ValueError("Saha population is not finite and positive for the supplied inputs")
     return population

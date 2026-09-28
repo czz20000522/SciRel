@@ -28,8 +28,8 @@ def test_frozen_saha_relation_and_level_scaling(level):
     assert np.all(np.isfinite(actual)) and np.all(actual > 0.0)
 
 
-def test_large_integral_level_is_not_rounded_before_square():
-    level = 2**53 + 1
+@pytest.mark.parametrize("level", [2**53 + 1, 2**64])
+def test_large_integral_level_is_not_rounded_before_square(level):
     density = np.array([1.0e18])
     temperature = np.array([2.0])
     actual = evaluate_h_saha_equilibrium_population(density, temperature, level)
@@ -73,3 +73,9 @@ def test_nonfinite_input_and_result_are_rejected():
         evaluate_h_saha_equilibrium_population([1.0e18], [np.inf], 1)
     with pytest.raises(ValueError, match="population"):
         evaluate_h_saha_equilibrium_population([1.0e31], [1.0e-12], 1)
+
+
+def test_overflow_uses_public_failure_semantics_under_strict_numpy_errors():
+    with np.errstate(all="raise"):
+        with pytest.raises(ValueError, match="population"):
+            evaluate_h_saha_equilibrium_population([1.0e31], [1.0e-12], 1)

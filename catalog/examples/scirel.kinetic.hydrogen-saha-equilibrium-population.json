@@ -9,19 +9,20 @@
   "identity": {
     "relation": "Saha equilibrium population density of atomic-hydrogen principal level n from paired electron density and temperature",
     "direction": "electron density in m^-3, electron temperature in eV, principal level -> population density in m^-3 per sample",
-    "definition": "For level n, evaluate n_e*(3.310e-28*n_e)*n^2*exp(13.6057/(n^2*T_e))/T_e^1.5 in the saved operation order. The constants are the saved Saha factor and ionization energy in eV.",
-    "model": "Saved closed Saha equilibrium relation on its positive finite scientific branch; no dynamic state or non-equilibrium kinetics",
+    "definition": "For level n, evaluate n_e*(3.310e-28*n_e)*n^2*exp(13.6057/(n^2*T_e))/T_e^1.5 in the saved operation order. The second n_e factor substitutes hydrogen-ion density n_H+ under the model assumption n_H+ = n_e. The constants are the saved Saha factor and ionization energy in eV.",
+    "model": "Saved closed Saha equilibrium relation on its positive finite scientific branch with hydrogen-ion density identified with electron density; no dynamic state or non-equilibrium kinetics",
     "geometry": "No spatial geometry; elementwise paired material samples",
     "coordinates": "One shared one-dimensional sample axis for electron density and temperature; principal level is scalar",
     "boundary": "Non-empty, same-shape one-dimensional real arrays, finite and strictly between zero and 1e32; scalar integral level >= 1; finite positive represented result. The source's 1e32 sentinel is never returned.",
     "assumptions": [
       "The source's 3.310e-28 and 13.6057 eV constants and formula order are retained, without external re-derivation.",
       "This relation assumes Saha equilibrium; it does not establish that the caller's plasma is in equilibrium.",
-      "The saved formal implementation rejected non-scientific branches. SciRel also rejects boolean and numeric-string coercions under the declared real/integer input contract and preserves integer principal levels before squaring."
+      "The n_e squared factor requires n_H+ = n_e for the modeled hydrogen population. Saha equilibrium alone does not establish that equality; the caller must establish it separately.",
+      "The saved formal implementation rejected non-scientific branches. SciRel also rejects boolean and numeric-string coercions under the declared real/integer input contract and preserves Python and NumPy integer principal levels before squaring."
     ]
   },
   "inputs": [
-    {"name": "electron_density_m3", "description": "Electron number density per sample.", "units": "m^-3", "shape": "(N,), N >= 1", "dtype": "real numeric array-like", "required": true, "constraints": "Finite, strictly positive and below 1e32; boolean and numeric-string coercions rejected."},
+    {"name": "electron_density_m3", "description": "Electron number density per sample, also used as hydrogen-ion density under n_H+ = n_e.", "units": "m^-3", "shape": "(N,), N >= 1", "dtype": "real numeric array-like", "required": true, "constraints": "Finite, strictly positive and below 1e32; boolean and numeric-string coercions rejected."},
     {"name": "electron_temperature_ev", "description": "Electron temperature paired with each density.", "units": "eV", "shape": "(N,), same as electron_density_m3", "dtype": "real numeric array-like", "required": true, "constraints": "Finite, strictly positive and below 1e32; boolean and numeric-string coercions rejected."},
     {"name": "principal_level", "description": "Atomic-hydrogen principal quantum level n.", "units": "dimensionless", "shape": "scalar", "dtype": "real numeric scalar representing an integer", "required": true, "constraints": "Integral value >= 1; booleans, strings and non-integral values rejected."}
   ],
@@ -29,9 +30,9 @@
     {"name": "population_m3", "description": "Saha equilibrium population density per paired sample.", "units": "m^-3", "shape": "(N,), same as inputs", "dtype": "float64 array", "required": true, "constraints": "Finite and strictly positive; no sentinel or partial output."}
   ],
   "applicability": {
-    "preconditions": ["The caller accepts the saved Saha-equilibrium idealization, one-dimensional paired samples and the strict 1e32 domain ceilings."],
+    "preconditions": ["The caller has established both the Saha-equilibrium idealization and n_H+ = n_e for the modeled hydrogen population; equality of hydrogen-ion and electron densities is not inferred from the supplied inputs.", "The caller accepts one-dimensional paired samples and the strict 1e32 domain ceilings."],
     "supported": ["Pointwise atomic-hydrogen level populations for integral n >= 1 on the represented scientific domain."],
-    "excluded": ["Non-equilibrium, molecular or ion populations; scalar or higher-rank carriers; use of the source's 1e32 sentinel as physical data.", "Physical accuracy without an external atomic-physics reference."]
+    "excluded": ["Non-equilibrium, molecular or ion populations; scalar or higher-rank carriers; use of the source's 1e32 sentinel as physical data.", "Mixed or impurity plasma states where n_H+ differs from n_e; this callable has no separate hydrogen-ion-density input.", "Physical accuracy without an external atomic-physics reference."]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for non-real or non-finite arrays, empty/non-1-D or mismatched shapes, density or temperature outside (0, 1e32), or a non-scalar, non-integral or below-one principal level.",
@@ -40,7 +41,7 @@
     "partial_results": "Never returned."
   },
   "provenance": {
-    "lineage_summary": "Development integration of intake asset scirel.kinetic.hydrogen-saha-equilibrium-population at SciRel-intake-20260925 commit 647d5dbd36404bc5e76d934a875984787e789644. The saved KN1DPy nh_saha package cites jh_related/nh_saha.py:25-46; its formal implementation SHA-256 is 38fa28ac6728cf4aaa3e98ec638b1c39435200901ba8415a444a4df8d1dee89c. Constants, scientific branch and operation order are retained on compared ordinary levels. SciRel rejects boolean and numeric-string coercions that the intake implementation accepted and avoids its pre-square float rounding for integer levels above 2^53. KN1DPy's strict D1 qualification is withdrawn; this is bounded historical development comparison, not a qualified source freeze, expert approval or public release.",
+    "lineage_summary": "Development integration of intake asset scirel.kinetic.hydrogen-saha-equilibrium-population at SciRel-intake-20260925 commit 647d5dbd36404bc5e76d934a875984787e789644. The saved KN1DPy nh_saha package cites jh_related/nh_saha.py:25-46; its formal implementation SHA-256 is 38fa28ac6728cf4aaa3e98ec638b1c39435200901ba8415a444a4df8d1dee89c. Constants, scientific branch and operation order are retained on compared ordinary levels. The n_e squared formula is explicitly restricted to n_H+ = n_e, a model assumption not implied by Saha equilibrium. SciRel rejects boolean and numeric-string coercions that the intake implementation accepted, preserves integer levels above 2^53 and accepts representable Python integer levels beyond NumPy's inferred integer dtypes. KN1DPy's strict D1 qualification is withdrawn; this is bounded historical development comparison, not a qualified source freeze, expert approval or public release.",
     "source_kinds": ["saved L1 operator document and implementation", "intake development candidate and tests", "independent frozen-constant formula regression"],
     "public_references": [],
     "license_status": "pending-human-decision"
@@ -53,9 +54,9 @@
     "expected": "Two finite positive level-2 population densities in m^-3 matching the frozen Saha expression."
   },
   "verification": {
-    "scope": ["Frozen-constant formula and principal levels 1, 2 and 3 at 1e-15 relative tolerance, plus exact handling of one integer level above 2^53.", "One-dimensional paired shape, scientific-domain bounds, invalid levels, coercion rejection and non-finite result guard."],
+    "scope": ["Frozen-constant formula and principal levels 1, 2 and 3 at 1e-15 relative tolerance, plus exact handling of integer levels 2^53+1 and 2^64.", "One-dimensional paired shape, scientific-domain bounds, invalid levels, coercion rejection and non-finite result guard, including under caller np.errstate(all='raise')."],
     "tests": ["tests/operator_contracts/test_hydrogen_saha_equilibrium_population.py"],
     "evidence_ceiling": "Maintained tests establish the coded relation and failure contract on tested samples. Historical source comparisons are bounded development evidence; no external atomic-physics oracle, qualified whole-source D1 result, expert approval or distribution license is established.",
-    "known_limitations": ["Saha equilibrium is an assumption, not inferred from inputs.", "The saved document's scalar/profile wording conflicts with its formal implementation's one-dimensional restriction; this contract follows the implementation.", "Physical-reference validation_oracle_gap and pending public-distribution licensing remain."]
+    "known_limitations": ["Saha equilibrium and n_H+ = n_e are separate assumptions, neither inferred from inputs; states with n_H+ different from n_e require a different relation.", "The saved document's scalar/profile wording conflicts with its formal implementation's one-dimensional restriction; this contract follows the implementation.", "Physical-reference validation_oracle_gap and pending public-distribution licensing remain."]
   }
 }
