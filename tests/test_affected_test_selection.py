@@ -603,6 +603,8 @@ def test_documented_mirror_quasineutral_leaves_keep_legacy_graph_reverse_depende
             "tests/operator_contracts/test_quasineutral_potential.py",
         "src/scirel/kinetic/mirror_total_pressure.py":
             "tests/operator_contracts/test_mirror_total_pressure.py",
+        "src/scirel/kinetic/mirror_constrained_moments.py":
+            "tests/operator_contracts/test_mirror_constrained_moments.py",
     }
     graph_tests = {
         "tests/graph_contracts/mirror_quasineutral_closure/test_graph_mirror_quasineutral_closure.py",
