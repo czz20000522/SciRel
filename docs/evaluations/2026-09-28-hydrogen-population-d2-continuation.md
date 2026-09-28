@@ -47,3 +47,31 @@ does not fabricate a qualified CandidatePackage or automated L1 checks.
 
 No external atomic-physics oracle, current qualified D1 source root, expert
 decision or public distribution license is established by these checks.
+
+## Successor verification at `ce0763e`
+
+The preceding development evidence describes the earlier D2 snapshot. The
+successor at `ce0763e` makes the `n_H+ = n_e` premise explicit in the exact
+document, accepts Python integer `principal_level=2**64` without pre-square
+rounding, and preserves the public `ValueError` failure under a caller's
+`np.errstate(all="raise")`. Two focused regressions failed before the repair.
+The affected selector chose the Saha direct test and passed 22/22; the changed
+exact document passed schema, runtime-signature and executable-example checks.
+The earlier 119-document validation is not claimed to have been repeated for
+this successor.
+
+- Development catalog: `build/catalog/d2-saha-fix-ce0763e/release.json`,
+  `119/119`, root
+  `sha256:874fa326905d1375eee8df9d7abad2a8e31415fa60d0e7ac60a89a744b7e1348`.
+- Development wheel: `build/verification/d2-saha-fix-ce0763e/wheel/scirel-0.1.0.dev5-py3-none-any.whl`,
+  SHA-256 `8e8bf38af6949b0cd5d09dbb25c10a3a39cd3633e9864b85089c5798ce360153`.
+  It was installed with `pip --no-index --no-deps` into that run's `venv`.
+  From outside the SciRel checkout, `python -I` resolved `scirel` under this
+  venv's `Lib/site-packages`, confirmed the root and kinetic exports are the
+  same callable, matched the `2**64` formula result exactly
+  (`3.9821942897304742e+46` for `n_e=1e18 m^-3`, `T_e=2 eV`), and observed
+  `ValueError` on an overflowing input under strict NumPy errors.
+
+This remains a `pending_unapproved` development comparison. In particular,
+the saved KN1DPy input is not a qualified D1 source freeze; these successor
+checks do not expand its source or scientific validity claims.
