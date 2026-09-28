@@ -1,0 +1,197 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.fluid-wavevector-eigensolve",
+  "kind": "operator",
+  "title": {
+    "en": "Fluid perpendicular-wavenumber eigenbranches",
+    "zh": "流体垂直波数本征分支"
+  },
+  "summary": "Solve a general complex fluid eigenmatrix and select positive-real least-damped kx branches.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave"
+  ],
+  "aliases": [],
+  "identity": {
+    "relation": "complex square matrix and kn to full spectrum and filtered leading branches",
+    "direction": "complex square matrix and kn to full spectrum and filtered leading branches",
+    "definition": "Solve kx X=M X with general complex LAPACK zgeev; keep Re(kx)>real_floor_scale*kn and stable-sort by |Im(kx)|.",
+    "model": "linearized fluid pole dispersion eigenproblem",
+    "geometry": "no physical spatial grid",
+    "coordinates": "complex perpendicular wavenumber plane",
+    "boundary": "selection rejects nonpropagating modes and returns at most keep branches",
+    "assumptions": [
+      "Input units and normalization follow the declared ports; no physical parameters are inferred."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "matrix",
+      "description": "待求本征的复方阵，通常是流体色散矩阵",
+      "units": "与矩阵组装约定一致",
+      "shape": "`(NN, NN)` 复方阵",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "非空方阵且元素有限。"
+    },
+    {
+      "name": "kn",
+      "description": "波数归一尺度，用于把实部阈值化为绝对阈值",
+      "units": "1/m",
+      "shape": "标量",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "有限且严格为正。"
+    },
+    {
+      "name": "real_floor_scale",
+      "description": "非传播本征值的实部相对阈值",
+      "units": "无量纲",
+      "shape": "标量",
+      "dtype": "real numeric",
+      "required": false,
+      "constraints": "有限且非负，默认 `1e-5`。",
+      "default": 1e-05
+    },
+    {
+      "name": "keep",
+      "description": "返回的前导本征值个数",
+      "units": "无量纲",
+      "shape": "标量整数",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "不小于 1，默认 5。",
+      "default": 5
+    }
+  ],
+  "outputs": [
+    {
+      "name": "eigenvalues",
+      "description": "全部本征值，即完整 $k_\\perp$ 谱",
+      "units": "1/m",
+      "shape": "长度 `NN` 的复数组",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "有限复数。"
+    },
+    {
+      "name": "selected",
+      "description": "实部超过阈值的本征值，已按 $|\\operatorname{Im}|$ 升序排列",
+      "units": "1/m",
+      "shape": "长度 `selected_count` 的复数组",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "是 `eigenvalues` 的子集。"
+    },
+    {
+      "name": "head",
+      "description": "前 `keep` 个已排序的物理本征值",
+      "units": "1/m",
+      "shape": "长度不超过 `keep` 的复数组",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "当存活本征值不足 `keep` 个时返回全部存活值。"
+    },
+    {
+      "name": "eigenvalue_count",
+      "description": "本征值总数，等于矩阵阶数",
+      "units": "无量纲",
+      "shape": "标量整数",
+      "dtype": "integer",
+      "required": true,
+      "constraints": "等于 `matrix` 的行数。"
+    },
+    {
+      "name": "selected_count",
+      "description": "通过实部阈值的本征值个数",
+      "units": "无量纲",
+      "shape": "标量整数",
+      "dtype": "integer",
+      "required": true,
+      "constraints": "不大于 `eigenvalue_count`。"
+    },
+    {
+      "name": "returned_count",
+      "description": "`head` 的长度",
+      "units": "无量纲",
+      "shape": "标量整数",
+      "dtype": "integer",
+      "required": true,
+      "constraints": "等于 `min(keep, selected_count)`。"
+    },
+    {
+      "name": "real_floor",
+      "description": "实际使用的绝对实部阈值",
+      "units": "1/m",
+      "shape": "标量",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "等于 `real_floor_scale*kn`。"
+    },
+    {
+      "name": "sort_key",
+      "description": "排序依据标识",
+      "units": "不适用",
+      "shape": "字符串",
+      "dtype": "string",
+      "required": true,
+      "constraints": "固定为 `ascending_abs_imag`。"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "selection rejects nonpropagating modes and returns at most keep branches"
+    ],
+    "supported": [
+      "Solve a general complex fluid eigenmatrix and select positive-real least-damped kx branches."
+    ],
+    "excluded": [
+      "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
+    "runtime_failure": "The general complex LAPACK solver raises LinAlgError on nonconvergence.",
+    "nonconvergence": "Not applicable; no iterative root solve is exposed.",
+    "partial_results": "No partial mapping is returned after an exception."
+  },
+  "provenance": {
+    "lineage_summary": "SciRel D2 retained this distinct fluidBW r43 numerical relation after comparison with maintained kinetic entries; the source-scope freeze and finite oracles are development evidence, not expert approval.",
+    "source_kinds": [
+      "frozen source operator contract",
+      "frozen source numerical oracle",
+      "SciRel direct contract tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.fluid_wavevector_eigensolve",
+      "symbol": "solve_fluid_wavevector_eigenproblem",
+      "signature": "solve_fluid_wavevector_eigenproblem(*, matrix, kn, real_floor_scale=1e-05, keep=5)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev5",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate one bounded source-method case.",
+    "code": "from scirel.kinetic import solve_fluid_wavevector_eigenproblem\nr=solve_fluid_wavevector_eigenproblem(matrix=__import__('numpy').diag([1+1j,-1+0j]),kn=1); assert len(r['selected'])==1",
+    "expected": "The asserted result follows the declared output contract."
+  },
+  "verification": {
+    "scope": [
+      "Declared source-method numerical case and relevant failure boundaries."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_fluidbw_r43_fluid.py"
+    ],
+    "evidence_ceiling": "Finite D1 source oracles and direct SciRel tests establish only the listed cases and tolerances; they do not establish arbitrary-parameter parity, expert recognition or release approval.",
+    "known_limitations": [
+      "selection rejects nonpropagating modes and returns at most keep branches",
+      "Public distribution license and expert review remain pending."
+    ]
+  }
+}

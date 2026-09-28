@@ -1,0 +1,141 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.ronnmark-r-function",
+  "kind": "operator",
+  "title": {
+    "en": "Ronnmark R function and companion columns",
+    "zh": "Ronnmark R 函数及伴随列"
+  },
+  "summary": "Evaluate the source's Taylor, asymptotic or integral R-function branch and 2x2 companion matrix.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave"
+  ],
+  "aliases": [],
+  "identity": {
+    "relation": "dimensionless x and lambda to selected R branch and companion matrix",
+    "direction": "dimensionless x and lambda to selected R branch and companion matrix",
+    "definition": "Ordered RYLA selector uses three Taylor tests, an asymptotic test, then a 16-point Gauss-Legendre integral fallback; RC[0,1]=d(lambda R)/d lambda.",
+    "model": "Ronnmark rational response for magnetized Maxwellian dispersion",
+    "geometry": "no physical spatial grid",
+    "coordinates": "dimensionless complex x and lambda plane",
+    "boundary": "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only",
+    "assumptions": [
+      "Input units and normalization follow the declared ports; no physical parameters are inferred."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "x",
+      "description": "Ronnmark 自变量 Y，在 frozen source 中为 (omega-kz*vt*czj)/wcs。实数或复数标量。单位：无量纲（归一化频率）。有效性约束：须为有限值（不含 `NaN`/`inf`）；实数输入走实双精度算术，复数输入走复双精度算术（两者舍入不同，见「行为与边界」）；本算子只接受标量，数组输入须由调用方逐元素循环。",
+      "units": "无量纲",
+      "shape": "scalar",
+      "dtype": "real or complex numeric",
+      "required": true,
+      "constraints": "须为有限值（不含 `NaN`/`inf`）；实数输入走实双精度算术，复数输入走复双精度算术（两者舍入不同，见「行为与边界」）；本算子只接受标量，数组输入须由调用方逐元素循环。"
+    },
+    {
+      "name": "lambda_",
+      "description": "AL=lambda=(k_perp*rho_c)^2，Ronnmark 展开参数（源码 frozen source）。形状/轴序：标量（实数或复数；复 kx 平面上带非零虚部）。单位：无量纲。有效性约束：须有限；实 kx 时为非负实数，复 kx 时为复数；lambda=0 会使 RINT 的 C=YR/AL 与 XO 发散，属源码本身未定义域。",
+      "units": "无量纲",
+      "shape": "scalar",
+      "dtype": "real or complex numeric",
+      "required": true,
+      "constraints": "须有限；实 kx 时为非负实数，复 kx 时为复数；lambda=0 会使 RINT 的 C=YR/AL 与 XO 发散，属源码本身未定义域。"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "R",
+      "description": "R(x,lambda)=RC(1,1)，即 Ronnmark 的 R 函数值。复数标量。单位：无量纲。有效性约束：在 RTAY 的 Y^2=I^2 极点（如 x=12、lambda=9）上该分支返回 `NaN`；公共选择器对同一组参数按 frozen source 走 RINT，故 `scientific_operator` 在该点仍返回有限值。",
+      "units": "无量纲",
+      "shape": "scalar",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "在 RTAY 的 Y^2=I^2 极点（如 x=12、lambda=9）上该分支返回 `NaN`；公共选择器对同一组参数按 frozen source 走 RINT，故 `scientific_operator` 在该点仍返回有限值。"
+    },
+    {
+      "name": "dR_dlambda",
+      "description": "RC(1,2) 列，即 frozen source 读取的 `dRsj`。复数标量。单位：无量纲。有效性约束：与 `R` 同一分支计算；按源码级数展开可解析验证，该列等于 d(lambda*R)/dlambda = R + lambda*dR/dlambda，而非 dR/dlambda 本身（frozen source 中 PN_I 正比于 lambda^(I-1) 而累加权重为 I，故 RC(1,2) = R + lambda*dR/dlambda）。",
+      "units": "无量纲",
+      "shape": "scalar",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "与 `R` 同一分支计算；按源码级数展开可解析验证，该列等于 d(lambda*R)/dlambda = R + lambda*dR/dlambda，而非 dR/dlambda 本身（frozen source 中 PN_I 正比于 lambda^(I-1) 而累加权重为 I，故 RC(1,2) = R + lambda*dR/dlambda）。"
+    },
+    {
+      "name": "branch",
+      "description": "字符串，标识实际选中的分支；形状/轴序：标量字符串（枚举标签，无数组轴），取值之一：`'RTAY(AL<4)'`、`'RTAY(|Y|^2>75*AL)'`、`'RTAY(|Y|>40+AL/3)'`、`'RASY'`、`'RINT'`。单位：无量纲（枚举标签）。有效性约束：五个字符串之一，与 frozen source 的判据一一对应。",
+      "units": "无量纲",
+      "shape": "scalar",
+      "dtype": "string",
+      "required": true,
+      "constraints": "五个字符串之一，与 frozen source 的判据一一对应。"
+    },
+    {
+      "name": "RC",
+      "description": "完整的 2x2 复矩阵（complex128，按 Octave 列主序理解）。单位：无量纲。有效性约束：`RC[0,0]==R` 且 `RC[0,1]==dR_dlambda`；`RC[1,0]`、`RC[1,1]` 为同一分支计算出的伴随列，frozen source 未使用。",
+      "units": "无量纲",
+      "shape": "(2,2)",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "`RC[0,0]==R` 且 `RC[0,1]==dR_dlambda`；`RC[1,0]`、`RC[1,1]` 为同一分支计算出的伴随列，frozen source 未使用。"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only"
+    ],
+    "supported": [
+      "Evaluate the source's Taylor, asymptotic or integral R-function branch and 2x2 companion matrix."
+    ],
+    "excluded": [
+      "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
+    "runtime_failure": "Source-compatible arithmetic may return nonfinite values at a singular wavepoint.",
+    "nonconvergence": "Not applicable; no iterative root solve is exposed.",
+    "partial_results": "No partial mapping is returned after an exception."
+  },
+  "provenance": {
+    "lineage_summary": "SciRel D2 retained this distinct fluidBW r43 numerical relation after comparison with maintained kinetic entries; the source-scope freeze and finite oracles are development evidence, not expert approval.",
+    "source_kinds": [
+      "frozen source operator contract",
+      "frozen source numerical oracle",
+      "SciRel direct contract tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.ronnmark_r_function",
+      "symbol": "evaluate_ronnmark_r",
+      "signature": "evaluate_ronnmark_r(x, lambda_)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev5",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate one bounded source-method case.",
+    "code": "from scirel.kinetic import evaluate_ronnmark_r\nr=evaluate_ronnmark_r(0.5,0.25); assert r['branch']=='RTAY(AL<4)'",
+    "expected": "The asserted result follows the declared output contract."
+  },
+  "verification": {
+    "scope": [
+      "Declared source-method numerical case and relevant failure boundaries."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_fluidbw_r43_kinetic.py"
+    ],
+    "evidence_ceiling": "Finite D1 source oracles and direct SciRel tests establish only the listed cases and tolerances; they do not establish arbitrary-parameter parity, expert recognition or release approval.",
+    "known_limitations": [
+      "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only",
+      "Public distribution license and expert review remain pending."
+    ]
+  }
+}

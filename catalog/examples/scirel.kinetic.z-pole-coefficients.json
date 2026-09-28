@@ -1,0 +1,159 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.z-pole-coefficients",
+  "kind": "operator",
+  "title": {
+    "en": "Z-function pole coefficients",
+    "zh": "Z 函数极点系数"
+  },
+  "summary": "Return the fixed J=8 or J=12 complex residue and pole tables with conjugate completion.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave"
+  ],
+  "aliases": [],
+  "identity": {
+    "relation": "integer pole count J to residues and complex pole positions",
+    "direction": "integer pole count J to residues and complex pole positions",
+    "definition": "Z(zeta) is approximated by sum_j bzj[j]/(zeta-czj[j]); the stored first half is completed by conjugation and negative conjugation, respectively.",
+    "model": "rational approximation of the Maxwellian plasma dispersion function",
+    "geometry": "homogeneous plasma",
+    "coordinates": "dimensionless complex zeta plane; one pole axis",
+    "boundary": "only the frozen J=8 and J=12 tables exist; no interpolation or extrapolation",
+    "assumptions": [
+      "Input units and normalization follow the declared ports; no physical parameters are inferred."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "j_order",
+      "description": "极点阶数 J，选定一组固定留数与位置，并决定返回数组长度与每组分极点块大小",
+      "units": "无量纲",
+      "shape": "标量整数",
+      "dtype": "integer",
+      "required": true,
+      "constraints": "只能取 8 或 12，分别对应源码的 8 极点表与 12 极点表，其他阶数在源码中无表因而必须失败关闭。"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "bzj",
+      "description": "各极点的留数，矩阵按极点轴加权共振项",
+      "units": "无量纲",
+      "shape": "`(J,)` 一维极点轴",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "有限复数，后半段必须等于前半段的复共轭。"
+    },
+    {
+      "name": "czj",
+      "description": "各极点位置，给出复共振偏移并进入共振宗量分母",
+      "units": "无量纲",
+      "shape": "`(J,)` 一维极点轴",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "有限复数，后半段必须等于前半段复共轭的相反数。"
+    },
+    {
+      "name": "j_order",
+      "description": "本次实际使用的极点阶数，回显输入以便调用者核对矩阵分块",
+      "units": "无量纲",
+      "shape": "标量整数",
+      "dtype": "integer",
+      "required": true,
+      "constraints": "取值 8 或 12。"
+    },
+    {
+      "name": "half_order",
+      "description": "源码写定的前半段极点个数 `J/2`，用于核对共轭补齐边界",
+      "units": "无量纲",
+      "shape": "标量整数",
+      "dtype": "integer",
+      "required": true,
+      "constraints": "等于 `j_order//2`。"
+    },
+    {
+      "name": "sum_bzj",
+      "description": "留数总和，用于核对零阶矩条件",
+      "units": "无量纲",
+      "shape": "标量复数",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "有限，理想值 -1。"
+    },
+    {
+      "name": "sum_bzcj",
+      "description": "留数与极点位置乘积的总和，用于核对一阶矩条件",
+      "units": "无量纲",
+      "shape": "标量复数",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "有限，理想值 0。"
+    },
+    {
+      "name": "sum_bzcj2",
+      "description": "留数与极点位置平方乘积的总和，用于核对二阶矩条件",
+      "units": "无量纲",
+      "shape": "标量复数",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "有限，理想值 -1/2。"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "only the frozen J=8 and J=12 tables exist; no interpolation or extrapolation"
+    ],
+    "supported": [
+      "Return the fixed J=8 or J=12 complex residue and pole tables with conjugate completion."
+    ],
+    "excluded": [
+      "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
+    "runtime_failure": "Numerical backend errors propagate; no fallback relation is substituted.",
+    "nonconvergence": "Not applicable; no iterative root solve is exposed.",
+    "partial_results": "No partial mapping is returned after an exception."
+  },
+  "provenance": {
+    "lineage_summary": "SciRel D2 retained this distinct fluidBW r43 numerical relation after comparison with maintained kinetic entries; the source-scope freeze and finite oracles are development evidence, not expert approval.",
+    "source_kinds": [
+      "frozen source operator contract",
+      "frozen source numerical oracle",
+      "SciRel direct contract tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.z_pole_coefficients",
+      "symbol": "get_z_pole_coefficients",
+      "signature": "get_z_pole_coefficients(*, j_order)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev5",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate one bounded source-method case.",
+    "code": "from scirel.kinetic import get_z_pole_coefficients\nr=get_z_pole_coefficients(j_order=8); assert len(r['bzj'])==8 and len(r['czj'])==8",
+    "expected": "The asserted result follows the declared output contract."
+  },
+  "verification": {
+    "scope": [
+      "Declared source-method numerical case and relevant failure boundaries."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_fluidbw_r43_fluid.py"
+    ],
+    "evidence_ceiling": "Finite D1 source oracles and direct SciRel tests establish only the listed cases and tolerances; they do not establish arbitrary-parameter parity, expert recognition or release approval.",
+    "known_limitations": [
+      "only the frozen J=8 and J=12 tables exist; no interpolation or extrapolation",
+      "Public distribution license and expert review remain pending."
+    ]
+  }
+}

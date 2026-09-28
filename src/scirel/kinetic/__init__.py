@@ -9,6 +9,19 @@ from .loss_cone_spectrum import solve_loss_cone_spectrum
 from .plasma_dispersion import evaluate_plasma_dispersion
 from .bessel_gamma import evaluate_bessel_gamma
 from .kinetic_dispersion_sum_n import evaluate_kinetic_dispersion_sum
+from .kinetic_dispersion_sum_fluidbw import evaluate_fluidbw_kinetic_dispersion_sum
+from .plasma_dispersion_weideman import evaluate_plasma_dispersion_weideman
+from .z_pole_coefficients import get_z_pole_coefficients
+from .gamma_lpole_coefficients import get_gamma_lpole_coefficients
+from .fluid_dispersion_matrix import assemble_fluid_dispersion_matrix
+from .fluid_wavevector_eigensolve import solve_fluid_wavevector_eigenproblem
+from .ronnmark_r_function import evaluate_ronnmark_r
+from .kinetic_dispersion_ronnmark import evaluate_kinetic_dispersion_ronnmark
+from .dielectric_tensor_diagnostic import evaluate_kinetic_dielectric_tensor
+from .kinetic_wavevector_roots import solve_kinetic_wavevector_roots
+from .fluid_wavevector_scan import scan_fluid_wavevectors
+from .kinetic_dispersion_relation import evaluate_kinetic_dispersion_relation
+from .kinetic_wavevector_scan import scan_kinetic_wavevectors
 from .species_equilibrium_scales import derive_species_equilibrium_scales
 from .thermal_speed_scale import compute_thermal_speed_m_s
 from .hydrogen_saha_equilibrium_population import evaluate_h_saha_equilibrium_population
@@ -46,6 +59,10 @@ from .grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
 from .frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure
 
 __all__ = ['assemble_frank_egedal_pressure', 'evaluate_frank_egedal_radial_envelope', 'project_frank_egedal_source_modes', 'evaluate_frank_egedal_hot_ion_moments', 'evaluate_mirror_invariant_distribution', 'assemble_mirror_total_pressure', 'evaluate_mirror_constrained_moments', 'solve_loss_cone_spectrum', 'evaluate_plasma_dispersion', 'evaluate_bessel_gamma', 'evaluate_kinetic_dispersion_sum', 'derive_species_equilibrium_scales', 'compute_thermal_speed_m_s', 'reduce_generation_density', 'solve_grid_mirror_kinetic_closure', 'solve_frank_egedal_pressure_closure']
+__all__.extend(['evaluate_plasma_dispersion_weideman', 'evaluate_fluidbw_kinetic_dispersion_sum'])
+__all__.extend(['get_z_pole_coefficients', 'get_gamma_lpole_coefficients', 'assemble_fluid_dispersion_matrix', 'solve_fluid_wavevector_eigenproblem'])
+__all__.extend(['evaluate_ronnmark_r', 'evaluate_kinetic_dispersion_ronnmark', 'evaluate_kinetic_dielectric_tensor', 'solve_kinetic_wavevector_roots'])
+__all__.extend(['scan_fluid_wavevectors', 'evaluate_kinetic_dispersion_relation', 'scan_kinetic_wavevectors'])
 __all__.extend(['normalize_incoming_neutral_boundary', 'normalize_spatial_source_shape'])
 __all__.append('make_cylindrical_velocity_quadrature')
 __all__.append('build_shifted_maxwellian_seed')

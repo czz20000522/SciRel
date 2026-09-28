@@ -1,0 +1,303 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.fluid-dispersion-matrix",
+  "kind": "operator",
+  "title": {
+    "en": "L/J-pole fluid dispersion matrix",
+    "zh": "L/J 极点流体色散矩阵"
+  },
+  "summary": "Assemble the dense first-order fluid eigenmatrix for fixed angular frequency and parallel wavenumber.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave"
+  ],
+  "aliases": [],
+  "identity": {
+    "relation": "species scales and L/J pole tables to a complex kx eigenmatrix",
+    "direction": "species scales and L/J pole tables to a complex kx eigenmatrix",
+    "definition": "Assemble M for kx X=M X in [vx_snl,vy_snl,vz_snl,Ey,Ez,By,Bz] order; its dimension is 3*S*sum(L)+4.",
+    "model": "homogeneous magnetized multi-species Maxwellian fluid pole expansion",
+    "geometry": "no physical spatial grid",
+    "coordinates": "wavevector x-z plane; z parallel to B0; component and pole blocks retain source ordering",
+    "boundary": "finite nonzero omega, nonzero gyrofrequencies, positive pole radii and matched coefficient axes",
+    "assumptions": [
+      "Input units and normalization follow the declared ports; no physical parameters are inferred."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "omega",
+      "description": "固定角频率，进入共振分母与 Maxwell 旋度项",
+      "units": "rad/s",
+      "shape": "标量",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "有限且非零。"
+    },
+    {
+      "name": "kz",
+      "description": "平行波数，进入平行共振与旋度项",
+      "units": "1/m",
+      "shape": "标量",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "有限。"
+    },
+    {
+      "name": "c2",
+      "description": "真空光速平方",
+      "units": "m^2/s^2",
+      "shape": "标量",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "有限且严格为正。"
+    },
+    {
+      "name": "epsilon0",
+      "description": "真空介电常数",
+      "units": "F/m",
+      "shape": "标量",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "有限且严格为正。"
+    },
+    {
+      "name": "wps2",
+      "description": "各组分等离子体频率平方",
+      "units": "rad^2/s^2",
+      "shape": "`(S,)` 一维组分轴",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "有限。"
+    },
+    {
+      "name": "wcs",
+      "description": "各组分含符号回旋频率",
+      "units": "rad/s",
+      "shape": "`(S,)`",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "有限且非零。"
+    },
+    {
+      "name": "vts",
+      "description": "各组分热速度",
+      "units": "m/s",
+      "shape": "`(S,)`",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "有限。"
+    },
+    {
+      "name": "rhocs",
+      "description": "各组分含符号回旋半径",
+      "units": "m",
+      "shape": "`(S,)`",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "有限。"
+    },
+    {
+      "name": "sgns",
+      "description": "回旋半径符号",
+      "units": "无量纲",
+      "shape": "`(S,)`",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "取值为 `±1`。"
+    },
+    {
+      "name": "absrhocs",
+      "description": "回旋半径绝对值",
+      "units": "m",
+      "shape": "`(S,)`",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "有限且严格为正。"
+    },
+    {
+      "name": "cn_residues",
+      "description": "L 极点留数表，按系数序号 1..`max_harmonic+1` 索引",
+      "units": "无量纲",
+      "shape": "字典，值为复数组",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "覆盖全部所需序号且有限。"
+    },
+    {
+      "name": "cn_poles",
+      "description": "L 极点位置表，索引同 `cn_residues`",
+      "units": "无量纲",
+      "shape": "字典，值为复数组",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "覆盖全部所需序号且有限。"
+    },
+    {
+      "name": "order_lengths",
+      "description": "各序号极点个数",
+      "units": "无量纲",
+      "shape": "字典",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "与 `cn_residues`/`cn_poles` 的数组长度一致。"
+    },
+    {
+      "name": "bzj",
+      "description": "Z 极点近似的留数",
+      "units": "无量纲",
+      "shape": "`(J,)` 一维极点轴",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "有限且非空。"
+    },
+    {
+      "name": "czj",
+      "description": "Z 极点近似的极点位置",
+      "units": "无量纲",
+      "shape": "`(J,)`，与 `bzj` 等长",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "有限。"
+    },
+    {
+      "name": "max_harmonic",
+      "description": "贝塞尔最大谐波阶数 $N$",
+      "units": "无量纲",
+      "shape": "标量整数",
+      "dtype": "integer",
+      "required": true,
+      "constraints": "非负整数。"
+    },
+    {
+      "name": "n_species",
+      "description": "组分数 $S$",
+      "units": "无量纲",
+      "shape": "标量整数",
+      "dtype": "integer",
+      "required": true,
+      "constraints": "不小于 1。"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "M",
+      "description": "待求本征矩阵",
+      "units": "混合量纲（分块各按自身物理量归一）",
+      "shape": "`(3*NSL+4, 3*NSL+4)` 复方阵，`NSL=n_species*sum(order_lengths)`",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "有限复数。"
+    },
+    {
+      "name": "n_sl",
+      "description": "每组分的速度展开维数 $\\sum_l L(l)$",
+      "units": "无量纲",
+      "shape": "标量整数",
+      "dtype": "integer",
+      "required": true,
+      "constraints": "正整数。"
+    },
+    {
+      "name": "n_sl3",
+      "description": "三个速度分量块的总维数 $3\\,NSL$",
+      "units": "无量纲",
+      "shape": "标量整数",
+      "dtype": "integer",
+      "required": true,
+      "constraints": "正整数。"
+    },
+    {
+      "name": "matrix_size",
+      "description": "矩阵阶数 $3\\,NSL+4$",
+      "units": "无量纲",
+      "shape": "标量整数",
+      "dtype": "integer",
+      "required": true,
+      "constraints": "与 `M` 的行数一致。"
+    },
+    {
+      "name": "n_l",
+      "description": "每组分在全部谐波上的极点总数",
+      "units": "无量纲",
+      "shape": "标量整数",
+      "dtype": "integer",
+      "required": true,
+      "constraints": "正整数。"
+    },
+    {
+      "name": "nonzero_entries",
+      "description": "矩阵非零元个数，用于结构核对",
+      "units": "无量纲",
+      "shape": "标量整数",
+      "dtype": "integer",
+      "required": true,
+      "constraints": "不大于矩阵元素总数。"
+    },
+    {
+      "name": "state_layout",
+      "description": "状态向量分块顺序",
+      "units": "不适用",
+      "shape": "长度为 7 的字符串列表",
+      "dtype": "string",
+      "required": true,
+      "constraints": "固定为 `vx_snl, vy_snl, vz_snl, Ey, Ez, By, Bz`。"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "finite nonzero omega, nonzero gyrofrequencies, positive pole radii and matched coefficient axes"
+    ],
+    "supported": [
+      "Assemble the dense first-order fluid eigenmatrix for fixed angular frequency and parallel wavenumber."
+    ],
+    "excluded": [
+      "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
+    "runtime_failure": "Numerical backend errors propagate; no fallback relation is substituted.",
+    "nonconvergence": "Not applicable; no iterative root solve is exposed.",
+    "partial_results": "No partial mapping is returned after an exception."
+  },
+  "provenance": {
+    "lineage_summary": "SciRel D2 retained this distinct fluidBW r43 numerical relation after comparison with maintained kinetic entries; the source-scope freeze and finite oracles are development evidence, not expert approval.",
+    "source_kinds": [
+      "frozen source operator contract",
+      "frozen source numerical oracle",
+      "SciRel direct contract tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.fluid_dispersion_matrix",
+      "symbol": "assemble_fluid_dispersion_matrix",
+      "signature": "assemble_fluid_dispersion_matrix(*, omega, kz, c2, epsilon0, wps2, wcs, vts, rhocs, sgns, absrhocs, cn_residues, cn_poles, order_lengths, bzj, czj, max_harmonic, n_species)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev5",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate one bounded source-method case.",
+    "code": "from scirel.kinetic import derive_species_equilibrium_scales, get_gamma_lpole_coefficients, get_z_pole_coefficients\nfrom scirel.kinetic import assemble_fluid_dispersion_matrix\ns=derive_species_equilibrium_scales(ms=[9.1094e-31],qs=[-1.60217662e-19],ns_unit=[1],Ts_unit=[1],B0=1,n00=6.075e19,T00=1000); l=get_gamma_lpole_coefficients(max_harmonic=0); z=get_z_pole_coefficients(j_order=8); r=assemble_fluid_dispersion_matrix(omega=s['wn'],kz=0.1*s['kn'],c2=s['c2'],epsilon0=s['epsilon0'],wps2=s['wps2'],wcs=s['wcs'],vts=s['vts'],rhocs=s['rhocs'],sgns=s['sgns'],absrhocs=s['absrhocs'],cn_residues=l['residues'],cn_poles=l['poles'],order_lengths=l['order_lengths'],bzj=z['bzj'],czj=z['czj'],max_harmonic=0,n_species=1); assert r['M'].shape==(40,40)",
+    "expected": "The asserted result follows the declared output contract."
+  },
+  "verification": {
+    "scope": [
+      "Declared source-method numerical case and relevant failure boundaries."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_fluidbw_r43_fluid.py"
+    ],
+    "evidence_ceiling": "Finite D1 source oracles and direct SciRel tests establish only the listed cases and tolerances; they do not establish arbitrary-parameter parity, expert recognition or release approval.",
+    "known_limitations": [
+      "finite nonzero omega, nonzero gyrofrequencies, positive pole radii and matched coefficient axes",
+      "Public distribution license and expert review remain pending."
+    ]
+  }
+}

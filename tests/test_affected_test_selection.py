@@ -312,13 +312,15 @@ def test_codefusion_consumer_contract_change_selects_its_contract_test():
 def test_shared_composition_change_selects_every_task_graph():
     result = select("src/scirel/_composition.py")
 
+    namespace = runpy.run_path(str(SELECTOR))
     graph_assets = [
-        asset for asset in result["affected_assets"] if ".solve_" in asset or ".synthesize_" in asset
+        asset for asset in namespace["_load_assets"]()
+        if asset.kind == "task_graph" and asset.public_callable in result["affected_assets"]
     ]
-    assert len(graph_assets) == 11
+    assert len(graph_assets) >= 11
+    assert {path for asset in graph_assets for path in asset.direct_tests} <= set(result["test_paths"])
     assert "tests/test_library_composition.py" in result["test_paths"]
     assert "tests/test_incremental_admissions.py" in result["test_paths"]
-    assert len(result["test_paths"]) == 13
 
 
 def test_documentation_change_needs_no_scientific_tests():
@@ -796,8 +798,8 @@ def test_current_asset_index_unions_legacy_samples_and_exact_documents():
     namespace = runpy.run_path(str(SELECTOR))
     assets = namespace["_load_assets"]()
 
-    assert len(assets) == 119
-    assert len({asset.public_callable for asset in assets}) == 119
+    assert len(assets) == 132
+    assert len({asset.public_callable for asset in assets}) == 132
 
 
 def test_catalog_asset_keeps_every_declared_direct_test(tmp_path):
