@@ -173,6 +173,19 @@ def test_terminal_ion_state_change_selects_its_two_direct_tests():
     } <= set(result["test_paths"])
 
 
+def test_terminal_conservation_change_selects_its_two_direct_tests():
+    result = select("src/scirel/kinetic/terminal_conservation_diagnostic.py")
+
+    assert result["full_suite_required"] is False
+    assert result["affected_assets"] == [
+        "scirel.kinetic.terminal_conservation_diagnostic.reduce_qh2_total_conservation_diagnostic"
+    ]
+    assert {
+        "tests/operator_contracts/test_terminal_molecular_conservation.py",
+        "tests/operator_contracts/test_terminal_molecular_conservation_l1.py",
+    } <= set(result["test_paths"])
+
+
 def test_mcp_adapter_change_selects_only_its_boundary_tests():
     result = select("src/scirel_adapter/mcp.py")
 

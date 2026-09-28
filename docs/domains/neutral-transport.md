@@ -34,6 +34,7 @@
 - [终态分子随机与总热通量](../../catalog/examples/scirel.kinetic.terminal-heat-flux-reduction.json)按显式质量比和热速度计算中心随机通量与总能量通量；随机项在正权重域与九矩关系重叠，总量为本变体新增字段。
 - [终态分子能量转移率](../../catalog/examples/scirel.kinetic.terminal-energy-transfer-reduction.json)由调用方给出的带符号 Boltzmann RHS、终态分布和外部源归约 loss、热、动量与总能量转移；不在内部组装 RHS 或闭合守恒诊断。
 - [终态分子离子密度与温度](../../catalog/examples/scirel.kinetic.terminal-ion-state-reduction.json)按显式密度、离子温度和 11 通道反应表计算 H2+ 密度、温度及两项频率；输出可由调用方衔接分子 Alpha 收缩，速率表单位仍待专家核对。
+- [终态分子总能量守恒诊断](../../catalog/examples/scirel.kinetic.terminal-conservation-diagnostic.json)对调用方给出的总热通量轴向差分和总能量转移率相邻均值计算全局归一化误差；最后节点约定为零，不验证上游物理归一化。
 
 跨网格分布插值复用圆柱速度空间积分权重。其余二十九项没有直接 callable 依赖；单代传播由调用方传入上风推进系数，停止判据由调用方传入累计密度，Boltzmann RHS 接收各上游源项，这些函数不在内部调用其他资产。Alpha 收缩接收调用方矩阵，未绑定矩阵来源或完整碰撞图。累计更新只处理一次显式状态转移；重入决定未绑定反馈顺序或迭代上限，不能被解释为完整 TaskGraph。边界归一化接收调用方提供的热速度和柱坐标权重。自适应网格、积分权重、种子与矩归约的端口组合由直接测试覆盖。链接指向 `catalog/examples/` 开发 pilot 的 exact documents，不代表专家批准或公开发布。
 
