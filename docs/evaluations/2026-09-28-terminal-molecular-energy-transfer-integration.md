@@ -48,7 +48,12 @@ bound to the declared total of 108 and its two targeted tests passed. The
 subsequent `affected` gate selected this asset, both direct test files, the
 public export and the asset-document/check-script contracts: 101 passed and
 3 optional saved-root replays skipped. The catalog target is
-`partial: 61/108`.
+`partial: 61/108`. After cherry-pick `f2ddb2e`, fixture fix `cefaa01`,
+evidence record `5a3253c` and README count commit `fec8f19`, the main checkout
+ran `pwsh ./scripts/check.ps1 -Mode affected -BaseRef cb39500`: 101 passed
+and 3 optional saved-root replays skipped. Setting
+`SCIREL_KN1DPY_REVIEW_ROOT` and running the main-checkout replay separately
+yielded 3 passed.
 
 These checks do not establish the upstream terminal distribution or RHS,
 absolute source units, full KN1D terminal diagnostics, whole-source D1
