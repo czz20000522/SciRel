@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from scirel.closures.reduced_hall_drift import _source_hypot, close_reduced_hall_drift, close_reduced_hall_drift as scientific_operator
 
@@ -22,6 +23,30 @@ def test_uniform_state_has_zero_hall_current_and_flows():
     np.testing.assert_allclose(result['J_phi'], 0.0, atol=1e-12)
     np.testing.assert_allclose(result['ion_toroidal_velocity'], 0.0, atol=1e-12)
     assert result['generalized_ohm_error'] < 1e-12
+
+
+def test_zero_hall_multiplier_keeps_pressure_current_and_no_inertia_runs_once():
+    R, Z, BR, BZ = _grid()
+    pressure = 20.0 + R
+    result = scientific_operator(
+        R, Z, BR, BZ, pressure, pressure, _state(R.shape),
+        np.ones_like(R, dtype=bool), M, E,
+        hall_multiplier=0.0, include_toroidal_inertia=False,
+    )
+    np.testing.assert_allclose(result['J_phi'][:, 1:], 0.5, atol=1e-12)
+    np.testing.assert_allclose(result['ion_toroidal_velocity'], 0.0)
+    assert result['inertia_converged'] and result['inertia_iterations'] == 1
+
+
+def test_local_inertia_budget_exhaustion_returns_no_state():
+    R, Z, BR, BZ = _grid()
+    pressure = 20.0 + R
+    with pytest.raises(RuntimeError, match='inertia iteration did not converge'):
+        scientific_operator(
+            R, Z, BR, BZ, pressure, pressure, _state(R.shape),
+            np.ones_like(R, dtype=bool), M, E,
+            inertia_max_iterations=1, inertia_tolerance=1e-30,
+        )
 
 
 def test_electron_gradient_drives_exact_generalized_ohm_drift():
