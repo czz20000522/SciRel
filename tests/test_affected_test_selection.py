@@ -714,6 +714,14 @@ def test_documented_dense_green_selects_its_direct_test():
     ]
 
 
+def test_documented_mirror_green_selects_its_direct_test():
+    result = select("src/scirel/field/mirror_plasma_green.py")
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == [
+        "tests/operator_contracts/test_mirror_plasma_green.py",
+    ]
+
+
 def test_current_asset_index_unions_legacy_samples_and_exact_documents():
     namespace = runpy.run_path(str(SELECTOR))
     assets = namespace["_load_assets"]()
