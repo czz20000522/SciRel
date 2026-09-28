@@ -24,6 +24,15 @@ def test_rejects_outside_diagnostic_point():
         scientific_operator(r_grid, z_grid, quantity, np.array([[0.9, 0.0]]))
 
 
+def test_empty_query_and_invalid_later_point():
+    r_grid, z_grid, quantity = _grid()
+    result = scientific_operator(r_grid, z_grid, quantity, np.empty((0, 2)))
+    assert result["samples"].shape == (0,)
+
+    with pytest.raises(ValueError, match="outside the R-Z grid"):
+        scientific_operator(r_grid, z_grid, quantity, [[1.5, 0.0], [4.1, 0.0]])
+
+
 def test_reviewed_relation_example():
     from scirel.geometry.bilinear_grid_sampling import sample_rectilinear_field
     import numpy as np
