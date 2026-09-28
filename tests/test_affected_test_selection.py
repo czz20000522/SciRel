@@ -593,7 +593,7 @@ def test_legacy_graph_dependencies_are_canonicalized_to_documented_asset_ids(tmp
     assert graph in namespace["_dependent_assets"]({dependency}, assets)
 
 
-def test_documented_quasineutral_leaves_keep_legacy_graph_reverse_dependencies():
+def test_documented_mirror_quasineutral_leaves_keep_legacy_graph_reverse_dependencies():
     cases = {
         "src/scirel/closures/quasineutral_reference_density.py":
             "tests/operator_contracts/test_quasineutral_reference_density.py",
@@ -601,6 +601,8 @@ def test_documented_quasineutral_leaves_keep_legacy_graph_reverse_dependencies()
             "tests/operator_contracts/test_boltzmann_quasineutrality.py",
         "src/scirel/closures/quasineutral_potential.py":
             "tests/operator_contracts/test_quasineutral_potential.py",
+        "src/scirel/kinetic/mirror_total_pressure.py":
+            "tests/operator_contracts/test_mirror_total_pressure.py",
     }
     graph_tests = {
         "tests/graph_contracts/mirror_quasineutral_closure/test_graph_mirror_quasineutral_closure.py",

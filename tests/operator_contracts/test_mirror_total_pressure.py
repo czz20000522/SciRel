@@ -19,6 +19,22 @@ def test_missing_state_field_fails_closed():
         scientific_operator({"p_parallel_pa": 1.0}, {"electron_pressure_pa": 1.0})
 
 
+def test_density_and_residual_are_unvalidated_pass_through_fields():
+    ion_density = np.array([-1.0, np.nan])
+    electron_density = np.array([np.nan, -2.0])
+    residual = np.array([np.inf, -np.inf])
+    ion = {"p_parallel_pa": [2.0, 3.0], "p_perpendicular_pa": [4.0, 5.0], "density_m3": ion_density}
+    electron = {"electron_density_m3": electron_density, "electron_pressure_pa": 1.5, "relative_charge_residual": residual}
+
+    result = scientific_operator(ion, electron)
+
+    assert result["ion_density"] is ion_density
+    assert result["electron_density"] is electron_density
+    assert result["relative_charge_residual"] is residual
+    np.testing.assert_allclose(result["p_parallel"], [3.5, 4.5])
+    np.testing.assert_allclose(result["p_perpendicular"], [5.5, 6.5])
+
+
 def test_reviewed_relation_example():
     import numpy as np
     from scirel.kinetic.mirror_total_pressure import assemble_mirror_total_pressure
