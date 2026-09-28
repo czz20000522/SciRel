@@ -14,6 +14,8 @@ from .hydrogen2_proton_elastic_cross_section import evaluate_hydrogen2_proton_el
 from .hydrogen2_hydrogen2_elastic_cross_section import evaluate_hydrogen2_hydrogen2_elastic_cross_section
 from .atomic_hydrogen_collision_matrices import assemble_atomic_hydrogen_collision_matrices
 from .molecular_hydrogen_collision_matrices import assemble_molecular_hydrogen_collision_matrices
+from .atomic_hydrogen_omega_frequencies import assemble_atomic_hydrogen_omega_frequencies
+from .molecular_hydrogen_omega_frequencies import assemble_molecular_hydrogen_omega_frequencies
 
 __all__ = [
     'BesselBackendEvaluationError',
@@ -33,4 +35,6 @@ __all__.extend([
     'evaluate_hydrogen2_hydrogen2_elastic_cross_section',
     'assemble_atomic_hydrogen_collision_matrices',
     'assemble_molecular_hydrogen_collision_matrices',
+    'assemble_atomic_hydrogen_omega_frequencies',
+    'assemble_molecular_hydrogen_omega_frequencies',
 ])

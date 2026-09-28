@@ -97,6 +97,17 @@ def test_cross_section_change_selects_both_collision_matrix_dependents():
     } <= set(result["test_paths"])
 
 
+def test_alpha_change_selects_omega_dependent_and_direct_replay():
+    result = select("src/scirel/kinetic/atomic_alpha_contraction.py")
+
+    assert result["full_suite_required"] is False
+    assert "scirel.collisions.atomic_hydrogen_omega_frequencies.assemble_atomic_hydrogen_omega_frequencies" in result["affected_assets"]
+    assert {
+        "tests/operator_contracts/test_atomic_hydrogen_omega_frequencies.py",
+        "tests/operator_contracts/test_omega_frequencies_l1.py",
+    } <= set(result["test_paths"])
+
+
 def test_mcp_adapter_change_selects_only_its_boundary_tests():
     result = select("src/scirel_adapter/mcp.py")
 
@@ -456,8 +467,8 @@ def test_current_asset_index_unions_legacy_samples_and_exact_documents():
     namespace = runpy.run_path(str(SELECTOR))
     assets = namespace["_load_assets"]()
 
-    assert len(assets) == 102
-    assert len({asset.public_callable for asset in assets}) == 102
+    assert len(assets) == 104
+    assert len({asset.public_callable for asset in assets}) == 104
 
 
 def test_catalog_asset_keeps_every_declared_direct_test(tmp_path):
