@@ -225,11 +225,14 @@ input, convention, matched domain or independent check is missing, report the ob
 mechanism, causal attribution or error bound.
 For a consequential claim that crosses from a computed rate into an individual probability, accumulated event count,
 or evolving inventory, have an independent reviewer challenge the draft explanation against the input state, exact
-asset contract, and actual output before it reaches the user when such an Agent is available. Resolve supported
-findings and recheck affected files. If no independent Agent is available, perform a separate interpretation pass and
-say that it was not independently reviewed. Record whether a problem was found by the solver before review, by the
-pre-delivery reviewer, or only after user feedback; a corrected result does not make an earlier unsupported claim an
-autonomous pass. This review is conditional on the claim, not a gate on every simple calculation.
+asset contract, and actual output before it reaches the user when such an Agent is available. Treat each reported
+defect and each proposed replacement as separate claims: check both against the original inputs, the model's state
+and evolution assumptions, and the computed quantity before changing the result. Accept a supported defect without
+copying an unsupported numerical or physical replacement; leave an underdetermined quantity unresolved when the
+missing state cannot be recovered. Recheck affected files. If no independent Agent is available, perform a separate
+interpretation pass and say that it was not independently reviewed. Record whether a problem was found by the solver
+before review, by the pre-delivery reviewer, or only after user feedback. A corrected result does not make an earlier
+unsupported claim an autonomous pass. This review is conditional on the claim, not a gate on every simple calculation.
 For an error-bound claim, name the error target and domain, its reference, and the argument that bounds it on that
 domain. The maximum difference on a finite comparison set describes those sampled points; it does not by itself bound
 unsampled values, solver accuracy, or physical-model error. If the user asks for a wider bound, answer that question

@@ -75,7 +75,8 @@ answer. If the user delegated the choice, select the narrowest defensible model 
    rerun, put it in the ordinary delivery path; an optional test alone does not establish that guarantee. Check that
    physical conclusions follow from quantities actually computed. For a consequential rate-to-probability, cumulative
    event or changing-inventory claim, request an independent interpretation review before user delivery when an Agent
-   is available, and resolve supported findings against the source inputs and model assumptions. Record whether the
+   is available. Check each finding and proposed replacement separately against the original inputs, model state,
+   and actual outputs; a valid criticism need not make the reviewer's substitute answer valid. Record whether the
    solver, that reviewer or later user feedback found the issue. Sampling a field at a new location does not establish
    that every other material input is defined there. Report only
    commands, exit states, output, and artifacts actually observed. Do not claim success from generated text alone.
