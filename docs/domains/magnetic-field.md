@@ -21,6 +21,7 @@
 - [轴对称磁通导出极向场](../../catalog/examples/scirel.field.poloidal-field-from-flux.json)从调用方 `psi = R A_phi` 的 R-Z 网格值离散恢复 `B_R`、`B_Z` 和幅值，包含明确的轴上规则；它不解决真空场输出 `Wb` 与平衡侧 `Wb/rad` 标签之间尚待裁决的接线问题。
 - [轴对称 Picard 磁通 Green 更新](../../catalog/examples/scirel.equilibrium.axisymmetric-picard-update.json)以首个网格间距形成单元电流，用稠密 Green 矩阵产生候选磁通，再对磁通而非电流做一次松弛；这是单步更新，求解循环由调用方负责。
 - [轴对称各向异性压强张量力平衡](../../catalog/examples/scirel.equilibrium.anisotropic-force-balance.json)在调用方给定的 R-Z 场与压强网格上计算张量散度、环向电流和沿场力诊断；活动掩码只影响诊断 RMS，函数不自行裁决压力闭包或低场物理有效性。
+- [平行压强平衡残差](../../catalog/examples/scirel.diagnostics.parallel-pressure-residual.json)按磁场数值排序估计 `p_parallel/B` 对 `B` 的导数，比较给定 `p_perp` 与关系右侧；这是样本值空间诊断，不是 R-Z 空间力平衡。
 - [各向异性压强环向电流分解](../../catalog/examples/scirel.equilibrium.anisotropic-toroidal-current.json)两次调用上述力平衡关系，以全压强态与各向同性 `p_perp` 对照的差值定义各向异性分项；分项名称不表示独立离散的纯曲率公式。
 - [各向异性 Picard 单元电流反馈](../../catalog/examples/scirel.equilibrium.anisotropic-picard-feedback.json)先按布尔掩码裁剪电流密度、换算单元电流并与旧电流松弛，再经调用方 Green 矩阵投影磁通和可选极向场；其 `Wb/rad` 磁通端口不自动接收公共真空场 `Wb` 输出。
 - [各向异性自由边界 Picard 图](../../catalog/examples/scirel.equilibrium.free-boundary-anisotropic-picard.json)以调用方压力闭包、单元电流反馈、相对磁通残差与可选导体墙校正组成有上限的状态迭代；墙分支只校正磁通，不重算 `BR/BZ`，历史 `Wb` 与场链 `Wb/rad` 标注仍待裁决。
