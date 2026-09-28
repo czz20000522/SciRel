@@ -1,6 +1,6 @@
 # 中性粒子输运
 
-状态：开发期叶子关系导航，待领域专家划定完整输运问题；不代表 KN1D 代际迭代、碰撞闭合或终端诊断已经整合。
+状态：开发期叶子关系导航，待领域专家划定完整输运问题；不代表 KN1D 代际迭代、碰撞闭合或完整终端诊断已经整合。
 
 ## 开发样例关系
 
@@ -29,8 +29,9 @@
 - [圆柱速度空间积分权重](../../catalog/examples/scirel.kinetic.cylindrical-velocity-quadrature.json)从归一化 `vr`、`vx` 网格构造 ghost 面、环形径向测度、体积权重和差分系数；`volume` 可作为 Maxwellian 速率平均的 `cylindrical_volume` 输入。
 - [平移 Maxwellian 离散种子](../../catalog/examples/scirel.kinetic.shifted-maxwellian-seed.json)在调用方速度网格和体积权重上构造逐 shift 归一化指数初值，保留来源的严格内部 `-80` clamp；输出尚未经过离散矩补偿。
 - [轴对称中性分布矩归约](../../catalog/examples/scirel.kinetic.axisymmetric-neutral-moments.json)在调用方分布与圆柱积分权重上归约密度、轴向流、压力、温度、应力和随机热通量；`sigma_zz = sigma_yy` 与零密度切片的 `source_default` 值沿用保存实现，仍待专家确认。
+- [终态分子轴向通量与流速](../../catalog/examples/scirel.kinetic.terminal-flux-velocity-reduction.json)在显式热速度和非负柱坐标权重上归约两项剖面；与九矩关系的正权重域重叠，但允许零权重单元且不计算高阶矩。
 
-跨网格分布插值复用圆柱速度空间积分权重。其余二十四项没有直接 callable 依赖；单代传播由调用方传入上风推进系数，停止判据由调用方传入累计密度，Boltzmann RHS 接收各上游源项，这些函数不在内部调用其他资产。Alpha 收缩接收调用方矩阵，未绑定矩阵来源或完整碰撞图。累计更新只处理一次显式状态转移；重入决定未绑定反馈顺序或迭代上限，不能被解释为完整 TaskGraph。边界归一化接收调用方提供的热速度和柱坐标权重。自适应网格、积分权重、种子与矩归约的端口组合由直接测试覆盖。链接指向 `catalog/examples/` 开发 pilot 的 exact documents，不代表专家批准或公开发布。
+跨网格分布插值复用圆柱速度空间积分权重。其余二十五项没有直接 callable 依赖；单代传播由调用方传入上风推进系数，停止判据由调用方传入累计密度，Boltzmann RHS 接收各上游源项，这些函数不在内部调用其他资产。Alpha 收缩接收调用方矩阵，未绑定矩阵来源或完整碰撞图。累计更新只处理一次显式状态转移；重入决定未绑定反馈顺序或迭代上限，不能被解释为完整 TaskGraph。边界归一化接收调用方提供的热速度和柱坐标权重。自适应网格、积分权重、种子与矩归约的端口组合由直接测试覆盖。链接指向 `catalog/examples/` 开发 pilot 的 exact documents，不代表专家批准或公开发布。
 
 ## 证据与待整理项
 
