@@ -264,7 +264,8 @@ def test_shared_composition_change_selects_every_task_graph():
     ]
     assert len(graph_assets) == 11
     assert "tests/test_library_composition.py" in result["test_paths"]
-    assert len(result["test_paths"]) == 12
+    assert "tests/test_incremental_admissions.py" in result["test_paths"]
+    assert len(result["test_paths"]) == 13
 
 
 def test_documentation_change_needs_no_scientific_tests():
@@ -694,6 +695,15 @@ def test_documented_reduced_hall_graph_keeps_outer_reverse_dependency():
         "tests/graph_contracts/reduced_hall_anisotropic_picard/test_graph_reduced_hall_anisotropic_picard.py",
         "tests/framework_compositions/test_kinetic_mirror_hall_equilibrium.py",
     } <= set(result["test_paths"])
+
+
+def test_documented_outer_hall_graph_selects_its_direct_tests():
+    result = select("src/scirel/equilibrium/kinetic_mirror_hall_equilibrium.py")
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == [
+        "tests/framework_compositions/test_kinetic_mirror_hall_equilibrium.py",
+        "tests/test_incremental_admissions.py",
+    ]
 
 
 def test_current_asset_index_unions_legacy_samples_and_exact_documents():
