@@ -67,8 +67,11 @@ answer. If the user delegated the choice, select the narrowest defensible model 
    trusting the serializer's in-memory values or its own round-trip helper. Rerun the user-facing entrypoint with
    unchanged inputs and check the files it actually regenerates. If the project promises this file check on every
    rerun, put it in the ordinary delivery path; an optional test alone does not establish that guarantee. Check that
-   physical conclusions follow from quantities actually computed; sampling a
-   field at a new location does not establish that every other material input is defined there. Report only
+   physical conclusions follow from quantities actually computed. For a consequential rate-to-probability, cumulative
+   event or changing-inventory claim, request an independent interpretation review before user delivery when an Agent
+   is available, and resolve supported findings against the source inputs and model assumptions. Record whether the
+   solver, that reviewer or later user feedback found the issue. Sampling a field at a new location does not establish
+   that every other material input is defined there. Report only
    commands, exit states, output, and artifacts actually observed. Do not claim success from generated text alone.
 
 Keep interim chat concise. Do not narrate every tool call, and do not substitute displayed snippets for

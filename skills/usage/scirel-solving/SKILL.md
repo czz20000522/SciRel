@@ -41,6 +41,12 @@ focused question while continuing independent preparation. If the host cannot ob
 reversed without losing prior work, state the narrow assumption before delivery, label the result by that choice, and
 keep enough inputs and prior output to correct it later. A later clarification changes the requested result; it does
 not retroactively make a correctly executed alternative calculation a scientific error.
+When a request moves from a coefficient or instantaneous rate to a probability, cumulative amount, or remaining
+population, identify the object being counted and the state that changes with time. Distinguish a prescribed profile
+from a state evolved by the model, and identify any replenishment, depletion, transport or repeated-event assumption
+needed for that derived quantity. An integral of a rate over prescribed states does not by itself establish the fate
+of one initial object or the inventory left afterward. Apply this check where the requested interpretation depends on
+it; do not turn it into a questionnaire for unrelated calculations.
 For each material input, distinguish a user statement, a fact read from a user file, an exact-document default, and
 your own proposal. Keep a file location or artifact reference for file facts. Connect the user's goal to the expected
 outputs and checks; do not describe a proposed assumption as a user requirement.
@@ -217,6 +223,13 @@ Before delivery, check each nontrivial physical interpretation or numerical-erro
 the computed quantity, applicable relation and convention, and what was held fixed in any comparison. If a required
 input, convention, matched domain or independent check is missing, report the observation without promoting it to a
 mechanism, causal attribution or error bound.
+For a consequential claim that crosses from a computed rate into an individual probability, accumulated event count,
+or evolving inventory, have an independent reviewer challenge the draft explanation against the input state, exact
+asset contract, and actual output before it reaches the user when such an Agent is available. Resolve supported
+findings and recheck affected files. If no independent Agent is available, perform a separate interpretation pass and
+say that it was not independently reviewed. Record whether a problem was found by the solver before review, by the
+pre-delivery reviewer, or only after user feedback; a corrected result does not make an earlier unsupported claim an
+autonomous pass. This review is conditional on the claim, not a gate on every simple calculation.
 For an error-bound claim, name the error target and domain, its reference, and the argument that bounds it on that
 domain. The maximum difference on a finite comparison set describes those sampled points; it does not by itself bound
 unsampled values, solver accuracy, or physical-model error. If the user asks for a wider bound, answer that question
