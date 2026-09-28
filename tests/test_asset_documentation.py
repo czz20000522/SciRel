@@ -317,7 +317,7 @@ def test_complete_catalog_cannot_hide_missing_documents(tmp_path):
             catalog_id="invalid-complete",
             release_version="0.1.0.dev5",
             coverage_status="complete",
-            declared_total=61,
+            declared_total=108,
         )
 
 
@@ -329,5 +329,5 @@ def test_catalog_release_version_must_match_every_document(tmp_path):
             catalog_id="version-mismatch",
             release_version="0.1.0.dev4",
             coverage_status="partial",
-            declared_total=61,
+            declared_total=108,
         )
