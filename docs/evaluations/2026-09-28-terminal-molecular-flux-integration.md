@@ -40,8 +40,12 @@ boolean-weight witness distinguishes the maintained failure contract.
 The 58 exact documents passed runtime-signature and executable-example
 validation. The worktree `affected` gate selected this asset, both direct
 test files, the public export and the asset-document/check-script contracts:
-94 passed and 3 optional saved-root replays skipped. The catalog target is
-`partial: 58/105`; main-checkout verification follows integration.
+94 passed and 3 optional saved-root replays skipped. After cherry-pick
+`b921e40` and README count commit `d2fe74c`, the main checkout ran
+`pwsh ./scripts/check.ps1 -Mode affected -BaseRef 2392b95`: 94 passed and
+3 optional saved-root replays skipped. Setting `SCIREL_KN1DPY_REVIEW_ROOT`
+and running the replay separately yielded 3 passed. The catalog target is
+`partial: 58/105`.
 
 These checks do not establish the upstream terminal distribution, full KN1D
 terminal diagnostics, physical flux normalization, whole-source D1
