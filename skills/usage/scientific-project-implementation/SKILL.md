@@ -14,6 +14,12 @@ and request truth. The method may consume an authorized published capability, bu
 candidate, review, catalog, or release state. A runnable user project is not automatically a reusable or published
 scientific capability.
 
+For evaluator-owned disposable copies in an outbound trial, put simulated user projects, negative probes and
+independent reruns under SciRel's ignored `build/verification/<case>/` or a designated system temporary directory
+when checkout isolation requires it. Reuse the pinned wheel, catalog and environment across copies when their runtime
+contract permits; freeze trial states and traces through the existing case archive and manifest. This does not move
+or replace a user's persistent project workspace.
+
 ## Decide once, then act
 
 Inspect the current project and supplied material first. A complete request needs no confirmation. Concrete
