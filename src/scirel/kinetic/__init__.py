@@ -11,6 +11,7 @@ from .bessel_gamma import evaluate_bessel_gamma
 from .kinetic_dispersion_sum_n import evaluate_kinetic_dispersion_sum
 from .species_equilibrium_scales import derive_species_equilibrium_scales
 from .thermal_speed_scale import compute_thermal_speed_m_s
+from .hydrogen_saha_equilibrium_population import evaluate_h_saha_equilibrium_population
 from .generation_density_reduction import reduce_generation_density
 from .incoming_boundary_flux_normalization import normalize_incoming_neutral_boundary
 from .spatial_source_shape_normalization import normalize_spatial_source_shape
@@ -63,3 +64,4 @@ __all__.append('reduce_terminal_molecular_heat_flux')
 __all__.append('reduce_terminal_molecular_energy_transfer')
 __all__.append('reduce_qh2_total_conservation_diagnostic')
 __all__.append('reduce_terminal_molecular_ion_state')
+__all__.append('evaluate_h_saha_equilibrium_population')

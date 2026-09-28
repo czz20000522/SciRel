@@ -35,6 +35,7 @@ from .kinetic.bessel_gamma import evaluate_bessel_gamma
 from .kinetic.kinetic_dispersion_sum_n import evaluate_kinetic_dispersion_sum
 from .kinetic.species_equilibrium_scales import derive_species_equilibrium_scales
 from .kinetic.thermal_speed_scale import compute_thermal_speed_m_s
+from .kinetic.hydrogen_saha_equilibrium_population import evaluate_h_saha_equilibrium_population
 from .kinetic.generation_density_reduction import reduce_generation_density
 from .kinetic.incoming_boundary_flux_normalization import normalize_incoming_neutral_boundary
 from .kinetic.spatial_source_shape_normalization import normalize_spatial_source_shape
@@ -114,3 +115,4 @@ __all__.append('interp_distribution_across_mesh')
 __all__.extend(['assemble_neutral_upwind_transport_coefficients', 'propagate_neutral_generation', 'assemble_neutral_boltzmann_rhs'])
 __all__.extend(['evaluate_neutral_generation_stopping', 'update_neutral_generation_accumulation', 'evaluate_neutral_outer_seed_convergence', 'evaluate_kn1d_outer_convergence'])
 __all__.append('compute_pointwise_firehose_margin')
+__all__.append('evaluate_h_saha_equilibrium_population')
