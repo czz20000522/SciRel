@@ -14,6 +14,7 @@
 - [原子氢电荷交换截面](../../catalog/examples/scirel.collisions.atomic-hydrogen-charge-exchange-cross-section.json)给出 H 与 H+ 的 Janev 拟合及可选 Freeman–Jones 分支，两个分支有各自的能量截断区间。
 - [原子氢电荷交换速率系数](../../catalog/examples/scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient.json)按温度和撞击能量评价独立的双变量拟合；它不是上述截面的运行时 Maxwellian 积分，超出拟合区间沿用端点剪裁。
 - [分子氢电荷交换截面](../../catalog/examples/scirel.collisions.molecular-hydrogen-charge-exchange-cross-section.json)给出 H2 与 H2+ 的 Janev 拟合，不能与原子氢同名通道互换。
+- [分子氢电荷交换速率系数](../../catalog/examples/scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient.json)按温度和撞击能量评价独立的双变量拟合；它不是分子截面的运行时 Maxwellian 积分，也不能与原子氢速率系数互换。
 - [原子氢弹性截面](../../catalog/examples/scirel.collisions.atomic-hydrogen-elastic-cross-section.json)保留 H–H 动量转移和黏滞两组不同系数。
 - [原子氢与分子氢弹性截面](../../catalog/examples/scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section.json)保留保存实现的前置单例输出轴。
 - [质子与原子氢弹性截面](../../catalog/examples/scirel.collisions.proton-atomic-hydrogen-elastic-cross-section.json)保留 10 eV 处严格分支产生的零值及前置单例输出轴；该断点仍待专家判定。
