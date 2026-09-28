@@ -1,0 +1,184 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.frank-egedal-source-projection",
+  "kind": "operator",
+  "title": {
+    "en": "Frank-Egedal source-mode projection",
+    "zh": "Frank-Egedal 源模态投影"
+  },
+  "summary": "Select supplied or externally generated fractional Legendre degrees and associate them with supplied coefficients or a source-defined NBI pitch-angle projection over the active loss-cone interval.",
+  "taxonomy": [
+    "kinetic",
+    "mirror-plasma",
+    "loss-cone",
+    "source-projection"
+  ],
+  "aliases": [
+    "Frank-Egedal NBI angular source coefficients",
+    "fractional-Legendre source projection"
+  ],
+  "identity": {
+    "relation": "Mirror-ratio loss-cone state and NBI source configuration to fractional Legendre degrees and source coefficients",
+    "direction": "(params, optional spectrum_operator) -> degrees, source_coefficients, degree_source, legendre controls, xi_tp_mid and fractional_mode callable",
+    "definition": "Set R from mirror_ratio, falling back to turning_b then 2.0, and xi_tp_mid=sqrt(max(0,1-1/max(R,1e-12))). For positive xi_tp_mid use explicit legendre_degrees or call the supplied spectrum_operator(xi_tp_mid, mode_count, grid_points, backend) for degrees. Explicit source_coefficients are float-converted after shape/finiteness validation. Otherwise, for each degree nu, compute c_nu=u_nu(clip(cos(theta_NBI),0,xi_tp_mid))/max(4*pi*integral_0^xi_tp_mid u_nu(xi)^2 dxi,1e-30), using 64-point Gauss-Legendre quadrature. u_nu=a P_nu+b Q_nu is normalized by a 2x2 linear solve to u_nu(0)=1 and a centered-difference derivative zero at xi=0 with step 1e-5. The default P_nu uses a 15-term truncated hypergeometric series; the alternative is scipy.special.hyp2f1. If xi_tp_mid<=0, return empty degrees and coefficients before validating the active-branch backend or spectrum controls.",
+    "model": "Source-defined fractional Legendre angular NBI projection for a mirror loss cone; it does not infer degrees internally or evolve a distribution",
+    "geometry": "One-dimensional pitch-cosine interval from xi=0 to the mirror-ratio-derived turning boundary xi_tp_mid",
+    "coordinates": "xi and degree are dimensionless. nbi_pitch_angle_deg is in degrees and converted through cosine; the angle cosine is clipped to the active interval. Returned degree and coefficient arrays preserve supplied order.",
+    "boundary": "The mode combination is numerically normalized at xi=0; no endpoint root is checked for caller-supplied degrees. The quadrature includes interior points of [0,xi_tp_mid], and the inactive branch returns empty arrays without evaluating a spectrum.",
+    "assumptions": [
+      "The caller supplies physically suitable fractional degrees or a compatible spectrum callable when no degrees are explicit; this function does not certify their loss-cone boundary roots.",
+      "The coefficient formula treats the NBI pitch as a point-source direction with the source-defined 4*pi angular normalization; external source amplitude and transport physics are not modeled."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "params",
+      "description": "Configuration dict holding mirror_ratio or turning_b; optional legendre_degrees, source_coefficients, legendre_terms, legendre_backend, legendre_mode_count, legendre_spectrum_grid_points and nbi_pitch_angle_deg.",
+      "units": "mirror ratio, degrees and xi: dimensionless; coefficients: caller source normalization when explicit; NBI pitch: degree; terms, mode_count and grid_points: count",
+      "shape": "dict with scalar controls and optional one-dimensional degree/coefficient arrays",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "Must be a dict. R defaults to 2.0; legendre_terms to 15 and backend to 'truncated'. In the active branch, terms converted with int must be >=2 and backend must be 'truncated' or 'hypergeometric'; explicit degrees must form a nonempty finite 1-D array. Explicit coefficients must be finite with the same shape. Other controls are converted only on their exercised branch, and unknown keys are ignored."
+    },
+    {
+      "name": "spectrum_operator",
+      "description": "Caller-provided degree generator when legendre_degrees is absent in the active branch.",
+      "units": "xi_tp_mid and returned degrees: dimensionless; mode_count and grid_points: count; backend: text",
+      "shape": "None or callable(xi_tp_mid, mode_count, grid_points, backend) -> mapping containing degrees",
+      "dtype": "callable or None",
+      "required": false,
+      "default": null,
+      "constraints": "Required only in the active branch without explicit degrees. It receives int-converted counts defaulting to 6 and 256 and the selected backend; returned degrees must form a nonempty finite 1-D array. The callable is supplied by the caller, not imported or validated for scientific equivalence here."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "degrees",
+      "description": "Explicit degrees or the supplied spectrum callable's degree array, in original order.",
+      "units": "dimensionless",
+      "shape": "(N_mode,); (0,) when inactive",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Finite and nonempty in the active branch; their noninteger character and endpoint eigencondition are not checked unless later mode evaluation requires it."
+    },
+    {
+      "name": "source_coefficients",
+      "description": "Explicit coefficients or NBI pitch projection coefficients paired with degrees.",
+      "units": "computed branch: dimensionless in the source-defined normalized angular convention; explicit branch: caller-supplied normalization",
+      "shape": "same as degrees",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Explicit coefficients are checked for finiteness but may share storage with the input array. Computed coefficients use the 64-node formula and denominator floor 1e-30, without a final finiteness check; empty when inactive."
+    },
+    {
+      "name": "degree_source",
+      "description": "Reported origin of degrees.",
+      "units": "text",
+      "shape": "scalar",
+      "dtype": "str",
+      "required": true,
+      "constraints": "One of 'caller_supplied', 'scirel.kinetic.loss_cone_spectrum' or 'inactive_loss_cone'. The spectrum label is fixed even if the injected callable is not SciRel's solver."
+    },
+    {
+      "name": "legendre_terms",
+      "description": "Int-converted requested truncation count used for active mode evaluation.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "Default 15. The active branch requires >=2; the inactive branch reports the int-converted value without that check."
+    },
+    {
+      "name": "legendre_backend",
+      "description": "Chosen P-function numerical evaluator in the active branch.",
+      "units": "text",
+      "shape": "scalar when active; absent when inactive",
+      "dtype": "str",
+      "required": false,
+      "default": null,
+      "constraints": "Only 'truncated' or 'hypergeometric' in the active branch. The document default denotes absence; the runtime does not return this key or a null value in the inactive branch."
+    },
+    {
+      "name": "xi_tp_mid",
+      "description": "Mirror-ratio-derived pitch-cosine turning boundary.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Computed from max-clamped R; zero enters the inactive branch. No independent finite or physical R>1 validation is performed."
+    },
+    {
+      "name": "fractional_mode",
+      "description": "Callable evaluating the normalized fractional Legendre mode at a requested degree, pitch cosine and term count.",
+      "units": "dimensionless return",
+      "shape": "callable(degree, xi, terms) -> scalar or array",
+      "dtype": "Python callable",
+      "required": true,
+      "constraints": "Returned in both branches. Active branch closes over the chosen backend; inactive branch uses the default truncated evaluator. Invocation can raise for integer degrees, singular coefficient systems or invalid numerical arguments."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "params is a dict, and the active branch has either a finite nonempty one-dimensional legendre_degrees array or a supplied callable yielding one.",
+      "For computed coefficients, chosen degrees must make the fractional P/Q normalization solve numerically valid; the caller must use physically suitable source and mirror settings."
+    ],
+    "supported": [
+      "Explicit degrees with explicit coefficients, or source-defined 64-point NBI projection onto explicit degrees.",
+      "Optional externally supplied spectrum degree generation and the inactive-loss-cone empty result for xi_tp_mid<=0."
+    ],
+    "excluded": [
+      "Automatically discovering or certifying a complete fractional Legendre spectrum without a supplied spectrum callable.",
+      "Validating a source amplitude, an arbitrary source distribution, physical turning-boundary consistency, or a full Frank-Egedal pressure closure."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for non-dict params; absent active-branch spectrum_operator when degrees are omitted; invalid explicit degree shape/finiteness; active legendre_terms<2; unsupported active backend; or mismatched/nonfinite explicit coefficients. Float/int conversions and injected spectrum errors can propagate as ValueError, TypeError or their original exceptions. The inactive branch bypasses these active checks.",
+    "runtime_failure": "Computed coefficients can raise ValueError for integer degrees through Q, NumPy linear-algebra errors for a singular 2x2 mode system, or SciPy/NumPy arithmetic errors. No general finiteness check follows computed coefficients, and the returned fractional_mode callable can fail later when invoked.",
+    "nonconvergence": "The projection does not iterate to convergence; its 64-point quadrature has no returned error estimate. Convergence of an injected spectrum operator is external and unchecked.",
+    "partial_results": "No partial mapping is returned on a raised exception. The inactive branch returns complete empty arrays and metadata rather than signaling a failure."
+  },
+  "provenance": {
+    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery.",
+    "source_kinds": [
+      "historical Pleiades development descriptor and migration mapping",
+      "pending intake development candidate",
+      "current SciRel implementation and direct tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.frank_egedal_source_projection",
+      "symbol": "project_frank_egedal_source_modes",
+      "signature": "project_frank_egedal_source_modes(params, spectrum_operator=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev5",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Project one explicitly supplied noninteger degree with a hypergeometric mode and check its origin, normalization and coefficient finiteness.",
+    "code": "import numpy as np\nfrom scirel.kinetic import project_frank_egedal_source_modes\nr = project_frank_egedal_source_modes({'mirror_ratio': 2.0, 'legendre_degrees': [0.5], 'nbi_pitch_angle_deg': 60.0, 'legendre_terms': 24, 'legendre_backend': 'hypergeometric'})\nassert r['degree_source'] == 'caller_supplied'\nnp.testing.assert_allclose(r['degrees'], [0.5])\nassert r['source_coefficients'].shape == (1,) and np.all(np.isfinite(r['source_coefficients']))\nassert abs(float(r['fractional_mode'](0.5, 0.0, 24)) - 1.0) < 1e-10",
+    "expected": "The caller's degree 0.5 is retained, one finite source coefficient is returned, and the normalized mode is one at xi=0."
+  },
+  "verification": {
+    "scope": [
+      "A one-mode hypergeometric NBI coefficient at mirror_ratio=2 and pitch angle 60 degrees is compared with independent adaptive integration to absolute error below 2e-11.",
+      "The returned mode is checked at xi=0 and xi=0.2 against an independently reconstructed P/Q combination, with a near-zero centered derivative check.",
+      "A supplied spectrum callable is checked for argument forwarding and degree/explicit-coefficient preservation; the inactive branch returns empty arrays and a source label."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_frank_egedal_source_projection.py"
+    ],
+    "evidence_ceiling": "Direct SciRel tests establish the selected hypergeometric one-mode projection, normalization, numerical derivative, injected-spectrum branch and inactive result. They do not test the truncated default's projection accuracy, all degrees or mirror ratios, spectrum completeness, arbitrary injected operator correctness, source parity from a qualified frozen L1, expert recognition or public release.",
+    "known_limitations": [
+      "No built-in spectrum generation occurs: a caller-supplied callable is mandatory when active degrees are not explicit, despite the fixed SciRel-looking degree_source label.",
+      "Integer degrees can pass input validation but fail during computed mode evaluation; explicit coefficients defer such failure until the returned mode callable is invoked.",
+      "The truncated backend, fixed 64-point quadrature, 1e-5 derivative step and 1e-30 normalization floor have no general accuracy bound.",
+      "Inactive loss cones bypass active backend, term-count and degree validation; mirror-ratio physical validity and finite computed-output checks are incomplete.",
+      "Current-version scientific expert recognition and public distribution licensing remain pending."
+    ]
+  }
+}
