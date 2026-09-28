@@ -54,6 +54,7 @@ from .kinetic.kn1d_outer_convergence import evaluate_kn1d_outer_convergence
 from .field.poloidal_field_magnitude import compute_poloidal_field_magnitude
 from .field.permanent_ring_filaments import discretize_permanent_ring
 from .diagnostics.firehose_mirror_margins import compute_firehose_mirror_margins
+from .diagnostics.pointwise_firehose_margin import compute_pointwise_firehose_margin
 from .field.ideal_conductor_boundary import correct_ideal_conductor_boundary_flux
 from .closures.boltzmann_quasineutrality import compute_boltzmann_electron_state
 from .field.rectangular_coil_filaments import discretize_rectangular_coil
@@ -112,3 +113,4 @@ __all__.append('interpolate_scalar_across_mesh')
 __all__.append('interp_distribution_across_mesh')
 __all__.extend(['assemble_neutral_upwind_transport_coefficients', 'propagate_neutral_generation', 'assemble_neutral_boltzmann_rhs'])
 __all__.extend(['evaluate_neutral_generation_stopping', 'update_neutral_generation_accumulation', 'evaluate_neutral_outer_seed_convergence', 'evaluate_kn1d_outer_convergence'])
+__all__.append('compute_pointwise_firehose_margin')

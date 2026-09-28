@@ -1,6 +1,6 @@
 # 科学领域能力
 
-这些页面是给专家讨论和修改的**能力导航骨架**，不是完整领域覆盖声明、审核结论或第二份资产合同。当前链接的 `catalog/examples/` 是 117/117 个 exact document 的开发 pilot，不是可信发布目录。单个能力可以出现在多个领域页；科学身份、输入输出、模型条件、测试和证据上限只在对应的 `scirel.asset-document.v1` exact document 中维护。
+这些页面是给专家讨论和修改的**能力导航骨架**，不是完整领域覆盖声明、审核结论或第二份资产合同。当前链接的 `catalog/examples/` 是 118/118 个 exact document 的开发 pilot，不是可信发布目录。单个能力可以出现在多个领域页；科学身份、输入输出、模型条件、测试和证据上限只在对应的 `scirel.asset-document.v1` exact document 中维护。
 
 阅读领域页时分别记录：**未整理**（尚未完成资产盘点）、**经核查确有缺口**（明确比较范围及证据后确认缺少能力）、**已有但范围有限**（能力存在，模型或适用域不满足更广需求）。不能把缺少目录文档、资产数量少或一次检索无结果直接写成科学缺口。当前 `catalog/examples/` 仅是部分开发期样例。
 
@@ -19,7 +19,7 @@
 以下是问题导向的检索入口，不是互斥分类，也没有通过项目数或资产数核定覆盖。未列出精确样例的范围仍标记为**未整理**：
 
 - 平衡与磁几何：未整理。
-- MHD 稳定性：已有但范围有限；[火蛇与磁镜压强裕度](../../catalog/examples/scirel.diagnostics.firehose-mirror-margins.json)仅计算给定样本的两个判据裕度，完整稳定性能力仍待盘点。
+- MHD 稳定性：已有但范围有限；[逐点火蛇裕度](../../catalog/examples/scirel.diagnostics.pointwise-firehose-margin.json)只返回给定样本的逐点代数值，[火蛇与磁镜压强裕度](../../catalog/examples/scirel.diagnostics.firehose-mirror-margins.json)还计算样本集合的镜像分支与汇总标志，完整稳定性能力仍待盘点。
 - 色散、波传播与射频：未整理；上表只有局部冷等离子体响应样例。
 - 加热与电流驱动：未整理。
 - 碰撞与输运：未整理；上表只有少量碰撞相关定义样例。

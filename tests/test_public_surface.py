@@ -38,6 +38,7 @@ from scirel.field import (
 )
 from scirel.field.permanent_ring_filaments import discretize_permanent_ring
 from scirel.diagnostics.firehose_mirror_margins import compute_firehose_mirror_margins
+from scirel.diagnostics.pointwise_firehose_margin import compute_pointwise_firehose_margin
 from scirel.field.ideal_conductor_boundary import correct_ideal_conductor_boundary_flux
 from scirel.closures.boltzmann_quasineutrality import compute_boltzmann_electron_state
 from scirel.field.rectangular_coil_filaments import discretize_rectangular_coil
@@ -114,6 +115,7 @@ def test_all_normalized_public_callables_are_importable():
         evaluate_filament_coil_green_field,
         discretize_permanent_ring,
         compute_firehose_mirror_margins,
+        compute_pointwise_firehose_margin,
         correct_ideal_conductor_boundary_flux,
         compute_boltzmann_electron_state,
         discretize_rectangular_coil,

@@ -2,7 +2,8 @@ from .picard_flux_residual import compute_picard_flux_residual
 from .observation_residuals import reduce_observation_residuals
 from .parallel_pressure_residual import compute_parallel_pressure_residual
 from .firehose_mirror_margins import compute_firehose_mirror_margins
+from .pointwise_firehose_margin import compute_pointwise_firehose_margin
 from .equilibrium_synthesis_diagnostics import synthesize_equilibrium_diagnostics
 from .species_absorption_fraction import compute_species_absorption_fraction
 
-__all__ = ['compute_picard_flux_residual', 'reduce_observation_residuals', 'compute_parallel_pressure_residual', 'compute_firehose_mirror_margins', 'synthesize_equilibrium_diagnostics', 'compute_species_absorption_fraction']
+__all__ = ['compute_picard_flux_residual', 'reduce_observation_residuals', 'compute_parallel_pressure_residual', 'compute_firehose_mirror_margins', 'compute_pointwise_firehose_margin', 'synthesize_equilibrium_diagnostics', 'compute_species_absorption_fraction']
