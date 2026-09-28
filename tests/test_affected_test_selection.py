@@ -147,6 +147,19 @@ def test_terminal_heat_flux_change_selects_its_two_direct_tests():
     } <= set(result["test_paths"])
 
 
+def test_terminal_energy_transfer_change_selects_its_two_direct_tests():
+    result = select("src/scirel/kinetic/terminal_energy_transfer_reduction.py")
+
+    assert result["full_suite_required"] is False
+    assert result["affected_assets"] == [
+        "scirel.kinetic.terminal_energy_transfer_reduction.reduce_terminal_molecular_energy_transfer"
+    ]
+    assert {
+        "tests/operator_contracts/test_terminal_molecular_energy_transfer.py",
+        "tests/operator_contracts/test_terminal_molecular_energy_transfer_l1.py",
+    } <= set(result["test_paths"])
+
+
 def test_mcp_adapter_change_selects_only_its_boundary_tests():
     result = select("src/scirel_adapter/mcp.py")
 
@@ -506,8 +519,8 @@ def test_current_asset_index_unions_legacy_samples_and_exact_documents():
     namespace = runpy.run_path(str(SELECTOR))
     assets = namespace["_load_assets"]()
 
-    assert len(assets) == 107
-    assert len({asset.public_callable for asset in assets}) == 107
+    assert len(assets) == 108
+    assert len({asset.public_callable for asset in assets}) == 108
 
 
 def test_catalog_asset_keeps_every_declared_direct_test(tmp_path):

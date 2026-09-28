@@ -38,6 +38,7 @@ from .molecular_alpha_contraction import contract_molecular_hydrogen_alpha_frequ
 from .terminal_flux_velocity_reduction import reduce_terminal_molecular_flux_velocity
 from .terminal_pressure_temperature_reduction import reduce_terminal_molecular_pressure_temperature
 from .terminal_heat_flux_reduction import reduce_terminal_molecular_heat_flux
+from .terminal_energy_transfer_reduction import reduce_terminal_molecular_energy_transfer
 from .grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
 from .frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure
 
@@ -57,3 +58,4 @@ __all__.extend(['contract_atomic_hydrogen_alpha_frequencies', 'contract_molecula
 __all__.append('reduce_terminal_molecular_flux_velocity')
 __all__.append('reduce_terminal_molecular_pressure_temperature')
 __all__.append('reduce_terminal_molecular_heat_flux')
+__all__.append('reduce_terminal_molecular_energy_transfer')
