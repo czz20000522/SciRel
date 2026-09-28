@@ -1,0 +1,132 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.diagnostics.observation-residuals",
+  "kind": "operator",
+  "title": {
+    "en": "Normalized observation residual reduction",
+    "zh": "归一化观测残差归约"
+  },
+  "summary": "Concatenate matched flux-loop and selected Thomson-like prediction errors divided by observation sigma, then compute their squared Euclidean norm.",
+  "taxonomy": [
+    "diagnostics",
+    "inference",
+    "observation-residual"
+  ],
+  "aliases": [
+    "flux-first inversion residual vector"
+  ],
+  "identity": {
+    "relation": "matched diagnostic predictions and observations to a normalized residual vector and chi-squared",
+    "direction": "predicted, observations -> residual_vector, chi2",
+    "definition": "For a present flux_loops observation, append (prediction-values)/sigma first. Then, only if both thomson containers are mappings, append matching channels in density, electron_temperature, p_parallel, p_perp order. Scalar sigma defaults to 1 and is broadcast to each observation shape; flatten each channel in NumPy C order and concatenate, then chi2 is the dot product of the vector with itself.",
+    "model": "diagonal-sigma weighted residual sum without covariance or instrument model",
+    "geometry": "the reducer has no geometry; prediction and observation arrays must already refer to the same diagnostic samples",
+    "coordinates": "flux_loops precedes Thomson-like channels; positions within each channel follow NumPy flattening order",
+    "boundary": "Channel predictions and values must have exact shape; sigma may broadcast to that shape and must be finite and positive.",
+    "assumptions": [
+      "The caller owns measurement units, point alignment and sigma interpretation; this function performs no unit conversion.",
+      "Only recognized and mutually present Thomson-like channels contribute; unknown channels are ignored."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "predicted",
+      "description": "Diagnostic predictions; flux_loops is required if observed, while Thomson-like channels are used only when both sides supply matching keys.",
+      "units": "each channel matches its observation values",
+      "shape": "mapping with optional flux_loops array and thomson mapping",
+      "dtype": "Python Mapping containing float-convertible arrays",
+      "required": true,
+      "constraints": "Recognized used predictions must be finite and exactly match corresponding values shapes."
+    },
+    {
+      "name": "observations",
+      "description": "Observed flux_loops and/or Thomson-like channels; each used channel holds values and optional sigma.",
+      "units": "channel values in caller units; sigma in same units",
+      "shape": "mapping[signal -> {values, sigma?}] with optional nested thomson",
+      "dtype": "Python Mapping containing float-convertible arrays",
+      "required": true,
+      "constraints": "At least one usable recognized signal with matching prediction; used values finite, sigma finite and strictly positive. A present flux_loops key requires a prediction and values mapping."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "residual_vector",
+      "description": "Concatenated signed (prediction-observation)/sigma values in declared channel and flatten order.",
+      "units": "dimensionless",
+      "shape": "[N_residual]",
+      "dtype": "float64 NumPy array",
+      "required": true,
+      "constraints": "May be empty if a recognized matched channel itself contains zero samples; finite on success."
+    },
+    {
+      "name": "chi2",
+      "description": "Unreduced sum of squared normalized residuals, without degrees-of-freedom adjustment.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and nonnegative on successful return."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Predictions and observations are already aligned in channel, sample location, shape and units.",
+      "The caller accepts independent sigma normalization, with no covariance matrix."
+    ],
+    "supported": [
+      "Flux-loop-like residuals and matching Thomson-like density, electron_temperature, p_parallel and p_perp residuals.",
+      "Flux-first deterministic channel ordering and scalar or broadcastable sigma."
+    ],
+    "excluded": [
+      "A synthetic diagnostic calculator, a likelihood with correlated errors, or a physical validation of the supplied equilibrium.",
+      "Automatic rejection of unmatched Thomson-like channels; those are skipped when no usable match remains unless another signal contributes."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for non-mapping top-level inputs, missing observed flux prediction or values, used malformed channel, exact-shape mismatch, nonbroadcastable/nonfinite/nonpositive sigma, nonfinite used values, or no usable signal. NumPy conversion failures may propagate.",
+    "runtime_failure": "Raises ValueError if normalized residuals or their squared sum become nonfinite; unexpected NumPy failures propagate.",
+    "nonconvergence": "Not applicable; one finite reduction is performed.",
+    "partial_results": "No mapping is returned if any used channel fails, even after prior channels were reduced."
+  },
+  "provenance": {
+    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery.",
+    "source_kinds": [
+      "historical Pleiades development descriptor and migration mapping",
+      "pending intake development candidate",
+      "current SciRel implementation and direct tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.diagnostics.observation_residuals",
+      "symbol": "reduce_observation_residuals",
+      "signature": "reduce_observation_residuals(*, predicted, observations)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev5",
+    "dependencies": []
+  },
+  "example": {
+    "description": "A flux-loop residual precedes a Thomson-like perpendicular-pressure residual.",
+    "code": "import numpy as np\nfrom scirel.diagnostics import reduce_observation_residuals\nresult = reduce_observation_residuals(predicted={'flux_loops': [3.0], 'thomson': {'p_perp': [5.0]}}, observations={'flux_loops': {'values': [1.0], 'sigma': [2.0]}, 'thomson': {'p_perp': {'values': [3.0], 'sigma': [1.0]}}})\nnp.testing.assert_allclose(result['residual_vector'], [1.0, 2.0])\nassert result['chi2'] == 5.0",
+    "expected": "The ordered normalized vector is [1, 2] and the unadjusted squared sum is 5."
+  },
+  "verification": {
+    "scope": [
+      "Flux-first ordering and sigma scaling on two channels.",
+      "Rejection of no matching channel, shape mismatch, nonpositive sigma and nonfinite predictions."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_observation_residuals.py"
+    ],
+    "evidence_ceiling": "Direct tests establish the stated finite-array reduction and selected failures; they do not validate measurement alignment, covariance assumptions, physical predictions or expert recognition.",
+    "known_limitations": [
+      "Unmatched Thomson-like channels and unknown observation keys are silently ignored if another usable signal exists.",
+      "No covariance, robust loss or degrees-of-freedom normalization is applied.",
+      "Public distribution licensing and SciRel expert recognition remain pending."
+    ]
+  }
+}

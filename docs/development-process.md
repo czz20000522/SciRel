@@ -95,7 +95,7 @@ pwsh ./scripts/check.ps1 -Mode release -WorkflowSnapshot <approved-workflow.json
 
 `release` 的输出目录必须不存在，脚本不会覆盖或清理已有结果。其 venv 不继承 system site-packages，SciRel wheel 以 `--no-index --no-deps` 安装，并清空源码 `PYTHONPATH`；当前离线方式通过 `.pth` 暴露开发解释器中 NumPy/SciPy/Pytest 所在开发 site-packages，因此只证明 wheel 可在不导入 SciRel 源码的环境配合这些已存在依赖运行，不证明未声明包完全不可见，也不等价于从干净离线 wheelhouse 安装全部依赖。正式发行还需从固定的离线 wheelhouse 安装声明依赖，并固定 Python 与构建工具版本；不同工具链下 wheel 字节摘要不同，不能仅凭相同源码声称 wheel 字节可复现。
 
-当前 catalog 为 `partial: 95/114` 开发 pilot。release manifest 只证明 approved draft 中的 exact documents 已与本次 catalog/wheel 绑定；它不会把 wheel 中未进入 catalog 的维护代码解释成已批准资产。正式首发前必须为全部可见发布资产完成 bootstrap/batch 审核与 exact documentation，并把 `.dev` schema 统一冻结为 `v1`。
+当前 catalog 为 `partial: 98/114` 开发 pilot。release manifest 只证明 approved draft 中的 exact documents 已与本次 catalog/wheel 绑定；它不会把 wheel 中未进入 catalog 的维护代码解释成已批准资产。正式首发前必须为全部可见发布资产完成 bootstrap/batch 审核与 exact documentation，并把 `.dev` schema 统一冻结为 `v1`。
 
 ## 6. 收尾与发行边界
 
