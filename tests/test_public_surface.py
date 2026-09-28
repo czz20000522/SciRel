@@ -31,6 +31,11 @@ from scirel.kinetic.generation_density_reduction import reduce_generation_densit
 from scirel.kinetic.incoming_boundary_flux_normalization import normalize_incoming_neutral_boundary
 from scirel.kinetic.spatial_source_shape_normalization import normalize_spatial_source_shape
 from scirel.field.poloidal_field_magnitude import compute_poloidal_field_magnitude
+from scirel.field import (
+    compute_axisymmetric_coil_modulus,
+    evaluate_complete_elliptic_integrals,
+    evaluate_filament_coil_green_field,
+)
 from scirel.field.permanent_ring_filaments import discretize_permanent_ring
 from scirel.diagnostics.firehose_mirror_margins import compute_firehose_mirror_margins
 from scirel.field.ideal_conductor_boundary import correct_ideal_conductor_boundary_flux
@@ -104,6 +109,9 @@ def test_all_normalized_public_callables_are_importable():
         compute_parallel_pressure_residual,
         solve_loss_cone_spectrum,
         compute_poloidal_field_magnitude,
+        compute_axisymmetric_coil_modulus,
+        evaluate_complete_elliptic_integrals,
+        evaluate_filament_coil_green_field,
         discretize_permanent_ring,
         compute_firehose_mirror_margins,
         correct_ideal_conductor_boundary_flux,
