@@ -20,6 +20,7 @@
 - [轴对称各向异性压强张量力平衡](../../catalog/examples/scirel.equilibrium.anisotropic-force-balance.json)在调用方给定的 R-Z 场与压强网格上计算张量散度、环向电流和沿场力诊断；活动掩码只影响诊断 RMS，函数不自行裁决压力闭包或低场物理有效性。
 - [各向异性压强环向电流分解](../../catalog/examples/scirel.equilibrium.anisotropic-toroidal-current.json)两次调用上述力平衡关系，以全压强态与各向同性 `p_perp` 对照的差值定义各向异性分项；分项名称不表示独立离散的纯曲率公式。
 - [各向异性 Picard 单元电流反馈](../../catalog/examples/scirel.equilibrium.anisotropic-picard-feedback.json)先按布尔掩码裁剪电流密度、换算单元电流并与旧电流松弛，再经调用方 Green 矩阵投影磁通和可选极向场；其 `Wb/rad` 磁通端口不自动接收公共真空场 `Wb` 输出。
+- [各向异性自由边界 Picard 图](../../catalog/examples/scirel.equilibrium.free-boundary-anisotropic-picard.json)以调用方压力闭包、单元电流反馈、相对磁通残差与可选导体墙校正组成有上限的状态迭代；墙分支只校正磁通，不重算 `BR/BZ`，历史 `Wb` 与场链 `Wb/rad` 标注仍待裁决。
 - [Picard 磁通状态相对残差](../../catalog/examples/scirel.diagnostics.picard-flux-residual.json)比较相邻二维磁通状态的 L2 变化，采用 `1e-30 Wb` 分母地板；自由边界图将其用于停止判断，但这不裁决 `Wb/rad` 状态与 `Wb` 合同的接线。
 
 这些链接来自 `catalog/examples/` 开发 pilot，不表示专家已认可或可公开发布。

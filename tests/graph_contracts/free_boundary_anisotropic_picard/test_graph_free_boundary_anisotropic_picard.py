@@ -116,6 +116,15 @@ def test_nonzero_green_requires_sequential_state_feedback():
 
 
 # 验证：自洽 BR/BZ Green 响应是成对合同，单独提供一个会改变 B 的物理含义，必须拒绝。
+def test_iteration_bound_returns_last_state_without_convergence():
+    result = _run(_inputs(g_psi=1.0e-2 * np.eye(9), maxiter=1, tol=1.0e-30))
+    assert result["iterations"] == 1
+    assert not result["converged"]
+    assert result["failure_reason"] == "maxiter_reached"
+    assert result["residual"] == result["residual_history"][0] > 0.0
+    np.testing.assert_allclose(result["profiles"]["p_parallel"], 2.0 + result["psi"])
+
+
 def test_rejects_unpaired_magnetic_field_green_matrices():
     with pytest.raises(ValueError, match="g_br and g_bz must be provided together"):
         _run(_inputs(g_br=np.eye(9)))
@@ -157,7 +166,17 @@ def test_zero_step_returns_declared_zero_feedback_state():
     result = _run(_inputs(maxiter=0))
     assert result["failure_reason"] == "maxiter_reached"
     assert result["iterations"] == 0
+    assert np.isinf(result["residual"])
+    assert result["residual_history"].size == 0
     np.testing.assert_allclose(result["picard_current_state"], 0.0)
+
+
+def test_current_grid_validation_precedes_required_port_validation():
+    values = _inputs(r_grid=np.ones((2, 2)))
+    values.pop("pressure_closure")
+    with pytest.raises(ValueError, match="equal-shape 2-D grids"):
+        _run(values)
+
 
 def test_review_gate_rejects_invalid_closure_fields_and_mask_shape():
     values = _inputs()
