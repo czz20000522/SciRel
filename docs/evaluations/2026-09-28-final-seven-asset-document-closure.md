@@ -30,4 +30,7 @@ status describes document count and dependency closure, not scientific
 approval. All 114 runtime signatures and examples passed validation; five
 direct graph modules and the optimizer module passed 51 tests. The catalog
 builder test exercises deterministic route, summary, exact and reverse
-dependency projections at the full count. No wheel or release was built.
+dependency projections at the full count. The isolated worktree and main
+checkout each passed 24 affected tests; the main check used
+`pwsh ./scripts/check.ps1 -Mode affected -BaseRef 8a306e0`. The main
+`git diff --check 8a306e0..HEAD` also passed. No wheel or release was built.
