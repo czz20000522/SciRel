@@ -12,4 +12,4 @@
 
 ## 组合与证据
 
-镜面准中性 TaskGraph 还消费[双温镜约束速度矩](../../catalog/examples/scirel.kinetic.mirror-constrained-moments.json)和[双温镜总压强状态组装](../../catalog/examples/scirel.kinetic.mirror-total-pressure.json)。前者从调用方剖面计算离子密度与各向异性压强，可选择双端塞损失锥求积；后者只检查压强字段，离子/电子密度和残差原样透传。五个叶子均有独立 exact document，但图的状态、反馈、停止与失败传播仍需独立核对。现有直接测试与图测试证明选定输入上的可执行关系，不构成完整物理闭包校验或专家批准。相对上一可信版的变化待建立可信版后填写。
+镜面准中性 TaskGraph 还消费[双温镜约束速度矩](../../catalog/examples/scirel.kinetic.mirror-constrained-moments.json)和[双温镜总压强状态组装](../../catalog/examples/scirel.kinetic.mirror-total-pressure.json)。前者从调用方剖面计算离子密度与各向异性压强，可选择双端塞损失锥求积；后者只检查压强字段，离子/电子密度和残差原样透传。[镜面准中性图](../../catalog/examples/scirel.closures.mirror-quasineutral-closure.json)显式声明五个叶子、局部电势反馈与有界停止条件，求解失败不返回终态。现有直接测试与图测试证明选定输入上的可执行关系，不构成完整物理闭包校验或专家批准。相对上一可信版的变化待建立可信版后填写。

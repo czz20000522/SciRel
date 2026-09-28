@@ -39,6 +39,73 @@ def test_loss_cone_closure_remains_neutral():
 def test_zero_density_returns_reference_potential():
     result = graph.run_graph(_inputs(density_ref_m3=0.0, phi_ref_v=15.0), asset_loader=_loader)
     np.testing.assert_allclose(result['electrostatic_potential'], 15.0)
+    np.testing.assert_array_equal(result['ion_density'], 0.0)
+    np.testing.assert_array_equal(result['electron_density'], 0.0)
+    assert result['iterations'] == 0 and result['converged'] is True
+
+
+def test_final_moments_and_electrons_are_reevaluated_after_potential_solve():
+    events = []
+
+    def tracing_loader(asset_ref):
+        implementation = _loader(asset_ref)
+        if asset_ref == 'scirel.closures.quasineutral_potential':
+            def solve(*args, **kwargs):
+                events.append('solver_begin')
+                result = implementation(*args, **kwargs)
+                events.append('solver_end')
+                return result
+            return solve
+
+        def evaluate(*args, **kwargs):
+            events.append(asset_ref)
+            return implementation(*args, **kwargs)
+        return evaluate
+
+    result = graph.run_graph(_inputs(), asset_loader=tracing_loader)
+
+    assert result['converged'] is True
+    assert events[-4:] == [
+        'solver_end',
+        'scirel.kinetic.mirror_constrained_moments',
+        'scirel.closures.boltzmann_quasineutrality',
+        'scirel.kinetic.mirror_total_pressure',
+    ]
+
+
+def test_solver_failure_propagates_without_terminal_pressure_assembly():
+    import pytest
+
+    failure = RuntimeError('unbracketed potential')
+
+    def failing_loader(asset_ref):
+        if asset_ref == 'scirel.closures.quasineutral_potential':
+            def fail(*_args, **_kwargs):
+                raise failure
+            return fail
+        if asset_ref == 'scirel.kinetic.mirror_total_pressure':
+            def unexpected(*_args, **_kwargs):
+                pytest.fail('terminal pressure assembly ran after solver failure')
+            return unexpected
+        return _loader(asset_ref)
+
+    with pytest.raises(RuntimeError) as caught:
+        graph.run_graph(_inputs(), asset_loader=failing_loader)
+    assert caught.value is failure
+
+
+def test_supplied_electron_reference_density_skips_default_calculation():
+    def loader(asset_ref):
+        if asset_ref == 'scirel.closures.quasineutral_reference_density':
+            def unexpected(*_args, **_kwargs):
+                raise AssertionError('supplied electron reference was ignored')
+            return unexpected
+        return _loader(asset_ref)
+
+    result = graph.run_graph(
+        _inputs(electron_density_ref_m3=2e18), asset_loader=loader,
+    )
+    assert np.max(np.abs(result['relative_charge_residual'])) < 1e-10
 
 
 def test_profile_ports_receive_current_psi_values():
