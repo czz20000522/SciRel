@@ -5,6 +5,7 @@ from _review_bindings import load_asset as _load_asset, load_graph as _load_grap
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 
 E, M = 1.602176634e-19, 1.67262192595e-27
@@ -27,11 +28,83 @@ def test_nested_kinetic_closure_maps_end_states_and_remains_neutral():
     assert np.max(np.abs(result['relative_charge_residual'])) < 1e-9
 
 
+def test_prescribed_end_potentials_evaluate_without_endpoint_current_balance():
+    inputs = {**_inputs(), 'plug_potential_mode': 'prescribed',
+              'phi_plug_left_v': 20.0, 'phi_plug_right_v': -10.0}
+    result = _run(inputs)
+    np.testing.assert_allclose(result['end_left_potential_v'], 20.0)
+    np.testing.assert_allclose(result['end_right_potential_v'], -10.0)
+    assert np.max(np.abs(result['end_left_relative_current_residual'])) > 1e-3
+    assert result['converged']
+    assert np.max(np.abs(result['relative_charge_residual'])) < 1e-9
+
+
+def test_flux_coordinate_rescaling_requires_rescaled_profile_callbacks():
+    inputs = _inputs()
+    scaled = {**inputs, 'psi': inputs['psi'] * (2.0 * np.pi)}
+    original = _run(inputs)
+    consistent = _run(scaled)
+    for name in ('p_parallel', 'p_perpendicular', 'ion_density', 'end_left_potential_v'):
+        np.testing.assert_allclose(consistent[name], original[name], rtol=1e-11, atol=0.0)
+
+    psi_max = np.max(inputs['psi'])
+    unadjusted_profile = lambda psi: 1e18 * (1.0 - 0.05 * psi / psi_max)
+    unscaled_profile = _run({**inputs, 'density_ref_m3': unadjusted_profile})
+    scaled_profile = _run({**scaled, 'density_ref_m3': unadjusted_profile})
+    assert np.max(np.abs(unscaled_profile['ion_density'] - scaled_profile['ion_density'])) > 1e15
+
+
 def test_confinement_mask_zeros_outside_plug_planes():
     inputs = _inputs()
     inputs['plug_left_z'], inputs['plug_right_z'] = -.6, .6
     result = _run(inputs)
     np.testing.assert_allclose(result['ion_density'][[0, -1]], 0.0)
+
+
+def test_confinement_preserves_original_moments_and_endpoint_diagnostics():
+    inputs = {**_inputs(), 'plug_left_z': -0.6, 'plug_right_z': 0.6}
+    confined = _run(inputs)
+    full = _run({**inputs, 'confine_to_plug_planes': False})
+    for name in ('density_m3', 'p_parallel_pa', 'electrostatic_potential',
+                 'end_left_potential_v', 'end_right_ion_particle_flux_m2_s'):
+        np.testing.assert_allclose(confined[name], full[name])
+    assert np.all(confined['ion_density'][[0, -1]] == 0.0)
+    assert np.all(confined['electron_density'][[0, -1]] == 0.0)
+    assert np.any(full['ion_density'][[0, -1]] > 0.0)
+    assert np.any(full['electron_density'][[0, -1]] > 0.0)
+
+
+def test_endpoint_and_nested_failures_propagate_without_terminal_state():
+    from scirel.kinetic.grid_mirror_kinetic_closure import run_graph
+    from scirel.geometry.flux_surface_profile import evaluate_flux_surface_profile
+    from scirel.closures.mirror_ambipolar_potential import solve_mirror_ambipolar_potential
+
+    calls = []
+
+    def failed_endpoint(*args, **kwargs):
+        calls.append('endpoint')
+        raise RuntimeError('endpoint failure')
+
+    def failed_nested(*args, **kwargs):
+        calls.append('nested')
+        raise RuntimeError('nested failure')
+
+    def loader(endpoint):
+        return lambda asset_id: {
+            'scirel.geometry.flux_surface_profile': evaluate_flux_surface_profile,
+            'scirel.closures.mirror_ambipolar_potential': endpoint,
+        }[asset_id]
+
+    with pytest.raises(RuntimeError, match='endpoint failure'):
+        run_graph(_inputs(), asset_loader=loader(failed_endpoint),
+                  task_graph_loader=lambda _: failed_nested)
+    assert calls == ['endpoint']
+
+    calls.clear()
+    with pytest.raises(RuntimeError, match='nested failure'):
+        run_graph(_inputs(), asset_loader=loader(solve_mirror_ambipolar_potential),
+                  task_graph_loader=lambda _: failed_nested)
+    assert calls == ['nested']
 
 
 def test_yaml_declares_nested_task_graph_dependency():

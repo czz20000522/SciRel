@@ -84,7 +84,7 @@ def test_contract_schemas_and_dependency_closed_examples_parse():
 
     assert asset_schema["$schema"].endswith("2020-12/schema")
     assert release_schema["properties"]["schema"]["const"] == "scirel.catalog-release.v1"
-    assert len(documents) == 75
+    assert len(documents) == 76
     assert {item["kind"] for item in documents} == {"operator", "task_graph"}
 
 
@@ -208,7 +208,7 @@ def test_runtime_signatures_tests_and_examples_are_executable():
 
     assert completed.returncode == 0, completed.stderr
     report = json.loads(completed.stdout)
-    assert report["asset_count"] == 75
+    assert report["asset_count"] == 76
     assert report["runtime_checked"] is True
     assert report["runtime_origin"] == "source"
     assert report["examples_executed"] is True
@@ -249,7 +249,7 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
     release = json.loads(first_files["release.json"])
     assert release["coverage"] == {
         "status": "partial",
-        "included_asset_count": 75,
+        "included_asset_count": 76,
         "declared_total_asset_count": 114,
     }
     digest = release.pop("root_digest")
@@ -268,7 +268,7 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
         json.loads(line)
         for line in first_files["reverse-dependencies/all.jsonl"].splitlines()
     ]
-    assert len(routes) == len(summaries) == len(reverse) == 75
+    assert len(routes) == len(summaries) == len(reverse) == 76
     partition_paths = {item["path"] for item in release["partitions"]}
     for route in routes:
         assert set(route["exact_record"]) == {"path"}
