@@ -21,7 +21,9 @@ code, before final review freeze; D1 does not generate them merely to satisfy a 
 1. **Fix the scope and anchors.** Preserve the exact source snapshot and evidence universe. Reuse a digest-bound
    structural index to find source locations, then inspect science; an index or call graph cannot establish the
    scientific census. Map declared terminal outputs backward to governing relations, state and inputs, and trace
-   inputs forward. Record uncovered branches and non-candidate dispositions instead of silently dropping them.
+   inputs forward. Use the [scientific boundary criteria](references/asset_projection_decision_manual.md#scientific-relation-and-boundary-meaning)
+   to distinguish a relation, its directed operator and required composition; "minimal" is not formula/function/output
+   count. Record uncovered branches and non-candidate dispositions instead of silently dropping them.
 2. **Choose ready scientific regions.** Derive a dependency queue from the source-backed map. Partition by relations
    and target paths, not file count. Delegate independent regions with private writes and one bundle integrator
    using [coordinator-led extraction](references/coordinator_led_extraction.md). Runtime capacity and the task set

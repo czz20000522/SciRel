@@ -58,20 +58,23 @@ Different evidence packages are different extraction runs and must not be used t
 
 ## Split rules
 
-Split a cluster when any condition holds:
+Use the [scientific boundary decision](asset_projection_decision_manual.md#scientific-relation-and-boundary-meaning)
+before splitting. The following are reasons to inspect a boundary, not automatic split triggers. Split when the
+subcomputations have distinct, complete scientific contracts with independent composition/replacement value and
+meaningful validation:
 
-- it produces different primary scientific outputs or relation directions;
+- it produces distinct primary scientific result contracts or relation directions, not merely vector components or return fields;
 - it owns independent state transitions or feedback boundaries;
-- it implements different physical models, branches, boundary policies, units, signs, or normalization conventions;
-- it has an independently callable port contract, consumer, replacement boundary, or oracle;
+- it implements independently meaningful physical models or boundary/normalization conventions; a branch of one piecewise law is not enough;
+- it has an independent scientific port contract and consumer, replacement or composition boundary, not just a separately callable helper;
 - its output fans out to multiple scientific consumers and has stable meaning outside the current caller.
 
 ## Merge rules
 
 Merge implementation fragments when all material conditions hold:
 
-- they implement one scientific relation and one primary output;
-- intermediates have no independent scientific consumer or oracle;
+- they implement one directed scientific mapping with one coherent result, which may be a vector, coupled state or structured result;
+- intermediates have no complete independent scientific contract with source-backed consumption/replacement value;
 - separation would expose only array plumbing, iteration mechanics, or storage layout;
 - they share state ownership, branch policy, boundary convention, and validation boundary.
 
@@ -124,7 +127,11 @@ source_anchors
 
 ## Deterministic ordering and ambiguity
 
-Order nodes by Level 0 parent, target-relation priority, primary output, then normalized `node_key`. Apply split rules before merge rules. When evidence supports more than one scientific boundary after tie-breaking, emit `needs_domain_ruling` with both bounded alternatives and the evidence that would decide them.
+Order nodes by Level 0 parent, target-relation priority, primary result, then normalized `node_key`. Apply the
+scientific contract criteria before split/merge heuristics. Multiple equivalent package boundaries do not require
+a domain ruling: retain the stable coherent boundary and its source coverage. Use `needs_domain_ruling` only for
+unresolved scientific identity or coordination semantics, with the bounded alternatives and missing evidence;
+the coordinator investigates it without automatically adding a human checkpoint.
 
 ## Fallbacks and scale
 

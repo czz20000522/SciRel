@@ -4,12 +4,45 @@ Use this manual after Level 1 node/edge production and before emitting operator 
 
 ## Contents
 
+- Scientific relation and boundary meaning
 - Projection types
 - Operator identity
 - Task-graph necessity gate
 - Parallel diagnostic and nested-graph decisions
 - Ruling record and deterministic order
 - Boundary reproducibility and ownership
+
+## Scientific relation and boundary meaning
+
+A scientific relation describes evidenced equations, constraints, closures, diagnostic definitions or state
+evolution. It can be implicit, coupled, differential or integral; it is not an executable function. An operator
+implements a complete directed scientific mapping under explicit assumptions and numerical conventions.
+TaskGraph dependencies, ordering and feedback express how such computations compose, not a synonym for the
+underlying physical relation. For example, `V = I R` is a relation; `(V, R) -> I` is one direction with its own domain.
+
+There is no unique, context-free "minimal scientific relation" partition. Choose an independently meaningful
+computational boundary relative to the declared source scope and required recomposition:
+
+- Name the scientific result or state change and make its inputs, assumptions, units and numerical meaning explicit.
+- Identify source-backed independent consumption, replacement or composition value and a meaningful validation
+  boundary. Merely being callable or unit-testable as a helper is insufficient.
+- Preserve internal subcomputations with those independent contracts when they need separate delivery; represent
+  required coordination as a TaskGraph. Do not hide them merely to reduce package count.
+- Stop splitting when only algebraic fragments, array plumbing or iteration mechanics would remain without an
+  independent scientific contract. Equation count, code length, return-field count and source routine boundaries
+  cannot determine this decision.
+
+A primary result may be a vector, tensor, coupled state or structured result with companion diagnostics.
+For example, one flux-to-field mapping may return `B_R, B_Z` and field magnitude; this does not require three
+operators. A source-specific assembly may return matrix and RHS together under one discretization contract.
+Conversely, unrelated diagnostic moments are not one operator merely because a function returns them together.
+A named source-backed rate may be one line and still qualify. An elliptic-function call inside a field kernel
+does not become an operator solely because it has an input/output signature.
+
+If multiple partitions preserve the same science and required recomposition, keep the existing coherent boundary
+and record a short rationale in code or the current task record. Do not wait for a globally smallest partition
+or rerun science for a naming/packaging preference. Unresolved physical meaning, omitted computation or unverified
+source parity remains substantive. These are decision criteria, not a new required document or numeric gate.
 
 ## Projection types
 
@@ -39,16 +72,22 @@ boundary_policy
 normalization_and_sign_convention
 ```
 
-Emit separate operator candidates when identities differ and each boundary is independently callable, reusable, and verifiable. Merge substeps into one operator when they realize one identity, have one stable primary output, and expose no independently meaningful intermediate contract.
+Emit separate operator candidates when identities differ and each has a complete independent scientific contract,
+composition/replacement value and meaningful validation. Merge implementation substeps of one identity when they
+produce one coherent scientific result and expose no independently meaningful intermediate contract.
 
 Default rules:
 
-- different scientific outputs or relation directions -> separate operators;
+- distinct independently meaningful result contracts or relation directions -> separate operators;
+- components of one vector/coupled result, companion diagnostics, or branches of one piecewise relation -> not separate merely by field/branch count;
 - implementation-only substeps of one mapping -> one operator;
 - same identity with alternate source implementations -> one candidate identity plus implementation/convention evidence, not duplicate operators;
 - no scientific identity -> support/glue/reject, not an operator.
 
 ## Step 2: Apply the task-graph necessity gate
+
+First identify multiple independently meaningful computation contracts. Internal evaluation order, a numerical
+recurrence or a loop inside one complete operator is not by itself a TaskGraph.
 
 Emit a scientific task graph only when a composite relation requires at least one evidenced non-interchangeable coordination rule:
 
@@ -123,9 +162,12 @@ All producers must apply this order:
 5. test the remaining composition for non-interchangeable coordination;
 6. emit a task graph only if the necessity gate passes;
 7. otherwise retain operators and use `operator_family` or `assembly_recipe`;
-8. record `needs_domain_ruling` when evidence cannot decide identity or coordination semantics.
+8. record `needs_domain_ruling` when evidence cannot decide scientific identity or coordination semantics,
+   not merely because more than one equivalent packaging is possible. The coordinator investigates the scientific
+   question; this label does not itself require a human checkpoint.
 
-Default under unresolved ambiguity: do not create a task graph and do not merge different scientific outputs into one operator.
+Default under unresolved scientific ambiguity: do not invent a task graph and do not merge distinct independent
+scientific contracts into one operator. This does not require splitting components of one coherent result.
 
 ## Boundary reproducibility
 
