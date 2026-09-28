@@ -617,6 +617,16 @@ def test_documented_mirror_quasineutral_leaves_keep_legacy_graph_reverse_depende
         assert {direct_test, *graph_tests} <= set(result["test_paths"])
 
 
+def test_documented_mirror_quasineutral_graph_keeps_outer_reverse_dependencies():
+    result = select("src/scirel/closures/mirror_quasineutral_closure.py")
+    assert result["full_suite_required"] is False
+    assert {
+        "tests/graph_contracts/mirror_quasineutral_closure/test_graph_mirror_quasineutral_closure.py",
+        "tests/graph_contracts/grid_mirror_kinetic_closure/test_graph_grid_mirror_kinetic_closure.py",
+        "tests/framework_compositions/test_kinetic_mirror_hall_equilibrium.py",
+    } <= set(result["test_paths"])
+
+
 def test_current_asset_index_unions_legacy_samples_and_exact_documents():
     namespace = runpy.run_path(str(SELECTOR))
     assets = namespace["_load_assets"]()
