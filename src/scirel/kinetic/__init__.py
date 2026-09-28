@@ -36,6 +36,7 @@ from .simple_charge_exchange_source import assemble_simple_charge_exchange_sourc
 from .atomic_alpha_contraction import contract_atomic_hydrogen_alpha_frequencies
 from .molecular_alpha_contraction import contract_molecular_hydrogen_alpha_frequencies
 from .terminal_flux_velocity_reduction import reduce_terminal_molecular_flux_velocity
+from .terminal_pressure_temperature_reduction import reduce_terminal_molecular_pressure_temperature
 from .grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
 from .frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure
 
@@ -53,3 +54,4 @@ __all__.extend(['sum_elastic_frequency_channels', 'assemble_neutral_total_collis
 __all__.extend(['reduce_atomic_scattered_sources', 'reduce_molecular_scattered_sources', 'aggregate_elastic_regeneration_source', 'assemble_simple_charge_exchange_source'])
 __all__.extend(['contract_atomic_hydrogen_alpha_frequencies', 'contract_molecular_hydrogen_alpha_frequencies'])
 __all__.append('reduce_terminal_molecular_flux_velocity')
+__all__.append('reduce_terminal_molecular_pressure_temperature')
