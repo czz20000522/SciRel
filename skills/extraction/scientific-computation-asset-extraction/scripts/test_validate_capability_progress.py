@@ -8,6 +8,11 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from validate_capability_progress import (
+    _validate_comparison_receipt,
+    _file_hash_digest,
+    _validate_execution_rebind,
+    _validate_full_freeze_delivery_surface,
+    bundle_file_hashes,
     compute_bundle_digest,
     compute_file_sha256,
     load_progress_document,
@@ -181,7 +186,279 @@ def reassembly_evidence() -> dict:
     }
 
 
+def check_report_only_execution_rebind() -> None:
+    with TemporaryDirectory() as directory:
+        root = Path(directory)
+        bundle = root / "candidate_bundle"
+        evidence = root / "evidence"
+        operator = bundle / "operators" / "example" / "scientific_operator.py"
+        operator.parent.mkdir(parents=True)
+        evidence.mkdir()
+        operator.write_text("def calculate(): return 1\n", encoding="utf-8")
+        report = bundle / "extraction_report.md"
+        report.write_text("initial report\n", encoding="utf-8")
+        baseline_files = bundle_file_hashes(bundle)
+        baseline_digest = compute_bundle_digest(bundle)
+        manifest_path = evidence / "baseline-files.json"
+        manifest_path.write_text(
+            json.dumps({
+                "schema_version": "scirel.bundle-file-manifest.v1",
+                "bundle_digest": baseline_digest,
+                "files": baseline_files,
+            }),
+            encoding="utf-8",
+        )
+        report.write_text("corrected report\n", encoding="utf-8")
+        current_digest = compute_bundle_digest(bundle)
+        case = {
+            "case_id": "canonical",
+            "kind": "canonical",
+            "source_input_digest": "b" * 64,
+            "bundle_input_digest": "b" * 64,
+            "tolerance_contract_sha256": "c" * 64,
+            "compared_terminal_output_ids": ["result"],
+            "bundle_execution_ref": "evidence/execution.json",
+            "bundle_execution_sha256": "d" * 64,
+        }
+        execution = {
+            "bundle_digest": baseline_digest,
+            "cases": {"T-EXAMPLE::canonical": {"input_digest": "b" * 64}},
+        }
+        probe = {"image_id": "sha256:" + "e" * 64}
+        receipt = {
+            "target_id": "T-EXAMPLE",
+            "bundle_digest": current_digest,
+            "source_scope_digest": "a" * 64,
+            "execution_rebind_ref": "evidence/rebind.json",
+            "bundle_execution_receipt_ref": "evidence/probe.json",
+            "bundle_execution_receipt_sha256": "f" * 64,
+        }
+        rebind = {
+            "schema_version": "scirel.execution-rebind.v1",
+            "target_id": receipt["target_id"],
+            "case_id": case["case_id"],
+            "baseline_bundle_digest": baseline_digest,
+            "current_bundle_digest": current_digest,
+            "baseline_manifest_ref": "evidence/baseline-files.json",
+            "baseline_manifest_sha256": compute_file_sha256(manifest_path),
+            "changed_report_paths": ["extraction_report.md"],
+            "scientific_identity_digest": _file_hash_digest({
+                path: digest for path, digest in baseline_files.items()
+                if path != "extraction_report.md"
+            }),
+            "source_scope_digest": receipt["source_scope_digest"],
+            "source_input_digest": case["source_input_digest"],
+            "bundle_input_digest": case["bundle_input_digest"],
+            "tolerance_contract_digest": case["tolerance_contract_sha256"],
+            "bundle_execution_ref": case["bundle_execution_ref"],
+            "bundle_execution_sha256": case["bundle_execution_sha256"],
+            "bundle_execution_receipt_ref": receipt["bundle_execution_receipt_ref"],
+            "bundle_execution_receipt_sha256": receipt["bundle_execution_receipt_sha256"],
+            "runtime_image_id": probe["image_id"],
+        }
+        rebind_path = evidence / "rebind.json"
+
+        def verify() -> list[str]:
+            rebind_path.write_text(json.dumps(rebind), encoding="utf-8")
+            receipt["execution_rebind_sha256"] = compute_file_sha256(rebind_path)
+            errors: list[str] = []
+            _validate_execution_rebind(
+                receipt, case, execution, probe,
+                run_root=root, bundle_root=bundle, errors=errors,
+            )
+            return errors
+
+        assert verify() == []
+        regressions: list[str] = []
+        # Without the original file manifest, changed code must not be able to
+        # claim that only its report moved or changed.
+        operator.write_text("def calculate(): return 999\n", encoding="utf-8")
+        receipt["bundle_digest"] = compute_bundle_digest(bundle)
+        rebind["current_bundle_digest"] = receipt["bundle_digest"]
+        for missing_ref in (None, ""):
+            if missing_ref is None:
+                rebind.pop("baseline_manifest_ref", None)
+            else:
+                rebind["baseline_manifest_ref"] = missing_ref
+            if not any("baseline_manifest_ref is required" in error for error in verify()):
+                regressions.append(f"missing baseline manifest reference accepted: {missing_ref!r}")
+        rebind["baseline_manifest_ref"] = "evidence/baseline-files.json"
+        operator.write_text("def calculate(): return 1\n", encoding="utf-8")
+        receipt["bundle_digest"] = current_digest
+        rebind["current_bundle_digest"] = current_digest
+
+        # The first final report is legitimately absent from the execution
+        # bundle. Adding it must retain the same scientific execution evidence.
+        without_report = {path: value for path, value in baseline_files.items()
+                          if path != "extraction_report.md"}
+        no_report_digest = _file_hash_digest(without_report)
+        manifest_path.write_text(json.dumps({
+            "schema_version": "scirel.bundle-file-manifest.v1",
+            "bundle_digest": no_report_digest,
+            "files": without_report,
+        }), encoding="utf-8")
+        execution["bundle_digest"] = no_report_digest
+        rebind["baseline_bundle_digest"] = no_report_digest
+        rebind["baseline_manifest_sha256"] = compute_file_sha256(manifest_path)
+        report_added_errors = verify()
+        if report_added_errors:
+            regressions.append(f"first final report rejected: {report_added_errors}")
+
+        manifest_path.write_text(json.dumps({
+            "schema_version": "scirel.bundle-file-manifest.v1",
+            "bundle_digest": baseline_digest,
+            "files": baseline_files,
+        }), encoding="utf-8")
+        execution["bundle_digest"] = baseline_digest
+        rebind["baseline_bundle_digest"] = baseline_digest
+        rebind["baseline_manifest_sha256"] = compute_file_sha256(manifest_path)
+        report.unlink()
+        receipt["bundle_digest"] = compute_bundle_digest(bundle)
+        rebind["current_bundle_digest"] = receipt["bundle_digest"]
+        report_removed_errors = verify()
+        if report_removed_errors:
+            regressions.append(f"report removal rejected: {report_removed_errors}")
+        report.write_text("corrected report\n", encoding="utf-8")
+
+        # A code file addition/removal is still a scientific file-set change.
+        extra_code = operator.parent / "new_relation.py"
+        extra_code.write_text("def new_relation(): return 2\n", encoding="utf-8")
+        receipt["bundle_digest"] = compute_bundle_digest(bundle)
+        rebind["current_bundle_digest"] = receipt["bundle_digest"]
+        assert any("only to root project reports" in error for error in verify())
+        extra_code.unlink()
+        operator.unlink()
+        receipt["bundle_digest"] = compute_bundle_digest(bundle)
+        rebind["current_bundle_digest"] = receipt["bundle_digest"]
+        assert any("only to root project reports" in error for error in verify())
+        operator.write_text("def calculate(): return 1\n", encoding="utf-8")
+        receipt["bundle_digest"] = current_digest
+        rebind["current_bundle_digest"] = current_digest
+        assert not regressions, regressions
+        assert verify() == []
+        execution_path = evidence / "execution.json"
+        execution_path.write_text(json.dumps(execution), encoding="utf-8")
+        probe_path = evidence / "probe.json"
+        probe_path.write_text(json.dumps({"exit_code": 0, **probe}), encoding="utf-8")
+        case["bundle_execution_sha256"] = compute_file_sha256(execution_path)
+        receipt["bundle_execution_receipt_sha256"] = compute_file_sha256(probe_path)
+        rebind["bundle_execution_sha256"] = case["bundle_execution_sha256"]
+        rebind["bundle_execution_receipt_sha256"] = receipt["bundle_execution_receipt_sha256"]
+        assert verify() == []
+        comparison = {
+            **receipt,
+            "schema_version": "scirel.extraction-reassembly-comparison.v2",
+            "status": "passed",
+            "case_id": case["case_id"],
+            "kind": case["kind"],
+            "source_input_digest": case["source_input_digest"],
+            "bundle_input_digest": case["bundle_input_digest"],
+            "tolerance_contract_digest": case["tolerance_contract_sha256"],
+            "bundle_execution_ref": case["bundle_execution_ref"],
+            "bundle_execution_sha256": case["bundle_execution_sha256"],
+            "terminal_output_ids": ["result"],
+            "comparisons": [{
+                "output_id": "result", "status": "passed", "metric": "absolute_error",
+                "observed_error": 0.0, "allowed_error": 1.0,
+            }],
+        }
+        comparison_path = evidence / "comparison.json"
+
+        def validate_comparison() -> list[str]:
+            comparison_path.write_text(json.dumps(comparison), encoding="utf-8")
+            errors: list[str] = []
+            _validate_comparison_receipt(
+                comparison_path, run_root=root, bundle_root=bundle,
+                bundle_execution_path=execution_path, target_id="T-EXAMPLE",
+                case=case, scope_manifest_digest=receipt["source_scope_digest"],
+                bundle_digest=current_digest, require_detailed=True, errors=errors,
+            )
+            return errors
+
+        assert validate_comparison() == []
+        comparison.pop("execution_rebind_ref")
+        assert any("rebind is required" in error for error in validate_comparison())
+        comparison["execution_rebind_ref"] = receipt["execution_rebind_ref"]
+        operator.write_text("def calculate(): return 2\n", encoding="utf-8")
+        receipt["bundle_digest"] = compute_bundle_digest(bundle)
+        rebind["current_bundle_digest"] = receipt["bundle_digest"]
+        assert any("only to root project reports" in error for error in verify())
+        operator.write_text("def calculate(): return 1\n", encoding="utf-8")
+        receipt["bundle_digest"] = current_digest
+        rebind["current_bundle_digest"] = current_digest
+        altered_case = dict(case, bundle_input_digest="0" * 64)
+        case, saved_case = altered_case, case
+        assert any("bundle_input_digest" in error for error in verify())
+        case = saved_case
+        probe["image_id"] = "sha256:" + "0" * 64
+        assert any("runtime_image_id" in error for error in verify())
+
+        probe["image_id"] = "sha256:" + "e" * 64
+        document_path = operator.parent / "operator.md"
+        document_path.write_text("final source-backed contract\n", encoding="utf-8")
+        receipt["bundle_digest"] = compute_bundle_digest(bundle)
+        rebind["current_bundle_digest"] = receipt["bundle_digest"]
+        rebind["schema_version"] = "scirel.execution-rebind.v2"
+        rebind.pop("changed_report_paths")
+        changed_documents = ["extraction_report.md", "operators/example/operator.md"]
+        rebind["changed_document_paths"] = changed_documents
+        review = {
+            "schema_version": "scirel.documentation-rebind-review.v1",
+            "review_id": "review-001",
+            "reviewer_role": "independent_subagent",
+            "verdict": "pass",
+            "source_scope_digest": receipt["source_scope_digest"],
+            "baseline_bundle_digest": baseline_digest,
+            "current_bundle_digest": receipt["bundle_digest"],
+            "scientific_identity_digest": rebind["scientific_identity_digest"],
+            "reviewed_document_paths": changed_documents,
+            "code_and_science_consistent": True,
+            "findings": [],
+        }
+        review_path = evidence / "documentation-review.json"
+        review_path.write_text(json.dumps(review), encoding="utf-8")
+        rebind["documentation_review_ref"] = "evidence/documentation-review.json"
+        rebind["documentation_review_sha256"] = compute_file_sha256(review_path)
+        assert verify() == []
+        current_digest = receipt["bundle_digest"]
+        comparison["bundle_digest"] = current_digest
+        comparison["execution_rebind_sha256"] = receipt["execution_rebind_sha256"]
+        assert validate_comparison() == []
+
+        rebind.pop("documentation_review_ref")
+        assert any("documentation review" in error for error in verify())
+        rebind["documentation_review_ref"] = "evidence/documentation-review.json"
+        review["verdict"] = "fail"
+        review_path.write_text(json.dumps(review), encoding="utf-8")
+        rebind["documentation_review_sha256"] = compute_file_sha256(review_path)
+        assert any("documentation_review.verdict" in error for error in verify())
+        review["verdict"] = "pass"
+        review_path.write_text(json.dumps(review), encoding="utf-8")
+        rebind["documentation_review_sha256"] = compute_file_sha256(review_path)
+        operator.write_text("def calculate(): return 2\n", encoding="utf-8")
+        receipt["bundle_digest"] = compute_bundle_digest(bundle)
+        rebind["current_bundle_digest"] = receipt["bundle_digest"]
+        changed_code_errors = verify()
+        assert any("only to documentation files" in error for error in changed_code_errors), changed_code_errors
+
+
+def check_full_freeze_requires_entry_receipt_reference() -> None:
+    with TemporaryDirectory() as directory:
+        bundle = Path(directory) / "candidate_bundle"
+        bundle.mkdir()
+        (bundle / "asset_entry.py").write_text("# entry fixture\n", encoding="utf-8")
+        for binding in ({}, {"receipt_ref": ""}):
+            document = {"closure_signal": {
+                "kind": "full_freeze", "asset_entry_validation": binding,
+            }}
+            errors: list[str] = []
+            _validate_full_freeze_delivery_surface(document, bundle, errors)
+            assert any("asset_entry_validation.receipt_ref is required" in error
+                       for error in errors), errors
+
+
 def main() -> None:
+    check_full_freeze_requires_entry_receipt_reference()
     frozen = frozen_document()
     assert validate_progress_document(frozen) == []
 
@@ -250,6 +527,38 @@ def main() -> None:
         "unresolved_ids": [],
     }
     assert validate_progress_document(full_freeze_signal, require_closure_signal=True) == []
+
+    bounded_signal = deepcopy(staged_frozen)
+    bounded_signal["closure_signal"] = {
+        "kind": "bounded_delivery",
+        "claim_ceiling": "delivered target paths only",
+        "next_action": "submit this batch to SciRel assembly",
+        "reopen_condition": "assembly identifies a missing capability or full_freeze is required",
+        "owner": "scientific-computation-asset-extraction",
+        "evidence_refs": ["evidence:bounded-001"],
+        "delivered_target_ids": ["T-EQUILIBRIUM"],
+        "unresolved_ids": [],
+        "bounded_delivery_review": {
+            "receipt_ref": "evidence/bounded-review.json",
+            "receipt_sha256": "7" * 64,
+        },
+    }
+    assert validate_progress_document(bounded_signal, require_closure_signal=True) == []
+
+    missing_review = deepcopy(bounded_signal)
+    missing_review["closure_signal"].pop("bounded_delivery_review")
+    assert any(
+        "requires bounded_delivery_review" in error
+        for error in validate_progress_document(missing_review, require_closure_signal=True)
+    )
+
+    partial_delivered = deepcopy(bounded_signal)
+    partial_delivered["target_paths"][0]["status"] = "partial"
+    partial_delivered["target_paths"][0]["earliest_unresolved"] = "C-EQUATION"
+    assert any(
+        "requires every delivered target to have status=passed" in error
+        for error in validate_progress_document(partial_delivered, require_closure_signal=True)
+    )
 
     state_bound_freeze = deepcopy(full_freeze_signal)
     state_bound_freeze["state"] = "full_freeze"
@@ -632,14 +941,33 @@ def main() -> None:
         evidence_matrix.write_text("matrix", encoding="utf-8")
         ledger.write_text("ledger", encoding="utf-8")
         (bundle_root / "asset.txt").write_text("asset", encoding="utf-8")
+        (bundle_root / "asset_entry.py").write_text(
+            "def load_asset_bundle(root=None):\n    return None\n",
+            encoding="utf-8",
+        )
 
-        externally_bound = deepcopy(staged_frozen)
+        externally_bound = deepcopy(full_freeze_signal)
         externally_bound["scope"]["scope_manifest_digest"] = compute_file_sha256(scope_manifest)
         externally_bound["scope"]["capability_evidence_matrix_digest"] = compute_file_sha256(
             evidence_matrix
         )
         externally_bound["scope"]["ledger_digest"] = compute_file_sha256(ledger)
         externally_bound["scope"]["bundle_digest"] = compute_bundle_digest(bundle_root)
+        entry_receipt_path = evidence_root / "asset-entry-validation.json"
+        entry_receipt = {
+            "validator": "validate_asset_entry.py",
+            "sandbox": "CODEFUSION_ASSET_SANDBOX=1",
+            "exit_code": 0,
+            "asset_entry_sha256": compute_file_sha256(bundle_root / "asset_entry.py"),
+            "bundle_digest": externally_bound["scope"]["bundle_digest"],
+            "operators": 1,
+            "task_graphs": 0,
+        }
+        entry_receipt_path.write_text(json.dumps(entry_receipt), encoding="utf-8")
+        externally_bound["closure_signal"]["asset_entry_validation"] = {
+            "receipt_ref": entry_receipt_path.relative_to(root).as_posix(),
+            "receipt_sha256": compute_file_sha256(entry_receipt_path),
+        }
         reassembly = externally_bound["target_paths"][0]["reassembly_evidence"]
         reassembly["source_scope_digest"] = externally_bound["scope"]["scope_manifest_digest"]
         reassembly["bundle_digest"] = externally_bound["scope"]["bundle_digest"]
@@ -648,10 +976,18 @@ def main() -> None:
             case_id = case["case_id"]
             source_path = evidence_root / f"{case_id}-source.json"
             bundle_path = evidence_root / f"{case_id}-bundle.json"
+            execution_receipt_path = evidence_root / f"{case_id}-execution-receipt.json"
             tolerance_path = evidence_root / f"{case_id}-tolerance.json"
             comparison_path = evidence_root / f"{case_id}-comparison.json"
             source_path.write_text(json.dumps({"source": case_id}), encoding="utf-8")
-            bundle_path.write_text(json.dumps({"bundle": case_id}), encoding="utf-8")
+            bundle_path.write_text(
+                json.dumps({"bundle": case_id, "bundle_digest": reassembly["bundle_digest"]}),
+                encoding="utf-8",
+            )
+            execution_receipt_path.write_text(
+                json.dumps({"exit_code": 0, "image_id": "sha256:" + "a" * 64}),
+                encoding="utf-8",
+            )
             tolerance_path.write_text(json.dumps({"rtol": 1e-12}), encoding="utf-8")
             case["source_oracle_ref"] = source_path.relative_to(root).as_posix()
             case["source_oracle_sha256"] = compute_file_sha256(source_path)
@@ -660,7 +996,7 @@ def main() -> None:
             case["tolerance_contract_ref"] = tolerance_path.relative_to(root).as_posix()
             case["tolerance_contract_sha256"] = compute_file_sha256(tolerance_path)
             receipt = {
-                "schema_version": "scirel.extraction-reassembly-comparison.v1",
+                "schema_version": "scirel.extraction-reassembly-comparison.v2",
                 "status": "passed",
                 "target_id": "T-EQUILIBRIUM",
                 "case_id": case_id,
@@ -670,9 +1006,19 @@ def main() -> None:
                 "source_input_digest": case["source_input_digest"],
                 "bundle_input_digest": case["bundle_input_digest"],
                 "tolerance_contract_digest": case["tolerance_contract_sha256"],
+            "bundle_execution_receipt_ref": execution_receipt_path.relative_to(root).as_posix(),
+            "bundle_execution_receipt_sha256": compute_file_sha256(execution_receipt_path),
+            "bundle_execution_ref": case["bundle_execution_ref"],
+            "bundle_execution_sha256": case["bundle_execution_sha256"],
                 "terminal_output_ids": case["compared_terminal_output_ids"],
                 "comparisons": [
-                    {"output_id": "equilibrium_state", "status": "passed"}
+                    {
+                        "output_id": "equilibrium_state",
+                        "status": "passed",
+                        "metric": "relative_error",
+                        "observed_error": 0.0,
+                        "allowed_error": 1e-12,
+                    }
                 ],
             }
             comparison_path.write_text(json.dumps(receipt), encoding="utf-8")
@@ -687,6 +1033,369 @@ def main() -> None:
             ledger=ledger,
             bundle_root=bundle_root,
         ) == []
+
+        missing_entry_receipt = deepcopy(externally_bound)
+        missing_entry_receipt["closure_signal"].pop("asset_entry_validation")
+        assert any(
+            "requires asset_entry_validation" in error
+            for error in validate_external_bindings(
+                missing_entry_receipt,
+                scope_manifest=scope_manifest,
+                capability_evidence_matrix=evidence_matrix,
+                ledger=ledger,
+                bundle_root=bundle_root,
+            )
+        )
+        stale_entry_receipt = deepcopy(externally_bound)
+        entry_receipt["asset_entry_sha256"] = "0" * 64
+        entry_receipt_path.write_text(json.dumps(entry_receipt), encoding="utf-8")
+        stale_entry_receipt["closure_signal"]["asset_entry_validation"]["receipt_sha256"] = (
+            compute_file_sha256(entry_receipt_path)
+        )
+        assert any(
+            "asset_entry_validation.asset_entry_sha256" in error
+            for error in validate_external_bindings(
+                stale_entry_receipt,
+                scope_manifest=scope_manifest,
+                capability_evidence_matrix=evidence_matrix,
+                ledger=ledger,
+                bundle_root=bundle_root,
+            )
+        )
+        entry_receipt["asset_entry_sha256"] = compute_file_sha256(bundle_root / "asset_entry.py")
+        entry_receipt_path.write_text(json.dumps(entry_receipt), encoding="utf-8")
+
+        wrong_execution_binding = deepcopy(externally_bound)
+        receipt = json.loads(comparison_path.read_text(encoding="utf-8"))
+        receipt["bundle_execution_ref"] = "evidence/another-bundle.json"
+        comparison_path.write_text(json.dumps(receipt), encoding="utf-8")
+        wrong_execution_binding["target_paths"][0]["reassembly_evidence"]["cases"][-1][
+            "comparison_receipt_sha256"
+        ] = compute_file_sha256(comparison_path)
+        assert any(
+            "bundle_execution_ref does not match" in error
+            for error in validate_external_bindings(
+                wrong_execution_binding,
+                scope_manifest=scope_manifest,
+                capability_evidence_matrix=evidence_matrix,
+                ledger=ledger,
+                bundle_root=bundle_root,
+            )
+        )
+        receipt["bundle_execution_ref"] = case["bundle_execution_ref"]
+        comparison_path.write_text(json.dumps(receipt), encoding="utf-8")
+
+        bad_entry = deepcopy(externally_bound)
+        entry_receipt["exit_code"] = 1
+        entry_receipt_path.write_text(json.dumps(entry_receipt), encoding="utf-8")
+        bad_entry["closure_signal"]["asset_entry_validation"]["receipt_sha256"] = (
+            compute_file_sha256(entry_receipt_path)
+        )
+        assert any(
+            "asset_entry_validation.exit_code must equal 0" in error
+            for error in validate_external_bindings(
+                bad_entry,
+                scope_manifest=scope_manifest,
+                capability_evidence_matrix=evidence_matrix,
+                ledger=ledger,
+                bundle_root=bundle_root,
+            )
+        )
+        entry_receipt["exit_code"] = 0
+        entry_receipt_path.write_text(json.dumps(entry_receipt), encoding="utf-8")
+
+        first_case = externally_bound["target_paths"][0]["reassembly_evidence"]["cases"][0]
+        comparison_path = root / first_case["comparison_receipt_ref"]
+        receipt = json.loads(comparison_path.read_text(encoding="utf-8"))
+        legacy_receipt = deepcopy(receipt)
+        legacy_receipt["schema_version"] = "scirel.extraction-reassembly-comparison.v1"
+        legacy_receipt.pop("bundle_execution_receipt_ref")
+        legacy_receipt.pop("bundle_execution_receipt_sha256")
+        legacy_receipt["comparisons"] = [{"output_id": "equilibrium_state", "status": "passed"}]
+        comparison_path.write_text(json.dumps(legacy_receipt), encoding="utf-8")
+        legacy_working = deepcopy(externally_bound)
+        legacy_working["closure_signal"]["kind"] = "active"
+        legacy_working["target_paths"][0]["reassembly_evidence"]["cases"][0][
+            "comparison_receipt_sha256"
+        ] = compute_file_sha256(comparison_path)
+        assert validate_external_bindings(
+            legacy_working,
+            scope_manifest=scope_manifest,
+            capability_evidence_matrix=evidence_matrix,
+            ledger=ledger,
+            bundle_root=bundle_root,
+        ) == []
+        legacy_delivery = deepcopy(externally_bound)
+        legacy_delivery["target_paths"][0]["reassembly_evidence"]["cases"][0][
+            "comparison_receipt_sha256"
+        ] = compute_file_sha256(comparison_path)
+        assert any(
+            "requires v2 for delivery closure" in error
+            for error in validate_external_bindings(
+                legacy_delivery,
+                scope_manifest=scope_manifest,
+                capability_evidence_matrix=evidence_matrix,
+                ledger=ledger,
+                bundle_root=bundle_root,
+            )
+        )
+        legacy_state_freeze = deepcopy(legacy_working)
+        legacy_state_freeze["state"] = "full_freeze"
+        assert any(
+            "requires v2 for delivery closure" in error
+            for error in validate_external_bindings(
+                legacy_state_freeze,
+                scope_manifest=scope_manifest,
+                capability_evidence_matrix=evidence_matrix,
+                ledger=ledger,
+                bundle_root=bundle_root,
+            )
+        )
+        comparison_path.write_text(json.dumps(receipt), encoding="utf-8")
+        failed_metric = deepcopy(externally_bound)
+        receipt["comparisons"][0]["observed_error"] = 2e-12
+        comparison_path.write_text(json.dumps(receipt), encoding="utf-8")
+        failed_metric["target_paths"][0]["reassembly_evidence"]["cases"][0][
+            "comparison_receipt_sha256"
+        ] = compute_file_sha256(comparison_path)
+        assert any(
+            "observed_error exceeds allowed_error" in error
+            for error in validate_external_bindings(
+                failed_metric,
+                scope_manifest=scope_manifest,
+                capability_evidence_matrix=evidence_matrix,
+                ledger=ledger,
+                bundle_root=bundle_root,
+            )
+        )
+
+        receipt["comparisons"][0]["observed_error"] = 0.0
+        execution_receipt_path = root / receipt["bundle_execution_receipt_ref"]
+        execution_receipt_path.write_text(json.dumps({"exit_code": 1}), encoding="utf-8")
+        receipt["bundle_execution_receipt_sha256"] = compute_file_sha256(execution_receipt_path)
+        comparison_path.write_text(json.dumps(receipt), encoding="utf-8")
+        failed_execution = deepcopy(externally_bound)
+        failed_execution["target_paths"][0]["reassembly_evidence"]["cases"][0][
+            "comparison_receipt_sha256"
+        ] = compute_file_sha256(comparison_path)
+        assert any(
+            "exit_code must equal 0" in error
+            for error in validate_external_bindings(
+                failed_execution,
+                scope_manifest=scope_manifest,
+                capability_evidence_matrix=evidence_matrix,
+                ledger=ledger,
+                bundle_root=bundle_root,
+            )
+        )
+
+        missing_execution = deepcopy(externally_bound)
+        receipt.pop("bundle_execution_receipt_ref")
+        comparison_path.write_text(json.dumps(receipt), encoding="utf-8")
+        missing_execution["target_paths"][0]["reassembly_evidence"]["cases"][0][
+            "comparison_receipt_sha256"
+        ] = compute_file_sha256(comparison_path)
+        assert any(
+            "bundle_execution_receipt_ref is required" in error
+            for error in validate_external_bindings(
+                missing_execution,
+                scope_manifest=scope_manifest,
+                capability_evidence_matrix=evidence_matrix,
+                ledger=ledger,
+                bundle_root=bundle_root,
+            )
+        )
+
+        execution_receipt_path.write_text(json.dumps({"exit_code": 0}), encoding="utf-8")
+        receipt["bundle_execution_receipt_ref"] = execution_receipt_path.relative_to(root).as_posix()
+        receipt["bundle_execution_receipt_sha256"] = compute_file_sha256(execution_receipt_path)
+        comparison_path.write_text(json.dumps(receipt), encoding="utf-8")
+        first_case["comparison_receipt_sha256"] = compute_file_sha256(comparison_path)
+
+        receipt["comparisons"][0]["observed_error"] = 10**400
+        comparison_path.write_text(json.dumps(receipt), encoding="utf-8")
+        huge_error = deepcopy(externally_bound)
+        huge_error["target_paths"][0]["reassembly_evidence"]["cases"][0][
+            "comparison_receipt_sha256"
+        ] = compute_file_sha256(comparison_path)
+        assert any(
+            "observed_error must be finite and non-negative" in error
+            for error in validate_external_bindings(
+                huge_error,
+                scope_manifest=scope_manifest,
+                capability_evidence_matrix=evidence_matrix,
+                ledger=ledger,
+                bundle_root=bundle_root,
+            )
+        )
+        receipt["comparisons"][0]["observed_error"] = 0.0
+        comparison_path.write_text(json.dumps(receipt), encoding="utf-8")
+        first_case["comparison_receipt_sha256"] = compute_file_sha256(comparison_path)
+
+        bounded_external = deepcopy(externally_bound)
+        bounded_external["closure_signal"] = deepcopy(bounded_signal["closure_signal"])
+        bounded_external["closure_signal"]["bounded_delivery_review"][
+            "receipt_sha256"
+        ] = "0" * 64
+        review_path = root / "evidence" / "bounded-review.json"
+        review_receipt = {
+            "review_id": "bounded-review-001",
+            "reviewer_role": "independent_subagent",
+            "verdict": "pass",
+            "source_scope_digest": externally_bound["scope"]["scope_manifest_digest"],
+            "bundle_digest": externally_bound["scope"]["bundle_digest"],
+            "reviewed_target_ids": ["T-EQUILIBRIUM"],
+            "reviewed_evidence_refs": [
+                *bounded_external["closure_signal"]["evidence_refs"],
+                *(
+                    case[name]
+                    for case in reassembly["cases"]
+                    for name in (
+                        "source_oracle_ref",
+                        "bundle_execution_ref",
+                        "comparison_receipt_ref",
+                        "tolerance_contract_ref",
+                    )
+                ),
+            ],
+            "claim_ceiling": "delivered target paths only",
+            "reopen_condition": bounded_external["closure_signal"]["reopen_condition"],
+            "findings": ["target reassembly is runnable"],
+        }
+        review_path.write_text(json.dumps(review_receipt), encoding="utf-8")
+        bounded_external["closure_signal"]["bounded_delivery_review"][
+            "receipt_sha256"
+        ] = compute_file_sha256(review_path)
+        assert validate_external_bindings(
+            bounded_external,
+            scope_manifest=scope_manifest,
+            capability_evidence_matrix=evidence_matrix,
+            ledger=ledger,
+            bundle_root=bundle_root,
+        ) == []
+
+        omitted_evidence = deepcopy(bounded_external)
+        review_receipt["reviewed_evidence_refs"] = ["evidence:unrelated"]
+        review_path.write_text(json.dumps(review_receipt), encoding="utf-8")
+        omitted_evidence["closure_signal"]["bounded_delivery_review"]["receipt_sha256"] = (
+            compute_file_sha256(review_path)
+        )
+        assert any(
+            "reviewed_evidence_refs must include" in error
+            for error in validate_external_bindings(
+                omitted_evidence,
+                scope_manifest=scope_manifest,
+                capability_evidence_matrix=evidence_matrix,
+                ledger=ledger,
+                bundle_root=bundle_root,
+            )
+        )
+        review_receipt["reviewed_evidence_refs"] = [
+            *bounded_external["closure_signal"]["evidence_refs"],
+            *(
+                case[name]
+                for case in reassembly["cases"]
+                for name in (
+                    "source_oracle_ref",
+                    "bundle_execution_ref",
+                    "comparison_receipt_ref",
+                    "tolerance_contract_ref",
+                )
+            ),
+        ]
+        review_receipt["claim_ceiling"] = "entire source scope"
+        review_path.write_text(json.dumps(review_receipt), encoding="utf-8")
+        omitted_evidence["closure_signal"]["bounded_delivery_review"]["receipt_sha256"] = (
+            compute_file_sha256(review_path)
+        )
+        assert any(
+            "claim_ceiling does not match" in error
+            for error in validate_external_bindings(
+                omitted_evidence,
+                scope_manifest=scope_manifest,
+                capability_evidence_matrix=evidence_matrix,
+                ledger=ledger,
+                bundle_root=bundle_root,
+            )
+        )
+        review_receipt["claim_ceiling"] = bounded_external["closure_signal"]["claim_ceiling"]
+        review_receipt["reopen_condition"] = "never"
+        review_path.write_text(json.dumps(review_receipt), encoding="utf-8")
+        omitted_evidence["closure_signal"]["bounded_delivery_review"]["receipt_sha256"] = (
+            compute_file_sha256(review_path)
+        )
+        assert any(
+            "reopen_condition does not match" in error
+            for error in validate_external_bindings(
+                omitted_evidence,
+                scope_manifest=scope_manifest,
+                capability_evidence_matrix=evidence_matrix,
+                ledger=ledger,
+                bundle_root=bundle_root,
+            )
+        )
+        review_receipt["reopen_condition"] = bounded_external["closure_signal"]["reopen_condition"]
+        review_path.write_text(json.dumps(review_receipt), encoding="utf-8")
+
+        failed_review = deepcopy(bounded_external)
+        failed_review["closure_signal"]["bounded_delivery_review"][
+            "receipt_sha256"
+        ] = compute_file_sha256(review_path)
+        review_receipt["verdict"] = "fail"
+        review_path.write_text(json.dumps(review_receipt), encoding="utf-8")
+        failed_review["closure_signal"]["bounded_delivery_review"][
+            "receipt_sha256"
+        ] = compute_file_sha256(review_path)
+        assert any(
+            "verdict must equal pass" in error
+            for error in validate_external_bindings(
+                failed_review,
+                scope_manifest=scope_manifest,
+                capability_evidence_matrix=evidence_matrix,
+                ledger=ledger,
+                bundle_root=bundle_root,
+            )
+        )
+
+        (bundle_root / "asset_entry.py").unlink()
+        externally_bound["scope"]["bundle_digest"] = compute_bundle_digest(bundle_root)
+        reassembly["bundle_digest"] = externally_bound["scope"]["bundle_digest"]
+        for case in reassembly["cases"]:
+            comparison_path = root / case["comparison_receipt_ref"]
+            receipt = json.loads(comparison_path.read_text(encoding="utf-8"))
+            receipt["bundle_digest"] = externally_bound["scope"]["bundle_digest"]
+            comparison_path.write_text(json.dumps(receipt), encoding="utf-8")
+            case["comparison_receipt_sha256"] = compute_file_sha256(comparison_path)
+        missing_entry_errors = validate_external_bindings(
+            externally_bound,
+            scope_manifest=scope_manifest,
+            capability_evidence_matrix=evidence_matrix,
+            ledger=ledger,
+            bundle_root=bundle_root,
+        )
+        assert any("root asset_entry.py" in error for error in missing_entry_errors)
+
+        active_without_entry = deepcopy(externally_bound)
+        active_without_entry["closure_signal"] = {
+            "kind": "active",
+            "claim_ceiling": "incomplete working snapshot",
+            "next_action": "continue extraction",
+            "reopen_condition": "frontier changes",
+            "owner": "scientific-computation-asset-extraction",
+            "evidence_refs": ["evidence:working"],
+            "delivered_target_ids": [],
+            "unresolved_ids": ["C-EQUATION"],
+        }
+        assert not any(
+            "root asset_entry.py" in error
+            for error in validate_external_bindings(
+                active_without_entry,
+                scope_manifest=scope_manifest,
+                capability_evidence_matrix=evidence_matrix,
+                ledger=ledger,
+                bundle_root=bundle_root,
+            )
+        )
 
         first_case = externally_bound["target_paths"][0]["reassembly_evidence"]["cases"][0]
         comparison_path = root / first_case["comparison_receipt_ref"]
@@ -711,6 +1420,7 @@ def main() -> None:
     assert any("target_paths" in error for error in malformed_errors)
     assert any("from_node_id" in error for error in malformed_errors)
 
+    check_report_only_execution_rebind()
     print("capability progress validator: PASS")
 
 

@@ -1,6 +1,6 @@
 ---
 name: scirel-solving
-description: Use when turning a user's scientific request into a normalized problem, a SciRel-based solution plan, an executed result, and an evidence-bounded explanation using only the visible released catalog.
+description: Turn a scientific request into a normalized problem, SciRel execution and evidence-bounded explanation using the authorized catalog, including a pinned development catalog for an isolated evaluation.
 ---
 
 # SciRel Solving

@@ -9,6 +9,22 @@
 
 SciRel must describe each public scientific asset independently of any agent framework. A document is a versioned scientific and callable contract, not a copy of CodeFusion review records, source-project layout, an MCP tool definition, or marketing documentation.
 
+## Production timing and source anchors
+
+Formal documents are produced after D2 comparison, deduplication, repair and runnable code stabilization,
+before freezing retained assets for final review. D1 supplies source-complete code, graph definitions and verified
+source/numerical evidence, not mandatory operator.md or task_graph.md copies. Code comments, docstrings,
+function/module descriptions and existing evidence records carry source references, implementation conventions
+and other useful internal notes. They are development anchors, not human-facing review documents.
+Downstream stages never annotate or repair a frozen upstream delivery in place; their dispositions and corrections
+belong to their own derived outputs. Human-facing standardized documents contain the scientific contract and
+reviewable evidence limits, not private source paths, raw run logs or repeated development notes.
+
+Reuse existing exact documents for unchanged assets. Absorbed duplicate/covered inputs preserve comparison and
+lineage evidence without a new formal document or review item. Retained independent variants/subgraphs still
+need documents. Human-readable pages and review views project or reference the canonical record rather than
+maintaining a second full contract. Only validated records enter a development catalog; this grants no approval.
+
 ## Required common contract
 
 Every document must bind one stable scientific `asset_id` and declare:
@@ -28,8 +44,8 @@ Every document must bind one stable scientific `asset_id` and declare:
 Public provenance must preserve useful lineage without exposing tenant IDs, admission/case/decision refs, candidate refs, source-project directories or another platform's internal owner model. Private governance evidence remains in `provenance/` and is joined only inside authorized release engineering. The absence of a public reference must remain explicit; it cannot be filled from a guessed project name.
 
 This canonical scientific contract is not reviewer prose. Reviewer documents remain candidate evidence, while the
-machine catalog and human documentation site are SciRel-owned projections generated from the same approved exact
-documents. A harness such as CodeFusion may display or link those projections, but it does not own or rewrite their
+machine catalog and human documentation site are SciRel-owned projections generated from the same exact
+documents, with development or approved status carried by the enclosing version. A harness such as CodeFusion may display or link those projections, but it does not own or rewrite their
 scientific content. Private review, identity, queue, and host audit fields remain outside the public document and are
 joined only at their authorized UI or release boundary.
 

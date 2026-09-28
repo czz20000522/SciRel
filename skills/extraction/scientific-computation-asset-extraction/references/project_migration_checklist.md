@@ -6,7 +6,7 @@ Use this checklist when applying the extraction method to a project that is not 
 
 - Record source snapshot, workcopy boundary, Docker image/runtime identity, and a source-access counter.
 - Rebuild source in the target image from a clean workcopy; discard host object files, close every makefile/link dependency (including stubs and historical auxiliary sources), disable permissive unresolved-symbol linking, and fail the source gate before running a probe when format, architecture, or link closure is wrong.
-- Build `program_framework_map.md` and a candidate census before deep extraction. For every important edge record `from.output -> to.input`, hidden state, transforms, shapes, axes, units, selectors, and branch conditions.
+- Reuse or establish the source-backed candidate census before deep extraction; derive the final `program_framework_map.md` at handoff. For every important edge record `from.output -> to.input`, hidden state, transforms, shapes, axes, units, selectors, and branch conditions.
 - Mark each candidate as package, support kernel, rework, rejected, or a canonical gap. Do not let an unprocessed candidate disappear from the queue.
 - Create a branch/oracle matrix before deep extraction. Keep one row per physical mode or boundary family, including selectors, producer chain, hidden state, caller contract, oracle provenance, source-free demand, and canonical gap. Do not use branch count as a package quota.
 - Create a capability evidence matrix for every named requirement, capability, branch, artifact, invariant, and gate. Use concrete selectors and bind each row to an executable demand, external source-free evidence, and a canonical gap or proven status; use the matrix template rather than a package-count summary.

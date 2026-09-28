@@ -6,6 +6,7 @@ contracts, not a second scientific asset schema and not a database model.
 
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
 import hashlib
@@ -19,6 +20,7 @@ class WorkflowStatus(str, Enum):
     AUTOMATED_CHECKING = "automated_checking"
     AUTOMATED_READY = "automated_ready"
     AUTOMATED_REJECTED = "automated_rejected"
+    NO_CHANGES = "no_changes"
     DRAFT = "draft"
     REVIEW_PENDING = "review_pending"
     REVIEW_IN_PROGRESS = "review_in_progress"
@@ -482,6 +484,10 @@ class CandidatePackage:
             if not asset_id:
                 continue
             for field in ("contract_path", "implementation_path", "direct_test_path"):
+                if field == "contract_path" and asset.get("asset_kind") == "operator":
+                    # D1 keeps scientific facts with code/evidence; the final
+                    # canonical document is generated after D2 deduplication.
+                    continue
                 if field in asset and not asset.get(field):
                     if field == "direct_test_path":
                         gaps.append(f"missing_direct_test_mapping:{asset_id}")
@@ -820,6 +826,36 @@ class StandardizationReviewUnit:
         }
 
 
+def _input_disposition(value: Mapping[str, Any]) -> dict[str, Any]:
+    """Account for unchanged reuse without copying the target's scientific record."""
+
+    record = _exact_record(
+        value,
+        "input disposition",
+        required={
+            "source_asset_ids", "disposition", "target_asset_id",
+            "target_ref", "target_digest", "evidence",
+        },
+    )
+    source_ids = _strings(record["source_asset_ids"], "source_asset_ids")
+    if not source_ids:
+        raise ValueError("input disposition source_asset_ids must not be empty")
+    disposition = _text(record["disposition"], "input disposition")
+    if disposition not in {"reuse", "exact_duplicate", "covered_by"}:
+        raise ValueError("input disposition must describe unchanged reuse or coverage")
+    evidence = _records(record["evidence"], "input disposition evidence")
+    if not evidence:
+        raise ValueError("input disposition requires comparison evidence")
+    return {
+        "source_asset_ids": list(source_ids),
+        "disposition": disposition,
+        "target_asset_id": _text(record["target_asset_id"], "target_asset_id"),
+        "target_ref": _text(record["target_ref"], "target_ref"),
+        "target_digest": _digest_text(record["target_digest"], "target_digest"),
+        "evidence": deepcopy(list(evidence)),
+    }
+
+
 @dataclass
 class StandardizationSubmission:
     """Digest-bound model output accepted by the deterministic review gate."""
@@ -836,6 +872,7 @@ class StandardizationSubmission:
     review_units: tuple[StandardizationReviewUnit, ...]
     run_evidence: tuple[dict[str, Any], ...] = ()
     gaps: tuple[str, ...] = ()
+    input_dispositions: tuple[dict[str, Any], ...] = ()
 
     def __post_init__(self) -> None:
         self.submission_id = _text(self.submission_id, "submission_id")
@@ -863,8 +900,12 @@ class StandardizationSubmission:
                 )
             except (TypeError, ValueError) as error:
                 raise ValueError(f"review_units[{index}] is invalid: {error}") from error
-        if not units:
-            raise ValueError("review_units must not be empty")
+        self.input_dispositions = tuple(
+            _input_disposition(item)
+            for item in _records(self.input_dispositions, "input_dispositions")
+        )
+        if not units and not self.input_dispositions:
+            raise ValueError("review_units or input_dispositions must not be empty")
         self.review_units = tuple(units)
         unit_ids = [unit.review_unit_id for unit in units]
         asset_ids = [str(unit.asset_document["asset_id"]) for unit in units]
@@ -895,6 +936,7 @@ class StandardizationSubmission:
                 "run_evidence",
                 "gaps",
             },
+            optional={"input_dispositions"},
         )
         if record["schema"] != "scirel.standardization-submission.dev":
             raise ValueError(
@@ -916,10 +958,11 @@ class StandardizationSubmission:
             review_units=tuple(record["review_units"]),
             run_evidence=tuple(record["run_evidence"]),
             gaps=tuple(record["gaps"]),
+            input_dispositions=record.get("input_dispositions", ()),
         )
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        result = {
             "schema": "scirel.standardization-submission.dev",
             "submission_id": self.submission_id,
             "draft_id": self.draft_id,
@@ -934,6 +977,9 @@ class StandardizationSubmission:
             "run_evidence": list(self.run_evidence),
             "gaps": list(self.gaps),
         }
+        if self.input_dispositions:
+            result["input_dispositions"] = deepcopy(list(self.input_dispositions))
+        return result
 
     @property
     def submission_digest(self) -> str:
@@ -959,7 +1005,10 @@ class StandardizedDraft:
         self.dependency_asset_ids = _strings(
             self.dependency_asset_ids, "dependency_asset_ids"
         )
-        self.evidence = _records(self.evidence, "evidence")
+        self.evidence = tuple(
+            deepcopy(item) if item.get("kind") == "standardization_input_disposition" else item
+            for item in _records(self.evidence, "evidence")
+        )
         self.gaps = _strings(self.gaps, "gaps")
         self.gaps = tuple(dict.fromkeys((
             *self.gaps,
@@ -980,7 +1029,10 @@ class StandardizedDraft:
             "candidate_id": self.candidate_id,
             "assets": list(self.assets),
             "dependency_asset_ids": list(self.dependency_asset_ids),
-            "evidence": list(self.evidence),
+            "evidence": [
+                deepcopy(item) if item.get("kind") == "standardization_input_disposition" else item
+                for item in self.evidence
+            ],
             "gaps": list(self.gaps),
             "status": self.status.value,
         }

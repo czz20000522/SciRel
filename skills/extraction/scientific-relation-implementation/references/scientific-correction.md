@@ -61,11 +61,12 @@ The original defective behavior is retained as evidence, not as an extra callabl
 explicit compatibility requirement justifies a separately labelled, isolated legacy path; it cannot be
 presented as the corrected relation or inherit its validation.
 
-## Required disclosure in the affected scientific page
+## Required disclosure at the current stage
 
-Describe the **科学修正说明** in the inherited scientific contract, normally under `实现对应`,
-`行为与边界`, and `验证与溯源`. Do not create an expert-review section merely because a confirmed
-defect was repaired:
+Record the correction once in the current stage's derived code/semantic anchor and bound evidence.
+Do not annotate or rewrite the upstream frozen source or L1 delivery. Function/module comments may carry
+implementation conventions and provenance; D1 does not need a formal page. After D2 stabilizes retained
+new/changed assets, carry reviewer-relevant consequences into the final canonical document:
 
 - What the inspected implementation did and precisely why it is wrong under the stated assumptions.
 - The independent basis or counterexample, with honest attribution and no unverifiable citation.
@@ -73,9 +74,9 @@ defect was repaired:
 - The affected input domain, output differences, compatibility and dependent TaskGraph impact.
 - What validation actually supports the correction and what remains unproved or for expert decision.
 
-This disclosure is mandatory even when the repair is fully explained in a separate report. Keep command
-logs, content hashes and changing pass counts in bound evidence, not the scientific narrative. The heading
-placement does not excuse leaving an objectively repairable defect in the implementation. The calling
+The facts must remain discoverable without repeating them in every representation. Keep command logs,
+content hashes and changing pass counts in bound evidence, not the scientific narrative. A heading or page
+format does not excuse leaving an objectively repairable defect in the implementation. The calling
 correctness owner must judge the correction against the contract, validation evidence, and read-only findings.
 If a scientific choice remains unresolved, report the exact missing decision and claim impact; this protocol
 does not route or approve it.

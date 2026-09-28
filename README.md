@@ -1,12 +1,13 @@
 # SciRel
 
 SciRel 是独立维护的 Python 科学关系库，并拥有从保存的 L1 产物到 release 的科学领域流程。
-`scirel-integration` skill 指导模型理解 L1，并同时对照冻结基线和当前未发布候选池，在基线之外形成专家可审查的
-候选文档、候选代码和候选测试；尚未被专家打开的排队候选可以先合并、替换或撤回，项目代码只实现
-稳定的确定性门禁、审核状态、catalog/wheel 构建和 release 绑定。CodeFusion 与 Claude Code、
-Codex 一样是中性 Agent harness，也可提供 artifact、身份和审核 UI；它不拥有 SciRel 的科学语义。
-候选入队后 Agent run 即可结束；专家首次打开完整候选时才冻结三件套。专家批准只使候选有资格进入独立固化任务，固化任务还必须对照
-最新 SciRel 基线处理堆积候选之间的冲突，成功后才可更新维护基线并进入 release。
+D1 保留完整来源、源实现与数值对照；`scirel-integration` 统筹 D2 比较、去重、修正、组装和开发 wheel；
+D3 使用确切版本验证用户任务。正式文档在保留资产代码稳定后生成，阶段入口见 [开发流程](docs/development-process.md)。
+CodeFusion、Claude Code、Codex 均是中性 harness；SciRel 拥有科学语义与最终审核/发行绑定。
+上传前可合并、替换或撤回草稿，上传时固定逐项初始版本，之后无模型在后台改写队列。
+专家查看记录所见版本，领取绑定修改基点，放回保存修改并释放锁，显式提交才完成该项审核。
+Agent 可先集成验证开发版；人类在稳定累积增量处拍板，不逐开发提交审批。人工认可和公开发行
+分别绑定确切内容；开发进展不改写上游交付或既有待审/可信版本。
 
 SciRel 以独立插件和发布 wheel 交付；CodeFusion 可以预装或加载它，但 SciRel 不属于 CodeFusion kernel。
 包名与安装方式属于平台实现细节。
@@ -16,6 +17,8 @@ SciRel 以独立插件和发布 wheel 交付；CodeFusion 可以预装或加载�
 
 当前 `0.1.0.dev5` 为开发期候选，而非公开发行。保存的 L1 产物是新 workflow 的重跑输入；
 旧的 `provenance/admitted-assets.json` 仅作为历史开发样本和来源证据，不再定义新的准入流程。
+具体交付应以该轮冻结的 `build/verification/<review-run>/manifest.json` 和对应评审记录核对
+确切版本及待审状态，不能以未冻结的 HEAD 或开发版本号代替交付基线。
 
 当前 `provenance/admitted-assets.json` 是旧流程留下的 52 条完整迁移样本，其中包含 41 条 operator
 和 11 条 TaskGraph，并保存当时导出的来源、决定标签、版本树、内容摘要和依赖绑定。这些字段只用于
@@ -51,7 +54,7 @@ assert result["B"][0, 0] == 5.0
 - `src/scirel/<domain>/`：公共科学函数与组合模块，目录按科学领域组织。
 - `_validation.py`：合同相同的共享参数检查；不同默认值语义分别保留。
 - `_composition.py`：不修改调用方输入的组合调用；依赖由模块显式绑定，无全局资产目录。
-- `tests/`：迁移保留的科学回归与新增库工程测试。审核 YAML 仅作历史合同测试证据，不进入运行包。
+- `tests/`：SciRel 科学函数、组合、准入和发行的维护测试；不重验 D1 冻结，也不要求当前实现与来源源码一致。审核 YAML 仅作历史合同测试证据，不进入运行包。
 - `provenance/`：来源关系和审核状态，不参与运行时加载。
 - `docs/architecture.md`：Operator、TaskGraph、公共接口、科学身份和目录投影的权威边界。
 - `docs/catalog.md`：面向数万 Operator、数千 TaskGraph 的分片目录和渐进检索合同。
@@ -59,8 +62,9 @@ assert result["B"][0, 0] == 5.0
 - `docs/development-process.md`：首次/增量整合、验证分层和发行候选流程。
 - `docs/requirements/scirel-workflow.md` 与 `docs/design/scirel-workflow.md`：L1 到 release 的领域需求和设计。
 - `docs/requirements/scientific-request-workflow.md` 与 `docs/design/scientific-request-workflow.md`：从用户需求到 SciRel 计算结果和审计解释的出库流程。
-- `docs/design/l1-inventory.md`：可选 L1 结构探针的边界和当前压测结果。
+- `docs/design/l1-inventory.md`：可选 L1 结构探针的边界和历史压测样本。
 - `docs/requirements/codefusion-plugin.md` 与 `docs/integration/codefusion-plugin-contract.md`：CodeFusion 中性 Agent 与专家审核插件边界。
+- `docs/integration/extraction-skill-bundle-deployment.md`：五个 D1 extraction skills 的确定性 bundle 构建与运行副本部署流程。
 - `skills/integration/scirel-integration/`：模型理解保存的 L1、对照当前 SciRel、判定复用/重复/变体/组合并形成专家可审查变更的方法。
 - `skills/usage/scirel-solving/`：模型规范化用户科学请求、匹配发布能力、规划执行并给出证据有界解释的方法。
 
@@ -74,9 +78,24 @@ python scripts/validate_asset_documents.py catalog/examples --check-runtime --ex
 python scripts/build_catalog.py catalog/examples --output-dir build/catalog/<new-run> --catalog-id scirel-development-pilot --release-version 0.1.0.dev5 --coverage-status complete --declared-total 117
 ```
 
-L1 workflow 的本地 fixture 使用 `tests/fixtures/l1/pleiades-minimal.json`，不读取源项目 checkout、数据库或网络；它只验证 candidate、draft、审核和 release artifact 的确定性关联，不代替模型完成真实科学整合。
+L1 workflow 的小型 fixture 使用 `tests/fixtures/l1/pleiades-minimal.json`，只验证 candidate、draft、审核和 release artifact 的确定性关联。真实保存目录或 ZIP 使用 SciRel 自己的转换入口生成内容寻址的 UTF-8 bundle；它保留每个文件的路径、原始字节和摘要，随后由 `scirel.import_l1` 映射 Operator/TaskGraph，不代替模型完成真实科学整合：
 
-模型可选用 `scripts/build_l1_inventory.py` 为多项目 L1 建立结构索引。历史完整压测快照包含 6 个项目、928 个 Operator 和 487 个 TaskGraph；CodeFusion 压测目录重扫结果为 4 个项目、680 个资产、0 个 gap；当前 `材料/extracted_assets` 归档重扫结果为 8 个项目、920 个 Operator 和 355 个 TaskGraph（1275 个资产、0 个 gap）。三者是不同的输入快照，不能混合解读。该索引不是标准输入协议，只有后续标准化和专家审核通过的变更才会进入公共 SciRel 资产。
+```powershell
+python scripts/build_l1_bundle.py <L1目录或ZIP> <新输出.json> --project-id <project-id>
+```
+
+转换器不执行 L1 代码，拒绝路径穿越、符号链接、重复/大小写冲突路径、加密或超界 ZIP，并排除 `__pycache__` 等生成缓存。旧 ZIP 的中文文件名编码不明确时，应从原始 L1 目录重新生成 bundle。结构检查只证明实际文件、直接测试映射和显式依赖闭包；它不声称 AI 标准化或科学正确性已完成。
+
+加载 `scirel-integration` 的模型完成语义比较后，以
+`scirel.standardization-submission.dev` 交付逐项候选三件套。下面的确定性入口校验 exact candidate、
+当前 Git base、未发布候选池和 skill 摘要，有保留增量时生成 reviewer body 可消费的
+`review_pending` workflow；纯复用批次完整记账后生成 `no_changes`，不创建新审核项；它不运行或替代模型：
+
+```powershell
+python scripts/submit_standardization.py <candidate.json> <submission.json> <candidate-pool.json> <new-workflow.json>
+```
+
+模型可选用 `scripts/build_l1_inventory.py` 为多项目 L1 建立结构索引。历史完整压测快照包含 6 个项目、928 个 Operator 和 487 个 TaskGraph；CodeFusion 压测目录重扫结果为 4 个项目、680 个资产、0 个 gap；2026-09-19 的 `材料/extracted_assets` 归档重扫结果为 8 个项目、920 个 Operator 和 355 个 TaskGraph（1275 个资产、0 个 gap）。三者是不同的历史输入快照，不能混合解读，也不代表当前合格 L1 交付。该索引不是标准输入协议，D2 可先集成到可运行开发包，可信发行仍绑定最终批准。
 
 MCP、Codex、Claude Code、CodeFusion、CLI 与云 batch/service 都是 catalog/wheel 的消费者或薄适配器；
 它们不能改变资产身份、单位、端口、适用域或失败语义。详细需求与适配合同见
@@ -91,7 +110,7 @@ MCP、Codex、Claude Code、CodeFusion、CLI 与云 batch/service 都是 catalog
 ## 本地验证与构建
 
 在隔离 Python 环境中安装已有开发依赖（numpy、scipy、pytest、setuptools）。统一入口会设置源码测试所需
-的 `PYTHONPATH`；正式候选 wheel 必须由专家批准后固化的 SciRel 基线生成，不能把未审核候选或整个开发树直接发布。
+的 `PYTHONPATH`；开发 wheel 可先构建供 D3 验证；可信发行必须来自最终批准的冻结版本，不能直接发布未审核开发树。
 
 ```powershell
 pwsh ./scripts/check.ps1 -Mode affected -ChangedPath src/scirel/<domain>/<asset>.py
@@ -103,6 +122,9 @@ pwsh ./scripts/check.ps1 -Mode release -WorkflowSnapshot <approved-workflow.json
 `affected` 根据准入依赖、源码 import 关系和显式测试映射选择改变的 Operator、共享模块及其反向依赖
 TaskGraph；不传 `-ChangedPath` 时读取当前 Git 工作区，也可用 `-BaseRef <ref>` 检查提交范围。无法可靠归属的
 SciRel 源码或公共基线变更会 fail closed 到全套测试。`focused` 可用 `-TestPath` 手工指定精确测试。
+上述库门禁不检查任何源项目的 D1 冻结状态。仓库中维护的 extraction skill/部署工具使用
+`python -m pytest skills/extraction/tests skills/extraction/scientific-computation-asset-extraction/tests`
+单独验证；历史 admitted-only 构建器测试保存在 `provenance/tests/`，不约束当前库源码。
 `release` 要求一个已获专家批准的 workflow 快照和不存在的输出目录。它从当前维护基线构建普通 wheel，
 验证 exact documents，生成 catalog，在隔离环境运行已安装 wheel 的科学合同与用户验收，最后把实际摘要
 写入 release manifest 和 released workflow 快照；它不会覆盖或清理已有结果。更细的整合和验证规则见

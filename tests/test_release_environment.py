@@ -1,5 +1,6 @@
 from pathlib import Path
 import runpy
+import json
 import subprocess
 
 from scripts.validate_asset_documents import load_document_set
@@ -69,11 +70,7 @@ def test_release_gate_uses_the_current_baseline_and_an_approved_workflow():
     assert "-m pip wheel" in script
     assert "scripts/build_catalog.py" in script
     assert "scripts/finalize_release.py" in script
-    assert '$catalogCoverageStatus = "partial"' in script
-    included = len(load_document_set(ROOT / "catalog/examples"))
-    declared = len(runpy.run_path(str(ROOT / "scripts/select_affected_tests.py"))["_load_assets"]())
-    assert f"$catalogIncludedAssetCount = {included}" in script
-    assert f"$catalogDeclaredTotalAssetCount = {declared}" in script
+    assert "Get-SciRelCatalogCoverage -RepositoryRoot $repoRoot -Python $Python" in script
     assert '"--expected-coverage-status" $catalogCoverageStatus' in script
     assert '"--expected-included-asset-count" $catalogIncludedAssetCount' in script
     assert (
@@ -94,3 +91,19 @@ def test_release_gate_checks_the_installed_scientific_runtime():
     assert '"operator_contracts", "graph_contracts", "framework_compositions"' in script
     assert '"test_library_composition.py", "test_public_surface.py"' in script
     assert '"runtime-test-bundle"' in script
+
+
+def test_release_coverage_uses_the_actual_current_catalog():
+    result = subprocess.run(
+        ["pwsh", "-NoProfile", "-Command",
+         f". '{HELPERS}'; Get-SciRelCatalogCoverage -RepositoryRoot '{ROOT}' | ConvertTo-Json"],
+        cwd=ROOT, capture_output=True, text=True, encoding="utf-8",
+    )
+    assert result.returncode == 0, result.stderr
+    coverage = json.loads(result.stdout)
+    included = len(load_document_set(ROOT / "catalog/examples"))
+    declared = len(runpy.run_path(str(ROOT / "scripts/select_affected_tests.py"))["_load_assets"]())
+    assert coverage == {
+        "included": included, "declared": declared,
+        "status": "complete" if included == declared else "partial",
+    }

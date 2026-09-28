@@ -2,9 +2,9 @@
 
 ## 目标
 
-SciRel 负责从保存的 L1 产物开始，完成语义理解、与冻结基线及当前未发布候选池比较、候选准备、专家审核、批准后整合和 release。CodeFusion 是中性的 Agent 宿主，不拥有 SciRel 的科学状态和资产语义。
+SciRel 负责从保存的 L1 产物开始，完成语义理解、与开发/可信基线及当前未发布候选池比较、开发整合与验证、最终待审冻结、专家拍板和 release。CodeFusion 是中性的 Agent 宿主，不拥有 SciRel 的科学状态和资产语义。
 
-语义理解和标准化由加载 `scirel-integration` skill 的模型完成；代码不尝试用固定状态机、脚本或 JSON patch 代替这项工作。模型只在冻结基线之外形成候选文档、候选代码和候选测试。专家批准后，独立的实施步骤才把批准内容应用到 SciRel。
+语义理解和标准化由加载 `scirel-integration` skill 的模型完成；代码不尝试用固定状态机、脚本或 JSON patch 代替这项工作。模型在隔离开发分支完成代码整合、修正、测试及内部 wheel/catalog；可信版本保持只读。正式文档在 D2 去重和代码稳定后生成，重复吸收项仅保留本阶段的来源和处置依据。人类在最终稳定增量处拍板，不成为日常开发前置条件。阶段职责与条件路由以 [开发流程](../development-process.md) 为准。
 
 ## 生命周期
 
@@ -12,25 +12,26 @@ SciRel 负责从保存的 L1 产物开始，完成语义理解、与冻结基线
 candidate
   -> automated_checking
   -> automated_ready | automated_rejected
-  -> draft
+  -> no_changes (全输入已比较且无保留增量)
+  | draft
   -> review_pending
   -> review_in_progress
   -> needs_evidence | rework_requested | rejected | approved
-  -> approved candidate integration/build
+  -> approved frozen-version confirmation/build
   -> released
 ```
 
 候选包可以包含数十或数百个 Operator/TaskGraph；上述审核状态应逐项解释，而不是给整个批次加一把锁。上传前的 `draft` 可以由模型整合、替换或撤回；上传后每项 `review_pending` 都已有确定的初始内容版本，队列中没有模型继续改写。查看某项完整详情只记录该专家看过的版本，不改变同批其它项。领取是另一件事：它记录本轮修改的基点并授予该项的独占写租约；未领取的授权专家仍可只读查看。返工保留先前版本和审核记录。SciRel reviewer body 已实现逐资产投影、只读打开、精确版本决定、完整 successor 和批准子集返回；租约、版本历史与 diff 仍由 CodeFusion 通用工作台实现和验收。
 
-候选生成与候选审核/固化是两个异步流程。模型提交批次后即可结束运行，不等待耗时不可控的人工审核。逐项 `approved` 只使该项有资格被上传者取回并进入独立固化流程，不表示整个批次已批准或已经修改 SciRel。只有批准项及其依赖闭包完成固化且 release 构建成功，才能产生 `released`。candidate、draft、候选代码和候选测试不得在批准前进入维护基线、运行时 catalog 或 wheel。
+候选生成与候选审核/固化是两个异步流程。模型提交批次后即可结束运行，不等待耗时不可控的人工审核。逐项 `approved` 只使该项有资格被上传者取回并进入独立固化流程，不表示整个批次已批准或已经修改 SciRel。只有批准项及其依赖闭包完成固化且 release 构建成功，才能产生 `released`。未批准内容可以进入明确标识的开发基线、内部 catalog 和 wheel，但不得进入可信/公开发行。D3 可以使用开发版本并披露信任状态；Agent 独立审核记录真实身份和结论，不伪称人类批准。
 
 ## 领域对象
 
 - **L1 bundle / payload**：来源项目拆解阶段保存的真实输入。目录或 ZIP 先由 SciRel 的转换入口生成 `scirel.l1-bundle.dev`，逐文件保存安全相对路径、原始内容和摘要；`scirel.import_l1` 再从这个受 source Artifact digest 绑定的 bundle 映射资产。CodeFusion 不得手工构造资产列表或猜测 domain 映射。SciRel 不依赖源项目 checkout、CodeFusion 数据库或网络，也不在转换或导入时执行输入代码。
 - **L1 inventory**：`scripts/build_l1_inventory.py` 提供的可选结构探针。它可以帮助定位相对路径、直接测试和显式依赖缺口，但不是模型整合 L1 的必经输入或标准化协议。
 - **CandidatePackage**：绑定 `run_id`、来源 artifact、source digest、单一 `project_id`、候选资产和自动检查结果。多项目 inventory 必须先拆成 `to_project_l1_payloads()` 的独立 payload，不能在一个 candidate 中混合推进。
-- **Candidate comparison view**：冻结 SciRel 基线、全部当前未发布候选和本次 L1 输入的联合检索视图。它用于提前发现重复、可合并项和冲突；未发布候选不是可运行资产，也不改变权威基线。
-- **StandardizationSubmission**：模型完成语义工作后的正式交接，绑定 exact candidate/source、SciRel Git base、未发布候选池快照、harness/model/skill 身份，以及逐项文档、代码或无代码理由、测试、处置、依赖、证据和 gaps。它不携带或覆盖自动检查结果。
+- **Candidate comparison view**：冻结 SciRel 基线、全部当前未发布候选和本次 L1 输入的联合检索视图。它用于提前发现重复、可合并项和冲突；未发布候选可以在隔离开发包中运行，但不改变可信基线或自动获得认可。
+- **StandardizationSubmission**：模型完成语义工作后的正式交接，绑定 exact candidate/source、SciRel Git base、未发布候选池快照、harness/model/skill 身份，以及保留增量的逐项文档、代码或无代码理由、测试、处置、依赖、证据和 gaps；无变化输入使用可选 input_dispositions 绑定目标版本和比较证据。它不携带或覆盖自动检查结果。
 - **StandardizedDraft**：确定性门禁接受 submission 后形成的开发期对象。资产文档作为专家主入口，逐项三件套和模型运行身份保存在其 evidence 中；批次只承载来源和比较上下文，不应成为审核锁粒度。
 - **Item revision / review event**：每项 `scirel.review-item.dev` 关联资产文档、代码/测试证据、依赖和 gap；review action 绑定 exact predecessor Artifact，successor Artifact 成为下一 current version。观测、领取、保存、清空修改、放回和提交事件及 diff 由 CodeFusion 保存，同内容可复用快照。
 - **ReviewDecision**：仅由显式 `plugin.review.action` 提交产生，绑定 item ref、最终 Artifact ref/digest、host 认证的 reviewer actor、outcome 和说明；同一批次可独立形成多项结论。旧 `ReviewDecision`/`record_review()` 仍只服务单 draft release fixture，不作为工作台逐项事实。
@@ -41,8 +42,7 @@ SciRel 可以通过宿主 artifact store 保存 `scirel.workflow-state.dev` 快�
 
 ## 自动检查
 
-自动检查至少覆盖资产合同/实现记录、结构、依赖、许可证/来源记录、构建、直接测试 replay
-和标准文档完整性。检查结果只能说明机器门禁范围内的事实，不能替代专家对科学适用性的判断。
+自动检查按阶段选择：D1 必须保持全来源范围、源实现/数值对照及可运行重组；入库转换只检查路径安全、实现/直接测试、来源映射和图依赖，不执行输入代码，也不以正式 Markdown 缺失拒收。D2 负责比较后代码、受影响测试和开发包；标准文档完整性在保留资产稳定后、catalog 投影/最终待审冻结前检查。检查结果只能说明机器门禁范围内的事实，不能替代专家对科学适用性的判断。
 
 检查失败必须保留结构化原因。存在失败或缺口时，workflow 不得创建可审核 draft。
 
@@ -60,7 +60,7 @@ SciRel 可以通过宿主 artifact store 保存 `scirel.workflow-state.dev` 快�
 工作目录和模型推理过程不固定，但上传边界必须形成
 `scirel.standardization-submission.dev`。`SciRelWorkflow.submit_standardization()` 重新校验
 candidate/source digest、SciRel Git base、候选池与 skill digest、L1 资产记账和每项三件套内容摘要，
-成功后一次性产生 `review_pending` workflow。该门禁只验证绑定和结构，不把模型自报的命令结果
+有保留增量时产生 `review_pending` workflow；全部输入均由有证据的复用/重复/覆盖处置解释时产生 `no_changes`，不创建 draft、审核项、批准或 release。每个输入在 review_units 与 input_dispositions 中必须恰好归属一次。该门禁只验证绑定和结构，不把模型自报的命令结果
 解释为科学正确或平台执行事实，也不运行模型。
 
 上传者将一个批量候选交给独立工作台，并在项目权限内选择对全部获准审核员可见或指定审核员可见。列表、详情、三件套 Artifact 和动作的权限都必须在服务端复核；可见不等于可写或已领取。专家按单个 Operator/TaskGraph 自行领取，工作台按 item ref 签发带代次的写租约；同一项只允许一个有效持有者，不同项可并行。领取事件绑定当时的内容版本，作为本轮清空修改的返回点。过期或旧代次提交不得覆盖当前版本。
@@ -81,19 +81,19 @@ candidate/source digest、SciRel Git base、候选池与 skill digest、L1 资�
 
 ## 批准后固化与候选冲突
 
-批准后由新的短任务完成固化，原 Claude Code、CodeFusion 或 Codex 运行不需要等待专家。第一版按串行队列处理已批准候选；只有受影响科学身份和依赖闭包明确不相交时，才允许并行固化。
+批准后由新的短任务确认冻结开发版本与批准内容一致并准备发行，不从头重做已完成的开发整合；原 Claude Code、CodeFusion 或 Codex 运行不需要等待专家。第一版按串行队列处理已批准候选；只有受影响科学身份和依赖闭包明确不相交时，才允许并行固化。
 
 每次固化先把候选审核时的 Git base 与当前 SciRel 基线比较：
 
 1. 相关资产、公共合同、依赖、TaskGraph 和 patch hunk 均未变化时，原样应用批准的候选代码和测试；
 2. 基线有无关变化但批准 patch 仍能原样应用时，应用后运行 affected tests 和候选声明的直接测试；
 3. 同一科学身份、公共合同、依赖闭包、TaskGraph 或 patch hunk 已变化时，停止固化，不采用 last-write-wins；
-4. 冲突候选基于最新基线重新比较并形成关联的新候选。即使它因此变成重复或直接复用，也必须把新处置作为文档候选交给专家，不能静默丢弃；
+4. 冲突候选基于最新基线重新比较并形成关联的新候选。若它因此成为无变化的重复/复用，保留本阶段目标绑定与科学处置证据，可结束为 no_changes；若公共合同改变仍形成新的待审增量；
 5. 旧批准记录保持冻结，只证明旧候选曾获批准，不能自动批准新代码。
 
 这里不新增复杂的长期状态机。当前 `approved` 即“已批准、等待固化”；固化成功后才能调用 `release`。冲突时保留原 workflow 和固化失败证据，另起一个候选 workflow。工作台把“已批准待固化、固化冲突、已发布”作为现有记录的投影视图即可。
 
-允许候选增量堆积在 artifact、review directory、branch 或 worktree 中。即使候选目录位于 SciRel 仓库，它也必须排除在公共 import、catalog 和 wheel 之外；否则就已经是在修改维护基线，不能等到周期性功能审查再补审核。
+允许在隔离开发分支整合、提交并构建可运行开发版本，避免长期未提交候选堆积。冻结待审版本相对上一可信版本呈现累积科学差异；不要求每次开发提交先审核。可信/公开发行仍只包括最终批准的确切内容。
 
 ## Release 门禁
 

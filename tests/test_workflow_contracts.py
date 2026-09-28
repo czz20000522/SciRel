@@ -192,7 +192,8 @@ def test_standardization_submission_covers_contract_fields_exactly():
     )
     contract = load_contract("standardization-submission-dev.schema.json")
 
-    assert set(submission.to_dict()) == set(contract["properties"])
+    assert set(submission.to_dict()) == set(contract["properties"]) - {"input_dispositions"}
+    assert "input_dispositions" not in contract["required"]
 
 
 def test_project_l1_payload_covers_inventory_contract_required_fields(tmp_path):
@@ -252,7 +253,8 @@ def test_workflow_snapshot_covers_contract_fields_exactly():
     contract = load_contract("workflow-state-dev.schema.json")
 
     assert set(contract["required"]) <= set(snapshot)
-    assert set(snapshot) == set(contract["properties"])
+    assert set(snapshot) == set(contract["properties"]) - {"no_change_submission"}
+    assert "no_change_submission" not in contract["required"]
 
 
 def test_review_ui_projection_contract_has_exact_public_actions():

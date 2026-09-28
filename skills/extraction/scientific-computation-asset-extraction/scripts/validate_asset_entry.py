@@ -21,6 +21,8 @@ def validate(root: Path, expected_operators: int, expected_task_graphs: int) -> 
 
     bundle = module.load_asset_bundle(root)
     assets = bundle.list_assets()
+    if not assets:
+        raise AssertionError("asset entry must expose at least one scientific asset")
     operators = [asset for asset in assets if asset["kind"] == "operator"]
     graphs = [asset for asset in assets if asset["kind"] == "task_graph"]
     if len(operators) != expected_operators:
@@ -34,6 +36,8 @@ def validate(root: Path, expected_operators: int, expected_task_graphs: int) -> 
             raise AssertionError(asset)
 
     for kind_assets in (operators, graphs):
+        if not kind_assets:
+            continue
         for asset in (kind_assets[0], kind_assets[-1]):
             if not bundle.find_assets(query=asset["name"], kind=asset["kind"]):
                 raise AssertionError(asset)

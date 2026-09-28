@@ -215,9 +215,10 @@ print(json.dumps(roots))
             throw "Failed to read the installed SciRel distribution version."
         }
 
-        $catalogCoverageStatus = "partial"
-        $catalogIncludedAssetCount = 62
-        $catalogDeclaredTotalAssetCount = 109
+        $coverage = Get-SciRelCatalogCoverage -RepositoryRoot $repoRoot -Python $Python
+        $catalogCoverageStatus = $coverage.status
+        $catalogIncludedAssetCount = $coverage.included
+        $catalogDeclaredTotalAssetCount = $coverage.declared
         $catalogPath = Join-Path $releaseOutputPath "catalog"
         $catalogOutput = & $Python "scripts/build_catalog.py" `
             "catalog/examples" `

@@ -169,3 +169,50 @@ def test_standardization_submission_has_no_automated_check_override():
         assert "unknown fields: automated_checks" in str(error)
     else:
         raise AssertionError("submission accepted a forged automated-check field")
+
+
+def test_official_gate_completes_reuse_without_copying_documents_or_queuing_review():
+    candidate = CandidatePackage.from_l1(
+        {
+            "assets": [{"candidate_asset_id": "pleiades:operator:circular-filament-green"}],
+            "automated_checks": [{"name": "replay", "status": "passed"}],
+        },
+        source_artifact_ref="artifact://l1/pleiades",
+        source_digest="sha256:" + "1" * 64,
+        run_id="run-no-new-assets",
+    )
+    payload = _submission_payload(candidate, "a" * 40)
+    payload["review_units"] = []
+    payload["input_dispositions"] = [{
+        "source_asset_ids": ["pleiades:operator:circular-filament-green"],
+        "disposition": "reuse",
+        "target_asset_id": ASSET_DOCUMENT["asset_id"],
+        "target_ref": "artifact://catalog/frozen/circular-filament-green",
+        "target_digest": digest(ASSET_DOCUMENT),
+        "evidence": [{"kind": "mapped_comparison", "ref": "run://comparison"}],
+    }]
+    snapshot = build_review_workflow(
+        candidate.to_dict(), payload, [],
+        scirel_git_base="a" * 40,
+        skill_digest=payload["producer"]["skill"]["digest"],
+    )
+    assert snapshot["status"] == "no_changes"
+    assert snapshot["no_change_submission"]["input_dispositions"] == payload["input_dispositions"]
+    assert snapshot["draft"] is None
+    assert snapshot["release"] is None
+    host = FakeHost()
+    plugin = SciRelPlugin.for_development(host)
+    artifact = host.put_artifact("scirel.workflow-state.dev", snapshot)
+    assert plugin.list_review_items((artifact,))["items"] == []
+
+    submission_contract = json.loads(
+        (ROOT / "contracts/standardization-submission-dev.schema.json").read_text(encoding="utf-8")
+    )
+    assert set(payload) == set(submission_contract["properties"])
+    assert set(payload["input_dispositions"][0]) == set(
+        submission_contract["$defs"]["inputDisposition"]["properties"]
+    )
+    snapshot_contract = json.loads(
+        (ROOT / "contracts/workflow-state-dev.schema.json").read_text(encoding="utf-8")
+    )
+    assert set(snapshot) == set(snapshot_contract["properties"])

@@ -2,7 +2,7 @@
 
 ## 设计原则
 
-workflow 是 host-independent 的领域协调器。它记录从 L1 比较得到的候选、确定性检查、专家 action，以及批准后整合产生的 catalog、wheel 和 release version。存储和传输由调用方或 plugin adapter 负责。
+workflow 是 host-independent 的领域协调器。它记录从 L1 比较得到的候选、确定性检查、专家 action，以及最终批准绑定的 catalog、wheel 和 release version。存储和传输由调用方或 plugin adapter 负责。
 
 workflow 不执行科学标准化，也不规定模型必须使用的探针、脚本或中间文件。加载
 `scirel-integration` skill 的模型负责理解 L1、比较当前 SciRel 与未发布候选池、修改隔离工作树和形成证据；
@@ -11,14 +11,14 @@ workflow 只记录其结果，并执行可确定验证的状态、摘要、文�
 模型交接使用 `scirel.standardization-submission.dev`。每个 review unit 绑定一个目标 asset document、
 一个面向专家的候选文档、候选代码或明确的无代码理由、候选测试与实际结果、来源 L1 asset IDs、
 处置和依赖。外层绑定 candidate/source digest、Git base、候选池快照及 producer 身份。
-`submit_standardization()` 校验这些事实及全部 L1 asset 的覆盖后直接生成 `review_pending` draft；
+`submit_standardization()` 校验这些事实及全部 L1 asset 的覆盖；有保留增量时生成 `review_pending` draft，无增量且 input_dispositions 完整时生成 `no_changes`；
 submission 不能声明或改写 automated checks。
 
 下述 `WorkflowRecord` 与 transition API 仍描述单 draft release fixture。实际 reviewer body 已在插件边界把 batch 投影为逐个 Operator/TaskGraph item，支持只读打开、逐项结论、完整 successor 和批准子集取回；它复用 CodeFusion 中性 workbench 的 lease/CAS，不把平台协调字段写回 `WorkflowRecord`。
 
-`WorkflowRecord` 保存当前 draft/review，以及本次 run 的 draft/review history。这里的 draft 是冻结基线之外的候选三件套，不是已经写入 SciRel 的资产。当前开发 fixture 只允许在 `draft` 状态原位替换并复用 `draft_id`；`submit_for_review` 代表上传边界，之后初始版本固定。fixture 仍在 `start_review` 时把单个 draft 推进到 `review_in_progress`，这只是内部人工审核状态，不是目标工作台的“首次打开才冻结”合同。目标流程中查看只记录所见版本，返工另记版本和决定，任何操作都不覆盖 L1 source、冻结基线或已存版本。
+`WorkflowRecord` 保存当前 draft/review，以及本次 run 的 draft/review history。这里的 draft 是最终待审的冻结三件套，可引用已在隔离 SciRel 开发版实现并验证的代码；它不是可信发行证明。当前开发 fixture 只允许在 `draft` 状态原位替换并复用 `draft_id`；`submit_for_review` 代表上传边界，之后初始版本固定。fixture 仍在 `start_review` 时把单个 draft 推进到 `review_in_progress`，这只是内部人工审核状态，不是目标工作台的“首次打开才冻结”合同。目标流程中查看只记录所见版本，返工另记版本和决定，任何操作都不覆盖 L1 source、冻结基线或已存版本。
 
-模型的比较视图由“冻结 SciRel 基线 + 全部当前未发布候选 + 本次 L1”组成。候选池用于上传前的语义去重、合并和冲突预判，不进入公共 import、catalog 或 wheel，因此不成为第二套权威基线。上传后的 item 没有后台模型更新；领取绑定的起始版本在本轮必须保持可恢复。新的 AI 准备运行只能产生关联候选，由上传者明确提交，不能覆盖已上传版本。
+模型的比较视图由“冻结 SciRel 基线 + 全部当前未发布候选 + 本次 L1”组成。候选池用于上传前的语义去重、合并和冲突预判，可在隔离开发包 import、构建内部 catalog/wheel，但不得冒充可信基线。上传后的 item 没有后台模型更新；领取绑定的起始版本在本轮必须保持可恢复。新的 AI 准备运行只能产生关联候选，由上传者明确提交，不能覆盖已上传版本。
 
 上传前草稿撤回由候选 artifact 层取消引用，不增加 `WorkflowStatus`。已上传项的撤回必须是上传者的显式队列操作，保留初始内容引用和事件，而非基于“尚未观测”静默删除。
 
@@ -38,6 +38,7 @@ session、credential 或平台审计字段，因此恢复不依赖 CodeFusion �
 有失败或 gap       -> automated_rejected / retry / rework_requested / needs_evidence
 检查通过且无显式阻断动作 -> automated_ready
 检查通过但 next_action 要求补证据或返工 -> needs_evidence / rework_requested
+完整无变化处置     -> no_changes (无 draft/review/release)
 有 draft            -> draft / review_pending / review_in_progress
 审核 action         -> needs_evidence / rework_requested / rejected / approved
 approved + 构建完成 -> released
@@ -113,6 +114,17 @@ release 还逐项要求资产文档的 `version.implementation_version` 精确�
 中处理，随后针对真实变更重新运行门禁。这样既允许模型按具体科学问题选择验证方法，也避免
 把一次任务的修复形态固化为通用 patch schema。
 
+## 无变化交接与兼容性
+
+input_dispositions 是可选字段；每项包含 source_asset_ids、disposition（reuse/exact_duplicate/covered_by）、
+target_asset_id、target_ref、target_digest 和 evidence。它与 review_units 一起完整且无重复地记账。
+目标引用绑定实际比较版本；领域对象不读取外部 artifact，也不证明科学等价，D2 必须提供实际比较依据。
+纯无变化 submit_standardization 返回 None，workflow.status 为 NO_CHANGES；官方 CLI 仍序列化 workflow，
+插件无待审 item。快照保存 no_change_submission，恢复时重新验证绑定、检查结果、输入覆盖和 gaps。
+该终态不能新建 draft 或被新检查修改；完全相同的既有检查回放保持幂等。
+旧 payload/快照省略新增空字段，既有摘要和读取方式不变；无需数据库迁移。
+这条路径不为目标资产创造批准或 release，release 的 approved 门禁不变。
+
 ## Artifact 适配
 
 `SciRelPlugin` 不把 workflow 状态写入宿主数据库，而是通过宿主已有 artifact store
@@ -137,7 +149,7 @@ artifact 的 digest 和 reference 由 host 生成；领域 payload 由 SciRel co
 
 ## 构建与运行绑定
 
-专家批准后，独立实施步骤按候选文档应用候选代码和测试；任何实质偏离都返回审核。release build 再读取实际标准化资产文档和受影响测试结果，生成 catalog、wheel 和 manifest。manifest 只描述这一次 release 绑定，不成为第二套科学真值。CodeFusion runtime 读取 manifest 后验证 candidate/draft、catalog 和 wheel 的绑定，再暴露已发布 callable。
+D2 在开发分支已整合代码与测试并可构建开发 wheel。专家最终批准后，独立步骤确认实际版本符合已批准快照；任何科学实质偏离形成 successor 重新审核。release build 再读取实际标准化资产文档和受影响测试结果，生成 catalog、wheel 和 manifest。manifest 只描述这一次 release 绑定，不成为第二套科学真值。CodeFusion runtime 读取 manifest 后验证 candidate/draft、catalog 和 wheel 的绑定，再暴露已发布 callable。
 
 draft、review action 和自动检查结果可以被工作台查询，但不得被运行时 callable resolver 当作 release。
 
@@ -150,11 +162,11 @@ draft、review action 和自动检查结果可以被工作台查询，但不得�
 - 没有交集，或只有无关文件变化且批准 patch 可逐字保持时，应用原候选并运行 affected tests；
 - 同一 patch hunk、稳定 asset ID、公共 API/科学合同、依赖边或受影响 TaskGraph 发生变化时，判为冲突，不自动选取较新或较早候选；
 - 冲突产生一个固化失败 artifact，并以当前 HEAD 为 base 创建关联的新候选。旧 workflow 和旧 review 不改写；
-- 新候选可以得出“已被前一个候选吸收/现在应复用”的结论，但仍需新的候选文档和审核。
+- 新候选可以得出“已被前一个候选吸收/现在应复用”的结论，只保留可核对的 input_dispositions；无公共合同改变时无需新文档或审核。
 
 因此不需要在 `WorkflowStatus` 中复制队列系统的每个瞬时状态：`approved` 表示等待固化，存在 release 表示固化和发行均完成。工作台可由 approved workflow、release 缺失和最近一次固化结果投影“待固化/冲突”。若后续真实负载证明串行固化成为瓶颈，再只对影响闭包互斥的候选增加并行调度。
 
-“先写入包、后周期审查”只允许作为隔离候选存储：候选路径不得被 `scirel` 导入，不得进入 catalog 或 wheel。只要代码能够通过维护中的公共包执行，它就已经改变冻结基线，必须先有专家批准。
+隔离开发包可执行和验证，最终待审与可信版采用独立版本绑定。开发进展不改写上一可信版本。正式文档在 D2 去重/代码稳定后为保留增量生成；源注释和派生代码中的内部实现备注不复制成正式审核文档。
 
 ## 验证策略
 

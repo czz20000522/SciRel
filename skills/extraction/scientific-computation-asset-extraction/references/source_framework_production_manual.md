@@ -18,6 +18,10 @@ while Level 1 supplies their source anchors, ports, hidden state, branch guards,
 
 ## Required normalized evidence
 
+Reuse existing source indexes, code/YAML and scientific records for these facts; the names below are information
+roles, not a requirement for one new file or table per role. Supplement only missing facts. A final human-readable
+map is a projection produced at handoff, not an extra document to rewrite during every implementation iteration.
+
 Freeze one evidence package before comparing or combining AI results:
 
 ```text
@@ -49,7 +53,7 @@ Different evidence packages are different extraction runs and must not be used t
 8. **Reconcile scientific identity.** Bind every equation anchor and scientific node to source/state evidence and every glue edge to its source port movement. Promote an apparent edge to a node whenever it computes interpolation, boundary synthesis, closure, discretization, scientific normalization, or a state update.
 9. **Emit normalized node records.** Assign one allowed node role and one asset-projection status. A task-graph candidate denotes a required local subweb, not an indivisible scientific leaf; retain its participating node and edge identities.
 10. **Emit state/port edges.** Create edges only from evidenced data/state movement; attach shape, axes, units, sign, normalization, index base, branch selector, and hidden state.
-11. **Derive the Mermaid from ledgers.** Never use a drawing as the sole source of Level 1 truth.
+11. **Project a map when needed.** At handoff, derive a diagram from existing records if it helps its reader. A drawing is not the sole source of scientific truth and is not a D1 formatting gate.
 12. **Record coverage and ambiguity.** Uncovered source families, unbound web nodes/edges, and unresolved split decisions remain visible; do not force a green completeness result.
 
 ## Split rules

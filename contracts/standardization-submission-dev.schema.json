@@ -35,8 +35,11 @@
     "producer": {"$ref": "#/$defs/producer"},
     "review_units": {
       "type": "array",
-      "minItems": 1,
       "items": {"$ref": "#/$defs/reviewUnit"}
+    },
+    "input_dispositions": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/inputDisposition"}
     },
     "run_evidence": {
       "type": "array",
@@ -49,6 +52,25 @@
     }
   },
   "$defs": {
+    "inputDisposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_asset_ids", "disposition", "target_asset_id",
+        "target_ref", "target_digest", "evidence"
+      ],
+      "properties": {
+        "source_asset_ids": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "disposition": {"enum": ["reuse", "exact_duplicate", "covered_by"]},
+        "target_asset_id": {"type": "string", "minLength": 1},
+        "target_ref": {"type": "string", "minLength": 1},
+        "target_digest": {"$ref": "#/$defs/digest"},
+        "evidence": {"type": "array", "minItems": 1, "items": {"type": "object"}}
+      }
+    },
     "digest": {
       "type": "string",
       "pattern": "^sha256:[0-9a-fA-F]{64}$"
@@ -178,5 +200,9 @@
         }
       }
     }
-  }
+  },
+  "anyOf": [
+    {"properties": {"review_units": {"minItems": 1}}},
+    {"required": ["input_dispositions"], "properties": {"input_dispositions": {"minItems": 1}}}
+  ]
 }

@@ -1,3 +1,31 @@
+function Get-SciRelCatalogCoverage {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [string]$Python = "python"
+    )
+    Push-Location $RepositoryRoot
+    try {
+        $result = & $Python -c @'
+import json
+from pathlib import Path
+from scripts.validate_asset_documents import load_document_set
+from scripts.select_affected_tests import _load_assets
+included = len(load_document_set(Path('catalog/examples')))
+declared = len(_load_assets())
+if not included or included > declared:
+    raise SystemExit('invalid current catalog coverage')
+print(json.dumps({'status': 'complete' if included == declared else 'partial',
+                  'included': included, 'declared': declared}))
+'@
+        if ($LASTEXITCODE -ne 0) {
+            throw "Cannot determine current catalog coverage."
+        }
+        return ($result | ConvertFrom-Json)
+    }
+    finally { Pop-Location }
+}
+
 function Resolve-SciRelVenvPython {
     [CmdletBinding()]
     param(

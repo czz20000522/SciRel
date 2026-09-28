@@ -9,7 +9,7 @@ description: Use when generalizing and normalizing a selected batch of correctne
 
 Apply the normalization method to one caller-selected batch of exact scientific candidates. Compare scientific
 meaning before code shape, preserve material applicability differences, create common contracts and implementations
-where the evidence supports them, and prepare one internally consistent document/code/test candidate for expert review.
+where the evidence supports them, and produce a coherent retained development implementation with comparison evidence. Formal documents follow stable code.
 
 This skill may report that its declared method scope is complete, but it cannot write or advance normalization
 lifecycle state. It does not reopen source-project discovery, re-decide inherited correctness without a concrete
@@ -19,18 +19,21 @@ documentation. Read the governing
 
 Use the shared [stage boundary contract](../../extraction/scientific-computation-asset-extraction/references/stage_boundary_contract.md).
 Preserve the correctness-qualified inputs and evidence used for comparison. A structural or profile
-repair may be batched deterministically; a scientific ambiguity, external dependency, or
-human decision becomes a `boundary_event` and is not silently resolved during normalization.
+repair may reuse attributable evidence. Investigate scientific ambiguity through the correctness specialist;
+only a genuinely unavailable fact or reserved human decision remains unresolved. Do not route every intermediate
+choice to a human. Upstream deliveries stay read-only; annotate reuse, source references and implementation
+conventions in this stage's code comments/docstrings or existing task record, not a copied formal review document.
 
 ## Required input
 
-Freeze a batch manifest containing exact candidate and dependency digests, scientific contracts, applicability,
+Use the existing exact batch references and comparison record for candidate/dependency versions, scientific meaning, applicability,
 correctness evidence and claim ceilings, source lineages, runtime profiles, selected scope, and exclusions. Reject
 mutable aliases and implicit "latest" versions.
 
 Every candidate must have a usable correctness qualification for the claims normalization will preserve. If the
 input is missing that basis or normalization exposes a concrete contradiction, record
-`input_correctness_conflict` for the affected branch and stop transforming it. Do not repair its science here.
+`input_correctness_conflict` for the affected branch and route a bounded repair to scientific-asset-correctness.
+Continue independent families; do not discard inherited evidence or rebuild the whole batch.
 
 ## Comparison model
 
@@ -74,15 +77,16 @@ parameterize, compose, or discard a scientific identity.
 6. **Compose exact capabilities.** A normalized TaskGraph binds exact nodes and nested graphs and declares ports,
    order, branches, state ownership, feedback, convergence, and failure propagation. It cannot conceal a new
    scientific relation in orchestration code.
-7. **Prove non-regression.** Re-run inherited relation, numerical, port, lifecycle, and terminal-state gates for
-   every changed candidate. Add adapter round-trip/information-preservation tests and composition tests where
+7. **Prove non-regression.** Re-run only relation, numerical, port, lifecycle and terminal-state gates invalidated by
+   the actual scientific change; reuse unchanged attributable evidence. Add adapter round-trip/information-preservation tests and composition tests where
    applicable. New evidence proves the normalized version only; an old pass is not copied by name.
 8. **Freeze the batch.** Bind every input to retained, transformed, absorbed, conflicting, or unresolved outputs;
    freeze exact implementations, contracts, dependencies, comparison decisions, transformation diffs, and
    regression evidence.
 
 Use [the output contract](references/refinement-output-contract.md) for the current package layout and
-[the normalized relation page contract](references/relation-page-contract.md) for each relation.
+[canonical document preparation](references/relation-page-contract.md) only after retained code stabilizes.
+Absorbed duplicates keep lineage and evidence without a new formal document or review item.
 
 ## Coordination
 

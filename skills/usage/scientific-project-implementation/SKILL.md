@@ -20,6 +20,17 @@ when checkout isolation requires it. Reuse the pinned wheel, catalog and environ
 contract permits; freeze trial states and traces through the existing case archive and manifest. This does not move
 or replace a user's persistent project workspace.
 
+## D3 stage boundary
+
+Use the [development process](../../../docs/development-process.md) for D1/D2/D3 responsibilities.
+Consume an exact development or trusted wheel/catalog with its trust status explicit; development use does not
+wait for final human approval. Keep upstream deliveries read-only. Put task-specific assumptions, source references,
+repairs and implementation notes in this project's code comments/docstrings or run record; write the human-facing
+result from the actual stable implementation and observations.
+Return library gaps to scirel-integration and source-only evidence gaps to the D1 owner. Do not rerun valid D1
+source comparisons or require new per-source formal documents for an application task.
+Final library endorsement belongs to scirel-review-preparation; a successful user case supports only its declared scope.
+
 ## Decide once, then act
 
 Inspect the current project and supplied material first. A complete request needs no confirmation. Concrete

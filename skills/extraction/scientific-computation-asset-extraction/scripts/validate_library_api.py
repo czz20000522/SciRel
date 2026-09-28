@@ -41,12 +41,14 @@ def validate(root: Path) -> None:
             raise AssertionError(f"missing root loader: {name}")
     operator = next((item for item in bundle.list_assets("operator")), None)
     graph = next((item for item in bundle.list_assets("task_graph")), None)
-    if operator is None or graph is None:
-        raise AssertionError("library-ready bundle must expose at least one operator and task graph")
-    operator_callable = bundle.operator_callable(f"operators/{operator['name']}")
-    graph_callable = bundle.task_graph_callable(f"task_graphs/{graph['name']}")
-    if not callable(operator_callable) or not callable(graph_callable):
-        raise AssertionError("canonical asset resolvers must return callables")
+    if operator is None and graph is None:
+        raise AssertionError("library-ready bundle must expose at least one scientific asset")
+    for asset, resolver, family in (
+        (operator, bundle.operator_callable, "operators"),
+        (graph, bundle.task_graph_callable, "task_graphs"),
+    ):
+        if asset is not None and not callable(resolver(f"{family}/{asset['name']}")):
+            raise AssertionError("canonical asset resolvers must return callables")
     signatures = {
         "operator_callable": inspect.signature(bundle.operator_callable),
         "task_graph_callable": inspect.signature(bundle.task_graph_callable),

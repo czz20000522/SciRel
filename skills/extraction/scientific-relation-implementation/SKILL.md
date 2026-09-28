@@ -171,6 +171,12 @@ the complete corrected terminal contract independently; matching known wrong out
 
 ### 6. Deliver at the correct boundary
 
+Treat the prior stage's delivery as read-only. Implement changes and annotations in this stage's derived candidate,
+linked to that original. Necessary science may be anchored in code, YAML, docstrings or function/module comments;
+formal human-facing documents wait until D2 retained code is stable and final review is prepared. Do not generate
+a second draft page for facts already recoverable from code.
+
+
 For `new_relation`, integrate into normal project conventions. For `asset_completion` or
 `scientific_correction`, update the
 affected operator/task-graph package, its declared ports, tests, and project sidecars without

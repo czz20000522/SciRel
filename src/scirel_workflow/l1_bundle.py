@@ -407,6 +407,10 @@ def _asset_projection(
     project_id: str, files: tuple[_BundleFile, ...]
 ) -> tuple[tuple[L1AssetEntry, ...], dict[str, dict[str, Any]]]:
     by_path = {item.path: item for item in files}
+
+    def has_content(path: str) -> bool:
+        return path in by_path and bool(by_path[path].content.strip())
+
     assets: list[L1AssetEntry] = []
     enriched: dict[str, dict[str, Any]] = {}
     for kind, root in (("operator", "operators"), ("task_graph", "task_graphs")):
@@ -429,9 +433,9 @@ def _asset_projection(
                 python_impl = prefix + "scientific_operator.py"
                 c_impl = prefix + "scientific_operator.c"
                 c_header = prefix + "scientific_operator.h"
-                if python_impl in by_path:
+                if has_content(python_impl):
                     implementation_paths = [python_impl]
-                elif c_impl in by_path and c_header in by_path:
+                elif has_content(c_impl) and has_content(c_header):
                     implementation_paths = [c_impl, c_header]
                 else:
                     implementation_paths = []
@@ -441,24 +445,22 @@ def _asset_projection(
                         prefix + "test_scientific_operator.py",
                         prefix + "test_scientific_operator.c",
                     )
-                    if path in by_path
+                    if has_content(path)
                 ]
             else:
                 contract_path = prefix + "task_graph.yaml"
                 documentation_path = prefix + "task_graph.md"
                 implementation_paths = (
-                    [prefix + "graph.py"] if prefix + "graph.py" in by_path else []
+                    [prefix + "graph.py"] if has_content(prefix + "graph.py") else []
                 )
                 test_paths = (
                     [prefix + "test_task_graph.py"]
-                    if prefix + "test_task_graph.py" in by_path
+                    if has_content(prefix + "test_task_graph.py")
                     else []
                 )
             gaps: list[str] = []
-            if contract_path not in by_path:
+            if kind == "task_graph" and not has_content(contract_path):
                 gaps.append(f"missing_contract:{contract_path}")
-            if documentation_path not in by_path:
-                gaps.append(f"missing_documentation:{documentation_path}")
             if not implementation_paths:
                 gaps.append(f"missing_implementation:{prefix.rstrip('/')}")
             if not test_paths:
@@ -515,7 +517,6 @@ def l1_bundle_to_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
     for path, gap in (
         ("asset_entry.py", "missing_asset_entry"),
         ("extraction_ledger.md", "missing_extraction_ledger"),
-        ("extraction_report.md", "missing_extraction_report"),
         ("program_framework_map.md", "missing_program_framework_map"),
     ):
         if path not in by_path:

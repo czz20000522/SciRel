@@ -489,10 +489,15 @@ Use when evidence is too weak, the candidate is only glue, or the proposed opera
 
 ## Candidate Operator Packages
 
-Create `operator.md` plus language-profile implementation/test artifacts only for implementation-backed candidates that pass all extraction-eligibility gates:
+Create language-profile implementation/test artifacts only for source-backed candidates that pass all
+extraction-eligibility gates. Necessary science is anchored in code, YAML, docstrings and existing evidence;
+D1 does not require `operator.md`. Formal pages are generated after D2 deduplication, correction and assembly,
+only for retained new/changed assets before final review freeze. See [stage boundaries](stage_boundary_contract.md).
+A documentation correction alone does not rerun science when code, inputs and relevant environment remain
+attributable and unchanged; preserve old observations and repair the affected binding or comparison.
 
 - the candidate maps to a concrete source path, symbol, line range, or cohesive source routine;
-- the reviewer artifact explains strong physical semantics, scientific role, and physical relevance;
+- the delivered scientific anchors make physical semantics, scientific role and physical relevance explicit;
 - the candidate has stable typed inputs and outputs with machine-readable ASCII identifiers;
 - the candidate has independent scientific computation meaning beyond utility glue;
 - the implementation artifact is an implementation-backed extraction or adaptation whose behavior is proven by its own executed tests;
@@ -512,7 +517,7 @@ Controlled completion can help pass the implementation standard gate only when t
 
 ## Project-Level Extraction Report
 
-A whole-project or source-snapshot extraction is incomplete without candidate asset packages for every package-worthy operator or task-graph candidate and a report outside the asset package directories. Use `extraction_report_template.md`.
+A complete whole-project extraction accounts for every source-backed capability with candidates or evidence-based dispositions, plus a concise handoff summary outside asset directories. Reuse exact source-coverage and validation records; do not maintain duplicate narrative tables during implementation. Use `extraction_report_template.md` only at handoff.
 
 Report granularity follows the accountability boundary of the extraction universe:
 
@@ -530,7 +535,7 @@ The report must cover:
 - source execution attempts, oracle choice, and numerical metrics or blockers.
 - extraction completion status: complete only when no package-worthy candidate remains merely unprocessed.
 
-The report is a global sidecar artifact. It is not a replacement for `operator.md`, implementation files, or tests; not a gap note inside the operator package root; and not a place to invent system-owned lifecycle metadata. A report-only or candidate-map-only run is discovery/partial output unless the user explicitly requested that phase.
+The report is a global sidecar artifact. It does not replace scientific anchors, implementation files or tests; not a gap note inside the operator package root; and not a place to invent system-owned lifecycle metadata. A report-only or candidate-map-only run is discovery/partial output unless the user explicitly requested that phase.
 
 ## Required Operator Package Content
 
@@ -551,11 +556,9 @@ requiring the reader to know its source program, PFM node, or task-graph parents
 - controlled-completion notes under boundaries only for supplementation, non-obvious numerical choices, or reviewer-relevant limitations
 - for controlled completions, the source-backed core, each Agent-supplemented repair, where the supplement appears, why it was needed, and any physics or data the agent explicitly did not infer
 
-Do not include these headings in `operator.md`: `Admission Classification`, `Operator Source`, `Source Scenario`, `Source Path`, `Evidence Chunk IDs`, `Self-Test Evidence`, or `Gaps`.
-
-Also do not use legacy extraction-report headings in `operator.md`, including `Admission`, `Scientific Intent`, `Evidence`, `Numerical Contract`, or `Implementation`.
-
-Use `assets/artifact_template_pack/` as the only fill-in shape for `operator.md` and `task_graph.md`. Use `operator_templates.md` only for writing guidance and test evidence headers, and `language_profiles.md` to select implementation/test file names.
+Keep D1 workflow dispositions in project records, not in the callable's scientific definition. Use
+[documentation routing](operator_templates.md) for the later formal document and
+[language profiles](language_profiles.md) for implementation/test files. No D1 gate depends on page headings.
 
 ## Evidence References
 
@@ -599,11 +602,12 @@ The test artifact must not stop at:
 - docstring exists
 - `assert True`
 
-`operator.md` should record validation intent in its single-language `Validation and Source Basis` / `验证与溯源` section; latest executed command/result and source-comparison status belong only in the top comments of the test artifact.
+Record validation intent with the test or existing scientific anchor; bind executed commands, source identity,
+actual per-output metrics and runtime conditions in the existing evidence record. Do not duplicate these facts
+in a mandatory test-header format or an extra Markdown page. Use `direct_source_runnable` when the test actually
+imports, compiles or subprocess-runs source and compares candidate values; compiled parity needs no new token.
 
-Use `direct_source_runnable` in the test header whenever the test imports, compiles, or subprocess-runs the source and compares candidate values. Describe compile/run details in `对照依据`, `命令`, and `运行环境`; do not create new status tokens for compiled parity.
-
-If direct parity only covers a source-runnable subdomain because the original source crashes or is undefined on another path, do not invent a new source status. Keep `direct_source_runnable` only when the source is actually run, state the subdomain in `对照依据`, document the repair under `Boundaries / 边界`, and test the repaired path separately.
+If direct parity only covers a source-runnable subdomain because the original source crashes or is undefined on another path, do not invent a new source status. Keep `direct_source_runnable` only when the source is actually run, state the subdomain and correction in the scientific/evidence anchor, and test the repaired path separately.
 
 ## Hard Reject Rules
 

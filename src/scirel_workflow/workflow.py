@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 
@@ -30,6 +31,7 @@ class WorkflowRecord:
     reviews: list[ReviewDecision] = field(default_factory=list)
     automated_results: list[AutomatedCheckResult] = field(default_factory=list)
     release: ReleaseManifest | None = None
+    no_change_submission: StandardizationSubmission | None = None
 
     def to_dict(self, *, status: WorkflowStatus) -> dict[str, Any]:
         """Serialize only SciRel-owned workflow state.
@@ -39,7 +41,7 @@ class WorkflowRecord:
         the payload remains a SciRel domain record.
         """
 
-        return {
+        result = {
             "schema": "scirel.workflow-state.dev",
             "status": status.value,
             "candidate": self.candidate.to_dict(),
@@ -52,6 +54,10 @@ class WorkflowRecord:
             ],
             "release": self.release.to_dict() if self.release is not None else None,
         }
+        if self.no_change_submission is not None:
+            result["no_change_submission"] = self.no_change_submission.to_dict()
+            return deepcopy(result)
+        return result
 
 
 class SciRelWorkflow:
@@ -82,6 +88,8 @@ class SciRelWorkflow:
             ):
                 return self.record.draft.status
             return WorkflowStatus.DRAFT
+        if self.record.no_change_submission is not None:
+            return WorkflowStatus.NO_CHANGES
         candidate = self.record.candidate
         if candidate.automated_ready:
             return WorkflowStatus.AUTOMATED_READY
@@ -120,7 +128,7 @@ class SciRelWorkflow:
         if not isinstance(payload, Mapping):
             raise WorkflowError("workflow snapshot must be an object")
         missing = required.difference(payload)
-        unknown = set(payload).difference(required)
+        unknown = set(payload).difference(required | {"no_change_submission"})
         if missing:
             raise WorkflowError(
                 "workflow snapshot is missing fields: " + ", ".join(sorted(missing))
@@ -131,6 +139,8 @@ class SciRelWorkflow:
             )
         if payload["schema"] != "scirel.workflow-state.dev":
             raise WorkflowError(f"unsupported workflow snapshot schema: {payload['schema']}")
+        if "no_change_submission" in payload:
+            payload = deepcopy(payload)
 
         candidate_payload = payload["candidate"]
         if not isinstance(candidate_payload, Mapping):
@@ -194,6 +204,11 @@ class SciRelWorkflow:
                 if current_release is not None
                 else None
             )
+            workflow.record.no_change_submission = (
+                StandardizationSubmission.from_mapping(payload["no_change_submission"])
+                if "no_change_submission" in payload
+                else None
+            )
         except (KeyError, TypeError, ValueError) as error:
             raise WorkflowError(f"invalid workflow snapshot: {error}") from error
 
@@ -214,6 +229,12 @@ class SciRelWorkflow:
 
         record = self.record
         candidate = record.candidate
+        if record.no_change_submission is not None:
+            if any((record.draft, record.review, record.drafts, record.reviews, record.release)):
+                raise WorkflowError("no-change completion cannot contain review or release records")
+            self._validate_submission(record.no_change_submission)
+            if record.no_change_submission.review_units or record.no_change_submission.gaps:
+                raise WorkflowError("no-change completion cannot contain review units or gaps")
         result_ids: set[str] = set()
         for result in record.automated_results:
             if result.result_id in result_ids:
@@ -340,6 +361,8 @@ class SciRelWorkflow:
         evidence: list[Mapping[str, Any]] | tuple[Mapping[str, Any], ...] = (),
         gaps: list[str] | tuple[str, ...] = (),
     ) -> StandardizedDraft:
+        if self.record.no_change_submission is not None:
+            raise WorkflowError("completed no-change workflow cannot create a draft")
         if self.record.release is not None:
             raise WorkflowError("released workflow cannot create another draft")
         if self.record.draft is not None and self.record.review is None:
@@ -407,6 +430,8 @@ class SciRelWorkflow:
                     "automated result_id was reused with different content"
                 )
             return self.record.candidate
+        if self.record.no_change_submission is not None:
+            raise WorkflowError("automated results cannot change a completed no-change workflow")
         if self.record.draft is not None or self.record.release is not None:
             raise WorkflowError("automated results cannot change a drafted workflow")
         try:
@@ -424,26 +449,18 @@ class SciRelWorkflow:
         draft.status = WorkflowStatus.REVIEW_PENDING
         return draft
 
-    def submit_standardization(
+    def _validate_submission(
         self,
         submission: StandardizationSubmission,
         *,
         expected_scirel_git_base: str | None = None,
         expected_candidate_pool_digest: str | None = None,
         expected_skill_digest: str | None = None,
-    ) -> StandardizedDraft:
-        """Validate one model submission and atomically queue its review units.
-
-        The model owns the semantic comparison and proposed materials. This
-        transition only verifies exact bindings, input coverage, and the trio
-        structure before producing the host-independent review snapshot.
-        """
-
+    ) -> None:
+        """Check identity and complete accounting independently of review packaging."""
         candidate = self.record.candidate
         if not candidate.automated_ready:
             raise WorkflowError("candidate automated checks are not ready")
-        if self.record.draft is not None:
-            raise WorkflowError("workflow already has a standardized draft")
         if submission.candidate_id != candidate.candidate_id:
             raise WorkflowError("standardization submission refers to another candidate")
         if submission.candidate_digest != candidate.package_digest:
@@ -474,8 +491,10 @@ class SciRelWorkflow:
             candidate_asset_ids.add(asset_id)
         submitted_source_ids: set[str] = set()
         duplicate_source_ids: set[str] = set()
-        for unit in submission.review_units:
-            for source_asset_id in unit.source_asset_ids:
+        source_groups = [unit.source_asset_ids for unit in submission.review_units]
+        source_groups.extend(item["source_asset_ids"] for item in submission.input_dispositions)
+        for source_ids in source_groups:
+            for source_asset_id in source_ids:
                 if source_asset_id in submitted_source_ids:
                     duplicate_source_ids.add(source_asset_id)
                 submitted_source_ids.add(source_asset_id)
@@ -497,6 +516,37 @@ class SciRelWorkflow:
                 + ", ".join(sorted(missing))
             )
 
+    def submit_standardization(
+        self,
+        submission: StandardizationSubmission,
+        *,
+        expected_scirel_git_base: str | None = None,
+        expected_candidate_pool_digest: str | None = None,
+        expected_skill_digest: str | None = None,
+    ) -> StandardizedDraft | None:
+        """Queue changed assets, or finish unchanged reuse without inventing review items.
+
+        No-change completion only records comparison and lineage. It grants no
+        scientific approval, modifies no library, and creates no release.
+        """
+        if self.record.no_change_submission is not None:
+            raise WorkflowError("completed no-change workflow cannot accept another submission")
+        if self.record.draft is not None:
+            raise WorkflowError("workflow already has a standardized draft")
+        self._validate_submission(
+            submission,
+            expected_scirel_git_base=expected_scirel_git_base,
+            expected_candidate_pool_digest=expected_candidate_pool_digest,
+            expected_skill_digest=expected_skill_digest,
+        )
+        if not submission.review_units:
+            if submission.gaps:
+                raise WorkflowError("no-change completion cannot hide unresolved gaps")
+            self.record.no_change_submission = StandardizationSubmission.from_mapping(
+                deepcopy(submission.to_dict())
+            )
+            return None
+
         evidence: list[dict[str, Any]] = [
             {
                 "kind": "standardization_submission",
@@ -511,6 +561,10 @@ class SciRelWorkflow:
                 "run_evidence": list(submission.run_evidence),
             }
         ]
+        evidence.extend(
+            {"kind": "standardization_input_disposition", **item}
+            for item in submission.input_dispositions
+        )
         gaps = list(submission.gaps)
         assets: list[dict[str, Any]] = []
         for unit in submission.review_units:

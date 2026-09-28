@@ -117,10 +117,10 @@ source_unavailable: 使用独立闭式公式和边界测试验证当前实现。
         )
         self.assertTrue(any("original-source anchor" in error for error in errors), errors)
 
-    def test_rejects_english_project_document(self) -> None:
+    def test_project_document_language_is_not_a_d1_gate(self) -> None:
         errors = self._validate_project_document("en-US")
 
-        self.assertIn(
+        self.assertNotIn(
             "program_framework_map.md requires language: zh-CN during intake",
             errors,
         )

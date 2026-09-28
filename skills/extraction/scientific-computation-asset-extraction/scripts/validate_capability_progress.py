@@ -3,12 +3,26 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import string
 from pathlib import Path
 from typing import Any
 
 MAX_PROGRESS_JSON_BYTES = 10 * 1024 * 1024
 CACHE_DIRECTORY_NAMES = {"__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache"}
+REPORT_ONLY_ROOT_FILES = {
+    "extraction_report.md",
+    "extraction_ledger.md",
+    "program_framework_map.md",
+}
+
+
+def _is_package_document(relative: str) -> bool:
+    parts = relative.split("/")
+    return len(parts) == 3 and (
+        (parts[0] == "operators" and parts[2] == "operator.md")
+        or (parts[0] == "task_graphs" and parts[2] == "task_graph.md")
+    )
 
 ANCHOR_KINDS = {
     "governing_equation",
@@ -297,6 +311,42 @@ def _validate_closure_signal(
         errors.append(
             "closure_signal.kind=bounded_delivery requires delivered_target_ids"
         )
+    if kind == "bounded_delivery":
+        review = signal.get("bounded_delivery_review")
+        if not isinstance(review, dict):
+            errors.append(
+                "closure_signal.kind=bounded_delivery requires bounded_delivery_review"
+            )
+        else:
+            _require_nonempty_string(
+                review.get("receipt_ref"),
+                "closure_signal.bounded_delivery_review.receipt_ref",
+                errors,
+            )
+            _require_sha256(
+                review.get("receipt_sha256"),
+                "closure_signal.bounded_delivery_review.receipt_sha256",
+                errors,
+            )
+        target_by_id = {
+            target.get("target_id"): target
+            for target in document.get("target_paths", [])
+            if isinstance(target, dict) and isinstance(target.get("target_id"), str)
+        }
+        for target_id in signal.get("delivered_target_ids", []):
+            target = target_by_id.get(target_id)
+            if target is None:
+                continue
+            if target.get("status") != "passed":
+                errors.append(
+                    "closure_signal.kind=bounded_delivery requires every delivered "
+                    f"target to have status=passed: {target_id}"
+                )
+            if target.get("trace_status") != "traced":
+                errors.append(
+                    "closure_signal.kind=bounded_delivery requires every delivered "
+                    f"target to be traced: {target_id}"
+                )
     if kind == "full_freeze":
         scope = document.get("scope")
         progress = document.get("progress")
@@ -446,6 +496,29 @@ def compute_bundle_digest(bundle_root: Path) -> str:
     return digest.hexdigest()
 
 
+def bundle_file_hashes(bundle_root: Path) -> dict[str, str]:
+    """Capture the exact bundle files used to justify an execution rebind."""
+    if not bundle_root.is_dir():
+        raise OSError(f"bundle root is not a directory: {bundle_root}")
+    files = {}
+    for path in bundle_root.rglob("*"):
+        relative = path.relative_to(bundle_root)
+        if any(part in CACHE_DIRECTORY_NAMES for part in relative.parts):
+            continue
+        if path.is_symlink():
+            raise OSError(f"bundle rebind cannot include a symlink: {path}")
+        if path.is_file():
+            files[relative.as_posix()] = compute_file_sha256(path)
+    return files
+
+
+def _file_hash_digest(files: dict[str, str]) -> str:
+    digest = hashlib.sha256()
+    for relative, file_digest in sorted(files.items()):
+        digest.update(f"{relative}\t{file_digest}\n".encode("utf-8"))
+    return digest.hexdigest()
+
+
 def _resolve_bound_evidence_file(
     run_root: Path,
     reference: Any,
@@ -478,13 +551,197 @@ def _resolve_bound_evidence_file(
     return path
 
 
+def _validate_execution_rebind(
+    receipt: dict[str, Any],
+    case: dict[str, Any],
+    execution: dict[str, Any],
+    probe_receipt: dict[str, Any],
+    *,
+    run_root: Path,
+    bundle_root: Path,
+    errors: list[str],
+) -> None:
+    field = "execution rebind"
+    path = _resolve_bound_evidence_file(
+        run_root,
+        receipt.get("execution_rebind_ref"),
+        receipt.get("execution_rebind_sha256"),
+        f"{field}.receipt_ref",
+        errors,
+    )
+    if path is None:
+        errors.append(f"{field} is required when execution and current bundle digests differ")
+        return
+    try:
+        rebind = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        errors.append(f"{field} is not readable JSON: {exc}")
+        return
+    if not isinstance(rebind, dict):
+        errors.append(f"{field} must be an object")
+        return
+    expected = {
+        "target_id": receipt.get("target_id"),
+        "case_id": case.get("case_id"),
+        "baseline_bundle_digest": execution.get("bundle_digest"),
+        "current_bundle_digest": receipt.get("bundle_digest"),
+        "source_scope_digest": receipt.get("source_scope_digest"),
+        "source_input_digest": case.get("source_input_digest"),
+        "bundle_input_digest": case.get("bundle_input_digest"),
+        "tolerance_contract_digest": case.get("tolerance_contract_sha256"),
+        "bundle_execution_ref": case.get("bundle_execution_ref"),
+        "bundle_execution_sha256": case.get("bundle_execution_sha256"),
+        "bundle_execution_receipt_ref": receipt.get("bundle_execution_receipt_ref"),
+        "bundle_execution_receipt_sha256": receipt.get("bundle_execution_receipt_sha256"),
+        "runtime_image_id": probe_receipt.get("image_id"),
+    }
+    for name, value in expected.items():
+        if rebind.get(name) != value:
+            errors.append(f"{field}.{name} does not match the retained execution or current case")
+    image_id = rebind.get("runtime_image_id")
+    if not isinstance(image_id, str) or not image_id.startswith("sha256:"):
+        errors.append(f"{field}.runtime_image_id must bind a content-addressed image")
+    cases = execution.get("cases")
+    case_key = f"{receipt.get('target_id')}::{case.get('case_id')}"
+    if isinstance(cases, dict):
+        executed_case = cases.get(case_key)
+    elif isinstance(cases, list):
+        executed_case = next(
+            (row for row in cases if isinstance(row, dict)
+             and row.get("target_id") == receipt.get("target_id")
+             and row.get("case_id") == case.get("case_id")),
+            None,
+        )
+    else:
+        executed_case = execution if execution.get("target_id") == receipt.get("target_id") else None
+    if not isinstance(executed_case, dict) or executed_case.get("input_digest") != case.get("bundle_input_digest"):
+        errors.append(f"{field}.bundle_input_digest does not match the original execution case")
+
+    manifest_path = _resolve_bound_evidence_file(
+        run_root,
+        rebind.get("baseline_manifest_ref"),
+        rebind.get("baseline_manifest_sha256"),
+        f"{field}.baseline_manifest_ref",
+        errors,
+    )
+    if manifest_path is None:
+        errors.append(f"{field}.baseline_manifest_ref is required to reuse an execution")
+        return
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        errors.append(f"{field}.baseline_manifest is not readable JSON: {exc}")
+        return
+    if not isinstance(manifest, dict) or manifest.get("schema_version") != "scirel.bundle-file-manifest.v1":
+        errors.append(f"{field}.baseline_manifest has an unsupported schema")
+        return
+    baseline = manifest.get("files")
+    if not isinstance(baseline, dict) or not baseline:
+        errors.append(f"{field}.baseline_manifest.files must be a non-empty object")
+        return
+    for relative, digest in baseline.items():
+        path_value = Path(relative) if isinstance(relative, str) else Path("")
+        if (
+            not isinstance(relative, str)
+            or not relative
+            or path_value.is_absolute()
+            or ".." in path_value.parts
+            or path_value.as_posix() != relative
+            or not isinstance(digest, str)
+            or len(digest) != 64
+            or any(character not in string.hexdigits for character in digest)
+        ):
+            errors.append(f"{field}.baseline_manifest.files has an invalid path or digest")
+            return
+    baseline_digest = _file_hash_digest(baseline)
+    if manifest.get("bundle_digest") != baseline_digest or baseline_digest != execution.get("bundle_digest"):
+        errors.append(f"{field}.baseline_manifest does not reconstruct the execution bundle digest")
+    try:
+        current = bundle_file_hashes(bundle_root)
+    except OSError as exc:
+        errors.append(f"{field}.current_bundle cannot be read: {exc}")
+        return
+    if _file_hash_digest(current) != receipt.get("bundle_digest"):
+        errors.append(f"{field}.current_bundle does not reconstruct the current bundle digest")
+    changed = sorted(
+        path for path in baseline.keys() | current.keys()
+        if baseline.get(path) != current.get(path)
+    )
+    version = rebind.get("schema_version")
+    if version == "scirel.execution-rebind.v1":
+        if not changed or set(changed) - REPORT_ONLY_ROOT_FILES:
+            errors.append(f"{field} permits changes only to root project reports")
+        if rebind.get("changed_report_paths") != changed:
+            errors.append(f"{field}.changed_report_paths does not match the bundle files")
+    elif version == "scirel.execution-rebind.v2":
+        if not changed or any(
+            path not in REPORT_ONLY_ROOT_FILES and not _is_package_document(path)
+            for path in changed
+        ):
+            errors.append(f"{field} permits changes only to documentation files")
+        if not any(_is_package_document(path) for path in changed):
+            errors.append(f"{field}.v2 requires a changed package document")
+        if rebind.get("changed_document_paths") != changed:
+            errors.append(f"{field}.changed_document_paths does not match the bundle files")
+    else:
+        errors.append(f"{field}.schema_version is unsupported")
+    scientific = {path: digest for path, digest in current.items() if path not in changed}
+    if rebind.get("scientific_identity_digest") != _file_hash_digest(scientific):
+        errors.append(f"{field}.scientific_identity_digest does not match unchanged executable files")
+    if version == "scirel.execution-rebind.v2":
+        review_path = _resolve_bound_evidence_file(
+            run_root,
+            rebind.get("documentation_review_ref"),
+            rebind.get("documentation_review_sha256"),
+            f"{field}.documentation_review_ref",
+            errors,
+        )
+        if review_path is None:
+            errors.append(f"{field} requires a documentation review")
+            return
+        try:
+            review = json.loads(review_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            errors.append(f"{field}.documentation_review is not readable JSON: {exc}")
+            return
+        if not isinstance(review, dict):
+            errors.append(f"{field}.documentation_review must be an object")
+            return
+        _require_nonempty_string(
+            review.get("review_id"), f"{field}.documentation_review.review_id", errors
+        )
+        findings = review.get("findings")
+        if not isinstance(findings, list) or any(
+            not isinstance(item, str) or not item for item in findings
+        ):
+            errors.append(f"{field}.documentation_review.findings must be a list of strings")
+        review_expected = {
+            "schema_version": "scirel.documentation-rebind-review.v1",
+            "reviewer_role": "independent_subagent",
+            "verdict": "pass",
+            "source_scope_digest": receipt.get("source_scope_digest"),
+            "baseline_bundle_digest": execution.get("bundle_digest"),
+            "current_bundle_digest": receipt.get("bundle_digest"),
+            "scientific_identity_digest": rebind.get("scientific_identity_digest"),
+            "reviewed_document_paths": changed,
+            "code_and_science_consistent": True,
+        }
+        for name, value in review_expected.items():
+            if review.get(name) != value:
+                errors.append(f"{field}.documentation_review.{name} does not match the rebind")
+
+
 def _validate_comparison_receipt(
     path: Path,
     *,
+    run_root: Path,
+    bundle_root: Path,
+    bundle_execution_path: Path | None,
     target_id: Any,
     case: dict[str, Any],
     scope_manifest_digest: Any,
     bundle_digest: Any,
+    require_detailed: bool,
     errors: list[str],
 ) -> None:
     field = f"comparison receipt {path}"
@@ -494,7 +751,6 @@ def _validate_comparison_receipt(
         errors.append(f"{field} is not readable JSON: {exc}")
         return
     expected = {
-        "schema_version": "scirel.extraction-reassembly-comparison.v1",
         "status": "passed",
         "target_id": target_id,
         "case_id": case.get("case_id"),
@@ -508,9 +764,64 @@ def _validate_comparison_receipt(
     if not isinstance(receipt, dict):
         errors.append(f"{field} must contain a JSON object")
         return
+    receipt_version = receipt.get("schema_version")
+    if receipt_version not in (
+        "scirel.extraction-reassembly-comparison.v1",
+        "scirel.extraction-reassembly-comparison.v2",
+    ):
+        errors.append(f"{field}.schema_version is unsupported")
+    if require_detailed and receipt_version != "scirel.extraction-reassembly-comparison.v2":
+        errors.append(f"{field}.schema_version requires v2 for delivery closure")
     for name, value in expected.items():
         if receipt.get(name) != value:
             errors.append(f"{field}.{name} does not match the capability-progress record")
+
+    if receipt_version == "scirel.extraction-reassembly-comparison.v2":
+        for name in ("bundle_execution_ref", "bundle_execution_sha256"):
+            if receipt.get(name) != case.get(name):
+                errors.append(f"{field}.{name} does not match the capability-progress record")
+        execution_ref = receipt.get("bundle_execution_receipt_ref")
+        if not isinstance(execution_ref, str) or not execution_ref:
+            errors.append(f"{field}.bundle_execution_receipt_ref is required")
+            execution_path = None
+        else:
+            execution_path = _resolve_bound_evidence_file(
+                run_root,
+                execution_ref,
+                receipt.get("bundle_execution_receipt_sha256"),
+                f"{field}.bundle_execution_receipt_ref",
+                errors,
+            )
+        execution = None
+        if execution_path is not None:
+            try:
+                execution = json.loads(execution_path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+                errors.append(f"{field}.bundle_execution_receipt is not readable JSON: {exc}")
+            else:
+                if (
+                    not isinstance(execution, dict)
+                    or type(execution.get("exit_code")) is not int
+                    or execution["exit_code"] != 0
+                ):
+                    errors.append(f"{field}.bundle_execution_receipt.exit_code must equal 0")
+        if bundle_execution_path is not None:
+            try:
+                bundle_execution = json.loads(bundle_execution_path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+                errors.append(f"{field}.bundle_execution is not readable JSON: {exc}")
+            else:
+                original_digest = bundle_execution.get("bundle_digest") if isinstance(bundle_execution, dict) else None
+                if not isinstance(original_digest, str) or len(original_digest) != 64:
+                    errors.append(f"{field}.bundle_execution.bundle_digest is required for v2")
+                elif original_digest != bundle_digest:
+                    if execution_path is not None and isinstance(execution, dict):
+                        _validate_execution_rebind(
+                            receipt, case, bundle_execution, execution,
+                            run_root=run_root, bundle_root=bundle_root, errors=errors,
+                        )
+                elif "execution_rebind_ref" in receipt or "execution_rebind_sha256" in receipt:
+                    errors.append(f"{field} has an unnecessary execution rebind")
 
     expected_outputs = case.get("compared_terminal_output_ids")
     receipt_outputs = receipt.get("terminal_output_ids")
@@ -529,16 +840,128 @@ def _validate_comparison_receipt(
         comparison_ids.append(output_id)
         if comparison.get("status") != "passed":
             errors.append(f"{field}.comparisons[{index}].status must equal passed")
+        if receipt_version == "scirel.extraction-reassembly-comparison.v2":
+            if not isinstance(comparison.get("metric"), str) or not comparison["metric"].strip():
+                errors.append(f"{field}.comparisons[{index}].metric must be non-empty")
+            observed = comparison.get("observed_error")
+            allowed = comparison.get("allowed_error")
+            valid_errors = []
+            for name, value in (("observed_error", observed), ("allowed_error", allowed)):
+                try:
+                    valid = type(value) in (int, float) and math.isfinite(value) and value >= 0
+                except OverflowError:
+                    valid = False
+                valid_errors.append(valid)
+                if not valid:
+                    errors.append(
+                        f"{field}.comparisons[{index}].{name} must be finite and non-negative"
+                    )
+            if all(valid_errors) and observed > allowed:
+                errors.append(f"{field}.comparisons[{index}].observed_error exceeds allowed_error")
     if comparison_ids != expected_outputs:
         errors.append(f"{field}.comparisons must cover every declared output exactly once and in order")
 
 
-def _validate_reassembly_external_bindings(
+def _validate_bounded_delivery_review(
     document: dict[str, Any], run_root: Path, errors: list[str]
 ) -> None:
+    signal = document.get("closure_signal")
+    if not isinstance(signal, dict) or signal.get("kind") != "bounded_delivery":
+        return
+    review = signal.get("bounded_delivery_review")
+    if not isinstance(review, dict):
+        return
+    path = _resolve_bound_evidence_file(
+        run_root,
+        review.get("receipt_ref"),
+        review.get("receipt_sha256"),
+        "closure_signal.bounded_delivery_review.receipt_ref",
+        errors,
+    )
+    if path is None:
+        return
+    field = f"bounded delivery review {path}"
+    try:
+        receipt = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        errors.append(f"{field} is not readable JSON: {exc}")
+        return
+    if not isinstance(receipt, dict):
+        errors.append(f"{field} must contain a JSON object")
+        return
+    if receipt.get("reviewer_role") != "independent_subagent":
+        errors.append(f"{field}.reviewer_role must equal independent_subagent")
+    if receipt.get("verdict") != "pass":
+        errors.append(f"{field}.verdict must equal pass")
+    scope = document.get("scope")
+    if isinstance(scope, dict):
+        for name, expected in (
+            ("source_scope_digest", scope.get("scope_manifest_digest")),
+            ("bundle_digest", scope.get("bundle_digest")),
+        ):
+            if receipt.get(name) != expected:
+                errors.append(f"{field}.{name} does not match the progress snapshot")
+    delivered = signal.get("delivered_target_ids", [])
+    reviewed = receipt.get("reviewed_target_ids")
+    if not isinstance(reviewed, list) or any(
+        not isinstance(value, str) or not value for value in reviewed
+    ):
+        errors.append(f"{field}.reviewed_target_ids must be a non-empty list of strings")
+    elif set(reviewed) != set(delivered):
+        errors.append(f"{field}.reviewed_target_ids must equal delivered_target_ids")
+    for name in ("review_id", "claim_ceiling", "reopen_condition"):
+        _require_nonempty_string(receipt.get(name), f"{field}.{name}", errors)
+    for name in ("claim_ceiling", "reopen_condition"):
+        if receipt.get(name) != signal.get(name):
+            errors.append(f"{field}.{name} does not match closure_signal.{name}")
+    reviewed_refs = receipt.get("reviewed_evidence_refs")
+    if not isinstance(reviewed_refs, list) or not reviewed_refs or any(
+        not isinstance(value, str) or not value for value in reviewed_refs
+    ) or len(reviewed_refs) != len(set(reviewed_refs)):
+        errors.append(f"{field}.reviewed_evidence_refs must be a non-empty unique list of strings")
+    else:
+        signal_refs = signal.get("evidence_refs")
+        required_refs = {
+            value for value in signal_refs if isinstance(value, str) and value
+        } if isinstance(signal_refs, list) else set()
+        for target in document.get("target_paths", []):
+            if not isinstance(target, dict) or target.get("target_id") not in delivered:
+                continue
+            reassembly = target.get("reassembly_evidence")
+            if not isinstance(reassembly, dict):
+                continue
+            for case in reassembly.get("cases", []):
+                if isinstance(case, dict):
+                    required_refs.update(
+                        case[name]
+                        for name in (
+                            "source_oracle_ref",
+                            "bundle_execution_ref",
+                            "comparison_receipt_ref",
+                            "tolerance_contract_ref",
+                        )
+                        if isinstance(case.get(name), str) and case[name]
+                    )
+        if not required_refs.issubset(reviewed_refs):
+            errors.append(f"{field}.reviewed_evidence_refs must include closure and reassembly evidence")
+    findings = receipt.get("findings")
+    if not isinstance(findings, list) or any(
+        not isinstance(value, str) or not value for value in findings
+    ):
+        errors.append(f"{field}.findings must be a list of non-empty strings")
+
+
+def _validate_reassembly_external_bindings(
+    document: dict[str, Any], bundle_root: Path, errors: list[str]
+) -> None:
+    run_root = bundle_root.parent
     scope = document.get("scope")
     if not isinstance(scope, dict):
         return
+    signal = document.get("closure_signal")
+    require_detailed = document.get("state") == "full_freeze" or (
+        isinstance(signal, dict) and signal.get("kind") in ("bounded_delivery", "full_freeze")
+    )
     for target_index, target in enumerate(document.get("target_paths", [])):
         if not isinstance(target, dict) or target.get("status") != "passed":
             continue
@@ -569,12 +992,65 @@ def _validate_reassembly_external_bindings(
             if receipt_path is not None:
                 _validate_comparison_receipt(
                     receipt_path,
+                    run_root=run_root,
+                    bundle_root=bundle_root,
+                    bundle_execution_path=resolved.get("bundle_execution"),
                     target_id=target.get("target_id"),
                     case=case,
                     scope_manifest_digest=scope.get("scope_manifest_digest"),
                     bundle_digest=scope.get("bundle_digest"),
+                    require_detailed=require_detailed,
                     errors=errors,
                 )
+
+
+def _validate_full_freeze_delivery_surface(
+    document: dict[str, Any], bundle_root: Path, errors: list[str]
+) -> None:
+    signal = document.get("closure_signal")
+    if not isinstance(signal, dict) or signal.get("kind") != "full_freeze":
+        return
+    entry = bundle_root / "asset_entry.py"
+    if entry.is_symlink() or not entry.is_file():
+        errors.append(
+            "closure_signal.kind=full_freeze requires a regular, non-symlinked "
+            "root asset_entry.py"
+        )
+        return
+    binding = signal.get("asset_entry_validation")
+    if not isinstance(binding, dict):
+        errors.append("closure_signal.kind=full_freeze requires asset_entry_validation")
+        return
+    path = _resolve_bound_evidence_file(
+        bundle_root.parent,
+        binding.get("receipt_ref"),
+        binding.get("receipt_sha256"),
+        "closure_signal.asset_entry_validation.receipt_ref",
+        errors,
+    )
+    if path is None:
+        errors.append("closure_signal.asset_entry_validation.receipt_ref is required for full_freeze")
+        return
+    try:
+        receipt = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        errors.append(f"asset_entry_validation receipt is not readable JSON: {exc}")
+        return
+    if not isinstance(receipt, dict):
+        errors.append("asset_entry_validation receipt must contain a JSON object")
+        return
+    for name, expected in (
+        ("validator", "validate_asset_entry.py"),
+        ("sandbox", "CODEFUSION_ASSET_SANDBOX=1"),
+        ("exit_code", 0),
+        ("asset_entry_sha256", compute_file_sha256(entry)),
+        ("bundle_digest", document["scope"].get("bundle_digest")),
+    ):
+        if receipt.get(name) != expected or (name == "exit_code" and type(receipt.get(name)) is not int):
+            errors.append(f"asset_entry_validation.{name} must equal {expected}")
+    for name in ("operators", "task_graphs"):
+        if type(receipt.get(name)) is not int or receipt[name] < 0:
+            errors.append(f"asset_entry_validation.{name} must be a non-negative integer")
 
 
 def validate_external_bindings(
@@ -595,6 +1071,8 @@ def validate_external_bindings(
         ("bundle_digest", bundle_root, True),
     )
     errors: list[str] = []
+    _validate_full_freeze_delivery_surface(document, bundle_root, errors)
+    _validate_bounded_delivery_review(document, bundle_root.parent, errors)
     for field, path, is_bundle in checks:
         try:
             actual = compute_bundle_digest(path) if is_bundle else compute_file_sha256(path)
@@ -604,7 +1082,7 @@ def validate_external_bindings(
         expected = scope.get(field)
         if not isinstance(expected, str) or actual != expected.lower():
             errors.append(f"scope.{field} does not match {path}")
-    _validate_reassembly_external_bindings(document, bundle_root.parent, errors)
+    _validate_reassembly_external_bindings(document, bundle_root, errors)
     return errors
 
 
