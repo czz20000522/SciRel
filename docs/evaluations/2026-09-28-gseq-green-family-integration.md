@@ -45,3 +45,16 @@ input/output units, failure behavior and limited provenance. The 117/117
 catalog count describes development documentation coverage only. Source
 coverage claims, scientific correctness, expert recognition and licensing
 remain separate decisions.
+
+## Main checkout verification
+
+The integration was applied to the main SciRel checkout as `ab8189f`, with
+the three README count updates committed separately as `a0d7284`. Against
+`e5ba42d`, `pwsh ./scripts/check.ps1 -Mode affected -BaseRef e5ba42d`
+selected the three new relations and their public/documentation tests:
+39 passed, with three expected NumPy overflow/invalid warnings from the
+nonfinite-output rejection test. `python scripts/validate_asset_documents.py
+catalog/examples --check-runtime --execute-examples` validated all 117 exact
+documents, including runtime signatures and examples. `git diff --check
+e5ba42d..HEAD` passed before this record update. Other owners' uncommitted
+README and extraction-skill changes remained outside these commits.
