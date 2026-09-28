@@ -129,7 +129,11 @@ def test_review_gate_firehose_and_parallel_compatibility_fail_closed():
 def test_review_gate_rechecks_minimum_field_after_terminal_update():
     from scirel.equilibrium import axisymmetric_anisotropic_picard as graph
 
-    calls = {"field": 0}
+    calls = {"field": 0, "closure": 0}
+
+    def closure(b, psi):
+        calls["closure"] += 1
+        return _closure(b, psi)
 
     def loader(reference):
         asset = _load_asset(reference)
@@ -147,8 +151,9 @@ def test_review_gate_rechecks_minimum_field_after_terminal_update():
         return field
 
     with pytest.raises(FloatingPointError, match="returned terminal state"):
-        graph.run_graph(_inputs(maxiter=1, minimum_field=1.0e-6), asset_loader=loader)
+        graph.run_graph(_inputs(maxiter=1, minimum_field=1.0e-6, pressure_closure=closure), asset_loader=loader)
     assert calls["field"] >= 2
+    assert calls["closure"] == 2
 
 
 def test_review_gate_rejects_nonfinite_and_coerced_control_values():
