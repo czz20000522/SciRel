@@ -18,3 +18,5 @@
 [网格镜端动理学闭合](../../catalog/examples/scirel.kinetic.grid-mirror-kinetic-closure.json)在调用方的 R-Z 网格上选择参考与端塞行，通过磁通剖面插值映射端态，再调用镜面准中性图。端塞电势可规定或分别求解；默认只屏蔽端塞外的指定顶层密度、压强和电荷残差字段，原始矩与端态诊断保留全网格。磁通坐标须由调用方统一约定。
 
 [约化 Hall 漂移闭合](../../catalog/examples/scirel.closures.reduced-hall-drift.json)在给定极向场、各向异性压强、电子态和等离子体掩码上评价环向电流、物种漂移及局部惯性修正。其速度和广义 Ohm 诊断使用更严格的活跃掩码；返回值不证明整体平衡或低密度区域的模型适用性。
+
+[约化 Hall 各向异性 Picard 图](../../catalog/examples/scirel.equilibrium.reduced-hall-anisotropic-picard.json)在调用方提供的压强闭合与 Green 响应上反馈磁通，逐轮调用极向场、Hall 漂移和磁通更新三个叶子，达到容差或迭代上限后复算终态。外层未收敛可返回带 `converged=false` 的终态；内层惯性未收敛会抛错。真空场文档的 `Wb` 与本图要求的 `Wb/rad` 接线仍待科学裁决。
