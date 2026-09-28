@@ -22,6 +22,23 @@ deduplication, public namespace design, expert approval, or release work. Those 
 material invalid by definition: record recoverable format, test, evidence, and scientific gaps with enough detail for
 a later SciRel workflow to diagnose them without rewriting the saved source record.
 
+D1 must establish complete declared-source coverage, source-shaped implementations, and numerical comparisons
+with the source before a qualified complete L1 `full_freeze`. Later stages may not be able to access or run the
+source, so unresolved scientific coverage or validation remains a named D1 gap. An incomplete candidate may be
+saved under an explicit claim ceiling but must not be reported as qualified complete material.
+
+When an executed result still has independently verifiable code, inputs, outputs, and runtime-relevant
+conditions, fix a path, assertion, format, or digest binding with a traceable supplemental record instead of
+repeating the calculation. Check an assertion against source semantics and independent results; do not relax
+its scientific tolerance to fit the candidate. Preserve the old failure and its evidence, without fabricating
+a historical seal. Rerun only the affected cheap comparison or gate; repeat scientific execution when its
+correspondence is missing or the inputs, executable science, or environment materially changed.
+
+For a `bounded_delivery` handoff, D1 requires an independent read-only subagent review of the exact source-derived
+census, selected bundle assets, reassembly evidence, and deferred capability register. The review receipt is a finite
+exit decision for that batch, not expert approval and not a `full_freeze` claim. The producing coordinator must not
+also act as this reviewer, and the reviewer must not edit the bundle or progress snapshot.
+
 ## Preserved material and gaps
 
 - Preserve the source snapshot, raw evidence, L1 bundle, and their content identities.

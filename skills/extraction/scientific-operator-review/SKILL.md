@@ -31,6 +31,19 @@ Read [the correctness criteria](references/review_criteria.md) for detailed find
 `scientific-computation-validation` only in a separate validation task when a proposed or executed gate needs
 specialist assessment.
 
+## Efficient review focus
+
+Use exact-digest structural indexes, claim/evidence matrices, prior findings, and predecessor diffs to navigate the
+target and identify the affected scientific cone. They may prioritize reading but cannot replace inspection of the
+material contract, implementation, tests, and evidence anchors. Mechanical similarity, unchanged filenames, or a
+clean diff does not establish scientific equivalence.
+
+Reuse a prior review conclusion only when the target digest, dependency versions, claim, applicability, evidence,
+and review scope are identical. For a successor, concentrate repeated inspection on changed formulas, ports, state,
+branches, evidence, and reverse dependencies while still accounting for every claimed dimension. Do not repeat a
+full unchanged review merely to produce new activity, and do not skip a material risk because it was absent from an
+index.
+
 ## Review order
 
 1. **Confirm identity and claim.** State the exact target, relation direction, supported domain, claimed evidence

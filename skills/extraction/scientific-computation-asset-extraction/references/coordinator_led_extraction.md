@@ -30,7 +30,7 @@ The coordinator continuously performs these actions:
 4. assign an item to one owner or claim it locally;
 5. review and integrate a handoff against the current dependency revisions;
 6. freeze each complete candidate into project staging; and
-7. declare extraction complete only after the declared project scope reaches `full_freeze`.
+7. declare extraction complete only after the declared project scope reaches `full_freeze` with source comparison.
 
 ## Pipeline queue
 
@@ -133,6 +133,11 @@ Reuse unchanged, digest-bound source probes, frozen candidate evidence, and prio
 inputs, runtime conditions, claim, and consumer still match. A source, contract, dependency, or implementation
 change invalidates its affected slice and downstream consumers, not every unrelated region. Reuse never turns a
 canonical case into an independently sealed holdout or bypasses a required final whole-bundle gate.
+An attributable computation with a failed path, assertion, format, digest, or handoff wrapper remains failed as
+an attempt. Check its code, inputs, outputs, and runtime conditions independently; preserve the old evidence and
+add a traceable correction if science still corresponds. Rerun only the affected cheap comparison or gate, not
+the scientific computation. If correspondence is unproved or science changed, rerun the affected computation.
+This repair can close a mechanical freeze blocker but cannot waive source-wide scientific validation.
 
 An accepted implementation handoff is not automatically a staged candidate. Freeze a candidate only after its scientific
 contract, source-free callable, dependency closure, provenance, targeted evidence, and claim ceiling agree in one

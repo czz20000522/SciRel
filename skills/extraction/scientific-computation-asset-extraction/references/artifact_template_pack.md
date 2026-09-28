@@ -43,7 +43,7 @@ Instantiate one bundle per project or independent extraction universe:
   program_framework_map.md              # project extraction context
   extraction_report.md                  # project extraction context
   extraction_ledger.md                  # project extraction context
-  asset_entry.py                   # optional uniform source-free loader; no scientific logic
+  asset_entry.py                   # required at full_freeze; discovery-only, no scientific logic
 ```
 
 Rules:
@@ -57,6 +57,18 @@ Rules:
 - Preserve source-backed specialization. Cross-project generalization, deduplication, public namespace
   design, and library refactoring are not template-completion requirements.
 - `program_framework_map.md`, `extraction_report.md`, `extraction_ledger.md`, `configs/`, and `docker/` are project context. They bind the project commit and are never standalone candidate packages.
+- Create the root `extraction_report.md` once the project scope, first frontier, and first validated snapshot
+  are available, with an honest `active` or other current claim ceiling. Update it from the latest validated snapshot as the run advances;
+  complete the root report before requesting final freeze review, not after declaring `full_freeze`.
+- Run-local process notes and private worker drafts are resumable working material outside frozen candidate
+  packages. Editing them does not invalidate already bound source, candidate, or execution evidence unless a
+  cited claim or digest-bound input changes. The coordinator alone integrates their proven conclusions into
+  shared sidecars and creates a new bound snapshot when the evidence or current claim changes.
+- A new-project `bounded_delivery` report may include a `Deferred Source Capability Register` section in
+  `extraction_report.md`. Each row records only a source-anchored capability locator, likely target path or
+  scientific family, current disposition (`deferred_source_capability`, `support_or_non_candidate`, or
+  `unresolved`), and an explicit reopen condition. These rows are internal capability-repository metadata; they do
+  not create an operator, TaskGraph, package directory, or `asset_ref`, and are not sent as expert-review items.
 - A package contains only its contract, implementation, runtime-required package data, and tests. No package-local reports, checklists, validation JSON, probes, or source copies.
 - Python is the default operator profile. Use the C profile only when source-faithful delivery requires it and record the reason in the ledger.
 - `configs/schemas/` declares identifiers, types, shapes, axes, units, ranges, default policies, and owners. Concrete case values belong to calls or outbound glue, never hidden global configuration.
@@ -66,16 +78,19 @@ Rules:
 - Final gate JSON, source probes, golden-output parsers, captured runtime state, and large oracle files are temporary external evidence attachments. Generate one bounded final set at extraction freeze, retain it only through the extraction gates that consume it, write its durable conclusions into the formal contracts/report/ledger, then retire the raw attachments under `evidence_persistence_boundary.md`.
 - Do not add a root README, catalog, counts file, duplicate template, or backup copy.
 
-### Optional uniform bundle entry
+### Uniform frozen-bundle entry
 
-When the declared extraction format requires a common loader, provide `asset_entry.py` with
+For `full_freeze`, provide root `asset_entry.py` with
 `load_asset_bundle(root=None)` and an
 `AssetBundle` exposing `list_assets`, `describe_asset`, `find_assets`, `operator_callable`,
 `task_graph_callable`, and `asset_callable`. The operator resolver returns the callable declared
 by the package syntax (or an explicit `callable_name`); the task-graph resolver defaults only to
 `run_graph`. Root `load_operator` and `load_task_graph` are convenience aliases. This contract
 standardizes extraction-bundle loading only; it is not a generalized public API and never upgrades
-an unproved scientific relation or source-parity claim.
+an unproved scientific relation or source-parity claim. Active, bounded, or otherwise incomplete
+working snapshots may omit the entry; the final frozen bundle may not. Execute
+`scripts/validate_asset_entry.py` in the fixed source-free asset sandbox before deriving
+`closure_signal.kind=full_freeze`.
 
 ## Canonical Operator Reference Layer
 
@@ -92,7 +107,15 @@ An operator reference covers the information a reader must understand before ope
 
 Equations, callable names, identifiers, signatures, shapes, units, source paths, metrics, and YAML keys retain the same value across language editions. Do not add language labels such as `中文审查说明` or `English reviewer note`. Do not include PFM membership, parent task graphs, source-program call order, or recommended composition in an operator reference; those are project/catalog relationships, not callable prerequisites.
 
-The package contract must be understandable before opening implementation or source. A reviewer must be able to identify the scientific relation, callable signature, every real input/output, axes/units/constraints, source-specific normalization/index/branch/boundary rules, evidence anchors, and validation route from the contract alone. Never use placeholders or deferrals such as `input_detail_1`, `output_detail_1`, `return_value`, `arguments`, `See the package implementation entrypoint`, or `Source-backed operator`.
+These package-document requirements apply to the emitted bundle before `full_freeze`. During implementation,
+retain the source version and scope, physical definition, necessary input/output meanings, and validation anchors;
+the finished `operator.md` and `task_graph.md` may be generated after code and tests stabilize. Separate agents
+may draft distinct package pages in parallel, with one coordinator integrating them against the exact code digest.
+The package contract must then be understandable before a reviewer opens implementation or source. A reviewer must
+be able to identify the scientific relation, callable signature, every real input/output, axes/units/constraints,
+source-specific normalization/index/branch/boundary rules, evidence anchors, and validation route from the contract
+alone. Never use placeholders or deferrals such as `input_detail_1`, `output_detail_1`, `return_value`, `arguments`,
+`See the package implementation entrypoint`, or `Source-backed operator`.
 
 One asset has one canonical internal scientific contract page; do not maintain a skeletal summary beside it or
 turn the extraction contract into a usage tutorial. Write the internal page like
@@ -155,7 +178,8 @@ Every task graph declares exactly one primary PFM node, a coverage value (`full`
 2. Rename `OPERATOR_NAME`, `TASK_GRAPH_NAME`, `PROJECT_NAME`, and `config_schema.md`; duplicate only package directories required by the framework map.
 3. Replace every angle-bracket placeholder. Delete unused optional files/directories.
 4. Preserve heading order. Add detail under existing headings before adding a new heading.
-5. Write newly proven capability/state/oracle evidence immediately; defer only recomputable counts, digests, and roll-ups.
+5. Write newly proven capability/state/oracle evidence and a truthful current root report as work advances;
+   defer only recomputable counts, digests, and roll-ups until their inputs are stable.
 6. A stub is not a candidate. Replace every `NotImplementedError`, execute package tests, and write actual results into test headers.
 
 ## Bundle Inspection Order
@@ -175,6 +199,8 @@ During extraction, run only changed-package tests and directly dependent graph t
 3. run `scripts/validate_source_free_bundle.py <bundle_root> --require-docker`;
 4. run the full source-free composition gate once;
 5. remove generated caches/build artifacts and produce one bounded final evidence set outside the bundle;
-6. after all evidence-consuming extraction gates finish, condense the final metrics and claim into the formal report/ledger, retire the run-owned evidence/scratch/container resources, and record the cleanup receipt.
+6. before the final claim, reconcile the root report and ledger with the validated snapshot and final evidence;
+   after all evidence-consuming gates finish, record final metrics and cleanup receipt, then retire only
+   superseded run-owned evidence/scratch/container resources under the evidence-persistence boundary.
 
 Format validation does not prove scientific correctness; source parity does not permit a format deviation.

@@ -491,6 +491,11 @@ Use when evidence is too weak, the candidate is only glue, or the proposed opera
 
 Create `operator.md` plus language-profile implementation/test artifacts only for implementation-backed candidates that pass all extraction-eligibility gates:
 
+This describes the final emitted package, not the authoring order. The implementation and tests may be completed
+first from compact source-backed scientific anchors; generate the finished page from stable code and checked
+inputs/outputs before extraction freeze. A documentation correction alone does not rerun unrelated physics when
+code, inputs, and validation environment remain bound and an independent reviewer confirms contract consistency.
+
 - the candidate maps to a concrete source path, symbol, line range, or cohesive source routine;
 - the reviewer artifact explains strong physical semantics, scientific role, and physical relevance;
 - the candidate has stable typed inputs and outputs with machine-readable ASCII identifiers;
