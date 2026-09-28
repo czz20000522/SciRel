@@ -599,6 +599,8 @@ def test_documented_quasineutral_leaves_keep_legacy_graph_reverse_dependencies()
             "tests/operator_contracts/test_quasineutral_reference_density.py",
         "src/scirel/closures/boltzmann_quasineutrality.py":
             "tests/operator_contracts/test_boltzmann_quasineutrality.py",
+        "src/scirel/closures/quasineutral_potential.py":
+            "tests/operator_contracts/test_quasineutral_potential.py",
     }
     graph_tests = {
         "tests/graph_contracts/mirror_quasineutral_closure/test_graph_mirror_quasineutral_closure.py",

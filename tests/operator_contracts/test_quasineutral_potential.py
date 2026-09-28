@@ -30,6 +30,27 @@ def test_inactive_surface_returns_reference_potential():
     assert result["converged"]
 
 
+def test_all_inactive_surfaces_still_evaluate_the_returned_residual_once():
+    observations = []
+
+    def residual(potential):
+        observations.append(np.asarray(potential).copy())
+        return {"logarithmic_charge_residual": 0.5 - np.asarray(potential)}
+
+    reference = np.array([17.0, 99.0])
+    result = scientific_operator(
+        reference, ELEMENTARY_CHARGE, ELEMENTARY_CHARGE,
+        ELEMENTARY_CHARGE, [False, False], residual,
+    )
+    assert len(observations) == 1
+    np.testing.assert_array_equal(observations[0], reference)
+    np.testing.assert_array_equal(result["potential_v"], reference)
+    np.testing.assert_array_equal(
+        result["logarithmic_charge_residual"], 0.5 - reference,
+    )
+    assert result["iterations"] == 0 and result["converged"] is True
+
+
 def test_invalid_residual_contract_fails_closed():
     with pytest.raises(ValueError, match="logarithmic_charge_residual"):
         scientific_operator(0.0, 2.0, 1.0, 1.0, np.array([True]), lambda _: {})
