@@ -36,6 +36,16 @@ def test_operator_change_selects_only_its_contract_and_dependent_graphs():
     assert "tests/operator_contracts/test_dense_axisymmetric_green.py" not in result["test_paths"]
 
 
+def test_anisotropic_current_change_selects_free_boundary_graph():
+    result = select("src/scirel/equilibrium/anisotropic_toroidal_current.py")
+
+    assert result["full_suite_required"] is False
+    assert {
+        "tests/operator_contracts/test_anisotropic_toroidal_current.py",
+        "tests/graph_contracts/free_boundary_anisotropic_picard/test_graph_free_boundary_anisotropic_picard.py",
+    } <= set(result["test_paths"])
+
+
 def test_force_balance_change_selects_both_picard_graphs_and_current_wrapper():
     result = select("src/scirel/equilibrium/anisotropic_force_balance.py")
 

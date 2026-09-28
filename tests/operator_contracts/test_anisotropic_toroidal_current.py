@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from scirel.equilibrium.anisotropic_toroidal_current import compute_anisotropic_toroidal_current, compute_anisotropic_toroidal_current as scientific_operator
 
@@ -23,6 +24,20 @@ def test_radial_perpendicular_pressure_gradient_sets_gradp_term():
     assert np.allclose(result["gradp_term"], 1.0)
     assert np.allclose(result["anisotropy_curvature_term"], 0.0)
     assert np.allclose(result["j_phi"], 1.0)
+
+
+def test_axis_column_and_negative_pressure_contract():
+    r_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.4, 5), np.linspace(-0.2, 0.2, 4))
+    br = np.zeros_like(r_grid)
+    bz = np.ones_like(r_grid)
+    pressure = 1.0 + r_grid
+    result = scientific_operator(r_grid, z_grid, br, bz, pressure, pressure)
+    np.testing.assert_array_equal(result["j_phi"][:, 0], 0.0)
+    np.testing.assert_array_equal(result["gradp_term"][:, 0], 0.0)
+    np.testing.assert_array_equal(result["anisotropy_curvature_term"][:, 0], 0.0)
+
+    with pytest.raises(ValueError, match="grid axes and pressures"):
+        scientific_operator(r_grid, z_grid, br, bz, -pressure, pressure)
 
 
 def test_reviewed_relation_example():
