@@ -593,6 +593,24 @@ def test_legacy_graph_dependencies_are_canonicalized_to_documented_asset_ids(tmp
     assert graph in namespace["_dependent_assets"]({dependency}, assets)
 
 
+def test_documented_quasineutral_leaves_keep_legacy_graph_reverse_dependencies():
+    cases = {
+        "src/scirel/closures/quasineutral_reference_density.py":
+            "tests/operator_contracts/test_quasineutral_reference_density.py",
+        "src/scirel/closures/boltzmann_quasineutrality.py":
+            "tests/operator_contracts/test_boltzmann_quasineutrality.py",
+    }
+    graph_tests = {
+        "tests/graph_contracts/mirror_quasineutral_closure/test_graph_mirror_quasineutral_closure.py",
+        "tests/graph_contracts/grid_mirror_kinetic_closure/test_graph_grid_mirror_kinetic_closure.py",
+        "tests/framework_compositions/test_kinetic_mirror_hall_equilibrium.py",
+    }
+    for source, direct_test in cases.items():
+        result = select(source)
+        assert result["full_suite_required"] is False
+        assert {direct_test, *graph_tests} <= set(result["test_paths"])
+
+
 def test_current_asset_index_unions_legacy_samples_and_exact_documents():
     namespace = runpy.run_path(str(SELECTOR))
     assets = namespace["_load_assets"]()
