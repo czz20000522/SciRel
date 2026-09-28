@@ -20,6 +20,11 @@ SciRel 以独立插件和发布 wheel 交付；CodeFusion 可以预装或加载�
 具体交付应以该轮冻结的 `build/verification/<review-run>/manifest.json` 和对应评审记录核对
 确切版本及待审状态，不能以未冻结的 HEAD 或开发版本号代替交付基线。
 
+这里的开发包“冻结”只固定版本，不表示来源已通过 D1。历史 provisional 输入及其派生开发资产，与
+有界源验证通过的 D1 输入必须按已有 provenance 分别解释；`pending_unapproved` 也不表示仅剩人工批准。
+可运行 wheel、文档覆盖或 D2 测试不能替代缺少的源实现/数值对照。合格有界批次可先行整合，无须等待整个
+源项目 full_freeze；未核验历史包的内部联调则不计作已完成合格入库，详见[版本与来源边界](docs/design/development-trust-versions.md)。
+
 当前 `provenance/admitted-assets.json` 是旧流程留下的 52 条完整迁移样本，其中包含 41 条 operator
 和 11 条 TaskGraph，并保存当时导出的来源、决定标签、版本树、内容摘要和依赖绑定。这些字段只用于
 复现和核对早期开发实验；Pleiades 及该账本没有在新生命周期下完成专家审核或正式发布，旧的
