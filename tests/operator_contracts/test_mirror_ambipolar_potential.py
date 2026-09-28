@@ -46,6 +46,18 @@ def test_zero_density_surfaces_return_the_reference_potential():
     assert result["relative_current_residual"][0] == 0.0
 
 
+def test_joint_vacuum_solve_reports_one_update():
+    result = scientific_operator(
+        1.0, 3.0, np.array([0.0, 1.0]), PROTON_MASS_KG,
+        ELEMENTARY_CHARGE_C, np.zeros(2), 1000.0 * ELEMENTARY_CHARGE_C,
+        2000.0 * ELEMENTARY_CHARGE_C, 500.0 * ELEMENTARY_CHARGE_C,
+        phi_reference_v=np.array([7.0, -3.0]), max_iterations=1,
+    )
+    np.testing.assert_array_equal(result["potential_v"], [7.0, -3.0])
+    np.testing.assert_array_equal(result["relative_current_residual"], [0.0, 0.0])
+    assert result["iterations"] == 1 and result["converged"]
+
+
 def test_rejects_an_empty_ion_loss_cone_for_ambipolar_solution():
     with pytest.raises(ValueError, match="ion_loss_refill"):
         scientific_operator(
@@ -65,6 +77,23 @@ def test_prescribed_potential_evaluates_flux_without_solving():
     )
     assert result["iterations"] == 0 and result["converged"]
     assert np.all(result["ion_particle_flux_m2_s"] > 0.0)
+
+
+def test_solve_ignores_prescribed_plug_potential():
+    inputs = dict(
+        b_reference_t=1.0, b_plug_t=4.0, psi=0.0,
+        ion_mass_kg=PROTON_MASS_KG, ion_charge_c=ELEMENTARY_CHARGE_C,
+        ion_density_ref_m3=2.0e18,
+        ion_temperature_parallel_j=1000.0 * ELEMENTARY_CHARGE_C,
+        ion_temperature_perpendicular_j=2000.0 * ELEMENTARY_CHARGE_C,
+        electron_temperature_j=500.0 * ELEMENTARY_CHARGE_C,
+        ion_loss_refill=0.05,
+    )
+    baseline = scientific_operator(**inputs)
+    with_ignored_potential = scientific_operator(**inputs, phi_plug_v=1.0e9)
+    for key in ("potential_v", "ion_particle_flux_m2_s", "electron_particle_flux_m2_s"):
+        np.testing.assert_array_equal(with_ignored_potential[key], baseline[key])
+    assert with_ignored_potential["iterations"] == baseline["iterations"]
 
 
 def test_vectorized_density_profile_matches_explicit_values():
