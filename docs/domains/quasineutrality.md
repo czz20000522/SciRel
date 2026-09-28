@@ -8,7 +8,7 @@
 - [玻尔兹曼电子态与准中性残差](../../catalog/examples/scirel.closures.boltzmann-quasineutrality.json)在调用方提供的电势、电子热能、参考态与离子密度上评价电子密度、压力及三类残差。指数剪裁与零密度 `tiny` 地板是数值合同的一部分；极端有限输入的派生输出未做有限性复查。
 - [准中性电势二分求根](../../catalog/examples/scirel.closures.quasineutral-potential.json)对调用方残差回调进行有界扩括区与二分；活跃表面同时满足括区宽度和残差容差才返回，非活跃表面保留参考电势但仍返回其残差。
 
-两项关系都使用 NumPy 广播。广播只证明数组 shape 相容；坐标、物理状态与单一离子假设仍由调用方负责。残差中的 `charge_residual_m3` 是电荷态加权的**数密度**差，单位为 `m^-3`，不是 `C/m^3`。
+三项关系都使用 NumPy 广播。广播只证明数组 shape 相容；坐标、物理状态与单一离子假设仍由调用方负责。残差中的 `charge_residual_m3` 是电荷态加权的**数密度**差，单位为 `m^-3`，不是 `C/m^3`。
 
 ## 组合与证据
 
