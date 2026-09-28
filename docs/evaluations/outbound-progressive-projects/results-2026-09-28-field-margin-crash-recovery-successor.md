@@ -26,6 +26,15 @@ details the commands and result hashes. The new archive SHA-256 is
 `b491bf9a9713e8566eef93c2381b1aeb071941d59bcc746da1da3a455fb0128b`;
 all 375 extracted members matched its file manifest.
 
+An independent recheck by `/root/workflow_independent_review` (model and
+version `unknown`) found no remaining issue in this A/B/interrupted-C retry
+scope. Its [script](../../../build/verification/d3-independent-review-20260928/recheck_successor_historical_bytes_retry.py)
+and [observation](../../../build/verification/d3-independent-review-20260928/successor-historical-bytes-retry-observed.json)
+confirm both C delivery records, byte-identical normal B and second C retries,
+and unchanged predecessor and successor archive hashes. The manifest binds
+both recheck files by SHA-256; the review reused the 15/15 test and 375-member
+freeze evidence.
+
 This closes the reported A→B→C retry case. It does not make two-file
 replacement crash-atomic or change the scientific relations, pending-unapproved
 dev58 wheel, earlier freeze, or the project's sampled-arithmetic claim limit.

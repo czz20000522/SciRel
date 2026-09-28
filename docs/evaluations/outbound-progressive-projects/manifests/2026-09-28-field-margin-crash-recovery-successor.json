@@ -37,7 +37,20 @@
     "independent_reproducer": "build/verification/d3-independent-review-20260928/reproduce_historical_bytes_retry.py",
     "independent_reproducer_sha256": "cebb28c4a605e38882178981a211dadee0594a79f5725c83c386d006b21c8bfb",
     "independent_observation": "build/verification/d3-independent-review-20260928/historical-bytes-retry-observed.json",
-    "independent_observation_sha256": "92953eac340b54a764e4884112c5eb545d9b2da83028da489c4930804fbf2cad"
+    "independent_observation_sha256": "92953eac340b54a764e4884112c5eb545d9b2da83028da489c4930804fbf2cad",
+    "independent_recheck": "build/verification/d3-independent-review-20260928/recheck_successor_historical_bytes_retry.py",
+    "independent_recheck_sha256": "be0d39e52d390b6ad16b341d53a569782c2aea385e08df74ec695663b2d665e3",
+    "independent_recheck_observation": "build/verification/d3-independent-review-20260928/successor-historical-bytes-retry-observed.json",
+    "independent_recheck_observation_sha256": "dbef5263e0d074b403c6e1a2486aeb670a27cec8ded78eafdcb465da603c7132"
+  },
+  "independent_review": {
+    "reviewer_task": "/root/workflow_independent_review",
+    "model": "unknown",
+    "model_version": "unknown",
+    "candidate_git_commit": "423995fa0999d8343b9f9f31afab768d3db612de",
+    "finding": "historical_byte_interrupted_retry_closed",
+    "remaining_findings_in_scope": 0,
+    "scope": "A/B/interrupted-C recovery and unchanged B/C retries"
   },
   "observed": {
     "pre_fix_regression_failed": true,
