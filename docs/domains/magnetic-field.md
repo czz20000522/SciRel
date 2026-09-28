@@ -18,6 +18,7 @@
 - [轴对称磁通导出极向场](../../catalog/examples/scirel.field.poloidal-field-from-flux.json)从调用方 `psi = R A_phi` 的 R-Z 网格值离散恢复 `B_R`、`B_Z` 和幅值，包含明确的轴上规则；它不解决真空场输出 `Wb` 与平衡侧 `Wb/rad` 标签之间尚待裁决的接线问题。
 - [轴对称 Picard 磁通 Green 更新](../../catalog/examples/scirel.equilibrium.axisymmetric-picard-update.json)以首个网格间距形成单元电流，用稠密 Green 矩阵产生候选磁通，再对磁通而非电流做一次松弛；这是单步更新，求解循环由调用方负责。
 - [轴对称各向异性压强张量力平衡](../../catalog/examples/scirel.equilibrium.anisotropic-force-balance.json)在调用方给定的 R-Z 场与压强网格上计算张量散度、环向电流和沿场力诊断；活动掩码只影响诊断 RMS，函数不自行裁决压力闭包或低场物理有效性。
+- [各向异性压强环向电流分解](../../catalog/examples/scirel.equilibrium.anisotropic-toroidal-current.json)两次调用上述力平衡关系，以全压强态与各向同性 `p_perp` 对照的差值定义各向异性分项；分项名称不表示独立离散的纯曲率公式。
 - [Picard 磁通状态相对残差](../../catalog/examples/scirel.diagnostics.picard-flux-residual.json)比较相邻二维磁通状态的 L2 变化，采用 `1e-30 Wb` 分母地板；自由边界图将其用于停止判断，但这不裁决 `Wb/rad` 状态与 `Wb` 合同的接线。
 
 这些链接来自 `catalog/examples/` 开发 pilot，不表示专家已认可或可公开发布。
