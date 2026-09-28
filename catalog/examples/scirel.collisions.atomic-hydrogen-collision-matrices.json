@@ -1,0 +1,78 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.collisions.atomic-hydrogen-collision-matrices",
+  "kind": "operator",
+  "title": {"en": "Atomic hydrogen four-family collision matrices", "zh": "原子氢四族碰撞矩阵组装"},
+  "summary": "Assemble the saved KN1DPy atomic SIG_CX, SIG_H_H, SIG_H_H2 and SIG_H_P matrices from a cylindrical normalized velocity carrier. Five theta nodes and Fortran-order flattening are retained; the four cross sections bind to maintained SciRel leaves. This is a bounded development reconstruction, not a physical collision-operator validation.",
+  "taxonomy": ["collisions", "collision-matrix", "atomic-hydrogen", "velocity-space"],
+  "aliases": ["atomic SIG assembly", "assemble_atomic_hydrogen_collision_matrices"],
+  "identity": {
+    "relation": "atomic H four-family normalized collision-kernel matrix assembly",
+    "direction": "normalized cylindrical velocity axes, cell weights, normalization energy and mass ratio -> four SIG matrices and predecessor geometry",
+    "definition": "For each pair (vr_i,vx_j), (vr_k,vx_l), five midpoint theta nodes form relative-speed squared v_v2 and signed vr2_vx2. Each family multiplies the corresponding SciRel cross section at its source energy factor by v_v, averages over theta, weights by Vr2pidVr_k*dVx_l and reshapes the result to (nvr*nvx,nvr*nvx) in Fortran order (row i+nvr*j, column k+nvr*l). SIG_CX uses 0.5*H_MASS*Vth2/Q; SIG_H_H uses 0.5*H_MASS*mu*Vth2/Q, the viscosity fit and /8; SIG_H_H2 and SIG_H_P use the CX energy factor and an additional signed vx_j-vx_l weight. Vth2=(sqrt(2*Q*Tnorm/(mu*H_MASS)))^2, with saved H_MASS and Q constants.",
+    "model": "saved KN1DPy four-family atomic velocity-space quadrature, with SciRel cross-section operators as exact dependencies",
+    "geometry": "cylindrical velocity space with radial speed vr, axial velocity vx and five-point azimuthal theta quadrature",
+    "coordinates": "vr and vx are dimensionless v/Vth; source and target velocity pairs flatten in Fortran order",
+    "boundary": "vr is positive and strictly increasing; vx is strictly increasing with both signs; radial weights are nonnegative, axial widths are positive, Tnorm and mu are positive real scalars; signed elastic cells are retained",
+    "assumptions": [
+      "The saved constants H_MASS=1.6726231e-27 kg and Q=1.602177e-19 C are retained; Tnorm is the normalization energy in eV implied by the thermal-speed formula.",
+      "The H-H2 and H+-H cross-section leaves return a leading singleton axis; assembly removes that one declared wrapper axis before multiplication.",
+      "The source's Do_SIG gates, KH.Internal cache and other collision families are outside this stateless relation."
+    ]
+  },
+  "inputs": [
+    {"name": "vr", "description": "Radial normalized speed nodes.", "units": "v/Vth", "shape": "[nvr]", "dtype": "real numeric array-like", "required": true, "constraints": "Nonempty, finite, positive and strictly increasing."},
+    {"name": "vx", "description": "Axial normalized velocity nodes.", "units": "v/Vth", "shape": "[nvx]", "dtype": "real numeric array-like", "required": true, "constraints": "Nonempty, finite, strictly increasing, containing at least one negative and one positive node; exact symmetry is not required."},
+    {"name": "Vr2pidVr", "description": "Source-side radial cylindrical integration weights.", "units": "dimensionless normalized radial-area measure", "shape": "[nvr]", "dtype": "real numeric array-like", "required": true, "constraints": "Finite, nonnegative and aligned with vr."},
+    {"name": "dVx", "description": "Source-side axial cell widths.", "units": "dimensionless normalized axial-speed increment", "shape": "[nvx]", "dtype": "real numeric array-like", "required": true, "constraints": "Finite, positive and aligned with vx."},
+    {"name": "Tnorm", "description": "Energy setting the thermal normalization.", "units": "eV", "shape": "scalar", "dtype": "real numeric scalar", "required": true, "constraints": "Finite and strictly positive; arrays, booleans and numeric strings are rejected."},
+    {"name": "mu", "description": "Mass in multiples of the saved hydrogen mass.", "units": "multiples of 1.6726231e-27 kg", "shape": "scalar", "dtype": "real numeric scalar", "required": false, "default": 1.0, "constraints": "Finite and strictly positive; arrays, booleans and numeric strings are rejected."}
+  ],
+  "outputs": [
+    {"name": "SIG_CX", "description": "H/H+ charge-exchange kernel.", "units": "m^2 in normalized kernel convention", "shape": "[nvr*nvx,nvr*nvx]", "dtype": "float64 array", "required": true, "constraints": "Finite and nonnegative."},
+    {"name": "SIG_H_H", "description": "H-H elastic viscosity kernel with signed vr2_vx2 and /8.", "units": "m^2 in normalized kernel convention", "shape": "[nvr*nvx,nvr*nvx]", "dtype": "float64 array", "required": true, "constraints": "Finite; negative cells are retained."},
+    {"name": "SIG_H_H2", "description": "H-H2 elastic kernel with signed axial-difference weight.", "units": "m^2 in normalized kernel convention", "shape": "[nvr*nvx,nvr*nvx]", "dtype": "float64 array", "required": true, "constraints": "Finite; negative cells are retained."},
+    {"name": "SIG_H_P", "description": "H-H+ elastic kernel with signed axial-difference weight.", "units": "m^2 in normalized kernel convention", "shape": "[nvr*nvx,nvr*nvx]", "dtype": "float64 array", "required": true, "constraints": "Finite; negative cells and the source's exact 10 eV cross-section zero are retained."},
+    {"name": "v_v2", "description": "Squared normalized relative speed at each theta node.", "units": "(v/Vth)^2", "shape": "[nvr,nvx,nvr,nvx,5]", "dtype": "float64 array", "required": true, "constraints": "Predecessor geometry returned for parity inspection."},
+    {"name": "v_v", "description": "Normalized relative speed at each theta node.", "units": "v/Vth", "shape": "[nvr,nvx,nvr,nvx,5]", "dtype": "float64 array", "required": true, "constraints": "Square root of v_v2."},
+    {"name": "vr2_vx2", "description": "Signed radial-minus-axial collision factor.", "units": "(v/Vth)^2", "shape": "[nvr,nvx,nvr,nvx,5]", "dtype": "float64 array", "required": true, "constraints": "May be negative."},
+    {"name": "vx_vx", "description": "Axial velocity difference vx_j-vx_l.", "units": "v/Vth", "shape": "[nvr,nvx,nvr,nvx]", "dtype": "float64 array", "required": true, "constraints": "Signed and zero values are retained."},
+    {"name": "Vr2pidVrdVx", "description": "Broadcast source velocity-space weight.", "units": "dimensionless normalized volume measure", "shape": "[nvr,nvx,nvr,nvx]", "dtype": "float64 array", "required": true, "constraints": "Nonnegative."},
+    {"name": "Vth2", "description": "Squared thermal normalization speed.", "units": "m^2/s^2", "shape": "[1]", "dtype": "float64 array", "required": true, "constraints": "Finite and positive on accepted calls."}
+  ],
+  "applicability": {
+    "preconditions": ["The caller supplies the source velocity carrier and accepts its five-node theta and Fortran-index conventions.", "The four bound SciRel cross-section fits and their declared clipping and branch behavior apply."],
+    "supported": ["Stateless assembly of the atomic H four-family SIG matrices on finite normalized cylindrical velocity grids."],
+    "excluded": ["Do_SIG gating, cache lifecycle, SIG_D2 and other families, Alpha/Omega contraction, source iteration and external physical validation."]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for non-real, non-finite, misaligned or out-of-domain carriers, including non-increasing vr/vx and non-scalar Tnorm/mu.",
+    "runtime_failure": "Raises ValueError if thermal normalization is not representable, an assembled family is non-finite, or a bound cross-section rejects an energy; no matrix is returned on failure.",
+    "nonconvergence": "Not applicable; finite five-node quadrature has no iteration.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from saved KN1DPy 原子氢碰撞矩阵组装, source anchor kinetic_h.py:888-1018; saved implementation SHA-256 80fcd63681d255fbe6a2a0fc2e400d63143c9809099d1181bb30ef3266a956fe. Embedded source fits were replaced with four maintained SciRel leaves. Strictly increasing vr and scalar real normalization inputs are enforced as documented repairs. The saved bundle is in re-review and KN1DPy's strict D1 qualification is withdrawn; this is bounded historical development comparison, not qualified-L1 provenance or expert approval.",
+    "source_kinds": ["saved L1 operator document and implementation", "independent broadcast-geometry oracle", "SHA-gated historical replay", "scientific regression tests"],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {"python": {"module": "scirel.collisions.atomic_hydrogen_collision_matrices", "symbol": "assemble_atomic_hydrogen_collision_matrices", "signature": "assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu=1.0)"}},
+  "version": {"implementation_version": "0.1.0.dev5", "dependencies": [
+    {"asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section"},
+    {"asset_id": "scirel.collisions.atomic-hydrogen-elastic-cross-section"},
+    {"asset_id": "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section"},
+    {"asset_id": "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section"}
+  ]},
+  "example": {
+    "description": "Build a two-by-two velocity carrier and inspect matrix order and the source weight axis.",
+    "code": "import numpy as np\nfrom scirel.collisions import assemble_atomic_hydrogen_collision_matrices\nr = assemble_atomic_hydrogen_collision_matrices(\n    vr=np.array([0.5, 1.0]), vx=np.array([-1.0, 1.0]),\n    Vr2pidVr=np.array([1.0, 2.0]), dVx=np.array([2.0, 2.0]), Tnorm=1.0,\n)\nassert r['SIG_CX'].shape == (4, 4)\nassert r['v_v2'].shape == (2, 2, 2, 2, 5)\nassert np.isfinite(r['SIG_H_H']).all()\nassert (r['SIG_H_H'] < 0).any()\nassert r['Vth2'].shape == (1,)",
+    "expected": "Four finite 4-by-4 SIG matrices, retained signed elastic cells, five-node predecessor geometry and a one-element thermal-speed-square result."
+  },
+  "verification": {
+    "scope": ["All four matrices agree with an independent broadcast-geometry and fit oracle to relative tolerance 1e-12 on canonical and holdout grids.", "Fortran flattening, theta geometry, signed elastic cells and nonnegative CX are retained.", "Input repairs are covered by failing-before-fix regressions; SHA-pinned historical replay compares finite cases to relative tolerance 1e-12."],
+    "tests": ["tests/operator_contracts/test_atomic_hydrogen_collision_matrices.py", "tests/operator_contracts/test_collision_matrices_l1.py"],
+    "evidence_ceiling": "Direct tests establish source-formula agreement, shapes, signs and failure semantics on tested carriers. Optional SHA-gated replay establishes bounded agreement with the saved implementation on two grids, not a qualified source freeze or external atomic-physics oracle.",
+    "known_limitations": ["The source bundle's strict D1 qualification is withdrawn; historical replay cannot be upgraded to qualified-L1 provenance without new source review.", "Negative elastic cells and the H+-H exact 10 eV cross-section zero are preserved; physical interpretation is unresolved.", "Public distribution licensing and expert approval remain pending."]
+  }
+}
