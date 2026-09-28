@@ -11,6 +11,7 @@
 - [圆形电流丝 Green 响应](../../catalog/examples/scirel.field.circular-filament-green.json)描述加权电流丝到轴对称真空响应的叶子关系。
 - [稠密轴对称 Green 响应](../../catalog/examples/scirel.field.dense-axisymmetric-green.json)逐列保留圆丝源的磁通与极向场响应，源权重无电流或面积含义；奇异项遵循零值约定。其磁通列与圆丝核数值一致，但两份公共文档的 `Wb/A` 与 `Wb/rad/A` 标签仍待科学裁决。
 - [镜像等离子体磁通 Green 矩阵](../../catalog/examples/scirel.field.mirror-plasma-green.json)在等间距、关于零反射对称的 R-Z 网格上，以轴向反射索引扩展首平面圆丝响应；矩阵按 `[Z,R]` 的 C 顺序展开，返回值不含电流或面积因子。
+- [圆丝真空场与径向磁通积分](../../catalog/examples/scirel.field.filament-vacuum-field.json)先叠加理想圆丝磁场，再从首个径向网格点梯形积分 `R B_Z`；其 `psi` 以该网格点为零位，不能与逐点绝对 Green 响应不经参考值调整就直接比较。
 - [多线圈真空场](../../catalog/examples/scirel.field.multi-coil-vacuum-field.json)是组合 TaskGraph，依赖矩形线圈离散、Green 响应和电流叠加；准确端口及边见其 exact document。
 - [磁通坐标标量剖面插值](../../catalog/examples/scirel.geometry.flux-surface-profile.json)对调用方提供的成对样本排序、去重和线性插值，支持显式常值端点；它不构造物理磁通面，也不换算 `Wb` 与 `Wb/rad`。
 - [轴对称磁通导出极向场](../../catalog/examples/scirel.field.poloidal-field-from-flux.json)从调用方 `psi = R A_phi` 的 R-Z 网格值离散恢复 `B_R`、`B_Z` 和幅值，包含明确的轴上规则；它不解决真空场输出 `Wb` 与平衡侧 `Wb/rad` 标签之间尚待裁决的接线问题。
