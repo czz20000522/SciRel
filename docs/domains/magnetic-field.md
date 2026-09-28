@@ -12,6 +12,7 @@
 - [多线圈真空场](../../catalog/examples/scirel.field.multi-coil-vacuum-field.json)是组合 TaskGraph，依赖矩形线圈离散、Green 响应和电流叠加；准确端口及边见其 exact document。
 - [磁通坐标标量剖面插值](../../catalog/examples/scirel.geometry.flux-surface-profile.json)对调用方提供的成对样本排序、去重和线性插值，支持显式常值端点；它不构造物理磁通面，也不换算 `Wb` 与 `Wb/rad`。
 - [轴对称磁通导出极向场](../../catalog/examples/scirel.field.poloidal-field-from-flux.json)从调用方 `psi = R A_phi` 的 R-Z 网格值离散恢复 `B_R`、`B_Z` 和幅值，包含明确的轴上规则；它不解决真空场输出 `Wb` 与平衡侧 `Wb/rad` 标签之间尚待裁决的接线问题。
+- [轴对称 Picard 磁通 Green 更新](../../catalog/examples/scirel.equilibrium.axisymmetric-picard-update.json)以首个网格间距形成单元电流，用稠密 Green 矩阵产生候选磁通，再对磁通而非电流做一次松弛；这是单步更新，求解循环由调用方负责。
 
 这些链接来自 `catalog/examples/` 开发 pilot，不表示专家已认可或可公开发布。
 

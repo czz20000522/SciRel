@@ -667,6 +667,16 @@ def test_documented_poloidal_flux_field_keeps_hall_graph_reverse_dependencies():
     } <= set(result["test_paths"])
 
 
+def test_documented_picard_update_keeps_hall_graph_reverse_dependencies():
+    result = select("src/scirel/equilibrium/axisymmetric_picard_update.py")
+    assert result["full_suite_required"] is False
+    assert {
+        "tests/operator_contracts/test_axisymmetric_picard_update.py",
+        "tests/graph_contracts/reduced_hall_anisotropic_picard/test_graph_reduced_hall_anisotropic_picard.py",
+        "tests/framework_compositions/test_kinetic_mirror_hall_equilibrium.py",
+    } <= set(result["test_paths"])
+
+
 def test_current_asset_index_unions_legacy_samples_and_exact_documents():
     namespace = runpy.run_path(str(SELECTOR))
     assets = namespace["_load_assets"]()
