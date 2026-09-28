@@ -43,7 +43,14 @@ contract. All 62 exact documents passed runtime-signature and executable-
 example validation. The worktree `affected` gate selected this asset, both
 direct test files, the public export and the asset-document/check-script
 contracts: 100 passed and 3 optional saved-root replays skipped. The catalog
-target is `partial: 62/109`.
+target is `partial: 62/109`. The main checkout first accepted independent
+outbound evaluation commit `2630994` directly atop `a600632`, then cherry-
+picked ion-state implementation `ead8856` and evidence `791c077`, followed by
+README count commit `4b35784`. Its combined
+`pwsh ./scripts/check.ps1 -Mode affected -BaseRef a600632` selected both the
+ion-state and outbound manifest/documentation checks: 138 passed and 3
+optional saved-root replays skipped. Setting `SCIREL_KN1DPY_REVIEW_ROOT` and
+running the main-checkout ion-state replay separately yielded 3 passed.
 
 These checks do not establish the rate-table producer, absolute physical
 units, H2+ distribution seeding, full KN1D terminal closure, whole-source D1
