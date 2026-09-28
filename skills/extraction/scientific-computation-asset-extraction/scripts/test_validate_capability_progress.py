@@ -425,6 +425,43 @@ def check_report_only_execution_rebind() -> None:
         comparison["execution_rebind_sha256"] = receipt["execution_rebind_sha256"]
         assert validate_comparison() == []
 
+        saved_case = case
+        saved_cases = execution["cases"]
+        for jcase in (1, 2, 3):
+            for kind in ("canonical", "sealed_holdout"):
+                case_id = f"jcase{jcase}-{kind}"
+                case = dict(saved_case, case_id=case_id, kind=kind)
+                rebind["case_id"] = case_id
+                row = {
+                    "target_id": "T-EXAMPLE",
+                    "jcase": jcase,
+                    "case_id": kind,
+                    "controls": {"case_tag": case_id, "case_kind": kind, "jcase": jcase},
+                    "input_digest": case["bundle_input_digest"],
+                }
+                execution["cases"] = {case_id: row}
+                assert verify() == []
+                for container, field, wrong_value in (
+                    (row, "target_id", "T-OTHER"),
+                    (row, "jcase", jcase + 1),
+                    (row, "case_id", "sealed_holdout" if kind == "canonical" else "canonical"),
+                    (row["controls"], "case_tag", "other-case"),
+                    (row["controls"], "case_kind", "other-kind"),
+                    (row["controls"], "jcase", jcase + 1),
+                    (row, "input_digest", "0" * 64),
+                ):
+                    original = container[field]
+                    container[field] = wrong_value
+                    assert any("bundle_input_digest" in error for error in verify())
+                    container[field] = original
+                execution["cases"] = {"other-case": row}
+                assert any("bundle_input_digest" in error for error in verify())
+                execution["cases"] = {case_id: row, f"T-EXAMPLE::{case_id}": {"input_digest": "0" * 64}}
+                assert any("bundle_input_digest" in error for error in verify())
+        case = saved_case
+        rebind["case_id"] = case["case_id"]
+        execution["cases"] = saved_cases
+
         rebind.pop("documentation_review_ref")
         assert any("documentation review" in error for error in verify())
         rebind["documentation_review_ref"] = "evidence/documentation-review.json"

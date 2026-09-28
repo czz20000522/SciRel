@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import math
+import re
 import string
 from pathlib import Path
 from typing import Any
@@ -605,6 +606,30 @@ def _validate_execution_rebind(
     case_key = f"{receipt.get('target_id')}::{case.get('case_id')}"
     if isinstance(cases, dict):
         executed_case = cases.get(case_key)
+        if executed_case is None:
+            case_id = case.get("case_id")
+            kind = case.get("kind")
+            match = (
+                re.fullmatch(r"jcase([1-9][0-9]*)-(canonical|sealed_holdout)", case_id)
+                if isinstance(case_id, str) else None
+            )
+            keyed_case = cases.get(case_id)
+            controls = keyed_case.get("controls") if isinstance(keyed_case, dict) else None
+            if (
+                match is not None
+                and match.group(2) == kind
+                and isinstance(keyed_case, dict)
+                and keyed_case.get("target_id") == receipt.get("target_id")
+                and keyed_case.get("case_id") == kind
+                and type(keyed_case.get("jcase")) is int
+                and keyed_case["jcase"] == int(match.group(1))
+                and isinstance(controls, dict)
+                and controls.get("case_tag") == case_id
+                and controls.get("case_kind") == kind
+                and type(controls.get("jcase")) is int
+                and controls["jcase"] == keyed_case["jcase"]
+            ):
+                executed_case = keyed_case
     elif isinstance(cases, list):
         executed_case = next(
             (row for row in cases if isinstance(row, dict)
