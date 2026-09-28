@@ -20,9 +20,11 @@
 - [分子氢弹性截面](../../catalog/examples/scirel.collisions.molecular-hydrogen-elastic-cross-section.json)保留 H2–H2 的同一拟合及 `viscosity=True` 的来源回退语义。
 - [原子氢四族碰撞矩阵](../../catalog/examples/scirel.collisions.atomic-hydrogen-collision-matrices.json)在归一化柱坐标速度网格上组装 CX、H–H、H–H2 与 H–H+ 的 SIG 核；截面绑定上列四个独立算子。
 - [分子氢四族碰撞矩阵](../../catalog/examples/scirel.collisions.molecular-hydrogen-collision-matrices.json)组装 CX、H2–H、H2–H+ 与 H2–H2 的 SIG 核；分子 CX 保留与原子侧不同的完整能量因子。
+- [原子氢弹性 Omega 聚合](../../catalog/examples/scirel.collisions.atomic-hydrogen-omega-frequencies.json)从分布、Alpha 场与 H–H 矩阵归约三个频率通道；零速度差和零垂直矩显式失败。
+- [分子氢弹性 Omega 聚合](../../catalog/examples/scirel.collisions.molecular-hydrogen-omega-frequencies.json)保留 H2–H 求和内除法和与原子侧不同的零累计矩分支。
 
 这些链接来自 `catalog/examples/` 开发 pilot，不表示专家已认可或可公开发布。
 
 ## 证据、限制与待整理项
 
-热电子归一化动量文档明确排除将其直接作为归一化动量映射的 `vnorm`：那会重复除以光速。速率平均可消费圆柱速度空间积分权重的 `volume`，但不验证截面模型或网格收敛。七项截面和两项矩阵组装仍是保存公式的开发期重装，物理截面外部校验、矩阵守恒或正定性 oracle 尚未完成。其它碰撞关系、跨资产的合法组合和适用域仍**未整理**，不能解释为已证实缺口。相对上一可信版的变化：待建立可信版后填写。
+热电子归一化动量文档明确排除将其直接作为归一化动量映射的 `vnorm`：那会重复除以光速。速率平均可消费圆柱速度空间积分权重的 `volume`，但不验证截面模型或网格收敛。七项截面、两项矩阵和两项 Omega 聚合仍是保存公式的开发期重装，物理截面外部校验、矩阵守恒或正定性 oracle 尚未完成。其它碰撞关系、跨资产的合法组合和适用域仍**未整理**，不能解释为已证实缺口。相对上一可信版的变化：待建立可信版后填写。
