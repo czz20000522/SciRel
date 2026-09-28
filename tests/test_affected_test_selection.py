@@ -36,6 +36,16 @@ def test_operator_change_selects_only_its_contract_and_dependent_graphs():
     assert "tests/operator_contracts/test_dense_axisymmetric_green.py" not in result["test_paths"]
 
 
+def test_bilinear_sampler_change_selects_equilibrium_diagnostics_graph():
+    result = select("src/scirel/geometry/bilinear_grid_sampling.py")
+
+    assert result["full_suite_required"] is False
+    assert {
+        "tests/operator_contracts/test_bilinear_grid_sampling.py",
+        "tests/graph_contracts/equilibrium_synthesis_diagnostics/test_graph_equilibrium_synthesis_diagnostics.py",
+    } <= set(result["test_paths"])
+
+
 def test_anisotropic_feedback_change_selects_free_boundary_graph():
     result = select("src/scirel/equilibrium/anisotropic_picard_feedback.py")
 
