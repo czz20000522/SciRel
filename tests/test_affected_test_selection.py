@@ -97,6 +97,19 @@ def test_cross_section_change_selects_both_collision_matrix_dependents():
     } <= set(result["test_paths"])
 
 
+def test_atomic_cx_rate_change_selects_its_direct_tests():
+    result = select("src/scirel/collisions/atomic_hydrogen_charge_exchange_rate.py")
+
+    assert result["full_suite_required"] is False
+    assert result["affected_assets"] == [
+        "scirel.collisions.atomic_hydrogen_charge_exchange_rate.evaluate_atomic_hydrogen_charge_exchange_rate"
+    ]
+    assert {
+        "tests/operator_contracts/test_atomic_hydrogen_charge_exchange_rate.py",
+        "tests/operator_contracts/test_atomic_hydrogen_charge_exchange_rate_l1.py",
+    } <= set(result["test_paths"])
+
+
 def test_alpha_change_selects_omega_dependent_and_direct_replay():
     result = select("src/scirel/kinetic/atomic_alpha_contraction.py")
 
@@ -545,8 +558,8 @@ def test_current_asset_index_unions_legacy_samples_and_exact_documents():
     namespace = runpy.run_path(str(SELECTOR))
     assets = namespace["_load_assets"]()
 
-    assert len(assets) == 110
-    assert len({asset.public_callable for asset in assets}) == 110
+    assert len(assets) == 111
+    assert len({asset.public_callable for asset in assets}) == 111
 
 
 def test_catalog_asset_keeps_every_declared_direct_test(tmp_path):
