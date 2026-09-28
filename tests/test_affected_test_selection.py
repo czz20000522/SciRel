@@ -730,6 +730,15 @@ def test_documented_filament_vacuum_field_selects_its_direct_test():
     ]
 
 
+def test_documented_ideal_conductor_boundary_keeps_free_boundary_graph():
+    result = select("src/scirel/field/ideal_conductor_boundary.py")
+    assert result["full_suite_required"] is False
+    assert {
+        "tests/operator_contracts/test_ideal_conductor_boundary.py",
+        "tests/graph_contracts/free_boundary_anisotropic_picard/test_graph_free_boundary_anisotropic_picard.py",
+    } <= set(result["test_paths"])
+
+
 def test_current_asset_index_unions_legacy_samples_and_exact_documents():
     namespace = runpy.run_path(str(SELECTOR))
     assets = namespace["_load_assets"]()

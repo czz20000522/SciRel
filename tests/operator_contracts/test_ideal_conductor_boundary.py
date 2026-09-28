@@ -35,6 +35,20 @@ def test_honors_relative_svd_cutoff_and_rejects_invalid_cutoff():
         scientific_operator(**_inputs(), rcond=-1.0)
 
 
+def test_consistent_flux_rescaling_preserves_boundary_currents():
+    data = _inputs()
+    per_radian = scientific_operator(**data)
+    full_flux = scientific_operator(
+        uncorrected_field_flux=2 * np.pi * data["uncorrected_field_flux"],
+        boundary_sample_matrix=data["boundary_sample_matrix"],
+        green_boundary_to_boundary=2 * np.pi * data["green_boundary_to_boundary"],
+        green_boundary_to_field=2 * np.pi * data["green_boundary_to_field"],
+    )
+    np.testing.assert_allclose(full_flux["boundary_currents"], per_radian["boundary_currents"])
+    for name in ("corrected_field_flux", "boundary_flux_correction", "field_flux_correction", "residual"):
+        np.testing.assert_allclose(full_flux[name], 2 * np.pi * per_radian[name])
+
+
 def test_reviewed_relation_example():
     import numpy as np
     from scirel.field.ideal_conductor_boundary import correct_ideal_conductor_boundary_flux
