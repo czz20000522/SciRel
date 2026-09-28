@@ -42,7 +42,11 @@ maintained failure contract. All 60 exact documents passed runtime-signature
 and executable-example validation. The worktree `affected` gate selected this
 asset, both direct test files, the public export and the asset-document/check
 script contracts: 98 passed and 3 optional saved-root replays skipped. The
-catalog target is `partial: 60/107`.
+catalog target is `partial: 60/107`. After cherry-pick `2a503e2`, evidence
+record `f609dd3` and README count commit `a97846e`, the main checkout ran
+`pwsh ./scripts/check.ps1 -Mode affected -BaseRef 2b1351d`: 98 passed and
+3 optional saved-root replays skipped. Setting `SCIREL_KN1DPY_REVIEW_ROOT`
+and running the main-checkout replay separately yielded 3 passed.
 
 These checks do not establish the upstream terminal distribution, full KN1D
 terminal diagnostics, physical distribution normalization, whole-source D1
