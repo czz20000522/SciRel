@@ -36,6 +36,37 @@ rebuildable `venv/.venv` directories were removed. Two `.venv` junctions were
 preserved without recursive deletion; they point to a former test environment
 and are not a runnable environment in the retained copy. Fresh replay should
 create a new environment from the pinned wheel and catalog. The Desktop count
-is now zero; the retained non-environment data remains available in the ignored
-task directory. The retained directories occupy 124,647,556 bytes, a reduction
-of 3,083,766,919 bytes from the original Desktop footprint.
+for `scirel*` was zero after this phase; the retained non-environment data
+remains available in the ignored task directory. Those 75 retained directories
+occupy 124,647,556 bytes, a reduction of 3,083,766,919 bytes from their
+original Desktop footprint.
+
+## Non-prefixed supplement
+
+A full directory inventory by creation date found nine more September 26-27
+outbound evaluation copies on D: (none on C:), occupying 10,205,562 bytes.
+They belong to the frozen STIX per-shot and spectral-pair cases, whose stage
+archives, raw traces and manifests remain unchanged. No active process command
+line referenced them. The exact-source dry run is
+`build/verification/desktop-cleanup-20260926-27/supplement-plan.json`, SHA-256
+`bfe94b045539bbd9ce17dbe1e73a5cd944548494d430d32afe871e4be13f0bc1`.
+It binds 725 file paths, lengths and SHA-256 values; all matched after the
+move. There were no virtual environments or reparse points in this group.
+
+Each old `D:/Users/26569/Desktop/<name>` now maps to
+`build/verification/desktop-cleanup-20260926-27/retained/unprefixed/<name>`:
+
+| STIX per-shot | Spectral pair |
+| --- | --- |
+| `stix-per-shot-independent-20260926` | `spectral-pair-stage1-independent-20260927` |
+| `stix-per-shot-failure-independent-20260926` | `spectral-pair-stage2-independent-20260927` |
+| `stix-per-shot-final-independent-20260926` | `spectral-pair-stage3-independent-20260927` |
+| `stix-per-shot-final-failure-20260926` | `spectral-pair-holdout-independent-20260927` |
+| | `spectral-pair-holdout-reviewed-independent-20260927` |
+
+After this supplement, all 84 project directories and 8,082 files remain in
+the ignored task directory (134,853,118 bytes). A `-Force` inventory of *all*
+directories created since September 25 under both Desktop roots found zero
+remaining; the check did not rely on a project-name prefix. Overall the two
+phases removed 3,083,766,919 bytes of rebuildable environments from the
+original 3,218,620,037-byte Desktop footprint.
