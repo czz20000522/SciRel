@@ -75,3 +75,19 @@ this successor.
 This remains a `pending_unapproved` development comparison. In particular,
 the saved KN1DPy input is not a qualified D1 source freeze; these successor
 checks do not expand its source or scientific validity claims.
+
+The bounded independent successor review was performed by collaboration task
+`/root/workflow_independent_review` under coordination thread
+`01a0d158-0127-78e1-a7b2-5af28e50876a`; its verifiable model/version is
+unknown. The reviewer compared `d2b64a971c41a05fcc6dc8321013cf93ba4b7152`
+with `ce0763ee7db2d5ba8bdf249b83b3b1be4d0c0661`, replayed the large
+integer and strict NumPy counterexamples, checked that caller error policy is
+restored and the population expression's AST is unchanged, and inspected the
+three-file diff for the `n_H+ = n_e` scope premise. All three original findings
+were closed for that exact successor. The review's tool-output chunks are
+`8025fe` (diff and identity) and `87dc67` (counterexamples); these identify
+thread tool records, not saved artifacts or content digests. No separate raw
+review report or script was retained. The retrospective coordination summary
+is at `../CodeFusion/build/coordination/three-day-20260925/workflow-redesign-20260928.md`
+in its Saha successor review and reviewer-identity addendum. This review does
+not establish D1 source qualification, human approval or release status.
