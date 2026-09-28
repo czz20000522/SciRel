@@ -68,6 +68,25 @@ def test_fluid_matrix_block_and_eigen_selection():
     assert np.all(np.diff(np.abs(solved["selected"].imag)) >= 0)
 
 
+def test_fluid_matrix_rejects_nonfinite_resonance():
+    scales = derive_species_equilibrium_scales(
+        ms=[9.1094e-31], qs=[-1.60217662e-19], ns_unit=[1.0],
+        Ts_unit=[1.0], B0=1.0, n00=6.075e19, T00=1000.0,
+    )
+    l = get_gamma_lpole_coefficients(max_harmonic=0)
+    z = get_z_pole_coefficients(j_order=8)
+    with pytest.raises(ValueError, match="finite"):
+        assemble_fluid_dispersion_matrix(
+            omega=abs(scales["wcs"][0]), kz=0.0,
+            c2=scales["c2"], epsilon0=scales["epsilon0"],
+            wps2=scales["wps2"], wcs=scales["wcs"], vts=scales["vts"],
+            rhocs=scales["rhocs"], sgns=scales["sgns"],
+            absrhocs=scales["absrhocs"], cn_residues=l["residues"],
+            cn_poles=l["poles"], order_lengths=l["order_lengths"],
+            bzj=z["bzj"], czj=z["czj"], max_harmonic=0, n_species=1,
+        )
+
+
 def test_eigen_floor_rejects_nonpropagating_modes():
     roots = np.array([0.1 + 3j, -1 + 0j, 0.2 + 1j])
     out = solve_fluid_wavevector_eigenproblem(matrix=np.diag(roots), kn=1.0)

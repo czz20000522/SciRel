@@ -77,7 +77,7 @@
       "description": "完整的 2x2 复矩阵（complex128，按 Octave 列主序理解）。单位：无量纲。有效性约束：`RC[0,0]==R` 且 `RC[0,1]==dR_dlambda`；`RC[1,0]`、`RC[1,1]` 为同一分支计算出的伴随列，frozen source 未使用。",
       "units": "无量纲",
       "shape": "(2,2)",
-      "dtype": "real numeric",
+      "dtype": "complex128",
       "required": true,
       "constraints": "`RC[0,0]==R` 且 `RC[0,1]==dR_dlambda`；`RC[1,0]`、`RC[1,1]` 为同一分支计算出的伴随列，frozen source 未使用。"
     }

@@ -6,7 +6,7 @@ D_ij 及其六项展开行列式 det(D)。所有公式、常数、截断与符�
 Dxz/Dzx 符号修正）均按冻结源码照抄，不做任何"修正"或归一化。
 
 模块只依赖 numpy 与 scipy；不读取、不导入冻结源码树或任何同级算子包。
-公开 API 只有 scientific_operator 一个可调用对象。
+公开 API 是 evaluate_kinetic_dielectric_tensor。
 """
 
 import operator as _operator
@@ -14,7 +14,7 @@ import operator as _operator
 import numpy as _np
 from scipy import special as _sp
 
-__all__ = ["scientific_operator"]
+__all__ = ["evaluate_kinetic_dielectric_tensor"]
 
 # bonk/fDtensor.m:22-25 的默认 SI 常数（原样照抄）
 _C2 = (2.99792458e8) ** 2
@@ -158,7 +158,7 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
     if lmx < 0:
         raise ValueError("lmx must be a non-negative integer, got %d" % lmx)
 
-    b0 = _complex_scalar(B0, "B0")
+    b0 = _real_scalar(B0, "B0")
     freq = _real_scalar(f, "f")
     kz_c = _real_scalar(kz, "kz")
     kx_c = _complex_scalar(kx, "kx")
@@ -171,6 +171,8 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
         raise ValueError("kz must be non-zero: z0 and zn divide by kz")
 
     species_count, (qs_a, ms_a, ns0_a, ts0_a) = _species_arrays(qs, ms, ns0, Ts0)
+    if _np.any(qs_a == 0):
+        raise ValueError("qs must be non-zero: wcs and rhocs degenerate at zero charge")
     if _np.any(ms_a <= 0):
         raise ValueError("ms must be strictly positive")
     if _np.any(ns0_a <= 0):

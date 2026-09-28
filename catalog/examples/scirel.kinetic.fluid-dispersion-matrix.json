@@ -19,7 +19,7 @@
     "model": "homogeneous magnetized multi-species Maxwellian fluid pole expansion",
     "geometry": "no physical spatial grid",
     "coordinates": "wavevector x-z plane; z parallel to B0; component and pole blocks retain source ordering",
-    "boundary": "finite nonzero omega, nonzero gyrofrequencies, positive pole radii and matched coefficient axes",
+    "boundary": "finite nonzero omega, nonzero gyrofrequencies, positive pole radii and matched coefficient axes; source resonance denominators must not vanish and the assembled matrix must remain finite",
     "assumptions": [
       "Input units and normalization follow the declared ports; no physical parameters are inferred."
     ]
@@ -147,7 +147,7 @@
       "description": "Z 极点近似的留数",
       "units": "无量纲",
       "shape": "`(J,)` 一维极点轴",
-      "dtype": "real numeric",
+      "dtype": "complex128",
       "required": true,
       "constraints": "有限且非空。"
     },
@@ -156,7 +156,7 @@
       "description": "Z 极点近似的极点位置",
       "units": "无量纲",
       "shape": "`(J,)`，与 `bzj` 等长",
-      "dtype": "real numeric",
+      "dtype": "complex128",
       "required": true,
       "constraints": "有限。"
     },
@@ -246,7 +246,8 @@
   ],
   "applicability": {
     "preconditions": [
-      "finite nonzero omega, nonzero gyrofrequencies, positive pole radii and matched coefficient axes"
+      "finite nonzero omega, nonzero gyrofrequencies, positive pole radii and matched coefficient axes",
+      "Source 1/xsj and 1/(xsj^2-m^2) resonance denominators must not vanish; M must remain finite."
     ],
     "supported": [
       "Assemble the dense first-order fluid eigenmatrix for fixed angular frequency and parallel wavenumber."
@@ -256,7 +257,7 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
+    "invalid_input": "Raises ValueError for declared invalid inputs and nonfinite assembled M, including singular source resonance denominators; numeric conversion errors may propagate for unsupported Python objects.",
     "runtime_failure": "Numerical backend errors propagate; no fallback relation is substituted.",
     "nonconvergence": "Not applicable; no iterative root solve is exposed.",
     "partial_results": "No partial mapping is returned after an exception."
@@ -296,7 +297,7 @@
     ],
     "evidence_ceiling": "Finite D1 source oracles and direct SciRel tests establish only the listed cases and tolerances; they do not establish arbitrary-parameter parity, expert recognition or release approval.",
     "known_limitations": [
-      "finite nonzero omega, nonzero gyrofrequencies, positive pole radii and matched coefficient axes",
+      "finite nonzero omega, nonzero gyrofrequencies, positive pole radii and matched coefficient axes; source resonance denominators must not vanish and M must remain finite",
       "Public distribution license and expert review remain pending."
     ]
   }

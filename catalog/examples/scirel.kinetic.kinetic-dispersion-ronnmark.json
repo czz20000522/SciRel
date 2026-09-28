@@ -151,7 +151,7 @@
       "description": "垂直折射率 $c k_\\perp/\\omega$",
       "units": "无量纲",
       "shape": "标量",
-      "dtype": "real numeric",
+      "dtype": "complex128",
       "required": true,
       "constraints": "有限。"
     },
@@ -196,7 +196,7 @@
       "description": "各组分 $a_s=k_\\perp\\rho_{cs}$，即极点耦合项 $\\sqrt2 a_s c_j/x_{sj}$ 的尺度",
       "units": "无量纲",
       "shape": "`(S,)`",
-      "dtype": "real numeric",
+      "dtype": "complex128",
       "required": true,
       "constraints": "有限，可正可负。"
     },
@@ -205,7 +205,7 @@
       "description": "各组分 Ronnmark 参数 $\\lambda_s=(k_\\perp\\rho_{cs})^2$",
       "units": "无量纲",
       "shape": "`(S,)`",
-      "dtype": "real numeric",
+      "dtype": "complex128",
       "required": true,
       "constraints": "非负。"
     },
@@ -214,7 +214,7 @@
       "description": "$J=8$ 极点留数，权重每个极点的共振项",
       "units": "无量纲",
       "shape": "`(8,)` 一维极点轴",
-      "dtype": "real numeric",
+      "dtype": "complex128",
       "required": true,
       "constraints": "有限复数，后半段为前半段的复共轭。"
     },
@@ -223,7 +223,7 @@
       "description": "$J=8$ 极点位置，给出复共振偏移",
       "units": "无量纲",
       "shape": "`(8,)` 一维极点轴",
-      "dtype": "real numeric",
+      "dtype": "complex128",
       "required": true,
       "constraints": "有限复数，后半段为前半段复共轭的相反数。"
     },

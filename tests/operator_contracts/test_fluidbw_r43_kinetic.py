@@ -96,6 +96,20 @@ def test_full_tensor_diagnostic_keeps_15_harmonics_and_six_term_det():
     assert out["K"][0, 0] == pytest.approx(1.323438756569723 + 16.286340462141965j)
 
 
+@pytest.mark.parametrize("change", [{"B0": 1.0 + 0.1j}, {"qs": [0.0]}])
+def test_full_tensor_diagnostic_rejects_invalid_species_controls(change):
+    args = dict(CASE, f=WN / (2 * np.pi), kz=1326.1942478795652, kx=KN)
+    args.update(change)
+    with pytest.raises(ValueError):
+        evaluate_kinetic_dielectric_tensor(**args)
+
+
+def test_diagnostic_module_star_import_exports_public_callable():
+    namespace = {}
+    exec("from scirel.kinetic.dielectric_tensor_diagnostic import *", namespace)
+    assert namespace["evaluate_kinetic_dielectric_tensor"] is evaluate_kinetic_dielectric_tensor
+
+
 def test_complex_root_preserves_source_sign_and_exit_flag():
     out = solve_kinetic_wavevector_roots(
         **CASE, omegas=[0.11 * WN], kz=0.0, kx_start=0.6 * KN

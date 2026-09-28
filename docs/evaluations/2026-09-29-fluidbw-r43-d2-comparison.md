@@ -81,3 +81,34 @@ retroactively change the narrower D1 r74/r57 evidence or replace expert review.
 
 The container used Python 3.11, NumPy 2.2.6 and SciPy 1.16.3. The final local
 `scripts/check.ps1 -Mode affected` run passed 145/145 selected tests.
+
+## Bounded D2 review successor
+
+An independent Agent review of Git `412b507` is bound by
+`d2-review-412b5070.json` SHA-256
+`94554fcb309414ac50077c5102d21c84a0a70dc65198fb3510395b9a52899fb9`.
+Its installed-wheel boundary probe and observed output are bound by SHA-256
+`4f71d3b234f5ee479a089afeb020df0d2f162acd708b9f6a3924588724e39b69`
+and `e9f88ccc9987a91c0d7bae91377d2c14f2b3e66795bd373562cf740fca84bb3b`.
+The review requested four bounded fixes: exact complex port types, real `B0`
+and nonzero `qs` in the full-tensor diagnostic, a finite fluid matrix at the
+source resonance boundary, and the diagnostic module export. The successor
+keeps the original source arithmetic and valid-case assertions. It rejects
+singular fluid resonance denominators and nonfinite assembled matrices rather
+than returning them as ordinary results.
+
+The successor development catalog is in `build/catalog/fluidbw-r43-d2-review-fix`
+with root digest
+`sha256:6397450433d8fe6ac4b58cb28515505bb0e66d9caf4be1abf910dd7c6c31d696`.
+The successor development wheel is in `build/wheels/fluidbw-r43-d2-review-fix`
+with SHA-256
+`927b33e4a1051d71698714b30d80dfe9da46c7647ebe25fd9c2fedfc6025deda`.
+The original `412b507` wheel and catalog above remain unchanged. All 132 exact
+documents passed runtime-signature and example validation, and the affected
+selector passed 56/56 tests. In a worktree-external venv, `python -I` passed
+42/42 tests across the three affected D2 files; the two changed modules were
+byte-identical to the installed wheel copies, and `scirel` resolved from that
+venv's site-packages. This successor venv reused host NumPy/SciPy; the earlier
+offline Podman result applies to the original wheel only. The successor awaits
+narrow independent rereview and remains `pending_unapproved`, not a public
+release or expert-approved scientific baseline.

@@ -41,7 +41,7 @@
       "description": "各极点的留数，矩阵按极点轴加权共振项",
       "units": "无量纲",
       "shape": "`(J,)` 一维极点轴",
-      "dtype": "real numeric",
+      "dtype": "complex128",
       "required": true,
       "constraints": "有限复数，后半段必须等于前半段的复共轭。"
     },
@@ -50,7 +50,7 @@
       "description": "各极点位置，给出复共振偏移并进入共振宗量分母",
       "units": "无量纲",
       "shape": "`(J,)` 一维极点轴",
-      "dtype": "real numeric",
+      "dtype": "complex128",
       "required": true,
       "constraints": "有限复数，后半段必须等于前半段复共轭的相反数。"
     },

@@ -109,6 +109,8 @@ def assemble_fluid_dispersion_matrix(
     snl = 0
     for s in range(n_species):
         xsj = (omega - kz * vts[s] * czj) / wcs[s]
+        if any(np.any(xsj**2 == n**2) for n in range(max_harmonic + 2)):
+            raise ValueError("resonance denominators must be non-zero for finite M")
         for n in range(max_harmonic + 1):
             order = n + 1
             for l in range(order_lengths[order]):
@@ -189,6 +191,9 @@ def assemble_fluid_dispersion_matrix(
     mat[n_sl3 + 1, n_sl3 + 2] = kz**2 * c2 / omega - omega
     mat[n_sl3 + 2, n_sl3 + 1] = -omega / c2
     mat[n_sl3 + 3, n_sl3 + 0] = omega / c2 - kz**2 / omega
+
+    if not np.all(np.isfinite(mat)):
+        raise ValueError("fluid dispersion matrix M must be finite")
 
     return {
         "M": mat,
