@@ -30,6 +30,13 @@ def test_returns_l2_relative_change():
     assert np.isclose(result["residual"], 1.0)
 
 
+def test_rejects_mismatched_or_nonfinite_flux_states():
+    with pytest.raises(ValueError, match="same-shape two-dimensional"):
+        scientific_operator([[1.0, 2.0]], [[1.0], [2.0]])
+    with pytest.raises(ValueError, match="only finite values"):
+        scientific_operator([[1.0]], [[np.nan]])
+
+
 def test_reviewed_relation_example():
     from scirel.diagnostics.picard_flux_residual import compute_picard_flux_residual
     import numpy as np
