@@ -131,6 +131,33 @@ identity, not selection or revalidation of the current D2 candidate. The
 earlier `b9e2c8...` export also remains development review evidence. Neither
 set is a SciRel approval or `released` entry.
 
+The same CodeFusion source `3c69931b` subsequently ran the current r43
+workflow in a new V1 development project
+`prj_06b93ac5f20676cf034d2e8c171eb73e628a`. Its source workflow Artifact
+has digest `sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b`,
+and all 13 item refs match the current indexed candidate. One Weideman
+`request-evidence` action left one item `needs_evidence`, 12 `review_pending`,
+and zero approved. The selected snapshot Artifact
+`cf://artifact/upload_1885f11491ebaa41c4149c4c6f4621b560b4df963dbd8fde`
+has SHA-256 `05ee82f0f9fae1a635879ed0a10272b5043dcb2b6ceb69cd72ad9b44dbabce85`.
+It binds release attempt `dev-current-r43-3c69931b5`, that source Artifact,
+and the Weideman successor as the selected current Artifact. A second export
+using the selected snapshot as `previous_snapshot` returned Artifact
+`cf://artifact/upload_8626eb5a90acbcc0cdc2688423e437e3ddf0faa28616cb2c`
+with SHA-256 `5046888289573d540d65f28622aa872d57d1e344c3b1b3b86a2ef81c106c3a7d`
+and a new selection nonce. A stale current Artifact request returned 409.
+Downloaded snapshot bytes match both receipt digests (CodeFusion
+`.runtime/reviewer-current-r43-3c69931b5.json` and its saved Artifact bodies).
+
+This verifies selection and conditional revalidation for the current workflow
+identity in that development project. Its `plugin_release_ref` is
+`plugin-release://scirel/0.1.0.dev5/source-manifest-sha256-6185c8f1c973832e12040be19323faaef09668ab94347af7cb348b19d62a14f7`,
+which differs from the corrected-wheel `b1abff...` development registration
+in `prj_0b4158c393a55f538dae18802c15770ef756`. The matching workflow and
+items do not establish a same-tuple wheel/catalog release. D2 has not added
+these new selection receipts to its index; they do not confer scientific
+approval, license clearance, or a stable release.
+
 Before a stable outbound release, the following inputs are still required:
 
 - Human expert decisions on exact item revisions and their scientific scope;
