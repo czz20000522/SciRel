@@ -1,0 +1,33 @@
+{
+  "schema": "scirel.review-host-export-acceptance.dev",
+  "candidate_entry_id": "candidate:1d02ae5282f0947a40f5e15bb30df1ca9613fdd491d5012ab7b204f88d6c2218",
+  "predecessor_candidate_entry_id": "candidate:a90a56d6c69390d65c38b7ac8de7597ea5d6f5ef7cc7776377668daa8a7d3c14",
+  "development_entry_id": "development:c9a63b3f8068626417895ecfdc45787045a46a2a78ff6972642f6e8164de0463",
+  "workflow_revision": "sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b",
+  "item_count": 13,
+  "review_pending_items": 12,
+  "needs_evidence_items": 1,
+  "approved_items": 0,
+  "approval_state": "pending_unapproved",
+  "applied_transitions": 1,
+  "review_action": {
+    "item_ref": "scirel-review-item:32db97d7421ba776be0e18137e5cf7be726892f3ba0fda8ec894b1ff4ef2409c",
+    "action": "request-evidence",
+    "run_id": "run_96c8da8766b8eb0a7e78fbdb8649bffc9aa08c41ce7e23dc974b41c76a8bd9f2",
+    "successor_artifact_ref": "cf://artifact/upload_615e3e16eff14ab1f750ef4628098ab7fd75202a5d1c0e67",
+    "successor_digest": "sha256:d62ae8faf3b529605bb3795acbde9589d274a0bbca54cceb1dd5b7abddbcd461"
+  },
+  "host_source_revision": "2d3de66e04d81fcbb94fd069bb7f4d93630cd844",
+  "host_environment": "isolated_development_service_installed_b1ab_wheel",
+  "host_project_ref": "prj_0b4158c393a55f538dae18802c15770ef756",
+  "host_plugin_release_ref": "plugin-release://scirel/0.1.0.dev5/source-cc2fa21e03fa7e5152c29f0769165863429e1693/wheel-b1abff574c870e17dd4e24adc952ca4279561aa43adcc92250d019e42b2b3684/catalog-afee7fcf2d5bca4e04179aaaa1e1d98bdd689a8439c965f1b1c4580993c097e5",
+  "host_review_index_run_id": "run_e42f2d8a57ff503b4bbb3a924858833fa6346e405ecdb58c359ee92a5bf06020",
+  "host_export_artifact_ref": "cf://artifact/upload_023f4dc2766a932f0ad6f4cf26347e9b8b751726272f8e03",
+  "host_export_artifact_digest": "sha256:b9e2c8c990f821232f2a912163a8ae03a970faa52c49ced1a701d22e1de9eabd",
+  "host_export_bytes": 9854,
+  "unchanged_item_artifacts": 12,
+  "index_snapshot_digest": "sha256:8768b807cd850538d13dbbc034d201cf48c8010bb9e8af5477a51c1de3aa9b88",
+  "host_receipt_digest": "sha256:515a92eca85c93ca11303c485755a435c9fb08183abc6e6dcba5387e53203802",
+  "verification_boundary": "D2 checked the owner's saved local receipt and downloaded host export bytes, all 13 item refs and source Artifact digests against the new indexed workflow, one applied Weideman transition, and the downloaded successor digest and needs_evidence payload. The owner performed authenticated product downloads and a read-only registration database check. D2 did not independently query the product or database. This evidence is bound to the new workflow revision; earlier a9099a reviewer actions remain historical.",
+  "not_claims": ["complete_unpublished_candidate_census", "scientific_approval", "license_clearance", "public_release", "old_review_decisions_transfer"]
+}

@@ -287,6 +287,158 @@
       "subject_entry_id": "development:470d2b5bf1ae405786a1794e0c500cb765d4255e515d3e67d8a7ec5e140035f5",
       "successor_entry_id": "development:c9a63b3f8068626417895ecfdc45787045a46a2a78ff6972642f6e8164de0463",
       "transition": "superseded"
+    },
+    {
+      "approval_state": "pending_unapproved",
+      "candidate_id": "candidate-run-8bf8b626869256048083bc054bcebaee1133977a6183c7fcdfc2b45b84b84e32",
+      "destination": "review_host",
+      "destination_refs": [],
+      "draft_id": "fluidbw-r43-d2-review-draft-20260929",
+      "entry_digest": "sha256:6129a83b770afe79dcd16644b3c532b7fcfc937c3435d232c184caec97b16b2e",
+      "entry_id": "candidate:1d02ae5282f0947a40f5e15bb30df1ca9613fdd491d5012ab7b204f88d6c2218",
+      "evidence_refs": [
+        {
+          "digest": "sha256:db24351a3b38558357acda81c3b5582f4f999b6aee7643dc52e9ccb8af847406",
+          "ref": "docs/evaluations/2026-09-29-fluidbw-r43-d2-comparison.md"
+        },
+        {
+          "digest": "sha256:89b30d150242fa2cfac6e2827ffa87d18c0fa3de73a847f0d070620a2cd171a6",
+          "ref": "provenance/r43-b1ab-review-workflow-acceptance-20260929.json"
+        }
+      ],
+      "git_revision": "cc2fa21e03fa7e5152c29f0769165863429e1693",
+      "items": [
+        {
+          "asset_id": "scirel.kinetic.kinetic-dispersion-ronnmark",
+          "dependency_asset_ids": [],
+          "document_digest": "sha256:1e46df1ba8b7cd17edb6eaf4687be11ce527a03b5f63d8ffd22cec59c1369396",
+          "initial_revision": "sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b",
+          "item_ref": "scirel-review-item:0d72a89726790d2dda217f52b8ee89b7e433b8de80074ba8545945989b2a7cd6"
+        },
+        {
+          "asset_id": "scirel.kinetic.plasma-dispersion-weideman",
+          "dependency_asset_ids": [],
+          "document_digest": "sha256:bc3d515a9546405707eb13d3151e0e4081ab640c7b1c86f15f901108d5d3408f",
+          "initial_revision": "sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b",
+          "item_ref": "scirel-review-item:32db97d7421ba776be0e18137e5cf7be726892f3ba0fda8ec894b1ff4ef2409c"
+        },
+        {
+          "asset_id": "scirel.kinetic.kinetic-dispersion-relation",
+          "dependency_asset_ids": [
+            "scirel.kinetic.species-equilibrium-scales",
+            "scirel.kinetic.kinetic-dispersion-sum-fluidbw",
+            "scirel.kinetic.kinetic-dispersion-ronnmark"
+          ],
+          "document_digest": "sha256:b7c751ca69add39e681bc1ebacd94ded838b77ddb55d0eb7b677927e4eb772d9",
+          "initial_revision": "sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b",
+          "item_ref": "scirel-review-item:4956e12b305ce4bc1b6c4c84a120cfe2379da0ee07d570a85cce3c2935180e2a"
+        },
+        {
+          "asset_id": "scirel.kinetic.ronnmark-r-function",
+          "dependency_asset_ids": [],
+          "document_digest": "sha256:a5acb0c7deffbed490eb01a1d38b837ae5bfdfd9c7fb4f84c84fa5c79b8f83af",
+          "initial_revision": "sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b",
+          "item_ref": "scirel-review-item:70f123df50f85f7e577b35ee670fe2d7f340c639e457b6542e40d581b7ab4746"
+        },
+        {
+          "asset_id": "scirel.kinetic.fluid-dispersion-matrix",
+          "dependency_asset_ids": [],
+          "document_digest": "sha256:9b5e259b533e42c64248cd522e9aaf8be46da8bc53acded1338be28929f04b78",
+          "initial_revision": "sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b",
+          "item_ref": "scirel-review-item:73311c0902bf4fea7a999dcb2f05b398d6839b2e7ba83f3cbef7204bceba6b57"
+        },
+        {
+          "asset_id": "scirel.kinetic.kinetic-wavevector-roots",
+          "dependency_asset_ids": [],
+          "document_digest": "sha256:8771407744edb8adb71fa64276e9cdfd6ce824b076c32c263dc5ad08d6e7885e",
+          "initial_revision": "sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b",
+          "item_ref": "scirel-review-item:765b51697dfde7549eb64be905d7bfe069c067359b28dc1b8f7e8574a1176338"
+        },
+        {
+          "asset_id": "scirel.kinetic.kinetic-wavevector-scan",
+          "dependency_asset_ids": [
+            "scirel.kinetic.species-equilibrium-scales",
+            "scirel.kinetic.kinetic-wavevector-roots"
+          ],
+          "document_digest": "sha256:c69b7a9d2cc40831cb824b5aa94489c7fb0d83f7dd522fd10efc3d71a681328c",
+          "initial_revision": "sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b",
+          "item_ref": "scirel-review-item:97b2d568bf22479fa0607ed283031bee18ede42f0af50d35cea9807cf3f73861"
+        },
+        {
+          "asset_id": "scirel.kinetic.dielectric-tensor-diagnostic",
+          "dependency_asset_ids": [],
+          "document_digest": "sha256:9ac77ed6f7ae8f3124718270acbb13290858f6cdf23802761db8b50b122dc1b0",
+          "initial_revision": "sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b",
+          "item_ref": "scirel-review-item:a4cb5bcde3c211b89538069142ed795eccaa9fccda4fa30dfa33f6785b35fd63"
+        },
+        {
+          "asset_id": "scirel.kinetic.gamma-lpole-coefficients",
+          "dependency_asset_ids": [],
+          "document_digest": "sha256:b5e1d9e851ee6e72bcc369b7f51b19824e384318f1eb3010f49ffe1b409514fe",
+          "initial_revision": "sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b",
+          "item_ref": "scirel-review-item:a7390a0bde779cc2369267d712f7a1f662a54a68da9db7f09096e8be986153d5"
+        },
+        {
+          "asset_id": "scirel.kinetic.kinetic-dispersion-sum-fluidbw",
+          "dependency_asset_ids": [],
+          "document_digest": "sha256:cf753aefe32e53b5ffbc829cf1d188e3a34f8008c90979c481ff63a88c974d20",
+          "initial_revision": "sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b",
+          "item_ref": "scirel-review-item:aff9acd9190c72756012f8e024d2acdf5a3b6d94e3154c32167652ed2ece3e72"
+        },
+        {
+          "asset_id": "scirel.kinetic.fluid-wavevector-eigensolve",
+          "dependency_asset_ids": [],
+          "document_digest": "sha256:ba754b1bc9182d019b40f6e281d2965eda547956453de96134bf5aa6b1dde6c1",
+          "initial_revision": "sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b",
+          "item_ref": "scirel-review-item:cd36240e581126c52b8ba503ba40f4430fd18ae72e1986427210337e7669c3a0"
+        },
+        {
+          "asset_id": "scirel.kinetic.fluid-wavevector-scan",
+          "dependency_asset_ids": [
+            "scirel.kinetic.species-equilibrium-scales",
+            "scirel.kinetic.gamma-lpole-coefficients",
+            "scirel.kinetic.z-pole-coefficients",
+            "scirel.kinetic.fluid-dispersion-matrix",
+            "scirel.kinetic.fluid-wavevector-eigensolve"
+          ],
+          "document_digest": "sha256:4337dd86b5f2a3b70ef0f8a3ccebeaecf04ec7a1cf788ee0a3b4cd2b99726d0a",
+          "initial_revision": "sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b",
+          "item_ref": "scirel-review-item:d785c16d2176aee3c613ca8ece45a6bd068147aa5682bb6a069e02539e253373"
+        },
+        {
+          "asset_id": "scirel.kinetic.z-pole-coefficients",
+          "dependency_asset_ids": [],
+          "document_digest": "sha256:7e7532c38c598bfadf429309012046b77ef7a53b0c19f88ea6a0b528bca2317e",
+          "initial_revision": "sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b",
+          "item_ref": "scirel-review-item:e15fcd9f1e0bd55bfb243bdb6cee3a86aff0caa9f746c58f4b213adbcc5c70fe"
+        }
+      ],
+      "source_qualification": "bounded_d1",
+      "status": "candidate"
+    },
+    {
+      "approval_state": "pending_unapproved",
+      "entry_digest": "sha256:fa1fc20da8ac89438ffa7a84218f9c4b2e585b600822932de56c594ab25439ac",
+      "entry_id": "evidence:dcb47181bdd4c05e67650d7fd2a66df00bb74ae6c74ec707c0bca0110fa396c7",
+      "evidence_ref": {
+        "digest": "sha256:178de56ebb18fb0b247a2a67e947da1e8a92c1a0f6747d6450048642fee49dc7",
+        "ref": "provenance/r43-b1ab-review-host-acceptance-20260929.json"
+      },
+      "evidence_type": "review_host_export_acceptance",
+      "status": "evidence",
+      "subject_entry_id": "candidate:1d02ae5282f0947a40f5e15bb30df1ca9613fdd491d5012ab7b204f88d6c2218"
+    },
+    {
+      "entry_digest": "sha256:4bc3e2f8256664c1a8d7e9b1659f57fe894aa548eba5788edd854c9d25123740",
+      "entry_id": "lifecycle:b11625903d6179e82016f5a76513d4ba9a2965d70c0b01cef38b901b2a73284f",
+      "evidence_ref": {
+        "digest": "sha256:178de56ebb18fb0b247a2a67e947da1e8a92c1a0f6747d6450048642fee49dc7",
+        "ref": "provenance/r43-b1ab-review-host-acceptance-20260929.json"
+      },
+      "status": "lifecycle",
+      "subject_entry_id": "candidate:a90a56d6c69390d65c38b7ac8de7597ea5d6f5ef7cc7776377668daa8a7d3c14",
+      "successor_entry_id": "candidate:1d02ae5282f0947a40f5e15bb30df1ca9613fdd491d5012ab7b204f88d6c2218",
+      "transition": "superseded"
     }
   ],
   "schema": "scirel.release-index.dev"

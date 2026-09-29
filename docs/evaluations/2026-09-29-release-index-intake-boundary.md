@@ -1,7 +1,7 @@
 # Release-index intake boundary (2026-09-29)
 
 `provenance/release-index.dev.json` records current unpublished SciRel development
-snapshots and the r43 initial review candidate. D2 maintains it as the single
+snapshots and r43 review versions. D2 maintains it as the single
 authoritative index for registered unpublished candidates. This dated check
 records known D1 inputs that are not eligible for a releasable candidate entry.
 D1 references below are relative to their named stage1 run. A frozen source
@@ -43,20 +43,37 @@ The new append-only index evidence entry binds it to the existing `b1abff...`
 development wheel. The owner verified the same request's frozen skill revision,
 environment, shell Tool Plan and read-only wheel input; D2 checked saved local
 script/result bytes and the two numerical outputs, without independently
-querying the product. The current reviewer registration contains only the old
+querying the product. At that point the reviewer registration contained only the old
 plugin release ref, with no wheel/catalog/runtime dependency binding. Its
 runner uses a source-backed fixture with no installed SciRel wheel, according
 to CodeFusion's read-only host check. That check also found the runner's
 `scirel_plugin/plugin.py` and `scirel_workflow/workflow.py` bytes differ from
 SciRel source `cc2fa21`; D2 did not independently read the container fixture.
 Its 13-item workflow and non-approving successor remain separate evidence;
-zero items are approved. A new reviewer claim needs a runner assembled from
-the exact source and dependencies, a new immutable release registration, and
-new host receipts. This ordinary-user result is neither same-tuple dual-chain
-acceptance nor stable release.
+zero items are approved. That ordinary-user result alone was neither
+same-tuple dual-chain acceptance nor stable release.
 
-The verified local scope is the r81/dev58 and r43/dev5 development deliveries
-and the corrected adapter successor, plus the r43 initial 13-item review version.
+The later isolated reviewer project registered a development plugin release
+binding SciRel Git `cc2fa21`, wheel `b1abff...` and catalog ZIP `afee7fcf...`.
+CodeFusion read back both uploaded Artifacts and reported an installed-wheel
+backend; D2 checked the saved local readback bytes and receipts, without an
+independent product or database query. Its new `review_pending` workflow SHA-256
+`0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b`
+retains the same 13 review units and item refs as the old `a9099a...` version,
+but binds the corrected L1 result, wheel/catalog Artifacts and exact index
+snapshot `8768b807...`. The index now registers this as current candidate
+`candidate:1d02ae5282f0947a40f5e15bb30df1ca9613fdd491d5012ab7b204f88d6c2218`
+and marks the old candidate superseded without changing its entries or host
+receipts. The new host export SHA-256 `b9e2c8c990f821232f2a912163a8ae03a970faa52c49ced1a701d22e1de9eabd`
+contains 13 matching item refs, one Weideman `request-evidence` successor
+`d62ae8...`, 12 other pending items and zero approvals. Exact run and Artifact
+bindings are in `provenance/r43-b1ab-review-workflow-acceptance-20260929.json`
+and `provenance/r43-b1ab-review-host-acceptance-20260929.json`. This is a
+development reviewer acceptance, not expert approval, license clearance or
+stable release.
+
+The verified local scope is the r81/dev58 and r43/dev5 development deliveries,
+the corrected adapter successor, and both exact r43 13-item review versions.
 The r43 workflow itself records an unpublished-candidate census gap, so these
 entries are not an authoritative inventory of every external checkout or host
 artifact.
@@ -200,6 +217,26 @@ caller input, producer output, or edge/transform. The executable graph passes
 but not this derived species count. D1 owns the exact graph-contract successor;
 the passing tests and intake probe do not close this D2 dependency finding.
 
+The subsequent D1 `S` successor at
+`evidence_out/d1_successor_spectrum_species_count_20260929/successor_record.json`
+(SHA-256 `7f1b94346c28fcef83888f232358bf864060f18418562ce19477b98807645743`)
+binds a new 67-file candidate digest
+`7b69c725cf218159f8e24f04095f57216cb4ab12c4d0a3bce95bf44378ff1d5b`.
+D2 read the frozen record and checked the candidate YAML, executable graph,
+test-file hashes, and fresh receipt hashes. YAML now has one required
+`species_equilibrium_scales.qs -> em3d_dispersion_matrix.S` edge with
+`transform: length(qs)`; the graph passes `len(scales["qs"])`, and its regression
+asserts the runtime value. The new `splus-r11-1` probe exited 0; eight graph
+tests, import-intake and source-free checks passed. Spectrum and PDF each have
+new canonical and sealed-holdout receipts bound to that same candidate digest.
+The PDF comparison uses positional `z` alignment at its original tolerance;
+the saved cross-position negative control fails while a flattened multiset
+would pass. The prior `modular-r10-1` exit-1 PDF failure remains historical.
+The D1 record explicitly leaves `T-PDRK-JPOLE-GENERATOR` OPEN and sets
+`full_freeze=false`, `d2_intake=false`, and `exported=false`. This closes the
+reported `S` contract discrepancy for this successor but does not register a
+PDRK D2 candidate or change the SciRel index.
+
 The Pleiades equal-temperature WHAM API-domain canonical attempt `a02` has an
 exact comparison at `lanes/wi-wham-source-api-domain-terminal-comparison-20260929/attempts/a02/evidence/wham-api-domain-terminal-comparison.json`
 (SHA-256 `2a552662e1a873ef7eea8b2b11946f8735be504c9247b8fd022dedeb80b56135`)
@@ -302,7 +339,7 @@ so this is neither a qualified D1 handoff nor an index entry.
 
 ## Review-slice dependency closure
 
-The r43 index binds 13 retained review items, but this slice alone is not a
+The current r43 candidate binds 13 retained review items, but this slice alone is not a
 closed first-release set. `kinetic-dispersion-relation`,
 `kinetic-wavevector-scan`, and `fluid-wavevector-scan` each depend on
 `scirel.kinetic.species-equilibrium-scales`. D2 reused that existing relation
@@ -323,8 +360,8 @@ record both edges. Those imported modules are among the 13 review items, but a
 smaller approved subset selecting either caller alone cannot form an importable
 wheel. The first-release source preparer rejects such a selection. The current
 document corrections require exact reviewer successors before they can govern
-approval or release; the initial index entry and frozen review artifacts remain
-unchanged.
+approval or release; both submitted workflow versions retain their original
+document digests and frozen review artifacts.
 
 The current corrected documents are bound by Git `d794fdc` and have these
 canonical-JSON digests. The submitted digests remain the ones in the index;
