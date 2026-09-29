@@ -358,6 +358,15 @@ def test_consumer_evidence_binds_existing_development_without_approval(tmp_path,
     contract = json.loads((ROOT / "contracts/release-index-dev.schema.json").read_text(encoding="utf-8"))
     assert set(evidence) == set(contract["$defs"]["evidence"]["required"])
 
+    outside = tmp_path.parent / f"{tmp_path.name}-outside-consumer.json"
+    outside.write_text("{", encoding="utf-8")
+    with pytest.raises(ValueError, match="within SciRel"):
+        release_index.register_development_consumer_evidence(
+            development_entry_id=development["entry_id"],
+            evidence_path=tmp_path / ".." / outside.name,
+            existing_index=first_path, output_path=tmp_path / "outside-consumer.json",
+        )
+
     with pytest.raises(ValueError, match="already exists"):
         release_index.register_development_consumer_evidence(
             development_entry_id=development["entry_id"], evidence_path=record,
@@ -423,6 +432,14 @@ def test_review_host_evidence_appends_without_rewriting_candidate(tmp_path, monk
     assert release_index.read_index(second_path) == second
     contract = json.loads((ROOT / "contracts/release-index-dev.schema.json").read_text(encoding="utf-8"))
     assert set(evidence) == set(contract["$defs"]["evidence"]["required"])
+
+    outside = tmp_path.parent / f"{tmp_path.name}-outside-review.json"
+    outside.write_text("{", encoding="utf-8")
+    with pytest.raises(ValueError, match="within SciRel"):
+        release_index.register_review_host_evidence(
+            candidate_entry_id=candidate["entry_id"], evidence_path=outside,
+            existing_index=first_path, output_path=tmp_path / "outside-review.json",
+        )
 
     with pytest.raises(ValueError, match="already exists"):
         release_index.register_review_host_evidence(

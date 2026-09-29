@@ -272,6 +272,7 @@ def register_review_host_evidence(
     if len(candidates) != 1:
         raise ValueError("review host evidence needs an indexed candidate")
     candidate = candidates[0]
+    binding = artifact_ref(evidence_path)
     record = json.loads(evidence_path.read_text(encoding="utf-8"))
     revisions = {item["initial_revision"] for item in candidate["items"]}
     action = record.get("review_action") if isinstance(record, dict) else None
@@ -312,7 +313,6 @@ def register_review_host_evidence(
         or not _SHA256_DIGEST.fullmatch(record["host_receipt_digest"])
     ):
         raise ValueError("review host evidence does not bind the pending candidate")
-    binding = artifact_ref(evidence_path)
     entry = {
         "entry_id": "evidence:" + digest(canonical_json([candidate_entry_id, binding]))[7:],
         "status": "evidence",
@@ -344,6 +344,7 @@ def register_development_consumer_evidence(
     if len(developments) != 1:
         raise ValueError("consumer evidence needs an indexed development snapshot")
     development = developments[0]
+    binding = artifact_ref(evidence_path)
     record = json.loads(evidence_path.read_text(encoding="utf-8"))
     runtime = record.get("runtime") if isinstance(record, dict) else None
     observation = record.get("codefusion_observation") if isinstance(record, dict) else None
@@ -375,7 +376,6 @@ def register_development_consumer_evidence(
         or review["approved_items"] != 0
     ):
         raise ValueError("consumer evidence does not bind the development snapshot")
-    binding = artifact_ref(evidence_path)
     entry = {
         "entry_id": "evidence:" + digest(canonical_json([development_entry_id, binding]))[7:],
         "status": "evidence",
