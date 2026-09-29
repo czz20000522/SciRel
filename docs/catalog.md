@@ -101,6 +101,8 @@ catalog builder 的输入只能是同一待发行版本中的可信 canonical co
 - 删除、替换和 alias 符合兼容与弃用策略。
 
 catalog 不必进入 `import scirel` 的热路径。运行时按 public callable 直接调用；平台检索层读取对应索引与精确记录。不得建立需要在进程启动时 import 数万模块的全局 registry。
+`release.json` 是单个 catalog 快照的内容锁，不是 SciRel 的统一发布索引。发布候选和已发布版本由
+SciRel 的发布索引选取；开发 catalog 即使覆盖完整、摘要有效，也不因此成为已批准或公开发布版本。
 
 ## 当前迁移边界
 

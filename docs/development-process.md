@@ -65,6 +65,8 @@ Agent 调查并解决有依据的中间分歧，不必交人类逐次裁决；�
 未解决科学缺口补证或明确排除，不强迫人类接手日常调试。
 
 待审快照绑定 Git、exact documents、代码/测试、比较处置和有效证据；已有 wheel/catalog 同时绑定。
+SciRel 将稳定待审快照登记为统一发布索引中的候选版本；返工另建关联版本。索引是最终发布版本的
+选择入口，catalog、wheel 和单次 manifest 只绑定该版本的实际内容，不自行授予发布状态。
 review_units 只包括保留新增/改变项；input_dispositions 完整记录无改变的复用、重复或覆盖。
 纯无变化批次终结为 no_changes，不产生新 draft、审核项、批准或 release。复用不提升目标信任状态。
 上传后不静默覆盖；返工另建 successor，保留原版及审查记录。人工最终可要求返工或排除；
@@ -86,8 +88,13 @@ pwsh ./scripts/check.ps1 -Mode release -WorkflowSnapshot <approved-workflow.json
 
 开发 wheel 用普通 Python 构建入口；不要用需要 approved workflow 的 release 模式阻断开发。
 正式 release 仍需最终批准、许可证与依赖、完整文档、catalog/wheel/版本绑定及发行授权。
+通过这些门禁后才从索引候选形成已发布条目；正式发行前把相关开发期版本和合同统一冻结为 `v1`。
+索引的开发期字段布局可以随真实闭环调整，当前 `pending_unapproved` wheel/catalog 不登记为已发布。
 当前 release fixture 为单 draft 门禁，尚不能声称实现任意逐项批准子集的自动整包晋级。
+逐项审核投影已有候选代码/测试证据；当前 `finalize_release.py` 尚未将获批 revision 与固化代码、
+实际测试结果和 wheel 精确核对。正式发行必须先补齐并验证该绑定，不能只凭整 draft approved。
 未批准内容不能混入可信发行；首次可信发布须覆盖全部可见发布资产。
+旧 52 项历史候选不再作为本轮整合和索引设计的盘点门禁；发行门禁仍以实际拟发行内容为准。
 
 source-free 必须确认不从 SciRel 源 checkout import。当前脚本通过 .pth 暴露开发解释器 NumPy/SciPy/Pytest
 目录，只证明不依赖 SciRel 源码，不证明其他包完全隔离；正式发行仍需固定离线 wheelhouse 和工具链。

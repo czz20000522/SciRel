@@ -23,6 +23,11 @@ Do not repeat valid stage work just to make this handoff look independent.
 Compare against the previous trusted version, or explicitly state none exists.
 Include cumulative science and affected dependencies, not every development commit.
 Bind actual code, tests, canonical documents and evidence to Git; bind any wheel/catalog actually built.
+Register the frozen reviewable version through SciRel's release index when that development path exists;
+the candidate entry does not imply approval. Keep successors linked without rewriting reviewed entries.
+Completed review projections already carry candidate code and test evidence. Before release, verify each
+approved revision against the solidified code, actual test results and wheel; the current single-draft
+finalizer does not perform that full binding.
 Record Agent reviewer identity/version and findings separately from human approval.
 Review prose explains the delta and references the canonical document.
 
@@ -42,4 +47,6 @@ Uploaded versions stay fixed. Explicit successors preserve predecessors; no sile
 Agent review supports internal development, not human endorsement. Human approval covers only its exact
 increment and dependency closure. Material changes need a new reviewed successor.
 Publication still requires authority, license, dependency and release checks in the [process](../../../docs/development-process.md).
+Only a successful release creates a released index entry; converge related development versions and contracts
+to v1 before the first formal release.
 Current single-draft fixtures do not automatically promote arbitrary approved item subsets to a complete release.

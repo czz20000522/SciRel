@@ -98,9 +98,9 @@ L3 运行时能力边界包括：没有对应 Operator/TaskGraph，候选模型/
 
 ### 发行与目录投影
 
-`scripts/build_admitted_distribution.py` 可以从历史迁移账本复现 admitted-only staging、wheel、内置 manifest 和内容锁，只作为开发证据。新流程的发行输入是专家批准后固化的 SciRel 基线及其 exact asset documents；任何构建成功都不单独产生批准或发布事实。
+`scripts/build_admitted_distribution.py` 可以从历史迁移账本复现 admitted-only staging、wheel、内置 manifest 和内容锁，只作为开发证据。新流程由 SciRel 的统一发布索引选择冻结候选及最终发布版本；候选绑定待审快照，最终发布另绑定批准后固化的基线、确切资产文档和实际构建摘要，不从旧账本推断准入。任何构建成功都不单独产生批准或发布事实。
 
-面向大规模发现的 catalog 应是从同一发行内容锁重建的投影，而不是新的真值。每条精确记录至少需要：
+面向大规模发现的 catalog 应是从索引选定的同一发行内容锁重建的投影，而不是发布版本索引或新的科学真值。每条精确记录至少需要：
 
 - 稳定资产 ID、kind、公共 module/symbol 和运行时 signature；
 - 结构化输入输出，以及模型、几何、边界、单位、轴序、shape/dtype 和适用域；

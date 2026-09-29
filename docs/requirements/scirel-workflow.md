@@ -106,7 +106,20 @@ candidate/source digest、SciRel Git base、候选池与 skill digest、L1 资�
 5. manifest 中的 candidate/batch、逐项审核版本与批准记录的 digest 均与实际 artifact 一致；
 6. release version 与 catalog/document implementation version 一致。
 
-开发期合同使用 `.dev` schema；首条稳定闭环后统一冻结为 `v1`，不保留旧 `.dev` 流程兼容分支。
+最终固化还须逐项核对获批 revision 所附的代码、测试材料和实际测试结果，与拟发行 Git 内容及 wheel
+逐字节或按可验证摘要对应。审核结果投影已经携带候选文档、代码和测试证据；缺口在固化时的精确绑定，
+不得把“有证据字段”或整 draft 获批当成上述核对已完成。
+
+SciRel 维护一个统一的发布索引，作为发布候选和最终发布版本的版本入口。冻结待审增量进入候选条目时，
+索引绑定确切 Git 版本、拟发行资产及依赖闭包、exact documents、审核版本和证据引用；候选状态不代表批准。
+只有逐项批准内容完成固化，并通过许可、依赖、catalog/wheel 绑定和发行门禁后，才可从该候选形成
+最终发布条目。条目和决定保留历史及 successor 关系，不回写已审版本；公开消费者只能选择已发布条目。
+开发 wheel、catalog 快照、旧 admission 标签及 Agent 审查结论均不能自行创建发布事实。
+
+索引的开发期存储和字段可随首条真实闭环调整；正式发布前须将 SciRel 自有的相关版本与 `.dev` 合同
+统一收敛并冻结为 `v1`，核对索引、workflow、文档、catalog、wheel 和公共 API 的绑定，不保留旧
+`.dev` 流程兼容分支。旧 52 项历史开发候选不作为本轮索引设计或开发整合的盘点门禁；实际拟发行内容
+仍须满足上述发行门禁。
 
 ## 测试要求
 
