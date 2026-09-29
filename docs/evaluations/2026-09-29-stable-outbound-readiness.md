@@ -154,9 +154,34 @@ identity in that development project. Its `plugin_release_ref` is
 `plugin-release://scirel/0.1.0.dev5/source-manifest-sha256-6185c8f1c973832e12040be19323faaef09668ab94347af7cb348b19d62a14f7`,
 which differs from the corrected-wheel `b1abff...` development registration
 in `prj_0b4158c393a55f538dae18802c15770ef756`. The matching workflow and
-items do not establish a same-tuple wheel/catalog release. D2 has not added
-these new selection receipts to its index; they do not confer scientific
-approval, license clearance, or a stable release.
+items do not establish a same-tuple wheel/catalog release. D2 has since added
+the selection acceptance as an evidence-only index entry, referencing
+`provenance/r43-current-review-selection-acceptance-20260930.json`; it remains
+`pending_unapproved` and confers no scientific approval, license clearance,
+or stable release.
+
+CodeFusion `3c69931b` also ran a separate ordinary-user technical trace in
+new V1 development project `prj_294431b895bf39bf55bd8112b8c7f02897cf`.
+The qualified r43 L1 transfer ZIP has SHA-256
+`166021e28d6aa6db71b61daff7e3671837f3dede218b41153b4c0d3186cb83bd`;
+the input supplied the corrected SciRel wheel SHA-256
+`b1abff574c870e17dd4e24adc952ca4279561aa43adcc92250d019e42b2b3684`
+and catalog root
+`sha256:1bd47cc5cce3155cb8ec17676eb4f0296374d85939c7396c8be9a9ee06e7cdfb`.
+Three requests in one product session preserved an incomplete-catalog failure,
+then successful adapter calls with a result-checker misread, and finally a
+corrected check. The final request
+`appreq_047e088a383a9767_6c5e6c75c889e84c` completed. Its downloaded
+`results-final.json` has SHA-256
+`a5864a95f06091f9c90b22fea7ece9f1ca48e564522b246dddecc3e728346100`;
+it records Weideman discovery, document readback, and two invocations at
+`z=0` and `z=0.5+0.25j`, with absolute errors against SciPy `wofz` of zero
+and `2.48253415324727e-16` (CodeFusion
+`.runtime/ordinary-current-r43-3c69931b5.json` and
+`.runtime/ordinary-current-r43-readback-3c69931b5/`). This is a development
+ordinary-user result. The current reviewer project's plugin registration
+still does not bind that same wheel/catalog Artifact tuple; the review batch
+has zero approved items and no stable release follows from this run.
 
 Before a stable outbound release, the following inputs are still required:
 
