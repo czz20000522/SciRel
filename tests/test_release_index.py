@@ -30,6 +30,7 @@ def _candidate_entry_id(path):
 def _pending_item(
     *, release_ready=False,
     document_name="scirel.field.circular-filament-green.json",
+    support_file=None,
 ):
     document = json.loads(
         (ROOT / "catalog/examples" / document_name).read_text(
@@ -45,6 +46,14 @@ def _pending_item(
             "kind": "none", "content": None,
             "rationale": "The maintained implementation is reused unchanged.",
         }
+        if support_file is not None:
+            code = {
+                "kind": "files",
+                "content": {"files": {
+                    support_file: (ROOT / support_file).read_bytes().decode("utf-8"),
+                }},
+                "rationale": "The selected implementation binds this exact support module.",
+            }
         code["digest"] = digest(code)
         tests = {
             "content": {"files": {
@@ -265,6 +274,7 @@ def _reviewed_release_inputs(
     tmp_path, *, multi_item=False,
     document_name="scirel.field.circular-filament-green.json",
     git_revision="a" * 40,
+    support_file=None,
 ):
     from build_catalog import build_catalog
     from release_index import register_candidate
@@ -273,7 +283,10 @@ def _reviewed_release_inputs(
         pending_body = _multi_item_workflow_body(release_ready=True)
         item = review_items_from_body(pending_body)[0]
     else:
-        item = _pending_item(release_ready=True, document_name=document_name)
+        item = _pending_item(
+            release_ready=True, document_name=document_name,
+            support_file=support_file,
+        )
         pending_body = json.dumps(item, ensure_ascii=False, sort_keys=True).encode("utf-8")
     pending_revision = "sha256:" + hashlib.sha256(pending_body).hexdigest()
     artifacts = tmp_path / "artifacts"
@@ -446,6 +459,59 @@ def test_first_reviewed_distribution_requires_bound_private_support(tmp_path):
             staging_dir=staging,
         )
     assert not staging.exists()
+
+
+def test_first_reviewed_distribution_includes_bound_private_support(tmp_path, monkeypatch):
+    import finalize_release
+    from build_catalog import build_catalog
+    from prepare_reviewed_distribution import prepare_reviewed_distribution
+
+    support = "src/scirel/_validation.py"
+    artifacts, _, _, _, _ = _reviewed_release_inputs(
+        tmp_path,
+        document_name="scirel.closures.mirror-ambipolar-potential.json",
+        support_file=support,
+    )
+    staging = tmp_path / "reviewed-source"
+    result = prepare_reviewed_distribution(
+        release_index=tmp_path / "index.json",
+        candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
+        approved_results=tmp_path / "results.json",
+        review_artifacts_dir=artifacts,
+        source_root=ROOT,
+        staging_dir=staging,
+    )
+    assert result["asset_count"] == 1
+    assert (staging / support).read_bytes() == (ROOT / support).read_bytes()
+    assert not (staging / "src/scirel/field").exists()
+    wheel_dir = tmp_path / "built-wheel"
+    wheel_dir.mkdir()
+    subprocess.run(
+        [sys.executable, "-m", "pip", "wheel", "--disable-pip-version-check",
+         "--no-deps", "--no-build-isolation", "--wheel-dir", str(wheel_dir), str(staging)],
+        capture_output=True, text=True, check=True,
+    )
+    catalog = tmp_path / "built-catalog"
+    build_catalog(
+        staging / "documents", catalog, catalog_id="test-reviewed-support",
+        release_version="0.1.0.dev5", coverage_status="complete", declared_total=1,
+    )
+    monkeypatch.setattr(finalize_release, "_git_revision", lambda root: "a" * 40)
+    monkeypatch.setattr(finalize_release, "_git_changed_files", lambda root, revision: set())
+    monkeypatch.setattr(finalize_release, "_require_clean_release_sources", lambda root: None)
+    finalized = finalize_release.finalize_reviewed_release(
+        release_index=tmp_path / "index.json",
+        candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
+        approved_results=tmp_path / "results.json",
+        review_artifacts_dir=artifacts,
+        documents_dir=staging / "documents",
+        catalog_dir=catalog,
+        wheel=next(wheel_dir.glob("*.whl")),
+        output_dir=tmp_path / "reviewed-release",
+        release_id="release-test",
+        source_root=ROOT,
+    )
+    assert Path(finalized["release_manifest"]).is_file()
 
 
 def test_reviewed_finalization_rejects_changed_wheel_code(tmp_path, monkeypatch):
