@@ -93,6 +93,35 @@ not create `candidate` entries or imply a new census of the historical 52-item
 snapshot. A bounded D1 batch may enter D2 before whole-project freeze once its
 own source implementation and numerical comparison have passed.
 
+## PDRK spectrum path screen
+
+The PDRK r9 progress record (SHA-256
+`9ddd03747c8d0b6c7f9b8ef99416447750cc6bd435036469fd48ca744b39bcef`)
+marks `T-PDRK-SPECTRUM` passed on candidate bundle
+`a35bd08ad1afb3912b996d8528317641ea9960b9875bbf0ccabfe8429c3c6310`.
+Its canonical and source-origin sealed-holdout comparison receipts have SHA-256
+`64dd09b918266de2850f966e153fe7b24f05ffd0863a2f2e8d9e4f948576fb52`
+and `38d6fcaafe5c508c46d3c157a4e792e9d1e25d31de8aeb4411806d94f5405e86`.
+This numerical path does not use the still-open JPOLE generator.
+
+The saved PDRK `task_graphs/kinetic_dispersion_relation` is not the existing
+SciRel graph of the same name. SciRel evaluates two kinetic determinants at one
+wavepoint; PDRK combines loss-cone partitioning, an EM3D matrix and an
+eigensolve to return a complex-frequency spectrum. The five PDRK node
+relations therefore need individual scientific comparison before reuse.
+
+The exact PDRK graph YAML (SHA-256
+`69f911ef51b0d76de51f509fa49931ba4706537e8a6a5c1c32040a911edeb488`)
+omits `c2` and `vds` from the scale node outputs, EM3D node inputs and edges,
+although the executable graph (SHA-256
+`529302e91ee886d6f6acd89382e35b394dc5ec46234d819491d9bde64311bf5d`)
+passes both values and the EM3D operator requires them. It also declares
+`graph_order` shape `(6,)` while the executable graph and direct test return
+five node labels. The runtime source comparison does not verify this YAML
+port contract. No bounded handoff was found for this path; a D1 successor must
+bind the corrected graph contract and exact candidate bytes before D2 can
+credit this as an importable TaskGraph. The frozen r9 evidence stays unchanged.
+
 The Pleiades equal-temperature WHAM API-domain canonical attempt `a02` has an
 exact comparison at `lanes/wi-wham-source-api-domain-terminal-comparison-20260929/attempts/a02/evidence/wham-api-domain-terminal-comparison.json`
 (SHA-256 `2a552662e1a873ef7eea8b2b11946f8735be504c9247b8fd022dedeb80b56135`)
