@@ -10,10 +10,17 @@
 
 ## 统一发布索引
 
-目标是由 SciRel 维护统一发布索引，按不可变的确切版本记录待审发布候选及最终发布结果。候选条目
+SciRel 的单一开发期索引位于 `provenance/release-index.dev.json`，按不可变的确切版本记录
+未发布开发快照、待审候选及最终发布结果。`development` 条目绑定实际 catalog/wheel 字节、
+来源资格、证据和 D3 去向；完整文档闭包不表示来源合格。候选条目
 指向冻结的 Git、拟发行资产及依赖闭包、exact documents、初始待审版本和有效证据；后续审核
 revision 逐项关联到该候选，发布条目再绑定实际
 catalog、wheel、许可决定与发行验证。返工产生关联的 successor，不改写前一个条目或批准记录。
+候选的 `initial_revision` 是初始待审 artifact 摘要；后续逐项 successor 和当前审核状态须从工作台
+实际 artifact/投影核对。r43 的候选去向是工作台审核，不能把较早 dev5 wheel 的 D3 manifest
+当作其审核去向。`pending_unapproved` 只表示未批准；`mixed_unverified` 不蕴含 D1 合格。
+r43 的 `bounded_d1` 仅属于 13 个保留 item，不外推到同轮 132 项混合来源开发快照。
+历史 52 项快照不回填、不重审，也不成为索引门禁。
 发布条目前须从逐项批准 revision 验证候选代码、测试和实际结果确实对应固化的 Git 与 wheel；
 仅把这些材料显示在审核投影中不足以证明发行内容同一。
 索引只选择和绑定版本，不复制资产的科学字段；科学合同仍以 exact document 为准，catalog 是所选
@@ -24,6 +31,17 @@ catalog、wheel、许可决定与发行验证。返工产生关联的 successor�
 公开版本指针只在确切候选的批准闭包、许可、依赖、构建和发行检查通过后更新。当前没有已批准的
 公开基线，也没有真实批准的发布条目。现有 `.dev` 索引注册器可冻结待审 item 版本，但还没有把
 真实候选登记为可信或发布事实；其字段可随首条真实闭环调整，正式发布前连同相关版本和合同冻结为 `v1`。
+
+索引由 D2 集成 owner 单写。D2 负责候选身份、逐项处置、来源资格、冻结 Git/artifact 和
+科学验证证据；出库 owner 提供确切 wheel/catalog 消费绑定、D3 manifest 与去向证据，由 D2
+核对摘要后追加到同一索引。新快照用 `scripts/release_index.py --snapshot-id` 登记，
+最终待审项用 `--item-artifact` 登记；两者均以当前索引作 `--existing-index` 输出新文件，
+核验旧条目逐字未变后再更新仓库索引。后续证据或返工形成新版本/投影，不回写旧条目。
+
+当前 r81/dev58 与 r43/dev5 是两个混合来源开发快照，不等同于 r43 的 13 项待审增量。
+已知但未达到候选登记资格的 D1 输入、精确证据和去向见
+`docs/evaluations/2026-09-29-release-index-intake-boundary.md`；合格的有界 D1 批次
+无须等待 whole-project freeze 才能进入 D2。
 
 ## 开发快照的来源资格
 
@@ -60,8 +78,9 @@ L1 从实现和图定义发现资产，无须正式 Markdown；输入仍只读�
 现有 workflow/plugin release API 仍是单 draft fixture。`scripts/release_index.py` 已能登记精确
 待审 artifact 与 Git 候选，`scripts/finalize_release.py` 的命令入口已按逐项批准 revision 核对
 提交前版本、代码/测试文件、实际重跑结果、文档、catalog 与 wheel，并追加新的索引副本。
-它不负责把任意批准子集装配成 wheel；`check.ps1 -Mode release` 仍构建当前 checkout 全包。
-审核宿主的身份认证与发行授权也不能由本地 JSON 摘要证明。批准子集整包固化、完整可信版本增量
+首发准备器已可从逐项批准投影装配只含选中资产及绑定支持模块的 wheel；增量发行仍缺
+上一可信基线资产、文档和支持模块的可验证继承输入。
+审核宿主的身份认证与发行授权也不能由本地 JSON 摘要证明。完整可信版本增量
 投影及消费者切换仍需真实获批输入与对应实现验证，不能以开发 fixture 代替。
 发布批准始终绑定最终科学内容；既有未批准维护代码不因某一个 draft 获批而整体获批。
 

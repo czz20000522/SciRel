@@ -232,6 +232,90 @@ def test_candidate_index_appends_without_rewriting_previous_entry(tmp_path):
     assert json.loads(first_path.read_text(encoding="utf-8")) == first
 
 
+def test_development_snapshot_appends_exact_artifacts_without_approval(tmp_path, monkeypatch):
+    import release_index
+
+    monkeypatch.setattr(release_index, "ROOT", tmp_path)
+    catalog = tmp_path / "catalog" / "release.json"
+    catalog.parent.mkdir()
+    catalog_body = {"schema": "scirel.catalog-release.v1", "release_version": "0.1.0.dev5"}
+    catalog_body["root_digest"] = release_index.digest(release_index.canonical_json(catalog_body))
+    catalog.write_text(json.dumps(catalog_body), encoding="utf-8")
+    wheel = tmp_path / "wheel.whl"
+    wheel.write_bytes(b"development wheel")
+    evidence = tmp_path / "evidence.json"
+    evidence.write_text('{"result":"bounded"}', encoding="utf-8")
+    destination = tmp_path / "delivery.json"
+    destination.write_text('{"status":"pending_unapproved"}', encoding="utf-8")
+
+    result = release_index.register_development_snapshot(
+        snapshot_id="r43-dev5", catalog_release=catalog, wheel=wheel,
+        evidence_paths=[evidence], destination_paths=[destination],
+        git_revision="a" * 40, source_qualification="bounded_d1",
+        output_path=tmp_path / "index.json",
+    )
+
+    entry = result["entries"][0]
+    assert entry["status"] == "development"
+    assert entry["approval_state"] == "pending_unapproved"
+    assert entry["source_qualification"] == "bounded_d1"
+    assert entry["catalog"]["root_digest"] == catalog_body["root_digest"]
+    assert entry["wheel"] == release_index.artifact_ref(wheel)
+    assert entry["destination_refs"] == [release_index.artifact_ref(destination)]
+    assert release_index.read_index(tmp_path / "index.json") == result
+    assert "approved" not in entry
+
+    pending = tmp_path / "pending.json"
+    pending.write_text(json.dumps(_pending_item()), encoding="utf-8")
+    with_candidate = release_index.register_candidate(
+        item_artifacts=[pending], git_revision="b" * 40,
+        output_path=tmp_path / "with-candidate.json",
+        existing_index=tmp_path / "index.json", evidence_paths=[evidence],
+        source_qualification="bounded_d1",
+    )
+    assert with_candidate["entries"][0] == entry
+    assert with_candidate["entries"][1]["destination"] == "review_host"
+    assert with_candidate["entries"][1]["destination_refs"] == []
+    assert release_index.read_index(tmp_path / "with-candidate.json") == with_candidate
+
+
+def test_development_snapshot_rejects_invalid_catalog_binding(tmp_path, monkeypatch):
+    import release_index
+
+    monkeypatch.setattr(release_index, "ROOT", tmp_path)
+    catalog = tmp_path / "release.json"
+    catalog.write_text(json.dumps({
+        "schema": "scirel.catalog-release.v1", "root_digest": "sha256:" + "0" * 64,
+    }), encoding="utf-8")
+    wheel = tmp_path / "wheel.whl"
+    wheel.write_bytes(b"wheel")
+    with pytest.raises(ValueError, match="catalog root digest differs"):
+        release_index.register_development_snapshot(
+            snapshot_id="bad", catalog_release=catalog, wheel=wheel,
+            evidence_paths=[catalog], destination_paths=[catalog],
+            source_manifest_digest="sha256:" + "a" * 64,
+            source_qualification="mixed_unverified",
+            output_path=tmp_path / "index.json",
+        )
+
+
+def test_repository_release_index_keeps_exact_evidence_bindings():
+    from release_index import digest, read_index
+
+    index = read_index(ROOT / "provenance/release-index.dev.json")
+    assert index["entries"]
+    for entry in index["entries"]:
+        if entry["status"] not in {"candidate", "development"}:
+            continue
+        assert entry["approval_state"] == "pending_unapproved"
+        for binding in [*entry["evidence_refs"], *entry["destination_refs"]]:
+            path = ROOT / binding["ref"]
+            if path.is_file():
+                assert digest(path.read_bytes()) == binding["digest"]
+            else:
+                assert binding["ref"].startswith("build/")
+
+
 def test_strict_finalizer_rejects_a_candidate_without_item_approval(tmp_path):
     from finalize_release import finalize_reviewed_release
     from release_index import register_candidate

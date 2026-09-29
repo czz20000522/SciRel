@@ -92,6 +92,13 @@ pwsh ./scripts/check.ps1 -Mode release -ReleaseIndex <candidate-index.json> -Can
 通过这些门禁后才从索引候选形成已发布条目；正式发行前把相关开发期版本和合同统一冻结为 `v1`。
 索引的开发期字段布局可以随真实闭环调整，当前 `pending_unapproved` wheel/catalog 不登记为已发布。
 `release_index.py` 从待审 workflow 或单项 artifact 登记每个 item 的原始 artifact revision、文档摘要及冻结 Git 提交；
+当前仓库唯一的开发期索引为 `provenance/release-index.dev.json`。新开发 wheel/catalog 先用
+`--snapshot-id`、`--catalog-release`、`--wheel`、来源绑定、`--source-qualification` 和 D3
+证据/去向文件登记 `development` 条目；进入待审时用 `--item-artifact` 登记 `candidate`。
+从现有索引用 `--existing-index` 写新文件，校验旧条目未变后更新该路径。出库 owner 提供
+实际消费 manifest 和 digest，D2 单写者负责身份、来源与科学证据并核对登记；工作台当前逐项
+审核状态继续由审核 artifact/投影提供。完整开发 catalog 不等于专家批准，来源混合的开发
+快照不因 `pending_unapproved` 而自动取得 D1 资格；正式公开发行前合同统一冻结为 `v1`。
 同一 workflow 的多项共享原始 revision，只产生 `candidate` 条目。多个 artifact 可重复传入 `--item-artifact`，
 但重复 item 或资产会被拒绝。审核宿主导出的 `approved_items` 与各项原始 artifact 必须一起输入；artifact 以
 `<sha256-hex>.json` 命名，内容摘要须与投影 revision 一致，并包含提交前版本和批准 successor。

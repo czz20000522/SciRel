@@ -391,6 +391,10 @@ def test_release_index_selects_its_contract_test():
     assert result["full_suite_required"] is False
     assert result["test_paths"] == ["tests/test_release_index.py"]
 
+    index_result = select("provenance/release-index.dev.json")
+    assert index_result["full_suite_required"] is False
+    assert index_result["test_paths"] == ["tests/test_release_index.py"]
+
 
 def test_wire_fixture_builder_selects_only_wire_smoke_test():
     result = select("scripts/build_l1_wire_fixture.py")

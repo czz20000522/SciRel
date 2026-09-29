@@ -1,4 +1,4 @@
-"""Register immutable development candidates in the SciRel release index."""
+"""Register immutable review candidates and development snapshots in one index."""
 
 from __future__ import annotations
 
@@ -32,6 +32,16 @@ def digest(body: bytes) -> str:
     return "sha256:" + hashlib.sha256(body).hexdigest()
 
 
+def artifact_ref(path: Path) -> dict[str, str]:
+    resolved = path.resolve(strict=True)
+    if not resolved.is_file() or not resolved.is_relative_to(ROOT):
+        raise ValueError(f"index artifact must be a file within SciRel: {path}")
+    return {
+        "ref": resolved.relative_to(ROOT).as_posix(),
+        "digest": digest(resolved.read_bytes()),
+    }
+
+
 def read_index(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict) or set(value) != {"schema", "entries"}:
@@ -43,7 +53,7 @@ def read_index(path: Path) -> dict[str, Any]:
     latest_release = None
     for entry in value["entries"]:
         if not isinstance(entry, dict) or entry.get("status") not in {
-            "candidate", "released"
+            "candidate", "development", "released"
         }:
             raise ValueError("release index contains an invalid entry")
         unsigned = {key: part for key, part in entry.items() if key != "entry_digest"}
@@ -56,6 +66,13 @@ def read_index(path: Path) -> dict[str, Any]:
             if not isinstance(entry.get("items"), list) or not entry["items"]:
                 raise ValueError("candidate index entry has no review items")
             candidates.add(entry["entry_id"])
+        elif entry["status"] == "development":
+            if (
+                entry.get("approval_state") != "pending_unapproved"
+                or not isinstance(entry.get("catalog"), dict)
+                or not isinstance(entry.get("wheel"), dict)
+            ):
+                raise ValueError("development entry lacks an unapproved artifact binding")
         else:
             if (
                 entry.get("predecessor_entry_id") not in candidates
@@ -81,6 +98,8 @@ def register_candidate(
     git_revision: str,
     output_path: Path,
     existing_index: Path | None = None,
+    evidence_paths: list[Path] | None = None,
+    source_qualification: str | None = None,
 ) -> dict[str, Any]:
     if output_path.exists():
         raise FileExistsError(f"release index output already exists: {output_path}")
@@ -88,6 +107,8 @@ def register_candidate(
         raise ValueError("candidate Git revision must be an exact 40-character SHA")
     if not item_artifacts:
         raise ValueError("candidate requires review item artifacts")
+    if source_qualification not in (None, "bounded_d1", "mixed_unverified"):
+        raise ValueError("candidate source qualification is invalid")
     index = (
         read_index(existing_index)
         if existing_index is not None
@@ -137,6 +158,73 @@ def register_candidate(
         "git_revision": git_revision,
         "items": items,
     }
+    if evidence_paths:
+        entry["approval_state"] = "pending_unapproved"
+        entry["evidence_refs"] = [artifact_ref(path) for path in evidence_paths]
+        entry["destination"] = "review_host"
+        entry["destination_refs"] = []
+    if source_qualification is not None:
+        entry["source_qualification"] = source_qualification
+    result = append_entry(index, entry)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_bytes(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True).encode("utf-8") + b"\n")
+    return result
+
+
+def register_development_snapshot(
+    *,
+    snapshot_id: str,
+    catalog_release: Path,
+    wheel: Path,
+    evidence_paths: list[Path],
+    destination_paths: list[Path],
+    output_path: Path,
+    existing_index: Path | None = None,
+    git_revision: str | None = None,
+    source_manifest_digest: str | None = None,
+    source_qualification: str,
+) -> dict[str, Any]:
+    if output_path.exists():
+        raise FileExistsError(f"release index output already exists: {output_path}")
+    if not snapshot_id or not evidence_paths or not destination_paths:
+        raise ValueError("development snapshot needs identity, evidence and destination")
+    if source_qualification not in ("bounded_d1", "mixed_unverified"):
+        raise ValueError("development snapshot source qualification is invalid")
+    if (git_revision is None) == (source_manifest_digest is None):
+        raise ValueError("development snapshot needs exactly one source binding")
+    if git_revision is not None and not _GIT_REVISION.fullmatch(git_revision):
+        raise ValueError("development snapshot Git revision is invalid")
+    if source_manifest_digest is not None and not re.fullmatch(
+        r"sha256:[0-9a-f]{64}", source_manifest_digest
+    ):
+        raise ValueError("development snapshot source manifest digest is invalid")
+    catalog = artifact_ref(catalog_release)
+    catalog_body = json.loads(catalog_release.read_text(encoding="utf-8"))
+    if catalog_body.get("schema") != "scirel.catalog-release.v1":
+        raise ValueError("development snapshot catalog schema is invalid")
+    unsigned_catalog = {
+        key: value for key, value in catalog_body.items() if key != "root_digest"
+    }
+    if catalog_body.get("root_digest") != digest(canonical_json(unsigned_catalog)):
+        raise ValueError("development snapshot catalog root digest differs")
+    catalog["root_digest"] = catalog_body["root_digest"]
+    index = read_index(existing_index) if existing_index else {"schema": SCHEMA, "entries": []}
+    wheel_ref = artifact_ref(wheel)
+    entry = {
+        "entry_id": "development:" + digest(canonical_json([snapshot_id, catalog, wheel_ref]))[7:],
+        "status": "development",
+        "snapshot_id": snapshot_id,
+        "approval_state": "pending_unapproved",
+        "source_qualification": source_qualification,
+        "source_binding": (
+            {"git_revision": git_revision}
+            if git_revision else {"manifest_digest": source_manifest_digest}
+        ),
+        "catalog": catalog,
+        "wheel": wheel_ref,
+        "evidence_refs": [artifact_ref(path) for path in evidence_paths],
+        "destination_refs": [artifact_ref(path) for path in destination_paths],
+    }
     result = append_entry(index, entry)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_bytes(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True).encode("utf-8") + b"\n")
@@ -145,18 +233,43 @@ def register_candidate(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--item-artifact", type=Path, action="append", required=True)
-    parser.add_argument("--git-revision", required=True)
+    parser.add_argument("--item-artifact", type=Path, action="append")
+    parser.add_argument("--snapshot-id")
+    parser.add_argument("--catalog-release", type=Path)
+    parser.add_argument("--wheel", type=Path)
+    parser.add_argument("--git-revision")
+    parser.add_argument("--source-manifest-digest")
+    parser.add_argument("--source-qualification", choices=["bounded_d1", "mixed_unverified"])
+    parser.add_argument("--evidence", type=Path, action="append", default=[])
+    parser.add_argument("--destination", type=Path, action="append", default=[])
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--existing-index", type=Path)
     args = parser.parse_args()
     try:
-        index = register_candidate(
-            item_artifacts=args.item_artifact,
-            git_revision=args.git_revision,
-            output_path=args.output,
-            existing_index=args.existing_index,
-        )
+        if args.snapshot_id:
+            if args.item_artifact or not args.catalog_release or not args.wheel:
+                raise ValueError("development snapshot needs catalog and wheel, not review items")
+            index = register_development_snapshot(
+                snapshot_id=args.snapshot_id, catalog_release=args.catalog_release,
+                wheel=args.wheel, evidence_paths=args.evidence,
+                destination_paths=args.destination, output_path=args.output,
+                existing_index=args.existing_index, git_revision=args.git_revision,
+                source_manifest_digest=args.source_manifest_digest,
+                source_qualification=args.source_qualification,
+            )
+        else:
+            if (
+                not args.item_artifact or not args.git_revision
+                or args.source_manifest_digest or args.catalog_release
+                or args.wheel or args.destination
+            ):
+                raise ValueError("review candidate needs item artifacts and Git revision")
+            index = register_candidate(
+                item_artifacts=args.item_artifact, git_revision=args.git_revision,
+                output_path=args.output, existing_index=args.existing_index,
+                evidence_paths=args.evidence,
+                source_qualification=args.source_qualification,
+            )
     except (OSError, TypeError, ValueError) as error:
         print(f"candidate registration failed: {error}", file=sys.stderr)
         return 1
