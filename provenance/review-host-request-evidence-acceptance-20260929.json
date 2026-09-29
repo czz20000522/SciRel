@@ -1,0 +1,34 @@
+{
+  "schema": "scirel.review-host-export-acceptance.dev",
+  "candidate_entry_id": "candidate:a90a56d6c69390d65c38b7ac8de7597ea5d6f5ef7cc7776377668daa8a7d3c14",
+  "workflow_revision": "sha256:a9099aa88aee7256e1d1e841b28779b458c2f39d192d672a1d6a40e10c82cb6a",
+  "item_count": 13,
+  "review_pending_items": 12,
+  "needs_evidence_items": 1,
+  "approved_items": 0,
+  "approval_state": "pending_unapproved",
+  "applied_transitions": 1,
+  "review_action": {
+    "item_ref": "scirel-review-item:32db97d7421ba776be0e18137e5cf7be726892f3ba0fda8ec894b1ff4ef2409c",
+    "action": "request-evidence",
+    "run_id": "run_8ae50bc1a5e67cc740ffab91d6d56b04f9c55bfd518d5e7555c2c8e0b29b9f6b",
+    "successor_artifact_ref": "cf://artifact/upload_41d4ce1cc9c1a98b398d72f458e78a5a261f18f635886c91",
+    "successor_digest": "sha256:cad374f922e0b7ea4bed6d2141244bc3b86450ee162163a46b1523c27d24c475"
+  },
+  "host_source_revision": "2d3de66e04d81fcbb94fd069bb7f4d93630cd844",
+  "host_environment": "isolated_development_service_new_database",
+  "host_project_ref": "prj_290e904e17aba15361caa5eb3d86d254289a",
+  "host_export_artifact_ref": "cf://artifact/upload_26cfcd8bb35fc6531f49199c3b39d7be85634277f18b52ae",
+  "host_export_artifact_digest": "sha256:9ed3e5d329bee9d01dc0f7f128bb55abd69bcbfdd59903da08e5a78aca37fe99",
+  "host_export_bytes": 9750,
+  "previous_host_export_artifact_digest": "sha256:6e46b5fc63b0ab4287aaead559b656a3f97e5c97b6eeee3e7b0d60da0ae52bd5",
+  "unchanged_item_artifacts": 12,
+  "host_receipt_digest": "sha256:3a86ef8b62c38fb0b9cc78b80ba3b1ed2841bac9f4033dfa2d363b06882b6df0",
+  "verification_boundary": "D2 checked the local host action receipt, indexed Weideman item ref, initial workflow revision, and 13-item candidate count. The CodeFusion owner checked the 9,750 downloaded snapshot bytes, single applied transition, and 12 unchanged item Artifacts. D2 did not independently download the host snapshot or successor Artifact.",
+  "not_claims": [
+    "complete_unpublished_candidate_census",
+    "scientific_approval",
+    "public_release",
+    "stable_outbound_acceptance"
+  ]
+}

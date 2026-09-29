@@ -16,6 +16,8 @@ SciRel 的单一开发期索引位于 `provenance/release-index.dev.json`，按�
 指向冻结的 Git、拟发行资产及依赖闭包、exact documents、初始待审版本和有效证据；后续审核
 revision 逐项关联到该候选，发布条目再绑定实际
 catalog、wheel、许可决定与发行验证。返工产生关联的 successor，不改写前一个条目或批准记录。
+对同一候选后来取得的宿主开发验收使用 `evidence` 追加条目，绑定原候选和本地精确证据记录；
+它不产生新候选、审核 revision 或批准状态，也不把单项目导出扩张为全部未发布候选盘点。
 候选的 `initial_revision` 是初始待审 artifact 摘要；后续逐项 successor 和当前审核状态须从工作台
 实际 artifact/投影核对。r43 的候选去向是工作台审核，不能把较早 dev5 wheel 的 D3 manifest
 当作其审核去向。`pending_unapproved` 只表示未批准；`mixed_unverified` 不蕴含 D1 合格。
@@ -37,6 +39,7 @@ r43 的 `bounded_d1` 仅属于 13 个保留 item，不外推到同轮 132 项混
 核对摘要后追加到同一索引。新快照用 `scripts/release_index.py --snapshot-id` 登记，
 最终待审项用 `--item-artifact` 登记；两者均以当前索引作 `--existing-index` 输出新文件，
 核验旧条目逐字未变后再更新仓库索引。后续证据或返工形成新版本/投影，不回写旧条目。
+宿主开发验收用 `--review-host-evidence` 和 `--candidate-entry-id` 追加，不把宿主项目字段写入资产科学合同。
 
 当前 r81/dev58 与 r43/dev5 是两个混合来源开发快照，不等同于 r43 的 13 项待审增量。
 已知但未达到候选登记资格的 D1 输入、精确证据和去向见

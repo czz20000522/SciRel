@@ -20,6 +20,7 @@ from scirel_plugin.adapter import review_items_from_body  # noqa: E402
 
 SCHEMA = "scirel.release-index.dev"
 _GIT_REVISION = re.compile(r"^[0-9a-f]{40}$")
+_SHA256_DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 
 def canonical_json(value: Any) -> bytes:
@@ -53,7 +54,7 @@ def read_index(path: Path) -> dict[str, Any]:
     latest_release = None
     for entry in value["entries"]:
         if not isinstance(entry, dict) or entry.get("status") not in {
-            "candidate", "development", "released"
+            "candidate", "development", "evidence", "released"
         }:
             raise ValueError("release index contains an invalid entry")
         unsigned = {key: part for key, part in entry.items() if key != "entry_digest"}
@@ -73,6 +74,19 @@ def read_index(path: Path) -> dict[str, Any]:
                 or not isinstance(entry.get("wheel"), dict)
             ):
                 raise ValueError("development entry lacks an unapproved artifact binding")
+        elif entry["status"] == "evidence":
+            binding = entry.get("evidence_ref")
+            if (
+                entry.get("subject_entry_id") not in candidates
+                or entry.get("evidence_type") != "review_host_export_acceptance"
+                or entry.get("approval_state") != "pending_unapproved"
+                or not isinstance(binding, dict)
+                or not isinstance(binding.get("ref"), str)
+                or not binding["ref"]
+                or not isinstance(binding.get("digest"), str)
+                or not _SHA256_DIGEST.fullmatch(binding["digest"])
+            ):
+                raise ValueError("evidence entry lacks an earlier candidate or exact binding")
         else:
             if (
                 entry.get("predecessor_entry_id") not in candidates
@@ -231,6 +245,78 @@ def register_development_snapshot(
     return result
 
 
+def register_review_host_evidence(
+    *,
+    candidate_entry_id: str,
+    evidence_path: Path,
+    existing_index: Path,
+    output_path: Path,
+) -> dict[str, Any]:
+    if output_path.exists():
+        raise FileExistsError(f"release index output already exists: {output_path}")
+    index = read_index(existing_index)
+    candidates = [
+        entry for entry in index["entries"]
+        if entry["status"] == "candidate" and entry["entry_id"] == candidate_entry_id
+    ]
+    if len(candidates) != 1:
+        raise ValueError("review host evidence needs an indexed candidate")
+    candidate = candidates[0]
+    record = json.loads(evidence_path.read_text(encoding="utf-8"))
+    revisions = {item["initial_revision"] for item in candidate["items"]}
+    action = record.get("review_action") if isinstance(record, dict) else None
+    transition_count = record.get("applied_transitions") if isinstance(record, dict) else None
+    action_valid = (
+        type(transition_count) is int and transition_count == 0 and action is None
+    ) or (
+        type(transition_count) is int and transition_count == 1
+        and isinstance(action, dict)
+        and action.get("action") == "request-evidence"
+        and action.get("item_ref") in {item["item_ref"] for item in candidate["items"]}
+        and isinstance(action.get("run_id"), str)
+        and bool(action["run_id"])
+        and isinstance(action.get("successor_digest"), str)
+        and bool(_SHA256_DIGEST.fullmatch(action["successor_digest"]))
+    )
+    if not isinstance(record, dict) or (
+        record.get("schema") != "scirel.review-host-export-acceptance.dev"
+        or record.get("candidate_entry_id") != candidate_entry_id
+        or revisions != {record.get("workflow_revision")}
+        or record.get("item_count") != len(candidate["items"])
+        or type(record.get("review_pending_items")) is not int
+        or record["review_pending_items"] < 0
+        or type(record.get("needs_evidence_items")) is not int
+        or record["needs_evidence_items"] < 0
+        or type(record.get("approved_items")) is not int
+        or record["approved_items"] != 0
+        or record["review_pending_items"] + record["needs_evidence_items"] != len(candidate["items"])
+        or not action_valid
+        or record.get("approval_state") != "pending_unapproved"
+        or not isinstance(record.get("host_source_revision"), str)
+        or not _GIT_REVISION.fullmatch(record["host_source_revision"])
+        or not isinstance(record.get("host_export_artifact_ref"), str)
+        or not record["host_export_artifact_ref"]
+        or not isinstance(record.get("host_export_artifact_digest"), str)
+        or not _SHA256_DIGEST.fullmatch(record["host_export_artifact_digest"])
+        or not isinstance(record.get("host_receipt_digest"), str)
+        or not _SHA256_DIGEST.fullmatch(record["host_receipt_digest"])
+    ):
+        raise ValueError("review host evidence does not bind the pending candidate")
+    binding = artifact_ref(evidence_path)
+    entry = {
+        "entry_id": "evidence:" + digest(canonical_json([candidate_entry_id, binding]))[7:],
+        "status": "evidence",
+        "subject_entry_id": candidate_entry_id,
+        "evidence_type": "review_host_export_acceptance",
+        "approval_state": "pending_unapproved",
+        "evidence_ref": binding,
+    }
+    result = append_entry(index, entry)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_bytes(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True).encode("utf-8") + b"\n")
+    return result
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--item-artifact", type=Path, action="append")
@@ -244,9 +330,25 @@ def main() -> int:
     parser.add_argument("--destination", type=Path, action="append", default=[])
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--existing-index", type=Path)
+    parser.add_argument("--review-host-evidence", type=Path)
+    parser.add_argument("--candidate-entry-id")
     args = parser.parse_args()
     try:
-        if args.snapshot_id:
+        if args.review_host_evidence:
+            if (
+                not args.candidate_entry_id or not args.existing_index
+                or args.snapshot_id or args.item_artifact or args.catalog_release
+                or args.wheel or args.git_revision or args.source_manifest_digest
+                or args.source_qualification or args.evidence or args.destination
+            ):
+                raise ValueError("review host evidence needs a candidate and existing index")
+            index = register_review_host_evidence(
+                candidate_entry_id=args.candidate_entry_id,
+                evidence_path=args.review_host_evidence,
+                existing_index=args.existing_index,
+                output_path=args.output,
+            )
+        elif args.snapshot_id:
             if args.item_artifact or not args.catalog_release or not args.wheel:
                 raise ValueError("development snapshot needs catalog and wheel, not review items")
             index = register_development_snapshot(

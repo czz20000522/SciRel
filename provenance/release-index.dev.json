@@ -199,6 +199,30 @@
       ],
       "source_qualification": "bounded_d1",
       "status": "candidate"
+    },
+    {
+      "approval_state": "pending_unapproved",
+      "entry_digest": "sha256:3673b4f7142e8fbf4603686720413091df8f089d3e1a176402ebd06e26c27849",
+      "entry_id": "evidence:8c5009e6de277eeff68df53c941cda722b233b635a0aa2df5333d29e0d3fcb59",
+      "evidence_ref": {
+        "digest": "sha256:d6081481da5db8ec933a8f86e74ce668532964231750deca671a2afa4d73418a",
+        "ref": "provenance/review-host-export-acceptance-20260929.json"
+      },
+      "evidence_type": "review_host_export_acceptance",
+      "status": "evidence",
+      "subject_entry_id": "candidate:a90a56d6c69390d65c38b7ac8de7597ea5d6f5ef7cc7776377668daa8a7d3c14"
+    },
+    {
+      "approval_state": "pending_unapproved",
+      "entry_digest": "sha256:f5d938a08015aac07307d35423e36826502f3fdb4a6004f47b33917a7e516f32",
+      "entry_id": "evidence:5bcc37fb46cc09addc615034e2c4394770b54097b91ff321e87ab8924fe44c8b",
+      "evidence_ref": {
+        "digest": "sha256:a97963f8af624ecefb42dfa59fa717b86029484f7dbf6ad45172003397c07891",
+        "ref": "provenance/review-host-request-evidence-acceptance-20260929.json"
+      },
+      "evidence_type": "review_host_export_acceptance",
+      "status": "evidence",
+      "subject_entry_id": "candidate:a90a56d6c69390d65c38b7ac8de7597ea5d6f5ef7cc7776377668daa8a7d3c14"
     }
   ],
   "schema": "scirel.release-index.dev"

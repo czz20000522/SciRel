@@ -302,16 +302,128 @@ def test_development_snapshot_rejects_invalid_catalog_binding(tmp_path, monkeypa
         )
 
 
+def test_review_host_evidence_appends_without_rewriting_candidate(tmp_path, monkeypatch):
+    import release_index
+
+    monkeypatch.setattr(release_index, "ROOT", tmp_path)
+    artifact = tmp_path / "pending.json"
+    artifact.write_bytes(_multi_item_workflow_body())
+    first_path = tmp_path / "candidate.json"
+    first = release_index.register_candidate(
+        item_artifacts=[artifact], git_revision="a" * 40,
+        output_path=first_path,
+    )
+    candidate = first["entries"][0]
+    record = tmp_path / "host-evidence.json"
+    record.write_text(json.dumps({
+        "schema": "scirel.review-host-export-acceptance.dev",
+        "candidate_entry_id": candidate["entry_id"],
+        "workflow_revision": candidate["items"][0]["initial_revision"],
+        "item_count": len(candidate["items"]),
+        "review_pending_items": len(candidate["items"]),
+        "needs_evidence_items": 0,
+        "approved_items": 0,
+        "applied_transitions": 0,
+        "approval_state": "pending_unapproved",
+        "host_source_revision": "a" * 40,
+        "host_export_artifact_ref": "artifact://host/snapshot",
+        "host_export_artifact_digest": "sha256:" + "b" * 64,
+        "host_receipt_digest": "sha256:" + "e" * 64,
+    }), encoding="utf-8")
+    second_path = tmp_path / "with-evidence.json"
+    second = release_index.register_review_host_evidence(
+        candidate_entry_id=candidate["entry_id"], evidence_path=record,
+        existing_index=first_path, output_path=second_path,
+    )
+
+    assert second["entries"][0] == candidate
+    evidence = second["entries"][1]
+    assert evidence["status"] == "evidence"
+    assert evidence["subject_entry_id"] == candidate["entry_id"]
+    assert evidence["approval_state"] == "pending_unapproved"
+    assert evidence["evidence_ref"] == release_index.artifact_ref(record)
+    assert release_index.read_index(second_path) == second
+    contract = json.loads((ROOT / "contracts/release-index-dev.schema.json").read_text(encoding="utf-8"))
+    assert set(evidence) == set(contract["$defs"]["evidence"]["required"])
+
+    with pytest.raises(ValueError, match="already exists"):
+        release_index.register_review_host_evidence(
+            candidate_entry_id=candidate["entry_id"], evidence_path=record,
+            existing_index=second_path, output_path=tmp_path / "duplicate.json",
+        )
+    orphan = dict(evidence, subject_entry_id="candidate:" + "0" * 64)
+    orphan["entry_digest"] = release_index.digest(release_index.canonical_json({
+        key: value for key, value in orphan.items() if key != "entry_digest"
+    }))
+    orphan_path = tmp_path / "orphan.json"
+    orphan_path.write_text(json.dumps({
+        "schema": release_index.SCHEMA,
+        "entries": [candidate, orphan],
+    }), encoding="utf-8")
+    with pytest.raises(ValueError, match="earlier candidate"):
+        release_index.read_index(orphan_path)
+
+    action_record = tmp_path / "action-evidence.json"
+    action_body = json.loads(record.read_text(encoding="utf-8"))
+    action_body.update({
+        "review_pending_items": len(candidate["items"]) - 1,
+        "needs_evidence_items": 1,
+        "applied_transitions": 1,
+        "review_action": {
+            "item_ref": candidate["items"][0]["item_ref"],
+            "action": "request-evidence",
+            "run_id": "run-test",
+            "successor_digest": "sha256:" + "d" * 64,
+        },
+    })
+    action_record.write_text(json.dumps(action_body), encoding="utf-8")
+    third = release_index.register_review_host_evidence(
+        candidate_entry_id=candidate["entry_id"], evidence_path=action_record,
+        existing_index=second_path, output_path=tmp_path / "with-action.json",
+    )
+    assert third["entries"][:2] == second["entries"]
+    assert third["entries"][2]["status"] == "evidence"
+    action_body["approved_items"] = 1
+    action_record.write_text(json.dumps(action_body), encoding="utf-8")
+    with pytest.raises(ValueError, match="does not bind the pending candidate"):
+        release_index.register_review_host_evidence(
+            candidate_entry_id=candidate["entry_id"], evidence_path=action_record,
+            existing_index=second_path, output_path=tmp_path / "approved.json",
+        )
+    action_body["approved_items"] = 0
+    action_body["review_pending_items"] = -1
+    action_body["needs_evidence_items"] = len(candidate["items"]) + 1
+    action_record.write_text(json.dumps(action_body), encoding="utf-8")
+    with pytest.raises(ValueError, match="does not bind the pending candidate"):
+        release_index.register_review_host_evidence(
+            candidate_entry_id=candidate["entry_id"], evidence_path=action_record,
+            existing_index=second_path, output_path=tmp_path / "negative.json",
+        )
+
+    record_body = json.loads(record.read_text(encoding="utf-8"))
+    record_body["workflow_revision"] = "sha256:" + "c" * 64
+    record.write_text(json.dumps(record_body), encoding="utf-8")
+    with pytest.raises(ValueError, match="does not bind the pending candidate"):
+        release_index.register_review_host_evidence(
+            candidate_entry_id=candidate["entry_id"], evidence_path=record,
+            existing_index=first_path, output_path=tmp_path / "mismatch.json",
+        )
+
+
 def test_repository_release_index_keeps_exact_evidence_bindings():
     from release_index import digest, read_index
 
     index = read_index(ROOT / "provenance/release-index.dev.json")
     assert index["entries"]
     for entry in index["entries"]:
-        if entry["status"] not in {"candidate", "development"}:
+        if entry["status"] == "evidence":
+            bindings = [entry["evidence_ref"]]
+        elif entry["status"] in {"candidate", "development"}:
+            assert entry["approval_state"] == "pending_unapproved"
+            bindings = [*entry["evidence_refs"], *entry["destination_refs"]]
+        else:
             continue
-        assert entry["approval_state"] == "pending_unapproved"
-        for binding in [*entry["evidence_refs"], *entry["destination_refs"]]:
+        for binding in bindings:
             path = ROOT / binding["ref"]
             if path.is_file():
                 assert digest(path.read_bytes()) == binding["digest"]

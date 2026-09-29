@@ -26,6 +26,35 @@ while the indexed r43/dev5 wheel has SHA-256
 The earlier case records remain at their exact manifests; this check does not
 close the unpublished-candidate census gap.
 
+An isolated CodeFusion development host at source Git
+`2d3de66e04d81fcbb94fd069bb7f4d93630cd844` indexed the same r43
+initial workflow revision in one reviewer project and exported a host snapshot
+of that project's 13 pending items. The host Artifact digest is
+`sha256:6e46b5fc63b0ab4287aaead559b656a3f97e5c97b6eeee3e7b0d60da0ae52bd5`;
+the CodeFusion owner checked the 9,110 downloaded bytes, same-key replay, and
+ordinary-user denial. D2 checked the local host receipt against the candidate's
+workflow revision and item count, but did not independently download the host
+Artifact or compare all exported item refs. The exact D2 acceptance record is
+`provenance/review-host-export-acceptance-20260929.json`, bound as an append-only
+evidence entry in the development index. Zero review transitions were applied.
+This project-scoped export is neither a complete candidate census, scientific
+approval, nor a stable outbound release.
+It belongs to a new isolated project, not the older workbench project read below.
+
+The same isolated project later applied one non-approving `request-evidence`
+action to the indexed Weideman item. Its successor Artifact digest is
+`sha256:cad374f922e0b7ea4bed6d2141244bc3b86450ee162163a46b1523c27d24c475`.
+The next host snapshot has SHA-256
+`9ed3e5d329bee9d01dc0f7f128bb55abd69bcbfdd59903da08e5a78aca37fe99`;
+the CodeFusion owner checked 9,750 downloaded bytes, one applied transition
+bound to the action run and successor, and 12 unchanged item Artifacts. The
+project now has one `needs_evidence`, 12 `review_pending`, and zero approved
+items. D2 checked the local action receipt and indexed item identity, but did
+not independently download the snapshot or successor Artifact. The exact
+record `provenance/review-host-request-evidence-acceptance-20260929.json` is a
+second append-only evidence entry for the same candidate. The first snapshot
+remains the immutable zero-transition baseline for this project.
+
 The 2026-09-29 reviewer workbench readback showed 12 `review_pending` items and
 one Weideman `needs_evidence` successor, SHA-256
 `376899b3d2801fe7452f66086667852f08da98a21a4515d3d07e4fc88d9810ac`.

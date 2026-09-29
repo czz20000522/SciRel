@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://scirel.dev/contracts/release-index-dev.schema.json",
-  "title": "SciRel development snapshot, review candidate and released version index",
+  "title": "SciRel development snapshot, review candidate, evidence and released version index",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema", "entries"],
@@ -9,7 +9,7 @@
     "schema": {"const": "scirel.release-index.dev"},
     "entries": {
       "type": "array",
-      "items": {"oneOf": [{"$ref": "#/$defs/candidate"}, {"$ref": "#/$defs/development"}, {"$ref": "#/$defs/released"}]}
+      "items": {"oneOf": [{"$ref": "#/$defs/candidate"}, {"$ref": "#/$defs/development"}, {"$ref": "#/$defs/evidence"}, {"$ref": "#/$defs/released"}]}
     }
   },
   "$defs": {
@@ -75,6 +75,19 @@
         "wheel": {"$ref": "#/$defs/artifact_ref"},
         "evidence_refs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/artifact_ref"}},
         "destination_refs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/artifact_ref"}}
+      }
+    },
+    "evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["entry_id", "entry_digest", "status", "subject_entry_id", "evidence_type", "approval_state", "evidence_ref"],
+      "properties": {
+        "entry_id": {"type": "string", "pattern": "^evidence:[0-9a-f]{64}$"},
+        "entry_digest": {"$ref": "#/$defs/digest"},
+        "status": {"const": "evidence"},
+        "subject_entry_id": {"type": "string", "pattern": "^candidate:[0-9a-f]{64}$"},
+        "evidence_type": {"const": "review_host_export_acceptance"},
+        "approval_state": {"const": "pending_unapproved"},
+        "evidence_ref": {"$ref": "#/$defs/artifact_ref"}
       }
     },
     "released": {

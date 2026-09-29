@@ -99,6 +99,8 @@ pwsh ./scripts/check.ps1 -Mode release -ReleaseIndex <candidate-index.json> -Can
 实际消费 manifest 和 digest，D2 单写者负责身份、来源与科学证据并核对登记；工作台当前逐项
 审核状态继续由审核 artifact/投影提供。完整开发 catalog 不等于专家批准，来源混合的开发
 快照不因 `pending_unapproved` 而自动取得 D1 资格；正式公开发行前合同统一冻结为 `v1`。
+同一候选的宿主开发验收用 `--review-host-evidence`、`--candidate-entry-id` 和 `--existing-index`
+追加证据条目；这不产生新候选，也不替代宿主逐项审核状态或批准。
 同一 workflow 的多项共享原始 revision，只产生 `candidate` 条目。多个 artifact 可重复传入 `--item-artifact`，
 但重复 item 或资产会被拒绝。审核宿主导出的 `approved_items` 与各项原始 artifact 必须一起输入；artifact 以
 `<sha256-hex>.json` 命名，内容摘要须与投影 revision 一致，并包含提交前版本和批准 successor。
