@@ -615,6 +615,38 @@
       "subject_entry_id": "candidate:1d02ae5282f0947a40f5e15bb30df1ca9613fdd491d5012ab7b204f88d6c2218",
       "successor_entry_id": "candidate:af9f1e067df3a354a8059787315e199ccb73816ed709ecf2dc8722b8f9f06562",
       "transition": "superseded"
+    },
+    {
+      "approval_state": "pending_unapproved",
+      "catalog": {
+        "digest": "sha256:a0ff2790af0b7841de44f659e57a5ad73e866570092d6472efc0b85324666da5",
+        "ref": "build/verification/r43-corrected-development-b986952-20260930/catalog/release.json",
+        "root_digest": "sha256:478509e591b36b3aadae3c71daabce83375691b47ffca7c7d545b2f3d21c0f39"
+      },
+      "destination_refs": [
+        {
+          "digest": "sha256:7e8a98910bb003aef667593e171efe3984f405e8245a56cd8a57fcbbabdc1c59",
+          "ref": "docs/evaluations/outbound-progressive-projects/manifests/2026-09-30-r43-corrected-development-delivery.json"
+        }
+      ],
+      "entry_digest": "sha256:ccbeaa25a3aa1d61b5c3a34c7fa256ef8539c52a2f40fc01caea11ee5782e099",
+      "entry_id": "development:c34b22afc988ce05c58808f2aa8955ecf2f3d721ccb2b19fbc4df0d30dd07722",
+      "evidence_refs": [
+        {
+          "digest": "sha256:977d62812d7d0bf12d91b425de89ab8f1149dfc35cf6aac4e3c96f4a90192028",
+          "ref": "provenance/r43-corrected-development-acceptance-20260930.json"
+        }
+      ],
+      "snapshot_id": "fluidbw-r43-corrected-b986952-dev5-132",
+      "source_binding": {
+        "git_revision": "b986952474cc63971e0f518a18fa33c78ca9ac17"
+      },
+      "source_qualification": "mixed_unverified",
+      "status": "development",
+      "wheel": {
+        "digest": "sha256:50f411c4d5a763b9a58aef25af5658d1d4a35984eca8f5934d936e6a214ed256",
+        "ref": "build/verification/r43-corrected-development-b986952-20260930/wheels/scirel-0.1.0.dev5-py3-none-any.whl"
+      }
     }
   ],
   "schema": "scirel.release-index.dev"

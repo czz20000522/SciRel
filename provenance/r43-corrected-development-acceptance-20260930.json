@@ -1,0 +1,32 @@
+{
+  "schema": "scirel.development-delivery-acceptance.dev",
+  "snapshot_id": "fluidbw-r43-corrected-b986952-dev5-132",
+  "candidate_entry_id": "candidate:af9f1e067df3a354a8059787315e199ccb73816ed709ecf2dc8722b8f9f06562",
+  "source_revision": "b986952474cc63971e0f518a18fa33c78ca9ac17",
+  "source_qualification": "mixed_unverified",
+  "approval_state": "pending_unapproved",
+  "wheel_digest": "sha256:50f411c4d5a763b9a58aef25af5658d1d4a35984eca8f5934d936e6a214ed256",
+  "wheel_bytes": 328459,
+  "catalog_release_digest": "sha256:a0ff2790af0b7841de44f659e57a5ad73e866570092d6472efc0b85324666da5",
+  "catalog_root_digest": "sha256:478509e591b36b3aadae3c71daabce83375691b47ffca7c7d545b2f3d21c0f39",
+  "catalog_snapshot_digest": "sha256:ec47a718a478c4033de7d528421255672757be41ddec77edde2777e1dd821cb5",
+  "catalog_snapshot_bytes": 703416,
+  "verification_ref": "build/verification/r43-corrected-development-b986952-20260930/verification.json",
+  "verification_digest": "sha256:05d52d882c5ec144fda2e09f5da178b652cc4eedc3f03bab17d1bc226f2db5e1",
+  "catalog_assets": 132,
+  "candidate_assets": 13,
+  "candidate_dependency_closure_assets": 14,
+  "reused_support_asset_id": "scirel.kinetic.species-equilibrium-scales",
+  "wheel_python_members_byte_equal_to_frozen_source": 161,
+  "installed_candidate_examples_passed": 13,
+  "installed_runtime_document_checks_passed": 132,
+  "external_scientific_tests_passed": 51,
+  "external_scientific_test_files": {
+    "test_fluidbw_r43_fluid.py": "sha256:6dda2f37cfbdba0b1c458dfedf255be22648808764ff36bcab474dc7afcff335",
+    "test_fluidbw_r43_graphs.py": "sha256:b6af013333e282e49c5d4b721ee4e88d29f2716d344ffe0f08e1c0dfa6a14dea",
+    "test_fluidbw_r43_kinetic.py": "sha256:5ef4e190d9741143652bb307b8e0417c13b16900af4e2f75fc03c3948e715e7b",
+    "test_fluidbw_r43_variants.py": "sha256:3a03f43046f8a14019211f990425c51b7d5fce6d253defabc8f115b965de8fa"
+  },
+  "verification_boundary": "D2 built the full 132-asset development wheel and catalog offline from the frozen SciRel revision. The 13 corrected candidate documents and their dependency lists match the indexed review items; species-equilibrium-scales is a reused support dependency. Every Python wheel member matches the frozen source bytes. An isolated Python invocation imported the installed wheel from a venv, without dependency downloads, and passed 13 candidate examples, 132 installed-runtime document checks, and 51 candidate-declared scientific tests. The venv reused host NumPy, SciPy, and pytest through system site packages, so this does not establish an offline dependency reinstall. No CodeFusion consumer or backend acceptance has been observed for this exact tuple.",
+  "not_claims": ["all_132_assets_source_qualified", "expert_approval", "trusted_release", "backend_binding", "independent_product_download", "offline_dependency_reinstall"]
+}
