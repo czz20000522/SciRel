@@ -94,3 +94,16 @@ chain across two product projects. The earlier manifest's `not_claims` and
 reviewer receipts retain their historical scope; no old review decision is
 transferred. This wheel/catalog remains `mixed_unverified` and
 `pending_unapproved`, so the technical evidence is not a stable release.
+
+At this acceptance point, the D2-maintained
+`provenance/release-index.dev.json` records current reviewer candidate
+`candidate:1d02ae5282f0947a40f5e15bb30df1ca9613fdd491d5012ab7b204f88d6c2218`
+and host evidence
+`evidence:dcb47181bdd4c05e67650d7fd2a66df00bb74ae6c74ec707c0bca0110fa396c7`
+alongside the development entry above. New outbound candidate identities and
+evidence go to the source-governance/D2 owner for registration in that single
+development index; D2 is its sole writer. Later checks must read the index's
+then-current entries as development candidate IDs may change. The historical
+52-item snapshot needs no catch-up and is not an acceptance target. Development
+contracts converge to `v1` before formal release; the indexed technical trace
+does not waive scientific approval, distribution licenses, or release checks.
