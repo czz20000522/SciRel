@@ -96,6 +96,16 @@ known behavior, not an endorsed correction. This is a source-side baseline
 only: no candidate comparison, independent holdout, whole-source closure, or
 D1 intake follows from it. The failed `a01` receipt remains separate.
 
+For the current `b09804ced2f8cd8c499638d6b68bc39444e72a0351e9be908f8c7519d317baa2`
+candidate, `task_graphs/device_vacuum_field/graph.py` (SHA-256
+`e7c8ad607534670a43fde57754fa2d8969b38202532b609fbaeaca7d6be1c62f`)
+calls `device_coil_configuration(preset)`. That operator (SHA-256
+`66b3491cdc035018689b8713956d3a08150a51462d2d32fad56277b508fcd77b`)
+registers only `wham` and `brb`. A focused source-fidelity pass for the
+separate `flame_coil_filaments` operator does not establish a composed FLAME
+field/Green TaskGraph path or 60-field terminal parity. This composition gap
+must be resolved and compared on exact candidate bytes before intake credit.
+
 ## Review-slice dependency closure
 
 The r43 index binds 13 retained review items, but this slice alone is not a
