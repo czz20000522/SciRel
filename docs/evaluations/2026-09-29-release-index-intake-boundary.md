@@ -188,6 +188,13 @@ This is a relation and dependency screen, not numerical equivalence evidence.
 The PDRK five-node graph remains a separate candidate composition pending its
 same-bundle D1 source comparisons and D2 import checks.
 
+The same `5516b799...` graph has one further unresolved declared-port origin:
+`em3d_dispersion_matrix` lists `S` as an input, while its YAML gives `S` no
+caller input, producer output, or edge/transform. The executable graph passes
+`S=len(scales["qs"])`. Its new structural test checks `c2`, `vds`, and order,
+but not this derived species count. D1 owns the exact graph-contract successor;
+the passing tests and intake probe do not close this D2 dependency finding.
+
 The Pleiades equal-temperature WHAM API-domain canonical attempt `a02` has an
 exact comparison at `lanes/wi-wham-source-api-domain-terminal-comparison-20260929/attempts/a02/evidence/wham-api-domain-terminal-comparison.json`
 (SHA-256 `2a552662e1a873ef7eea8b2b11946f8735be504c9247b8fd022dedeb80b56135`)
