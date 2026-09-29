@@ -1,13 +1,15 @@
 # Stable outbound readiness (2026-09-29)
 
-This is a read-only development acceptance check, not a scientific approval or
-public release. SciRel Git `ac299ceeafbc25545760974943620c5c972d643b`
-has one r43 `candidate` and two `development` entries in
-`provenance/release-index.dev.json`; it has no `released` entry. The index
-covers the verified local scope, not an authoritative census of all unpublished
-candidates. The old 52-item snapshot is historical.
+This is a read-only development acceptance record, not a scientific approval or
+public release. The earlier check at SciRel Git
+`ac299ceeafbc25545760974943620c5c972d643b` saw one r43 `candidate` and two
+`development` entries. The D2-maintained `provenance/release-index.dev.json` is
+now the single current unpublished-candidate index. At `21cb40f`, its current
+r43 reviewer candidate is `candidate:1d02ae5282f0947a40f5e15bb30df1ca9613fdd491d5012ab7b204f88d6c2218`;
+it has no `released` entry. The old 52-item snapshot is historical and is not
+an acceptance prerequisite.
 
-## Authenticated review readback
+## Earlier authenticated review readback
 
 CodeFusion Git `e532153990bec33103721138b742df4ecdb94b21` exposes the
 development reviewer workbench for project
@@ -47,40 +49,57 @@ equivalent authenticated, auditable collection protocol that binds every item
 ref, current Artifact ref/digest, decision actor, and source review revision.
 
 CodeFusion local `master` at `2d3de66e04d81fcbb94fd069bb7f4d93630cd844`
-now contains a reviewer `snapshot-exports` route and its follow-up fixes. That
-code integration has not been deployed. The commit itself supplies neither an
-authenticated r43 aggregate export nor an approval; the live workbench and
-exact current item Artifacts remain the authority for release decisions.
+contained a reviewer `snapshot-exports` route and its follow-up fixes. It had
+not been deployed to this older workbench at the time of that readback. A later
+isolated product using that source completed a separate r43 development
+reviewer run, described below; neither deployment nor export is an approval.
 
 The new route's `codefusion.plugin-review-snapshot-export.v1` is a neutral
 host snapshot of item refs, current/source Artifact refs, and applied review
 transitions. It is not the `scirel.review-completed-results.dev` projection
-accepted by the SciRel distribution scripts. Before using a deployed export,
-D2 must verify its exact host Artifact, retrieve and check the referenced
-initial, predecessor, and current review Artifact bytes for selected approved
-items, then bind the derived domain projection to that host snapshot. A route
-receipt alone cannot satisfy the release inputs.
+accepted by the SciRel distribution scripts. For a selected approved subset,
+D2 must verify the exact host Artifact and referenced initial, predecessor,
+and current review Artifact bytes, then bind the derived domain projection to
+that host snapshot. A route receipt alone cannot satisfy release inputs.
 
-The 2026-09-29 Spark runtime check still found CodeFusion `e5321539` on port
+The earlier 2026-09-29 Spark runtime check found CodeFusion `e5321539` on port
 18096 and all 13 r43 items on one reviewer index page with no next page. Local
 `2d3de66e` changes the product V1 schema, including a review-transition table
 and Artifact source constraints, so the existing database with its old V1
-checksum cannot be used by simply restarting the new service. Deployment
-requires an explicit preservation/reload decision for the pending r43 review
-project and other needed inputs, followed by a new-database acceptance check
-against the actual source label. No review action, service replacement, or
-database rebuild was performed by this check.
+checksum could not be used by simply restarting the new service. Deploying to
+that old workbench would have required an explicit preservation/reload decision
+for its pending r43 review project and other needed inputs, followed by a
+new-database acceptance check against the actual source label. No review
+action, service replacement, or database rebuild was performed by that check.
+
+## Current development successor
+
+SciRel `21cb40f` indexes a distinct r43 workflow version
+`sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b`.
+CodeFusion `2d3de66e` ran it in a separate isolated product and reviewer
+project, with a registered development release binding SciRel source `cc2fa21`,
+wheel SHA-256 `b1abff574c870e17dd4e24adc952ca4279561aa43adcc92250d019e42b2b3684`
+and catalog ZIP SHA-256 `afee7fcf2d5bca4e04179aaaa1e1d98bdd689a8439c965f1b1c4580993c097e5`.
+The installed-wheel backend completed L1 intake and review-index runs. One
+Weideman `request-evidence` action produced a new successor. The authenticated
+host export contains 13 items: one `needs_evidence`, 12 `review_pending`, zero
+approved. D2 bound the new workflow and export in
+`provenance/r43-b1ab-review-workflow-acceptance-20260929.json` and
+`provenance/r43-b1ab-review-host-acceptance-20260929.json`; the old reviewer
+candidate is retained through an append-only `superseded` event. This closes
+the bounded development reviewer technical trace alongside the corrected-wheel
+ordinary-user trace, without transferring old review decisions.
 
 ## Release boundary
 
 The first-release subset assembler, exact-item finalizer, and source-free
 installed-wheel gate have development fixture coverage. These tests establish
-the technical checks, not approval of the r43 items. The development wheel and
-catalog consumed by D3 are `pending_unapproved` and include mixed-source
-material outside the 13-item r43 review slice. They cannot be registered as a
-trusted CodeFusion runtime release. The example plugin registration contains
-placeholder Artifact refs; no real SciRel reviewed release manifest, approved
-wheel/catalog tuple, or `released` index entry exists.
+technical checks, not approval of the r43 items. The corrected development
+wheel and catalog are `pending_unapproved` and include mixed-source material
+outside the 13-item r43 review slice. The new CodeFusion registration uses real
+Artifact refs for this development tuple, but it is not a trusted runtime
+release. No SciRel reviewed release manifest, approved-only wheel/catalog
+tuple, or `released` index entry exists.
 
 Before a stable outbound release, the following inputs are still required:
 
@@ -88,17 +107,18 @@ Before a stable outbound release, the following inputs are still required:
   the current 13-item batch has no approved item.
 - Human distribution-license decisions for the selected code, documents, and
   dependencies, followed by explicit release authorization.
-- Resolution or exclusion of candidate gaps, including the unpublished-candidate
-  census and unreported exact producer build identifiers; a development pass
-  does not close these evidence gaps.
-- An authenticated, auditable host export of any approved subset with exact
+- Resolution or exclusion of gaps in the selected current candidate, including
+  unreported exact producer build identifiers where required. The historical
+  52-item snapshot is not a census gate for new development acceptance.
+- For any approved subset, an authenticated, auditable host export with exact
   current and predecessor Artifact bytes, then a clean selected-source build,
   complete exact documents, catalog, wheel, isolated checks, and manifest/index
   binding for that same subset.
-- A real CodeFusion registration and consumer readback of one pinned plugin
-  release, wheel, catalog, runtime dependencies, and SciRel release manifest.
-  The SciRel-owned `.dev` review and release contracts must converge to `v1`
-  before formal public release.
+- A CodeFusion registration and consumer readback of the approved-only pinned
+  release tuple, including wheel, catalog, runtime dependencies, and SciRel
+  release manifest. The current development registration does not supply that
+  release. SciRel-owned `.dev` review and release contracts must converge to
+  `v1` before formal public release.
 
 Incremental release also needs a real prior trusted baseline whose wheel,
 catalog, documents, support modules, and tests can be verified and inherited.
