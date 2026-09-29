@@ -17,7 +17,8 @@ contracts converge to `v1` before formal release.
 | Distribution | `scirel` `0.1.0.dev5`, wheel SHA-256 `b1abff574c870e17dd4e24adc952ca4279561aa43adcc92250d019e42b2b3684` | `build/verification/fluidbw-r43-cc2fa21-outbound-acceptance-20260929/wheels/scirel-0.1.0.dev5-py3-none-any.whl` |
 | Catalog | `release.json` SHA-256 `fece59b88ad39480a58b3c35f7678b2007a578f5918a74533f5b0cae6dfe2d02`; root `sha256:1bd47cc5cce3155cb8ec17676eb4f0296374d85939c7396c8be9a9ee06e7cdfb` | `build/verification/fluidbw-r43-development-delivery-20260929/bundle/catalog/release.json` |
 | Catalog snapshot ZIP | SHA-256 `afee7fcf2d5bca4e04179aaaa1e1d98bdd689a8439c965f1b1c4580993c097e5`; 703,217 bytes; media type `application/vnd.scirel.catalog-snapshot+zip` | `build/verification/fluidbw-r43-cc2fa21-outbound-acceptance-20260929/catalog-snapshot.zip` |
-| Development index | `development:c9a63b3f8068626417895ecfdc45787045a46a2a78ff6972642f6e8164de0463` | `provenance/release-index.dev.json` at `b0ef52a` |
+| Development index | `development:c9a63b3f8068626417895ecfdc45787045a46a2a78ff6972642f6e8164de0463` | `provenance/release-index.dev.json`; retained at `21cb40f` |
+| Current reviewer candidate | `candidate:1d02ae5282f0947a40f5e15bb30df1ca9613fdd491d5012ab7b204f88d6c2218`, workflow `sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b` | `provenance/release-index.dev.json` at `21cb40f` |
 | Ordinary-user evidence | `evidence:f61f5487b357c2009707d3fd852e5507b882de3fa070b7c7952ddbd6763ed895`; manifest SHA-256 `4e85873f9a8280a139158937f9bc9531c5f1b6ea67be2ed5762a16abf2aeea1f` | `manifests/2026-09-29-fluidbw-r43-b1ab-current-ordinary.json` |
 
 The wheel and catalog release file were rehashed locally for this handoff.
@@ -120,8 +121,13 @@ The old review project's workflow revision
 is a different frozen version. The new preparation retains the logical
 candidate/draft IDs but incorporates the new L1 result, host Artifacts and
 index snapshot; it neither modifies the old workflow bytes nor inherits an
-old review conclusion. D2 alone decides how this new reviewer-run/export
-evidence is appended to the unified development index.
+old review conclusion. At `21cb40f`, D2 registered the new candidate and host
+evidence
+`evidence:dcb47181bdd4c05e67650d7fd2a66df00bb74ae6c74ec707c0bca0110fa396c7`;
+an append-only `superseded` event points the old
+`candidate:a90a56d6c69390d65c38b7ac8de7597ea5d6f5ef7cc7776377668daa8a7d3c14`
+to the current candidate. The old review receipts remain bound to their own
+workflow revision.
 
 The development technical run cannot substitute for expert decisions, license
 clearance, an approved-subset build and release checks, or `v1` convergence.
