@@ -31,12 +31,15 @@ def _pending_item(
     *, release_ready=False,
     document_name="scirel.field.circular-filament-green.json",
     support_file=None,
+    omit_dependencies=False,
 ):
     document = json.loads(
         (ROOT / "catalog/examples" / document_name).read_text(
             encoding="utf-8"
         )
     )
+    if omit_dependencies:
+        document["version"]["dependencies"] = []
     evidence = []
     if release_ready:
         document["provenance"]["license_status"] = "approved-for-public-release"
@@ -360,6 +363,7 @@ def _reviewed_release_inputs(
     git_revision="a" * 40,
     support_file=None,
     build_release_catalog=True,
+    omit_dependencies=False,
 ):
     from build_catalog import build_catalog
     from release_index import register_candidate
@@ -371,6 +375,7 @@ def _reviewed_release_inputs(
         item = _pending_item(
             release_ready=True, document_name=document_name,
             support_file=support_file,
+            omit_dependencies=omit_dependencies,
         )
         pending_body = json.dumps(item, ensure_ascii=False, sort_keys=True).encode("utf-8")
     pending_revision = "sha256:" + hashlib.sha256(pending_body).hexdigest()
@@ -478,7 +483,7 @@ def test_first_reviewed_distribution_rejects_undeclared_internal_import(
     from prepare_reviewed_distribution import prepare_reviewed_distribution
 
     artifacts, _, _, _, _ = _reviewed_release_inputs(
-        tmp_path, document_name=document_name
+        tmp_path, document_name=document_name, omit_dependencies=True
     )
     staging = tmp_path / "reviewed-source"
     with pytest.raises(ValueError, match="missing internal import") as error:
