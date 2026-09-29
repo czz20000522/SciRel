@@ -4,11 +4,14 @@ This is a read-only map of decision inputs, not a review decision, a release
 selection, or another candidate index. D2 alone maintains the unified
 [`release-index.dev.json`](../../provenance/release-index.dev.json), frozen for
 this handoff at SciRel `274f2e6378d1f349be2a81449ed4021cd2a0679e`.
-It has 14 entries and no `released` entry. The current r43 candidate is
+That snapshot has 14 entries and no `released` entry. Its then-current r43 candidate was
 `candidate:1d02ae5282f0947a40f5e15bb30df1ca9613fdd491d5012ab7b204f88d6c2218`
 with `bounded_d1` source qualification and `pending_unapproved` state.
 The original 13 review items have zero approvals. A separately submitted
 corrected 13-item cohort is recorded below; the two cohorts are distinct.
+The development index now has 16 entries after D2's `a5d659d` append, with
+`candidate:af9f1e067df3a354a8059787315e199ccb73816ed709ecf2dc8722b8f9f06562`
+as the current unpublished r43 candidate and no approved or released item.
 
 The identity map below is from the downloaded CodeFusion `3c69931b` V1
 project `prj_06b93ac5f20676cf034d2e8c171eb73e628a` revalidated snapshot:
@@ -160,9 +163,10 @@ SHA-256 `e1169e806437fe8d3ad9acf3e0d3e4e726fcfd635fdb01cf5ca40ed8024e2c11`.
 The authenticated snapshot shows 26 items: the original 13 plus 13 new
 `review_pending` items, with no overlap in item refs. The two corrected items
 have the maintained document digests and their nonempty dependency lists.
-D2 alone registers the new candidate and then appends the old candidate's
-`superseded` lifecycle event with exact evidence. The old candidate and its
-review actions stay immutable; neither cohort has scientific or license approval.
+D2 registered the new 13-item candidate in SciRel `a5d659d` and appended the
+old candidate's `superseded` lifecycle event, bound to the frozen intake
+acceptance record. The old candidate and its review actions stay immutable;
+neither cohort has scientific or license approval.
 
 The A1 Weideman item is `needs_evidence`, not approved. Its successor retains
 general census, producer-build, scientific-approval, and license gaps; the
