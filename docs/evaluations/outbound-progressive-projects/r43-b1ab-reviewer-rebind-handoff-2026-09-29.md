@@ -40,7 +40,7 @@ upload bytes; `release.json` SHA-256 identifies that file's bytes; the catalog
 root is computed from canonical release content without its `root_digest` field
 and binds the partition hashes. These three digests serve different purposes.
 
-## Current reviewer runtime
+## Reviewer runtimes
 
 CodeFusion's read-only check of its isolated service on port 18110 found that
 `plugin-runner-backend` mounts an older SciRel body-wire source fixture and has
@@ -63,9 +63,8 @@ The corrected wheel contains seven `scirel_plugin` and five
 `body_runner.py` and `workflow.py` with the current SciRel source found equal
 text after CRLF/LF normalization. `workflow.py` also matches byte for byte;
 the other two have different raw bytes because of line endings. This supports
-an installed-wheel runner path, but does not show that the current host runs
-the wheel. The new runner must actually install the exact wheel and record its
-import origins and dependencies.
+the installed-wheel runner path used by the new isolated project below; it
+does not rebind the old runner.
 
 CodeFusion has since prepared a separate `m3-r43-b1ab-reviewer-backend` on
 Spark. Its owner reports an offline installation of the exact `b1abff...`
@@ -74,7 +73,7 @@ wheel, NumPy 2.4.6 and SciPy 1.18.1, with SciRel import origins under
 backend and service remain running. SciRel has not independently queried this
 remote container, and this runner check alone is not a reviewer host receipt.
 
-## New host binding required
+## New host binding
 
 CodeFusion reports that its new isolated project
 `prj_0b4158c393a55f538dae18802c15770ef756` uploaded two ArtifactOwner
@@ -92,15 +91,37 @@ manifest ArtifactOwner ref has yet been verified. The ordinary request's
 `cf://user/.../resources/...` input is a ResourceOwner reference, not an
 ArtifactOwner reference. Example refs in
 `contracts/examples/scirel-plugin-registration.dev.json` are placeholders.
-Do not place a digest alone or an invented `cf://artifact/...` value in the
-new registration.
+The new isolated product on Spark loopback port 18112 registered a development
+plugin release binding SciRel source `cc2fa21`, the two exact ArtifactOwner
+inputs above, and the installed-wheel backend. Its release ref is:
 
-The host still needs a new immutable plugin registration with a resolved
-runtime dependency binding to the installed wheel and catalog, then new
-authenticated reviewer item, action and host export receipts under that
-release in the isolated project. No new plugin release registration or reviewer
-host receipt has been reported yet. The previous 13-item project and its
-non-approving successor remain historical evidence.
+```text
+plugin-release://scirel/0.1.0.dev5/source-cc2fa21e03fa7e5152c29f0769165863429e1693/wheel-b1abff574c870e17dd4e24adc952ca4279561aa43adcc92250d019e42b2b3684/catalog-afee7fcf2d5bca4e04179aaaa1e1d98bdd689a8439c965f1b1c4580993c097e5
+```
+
+The first L1 run failed after a task-local proxy error; the retry under the
+same release completed. CodeFusion reports these new project results and
+authenticated Artifact readbacks:
+
+| Step | Exact identity and result |
+| --- | --- |
+| L1 intake | `run_d9bc496e3714747d851e2f89c77a317351e5f5b97d59135c985598a9f9e80772d`; result Artifact `cf://artifact/upload_2a29b63525516715a362a175e804d67c805ae5cd54a98395`, SHA-256 `c1f632d433441be6bc84410ea28c558f64b11710be59cfcbd2b56585faf8e1a4`; 15 assets and five structural checks passed. |
+| New review source | Uploaded workflow Artifact `cf://artifact/upload_8fe2f34e384bfea5f56bb605561c6e8af7677279544bd7bd`, SHA-256 `0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b`; review-index run `run_e42f2d8a57ff503b4bbb3a924858833fa6346e405ecdb58c359ee92a5bf06020` admitted 13 items. |
+| Weideman action | `request-evidence` run `run_96c8da8766b8eb0a7e78fbdb8649bffc9aa08c41ce7e23dc974b41c76a8bd9f2`; successor Artifact `cf://artifact/upload_615e3e16eff14ab1f750ef4628098ab7fd75202a5d1c0e67`, SHA-256 `d62ae8faf3b529605bb3795acbde9589d274a0bbca54cceb1dd5b7abddbcd461`. |
+| Host export | Artifact `cf://artifact/upload_023f4dc2766a932f0ad6f4cf26347e9b8b751726272f8e03`, SHA-256 `b9e2c8c990f821232f2a912163a8ae03a970faa52c49ced1a701d22e1de9eabd`; 13 items, one applied transition, one `needs_evidence`, 12 `review_pending`, zero approved. |
+
+The new review preparation bound development-index file SHA-256
+`8768b807cd850538d13dbbc034d201cf48c8010bb9e8af5477a51c1de3aa9b88`.
+Its submission ID is `fluidbw-r43-b1ab-review-prep-20260929` and its
+candidate-pool digest is
+`sha256:04748521cb88ab4acb495f5417973a3e60df6a4c1bb85f00cbdbd45bb6453036`.
+The old review project's workflow revision
+`sha256:a9099aa88aee7256e1d1e841b28779b458c2f39d192d672a1d6a40e10c82cb6a`
+is a different frozen version. The new preparation retains the logical
+candidate/draft IDs but incorporates the new L1 result, host Artifacts and
+index snapshot; it neither modifies the old workflow bytes nor inherits an
+old review conclusion. D2 alone decides how this new reviewer-run/export
+evidence is appended to the unified development index.
 
 The development technical run cannot substitute for expert decisions, license
 clearance, an approved-subset build and release checks, or `v1` convergence.
