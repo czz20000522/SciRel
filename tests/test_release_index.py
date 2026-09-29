@@ -302,6 +302,84 @@ def test_development_snapshot_rejects_invalid_catalog_binding(tmp_path, monkeypa
         )
 
 
+def test_consumer_evidence_binds_existing_development_without_approval(tmp_path, monkeypatch):
+    import release_index
+
+    monkeypatch.setattr(release_index, "ROOT", tmp_path)
+    catalog = tmp_path / "release.json"
+    catalog_body = {"schema": "scirel.catalog-release.v1"}
+    catalog_body["root_digest"] = release_index.digest(release_index.canonical_json(catalog_body))
+    catalog.write_text(json.dumps(catalog_body), encoding="utf-8")
+    wheel = tmp_path / "wheel.whl"
+    wheel.write_bytes(b"development wheel")
+    first_path = tmp_path / "development.json"
+    first = release_index.register_development_snapshot(
+        snapshot_id="r43-dev5", catalog_release=catalog, wheel=wheel,
+        evidence_paths=[catalog], destination_paths=[catalog],
+        git_revision="a" * 40, source_qualification="mixed_unverified",
+        output_path=first_path,
+    )
+    development = first["entries"][0]
+    record = tmp_path / "consumer.json"
+    record_body = {
+        "schema": "scirel.outbound-evaluation-manifest.v1",
+        "status": "development_product_ordinary_same_request_acceptance",
+        "development_entry_id": development["entry_id"],
+        "scirel_source_revision": "a" * 40,
+        "runtime": {
+            "wheel_sha256": development["wheel"]["digest"].removeprefix("sha256:"),
+            "catalog_release_sha256": development["catalog"]["digest"].removeprefix("sha256:"),
+            "catalog_root_digest": development["catalog"]["root_digest"],
+        },
+        "codefusion_observation": {
+            "request_ref": "appreq-exact", "request_status": "completed",
+            "owner_resolved_skill_revision_digest": "sha256:" + "b" * 64,
+            "environment_version": "envver-exact",
+            "shell_tool_plan_revision": "tool-plan@sha256:" + "c" * 64,
+            "shell_calls_bound_to_plan": 2,
+            "input_mount": "read_only",
+        },
+        "review_boundary": {"approved_items": 0},
+    }
+    record.write_text(json.dumps(record_body), encoding="utf-8")
+    second_path = tmp_path / "with-consumer.json"
+    second = release_index.register_development_consumer_evidence(
+        development_entry_id=development["entry_id"], evidence_path=record,
+        existing_index=first_path, output_path=second_path,
+    )
+
+    assert second["entries"][0] == development
+    evidence = second["entries"][1]
+    assert evidence["evidence_type"] == "development_consumer_acceptance"
+    assert evidence["subject_entry_id"] == development["entry_id"]
+    assert evidence["approval_state"] == "pending_unapproved"
+    assert evidence["evidence_ref"] == release_index.artifact_ref(record)
+    assert release_index.read_index(second_path) == second
+    contract = json.loads((ROOT / "contracts/release-index-dev.schema.json").read_text(encoding="utf-8"))
+    assert set(evidence) == set(contract["$defs"]["evidence"]["required"])
+
+    with pytest.raises(ValueError, match="already exists"):
+        release_index.register_development_consumer_evidence(
+            development_entry_id=development["entry_id"], evidence_path=record,
+            existing_index=second_path, output_path=tmp_path / "duplicate.json",
+        )
+    record_body["runtime"]["wheel_sha256"] = "0" * 64
+    record.write_text(json.dumps(record_body), encoding="utf-8")
+    with pytest.raises(ValueError, match="does not bind"):
+        release_index.register_development_consumer_evidence(
+            development_entry_id=development["entry_id"], evidence_path=record,
+            existing_index=first_path, output_path=tmp_path / "wrong-wheel.json",
+        )
+    record_body["runtime"]["wheel_sha256"] = development["wheel"]["digest"].removeprefix("sha256:")
+    del record_body["codefusion_observation"]["shell_tool_plan_revision"]
+    record.write_text(json.dumps(record_body), encoding="utf-8")
+    with pytest.raises(ValueError, match="does not bind"):
+        release_index.register_development_consumer_evidence(
+            development_entry_id=development["entry_id"], evidence_path=record,
+            existing_index=first_path, output_path=tmp_path / "missing-plan.json",
+        )
+
+
 def test_review_host_evidence_appends_without_rewriting_candidate(tmp_path, monkeypatch):
     import release_index
 

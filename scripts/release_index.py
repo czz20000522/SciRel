@@ -51,6 +51,7 @@ def read_index(path: Path) -> dict[str, Any]:
         raise ValueError("release index schema or entries are invalid")
     ids = set()
     candidates = set()
+    developments = set()
     latest_release = None
     for entry in value["entries"]:
         if not isinstance(entry, dict) or entry.get("status") not in {
@@ -74,11 +75,16 @@ def read_index(path: Path) -> dict[str, Any]:
                 or not isinstance(entry.get("wheel"), dict)
             ):
                 raise ValueError("development entry lacks an unapproved artifact binding")
+            developments.add(entry["entry_id"])
         elif entry["status"] == "evidence":
             binding = entry.get("evidence_ref")
+            evidence_type = entry.get("evidence_type")
+            subject = entry.get("subject_entry_id")
             if (
-                entry.get("subject_entry_id") not in candidates
-                or entry.get("evidence_type") != "review_host_export_acceptance"
+                not (
+                    (evidence_type == "review_host_export_acceptance" and subject in candidates)
+                    or (evidence_type == "development_consumer_acceptance" and subject in developments)
+                )
                 or entry.get("approval_state") != "pending_unapproved"
                 or not isinstance(binding, dict)
                 or not isinstance(binding.get("ref"), str)
@@ -86,7 +92,11 @@ def read_index(path: Path) -> dict[str, Any]:
                 or not isinstance(binding.get("digest"), str)
                 or not _SHA256_DIGEST.fullmatch(binding["digest"])
             ):
-                raise ValueError("evidence entry lacks an earlier candidate or exact binding")
+                subject_kind = (
+                    "candidate" if evidence_type == "review_host_export_acceptance"
+                    else "development snapshot"
+                )
+                raise ValueError(f"evidence entry lacks an earlier {subject_kind} or exact binding")
         else:
             if (
                 entry.get("predecessor_entry_id") not in candidates
@@ -317,6 +327,69 @@ def register_review_host_evidence(
     return result
 
 
+def register_development_consumer_evidence(
+    *,
+    development_entry_id: str,
+    evidence_path: Path,
+    existing_index: Path,
+    output_path: Path,
+) -> dict[str, Any]:
+    if output_path.exists():
+        raise FileExistsError(f"release index output already exists: {output_path}")
+    index = read_index(existing_index)
+    developments = [
+        entry for entry in index["entries"]
+        if entry["status"] == "development" and entry["entry_id"] == development_entry_id
+    ]
+    if len(developments) != 1:
+        raise ValueError("consumer evidence needs an indexed development snapshot")
+    development = developments[0]
+    record = json.loads(evidence_path.read_text(encoding="utf-8"))
+    runtime = record.get("runtime") if isinstance(record, dict) else None
+    observation = record.get("codefusion_observation") if isinstance(record, dict) else None
+    review = record.get("review_boundary") if isinstance(record, dict) else None
+    if not isinstance(record, dict) or (
+        record.get("schema") != "scirel.outbound-evaluation-manifest.v1"
+        or record.get("status") != "development_product_ordinary_same_request_acceptance"
+        or record.get("development_entry_id") != development_entry_id
+        or not isinstance(runtime, dict)
+        or "sha256:" + str(runtime.get("wheel_sha256")) != development["wheel"]["digest"]
+        or "sha256:" + str(runtime.get("catalog_release_sha256")) != development["catalog"]["digest"]
+        or runtime.get("catalog_root_digest") != development["catalog"]["root_digest"]
+        or development["source_binding"] != {"git_revision": record.get("scirel_source_revision")}
+        or not isinstance(observation, dict)
+        or observation.get("request_status") != "completed"
+        or not isinstance(observation.get("request_ref"), str)
+        or not observation["request_ref"]
+        or not isinstance(observation.get("owner_resolved_skill_revision_digest"), str)
+        or not _SHA256_DIGEST.fullmatch(observation["owner_resolved_skill_revision_digest"])
+        or not isinstance(observation.get("environment_version"), str)
+        or not observation["environment_version"]
+        or not isinstance(observation.get("shell_tool_plan_revision"), str)
+        or not re.fullmatch(r"tool-plan@sha256:[0-9a-f]{64}", observation["shell_tool_plan_revision"])
+        or type(observation.get("shell_calls_bound_to_plan")) is not int
+        or observation["shell_calls_bound_to_plan"] < 1
+        or observation.get("input_mount") != "read_only"
+        or not isinstance(review, dict)
+        or type(review.get("approved_items")) is not int
+        or review["approved_items"] != 0
+    ):
+        raise ValueError("consumer evidence does not bind the development snapshot")
+    binding = artifact_ref(evidence_path)
+    entry = {
+        "entry_id": "evidence:" + digest(canonical_json([development_entry_id, binding]))[7:],
+        "status": "evidence",
+        "subject_entry_id": development_entry_id,
+        "evidence_type": "development_consumer_acceptance",
+        "approval_state": "pending_unapproved",
+        "evidence_ref": binding,
+    }
+    result = append_entry(index, entry)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_bytes(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True).encode("utf-8") + b"\n")
+    return result
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--item-artifact", type=Path, action="append")
@@ -332,11 +405,14 @@ def main() -> int:
     parser.add_argument("--existing-index", type=Path)
     parser.add_argument("--review-host-evidence", type=Path)
     parser.add_argument("--candidate-entry-id")
+    parser.add_argument("--development-consumer-evidence", type=Path)
+    parser.add_argument("--development-entry-id")
     args = parser.parse_args()
     try:
         if args.review_host_evidence:
             if (
                 not args.candidate_entry_id or not args.existing_index
+                or args.development_consumer_evidence or args.development_entry_id
                 or args.snapshot_id or args.item_artifact or args.catalog_release
                 or args.wheel or args.git_revision or args.source_manifest_digest
                 or args.source_qualification or args.evidence or args.destination
@@ -348,8 +424,26 @@ def main() -> int:
                 existing_index=args.existing_index,
                 output_path=args.output,
             )
+        elif args.development_consumer_evidence:
+            if (
+                not args.development_entry_id or not args.existing_index
+                or args.candidate_entry_id or args.item_artifact or args.snapshot_id
+                or args.catalog_release or args.wheel or args.git_revision
+                or args.source_manifest_digest or args.source_qualification
+                or args.evidence or args.destination
+            ):
+                raise ValueError("consumer evidence needs a development entry and existing index")
+            index = register_development_consumer_evidence(
+                development_entry_id=args.development_entry_id,
+                evidence_path=args.development_consumer_evidence,
+                existing_index=args.existing_index,
+                output_path=args.output,
+            )
         elif args.snapshot_id:
-            if args.item_artifact or not args.catalog_release or not args.wheel:
+            if (
+                args.item_artifact or args.candidate_entry_id or args.development_entry_id
+                or not args.catalog_release or not args.wheel
+            ):
                 raise ValueError("development snapshot needs catalog and wheel, not review items")
             index = register_development_snapshot(
                 snapshot_id=args.snapshot_id, catalog_release=args.catalog_release,
@@ -362,6 +456,7 @@ def main() -> int:
         else:
             if (
                 not args.item_artifact or not args.git_revision
+                or args.candidate_entry_id or args.development_entry_id
                 or args.source_manifest_digest or args.catalog_release
                 or args.wheel or args.destination
             ):

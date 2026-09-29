@@ -1,9 +1,11 @@
 # Release-index intake boundary (2026-09-29)
 
 `provenance/release-index.dev.json` records current unpublished SciRel development
-snapshots and the r43 initial review candidate. This dated check records known D1
-inputs that are not eligible for a releasable candidate entry. D1 references below
-are relative to their named stage1 run. A frozen source hash alone does not close
+snapshots and the r43 initial review candidate. D2 maintains it as the single
+authoritative index for registered unpublished candidates. This dated check
+records known D1 inputs that are not eligible for a releasable candidate entry.
+D1 references below are relative to their named stage1 run. A frozen source
+hash alone does not close
 source/numerical comparison, and `pending_unapproved` does not imply D1 qualification.
 The unpublished-candidate census is not independently complete; new qualified
 intake and exact development deliveries must be appended as they arrive.
@@ -21,10 +23,33 @@ The two entries share a catalog root but do not share wheel identity or transfer
 the earlier D3 case results. The consumer request identity comes from the
 CodeFusion owner's readback; D2 checked its downloaded receipt bytes locally,
 without an independent product query or remote catalog byte download.
-The final ordinary-user dual-chain trace still lacks one same-request binding
-to an owner-resolved immutable `scirel-solving` revision, a frozen execution
-environment, and the shell Tool Plan. This development snapshot does not close
+At that acceptance point, the ordinary-user dual-chain trace still lacked one
+same-request binding to an owner-resolved immutable `scirel-solving` revision,
+a frozen execution environment, and the shell Tool Plan. This development
+snapshot does not close
 that consumer-contract gap.
+
+The later current-source ordinary-user request
+`appreq_f9ab1cd4d20826bb_a76d533b66556885` closes that bounded trace gap.
+Its exact development manifest at
+`docs/evaluations/outbound-progressive-projects/manifests/2026-09-29-fluidbw-r43-b1ab-current-ordinary.json`
+has SHA-256 `4e85873f9a8280a139158937f9bc9531c5f1b6ea67be2ed5762a16abf2aeea1f`.
+The new append-only index evidence entry binds it to the existing `b1abff...`
+development wheel. The owner verified the same request's frozen skill revision,
+environment, shell Tool Plan and read-only wheel input; D2 checked saved local
+script/result bytes and the two numerical outputs, without independently
+querying the product. The current reviewer registration contains only the old
+plugin release ref, with no wheel/catalog/runtime dependency binding. Its
+runner uses a source-backed fixture with no installed SciRel wheel, according
+to CodeFusion's read-only host check. That check also found the runner's
+`scirel_plugin/plugin.py` and `scirel_workflow/workflow.py` bytes differ from
+SciRel source `cc2fa21`; D2 did not independently read the container fixture.
+Its 13-item workflow and non-approving successor remain separate evidence;
+zero items are approved. A new reviewer claim needs a runner assembled from
+the exact source and dependencies, a new immutable release registration, and
+new host receipts. This ordinary-user result is neither same-tuple dual-chain
+acceptance nor stable release.
+
 The verified local scope is the r81/dev58 and r43/dev5 development deliveries
 and the corrected adapter successor, plus the r43 initial 13-item review version.
 The r43 workflow itself records an unpublished-candidate census gap, so these

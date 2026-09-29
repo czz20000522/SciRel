@@ -263,6 +263,18 @@
         "digest": "sha256:b1abff574c870e17dd4e24adc952ca4279561aa43adcc92250d019e42b2b3684",
         "ref": "build/verification/fluidbw-r43-adapter-corrected-20260929/scirel-0.1.0.dev5-py3-none-any.whl"
       }
+    },
+    {
+      "approval_state": "pending_unapproved",
+      "entry_digest": "sha256:75e7b9fcb1568f56e347fa329a1baf49b06b26b8a33f6b555ff393166c7e823f",
+      "entry_id": "evidence:f61f5487b357c2009707d3fd852e5507b882de3fa070b7c7952ddbd6763ed895",
+      "evidence_ref": {
+        "digest": "sha256:4e85873f9a8280a139158937f9bc9531c5f1b6ea67be2ed5762a16abf2aeea1f",
+        "ref": "docs/evaluations/outbound-progressive-projects/manifests/2026-09-29-fluidbw-r43-b1ab-current-ordinary.json"
+      },
+      "evidence_type": "development_consumer_acceptance",
+      "status": "evidence",
+      "subject_entry_id": "development:c9a63b3f8068626417895ecfdc45787045a46a2a78ff6972642f6e8164de0463"
     }
   ],
   "schema": "scirel.release-index.dev"
