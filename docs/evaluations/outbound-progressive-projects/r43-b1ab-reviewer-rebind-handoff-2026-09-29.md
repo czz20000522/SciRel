@@ -36,6 +36,15 @@ The existing registration contains only its old `plugin_release_ref`, with no
 wheel, catalog or runtime dependency refs. The old review host snapshots are
 valid for their own release identity, but cannot be reassigned to this wheel.
 
+The corrected wheel contains seven `scirel_plugin` and five
+`scirel_workflow` Python modules. A local comparison of its `plugin.py`,
+`body_runner.py` and `workflow.py` with the current SciRel source found equal
+text after CRLF/LF normalization. `workflow.py` also matches byte for byte;
+the other two have different raw bytes because of line endings. This supports
+an installed-wheel runner path, but does not show that the current host runs
+the wheel. The new runner must actually install the exact wheel and record its
+import origins and dependencies.
+
 ## New host binding required
 
 No host-issued ArtifactOwner reference for this wheel, a catalog snapshot, or
