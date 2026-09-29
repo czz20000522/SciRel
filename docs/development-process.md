@@ -79,7 +79,8 @@ pwsh ./scripts/check.ps1 -Mode affected -ChangedPath src/scirel/<domain>/<asset>
 pwsh ./scripts/check.ps1 -Mode affected -BaseRef <merge-base-or-release-ref>
 pwsh ./scripts/check.ps1 -Mode focused -TestPath tests/<affected-test>.py
 pwsh ./scripts/check.ps1 -Mode full
-pwsh ./scripts/check.ps1 -Mode release -WorkflowSnapshot <approved-workflow.json> -ReleaseId <release-id> -OutputRoot build/verification/<new-run>
+python scripts/release_index.py --item-artifact <pending-item.json> --git-revision <frozen-git-sha> --output <candidate-index.json>
+pwsh ./scripts/check.ps1 -Mode release -ReleaseIndex <candidate-index.json> -CandidateEntryId <candidate-entry-id> -ApprovedResults <completed-results.json> -ReviewArtifactsDir <exact-review-artifacts> -ReleaseId <release-id> -OutputRoot build/verification/<new-run>
 ```
 
 内循环按影响选检查并复用有效证据；纯文档验证结构、链接、signature 与相关示例，不重跑源数值。
@@ -90,9 +91,23 @@ pwsh ./scripts/check.ps1 -Mode release -WorkflowSnapshot <approved-workflow.json
 正式 release 仍需最终批准、许可证与依赖、完整文档、catalog/wheel/版本绑定及发行授权。
 通过这些门禁后才从索引候选形成已发布条目；正式发行前把相关开发期版本和合同统一冻结为 `v1`。
 索引的开发期字段布局可以随真实闭环调整，当前 `pending_unapproved` wheel/catalog 不登记为已发布。
-当前 release fixture 为单 draft 门禁，尚不能声称实现任意逐项批准子集的自动整包晋级。
-逐项审核投影已有候选代码/测试证据；当前 `finalize_release.py` 尚未将获批 revision 与固化代码、
-实际测试结果和 wheel 精确核对。正式发行必须先补齐并验证该绑定，不能只凭整 draft approved。
+`release_index.py` 登记待审 item 的原始 artifact revision、文档摘要及冻结 Git 提交，只产生
+`candidate` 条目。审核宿主导出的 `approved_items` 与逐项原始 artifact 必须一起输入；artifact 以
+`<sha256-hex>.json` 命名，内容摘要须与投影 revision 一致，并包含提交前版本和批准 successor。
+`finalize_release.py` 核对原始/批准 revision、决定、文档、许可状态、依赖闭包、批准代码与测试文件、
+Git 变更、catalog 与 wheel，重新执行批准项的测试文件，再追加 `released` 条目。批准代码目前支持
+`files` 或明确 `none` 复用；`patch` 需先固化为逐文件内容。旧单 draft finalizer 仅保留为内部
+生命周期 fixture，不再是 release 命令入口。
+release catalog 的声明总数来自本次实际文档集；历史 admission 账本不再参与该门禁。首个发布条目
+必须覆盖文档集的全部逐项批准，后续条目可以继承索引中上一已发布条目的资产闭包。
+
+审核导出必须来自有认证及授权记录的工作台 artifact 存储；本地 JSON 摘要只能核对内容，不能证明
+操作者的真实身份或发行授权。开发 fixture 的专家名称和批准动作不能作为真实审核输入。当前候选
+仍无真实批准与许可，不得因本门禁可运行而称已发行。索引与 manifest 仍为 `.dev`，首条真实
+闭环后在正式公开发布前统一冻结到 `v1`。
+插件的旧 `complete_release`/`scirel.release-manifest.dev` 仍是单 draft 生命周期 fixture；
+它不消费新的逐项 manifest，也不能作为本次索引的公开发行入口。消费者切换须随正式 `v1`
+合同收敛完成，并在真实获批批次上核对。
 未批准内容不能混入可信发行；首次可信发布须覆盖全部可见发布资产。
 旧 52 项历史候选不再作为本轮整合和索引设计的盘点门禁；发行门禁仍以实际拟发行内容为准。
 

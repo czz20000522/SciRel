@@ -13,7 +13,13 @@ param(
 
     [string]$OutputRoot,
 
-    [string]$WorkflowSnapshot,
+    [string]$ReleaseIndex,
+
+    [string]$CandidateEntryId,
+
+    [string]$ApprovedResults,
+
+    [string]$ReviewArtifactsDir,
 
     [string]$ReleaseId,
 
@@ -35,7 +41,9 @@ $testsPath = (Resolve-Path (Join-Path $repoRoot "tests")).Path
 $previousPythonPath = $env:PYTHONPATH
 $previousInstalledRuntime = $env:SCIREL_INSTALLED_RUNTIME
 $releaseOutputPath = $null
-$workflowSnapshotPath = $null
+$releaseIndexPath = $null
+$approvedResultsPath = $null
+$reviewArtifactsPath = $null
 
 if ($Mode -eq "release") {
     if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
@@ -46,15 +54,29 @@ if ($Mode -eq "release") {
     if (Test-Path -LiteralPath $releaseOutputPath) {
         throw "Release output already exists: $releaseOutputPath"
     }
-    if ([string]::IsNullOrWhiteSpace($WorkflowSnapshot)) {
-        throw "-WorkflowSnapshot is required for release mode."
+    foreach ($required in @(
+        @{ Name = "ReleaseIndex"; Value = $ReleaseIndex; Kind = "Leaf" },
+        @{ Name = "ApprovedResults"; Value = $ApprovedResults; Kind = "Leaf" },
+        @{ Name = "ReviewArtifactsDir"; Value = $ReviewArtifactsDir; Kind = "Container" }
+    )) {
+        if ([string]::IsNullOrWhiteSpace($required.Value)) {
+            throw "-$($required.Name) is required for release mode."
+        }
+        $resolved = [IO.Path]::GetFullPath($required.Value, $repoRoot)
+        if (-not (Test-Path -LiteralPath $resolved -PathType $required.Kind)) {
+            throw "Release input does not exist: $resolved"
+        }
+        switch ($required.Name) {
+            "ReleaseIndex" { $releaseIndexPath = $resolved }
+            "ApprovedResults" { $approvedResultsPath = $resolved }
+            "ReviewArtifactsDir" { $reviewArtifactsPath = $resolved }
+        }
     }
     if ([string]::IsNullOrWhiteSpace($ReleaseId)) {
         throw "-ReleaseId is required for release mode."
     }
-    $workflowSnapshotPath = [IO.Path]::GetFullPath($WorkflowSnapshot, $repoRoot)
-    if (-not (Test-Path -LiteralPath $workflowSnapshotPath -PathType Leaf)) {
-        throw "Approved workflow snapshot does not exist: $workflowSnapshotPath"
+    if ([string]::IsNullOrWhiteSpace($CandidateEntryId)) {
+        throw "-CandidateEntryId is required for release mode."
     }
 }
 
@@ -123,21 +145,6 @@ try {
 
         if ($Mode -ne "release") {
             return
-        }
-
-        $workflowValidation = @'
-import json
-import sys
-from pathlib import Path
-from scirel_workflow import SciRelWorkflow, WorkflowStatus
-
-workflow = SciRelWorkflow.from_dict(json.loads(Path(sys.argv[1]).read_text(encoding="utf-8")))
-if workflow.status is not WorkflowStatus.APPROVED:
-    raise SystemExit("release requires an approved workflow snapshot")
-'@
-        & $Python -c $workflowValidation $workflowSnapshotPath
-        if ($LASTEXITCODE -ne 0) {
-            throw "Approved workflow snapshot validation failed with exit code $LASTEXITCODE."
         }
 
         New-Item -ItemType Directory -Path $releaseOutputPath | Out-Null
@@ -303,15 +310,15 @@ print(json.dumps(roots))
 
         $releaseMetadataPath = Join-Path $releaseOutputPath "release"
         $finalizationOutput = & $Python "scripts/finalize_release.py" `
-            "--workflow-snapshot" $workflowSnapshotPath `
+            "--release-index" $releaseIndexPath `
+            "--candidate-entry-id" $CandidateEntryId `
+            "--approved-results" $approvedResultsPath `
+            "--review-artifacts-dir" $reviewArtifactsPath `
             "--documents-dir" (Join-Path $repoRoot "catalog/examples") `
             "--catalog-dir" $catalogPath `
             "--wheel" $wheelPath `
             "--output-dir" $releaseMetadataPath `
-            "--release-id" $ReleaseId `
-            "--expected-coverage-status" $catalogCoverageStatus `
-            "--expected-included-asset-count" $catalogIncludedAssetCount `
-            "--expected-declared-total-asset-count" $catalogDeclaredTotalAssetCount
+            "--release-id" $ReleaseId
         if ($LASTEXITCODE -ne 0) {
             throw "Release finalization failed with exit code $LASTEXITCODE."
         }

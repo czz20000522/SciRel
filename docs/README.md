@@ -40,7 +40,7 @@ SciRel 将已有科研代码整理为可复用的科学算子与任务图，供 
 
 - `src/scirel/` 是可独立调用的科学库；`src/scirel_workflow/` 与 `src/scirel_plugin/` 已有本地状态、合同及 fixture 测试。它们不等于真实 L1 项目经模型整合、专家审核和宿主产品链路联调已完成。
 - `catalog/examples/` 仍为部分 exact-document pilot，不代表全部库能力；不能从 catalog 缺项推断没有对应算子，也不能把维护树中的所有代码视为可发布资产。
-- `provenance/admitted-assets.json` 与 `scripts/build_admitted_distribution.py` 用于复核历史开发样本，不是新流程的批准事实或发布入口。隔离开发分支允许先集成和验证；最终冻结版本经专家认可及发行验证后才能晋级可信/发布版本。现有 release fixture 仍只实现单 draft 发布绑定。
+- `provenance/admitted-assets.json` 与 `scripts/build_admitted_distribution.py` 用于复核历史开发样本，不是新流程的批准事实或发布入口。隔离开发分支允许先集成和验证；最终冻结版本经专家认可及发行验证后才能晋级可信/发布版本。`scripts/release_index.py` 和 `scripts/finalize_release.py` 承担开发期候选索引与逐项固化门禁；旧单 draft release fixture 仅用于生命周期测试。
 - 开发期 workflow/plugin 合同仍用 `.dev`；正式上线前应统一冻结为 `v1`。许可证、完整 exact documents、真实宿主接线和发行环境证据均须分别验收，不因本地 fixture 通过而自动获得。
 
 需要判断某一轮是否完成时，以该轮的 L1 输入树、SciRel 基线与候选池、skill 内容、候选三件套、实际测试、专家记录和 release artifact 为证据；不要把历史压测数量当作当前状态。

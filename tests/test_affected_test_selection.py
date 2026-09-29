@@ -367,11 +367,20 @@ def test_release_environment_helper_change_selects_only_its_contract_test():
     assert result["test_paths"] == ["tests/test_release_environment.py"]
 
 
-def test_release_finalizer_selects_only_its_contract_test():
+def test_release_finalizer_selects_both_release_contract_tests():
     result = select("scripts/finalize_release.py")
 
     assert result["full_suite_required"] is False
-    assert result["test_paths"] == ["tests/test_release_finalization.py"]
+    assert result["test_paths"] == [
+        "tests/test_release_finalization.py", "tests/test_release_index.py",
+    ]
+
+
+def test_release_index_selects_its_contract_test():
+    result = select("scripts/release_index.py")
+
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == ["tests/test_release_index.py"]
 
 
 def test_wire_fixture_builder_selects_only_wire_smoke_test():

@@ -158,7 +158,7 @@ MCP、Codex、Claude Code、CodeFusion、CLI 与云 batch/service 都是 catalog
 pwsh ./scripts/check.ps1 -Mode affected -ChangedPath src/scirel/<domain>/<asset>.py
 pwsh ./scripts/check.ps1 -Mode focused
 pwsh ./scripts/check.ps1 -Mode full
-pwsh ./scripts/check.ps1 -Mode release -WorkflowSnapshot <approved-workflow.json> -ReleaseId <release-id> -OutputRoot build/verification/<new-run>
+pwsh ./scripts/check.ps1 -Mode release -ReleaseIndex <candidate-index.json> -CandidateEntryId <candidate-entry-id> -ApprovedResults <completed-results.json> -ReviewArtifactsDir <exact-review-artifacts> -ReleaseId <release-id> -OutputRoot build/verification/<new-run>
 ```
 
 `affected` 根据准入依赖、源码 import 关系和显式测试映射选择改变的 Operator、共享模块及其反向依赖

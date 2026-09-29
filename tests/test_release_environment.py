@@ -1,5 +1,4 @@
 from pathlib import Path
-import runpy
 import json
 import subprocess
 
@@ -61,26 +60,43 @@ def test_release_environment_does_not_inherit_system_packages():
     assert "import sys, numpy, scipy, pytest, scirel" in script
 
 
-def test_release_gate_uses_the_current_baseline_and_an_approved_workflow():
+def test_release_gate_uses_the_current_baseline_and_exact_review_inputs():
     script = CHECK.read_text(encoding="utf-8")
 
-    assert "-WorkflowSnapshot is required for release mode" in script
-    assert "release requires an approved workflow snapshot" in script
+    assert "[string]$ReleaseIndex" in script
+    assert "[string]$CandidateEntryId" in script
+    assert "[string]$ApprovedResults" in script
+    assert "[string]$ReviewArtifactsDir" in script
+    assert "--workflow-snapshot" not in script
     assert "scripts/build_admitted_distribution.py" not in script
     assert "-m pip wheel" in script
     assert "scripts/build_catalog.py" in script
     assert "scripts/finalize_release.py" in script
     assert "Get-SciRelCatalogCoverage -RepositoryRoot $repoRoot -Python $Python" in script
-    assert '"--expected-coverage-status" $catalogCoverageStatus' in script
-    assert '"--expected-included-asset-count" $catalogIncludedAssetCount' in script
-    assert (
-        '"--expected-declared-total-asset-count" '
-        "$catalogDeclaredTotalAssetCount"
-    ) in script
+    assert '"--release-index" $releaseIndexPath' in script
+    assert '"--candidate-entry-id" $CandidateEntryId' in script
+    assert '"--approved-results" $approvedResultsPath' in script
+    assert '"--review-artifacts-dir" $reviewArtifactsPath' in script
     assert '"--catalog-ref"' not in script
     assert '"--wheel-ref"' not in script
     assert "CatalogCoverageStatus" not in script
     assert "DeclaredAssetTotal" not in script
+
+
+def test_release_gate_requires_review_inputs_before_creating_output(tmp_path):
+    output = tmp_path / "release-output"
+    result = subprocess.run(
+        [
+            "pwsh", "-NoProfile", "-File", str(CHECK), "-Mode", "release",
+            "-OutputRoot", str(output), "-ReleaseId", "release-test",
+            "-CandidateEntryId", "candidate:test",
+        ],
+        cwd=ROOT, capture_output=True, text=True, encoding="utf-8",
+    )
+
+    assert result.returncode != 0
+    assert "-ReleaseIndex is required for release mode" in result.stderr
+    assert not output.exists()
 
 
 def test_release_gate_checks_the_installed_scientific_runtime():
@@ -102,8 +118,7 @@ def test_release_coverage_uses_the_actual_current_catalog():
     assert result.returncode == 0, result.stderr
     coverage = json.loads(result.stdout)
     included = len(load_document_set(ROOT / "catalog/examples"))
-    declared = len(runpy.run_path(str(ROOT / "scripts/select_affected_tests.py"))["_load_assets"]())
     assert coverage == {
-        "included": included, "declared": declared,
-        "status": "complete" if included == declared else "partial",
+        "included": included, "declared": included,
+        "status": "complete",
     }
