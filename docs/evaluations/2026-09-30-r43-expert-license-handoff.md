@@ -7,7 +7,8 @@ this handoff at SciRel `274f2e6378d1f349be2a81449ed4021cd2a0679e`.
 It has 14 entries and no `released` entry. The current r43 candidate is
 `candidate:1d02ae5282f0947a40f5e15bb30df1ca9613fdd491d5012ab7b204f88d6c2218`
 with `bounded_d1` source qualification and `pending_unapproved` state.
-The 13 review items have zero approvals.
+The original 13 review items have zero approvals. A separately submitted
+corrected 13-item cohort is recorded below; the two cohorts are distinct.
 
 The identity map below is from the downloaded CodeFusion `3c69931b` V1
 project `prj_06b93ac5f20676cf034d2e8c171eb73e628a` revalidated snapshot:
@@ -128,8 +129,8 @@ dependent graphs are not closed release selections. Release checks require
 the approved item dependency list to match its exact document and every
 selected dependency to be present.
 
-Technical route check on 2026-09-30: the installed SciRel review action contract
-offers only approve, request-evidence, and reject. Its successor copies the
+Technical route check on 2026-09-30: the two original items' current actions
+offer request-evidence, request-rework, and reject. Their successors copy the
 submitted `asset` and `dependency_asset_ids`, so an action on either A0 item
 cannot carry the corrected document. An intake using the old `candidate_id`,
 `draft_id`, asset order, and asset IDs would regenerate the same item refs;
@@ -144,17 +145,24 @@ updated embedded digest and `dependency_asset_ids`; code, tests, and evidence
 must be checked against the new frozen base. Reusing the old submission JSON
 with only its document fields patched is not a valid new review handoff.
 
-The local CodeFusion endpoint `127.0.0.1:18096` refused a connection during
-this check, so live item state, project authorization, and any new intake could
-not be revalidated. No corrected successor, new host receipt, or new candidate
-Artifact was produced. The next technical owner must first restore the
-reviewer host and refresh both item revisions, then prepare and validate a new
-complete standardization submission from a frozen SciRel base. After an
-authenticated intake and index admission, give D2 the exact workflow Artifact,
-digest, item refs, dependency lists, host receipt, and Git revision. D2 alone
-registers the new candidate and then appends the old candidate's `superseded`
-lifecycle event with exact evidence. Neither step implies scientific or license
-approval.
+The reviewer host later became reachable. From frozen SciRel
+`b986952474cc63971e0f518a18fa33c78ca9ac17`, a new complete submission
+with the same source candidate, new draft identity, corrected documents, and
+explicit old-package evidence gap passed `scripts/submit_standardization.py`.
+The CodeFusion integration owner independently checked its three input/output
+digests, all 13 new item identities, and the two dependency changes before
+host intake. The exact authenticated upload, intake, admission, download, and
+post-admission snapshot are recorded in
+[`r43-corrected-review-intake-acceptance-20260930.json`](../../provenance/r43-corrected-review-intake-acceptance-20260930.json).
+The new workflow Artifact is
+`cf://artifact/upload_2466a787f9aa35027303e29cdf7689f2e900e1f95f3580bd`,
+SHA-256 `e1169e806437fe8d3ad9acf3e0d3e4e726fcfd635fdb01cf5ca40ed8024e2c11`.
+The authenticated snapshot shows 26 items: the original 13 plus 13 new
+`review_pending` items, with no overlap in item refs. The two corrected items
+have the maintained document digests and their nonempty dependency lists.
+D2 alone registers the new candidate and then appends the old candidate's
+`superseded` lifecycle event with exact evidence. The old candidate and its
+review actions stay immutable; neither cohort has scientific or license approval.
 
 The A1 Weideman item is `needs_evidence`, not approved. Its successor retains
 general census, producer-build, scientific-approval, and license gaps; the
