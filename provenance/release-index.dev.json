@@ -451,6 +451,30 @@
       "evidence_type": "review_host_registration_acceptance",
       "status": "evidence",
       "subject_entry_id": "candidate:1d02ae5282f0947a40f5e15bb30df1ca9613fdd491d5012ab7b204f88d6c2218"
+    },
+    {
+      "approval_state": "pending_unapproved",
+      "entry_digest": "sha256:4cf953f2a28634b6842a66b384c3d5aceb3dee624b34b6a9aba9b0e06aceb89d",
+      "entry_id": "evidence:c47fcda2aea93eb03f1101d38f983849c04c1781c0412901166c65c9e66c7a79",
+      "evidence_ref": {
+        "digest": "sha256:71493ab862a1bc59d7527df1c6b551f208236fc9bbb5ae26395f0aacd591f946",
+        "ref": "provenance/r43-current-review-selection-acceptance-20260930.json"
+      },
+      "evidence_type": "review_host_export_acceptance",
+      "status": "evidence",
+      "subject_entry_id": "candidate:1d02ae5282f0947a40f5e15bb30df1ca9613fdd491d5012ab7b204f88d6c2218"
+    },
+    {
+      "approval_state": "pending_unapproved",
+      "entry_digest": "sha256:b3b0f2067c26b72f18ec2b1a297765b993c36a4608da0fcd54f35b273456317f",
+      "entry_id": "evidence:ab4529a8c518cce484e4f30cf575120f7d60f945a775d33b3157a2205e188b40",
+      "evidence_ref": {
+        "digest": "sha256:3cb033fb506699e8c04432ebcf00318f74ec11b4ae5c1658c53d903a0b0a1b5e",
+        "ref": "provenance/r43-current-ordinary-recovery-acceptance-20260930.json"
+      },
+      "evidence_type": "development_consumer_recovery_acceptance",
+      "status": "evidence",
+      "subject_entry_id": "development:c9a63b3f8068626417895ecfdc45787045a46a2a78ff6972642f6e8164de0463"
     }
   ],
   "schema": "scirel.release-index.dev"

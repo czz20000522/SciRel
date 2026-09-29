@@ -533,6 +533,84 @@ def test_consumer_evidence_binds_existing_development_without_approval(tmp_path,
         )
 
 
+def test_recovery_evidence_binds_existing_development_without_approval(tmp_path, monkeypatch):
+    import release_index
+
+    monkeypatch.setattr(release_index, "ROOT", tmp_path)
+    catalog = tmp_path / "release.json"
+    catalog_body = {"schema": "scirel.catalog-release.v1"}
+    catalog_body["root_digest"] = release_index.digest(release_index.canonical_json(catalog_body))
+    catalog.write_text(json.dumps(catalog_body), encoding="utf-8")
+    wheel = tmp_path / "wheel.whl"
+    wheel.write_bytes(b"development wheel")
+    first_path = tmp_path / "development.json"
+    first = release_index.register_development_snapshot(
+        snapshot_id="r43-dev5", catalog_release=catalog, wheel=wheel,
+        evidence_paths=[catalog], destination_paths=[catalog],
+        git_revision="a" * 40, source_qualification="mixed_unverified",
+        output_path=first_path,
+    )
+    development = first["entries"][0]
+    record = tmp_path / "recovery.json"
+    record_body = {
+        "schema": "scirel.development-consumer-recovery-acceptance.dev",
+        "status": "development_product_ordinary_recovery_acceptance",
+        "development_entry_id": development["entry_id"],
+        "scirel_source_revision": "a" * 40,
+        "source_qualification": "mixed_unverified",
+        "runtime": {
+            "wheel_sha256": development["wheel"]["digest"][7:],
+            "catalog_release_sha256": development["catalog"]["digest"][7:],
+            "catalog_root_digest": development["catalog"]["root_digest"],
+            "input_zip_digest": "sha256:" + "b" * 64,
+            "qualified_l1_zip_digest": "sha256:" + "c" * 64,
+        },
+        "codefusion_observation": {
+            "source_revision": "d" * 40,
+            "project_ref": "project-1", "session_ref": "session-1",
+            "environment_version": "env-1",
+            "skill_content_digest": "sha256:" + "e" * 64,
+            "request_refs": ["request-failed", "request-corrected"],
+            "final_request_status": "completed",
+        },
+        "saved_evidence": {
+            "owner_receipt_digest": "sha256:" + "1" * 64,
+            "initial_failure_digest": "sha256:" + "2" * 64,
+            "pre_correction_result_digest": "sha256:" + "3" * 64,
+            "final_result_digest": "sha256:" + "4" * 64,
+            "final_script_digest": "sha256:" + "5" * 64,
+        },
+        "review_boundary": {"approved_items": 0},
+        "approval_state": "pending_unapproved",
+    }
+    record.write_text(json.dumps(record_body), encoding="utf-8")
+    second_path = tmp_path / "with-recovery.json"
+    second = release_index.register_development_consumer_evidence(
+        development_entry_id=development["entry_id"], evidence_path=record,
+        existing_index=first_path, output_path=second_path,
+    )
+    assert second["entries"][0] == development
+    assert second["entries"][1]["evidence_type"] == "development_consumer_recovery_acceptance"
+    assert second["entries"][1]["approval_state"] == "pending_unapproved"
+    assert release_index.read_index(second_path) == second
+
+    for label, modify in (
+        ("wrong-wheel", lambda body: body["runtime"].update(wheel_sha256="0" * 64)),
+        ("duplicate-request", lambda body: body["codefusion_observation"].update(
+            request_refs=["request-failed", "request-failed"])),
+        ("missing-failure", lambda body: body["saved_evidence"].pop("initial_failure_digest")),
+        ("approved", lambda body: body["review_boundary"].update(approved_items=1)),
+    ):
+        invalid = json.loads(json.dumps(record_body))
+        modify(invalid)
+        record.write_text(json.dumps(invalid), encoding="utf-8")
+        with pytest.raises(ValueError, match="recovery evidence does not bind"):
+            release_index.register_development_consumer_evidence(
+                development_entry_id=development["entry_id"], evidence_path=record,
+                existing_index=first_path, output_path=tmp_path / f"{label}.json",
+            )
+
+
 def test_review_host_evidence_appends_without_rewriting_candidate(tmp_path, monkeypatch):
     import release_index
 

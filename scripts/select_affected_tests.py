@@ -63,6 +63,7 @@ ENGINEERING_TESTS = {
     "scripts/finalize_release.py": (
         "tests/test_release_finalization.py", "tests/test_release_index.py",
     ),
+    "scripts/verify_review_selection.py": ("tests/test_review_selection.py",),
     "scripts/prepare_reviewed_distribution.py": (
         "tests/test_release_environment.py", "tests/test_release_index.py",
     ),

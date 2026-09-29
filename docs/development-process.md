@@ -99,6 +99,8 @@ pwsh ./scripts/check.ps1 -Mode release -ReleaseIndex <candidate-index.json> -Can
 实际消费 manifest 和 digest，D2 单写者负责身份、来源与科学证据并核对登记；工作台当前逐项
 审核状态继续由审核 artifact/投影提供。完整开发 catalog 不等于专家批准，来源混合的开发
 快照不因 `pending_unapproved` 而自动取得 D1 资格；正式公开发行前合同统一冻结为 `v1`。
+普通用户单请求验收与多请求故障恢复使用不同开发期证据类型；后者须保留初始失败、纠正前结果、
+最终结果及有序请求身份，并绑定同一开发 wheel/catalog。两者都不提升科学审核或发行状态。
 普通用户与 reviewer 技术链的交接还须给出同一 exact source Git、wheel、catalog 和 review
 workflow/successor 身份，以及不可变 plugin registration 快照的引用和摘要。CodeFusion 的中性
 `PluginReleaseSnapshot.artifacts` 可用 artifact ref、digest、media type 指向已上传的 wheel、
@@ -131,6 +133,14 @@ Git 变更、catalog 与 wheel，重新执行批准项的测试文件，再追�
 闭环后在正式公开发布前统一冻结到 `v1`。
 当前 `check.ps1 -Mode release`/`finalize_release.py` 只核对本地审核投影和 artifact 字节，尚未验证
 同一批次的宿主认证选择快照；逐项 `items` 分页、`open`、下载和前后重读没有跨页快照 token，不能替代该证明。
+CodeFusion `3c69931b` 已合并带 `selection` 的中性快照导出与 `previous_snapshot` 条件重验，
+并在独立的新 V1 开发库项目完成技术验收；这不是正式发行部署。`scripts/verify_review_selection.py` 可离线核对同一候选 workflow Artifact、
+索引中的完整 item 清单、所选批准 successor、动作链/actor、两次导出字节和各自回执，输出
+`scirel.review-host-selection-binding.dev`。输入需由有权限的操作者从宿主认证接口取得，并明确提供
+tenant/project/plugin/view、plugin release、release attempt、候选 Artifact ref，以及初次和重验的
+导出及回执；本地 JSON 和摘要本身不能证明宿主来源。该绑定只证明这些文件相互一致，不授予批准、
+许可或发布状态。重验是捕获时状态，真实发布事务在提交前仍须再次检查所选 current Artifact；
+现有 `release` fixture 路径不消费该绑定，也不得据此追加真实 `released` 条目。
 真实 `released` 条目进入统一索引前，宿主导出或等价在线协议须绑定项目/plugin/view、候选身份、候选
 总数及明确所选子集的 item_ref→当前不可变 artifact 全集、每项认证审核事件及 actor、submitted/predecessor/successor
 引用和摘要、截止版本，并在发布前复核所选项未被后继覆盖。当前命令产物只用于开发期技术 fixture，

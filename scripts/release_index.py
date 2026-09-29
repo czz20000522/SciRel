@@ -91,7 +91,10 @@ def read_index(path: Path) -> dict[str, Any]:
                         "review_host_export_acceptance",
                         "review_host_registration_acceptance",
                     } and subject in candidates)
-                    or (evidence_type == "development_consumer_acceptance" and subject in developments)
+                    or (evidence_type in {
+                        "development_consumer_acceptance",
+                        "development_consumer_recovery_acceptance",
+                    } and subject in developments)
                 )
                 or entry.get("approval_state") != "pending_unapproved"
                 or not isinstance(binding, dict)
@@ -497,6 +500,77 @@ def register_development_consumer_evidence(
     development = developments[0]
     binding = artifact_ref(evidence_path)
     record = json.loads(evidence_path.read_text(encoding="utf-8"))
+    if isinstance(record, dict) and record.get("schema") == "scirel.development-consumer-recovery-acceptance.dev":
+        _validate_development_consumer_recovery(record, development, development_entry_id)
+        evidence_type = "development_consumer_recovery_acceptance"
+    else:
+        _validate_development_consumer_same_request(record, development, development_entry_id)
+        evidence_type = "development_consumer_acceptance"
+    entry = {
+        "entry_id": "evidence:" + digest(canonical_json([development_entry_id, binding]))[7:],
+        "status": "evidence",
+        "subject_entry_id": development_entry_id,
+        "evidence_type": evidence_type,
+        "approval_state": "pending_unapproved",
+        "evidence_ref": binding,
+    }
+    result = append_entry(index, entry)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_bytes(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True).encode("utf-8") + b"\n")
+    return result
+
+
+def _validate_development_consumer_recovery(
+    record: dict[str, Any], development: dict[str, Any], development_entry_id: str,
+) -> None:
+    runtime = record.get("runtime")
+    host = record.get("codefusion_observation")
+    saved = record.get("saved_evidence")
+    review = record.get("review_boundary")
+    requests = host.get("request_refs") if isinstance(host, dict) else None
+    required_digests = (
+        "owner_receipt_digest", "initial_failure_digest",
+        "pre_correction_result_digest", "final_result_digest", "final_script_digest",
+    )
+    if (
+        record.get("status") != "development_product_ordinary_recovery_acceptance"
+        or record.get("development_entry_id") != development_entry_id
+        or not isinstance(record.get("scirel_source_revision"), str)
+        or not _GIT_REVISION.fullmatch(record["scirel_source_revision"])
+        or record.get("scirel_source_revision") != development["source_binding"].get("git_revision")
+        or record.get("source_qualification") != development["source_qualification"]
+        or not isinstance(runtime, dict)
+        or "sha256:" + str(runtime.get("wheel_sha256")) != development["wheel"]["digest"]
+        or "sha256:" + str(runtime.get("catalog_release_sha256")) != development["catalog"]["digest"]
+        or runtime.get("catalog_root_digest") != development["catalog"]["root_digest"]
+        or any(not isinstance(runtime.get(key), str) or not _SHA256_DIGEST.fullmatch(runtime[key])
+               for key in ("input_zip_digest", "qualified_l1_zip_digest"))
+        or not isinstance(host, dict)
+        or not isinstance(host.get("source_revision"), str)
+        or not _GIT_REVISION.fullmatch(host["source_revision"])
+        or any(not isinstance(host.get(key), str) or not host[key]
+               for key in ("project_ref", "session_ref", "environment_version"))
+        or not isinstance(host.get("skill_content_digest"), str)
+        or not _SHA256_DIGEST.fullmatch(host["skill_content_digest"])
+        or host.get("final_request_status") != "completed"
+        or not isinstance(requests, list) or len(requests) < 2
+        or any(not isinstance(ref, str) or not ref for ref in requests)
+        or len(set(requests)) != len(requests)
+        or not isinstance(saved, dict)
+        or any(not isinstance(saved.get(key), str) or not _SHA256_DIGEST.fullmatch(saved[key])
+               for key in required_digests)
+        or saved["pre_correction_result_digest"] == saved["final_result_digest"]
+        or not isinstance(review, dict)
+        or type(review.get("approved_items")) is not int
+        or review["approved_items"] != 0
+        or record.get("approval_state") != "pending_unapproved"
+    ):
+        raise ValueError("consumer recovery evidence does not bind the development snapshot")
+
+
+def _validate_development_consumer_same_request(
+    record: Any, development: dict[str, Any], development_entry_id: str,
+) -> None:
     runtime = record.get("runtime") if isinstance(record, dict) else None
     observation = record.get("codefusion_observation") if isinstance(record, dict) else None
     review = record.get("review_boundary") if isinstance(record, dict) else None
@@ -527,18 +601,6 @@ def register_development_consumer_evidence(
         or review["approved_items"] != 0
     ):
         raise ValueError("consumer evidence does not bind the development snapshot")
-    entry = {
-        "entry_id": "evidence:" + digest(canonical_json([development_entry_id, binding]))[7:],
-        "status": "evidence",
-        "subject_entry_id": development_entry_id,
-        "evidence_type": "development_consumer_acceptance",
-        "approval_state": "pending_unapproved",
-        "evidence_ref": binding,
-    }
-    result = append_entry(index, entry)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_bytes(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True).encode("utf-8") + b"\n")
-    return result
 
 
 def main() -> int:
