@@ -2,6 +2,12 @@
 
 This is a development handoff for a new technical reviewer run. It does not
 authorize a release or change the existing 13-item review project's identity.
+`provenance/release-index.dev.json` is the D2-maintained single current index
+for unpublished development candidates; D2 is its sole writer. Later outbound
+and reviewer checks must use the index's current exact identity and state,
+not this dated handoff as a status pointer. The old 52-item snapshot is
+historical and is not a prerequisite for this acceptance. Development `.dev`
+contracts converge to `v1` before formal release.
 
 ## Exact SciRel inputs
 
