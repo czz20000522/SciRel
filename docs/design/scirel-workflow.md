@@ -153,6 +153,18 @@ D2 在开发分支已整合代码与测试并可构建开发 wheel。专家最�
 
 draft、review action 和自动检查结果可以被工作台查询，但不得被运行时 callable resolver 当作 release。
 
+当前开发期发布索引由 `scripts/release_index.py` 产生 `scirel.release-index.dev` 的 append-only
+候选条目。候选绑定同一 candidate/draft 下每项待审 artifact 的 SHA-256、初始资产文档摘要、依赖
+和 Git 提交；条目 digest 覆盖完整内容，不能据此推断审核通过。`scripts/finalize_release.py` 的正式
+命令入口要求工作台导出的 completed/approved 投影及所有 exact review artifact；复查批准 successor
+与提交前 item、批准文档和逐文件代码/测试材料，再核对发行 Git diff、实际文件、wheel、catalog 和
+许可状态。批准项测试由 finalizer 在发行源码上重跑。通过后在输出目录写入新的索引副本，其中
+`released` 条目保留候选 predecessor 和 manifest digest；已有索引不回写。单 draft
+`finalize_single_draft_fixture` 仍服务旧生命周期测试，不参与发行命令。
+
+artifact 摘要保证导出内容一致，不认证审核 actor。工作台必须提供经授权流程形成的投影与 artifact，
+发行负责人仍须确认发行授权。开发期的索引和 manifest 字段是 `.dev`；正式发布前统一收敛为 `v1`。
+
 ### 固化队列与乐观并发
 
 候选文档或通用 harness 运行证据记录比较时的 SciRel Git base。第一版固化器串行消费已批准候选，每次都从当前基线开始；这里的串行窗口只覆盖基线检查、应用和测试，不阻塞候选生成或人工审核。

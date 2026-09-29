@@ -19,7 +19,7 @@ SCRIPTS = ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 from build_catalog import build_catalog  # noqa: E402
-from finalize_release import finalize_release  # noqa: E402
+from finalize_release import finalize_single_draft_fixture as finalize_release  # noqa: E402
 
 
 def _approved_snapshot(tmp_path: Path, *, alter_asset: bool = False) -> Path:
@@ -174,6 +174,36 @@ def test_finalization_rejects_a_catalog_record_that_differs_from_the_document(tm
     release_path.write_text(json.dumps(release), encoding="utf-8")
 
     with pytest.raises(ValueError, match="record differs from the release document"):
+        finalize_release(
+            workflow_snapshot=snapshot,
+            documents_dir=documents,
+            catalog_dir=catalog,
+            wheel=wheel,
+            output_dir=tmp_path / "release",
+            release_id="release-test",
+            expected_coverage_status="complete",
+            expected_included_asset_count=1,
+            expected_declared_total_asset_count=1,
+        )
+
+
+def test_finalization_rejects_a_catalog_file_missing_from_partition_digest(tmp_path):
+    snapshot = _approved_snapshot(tmp_path)
+    documents, catalog, wheel = _release_inputs(tmp_path)
+    release_path = catalog / "release.json"
+    release = json.loads(release_path.read_text(encoding="utf-8"))
+    release["partitions"] = [
+        partition for partition in release["partitions"]
+        if not partition["path"].startswith("records/")
+    ]
+    unsigned = {key: value for key, value in release.items() if key != "root_digest"}
+    canonical = json.dumps(
+        unsigned, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    release["root_digest"] = "sha256:" + hashlib.sha256(canonical).hexdigest()
+    release_path.write_text(json.dumps(release), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="partitions do not cover"):
         finalize_release(
             workflow_snapshot=snapshot,
             documents_dir=documents,

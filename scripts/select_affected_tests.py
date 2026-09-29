@@ -60,11 +60,19 @@ ENGINEERING_TESTS = {
     ),
     "examples/user_acceptance.py": ("tests/test_user_acceptance.py",),
     "scripts/build_catalog.py": ("tests/test_asset_documentation.py",),
-    "scripts/finalize_release.py": ("tests/test_release_finalization.py",),
+    "scripts/finalize_release.py": (
+        "tests/test_release_finalization.py", "tests/test_release_index.py",
+    ),
+    "scripts/release_index.py": ("tests/test_release_index.py",),
+    "contracts/release-index-dev.schema.json": ("tests/test_release_index.py",),
+    "contracts/reviewed-release-manifest-dev.schema.json": (
+        "tests/test_release_index.py",
+    ),
     "scripts/check.ps1": (
         "tests/test_affected_test_selection.py",
         "tests/test_release_environment.py",
         "tests/test_release_finalization.py",
+        "tests/test_release_index.py",
     ),
     "scripts/check_helpers.ps1": ("tests/test_release_environment.py",),
     "scripts/select_affected_tests.py": ("tests/test_affected_test_selection.py",),
