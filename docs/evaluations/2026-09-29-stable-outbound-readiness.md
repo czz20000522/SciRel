@@ -101,6 +101,18 @@ Artifact refs for this development tuple, but it is not a trusted runtime
 release. No SciRel reviewed release manifest, approved-only wheel/catalog
 tuple, or `released` index entry exists.
 
+CodeFusion master `3c69931b594beec24c319618365ad0bbe2d7cb1f` now contains
+reviewer selection exports that bind a release attempt, candidate Artifact,
+expected plugin release, and selected item/current Artifact pairs. A new
+idempotency key and previous snapshot Artifact support conditional revalidation;
+changed item revisions or registration conflict, and the receipt identifies
+the new Artifact digest, capture time, and nonce. CodeFusion reports an
+independent review and passing Spark ARM64 merge gate. This code has not been
+deployed to the existing acceptance service. The earlier `b9e2c8...` export
+remains development review evidence, not a selected/revalidated r43 release
+receipt. The current batch still has zero approved items and no `released`
+index entry.
+
 Before a stable outbound release, the following inputs are still required:
 
 - Human expert decisions on exact item revisions and their scientific scope;
