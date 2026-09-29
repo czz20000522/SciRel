@@ -167,6 +167,19 @@ Its canonical and source-origin sealed-holdout comparison receipts have SHA-256
 and `38d6fcaafe5c508c46d3c157a4e792e9d1e25d31de8aeb4411806d94f5405e86`.
 This numerical path does not use the still-open JPOLE generator.
 
+The same frozen r9 record has `state=reopened` and
+`closure_signal.kind=active`. The upstream owner read all 24 canonical and
+holdout comparison receipts referenced by its 12 passed paths; each declares
+`scirel.extraction-reassembly-comparison.v1`. The current validator requires
+v2 receipts for `full_freeze` or `bounded_delivery`, so this receipt version
+alone does not trigger that gate for r9's `reopened/active` state. D2 checked
+the r9 hash and state fields, but did not rerun r9 against the later live
+`7b69c725...` bundle. Its passed-path claims and v1 receipts remain bound to
+the old `a35bd08a...` candidate and cannot establish a current full freeze.
+A future full-freeze successor would also require freeze-level
+`asset_entry_validation`. This version and candidate-binding limit is separate
+from the open J-pole path; r9 is not a D2 intake.
+
 The saved PDRK `task_graphs/kinetic_dispersion_relation` is not the existing
 SciRel graph of the same name. SciRel evaluates two kinetic determinants at one
 wavepoint; PDRK combines loss-cone partitioning, an EM3D matrix and an
