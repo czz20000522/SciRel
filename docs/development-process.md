@@ -115,6 +115,12 @@ Git 变更、catalog 与 wheel，重新执行批准项的测试文件，再追�
 操作者的真实身份或发行授权。开发 fixture 的专家名称和批准动作不能作为真实审核输入。当前候选
 仍无真实批准与许可，不得因本门禁可运行而称已发行。索引与 manifest 仍为 `.dev`，首条真实
 闭环后在正式公开发布前统一冻结到 `v1`。
+当前 `check.ps1 -Mode release`/`finalize_release.py` 只核对本地审核投影和 artifact 字节，尚未验证
+同一批次的宿主认证选择快照；逐项 `items` 分页、`open`、下载和前后重读没有跨页快照 token，不能替代该证明。
+真实 `released` 条目进入统一索引前，宿主导出或等价在线协议须绑定项目/plugin/view、候选身份、候选
+总数及明确所选子集的 item_ref→当前不可变 artifact 全集、每项认证审核事件及 actor、submitted/predecessor/successor
+引用和摘要、截止版本，并在发布前复核所选项未被后继覆盖。当前命令产物只用于开发期技术 fixture，
+不得作为经宿主认证的发行结果追加到 `provenance/release-index.dev.json`。
 插件的旧 `complete_release`/`scirel.release-manifest.dev` 仍是单 draft 生命周期 fixture；
 它不消费新的逐项 manifest，也不能作为本次索引的公开发行入口。消费者切换须随正式 `v1`
 合同收敛完成，并在真实获批批次上核对。
