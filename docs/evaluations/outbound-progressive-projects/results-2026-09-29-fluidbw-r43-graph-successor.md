@@ -63,3 +63,13 @@ chain; the reviewer did not rerun the scientific functions. Acceptance covers
 this manufactured two-wavepoint development case only. It does not establish
 measured-user-task completion, arbitrary-input parity, a root or stability
 result, whole-package source qualification, or human/public-release approval.
+
+A separate SciRel outbound environment check on 2026-09-29 used the existing
+private Spark `scirel-codex` `gpt-6-luna` Responses configuration. Three
+sequential real `codex exec` short requests returned exactly `READY`,
+`READY_TWO`, and `READY_THREE`, each with exit code 0; no HTTP 4xx/5xx or
+error marker was observed. The private configuration and key were neither
+printed nor changed. This supports current basic reachability only. It did
+not execute this D3 graph or its independent rerun, and does not establish
+long-term availability, a complete scientific workflow, or the final
+trusted release chain.
