@@ -9,6 +9,17 @@ r43 reviewer candidate is `candidate:1d02ae5282f0947a40f5e15bb30df1ca9613fdd491d
 it has no `released` entry. The old 52-item snapshot is historical and is not
 an acceptance prerequisite.
 
+For normal SciRel integration handoff, the frozen D2 development candidate is
+SciRel `274f2e6378d1f349be2a81449ed4021cd2a0679e` on
+`codex/initial-library`. Its unified index has 14 entries and no `released`
+entry; the current r43 candidate and both new review-selection and
+ordinary-user recovery evidence entries remain `pending_unapproved`, with
+zero approved review items. D2 reports `scripts/check.ps1 -Mode affected` at
+1840 passed, 83 skipped, and three expected numerical warnings. This is a
+technical handoff baseline, not a scientific approval, license decision, or
+same-tuple dual-chain acceptance. The development index can evolve during
+integration; its formal contracts converge to `v1` before public release.
+
 ## Earlier authenticated review readback
 
 CodeFusion Git `e532153990bec33103721138b742df4ecdb94b21` exposes the
