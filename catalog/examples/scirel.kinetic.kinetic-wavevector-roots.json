@@ -311,7 +311,11 @@
   },
   "version": {
     "implementation_version": "0.1.0.dev5",
-    "dependencies": []
+    "dependencies": [
+      {
+        "asset_id": "scirel.kinetic.kinetic-dispersion-ronnmark"
+      }
+    ]
   },
   "example": {
     "description": "Evaluate one bounded source-method case.",

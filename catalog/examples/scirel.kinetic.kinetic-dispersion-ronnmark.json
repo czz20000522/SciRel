@@ -291,7 +291,11 @@
   },
   "version": {
     "implementation_version": "0.1.0.dev5",
-    "dependencies": []
+    "dependencies": [
+      {
+        "asset_id": "scirel.kinetic.ronnmark-r-function"
+      }
+    ]
   },
   "example": {
     "description": "Evaluate one bounded source-method case.",
