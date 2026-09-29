@@ -173,6 +173,21 @@ no new numerical receipts were established at `5516b799...`. Both
 still subject to the canonical plus independent same-path sealed-holdout gate.
 This successor is not a qualified D1 handoff, full freeze, or D2 intake.
 
+Read-only D2 comparison of the five node contracts on `5516b799...` found no
+direct callable reuse in the current SciRel kinetic domain:
+
+| PDRK node | Nearest current SciRel relation | Contract difference preventing direct reuse |
+| --- | --- | --- |
+| `species_equilibrium_scales` | `derive_species_equilibrium_scales` | PDRK converts charge/proton-mass inputs, separate parallel/perpendicular eV temperatures and light-speed-normalized drift; fluidBW takes SI charge/mass and one reference-scaled temperature. Their constants and first-species versus minimum cyclotron normalization also differ. |
+| `loss_cone_partition` | `solve_loss_cone_spectrum` | PDRK forms algebraic core/loss-cone weights and `(2, species)` thermal branches. SciRel's existing relation solves an angular Legendre eigenproblem; it does not produce those branches. |
+| `z_pole_coefficients` | `get_z_pole_coefficients` | Both return `bzj`/`czj`, but PDRK supports J=4/8/12 and its J=8/12 tables differ from the fluidBW J=8/12 tables. Matching port names do not license replacing either source-specific pole set. |
+| `em3d_dispersion_matrix` | `assemble_fluid_dispersion_matrix` and the kinetic determinant operators | PDRK assembles a sparse, two-branch kinetic matrix at fixed `kx,kz` whose eigenvalues are complex frequencies. The fluidBW matrix solves for perpendicular wavenumber at fixed frequency; its kinetic operators evaluate determinants, not this eigenmatrix. |
+| `dispersion_eigensolve` | `solve_fluid_wavevector_eigenproblem` | PDRK offers dense full-spectrum or sparse near-guess frequency roots ordered by descending growth. SciRel filters and orders perpendicular-wavenumber roots by propagation and damping. |
+
+This is a relation and dependency screen, not numerical equivalence evidence.
+The PDRK five-node graph remains a separate candidate composition pending its
+same-bundle D1 source comparisons and D2 import checks.
+
 The Pleiades equal-temperature WHAM API-domain canonical attempt `a02` has an
 exact comparison at `lanes/wi-wham-source-api-domain-terminal-comparison-20260929/attempts/a02/evidence/wham-api-domain-terminal-comparison.json`
 (SHA-256 `2a552662e1a873ef7eea8b2b11946f8735be504c9247b8fd022dedeb80b56135`)
