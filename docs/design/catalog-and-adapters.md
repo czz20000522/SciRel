@@ -59,6 +59,8 @@ Codex and Claude Code can consume files directly or through MCP. A CLI can map t
 
 The implemented development slice is the SDK-free core in the separate `scirel_adapter` package, with the request/response surface defined by the [thin MCP adapter contract](../requirements/thin-mcp-adapter.md). Keeping it outside the `scirel` runtime package prevents discovery from triggering SciRel's public scientific imports. It verifies a catalog release and partitions before serving operations, reads route/summary/document projections, resolves only a selected callable, and materializes JSON-compatible results. A production MCP server remains a separate transport and execution-policy layer.
 
+Result materialization preserves complex values as finite real/imaginary component pairs within the original array shape. The adapter performs this transport conversion after the selected scientific callable returns; it does not change that callable's result or infer a scientific quantity from the pair.
+
 ## Adapter compatibility
 
 Adapters are conforming when the same catalog snapshot and request produce the same selected exact record and callable binding, subject to explicit search bounds. Cross-framework demonstration tests should therefore compare catalog root digest, asset ID, callable signature and scientific output, not UI wording or transport envelopes.

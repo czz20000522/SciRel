@@ -494,6 +494,11 @@ class ThinMcpAdapter:
             if not math.isfinite(value):
                 _fail("result_not_serializable", "result contains a non-finite float")
             return value
+        if isinstance(value, complex):
+            return {
+                "real": ThinMcpAdapter._materialize(value.real),
+                "imag": ThinMcpAdapter._materialize(value.imag),
+            }
         if isinstance(value, Mapping):
             result = {}
             for key, item in value.items():
