@@ -61,31 +61,40 @@ an installed-wheel runner path, but does not show that the current host runs
 the wheel. The new runner must actually install the exact wheel and record its
 import origins and dependencies.
 
+CodeFusion has since prepared a separate `m3-r43-b1ab-reviewer-backend` on
+Spark. Its owner reports an offline installation of the exact `b1abff...`
+wheel, NumPy 2.4.6 and SciPy 1.18.1, with SciRel import origins under
+`/opt/install`; an HTTP body-wire `scirel.import_l1` smoke call passed. The old
+backend and service remain running. SciRel has not independently queried this
+remote container, and this runner check alone is not a reviewer host receipt.
+
 ## New host binding required
 
 CodeFusion reports that its new isolated project
-`prj_0b4158c393a55f538dae18802c15770ef756` uploaded the corrected wheel
-as `cf://artifact/upload_3b6cf72adddd592f6edba784eaf7a0977ff69fd4bce4bdb3`
-with media type `application/octet-stream`; its authenticated readback matched
-the `b1abff...` SHA-256. No host-issued ArtifactOwner reference for this
-catalog ZIP or a SciRel release manifest has yet been verified in the saved
-handoff. The ordinary
-request's `cf://user/.../resources/...` input is a ResourceOwner reference, not
-an ArtifactOwner reference. Example refs in
+`prj_0b4158c393a55f538dae18802c15770ef756` uploaded two ArtifactOwner
+inputs and read them back under reviewer authentication:
+
+| Input | ArtifactOwner ref | Media type | Readback SHA-256 |
+| --- | --- | --- | --- |
+| Corrected wheel | `cf://artifact/upload_3b6cf72adddd592f6edba784eaf7a0977ff69fd4bce4bdb3` | `application/octet-stream` | `b1abff574c870e17dd4e24adc952ca4279561aa43adcc92250d019e42b2b3684` |
+| Catalog snapshot ZIP | `cf://artifact/upload_4b8246a7369ee9581e0e241830f0ea69c3a16cf934cdcc56` | `application/vnd.scirel.catalog-snapshot+zip` | `afee7fcf2d5bca4e04179aaaa1e1d98bdd689a8439c965f1b1c4580993c097e5` |
+
+CodeFusion also independently checked the ZIP's 136 members, 135 partitions,
+`release.json` SHA-256 and catalog root. SciRel's local ZIP checks are recorded
+above; SciRel did not independently query ArtifactOwner. No SciRel release
+manifest ArtifactOwner ref has yet been verified. The ordinary request's
+`cf://user/.../resources/...` input is a ResourceOwner reference, not an
+ArtifactOwner reference. Example refs in
 `contracts/examples/scirel-plugin-registration.dev.json` are placeholders.
 Do not place a digest alone or an invented `cf://artifact/...` value in the
 new registration.
 
-For a new isolated technical reviewer run, the host must register exact
-ArtifactOwner refs with owner readback of bytes, digest, media type and scope;
-assemble and check the reviewer runner from the exact `cc2fa21` body-wire
-source and its dependencies (or execute those modules from the verified
-`b1abff...` installed wheel); and issue a new immutable plugin registration
-with a resolved runtime dependency binding. Record the runner's import origins,
-distribution/source identity and dependency versions alongside the registration.
-Then create a new reviewer project under that release and obtain new
-authenticated item, action and host export receipts. The previous 13-item
-project and its non-approving successor remain historical evidence.
+The host still needs a new immutable plugin registration with a resolved
+runtime dependency binding to the installed wheel and catalog, then new
+authenticated reviewer item, action and host export receipts under that
+release in the isolated project. No new plugin release registration or reviewer
+host receipt has been reported yet. The previous 13-item project and its
+non-approving successor remain historical evidence.
 
 The development technical run cannot substitute for expert decisions, license
 clearance, an approved-subset build and release checks, or `v1` convergence.
