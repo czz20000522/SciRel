@@ -63,6 +63,9 @@ ENGINEERING_TESTS = {
     "scripts/finalize_release.py": (
         "tests/test_release_finalization.py", "tests/test_release_index.py",
     ),
+    "scripts/prepare_reviewed_distribution.py": (
+        "tests/test_release_environment.py", "tests/test_release_index.py",
+    ),
     "scripts/release_index.py": ("tests/test_release_index.py",),
     "contracts/release-index-dev.schema.json": ("tests/test_release_index.py",),
     "contracts/reviewed-release-manifest-dev.schema.json": (

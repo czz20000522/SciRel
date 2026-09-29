@@ -148,8 +148,20 @@ try {
         }
 
         New-Item -ItemType Directory -Path $releaseOutputPath | Out-Null
+        $reviewedSource = Join-Path $releaseOutputPath "reviewed-source"
+        $preparationOutput = & $Python "scripts/prepare_reviewed_distribution.py" `
+            "--release-index" $releaseIndexPath `
+            "--candidate-entry-id" $CandidateEntryId `
+            "--approved-results" $approvedResultsPath `
+            "--review-artifacts-dir" $reviewArtifactsPath `
+            "--staging-dir" $reviewedSource
+        if ($LASTEXITCODE -ne 0) {
+            throw "Reviewed source preparation failed with exit code $LASTEXITCODE."
+        }
+        $preparation = $preparationOutput | ConvertFrom-Json
+        $reviewedDocuments = $preparation.documents_dir
         $documentValidation = & $Python "scripts/validate_asset_documents.py" `
-            "catalog/examples" `
+            $reviewedDocuments `
             "--check-runtime" `
             "--execute-examples"
         if ($LASTEXITCODE -ne 0) {
@@ -163,7 +175,7 @@ try {
             --no-deps `
             --no-build-isolation `
             --wheel-dir $wheelDirectory `
-            $repoRoot
+            $reviewedSource
         if ($LASTEXITCODE -ne 0) {
             throw "SciRel wheel build failed with exit code $LASTEXITCODE."
         }
@@ -196,7 +208,7 @@ print(json.dumps(roots))
             throw "Failed to locate release dependencies."
         }
         $dependencyRoots = $dependencyRootsJson | ConvertFrom-Json
-        $sitePackages = & $environmentPython -c "import site; print(site.getsitepackages()[0])"
+        $sitePackages = & $environmentPython -I -c "import sysconfig; print(sysconfig.get_path('purelib'))"
         if ($LASTEXITCODE -ne 0) {
             throw "Failed to locate isolated site-packages."
         }
@@ -222,18 +234,14 @@ print(json.dumps(roots))
             throw "Failed to read the installed SciRel distribution version."
         }
 
-        $coverage = Get-SciRelCatalogCoverage -RepositoryRoot $repoRoot -Python $Python
-        $catalogCoverageStatus = $coverage.status
-        $catalogIncludedAssetCount = $coverage.included
-        $catalogDeclaredTotalAssetCount = $coverage.declared
         $catalogPath = Join-Path $releaseOutputPath "catalog"
         $catalogOutput = & $Python "scripts/build_catalog.py" `
-            "catalog/examples" `
+            $reviewedDocuments `
             "--output-dir" $catalogPath `
             "--catalog-id" $CatalogId `
             "--release-version" $releaseVersion `
-            "--coverage-status" $catalogCoverageStatus `
-            "--declared-total" $catalogDeclaredTotalAssetCount
+            "--coverage-status" "complete" `
+            "--declared-total" $preparation.asset_count
         if ($LASTEXITCODE -ne 0) {
             throw "Catalog build failed with exit code $LASTEXITCODE."
         }
@@ -241,12 +249,11 @@ print(json.dumps(roots))
 
         $env:PYTHONPATH = $null
         $env:SCIREL_INSTALLED_RUNTIME = "1"
-        $acceptancePath = Join-Path $releaseOutputPath "acceptance"
         Push-Location $releaseOutputPath
         try {
             $installedValidation = & $environmentPython -I `
                 (Join-Path $repoRoot "scripts/validate_asset_documents.py") `
-                (Join-Path $repoRoot "catalog/examples") `
+                $reviewedDocuments `
                 "--check-runtime" `
                 "--execute-examples" `
                 "--installed-runtime"
@@ -266,17 +273,16 @@ print(json.dumps(roots))
             New-Item -ItemType Directory -Path $runtimeCatalogExamples | Out-Null
             Copy-Item -LiteralPath (Join-Path $repoRoot "tests/conftest.py") -Destination $runtimeTestRoot
             Copy-Item -LiteralPath (Join-Path $repoRoot "tests/_review_bindings.py") -Destination $runtimeTestRoot
-            foreach ($directory in @("operator_contracts", "graph_contracts", "framework_compositions")) {
-                Copy-Item `
-                    -LiteralPath (Join-Path $repoRoot "tests/$directory") `
-                    -Destination $runtimeTestRoot `
-                    -Recurse
-            }
-            foreach ($file in @("test_library_composition.py", "test_public_surface.py")) {
-                Copy-Item -LiteralPath (Join-Path $repoRoot "tests/$file") -Destination $runtimeTestRoot
+            $runtimeTests = @()
+            foreach ($file in $preparation.test_paths) {
+                $relativeTest = $file.Substring("tests/".Length)
+                $destination = Join-Path $runtimeTestRoot $relativeTest
+                New-Item -ItemType Directory -Path (Split-Path -Parent $destination) -Force | Out-Null
+                Copy-Item -LiteralPath (Join-Path $repoRoot $file) -Destination $destination
+                $runtimeTests += $destination
             }
             Copy-Item `
-                -Path (Join-Path $repoRoot "catalog/examples/*.json") `
+                -Path (Join-Path $reviewedDocuments "*.json") `
                 -Destination $runtimeCatalogExamples
 
             $isolatedPytestConfig = Join-Path $releaseOutputPath "pytest-release.ini"
@@ -285,36 +291,24 @@ print(json.dumps(roots))
                 "[pytest]`naddopts = -p no:cacheprovider`npythonpath = runtime-test-bundle/tests`n",
                 [Text.UTF8Encoding]::new($false)
             )
-            $runtimeTests = @(
-                (Join-Path $runtimeTestRoot "operator_contracts"),
-                (Join-Path $runtimeTestRoot "graph_contracts"),
-                (Join-Path $runtimeTestRoot "framework_compositions"),
-                (Join-Path $runtimeTestRoot "test_library_composition.py"),
-                (Join-Path $runtimeTestRoot "test_public_surface.py")
-            )
             & $environmentPython -I -m pytest -c $isolatedPytestConfig @runtimeTests
             if ($LASTEXITCODE -ne 0) {
                 throw "Installed scientific contract tests failed with exit code $LASTEXITCODE."
             }
 
-            & $environmentPython (Join-Path $repoRoot "examples/user_acceptance.py") `
-                "--wheel" $wheelPath `
-                "--output" $acceptancePath
-            if ($LASTEXITCODE -ne 0) {
-                throw "Source-free user acceptance failed with exit code $LASTEXITCODE."
-            }
         }
         finally {
             Pop-Location
         }
 
+        $env:SCIREL_INSTALLED_RUNTIME = $null
         $releaseMetadataPath = Join-Path $releaseOutputPath "release"
         $finalizationOutput = & $Python "scripts/finalize_release.py" `
             "--release-index" $releaseIndexPath `
             "--candidate-entry-id" $CandidateEntryId `
             "--approved-results" $approvedResultsPath `
             "--review-artifacts-dir" $reviewArtifactsPath `
-            "--documents-dir" (Join-Path $repoRoot "catalog/examples") `
+            "--documents-dir" $reviewedDocuments `
             "--catalog-dir" $catalogPath `
             "--wheel" $wheelPath `
             "--output-dir" $releaseMetadataPath `
@@ -333,7 +327,7 @@ print(json.dumps(roots))
             release_manifest = $finalization.release_manifest
             release_digest = $finalization.release_digest
             installed_asset_validation = (Join-Path $releaseOutputPath "installed-asset-validation.json")
-            acceptance_report = (Join-Path $acceptancePath "acceptance.json")
+            reviewed_selection = (Join-Path $reviewedSource "selection.json")
         } | ConvertTo-Json
     }
     finally {

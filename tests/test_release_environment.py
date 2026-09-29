@@ -1,9 +1,9 @@
 from pathlib import Path
 import json
+import os
 import subprocess
 
-from scripts.validate_asset_documents import load_document_set
-
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 HELPERS = ROOT / "scripts" / "check_helpers.ps1"
@@ -57,10 +57,12 @@ def test_release_environment_does_not_inherit_system_packages():
 
     assert "--system-site-packages" not in script
     assert "--no-index --no-deps --force-reinstall" in script
+    assert "sysconfig.get_path('purelib')" in script
+    assert "site.getsitepackages()[0]" not in script
     assert "import sys, numpy, scipy, pytest, scirel" in script
 
 
-def test_release_gate_uses_the_current_baseline_and_exact_review_inputs():
+def test_release_gate_builds_from_exact_review_inputs():
     script = CHECK.read_text(encoding="utf-8")
 
     assert "[string]$ReleaseIndex" in script
@@ -70,9 +72,11 @@ def test_release_gate_uses_the_current_baseline_and_exact_review_inputs():
     assert "--workflow-snapshot" not in script
     assert "scripts/build_admitted_distribution.py" not in script
     assert "-m pip wheel" in script
+    assert "scripts/prepare_reviewed_distribution.py" in script
     assert "scripts/build_catalog.py" in script
     assert "scripts/finalize_release.py" in script
-    assert "Get-SciRelCatalogCoverage -RepositoryRoot $repoRoot -Python $Python" in script
+    assert '$reviewedDocuments = $preparation.documents_dir' in script
+    assert '"--declared-total" $preparation.asset_count' in script
     assert '"--release-index" $releaseIndexPath' in script
     assert '"--candidate-entry-id" $CandidateEntryId' in script
     assert '"--approved-results" $approvedResultsPath' in script
@@ -104,21 +108,44 @@ def test_release_gate_checks_the_installed_scientific_runtime():
 
     assert 'SCIREL_INSTALLED_RUNTIME = "1"' in script
     assert '"--installed-runtime"' in script
-    assert '"operator_contracts", "graph_contracts", "framework_compositions"' in script
-    assert '"test_library_composition.py", "test_public_surface.py"' in script
+    assert 'foreach ($file in $preparation.test_paths)' in script
     assert '"runtime-test-bundle"' in script
 
 
-def test_release_coverage_uses_the_actual_current_catalog():
-    result = subprocess.run(
-        ["pwsh", "-NoProfile", "-Command",
-         f". '{HELPERS}'; Get-SciRelCatalogCoverage -RepositoryRoot '{ROOT}' | ConvertTo-Json"],
-        cwd=ROOT, capture_output=True, text=True, encoding="utf-8",
+def test_first_release_mode_smoke_from_review_fixture(tmp_path):
+    if os.environ.get("SCIREL_RELEASE_SMOKE_CHILD") == "1":
+        pytest.skip("release gate is already running its source suite")
+    if os.environ.get("SCIREL_RUN_RELEASE_SMOKE") != "1":
+        pytest.skip("run explicitly for the full release gate")
+
+    from test_release_index import _candidate_entry_id, _reviewed_release_inputs
+
+    git_revision = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True,
+        text=True, check=True,
+    ).stdout.strip()
+    artifacts, _, _, _, _ = _reviewed_release_inputs(
+        tmp_path, git_revision=git_revision
     )
-    assert result.returncode == 0, result.stderr
-    coverage = json.loads(result.stdout)
-    included = len(load_document_set(ROOT / "catalog/examples"))
-    assert coverage == {
-        "included": included, "declared": included,
-        "status": "complete",
-    }
+    output = tmp_path / "release-output"
+    environment = os.environ.copy()
+    environment["SCIREL_RELEASE_SMOKE_CHILD"] = "1"
+    environment.pop("SCIREL_RUN_RELEASE_SMOKE", None)
+    result = subprocess.run(
+        [
+            "pwsh", "-NoProfile", "-File", str(CHECK), "-Mode", "release",
+            "-OutputRoot", str(output), "-ReleaseId", "release-smoke",
+            "-ReleaseIndex", str(tmp_path / "index.json"),
+            "-CandidateEntryId", _candidate_entry_id(tmp_path / "index.json"),
+            "-ApprovedResults", str(tmp_path / "results.json"),
+            "-ReviewArtifactsDir", str(artifacts),
+        ],
+        cwd=ROOT, env=environment, capture_output=True, text=True,
+        encoding="utf-8", timeout=600,
+    )
+    assert result.returncode == 0, result.stdout[-4000:] + result.stderr[-4000:]
+    manifest = json.loads((output / "release" / "release-manifest.json").read_text(encoding="utf-8"))
+    validation = json.loads((output / "installed-asset-validation.json").read_text(encoding="utf-8"))
+    assert manifest["included_assets"] == ["scirel.field.circular-filament-green"]
+    assert validation["asset_count"] == 1
+    assert validation["runtime_origin"] == "installed"

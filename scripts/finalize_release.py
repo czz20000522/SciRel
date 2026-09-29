@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+from collections import Counter
 import hashlib
 from importlib.util import resolve_name
 import json
@@ -324,9 +325,20 @@ def _wheel_contents(wheel: Path, release_version: str) -> dict[str, bytes]:
             fields = Parser().parsestr(archive.read(metadata[0]).decode("utf-8"))
             if fields.get("Name", "").lower() != "scirel" or fields.get("Version") != release_version:
                 raise ValueError("release wheel distribution/version differs from catalog")
+            metadata_root = metadata[0].removesuffix("METADATA")
+            if any(
+                not name.startswith(("scirel/", metadata_root))
+                for name in names
+            ):
+                raise ValueError("release wheel contains files outside the reviewed SciRel package")
+            if any(
+                name.startswith("scirel/") and name.endswith((".pyc", ".pyd", ".so", ".dll"))
+                for name in names
+            ):
+                raise ValueError("release wheel contains unreviewed executable content")
             return {
                 name: archive.read(name)
-                for name in names if name.startswith(("scirel/", "scirel_"))
+                for name in names if name.startswith("scirel/")
             }
     except BadZipFile as error:
         raise ValueError("release wheel is not a valid wheel archive") from error
@@ -366,6 +378,56 @@ def _validate_wheel_import_closure(wheel_members: dict[str, bytes], source_root:
                     source = source_root / "src" / Path(*candidate.split("."))
                     if source.with_suffix(".py").is_file() or (source / "__init__.py").is_file():
                         check(candidate, name)
+
+
+def _reviewed_initializers(
+    documents: dict[str, dict[str, Any]], support_modules: set[str]
+) -> dict[str, bytes]:
+    exports: dict[str, list[tuple[str, str]]] = {}
+    packages = {"scirel"}
+    for document in documents.values():
+        api = document["public_api"]["python"]
+        module = api["module"]
+        package = module.rpartition(".")[0]
+        exports.setdefault(package, []).append((module, api["symbol"]))
+        parts = package.split(".")
+        packages.update(".".join(parts[:index]) for index in range(1, len(parts) + 1))
+    for module in support_modules:
+        parts = module.split(".")[:-1]
+        packages.update(".".join(parts[:index]) for index in range(1, len(parts) + 1))
+
+    initializers = {}
+    root_exports = [item for values in exports.values() for item in values]
+    root_counts = Counter(symbol for _, symbol in root_exports)
+    unique_root_exports = sorted(
+        (module, symbol) for module, symbol in root_exports if root_counts[symbol] == 1
+    )
+    for package in sorted(packages):
+        members = sorted(exports.get(package, []))
+        public_children = sorted(
+            child.rsplit(".", 1)[1]
+            for child in packages
+            if child.rpartition(".")[0] == package and not child.rsplit(".", 1)[1].startswith("_")
+        )
+        lines = [f"from . import {child}" for child in public_children]
+        lines.extend(
+            f"from .{module.removeprefix(package + '.')} import {symbol}"
+            for module, symbol in members
+        )
+        if package == "scirel":
+            lines.extend(
+                f"from .{module.removeprefix('scirel.')} import {symbol}"
+                for module, symbol in unique_root_exports
+            )
+        names = [*public_children, *(symbol for _, symbol in members)]
+        if package == "scirel":
+            names.extend(symbol for _, symbol in unique_root_exports)
+        if len(names) != len(set(names)):
+            raise ValueError(f"reviewed package exports duplicate a name: {package}")
+        lines.append(f"__all__ = {sorted(names)!r}")
+        path = package.replace(".", "/") + "/__init__.py"
+        initializers[path] = ("\n".join(lines) + "\n").encode("utf-8")
+    return initializers
 
 
 def finalize_reviewed_release(
@@ -564,6 +626,12 @@ def finalize_reviewed_release(
         document["public_api"]["python"]["module"].replace(".", "/") + ".py"
         for document in documents.values()
     }
+    support_modules = {
+        name.removeprefix("src/").removesuffix(".py").replace("/", ".")
+        for name in code_files
+        if name.endswith(".py") and any(part.startswith("_") for part in PurePosixPath(name).parts[2:])
+    }
+    expected_initializers = _reviewed_initializers(documents, support_modules)
     for wheel_name in wheel_members:
         parts = PurePosixPath(wheel_name).parts
         if (
@@ -573,8 +641,18 @@ def finalize_reviewed_release(
             and wheel_name not in approved_modules
         ):
             raise ValueError(f"release wheel contains an unapproved scientific module: {wheel_name}")
+        if (
+            wheel_name.endswith(".py") and not wheel_name.endswith("/__init__.py")
+            and any(part.startswith("_") for part in parts[1:])
+            and wheel_name.removesuffix(".py").replace("/", ".") not in support_modules
+        ):
+            raise ValueError(f"release wheel contains an unreviewed support module: {wheel_name}")
     for wheel_name, body in wheel_members.items():
         if wheel_name.endswith(".py"):
+            if wheel_name.endswith("/__init__.py"):
+                if body != expected_initializers.get(wheel_name):
+                    raise ValueError(f"release wheel has an unreviewed package initializer: {wheel_name}")
+                continue
             source_name = "src/" + wheel_name
             source_path = _relative_file(source_root, source_name, "src/")
             if source_path.read_bytes() != body:

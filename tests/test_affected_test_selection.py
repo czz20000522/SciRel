@@ -376,6 +376,15 @@ def test_release_finalizer_selects_both_release_contract_tests():
     ]
 
 
+def test_reviewed_distribution_preparer_selects_release_contract_tests():
+    result = select("scripts/prepare_reviewed_distribution.py")
+
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == [
+        "tests/test_release_environment.py", "tests/test_release_index.py",
+    ]
+
+
 def test_release_index_selects_its_contract_test():
     result = select("scripts/release_index.py")
 

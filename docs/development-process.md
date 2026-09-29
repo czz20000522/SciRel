@@ -99,8 +99,10 @@ pwsh ./scripts/check.ps1 -Mode release -ReleaseIndex <candidate-index.json> -Can
 Git 变更、catalog 与 wheel，重新执行批准项的测试文件，再追加 `released` 条目。批准代码目前支持
 `files` 或明确 `none` 复用；`patch` 需先固化为逐文件内容。旧单 draft finalizer 仅保留为内部
 生命周期 fixture，不再是 release 命令入口。
-release catalog 的声明总数来自本次实际文档集；历史 admission 账本不再参与该门禁。首个发布条目
-必须覆盖文档集的全部逐项批准，后续条目可以继承索引中上一已发布条目的资产闭包。
+首发准备器从 exact approved projection 生成只含所选模块与审核绑定支持模块的源码树、过滤后的包初始化文件、
+文档集和测试路径；release catalog 的声明总数来自该文档集，历史 admission 账本不参与门禁。源码仍跑全套工程测试，
+安装后只跑所选资产的审核测试与文档示例。现有准备器仅支持首发；后续条目的 baseline 资产、文档与支持模块
+尚无可验证的继承输入，因而会拒绝增量发行，不能仅凭索引中的资产 ID 复建上一可信版。
 
 审核导出必须来自有认证及授权记录的工作台 artifact 存储；本地 JSON 摘要只能核对内容，不能证明
 操作者的真实身份或发行授权。开发 fixture 的专家名称和批准动作不能作为真实审核输入。当前候选

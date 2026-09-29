@@ -167,9 +167,11 @@ SciRel 源码或公共基线变更会 fail closed 到全套测试。`focused` �
 上述库门禁不检查任何源项目的 D1 冻结状态。仓库中维护的 extraction skill/部署工具使用
 `python -m pytest skills/extraction/tests skills/extraction/scientific-computation-asset-extraction/tests`
 单独验证；历史 admitted-only 构建器测试保存在 `provenance/tests/`，不约束当前库源码。
-`release` 要求一个已获专家批准的 workflow 快照和不存在的输出目录。它从当前维护基线构建普通 wheel，
-验证 exact documents，生成 catalog，在隔离环境运行已安装 wheel 的科学合同与用户验收，最后把实际摘要
-写入 release manifest 和 released workflow 快照；它不会覆盖或清理已有结果。更细的整合和验证规则见
+`release` 要求 exact candidate index、审核宿主导出的 approved results 与 reviewer artifacts，以及不存在的输出目录。
+当前首发入口从逐项审核投影准备只含所选科学模块的 wheel 和文档集，验证其依赖闭包、目录与包初始化导出，
+在隔离环境运行所选资产的测试与文档示例，最后把实际摘要写入 reviewed release manifest 和 release index；
+它不会覆盖或清理已有结果。已有可信基线的增量发行尚缺 exact baseline 文档/支持模块输入，当前准备器会拒绝。
+更细的整合和验证规则见
 [`docs/development-process.md`](docs/development-process.md)。
 
 现有 admitted-only 构建器仍可逐项核对历史样本的源码摘要，用于复现早期开发 wheel；它不是新流程的
@@ -184,8 +186,8 @@ SciRel 源码或公共基线变更会 fail closed 到全套测试。`focused` �
 干净离线 wheelhouse 重装全部依赖，也不证明同目录的其他包不可见。正式发行门禁仍需固定依赖 wheelhouse。
 安装后的测试不得依赖 editable 安装或把 src 放进 PYTHONPATH。上面的版本号随 pyproject.toml 更新，不是永久发行版本。
 
-当前 catalog 是 `complete: 132/132` 文档覆盖的开发 pilot，不表示专家批准；这条 release 链证明的是已批准资产、catalog 与普通 wheel
-可以被精确绑定，不代表一个候选的批准自动批准 wheel 中其余维护代码。正式首发前必须让可见发布基线获得
+当前 catalog 是 `complete: 132/132` 文档覆盖的开发 pilot，不表示专家批准；发行目录另由实际获批子集构建，
+其 `complete` 只指所选发布内容的文档覆盖。合成审核 fixture 的闭环测试不代表真实批准。正式首发前必须让可见发布基线获得
 对应的批量/逐项专家批准并补齐 exact documents，同时把开发期 `.dev` workflow 合同统一冻结为 `v1`。
 
 项目尚未声明独立分发许可证，保留来源对应关系；正式分发前需确认输入资产与项目许可证选择。
