@@ -69,6 +69,16 @@ document corrections require exact reviewer successors before they can govern
 approval or release; the initial index entry and frozen review artifacts remain
 unchanged.
 
+The current corrected documents are bound by Git `d794fdc` and have these
+canonical-JSON digests. The submitted digests remain the ones in the index;
+this table is a D2 successor input, not a host-issued review successor or an
+approval event.
+
+| Review item | Submitted document | Corrected development document |
+| --- | --- | --- |
+| `scirel-review-item:0d72a89726790d2dda217f52b8ee89b7e433b8de80074ba8545945989b2a7cd6` (`kinetic-dispersion-ronnmark`) | `sha256:1e46df1ba8b7cd17edb6eaf4687be11ce527a03b5f63d8ffd22cec59c1369396` | `sha256:2c79d1dc3ace5516f57b212eab2794e4118e42139daa69234d5d9a888b166033` |
+| `scirel-review-item:765b51697dfde7549eb64be905d7bfe069c067359b28dc1b8f7e8574a1176338` (`kinetic-wavevector-roots`) | `sha256:8771407744edb8adb71fa64276e9cdfd6ce824b076c32c263dc5ad08d6e7885e` | `sha256:6d9e7459db7f6f768bcdae3a0a690eb91c315252851cf0d0ac3d2a7d1d2d5aa7` |
+
 ## Local draft outside the index
 
 A read-only worktree check also found two untracked files on
