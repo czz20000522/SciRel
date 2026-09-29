@@ -34,8 +34,8 @@ returned 0 completed/0 approved for the initial workflow and 1 completed/0
 approved for the successor. The live workbench state and the saved Artifact
 bytes agree; neither is an approval.
 
-CodeFusion currently provides authenticated per-item `items`, `open`, and
-Artifact download endpoints. The reviewed product routes do not provide a
+The authenticated readback found per-item `items`, `open`, and Artifact download
+endpoints. The deployed product routes did not provide a
 host-issued, candidate-wide `scirel.review-completed-results.dev` export.
 SciRel's `list_completed` body operation projects one current Artifact at a
 time, while `prepare_reviewed_distribution.py` and `finalize_release.py`
@@ -45,6 +45,12 @@ current revisions, reviewer identities, and decisions came from an authorized
 host export. A real approved batch still needs a host-owned export or an
 equivalent authenticated, auditable collection protocol that binds every item
 ref, current Artifact ref/digest, decision actor, and source review revision.
+
+CodeFusion local `master` at `2d3de66e04d81fcbb94fd069bb7f4d93630cd844`
+now contains a reviewer `snapshot-exports` route and its follow-up fixes. That
+code integration has not been deployed. The commit itself supplies neither an
+authenticated r43 aggregate export nor an approval; the live workbench and
+exact current item Artifacts remain the authority for release decisions.
 
 ## Release boundary
 
