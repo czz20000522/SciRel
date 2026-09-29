@@ -115,6 +115,15 @@ for this development host, not expert approval, formal same-tuple release
 acceptance, or stable release; the earlier reviewer registration remains a
 separate historical instance.
 
+At SciRel `ce758b3`, D2 appended registration evidence
+`evidence:5f1c6c5b348a4ead3bbe72a450895f2f5ba389403798f83bf38adf4ad5f48f03`
+for the current reviewer candidate in `provenance/release-index.dev.json`. Its
+exact record is `provenance/r43-b1ab-review-registration-acceptance-20260930.json`.
+D2 checked the saved owner report hash against the indexed candidate/workflow,
+development wheel/catalog root, and earlier Artifact readbacks. D2's direct
+container inspection was denied, so it did not recompute the registration
+digest or query the database; those readbacks remain owner-verified.
+
 For a later qualified candidate, the ordinary/reviewer handoff must identify
 the same exact source Git, wheel, catalog release/root/ZIP, and review
 workflow/successor. It must give the immutable plugin registration snapshot
