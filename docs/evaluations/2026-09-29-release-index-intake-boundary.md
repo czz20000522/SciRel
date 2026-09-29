@@ -54,6 +54,18 @@ The literal 1000/2000 eV public-driver default still fails the source
 integrability guard. The follow-up grants no independent holdout, whole-source
 closure, full freeze, export, or D2 intake status.
 
+The unchanged source-first census also counts 146 embedded-data field
+occurrences alongside the 292 public-driver terminal-field occurrences, for
+438 source output/artifact occurrences in total. A disposition label for each
+occurrence is not a numerical validation. The current WHAM contract map at
+`coordination/wham-kinetic-closure-contract-map-20260929-v2.json`
+(SHA-256 `95033ec0775544cd362252ae89b065b12c7ceda19b56428a87562aa752f66de6`)
+binds bounded graph-contract/source-branch tests and the accepted a02 canonical
+case. It also preserves a fixed-a05 105/105 numerical comparison whose
+independent holdout admission remains pending, and identifies a public-driver
+serialization-key defect. Neither the bounded graph test nor these finite
+comparisons closes the remaining source paths or qualifies a D1 handoff.
+
 ## Review-slice dependency closure
 
 The r43 index binds 13 retained review items, but this slice alone is not a
