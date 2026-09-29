@@ -359,6 +359,7 @@ def _reviewed_release_inputs(
     document_name="scirel.field.circular-filament-green.json",
     git_revision="a" * 40,
     support_file=None,
+    build_release_catalog=True,
 ):
     from build_catalog import build_catalog
     from release_index import register_candidate
@@ -416,11 +417,12 @@ def _reviewed_release_inputs(
     documents.mkdir()
     (documents / "asset.json").write_text(json.dumps(item["asset"]), encoding="utf-8")
     catalog = tmp_path / "catalog"
-    build_catalog(
-        documents, catalog, catalog_id="test-reviewed-release",
-        release_version="0.1.0.dev5", coverage_status="complete",
-        declared_total=1,
-    )
+    if build_release_catalog:
+        build_catalog(
+            documents, catalog, catalog_id="test-reviewed-release",
+            release_version="0.1.0.dev5", coverage_status="complete",
+            declared_total=1,
+        )
     wheel = tmp_path / "scirel-0.1.0.dev5-py3-none-any.whl"
     module_name = item["asset"]["public_api"]["python"]["module"].replace(".", "/") + ".py"
     with ZipFile(wheel, "w") as archive:
@@ -430,6 +432,31 @@ def _reviewed_release_inputs(
         )
         archive.writestr(module_name, (ROOT / "src" / module_name).read_bytes())
     return artifacts, documents, catalog, wheel, projection
+
+
+def test_first_reviewed_distribution_rejects_incomplete_composition_dependencies(tmp_path):
+    from prepare_reviewed_distribution import prepare_reviewed_distribution
+
+    artifacts, _, _, _, projection = _reviewed_release_inputs(
+        tmp_path,
+        document_name="scirel.kinetic.kinetic-dispersion-relation.json",
+        build_release_catalog=False,
+    )
+    assert "scirel.kinetic.species-equilibrium-scales" in projection["dependency_asset_ids"]
+    staging = tmp_path / "reviewed-source"
+    with pytest.raises(
+        ValueError,
+        match=r"release dependency closure is incomplete: scirel\.kinetic\.kinetic-dispersion-relation",
+    ):
+        prepare_reviewed_distribution(
+            release_index=tmp_path / "index.json",
+            candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
+            approved_results=tmp_path / "results.json",
+            review_artifacts_dir=artifacts,
+            source_root=ROOT,
+            staging_dir=staging,
+        )
+    assert not staging.exists()
 
 
 @pytest.mark.parametrize("multi_item", [False, True])

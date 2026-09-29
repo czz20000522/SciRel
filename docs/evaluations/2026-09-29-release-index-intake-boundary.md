@@ -31,6 +31,20 @@ not create `candidate` entries or imply a new census of the historical 52-item
 snapshot. A bounded D1 batch may enter D2 before whole-project freeze once its
 own source implementation and numerical comparison have passed.
 
+## Review-slice dependency closure
+
+The r43 index binds 13 retained review items, but this slice alone is not a
+closed first-release set. `kinetic-dispersion-relation`,
+`kinetic-wavevector-scan`, and `fluid-wavevector-scan` each depend on
+`scirel.kinetic.species-equilibrium-scales`. D2 reused that existing relation
+and absorbed its r43 lineage; it is not one of the 13 review items, and the
+index has no prior trusted released baseline. The other 10 items have their
+declared dependencies within the review slice. Even if all 13 current items
+were later approved, the three compositions could not enter a first release
+without an exact approved review of the reused dependency; a release may
+instead exclude those compositions. Existing development code, documents,
+catalog coverage, and D1 qualification do not supply that approval.
+
 ## Local draft outside the index
 
 A read-only worktree check also found two untracked files on
