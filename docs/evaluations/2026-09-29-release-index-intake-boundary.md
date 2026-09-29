@@ -102,7 +102,11 @@ candidate, `task_graphs/device_vacuum_field/graph.py` (SHA-256
 calls `device_coil_configuration(preset)`. That operator (SHA-256
 `66b3491cdc035018689b8713956d3a08150a51462d2d32fad56277b508fcd77b`)
 registers only `wham` and `brb`. A focused source-fidelity pass for the
-separate `flame_coil_filaments` operator does not establish a composed FLAME
+separate `flame_coil_filaments` operator has probe receipt SHA-256
+`f39f5b0764ea3bfc8b4c4be347478640e826e0432095105d3b67a82eb0bc98a1`
+and log SHA-256 `b26b48fa378229daa452dcd365d7fbfb3783f19dd1a17a38da089f511f4dabd7`;
+its 4108-filament source comparison reports zero absolute and relative error.
+That local result does not establish a composed FLAME
 field/Green TaskGraph path or 60-field terminal parity. This composition gap
 must be resolved and compared on exact candidate bytes before intake credit.
 
