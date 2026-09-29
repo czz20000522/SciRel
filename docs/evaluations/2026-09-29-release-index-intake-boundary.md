@@ -113,6 +113,18 @@ the workbench is the source for later item revisions and current decisions.
 | Pleiades `stage1-Pleiades-opt-20260921T093633Z` | Frozen source SHA-256 `7c809a0d6d1fb18568e3b70e1a0fcbee7fff42469881b859df2028a373488c5a`; earlier D2-checked comparison candidate SHA-256 `b09804ced2f8cd8c499638d6b68bc39444e72a0351e9be908f8c7519d317baa2`; `coordination/source-first-public-terminal-census-20260927.json` SHA-256 `3b3b8ae9166a03fc1b79c78e4eb2a4dcf4efa93b484d098b04a7fdaa50fb2252`; `lanes/wi-wham-source-api-domain-wham-control-20260929/attempts/a01/evidence/source-solver-entry-check.json` SHA-256 `773a196789082151d91526b5c81e2f925bc5f787d64bad9762720f273bbc294f` | Source-first census has 5 drivers and 292 terminal-field occurrences; 7 target paths remain open. The WHAM API-domain source check and one equal-temperature canonical terminal comparison passed on the earlier candidate; that variant still lacks its own sealed holdout, and full-source freeze remains open. Historical 52-item SciRel sample stays historical. |
 | FIDASIM `stage1-FIDASIM-20260917T053940Z` | Frozen source SHA-256 `c8bd91ecaeac96de7aa08a8eb7eeec435ee63b2a613d37254a607f1b8bc81f70`; current bundle SHA-256 `9677d76a88bf884eec33c66eecd2d03c0c86d63ea5f722acbee286116c02394a`; `coordination/capacity-checkpoint-20260928T012947Z.json` SHA-256 `b7472b11ae95ef8a6517c2504be48ea53a3d550391f08ca9eb482c1259d1b7d5` | Of 146 scoped items, 105 proved, 18 residual and 23 terminal; 0/10 target paths passed, and holdout independence remains unproved. D1 work continues. |
 
+The indexed `r81-dev58-169` wheel/catalog
+(`development:84d0882deca15fdba4dbb9dafeea773b34203f6200628b528ab3fd4636953d7c`)
+is a separate `mixed_unverified` development snapshot, not a qualified FIDASIM
+D1 handoff. The review record `docs/evaluations/review-version-2026-09-27-r81.md`
+on intake branch `647d5dbd36404bc5e76d934a875984787e789644` (SHA-256
+`57d74f05db134ff0f6ed2dc1d7996113cd88038c511ce6a761f3be79b919bbaa`)
+states that the qualified L1 delivery root was empty and its external NPA
+`store_npa` source microprobe could not be independently checked. That NPA
+energy-bin leaf exists on the isolated branch but not in the current main
+checkout. The indexed development artifact does not by itself qualify a new
+mainline scientific intake or transfer the branch's provisional source claim.
+
 The latter three inputs remain visible here for comparison and follow-up. They do
 not create `candidate` entries or imply a new census of the historical 52-item
 snapshot. A bounded D1 batch may enter D2 before whole-project freeze once its
