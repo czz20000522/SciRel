@@ -60,14 +60,14 @@ Expert decisions, license clearance, approved-subset wheel/catalog
 construction, release checks and `v1` contract convergence remain
 prerequisites for stable distribution.
 
-## Later same-tuple reviewer successor
+## Later reviewer successor on matching materials
 
 CodeFusion `2d3de66e` subsequently ran a separate isolated reviewer project,
-`prj_0b4158c393a55f538dae18802c15770ef756`. Its development registration
-binds the same SciRel source `cc2fa21e03fa7e5152c29f0769165863429e1693`
-and wheel SHA-256
+`prj_0b4158c393a55f538dae18802c15770ef756`. Its owner reports a new
+development release ref naming the same SciRel source
+`cc2fa21e03fa7e5152c29f0769165863429e1693` and wheel SHA-256
 `b1abff574c870e17dd4e24adc952ca4279561aa43adcc92250d019e42b2b3684`
-to catalog snapshot ZIP SHA-256
+with catalog snapshot ZIP SHA-256
 `afee7fcf2d5bca4e04179aaaa1e1d98bdd689a8439c965f1b1c4580993c097e5`.
 The ZIP's `release.json` has SHA-256
 `fece59b88ad39480a58b3c35f7678b2007a578f5918a74533f5b0cae6dfe2d02`
@@ -89,10 +89,15 @@ are bound to the same D2 development entry
 The export has 13 items, one `needs_evidence`, 12 `review_pending`, and zero
 approved; D2's check is recorded in
 `provenance/r43-b1ab-review-host-acceptance-20260929.json`. Alongside the
-ordinary-user request, this establishes a bounded same-tuple technical dual
-chain across two product projects. The earlier manifest's `not_claims` and
-reviewer receipts retain their historical scope; no old review decision is
-transferred. This wheel/catalog remains `mixed_unverified` and
+ordinary-user request, this establishes a bounded technical dual-chain
+comparison of matching source, wheel, and catalog materials across two product
+projects. The earlier manifest freezes the old reviewer candidate; it does not
+bind the new workflow or show the new project's immutable neutral registration
+snapshot ref, digest, and field list. An opaque release ref and matching
+material hashes alone do not establish formal same-tuple product acceptance.
+The earlier manifest's `not_claims` and reviewer receipts retain their
+historical scope; no old review decision is transferred. This wheel/catalog
+remains `mixed_unverified` and
 `pending_unapproved`, so the technical evidence is not a stable release.
 
 At this acceptance point, the D2-maintained

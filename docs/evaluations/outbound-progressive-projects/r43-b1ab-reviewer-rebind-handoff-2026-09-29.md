@@ -92,13 +92,30 @@ manifest ArtifactOwner ref has yet been verified. The ordinary request's
 `cf://user/.../resources/...` input is a ResourceOwner reference, not an
 ArtifactOwner reference. Example refs in
 `contracts/examples/scirel-plugin-registration.dev.json` are placeholders.
-The new isolated product on Spark loopback port 18112 registered a development
-plugin release binding SciRel source `cc2fa21`, the two exact ArtifactOwner
-inputs above, and the installed-wheel backend. Its release ref is:
+The new isolated product on Spark loopback port 18112 used the installed-wheel
+backend and registered a development plugin release under an owner-reported
+ref naming SciRel source `cc2fa21`, wheel, and catalog. The wheel and catalog
+ArtifactOwner readbacks are above. The release ref is:
 
 ```text
 plugin-release://scirel/0.1.0.dev5/source-cc2fa21e03fa7e5152c29f0769165863429e1693/wheel-b1abff574c870e17dd4e24adc952ca4279561aa43adcc92250d019e42b2b3684/catalog-afee7fcf2d5bca4e04179aaaa1e1d98bdd689a8439c965f1b1c4580993c097e5
 ```
+
+For a later qualified candidate, the ordinary/reviewer handoff must identify
+the same exact source Git, wheel, catalog release/root/ZIP, and review
+workflow/successor. It must give an immutable plugin registration snapshot ref
+and digest, enumerate the actual `PluginReleaseSnapshot.artifacts` triples
+(`artifact_ref`, digest, media type) and `runtime_dependency_refs`, and attach
+host installation and readback receipts. The neutral artifacts can reference
+the wheel and catalog ArtifactOwner refs above; this handoff pins the workflow,
+review successor, and host export separately as review evidence. The frozen
+source Git SHA belongs in the D2 index. The current development run has an
+owner-reported registration and matched Artifact readbacks, but this handoff
+does not preserve the full immutable registration snapshot or its neutral
+field list. Its release ref's embedded digests do not by themselves establish
+formal same-tuple product acceptance. A later qualified binding needs a new
+immutable release ref and registration; the earlier development registration
+and reviewer decisions stay historical.
 
 The first L1 run failed after a task-local proxy error; the retry under the
 same release completed. CodeFusion reports these new project results and
