@@ -7,10 +7,29 @@ are relative to their named stage1 run. A frozen source hash alone does not clos
 source/numerical comparison, and `pending_unapproved` does not imply D1 qualification.
 The unpublished-candidate census is not independently complete; new qualified
 intake and exact development deliveries must be appended as they arrive.
+The later `cc2fa21` adapter wheel is a distinct r43 development successor:
+its SHA-256 is `b1abff574c870e17dd4e24adc952ca4279561aa43adcc92250d019e42b2b3684`,
+whereas the earlier indexed wheel is `927b33e4a1051d71698714b30d80dfe9da46c7647ebe25fd9c2fedfc6025deda`.
+The appended successor entry binds the exact wheel, Git source, local catalog,
+and preserved ordinary-user install/result receipts through
+`provenance/r43-adapter-corrected-development-acceptance-20260929.json`.
+Its third destination reference is the independently saved
+`docs/evaluations/outbound-progressive-projects/manifests/2026-09-29-fluidbw-r43-cc2fa21-outbound-check.json`:
+the installed wheel passed 51 r43 scientific tests and a bounded local adapter
+discover/read/invoke probe outside the source checkout.
+The two entries share a catalog root but do not share wheel identity or transfer
+the earlier D3 case results. The consumer request identity comes from the
+CodeFusion owner's readback; D2 checked its downloaded receipt bytes locally,
+without an independent product query or remote catalog byte download.
+The final ordinary-user dual-chain trace still lacks one same-request binding
+to an owner-resolved immutable `scirel-solving` revision, a frozen execution
+environment, and the shell Tool Plan. This development snapshot does not close
+that consumer-contract gap.
 The verified local scope is the r81/dev58 and r43/dev5 development deliveries
-plus the r43 initial 13-item review version. The r43 workflow itself records an
-unpublished-candidate census gap, so these entries are not an authoritative
-inventory of every external checkout or host artifact.
+and the corrected adapter successor, plus the r43 initial 13-item review version.
+The r43 workflow itself records an unpublished-candidate census gap, so these
+entries are not an authoritative inventory of every external checkout or host
+artifact.
 
 Earlier outbound case manifests also bind development wheels labelled dev12,
 dev15, dev24, dev39, and dev5. The local dev24 wheel SHA-256

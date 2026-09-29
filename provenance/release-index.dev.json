@@ -223,6 +223,46 @@
       "evidence_type": "review_host_export_acceptance",
       "status": "evidence",
       "subject_entry_id": "candidate:a90a56d6c69390d65c38b7ac8de7597ea5d6f5ef7cc7776377668daa8a7d3c14"
+    },
+    {
+      "approval_state": "pending_unapproved",
+      "catalog": {
+        "digest": "sha256:fece59b88ad39480a58b3c35f7678b2007a578f5918a74533f5b0cae6dfe2d02",
+        "ref": "build/verification/fluidbw-r43-development-delivery-20260929/bundle/catalog/release.json",
+        "root_digest": "sha256:1bd47cc5cce3155cb8ec17676eb4f0296374d85939c7396c8be9a9ee06e7cdfb"
+      },
+      "destination_refs": [
+        {
+          "digest": "sha256:5507e0e7696e456cc7c60aea34f511b7ee919bdbca979746a78bf8baee25cf35",
+          "ref": "provenance/r43-adapter-corrected-wheel-install-20260929.json"
+        },
+        {
+          "digest": "sha256:3d9605a897582babff9a7c4813d5cc2fd8f8e08d80708dfa5ff393e640b101f2",
+          "ref": "provenance/r43-adapter-corrected-consumer-receipt-20260929.json"
+        },
+        {
+          "digest": "sha256:70856eb562a67352c80b96a3b0dd7a6144fe73fa57068c28d2ea4a724f38e328",
+          "ref": "docs/evaluations/outbound-progressive-projects/manifests/2026-09-29-fluidbw-r43-cc2fa21-outbound-check.json"
+        }
+      ],
+      "entry_digest": "sha256:a030749c497dfa432457d14e266d1a4b0aa0998e2d2c20df95c32ae09c769575",
+      "entry_id": "development:c9a63b3f8068626417895ecfdc45787045a46a2a78ff6972642f6e8164de0463",
+      "evidence_refs": [
+        {
+          "digest": "sha256:f43494fed8da6d4e6bf97622ea0cf8d98886a76846be684e9c9fb72bb77bd951",
+          "ref": "provenance/r43-adapter-corrected-development-acceptance-20260929.json"
+        }
+      ],
+      "snapshot_id": "fluidbw-r43-adapter-cc2fa21-dev5-132",
+      "source_binding": {
+        "git_revision": "cc2fa21e03fa7e5152c29f0769165863429e1693"
+      },
+      "source_qualification": "mixed_unverified",
+      "status": "development",
+      "wheel": {
+        "digest": "sha256:b1abff574c870e17dd4e24adc952ca4279561aa43adcc92250d019e42b2b3684",
+        "ref": "build/verification/fluidbw-r43-adapter-corrected-20260929/scirel-0.1.0.dev5-py3-none-any.whl"
+      }
     }
   ],
   "schema": "scirel.release-index.dev"
