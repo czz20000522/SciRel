@@ -53,11 +53,14 @@ Its 13-item workflow and non-approving successor remain separate evidence;
 zero items are approved. That ordinary-user result alone was neither
 same-tuple dual-chain acceptance nor stable release.
 
-The later isolated reviewer project registered a development plugin release
-binding SciRel Git `cc2fa21`, wheel `b1abff...` and catalog ZIP `afee7fcf...`.
+The later isolated reviewer project used a new development release ref naming
+SciRel Git `cc2fa21`, wheel `b1abff...` and catalog ZIP `afee7fcf...`.
 CodeFusion read back both uploaded Artifacts and reported an installed-wheel
 backend; D2 checked the saved local readback bytes and receipts, without an
-independent product or database query. Its new `review_pending` workflow SHA-256
+independent product or database query. The saved D2 evidence does not include
+the full immutable neutral registration JSON, so matching material digests
+support a bounded technical comparison across the two projects, not formal
+same-tuple product acceptance. Its new `review_pending` workflow SHA-256
 `0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b`
 retains the same 13 review units and item refs as the old `a9099a...` version,
 but binds the corrected L1 result, wheel/catalog Artifacts and exact index
