@@ -22,8 +22,8 @@ catalog、wheel、许可决定与发行验证。返工产生关联的 successor�
 
 开发期 `pending_unapproved` 快照可供 D3 运行，但不因构建成功自动成为已批准候选或已发布版本。
 公开版本指针只在确切候选的批准闭包、许可、依赖、构建和发行检查通过后更新。当前没有已批准的
-公开基线，也尚无统一索引实现或发布条目；索引的开发期形状可在首条真实候选中调整，正式发布前
-连同相关版本和合同冻结为 `v1`。
+公开基线，也没有真实批准的发布条目。现有 `.dev` 索引注册器可冻结待审 item 版本，但还没有把
+真实候选登记为可信或发布事实；其字段可随首条真实闭环调整，正式发布前连同相关版本和合同冻结为 `v1`。
 
 ## 开发快照的来源资格
 
@@ -57,10 +57,12 @@ L1 从实现和图定义发现资产，无须正式 Markdown；输入仍只读�
 它不授予目标资产批准，也不能通过 release 的 approved 门禁。
 
 开发版和冻结待审版通过 Git 与现有 artifact 管理，不新增数据库或每次提交的工作流状态。
-现有 release API 仍是单 draft fixture；逐项批准子集的自动整包固化、完整可信版本增量投影仍需对应
-消费者实现与验证。不能用文档声明这些功能已完成，也不能用这个限制阻断已有开发 wheel 构建。
-`scripts/finalize_release.py` 当前核对整 draft 的 approved 状态、文档/catalog 与 wheel 摘要，
-尚未核对逐项批准 revision 到实际代码、测试结果和 wheel 的完整绑定；它不能作为正式发行门禁。
+现有 workflow/plugin release API 仍是单 draft fixture。`scripts/release_index.py` 已能登记精确
+待审 artifact 与 Git 候选，`scripts/finalize_release.py` 的命令入口已按逐项批准 revision 核对
+提交前版本、代码/测试文件、实际重跑结果、文档、catalog 与 wheel，并追加新的索引副本。
+它不负责把任意批准子集装配成 wheel；`check.ps1 -Mode release` 仍构建当前 checkout 全包。
+审核宿主的身份认证与发行授权也不能由本地 JSON 摘要证明。批准子集整包固化、完整可信版本增量
+投影及消费者切换仍需真实获批输入与对应实现验证，不能以开发 fixture 代替。
 发布批准始终绑定最终科学内容；既有未批准维护代码不因某一个 draft 获批而整体获批。
 
 CodeFusion 是中性宿主，不拥有这些科学版本的判断。需要宿主联调时，SciRel 作为普通用户访问 Spark 上的 CodeFusion 局域网服务；Spark 侧构建、部署、访问控制和通用工作台由 CodeFusion 维护者负责，SciRel 不在本机启动或改造该服务。
