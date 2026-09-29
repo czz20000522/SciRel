@@ -128,6 +128,34 @@ dependent graphs are not closed release selections. Release checks require
 the approved item dependency list to match its exact document and every
 selected dependency to be present.
 
+Technical route check on 2026-09-30: the installed SciRel review action contract
+offers only approve, request-evidence, and reject. Its successor copies the
+submitted `asset` and `dependency_asset_ids`, so an action on either A0 item
+cannot carry the corrected document. An intake using the old `candidate_id`,
+`draft_id`, asset order, and asset IDs would regenerate the same item refs;
+CodeFusion `admit-index` only replays identical source Artifacts and rejects a
+different binding for an existing ref. A new `draft_id` (or candidate identity)
+is therefore required for a new workflow. The standardization gate also
+requires complete accounting of the original source assets, matching candidate
+and source digests, the exact SciRel Git base and skill digest, and internally
+consistent review units. For these two units, both `asset_document` and the
+embedded `candidate_document` must reflect the maintained exact document, with
+updated embedded digest and `dependency_asset_ids`; code, tests, and evidence
+must be checked against the new frozen base. Reusing the old submission JSON
+with only its document fields patched is not a valid new review handoff.
+
+The local CodeFusion endpoint `127.0.0.1:18096` refused a connection during
+this check, so live item state, project authorization, and any new intake could
+not be revalidated. No corrected successor, new host receipt, or new candidate
+Artifact was produced. The next technical owner must first restore the
+reviewer host and refresh both item revisions, then prepare and validate a new
+complete standardization submission from a frozen SciRel base. After an
+authenticated intake and index admission, give D2 the exact workflow Artifact,
+digest, item refs, dependency lists, host receipt, and Git revision. D2 alone
+registers the new candidate and then appends the old candidate's `superseded`
+lifecycle event with exact evidence. Neither step implies scientific or license
+approval.
+
 The A1 Weideman item is `needs_evidence`, not approved. Its successor retains
 general census, producer-build, scientific-approval, and license gaps; the
 decision notes do not specify a narrower scientific question. The reviewer
