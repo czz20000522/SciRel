@@ -99,6 +99,13 @@ pwsh ./scripts/check.ps1 -Mode release -ReleaseIndex <candidate-index.json> -Can
 实际消费 manifest 和 digest，D2 单写者负责身份、来源与科学证据并核对登记；工作台当前逐项
 审核状态继续由审核 artifact/投影提供。完整开发 catalog 不等于专家批准，来源混合的开发
 快照不因 `pending_unapproved` 而自动取得 D1 资格；正式公开发行前合同统一冻结为 `v1`。
+普通用户与 reviewer 技术链的交接还须给出同一 exact source Git、wheel、catalog 和 review
+workflow/successor 身份，以及不可变 plugin registration 快照的引用和摘要。CodeFusion 的中性
+`PluginReleaseSnapshot.artifacts` 可用 artifact ref、digest、media type 指向已上传的 wheel、
+catalog 或审核材料；`runtime_dependency_refs` 可标识声明的运行依赖。交接应逐项说明实际
+使用了哪些 ref，并用宿主回执验证安装和读取，不能仅凭 opaque `plugin_release_ref` 推断材料
+相同或科学获批。旧注册不改写；新绑定使用独立的不可变注册与证据，技术双链也不替代专家
+审核、许可和发行验收。
 开发条目或待审候选的替换、撤回用 `--lifecycle superseded|withdrawn`、`--subject-entry-id`、
 精确 `--evidence` 和 `--existing-index` 追加事件；替换还须给出同类的 `--successor-entry-id`。
 旧条目及摘要不改写，当前未发布入口排除已替换、撤回和已发行的候选。开发条目的替换只改变
