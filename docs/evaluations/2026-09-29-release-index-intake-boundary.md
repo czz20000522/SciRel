@@ -81,6 +81,21 @@ producer keys. This bounded reconciliation does not validate the literal
 denominator, or qualify D1 intake. A changed candidate digest needs fresh
 comparison evidence.
 
+The FLAME kinetic public canonical source-only attempt `a02` at
+`lanes/wi-flame-kinetic-source-canonical-20260929/attempts/a02/evidence/`
+has a probe receipt SHA-256
+`ca4caf3400f8bc34f87bb0a82e1f6741c08bb8e6324d59599094d5fd81d6fc35`
+and source-intermediates record SHA-256
+`7b9b65da178fae537bc7ebd42d618758796467cf0cde13e77d3420bcc081215f`.
+The frozen source converged in four iterations on its 151 by 51 mesh and
+materialized 35 NPZ fields and 25 summary fields; both output hashes and the
+intermediate-array hash match the record. The source mount was read-only,
+candidate mounting was unavailable, and the probe reports no candidate read.
+The record preserves the source summary's omitted `dR` volume weight as a
+known behavior, not an endorsed correction. This is a source-side baseline
+only: no candidate comparison, independent holdout, whole-source closure, or
+D1 intake follows from it. The failed `a01` receipt remains separate.
+
 ## Review-slice dependency closure
 
 The r43 index binds 13 retained review items, but this slice alone is not a
