@@ -223,7 +223,9 @@ def finalize_single_draft_fixture(
     }
 
 
-def _review_artifact(directory: Path, revision: str) -> tuple[bytes, dict[str, Any]]:
+def _review_artifact(
+    directory: Path, revision: str, item_ref: str
+) -> tuple[bytes, dict[str, Any]]:
     if not isinstance(revision, str) or len(revision) != 71 or not all(
         character in "0123456789abcdef" for character in revision[7:]
     ) or not revision.startswith("sha256:"):
@@ -232,7 +234,7 @@ def _review_artifact(directory: Path, revision: str) -> tuple[bytes, dict[str, A
     body = path.read_bytes()
     if _digest(body) != revision:
         raise ValueError(f"review artifact digest differs: {revision}")
-    return body, review_item_from_body(body)
+    return body, review_item_from_body(body, item_ref=item_ref)
 
 
 def _relative_file(root: Path, name: str, prefix: str) -> Path:
@@ -381,7 +383,7 @@ def finalize_reviewed_release(
         if candidate_item is None:
             raise ValueError(f"approved item is absent from candidate: {item_ref}")
         revision = projection.get("revision")
-        successor_body, item = _review_artifact(review_artifacts_dir, revision)
+        successor_body, item = _review_artifact(review_artifacts_dir, revision, item_ref)
         successor = json.loads(successor_body)
         if successor.get("schema") != "codefusion.plugin-reviewer-successor-snapshot.v1":
             raise ValueError("approved revision must be a reviewer successor artifact")
@@ -400,7 +402,7 @@ def finalize_reviewed_release(
         if asset_id != candidate_item["asset_id"] or asset_id in approved_by_asset:
             raise ValueError("approved item asset identity is invalid or repeated")
         _, submitted = _review_artifact(
-            review_artifacts_dir, decision["submitted_revision"]
+            review_artifacts_dir, decision["submitted_revision"], item_ref
         )
         if successor["predecessor"] != decision["submitted_artifact"]:
             raise ValueError("review successor predecessor differs from approval decision")
@@ -410,7 +412,7 @@ def finalize_reviewed_release(
         ):
             raise ValueError("approved item differs from the submitted review revision")
         _, initial = _review_artifact(
-            review_artifacts_dir, candidate_item["initial_revision"]
+            review_artifacts_dir, candidate_item["initial_revision"], item_ref
         )
         if (
             initial["status"] != "review_pending"

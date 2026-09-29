@@ -1,5 +1,6 @@
 """Development release index and exact review binding gates."""
 
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -11,6 +12,7 @@ from scirel_plugin.adapter import (
     execute_body_import_wire,
     review_item_from_body,
     review_item_from_workflow,
+    review_items_from_body,
 )
 from scirel_workflow import CandidatePackage, SciRelWorkflow
 from scirel_workflow.models import digest
@@ -68,6 +70,90 @@ def _pending_item(*, release_ready=False):
     )
     workflow.submit_for_review()
     return review_item_from_workflow(workflow, 0)
+
+
+def _multi_item_workflow_body(*, release_ready=False):
+    first = _pending_item(release_ready=release_ready)
+    second = json.loads(
+        (ROOT / "catalog/examples/scirel.closures.hall-two-fluid-pressure.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    candidate = CandidatePackage.from_l1(
+        {
+            "assets": [
+                {"candidate_asset_id": "candidate-field"},
+                {"candidate_asset_id": "candidate-closure"},
+            ],
+            "automated_checks": [{"name": "replay", "status": "passed"}],
+        },
+        source_artifact_ref="artifact://l1/test",
+        source_digest="sha256:l1",
+        run_id="run-release-index",
+    )
+    workflow = SciRelWorkflow(candidate)
+    workflow.create_draft(
+        draft_id="draft-release-index",
+        assets=[first["asset"], second],
+        evidence=first["evidence"],
+    )
+    workflow.submit_for_review()
+    return json.dumps(workflow.to_dict(), ensure_ascii=False, sort_keys=True).encode("utf-8")
+
+
+def test_candidate_index_registers_every_item_from_one_workflow_revision(tmp_path):
+    from release_index import register_candidate
+
+    body = _multi_item_workflow_body()
+    artifact = tmp_path / "workflow.json"
+    artifact.write_bytes(body)
+
+    index = register_candidate(
+        item_artifacts=[artifact],
+        git_revision="a" * 40,
+        output_path=tmp_path / "index.json",
+    )
+
+    items = index["entries"][0]["items"]
+    assert {item["item_ref"] for item in items} == {
+        item["item_ref"] for item in review_items_from_body(body)
+    }
+    assert len(items) == 2
+    assert {item["initial_revision"] for item in items} == {
+        "sha256:" + hashlib.sha256(body).hexdigest()
+    }
+
+
+def test_candidate_index_rejects_repeated_multi_item_artifact(tmp_path):
+    from release_index import register_candidate
+
+    artifact = tmp_path / "workflow.json"
+    artifact.write_bytes(_multi_item_workflow_body())
+
+    with pytest.raises(ValueError, match="repeats an asset or review item"):
+        register_candidate(
+            item_artifacts=[artifact, artifact],
+            git_revision="a" * 40,
+            output_path=tmp_path / "index.json",
+        )
+
+
+def test_candidate_index_rejects_workflow_without_pending_items(tmp_path):
+    from release_index import register_candidate
+
+    workflow = json.loads(_multi_item_workflow_body())
+    workflow["status"] = "draft"
+    workflow["draft"]["status"] = "draft"
+    workflow["drafts"][0]["status"] = "draft"
+    artifact = tmp_path / "workflow.json"
+    artifact.write_text(json.dumps(workflow), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="no pending review items"):
+        register_candidate(
+            item_artifacts=[artifact],
+            git_revision="a" * 40,
+            output_path=tmp_path / "index.json",
+        )
 
 
 def test_candidate_index_preserves_exact_pending_revision_without_approval(tmp_path):
@@ -168,14 +254,16 @@ def test_strict_finalizer_rejects_a_candidate_without_item_approval(tmp_path):
         )
 
 
-def _reviewed_release_inputs(tmp_path):
+def _reviewed_release_inputs(tmp_path, *, multi_item=False):
     from build_catalog import build_catalog
     from release_index import register_candidate
 
-    item = _pending_item(release_ready=True)
-    pending_body = json.dumps(item, ensure_ascii=False, sort_keys=True).encode("utf-8")
-    import hashlib
-
+    if multi_item:
+        pending_body = _multi_item_workflow_body(release_ready=True)
+        item = review_items_from_body(pending_body)[0]
+    else:
+        item = _pending_item(release_ready=True)
+        pending_body = json.dumps(item, ensure_ascii=False, sort_keys=True).encode("utf-8")
     pending_revision = "sha256:" + hashlib.sha256(pending_body).hexdigest()
     artifacts = tmp_path / "artifacts"
     artifacts.mkdir()
@@ -236,10 +324,13 @@ def _reviewed_release_inputs(tmp_path):
     return artifacts, documents, catalog, wheel, projection
 
 
-def test_reviewed_finalization_binds_item_document_test_and_wheel(tmp_path, monkeypatch):
+@pytest.mark.parametrize("multi_item", [False, True])
+def test_reviewed_finalization_binds_item_document_test_and_wheel(tmp_path, monkeypatch, multi_item):
     import finalize_release
 
-    artifacts, documents, catalog, wheel, projection = _reviewed_release_inputs(tmp_path)
+    artifacts, documents, catalog, wheel, projection = _reviewed_release_inputs(
+        tmp_path, multi_item=multi_item
+    )
     monkeypatch.setattr(finalize_release, "_git_revision", lambda root: "a" * 40)
     monkeypatch.setattr(finalize_release, "_git_changed_files", lambda root, revision: set())
     monkeypatch.setattr(finalize_release, "_require_clean_release_sources", lambda root: None)
@@ -258,6 +349,7 @@ def test_reviewed_finalization_binds_item_document_test_and_wheel(tmp_path, monk
     manifest = json.loads(Path(result["release_manifest"]).read_text(encoding="utf-8"))
     index = json.loads(Path(result["release_index"]).read_text(encoding="utf-8"))
     assert manifest["approved_items"][0]["revision"] == projection["revision"]
+    assert len(manifest["approved_items"]) == 1
     assert manifest["verified_tests"] == [
         "tests/operator_contracts/test_circular_filament_green.py"
     ]

@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from scirel_plugin.adapter import review_item_from_body  # noqa: E402
+from scirel_plugin.adapter import review_items_from_body  # noqa: E402
 
 
 SCHEMA = "scirel.release-index.dev"
@@ -100,28 +100,32 @@ def register_candidate(
     item_refs = set()
     for path in item_artifacts:
         body = path.read_bytes()
-        item = review_item_from_body(body)
-        if item["status"] != "review_pending":
-            raise ValueError("candidate item must be pending")
-        asset = item["asset"]
-        asset_id = asset.get("asset_id")
-        if not isinstance(asset_id, str) or not asset_id:
-            raise ValueError("candidate asset requires a stable asset_id")
-        if asset_id in asset_ids or item["item_ref"] in item_refs:
-            raise ValueError("candidate repeats an asset or review item")
-        asset_ids.add(asset_id)
-        item_refs.add(item["item_ref"])
-        candidate_ids.add(item["candidate_id"])
-        draft_ids.add(item["draft_id"])
-        items.append(
-            {
-                "item_ref": item["item_ref"],
-                "initial_revision": digest(body),
-                "asset_id": asset_id,
-                "document_digest": digest(canonical_json(asset)),
-                "dependency_asset_ids": item["dependency_asset_ids"],
-            }
-        )
+        revision = digest(body)
+        artifact_items = review_items_from_body(body)
+        if not artifact_items:
+            raise ValueError("candidate artifact has no pending review items")
+        for item in artifact_items:
+            if item["status"] != "review_pending":
+                raise ValueError("candidate item must be pending")
+            asset = item["asset"]
+            asset_id = asset.get("asset_id")
+            if not isinstance(asset_id, str) or not asset_id:
+                raise ValueError("candidate asset requires a stable asset_id")
+            if asset_id in asset_ids or item["item_ref"] in item_refs:
+                raise ValueError("candidate repeats an asset or review item")
+            asset_ids.add(asset_id)
+            item_refs.add(item["item_ref"])
+            candidate_ids.add(item["candidate_id"])
+            draft_ids.add(item["draft_id"])
+            items.append(
+                {
+                    "item_ref": item["item_ref"],
+                    "initial_revision": revision,
+                    "asset_id": asset_id,
+                    "document_digest": digest(canonical_json(asset)),
+                    "dependency_asset_ids": item["dependency_asset_ids"],
+                }
+            )
     if len(candidate_ids) != 1 or len(draft_ids) != 1:
         raise ValueError("candidate items must belong to one candidate and draft")
     items.sort(key=lambda item: item["item_ref"])
