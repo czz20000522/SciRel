@@ -85,7 +85,7 @@ the workbench is the source for later item revisions and current decisions.
 | --- | --- | --- |
 | fluidBW `stage1-fluidBW-20260920T025316Z` | r43 bundle SHA-256 `02b9b01d5224ecd2be0781aaae3540fdbe1526c05203f3748bdad6f9a6bd02fd`; `evidence_out/fluidbw-d1-extraction-freeze-20260920-r43/D1-HANDOFF-v2.json` SHA-256 `3c514298bd46be501a097e53766868285928c9e3cdb5f66c06a291289ec26f9a` | 16/16 source partitions and 4/4 target paths; issued for read-only D2 intake. The index binds its 13 retained review items separately from the mixed 132-item development wheel. |
 | PDRK `stage1-PDRK-20260919T214903Z` | Frozen source SHA-256 `7ceab1c6383a474ec55095c7ff19316db5c1b739855e495a6b325f0f110b39e4`; candidate bundle SHA-256 `a35bd08ad1afb3912b996d8528317641ea9960b9875bbf0ccabfe8429c3c6310`; `coordination/capability_progress_reopened_20260921_r9/capability_progress.json` SHA-256 `9ddd03747c8d0b6c7f9b8ef99416447750cc6bd435036469fd48ca744b39bcef`; `coordination/pdrk-fixed-jpole-user-ruling-20260928.txt` SHA-256 `32d09ec338f1b75107a59abf1ff9e70458c33204914f389db4966a3a4f1e6120` | 12/13 paths closed; `T-PDRK-JPOLE-GENERATOR` lacks independent same-path sealed holdout. Remains OPEN in D1. PDRF proposal is also not uploaded; the isolated comparison in `docs/evaluations/2026-09-25-planar-wavevector-integration.md` is development evidence only. |
-| Pleiades `stage1-Pleiades-opt-20260921T093633Z` | Frozen source SHA-256 `7c809a0d6d1fb18568e3b70e1a0fcbee7fff42469881b859df2028a373488c5a`; current comparison candidate SHA-256 `b09804ced2f8cd8c499638d6b68bc39444e72a0351e9be908f8c7519d317baa2`; `coordination/source-first-public-terminal-census-20260927.json` SHA-256 `3b3b8ae9166a03fc1b79c78e4eb2a4dcf4efa93b484d098b04a7fdaa50fb2252`; `lanes/wi-wham-source-api-domain-wham-control-20260929/attempts/a01/evidence/source-solver-entry-check.json` SHA-256 `773a196789082151d91526b5c81e2f925bc5f787d64bad9762720f273bbc294f` | Source-first census has 5 drivers and 292 terminal-field occurrences; 7 target paths remain open. The WHAM API-domain source check and one equal-temperature canonical terminal comparison passed; that variant still lacks its own sealed holdout, and full-source freeze remains open. Historical 52-item SciRel sample stays historical. |
+| Pleiades `stage1-Pleiades-opt-20260921T093633Z` | Frozen source SHA-256 `7c809a0d6d1fb18568e3b70e1a0fcbee7fff42469881b859df2028a373488c5a`; earlier D2-checked comparison candidate SHA-256 `b09804ced2f8cd8c499638d6b68bc39444e72a0351e9be908f8c7519d317baa2`; `coordination/source-first-public-terminal-census-20260927.json` SHA-256 `3b3b8ae9166a03fc1b79c78e4eb2a4dcf4efa93b484d098b04a7fdaa50fb2252`; `lanes/wi-wham-source-api-domain-wham-control-20260929/attempts/a01/evidence/source-solver-entry-check.json` SHA-256 `773a196789082151d91526b5c81e2f925bc5f787d64bad9762720f273bbc294f` | Source-first census has 5 drivers and 292 terminal-field occurrences; 7 target paths remain open. The WHAM API-domain source check and one equal-temperature canonical terminal comparison passed on the earlier candidate; that variant still lacks its own sealed holdout, and full-source freeze remains open. Historical 52-item SciRel sample stays historical. |
 | FIDASIM `stage1-FIDASIM-20260917T053940Z` | Frozen source SHA-256 `c8bd91ecaeac96de7aa08a8eb7eeec435ee63b2a613d37254a607f1b8bc81f70`; current bundle SHA-256 `9677d76a88bf884eec33c66eecd2d03c0c86d63ea5f722acbee286116c02394a`; `coordination/capacity-checkpoint-20260928T012947Z.json` SHA-256 `b7472b11ae95ef8a6517c2504be48ea53a3d550391f08ca9eb482c1259d1b7d5` | Of 146 scoped items, 105 proved, 18 residual and 23 terminal; 0/10 target paths passed, and holdout independence remains unproved. D1 work continues. |
 
 The latter three inputs remain visible here for comparison and follow-up. They do
@@ -158,7 +158,7 @@ known behavior, not an endorsed correction. This is a source-side baseline
 only: no candidate comparison, independent holdout, whole-source closure, or
 D1 intake follows from it. The failed `a01` receipt remains separate.
 
-For the current `b09804ced2f8cd8c499638d6b68bc39444e72a0351e9be908f8c7519d317baa2`
+For the earlier `b09804ced2f8cd8c499638d6b68bc39444e72a0351e9be908f8c7519d317baa2`
 candidate, `task_graphs/device_vacuum_field/graph.py` (SHA-256
 `e7c8ad607534670a43fde57754fa2d8969b38202532b609fbaeaca7d6be1c62f`)
 calls `device_coil_configuration(preset)`. That operator (SHA-256
@@ -168,9 +168,20 @@ separate `flame_coil_filaments` operator has probe receipt SHA-256
 `f39f5b0764ea3bfc8b4c4be347478640e826e0432095105d3b67a82eb0bc98a1`
 and log SHA-256 `b26b48fa378229daa452dcd365d7fbfb3783f19dd1a17a38da089f511f4dabd7`;
 its 4108-filament source comparison reports zero absolute and relative error.
-That local result does not establish a composed FLAME
-field/Green TaskGraph path or 60-field terminal parity. This composition gap
-must be resolved and compared on exact candidate bytes before intake credit.
+That local result alone did not establish a composed FLAME field/Green TaskGraph
+path or 60-field terminal parity. The later a03 comparison below covers one
+canonical path, without granting intake credit.
+
+The later Pleiades candidate SHA-256
+`9eb0bad7b4021689a6a9d64d1b9d0a22b627dcb0a5a97cfcbe8791c85f767e93`
+has a FLAME terminal reassembly comparison at
+`lanes/wi-flame-terminal-reassembly-20260929/attempts/a03/evidence/flame-terminal-reassembly-comparison.json`
+(SHA-256 `766a808aa155f3144c0cceeebe654998edc8be1a9987eb6f47fefae4c8b56577`).
+D2 checked that report's bytes and its source/candidate digests: 35 archive
+fields and 25 summary fields passed at `atol=rtol=1e-12`, with zero failed
+fields. The D1 coordination record gives this canonical case no independent
+holdout credit. WHAM a06 admission and whole-source closure also remain open,
+so this is neither a qualified D1 handoff nor an index entry.
 
 ## Review-slice dependency closure
 
