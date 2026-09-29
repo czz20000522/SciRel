@@ -465,6 +465,18 @@ def finalize_reviewed_release(
     baseline = set(latest_release["included_assets"]) if latest_release else set()
     if set(documents) != set(approved_by_asset) | baseline:
         raise ValueError("release documents must equal approved items and prior released baseline")
+    release_modules = {
+        document["public_api"]["python"]["module"] for document in documents.values()
+    }
+    source_documents = load_document_set(source_root / "catalog/examples")
+    for source_document in source_documents:
+        if (
+            source_document["public_api"]["python"]["module"] in release_modules
+            and source_document["asset_id"] not in documents
+        ):
+            raise ValueError(
+                f"release module contains an unapproved asset in a shared module: {source_document['asset_id']}"
+            )
     for asset_id, item in approved_by_asset.items():
         if _canonical_json(documents[asset_id]) != _canonical_json(item["asset"]):
             raise ValueError(f"approved asset differs from release document: {asset_id}")
@@ -509,6 +521,19 @@ def finalize_reviewed_release(
     ):
         raise ValueError("catalog and document implementation versions differ")
     wheel_members = _wheel_contents(wheel, release_version)
+    approved_modules = {
+        document["public_api"]["python"]["module"].replace(".", "/") + ".py"
+        for document in documents.values()
+    }
+    for wheel_name in wheel_members:
+        parts = PurePosixPath(wheel_name).parts
+        if (
+            parts[0] == "scirel"
+            and wheel_name.endswith(".py")
+            and not any(part.startswith("_") for part in parts[1:])
+            and wheel_name not in approved_modules
+        ):
+            raise ValueError(f"release wheel contains an unapproved scientific module: {wheel_name}")
     for wheel_name, body in wheel_members.items():
         if wheel_name.endswith(".py"):
             source_name = "src/" + wheel_name
