@@ -155,9 +155,23 @@ although the executable graph (SHA-256
 passes both values and the EM3D operator requires them. It also declares
 `graph_order` shape `(6,)` while the executable graph and direct test return
 five node labels. The runtime source comparison does not verify this YAML
-port contract. No bounded handoff was found for this path; a D1 successor must
-bind the corrected graph contract and exact candidate bytes before D2 can
-credit this as an importable TaskGraph. The frozen r9 evidence stays unchanged.
+port contract. At screening time, no bounded handoff was found for this path;
+a D1 successor needed to bind the corrected graph contract and exact candidate
+bytes before D2 could credit this as an importable TaskGraph. The frozen r9
+evidence stays unchanged.
+
+The PDRK owner subsequently recorded a structural D1 successor at
+`evidence_out/d1_successor_spectrum_graph_contract_20260929/successor_record.json`
+(SHA-256 `bb99bbe5f3cfd53bcadd2b7aff02f69f80d8df33914afff07fbd2549c57f28b5`).
+It binds candidate bundle `5516b7998753283db982d3df26598aed0bd0f0295b22d2536609b5dfc4f921ab`:
+the YAML declares the internal `c2` and `vds` ports and edges and the five-label
+`graph_order`, while the executable graph pins the corrected YAML hash. Eight
+focused graph tests, import-intake, and source-free checks passed on that bundle.
+The predecessor canonical and sealed-holdout receipts bind only `a35bd08a...`;
+no new numerical receipts were established at `5516b799...`. Both
+`T-PDRK-SPECTRUM` and `T-PDRK-JPOLE-GENERATOR` remain OPEN, with the latter
+still subject to the canonical plus independent same-path sealed-holdout gate.
+This successor is not a qualified D1 handoff, full freeze, or D2 intake.
 
 The Pleiades equal-temperature WHAM API-domain canonical attempt `a02` has an
 exact comparison at `lanes/wi-wham-source-api-domain-terminal-comparison-20260929/attempts/a02/evidence/wham-api-domain-terminal-comparison.json`
