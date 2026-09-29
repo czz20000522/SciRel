@@ -1,4 +1,4 @@
-"""Register immutable review candidates and development snapshots in one index."""
+"""Register immutable unpublished candidates and their lifecycle in one index."""
 
 from __future__ import annotations
 
@@ -52,10 +52,13 @@ def read_index(path: Path) -> dict[str, Any]:
     ids = set()
     candidates = set()
     developments = set()
+    unpublished = {}
+    retired = set()
+    released_candidates = set()
     latest_release = None
     for entry in value["entries"]:
         if not isinstance(entry, dict) or entry.get("status") not in {
-            "candidate", "development", "evidence", "released"
+            "candidate", "development", "evidence", "lifecycle", "released"
         }:
             raise ValueError("release index contains an invalid entry")
         unsigned = {key: part for key, part in entry.items() if key != "entry_digest"}
@@ -68,6 +71,7 @@ def read_index(path: Path) -> dict[str, Any]:
             if not isinstance(entry.get("items"), list) or not entry["items"]:
                 raise ValueError("candidate index entry has no review items")
             candidates.add(entry["entry_id"])
+            unpublished[entry["entry_id"]] = entry
         elif entry["status"] == "development":
             if (
                 entry.get("approval_state") != "pending_unapproved"
@@ -76,6 +80,7 @@ def read_index(path: Path) -> dict[str, Any]:
             ):
                 raise ValueError("development entry lacks an unapproved artifact binding")
             developments.add(entry["entry_id"])
+            unpublished[entry["entry_id"]] = entry
         elif entry["status"] == "evidence":
             binding = entry.get("evidence_ref")
             evidence_type = entry.get("evidence_type")
@@ -97,14 +102,59 @@ def read_index(path: Path) -> dict[str, Any]:
                     else "development snapshot"
                 )
                 raise ValueError(f"evidence entry lacks an earlier {subject_kind} or exact binding")
+        elif entry["status"] == "lifecycle":
+            subject = entry.get("subject_entry_id")
+            successor = entry.get("successor_entry_id")
+            transition = entry.get("transition")
+            binding = entry.get("evidence_ref")
+            if (
+                not isinstance(entry.get("entry_id"), str)
+                or not re.fullmatch(r"lifecycle:[0-9a-f]{64}", entry["entry_id"])
+                or subject not in unpublished or subject in retired
+                or subject in released_candidates
+                or transition not in {"superseded", "withdrawn"}
+                or not isinstance(binding, dict)
+                or not isinstance(binding.get("ref"), str) or not binding["ref"]
+                or not isinstance(binding.get("digest"), str)
+                or not _SHA256_DIGEST.fullmatch(binding["digest"])
+            ):
+                raise ValueError("lifecycle entry lacks a current unpublished subject or exact evidence")
+            if transition == "superseded":
+                if (
+                    successor not in unpublished or successor == subject
+                    or successor in retired or successor in released_candidates
+                    or unpublished[successor]["status"] != unpublished[subject]["status"]
+                ):
+                    raise ValueError("lifecycle successor must be a current entry of the same kind")
+            elif "successor_entry_id" in entry:
+                raise ValueError("withdrawn lifecycle entry cannot name a successor")
+            retired.add(subject)
         else:
             if (
                 entry.get("predecessor_entry_id") not in candidates
+                or entry.get("predecessor_entry_id") in retired
                 or entry.get("baseline_entry_id") != latest_release
             ):
                 raise ValueError("released index entry has an invalid predecessor")
             latest_release = entry["entry_id"]
+            released_candidates.add(entry["predecessor_entry_id"])
     return value
+
+
+def current_unpublished_entries(index: dict[str, Any]) -> list[dict[str, Any]]:
+    retired = {
+        entry["subject_entry_id"] for entry in index["entries"]
+        if entry["status"] == "lifecycle"
+    }
+    retired.update(
+        entry["predecessor_entry_id"] for entry in index["entries"]
+        if entry["status"] == "released"
+    )
+    return [
+        entry for entry in index["entries"]
+        if entry["status"] in {"candidate", "development"}
+        and entry["entry_id"] not in retired
+    ]
 
 
 def append_entry(index: dict[str, Any], entry: dict[str, Any]) -> dict[str, Any]:
@@ -113,6 +163,44 @@ def append_entry(index: dict[str, Any], entry: dict[str, Any]) -> dict[str, Any]
     result = {"schema": SCHEMA, "entries": [*index["entries"], unsigned]}
     if any(old["entry_id"] == entry["entry_id"] for old in index["entries"]):
         raise ValueError("release index entry ID already exists")
+    return result
+
+
+def register_lifecycle(
+    *,
+    transition: str,
+    subject_entry_id: str,
+    evidence_path: Path,
+    existing_index: Path,
+    output_path: Path,
+    successor_entry_id: str | None = None,
+) -> dict[str, Any]:
+    if output_path.exists():
+        raise FileExistsError(f"release index output already exists: {output_path}")
+    index = read_index(existing_index)
+    current = {entry["entry_id"]: entry for entry in current_unpublished_entries(index)}
+    subject = current.get(subject_entry_id)
+    if subject is None or transition not in {"superseded", "withdrawn"}:
+        raise ValueError("lifecycle requires a current unpublished subject")
+    if transition == "superseded":
+        successor = current.get(successor_entry_id)
+        if successor is None or successor_entry_id == subject_entry_id or successor["status"] != subject["status"]:
+            raise ValueError("lifecycle successor must be a current entry of the same kind")
+    elif successor_entry_id is not None:
+        raise ValueError("withdrawn lifecycle entry cannot name a successor")
+    binding = artifact_ref(evidence_path)
+    entry = {
+        "status": "lifecycle",
+        "subject_entry_id": subject_entry_id,
+        "transition": transition,
+        "evidence_ref": binding,
+    }
+    if successor_entry_id is not None:
+        entry["successor_entry_id"] = successor_entry_id
+    entry["entry_id"] = "lifecycle:" + digest(canonical_json(entry))[7:]
+    result = append_entry(index, entry)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_bytes(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True).encode("utf-8") + b"\n")
     return result
 
 
@@ -407,15 +495,36 @@ def main() -> int:
     parser.add_argument("--candidate-entry-id")
     parser.add_argument("--development-consumer-evidence", type=Path)
     parser.add_argument("--development-entry-id")
+    parser.add_argument("--lifecycle", choices=["superseded", "withdrawn"])
+    parser.add_argument("--subject-entry-id")
+    parser.add_argument("--successor-entry-id")
     args = parser.parse_args()
     try:
-        if args.review_host_evidence:
+        if args.lifecycle:
+            if (
+                not args.subject_entry_id or not args.existing_index
+                or len(args.evidence) != 1 or args.review_host_evidence
+                or args.development_consumer_evidence or args.candidate_entry_id
+                or args.development_entry_id or args.snapshot_id or args.item_artifact
+                or args.catalog_release or args.wheel or args.git_revision
+                or args.source_manifest_digest or args.source_qualification
+                or args.destination
+            ):
+                raise ValueError("lifecycle needs one evidence file and an existing index")
+            index = register_lifecycle(
+                transition=args.lifecycle, subject_entry_id=args.subject_entry_id,
+                successor_entry_id=args.successor_entry_id,
+                evidence_path=args.evidence[0], existing_index=args.existing_index,
+                output_path=args.output,
+            )
+        elif args.review_host_evidence:
             if (
                 not args.candidate_entry_id or not args.existing_index
                 or args.development_consumer_evidence or args.development_entry_id
                 or args.snapshot_id or args.item_artifact or args.catalog_release
                 or args.wheel or args.git_revision or args.source_manifest_digest
                 or args.source_qualification or args.evidence or args.destination
+                or args.subject_entry_id or args.successor_entry_id
             ):
                 raise ValueError("review host evidence needs a candidate and existing index")
             index = register_review_host_evidence(
@@ -430,7 +539,8 @@ def main() -> int:
                 or args.candidate_entry_id or args.item_artifact or args.snapshot_id
                 or args.catalog_release or args.wheel or args.git_revision
                 or args.source_manifest_digest or args.source_qualification
-                or args.evidence or args.destination
+                or args.evidence or args.destination or args.subject_entry_id
+                or args.successor_entry_id
             ):
                 raise ValueError("consumer evidence needs a development entry and existing index")
             index = register_development_consumer_evidence(
@@ -443,6 +553,7 @@ def main() -> int:
             if (
                 args.item_artifact or args.candidate_entry_id or args.development_entry_id
                 or not args.catalog_release or not args.wheel
+                or args.subject_entry_id or args.successor_entry_id
             ):
                 raise ValueError("development snapshot needs catalog and wheel, not review items")
             index = register_development_snapshot(
@@ -459,6 +570,7 @@ def main() -> int:
                 or args.candidate_entry_id or args.development_entry_id
                 or args.source_manifest_digest or args.catalog_release
                 or args.wheel or args.destination
+                or args.subject_entry_id or args.successor_entry_id
             ):
                 raise ValueError("review candidate needs item artifacts and Git revision")
             index = register_candidate(

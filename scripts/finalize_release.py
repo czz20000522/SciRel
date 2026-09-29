@@ -27,7 +27,7 @@ if str(SOURCE) not in sys.path:
 from scirel_workflow import SciRelWorkflow, WorkflowStatus  # noqa: E402
 from scirel_plugin.adapter import review_item_from_body  # noqa: E402
 from validate_asset_documents import load_document_set  # noqa: E402
-from release_index import append_entry, read_index  # noqa: E402
+from release_index import append_entry, current_unpublished_entries, read_index  # noqa: E402
 
 
 def _canonical_json(value: Any) -> bytes:
@@ -455,6 +455,8 @@ def finalize_reviewed_release(
     ]
     if len(candidates) != 1:
         raise ValueError("release index does not contain the selected candidate entry")
+    if candidates[0] not in current_unpublished_entries(index):
+        raise ValueError("selected candidate is no longer current")
     candidate = candidates[0]
     released_entries = [entry for entry in index["entries"] if entry["status"] == "released"]
     if any(entry["predecessor_entry_id"] == candidate_entry_id for entry in released_entries):

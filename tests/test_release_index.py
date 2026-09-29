@@ -302,6 +302,150 @@ def test_development_snapshot_rejects_invalid_catalog_binding(tmp_path, monkeypa
         )
 
 
+def test_lifecycle_replaces_only_a_current_development_entry(tmp_path, monkeypatch):
+    import release_index
+
+    monkeypatch.setattr(release_index, "ROOT", tmp_path)
+    catalog = tmp_path / "release.json"
+    catalog_body = {"schema": "scirel.catalog-release.v1"}
+    catalog_body["root_digest"] = release_index.digest(release_index.canonical_json(catalog_body))
+    catalog.write_text(json.dumps(catalog_body), encoding="utf-8")
+    evidence = tmp_path / "transition.json"
+    evidence.write_text('{"predecessor":"old","successor":"new"}', encoding="utf-8")
+    old_wheel = tmp_path / "old.whl"
+    old_wheel.write_bytes(b"old wheel")
+    new_wheel = tmp_path / "new.whl"
+    new_wheel.write_bytes(b"new wheel")
+    first_path = tmp_path / "first.json"
+    first = release_index.register_development_snapshot(
+        snapshot_id="old", catalog_release=catalog, wheel=old_wheel,
+        evidence_paths=[evidence], destination_paths=[evidence],
+        git_revision="a" * 40, source_qualification="mixed_unverified",
+        output_path=first_path,
+    )
+    second_path = tmp_path / "second.json"
+    second = release_index.register_development_snapshot(
+        snapshot_id="new", catalog_release=catalog, wheel=new_wheel,
+        evidence_paths=[evidence], destination_paths=[evidence],
+        git_revision="b" * 40, source_qualification="mixed_unverified",
+        existing_index=first_path, output_path=second_path,
+    )
+    old_id, new_id = (entry["entry_id"] for entry in second["entries"])
+    third_path = tmp_path / "third.json"
+    third = release_index.register_lifecycle(
+        transition="superseded", subject_entry_id=old_id,
+        successor_entry_id=new_id, evidence_path=evidence,
+        existing_index=second_path, output_path=third_path,
+    )
+
+    assert third["entries"][:2] == second["entries"]
+    assert third["entries"][0] == first["entries"][0]
+    assert third["entries"][-1]["evidence_ref"] == release_index.artifact_ref(evidence)
+    assert [entry["entry_id"] for entry in release_index.current_unpublished_entries(third)] == [new_id]
+    assert release_index.read_index(third_path) == third
+
+    with pytest.raises(ValueError, match="current unpublished subject"):
+        release_index.register_lifecycle(
+            transition="withdrawn", subject_entry_id=old_id,
+            evidence_path=evidence, existing_index=third_path,
+            output_path=tmp_path / "duplicate.json",
+        )
+    with pytest.raises(ValueError, match="cannot name a successor"):
+        release_index.register_lifecycle(
+            transition="withdrawn", subject_entry_id=new_id,
+            successor_entry_id=old_id, evidence_path=evidence,
+            existing_index=third_path, output_path=tmp_path / "bad-withdrawal.json",
+        )
+
+    pending = tmp_path / "pending.json"
+    pending.write_text(json.dumps(_pending_item()), encoding="utf-8")
+    with_candidate = release_index.register_candidate(
+        item_artifacts=[pending], git_revision="c" * 40,
+        existing_index=third_path, output_path=tmp_path / "candidate.json",
+    )
+    with pytest.raises(ValueError, match="same kind"):
+        release_index.register_lifecycle(
+            transition="superseded", subject_entry_id=new_id,
+            successor_entry_id=with_candidate["entries"][-1]["entry_id"],
+            evidence_path=evidence, existing_index=tmp_path / "candidate.json",
+            output_path=tmp_path / "wrong-kind.json",
+        )
+
+
+def test_withdrawn_candidate_cannot_enter_release_gates(tmp_path, monkeypatch):
+    import release_index
+    from finalize_release import finalize_reviewed_release
+    from prepare_reviewed_distribution import prepare_reviewed_distribution
+
+    monkeypatch.setattr(release_index, "ROOT", tmp_path)
+    pending = tmp_path / "pending.json"
+    pending.write_text(json.dumps(_pending_item()), encoding="utf-8")
+    first_path = tmp_path / "candidate.json"
+    candidate = release_index.register_candidate(
+        item_artifacts=[pending], git_revision="a" * 40,
+        output_path=first_path,
+    )["entries"][0]
+    evidence = tmp_path / "withdrawal.json"
+    evidence.write_text('{"decision":"withdrawn"}', encoding="utf-8")
+    withdrawn_path = tmp_path / "withdrawn.json"
+    withdrawn = release_index.register_lifecycle(
+        transition="withdrawn", subject_entry_id=candidate["entry_id"],
+        evidence_path=evidence, existing_index=first_path,
+        output_path=withdrawn_path,
+    )
+    assert release_index.current_unpublished_entries(withdrawn) == []
+    assert release_index.read_index(withdrawn_path) == withdrawn
+
+    with pytest.raises(ValueError, match="no longer current"):
+        prepare_reviewed_distribution(
+            release_index=withdrawn_path, candidate_entry_id=candidate["entry_id"],
+            approved_results=tmp_path / "missing.json", review_artifacts_dir=tmp_path,
+            source_root=ROOT, staging_dir=tmp_path / "staging",
+        )
+    with pytest.raises(ValueError, match="no longer current"):
+        finalize_reviewed_release(
+            release_index=withdrawn_path, candidate_entry_id=candidate["entry_id"],
+            approved_results=tmp_path / "missing.json", review_artifacts_dir=tmp_path,
+            documents_dir=tmp_path, catalog_dir=tmp_path, wheel=tmp_path / "missing.whl",
+            output_dir=tmp_path / "release", release_id="withdrawn",
+            source_root=ROOT,
+        )
+
+
+def test_lifecycle_cannot_select_an_already_released_successor(tmp_path):
+    import release_index
+
+    pending = tmp_path / "pending.json"
+    pending.write_text(json.dumps(_pending_item()), encoding="utf-8")
+    candidate = release_index.register_candidate(
+        item_artifacts=[pending], git_revision="a" * 40,
+        output_path=tmp_path / "first.json",
+    )["entries"][0]
+    second_candidate = dict(candidate, entry_id="candidate:" + "b" * 64)
+    second_candidate["entry_digest"] = release_index.digest(release_index.canonical_json({
+        key: value for key, value in second_candidate.items() if key != "entry_digest"
+    }))
+    index = release_index.append_entry(release_index.read_index(tmp_path / "first.json"), {
+        key: value for key, value in second_candidate.items() if key != "entry_digest"
+    })
+    index = release_index.append_entry(index, {
+        "entry_id": "release:test", "status": "released",
+        "predecessor_entry_id": second_candidate["entry_id"],
+        "baseline_entry_id": None, "included_assets": [],
+        "manifest_digest": "sha256:" + "c" * 64,
+    })
+    index = release_index.append_entry(index, {
+        "entry_id": "lifecycle:" + "d" * 64, "status": "lifecycle",
+        "subject_entry_id": candidate["entry_id"], "transition": "superseded",
+        "successor_entry_id": second_candidate["entry_id"],
+        "evidence_ref": {"ref": "transition.json", "digest": "sha256:" + "e" * 64},
+    })
+    path = tmp_path / "invalid.json"
+    path.write_text(json.dumps(index), encoding="utf-8")
+    with pytest.raises(ValueError, match="current entry of the same kind"):
+        release_index.read_index(path)
+
+
 def test_consumer_evidence_binds_existing_development_without_approval(tmp_path, monkeypatch):
     import release_index
 
@@ -511,7 +655,7 @@ def test_repository_release_index_keeps_exact_evidence_bindings():
     index = read_index(ROOT / "provenance/release-index.dev.json")
     assert index["entries"]
     for entry in index["entries"]:
-        if entry["status"] == "evidence":
+        if entry["status"] in {"evidence", "lifecycle"}:
             bindings = [entry["evidence_ref"]]
         elif entry["status"] in {"candidate", "development"}:
             assert entry["approval_state"] == "pending_unapproved"

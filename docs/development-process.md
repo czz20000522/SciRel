@@ -99,6 +99,11 @@ pwsh ./scripts/check.ps1 -Mode release -ReleaseIndex <candidate-index.json> -Can
 实际消费 manifest 和 digest，D2 单写者负责身份、来源与科学证据并核对登记；工作台当前逐项
 审核状态继续由审核 artifact/投影提供。完整开发 catalog 不等于专家批准，来源混合的开发
 快照不因 `pending_unapproved` 而自动取得 D1 资格；正式公开发行前合同统一冻结为 `v1`。
+开发条目或待审候选的替换、撤回用 `--lifecycle superseded|withdrawn`、`--subject-entry-id`、
+精确 `--evidence` 和 `--existing-index` 追加事件；替换还须给出同类的 `--successor-entry-id`。
+旧条目及摘要不改写，当前未发布入口排除已替换、撤回和已发行的候选。开发条目的替换只改变
+开发快照当前身份，不继承或更新独立待审候选的逐项审核身份。旧 52 项快照只保留历史定位；
+正式公开发行前将有效决策和合同统一收敛到 `v1`。
 同一候选的宿主开发验收用 `--review-host-evidence`、`--candidate-entry-id` 和 `--existing-index`
 追加证据条目；这不产生新候选，也不替代宿主逐项审核状态或批准。
 同一 workflow 的多项共享原始 revision，只产生 `candidate` 条目。多个 artifact 可重复传入 `--item-artifact`，

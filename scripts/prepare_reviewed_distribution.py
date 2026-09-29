@@ -17,7 +17,7 @@ from finalize_release import (
     _reviewed_initializers,
     _validate_wheel_import_closure,
 )
-from release_index import read_index
+from release_index import current_unpublished_entries, read_index
 from validate_asset_documents import ASSET_ID_RE, load_document_set
 
 
@@ -44,6 +44,8 @@ def prepare_reviewed_distribution(
     ]
     if len(matches) != 1:
         raise ValueError("release index does not contain the selected candidate entry")
+    if matches[0] not in current_unpublished_entries(index):
+        raise ValueError("selected candidate is no longer current")
     candidate = matches[0]
     candidate_items = {item["item_ref"]: item for item in candidate["items"]}
     if len(candidate_items) != len(candidate["items"]):

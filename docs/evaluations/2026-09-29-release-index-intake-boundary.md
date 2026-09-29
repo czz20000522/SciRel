@@ -23,6 +23,11 @@ The two entries share a catalog root but do not share wheel identity or transfer
 the earlier D3 case results. The consumer request identity comes from the
 CodeFusion owner's readback; D2 checked its downloaded receipt bytes locally,
 without an independent product query or remote catalog byte download.
+The append-only `superseded` lifecycle event now marks the earlier
+`development:470d2b5b...` entry historical and the corrected
+`development:c9a63b3f...` entry current, using that exact acceptance record.
+The r43 13-item reviewer candidate remains a separate pending identity; this
+development replacement does not transfer review state or approvals.
 At that acceptance point, the ordinary-user dual-chain trace still lacked one
 same-request binding to an owner-resolved immutable `scirel-solving` revision,
 a frozen execution environment, and the shell Tool Plan. This development
