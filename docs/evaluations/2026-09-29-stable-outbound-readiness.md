@@ -108,10 +108,28 @@ idempotency key and previous snapshot Artifact support conditional revalidation;
 changed item revisions or registration conflict, and the receipt identifies
 the new Artifact digest, capture time, and nonce. CodeFusion reports an
 independent review and passing Spark ARM64 merge gate. This code has not been
-deployed to the existing acceptance service. The earlier `b9e2c8...` export
-remains development review evidence, not a selected/revalidated r43 release
-receipt. The current batch still has zero approved items and no `released`
-index entry.
+deployed to the earlier acceptance service. A separate V1 development instance
+at CodeFusion `3c69931b` has since admitted 13 r43 items in project
+`prj_745a23d72d1945738fc15388bdc44232df7d` (run
+`run_1bdca62591fbdbc4f4fb5d386a4301f6b6ce0b4da54e759f69fb377f2815907b`)
+and applied one `request-evidence` action; it still has zero approved items.
+Its workflow revision `sha256:a9099aa88aee7256e1d1e841b28779b458c2f39d192d672a1d6a40e10c82cb6a`
+and plugin release
+`plugin-release://scirel/0.1.0.dev5/source-manifest-sha256-6185c8f1c973832e12040be19323faaef09668ab94347af7cb348b19d62a14f7`
+differ from the current indexed corrected-wheel reviewer version
+`sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b`.
+
+That V1 instance returned a selected snapshot SHA-256
+`8454ffa614cf0dc40d1aa1511a54be2fe34673f9298c5fedff3f62fe336a349e`
+and a previous-snapshot revalidation SHA-256
+`af12a9ee1346934cba2f82f900b7869940d2b948a7202db54c614fb5213206f5`;
+CodeFusion reports that the downloaded digests matched and a stale current
+Artifact returned 409 (CodeFusion
+`.runtime/reviewer-selection-r43-export-3c69931b5.json`).
+These are development host-protocol receipts for a different review/release
+identity, not selection or revalidation of the current D2 candidate. The
+earlier `b9e2c8...` export also remains development review evidence. Neither
+set is a SciRel approval or `released` entry.
 
 Before a stable outbound release, the following inputs are still required:
 
