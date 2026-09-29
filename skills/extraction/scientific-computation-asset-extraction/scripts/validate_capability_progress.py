@@ -279,7 +279,9 @@ def _validate_closure_signal(
             errors.append(f"closure_signal.{name} must not contain duplicate ids")
 
     delivered_target_ids = signal.get("delivered_target_ids", [])
-    if not isinstance(delivered_target_ids, list):
+    if not isinstance(delivered_target_ids, list) or any(
+        not isinstance(value, str) or not value for value in delivered_target_ids
+    ):
         delivered_target_ids = []
     target_paths = document.get("target_paths", [])
     if not isinstance(target_paths, list):
@@ -331,10 +333,10 @@ def _validate_closure_signal(
             )
         target_by_id = {
             target.get("target_id"): target
-            for target in document.get("target_paths", [])
+            for target in target_paths
             if isinstance(target, dict) and isinstance(target.get("target_id"), str)
         }
-        for target_id in signal.get("delivered_target_ids", []):
+        for target_id in delivered_target_ids:
             target = target_by_id.get(target_id)
             if target is None:
                 continue
@@ -927,6 +929,11 @@ def _validate_bounded_delivery_review(
             if receipt.get(name) != expected:
                 errors.append(f"{field}.{name} does not match the progress snapshot")
     delivered = signal.get("delivered_target_ids", [])
+    if not isinstance(delivered, list) or any(
+        not isinstance(value, str) or not value for value in delivered
+    ):
+        errors.append("closure_signal.delivered_target_ids must be a list of non-empty strings")
+        return
     reviewed = receipt.get("reviewed_target_ids")
     if not isinstance(reviewed, list) or any(
         not isinstance(value, str) or not value for value in reviewed

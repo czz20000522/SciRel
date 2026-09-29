@@ -88,6 +88,17 @@ def test_bounded_delivery_requires_bound_independent_review_receipt(tmp_path: Pa
         bundle_root=bundle_root,
     ) == []
 
+    malformed = json.loads(json.dumps(document))
+    malformed["closure_signal"]["delivered_target_ids"] = None
+    malformed_errors = validate_external_bindings(
+        malformed,
+        scope_manifest=run_root / "scope.json",
+        capability_evidence_matrix=run_root / "matrix.md",
+        ledger=run_root / "ledger.md",
+        bundle_root=bundle_root,
+    )
+    assert any("delivered_target_ids must be a list" in error for error in malformed_errors)
+
     receipt["reviewer_role"] = "coordinator"
     receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
     document["closure_signal"]["bounded_delivery_review"][
