@@ -91,18 +91,32 @@ def _pending_item(
     return review_item_from_workflow(workflow, 0)
 
 
-def _multi_item_workflow_body(*, release_ready=False):
+def _multi_item_workflow_body(*, release_ready=False, asset_count=2):
+    assert asset_count >= 2
     first = _pending_item(release_ready=release_ready)
     second = json.loads(
         (ROOT / "catalog/examples/scirel.closures.hall-two-fluid-pressure.json").read_text(
             encoding="utf-8"
         )
     )
+    excluded = {"scirel.field.circular-filament-green.json",
+                "scirel.closures.hall-two-fluid-pressure.json"}
+    additional_paths = [
+        path for path in sorted((ROOT / "catalog/examples").glob("*.json"))
+        if path.name not in excluded
+    ][:asset_count - 2]
+    assert len(additional_paths) == asset_count - 2
+    additional = [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in additional_paths
+    ]
     candidate = CandidatePackage.from_l1(
         {
             "assets": [
                 {"candidate_asset_id": "candidate-field"},
                 {"candidate_asset_id": "candidate-closure"},
+                *({"candidate_asset_id": f"candidate-extra-{index}"}
+                  for index in range(len(additional))),
             ],
             "automated_checks": [{"name": "replay", "status": "passed"}],
         },
@@ -113,7 +127,7 @@ def _multi_item_workflow_body(*, release_ready=False):
     workflow = SciRelWorkflow(candidate)
     workflow.create_draft(
         draft_id="draft-release-index",
-        assets=[first["asset"], second],
+        assets=[first["asset"], second, *additional],
         evidence=first["evidence"],
     )
     workflow.submit_for_review()
@@ -868,7 +882,7 @@ def test_strict_finalizer_rejects_a_candidate_without_item_approval(tmp_path):
 
 
 def _reviewed_release_inputs(
-    tmp_path, *, multi_item=False,
+    tmp_path, *, multi_item=False, multi_item_count=2,
     document_name="scirel.field.circular-filament-green.json",
     git_revision="a" * 40,
     support_file=None,
@@ -879,7 +893,9 @@ def _reviewed_release_inputs(
     from release_index import register_candidate
 
     if multi_item:
-        pending_body = _multi_item_workflow_body(release_ready=True)
+        pending_body = _multi_item_workflow_body(
+            release_ready=True, asset_count=multi_item_count
+        )
         item = review_items_from_body(pending_body)[0]
     else:
         item = _pending_item(

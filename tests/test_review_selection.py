@@ -39,8 +39,10 @@ def _write_snapshot(path, receipt_path, value, ref):
     return {"artifact_ref": ref, "digest": _digest(body), "media_type": "application/json"}
 
 
-def _inputs(tmp_path, *, multi_item=False):
-    artifacts, _, _, _, projection = _reviewed_release_inputs(tmp_path, multi_item=multi_item)
+def _inputs(tmp_path, *, multi_item=False, multi_item_count=2):
+    artifacts, _, _, _, projection = _reviewed_release_inputs(
+        tmp_path, multi_item=multi_item, multi_item_count=multi_item_count
+    )
     candidate = json.loads((tmp_path / "index.json").read_text())["entries"][0]
     initial = next(item for item in candidate["items"] if item["item_ref"] == projection["item_ref"])
     source = {"artifact_ref": "artifact://review/pending",
@@ -109,6 +111,29 @@ def _inputs(tmp_path, *, multi_item=False):
     return arguments, first, second
 
 
+def _add_unrelated_cohort(arguments, first, second):
+    source = {"artifact_ref": "cf://artifact/older-workflow",
+              "digest": "sha256:" + "d" * 64, "media_type": "application/json"}
+    for index in range(13):
+        item = {"item_ref": f"scirel-review-item:{index + 1:064x}",
+                "plugin_context_ref": "ctx-1", "source_artifact": source,
+                "current_artifact": source, "current_updated_at_epoch_ms": 100,
+                "applied_transition": None, "transitions": []}
+        first["items"].append(copy.deepcopy(item))
+        second["items"].append(copy.deepcopy(item))
+    first["item_count"] = len(first["items"])
+    second["item_count"] = len(second["items"])
+    first_ref = _write_snapshot(
+        arguments["initial_snapshot"], arguments["initial_receipt"], first,
+        "cf://artifact/snapshot-initial",
+    )
+    second["selection"]["previous_snapshot"] = first_ref
+    _write_snapshot(
+        arguments["revalidation_snapshot"], arguments["revalidation_receipt"], second,
+        "cf://artifact/snapshot-revalidated",
+    )
+
+
 def test_selection_binds_two_host_snapshots_to_exact_successor(tmp_path):
     arguments, _, _ = _inputs(tmp_path)
     receipt = json.loads(arguments["revalidation_receipt"].read_text())
@@ -121,7 +146,7 @@ def test_selection_binds_two_host_snapshots_to_exact_successor(tmp_path):
     assert result["initial_nonce"] != result["revalidation_nonce"]
 
 
-def test_selection_requires_full_census_but_allows_unselected_item_to_advance(tmp_path):
+def test_selection_requires_candidate_census_but_allows_unselected_item_to_advance(tmp_path):
     arguments, _, second = _inputs(tmp_path, multi_item=True)
     pending = next(item for item in second["items"]
                    if item["item_ref"] != second["selection"]["selected_items"][0]["item_ref"])
@@ -143,6 +168,53 @@ def test_selection_requires_full_census_but_allows_unselected_item_to_advance(tm
     _write_snapshot(arguments["revalidation_snapshot"], arguments["revalidation_receipt"],
                     second, "cf://artifact/snapshot-revalidated")
     with pytest.raises(ValueError, match="item census"):
+        verify_review_selection(**arguments)
+
+
+def test_selection_accepts_candidate_cohort_in_shared_26_item_export(tmp_path):
+    arguments, first, second = _inputs(tmp_path, multi_item=True, multi_item_count=13)
+    _add_unrelated_cohort(arguments, first, second)
+    assert first["item_count"] == second["item_count"] == 26
+    assert len(verify_review_selection(**arguments)["selected_items"]) == 1
+
+
+@pytest.mark.parametrize(("change", "message"), [
+    ("missing", "item census"),
+    ("duplicate", "item census"),
+    ("wrong_source", "source differs"),
+    ("wrong_revision", "selected current revision"),
+    ("broken_chain", "chain is discontinuous"),
+    ("unapproved", "approval action"),
+])
+def test_selection_rejects_invalid_candidate_in_shared_export(tmp_path, change, message):
+    arguments, first, second = _inputs(tmp_path, multi_item=True, multi_item_count=13)
+    _add_unrelated_cohort(arguments, first, second)
+    selected_ref = second["selection"]["selected_items"][0]["item_ref"]
+    state = next(item for item in second["items"] if item["item_ref"] == selected_ref)
+    if change == "missing":
+        second["items"].remove(state)
+    elif change == "duplicate":
+        second["items"].append(copy.deepcopy(state))
+    elif change == "wrong_source":
+        state["source_artifact"] = second["items"][-1]["source_artifact"]
+    elif change == "wrong_revision":
+        second["selection"]["selected_items"][0]["current_artifact"]["digest"] = (
+            "sha256:" + "e" * 64
+        )
+    elif change == "broken_chain":
+        state["transitions"][0]["predecessor_artifact"] = {
+            **state["transitions"][0]["predecessor_artifact"],
+            "digest": "sha256:" + "e" * 64,
+        }
+    elif change == "unapproved":
+        state["transitions"][-1]["action_ref"] = "plugin://scirel/review/request-evidence"
+        state["applied_transition"]["action_ref"] = "plugin://scirel/review/request-evidence"
+    second["item_count"] = len(second["items"])
+    _write_snapshot(
+        arguments["revalidation_snapshot"], arguments["revalidation_receipt"], second,
+        "cf://artifact/snapshot-revalidated",
+    )
+    with pytest.raises(ValueError, match=message):
         verify_review_selection(**arguments)
 
 

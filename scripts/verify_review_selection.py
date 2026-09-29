@@ -145,8 +145,9 @@ def verify_review_selection(
         if not isinstance(items, list) or export.get("item_count") != len(items):
             raise ValueError("host snapshot item census is invalid")
         by_ref = {item.get("item_ref"): item for item in items if isinstance(item, dict)}
-        if len(by_ref) != len(items) or set(by_ref) != set(candidate_items):
+        if len(by_ref) != len(items) or not set(candidate_items) <= set(by_ref):
             raise ValueError("host snapshot item census differs from the candidate")
+        candidate_states = {item_ref: by_ref[item_ref] for item_ref in candidate_items}
         selection = export.get("selection")
         if not isinstance(selection, dict) or (
             selection.get("release_attempt_ref") != release_attempt_ref
@@ -166,9 +167,9 @@ def verify_review_selection(
             current = artifact(record["current_artifact"], f"selected {item_ref}")
             if current["digest"] != selected[item_ref].get("revision"):
                 raise ValueError("host selected current revision differs from approved results")
-            if current != artifact(by_ref[item_ref].get("current_artifact"), f"current {item_ref}"):
+            if current != artifact(candidate_states[item_ref].get("current_artifact"), f"current {item_ref}"):
                 raise ValueError("host selection differs from the view's current Artifact")
-        for item_ref, state in by_ref.items():
+        for item_ref, state in candidate_states.items():
             source = artifact(state.get("source_artifact"), f"source {item_ref}")
             current = artifact(state.get("current_artifact"), f"current {item_ref}")
             if source != original_ref or source["digest"] != candidate_items[item_ref]["initial_revision"]:
