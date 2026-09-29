@@ -19,9 +19,8 @@ with this corrected wheel or transfer its D3 case results.
 
 ## Installed-wheel execution
 
-An external Windows CPython 3.14.3 venv at
-`C:/Users/26569/.codex/outbound-runtimes/fluidbw-r43-b1ab-cc2fa21-20260929/venv`
-has `include-system-site-packages = false`. `pip --no-index` installed the
+An isolated Windows CPython 3.14.3 venv outside the SciRel checkout has
+`include-system-site-packages = false`. `pip --no-index` installed the
 corrected wheel with saved NumPy 2.5.3, SciPy 1.18.1, pytest 9.1.1 and test
 dependencies. Four r43 scientific test files, byte-identical to Git `cc2fa21`,
 ran outside the checkout under `python -I`: **51 passed, zero failed**. The
