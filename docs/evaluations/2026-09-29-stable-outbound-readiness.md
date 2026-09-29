@@ -179,9 +179,22 @@ it records Weideman discovery, document readback, and two invocations at
 and `2.48253415324727e-16` (CodeFusion
 `.runtime/ordinary-current-r43-3c69931b5.json` and
 `.runtime/ordinary-current-r43-readback-3c69931b5/`). This is a development
-ordinary-user result. The current reviewer project's plugin registration
-still does not bind that same wheel/catalog Artifact tuple; the review batch
-has zero approved items and no stable release follows from this run.
+ordinary-user result. On the shared `3c69931b` development service, the
+reviewer installation declares only a source-manifest plugin release and
+`release.artifacts=[]`; its runner backend uses a source fixture without a
+binding to the corrected wheel digest (CodeFusion
+`.runtime/reviewer-installation-prepare.overrides.json` and
+`.runtime/spark-plugin-runner-5420/scirel-backend-fixture/`). Uploading
+wheel/catalog Artifacts later would not by itself establish which package
+the backend executed. The earlier isolated `2d3de66e` instance declared and
+read back corrected wheel/catalog Artifacts, but it is a different CodeFusion
+source, project, and registration from the current `3c69931b` selection.
+The ordinary-user and reviewer traces therefore retain separate technical
+scope; the review batch has zero approved items and no stable release follows.
+When a stable SciRel outbound candidate is ready, an isolated instance must
+verify the exact SciRel and CodeFusion sources, wheel, catalog, executing
+backend, immutable registration, reviewer snapshot, and ordinary-user result
+as one pinned tuple.
 
 Before a stable outbound release, the following inputs are still required:
 
