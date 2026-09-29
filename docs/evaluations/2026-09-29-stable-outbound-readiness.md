@@ -179,9 +179,20 @@ it records Weideman discovery, document readback, and two invocations at
 and `2.48253415324727e-16` (CodeFusion
 `.runtime/ordinary-current-r43-3c69931b5.json` and
 `.runtime/ordinary-current-r43-readback-3c69931b5/`). This is a development
-ordinary-user result. On the shared `3c69931b` development service, the
-reviewer installation declares only a source-manifest plugin release and
-`release.artifacts=[]`; its runner backend uses a source fixture without a
+ordinary-user result. D2 rehashed the ZIP members and saved failure/final
+results, and recomputed the two SciPy comparisons; it did not independently
+query the product timeline for the owner-reported completed status. At this
+readback, the D2-maintained unified development index has 14 entries, none
+`released`. It adds evidence
+`evidence:ab4529a8c518cce484e4f30cf575120f7d60f945a775d33b3157a2205e188b40`
+for this recovery trace under the existing corrected-wheel/catalog
+`development:c9a63b3f8068626417895ecfdc45787045a46a2a78ff6972642f6e8164de0463`
+entry. The record at
+`provenance/r43-current-ordinary-recovery-acceptance-20260930.json` retains
+its `mixed_unverified` source qualification and `pending_unapproved` approval
+state; it creates no separate candidate. On the shared `3c69931b` development
+service, the reviewer installation declares a source-manifest plugin release
+with `release.artifacts=[]`; its runner backend uses a source fixture without a
 binding to the corrected wheel digest (CodeFusion
 `.runtime/reviewer-installation-prepare.overrides.json` and
 `.runtime/spark-plugin-runner-5420/scirel-backend-fixture/`). Uploading
