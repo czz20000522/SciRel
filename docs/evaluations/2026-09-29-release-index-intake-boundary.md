@@ -45,6 +45,16 @@ without an exact approved review of the reused dependency; a release may
 instead exclude those compositions. Existing development code, documents,
 catalog coverage, and D1 qualification do not supply that approval.
 
+The declared document dependencies are not the whole runtime import closure.
+`kinetic-dispersion-ronnmark` calls the separately indexed
+`ronnmark-r-function`, and `kinetic-wavevector-roots` calls
+`kinetic-dispersion-ronnmark`; both current exact documents list no version
+dependencies. Those imported modules are among the 13 review items, but a
+smaller approved subset selecting either caller alone cannot form an importable
+wheel. The first-release source preparer rejects such a selection. Any change
+to the submitted document dependency lists needs an exact reviewer successor;
+the initial index entry and frozen review artifacts remain unchanged.
+
 ## Local draft outside the index
 
 A read-only worktree check also found two untracked files on

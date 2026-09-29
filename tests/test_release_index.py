@@ -459,6 +459,41 @@ def test_first_reviewed_distribution_rejects_incomplete_composition_dependencies
     assert not staging.exists()
 
 
+@pytest.mark.parametrize(
+    ("document_name", "missing_module"),
+    [
+        (
+            "scirel.kinetic.kinetic-dispersion-ronnmark.json",
+            "scirel.kinetic.ronnmark_r_function",
+        ),
+        (
+            "scirel.kinetic.kinetic-wavevector-roots.json",
+            "scirel.kinetic.kinetic_dispersion_ronnmark",
+        ),
+    ],
+)
+def test_first_reviewed_distribution_rejects_undeclared_internal_import(
+    tmp_path, document_name, missing_module
+):
+    from prepare_reviewed_distribution import prepare_reviewed_distribution
+
+    artifacts, _, _, _, _ = _reviewed_release_inputs(
+        tmp_path, document_name=document_name
+    )
+    staging = tmp_path / "reviewed-source"
+    with pytest.raises(ValueError, match="missing internal import") as error:
+        prepare_reviewed_distribution(
+            release_index=tmp_path / "index.json",
+            candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
+            approved_results=tmp_path / "results.json",
+            review_artifacts_dir=artifacts,
+            source_root=ROOT,
+            staging_dir=staging,
+        )
+    assert missing_module in str(error.value)
+    assert not staging.exists()
+
+
 @pytest.mark.parametrize("multi_item", [False, True])
 def test_reviewed_finalization_binds_item_document_test_and_wheel(tmp_path, monkeypatch, multi_item):
     import finalize_release
