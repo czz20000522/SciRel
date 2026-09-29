@@ -146,6 +146,14 @@ authenticated Artifact readbacks:
 | Weideman action | `request-evidence` run `run_96c8da8766b8eb0a7e78fbdb8649bffc9aa08c41ce7e23dc974b41c76a8bd9f2`; successor Artifact `cf://artifact/upload_615e3e16eff14ab1f750ef4628098ab7fd75202a5d1c0e67`, SHA-256 `d62ae8faf3b529605bb3795acbde9589d274a0bbca54cceb1dd5b7abddbcd461`. |
 | Host export | Artifact `cf://artifact/upload_023f4dc2766a932f0ad6f4cf26347e9b8b751726272f8e03`, SHA-256 `b9e2c8c990f821232f2a912163a8ae03a970faa52c49ced1a701d22e1de9eabd`; 13 items, one applied transition, one `needs_evidence`, 12 `review_pending`, zero approved. |
 
+The host export is a reviewer-authenticated, repeatable-read capture of all 13
+items at one point in time. It includes source/current Artifact refs and the
+latest applied transition's actor, run, predecessor, and successor, but no
+persisted `action_ref`, explicit release-selected subset/candidate binding, or
+conditional recheck that later successors have not changed selected revisions.
+With zero approved items, it remains development review evidence; it cannot
+serve as SciRel `released` or as actual approved-results input.
+
 The new review preparation bound development-index file SHA-256
 `8768b807cd850538d13dbbc034d201cf48c8010bb9e8af5477a51c1de3aa9b88`.
 Its submission ID is `fluidbw-r43-b1ab-review-prep-20260929` and its

@@ -111,9 +111,11 @@ Before a stable outbound release, the following inputs are still required:
   unreported exact producer build identifiers where required. The historical
   52-item snapshot is not a census gate for new development acceptance.
 - For any approved subset, an authenticated, auditable host export with exact
-  current and predecessor Artifact bytes, then a clean selected-source build,
-  complete exact documents, catalog, wheel, isolated checks, and manifest/index
-  binding for that same subset.
+  current and predecessor Artifact bytes, an auditable action identity, explicit
+  candidate/subset binding, and a conditional current-revision recheck before
+  finalization so later successors cannot silently replace the selected items.
+  Then a clean selected-source build, complete exact documents, catalog, wheel,
+  isolated checks, and manifest/index binding for that same subset.
 - A CodeFusion registration and consumer readback of the approved-only pinned
   release tuple, including wheel, catalog, runtime dependencies, and SciRel
   release manifest. The current development registration does not supply that
