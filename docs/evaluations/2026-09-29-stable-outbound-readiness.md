@@ -61,6 +61,16 @@ initial, predecessor, and current review Artifact bytes for selected approved
 items, then bind the derived domain projection to that host snapshot. A route
 receipt alone cannot satisfy the release inputs.
 
+The 2026-09-29 Spark runtime check still found CodeFusion `e5321539` on port
+18096 and all 13 r43 items on one reviewer index page with no next page. Local
+`2d3de66e` changes the product V1 schema, including a review-transition table
+and Artifact source constraints, so the existing database with its old V1
+checksum cannot be used by simply restarting the new service. Deployment
+requires an explicit preservation/reload decision for the pending r43 review
+project and other needed inputs, followed by a new-database acceptance check
+against the actual source label. No review action, service replacement, or
+database rebuild was performed by this check.
+
 ## Release boundary
 
 The first-release subset assembler, exact-item finalizer, and source-free
