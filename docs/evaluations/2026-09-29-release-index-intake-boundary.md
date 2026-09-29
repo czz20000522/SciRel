@@ -66,6 +66,21 @@ independent holdout admission remains pending, and identifies a public-driver
 serialization-key defect. Neither the bounded graph test nor these finite
 comparisons closes the remaining source paths or qualifies a D1 handoff.
 
+The WHAM terminal-denominator reconciliation at
+`coordination/wham-terminal-denominator-reconciliation-20260929.json`
+(SHA-256 `f52a6a1fbddccbd45c9c3e80daad48bbc1cea7cd21a07a8fd8a3074a7873b326`)
+binds the same frozen source and `b09804ced2f8cd8c499638d6b68bc39444e72a0351e9be908f8c7519d317baa2`
+candidate to the a02 API-domain comparison. Its 56 unique source-declared
+WHAM archive/summary rows map to 57 distinct comparison outputs marked passed;
+the predecessor map, a02 comparison, and source projector hashes match its
+references. The frozen public driver uses three unsuffixed flux keys where the
+source state has `_m2_s` keys, so its archive and subsequent summary are not
+materialized. The comparison projects source-computed state with the actual
+producer keys. This bounded reconciliation does not validate the literal
+1000/2000 eV default, admit an independent holdout, close the full-source
+denominator, or qualify D1 intake. A changed candidate digest needs fresh
+comparison evidence.
+
 ## Review-slice dependency closure
 
 The r43 index binds 13 retained review items, but this slice alone is not a
