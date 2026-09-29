@@ -218,6 +218,10 @@ verify the exact SciRel and CodeFusion sources, wheel, catalog, executing
 backend, immutable registration, reviewer snapshot, and ordinary-user result
 as one pinned tuple.
 
+The exact per-item scientific and license decision inputs, captured Artifact
+refs, and selectable dependency closures are mapped in
+[r43 expert and license handoff](2026-09-30-r43-expert-license-handoff.md).
+
 Before a stable outbound release, the following inputs are still required:
 
 - Human expert decisions on exact item revisions and their scientific scope;
