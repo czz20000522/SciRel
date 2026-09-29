@@ -43,9 +43,10 @@
     "candidate_entry_id": "candidate:a90a56d6c69390d65c38b7ac8de7597ea5d6f5ef7cc7776377668daa8a7d3c14",
     "current_host_export_digest": "sha256:9ed3e5d329bee9d01dc0f7f128bb55abd69bcbfdd59903da08e5a78aca37fe99",
     "approved_items": 0,
-    "reviewer_plugin_wheel_binding": "not_verified"
+    "reviewer_plugin_wheel_binding": "absent_in_current_registration",
+    "registration_release_fields": ["plugin_release_ref"]
   },
-  "verification_boundary": "SciRel outbound rehashed the saved local ZIP and downloaded script/result, checked the ZIP wheel and release members, and inspected the result JSON. CodeFusion owner verified the authenticated request, first kernel checkpoint, skill/environment/Tool Plan revisions, and read-only resource mount. This is a bounded development request, not an approved review or release.",
+  "verification_boundary": "SciRel outbound rehashed the saved local ZIP and downloaded script/result, checked the ZIP wheel and release members, and inspected the result JSON. CodeFusion owner verified the authenticated request, first kernel checkpoint, skill/environment/Tool Plan revisions, read-only resource mount, and reviewer registration shape. This is a bounded development request, not an approved review or release.",
   "not_claims": [
     "expert_approval",
     "trusted_release",

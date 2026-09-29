@@ -47,8 +47,13 @@ authenticate the live service.
 
 The reviewer project's latest host export remains 13 items, one
 `needs_evidence`, 12 `review_pending`, and zero approved. Its review plugin
-installation has not been bound to this `b1ab...` wheel. The ordinary-user
-trace therefore closes one technical gap but does not complete a same-tuple
-reviewer/ordinary acceptance. Expert decisions, license clearance,
-approved-subset wheel/catalog construction, release checks and `v1` contract
-convergence remain prerequisites for stable distribution.
+registration's release object currently contains only a plugin release ref;
+CodeFusion's read-only database check found no wheel, catalog, or runtime
+dependency refs. The 13-item review workflow remains valid evidence, but this
+registration does not bind it to the `b1ab...` wheel. The ordinary-user trace
+therefore closes one technical gap without completing a same-tuple
+reviewer/ordinary acceptance. Final reviewer acceptance needs an immutable
+registration or equivalent host binding for the exact SciRel release tuple.
+Expert decisions, license clearance, approved-subset wheel/catalog
+construction, release checks and `v1` contract convergence remain
+prerequisites for stable distribution.
