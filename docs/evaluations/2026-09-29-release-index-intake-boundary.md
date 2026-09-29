@@ -30,3 +30,17 @@ The latter three inputs remain visible here for comparison and follow-up. They d
 not create `candidate` entries or imply a new census of the historical 52-item
 snapshot. A bounded D1 batch may enter D2 before whole-project freeze once its
 own source implementation and numerical comparison have passed.
+
+## Local draft outside the index
+
+A read-only worktree check also found two untracked files on
+`codex/d2-pointwise-margin` at Git `53271f0faa28aaac574481c9fe042f15b0be254a`:
+`src/scirel/collisions/collrad_h0_ionization_rate.py` (SHA-256
+`fb86d8f188f5cc2502b05c1867e5e8ed8d0ec9eb0d195764be5c5e655302fc21`) and
+`tests/operator_contracts/test_collrad_h0_ionization_rate.py` (SHA-256
+`5bda82bc9b20b4b3b7ddf91caf737937736d02e470438e3c2df3ed41da334013`).
+The draft itself identifies the saved KN1DPy strict D1 qualification as
+withdrawn and its source replay as historical development evidence. These files
+are not part of that worktree's Git commit or the current SciRel index. Their
+presence does not establish a qualified D1 handoff, a completed D2 asset, or a
+review candidate; the owning worktree remains untouched.
