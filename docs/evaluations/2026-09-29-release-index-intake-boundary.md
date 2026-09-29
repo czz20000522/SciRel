@@ -12,6 +12,20 @@ plus the r43 initial 13-item review version. The r43 workflow itself records an
 unpublished-candidate census gap, so these entries are not an authoritative
 inventory of every external checkout or host artifact.
 
+Earlier outbound case manifests also bind development wheels labelled dev12,
+dev15, dev24, dev39, and dev5. The local dev24 wheel SHA-256
+`a0c665a7d2920650fce832c448c49d4c866260daec0cba0102dd60e3e56c95a0`
+and dev39 wheel SHA-256
+`be5a2a2b40461ded5c486d9c9689ceaaed987923b9ba428da73ab59ca1eef9b8`
+match their outbound manifests. These case-bound inputs do not establish a new
+D2-frozen candidate identity or D1 qualification. Version labels alone are
+insufficient: a 2026-09-25 dev5 outbound wheel has SHA-256
+`1ab011ff5f3c34d833122e6834185122fbff6e2081efaba7b1f765c117306690`,
+while the indexed r43/dev5 wheel has SHA-256
+`927b33e4a1051d71698714b30d80dfe9da46c7647ebe25fd9c2fedfc6025deda`.
+The earlier case records remain at their exact manifests; this check does not
+close the unpublished-candidate census gap.
+
 The 2026-09-29 reviewer workbench readback showed 12 `review_pending` items and
 one Weideman `needs_evidence` successor, SHA-256
 `376899b3d2801fe7452f66086667852f08da98a21a4515d3d07e4fc88d9810ac`.
