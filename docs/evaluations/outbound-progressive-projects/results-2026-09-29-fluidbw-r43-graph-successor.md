@@ -52,3 +52,14 @@ wavepoints, not roots, growth/damping rates or a stability decision.
 Agreement between the two methods is not an error bound. No arbitrary-input
 source parity, whole-fluidBW qualification, human approval or public release
 follows from this case.
+
+Independent bounded review of commit `0e84a54f0aa9eb327ee7ec3c44d36977d45777cd`
+recorded `accept_bounded_physical_input_TaskGraph_D3_development_case` with
+no findings. The [acceptance record](../../../build/verification/fluidbw-r43-independent-review-20260929/d3-graph-acceptance-0e84a54f.json)
+has SHA-256 `d55823dd44518e8ef14c6559528dc494d97bb3a19f0d0ecce735e229729c49cc`.
+It checked the frozen 165-member archive, unchanged predecessor payloads,
+exact wheel/catalog and installed runtime binding, and the saved input/output
+chain; the reviewer did not rerun the scientific functions. Acceptance covers
+this manufactured two-wavepoint development case only. It does not establish
+measured-user-task completion, arbitrary-input parity, a root or stability
+result, whole-package source qualification, or human/public-release approval.
