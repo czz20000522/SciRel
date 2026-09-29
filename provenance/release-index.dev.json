@@ -439,6 +439,18 @@
       "subject_entry_id": "candidate:a90a56d6c69390d65c38b7ac8de7597ea5d6f5ef7cc7776377668daa8a7d3c14",
       "successor_entry_id": "candidate:1d02ae5282f0947a40f5e15bb30df1ca9613fdd491d5012ab7b204f88d6c2218",
       "transition": "superseded"
+    },
+    {
+      "approval_state": "pending_unapproved",
+      "entry_digest": "sha256:ce69d5cb9b3aed1767f8e82a77f5abf2e47e1f0fd735fb84ec6822f17ca91767",
+      "entry_id": "evidence:5f1c6c5b348a4ead3bbe72a450895f2f5ba389403798f83bf38adf4ad5f48f03",
+      "evidence_ref": {
+        "digest": "sha256:cc420739a76b656f247fb801d052bd9988b24c91dd1a0d3c61ac7b56b45eec54",
+        "ref": "provenance/r43-b1ab-review-registration-acceptance-20260930.json"
+      },
+      "evidence_type": "review_host_registration_acceptance",
+      "status": "evidence",
+      "subject_entry_id": "candidate:1d02ae5282f0947a40f5e15bb30df1ca9613fdd491d5012ab7b204f88d6c2218"
     }
   ],
   "schema": "scirel.release-index.dev"

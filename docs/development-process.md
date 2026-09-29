@@ -111,8 +111,8 @@ catalog 或审核材料；`runtime_dependency_refs` 可标识声明的运行依�
 旧条目及摘要不改写，当前未发布入口排除已替换、撤回和已发行的候选。开发条目的替换只改变
 开发快照当前身份，不继承或更新独立待审候选的逐项审核身份。旧 52 项快照只保留历史定位；
 正式公开发行前将有效决策和合同统一收敛到 `v1`。
-同一候选的宿主开发验收用 `--review-host-evidence`、`--candidate-entry-id` 和 `--existing-index`
-追加证据条目；这不产生新候选，也不替代宿主逐项审核状态或批准。
+同一候选的宿主导出或中性注册开发验收用 `--review-host-evidence`、`--candidate-entry-id` 和
+`--existing-index` 追加各自类型的证据条目；这不产生新候选，也不替代宿主逐项审核状态或批准。
 同一 workflow 的多项共享原始 revision，只产生 `candidate` 条目。多个 artifact 可重复传入 `--item-artifact`，
 但重复 item 或资产会被拒绝。审核宿主导出的 `approved_items` 与各项原始 artifact 必须一起输入；artifact 以
 `<sha256-hex>.json` 命名，内容摘要须与投影 revision 一致，并包含提交前版本和批准 successor。

@@ -649,6 +649,87 @@ def test_review_host_evidence_appends_without_rewriting_candidate(tmp_path, monk
         )
 
 
+def test_review_host_registration_evidence_binds_development_materials(tmp_path, monkeypatch):
+    import release_index
+
+    monkeypatch.setattr(release_index, "ROOT", tmp_path)
+    catalog = tmp_path / "release.json"
+    catalog_body = {"schema": "scirel.catalog-release.v1"}
+    catalog_body["root_digest"] = release_index.digest(release_index.canonical_json(catalog_body))
+    catalog.write_text(json.dumps(catalog_body), encoding="utf-8")
+    wheel = tmp_path / "wheel.whl"
+    wheel.write_bytes(b"development wheel")
+    development_path = tmp_path / "development.json"
+    development = release_index.register_development_snapshot(
+        snapshot_id="r43-dev5", catalog_release=catalog, wheel=wheel,
+        evidence_paths=[catalog], destination_paths=[catalog],
+        git_revision="a" * 40, source_qualification="mixed_unverified",
+        output_path=development_path,
+    )["entries"][0]
+    pending = tmp_path / "pending.json"
+    pending.write_bytes(_multi_item_workflow_body())
+    candidate_path = tmp_path / "candidate.json"
+    candidate = release_index.register_candidate(
+        item_artifacts=[pending], git_revision="a" * 40,
+        existing_index=development_path, output_path=candidate_path,
+    )["entries"][-1]
+    workflow_revision = candidate["items"][0]["initial_revision"]
+    record = tmp_path / "registration.json"
+    body = {
+        "schema": "scirel.review-host-registration-acceptance.dev",
+        "candidate_entry_id": candidate["entry_id"],
+        "development_entry_id": development["entry_id"],
+        "workflow_revision": workflow_revision,
+        "scirel_source_revision": "a" * 40,
+        "catalog_root_digest": development["catalog"]["root_digest"],
+        "registration_digest": "sha256:" + "b" * 64,
+        "owner_evidence_digest": "sha256:" + "d" * 64,
+        "host_plugin_release_ref": "plugin-release://scirel/development",
+        "host_artifacts": [
+            {"role": "wheel", "artifact_ref": "cf://artifact/wheel",
+             "digest": development["wheel"]["digest"], "media_type": "application/octet-stream"},
+            {"role": "catalog_snapshot_zip", "artifact_ref": "cf://artifact/catalog",
+             "digest": "sha256:" + "c" * 64,
+             "media_type": "application/vnd.scirel.catalog-snapshot+zip"},
+        ],
+        "runtime_dependency_refs": [],
+        "approval_state": "pending_unapproved",
+        "approved_items": 0,
+    }
+    record.write_text(json.dumps(body), encoding="utf-8")
+    result = release_index.register_review_host_evidence(
+        candidate_entry_id=candidate["entry_id"], evidence_path=record,
+        existing_index=candidate_path, output_path=tmp_path / "accepted.json",
+    )
+    assert result["entries"][:-1] == release_index.read_index(candidate_path)["entries"]
+    assert result["entries"][-1]["evidence_type"] == "review_host_registration_acceptance"
+    assert release_index.read_index(tmp_path / "accepted.json") == result
+
+    body["host_artifacts"][0]["digest"] = "sha256:" + "0" * 64
+    record.write_text(json.dumps(body), encoding="utf-8")
+    with pytest.raises(ValueError, match="does not bind"):
+        release_index.register_review_host_evidence(
+            candidate_entry_id=candidate["entry_id"], evidence_path=record,
+            existing_index=candidate_path, output_path=tmp_path / "wrong-wheel.json",
+        )
+    body["host_artifacts"][0]["digest"] = development["wheel"]["digest"]
+    body["workflow_revision"] = "sha256:" + "0" * 64
+    record.write_text(json.dumps(body), encoding="utf-8")
+    with pytest.raises(ValueError, match="does not bind"):
+        release_index.register_review_host_evidence(
+            candidate_entry_id=candidate["entry_id"], evidence_path=record,
+            existing_index=candidate_path, output_path=tmp_path / "wrong-workflow.json",
+        )
+    body["workflow_revision"] = workflow_revision
+    body["approved_items"] = False
+    record.write_text(json.dumps(body), encoding="utf-8")
+    with pytest.raises(ValueError, match="does not bind"):
+        release_index.register_review_host_evidence(
+            candidate_entry_id=candidate["entry_id"], evidence_path=record,
+            existing_index=candidate_path, output_path=tmp_path / "boolean-approval.json",
+        )
+
+
 def test_repository_release_index_keeps_exact_evidence_bindings():
     from release_index import digest, read_index
 

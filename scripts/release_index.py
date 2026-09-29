@@ -87,7 +87,10 @@ def read_index(path: Path) -> dict[str, Any]:
             subject = entry.get("subject_entry_id")
             if (
                 not (
-                    (evidence_type == "review_host_export_acceptance" and subject in candidates)
+                    (evidence_type in {
+                        "review_host_export_acceptance",
+                        "review_host_registration_acceptance",
+                    } and subject in candidates)
                     or (evidence_type == "development_consumer_acceptance" and subject in developments)
                 )
                 or entry.get("approval_state") != "pending_unapproved"
@@ -98,7 +101,10 @@ def read_index(path: Path) -> dict[str, Any]:
                 or not _SHA256_DIGEST.fullmatch(binding["digest"])
             ):
                 subject_kind = (
-                    "candidate" if evidence_type == "review_host_export_acceptance"
+                    "candidate" if evidence_type in {
+                        "review_host_export_acceptance",
+                        "review_host_registration_acceptance",
+                    }
                     else "development snapshot"
                 )
                 raise ValueError(f"evidence entry lacks an earlier {subject_kind} or exact binding")
@@ -363,6 +369,75 @@ def register_review_host_evidence(
     binding = artifact_ref(evidence_path)
     record = json.loads(evidence_path.read_text(encoding="utf-8"))
     revisions = {item["initial_revision"] for item in candidate["items"]}
+    if isinstance(record, dict) and record.get("schema") == "scirel.review-host-registration-acceptance.dev":
+        developments = {
+            entry["entry_id"]: entry for entry in index["entries"]
+            if entry["status"] == "development"
+        }
+        development = developments.get(record.get("development_entry_id"))
+        artifacts = record.get("host_artifacts")
+        by_role = (
+            {artifact.get("role"): artifact for artifact in artifacts}
+            if isinstance(artifacts, list) and all(
+                isinstance(artifact, dict) and isinstance(artifact.get("role"), str)
+                for artifact in artifacts
+            )
+            else {}
+        )
+        wheel = by_role.get("wheel", {})
+        catalog = by_role.get("catalog_snapshot_zip", {})
+        dependencies = record.get("runtime_dependency_refs")
+        if (
+            record.get("candidate_entry_id") != candidate_entry_id
+            or development is None
+            or revisions != {record.get("workflow_revision")}
+            or record.get("scirel_source_revision") != candidate["git_revision"]
+            or development["source_binding"] != {"git_revision": candidate["git_revision"]}
+            or record.get("catalog_root_digest") != development["catalog"]["root_digest"]
+            or not isinstance(record.get("registration_digest"), str)
+            or not _SHA256_DIGEST.fullmatch(record["registration_digest"])
+            or not isinstance(record.get("owner_evidence_digest"), str)
+            or not _SHA256_DIGEST.fullmatch(record["owner_evidence_digest"])
+            or not isinstance(record.get("host_plugin_release_ref"), str)
+            or not record["host_plugin_release_ref"]
+            or not isinstance(artifacts, list) or len(artifacts) != 2
+            or set(by_role) != {"wheel", "catalog_snapshot_zip"}
+            or wheel.get("digest") != development["wheel"]["digest"]
+            or wheel.get("media_type") != "application/octet-stream"
+            or not isinstance(catalog.get("digest"), str)
+            or not _SHA256_DIGEST.fullmatch(catalog["digest"])
+            or catalog.get("media_type") != "application/vnd.scirel.catalog-snapshot+zip"
+            or any(not isinstance(artifact.get("artifact_ref"), str)
+                   or not artifact["artifact_ref"] for artifact in artifacts)
+            or not isinstance(dependencies, list)
+            or any(not isinstance(value, str) or not value for value in dependencies)
+            or len(set(dependencies)) != len(dependencies)
+            or record.get("approval_state") != "pending_unapproved"
+            or type(record.get("approved_items")) is not int
+            or record["approved_items"] != 0
+        ):
+            raise ValueError("review host registration evidence does not bind the pending candidate")
+        evidence_type = "review_host_registration_acceptance"
+    else:
+        evidence_type = "review_host_export_acceptance"
+        _validate_review_host_export(record, candidate, candidate_entry_id, revisions)
+    entry = {
+        "entry_id": "evidence:" + digest(canonical_json([candidate_entry_id, binding]))[7:],
+        "status": "evidence",
+        "subject_entry_id": candidate_entry_id,
+        "evidence_type": evidence_type,
+        "approval_state": "pending_unapproved",
+        "evidence_ref": binding,
+    }
+    result = append_entry(index, entry)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_bytes(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True).encode("utf-8") + b"\n")
+    return result
+
+
+def _validate_review_host_export(
+    record: Any, candidate: dict[str, Any], candidate_entry_id: str, revisions: set[str],
+) -> None:
     action = record.get("review_action") if isinstance(record, dict) else None
     transition_count = record.get("applied_transitions") if isinstance(record, dict) else None
     action_valid = (
@@ -401,18 +476,6 @@ def register_review_host_evidence(
         or not _SHA256_DIGEST.fullmatch(record["host_receipt_digest"])
     ):
         raise ValueError("review host evidence does not bind the pending candidate")
-    entry = {
-        "entry_id": "evidence:" + digest(canonical_json([candidate_entry_id, binding]))[7:],
-        "status": "evidence",
-        "subject_entry_id": candidate_entry_id,
-        "evidence_type": "review_host_export_acceptance",
-        "approval_state": "pending_unapproved",
-        "evidence_ref": binding,
-    }
-    result = append_entry(index, entry)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_bytes(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True).encode("utf-8") + b"\n")
-    return result
 
 
 def register_development_consumer_evidence(

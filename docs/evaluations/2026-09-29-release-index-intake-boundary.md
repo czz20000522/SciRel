@@ -57,10 +57,10 @@ The later isolated reviewer project used a new development release ref naming
 SciRel Git `cc2fa21`, wheel `b1abff...` and catalog ZIP `afee7fcf...`.
 CodeFusion read back both uploaded Artifacts and reported an installed-wheel
 backend; D2 checked the saved local readback bytes and receipts, without an
-independent product or database query. The saved D2 evidence does not include
-the full immutable neutral registration JSON, so matching material digests
-support a bounded technical comparison across the two projects, not formal
-same-tuple product acceptance. Its new `review_pending` workflow SHA-256
+independent product or database query. At that point the saved D2 evidence did
+not include a neutral registration readback, so matching material digests
+supported a bounded technical comparison across the two projects. Its new
+`review_pending` workflow SHA-256
 `0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b`
 retains the same 13 review units and item refs as the old `a9099a...` version,
 but binds the corrected L1 result, wheel/catalog Artifacts and exact index
@@ -74,6 +74,24 @@ bindings are in `provenance/r43-b1ab-review-workflow-acceptance-20260929.json`
 and `provenance/r43-b1ab-review-host-acceptance-20260929.json`. This is a
 development reviewer acceptance, not expert approval, license clearance or
 stable release.
+
+CodeFusion's subsequent read-only inspection of the isolated product's running
+container registration and `product_plugin_releases` row reported the same
+development release ref and exact neutral `release.artifacts`: wheel Artifact
+`cf://artifact/upload_3b6cf72adddd592f6edba784eaf7a0977ff69fd4bce4bdb3`
+at SHA-256 `b1abff...` and catalog ZIP Artifact
+`cf://artifact/upload_4b8246a7369ee9581e0e241830f0ea69c3a16cf934cdcc56`
+at SHA-256 `afee7fcf...`. The reported canonical registration JSON SHA-256 is
+`40a83e4f18e0a4e621912ea61d2d2b8d96831d3701a8b8a4d44011774efbdcf2`;
+`runtime_dependency_refs` is empty. D2 hashed the saved owner report and
+checked its materials against the indexed wheel, catalog root, workflow and
+prior Artifact readback receipts. Direct D2 container inspection was denied
+by host permissions, so D2 did not recompute the registration digest or query
+the database. The append-only registration evidence is bound to the current
+candidate in `provenance/r43-b1ab-review-registration-acceptance-20260930.json`.
+This establishes an owner-verified neutral material binding for the isolated
+development host, not expert approval, license clearance or formal release.
+The old reviewer project's registration remains a separate historical identity.
 
 The verified local scope is the r81/dev58 and r43/dev5 development deliveries,
 the corrected adapter successor, and both exact r43 13-item review versions.

@@ -81,7 +81,7 @@
       "type": "object", "additionalProperties": false,
       "required": ["entry_id", "entry_digest", "status", "subject_entry_id", "evidence_type", "approval_state", "evidence_ref"],
       "oneOf": [
-        {"properties": {"subject_entry_id": {"pattern": "^candidate:[0-9a-f]{64}$"}, "evidence_type": {"const": "review_host_export_acceptance"}}},
+        {"properties": {"subject_entry_id": {"pattern": "^candidate:[0-9a-f]{64}$"}, "evidence_type": {"enum": ["review_host_export_acceptance", "review_host_registration_acceptance"]}}},
         {"properties": {"subject_entry_id": {"pattern": "^development:[0-9a-f]{64}$"}, "evidence_type": {"const": "development_consumer_acceptance"}}}
       ],
       "properties": {
