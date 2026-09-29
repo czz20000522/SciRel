@@ -43,6 +43,17 @@ and candidate mounts. Its own classification is a source-supported API-domain
 variant, not the literal public-driver default or a sealed holdout. This receipt
 alone does not qualify a new D1 handoff or change the index.
 
+The read-only independent follow-up at
+`coordination/reviews/wham-api-domain-canonical-followup-20260929.json`
+(SHA-256 `b32930c5e5aa1c91110d9ae4be970273be2a296af28bf6991e9dac94cff7b582`)
+accepts this 1000/1000 eV canonical case with a candidate-continuity condition:
+the coordinator was the sole candidate writer, no file mtime postdates a02,
+and a supplemental read-only mounted-tree probe recomputed the recorded digest
+and 134-file count. The original a02 probe did not itself recompute that digest.
+The literal 1000/2000 eV public-driver default still fails the source
+integrability guard. The follow-up grants no independent holdout, whole-source
+closure, full freeze, export, or D2 intake status.
+
 ## Review-slice dependency closure
 
 The r43 index binds 13 retained review items, but this slice alone is not a
