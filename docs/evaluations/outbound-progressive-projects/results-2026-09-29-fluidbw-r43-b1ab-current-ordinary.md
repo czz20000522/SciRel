@@ -92,9 +92,15 @@ approved; D2's check is recorded in
 ordinary-user request, this establishes a bounded technical dual-chain
 comparison of matching source, wheel, and catalog materials across two product
 projects. The earlier manifest freezes the old reviewer candidate; it does not
-bind the new workflow or show the new project's immutable neutral registration
-snapshot ref, digest, and field list. An opaque release ref and matching
-material hashes alone do not establish formal same-tuple product acceptance.
+bind the new workflow. CodeFusion's later read-only container and persisted-row
+check confirmed the new development registration's wheel/catalog
+`release.artifacts` and empty `runtime_dependency_refs`, with canonical JSON
+SHA-256 `40a83e4f18e0a4e621912ea61d2d2b8d96831d3701a8b8a4d44011774efbdcf2`
+(CodeFusion `.runtime/m3-b1ab-registration-evidence.md`). This establishes a
+neutral material binding for the new development host. The ordinary request
+and reviewer run remain distinct project/review-version observations; formal
+same-tuple release acceptance still needs final-candidate revalidation,
+scientific approval, distribution licenses, and release checks.
 The earlier manifest's `not_claims` and reviewer receipts retain their
 historical scope; no old review decision is transferred. This wheel/catalog
 remains `mixed_unverified` and
