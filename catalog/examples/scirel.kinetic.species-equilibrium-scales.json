@@ -287,10 +287,11 @@
     "partial_results": "None; returns the complete scale dictionary only after validation."
   },
   "provenance": {
-    "lineage_summary": "Standardized as a development relation from the saved fluidBW species_equilibrium_scales candidate, now archived pending first-stage re-review. The archived implementation SHA-256 is 17d06f1520d5d703a30d2493ae85086ecd6a271b1d9fe56dc16b58f8dc4b5397. The saved source-oracle cases compare one electron and an electron/deuteron mixture; neither those comparisons nor the old D1 label establish current qualified delivery or expert scientific approval. See docs/evaluations/2026-09-28-species-equilibrium-scales-integration.md.",
+    "lineage_summary": "The development relation originated from the archived fluidBW species_equilibrium_scales implementation (SHA-256 17d06f1520d5d703a30d2493ae85086ecd6a271b1d9fe56dc16b58f8dc4b5397). The later bounded fluidBW r43 handoff (SHA-256 3c514298bd46be501a097e53766868285928c9e3cdb5f66c06a291289ec26f9a) was independently accepted for read-only D2 intake. D2 found the same SI species axes, constants, signed gyroradius, thermal speed and outputs, and retained SciRel's stricter invalid-input handling. This source lineage does not confer expert approval or distribution rights.",
     "source_kinds": [
       "saved historical fluidBW L1 operator contract and implementation",
       "saved direct source-oracle cases and read-only digest-bound archived-source replay",
+      "bounded fluidBW r43 source handoff and independent D1 review",
       "SciRel scientific contract tests"
     ],
     "public_references": [],
@@ -321,11 +322,11 @@
     "tests": [
       "tests/operator_contracts/test_species_equilibrium_scales.py"
     ],
-    "evidence_ceiling": "Direct SciRel tests establish these formulas and failure behavior. Read-only digest-bound archived-source replay checked all 19 returned fields at two saved source-oracle cases, not all species mixtures or alternate normalizations. Neither test layer proves global physical applicability, qualified D1 or expert approval.",
+    "evidence_ceiling": "Direct SciRel tests establish these formulas and failure behavior. Read-only digest-bound archived-source replay checked all 19 returned fields at two saved source-oracle cases, not all species mixtures or alternate normalizations. The independently reviewed r43 handoff supports read-only D2 intake for its declared source scope; it does not expand SciRel parity to arbitrary inputs or confer expert approval.",
     "known_limitations": [
       "Constants and eV-to-K factor intentionally retain the saved fluidBW numeric convention.",
       "No thermal distribution, wave dispersion or root result is returned.",
-      "The first-stage fluidBW branch-coverage question and public distribution license remain open; expert recognition is pending."
+      "Public distribution license and expert scientific recognition remain open."
     ]
   }
 }

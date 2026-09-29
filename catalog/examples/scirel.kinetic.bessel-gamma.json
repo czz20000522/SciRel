@@ -68,10 +68,11 @@
     "partial_results": "None; both outputs are returned only after all broadcast elements pass validation."
   },
   "provenance": {
-    "lineage_summary": "Standardized as a development relation from the saved fluidBW bessel_gamma_functions candidate, now archived pending first-stage re-review, using SciPy's scaled Bessel implementation. The saved implementation SHA-256 is 2aa8a7079c0d248b25832dc15a09e5c2e019244afd62a721581c9e032c1e080c. Its saved 98-point oracle and digest-bound comparison are finite numerical evidence, not current qualified D1 delivery or expert-approved identity for every complex argument. See docs/evaluations/2026-09-28-bessel-gamma-integration.md.",
+    "lineage_summary": "The development relation originated from the archived fluidBW bessel_gamma_functions implementation (SHA-256 2aa8a7079c0d248b25832dc15a09e5c2e019244afd62a721581c9e032c1e080c). The later bounded fluidBW r43 handoff (SHA-256 3c514298bd46be501a097e53766868285928c9e3cdb5f66c06a291289ec26f9a) was independently accepted for read-only D2 intake. D2 found the same scaled Bessel-Gamma relation and retained SciRel's stricter validation. This source lineage does not establish arbitrary complex-argument parity, expert approval or distribution rights.",
     "source_kinds": [
       "saved historical fluidBW Gamman/Gammapn operator contract and implementation",
       "saved finite 98-point source oracle and digest-bound comparison",
+      "bounded fluidBW r43 source handoff and independent D1 review",
       "independent local modified-Bessel definition tests"
     ],
     "public_references": [],
@@ -97,11 +98,11 @@
       "Invalid-order, invalid-argument and unrepresentable-output rejection."
     ],
     "tests": ["tests/operator_contracts/test_bessel_gamma.py"],
-    "evidence_ceiling": "Direct SciRel tests establish listed identities and failure behavior. The read-only archived-source comparison covers only a finite 98-point real-argument grid with stated absolute and relative tolerances; it does not establish arbitrary complex-plane source parity, a physical choice of x, qualified D1 or expert approval.",
+    "evidence_ceiling": "Direct SciRel tests establish listed identities and failure behavior. The read-only archived-source comparison covers only a finite 98-point real-argument grid with stated absolute and relative tolerances. The independently reviewed r43 handoff supports read-only D2 intake for its declared source scope; neither layer establishes arbitrary complex-plane SciRel parity, a physical choice of x or expert approval.",
     "known_limitations": [
       "Floating-point underflow or a nonrepresentable result can bound extreme inputs; the callable raises rather than returning nonfinite outputs.",
       "The source implementation accepted some noninteger orders implicitly; SciRel intentionally restricts n to exactly representable integers.",
-      "The first-stage fluidBW branch-coverage question, public distribution license and expert recognition remain open."
+      "Public distribution license and expert scientific recognition remain open."
     ]
   }
 }
