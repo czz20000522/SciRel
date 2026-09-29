@@ -52,6 +52,15 @@ code integration has not been deployed. The commit itself supplies neither an
 authenticated r43 aggregate export nor an approval; the live workbench and
 exact current item Artifacts remain the authority for release decisions.
 
+The new route's `codefusion.plugin-review-snapshot-export.v1` is a neutral
+host snapshot of item refs, current/source Artifact refs, and applied review
+transitions. It is not the `scirel.review-completed-results.dev` projection
+accepted by the SciRel distribution scripts. Before using a deployed export,
+D2 must verify its exact host Artifact, retrieve and check the referenced
+initial, predecessor, and current review Artifact bytes for selected approved
+items, then bind the derived domain projection to that host snapshot. A route
+receipt alone cannot satisfy the release inputs.
+
 ## Release boundary
 
 The first-release subset assembler, exact-item finalizer, and source-free
