@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
+from importlib.util import resolve_name
 import json
 from pathlib import Path
 from pathlib import PurePosixPath
@@ -330,6 +332,42 @@ def _wheel_contents(wheel: Path, release_version: str) -> dict[str, bytes]:
         raise ValueError("release wheel is not a valid wheel archive") from error
 
 
+def _validate_wheel_import_closure(wheel_members: dict[str, bytes], source_root: Path) -> None:
+    modules = {
+        name.removesuffix("/__init__.py").removesuffix(".py").replace("/", ".")
+        for name in wheel_members
+        if name.startswith("scirel/") and name.endswith(".py")
+    }
+
+    def present(module: str) -> bool:
+        return module in modules or any(name.startswith(module + ".") for name in modules)
+
+    def check(module: str, owner: str) -> None:
+        if (module == "scirel" or module.startswith("scirel.")) and not present(module):
+            raise ValueError(f"release wheel has a missing internal import {module} in {owner}")
+
+    for name, body in wheel_members.items():
+        if not name.startswith("scirel/") or not name.endswith(".py"):
+            continue
+        module = name.removesuffix("/__init__.py").removesuffix(".py").replace("/", ".")
+        package = module if name.endswith("/__init__.py") else module.rpartition(".")[0]
+        tree = ast.parse(body.decode("utf-8"), filename=name)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    check(alias.name, name)
+            elif isinstance(node, ast.ImportFrom):
+                imported = resolve_name("." * node.level + (node.module or ""), package) if node.level else node.module
+                if not imported:
+                    continue
+                check(imported, name)
+                for alias in node.names:
+                    candidate = imported + "." + alias.name
+                    source = source_root / "src" / Path(*candidate.split("."))
+                    if source.with_suffix(".py").is_file() or (source / "__init__.py").is_file():
+                        check(candidate, name)
+
+
 def finalize_reviewed_release(
     *,
     release_index: Path,
@@ -521,6 +559,7 @@ def finalize_reviewed_release(
     ):
         raise ValueError("catalog and document implementation versions differ")
     wheel_members = _wheel_contents(wheel, release_version)
+    _validate_wheel_import_closure(wheel_members, source_root)
     approved_modules = {
         document["public_api"]["python"]["module"].replace(".", "/") + ".py"
         for document in documents.values()

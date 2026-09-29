@@ -425,6 +425,60 @@ def test_reviewed_finalization_rejects_unapproved_science_module(tmp_path, monke
         )
 
 
+def test_reviewed_finalization_requires_private_import_closure(tmp_path, monkeypatch):
+    import finalize_release
+
+    artifacts, documents, catalog, wheel, _ = _reviewed_release_inputs(
+        tmp_path,
+        document_name="scirel.closures.mirror-ambipolar-potential.json",
+    )
+    monkeypatch.setattr(finalize_release, "_git_revision", lambda root: "a" * 40)
+    monkeypatch.setattr(finalize_release, "_git_changed_files", lambda root, revision: set())
+    monkeypatch.setattr(finalize_release, "_require_clean_release_sources", lambda root: None)
+
+    with pytest.raises(ValueError, match="missing internal import.*scirel._validation"):
+        finalize_release.finalize_reviewed_release(
+            release_index=tmp_path / "index.json",
+            candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
+            approved_results=tmp_path / "results.json",
+            review_artifacts_dir=artifacts,
+            documents_dir=documents,
+            catalog_dir=catalog,
+            wheel=wheel,
+            output_dir=tmp_path / "release",
+            release_id="release-test",
+            source_root=ROOT,
+        )
+
+
+def test_reviewed_wheel_import_closure_accepts_bound_private_support():
+    from finalize_release import _validate_wheel_import_closure
+
+    module = "scirel/closures/mirror_ambipolar_potential.py"
+    support = "scirel/_validation.py"
+    members = {
+        name: (ROOT / "src" / name).read_bytes()
+        for name in (module, support)
+    }
+
+    _validate_wheel_import_closure(members, ROOT)
+
+
+def test_reviewed_wheel_import_closure_rejects_unfiltered_package_initializer():
+    from finalize_release import _validate_wheel_import_closure
+
+    members = {
+        name: (ROOT / "src" / name).read_bytes()
+        for name in (
+            "scirel/field/__init__.py",
+            "scirel/field/circular_filament_green.py",
+        )
+    }
+
+    with pytest.raises(ValueError, match="missing internal import.*poloidal_field_magnitude"):
+        _validate_wheel_import_closure(members, ROOT)
+
+
 def test_reviewed_finalization_rejects_partial_approval_of_shared_module(tmp_path, monkeypatch):
     import finalize_release
 
