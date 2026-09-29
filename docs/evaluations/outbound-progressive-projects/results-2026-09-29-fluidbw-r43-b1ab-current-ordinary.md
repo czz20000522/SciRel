@@ -45,15 +45,52 @@ Both numerical checks against SciPy `wofz` passed, with absolute errors 0 and
 product-state verification; SciRel's local inspection does not independently
 authenticate the live service.
 
-The reviewer project's latest host export remains 13 items, one
-`needs_evidence`, 12 `review_pending`, and zero approved. Its review plugin
-registration's release object currently contains only a plugin release ref;
-CodeFusion's read-only database check found no wheel, catalog, or runtime
-dependency refs. The 13-item review workflow remains valid evidence, but this
-registration does not bind it to the `b1ab...` wheel. The ordinary-user trace
-therefore closes one technical gap without completing a same-tuple
-reviewer/ordinary acceptance. Final reviewer acceptance needs an immutable
-registration or equivalent host binding for the exact SciRel release tuple.
+At this ordinary-user acceptance point, the earlier reviewer project's host
+export had 13 items, one `needs_evidence`, 12 `review_pending`, and zero
+approved. Its review plugin registration's release object contained only a
+plugin release ref; CodeFusion's read-only database check found no wheel,
+catalog, or runtime dependency refs. The 13-item review workflow remains valid
+evidence, but that registration did not bind it to the `b1ab...` wheel. The
+ordinary-user trace therefore closed one technical gap without completing a
+same-tuple reviewer/ordinary acceptance at that point. An immutable development
+registration or equivalent host binding for the exact SciRel tuple was still
+needed.
+
 Expert decisions, license clearance, approved-subset wheel/catalog
 construction, release checks and `v1` contract convergence remain
 prerequisites for stable distribution.
+
+## Later same-tuple reviewer successor
+
+CodeFusion `2d3de66e` subsequently ran a separate isolated reviewer project,
+`prj_0b4158c393a55f538dae18802c15770ef756`. Its development registration
+binds the same SciRel source `cc2fa21e03fa7e5152c29f0769165863429e1693`
+and wheel SHA-256
+`b1abff574c870e17dd4e24adc952ca4279561aa43adcc92250d019e42b2b3684`
+to catalog snapshot ZIP SHA-256
+`afee7fcf2d5bca4e04179aaaa1e1d98bdd689a8439c965f1b1c4580993c097e5`.
+The ZIP's `release.json` has SHA-256
+`fece59b88ad39480a58b3c35f7678b2007a578f5918a74533f5b0cae6dfe2d02`
+and catalog root
+`sha256:1bd47cc5cce3155cb8ec17676eb4f0296374d85939c7396c8be9a9ee06e7cdfb`,
+matching the ordinary request.
+CodeFusion checked the uploaded wheel/catalog Artifacts and ZIP contents;
+SciRel checked saved local readback evidence, without independently querying
+the product. The [reviewer handoff](r43-b1ab-reviewer-rebind-handoff-2026-09-29.md)
+records the product and ZIP readback; D2's exact bindings are in
+`provenance/r43-b1ab-review-workflow-acceptance-20260929.json`.
+
+The new workflow
+`sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b`
+and host export
+`sha256:b9e2c8c990f821232f2a912163a8ae03a970faa52c49ced1a701d22e1de9eabd`
+are bound to the same D2 development entry
+`development:c9a63b3f8068626417895ecfdc45787045a46a2a78ff6972642f6e8164de0463`.
+The export has 13 items, one `needs_evidence`, 12 `review_pending`, and zero
+approved; D2's check is recorded in
+`provenance/r43-b1ab-review-host-acceptance-20260929.json`. Alongside the
+ordinary-user request, this establishes a bounded same-tuple technical dual
+chain across two product projects. The earlier manifest's `not_claims` and
+reviewer receipts retain their historical scope; no old review decision is
+transferred. This wheel/catalog remains `mixed_unverified` and
+`pending_unapproved`, so the technical evidence is not a stable release.
