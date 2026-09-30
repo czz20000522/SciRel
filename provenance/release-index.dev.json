@@ -659,6 +659,30 @@
       "evidence_type": "development_host_acceptance",
       "status": "evidence",
       "subject_entry_id": "development:c34b22afc988ce05c58808f2aa8955ecf2f3d721ccb2b19fbc4df0d30dd07722"
+    },
+    {
+      "entry_digest": "sha256:20f89a2034ad65cceba8f01e559ee2abd3b74d7a7f43b3e5d710af7ec6ce8ed1",
+      "entry_id": "lifecycle:293fd3658e7c6330ccda3ad8d50d8437be71ae3bc435cbd15e6f9e22198a6c62",
+      "evidence_ref": {
+        "digest": "sha256:6b2fd38ba621ccfe777e9554f5130bd22f8c1ffef902c7a41c5230ca0aaca3b1",
+        "ref": "provenance/r43-corrected-development-supersession-20260930.json"
+      },
+      "status": "lifecycle",
+      "subject_entry_id": "development:c9a63b3f8068626417895ecfdc45787045a46a2a78ff6972642f6e8164de0463",
+      "successor_entry_id": "development:c34b22afc988ce05c58808f2aa8955ecf2f3d721ccb2b19fbc4df0d30dd07722",
+      "transition": "superseded"
+    },
+    {
+      "approval_state": "pending_unapproved",
+      "entry_digest": "sha256:74a79b6743e8286ee387e4d22a61eb32670db8d5c5277d5b5e6fad350a7d0684",
+      "entry_id": "evidence:da52337e8779615288dbc8ae1ecca9fbeaa302b1734b4cd5692633fc79aed059",
+      "evidence_ref": {
+        "digest": "sha256:2869ee8c515cfabf2437b95afd0e7061d8dc78339dc0678a7a0b87c4671fce68",
+        "ref": "docs/evaluations/outbound-progressive-projects/manifests/2026-09-29-fluidbw-r43-weideman-d3.json"
+      },
+      "evidence_type": "development_project_case_acceptance",
+      "status": "evidence",
+      "subject_entry_id": "development:470d2b5bf1ae405786a1794e0c500cb765d4255e515d3e67d8a7ec5e140035f5"
     }
   ],
   "schema": "scirel.release-index.dev"

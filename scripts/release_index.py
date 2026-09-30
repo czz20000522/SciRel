@@ -95,6 +95,7 @@ def read_index(path: Path) -> dict[str, Any]:
                         "development_consumer_acceptance",
                         "development_consumer_recovery_acceptance",
                         "development_host_acceptance",
+                        "development_project_case_acceptance",
                     } and subject in developments)
                 )
                 or entry.get("approval_state") != "pending_unapproved"
@@ -558,6 +559,94 @@ def register_development_host_evidence(
     return result
 
 
+def register_development_project_evidence(
+    *,
+    development_entry_id: str,
+    evidence_path: Path,
+    existing_index: Path,
+    output_path: Path,
+) -> dict[str, Any]:
+    if output_path.exists():
+        raise FileExistsError(f"release index output already exists: {output_path}")
+    index = read_index(existing_index)
+    development = next((entry for entry in index["entries"]
+                        if entry["status"] == "development"
+                        and entry["entry_id"] == development_entry_id), None)
+    if development is None:
+        raise ValueError("project evidence needs an indexed development snapshot")
+    binding = artifact_ref(evidence_path)
+    record = json.loads(evidence_path.read_text(encoding="utf-8"))
+    _validate_development_project_evidence(record, development)
+    entry = {
+        "entry_id": "evidence:" + digest(canonical_json([development_entry_id, binding]))[7:],
+        "status": "evidence",
+        "subject_entry_id": development_entry_id,
+        "evidence_type": "development_project_case_acceptance",
+        "approval_state": "pending_unapproved",
+        "evidence_ref": binding,
+    }
+    result = append_entry(index, entry)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_bytes(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True).encode("utf-8") + b"\n")
+    return result
+
+
+def _validate_development_project_evidence(
+    record: Any, development: dict[str, Any],
+) -> None:
+    if not isinstance(record, dict):
+        raise ValueError("project evidence must be an object")
+    handoff = record.get("d2_handoff") if isinstance(record, dict) else None
+    runtime = record.get("runtime") if isinstance(record, dict) else None
+    evidence = record.get("evidence") if isinstance(record, dict) else None
+    if (
+        record.get("schema") != "scirel.outbound-evaluation-manifest.v1"
+        or record.get("status") != "development_user_project_bounded_candidate"
+        or not isinstance(record.get("case_id"), str) or not record["case_id"]
+        or not isinstance(record.get("not_claims"), list)
+        or not {"expert_approval", "trusted_release", "public_v1"} <= set(record["not_claims"])
+        or not isinstance(handoff, dict)
+        or handoff.get("git_commit") != development["source_binding"].get("git_revision")
+        or not isinstance(runtime, dict)
+        or "sha256:" + str(runtime.get("wheel_sha256")) != development["wheel"]["digest"]
+        or "sha256:" + str(runtime.get("catalog_release_sha256")) != development["catalog"]["digest"]
+        or runtime.get("catalog_root_digest") != development["catalog"]["root_digest"]
+        or not isinstance(evidence, dict)
+    ):
+        raise ValueError("project evidence does not bind the development snapshot")
+    _validate_project_file(handoff, "independent_acceptance")
+    for section, names in (
+        (runtime, ("wheel", "catalog_release", "selected_document")),
+        (evidence, ("archive", "receipt")),
+    ):
+        for name in names:
+            _validate_project_file(section, name)
+    for name in ("file_manifest", "junit", "case_record", "baseline_result", "current_result"):
+        if name in evidence or f"{name}_sha256" in evidence:
+            _validate_project_file(evidence, name)
+    document_path = Path(runtime["selected_document"])
+    if not document_path.is_absolute():
+        document_path = ROOT / document_path
+    document = json.loads(document_path.read_text(encoding="utf-8"))
+    if not isinstance(document, dict) or document.get("asset_id") != runtime.get("selected_asset_id"):
+        raise ValueError("project evidence selected asset differs from its document")
+
+
+def _validate_project_file(section: dict[str, Any], name: str) -> None:
+    reference = section.get(name)
+    expected = section.get(f"{name}_sha256")
+    if (
+        not isinstance(reference, str) or not reference
+        or not isinstance(expected, str) or not re.fullmatch(r"[0-9a-f]{64}", expected)
+    ):
+        raise ValueError(f"project evidence lacks exact {name} binding")
+    path = Path(reference)
+    if not path.is_absolute():
+        path = ROOT / path
+    if artifact_ref(path)["digest"] != "sha256:" + expected:
+        raise ValueError(f"project evidence {name} digest differs")
+
+
 def _validate_development_host_evidence(
     record: Any, development: dict[str, Any], candidate: dict[str, Any] | None,
 ) -> None:
@@ -733,6 +822,7 @@ def main() -> int:
     parser.add_argument("--candidate-entry-id")
     parser.add_argument("--development-consumer-evidence", type=Path)
     parser.add_argument("--development-host-evidence", type=Path)
+    parser.add_argument("--development-project-evidence", type=Path)
     parser.add_argument("--development-entry-id")
     parser.add_argument("--lifecycle", choices=["superseded", "withdrawn"])
     parser.add_argument("--subject-entry-id")
@@ -745,6 +835,7 @@ def main() -> int:
                 or len(args.evidence) != 1 or args.review_host_evidence
                 or args.development_consumer_evidence or args.candidate_entry_id
                 or args.development_host_evidence
+                or args.development_project_evidence
                 or args.development_entry_id or args.snapshot_id or args.item_artifact
                 or args.catalog_release or args.wheel or args.git_revision
                 or args.source_manifest_digest or args.source_qualification
@@ -762,6 +853,7 @@ def main() -> int:
                 not args.candidate_entry_id or not args.existing_index
                 or args.development_consumer_evidence or args.development_entry_id
                 or args.development_host_evidence
+                or args.development_project_evidence
                 or args.snapshot_id or args.item_artifact or args.catalog_release
                 or args.wheel or args.git_revision or args.source_manifest_digest
                 or args.source_qualification or args.evidence or args.destination
@@ -778,6 +870,7 @@ def main() -> int:
             if (
                 not args.development_entry_id or not args.existing_index
                 or args.development_host_evidence
+                or args.development_project_evidence
                 or args.candidate_entry_id or args.item_artifact or args.snapshot_id
                 or args.catalog_release or args.wheel or args.git_revision
                 or args.source_manifest_digest or args.source_qualification
@@ -794,6 +887,7 @@ def main() -> int:
         elif args.development_host_evidence:
             if (
                 not args.development_entry_id or not args.existing_index
+                or args.development_project_evidence
                 or args.candidate_entry_id or args.item_artifact or args.snapshot_id
                 or args.catalog_release or args.wheel or args.git_revision
                 or args.source_manifest_digest or args.source_qualification
@@ -804,6 +898,21 @@ def main() -> int:
             index = register_development_host_evidence(
                 development_entry_id=args.development_entry_id,
                 evidence_path=args.development_host_evidence,
+                existing_index=args.existing_index, output_path=args.output,
+            )
+        elif args.development_project_evidence:
+            if (
+                not args.development_entry_id or not args.existing_index
+                or args.candidate_entry_id or args.item_artifact or args.snapshot_id
+                or args.catalog_release or args.wheel or args.git_revision
+                or args.source_manifest_digest or args.source_qualification
+                or args.evidence or args.destination or args.subject_entry_id
+                or args.successor_entry_id
+            ):
+                raise ValueError("project evidence needs a development entry and existing index")
+            index = register_development_project_evidence(
+                development_entry_id=args.development_entry_id,
+                evidence_path=args.development_project_evidence,
                 existing_index=args.existing_index, output_path=args.output,
             )
         elif args.snapshot_id:

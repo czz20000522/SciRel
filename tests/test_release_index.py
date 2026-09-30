@@ -649,6 +649,94 @@ def test_host_evidence_binds_current_candidate_and_development(tmp_path, monkeyp
             )
 
 
+def test_project_case_evidence_binds_exact_development_artifacts(tmp_path, monkeypatch):
+    import release_index
+
+    monkeypatch.setattr(release_index, "ROOT", tmp_path)
+    catalog = tmp_path / "release.json"
+    catalog_body = {"schema": "scirel.catalog-release.v1"}
+    catalog_body["root_digest"] = release_index.digest(release_index.canonical_json(catalog_body))
+    catalog.write_text(json.dumps(catalog_body), encoding="utf-8")
+    wheel = tmp_path / "scirel-0.1.0.dev5-py3-none-any.whl"
+    wheel.write_bytes(b"c69 development wheel")
+    development_path = tmp_path / "development.json"
+    development_index = release_index.register_development_snapshot(
+        snapshot_id="r43-c69", catalog_release=catalog, wheel=wheel,
+        evidence_paths=[catalog], destination_paths=[catalog],
+        git_revision="a" * 40, source_qualification="mixed_unverified",
+        output_path=development_path,
+    )
+    development = development_index["entries"][0]
+    document = tmp_path / "selected.json"
+    document.write_text(json.dumps({"asset_id": "scirel.kinetic.test"}), encoding="utf-8")
+    acceptance = tmp_path / "d2.json"
+    acceptance.write_bytes(b"D2 acceptance")
+    archive = tmp_path / "project.tgz"
+    archive.write_bytes(b"frozen project")
+    receipt = tmp_path / "freeze.json"
+    receipt.write_bytes(b"freeze receipt")
+
+    def file_ref(path):
+        return str(path), hashlib.sha256(path.read_bytes()).hexdigest()
+
+    wheel_path, wheel_hash = file_ref(wheel)
+    catalog_path, catalog_hash = file_ref(catalog)
+    document_path, document_hash = file_ref(document)
+    acceptance_path, acceptance_hash = file_ref(acceptance)
+    archive_path, archive_hash = file_ref(archive)
+    receipt_path, receipt_hash = file_ref(receipt)
+    record_body = {
+        "schema": "scirel.outbound-evaluation-manifest.v1",
+        "case_id": "bounded-project-case",
+        "status": "development_user_project_bounded_candidate",
+        "not_claims": ["expert_approval", "trusted_release", "public_v1"],
+        "d2_handoff": {
+            "git_commit": "a" * 40,
+            "independent_acceptance": acceptance_path,
+            "independent_acceptance_sha256": acceptance_hash,
+        },
+        "runtime": {
+            "wheel": wheel_path, "wheel_sha256": wheel_hash,
+            "catalog_release": catalog_path,
+            "catalog_release_sha256": catalog_hash,
+            "catalog_root_digest": development["catalog"]["root_digest"],
+            "selected_asset_id": "scirel.kinetic.test",
+            "selected_document": document_path,
+            "selected_document_sha256": document_hash,
+        },
+        "evidence": {
+            "archive": archive_path, "archive_sha256": archive_hash,
+            "receipt": receipt_path, "receipt_sha256": receipt_hash,
+        },
+    }
+    record = tmp_path / "project-case.json"
+    record.write_text(json.dumps(record_body), encoding="utf-8")
+    output = tmp_path / "with-project-case.json"
+    result = release_index.register_development_project_evidence(
+        development_entry_id=development["entry_id"], evidence_path=record,
+        existing_index=development_path, output_path=output,
+    )
+    assert result["entries"][0] == development
+    assert result["entries"][1]["evidence_type"] == "development_project_case_acceptance"
+    assert result["entries"][1]["approval_state"] == "pending_unapproved"
+    assert release_index.read_index(output) == result
+
+    for label, modify in (
+        ("wrong-source", lambda body: body["d2_handoff"].update(git_commit="b" * 40)),
+        ("wrong-wheel", lambda body: body["runtime"].update(wheel_sha256="0" * 64)),
+        ("wrong-archive", lambda body: body["evidence"].update(archive_sha256="0" * 64)),
+        ("approval-claim", lambda body: body.update(not_claims=["public_v1"])),
+    ):
+        invalid = json.loads(json.dumps(record_body))
+        modify(invalid)
+        record.write_text(json.dumps(invalid), encoding="utf-8")
+        with pytest.raises(ValueError, match="project evidence"):
+            release_index.register_development_project_evidence(
+                development_entry_id=development["entry_id"], evidence_path=record,
+                existing_index=development_path, output_path=tmp_path / f"{label}.json",
+            )
+
+
 def test_recovery_evidence_binds_existing_development_without_approval(tmp_path, monkeypatch):
     import release_index
 
