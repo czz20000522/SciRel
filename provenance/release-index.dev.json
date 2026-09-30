@@ -683,6 +683,18 @@
       "evidence_type": "development_project_case_acceptance",
       "status": "evidence",
       "subject_entry_id": "development:470d2b5bf1ae405786a1794e0c500cb765d4255e515d3e67d8a7ec5e140035f5"
+    },
+    {
+      "approval_state": "pending_unapproved",
+      "entry_digest": "sha256:028d137b8c0ff35a4f7c9520a50fc553553cc945835eb949f7a6b8d3ea74f15e",
+      "entry_id": "evidence:85f7de64a3d5392b3ff0b2c11e58396954b3ee999f2f1fbbbe14de9e34f47af9",
+      "evidence_ref": {
+        "digest": "sha256:ca7abd1c955b4e6eddc46a5167500efa5a3237f8e90e6682ee11754849bb55e0",
+        "ref": "docs/evaluations/outbound-progressive-projects/manifests/2026-09-30-r43-corrected-ordinary-same-request.json"
+      },
+      "evidence_type": "development_consumer_acceptance",
+      "status": "evidence",
+      "subject_entry_id": "development:c34b22afc988ce05c58808f2aa8955ecf2f3d721ccb2b19fbc4df0d30dd07722"
     }
   ],
   "schema": "scirel.release-index.dev"
