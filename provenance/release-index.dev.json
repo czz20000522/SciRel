@@ -647,6 +647,18 @@
         "digest": "sha256:50f411c4d5a763b9a58aef25af5658d1d4a35984eca8f5934d936e6a214ed256",
         "ref": "build/verification/r43-corrected-development-b986952-20260930/wheels/scirel-0.1.0.dev5-py3-none-any.whl"
       }
+    },
+    {
+      "approval_state": "pending_unapproved",
+      "entry_digest": "sha256:7159b7e314c66e0f28cba425d4afb44ba75d47952d0c12df3653b830797a1adb",
+      "entry_id": "evidence:7b7a9f6831dceb23226685335fc24d2a33d9eb03e48e080fe327328792a07cd4",
+      "evidence_ref": {
+        "digest": "sha256:6697179420bd06e3d324eab36c3dd73c669dbfd2161e5ee34c02270cdfd6e344",
+        "ref": "provenance/r43-corrected-development-host-acceptance-20260930.json"
+      },
+      "evidence_type": "development_host_acceptance",
+      "status": "evidence",
+      "subject_entry_id": "development:c34b22afc988ce05c58808f2aa8955ecf2f3d721ccb2b19fbc4df0d30dd07722"
     }
   ],
   "schema": "scirel.release-index.dev"

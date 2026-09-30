@@ -547,6 +547,108 @@ def test_consumer_evidence_binds_existing_development_without_approval(tmp_path,
         )
 
 
+def test_host_evidence_binds_current_candidate_and_development(tmp_path, monkeypatch):
+    import release_index
+
+    monkeypatch.setattr(release_index, "ROOT", tmp_path)
+    artifact = tmp_path / "pending.json"
+    artifact.write_bytes(_multi_item_workflow_body())
+    candidate_path = tmp_path / "candidate.json"
+    candidate_index = release_index.register_candidate(
+        item_artifacts=[artifact], git_revision="a" * 40,
+        output_path=candidate_path,
+    )
+    candidate = candidate_index["entries"][0]
+    catalog = tmp_path / "release.json"
+    catalog_body = {"schema": "scirel.catalog-release.v1"}
+    catalog_body["root_digest"] = release_index.digest(release_index.canonical_json(catalog_body))
+    catalog.write_text(json.dumps(catalog_body), encoding="utf-8")
+    wheel = tmp_path / "scirel-0.1.0.dev5-py3-none-any.whl"
+    wheel.write_bytes(b"development wheel")
+    development_path = tmp_path / "development.json"
+    development_index = release_index.register_development_snapshot(
+        snapshot_id="r43-dev5", catalog_release=catalog, wheel=wheel,
+        evidence_paths=[catalog], destination_paths=[catalog],
+        git_revision="a" * 40, source_qualification="mixed_unverified",
+        existing_index=candidate_path, output_path=development_path,
+    )
+    development = development_index["entries"][-1]
+    snapshot_digest = "sha256:" + "b" * 64
+    record_body = {
+        "schema": "scirel.development-host-acceptance.dev",
+        "status": "development_host_same_tuple_acceptance",
+        "development_entry_id": development["entry_id"],
+        "candidate_entry_id": candidate["entry_id"],
+        "scirel_source_revision": "a" * 40,
+        "source_qualification": "mixed_unverified",
+        "approval_state": "pending_unapproved",
+        "runtime": {
+            "wheel_digest": development["wheel"]["digest"],
+            "catalog_release_digest": development["catalog"]["digest"],
+            "catalog_root_digest": development["catalog"]["root_digest"],
+            "catalog_snapshot_digest": snapshot_digest,
+        },
+        "codefusion_host": {
+            "source_revision": "c" * 40,
+            "acceptance_digest": "sha256:" + "d" * 64,
+            "backend_version": "0.1.0.dev5",
+            "release_ref": (
+                "plugin-release://scirel/0.1.0.dev5/source-" + "a" * 40
+                + "/wheel-" + development["wheel"]["digest"][7:]
+                + "/catalog-" + snapshot_digest[7:]
+            ),
+        },
+        "reviewer": {
+            "project_ref": "reviewer-project", "wheel_artifact_ref": "cf://wheel/reviewer",
+            "catalog_artifact_ref": "cf://catalog/reviewer",
+            "initial_l1_run_id": "run-failed", "completed_l1_run_id": "run-completed",
+            "completed_l1_result_digest": "sha256:" + "1" * 64,
+            "review_run_id": "run-review",
+            "workflow_revision": candidate["items"][0]["initial_revision"],
+            "item_count": len(candidate["items"]), "applied_transitions": 0,
+            "approved_items": 0, "run_status": "completed",
+            "snapshot_artifact_ref": "cf://snapshot/reviewer",
+            "snapshot_digest": "sha256:" + "e" * 64,
+        },
+        "ordinary_user": {
+            "project_ref": "ordinary-project", "wheel_artifact_ref": "cf://wheel/ordinary",
+            "catalog_artifact_ref": "cf://catalog/ordinary",
+            "request_ref": "appreq-current", "request_status": "completed",
+            "evidence_digest": "sha256:" + "f" * 64,
+        },
+    }
+    record = tmp_path / "host.json"
+    record.write_text(json.dumps(record_body), encoding="utf-8")
+    output = tmp_path / "host-index.json"
+    result = release_index.register_development_host_evidence(
+        development_entry_id=development["entry_id"], evidence_path=record,
+        existing_index=development_path, output_path=output,
+    )
+    assert result["entries"][:-1] == development_index["entries"]
+    assert result["entries"][-1]["evidence_type"] == "development_host_acceptance"
+    assert result["entries"][-1]["approval_state"] == "pending_unapproved"
+    assert release_index.read_index(output) == result
+    contract = json.loads((ROOT / "contracts/release-index-dev.schema.json").read_text(encoding="utf-8"))
+    assert "development_host_acceptance" in contract["$defs"]["evidence"]["oneOf"][1]["properties"]["evidence_type"]["enum"]
+
+    for label, modify in (
+        ("wrong-wheel", lambda body: body["runtime"].update(wheel_digest="sha256:" + "0" * 64)),
+        ("wrong-release", lambda body: body["codefusion_host"].update(release_ref="plugin-release://scirel/old")),
+        ("same-l1-run", lambda body: body["reviewer"].update(completed_l1_run_id="run-failed")),
+        ("approved", lambda body: body["reviewer"].update(approved_items=1)),
+        ("shared-project", lambda body: body["ordinary_user"].update(project_ref="reviewer-project")),
+        ("wrong-candidate", lambda body: body.update(candidate_entry_id="candidate:" + "0" * 64)),
+    ):
+        invalid = json.loads(json.dumps(record_body))
+        modify(invalid)
+        record.write_text(json.dumps(invalid), encoding="utf-8")
+        with pytest.raises(ValueError, match="host evidence does not bind"):
+            release_index.register_development_host_evidence(
+                development_entry_id=development["entry_id"], evidence_path=record,
+                existing_index=development_path, output_path=tmp_path / f"{label}.json",
+            )
+
+
 def test_recovery_evidence_binds_existing_development_without_approval(tmp_path, monkeypatch):
     import release_index
 

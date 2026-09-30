@@ -94,6 +94,7 @@ def read_index(path: Path) -> dict[str, Any]:
                     or (evidence_type in {
                         "development_consumer_acceptance",
                         "development_consumer_recovery_acceptance",
+                        "development_host_acceptance",
                     } and subject in developments)
                 )
                 or entry.get("approval_state") != "pending_unapproved"
@@ -520,6 +521,118 @@ def register_development_consumer_evidence(
     return result
 
 
+def register_development_host_evidence(
+    *,
+    development_entry_id: str,
+    evidence_path: Path,
+    existing_index: Path,
+    output_path: Path,
+) -> dict[str, Any]:
+    if output_path.exists():
+        raise FileExistsError(f"release index output already exists: {output_path}")
+    index = read_index(existing_index)
+    development = next((entry for entry in index["entries"]
+                        if entry["status"] == "development"
+                        and entry["entry_id"] == development_entry_id), None)
+    if development is None:
+        raise ValueError("host evidence needs an indexed development snapshot")
+    binding = artifact_ref(evidence_path)
+    record = json.loads(evidence_path.read_text(encoding="utf-8"))
+    if not isinstance(record, dict):
+        raise ValueError("host evidence must be an object")
+    candidate = next((entry for entry in index["entries"]
+                      if entry["status"] == "candidate"
+                      and entry["entry_id"] == record.get("candidate_entry_id")), None)
+    _validate_development_host_evidence(record, development, candidate)
+    entry = {
+        "entry_id": "evidence:" + digest(canonical_json([development_entry_id, binding]))[7:],
+        "status": "evidence",
+        "subject_entry_id": development_entry_id,
+        "evidence_type": "development_host_acceptance",
+        "approval_state": "pending_unapproved",
+        "evidence_ref": binding,
+    }
+    result = append_entry(index, entry)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_bytes(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True).encode("utf-8") + b"\n")
+    return result
+
+
+def _validate_development_host_evidence(
+    record: Any, development: dict[str, Any], candidate: dict[str, Any] | None,
+) -> None:
+    runtime = record.get("runtime") if isinstance(record, dict) else None
+    host = record.get("codefusion_host") if isinstance(record, dict) else None
+    review = record.get("reviewer") if isinstance(record, dict) else None
+    ordinary = record.get("ordinary_user") if isinstance(record, dict) else None
+    revisions = ({item["initial_revision"] for item in candidate["items"]}
+                 if candidate is not None else set())
+    catalog_snapshot_digest = runtime.get("catalog_snapshot_digest") if isinstance(runtime, dict) else None
+    release_suffix = (
+        f"{development['source_binding'].get('git_revision')}"
+        f"/wheel-{development['wheel']['digest'][7:]}"
+        f"/catalog-{catalog_snapshot_digest[7:]}"
+        if isinstance(catalog_snapshot_digest, str) else ""
+    )
+    if (
+        record.get("schema") != "scirel.development-host-acceptance.dev"
+        or record.get("status") != "development_host_same_tuple_acceptance"
+        or record.get("development_entry_id") != development["entry_id"]
+        or candidate is None
+        or candidate["git_revision"] != development["source_binding"].get("git_revision")
+        or record.get("scirel_source_revision") != candidate["git_revision"]
+        or record.get("source_qualification") != development["source_qualification"]
+        or record.get("approval_state") != "pending_unapproved"
+        or not isinstance(runtime, dict)
+        or runtime.get("wheel_digest") != development["wheel"]["digest"]
+        or runtime.get("catalog_release_digest") != development["catalog"]["digest"]
+        or runtime.get("catalog_root_digest") != development["catalog"]["root_digest"]
+        or not isinstance(catalog_snapshot_digest, str)
+        or not _SHA256_DIGEST.fullmatch(catalog_snapshot_digest)
+        or not isinstance(host, dict)
+        or not isinstance(host.get("source_revision"), str)
+        or not _GIT_REVISION.fullmatch(host["source_revision"])
+        or not isinstance(host.get("acceptance_digest"), str)
+        or not _SHA256_DIGEST.fullmatch(host["acceptance_digest"])
+        or not isinstance(host.get("release_ref"), str)
+        or not host["release_ref"].startswith("plugin-release://scirel/")
+        or host["release_ref"].partition("/source-")[2] != release_suffix
+        or not isinstance(host.get("backend_version"), str)
+        or not development["wheel"]["ref"].rsplit("/", 1)[-1].startswith(
+            f"scirel-{host['backend_version']}-"
+        )
+        or not isinstance(review, dict)
+        or not isinstance(review.get("project_ref"), str) or not review["project_ref"]
+        or not isinstance(review.get("wheel_artifact_ref"), str) or not review["wheel_artifact_ref"]
+        or not isinstance(review.get("catalog_artifact_ref"), str) or not review["catalog_artifact_ref"]
+        or not isinstance(review.get("initial_l1_run_id"), str) or not review["initial_l1_run_id"]
+        or not isinstance(review.get("completed_l1_run_id"), str) or not review["completed_l1_run_id"]
+        or review["completed_l1_run_id"] == review["initial_l1_run_id"]
+        or not isinstance(review.get("completed_l1_result_digest"), str)
+        or not _SHA256_DIGEST.fullmatch(review["completed_l1_result_digest"])
+        or not isinstance(review.get("review_run_id"), str) or not review["review_run_id"]
+        or revisions != {review.get("workflow_revision")}
+        or type(review.get("item_count")) is not int or review["item_count"] != len(candidate["items"])
+        or type(review.get("applied_transitions")) is not int or review["applied_transitions"] != 0
+        or type(review.get("approved_items")) is not int or review["approved_items"] != 0
+        or review.get("run_status") != "completed"
+        or not isinstance(review.get("snapshot_artifact_ref"), str)
+        or not review["snapshot_artifact_ref"]
+        or not isinstance(review.get("snapshot_digest"), str)
+        or not _SHA256_DIGEST.fullmatch(review["snapshot_digest"])
+        or not isinstance(ordinary, dict)
+        or not isinstance(ordinary.get("project_ref"), str) or not ordinary["project_ref"]
+        or ordinary["project_ref"] == review["project_ref"]
+        or not isinstance(ordinary.get("wheel_artifact_ref"), str) or not ordinary["wheel_artifact_ref"]
+        or not isinstance(ordinary.get("catalog_artifact_ref"), str) or not ordinary["catalog_artifact_ref"]
+        or ordinary.get("request_status") != "completed"
+        or not isinstance(ordinary.get("request_ref"), str) or not ordinary["request_ref"]
+        or not isinstance(ordinary.get("evidence_digest"), str)
+        or not _SHA256_DIGEST.fullmatch(ordinary["evidence_digest"])
+    ):
+        raise ValueError("host evidence does not bind the development snapshot")
+
+
 def _validate_development_consumer_recovery(
     record: dict[str, Any], development: dict[str, Any], development_entry_id: str,
 ) -> None:
@@ -619,6 +732,7 @@ def main() -> int:
     parser.add_argument("--review-host-evidence", type=Path)
     parser.add_argument("--candidate-entry-id")
     parser.add_argument("--development-consumer-evidence", type=Path)
+    parser.add_argument("--development-host-evidence", type=Path)
     parser.add_argument("--development-entry-id")
     parser.add_argument("--lifecycle", choices=["superseded", "withdrawn"])
     parser.add_argument("--subject-entry-id")
@@ -630,6 +744,7 @@ def main() -> int:
                 not args.subject_entry_id or not args.existing_index
                 or len(args.evidence) != 1 or args.review_host_evidence
                 or args.development_consumer_evidence or args.candidate_entry_id
+                or args.development_host_evidence
                 or args.development_entry_id or args.snapshot_id or args.item_artifact
                 or args.catalog_release or args.wheel or args.git_revision
                 or args.source_manifest_digest or args.source_qualification
@@ -646,6 +761,7 @@ def main() -> int:
             if (
                 not args.candidate_entry_id or not args.existing_index
                 or args.development_consumer_evidence or args.development_entry_id
+                or args.development_host_evidence
                 or args.snapshot_id or args.item_artifact or args.catalog_release
                 or args.wheel or args.git_revision or args.source_manifest_digest
                 or args.source_qualification or args.evidence or args.destination
@@ -661,6 +777,7 @@ def main() -> int:
         elif args.development_consumer_evidence:
             if (
                 not args.development_entry_id or not args.existing_index
+                or args.development_host_evidence
                 or args.candidate_entry_id or args.item_artifact or args.snapshot_id
                 or args.catalog_release or args.wheel or args.git_revision
                 or args.source_manifest_digest or args.source_qualification
@@ -673,6 +790,21 @@ def main() -> int:
                 evidence_path=args.development_consumer_evidence,
                 existing_index=args.existing_index,
                 output_path=args.output,
+            )
+        elif args.development_host_evidence:
+            if (
+                not args.development_entry_id or not args.existing_index
+                or args.candidate_entry_id or args.item_artifact or args.snapshot_id
+                or args.catalog_release or args.wheel or args.git_revision
+                or args.source_manifest_digest or args.source_qualification
+                or args.evidence or args.destination or args.subject_entry_id
+                or args.successor_entry_id
+            ):
+                raise ValueError("host evidence needs a development entry and existing index")
+            index = register_development_host_evidence(
+                development_entry_id=args.development_entry_id,
+                evidence_path=args.development_host_evidence,
+                existing_index=args.existing_index, output_path=args.output,
             )
         elif args.snapshot_id:
             if (
