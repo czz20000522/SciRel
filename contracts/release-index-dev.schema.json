@@ -7,6 +7,26 @@
   "required": ["schema", "entries"],
   "properties": {
     "schema": {"const": "scirel.release-index.dev"},
+    "coverage": {
+      "type": "object", "additionalProperties": false,
+      "required": ["scope", "current_unpublished_entry_ids", "unindexed_scopes"],
+      "properties": {
+        "scope": {"const": "registered_entries_only"},
+        "current_unpublished_entry_ids": {
+          "type": "array", "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^(candidate|development):[0-9a-f]{64}$"}
+        },
+        "unindexed_scopes": {
+          "type": "object", "additionalProperties": false,
+          "required": ["external_source_checkouts", "host_artifacts_outside_index", "d1_inputs_not_handed_to_d2"],
+          "properties": {
+            "external_source_checkouts": {"const": "not_independently_inventoried"},
+            "host_artifacts_outside_index": {"const": "not_independently_inventoried"},
+            "d1_inputs_not_handed_to_d2": {"const": "not_independently_inventoried"}
+          }
+        }
+      }
+    },
     "entries": {
       "type": "array",
       "items": {"oneOf": [{"$ref": "#/$defs/candidate"}, {"$ref": "#/$defs/development"}, {"$ref": "#/$defs/evidence"}, {"$ref": "#/$defs/lifecycle"}, {"$ref": "#/$defs/released"}]}

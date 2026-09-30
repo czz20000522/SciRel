@@ -345,6 +345,16 @@ def test_lifecycle_replaces_only_a_current_development_entry(tmp_path, monkeypat
         existing_index=first_path, output_path=second_path,
     )
     old_id, new_id = (entry["entry_id"] for entry in second["entries"])
+    second["coverage"] = {
+        "scope": "registered_entries_only",
+        "current_unpublished_entry_ids": [old_id, new_id],
+        "unindexed_scopes": {
+            "external_source_checkouts": "not_independently_inventoried",
+            "host_artifacts_outside_index": "not_independently_inventoried",
+            "d1_inputs_not_handed_to_d2": "not_independently_inventoried",
+        },
+    }
+    second_path.write_text(json.dumps(second), encoding="utf-8")
     third_path = tmp_path / "third.json"
     third = release_index.register_lifecycle(
         transition="superseded", subject_entry_id=old_id,
@@ -356,6 +366,8 @@ def test_lifecycle_replaces_only_a_current_development_entry(tmp_path, monkeypat
     assert third["entries"][0] == first["entries"][0]
     assert third["entries"][-1]["evidence_ref"] == release_index.artifact_ref(evidence)
     assert [entry["entry_id"] for entry in release_index.current_unpublished_entries(third)] == [new_id]
+    assert third["coverage"]["current_unpublished_entry_ids"] == [new_id]
+    assert third["coverage"]["unindexed_scopes"] == second["coverage"]["unindexed_scopes"]
     assert release_index.read_index(third_path) == third
 
     with pytest.raises(ValueError, match="current unpublished subject"):
@@ -377,6 +389,9 @@ def test_lifecycle_replaces_only_a_current_development_entry(tmp_path, monkeypat
         item_artifacts=[pending], git_revision="c" * 40,
         existing_index=third_path, output_path=tmp_path / "candidate.json",
     )
+    assert with_candidate["coverage"]["current_unpublished_entry_ids"] == [
+        new_id, with_candidate["entries"][-1]["entry_id"]
+    ]
     with pytest.raises(ValueError, match="same kind"):
         release_index.register_lifecycle(
             transition="superseded", subject_entry_id=new_id,
@@ -1013,10 +1028,17 @@ def test_review_host_registration_evidence_binds_development_materials(tmp_path,
 
 
 def test_repository_release_index_keeps_exact_evidence_bindings():
-    from release_index import digest, read_index
+    from release_index import current_unpublished_entries, digest, read_index
 
     index = read_index(ROOT / "provenance/release-index.dev.json")
     assert index["entries"]
+    assert index["coverage"]["scope"] == "registered_entries_only"
+    assert index["coverage"]["current_unpublished_entry_ids"] == [
+        entry["entry_id"] for entry in current_unpublished_entries(index)
+    ]
+    assert set(index["coverage"]["unindexed_scopes"].values()) == {
+        "not_independently_inventoried"
+    }
     for entry in index["entries"]:
         if entry["status"] in {"evidence", "lifecycle"}:
             bindings = [entry["evidence_ref"]]
@@ -1031,6 +1053,24 @@ def test_repository_release_index_keeps_exact_evidence_bindings():
                 assert digest(path.read_bytes()) == binding["digest"]
             else:
                 assert binding["ref"].startswith("build/")
+
+
+def test_release_index_rejects_stale_or_overstated_coverage(tmp_path):
+    from release_index import read_index
+
+    index = read_index(ROOT / "provenance/release-index.dev.json")
+    stale = json.loads(json.dumps(index))
+    stale["coverage"]["current_unpublished_entry_ids"].pop()
+    path = tmp_path / "index.json"
+    path.write_text(json.dumps(stale), encoding="utf-8")
+    with pytest.raises(ValueError, match="coverage differs"):
+        read_index(path)
+
+    overstated = json.loads(json.dumps(index))
+    overstated["coverage"]["unindexed_scopes"]["external_source_checkouts"] = "complete"
+    path.write_text(json.dumps(overstated), encoding="utf-8")
+    with pytest.raises(ValueError, match="coverage differs"):
+        read_index(path)
 
 
 def test_strict_finalizer_rejects_a_candidate_without_item_approval(tmp_path):

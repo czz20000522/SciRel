@@ -45,7 +45,11 @@ def artifact_ref(path: Path) -> dict[str, str]:
 
 def read_index(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(value, dict) or set(value) != {"schema", "entries"}:
+    if (
+        not isinstance(value, dict)
+        or not {"schema", "entries"} <= set(value)
+        or set(value) - {"schema", "entries", "coverage"}
+    ):
         raise ValueError("release index fields are invalid")
     if value["schema"] != SCHEMA or not isinstance(value["entries"], list):
         raise ValueError("release index schema or entries are invalid")
@@ -149,6 +153,24 @@ def read_index(path: Path) -> dict[str, Any]:
                 raise ValueError("released index entry has an invalid predecessor")
             latest_release = entry["entry_id"]
             released_candidates.add(entry["predecessor_entry_id"])
+    if "coverage" in value:
+        coverage = value["coverage"]
+        unindexed = coverage.get("unindexed_scopes") if isinstance(coverage, dict) else None
+        if (
+            not isinstance(coverage, dict)
+            or set(coverage) != {"scope", "current_unpublished_entry_ids", "unindexed_scopes"}
+            or coverage["scope"] != "registered_entries_only"
+            or not isinstance(unindexed, dict)
+            or set(unindexed) != {
+                "external_source_checkouts", "host_artifacts_outside_index",
+                "d1_inputs_not_handed_to_d2",
+            }
+            or any(status != "not_independently_inventoried" for status in unindexed.values())
+            or coverage.get("current_unpublished_entry_ids") != [
+                entry["entry_id"] for entry in current_unpublished_entries(value)
+            ]
+        ):
+            raise ValueError("release index coverage differs from its current entries or inventory boundary")
     return value
 
 
@@ -174,6 +196,13 @@ def append_entry(index: dict[str, Any], entry: dict[str, Any]) -> dict[str, Any]
     result = {"schema": SCHEMA, "entries": [*index["entries"], unsigned]}
     if any(old["entry_id"] == entry["entry_id"] for old in index["entries"]):
         raise ValueError("release index entry ID already exists")
+    if "coverage" in index:
+        result["coverage"] = {
+            **index["coverage"],
+            "current_unpublished_entry_ids": [
+                item["entry_id"] for item in current_unpublished_entries(result)
+            ],
+        }
     return result
 
 

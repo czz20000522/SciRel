@@ -697,5 +697,18 @@
       "subject_entry_id": "development:c34b22afc988ce05c58808f2aa8955ecf2f3d721ccb2b19fbc4df0d30dd07722"
     }
   ],
-  "schema": "scirel.release-index.dev"
+  "schema": "scirel.release-index.dev",
+  "coverage": {
+    "scope": "registered_entries_only",
+    "current_unpublished_entry_ids": [
+      "development:84d0882deca15fdba4dbb9dafeea773b34203f6200628b528ab3fd4636953d7c",
+      "candidate:af9f1e067df3a354a8059787315e199ccb73816ed709ecf2dc8722b8f9f06562",
+      "development:c34b22afc988ce05c58808f2aa8955ecf2f3d721ccb2b19fbc4df0d30dd07722"
+    ],
+    "unindexed_scopes": {
+      "external_source_checkouts": "not_independently_inventoried",
+      "host_artifacts_outside_index": "not_independently_inventoried",
+      "d1_inputs_not_handed_to_d2": "not_independently_inventoried"
+    }
+  }
 }

@@ -1,5 +1,19 @@
 # Release-index intake boundary (2026-09-29)
 
+## Current coverage update (2026-09-30)
+
+The index now carries a machine-readable `coverage` field. Its
+`current_unpublished_entry_ids` names the three registered, still-current exact
+entries: the r81 development snapshot `development:84d0882d...`, the r43
+13-item reviewer candidate `candidate:af9f1e06...`, and the r43 development
+snapshot `development:c34b22af...`. This is a census of registered entries,
+not of all potential intake. External source checkouts, host artifacts outside
+the index, and D1 inputs not handed to D2 have not been independently inventoried.
+The 132-item development catalog does not close those gaps, and technical
+acceptance does not confer scientific approval, license clearance, or release.
+The entry identities and "current" descriptions below document earlier
+checkpoints; use the index and its lifecycle entries for the present state.
+
 `provenance/release-index.dev.json` records current unpublished SciRel development
 snapshots and r43 review versions. D2 maintains it as the single
 authoritative index for registered unpublished candidates. This dated check
