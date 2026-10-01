@@ -62,6 +62,12 @@ polish do not establish source coverage. These files never form a separate calla
 dependency closure, and generated-artifact exclusion. Structural success does not establish source fidelity,
 scientific correctness or full source coverage; the D1 scientific gates and independent review own those claims.
 
+For progress/reassembly `bundle_digest` bindings, use the pinned
+`validate_capability_progress.py::compute_bundle_digest` before execution and when freezing the handoff.
+This digest sorts relative POSIX **strings** case-sensitively, hashes the exact file bytes and excludes its declared
+cache directories; native `Path` sorting on Windows is not equivalent. Do not substitute a ZIP hash, skill-bundle
+manifest digest or another package format's identity. Keep generated artifacts outside the callable package.
+
 For `full_freeze`, preserve the existing discovery-only `asset_entry.py` contract and validate it in the source-free
 runtime. It must enumerate real packages and expose their callable/semantic anchors without requiring formal
 Markdown. It cannot contain scientific relations, hidden state construction or project computation.
