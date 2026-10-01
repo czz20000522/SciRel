@@ -54,8 +54,11 @@ SciRel 以独立插件和发布 wheel 交付；CodeFusion 可以预装或加载�
 
 当前 `0.1.0.dev5` 为开发期候选，而非公开发行。保存的 L1 产物是新 workflow 的重跑输入；
 旧的 `provenance/admitted-assets.json` 仅作为历史开发样本和来源证据，不再定义新的准入流程。
-具体交付应以该轮冻结的 `build/verification/<review-run>/manifest.json` 和对应评审记录核对
-确切版本及待审状态，不能以未冻结的 HEAD 或开发版本号代替交付基线。
+当前未发布候选以 `provenance/release-index.dev.json` 为统一入口。冻结、出库、验收和
+CodeFusion 联调先选定索引中的确切 `entry_id`，再按该条目的状态、来源绑定、工件摘要与证据引用
+核对同一候选；单次 `build/verification/<review-run>/manifest.json` 只绑定该次构建。
+新候选不继承旧候选的回执，不能以未冻结的 HEAD、开发版本号或历史 52 项快照代替验收基线。
+开发期索引与合同可迭代，在最终正式发布前统一收敛为 `v1`。
 
 这里的开发包“冻结”只固定版本，不表示来源已通过 D1。历史 provisional 输入及其派生开发资产，与
 有界源验证通过的 D1 输入必须按已有 provenance 分别解释；`pending_unapproved` 也不表示仅剩人工批准。
