@@ -109,6 +109,10 @@ pwsh ./scripts/check.ps1 -Mode release -ReleaseIndex <candidate-index.json> -Can
 当前仓库唯一的开发期索引为 `provenance/release-index.dev.json`。新开发 wheel/catalog 先用
 `--snapshot-id`、`--catalog-release`、`--wheel`、来源绑定、`--source-qualification` 和 D3
 证据/去向文件登记 `development` 条目；进入待审时用 `--item-artifact` 登记 `candidate`。
+当待审 workflow 嵌入所选公共资产的 exact document，登记前用显式 UTF-8 读取其实际输出与唯一
+canonical 文档，核对完整 JSON 语义（包括 Unicode 标题）相同；序列化布局与摘要前像可以不同。
+对所选增量做这项便宜的文档绑定检查，不用终端显示正常或结构检查通过代替，也不因此重跑科学。
+若生成/解码造成差异，保留原冻结记录，修派生生成路径并绑定明确 successor；只复核受影响元数据。
 从现有索引用 `--existing-index` 写新文件，校验旧条目未变后更新该路径。出库 owner 提供
 实际消费 manifest 和 digest，D2 单写者负责身份、来源与科学证据并核对登记；工作台当前逐项
 审核状态继续由审核 artifact/投影提供。完整开发 catalog 不等于专家批准，来源混合的开发

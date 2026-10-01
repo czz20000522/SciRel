@@ -43,6 +43,10 @@ A reused pending target stays pending.
 Use scripts/submit_standardization.py after semantic work. Its structural check is not scientific proof.
 Inspect the actual review_pending or no_changes result. The current API binds the D2 scirel-integration producer
 identity; do not substitute this router's digest for it.
+Before registering a pending candidate that embeds the selected canonical document, apply the process's UTF-8
+document-binding check to the actual workflow output, including Unicode metadata. A clean console display or
+structural pass is insufficient. A serialization/decoding mismatch needs a preserved predecessor and metadata
+successor, not repeated scientific execution or another full review.
 
 ## Final decision
 
