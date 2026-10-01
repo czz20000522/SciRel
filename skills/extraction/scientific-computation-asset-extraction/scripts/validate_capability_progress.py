@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import math
+import os
 import re
 import string
 from pathlib import Path
@@ -11,6 +12,7 @@ from typing import Any
 
 MAX_PROGRESS_JSON_BYTES = 10 * 1024 * 1024
 CACHE_DIRECTORY_NAMES = {"__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache"}
+INDEPENDENT_REVIEWER_ROLES = ("independent_subagent", "independent_agent")
 REPORT_ONLY_ROOT_FILES = {
     "extraction_report.md",
     "extraction_ledger.md",
@@ -522,6 +524,94 @@ def _file_hash_digest(files: dict[str, str]) -> str:
     return digest.hexdigest()
 
 
+def _file_change_marker(path: Path, info: os.stat_result) -> int:
+    if os.name != "nt":
+        return info.st_ctime_ns
+    # Windows st_ctime is creation time, not an NTFS/ReFS modification marker.
+    # FILE_BASIC_INFO.ChangeTime also detects same-size writes with restored mtime.
+    import ctypes
+    from ctypes import wintypes
+
+    class FileBasicInfo(ctypes.Structure):
+        _fields_ = [(name, ctypes.c_longlong) for name in (
+            "CreationTime", "LastAccessTime", "LastWriteTime", "ChangeTime"
+        )] + [("FileAttributes", wintypes.DWORD)]
+
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    open_file = kernel32.CreateFileW
+    open_file.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD,
+                          wintypes.LPVOID, wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE]
+    open_file.restype = wintypes.HANDLE
+    get_info = kernel32.GetFileInformationByHandleEx
+    get_info.argtypes = [wintypes.HANDLE, ctypes.c_int, wintypes.LPVOID, wintypes.DWORD]
+    get_info.restype = wintypes.BOOL
+    close = kernel32.CloseHandle
+    close.argtypes = [wintypes.HANDLE]
+    close.restype = wintypes.BOOL
+    handle = open_file(str(path), 0x80, 7, None, 3, 0, None)
+    if handle == wintypes.HANDLE(-1).value:
+        raise ctypes.WinError(ctypes.get_last_error())
+    try:
+        basic = FileBasicInfo()
+        if not get_info(handle, 0, ctypes.byref(basic), ctypes.sizeof(basic)):
+            raise ctypes.WinError(ctypes.get_last_error())
+        return basic.ChangeTime
+    finally:
+        close(handle)
+
+
+class _RebindBundleSnapshot:
+    """Share byte hashes only within one read-only external-binding validation."""
+
+    def __init__(self, root: Path) -> None:
+        self.root = root
+        self._files: dict[str, str] | None = None
+        self._metadata: dict[str, tuple[int, ...]] | None = None
+
+    def _file_metadata(self) -> dict[str, tuple[int, ...]]:
+        if not self.root.is_dir():
+            raise OSError(f"bundle root is not a directory: {self.root}")
+        metadata = {}
+        for path in self.root.rglob("*"):
+            relative = path.relative_to(self.root)
+            if any(part in CACHE_DIRECTORY_NAMES for part in relative.parts):
+                continue
+            if path.is_symlink():
+                raise OSError(f"bundle rebind cannot include a symlink: {path}")
+            if path.is_file():
+                info = path.stat()
+                metadata[relative.as_posix()] = (
+                    info.st_dev, info.st_ino, info.st_mode, info.st_size,
+                    info.st_mtime_ns, _file_change_marker(path, info),
+                )
+        return metadata
+
+    def files(self, root: Path) -> dict[str, str]:
+        if root != self.root:
+            raise OSError("rebind snapshot belongs to a different bundle root")
+        if self._files is None:
+            before = self._file_metadata()
+            files = bundle_file_hashes(self.root)
+            after = self._file_metadata()
+            if before != after:
+                raise OSError("bundle changed during validation; retry the stable snapshot")
+            self._files = files
+            self._metadata = after
+        return self._files
+
+    def verify_unchanged(self) -> None:
+        if self._files is not None and self._file_metadata() != self._metadata:
+            raise OSError("bundle changed during validation; retry the stable snapshot")
+
+
+def _validate_independent_reviewer_role(
+    receipt: dict[str, Any], field: str, errors: list[str]
+) -> None:
+    # A role is an assertion, not proof of a separate identity or human approval.
+    if receipt.get("reviewer_role") not in INDEPENDENT_REVIEWER_ROLES:
+        errors.append(f"{field}.reviewer_role must equal independent_subagent or independent_agent")
+
+
 def _resolve_bound_evidence_file(
     run_root: Path,
     reference: Any,
@@ -563,6 +653,7 @@ def _validate_execution_rebind(
     run_root: Path,
     bundle_root: Path,
     errors: list[str],
+    bundle_snapshot: _RebindBundleSnapshot | None = None,
 ) -> None:
     field = "execution rebind"
     path = _resolve_bound_evidence_file(
@@ -684,7 +775,8 @@ def _validate_execution_rebind(
     if manifest.get("bundle_digest") != baseline_digest or baseline_digest != execution.get("bundle_digest"):
         errors.append(f"{field}.baseline_manifest does not reconstruct the execution bundle digest")
     try:
-        current = bundle_file_hashes(bundle_root)
+        current = (bundle_file_hashes(bundle_root) if bundle_snapshot is None
+                   else bundle_snapshot.files(bundle_root))
     except OSError as exc:
         errors.append(f"{field}.current_bundle cannot be read: {exc}")
         return
@@ -742,9 +834,9 @@ def _validate_execution_rebind(
             not isinstance(item, str) or not item for item in findings
         ):
             errors.append(f"{field}.documentation_review.findings must be a list of strings")
+        _validate_independent_reviewer_role(review, f"{field}.documentation_review", errors)
         review_expected = {
             "schema_version": "scirel.documentation-rebind-review.v1",
-            "reviewer_role": "independent_subagent",
             "verdict": "pass",
             "source_scope_digest": receipt.get("source_scope_digest"),
             "baseline_bundle_digest": execution.get("bundle_digest"),
@@ -770,6 +862,7 @@ def _validate_comparison_receipt(
     bundle_digest: Any,
     require_detailed: bool,
     errors: list[str],
+    bundle_snapshot: _RebindBundleSnapshot | None = None,
 ) -> None:
     field = f"comparison receipt {path}"
     try:
@@ -846,6 +939,7 @@ def _validate_comparison_receipt(
                         _validate_execution_rebind(
                             receipt, case, bundle_execution, execution,
                             run_root=run_root, bundle_root=bundle_root, errors=errors,
+                            bundle_snapshot=bundle_snapshot,
                         )
                 elif "execution_rebind_ref" in receipt or "execution_rebind_sha256" in receipt:
                     errors.append(f"{field} has an unnecessary execution rebind")
@@ -916,8 +1010,7 @@ def _validate_bounded_delivery_review(
     if not isinstance(receipt, dict):
         errors.append(f"{field} must contain a JSON object")
         return
-    if receipt.get("reviewer_role") != "independent_subagent":
-        errors.append(f"{field}.reviewer_role must equal independent_subagent")
+    _validate_independent_reviewer_role(receipt, field, errors)
     if receipt.get("verdict") != "pass":
         errors.append(f"{field}.verdict must equal pass")
     scope = document.get("scope")
@@ -994,6 +1087,9 @@ def _validate_reassembly_external_bindings(
     require_detailed = document.get("state") == "full_freeze" or (
         isinstance(signal, dict) and signal.get("kind") in ("bounded_delivery", "full_freeze")
     )
+    # Frozen bundles may be large; all cases validate against the same fresh file map.
+    # This object is discarded before the next gate invocation, never persisted.
+    bundle_snapshot = _RebindBundleSnapshot(bundle_root)
     for target_index, target in enumerate(document.get("target_paths", [])):
         if not isinstance(target, dict) or target.get("status") != "passed":
             continue
@@ -1033,7 +1129,12 @@ def _validate_reassembly_external_bindings(
                     bundle_digest=scope.get("bundle_digest"),
                     require_detailed=require_detailed,
                     errors=errors,
+                    bundle_snapshot=bundle_snapshot,
                 )
+    try:
+        bundle_snapshot.verify_unchanged()
+    except OSError as exc:
+        errors.append(f"reassembly bundle snapshot could not be validated: {exc}")
 
 
 def _validate_full_freeze_delivery_surface(

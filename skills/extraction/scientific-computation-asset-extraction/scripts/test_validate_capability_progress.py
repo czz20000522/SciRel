@@ -420,6 +420,19 @@ def check_report_only_execution_rebind() -> None:
         rebind["documentation_review_ref"] = "evidence/documentation-review.json"
         rebind["documentation_review_sha256"] = compute_file_sha256(review_path)
         assert verify() == []
+        for reviewer_role in ("independent_agent", "coordinator"):
+            review["reviewer_role"] = reviewer_role
+            review_path.write_text(json.dumps(review), encoding="utf-8")
+            rebind["documentation_review_sha256"] = compute_file_sha256(review_path)
+            role_errors = verify()
+            if reviewer_role == "independent_agent":
+                assert role_errors == [], role_errors
+            else:
+                assert any("reviewer_role" in error for error in role_errors)
+        review["reviewer_role"] = "independent_subagent"
+        review_path.write_text(json.dumps(review), encoding="utf-8")
+        rebind["documentation_review_sha256"] = compute_file_sha256(review_path)
+        assert verify() == []
         current_digest = receipt["bundle_digest"]
         comparison["bundle_digest"] = current_digest
         comparison["execution_rebind_sha256"] = receipt["execution_rebind_sha256"]

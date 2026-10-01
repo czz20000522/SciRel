@@ -25,6 +25,15 @@ lineage evidence without a new formal document or review item. Retained independ
 need documents. Human-readable pages and review views project or reference the canonical record rather than
 maintaining a second full contract. Only validated records enter a development catalog; this grants no approval.
 
+## Human attention budget
+
+The normal human decision surface is the retained asset's canonical scientific document, with a compact cumulative
+change summary when context is needed. Code, tests, source references and detailed evidence are available for
+optional inspection, not an additional required reading queue. Agent owners verify their consistency and resolve
+routine scientific/engineering choices before submission; unresolved material claims are repaired or explicitly
+excluded. Human review supplies the final decision on the exact content and publication, rather than replacing
+the automated verification work. These presentation rules do not reduce required contract fields or evidence.
+
 ## Required common contract
 
 Every document must bind one stable scientific `asset_id` and declare:

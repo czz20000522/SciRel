@@ -54,10 +54,14 @@ its scientific tolerance to fit the candidate. Preserve the old failure and its 
 a historical seal. Rerun only the affected cheap comparison or gate; repeat scientific execution when its
 correspondence is missing or the inputs, executable science, or environment materially changed.
 
-For a `bounded_delivery` handoff, D1 requires an independent read-only subagent review of the exact source-derived
+For a `bounded_delivery` handoff, D1 requires an independent read-only Agent review of the exact source-derived
 census, selected bundle assets, reassembly evidence, and deferred capability register. The review receipt is a finite
 exit decision for that batch, not expert approval and not a `full_freeze` claim. The producing coordinator must not
 also act as this reviewer, and the reviewer must not edit the bundle or progress snapshot.
+An authorized separate visible thread is a valid independent context. Use `reviewer_role=independent_agent` for it;
+the validator also accepts the historical `independent_subagent` role without rewriting old receipts. Record actual
+reviewer identity, harness/model version and reviewed scope in the existing review evidence. The role string alone
+does not prove independence. A workflow does not require a hidden child agent, and caller delegation rules apply.
 
 ## Preserved material and gaps
 

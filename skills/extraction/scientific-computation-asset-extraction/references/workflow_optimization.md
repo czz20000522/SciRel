@@ -16,6 +16,20 @@ Efficiency measures are diagnostic only. Select the smallest useful set for the 
 time, model turns, tool calls, repeated source bytes inspected, failed queries, retries, candidate reopenings, or
 manual handoffs. No universal score or fixed improvement threshold is required.
 
+## Select the smallest necessary rerun
+
+Classify the failed boundary before scheduling work. Reuse observations only when executable science, source/input,
+dependencies, runtime-relevant conditions and claim still correspond to the retained raw results. A prose, path,
+packaging or comparator defect may require a new binding or comparison, not another scientific run. Derive repaired
+expectations independently; never calibrate a tolerance or expected answer against the candidate output. If provenance
+or raw results cannot support reuse, rerun only the affected slice. A new stage, new Agent or stronger receipt shape
+alone is not a reason to repeat unchanged calculations.
+
+Use existing run notes and receipts to distinguish reused evidence, cheap rechecks and fresh execution; this is not
+a new mandatory report or gate. Keep operator/dependency tests, source comparison, independent scientific review,
+application replay and packaging checks attached to their owning claims. Validation-script optimization may reduce
+duplicate byte reads but cannot replace those claims with a faster structural check.
+
 ## Structural evidence index
 
 A preprocessor may emit a digest-bound, run-local index with:

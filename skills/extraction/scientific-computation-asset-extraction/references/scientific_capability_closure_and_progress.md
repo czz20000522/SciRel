@@ -449,7 +449,7 @@ and `task_graphs/<name>/task_graph.md`, with exact `changed_document_paths` and 
 `scirel.documentation-rebind-review.v1` receipt. That independent read-only review must bind the old and current
 bundle digests, source scope, unchanged-file identity, and all changed document paths, and affirm that the final
 pages agree with the frozen source, fixed code, real inputs/outputs, tests, and retained raw evidence. That review
-receipt requires `review_id`, `reviewer_role=independent_subagent`, `verdict=pass`,
+receipt requires `review_id`, `reviewer_role=independent_agent` (or the retained legacy `independent_subagent`), `verdict=pass`,
 `code_and_science_consistent=true`, `reviewed_document_paths`, and a findings list. Neither
 version permits implementation, test, config, asset-entry, or runtime-metadata edits. Preserve the old execution
 and probe receipts, including the runtime image ID, and issue a new comparison receipt at the new exact bundle
@@ -459,6 +459,11 @@ and the probe image ID. The retained execution must itself record the matching c
 checks the file comparison and bound review shape; the independent scientific reviewer checks that raw results
 still support the comparison. A real change to scientific meaning, code, dependency, input, source, or environment
 requires fresh validation of the affected closure. Keep old receipts and whole-bundle digests as history.
+Within one read-only validation invocation, the validator shares a freshly hashed bundle file map across rebind
+cases and checks file metadata before/after capture and at exit for concurrent changes. On Windows it reads
+`FILE_BASIC_INFO.ChangeTime` rather than treating creation time as a modification marker. It never persists that cache
+or carries it into the next invocation. Keep the validated bundle unchanged until the gate returns; this reduces
+repeated file reads, not the required scientific comparisons or evidence bindings.
 
 The identical-input requirement is within each case: source and candidate receive the same explicit inputs.
 Canonical and sealed-holdout evidence must remain independently prepared and sealed from candidate tuning.
@@ -534,7 +539,7 @@ M0--M4 milestone projection or the conservative progress vector:
 | Kind | Meaning | Required evidence and next action |
 | --- | --- | --- |
 | `active` | work remains actionable in the current scope | non-empty `active_frontier`, named owner and next action |
-| `bounded_delivery` | an independent subagent has reviewed a finite, source-backed delivery slice under an explicit claim ceiling; remaining scope is not silently included | non-empty `delivered_target_ids`; digest-bound bounded-delivery review receipt with `verdict=pass`; reviewed targets and canonical/sealed-holdout evidence; unresolved IDs or an explicit empty remainder; and a reopen condition |
+| `bounded_delivery` | an independent Agent has reviewed a finite, source-backed delivery slice under an explicit claim ceiling; remaining scope is not silently included | non-empty `delivered_target_ids`; digest-bound bounded-delivery review receipt with `verdict=pass`; reviewed targets and canonical/sealed-holdout evidence; unresolved IDs or an explicit empty remainder; and a reopen condition |
 | `blocked_external` | no safe action remains under the current snapshot | non-empty frontier, named external/human/source dependency, and exact reopen condition |
 | `full_freeze` | the declared scope is fully extracted | frozen census, `progress.overall=1.0`, completed M4, empty frontier, and a fixed-sandbox-validated root `asset_entry.py` |
 
@@ -572,9 +577,10 @@ require an entry from ordinary active or incomplete snapshots.
 
 Deterministic validation is intentionally incomplete. It protects stable structural invariants and binds evidence;
 it does not attempt to encode an exhaustive scientific understanding of every source language or implementation
-shortcut. For `bounded_delivery`, an independent subagent owns the semantic exit review. The same delegation pattern
+shortcut. For `bounded_delivery`, an independent Agent owns the semantic exit review. The same delegation pattern
 may be used for non-enumerable checks during `full_freeze`, alongside its unchanged deterministic gates. Record the
-review as evidence, but do not treat a subagent verdict as expert approval or release.
+review as evidence, but do not treat an Agent verdict as expert approval or release. A separately authorized visible
+thread satisfies this context separation; see the stage boundary contract for reviewer identity and role compatibility.
 
 Use the shared [stage boundary contract](stage_boundary_contract.md) for structured
 `boundary_event` records. Provider/worker failures and validator defects are recoverable

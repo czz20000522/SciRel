@@ -30,6 +30,9 @@ approved revision against the solidified code, actual test results and wheel; th
 finalizer does not perform that full binding.
 Record Agent reviewer identity/version and findings separately from human approval.
 Review prose explains the delta and references the canonical document.
+Make that document the normal human reading surface. Provide a compact cumulative change summary only as needed;
+code, tests and detailed evidence remain optional drill-down. Agent owners check their consistency before submission
+and resolve ordinary intermediate choices. Do not create a second dossier or require humans to audit every raw log.
 
 Use review_units plus input_dispositions in the [submission contract](../../../contracts/standardization-submission-dev.schema.json).
 Reuse/exact_duplicate/covered_by needs target version and scientific evidence, not a new review item

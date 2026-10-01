@@ -18,8 +18,13 @@ code, before final review freeze; D1 does not generate them merely to satisfy a 
 
 ## Coordinator loop
 
-1. **Fix the scope and anchors.** Preserve the exact source snapshot and evidence universe. Reuse a digest-bound
-   structural index to find source locations, then inspect science; an index or call graph cannot establish the
+1. **Fix the scope and anchors.** Preserve the exact source snapshot and evidence universe.
+   Before selecting a new source, cross-check its names/aliases against both history filenames and case-insensitive
+   content in the supplied provenance, evaluations, handoffs and run inventories. In a full SciRel checkout include
+   `docs/evaluations/`; a deployed bundle uses caller-supplied history instead. A negative query only describes its
+   searched scope. Inspect source availability, runnable entrypoints and independent oracles before choosing;
+   copied directories and prior extracted assets do not establish an untouched, complete source.
+   Reuse a digest-bound structural index to find source locations, then inspect science; an index or call graph cannot establish the
    scientific census. Map declared terminal outputs backward to governing relations, state and inputs, and trace
    inputs forward. Use the [scientific boundary criteria](references/asset_projection_decision_manual.md#scientific-relation-and-boundary-meaning)
    to distinguish a relation, its directed operator and required composition; "minimal" is not formula/function/output
