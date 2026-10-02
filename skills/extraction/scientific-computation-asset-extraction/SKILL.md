@@ -16,6 +16,12 @@ comparison against that source, source-free composition, and independent scienti
 comparison, deduplication, correction and assembly. Formal asset documents belong after D2 stabilizes the retained
 code, before final review freeze; D1 does not generate them merely to satisfy a template.
 
+Default to a source-project D1 delivery after completing as much of its whole-source extraction as possible.
+Relations and graphs are internal work units, not triggers to launch D2/D3 for each finished asset. Save a durable
+project handoff that a different owner can consume weeks later without this conversation or a live D1 environment;
+use the [stage boundary](references/stage_boundary_contract.md#information-and-immutable-handoff) for its contents.
+An explicitly agreed bounded pilot/partial intake is an exception, not whole-project completion or automatic routing.
+
 ## Coordinator loop
 
 1. **Fix the scope and anchors.** Preserve the exact source snapshot and evidence universe.
@@ -46,7 +52,7 @@ code, before final review freeze; D1 does not generate them merely to satisfy a 
    of the exact scientific claims. Use [closure and progress](references/scientific_capability_closure_and_progress.md)
    for the current snapshot and deterministic completion checks. No unresolved required science may become
    `full_freeze`; bounded material states its narrower scope. D1 completion is not human approval or release.
-6. **Hand off once.** Preserve the exact bundle, evidence bindings, source mapping and remaining claim limits for
+6. **Hand off the project snapshot.** Preserve the exact bundle, evidence bindings, source mapping and remaining claim limits for
    the receiving D2 owner (`scirel-integration`, supplied by that environment). D2 may reuse, combine or discard equivalent
    assets without forcing D1 to write pages that will be discarded. Keep process notes resumable; derive the concise
    root delivery summary from the final evidence rather than rewriting it after every packet. Every stage reads

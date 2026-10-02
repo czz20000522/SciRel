@@ -27,6 +27,8 @@ Consume an exact development or trusted wheel/catalog with its trust status expl
 wait for final human approval. Keep upstream deliveries read-only. Put task-specific assumptions, source references,
 repairs and implementation notes in this project's code comments/docstrings or run record; write the human-facing
 result from the actual stable implementation and observations.
+D3 may start long after D1/D2 under a different owner. Use the saved exact development delivery; choose an actual
+useful task over its integrated capabilities rather than create one application for every upstream operator/graph.
 Return library gaps to scirel-integration and source-only evidence gaps to the D1 owner. Do not rerun valid D1
 source comparisons or require new per-source formal documents for an application task.
 Final library endorsement belongs to scirel-review-preparation; a successful user case supports only its declared scope.

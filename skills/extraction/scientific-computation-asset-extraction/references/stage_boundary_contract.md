@@ -34,6 +34,20 @@ D2 reads the delivered D1 snapshot without changing it. Deduplication decisions,
 new tests belong to D2's derived candidate, with a link to the original. The same read-only input rule applies
 between every stage. A successor never rewrites a prior stage's frozen claims or evidence.
 
+The default D1 handoff unit is the source project, after pursuing its whole-source extraction and validation.
+Ready relations and graphs advance D1 internally; they do not automatically launch downstream stages. Preserve
+unfinished scope and blockers explicitly, and never shrink the declared scope to claim project completion.
+An explicitly agreed bounded pilot/partial intake may transfer qualified material under its narrower ceiling.
+
+A receiving owner may start weeks later with no access to the original Agent, chat or temporary environment.
+Provide one compact continuation entry using the existing project records: exact source/version/license,
+whole-project census and asset/dependency dispositions, unresolved scope, callable bundle identity, source inputs,
+raw observations and criteria/evidence bindings, and pinned runtime dependencies with reconstruction/rerun commands.
+All cited artifacts must remain obtainable with the saved delivery. Keep original source and raw evidence in
+the associated archive outside the source-free callable package; do not duplicate them into every asset or create
+another scientific report. A saved incomplete project remains incomplete. Age or owner replacement alone does
+not invalidate attributable numerical evidence; later comparison uses the receiving stage's current library baseline.
+
 Formal operator/TaskGraph documents are generated only after D2 comparison, deduplication, correction and
 assembly stabilize the retained new/changed code, before final review freeze. Duplicate or covered assets need
 attributable disposition and scientific comparison evidence, not duplicate formal pages. Partial overlap alone

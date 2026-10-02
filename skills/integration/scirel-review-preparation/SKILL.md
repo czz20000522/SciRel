@@ -8,6 +8,9 @@ description: Prepare a stable SciRel development increment for final scientific 
 Use after D2 integrated and tested retained changes and relevant D3 evidence is available.
 Humans make final approval decisions; routine development does not wait for them.
 Follow the [workflow requirement](../../../docs/requirements/scirel-workflow.md).
+Project-level D1 delivery and later D2/D3 work may have different owners and be weeks apart. Review the stable
+retained increment and relevant application evidence; do not require each source operator/graph to travel through
+its own complete pipeline. Project intake grouping does not turn human decisions into a project-wide lock.
 
 ## Route remaining work
 

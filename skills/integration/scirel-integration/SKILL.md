@@ -10,7 +10,11 @@ Use the [development process](../../../docs/development-process.md) and [version
 
 ## Start and route
 
-Read exact L1 inputs and scope/evidence, the development Git base, previous trusted version if any,
+Normally receive a saved source-project D1 delivery, not a stream of individual ready operators/graphs.
+The producer may have finished weeks earlier; use its durable entry and artifacts, not its chat or live environment.
+Check the project's coverage, asset/dependency dispositions, evidence and explicit gaps; an incomplete saved project
+is not full D1 completion. Only an explicitly agreed bounded pilot/partial intake changes the default intake scope.
+Read exact L1 inputs and scope/evidence, the receiving stage's current development Git base, previous trusted version if any,
 and relevant unpublished candidates. Discover only affected scientific families.
 For D2 comparison inspect relevant maintained source, public exports, tests and unpublished work directly;
 catalog absence is not library absence. The navigation specialist below is limited to cataloged capabilities
@@ -53,4 +57,6 @@ wheel/catalog when D3 needs it; tests grant no approval.
 
 Deliver development SHA, complete dispositions, scientific changes, affected tests, actual wheel/catalog,
 supported scope and gaps. Submit focused commits for integration. D3 may consume the development version.
+Stage owners and handoff times are independent; no live D1 Agent or same-night full chain is required.
+Select useful D3 tasks over the integrated capability set, not one new application per input asset.
 Route final review only when the retained increment is stable, not for each interim revision.

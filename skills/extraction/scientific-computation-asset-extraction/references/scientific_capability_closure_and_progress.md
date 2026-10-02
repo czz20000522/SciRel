@@ -543,8 +543,10 @@ M0--M4 milestone projection or the conservative progress vector:
 | `blocked_external` | no safe action remains under the current snapshot | non-empty frontier, named external/human/source dependency, and exact reopen condition |
 | `full_freeze` | the declared scope is fully extracted | frozen census, `progress.overall=1.0`, completed M4, empty frontier, and a fixed-sandbox-validated root `asset_entry.py` |
 
-Use `bounded_delivery` when a useful source-free slice can be handed to users without pretending that
-the project is complete. A separate read-only subagent must review the source-derived census, selected bundle,
+Use `bounded_delivery` for an explicitly agreed bounded pilot or partial intake, not as the default per-asset
+downstream scheduler. Default project handoff and delayed continuation follow the
+[stage boundary contract](stage_boundary_contract.md#information-and-immutable-handoff).
+A useful source-free slice does not make the project complete. A separate read-only Agent must review the source-derived census, selected bundle,
 reassembly evidence, and deferred register and issue the pass receipt. It is not valid to place the missing science
 only in `extraction_report.md`: the delivered target must execute from the bundle and pass the same reassembly
 contract used by `full_freeze`. The review receipt must list the closure signal's evidence references and the

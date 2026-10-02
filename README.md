@@ -62,8 +62,10 @@ CodeFusion 联调先选定索引中的确切 `entry_id`，再按该条目的状�
 
 这里的开发包“冻结”只固定版本，不表示来源已通过 D1。历史 provisional 输入及其派生开发资产，与
 有界源验证通过的 D1 输入必须按已有 provenance 分别解释；`pending_unapproved` 也不表示仅剩人工批准。
-可运行 wheel、文档覆盖或 D2 测试不能替代缺少的源实现/数值对照。合格有界批次可先行整合，无须等待整个
-源项目 full_freeze；未核验历史包的内部联调则不计作已完成合格入库，详见[版本与来源边界](docs/design/development-trust-versions.md)。
+可运行 wheel、文档覆盖或 D2 测试不能替代缺少的源实现/数值对照。默认先尽量完成整个来源项目的 D1，
+保存可独立接续的项目交付后再进入 D2、D3；阶段可由不同团队隔数周接续，不按单个算子流水调度。
+明确约定的局部试点可先整合合格有界批次，但不代表项目完成或日常默认流程；未核验历史包的内部联调
+不计作已完成合格入库，详见[开发流程](docs/development-process.md)与[版本边界](docs/design/development-trust-versions.md)。
 
 当前 `provenance/admitted-assets.json` 是旧流程留下的 52 条完整迁移样本，其中包含 41 条 operator
 和 11 条 TaskGraph，并保存当时导出的来源、决定标签、版本树、内容摘要和依赖绑定。这些字段只用于
