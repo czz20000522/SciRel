@@ -9,7 +9,7 @@ description: Use when establishing scientific and numerical correctness for exac
 
 Apply the correctness method to one exact set of frozen scientific candidates. Determine what each candidate is
 proved to do, repair demonstrated defects only when an independent basis makes the correction determinate,
-revalidate affected reverse dependencies, and prepare resulting versions and evidence for the SciRel candidate flow.
+revalidate affected reverse dependencies, and prepare resulting versions and evidence for the receiving candidate flow.
 
 This skill may report whether its declared correctness method scope is complete. It cannot record the durable
 correctness disposition, discover a source project, merge or generalize candidates across sources, design a release

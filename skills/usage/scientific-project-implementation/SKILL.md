@@ -15,23 +15,22 @@ candidate, review, catalog, or release state. A runnable user project is not aut
 scientific capability.
 
 For evaluator-owned disposable copies in an outbound trial, put simulated user projects, negative probes and
-independent reruns under SciRel's ignored `build/verification/<case>/` or a designated system temporary directory
-when checkout isolation requires it. Reuse the pinned wheel, catalog and environment across copies when their runtime
+independent reruns in the run's declared private persistent result area or a designated temporary area when appropriate. Reuse the pinned wheel, catalog and environment across copies when their runtime
 contract permits; freeze trial states and traces through the existing case archive and manifest. This does not move
 or replace a user's persistent project workspace.
 
 ## D3 stage boundary
 
-Use the [development process](../../../docs/development-process.md) for D1/D2/D3 responsibilities.
+Use the portable [stage boundaries](../../extraction/scientific-computation-asset-extraction/references/stage_boundary_contract.md) and the supplied project policy for D1/D2/D3 responsibilities.
 Consume an exact development or trusted wheel/catalog with its trust status explicit; development use does not
 wait for final human approval. Keep upstream deliveries read-only. Put task-specific assumptions, source references,
 repairs and implementation notes in this project's code comments/docstrings or run record; write the human-facing
 result from the actual stable implementation and observations.
 D3 may start long after D1/D2 under a different owner. Use the saved exact development delivery; choose an actual
 useful task over its integrated capabilities rather than create one application for every upstream operator/graph.
-Return library gaps to scirel-integration and source-only evidence gaps to the D1 owner. Do not rerun valid D1
+Return library gaps to the D2 integration owner and source-only evidence gaps to the D1 owner. Do not rerun valid D1
 source comparisons or require new per-source formal documents for an application task.
-Final library endorsement belongs to scirel-review-preparation; a successful user case supports only its declared scope.
+Final library endorsement belongs to the receiving review process; a successful user case supports only its declared scope.
 
 ## Decide once, then act
 
@@ -60,16 +59,16 @@ answer. If the user delegated the choice, select the narrowest defensible model 
    use `scientific-asset-navigation` for a real applicability decision. Do not browse internal
    candidates or require the user to know platform package names.
    An explicitly staged development wheel/catalog may be used for an isolated evaluation, but its results remain
-   unapproved. When the task calls for a matched SciRel relation, the ordinary rerun path must invoke that asset;
+   unapproved. When the task calls for a matched scientific relation, the ordinary rerun path must invoke that asset;
    project code may adapt inputs and outputs, not replace its equations with a handwritten approximation.
-   If the request selects or composes SciRel assets, read the owner-resolved `scirel-solving` skill body and use
+   If the request selects or composes scientific assets, read the owner-resolved `scirel-solving` skill body and use
    it for scientific normalization, renewed discovery when a later request changes the relation or evaluation
    location, and evidence-bounded interpretation; a skill name in a host snapshot alone is not method execution.
    This skill still owns the runnable project files.
 4. Treat unit, field-name, dtype, axis, index-base, and lossless shape conversions as adapters. A change to
    equations, closure, boundary physics, interpolation, discretization, solver update, or reconstructed state
    is a scientific change; use `scientific-relation-implementation` for that bounded relation.
-   For a file-backed SciRel project with a scientifically material parse, join or unit conversion, decide how a
+   For a file-backed scientific project with a scientifically material parse, join or unit conversion, decide how a
    source-file field will be checked against the actual asset-port value before building the adapter. The check
    cannot start from the same parsed object that production uses. If the project claims its ordinary rerun checks
    this mapping, run that check before replacing user-facing outputs; an optional passing test suite is not a

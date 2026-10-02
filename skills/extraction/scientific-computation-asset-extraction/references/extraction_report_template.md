@@ -52,6 +52,6 @@ scientific records when useful; do not create a second manually maintained truth
 A dense hidden-state slice may have a separate map only when it has a current consumer; otherwise reference code,
 YAML and the existing state records.
 
-Formal operator/TaskGraph or SciRel exact asset documents are produced after D2 deduplication/correction/assembly,
+Formal operator/TaskGraph or exact scientific asset documents are produced after D2 deduplication/correction/assembly,
 only for retained new/changed assets before final review freeze. The root handoff is not a substitute for that
 later document and is not a reason to generate it prematurely.

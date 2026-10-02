@@ -14,8 +14,7 @@ where the evidence supports them, and produce a coherent retained development im
 This skill may report that its declared method scope is complete, but it cannot write or advance normalization
 lifecycle state. It does not reopen source-project discovery, re-decide inherited correctness without a concrete
 contradiction, write workflow facts, approve assets, assemble a distribution, or publish
-documentation. Read the governing
-[SciRel workflow requirement](../../../docs/requirements/scirel-workflow.md).
+documentation. Read the receiving project's supplied lifecycle policy.
 
 Use the shared [stage boundary contract](../../extraction/scientific-computation-asset-extraction/references/stage_boundary_contract.md).
 Preserve the correctness-qualified inputs and evidence used for comparison. A structural or profile
@@ -108,5 +107,5 @@ claim ceilings, and unresolved conflicts.
 
 The normalization method is complete only when every input appears in the final inventory and lineage, every changed
 output has exact dependencies and non-regression evidence, and every uncertain equivalence remains explicitly
-separate. The SciRel workflow still validates and records any lifecycle transition. Do not infer
+separate. The receiving workflow still validates and records any lifecycle transition. Do not infer
 review, approval, distribution, release, or production acceptance.

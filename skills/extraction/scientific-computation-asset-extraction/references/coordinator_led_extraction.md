@@ -1,8 +1,10 @@
 # Coordinator-Led Single-Project Extraction
 
 Read this reference when one source project exposes multiple independent scientific work items or when the
-runtime may provide delegated workers. The coordinator derives work from the project's scientific dependency
-graph. The caller supplies an objective and scope ceiling, not worker assignments.
+runtime may provide delegated workers. Here "coordinator" is the D1 project's integrating owner, not an outer
+multi-project supervisor. The project owner derives work from the scientific dependency graph autonomously.
+The caller supplies a usable environment, exact source/output locations, applicable skills, objective and scope ceiling,
+not a sequence of per-relation assignments. Internal delegation is optional, subject to the user's permitted surface.
 
 ## Authority and invariant method
 
@@ -57,7 +59,9 @@ ready. An unrelated operator may pass through the line while that graph waits.
 
 ## Work packet
 
-Every delegated or locally claimed item has one durable packet:
+For a delegated region, bind the following facts in its existing queue/checkpoint or one durable packet.
+An owner working locally may reference its existing code, scientific records and evidence; do not create a separate
+packet or external-supervisor round trip for every relation. A project assignment persists across local work items.
 
 ```text
 work_item_id and kind

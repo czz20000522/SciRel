@@ -1,20 +1,21 @@
 ---
 name: scirel-solving
-description: Turn a scientific request into a normalized problem, SciRel execution and evidence-bounded explanation using the authorized catalog, including a pinned development catalog for an isolated evaluation.
+description: Turn a scientific request into a normalized problem, scientific execution and evidence-bounded explanation using the authorized catalog, including a pinned development catalog for an isolated evaluation.
 ---
 
-# SciRel Solving
+# Scientific Request Solving
 
 ## Purpose
 
-Use the SciRel capabilities visible to the current runtime to answer a scientific request. First understand and
+Use the scientific capabilities visible to the current runtime to answer a scientific request. First understand and
 normalize the science, then discover and compose applicable assets, execute them, check the actual result, and explain
 the result and its limits. Do not begin by guessing a function from the user's wording.
 
-This skill is SciRel-owned and may run in CodeFusion, Claude Code, Codex or another capable harness. The harness owns
-the session, permissions, tools, execution environment, artifacts and delivery; it does not own the scientific
-semantics in this skill. This workflow does not inspect unpublished candidates, approve assets, publish TaskGraphs,
-or substitute PINN/XNet training for SciRel computation.
+This method works with any capable Agent, scientific library and discipline. Its existing discovery identifier is
+retained for compatibility, not a package or framework requirement. The caller supplies the session, permissions,
+tools, independent environment, source/result locations, distribution/catalog binding and permitted workers.
+This workflow does not approve assets, publish TaskGraphs or replace a selected scientific relation with another model.
+During an authorized D3 development evaluation, consume the exact development delivery and its declared claims.
 
 Normal user runtimes expose only released assets. An explicitly scoped, isolated development evaluation may instead
 bind an unapproved wheel and matching catalog; use the same applicability and invocation checks while labelling every
@@ -22,8 +23,8 @@ result as development evidence, not a trusted or public release. Do not add a pe
 of a released asset. A version identifier may be recorded for reproducibility without becoming part of the scientific
 argument.
 
-Read `docs/requirements/scientific-request-workflow.md` for user-visible requirements and
-`docs/design/scientific-request-workflow.md` for workflow boundaries when changing this method.
+Use the portable [stage boundaries](../../extraction/scientific-computation-asset-extraction/references/stage_boundary_contract.md)
+and the caller's supplied request and delivery contract. A particular repository's docs are not a runtime prerequisite.
 
 ## Normalize the request
 
@@ -78,19 +79,18 @@ boundaries, inputs, output contract, failure behavior, and evidence ceiling.
 Locate the catalog through the current harness's declared connector, mounted snapshot or environment resource; it
 may be outside the user project. When the selected environment says it supplies a catalog, inspect that binding
 before treating its absence from the project tree as an unavailable catalog or asking the user to upload it.
-When the catalog is exposed through SciRel's thin adapter, use its declared request and response fields rather than
-guessing connector envelopes from asset documents or implementation source. Read
-`docs/requirements/thin-mcp-adapter.md` when that full contract is mounted.
+When the catalog is exposed through an adapter, use its actual declared request/response fields rather than
+guessing connector envelopes from asset documents or implementation source. Read the selected adapter contract.
 When the selected task explicitly requires an adapter-mediated run, use the adapter's actual
 `catalog.discover -> asset.read(detail=document) -> callable.invoke` operations for discovery, exact matching and
-execution. Direct catalog-file browsing followed by `scirel` imports may be a separate useful project path, but it
+execution. Direct catalog-file browsing followed by library imports may be a separate useful project path, but it
 does not satisfy that adapter-path claim. Keep compact evidence from the returned operation responses in the host's
 ordinary tool record: operation, catalog root, selected asset ID, implementation version and result/check status,
 without dumping full documents or private inputs. If the adapter path cannot run, report that boundary instead of
 describing a direct call as equivalent. This condition does not require the adapter in tasks that did not select it.
 If the full repository contract is not mounted in the user project, use the bundled
-[thin adapter run reference](references/thin-adapter-run.md) for the core envelope and response shape; it does not
-replace scientific matching against the returned exact documents.
+[thin adapter example](references/thin-adapter-run.md) only when that implementation is explicitly selected;
+other adapters supply their own protocol. No example envelope is a universal scientific method requirement.
 Route and summary records are sufficient to discard clearly unrelated assets. Do not load every exact document to
 prove absence; load exact documents only for serious candidates and scientific near misses whose detailed contract
 materially affects the decision.
@@ -110,7 +110,7 @@ A rejected or missing candidate needs no runtime probe.
 
 Names, source projects, keywords, and similarity may improve recall but cannot make an incompatible asset applicable.
 If pagination is unfinished or catalog coverage is partial, report that no match was found in the inspected scope;
-do not claim that SciRel as a whole lacks the capability. Exhausting every included record does not make a partial
+do not claim that the selected library as a whole lacks the capability. Exhausting every included record does not make a partial
 catalog complete. Name this outcome an inspected-scope gap or incomplete catalog coverage, never a release capability
 gap, even with a qualifier. If the complete visible release has no applicable asset, report a release capability gap.
 Never replace a missing capability with a nearby weaker model.
@@ -173,12 +173,12 @@ inside glue. If such a relation is required and no applicable released asset exi
 
 ## Execute and check the result
 
-Execute only after the plan is valid. Preserve the causal SciRel exception and do not silently retry with another
+Execute only after the plan is valid. Preserve the causal scientific-library exception and do not silently retry with another
 model, asset, convention, or tolerance.
 If an asset rejects a scientifically empty or invalid result, a downstream file format's ability to represent it
 does not turn that asset call into success. Keep any separately useful mapped data as a labelled diagnostic, deliver
 unaffected branches, and report the failed relation. A different implementation needs its own explicit validation
-route; do not attribute its output to the rejected SciRel asset.
+route; do not attribute its output to the rejected scientific asset.
 For each scientific relation in the plan, verify that execution actually invokes the selected asset. A project-native
 replacement is a new implementation and validation route, not evidence that the catalog asset was reused.
 

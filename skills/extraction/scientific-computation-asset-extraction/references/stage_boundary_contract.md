@@ -1,26 +1,47 @@
 # Scientific skill group stage boundary contract
 
-SciRel owns its scientific methods and assets. A host such as CodeFusion, Claude Code, or Codex may load and run
-those methods, but host job state does not replace SciRel scientific state and the host does not own Operator,
-TaskGraph, catalog, review, or release semantics.
+These D1/D2/D3 methods apply across scientific disciplines, library names, languages and Agent harnesses.
+The project owns scientific meaning and stage acceptance; the selected harness supplies execution and delegation.
+A package name, job state, container name or tool result never substitutes for scientific qualification.
 
-This reference supplies the self-contained D1 boundary in the deployed extraction bundle. In a full SciRel
-checkout, later candidate/release authority lives in `docs/requirements/scirel-workflow.md`,
-`docs/design/scirel-workflow.md` and `skills/integration/`; user-facing execution lives in `skills/usage/`.
-Those repository-only resources are not part of the five-skill D1 bundle. D1 hands off exact artifacts and claims
-to the receiving owner without loading unavailable later-stage instructions or duplicating them here.
+The run configuration supplies the available runtime/container backend, source and result locations, resources,
+dependencies, Agent/model settings and permitted delegation. Inspect the actual platform and prepare dependencies
+inside its independent isolation boundary; verify source read-only access and persistent outputs before execution.
+Use a project-native private area for generated code, probes, builds and evidence. Local devices, cloud servers
+and heterogeneous clusters may implement this boundary differently. Do not fix one device path, Agent framework,
+subagent type, package name or deployment backend in the scientific method.
+
+This reference supplies the self-contained extraction boundary. Later-stage implementation adapters, submission
+APIs and release policy are supplied by the receiving project; they are not prerequisites to D1. The method hands
+off exact artifacts and claims without loading an unavailable repository or duplicating downstream policy.
+Bundled validators and schema namespaces are optional versioned serialization implementations: use their real
+contract when selected, or an equivalent project protocol carrying the same scientific information. Their filenames
+or schema prefix do not require a library of that name. A structural pass never substitutes for scientific evidence.
 
 ## D1 responsibility
 
 D1 produces a saved, source-traceable L1 bundle: complete source coverage, source-shaped callable code,
 TaskGraph structure, necessary scientific anchors, tests, evidence, provenance, and explicit gaps. The result remains a
-re-runnable source candidate. It is not a normalized SciRel identity, an expert decision, a maintained-baseline
+re-runnable source candidate. It is not a normalized maintained-library identity, an expert decision, a maintained-baseline
 change, a catalog entry, or a release.
 
 Keep the output source-shaped and preserve its lineage. Do not perform cross-project equivalence decisions,
 deduplication, public namespace design, expert approval, or release work. Those exclusions do not make imperfect L1
 material invalid by definition: record recoverable format, test, evidence, and scientific gaps with enough detail for
-a later SciRel workflow to diagnose them without rewriting the saved source record.
+a later integration workflow to diagnose them without rewriting the saved source record.
+
+## D2 and D3 responsibilities
+
+D2 compares a saved project delivery against the receiving library's current scientific baseline, accounts for every
+input, deduplicates or preserves justified variants, integrates and validates retained capabilities, and supplies an
+exact runnable development distribution with its actual discovery surface. Wheel/catalog is one Python deployment
+form, not a required package name, language or transport. Prepare one concise canonical scientific document for each
+stable retained capability; code, tests and evidence are optional drill-down maintained consistently by the Agent.
+
+D3 consumes that exact delivery to complete useful user tasks, checks actual inputs, applicability, port connections,
+results and failure recovery, and supplies a runnable application plus independent reproduction evidence. It does
+not repeat valid source comparisons or create an application per operator. Separate stage owners may resume weeks
+later from durable artifacts. Independent review, human endorsement and publication remain distinct decisions.
 
 ## Information and immutable handoff
 
@@ -95,7 +116,7 @@ ordinary working notes.
 Ordinary TaskGraphs are dependency-closed DAGs. Feedback or iteration must declare state, update order, stopping
 condition, finite bound, and nonconvergence behavior. Source parity proves source behavior only; it does not prove
 general physical correctness. Project examples may support a bounded claim but do not automatically become global
-rules for every SciRel asset.
+rules for every scientific asset.
 
 For a D1 full-freeze claim, the extraction gate derives `closure_signal.kind=full_freeze` from the declared scope,
 resolved asset references, package tests, source-free execution, and required reassembly evidence. This signal means

@@ -9,7 +9,7 @@ description: Coordinate source-project extraction into scientifically complete, 
 
 For a read-only progress question, use [progress diagnosis](references/progress_diagnosis.md) and inspect one
 exact snapshot. A diagnosis alone does not authorize writes. For authorized production or repair, read
-[stage boundaries](references/stage_boundary_contract.md), then use the coordinator loop below.
+[stage boundaries](references/stage_boundary_contract.md), then use the project owner loop below.
 
 D1 owns complete declared-source coverage, source-shaped runnable implementations, implementation and numerical
 comparison against that source, source-free composition, and independent scientific challenge. D2 owns library
@@ -22,11 +22,29 @@ project handoff that a different owner can consume weeks later without this conv
 use the [stage boundary](references/stage_boundary_contract.md#information-and-immutable-handoff) for its contents.
 An explicitly agreed bounded pilot/partial intake is an exception, not whole-project completion or automatic routing.
 
-## Coordinator loop
+## Project owner autonomy
+
+Select an independent container or equivalent isolation boundary from the actual project and platform contract,
+prepare its dependencies, then start authorized extraction with exact read-only source, an owned
+persistent output location, applicable skills and the project objective. Retain the environment definition and
+launch command; verify actual dependency access, read-only source and output persistence before claiming readiness.
+Use the selected runtime contract. If the user changes the isolation requirement, checkpoint active work and resume in the required runtime; preserve prior evidence and validate only the platform-affected behavior.
+
+The D1 project owner runs the scientific queue below autonomously, including local repair and resumable checkpoints.
+When the selected execution harness permits delegation, use subagents or workers for independent scientific families
+with private writes and one integrator. Their types, models, counts and invocation commands are run configuration;
+none is a method requirement. The host may be local, remote, cloud or a heterogeneous cluster.
+An outer supervisor samples existing project records for method, direction, evidence, resource and ownership drift;
+it does not prescribe each relation's steps or re-accept and hash every incremental report. Intervene for demonstrated
+drift, persistent lack of progress, an owner-unresolvable block, a resource/write conflict or a stage handoff.
+Resume an idle incomplete owner from its checkpoint under the existing objective, without replacing its scientific
+judgment with a new micro-plan. Independent review findings remain attributable and are resolved by the owner.
+
+## Project owner loop
 
 1. **Fix the scope and anchors.** Preserve the exact source snapshot and evidence universe.
    Before selecting a new source, cross-check its names/aliases against both history filenames and case-insensitive
-   content in the supplied provenance, evaluations, handoffs and run inventories. In a full SciRel checkout include
+   content in the supplied provenance, evaluations, handoffs and run inventories. When repository history is supplied include
    `docs/evaluations/`; a deployed bundle uses caller-supplied history instead. A negative query only describes its
    searched scope. Inspect source availability, runnable entrypoints and independent oracles before choosing;
    copied directories and prior extracted assets do not establish an untouched, complete source.
@@ -53,7 +71,7 @@ An explicitly agreed bounded pilot/partial intake is an exception, not whole-pro
    for the current snapshot and deterministic completion checks. No unresolved required science may become
    `full_freeze`; bounded material states its narrower scope. D1 completion is not human approval or release.
 6. **Hand off the project snapshot.** Preserve the exact bundle, evidence bindings, source mapping and remaining claim limits for
-   the receiving D2 owner (`scirel-integration`, supplied by that environment). D2 may reuse, combine or discard equivalent
+   the receiving D2 integration owner supplied by that environment. D2 may reuse, combine or discard equivalent
    assets without forcing D1 to write pages that will be discarded. Keep process notes resumable; derive the concise
    root delivery summary from the final evidence rather than rewriting it after every packet. Every stage reads
    its upstream delivery without editing it; decisions, annotations and corrections live in its own derived candidate.

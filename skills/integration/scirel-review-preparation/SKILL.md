@@ -1,13 +1,13 @@
 ---
 name: scirel-review-preparation
-description: Prepare a stable SciRel development increment for final scientific review and release preparation, reusing evidence and omitting duplicate inputs from the review queue.
+description: Prepare a stable scientific development increment for final scientific review and release preparation, reusing evidence and omitting duplicate inputs from the review queue.
 ---
 
-# SciRel Final Review Preparation
+# Scientific Final Review Preparation
 
 Use after D2 integrated and tested retained changes and relevant D3 evidence is available.
 Humans make final approval decisions; routine development does not wait for them.
-Follow the [workflow requirement](../../../docs/requirements/scirel-workflow.md).
+Follow the receiving project's review/publication policy and portable [stage boundaries](../../extraction/scientific-computation-asset-extraction/references/stage_boundary_contract.md).
 Project-level D1 delivery and later D2/D3 work may have different owners and be weeks apart. Review the stable
 retained increment and relevant application evidence; do not require each source operator/graph to travel through
 its own complete pipeline. Project intake grouping does not turn human decisions into a project-wide lock.
@@ -26,26 +26,26 @@ Do not repeat valid stage work just to make this handoff look independent.
 Compare against the previous trusted version, or explicitly state none exists.
 Include cumulative science and affected dependencies, not every development commit.
 Bind actual code, tests, canonical documents and evidence to Git; bind any wheel/catalog actually built.
-Register the frozen reviewable version through SciRel's release index when that development path exists;
-the candidate entry does not imply approval. Keep successors linked without rewriting reviewed entries.
+Register the frozen reviewable version through the receiving project's actual candidate mechanism when supplied;
+a candidate entry does not imply approval. Keep successors linked without rewriting reviewed entries.
 Completed review projections already carry candidate code and test evidence. Before release, verify each
-approved revision against the solidified code, actual test results and wheel; the current single-draft
-finalizer does not perform that full binding.
+approved revision against the solidified code, actual test results and distribution. Check the actual finalizer's
+capabilities instead of assuming it performs that full binding.
 Record Agent reviewer identity/version and findings separately from human approval.
 Review prose explains the delta and references the canonical document.
 Make that document the normal human reading surface. Provide a compact cumulative change summary only as needed;
 code, tests and detailed evidence remain optional drill-down. Agent owners check their consistency before submission
 and resolve ordinary intermediate choices. Do not create a second dossier or require humans to audit every raw log.
 
-Use review_units plus input_dispositions in the [submission contract](../../../contracts/standardization-submission-dev.schema.json).
+Keep reviewable retained units separate from dispositions for every input, using the receiving project's protocol.
 Reuse/exact_duplicate/covered_by needs target version and scientific evidence, not a new review item
 when no retained public contract changes. Partial overlap is not coverage.
 A pure no-change batch ends as no_changes; it creates neither approval nor release.
 A reused pending target stays pending.
 
-Use scripts/submit_standardization.py after semantic work. Its structural check is not scientific proof.
-Inspect the actual review_pending or no_changes result. The current API binds the D2 scirel-integration producer
-identity; do not substitute this router's digest for it.
+Use the receiving project's submission mechanism after semantic work. Its structural check is not scientific proof.
+Inspect its actual pending-review or no-change result and bind the real producing integration identity.
+Submission scripts, API field names and schema namespaces belong to that implementation, not this method.
 Before registering a pending candidate that embeds the selected canonical document, apply the process's UTF-8
 document-binding check to the actual workflow output, including Unicode metadata. A clean console display or
 structural pass is insufficient. A serialization/decoding mismatch needs a preserved predecessor and metadata
@@ -56,7 +56,6 @@ successor, not repeated scientific execution or another full review.
 Uploaded versions stay fixed. Explicit successors preserve predecessors; no silent queued/approved mutation.
 Agent review supports internal development, not human endorsement. Human approval covers only its exact
 increment and dependency closure. Material changes need a new reviewed successor.
-Publication still requires authority, license, dependency and release checks in the [process](../../../docs/development-process.md).
-Only a successful release creates a released index entry; converge related development versions and contracts
-to v1 before the first formal release.
-Current single-draft fixtures do not automatically promote arbitrary approved item subsets to a complete release.
+Publication still requires authority, license, dependency and release checks in the receiving project's process.
+Only an authorized successful publication creates a released entry. Use the receiving project's version policy;
+approval of a subset does not automatically establish a complete dependency-closed release.

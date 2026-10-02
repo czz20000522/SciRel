@@ -47,7 +47,7 @@ Every scientific node resolves to an emitted operator or permitted nested graph.
 assets and bounded glue; it does not hide a formula, normalization, scientific state update or source global.
 Project context cannot supply omitted callable inputs or turn an incomplete package into a runnable asset.
 
-Formal `operator.md`, `task_graph.md` or canonical SciRel asset documents are produced after D2 comparison,
+Formal `operator.md`, `task_graph.md` or canonical scientific asset documents are produced after D2 comparison,
 deduplication, correction and assembly stabilize the retained new/changed assets, before final review freeze.
 Existing pages may be retained as provenance but their language, heading order or absence is not a D1 gate.
 

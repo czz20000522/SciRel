@@ -1,12 +1,15 @@
 ---
 name: scirel-integration
-description: Coordinate D2 integration of saved scientific L1 assets into a runnable SciRel development library, routing comparison, normalization, correctness repair and final documentation as needed.
+description: Coordinate D2 integration of saved scientific L1 assets into a runnable scientific development library, routing comparison, normalization, correctness repair and final documentation as needed.
 ---
 
-# SciRel Integration
+# Scientific Asset Integration
 
 Own D2 comparison, deduplication, repair, composition and development delivery.
-Use the [development process](../../../docs/development-process.md) and [version boundaries](../../../docs/design/development-trust-versions.md).
+Use the portable [stage boundaries](../../extraction/scientific-computation-asset-extraction/references/stage_boundary_contract.md).
+The current discovery identifier is retained for compatibility; it does not require that library or package name.
+The receiving project supplies its lifecycle policy, runtime, source/result locations, baseline and distribution format.
+No particular Agent harness, device, container backend or subagent model is required.
 
 ## Start and route
 
@@ -51,11 +54,11 @@ Agent investigation handles intermediate choices within authorization.
 Generate formal exact documents after comparison and stable code, only for retained new/changed assets.
 Reused assets keep existing documents; absorbed inputs need disposition/provenance, not duplicate review items.
 Code/YAML/tests carry recoverable detail until documentation. Build and test a clearly identified development
-wheel/catalog when D3 needs it; tests grant no approval.
+distribution and matching discovery records when D3 needs them; tests grant no approval.
 
 ## Handoff
 
-Deliver development SHA, complete dispositions, scientific changes, affected tests, actual wheel/catalog,
+Deliver development SHA, complete dispositions, scientific changes, affected tests, actual distribution/discovery records,
 supported scope and gaps. Submit focused commits for integration. D3 may consume the development version.
 Stage owners and handoff times are independent; no live D1 Agent or same-night full chain is required.
 Select useful D3 tasks over the integrated capability set, not one new application per input asset.

@@ -7,12 +7,12 @@ description: Use when finding, comparing, shortlisting, adapting, or composing e
 
 ## Purpose and boundary
 
-In any supported harness, a SciRel release is a plugin-owned published dependency,
+In any supported harness, a scientific-library release is a plugin-owned published dependency,
 not a user-supplied bundle or platform business record. Use the catalog snapshot selected for the
 current run to identify matching scientific contracts. Confirm callable availability in the bound
 runtime only for assets that survive exact-record comparison and are selected for a solution plan.
 Installation or a Python import alone does not prove scientific suitability or release
-status. Do not require the user to upload, name, or install SciRel to start discovery; report an
+status. Do not require the user to upload, name, or install a particular named library to start discovery; report an
 unavailable authorized catalog or runtime to the coordinator as an environment gap.
 First check the current harness's declared connector, mounted snapshot or environment resource for the bound catalog;
 it need not live in the user project's files. If a selected environment declares one, inspect that binding before

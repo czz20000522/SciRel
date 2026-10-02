@@ -21,7 +21,7 @@ metrics, tolerances, execution interpretation, and the strongest earned claim.
 
 Validation proves a named claim for an exact revision. It does not choose an extraction boundary,
 normalize a package, approve an asset, or write plugin lifecycle state. When its result crosses an
-owner boundary, return the exact evidence and limitation to the caller; the receiving SciRel workflow performs
+owner boundary, return the exact evidence and limitation to the caller; the receiving scientific workflow performs
 its own candidate or release transition. If a validator and skill disagree, record a `tooling_defect` observation and
 preserve the scientific result.
 

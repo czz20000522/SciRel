@@ -41,7 +41,7 @@ domain, evidence, claim ceiling and reopen condition. Justified scientific corre
 source mismatch cannot pass as a documentation correction. Never fabricate a source citation.
 
 After D2 deduplication and assembly, only retained new/changed assets need the canonical asset document owned
-by the receiving `scirel-review-preparation` workflow and repository `docs/requirements/asset-documentation.md`.
+by the receiving review process and its supplied scientific-document contract.
 Those later-stage resources are not deployed with D1 and need not be loaded by its reviewer. The document must disclose their scientific
 contract, actual ports, applicability and known limitations without relying on the producer's memory. Reference
 the final exact code and evidence rather than embedding repeated raw logs or separate review copies. Duplicate
