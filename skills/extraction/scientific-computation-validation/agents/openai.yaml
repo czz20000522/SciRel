@@ -1,6 +1,6 @@
 interface:
   display_name: "Scientific Computation Validation"
   short_description: "Produce claim-specific scientific and numerical evidence"
-  default_prompt: "Use $scientific-computation-validation to test these exact claims with independent oracles and report actual evidence and limits without making a stage decision."
+  default_prompt: "Use $scientific-computation-validation for these exact claims; D1 source_fidelity compares original and candidate behavior, while scientific correctness claims require independent science evidence. Report limits without a stage decision."
 policy:
   allow_implicit_invocation: false

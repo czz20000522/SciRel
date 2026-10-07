@@ -6,6 +6,13 @@ description: Coordinate D2 integration of saved scientific L1 assets into a runn
 # Scientific Asset Integration
 
 Own D2 comparison, deduplication, repair, composition and development delivery.
+Own scientific-relation and numerical-method correctness for retained claims. D1 establishes source fidelity,
+including original errors, and supplies source-issue records; it does not owe corrected behavior or independent
+physical qualification. Consume each issue with an evidenced correction, explicit compatibility variant,
+exclusion or unresolved limitation. Do not return a source defect to D1 merely to make its faithful output
+scientifically correct. Packaging/extraction mismatches may return as specific fidelity questions.
+Retain packaged native implementations when appropriate; Python public callables do not require Python-only
+internals. Verify their source/permission, build/ABI, dependency and state/exception contracts.
 Use the portable [stage boundaries](../../extraction/scientific-computation-asset-extraction/references/stage_boundary_contract.md).
 The current discovery identifier is retained for compatibility; it does not require that library or package name.
 The receiving project supplies its lifecycle policy, runtime, source/result locations, baseline and distribution format.

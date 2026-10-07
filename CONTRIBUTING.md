@@ -13,14 +13,18 @@ pwsh ./scripts/check.ps1 -Mode affected
 
 科学函数运行时不得依赖 CodeFusion、源项目 checkout、数据库、网络或主机绝对路径。依赖变更需先说明用途、运行时影响、许可证和替代方案；不为便利引入新的框架。
 
+上述安装只提供科学库。开发 workflow/plugin/adapter 在源码 checkout 通过项目脚本、测试入口或显式
+`PYTHONPATH=src` 使用；宿主服务须另行部署。项目与包的范围、历史样本及多版本 worktree 规则见
+[开发项目与科学包交付](docs/design/project-and-distribution.md)。各整合/候选/维护分支使用独立环境和输出。
+
 ## 开始修改前
 
 1. 阅读 `README.md`、[架构合同](docs/architecture.md)、相关函数、科学测试和 provenance。
 2. 固定本次保存的 L1 输入和只读 SciRel 基线，并读取当前全部未发布候选；候选准备期间只写隔离 worktree/输出目录，L1 来源材料、机器检查和模型结论都不能代替后续专家审核。
-3. 对照当前 Git/release 基线与候选池，列出公共 API、科学身份、直接依赖和受影响 TaskGraph；不要把不完整 catalog 当作全部已有能力，也不要把未发布候选当作可运行资产。
-4. 对 L1 整合使用项目的 `scirel-integration` skill，逐项判断复用、重复、变体、组合、新增或未决，并先提交以文档为主的候选代码/测试三件套；未经专家批准不要修改维护源码。
-5. 候选记录比较时的 Git base；尚未被专家打开的排队候选可合并、替换或撤回，专家首次打开完整详情时才冻结三件套。候选入队后原 Agent run 即可结束；批准后由独立任务对照最新基线固化。同一资产、合同、依赖闭包、TaskGraph 或 patch hunk 已变化时生成新候选重新审核，不采用 last-write-wins。
-6. 新增或改变公共资产时维护对应标准资产文档，并运行 runtime/example/catalog release 验证；缺失可信元数据时保留 metadata gap，不生成占位科学合同。
+3. 对照当前 Git/release 基线与候选池，列出公共 API、科学身份、直接依赖和受影响 TaskGraph；不要把不完整 catalog 当作全部已有能力。未发布开发候选可以明确其信任状态后用于内部验证，不能冒充已批准能力。
+4. 对 L1 整合使用项目的 `scirel-integration` skill，逐项判断复用、重复、变体、组合、新增或未决；在隔离开发分支修改维护源码、测试和开发包。比较、去重与代码稳定后生成保留增量的正式文档，再提交最终待审三件套；人工认可不阻断日常开发，上一可信版保持只读。
+5. 候选记录比较时的 Git base；上传前草稿可合并、替换或撤回，上传时固定逐项初始内容，首次打开只记录所见版本。候选入队后原 Agent run 即可结束；批准后由独立任务对照最新基线固化，同一资产、合同、依赖闭包、TaskGraph 或 patch hunk 已变化时形成关联候选，不采用 last-write-wins 或改写原审核版本。
+6. 新增或改变公共资产，在代码稳定后、最终待审冻结前维护唯一标准资产文档，并运行相关 runtime/example/catalog 验证；缺失可信元数据时保留 metadata gap，不生成占位科学合同。
 
 ## 变更分类
 

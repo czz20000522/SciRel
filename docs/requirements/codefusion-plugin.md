@@ -2,6 +2,11 @@
 
 ## 边界
 
+插件是 SciRel 项目的可选平台集成，分别绑定 skill、catalog、科学 wheel 和所需工具部署。
+用户核心交付仍为 `scirel` 科学包；审核工作流、插件服务和 MCP 适配不打入科学 wheel，
+安装科学包不表示已经安装这些服务。部署须另行固定工具代码和兼容包版本，见
+[开发项目与科学包交付](../design/project-and-distribution.md)。
+
 CodeFusion 是领域中性的 Agent harness。它提供模型循环、上下文压缩、workspace、skill
 snapshot、工具、权限/审批、执行、恢复和通用运行证据，不理解 SciRel 的去重、变体、合并、
 标准化或科学审核语义。

@@ -2,9 +2,18 @@
 
 本文定义 SciRel 自身的长期边界。SciRel 从保存的 L1 产物开始拥有 candidate、自动检查、标准化、专家审核和 release 的领域流程；CodeFusion 只提供 artifact、job runner、身份、队列和审核 UI 等宿主能力。CodeFusion 的数据库、Rust owner、宿主审核状态和源项目目录都不是 SciRel core 的运行时依赖。
 
-保存的多项目 L1 目录可以使用项目级 inventory 作为结构探针，模型也可以直接检查保存的产物并形成候选。inventory 只保留来源路径、摘要、测试归属和显式依赖缺口；它不把拆解项目源码复制进 SciRel，也不把候选来源记录解释为专家批准。参考探针和不同批次的历史盘点见 [`l1-inventory.md`](design/l1-inventory.md)。
+保存的多项目 L1 目录可以使用项目级 inventory 作为结构探针，模型也可以直接检查保存的产物并形成候选。inventory 只保留来源路径、摘要、测试归属和显式依赖缺口；探针本身不复制实现或授予批准。合法来源实现可经 D1 抽取封装和 D2 整合进入包，候选来源记录不表示专家批准。参考探针和不同批次的历史盘点见 [`l1-inventory.md`](design/l1-inventory.md)。
 
 新流程的权威需求和设计分别见 [`scirel-workflow.md`](requirements/scirel-workflow.md) 与 [`scirel-workflow.md`](design/scirel-workflow.md)。本文件中的历史 admitted 记录仍可作为开发期 provenance fixture，但不再是新 workflow 的唯一输入。
+
+## 开发项目与用户科学包
+
+SciRel 项目拥有生产科学库的完整开发与治理过程，用户核心交付为确切版本的 `scirel` 包。
+`src/scirel/` 提供科学运行实现；workflow、审核状态、skill、来源工件、开发工具和宿主适配由项目层维护。
+普通 wheel 只收集 `scirel` 与其子包，必要本地组件/数据及许可证等分发元数据也须进入实际发行物。
+用户文档和可选 Agent catalog 绑定同一科学版本，运行不加载完整开发材料或审核状态。
+历史试验不自动成为后续正式主线的公共能力或永久门禁；仍被引用的来源与许可依据保持可取得。
+完整目录、构建及多版本分支/worktree 规则见 [开发项目与科学包交付](design/project-and-distribution.md)。
 
 ## 核心对象
 
@@ -46,6 +55,11 @@ Operator 实现一个完整的定向科学映射，而不是科学关系本身�
 边界按上面的科学合同与独立交付价值判断。其身份由关系方向、模型与假设、几何与坐标、边界或闭合、单位、轴序、shape/dtype、适用域、数值方法以及失败行为共同决定；名称、模块路径、源码相似度或少量相同样例都不能单独证明等价。
 
 Operator 的规范运行入口是普通 Python callable。函数签名是公共接口的一部分，结构化输入输出合同补充参数名无法表达的单位、shape、轴序、适用域和失败语义。REST、CLI 或平台工具可以包装 callable，但只是适配层；源码块属于实现与证据，不是调用协议。
+
+Python callable 不要求内部为纯 Python。可以封装包内来源实现、C/C++/Fortran 扩展或随包的本地程序，
+明确数据布局、ABI/支持平台、依赖、状态初始化/重置、并发隔离和失败映射。构建材料与许可随交付可取得；
+运行不访问原 checkout、开发机路径、捕获答案或在线源服务。独立进程封装也须保持可复用能力边界，
+其科学计算由绑定的来源组件承担，不在适配胶水里重写。
 
 ### TaskGraph
 

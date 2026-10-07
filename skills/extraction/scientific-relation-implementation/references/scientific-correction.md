@@ -1,5 +1,11 @@
 # Critical source review and scientific correction
 
+This protocol applies to an explicitly authorized scientific-correctness task, normally D2 for extracted sources.
+D1 `source_fidelity` preserves the original implementation and records source issues with reproduction evidence
+for D2. Its explicit compatibility requirement makes original defective behavior a legitimate faithful candidate;
+the repair/default-usable-asset rules below do not override that stage boundary. Fixing an introduced extraction
+mismatch in D1 restores source behavior and does not authorize changing the source's science.
+
 Use this protocol when source inspection, runtime observations, validation, or read-only review exposes a
 possible source error and the caller authorizes correctness repair. Source is evidence of behavior,
 not scientific authority. Preserve the original snapshot for evidence; do not preserve a known wrong

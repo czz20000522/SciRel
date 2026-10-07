@@ -4,6 +4,11 @@ SciRel 是独立维护的 Python 科学关系库。它将已有科研代码中�
 算子（Operator）和任务图（TaskGraph），供 Agent 按用户需求选择和组合，并通过胶水代码形成可执行的
 自定义程序。科学能力以 Python 包交付，可由 CodeFusion、Codex、Claude Code 或其他 Agent 平台使用。
 
+SciRel 开发项目负责生产和维护这个库；用户的核心交付是确切版本的 `scirel` 包及声明的运行依赖。
+skill、来源工件、审核状态、测试、构建工具和平台适配属于项目开发/集成层，不是科学函数的运行依赖。
+按版本提供必要使用文档；Agent catalog 是同一科学合同的发现投影。项目、包与多版本工作树的边界见
+[开发项目与科学包交付](docs/design/project-and-distribution.md)。
+
 ## 为什么拆解与组装
 
 已有科研项目积累了科学模型、数值实现和验证依据，但其对外接口与执行流程通常围绕原作者的使用场景设计。
@@ -38,7 +43,9 @@ SciRel 把这些能力整理成有明确科学含义、输入输出和适用条�
 ## 开发链路与当前状态
 
 SciRel 拥有从来源拆解、保存的 L1 产物到库整合、用户应用和 release 的科学领域流程。
-D1 保留完整来源、源实现与数值对照；`scirel-integration` 统筹 D2 比较、去重、修正、组装和开发 wheel；
+D1 忠实抽取来源现有功能，保留源码行为对照和疑似错误记录，不承担科学修正；
+Python 入口可封装包内 C/C++/Fortran 等原实现，运行须脱离原源码环境。
+`scirel-integration` 统筹 D2 科学判断、比较、去重、修正、组装和开发 wheel；
 D3 使用确切版本验证用户任务。正式文档在保留资产代码稳定后生成，阶段入口见 [开发流程](docs/development-process.md)。
 CodeFusion、Claude Code、Codex 均是中性 harness；SciRel 拥有科学语义与最终审核/发行绑定。
 上传前可合并、替换或撤回草稿，上传时固定逐项初始版本，之后无模型在后台改写队列。
@@ -46,7 +53,8 @@ CodeFusion、Claude Code、Codex 均是中性 harness；SciRel 拥有科学语�
 Agent 可先集成验证开发版；人类在稳定累积增量处拍板，不逐开发提交审批。人工认可和公开发行
 分别绑定确切内容；开发进展不改写上游交付或既有待审/可信版本。
 
-SciRel 以独立插件和发布 wheel 交付；CodeFusion 可以预装或加载它，但 SciRel 不属于 CodeFusion kernel。
+SciRel 以 `scirel` wheel 交付科学库；插件、skill 和 catalog 按平台需要单独部署与绑定版本。
+CodeFusion 可以预装科学包或通过可选插件接入，但 SciRel 不属于 CodeFusion kernel。
 包名与安装方式属于平台实现细节。
 普通用户在工作台描述需求并获得计算结果、图表或文件，无需安装包、输入 import 或知道 SciRel 名称。
 平台维护者在受控 Python runtime 镜像准备阶段预装经过验证的 wheel；运行任务时直接调用现有能力，
@@ -72,16 +80,14 @@ CodeFusion 联调先选定索引中的确切 `entry_id`，再按该条目的状�
 复现和核对早期开发实验；Pleiades 及该账本没有在新生命周期下完成专家审核或正式发布，旧的
 `admission`/决定标签不得被解释为当前批准事实，也不是新 workflow 的输入前置条件。
 
-候选还包含 `scirel._composition` 与 `scirel._validation` 两个 LF SHA-256 绑定的 support modules。
+该历史 52 项候选还包含 `scirel._composition` 与 `scirel._validation` 两个 LF SHA-256 绑定的 support modules。
 它们只用于已选资产的内部导入闭包，会进入 admitted-only staging 与内容锁；它们不是资产、不会出现在
 公共导出，也不会改变 52 条资产计数。构建器只复制账本选中的 callable 和 support modules，并拒绝
 未绑定、越界或摘要不符的内部依赖。
 
-旧批次的工程证据记录在 `provenance/assembly-record.md`。其 52 条开发候选 wheel 的 SHA-256 为
-`9f2b37e34a23f4252b6cae3915a4c2444c1a4a08a32e163e83db24d068d3914f`，内置 manifest digest 为
-`sha256:81a66405b369e179d38d1b71926e6101b264268b3cd2b41aab7adf14f4763cb9`，已执行证据为 337 项通过。
-另有 52 到 53 条的隔离增量演示，用于验证增量输入不会改写 52 条开发样本；它不是该样本的
-第 53 个资产，也不构成专家批准或公开发布。
+旧批次的工程证据与确切摘要保存在 [历史组装记录](provenance/assembly-record.md)。历史样本和隔离增量演示
+不定义后续正式主线的资产数量、构建输入或永久门禁；后续内容以接收的 D1 交付、D2 整合和发行选择为准。
+历史实现如被保留，须明确复用、来源资格及验证依据；冻结记录与仍被引用的许可/来源证据保持可取得。
 
 ## 维护者 API 示例
 
@@ -99,6 +105,7 @@ assert result["B"][0, 0] == 5.0
 ## 维护
 
 - `src/scirel/<domain>/`：公共科学函数与组合模块，目录按科学领域组织。
+- `src/scirel_workflow/`、`src/scirel_plugin/`、`src/scirel_adapter/`：开发工作流和可选宿主/消费适配；普通科学 wheel 不收集这些包，使用它们须另行准备源码工具环境。
 - `_validation.py`：合同相同的共享参数检查；不同默认值语义分别保留。
 - `_composition.py`：不修改调用方输入的组合调用；依赖由模块显式绑定，无全局资产目录。
 - `tests/`：SciRel 科学函数、组合、准入和发行的维护测试；不重验 D1 冻结，也不要求当前实现与来源源码一致。审核 YAML 仅作历史合同测试证据，不进入运行包。
@@ -107,6 +114,7 @@ assert result["B"][0, 0] == 5.0
 - `docs/catalog.md`：面向数万 Operator、数千 TaskGraph 的分片目录和渐进检索合同。
 - `contracts/` 与 `catalog/examples/`：标准资产/catalog Schema，以及依赖闭合的 132/132 开发 pilot。
 - `docs/development-process.md`：首次/增量整合、验证分层和发行候选流程。
+- `docs/design/project-and-distribution.md`：开发项目、用户科学包、历史样本和隔离分支/worktree 的构建边界。
 - `docs/requirements/scirel-workflow.md` 与 `docs/design/scirel-workflow.md`：L1 到 release 的领域需求和设计。
 - `docs/requirements/scientific-request-workflow.md` 与 `docs/design/scientific-request-workflow.md`：从用户需求到 SciRel 计算结果和审计解释的出库流程。
 - `docs/design/l1-inventory.md`：可选 L1 结构探针的边界和历史压测样本。

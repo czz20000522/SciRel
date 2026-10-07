@@ -6,9 +6,12 @@ Use this reference only when an extraction candidate needs source execution, hid
 runtime dependency repair, or source-free replay. It supplies a generic recovery loop. Project-specific formulas,
 case names, solver branches, and one-off failure recipes do not become universal extraction rules.
 
-The delivered callable must execute from explicit caller-owned inputs without the source checkout, source globals,
-implicit source call order, captured answer arrays, network access, or host-specific paths. Source programs,
-instrumentation, probes, containers, and captures are bounded evidence producers, not candidate dependencies.
+The delivered callable must execute from explicit inputs without the original checkout, hidden external source
+state/order, captured answer arrays, network access, or host-specific paths. Attributable source implementation,
+native libraries or local programs may be packaged runtime components with declared dependencies and explicit
+owned/reset/isolated state lifecycle. Source probes, instrumentation and captured answers remain external evidence.
+Use the [D1 source-fidelity boundary](stage_boundary_contract.md#d1-responsibility): source issues are recorded for
+D2, and independent scientific-correctness research is not a prerequisite to source-free extraction.
 
 ## Bounded source/runtime loop
 
@@ -96,8 +99,11 @@ For a TaskGraph candidate freeze, additionally verify exact dependency versions,
 feedback/convergence/failure behavior, and that returned fields are the actual terminal state.
 
 Whole-project completion is stronger. It requires a frozen census, candidates plus non-candidate dispositions,
-closed material branches and state lifecycles, and canonical plus sealed-holdout reassembly from identical explicit
-case inputs to complete declared terminal outputs against one bundle revision. Candidate staging may happen
+closed material branches and state lifecycles, and source-fidelity reassembly from identical explicit
+case inputs to complete declared terminal outputs against one bundle revision. Use original plus additional
+source-admissible cases where material uncovered behavior exists; source-defined failures belong to the comparison.
+A separately sealed holdout is required only by an explicitly selected protocol/claim, not by D1 fidelity itself.
+Candidate staging may happen
 earlier, but this project gate remains the extraction completion condition.
 
 Run changed-candidate and direct-dependent tests during the production loop. Run bundle-wide structure, digest,

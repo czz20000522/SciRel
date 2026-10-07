@@ -33,6 +33,21 @@ human choice must be returned with a specific reopen condition.
 
 ## Dataset Model
 
+For D1 select `source_fidelity` under the [stage boundary](../scientific-computation-asset-extraction/references/stage_boundary_contract.md#d1-responsibility).
+Capture original examples or self-constructed source-admissible inputs, genuine initial/predecessor state,
+outputs/post-state and termination/failure markers needed for differential comparison. Preserve the exact
+source/runtime and raw observations. Record source issues with trigger, source location, observation and
+impact for D2; do not repair the source or route to scientific correction merely because capture reveals a defect.
+For this mode, use the workflow's capture/integrity steps and return fidelity observations; scientific-oracle
+splits, independently sealed holdout and independent scientific promotion gates below are not D1 prerequisites.
+Any selected manifest validator retains its actual structural contract; do not fabricate split/seal facts.
+Owned/initialized/isolated native state may be preserved internally when the package can reproduce its lifecycle;
+construct a typed carrier only where a reusable call boundary actually needs one, not for every internal field.
+Undefined source behavior or a crash without observable stable state remains a limitation, not a guessed value.
+
+The scientific-oracle, controlled-repair and scientific-promotion requirements below apply only to separately
+requested later-stage scientific claims. Capture itself grants neither stage completion nor scientific validity.
+
 Treat one case as a complete observation tuple:
 
 ```text

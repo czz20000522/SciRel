@@ -20,6 +20,38 @@ or schema prefix do not require a library of that name. A structural pass never 
 
 ## D1 responsibility
 
+D1 acceptance is `source_fidelity`: reproduce the existing behavior of the bound source, including its
+defaults, numerical choices, state/order, terminal outputs and reproducible failures. The source implementation
+is the behavioral oracle; D1 does not certify its scientific or numerical correctness. Record suspected source
+defects for D2 instead of repairing them or opening independent physics/calibration research. Fix introduced
+extraction, packaging and comparison errors within D1. This boundary governs every specialist and linked
+reference loaded by D1; scientific-correction and independent-science instructions apply to a later explicitly
+scoped correctness task.
+
+Prefer lifting or wrapping actual source logic over deriving a new algorithm. A Python callable may use
+attributable packaged Python, C/C++, Fortran, local binaries or declared native dependencies. `source-free`
+means independence from the original checkout/environment, not absence of source-derived implementation.
+Retain licenses, build recipes, compiler/dependency identities, ABI/platform support, explicit state ownership,
+initialization/reset and failure mappings. Internal native state may remain encapsulated when its lifecycle and
+isolation are explicit; do not require a new carrier for every internal temporary. A whole-program wrapper may
+establish an initial comparison path, but does not replace source-supported reusable mappings and composition.
+
+Use original examples and self-constructed source-admissible inputs for differential tests of outputs,
+state transitions, branches and failures. Retain raw source/candidate observations and fixed comparison rules;
+reuse valid evidence. Extend cases for material uncovered behavior, not an unlimited input universe. Independent
+physical oracles, analytical correctness, convergence proofs, experimental calibration and statistically
+independent holdouts are not default D1 gates. A fixed-input source need not invent another admissible input.
+Never tune tolerances to candidate output, substitute captured answers for computation, or assert equivalence
+of undefined behavior. Missing comparison evidence remains a fidelity gap.
+
+Record a source issue once in existing code/evidence: source identity/location, triggering inputs/state,
+observed behavior, affected scope and reproduction evidence; distinguish suspicion from demonstrated fact.
+Already-corrected variants and their evidence remain separate later-stage candidates; do not discard them or
+substitute them for the faithful version. Reproducing a known source error can pass the corresponding fidelity
+check while remaining unqualified for scientific use. Full D1 completion requires all declared source functions,
+material branches and dependencies accounted for, attributable comparison and source-free reassembly, plus
+read-only fidelity/completeness review where required by the caller. It is not scientific endorsement.
+
 D1 produces a saved, source-traceable L1 bundle: complete source coverage, source-shaped callable code,
 TaskGraph structure, necessary scientific anchors, tests, evidence, provenance, and explicit gaps. The result remains a
 re-runnable source candidate. It is not a normalized maintained-library identity, an expert decision, a maintained-baseline
@@ -37,6 +69,11 @@ input, deduplicates or preserves justified variants, integrates and validates re
 exact runnable development distribution with its actual discovery surface. Wheel/catalog is one Python deployment
 form, not a required package name, language or transport. Prepare one concise canonical scientific document for each
 stable retained capability; code, tests and evidence are optional drill-down maintained consistently by the Agent.
+
+D2 consumes every D1 source-issue record and decides correction, explicitly retained compatibility variant,
+exclusion or unresolved limitation with evidence. It owns scientific-relation/numerical correctness testing for
+the retained claims. Corrections preserve failure regressions, intentional source divergence and affected
+dependency validation. D1 parity is reusable evidence, not independent scientific acceptance.
 
 D3 consumes that exact delivery to complete useful user tasks, checks actual inputs, applicability, port connections,
 results and failure recovery, and supplies a runnable application plus independent reproduction evidence. It does
@@ -64,8 +101,9 @@ A receiving owner may start weeks later with no access to the original Agent, ch
 Provide one compact continuation entry using the existing project records: exact source/version/license,
 whole-project census and asset/dependency dispositions, unresolved scope, callable bundle identity, source inputs,
 raw observations and criteria/evidence bindings, and pinned runtime dependencies with reconstruction/rerun commands.
-All cited artifacts must remain obtainable with the saved delivery. Keep original source and raw evidence in
-the associated archive outside the source-free callable package; do not duplicate them into every asset or create
+All cited artifacts must remain obtainable with the saved delivery. Keep the complete original source snapshot and raw evidence in
+the associated archive outside the callable package; attributable extracted runtime implementation may be packaged.
+Do not duplicate archives into every asset or create
 another scientific report. A saved incomplete project remains incomplete. Age or owner replacement alone does
 not invalidate attributable numerical evidence; later comparison uses the receiving stage's current library baseline.
 
@@ -79,13 +117,14 @@ internal development assembly do not require a human decision and do not imply p
 
 D1 must establish complete declared-source coverage, source-shaped implementations, and numerical comparisons
 with the source before a qualified complete L1 `full_freeze`. Later stages may not be able to access or run the
-source, so unresolved scientific coverage or validation remains a named D1 gap. An incomplete candidate may be
+source, so unresolved source-behavior coverage or comparison remains a named D1 gap. An incomplete candidate may be
 saved under an explicit claim ceiling but must not be reported as qualified complete material.
 
 When an executed result still has independently verifiable code, inputs, outputs, and runtime-relevant
 conditions, fix a path, assertion, format, or digest binding with a traceable supplemental record instead of
 repeating the calculation. Check an assertion against source semantics and independent results; do not relax
-its scientific tolerance to fit the candidate. Preserve the old failure and its evidence, without fabricating
+its comparison tolerance to fit the candidate. D1 uses source behavior as the expected result; independent
+scientific criteria belong to a correctness claim. Preserve the old failure and its evidence, without fabricating
 a historical seal. Rerun only the affected cheap comparison or gate; repeat scientific execution when its
 correspondence is missing or the inputs, executable science, or environment materially changed.
 
@@ -112,6 +151,11 @@ Use content digests where bytes cross an artifact or evidence boundary. Do not c
 ordinary working notes.
 
 ## TaskGraph and evidence constraints
+
+Optional serialization validators retain their exact contracts when selected. Their legacy fields or sealed-case
+requirements do not add scientific-correctness duties to D1. Use the caller's source-fidelity evidence protocol
+when those extra claims are not requested; do not fabricate seals, rewrite old receipts or claim that an unchanged
+validator passed a new protocol. Completion reports name the actual protocol and exact evidence reviewed.
 
 Ordinary TaskGraphs are dependency-closed DAGs. Feedback or iteration must declare state, update order, stopping
 condition, finite bound, and nonconvergence behavior. Source parity proves source behavior only; it does not prove
