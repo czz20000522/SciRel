@@ -13,7 +13,7 @@ from scripts.submit_standardization import build_review_workflow
 
 ROOT = Path(__file__).parents[2]
 ASSET_DOCUMENT = json.loads(
-    (ROOT / "catalog/examples/scirel.field.circular-filament-green.json").read_text(
+    (ROOT / "tests/fixtures/contracts/fixture-identity.json").read_text(
         encoding="utf-8"
     )
 )
@@ -48,8 +48,8 @@ def _submission_payload(candidate: CandidatePackage, git_base: str) -> dict:
         },
         "review_units": [
             {
-                "review_unit_id": "unit-circular-filament-green",
-                "source_asset_ids": ["pleiades:operator:circular-filament-green"],
+                "review_unit_id": "unit-identity",
+                "source_asset_ids": ["synthetic:operator:identity"],
                 "disposition": "reuse",
                 "asset_document": ASSET_DOCUMENT,
                 "candidate_document": _material(
@@ -93,12 +93,12 @@ def test_official_gate_preserves_three_piece_in_review_detail():
         {
             "assets": [
                 {
-                    "candidate_asset_id": "pleiades:operator:circular-filament-green"
+                    "candidate_asset_id": "synthetic:operator:identity"
                 }
             ],
             "automated_checks": [{"name": "replay", "status": "passed"}],
         },
-        source_artifact_ref="artifact://l1/pleiades",
+        source_artifact_ref="artifact://l1/synthetic",
         source_digest="sha256:" + "1" * 64,
         run_id="run-review-visible",
     )
@@ -151,12 +151,12 @@ def test_standardization_submission_has_no_automated_check_override():
         {
             "assets": [
                 {
-                    "candidate_asset_id": "pleiades:operator:circular-filament-green"
+                    "candidate_asset_id": "synthetic:operator:identity"
                 }
             ],
             "automated_checks": [{"name": "replay", "status": "passed"}],
         },
-        source_artifact_ref="artifact://l1/pleiades",
+        source_artifact_ref="artifact://l1/synthetic",
         source_digest="sha256:" + "1" * 64,
         run_id="run-no-check-override",
     )
@@ -174,20 +174,20 @@ def test_standardization_submission_has_no_automated_check_override():
 def test_official_gate_completes_reuse_without_copying_documents_or_queuing_review():
     candidate = CandidatePackage.from_l1(
         {
-            "assets": [{"candidate_asset_id": "pleiades:operator:circular-filament-green"}],
+            "assets": [{"candidate_asset_id": "synthetic:operator:identity"}],
             "automated_checks": [{"name": "replay", "status": "passed"}],
         },
-        source_artifact_ref="artifact://l1/pleiades",
+        source_artifact_ref="artifact://l1/synthetic",
         source_digest="sha256:" + "1" * 64,
         run_id="run-no-new-assets",
     )
     payload = _submission_payload(candidate, "a" * 40)
     payload["review_units"] = []
     payload["input_dispositions"] = [{
-        "source_asset_ids": ["pleiades:operator:circular-filament-green"],
+        "source_asset_ids": ["synthetic:operator:identity"],
         "disposition": "reuse",
         "target_asset_id": ASSET_DOCUMENT["asset_id"],
-        "target_ref": "artifact://catalog/frozen/circular-filament-green",
+        "target_ref": "artifact://catalog/frozen/identity",
         "target_digest": digest(ASSET_DOCUMENT),
         "evidence": [{"kind": "mapped_comparison", "ref": "run://comparison"}],
     }]

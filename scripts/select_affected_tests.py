@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 import ast
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 import json
 from pathlib import Path
 import subprocess
@@ -13,15 +13,8 @@ from typing import Iterable
 
 
 ROOT = Path(__file__).resolve().parents[1]
-LEDGER = ROOT / "provenance" / "admitted-assets.json"
-CATALOG = ROOT / "catalog" / "examples"
+CATALOG = ROOT / "catalog" / "assets"
 SCHEMA = "scirel.affected-tests.v1"
-
-DIRECT_TEST_OVERRIDES = {
-    "scirel.inference.anisotropic_trial_evaluation.evaluate_anisotropic_trial": (
-        "tests/test_incremental_admissions.py"
-    ),
-}
 
 FULL_SUITE_PATHS = {
     "pyproject.toml",
@@ -31,12 +24,10 @@ EXTERNAL_TOOLING_TESTS = {
     "scripts/build_extraction_skill_bundle.py": "skills/extraction/tests/test_extraction_skill_bundle.py",
     "scripts/install_extraction_skill_bundle.py": "skills/extraction/tests/test_extraction_skill_bundle.py",
     "skills/extraction/tests/test_extraction_skill_bundle.py": "skills/extraction/tests/test_extraction_skill_bundle.py",
-    "scripts/build_admitted_distribution.py": "provenance/tests/test_admitted_distribution_builder.py",
-    "provenance/admitted-assets.json": "provenance/tests/test_admitted_distribution_builder.py",
-    "provenance/tests/test_admitted_distribution_builder.py": "provenance/tests/test_admitted_distribution_builder.py",
 }
 
 ENGINEERING_TESTS = {
+    "scripts/runtime_dependency_roots.py": ("tests/test_runtime_dependency_roots.py",),
     "docs/integration/codefusion-consumer-contract.md": (
         "tests/test_codefusion_consumer_contract.py",
     ),
@@ -58,7 +49,6 @@ ENGINEERING_TESTS = {
     "skills/usage/scientific-project-implementation/SKILL.md": (
         "tests/test_scientific_request_workflow_docs.py",
     ),
-    "examples/user_acceptance.py": ("tests/test_user_acceptance.py",),
     "scripts/build_catalog.py": ("tests/test_asset_documentation.py",),
     "scripts/finalize_release.py": (
         "tests/test_release_finalization.py", "tests/test_release_index.py",
@@ -68,7 +58,7 @@ ENGINEERING_TESTS = {
         "tests/test_release_environment.py", "tests/test_release_index.py",
     ),
     "scripts/release_index.py": ("tests/test_release_index.py",),
-    "provenance/release-index.dev.json": ("tests/test_release_index.py",),
+    "provenance/mainline-release-index.dev.json": ("tests/test_release_index.py",),
     "contracts/release-index-dev.schema.json": ("tests/test_release_index.py",),
     "contracts/reviewed-release-manifest-dev.schema.json": (
         "tests/test_release_index.py",
@@ -88,9 +78,6 @@ ENGINEERING_TESTS = {
     "scripts/submit_standardization.py": (
         "tests/workflow/test_standardization_submission.py",
         "tests/test_workflow_contracts.py",
-    ),
-    "scripts/verify_outbound_evaluation_manifests.py": (
-        "tests/test_outbound_evaluation_manifests.py",
     ),
     "scripts/run_scirel_https.py": ("tests/plugin/test_http_listener.py",),
     "scripts/validate_asset_documents.py": ("tests/test_asset_documentation.py",),
@@ -130,7 +117,6 @@ WORKFLOW_CONTRACTS = {
 }
 
 SOURCE_DIRECT_TESTS = {
-    "src/scirel/_composition.py": ("tests/test_library_composition.py",),
     "src/scirel_adapter/__init__.py": ("tests/test_thin_mcp_adapter.py",),
     "src/scirel_adapter/mcp.py": ("tests/test_thin_mcp_adapter.py",),
 }
@@ -168,52 +154,6 @@ def _relative_path(value: str) -> str:
     if normalized == ".." or normalized.startswith("../"):
         raise ValueError(f"changed path escapes the SciRel repository: {value}")
     return normalized.removeprefix("./")
-
-
-def _direct_test(public_callable: str, module: str, kind: str) -> str:
-    override = DIRECT_TEST_OVERRIDES.get(public_callable)
-    if override is not None:
-        candidate = override
-    else:
-        base = module.rsplit(".", 1)[-1]
-        if kind == "operator":
-            candidate = f"tests/operator_contracts/test_{base}.py"
-        else:
-            graph_test = f"tests/graph_contracts/{base}/test_graph_{base}.py"
-            framework_test = f"tests/framework_compositions/test_{base}.py"
-            candidate = graph_test if (ROOT / graph_test).is_file() else framework_test
-    if not (ROOT / candidate).is_file():
-        raise ValueError(f"no direct test is registered for {public_callable}: {candidate}")
-    return candidate
-
-
-def _load_ledger_assets() -> list[Asset]:
-    """Load the historical admission ledger, kept as a compatibility input.
-
-    The ledger still binds the 52 migrated development assets to their callables
-    and direct tests.  It is no longer the admission authority: assets that now
-    carry a canonical catalog document are loaded from that document instead.
-    """
-    ledger = json.loads(LEDGER.read_text(encoding="utf-8"))
-    assets = []
-    for record in ledger["integrations"]:
-        public_callable = record["public_callable"]
-        module = public_callable.rsplit(".", 1)[0]
-        admission = record["admitted_input"]["admission"]
-        kind = admission["asset_kind"]
-        source_path = "src/" + module.replace(".", "/") + ".py"
-        assets.append(
-            Asset(
-                public_callable=public_callable,
-                module=module,
-                source_path=source_path,
-                kind=kind,
-                asset_ref=admission["admission_ref"],
-                dependency_refs=frozenset(record["dependency_admission_refs"]),
-                direct_tests=(_direct_test(public_callable, module, kind),),
-            )
-        )
-    return assets
 
 
 def _load_catalog_assets() -> list[Asset]:
@@ -255,26 +195,8 @@ def _load_catalog_assets() -> list[Asset]:
 
 
 def _load_assets() -> list[Asset]:
-    """Union current documents with legacy samples under one dependency ID space."""
-    catalog = _load_catalog_assets()
-    catalog_by_callable = {asset.public_callable: asset for asset in catalog}
-    ledger_assets = _load_ledger_assets()
-    legacy_to_current_ref = {
-        asset.asset_ref: catalog_by_callable.get(asset.public_callable, asset).asset_ref
-        for asset in ledger_assets
-    }
-    ledger = [
-        replace(
-            asset,
-            dependency_refs=frozenset(
-                legacy_to_current_ref.get(reference, reference)
-                for reference in asset.dependency_refs
-            ),
-        )
-        for asset in ledger_assets
-        if asset.public_callable not in catalog_by_callable
-    ]
-    return [*ledger, *catalog]
+    """Read only current mainline exact documents; historical branches are not an input."""
+    return _load_catalog_assets()
 
 
 def _module_name(path: Path) -> str:
@@ -380,7 +302,7 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
         if path in EXTERNAL_TOOLING_TESTS:
             path_tests.add(EXTERNAL_TOOLING_TESTS[path])
             reason = "external_tooling"
-        elif path.startswith(("skills/extraction/", "provenance/tests/")):
+        elif path.startswith("skills/extraction/"):
             reason = "external_tooling"
         elif path in FULL_SUITE_PATHS:
             full_suite_reasons.append(f"{path} changes the test/dependency baseline")
@@ -391,14 +313,16 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
         elif path in WORKFLOW_CONTRACTS:
             path_tests.update((*WORKFLOW_TESTS, *PLUGIN_TESTS))
             reason = "workflow_contract"
-        elif path.startswith("docs/evaluations/outbound-progressive-projects/manifests/"):
-            path_tests.add("tests/test_outbound_evaluation_manifests.py")
-            reason = "evaluation_manifest_contract"
-        elif path.startswith("contracts/") or path.startswith("catalog/examples/"):
+        elif path.startswith("contracts/") or path.startswith("catalog/assets/"):
             path_tests.add("tests/test_asset_documentation.py")
             reason = "asset_document_contract"
         elif path in NO_TEST_FILES or path.startswith(NO_TEST_PREFIXES):
             reason = "documentation_only"
+        elif path.startswith("tests/fixtures/contracts/"):
+            path_tests.update((*WORKFLOW_TESTS, *PLUGIN_TESTS, "tests/test_asset_documentation.py",
+                               "tests/test_release_index.py", "tests/test_release_finalization.py",
+                               "tests/test_review_selection.py", "tests/test_thin_mcp_adapter.py"))
+            reason = "synthetic_tool_fixture"
         elif path.startswith("tests/fixtures/l1/"):
             path_tests.update(
                 (
@@ -408,15 +332,7 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
             )
             reason = "workflow_fixture"
         elif path.startswith("tests/"):
-            if path == "tests/_review_bindings.py":
-                path_tests.update(
-                    test
-                    for asset in assets
-                    if asset.kind == "task_graph"
-                    for test in asset.direct_tests
-                )
-                reason = "shared_graph_test_support"
-            elif (
+            if (
                 Path(path).name.startswith("test_")
                 and path.endswith(".py")
                 and (ROOT / path).is_file()
@@ -455,8 +371,6 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
             path_tests.update(
                 ("tests/test_asset_documentation.py", "tests/test_public_surface.py")
             )
-            if path == "src/scirel/collisions/__init__.py":
-                path_tests.add("tests/operator_contracts/test_momentum_scales.py")
             reason = "public_exports"
         elif path.startswith("src/scirel/") and path.endswith(".py"):
             direct_source_tests = SOURCE_DIRECT_TESTS.get(path, ())

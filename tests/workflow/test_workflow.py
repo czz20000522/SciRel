@@ -21,7 +21,7 @@ from scirel_workflow.models import digest
 ASSET_DOCUMENT = json.loads(
     (
         Path(__file__).parents[2]
-        / "catalog/examples/scirel.field.circular-filament-green.json"
+        / "tests/fixtures/contracts/fixture-identity.json"
     ).read_text(encoding="utf-8")
 )
 
@@ -29,7 +29,7 @@ ASSET_DOCUMENT = json.loads(
 def ready_candidate() -> CandidatePackage:
     return CandidatePackage.from_l1(
         {"assets": [{"candidate_asset_id": "candidate-field"}], "automated_checks": [{"name": "replay", "status": "passed"}]},
-        source_artifact_ref="artifact://l1/pleiades",
+        source_artifact_ref="artifact://l1/synthetic",
         source_digest="sha256:l1",
         run_id="run-1",
     )
@@ -124,7 +124,7 @@ def test_l1_candidate_moves_through_review_and_release():
     assert workflow.status is WorkflowStatus.RELEASED
     assert draft.status is WorkflowStatus.APPROVED
     assert release.to_dict()["schema"] == "scirel.release-manifest.dev"
-    assert release.approved_assets == ("scirel.field.circular-filament-green",)
+    assert release.approved_assets == ("scirel.fixture.identity",)
     assert release.candidate_id == "candidate-run-1"
     assert release.candidate_digest.startswith("sha256:")
     assert release.draft_digest.startswith("sha256:")
@@ -179,7 +179,7 @@ def no_change_submission_payload(*source_asset_ids: str):
         "source_asset_ids": list(source_asset_ids),
         "disposition": "exact_duplicate",
         "target_asset_id": ASSET_DOCUMENT["asset_id"],
-        "target_ref": "git://" + "a" * 40 + "/catalog/examples/field.json",
+        "target_ref": "git://" + "a" * 40 + "/catalog/assets/fixture.json",
         "target_digest": digest(ASSET_DOCUMENT),
         "evidence": [{"kind": "comparison", "ref": "run://comparison/1"}],
     }]
@@ -445,7 +445,7 @@ def test_model_submission_rejects_source_claimed_by_multiple_review_units():
     payload = standardization_submission(candidate).to_dict()
     second = dict(payload["review_units"][0])
     second["review_unit_id"] = "unit-second"
-    second["asset_document"] = {**ASSET_DOCUMENT, "asset_id": "scirel.field.second"}
+    second["asset_document"] = {**ASSET_DOCUMENT, "asset_id": "scirel.fixture.second"}
     payload["review_units"].append(second)
     submission = StandardizationSubmission.from_mapping(payload)
 
@@ -482,7 +482,7 @@ def test_open_draft_can_be_replaced_without_creating_review_history():
 
     updated = workflow.update_open_draft(
         assets=[replacement_asset],
-        dependency_asset_ids=["scirel.field.related"],
+        dependency_asset_ids=["scirel.fixture.related"],
         evidence=[{"kind": "test", "ref": "tests/replacement.py"}],
     )
 
@@ -519,17 +519,17 @@ def test_uploaded_draft_cannot_be_updated_before_expert_opens_it():
 def test_l1_candidate_preserves_one_project_id():
     candidate = CandidatePackage.from_l1(
         {
-            "project": "pleiades",
-            "assets": [{"candidate_asset_id": "pleiades.field"}],
+            "project": "synthetic",
+            "assets": [{"candidate_asset_id": "synthetic.field"}],
             "automated_checks": [{"name": "replay", "status": "passed"}],
         },
-        source_artifact_ref="artifact://l1/pleiades",
-        source_digest="sha256:pleiades",
+        source_artifact_ref="artifact://l1/synthetic",
+        source_digest="sha256:synthetic",
         run_id="run-project",
     )
 
-    assert candidate.project_id == "pleiades"
-    assert candidate.to_dict()["project_id"] == "pleiades"
+    assert candidate.project_id == "synthetic"
+    assert candidate.to_dict()["project_id"] == "synthetic"
 
 
 def test_candidate_package_mapping_is_strict_and_round_trips():
@@ -556,7 +556,7 @@ def test_l1_candidate_rejects_mixed_projects():
     with pytest.raises(ValueError, match="must contain one project"):
         CandidatePackage.from_l1(
             {
-                "projects": [{"project_id": "aorsa3d"}, {"project_id": "gseq"}],
+                "projects": [{"project_id": "samplewave"}, {"project_id": "sampleflow"}],
                 "assets": [],
                 "automated_checks": [],
             },
@@ -650,7 +650,7 @@ def test_workflow_snapshot_rederives_draft_contract_gaps():
     workflow = SciRelWorkflow(ready_candidate())
     workflow.create_draft(
         draft_id="draft-snapshot-gap",
-        assets=[{"asset_id": "scirel.field.incomplete"}],
+        assets=[{"asset_id": "scirel.fixture.incomplete"}],
     )
     snapshot = workflow.to_dict()
     snapshot["draft"]["gaps"] = []
@@ -680,7 +680,7 @@ def test_workflow_snapshot_rejects_approved_draft_with_hidden_contract_gaps():
         )
     )
     snapshot = workflow.to_dict()
-    incomplete = {"asset_id": "scirel.field.incomplete"}
+    incomplete = {"asset_id": "scirel.fixture.incomplete"}
     snapshot["draft"]["assets"] = [incomplete]
     snapshot["draft"]["gaps"] = []
     snapshot["drafts"][0]["assets"] = [incomplete]
@@ -697,7 +697,7 @@ def test_workflow_snapshot_rejects_approved_draft_with_hidden_contract_gaps():
         ("draft_id", "draft-other", "draft_id does not match"),
         ("candidate_digest", "sha256:" + "a" * 64, "candidate digest does not match"),
         ("draft_digest", "sha256:" + "b" * 64, "draft digest does not match"),
-        ("approved_assets", ["scirel.field.other"], "asset set does not match"),
+        ("approved_assets", ["scirel.fixture.other"], "asset set does not match"),
         ("release_version", "9.9.9", "implementation_version does not match"),
     ],
 )
@@ -862,7 +862,7 @@ def test_release_rejects_asset_implementation_version_mismatch():
 def test_failed_automated_check_cannot_create_draft():
     candidate = CandidatePackage.from_l1(
         {"assets": [{"candidate_asset_id": "candidate-field"}], "automated_checks": [{"name": "replay", "status": "failed"}]},
-        source_artifact_ref="artifact://l1/pleiades",
+        source_artifact_ref="artifact://l1/synthetic",
         source_digest="sha256:l1",
         run_id="run-failed",
     )
@@ -1057,17 +1057,17 @@ def test_incomplete_standardization_becomes_structured_contract_gaps():
     draft = workflow.create_draft(
         draft_id="draft-incomplete-contract",
         assets=[{
-            "asset_id": "scirel.field.incomplete",
+            "asset_id": "scirel.fixture.incomplete",
             "tenant_id": "must-not-enter-the-contract",
         }],
     )
 
-    assert "scientific_contract_missing:scirel.field.incomplete:schema" in draft.gaps
+    assert "scientific_contract_missing:scirel.fixture.incomplete:schema" in draft.gaps
     assert (
-        "scientific_contract_unknown:scirel.field.incomplete:tenant_id" in draft.gaps
+        "scientific_contract_unknown:scirel.fixture.incomplete:tenant_id" in draft.gaps
     )
     assert (
-        "scientific_contract_private:scirel.field.incomplete:tenant_id" in draft.gaps
+        "scientific_contract_private:scirel.fixture.incomplete:tenant_id" in draft.gaps
     )
 
     workflow.submit_for_review()
@@ -1105,7 +1105,7 @@ def test_rework_creates_a_new_draft_and_keeps_review_history():
     workflow = SciRelWorkflow(ready_candidate())
     workflow.create_draft(
         draft_id="draft-first",
-        assets=[{"asset_id": "scirel.field.example"}],
+        assets=[{"asset_id": "scirel.fixture.example"}],
     )
     workflow.submit_for_review()
     workflow.start_review()
@@ -1115,7 +1115,7 @@ def test_rework_creates_a_new_draft_and_keeps_review_history():
 
     revised = workflow.create_draft(
         draft_id="draft-second",
-        assets=[{"asset_id": "scirel.field.example"}],
+        assets=[{"asset_id": "scirel.fixture.example"}],
         evidence=[{"kind": "boundary", "ref": "tests/example.py"}],
     )
 

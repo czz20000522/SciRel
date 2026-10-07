@@ -14,18 +14,18 @@ from scirel_workflow import (
     WorkflowError,
     WorkflowStatus,
 )
-FIXTURE = Path(__file__).parents[1] / "fixtures" / "l1" / "pleiades-minimal.json"
+FIXTURE = Path(__file__).parents[1] / "fixtures" / "l1" / "synthetic-minimal.json"
 ASSET_DOCUMENT = json.loads(
     (
         Path(__file__).parents[2]
-        / "catalog/examples/scirel.field.multi-coil-vacuum-field.json"
+        / "tests/fixtures/contracts/fixture-identity.json"
     ).read_text(encoding="utf-8")
 )
 
 
 def test_saved_l1_runs_to_release_with_host_adapter():
     payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
-    run_id = "run-vertical-pleiades"
+    run_id = "run-vertical-synthetic"
 
     host = FakeHost(tenant_id="tenant-test", project_id="project-scirel")
     plugin = SciRelPlugin.for_development(host)
@@ -48,9 +48,9 @@ def test_saved_l1_runs_to_release_with_host_adapter():
     assert workflow.status is WorkflowStatus.AUTOMATED_READY
 
     draft = workflow.create_draft(
-        draft_id="draft-vertical-pleiades",
+        draft_id="draft-vertical-synthetic",
         assets=[ASSET_DOCUMENT],
-        evidence=[{"kind": "direct_test", "ref": "tests/graph_contracts/multi_coil_vacuum_field"}],
+        evidence=[{"kind": "direct_test", "ref": "tests/fixtures/runtime/check_identity.py"}],
     )
     draft_artifact = plugin.publish_draft(draft)
     workflow.submit_for_review()
@@ -63,7 +63,7 @@ def test_saved_l1_runs_to_release_with_host_adapter():
     )
     release_result = plugin.complete_release(
         workflow,
-        release_id="release-vertical-pleiades",
+        release_id="release-vertical-synthetic",
         catalog_ref="artifact://catalog/dev/vertical",
         catalog_digest="sha256:" + "c" * 64,
         wheel_ref="artifact://wheel/dev/vertical",
@@ -78,7 +78,7 @@ def test_saved_l1_runs_to_release_with_host_adapter():
     assert draft_artifact.ref in host.artifacts
     assert review_result.decision_artifact.ref in host.artifacts
     assert release_result.release_artifact.ref in host.artifacts
-    assert release.candidate_id == "candidate-run-vertical-pleiades"
+    assert release.candidate_id == "candidate-run-vertical-synthetic"
     assert release.candidate_digest == workflow.record.candidate.package_digest
     assert release.draft_digest == draft.draft_digest
     assert host.jobs[0][1] == (handoff.artifact.ref,)
@@ -141,7 +141,7 @@ def test_automated_result_cannot_clear_inventory_gaps():
                 "direct_test_path": None,
             },
             {
-                "l1_asset_id": "gseq:task_graph:workflow",
+                "l1_asset_id": "sampleflow:task_graph:workflow",
                 "asset_path": "task_graphs/workflow",
                 "dependency_refs": ["operators/solver-missing"],
             },
@@ -168,7 +168,7 @@ def test_automated_result_cannot_clear_inventory_gaps():
     assert not repaired.automated_ready
     assert "missing_direct_test_mapping:cql3d:operator:solver" in repaired.gaps
     assert (
-        "unresolved_task_graph_dependency:gseq:task_graph:workflow -> operators/solver-missing"
+        "unresolved_task_graph_dependency:sampleflow:task_graph:workflow -> operators/solver-missing"
         in repaired.gaps
     )
     assert workflow.status is WorkflowStatus.AUTOMATED_REJECTED

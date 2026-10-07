@@ -32,7 +32,7 @@ from scirel_plugin.adapter import review_item_from_workflow
 ASSET_DOCUMENT = json.loads(
     (
         Path(__file__).parents[2]
-        / "catalog/examples/scirel.field.circular-filament-green.json"
+        / "tests/fixtures/contracts/fixture-identity.json"
     ).read_text(encoding="utf-8")
 )
 from scirel_workflow import (
@@ -53,7 +53,7 @@ PLUGIN_RELEASE_REF = "plugin-release://scirel/0.1.0.dev5/example-20260920"
 def candidate() -> CandidatePackage:
     return CandidatePackage.from_l1(
         {"assets": [{"candidate_asset_id": "candidate-field"}], "automated_checks": [{"name": "replay", "status": "passed"}]},
-        source_artifact_ref="artifact://l1/pleiades",
+        source_artifact_ref="artifact://l1/synthetic",
         source_digest="sha256:l1",
         run_id="run-plugin",
     )
@@ -515,7 +515,7 @@ def _review_wire_base(workflow, artifact_ref="cf://state/review-batch"):
 
 def test_review_body_projects_assets_as_independent_readonly_items():
     second_asset = dict(ASSET_DOCUMENT)
-    second_asset["asset_id"] = "scirel.field.circular-filament-green.variant"
+    second_asset["asset_id"] = "scirel.fixture.identity.variant"
     second_asset["title"] = {"en": "Variant", "zh": "变体"}
     workflow = SciRelWorkflow(candidate())
     workflow.create_draft(
@@ -636,7 +636,7 @@ def test_review_action_requires_host_identity_and_returns_exact_successor():
 
 def test_review_action_rejects_stale_or_wrong_item_and_blocks_gap_approval():
     workflow = SciRelWorkflow(candidate())
-    incomplete = {"asset_id": "scirel.field.incomplete"}
+    incomplete = {"asset_id": "scirel.fixture.incomplete"}
     workflow.create_draft(draft_id="draft-gap-action", assets=[incomplete])
     workflow.submit_for_review()
     base = _review_wire_base(workflow, "cf://state/review-gap-action")
@@ -821,7 +821,7 @@ def test_two_review_items_receive_independent_decisions():
     import hashlib
 
     second_asset = dict(ASSET_DOCUMENT)
-    second_asset["asset_id"] = "scirel.field.circular-filament-green.rejected"
+    second_asset["asset_id"] = "scirel.fixture.identity.rejected"
     second_asset["title"] = {"en": "Rejected variant", "zh": "拒绝变体"}
     workflow = SciRelWorkflow(candidate())
     workflow.create_draft(
@@ -1036,7 +1036,7 @@ def test_plugin_publishes_draft_and_registers_scientific_review_view():
     draft = StandardizedDraft(
         draft_id="draft-plugin",
         candidate_id="candidate-run-plugin",
-        assets=({"asset_id": "scirel.field.example"},),
+        assets=({"asset_id": "scirel.fixture.example"},),
         dependency_asset_ids=(),
         evidence=({"kind": "test", "ref": "tests/example.py"},),
     )
@@ -1686,7 +1686,7 @@ def test_review_ui_projection_exposes_rework_without_platform_state():
     workflow = SciRelWorkflow(candidate())
     draft = workflow.create_draft(
         draft_id="draft-ui-rework",
-        assets=[{"asset_id": "scirel.field.example"}],
+        assets=[{"asset_id": "scirel.fixture.example"}],
     )
     workflow.submit_for_review()
     workflow.start_review()
@@ -1815,7 +1815,7 @@ def test_review_ui_projection_hides_approve_for_unresolved_gaps():
     workflow = SciRelWorkflow(candidate())
     workflow.create_draft(
         draft_id="draft-ui-gap",
-        assets=[{"asset_id": "scirel.field.incomplete"}],
+        assets=[{"asset_id": "scirel.fixture.incomplete"}],
     )
     workflow.submit_for_review()
     workflow.start_review()
@@ -1836,7 +1836,7 @@ def test_review_action_uses_host_identity_and_publishes_domain_artifacts():
     workflow = SciRelWorkflow(candidate())
     workflow.create_draft(
         draft_id="draft-ui-action",
-        assets=[{"asset_id": "scirel.field.example"}],
+        assets=[{"asset_id": "scirel.fixture.example"}],
     )
     workflow.submit_for_review()
     workflow.start_review()
@@ -1879,7 +1879,7 @@ def test_review_action_cannot_bypass_expert_observation_transition():
     workflow = SciRelWorkflow(candidate())
     workflow.create_draft(
         draft_id="draft-not-pending",
-        assets=[{"asset_id": "scirel.field.example"}],
+        assets=[{"asset_id": "scirel.fixture.example"}],
     )
 
     with pytest.raises(ValueError, match="review_in_progress"):
@@ -2010,7 +2010,7 @@ def test_plugin_release_is_an_artifact_operation():
             "schema": "scirel.release-manifest.dev",
             "release_id": "release-plugin",
             "draft_id": "draft-plugin",
-            "approved_assets": ["scirel.field.example"],
+            "approved_assets": ["scirel.fixture.example"],
             "catalog_ref": "artifact://catalog/dev",
             "catalog_digest": "sha256:" + "2" * 64,
             "wheel_ref": "artifact://wheel/dev",
@@ -2042,7 +2042,7 @@ def test_release_events_bind_manifest_and_use_bounded_failure_codes():
     release = ReleaseManifest(
         release_id="release-event",
         draft_id="draft-event",
-        approved_assets=("scirel.field.example",),
+        approved_assets=("scirel.fixture.example",),
         catalog_ref="artifact://catalog/event",
         catalog_digest="sha256:" + "2" * 64,
         wheel_ref="artifact://wheel/event",

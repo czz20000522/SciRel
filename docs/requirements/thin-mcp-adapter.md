@@ -39,17 +39,17 @@ exception of an adapter `invocation_failed` error.
 
 ## Common binding and forbidden fields
 
-Every successful response carries:
+Every successful response carries the following binding. The values below illustrate a synthetic tool fixture, not a published catalog or current scientific API:
 
 ```json
 {
   "schema": "scirel.thin-mcp-response.v1",
   "operation": "catalog.discover",
   "catalog": {
-    "catalog_id": "scirel-development-pilot",
+    "catalog_id": "scirel-synthetic-fixture",
     "release_version": "0.1.0.dev5",
     "root_digest": "sha256:<catalog-release-root>",
-    "coverage": {"status": "partial", "included_asset_count": 24, "declared_total_asset_count": 71}
+    "coverage": {"status": "complete", "included_asset_count": 2, "declared_total_asset_count": 2}
   }
 }
 ```
@@ -71,6 +71,8 @@ Requests fail closed on unknown fields. In particular, `session_id`, `project_id
 
 ## Example flow
 
+This example requires a synthetic fixture package and catalog in a test environment. The current mainline scientific package exposes no such asset.
+
 ```python
 from scirel_adapter import ThinMcpAdapter
 
@@ -83,7 +85,7 @@ adapter.handle({
     "operation": "catalog.discover",
     "filters": {
         "kind": "operator",
-        "relation": "drive currents and per-current Green responses to physical flux and field"
+        "relation": "Synthetic scalar tool fixture; no physical model."
     },
     "cursor": 0,
     "limit": 5,
@@ -91,18 +93,16 @@ adapter.handle({
 
 adapter.handle({
     "operation": "asset.read",
-    "asset_ids": ["scirel.field.current-green-superposition"],
+    "asset_ids": ["scirel.fixture.identity"],
     "detail": "document",
 })
 
 adapter.handle({
     "operation": "callable.invoke",
-    "asset_id": "scirel.field.current-green-superposition",
+    "asset_id": "scirel.fixture.identity",
     "arguments": {
-        "currents": [2.0, -1.0],
-        "gpsi": [[1.0, 3.0], [4.0, 5.0]],
-        "gBR": [[2.0, 1.0], [0.0, 6.0]],
-        "gBZ": [[-1.0, 2.0], [3.0, 4.0]]
+        "x": 3.0,
+        "scale": 2.0
     },
 })
 ```
@@ -115,4 +115,4 @@ The final response reports the selected `asset_id`, catalog root digest, impleme
 
 ## Deferred boundaries
 
-This slice does not provide JSON-RPC transport, MCP tool registration, authentication/authorization, process isolation, resource limits, cancellation, streaming, audit storage, arbitrary object serialization, natural-language routing, cross-framework conformance, a complete 62-asset catalog or publication authorization. Those capabilities require separate owners and evidence.
+This slice does not provide JSON-RPC transport, MCP tool registration, authentication/authorization, process isolation, resource limits, cancellation, streaming, audit storage, arbitrary object serialization, natural-language routing, cross-framework conformance, a published scientific catalog or publication authorization. Those capabilities require separate owners and evidence.

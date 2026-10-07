@@ -1,0 +1,113 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fixture.secondary",
+  "kind": "operator",
+  "title": {
+    "en": "Synthetic identity fixture",
+    "zh": "合成工具测试夹具"
+  },
+  "summary": "Synthetic contract for tool tests only; no scientific or release claim.",
+  "taxonomy": [
+    "fixture"
+  ],
+  "aliases": [
+    "tool identity"
+  ],
+  "identity": {
+    "relation": "Synthetic scalar tool fixture; no physical model.",
+    "direction": "Synthetic scalar tool fixture; no physical model.",
+    "definition": "Synthetic scalar tool fixture; no physical model.",
+    "model": "Synthetic scalar tool fixture; no physical model.",
+    "geometry": "Synthetic scalar tool fixture; no physical model.",
+    "coordinates": "Synthetic scalar tool fixture; no physical model.",
+    "boundary": "Synthetic scalar tool fixture; no physical model.",
+    "assumptions": [
+      "Synthetic tool test only."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "x",
+      "description": "Synthetic tool-test port.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Tool fixture only."
+    },
+    {
+      "name": "scale",
+      "description": "Synthetic tool-test port.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": false,
+      "constraints": "Tool fixture only.",
+      "default": 1.0
+    }
+  ],
+  "outputs": [
+    {
+      "name": "value",
+      "description": "Synthetic tool-test port.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Tool fixture only."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Fixture inputs only."
+    ],
+    "supported": [
+      "Tool contract tests."
+    ],
+    "excluded": [
+      "Scientific calculations and public assets."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Synthetic fixture behavior only.",
+    "runtime_failure": "Synthetic fixture behavior only.",
+    "nonconvergence": "Synthetic fixture behavior only.",
+    "partial_results": "Synthetic fixture behavior only."
+  },
+  "provenance": {
+    "lineage_summary": "Synthetic tool fixture created independently of historical scientific assets.",
+    "source_kinds": [
+      "synthetic test fixture"
+    ],
+    "public_references": [],
+    "license_status": "fixture-only-not-public-release"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fixture.secondary",
+      "symbol": "identity",
+      "signature": "identity(x, scale=1.0)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev5",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Synthetic contract example, not a scientific computation.",
+    "code": "from scirel.fixture.identity import identity\nassert identity(3.0)['value'] == 3.0",
+    "expected": "Fixture value is returned."
+  },
+  "verification": {
+    "scope": [
+      "Tool wiring only."
+    ],
+    "tests": [
+      "tests/fixtures/runtime/check_identity.py"
+    ],
+    "evidence_ceiling": "No scientific capability, provenance approval or published version is established.",
+    "known_limitations": [
+      "Synthetic test fixture only."
+    ]
+  }
+}

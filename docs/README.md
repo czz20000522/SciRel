@@ -7,6 +7,7 @@ SciRel 将已有科研代码整理为可复用的科学算子与任务图，供 
 ## 理解项目与使用方法
 
 - [项目定位](../README.md)：为什么拆解已有代码，以及科学资产、Agent 和胶水代码各自负责什么。
+- [历史开发测试线](history.md)：迁出的科学实现、断言、pilot 和原始证据的确切快照与复建方法。
 - [开发项目与科学包交付](design/project-and-distribution.md)：项目开发态、用户安装包、历史样本和分支/worktree 的多版本构建边界。
 - [架构与科学资产合同](architecture.md)：Operator、可复用 TaskGraph 与本次运行实例的区别，以及科学实现和编排的边界。
 - [科学请求工作流](requirements/scientific-request-workflow.md)：需求规范化、能力匹配、动态组合、执行和结果解释。
@@ -39,9 +40,9 @@ SciRel 将已有科研代码整理为可复用的科学算子与任务图，供 
 
 ## 当前实现边界
 
-- `src/scirel/` 是可独立调用的科学库；`src/scirel_workflow/` 与 `src/scirel_plugin/` 已有本地状态、合同及 fixture 测试。它们不等于真实 L1 项目经模型整合、专家审核和宿主产品链路联调已完成。
-- `catalog/examples/` 仍为部分 exact-document pilot，不代表全部库能力；不能从 catalog 缺项推断没有对应算子，也不能把维护树中的所有代码视为可发布资产。
-- `provenance/admitted-assets.json` 与 `scripts/build_admitted_distribution.py` 用于复核历史开发样本，不是新流程的批准事实或发布入口。隔离开发分支允许先集成和验证；最终冻结版本经专家认可及发行验证后才能晋级可信/发布版本。`scripts/release_index.py` 和 `scripts/finalize_release.py` 承担开发期候选索引与逐项固化门禁；旧单 draft release fixture 仅用于生命周期测试。
+- `src/scirel/` 当前只有科学包骨架，尚无科学 callable；`src/scirel_workflow/` 与 `src/scirel_plugin/` 已有本地状态、合同及 fixture 测试。它们不等于真实 L1 项目经模型整合、专家审核和宿主产品链路联调已完成。
+- `catalog/assets/` 当前为空；后续只登记实际 D2 整合资产。`tests/fixtures/` 是合成工具夹具，不作为科学覆盖。
+- 历史科学代码、回归、pilot、旧账本和批次工件已迁至历史分支。新主线的 `provenance/mainline-release-index.dev.json` 为空；通用索引/发布工具保留，但工具 fixture 不能构成科学批准或公开发行。
 - 开发期 workflow/plugin 合同仍用 `.dev`；正式上线前应统一冻结为 `v1`。许可证、完整 exact documents、真实宿主接线和发行环境证据均须分别验收，不因本地 fixture 通过而自动获得。
 
 需要判断某一轮是否完成时，以该轮的 L1 输入树、SciRel 基线与候选池、skill 内容、候选三件套、实际测试、专家记录和 release artifact 为证据；不要把历史压测数量当作当前状态。

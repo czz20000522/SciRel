@@ -1,8 +1,8 @@
 # SciRel 规模化目录合同
 
-本文定义 SciRel 从当前 132 条开发资产扩展到数万 Operator、数千 TaskGraph 时的目录边界。catalog 服务发现、依赖分析和发行核对；它是从已选发行内容重建的索引，不拥有准入、科学身份或发布权威。
+本文定义 SciRel 在实际资产逐步整合后扩展到数万 Operator、数千 TaskGraph 时的目录边界。catalog 服务发现、依赖分析和发行核对；它是从已选发行内容重建的索引，不拥有准入、科学身份或发布权威。
 
-标准资产字段的权威需求见[标准化资产文档需求](requirements/asset-documentation.md)，catalog builder 与 MCP/CLI/云适配边界见[设计](design/catalog-and-adapters.md)。当前 `catalog/examples/` 是 132/132 的依赖闭合开发 pilot；文档计数完整不代表专家批准或可发行目录。
+标准资产字段的权威需求见[标准化资产文档需求](requirements/asset-documentation.md)，catalog builder 与 MCP/CLI/云适配边界见[设计](design/catalog-and-adapters.md)。当前 `catalog/assets/` 尚无资产文档，历史 pilot 已迁出主线；工具测试使用合成夹具，不计作科学覆盖。
 
 ## 设计目标
 
@@ -104,8 +104,10 @@ catalog 不必进入 `import scirel` 的热路径。运行时按 public callable
 `release.json` 是单个 catalog 快照的内容锁，不是 SciRel 的统一发布索引。发布候选和已发布版本由
 SciRel 的发布索引选取；开发 catalog 即使覆盖完整、摘要有效，也不因此成为已批准或公开发布版本。
 
-## 当前迁移边界
+## 当前主线边界
 
-现有 `provenance/admitted-assets.json` 与 wheel `_admitted_manifest.json` 已提供 52 条历史开发样本的 callable、来源 revision、依赖绑定和内容摘要，但不是完整 catalog。`scirel.asset-document.v1`、验证器和 route/summary/exact/reverse-dependency builder 已由 `catalog/examples/` 的依赖闭合 132 条开发 pilot 验证；其文档覆盖为 `complete: 132/132`，不表达审核或发行状态。
+主线只有库骨架与通用 catalog 工具；`catalog/assets/` 当前为空。旧 52 项账本、132 项 pilot 与规模实验
+保存在 [历史开发测试线](history.md)，不作为主线默认输入或门禁。后续 catalog 只由实际 D2 整合、验证的
+exact documents 生成；公开发行另绑定最终批准、许可和实际 wheel。合成夹具只验证目录工具。
 
-下一阶段在稳定的 132 条文档闭包上测量分片字节、token、查询延迟和增量重建成本，并据此选择生产分片和索引策略。只有小批次及完整批次门禁都成立后才扩展到数万资产；现有开发文档仍需独立的专家审核与发行决策。
+真实资产逐步积累后测量分片字节、token、查询延迟和增量重建成本；没有覆盖证据时不猜补生产能力数量。

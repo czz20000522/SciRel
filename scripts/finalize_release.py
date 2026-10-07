@@ -296,7 +296,7 @@ def _git_changed_files(source_root: Path, candidate_revision: str) -> set[str]:
         raise ValueError("candidate Git revision is not an ancestor of release source")
     result = subprocess.run(
         ["git", "diff", "--name-only", candidate_revision, "HEAD", "--",
-         "src/scirel", "tests", "catalog/examples"],
+         "src/scirel", "tests", "catalog/assets"],
         cwd=source_root, capture_output=True, text=True, check=True,
     )
     return set(result.stdout.splitlines())
@@ -304,7 +304,7 @@ def _git_changed_files(source_root: Path, candidate_revision: str) -> set[str]:
 
 def _require_clean_release_sources(source_root: Path) -> None:
     result = subprocess.run(
-        ["git", "status", "--porcelain", "--", "src", "tests", "catalog/examples"],
+        ["git", "status", "--porcelain", "--", "src", "tests", "catalog/assets"],
         cwd=source_root, capture_output=True, text=True, check=True,
     )
     if result.stdout.strip():
@@ -570,7 +570,11 @@ def finalize_reviewed_release(
     release_modules = {
         document["public_api"]["python"]["module"] for document in documents.values()
     }
-    source_documents = load_document_set(source_root / "catalog/examples")
+    source_document_dir = source_root / "catalog/assets"
+    source_documents = (
+        load_document_set(source_document_dir)
+        if any(source_document_dir.glob("*.json")) else []
+    )
     for source_document in source_documents:
         if (
             source_document["public_api"]["python"]["module"] in release_modules

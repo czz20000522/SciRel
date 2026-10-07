@@ -133,7 +133,7 @@ try {
             if ($TestPath.Count -eq 0) {
                 $TestPath = @(
                     "tests/test_public_surface.py",
-                    "tests/test_library_composition.py",
+                    "tests/test_scientific_distribution.py",
                     "tests/test_asset_documentation.py"
                 )
             }
@@ -189,21 +189,7 @@ try {
         Invoke-Python -Arguments @("-m", "venv", $environmentPath)
         $environmentPython = Resolve-SciRelVenvPython -EnvironmentPath $environmentPath
 
-        $dependencyRootsJson = & $Python -c @'
-import importlib.util
-import json
-from pathlib import Path
-
-roots = []
-for name in ("numpy", "scipy", "pytest"):
-    spec = importlib.util.find_spec(name)
-    if spec is None or spec.origin is None:
-        raise SystemExit(f"missing release dependency: {name}")
-    root = str(Path(spec.origin).resolve().parent.parent)
-    if root not in roots:
-        roots.append(root)
-print(json.dumps(roots))
-'@
+        $dependencyRootsJson = & $Python "scripts/runtime_dependency_roots.py" $wheelPath
         if ($LASTEXITCODE -ne 0) {
             throw "Failed to locate release dependencies."
         }
@@ -225,7 +211,7 @@ print(json.dumps(roots))
             throw "Installing the SciRel wheel failed with exit code $LASTEXITCODE."
         }
 
-        & $environmentPython -I -c "import sys, numpy, scipy, pytest, scirel; from pathlib import Path; assert Path(scirel.__file__).resolve().is_relative_to(Path(sys.prefix).resolve())"
+        & $environmentPython -I -c "import sys, pytest, scirel; from pathlib import Path; assert Path(scirel.__file__).resolve().is_relative_to(Path(sys.prefix).resolve())"
         if ($LASTEXITCODE -ne 0) {
             throw "The wheel or its declared runtime dependencies are unavailable in the release environment."
         }
@@ -268,11 +254,9 @@ print(json.dumps(roots))
 
             $runtimeBundle = Join-Path $releaseOutputPath "runtime-test-bundle"
             $runtimeTestRoot = Join-Path $runtimeBundle "tests"
-            $runtimeCatalogExamples = Join-Path $runtimeBundle "catalog/examples"
+            $runtimeCatalogDocuments = Join-Path $runtimeBundle "catalog/assets"
             New-Item -ItemType Directory -Path $runtimeTestRoot | Out-Null
-            New-Item -ItemType Directory -Path $runtimeCatalogExamples | Out-Null
-            Copy-Item -LiteralPath (Join-Path $repoRoot "tests/conftest.py") -Destination $runtimeTestRoot
-            Copy-Item -LiteralPath (Join-Path $repoRoot "tests/_review_bindings.py") -Destination $runtimeTestRoot
+            New-Item -ItemType Directory -Path $runtimeCatalogDocuments | Out-Null
             $runtimeTests = @()
             foreach ($file in $preparation.test_paths) {
                 $relativeTest = $file.Substring("tests/".Length)
@@ -283,7 +267,7 @@ print(json.dumps(roots))
             }
             Copy-Item `
                 -Path (Join-Path $reviewedDocuments "*.json") `
-                -Destination $runtimeCatalogExamples
+                -Destination $runtimeCatalogDocuments
 
             $isolatedPytestConfig = Join-Path $releaseOutputPath "pytest-release.ini"
             [IO.File]::WriteAllText(

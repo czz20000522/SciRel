@@ -43,19 +43,22 @@ pwsh ./scripts/check.ps1 -Mode affected
 pwsh ./scripts/check.ps1 -Mode affected -ChangedPath src/scirel/<domain>/<asset>.py
 ```
 
-选择器会加入改变资产的直接合同测试、所有传递依赖 TaskGraph、共享实现测试和历史绑定一致性测试。当前工作区可省略
+选择器会加入改变资产的直接合同测试、所有传递依赖 TaskGraph、共享实现测试；当前无科学资产时只选择骨架和通用工具测试。当前工作区可省略
 `-ChangedPath`，提交范围使用 `-BaseRef <ref>`。只有正在处理单个失败断点时使用
 `-Mode focused -TestPath tests/<relevant-test>.py`；不能手工缩小已经计算出的影响闭包。
 
-切片稳定后按影响和合并策略运行 `-Mode full`。准备发行候选时使用一个全新的输出目录运行 `-Mode release`；保留 wheel、manifest digest、验收报告以及 Python/pip/setuptools 版本。不要删除旧断言、扩大容差或弱化异常检查来使替换通过。
+公共基线或合并影响要求时运行 `-Mode full`。准备发行候选时使用一个全新的输出目录运行 `-Mode release`；保留 wheel、manifest digest、验收报告以及 Python/pip/setuptools 版本。不要删除旧断言、扩大容差或弱化异常检查来使替换通过。
 
-标准资产文档和 catalog 改动另外运行：
+后续 `catalog/assets/` 有实际科学资产后，标准文档和 catalog 改动另外运行：
 
 ```powershell
-python scripts/validate_asset_documents.py catalog/examples --check-runtime --execute-examples
+python scripts/validate_asset_documents.py catalog/assets --check-runtime --execute-examples
 python -m pytest tests/test_asset_documentation.py
 ```
 
 公开 provenance 只保留 framework-neutral lineage 摘要、公开参考和许可证状态。正式分发许可证仍是发布前的人类决定；贡献不得自行添加或推定许可证。
 
 提交说明应解释为什么改变、可观察行为、兼容性和实际验证。交付时列出修改文件、检查结果、未验证边界与待决项。构建成功不产生人工批准或发布授权；冻结 provenance 不随源码演进改写。
+
+当前主线不带历史科学产物，其完整源码、断言、候选与证据见 [历史开发测试线](docs/history.md)。
+迁出不表示历史失败已修复；后续实际保留能力应重新按 D1/D2 资格整合，而非整批复制回主线。

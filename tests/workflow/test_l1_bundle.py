@@ -86,7 +86,7 @@ def test_body_import_maps_real_bundle_files_without_faking_scientific_checks(tmp
     response = execute_body_import(
         SciRelBodyImportRequest(
             operation="scirel.import_l1",
-            artifact_ref="cf://artifact/l1/pleiades",
+            artifact_ref="cf://artifact/l1/synthetic",
             artifact_digest=source_digest,
             media_type="application/json",
             body=body,
@@ -94,7 +94,7 @@ def test_body_import_maps_real_bundle_files_without_faking_scientific_checks(tmp
     )
     candidate = json.loads(response.body)
 
-    assert candidate["source_artifact_ref"] == "cf://artifact/l1/pleiades"
+    assert candidate["source_artifact_ref"] == "cf://artifact/l1/synthetic"
     assert candidate["source_digest"] == source_digest
     assert candidate["project_id"] == "Pleiades"
     assert len(candidate["assets"]) == 2

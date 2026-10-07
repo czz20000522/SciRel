@@ -97,7 +97,7 @@ A document is eligible for catalog projection only when:
 
 There is one current canonical document per public `asset_id`. Git and immutable catalog releases retain history; maintainers do not create parallel snapshot documents or require repeated confirmation merely because source bytes changed. `implementation_version` states which SciRel implementation the current contract describes. A scientific contract change is handled through normal compatibility, review and release history rather than a document-local hash.
 
-`catalog/examples/` is a dependency-closed development pilot, not a complete catalog; [the catalog contract](../catalog.md) records current coverage. Missing documents remain a metadata gap and cannot be represented by generated placeholder science.
+`catalog/assets/` is the mainline document directory and is currently empty. Historical pilots are preserved in [the historical development line](../history.md); synthetic tool fixtures do not count as scientific assets. Missing metadata cannot be filled with placeholder science.
 
 ## Adapter projection
 
@@ -105,4 +105,4 @@ The canonical document drives adapter behavior directly: route projections drive
 
 ## Release decision
 
-SciRel does not yet have an approved public distribution license. Every pilot document records `pending-human-decision`. Selecting a project license, reconciling input obligations and authorizing public distribution are human release decisions and are not performed by the validator, catalog builder or adapter.
+SciRel does not yet have an approved public distribution license. The mainline has no scientific documents yet; historical pilot license states remain bound to their archived versions. Selecting a project license, reconciling input obligations and authorizing public distribution are human release decisions and are not performed by the validator, catalog builder or adapter.

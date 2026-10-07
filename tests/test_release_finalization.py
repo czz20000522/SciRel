@@ -25,7 +25,7 @@ from finalize_release import finalize_single_draft_fixture as finalize_release  
 def _approved_snapshot(tmp_path: Path, *, alter_asset: bool = False) -> Path:
     document = json.loads(
         (
-            ROOT / "catalog/examples/scirel.field.circular-filament-green.json"
+            ROOT / "tests/fixtures/contracts/fixture-identity.json"
         ).read_text(encoding="utf-8")
     )
     if alter_asset:
@@ -35,7 +35,7 @@ def _approved_snapshot(tmp_path: Path, *, alter_asset: bool = False) -> Path:
             "assets": [{"candidate_asset_id": "candidate-field"}],
             "automated_checks": [{"name": "replay", "status": "passed"}],
         },
-        source_artifact_ref="artifact://l1/pleiades",
+        source_artifact_ref="artifact://l1/synthetic",
         source_digest="sha256:l1",
         run_id="run-release-gate",
     )
@@ -56,7 +56,7 @@ def _approved_snapshot(tmp_path: Path, *, alter_asset: bool = False) -> Path:
 def _release_inputs(tmp_path: Path) -> tuple[Path, Path, Path]:
     documents = tmp_path / "documents"
     documents.mkdir()
-    source = ROOT / "catalog/examples/scirel.field.circular-filament-green.json"
+    source = ROOT / "tests/fixtures/contracts/fixture-identity.json"
     (documents / source.name).write_bytes(source.read_bytes())
     catalog = tmp_path / "catalog"
     build_catalog(
@@ -96,7 +96,7 @@ def test_finalization_binds_approved_snapshot_to_exact_artifacts(tmp_path):
     catalog_release = json.loads((catalog / "release.json").read_text(encoding="utf-8"))
     assert released.status is WorkflowStatus.RELEASED
     assert manifest["approved_assets"] == [
-        "scirel.field.circular-filament-green"
+        "scirel.fixture.identity"
     ]
     assert manifest["catalog_digest"] == catalog_release["root_digest"]
     assert manifest["wheel_digest"] == result["wheel_digest"]
@@ -307,3 +307,25 @@ def test_finalization_rejects_wheel_outside_release_root(tmp_path):
             expected_included_asset_count=1,
             expected_declared_total_asset_count=1,
         )
+
+
+@pytest.mark.parametrize("statement", [
+    "import scirel.fixture._support",
+    "from . import _support",
+    "from ._support import transform",
+])
+def test_release_wheel_rejects_omitted_internal_support(tmp_path, statement):
+    from finalize_release import _validate_wheel_import_closure
+
+    source = tmp_path / "src/scirel/fixture/_support.py"
+    source.parent.mkdir(parents=True)
+    source.write_text("def transform(x): return x\n")
+    wheel = {
+        "scirel/__init__.py": b"",
+        "scirel/fixture/__init__.py": b"",
+        "scirel/fixture/identity.py": (statement + "\n").encode(),
+    }
+    with pytest.raises(ValueError, match="missing internal import"):
+        _validate_wheel_import_closure(wheel, tmp_path)
+    wheel["scirel/fixture/_support.py"] = source.read_bytes()
+    _validate_wheel_import_closure(wheel, tmp_path)

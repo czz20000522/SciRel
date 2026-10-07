@@ -162,74 +162,24 @@ pwsh ./scripts/check.ps1 -Mode release -ReleaseIndex <candidate-index.json> -Can
 只有确切开发包与实际用户任务出现后才调度 D3，接续可延后且无需原 D1 Agent 在线。发布索引与最终固化
 始终由一个明确的 D2 owner 串行写入，流程/工具维护与来源/资产实现使用互不重叠的写入范围。
 
-开发 wheel 用普通 Python 构建入口；不要用需要 approved workflow 的 release 模式阻断开发。
-正式 release 仍需最终批准、许可证与依赖、完整文档、catalog/wheel/版本绑定及发行授权。
-通过这些门禁后才从索引候选形成已发布条目；正式发行前把相关开发期版本和合同统一冻结为 `v1`。
-索引的开发期字段布局可以随真实闭环调整，当前 `pending_unapproved` wheel/catalog 不登记为已发布。
-`release_index.py` 从待审 workflow 或单项 artifact 登记每个 item 的原始 artifact revision、文档摘要及冻结 Git 提交；
-当前仓库唯一的开发期索引为 `provenance/release-index.dev.json`。新开发 wheel/catalog 先用
-`--snapshot-id`、`--catalog-release`、`--wheel`、来源绑定、`--source-qualification` 和 D3
-证据/去向文件登记 `development` 条目；进入待审时用 `--item-artifact` 登记 `candidate`。
-当待审 workflow 嵌入所选公共资产的 exact document，登记前用显式 UTF-8 读取其实际输出与唯一
-canonical 文档，核对完整 JSON 语义（包括 Unicode 标题）相同；序列化布局与摘要前像可以不同。
-对所选增量做这项便宜的文档绑定检查，不用终端显示正常或结构检查通过代替，也不因此重跑科学。
-若生成/解码造成差异，保留原冻结记录，修派生生成路径并绑定明确 successor；只复核受影响元数据。
-从现有索引用 `--existing-index` 写新文件，校验旧条目未变后更新该路径。出库 owner 提供
-实际消费 manifest 和 digest，D2 单写者负责身份、来源与科学证据并核对登记；工作台当前逐项
-审核状态继续由审核 artifact/投影提供。完整开发 catalog 不等于专家批准，来源混合的开发
-快照不因 `pending_unapproved` 而自动取得 D1 资格；正式公开发行前合同统一冻结为 `v1`。
-普通用户单请求验收与多请求故障恢复使用不同开发期证据类型；后者须保留初始失败、纠正前结果、
-最终结果及有序请求身份，并绑定同一开发 wheel/catalog。两者都不提升科学审核或发行状态。
-普通用户与 reviewer 技术链的交接还须给出同一 exact source Git、wheel、catalog 和 review
-workflow/successor 身份，以及不可变 plugin registration 快照的引用和摘要。CodeFusion 的中性
-`PluginReleaseSnapshot.artifacts` 可用 artifact ref、digest、media type 指向已上传的 wheel、
-catalog 或审核材料；`runtime_dependency_refs` 可标识声明的运行依赖。交接应逐项说明实际
-使用了哪些 ref，并用宿主回执验证安装和读取，不能仅凭 opaque `plugin_release_ref` 推断材料
-相同或科学获批。旧注册不改写；新绑定使用独立的不可变注册与证据，技术双链也不替代专家
-审核、许可和发行验收。
-开发条目或待审候选的替换、撤回用 `--lifecycle superseded|withdrawn`、`--subject-entry-id`、
-精确 `--evidence` 和 `--existing-index` 追加事件；替换还须给出同类的 `--successor-entry-id`。
-旧条目及摘要不改写，当前未发布入口排除已替换、撤回和已发行的候选。开发条目的替换只改变
-开发快照当前身份，不继承或更新独立待审候选的逐项审核身份。旧 52 项快照只保留历史定位；
-正式公开发行前将有效决策和合同统一收敛到 `v1`。
-同一候选的宿主导出或中性注册开发验收用 `--review-host-evidence`、`--candidate-entry-id` 和
-`--existing-index` 追加各自类型的证据条目；这不产生新候选，也不替代宿主逐项审核状态或批准。
-同一 workflow 的多项共享原始 revision，只产生 `candidate` 条目。多个 artifact 可重复传入 `--item-artifact`，
-但重复 item 或资产会被拒绝。审核宿主导出的 `approved_items` 与各项原始 artifact 必须一起输入；artifact 以
-`<sha256-hex>.json` 命名，内容摘要须与投影 revision 一致，并包含提交前版本和批准 successor。
-`finalize_release.py` 核对原始/批准 revision、决定、文档、许可状态、依赖闭包、批准代码与测试文件、
-Git 变更、catalog 与 wheel，重新执行批准项的测试文件，再追加 `released` 条目。批准代码目前支持
-`files` 或明确 `none` 复用；`patch` 需先固化为逐文件内容。旧单 draft finalizer 仅保留为内部
-生命周期 fixture，不再是 release 命令入口。
-首发准备器从 exact approved projection 生成只含所选模块与审核绑定支持模块的源码树、过滤后的包初始化文件、
-文档集和测试路径；release catalog 的声明总数来自该文档集，历史 admission 账本不参与门禁。源码仍跑全套工程测试，
-安装后只跑所选资产的审核测试与文档示例。现有准备器仅支持首发；后续条目的 baseline 资产、文档与支持模块
-尚无可验证的继承输入，因而会拒绝增量发行，不能仅凭索引中的资产 ID 复建上一可信版。
+## 当前主线与发行边界
 
-审核导出必须来自有认证及授权记录的工作台 artifact 存储；本地 JSON 摘要只能核对内容，不能证明
-操作者的真实身份或发行授权。开发 fixture 的专家名称和批准动作不能作为真实审核输入。当前候选
-仍无真实批准与许可，不得因本门禁可运行而称已发行。索引与 manifest 仍为 `.dev`，首条真实
-闭环后在正式公开发布前统一冻结到 `v1`。
-当前 `check.ps1 -Mode release`/`finalize_release.py` 只核对本地审核投影和 artifact 字节，尚未验证
-同一批次的宿主认证选择快照；逐项 `items` 分页、`open`、下载和前后重读没有跨页快照 token，不能替代该证明。
-CodeFusion `3c69931b` 已合并带 `selection` 的中性快照导出与 `previous_snapshot` 条件重验，
-并在独立的新 V1 开发库项目完成技术验收；这不是正式发行部署。`scripts/verify_review_selection.py` 可离线核对同一候选 workflow Artifact、
-索引中的完整 item 清单、所选批准 successor、动作链/actor、两次导出字节和各自回执，输出
-`scirel.review-host-selection-binding.dev`。输入需由有权限的操作者从宿主认证接口取得，并明确提供
-tenant/project/plugin/view、plugin release、release attempt、候选 Artifact ref，以及初次和重验的
-导出及回执；本地 JSON 和摘要本身不能证明宿主来源。该绑定只证明这些文件相互一致，不授予批准、
-许可或发布状态。重验是捕获时状态，真实发布事务在提交前仍须再次检查所选 current Artifact；
-现有 `release` fixture 路径不消费该绑定，也不得据此追加真实 `released` 条目。
-真实 `released` 条目进入统一索引前，宿主导出或等价在线协议须绑定项目/plugin/view、候选身份、候选
-总数及明确所选子集的 item_ref→当前不可变 artifact 全集、每项认证审核事件及 actor、submitted/predecessor/successor
-引用和摘要、截止版本，并在发布前复核所选项未被后继覆盖。当前命令产物只用于开发期技术 fixture，
-不得作为经宿主认证的发行结果追加到 `provenance/release-index.dev.json`。
-插件的旧 `complete_release`/`scirel.release-manifest.dev` 仍是单 draft 生命周期 fixture；
-它不消费新的逐项 manifest，也不能作为本次索引的公开发行入口。消费者切换须随正式 `v1`
-合同收敛完成，并在真实获批批次上核对。
-未批准内容不能混入可信发行；首次可信发布须覆盖全部可见发布资产。
-旧 52 项历史候选不再作为本轮整合和索引设计的盘点门禁；发行门禁仍以实际拟发行内容为准。
+当前 `0.2.0.dev0` 是无科学资产的包骨架，开发测试只验证骨架和通用工具。
+历史实现、科学回归、pilot 与批次记录已迁往 [历史开发测试线](history.md)。
+新主线候选/版本入口为 `provenance/mainline-release-index.dev.json`，当前为空；
+不继承旧 wheel、候选、回执或批准。实际资产文档进入 `catalog/assets/`，
+受影响选择器只读取这里的文档、直接测试和源码 import 关系，不加载旧账本。
 
-source-free 必须确认不从 SciRel 源 checkout import。当前脚本通过 .pth 暴露开发解释器 NumPy/SciPy/Pytest
-目录，只证明不依赖 SciRel 源码，不证明其他包完全隔离；正式发行仍需固定离线 wheelhouse 和工具链。
-分别报告开发测试、Agent 科学审查、人工认可和公开发行。
+后续先接收独立 D1 项目交付，在隔离 D2 worktree 对照接收时基线整合科学源码、相关测试与必要依赖。
+开发 wheel 不要求最终批准。保留代码稳定后生成 exact documents，再冻结待审内容。
+正式发行另需确切批准、许可证/依赖、宿主认证与授权、文档/catalog/wheel 绑定及实际安装验证。
+没有科学资产的骨架和合成审核 fixture 都不能登记为科学库已发布。
+
+现有首发准备器从逐项审核材料装配所选科学模块、支持模块和过滤后的包初始化文件，
+历史账本不参与门禁。增量发行仍缺上一可信基线文档/支持模块的可验证继承输入。
+本地审核 artifact 摘要核对也不能认证真实专家身份；selection 绑定工具不代替发行前的真实授权与状态复核。
+这些工具机制仍在主线维护，测试使用合成材料；旧 r43/52/132 批次的具体接线与验收属于历史线。
+
+平台相关 PowerShell 检查在具备 `pwsh` 的环境执行；缺少时明确 NOT_RUN/skip，不能计作通过。
+发行环境必须安装实际声明的依赖，不通过挂载科学源码补足。当前开发检查的 `.pth` 方式只用于已声明
+依赖与测试工具，仍不证明完整离线 wheelhouse/工具链隔离；正式发行须完成该边界的实际验证。

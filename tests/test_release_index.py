@@ -29,12 +29,12 @@ def _candidate_entry_id(path):
 
 def _pending_item(
     *, release_ready=False,
-    document_name="scirel.field.circular-filament-green.json",
+    document_name="fixture-identity.json",
     support_file=None,
     omit_dependencies=False,
 ):
     document = json.loads(
-        (ROOT / "catalog/examples" / document_name).read_text(
+        (ROOT / "tests/fixtures/contracts" / document_name).read_text(
             encoding="utf-8"
         )
     )
@@ -95,21 +95,16 @@ def _multi_item_workflow_body(*, release_ready=False, asset_count=2):
     assert asset_count >= 2
     first = _pending_item(release_ready=release_ready)
     second = json.loads(
-        (ROOT / "catalog/examples/scirel.closures.hall-two-fluid-pressure.json").read_text(
+        (ROOT / "tests/fixtures/contracts/fixture-secondary.json").read_text(
             encoding="utf-8"
         )
     )
-    excluded = {"scirel.field.circular-filament-green.json",
-                "scirel.closures.hall-two-fluid-pressure.json"}
-    additional_paths = [
-        path for path in sorted((ROOT / "catalog/examples").glob("*.json"))
-        if path.name not in excluded
-    ][:asset_count - 2]
-    assert len(additional_paths) == asset_count - 2
-    additional = [
-        json.loads(path.read_text(encoding="utf-8"))
-        for path in additional_paths
-    ]
+    additional = []
+    for index in range(asset_count - 2):
+        document = json.loads(json.dumps(second))
+        document["asset_id"] = f"scirel.fixture.extra-{index}"
+        document["public_api"]["python"]["module"] = f"scirel.fixture.extra_{index}"
+        additional.append(document)
     candidate = CandidatePackage.from_l1(
         {
             "assets": [
@@ -1027,48 +1022,30 @@ def test_review_host_registration_evidence_binds_development_materials(tmp_path,
         )
 
 
-def test_repository_release_index_keeps_exact_evidence_bindings():
-    from release_index import current_unpublished_entries, digest, read_index
+def test_repository_release_index_has_no_inherited_candidates_or_approval():
+    from release_index import current_unpublished_entries, read_index
 
-    index = read_index(ROOT / "provenance/release-index.dev.json")
-    assert index["entries"]
+    index = read_index(ROOT / "provenance/mainline-release-index.dev.json")
+    assert index["entries"] == []
+    assert current_unpublished_entries(index) == []
     assert index["coverage"]["scope"] == "registered_entries_only"
-    assert index["coverage"]["current_unpublished_entry_ids"] == [
-        entry["entry_id"] for entry in current_unpublished_entries(index)
-    ]
+    assert index["coverage"]["current_unpublished_entry_ids"] == []
     assert set(index["coverage"]["unindexed_scopes"].values()) == {
         "not_independently_inventoried"
     }
-    for entry in index["entries"]:
-        if entry["status"] in {"evidence", "lifecycle"}:
-            bindings = [entry["evidence_ref"]]
-        elif entry["status"] in {"candidate", "development"}:
-            assert entry["approval_state"] == "pending_unapproved"
-            bindings = [*entry["evidence_refs"], *entry["destination_refs"]]
-        else:
-            continue
-        for binding in bindings:
-            path = ROOT / binding["ref"]
-            if path.is_file():
-                assert digest(path.read_bytes()) == binding["digest"]
-            else:
-                assert binding["ref"].startswith("build/")
 
 
-def test_release_index_rejects_stale_or_overstated_coverage(tmp_path):
+@pytest.mark.parametrize("overstatement", ["stale_candidate", "inventory_complete"])
+def test_release_index_rejects_stale_or_overstated_coverage(tmp_path, overstatement):
     from release_index import read_index
 
-    index = read_index(ROOT / "provenance/release-index.dev.json")
-    stale = json.loads(json.dumps(index))
-    stale["coverage"]["current_unpublished_entry_ids"].pop()
-    path = tmp_path / "index.json"
-    path.write_text(json.dumps(stale), encoding="utf-8")
-    with pytest.raises(ValueError, match="coverage differs"):
-        read_index(path)
-
-    overstated = json.loads(json.dumps(index))
-    overstated["coverage"]["unindexed_scopes"]["external_source_checkouts"] = "complete"
-    path.write_text(json.dumps(overstated), encoding="utf-8")
+    index = json.loads((ROOT / "provenance/mainline-release-index.dev.json").read_text())
+    if overstatement == "stale_candidate":
+        index["coverage"]["current_unpublished_entry_ids"] = ["nonexistent-candidate"]
+    else:
+        index["coverage"]["unindexed_scopes"]["external_source_checkouts"] = "complete"
+    path = tmp_path / "overstated-index.json"
+    path.write_text(json.dumps(index))
     with pytest.raises(ValueError, match="coverage differs"):
         read_index(path)
 
@@ -1113,7 +1090,7 @@ def test_strict_finalizer_rejects_a_candidate_without_item_approval(tmp_path):
 
 def _reviewed_release_inputs(
     tmp_path, *, multi_item=False, multi_item_count=2,
-    document_name="scirel.field.circular-filament-green.json",
+    document_name="fixture-identity.json",
     git_revision="a" * 40,
     support_file=None,
     build_release_catalog=True,
@@ -1191,433 +1168,46 @@ def _reviewed_release_inputs(
             "scirel-0.1.0.dev5.dist-info/METADATA",
             "Metadata-Version: 2.1\nName: scirel\nVersion: 0.1.0.dev5\n",
         )
-        archive.writestr(module_name, (ROOT / "src" / module_name).read_bytes())
+        archive.writestr(module_name, (ROOT / "tests/fixtures/runtime/identity.py").read_bytes())
     return artifacts, documents, catalog, wheel, projection
 
 
-def test_first_reviewed_distribution_rejects_incomplete_composition_dependencies(tmp_path):
-    from prepare_reviewed_distribution import prepare_reviewed_distribution
-
-    artifacts, _, _, _, projection = _reviewed_release_inputs(
-        tmp_path,
-        document_name="scirel.kinetic.kinetic-dispersion-relation.json",
-        build_release_catalog=False,
-    )
-    assert "scirel.kinetic.species-equilibrium-scales" in projection["dependency_asset_ids"]
-    staging = tmp_path / "reviewed-source"
-    with pytest.raises(
-        ValueError,
-        match=r"release dependency closure is incomplete: scirel\.kinetic\.kinetic-dispersion-relation",
-    ):
-        prepare_reviewed_distribution(
-            release_index=tmp_path / "index.json",
-            candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
-            approved_results=tmp_path / "results.json",
-            review_artifacts_dir=artifacts,
-            source_root=ROOT,
-            staging_dir=staging,
-        )
-    assert not staging.exists()
-
-
-@pytest.mark.parametrize(
-    ("document_name", "missing_module"),
-    [
-        (
-            "scirel.kinetic.kinetic-dispersion-ronnmark.json",
-            "scirel.kinetic.ronnmark_r_function",
-        ),
-        (
-            "scirel.kinetic.kinetic-wavevector-roots.json",
-            "scirel.kinetic.kinetic_dispersion_ronnmark",
-        ),
-    ],
-)
-def test_first_reviewed_distribution_rejects_undeclared_internal_import(
-    tmp_path, document_name, missing_module
-):
-    from prepare_reviewed_distribution import prepare_reviewed_distribution
-
-    artifacts, _, _, _, _ = _reviewed_release_inputs(
-        tmp_path, document_name=document_name, omit_dependencies=True
-    )
-    staging = tmp_path / "reviewed-source"
-    with pytest.raises(ValueError, match="missing internal import") as error:
-        prepare_reviewed_distribution(
-            release_index=tmp_path / "index.json",
-            candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
-            approved_results=tmp_path / "results.json",
-            review_artifacts_dir=artifacts,
-            source_root=ROOT,
-            staging_dir=staging,
-        )
-    assert missing_module in str(error.value)
-    assert not staging.exists()
-
-
-@pytest.mark.parametrize("multi_item", [False, True])
-def test_reviewed_finalization_binds_item_document_test_and_wheel(tmp_path, monkeypatch, multi_item):
-    import finalize_release
-
-    artifacts, documents, catalog, wheel, projection = _reviewed_release_inputs(
-        tmp_path, multi_item=multi_item
-    )
-    monkeypatch.setattr(finalize_release, "_git_revision", lambda root: "a" * 40)
-    monkeypatch.setattr(finalize_release, "_git_changed_files", lambda root, revision: set())
-    monkeypatch.setattr(finalize_release, "_require_clean_release_sources", lambda root: None)
-    result = finalize_release.finalize_reviewed_release(
-        release_index=tmp_path / "index.json",
-        candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
-        approved_results=tmp_path / "results.json",
-        review_artifacts_dir=artifacts,
-        documents_dir=documents,
-        catalog_dir=catalog,
-        wheel=wheel,
-        output_dir=tmp_path / "release",
-        release_id="release-test",
-        source_root=ROOT,
-    )
-    manifest = json.loads(Path(result["release_manifest"]).read_text(encoding="utf-8"))
-    index = json.loads(Path(result["release_index"]).read_text(encoding="utf-8"))
-    assert manifest["approved_items"][0]["revision"] == projection["revision"]
-    assert len(manifest["approved_items"]) == 1
-    assert manifest["verified_tests"] == [
-        "tests/operator_contracts/test_circular_filament_green.py"
-    ]
-    assert manifest["verified_test_run"]["exit_code"] == 0
-    assert index["entries"][-1]["status"] == "released"
-    contract = json.loads((ROOT / "contracts/reviewed-release-manifest-dev.schema.json").read_text(encoding="utf-8"))
-    assert set(manifest) == set(contract["required"])
-
-
-def test_first_reviewed_distribution_builds_only_the_selected_asset(tmp_path, monkeypatch):
-    import finalize_release
-    from build_catalog import build_catalog
+@pytest.mark.parametrize("alter_tests", [False, True])
+def test_first_release_preparation_uses_only_selected_synthetic_material(tmp_path, alter_tests):
     from prepare_reviewed_distribution import prepare_reviewed_distribution
 
     artifacts, _, _, _, _ = _reviewed_release_inputs(tmp_path)
-    staging = tmp_path / "reviewed-source"
-    result = prepare_reviewed_distribution(
+    source = tmp_path / "maintained"
+    module = source / "src/scirel/fixture/identity.py"
+    module.parent.mkdir(parents=True)
+    module.write_bytes((ROOT / "tests/fixtures/runtime/identity.py").read_bytes())
+    (module.parent / "unselected.py").write_text("raise RuntimeError('must not enter selected wheel')\n")
+    root_init = source / "src/scirel/__init__.py"
+    root_init.write_text("__all__ = []\n")
+    (source / "pyproject.toml").write_bytes((ROOT / "pyproject.toml").read_bytes())
+    tests = source / "tests/fixtures/runtime/check_identity.py"
+    tests.parent.mkdir(parents=True)
+    tests.write_bytes((ROOT / "tests/fixtures/runtime/check_identity.py").read_bytes())
+    if alter_tests:
+        tests.write_text("# unreviewed replacement\n")
+    stage = tmp_path / "stage"
+    arguments = dict(
         release_index=tmp_path / "index.json",
         candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
         approved_results=tmp_path / "results.json",
         review_artifacts_dir=artifacts,
-        source_root=ROOT,
-        staging_dir=staging,
+        source_root=source,
+        staging_dir=stage,
     )
-    assert result["asset_count"] == 1
-    assert result["test_paths"] == [
-        "tests/operator_contracts/test_circular_filament_green.py"
-    ]
-    wheel_dir = tmp_path / "built-wheel"
-    wheel_dir.mkdir()
-    built = subprocess.run(
-        [sys.executable, "-m", "pip", "wheel", "--disable-pip-version-check",
-         "--no-deps", "--no-build-isolation", "--wheel-dir", str(wheel_dir), str(staging)],
-        capture_output=True, text=True, check=True,
-    )
-    assert built.returncode == 0
-    wheel = next(wheel_dir.glob("*.whl"))
-    with ZipFile(wheel) as archive:
-        source_members = {name for name in archive.namelist() if name.startswith("scirel/")}
-    assert source_members == {
-        "scirel/__init__.py",
-        "scirel/field/__init__.py",
-        "scirel/field/circular_filament_green.py",
-    }
-    catalog = tmp_path / "built-catalog"
-    build_catalog(
-        staging / "documents", catalog, catalog_id="test-reviewed-subset",
-        release_version="0.1.0.dev5", coverage_status="complete", declared_total=1,
-    )
-    monkeypatch.setattr(finalize_release, "_git_revision", lambda root: "a" * 40)
-    monkeypatch.setattr(finalize_release, "_git_changed_files", lambda root, revision: set())
-    monkeypatch.setattr(finalize_release, "_require_clean_release_sources", lambda root: None)
-    finalized = finalize_release.finalize_reviewed_release(
-        release_index=tmp_path / "index.json",
-        candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
-        approved_results=tmp_path / "results.json",
-        review_artifacts_dir=artifacts,
-        documents_dir=staging / "documents",
-        catalog_dir=catalog,
-        wheel=wheel,
-        output_dir=tmp_path / "reviewed-release",
-        release_id="release-test",
-        source_root=ROOT,
-    )
-    assert Path(finalized["release_manifest"]).is_file()
-
-
-def test_first_reviewed_distribution_requires_bound_private_support(tmp_path):
-    from prepare_reviewed_distribution import prepare_reviewed_distribution
-
-    artifacts, _, _, _, _ = _reviewed_release_inputs(
-        tmp_path,
-        document_name="scirel.closures.mirror-ambipolar-potential.json",
-    )
-    staging = tmp_path / "reviewed-source"
-    with pytest.raises(ValueError, match="missing internal import.*scirel._validation"):
-        prepare_reviewed_distribution(
-            release_index=tmp_path / "index.json",
-            candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
-            approved_results=tmp_path / "results.json",
-            review_artifacts_dir=artifacts,
-            source_root=ROOT,
-            staging_dir=staging,
-        )
-    assert not staging.exists()
-
-
-def test_first_reviewed_distribution_includes_bound_private_support(tmp_path, monkeypatch):
-    import finalize_release
-    from build_catalog import build_catalog
-    from prepare_reviewed_distribution import prepare_reviewed_distribution
-
-    support = "src/scirel/_validation.py"
-    artifacts, _, _, _, _ = _reviewed_release_inputs(
-        tmp_path,
-        document_name="scirel.closures.mirror-ambipolar-potential.json",
-        support_file=support,
-    )
-    staging = tmp_path / "reviewed-source"
-    result = prepare_reviewed_distribution(
-        release_index=tmp_path / "index.json",
-        candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
-        approved_results=tmp_path / "results.json",
-        review_artifacts_dir=artifacts,
-        source_root=ROOT,
-        staging_dir=staging,
-    )
-    assert result["asset_count"] == 1
-    assert (staging / support).read_bytes() == (ROOT / support).read_bytes()
-    assert not (staging / "src/scirel/field").exists()
-    wheel_dir = tmp_path / "built-wheel"
-    wheel_dir.mkdir()
-    subprocess.run(
-        [sys.executable, "-m", "pip", "wheel", "--disable-pip-version-check",
-         "--no-deps", "--no-build-isolation", "--wheel-dir", str(wheel_dir), str(staging)],
-        capture_output=True, text=True, check=True,
-    )
-    catalog = tmp_path / "built-catalog"
-    build_catalog(
-        staging / "documents", catalog, catalog_id="test-reviewed-support",
-        release_version="0.1.0.dev5", coverage_status="complete", declared_total=1,
-    )
-    monkeypatch.setattr(finalize_release, "_git_revision", lambda root: "a" * 40)
-    monkeypatch.setattr(finalize_release, "_git_changed_files", lambda root, revision: set())
-    monkeypatch.setattr(finalize_release, "_require_clean_release_sources", lambda root: None)
-    finalized = finalize_release.finalize_reviewed_release(
-        release_index=tmp_path / "index.json",
-        candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
-        approved_results=tmp_path / "results.json",
-        review_artifacts_dir=artifacts,
-        documents_dir=staging / "documents",
-        catalog_dir=catalog,
-        wheel=next(wheel_dir.glob("*.whl")),
-        output_dir=tmp_path / "reviewed-release",
-        release_id="release-test",
-        source_root=ROOT,
-    )
-    assert Path(finalized["release_manifest"]).is_file()
-
-
-def test_reviewed_finalization_rejects_changed_wheel_code(tmp_path, monkeypatch):
-    import finalize_release
-
-    artifacts, documents, catalog, wheel, _ = _reviewed_release_inputs(tmp_path)
-    with ZipFile(wheel, "w") as archive:
-        archive.writestr(
-            "scirel-0.1.0.dev5.dist-info/METADATA",
-            "Metadata-Version: 2.1\nName: scirel\nVersion: 0.1.0.dev5\n",
-        )
-        archive.writestr("scirel/field/circular_filament_green.py", b"changed")
-    monkeypatch.setattr(finalize_release, "_git_revision", lambda root: "a" * 40)
-    monkeypatch.setattr(finalize_release, "_git_changed_files", lambda root, revision: set())
-    monkeypatch.setattr(finalize_release, "_require_clean_release_sources", lambda root: None)
-    with pytest.raises(ValueError, match="wheel differs from source"):
-        finalize_release.finalize_reviewed_release(
-            release_index=tmp_path / "index.json",
-            candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
-            approved_results=tmp_path / "results.json",
-            review_artifacts_dir=artifacts,
-            documents_dir=documents,
-            catalog_dir=catalog,
-            wheel=wheel,
-            output_dir=tmp_path / "release",
-            release_id="release-test",
-            source_root=ROOT,
-        )
-
-
-def test_reviewed_finalization_rejects_unapproved_science_module(tmp_path, monkeypatch):
-    import finalize_release
-
-    artifacts, documents, catalog, wheel, _ = _reviewed_release_inputs(tmp_path)
-    approved_module = "scirel/field/circular_filament_green.py"
-    unapproved_module = "scirel/field/poloidal_field_magnitude.py"
-    with ZipFile(wheel, "w") as archive:
-        archive.writestr(
-            "scirel-0.1.0.dev5.dist-info/METADATA",
-            "Metadata-Version: 2.1\nName: scirel\nVersion: 0.1.0.dev5\n",
-        )
-        for name in (approved_module, unapproved_module):
-            archive.writestr(name, (ROOT / "src" / name).read_bytes())
-    monkeypatch.setattr(finalize_release, "_git_revision", lambda root: "a" * 40)
-    monkeypatch.setattr(finalize_release, "_git_changed_files", lambda root, revision: set())
-    monkeypatch.setattr(finalize_release, "_require_clean_release_sources", lambda root: None)
-
-    with pytest.raises(ValueError, match="unapproved scientific module"):
-        finalize_release.finalize_reviewed_release(
-            release_index=tmp_path / "index.json",
-            candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
-            approved_results=tmp_path / "results.json",
-            review_artifacts_dir=artifacts,
-            documents_dir=documents,
-            catalog_dir=catalog,
-            wheel=wheel,
-            output_dir=tmp_path / "release",
-            release_id="release-test",
-            source_root=ROOT,
-        )
-
-
-@pytest.mark.parametrize(
-    ("extra_name", "message"),
-    [
-        ("scirel_plugin/adapter.py", "outside the reviewed SciRel package"),
-        ("scirel/_validation.py", "unreviewed support module"),
-    ],
-)
-def test_reviewed_finalization_rejects_unreviewed_wheel_content(
-    tmp_path, monkeypatch, extra_name, message
-):
-    import finalize_release
-
-    artifacts, documents, catalog, wheel, _ = _reviewed_release_inputs(tmp_path)
-    with ZipFile(wheel) as archive:
-        members = {name: archive.read(name) for name in archive.namelist()}
-    members[extra_name] = (ROOT / "src" / extra_name).read_bytes()
-    with ZipFile(wheel, "w") as archive:
-        for name, body in members.items():
-            archive.writestr(name, body)
-    monkeypatch.setattr(finalize_release, "_git_revision", lambda root: "a" * 40)
-    monkeypatch.setattr(finalize_release, "_git_changed_files", lambda root, revision: set())
-    monkeypatch.setattr(finalize_release, "_require_clean_release_sources", lambda root: None)
-
-    with pytest.raises(ValueError, match=message):
-        finalize_release.finalize_reviewed_release(
-            release_index=tmp_path / "index.json",
-            candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
-            approved_results=tmp_path / "results.json",
-            review_artifacts_dir=artifacts,
-            documents_dir=documents,
-            catalog_dir=catalog,
-            wheel=wheel,
-            output_dir=tmp_path / "release",
-            release_id="release-test",
-            source_root=ROOT,
-        )
-
-
-def test_reviewed_finalization_requires_private_import_closure(tmp_path, monkeypatch):
-    import finalize_release
-
-    artifacts, documents, catalog, wheel, _ = _reviewed_release_inputs(
-        tmp_path,
-        document_name="scirel.closures.mirror-ambipolar-potential.json",
-    )
-    monkeypatch.setattr(finalize_release, "_git_revision", lambda root: "a" * 40)
-    monkeypatch.setattr(finalize_release, "_git_changed_files", lambda root, revision: set())
-    monkeypatch.setattr(finalize_release, "_require_clean_release_sources", lambda root: None)
-
-    with pytest.raises(ValueError, match="missing internal import.*scirel._validation"):
-        finalize_release.finalize_reviewed_release(
-            release_index=tmp_path / "index.json",
-            candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
-            approved_results=tmp_path / "results.json",
-            review_artifacts_dir=artifacts,
-            documents_dir=documents,
-            catalog_dir=catalog,
-            wheel=wheel,
-            output_dir=tmp_path / "release",
-            release_id="release-test",
-            source_root=ROOT,
-        )
-
-
-def test_reviewed_wheel_import_closure_accepts_bound_private_support():
-    from finalize_release import _validate_wheel_import_closure
-
-    module = "scirel/closures/mirror_ambipolar_potential.py"
-    support = "scirel/_validation.py"
-    members = {
-        name: (ROOT / "src" / name).read_bytes()
-        for name in (module, support)
-    }
-
-    _validate_wheel_import_closure(members, ROOT)
-
-
-def test_reviewed_wheel_import_closure_rejects_unfiltered_package_initializer():
-    from finalize_release import _validate_wheel_import_closure
-
-    members = {
-        name: (ROOT / "src" / name).read_bytes()
-        for name in (
-            "scirel/field/__init__.py",
-            "scirel/field/circular_filament_green.py",
-        )
-    }
-
-    with pytest.raises(ValueError, match="missing internal import.*poloidal_field_magnitude"):
-        _validate_wheel_import_closure(members, ROOT)
-
-
-def test_reviewed_finalization_rejects_partial_approval_of_shared_module(tmp_path, monkeypatch):
-    import finalize_release
-
-    artifacts, documents, catalog, wheel, _ = _reviewed_release_inputs(
-        tmp_path, document_name="scirel.collisions.normalized-momentum.json"
-    )
-    monkeypatch.setattr(finalize_release, "_git_revision", lambda root: "a" * 40)
-    monkeypatch.setattr(finalize_release, "_git_changed_files", lambda root, revision: set())
-    monkeypatch.setattr(finalize_release, "_require_clean_release_sources", lambda root: None)
-
-    with pytest.raises(ValueError, match="unapproved asset in a shared module"):
-        finalize_release.finalize_reviewed_release(
-            release_index=tmp_path / "index.json",
-            candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
-            approved_results=tmp_path / "results.json",
-            review_artifacts_dir=artifacts,
-            documents_dir=documents,
-            catalog_dir=catalog,
-            wheel=wheel,
-            output_dir=tmp_path / "release",
-            release_id="release-test",
-            source_root=ROOT,
-        )
-
-
-def test_reviewed_finalization_rejects_a_forged_approval_projection(tmp_path):
-    import finalize_release
-
-    artifacts, documents, catalog, wheel, _ = _reviewed_release_inputs(tmp_path)
-    results_path = tmp_path / "results.json"
-    results = json.loads(results_path.read_text(encoding="utf-8"))
-    results["approved_items"][0]["asset"]["summary"] = "unreviewed change"
-    results["completed_items"][0]["asset"]["summary"] = "unreviewed change"
-    results_path.write_text(json.dumps(results), encoding="utf-8")
-
-    with pytest.raises(ValueError, match="projection differs"):
-        finalize_release.finalize_reviewed_release(
-            release_index=tmp_path / "index.json",
-            candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
-            approved_results=results_path,
-            review_artifacts_dir=artifacts,
-            documents_dir=documents,
-            catalog_dir=catalog,
-            wheel=wheel,
-            output_dir=tmp_path / "release",
-            release_id="release-test",
-            source_root=ROOT,
-        )
+    if alter_tests:
+        with pytest.raises(ValueError, match="approved test differs"):
+            prepare_reviewed_distribution(**arguments)
+        assert not stage.exists()
+    else:
+        result = prepare_reviewed_distribution(**arguments)
+        assert result["asset_count"] == 1
+        assert result["test_paths"] == ["tests/fixtures/runtime/check_identity.py"]
+        assert (stage / "src/scirel/fixture/identity.py").read_bytes() == module.read_bytes()
+        assert not (stage / "src/scirel/fixture/unselected.py").exists()
+        assert "from .fixture.identity import identity" in (stage / "src/scirel/__init__.py").read_text()
+    assert root_init.read_text() == "__all__ = []\n"

@@ -102,17 +102,22 @@ L3 运行时能力边界包括：没有对应 Operator/TaskGraph，候选模型/
 
 ### 候选与 provenance
 
-`provenance/admitted-assets.json` 保存旧流程导出的 52 条开发迁移样本。它的来源路径、版本树、内容摘要、依赖绑定和当时决定标签保持冻结，不能因重构或措辞调整而改写；但这些标签不等于新生命周期的专家批准，也不再是 L1 到 release 主链的治理输入。新候选、机器检查通过、旧 admission 标签或 AI 建议都不能单独产生批准。
+当前主线没有历史科学资产、获批候选或发布版本。新版本入口为
+`provenance/mainline-release-index.dev.json`，当前为空。历史迁移账本、源码、测试与候选记录保持原样
+保存在 [历史开发测试线](history.md)，不作为主线的资产索引、默认门禁或批准事实。
+新资产按项目级 D1 交付、D2 整合及最终发行选择进入；合成工具夹具不能成为公共能力。
 
 ### 维护源码与公共 API
 
-`src/scirel/` 是独立演进的库源码。公共 API 按科学领域组织，Operator 和 TaskGraph 都通过普通 Python callable 暴露。内部组合、校验和适配代码不得成为第二套科学事实，也不得在 wrapper 中隐藏新公式、插值、闭合、几何重建或离散规则。
+`src/scirel/` 是独立演进的库源码位置，当前只有空包骨架。公共 API 按科学领域组织，Operator 和 TaskGraph 都通过普通 Python callable 暴露。内部组合、校验和适配代码不得成为第二套科学事实，也不得在 wrapper 中隐藏新公式、插值、闭合、几何重建或离散规则。
 
 科学行为变化包括公式、单位/轴序、默认值、边界、失败行为、数值方法或 TaskGraph 依赖重绑。此类变化先以失败回归明确差异，并按需要形成新的科学候选和审查；行为不变的工程重构仍要保留旧合同和回归证据。
 
 ### 发行与目录投影
 
-`scripts/build_admitted_distribution.py` 可以从历史迁移账本复现 admitted-only staging、wheel、内置 manifest 和内容锁，只作为开发证据。新流程由 SciRel 的统一发布索引选择冻结候选及最终发布版本；候选绑定待审快照，最终发布另绑定批准后固化的基线、确切资产文档和实际构建摘要，不从旧账本推断准入。任何构建成功都不单独产生批准或发布事实。
+新流程从统一发布索引选择冻结候选和最终发行内容，绑定实际 exact documents、代码、测试及工件摘要。
+当前普通构建只产生没有科学资产的开发骨架；后续正式发行通过确切批准内容准备器构建，
+旧 admitted-only 构建器留在历史线。构建成功不单独产生科学批准或发布事实。
 
 面向大规模发现的 catalog 应是从索引选定的同一发行内容锁重建的投影，而不是发布版本索引或新的科学真值。每条精确记录至少需要：
 
@@ -121,7 +126,7 @@ L3 运行时能力边界包括：没有对应 Operator/TaskGraph，候选模型/
 - SciRel implementation version 与稳定依赖 asset IDs；
 - provenance 摘要、验证范围和证据上限。
 
-不得从函数名或源码猜补缺失的科学元数据。当前准入账本与 wheel manifest 已覆盖入口、准入和依赖绑定，但尚未覆盖上述完整发现合同；在补齐可信元数据前，应把它标记为 metadata gap，而不是生成看似完整的目录。
+不得从函数名或源码猜补缺失的科学元数据。当前 `catalog/assets/` 为空，不能据此声称已有目录覆盖；后续按实际整合资产建立发现合同，缺失元数据保持明确 gap。
 
 标准 exact record 使用 `scirel.asset-document.v1`。MCP、Codex、Claude Code、CodeFusion、CLI 和云执行平台只消费同一份 record/catalog/wheel；adapter 负责协议、权限与执行环境，不得成为新的资产身份或科学合同来源。
 

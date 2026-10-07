@@ -4,13 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scirel"
-version = "0.1.0.dev5"
+version = "0.2.0.dev0"
 description = "Scientific Relations Library"
 requires-python = ">=3.10"
-dependencies = ["numpy>=1.24", "scipy>=1.10"]
+dependencies = []
 
 [project.optional-dependencies]
 test = ["pytest>=7", "setuptools>=68", "wheel"]
+extraction-test = ["pytest>=7", "PyYAML>=6"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 import os
 import subprocess
+import shutil
 
 import pytest
 
@@ -24,6 +25,7 @@ def _resolve(environment: Path, platform: str):
     )
 
 
+@pytest.mark.skipif(shutil.which("pwsh") is None, reason="PowerShell 7 platform-tool test; pwsh unavailable")
 def test_release_python_path_is_resolved_for_windows_and_posix(tmp_path):
     windows = tmp_path / "windows"
     windows_python = windows / "Scripts" / "python.exe"
@@ -44,6 +46,7 @@ def test_release_python_path_is_resolved_for_windows_and_posix(tmp_path):
     assert Path(posix_result.stdout.strip()) == posix_python
 
 
+@pytest.mark.skipif(shutil.which("pwsh") is None, reason="PowerShell 7 platform-tool test; pwsh unavailable")
 def test_missing_release_python_fails_with_candidate_path(tmp_path):
     result = _resolve(tmp_path / "missing", "Posix")
 
@@ -59,7 +62,9 @@ def test_release_environment_does_not_inherit_system_packages():
     assert "--no-index --no-deps --force-reinstall" in script
     assert "sysconfig.get_path('purelib')" in script
     assert "site.getsitepackages()[0]" not in script
-    assert "import sys, numpy, scipy, pytest, scirel" in script
+    assert "import sys, pytest, scirel" in script
+    assert "scripts/runtime_dependency_roots.py" in script
+    assert 'for name in ("numpy", "scipy", "pytest")' not in script
 
 
 def test_release_gate_builds_from_exact_review_inputs():
@@ -87,6 +92,7 @@ def test_release_gate_builds_from_exact_review_inputs():
     assert "DeclaredAssetTotal" not in script
 
 
+@pytest.mark.skipif(shutil.which("pwsh") is None, reason="PowerShell 7 platform-tool test; pwsh unavailable")
 def test_release_gate_requires_review_inputs_before_creating_output(tmp_path):
     output = tmp_path / "release-output"
     result = subprocess.run(
@@ -110,42 +116,5 @@ def test_release_gate_checks_the_installed_scientific_runtime():
     assert '"--installed-runtime"' in script
     assert 'foreach ($file in $preparation.test_paths)' in script
     assert '"runtime-test-bundle"' in script
-
-
-def test_first_release_mode_smoke_from_review_fixture(tmp_path):
-    if os.environ.get("SCIREL_RELEASE_SMOKE_CHILD") == "1":
-        pytest.skip("release gate is already running its source suite")
-    if os.environ.get("SCIREL_RUN_RELEASE_SMOKE") != "1":
-        pytest.skip("run explicitly for the full release gate")
-
-    from test_release_index import _candidate_entry_id, _reviewed_release_inputs
-
-    git_revision = subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True,
-        text=True, check=True,
-    ).stdout.strip()
-    artifacts, _, _, _, _ = _reviewed_release_inputs(
-        tmp_path, git_revision=git_revision
-    )
-    output = tmp_path / "release-output"
-    environment = os.environ.copy()
-    environment["SCIREL_RELEASE_SMOKE_CHILD"] = "1"
-    environment.pop("SCIREL_RUN_RELEASE_SMOKE", None)
-    result = subprocess.run(
-        [
-            "pwsh", "-NoProfile", "-File", str(CHECK), "-Mode", "release",
-            "-OutputRoot", str(output), "-ReleaseId", "release-smoke",
-            "-ReleaseIndex", str(tmp_path / "index.json"),
-            "-CandidateEntryId", _candidate_entry_id(tmp_path / "index.json"),
-            "-ApprovedResults", str(tmp_path / "results.json"),
-            "-ReviewArtifactsDir", str(artifacts),
-        ],
-        cwd=ROOT, env=environment, capture_output=True, text=True,
-        encoding="utf-8", timeout=600,
-    )
-    assert result.returncode == 0, result.stdout[-4000:] + result.stderr[-4000:]
-    manifest = json.loads((output / "release" / "release-manifest.json").read_text(encoding="utf-8"))
-    validation = json.loads((output / "installed-asset-validation.json").read_text(encoding="utf-8"))
-    assert manifest["included_assets"] == ["scirel.field.circular-filament-green"]
-    assert validation["asset_count"] == 1
-    assert validation["runtime_origin"] == "installed"
+    assert "tests/_review_bindings.py" not in script
+    assert "catalog/examples" not in script
