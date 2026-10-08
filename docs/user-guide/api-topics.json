@@ -1,0 +1,130 @@
+{
+  "scirel.fusion.configuration.MachineConfig": {
+    "title": "装置与等离子体几何参数",
+    "topic_id": "state-and-evolution"
+  },
+  "scirel.fusion.configuration.ActuatorConfig": {
+    "title": "加热和驱动参数",
+    "topic_id": "state-and-evolution"
+  },
+  "scirel.fusion.configuration.SimulationConfig": {
+    "title": "数值与模型选择参数",
+    "topic_id": "state-and-evolution"
+  },
+  "scirel.fusion.configuration.PlasmaState": {
+    "title": "演化状态及历史几何字段",
+    "topic_id": "state-and-evolution"
+  },
+  "scirel.fusion.configuration.load_static_input": {
+    "title": "从 JSON 读取静态配置",
+    "topic_id": "state-and-evolution"
+  },
+  "scirel.fusion.configuration.load_waveform_input": {
+    "title": "从 JSON 读取时变输入",
+    "topic_id": "state-and-evolution"
+  },
+  "scirel.fusion.controls.apply_control_vector": {
+    "title": "将优化控制向量映射到 pytree 配置",
+    "topic_id": "control-and-optimization"
+  },
+  "scirel.fusion.controls.Waveform": {
+    "title": "单个物理输入的时间波形",
+    "topic_id": "control-and-optimization"
+  },
+  "scirel.fusion.controls.ScenarioWaveform": {
+    "title": "多物理输入的场景波形",
+    "topic_id": "control-and-optimization"
+  },
+  "scirel.fusion.controls.apply_waveform_controls": {
+    "title": "在指定时间应用场景波形",
+    "topic_id": "control-and-optimization"
+  },
+  "scirel.fusion.diagnostics.compute_diagnostics": {
+    "title": "计算模型诊断字典",
+    "topic_id": "heating-current-diagnostics"
+  },
+  "scirel.fusion.diagnostics.total_heating_sources": {
+    "title": "组合电子和离子温度源项",
+    "topic_id": "heating-current-diagnostics"
+  },
+  "scirel.fusion.diagnostics.current_components_from_state": {
+    "title": "组合电流组成",
+    "topic_id": "heating-current-diagnostics"
+  },
+  "scirel.fusion.dynamics.initial_state": {
+    "title": "构造径向初始状态",
+    "topic_id": "state-and-evolution"
+  },
+  "scirel.fusion.dynamics.step": {
+    "title": "更新径向状态",
+    "topic_id": "state-and-evolution"
+  },
+  "scirel.fusion.dynamics.initialize_step_cache": {
+    "title": "建立演化缓存",
+    "topic_id": "state-and-evolution"
+  },
+  "scirel.fusion.dynamics.step_cached": {
+    "title": "使用缓存更新状态",
+    "topic_id": "state-and-evolution"
+  },
+  "scirel.fusion.dynamics.initial_state_0d": {
+    "title": "构造约化 0D 初始状态",
+    "topic_id": "state-and-evolution"
+  },
+  "scirel.fusion.dynamics.zero_d_step_with_dt": {
+    "title": "更新约化 0D 状态并返回实际步长",
+    "topic_id": "state-and-evolution"
+  },
+  "scirel.fusion.geometry.solve_fixed_boundary_equilibrium": {
+    "title": "按配置取得约化或给定磁几何",
+    "topic_id": "equilibrium-and-transport"
+  },
+  "scirel.fusion.geometry.read_geqdsk": {
+    "title": "读取 G-EQDSK 磁平衡文件",
+    "topic_id": "equilibrium-and-transport"
+  },
+  "scirel.fusion.grid.make_grid": {
+    "title": "建立径向单元中心与物理间距",
+    "topic_id": "radial-profiles"
+  },
+  "scirel.fusion.grid.make_rho_faces": {
+    "title": "建立径向单元面",
+    "topic_id": "radial-profiles"
+  },
+  "scirel.fusion.grid.radial_gradient": {
+    "title": "按来源边界约定计算径向梯度",
+    "topic_id": "radial-profiles"
+  },
+  "scirel.fusion.grid.boundary_augmented_profile": {
+    "title": "给绘图剖面补上轴和边界点",
+    "topic_id": "radial-profiles"
+  },
+  "scirel.fusion.optimization.autodiff_value_and_grad_pytree": {
+    "title": "计算控制目标及梯度",
+    "topic_id": "control-and-optimization"
+  },
+  "scirel.fusion.optimization.optimize_controls_optax": {
+    "title": "以 Optax 迭代控制参数",
+    "topic_id": "control-and-optimization"
+  },
+  "scirel.fusion.optimization.waveform_objective_from_z": {
+    "title": "计算波形参数目标",
+    "topic_id": "control-and-optimization"
+  },
+  "scirel.fusion.optimization.optimize_waveform_optax": {
+    "title": "以 Optax 迭代波形参数",
+    "topic_id": "control-and-optimization"
+  },
+  "scirel.fusion.surrogates.fusion_surrogates_effective_diffusivities": {
+    "title": "将外部代理通量转换为有效扩散",
+    "topic_id": "equilibrium-and-transport"
+  },
+  "scirel.fusion.transport.angioni_neoclassical_diffusivities": {
+    "title": "取得来源 Angioni–Sauter 有效扩散",
+    "topic_id": "equilibrium-and-transport"
+  },
+  "scirel.fusion.transport.chang_hinton_neoclassical_diffusivities": {
+    "title": "取得来源约化 Chang–Hinton 有效扩散",
+    "topic_id": "equilibrium-and-transport"
+  }
+}

@@ -1,0 +1,2907 @@
+{
+  "schema": "scirel.user-guide-api-snapshot.v1",
+  "binding": {
+    "schema": "scirel.user-guide-binding.v1",
+    "guide_revision": "20261008.1",
+    "package": "scirel",
+    "package_version": "0.2.0.dev2+review20261008",
+    "science_git_commit": "fcf97c237adf799124e5a56cc4062c54302b2b33",
+    "science_git_tree": "60c08a77f4c672c00301d14e02ee9fe02187650f",
+    "wheel_file": "scirel-0.2.0.dev2+review20261008-py3-none-any.whl",
+    "wheel_sha256": "998b88f2c54cd75f5fcc1310789e280fa96ccc69181b708a4ce31141d06a9874",
+    "catalog_sha256": "c59c5f84677341d7cc1b6318a8a01df3cd800bb4fea6995d8691e78120136038",
+    "source_bundle_sha256": "dd34e7234ca120192024f3fd992b55a8bc1599da6b39acdb4906552aaeb63197",
+    "source_project": "TokaGrad",
+    "source_commit": "53db253ef56b641e0bc796fb2dad650d9b2ce33e",
+    "public_entries": 32,
+    "detailed_contracts": 7,
+    "status": "development; source-compatible partial domain; no publication approval",
+    "tested_profile": "Linux x86_64 CPU / CPython 3.12.14 / JAX x64",
+    "reference_queries": [
+      "Q1",
+      "Q2",
+      "Q3"
+    ],
+    "public_modules": 9,
+    "catalog": {
+      "catalog_id": "scirel-tokagrad-review-correction-20261008",
+      "root_digest": "sha256:c412d9f8eabee9649e18e85fa61b46dfd9ca86481ee2938cdeace0a7a64bc36b",
+      "coverage": {
+        "declared_total_asset_count": 32,
+        "included_asset_count": 7,
+        "status": "partial"
+      }
+    }
+  },
+  "derivation": "Read-only AST extraction of the exact wheel and selected fields of seven canonical records. Do not edit generated API/contract fields manually.",
+  "apis": [
+    {
+      "id": "scirel.fusion.configuration.MachineConfig",
+      "module": "scirel.fusion.configuration",
+      "symbol": "MachineConfig",
+      "title": "装置与等离子体几何参数",
+      "topic_id": "state-and-evolution",
+      "kind": "class",
+      "implementation_member_sha256": "2e3f728ab64e0a97be0f982c708ab2e1b1b898b949dad7876e3522d647881b89",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "fields": [
+        {
+          "name": "R0",
+          "annotation": "float",
+          "default_source": "6.2"
+        },
+        {
+          "name": "a",
+          "annotation": "float",
+          "default_source": "2.0"
+        },
+        {
+          "name": "kappa",
+          "annotation": "float",
+          "default_source": "1.7"
+        },
+        {
+          "name": "delta",
+          "annotation": "float",
+          "default_source": "0.5"
+        },
+        {
+          "name": "Bt",
+          "annotation": "float",
+          "default_source": "5.3"
+        },
+        {
+          "name": "Ip",
+          "annotation": "float",
+          "default_source": "15000000.0"
+        },
+        {
+          "name": "Zeff",
+          "annotation": "float",
+          "default_source": "1.8"
+        },
+        {
+          "name": "lnLambda",
+          "annotation": "float",
+          "default_source": "17.0"
+        },
+        {
+          "name": "plasma_species",
+          "annotation": "str",
+          "default_source": "'DT'"
+        },
+        {
+          "name": "dt_fraction_D",
+          "annotation": "float",
+          "default_source": "0.5"
+        },
+        {
+          "name": "dt_fraction_T",
+          "annotation": "float",
+          "default_source": "0.5"
+        },
+        {
+          "name": "impurity_Z",
+          "annotation": "float",
+          "default_source": "74.0"
+        }
+      ],
+      "signature": "MachineConfig(R0: float = 6.2, a: float = 2.0, kappa: float = 1.7, delta: float = 0.5, Bt: float = 5.3, Ip: float = 15000000.0, Zeff: float = 1.8, lnLambda: float = 17.0, plasma_species: str = 'DT', dt_fraction_D: float = 0.5, dt_fraction_T: float = 0.5, impurity_Z: float = 74.0)",
+      "methods": [],
+      "source_docstring": "Machine, equilibrium-shape, and plasma-composition parameters."
+    },
+    {
+      "id": "scirel.fusion.configuration.ActuatorConfig",
+      "module": "scirel.fusion.configuration",
+      "symbol": "ActuatorConfig",
+      "title": "加热和驱动参数",
+      "topic_id": "state-and-evolution",
+      "kind": "class",
+      "implementation_member_sha256": "2e3f728ab64e0a97be0f982c708ab2e1b1b898b949dad7876e3522d647881b89",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "fields": [
+        {
+          "name": "P_aux_MW",
+          "annotation": "float",
+          "default_source": "50.0"
+        },
+        {
+          "name": "f_e_heat",
+          "annotation": "float",
+          "default_source": "0.6"
+        },
+        {
+          "name": "aux_partition_model",
+          "annotation": "str",
+          "default_source": "'slowing_down'"
+        },
+        {
+          "name": "nbi_birth_energy_MeV",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "nbi_fast_ion_A",
+          "annotation": "float",
+          "default_source": "2.0"
+        },
+        {
+          "name": "nbi_fast_ion_Z",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "heat_center",
+          "annotation": "float",
+          "default_source": "0.2"
+        },
+        {
+          "name": "heat_width",
+          "annotation": "float",
+          "default_source": "0.25"
+        },
+        {
+          "name": "greenwald_fraction_target",
+          "annotation": "float",
+          "default_source": "0.9"
+        },
+        {
+          "name": "greenwald_edge_density_fraction",
+          "annotation": "float",
+          "default_source": "0.1"
+        },
+        {
+          "name": "edge_Te_keV",
+          "annotation": "float",
+          "default_source": "0.25"
+        },
+        {
+          "name": "edge_Ti_keV",
+          "annotation": "float",
+          "default_source": "0.25"
+        },
+        {
+          "name": "cd_fraction",
+          "annotation": "float",
+          "default_source": "0.0"
+        },
+        {
+          "name": "cd_efficiency_20",
+          "annotation": "float",
+          "default_source": "0.3"
+        },
+        {
+          "name": "cd_fraction_max",
+          "annotation": "float",
+          "default_source": "0.5"
+        },
+        {
+          "name": "cd_center",
+          "annotation": "float",
+          "default_source": "0.2"
+        },
+        {
+          "name": "cd_width",
+          "annotation": "float",
+          "default_source": "0.3"
+        }
+      ],
+      "signature": "ActuatorConfig(P_aux_MW: float = 50.0, f_e_heat: float = 0.6, aux_partition_model: str = 'slowing_down', nbi_birth_energy_MeV: float = 1.0, nbi_fast_ion_A: float = 2.0, nbi_fast_ion_Z: float = 1.0, heat_center: float = 0.2, heat_width: float = 0.25, greenwald_fraction_target: float = 0.9, greenwald_edge_density_fraction: float = 0.1, edge_Te_keV: float = 0.25, edge_Ti_keV: float = 0.25, cd_fraction: float = 0.0, cd_efficiency_20: float = 0.3, cd_fraction_max: float = 0.5, cd_center: float = 0.2, cd_width: float = 0.3)",
+      "methods": [],
+      "source_docstring": "External actuators and edge boundary values."
+    },
+    {
+      "id": "scirel.fusion.configuration.SimulationConfig",
+      "module": "scirel.fusion.configuration",
+      "symbol": "SimulationConfig",
+      "title": "数值与模型选择参数",
+      "topic_id": "state-and-evolution",
+      "kind": "class",
+      "implementation_member_sha256": "2e3f728ab64e0a97be0f982c708ab2e1b1b898b949dad7876e3522d647881b89",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "fields": [
+        {
+          "name": "nr",
+          "annotation": "int",
+          "default_source": "32"
+        },
+        {
+          "name": "radial_grid",
+          "annotation": "str",
+          "default_source": "'uniform'"
+        },
+        {
+          "name": "edge_cluster_power",
+          "annotation": "float",
+          "default_source": "2.0"
+        },
+        {
+          "name": "dt",
+          "annotation": "float",
+          "default_source": "0.001"
+        },
+        {
+          "name": "n_steps",
+          "annotation": "int",
+          "default_source": "500"
+        },
+        {
+          "name": "end_time_s",
+          "annotation": "float",
+          "default_source": "0.0"
+        },
+        {
+          "name": "dt_mode",
+          "annotation": "str",
+          "default_source": "'fixed'"
+        },
+        {
+          "name": "cfl_number",
+          "annotation": "float",
+          "default_source": "0.25"
+        },
+        {
+          "name": "cfl_diffusivity_ref_m2_s",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "adjust_dt_to_end_time",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "save_every",
+          "annotation": "int",
+          "default_source": "10"
+        },
+        {
+          "name": "save_results_enabled",
+          "annotation": "bool",
+          "default_source": "False"
+        },
+        {
+          "name": "save_result_times_s",
+          "annotation": "tuple",
+          "default_source": "()"
+        },
+        {
+          "name": "save_result_file",
+          "annotation": "str",
+          "default_source": "'outputs/tokagrad_results.npz'"
+        },
+        {
+          "name": "save_result_format",
+          "annotation": "str",
+          "default_source": "'npz'"
+        },
+        {
+          "name": "save_result_include_metadata_json",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "plot_diffusivity",
+          "annotation": "bool",
+          "default_source": "False"
+        },
+        {
+          "name": "plot_psi",
+          "annotation": "bool",
+          "default_source": "False"
+        },
+        {
+          "name": "equilibrium_skip_steps",
+          "annotation": "int",
+          "default_source": "1"
+        },
+        {
+          "name": "source_skip_steps",
+          "annotation": "int",
+          "default_source": "1"
+        },
+        {
+          "name": "transport_skip_steps",
+          "annotation": "int",
+          "default_source": "1"
+        },
+        {
+          "name": "pedestal_skip_steps",
+          "annotation": "int",
+          "default_source": "1"
+        },
+        {
+          "name": "diffusion_scheme",
+          "annotation": "str",
+          "default_source": "'semi_implicit'"
+        },
+        {
+          "name": "implicit_nonlinear_iters",
+          "annotation": "int",
+          "default_source": "3"
+        },
+        {
+          "name": "implicit_relaxation",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "predictor_corrector_relaxation",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "newton_iters",
+          "annotation": "int",
+          "default_source": "4"
+        },
+        {
+          "name": "newton_damping",
+          "annotation": "float",
+          "default_source": "0.7"
+        },
+        {
+          "name": "newton_jacobian_regularization",
+          "annotation": "float",
+          "default_source": "1e-06"
+        },
+        {
+          "name": "density_evolution_model",
+          "annotation": "str",
+          "default_source": "'greenwald_feedback'"
+        },
+        {
+          "name": "freeze_temperature_profiles",
+          "annotation": "bool",
+          "default_source": "False"
+        },
+        {
+          "name": "differentiable_smooth_mode",
+          "annotation": "bool",
+          "default_source": "False"
+        },
+        {
+          "name": "smooth_clip_width",
+          "annotation": "float",
+          "default_source": "0.01"
+        },
+        {
+          "name": "smooth_rate_width",
+          "annotation": "float",
+          "default_source": "0.01"
+        },
+        {
+          "name": "source_implicitness",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "source_max_delta_keV",
+          "annotation": "float",
+          "default_source": "2.5"
+        },
+        {
+          "name": "initial_beta_N_target",
+          "annotation": "float",
+          "default_source": "1.8"
+        },
+        {
+          "name": "initial_temperature_rescale_to_beta_N",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "initial_profile_quadrature_points",
+          "annotation": "int",
+          "default_source": "32"
+        },
+        {
+          "name": "greenwald_tanh_core_factor",
+          "annotation": "float",
+          "default_source": "1.1"
+        },
+        {
+          "name": "greenwald_tanh_pedestal_factor",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "greenwald_tanh_transition_fraction",
+          "annotation": "float",
+          "default_source": "0.25"
+        },
+        {
+          "name": "greenwald_tanh_default_width",
+          "annotation": "float",
+          "default_source": "0.04"
+        },
+        {
+          "name": "density_feedback_tau",
+          "annotation": "float",
+          "default_source": "0.001"
+        },
+        {
+          "name": "greenwald_feedback_average_basis",
+          "annotation": "str",
+          "default_source": "'volume'"
+        },
+        {
+          "name": "density_feedback_method",
+          "annotation": "str",
+          "default_source": "'implicit_source'"
+        },
+        {
+          "name": "density_boundary_source_width",
+          "annotation": "float",
+          "default_source": "0.1"
+        },
+        {
+          "name": "density_source_max_delta",
+          "annotation": "float",
+          "default_source": "0.25"
+        },
+        {
+          "name": "initial_profile_model",
+          "annotation": "str",
+          "default_source": "'h_mode'"
+        },
+        {
+          "name": "initial_current_profile_model",
+          "annotation": "str",
+          "default_source": "'saturated_components'"
+        },
+        {
+          "name": "simulation_model",
+          "annotation": "str",
+          "default_source": "'1.5d'"
+        },
+        {
+          "name": "zero_d_H_factor",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "zero_d_L_factor",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "zero_d_dt_fraction_tauE",
+          "annotation": "float",
+          "default_source": "0.1"
+        },
+        {
+          "name": "zero_d_tauE_min",
+          "annotation": "float",
+          "default_source": "0.001"
+        },
+        {
+          "name": "zero_d_tauE_max",
+          "annotation": "float",
+          "default_source": "20.0"
+        },
+        {
+          "name": "zero_d_core_shape_power",
+          "annotation": "float",
+          "default_source": "2.0"
+        },
+        {
+          "name": "zero_d_temperature_max_keV",
+          "annotation": "float",
+          "default_source": "80.0"
+        },
+        {
+          "name": "zero_d_alpha_birth_energy_MeV",
+          "annotation": "float",
+          "default_source": "3.52"
+        },
+        {
+          "name": "zero_d_fast_nbi_fraction",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "zero_d_use_lax_scan",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "zero_d_profile_reconstruction_fast_path",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "zero_d_reconstruct_current",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "transport_mode",
+          "annotation": "str",
+          "default_source": "'diffusive'"
+        },
+        {
+          "name": "transport_model",
+          "annotation": "str",
+          "default_source": "'tglfnn_jax'"
+        },
+        {
+          "name": "transport_surrogate_scale",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "transport_flux_scale",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "transport_flux_clip",
+          "annotation": "float",
+          "default_source": "50.0"
+        },
+        {
+          "name": "transport_flux_max_delta_keV",
+          "annotation": "float",
+          "default_source": "2.5"
+        },
+        {
+          "name": "transport_flux_max_delta_ne20",
+          "annotation": "float",
+          "default_source": "0.25"
+        },
+        {
+          "name": "fusion_surrogates_fail_mode",
+          "annotation": "str",
+          "default_source": "'fallback'"
+        },
+        {
+          "name": "chi_clip_min",
+          "annotation": "float",
+          "default_source": "0.03"
+        },
+        {
+          "name": "chi_clip_max",
+          "annotation": "float",
+          "default_source": "30.0"
+        },
+        {
+          "name": "qlknn_gb_to_chi",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "gradient_floor",
+          "annotation": "float",
+          "default_source": "0.5"
+        },
+        {
+          "name": "tglfnn_model_dir",
+          "annotation": "str",
+          "default_source": "'external_models/neural'"
+        },
+        {
+          "name": "tglfnn_model_name",
+          "annotation": "str",
+          "default_source": "'DIIID_ion_stiffness_60_rotation'"
+        },
+        {
+          "name": "tglfnn_fail_mode",
+          "annotation": "str",
+          "default_source": "'fallback'"
+        },
+        {
+          "name": "tglfnn_jax_max_nets",
+          "annotation": "int",
+          "default_source": "10"
+        },
+        {
+          "name": "tglfnn_gb_to_chi",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "tglfnn_use_gyrobohm_scale",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "tglfnn_clip_inputs_to_training",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "tglfnn_training_clip_sigma",
+          "annotation": "float",
+          "default_source": "5.0"
+        },
+        {
+          "name": "tglfnn_vpar_1",
+          "annotation": "float",
+          "default_source": "0.0"
+        },
+        {
+          "name": "tglfnn_vpar_shear_1",
+          "annotation": "float",
+          "default_source": "0.0"
+        },
+        {
+          "name": "tglfnn_vexb_shear",
+          "annotation": "float",
+          "default_source": "0.0"
+        },
+        {
+          "name": "chi_e_base",
+          "annotation": "float",
+          "default_source": "0.6"
+        },
+        {
+          "name": "chi_i_base",
+          "annotation": "float",
+          "default_source": "0.45"
+        },
+        {
+          "name": "Dn_base",
+          "annotation": "float",
+          "default_source": "0.15"
+        },
+        {
+          "name": "chi_edge_mult",
+          "annotation": "float",
+          "default_source": "4.0"
+        },
+        {
+          "name": "stiffness",
+          "annotation": "float",
+          "default_source": "1.5"
+        },
+        {
+          "name": "grad_crit_keV_per_m",
+          "annotation": "float",
+          "default_source": "3.0"
+        },
+        {
+          "name": "bohm_chi_e_bohm_coeff",
+          "annotation": "float",
+          "default_source": "8e-05"
+        },
+        {
+          "name": "bohm_chi_e_gyrobohm_coeff",
+          "annotation": "float",
+          "default_source": "5e-06"
+        },
+        {
+          "name": "bohm_chi_i_bohm_coeff",
+          "annotation": "float",
+          "default_source": "8e-05"
+        },
+        {
+          "name": "bohm_chi_i_gyrobohm_coeff",
+          "annotation": "float",
+          "default_source": "5e-06"
+        },
+        {
+          "name": "bohm_particle_c1",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "bohm_particle_c2",
+          "annotation": "float",
+          "default_source": "0.3"
+        },
+        {
+          "name": "bohm_chi_min",
+          "annotation": "float",
+          "default_source": "0.05"
+        },
+        {
+          "name": "bohm_chi_max",
+          "annotation": "float",
+          "default_source": "100.0"
+        },
+        {
+          "name": "bohm_particle_min",
+          "annotation": "float",
+          "default_source": "0.05"
+        },
+        {
+          "name": "bohm_particle_max",
+          "annotation": "float",
+          "default_source": "100.0"
+        },
+        {
+          "name": "ntheta",
+          "annotation": "int",
+          "default_source": "16"
+        },
+        {
+          "name": "theta_grid_alignment",
+          "annotation": "str",
+          "default_source": "'auto'"
+        },
+        {
+          "name": "shafranov_shift_max",
+          "annotation": "float",
+          "default_source": "0.25"
+        },
+        {
+          "name": "triangularity_profile_power",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "elongation_profile_power",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "transport_geometry",
+          "annotation": "str",
+          "default_source": "'flux'"
+        },
+        {
+          "name": "phi_dot_over_phi",
+          "annotation": "float",
+          "default_source": "0.0"
+        },
+        {
+          "name": "auto_phi_dot_over_phi",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "phi_dot_over_phi_clip",
+          "annotation": "float",
+          "default_source": "5.0"
+        },
+        {
+          "name": "reduced_geometry_metrics",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "torax_circular_psi_geometry",
+          "annotation": "bool",
+          "default_source": "False"
+        },
+        {
+          "name": "heat_convection_model",
+          "annotation": "str",
+          "default_source": "'none'"
+        },
+        {
+          "name": "heat_convection_e_base",
+          "annotation": "float",
+          "default_source": "0.0"
+        },
+        {
+          "name": "heat_convection_i_base",
+          "annotation": "float",
+          "default_source": "0.0"
+        },
+        {
+          "name": "particle_convection_model",
+          "annotation": "str",
+          "default_source": "'none'"
+        },
+        {
+          "name": "particle_convection_base",
+          "annotation": "float",
+          "default_source": "0.0"
+        },
+        {
+          "name": "ware_pinch_scale",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "ware_pinch_bpol_min_T",
+          "annotation": "float",
+          "default_source": "0.02"
+        },
+        {
+          "name": "ware_pinch_velocity_max_m_s",
+          "annotation": "float",
+          "default_source": "200.0"
+        },
+        {
+          "name": "equilibrium_model",
+          "annotation": "str",
+          "default_source": "'reduced_fixed_boundary'"
+        },
+        {
+          "name": "geqdsk_path",
+          "annotation": "str",
+          "default_source": "''"
+        },
+        {
+          "name": "geqdsk_use_pressure",
+          "annotation": "bool",
+          "default_source": "False"
+        },
+        {
+          "name": "geqdsk_q_profile_source",
+          "annotation": "str",
+          "default_source": "'eqdsk'"
+        },
+        {
+          "name": "geqdsk_flux_coordinate",
+          "annotation": "str",
+          "default_source": "'sqrt_psi'"
+        },
+        {
+          "name": "geqdsk_surface_geometry",
+          "annotation": "str",
+          "default_source": "'psirz_contours'"
+        },
+        {
+          "name": "geqdsk_inner_contour_fallback",
+          "annotation": "str",
+          "default_source": "'axis_hessian'"
+        },
+        {
+          "name": "geqdsk_lcfs_margin",
+          "annotation": "float",
+          "default_source": "0.0"
+        },
+        {
+          "name": "pedestal_model",
+          "annotation": "str",
+          "default_source": "'eped1_nn_jax'"
+        },
+        {
+          "name": "eped1nn_model_dir",
+          "annotation": "str",
+          "default_source": "'external_models/neural'"
+        },
+        {
+          "name": "eped1nn_model_name",
+          "annotation": "str",
+          "default_source": "'EPED1_H_superH'"
+        },
+        {
+          "name": "eped1nn_fail_mode",
+          "annotation": "str",
+          "default_source": "'fallback'"
+        },
+        {
+          "name": "eped1nn_output_scale",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "eped1nn_jax_max_nets",
+          "annotation": "int",
+          "default_source": "1"
+        },
+        {
+          "name": "pedestal_kbm_width_coeff",
+          "annotation": "float",
+          "default_source": "0.076"
+        },
+        {
+          "name": "pedestal_width_min",
+          "annotation": "float",
+          "default_source": "0.025"
+        },
+        {
+          "name": "pedestal_width_max",
+          "annotation": "float",
+          "default_source": "0.15"
+        },
+        {
+          "name": "pedestal_alpha_scale",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "pedestal_alpha_min",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "pedestal_alpha_max",
+          "annotation": "float",
+          "default_source": "5.5"
+        },
+        {
+          "name": "pedestal_pressure_relax_tau",
+          "annotation": "float",
+          "default_source": "0.005"
+        },
+        {
+          "name": "pedestal_density_height20",
+          "annotation": "float",
+          "default_source": "0.25"
+        },
+        {
+          "name": "pedestal_te_fraction",
+          "annotation": "float",
+          "default_source": "0.5"
+        },
+        {
+          "name": "pedestal_transition_sharpness",
+          "annotation": "float",
+          "default_source": "0.012"
+        },
+        {
+          "name": "pedestal_enforcement",
+          "annotation": "str",
+          "default_source": "'tanh_underlay'"
+        },
+        {
+          "name": "pedestal_blend_fraction",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "pedestal_blend_core_width_factor",
+          "annotation": "float",
+          "default_source": "0.5"
+        },
+        {
+          "name": "pedestal_blend_mask_sharpness",
+          "annotation": "float",
+          "default_source": "0.02"
+        },
+        {
+          "name": "pedestal_blend_include_density",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "pedestal_blend_max_delta_keV",
+          "annotation": "float",
+          "default_source": "2.0"
+        },
+        {
+          "name": "pedestal_blend_max_delta_ne20",
+          "annotation": "float",
+          "default_source": "0.1"
+        },
+        {
+          "name": "pedestal_underlay_smooth_keV",
+          "annotation": "float",
+          "default_source": "0.05"
+        },
+        {
+          "name": "pedestal_underlay_smooth_ne20",
+          "annotation": "float",
+          "default_source": "0.005"
+        },
+        {
+          "name": "pedestal_alpha_resolution_guard",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "pedestal_alpha_calibration_min_width_cells",
+          "annotation": "float",
+          "default_source": "0.75"
+        },
+        {
+          "name": "pedestal_alpha_calibration_width_cells",
+          "annotation": "float",
+          "default_source": "0.25"
+        },
+        {
+          "name": "pedestal_alpha_discrete_scale_max",
+          "annotation": "float",
+          "default_source": "5.0"
+        },
+        {
+          "name": "pedestal_alpha_tracking",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "pedestal_alpha_tracking_gain",
+          "annotation": "float",
+          "default_source": "1.5"
+        },
+        {
+          "name": "pedestal_source_max_delta_keV",
+          "annotation": "float",
+          "default_source": "0.5"
+        },
+        {
+          "name": "pedestal_min_temperature_keV",
+          "annotation": "float",
+          "default_source": "0.25"
+        },
+        {
+          "name": "pedestal_projection_fraction",
+          "annotation": "float",
+          "default_source": "0.8"
+        },
+        {
+          "name": "pedestal_lh_threshold_model",
+          "annotation": "str",
+          "default_source": "'delabie'"
+        },
+        {
+          "name": "pedestal_lh_power_basis",
+          "annotation": "str",
+          "default_source": "'net_separatrix'"
+        },
+        {
+          "name": "pedestal_lh_threshold_scale",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "pedestal_lh_margin",
+          "annotation": "float",
+          "default_source": "0.01"
+        },
+        {
+          "name": "pedestal_lh_min_gate",
+          "annotation": "float",
+          "default_source": "0.0"
+        },
+        {
+          "name": "pedestal_lh_gate_cutoff",
+          "annotation": "float",
+          "default_source": "0.01"
+        },
+        {
+          "name": "martin_lh_coeff",
+          "annotation": "float",
+          "default_source": "0.0488"
+        },
+        {
+          "name": "martin_lh_n_exp",
+          "annotation": "float",
+          "default_source": "0.717"
+        },
+        {
+          "name": "martin_lh_bt_exp",
+          "annotation": "float",
+          "default_source": "0.803"
+        },
+        {
+          "name": "martin_lh_s_exp",
+          "annotation": "float",
+          "default_source": "0.941"
+        },
+        {
+          "name": "delabie_lh_coeff",
+          "annotation": "float",
+          "default_source": "0.0441"
+        },
+        {
+          "name": "delabie_lh_n_exp",
+          "annotation": "float",
+          "default_source": "1.08"
+        },
+        {
+          "name": "delabie_lh_bt_exp",
+          "annotation": "float",
+          "default_source": "0.58"
+        },
+        {
+          "name": "delabie_lh_meff_exp",
+          "annotation": "float",
+          "default_source": "0.975"
+        },
+        {
+          "name": "delabie_lh_d_exp",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "delabie_lh_s_exp",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "current_evolution_model",
+          "annotation": "str",
+          "default_source": "'psi_diffusion'"
+        },
+        {
+          "name": "resistivity_multiplier",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "saturated_current_conductivity_power",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "saturated_current_sigma_floor",
+          "annotation": "float",
+          "default_source": "0.02"
+        },
+        {
+          "name": "saturated_current_smooth",
+          "annotation": "float",
+          "default_source": "0.15"
+        },
+        {
+          "name": "psi_solver_form",
+          "annotation": "str",
+          "default_source": "'face_fv'"
+        },
+        {
+          "name": "psi_state_grid",
+          "annotation": "str",
+          "default_source": "'face'"
+        },
+        {
+          "name": "new_psi_boundary_model",
+          "annotation": "str",
+          "default_source": "'fixed_ip_neumann'"
+        },
+        {
+          "name": "current_source_smoothing_passes",
+          "annotation": "int",
+          "default_source": "1"
+        },
+        {
+          "name": "current_enclosed_smoothing_passes",
+          "annotation": "int",
+          "default_source": "0"
+        },
+        {
+          "name": "current_axis_regularization_faces",
+          "annotation": "int",
+          "default_source": "2"
+        },
+        {
+          "name": "current_diagnostic_smoothing_passes",
+          "annotation": "int",
+          "default_source": "1"
+        },
+        {
+          "name": "psi_edge_robin_length_m",
+          "annotation": "float",
+          "default_source": "0.01"
+        },
+        {
+          "name": "neoclassical_transport_model",
+          "annotation": "str",
+          "default_source": "'neonn_jax'"
+        },
+        {
+          "name": "neonn_model_dir",
+          "annotation": "str",
+          "default_source": "'external_models/neural'"
+        },
+        {
+          "name": "neonn_model_name",
+          "annotation": "str",
+          "default_source": "'jbsnn'"
+        },
+        {
+          "name": "neonn_fail_mode",
+          "annotation": "str",
+          "default_source": "'fallback'"
+        },
+        {
+          "name": "neonn_jax_max_nets",
+          "annotation": "int",
+          "default_source": "1"
+        },
+        {
+          "name": "neonn_transport_scale",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "neoclassical_chi_scale",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "neoclassical_D_scale",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "neoclassical_chi_max",
+          "annotation": "float",
+          "default_source": "5.0"
+        },
+        {
+          "name": "chang_hinton_particle_fraction",
+          "annotation": "float",
+          "default_source": "0.2"
+        },
+        {
+          "name": "chang_hinton_epsilon_min",
+          "annotation": "float",
+          "default_source": "0.03"
+        },
+        {
+          "name": "neoclassical_abs_effective_diffusivity",
+          "annotation": "bool",
+          "default_source": "False"
+        },
+        {
+          "name": "neoclassical_shaing_ion_mode",
+          "annotation": "str",
+          "default_source": "'off'"
+        },
+        {
+          "name": "neoclassical_shaing_ion_multiplier",
+          "annotation": "float",
+          "default_source": "1.8"
+        },
+        {
+          "name": "neoclassical_shaing_blend_start",
+          "annotation": "float",
+          "default_source": "0.2"
+        },
+        {
+          "name": "neoclassical_shaing_blend_rate",
+          "annotation": "float",
+          "default_source": "5.0"
+        },
+        {
+          "name": "current_feedback_model",
+          "annotation": "str",
+          "default_source": "'psi_boundary_loop_voltage'"
+        },
+        {
+          "name": "loop_voltage_gain",
+          "annotation": "float",
+          "default_source": "0.4"
+        },
+        {
+          "name": "loop_voltage_max",
+          "annotation": "float",
+          "default_source": "4.0"
+        },
+        {
+          "name": "bootstrap_model",
+          "annotation": "str",
+          "default_source": "'sauter'"
+        },
+        {
+          "name": "neonn_bootstrap_fail_mode",
+          "annotation": "str",
+          "default_source": "'fallback'"
+        },
+        {
+          "name": "neonn_bootstrap_output_name",
+          "annotation": "str",
+          "default_source": "''"
+        },
+        {
+          "name": "neonn_bootstrap_output_units",
+          "annotation": "str",
+          "default_source": "'auto'"
+        },
+        {
+          "name": "neonn_bootstrap_scale",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "bootstrap_multiplier",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "bootstrap_btheta_floor",
+          "annotation": "float",
+          "default_source": "0.08"
+        },
+        {
+          "name": "include_ohmic_heating",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "include_ei_exchange",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "include_radiation_losses",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "include_alpha_heating",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "bremsstrahlung_scale",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "line_radiation_scale",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "line_radiation_Lz_ref_W_m3",
+          "annotation": "float",
+          "default_source": "3e-35"
+        },
+        {
+          "name": "line_radiation_Tcut_keV",
+          "annotation": "float",
+          "default_source": "1.5"
+        },
+        {
+          "name": "line_radiation_Z_scaling_power",
+          "annotation": "float",
+          "default_source": "0.5"
+        },
+        {
+          "name": "line_radiation_edge_power",
+          "annotation": "float",
+          "default_source": "3.0"
+        },
+        {
+          "name": "synchrotron_scale",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "synchrotron_wall_reflectivity",
+          "annotation": "float",
+          "default_source": "0.8"
+        },
+        {
+          "name": "synchrotron_escape_fraction",
+          "annotation": "float",
+          "default_source": "0.05"
+        },
+        {
+          "name": "alpha_heating_scale",
+          "annotation": "float",
+          "default_source": "1.0"
+        },
+        {
+          "name": "alpha_partition_model",
+          "annotation": "str",
+          "default_source": "'slowing_down'"
+        },
+        {
+          "name": "alpha_electron_fraction_fixed",
+          "annotation": "float",
+          "default_source": "0.85"
+        },
+        {
+          "name": "alpha_ion_fraction_fixed",
+          "annotation": "float",
+          "default_source": "0.15"
+        },
+        {
+          "name": "ei_exchange_multiplier",
+          "annotation": "float",
+          "default_source": "1.0"
+        }
+      ],
+      "signature": "SimulationConfig(nr: int = 32, radial_grid: str = 'uniform', edge_cluster_power: float = 2.0, dt: float = 0.001, n_steps: int = 500, end_time_s: float = 0.0, dt_mode: str = 'fixed', cfl_number: float = 0.25, cfl_diffusivity_ref_m2_s: float = 1.0, adjust_dt_to_end_time: bool = True, save_every: int = 10, save_results_enabled: bool = False, save_result_times_s: tuple = (), save_result_file: str = 'outputs/tokagrad_results.npz', save_result_format: str = 'npz', save_result_include_metadata_json: bool = True, plot_diffusivity: bool = False, plot_psi: bool = False, equilibrium_skip_steps: int = 1, source_skip_steps: int = 1, transport_skip_steps: int = 1, pedestal_skip_steps: int = 1, diffusion_scheme: str = 'semi_implicit', implicit_nonlinear_iters: int = 3, implicit_relaxation: float = 1.0, predictor_corrector_relaxation: float = 1.0, newton_iters: int = 4, newton_damping: float = 0.7, newton_jacobian_regularization: float = 1e-06, density_evolution_model: str = 'greenwald_feedback', freeze_temperature_profiles: bool = False, differentiable_smooth_mode: bool = False, smooth_clip_width: float = 0.01, smooth_rate_width: float = 0.01, source_implicitness: float = 1.0, source_max_delta_keV: float = 2.5, initial_beta_N_target: float = 1.8, initial_temperature_rescale_to_beta_N: bool = True, initial_profile_quadrature_points: int = 32, greenwald_tanh_core_factor: float = 1.1, greenwald_tanh_pedestal_factor: float = 1.0, greenwald_tanh_transition_fraction: float = 0.25, greenwald_tanh_default_width: float = 0.04, density_feedback_tau: float = 0.001, greenwald_feedback_average_basis: str = 'volume', density_feedback_method: str = 'implicit_source', density_boundary_source_width: float = 0.1, density_source_max_delta: float = 0.25, initial_profile_model: str = 'h_mode', initial_current_profile_model: str = 'saturated_components', simulation_model: str = '1.5d', zero_d_H_factor: float = 1.0, zero_d_L_factor: float = 1.0, zero_d_dt_fraction_tauE: float = 0.1, zero_d_tauE_min: float = 0.001, zero_d_tauE_max: float = 20.0, zero_d_core_shape_power: float = 2.0, zero_d_temperature_max_keV: float = 80.0, zero_d_alpha_birth_energy_MeV: float = 3.52, zero_d_fast_nbi_fraction: float = 1.0, zero_d_use_lax_scan: bool = True, zero_d_profile_reconstruction_fast_path: bool = True, zero_d_reconstruct_current: bool = True, transport_mode: str = 'diffusive', transport_model: str = 'tglfnn_jax', transport_surrogate_scale: float = 1.0, transport_flux_scale: float = 1.0, transport_flux_clip: float = 50.0, transport_flux_max_delta_keV: float = 2.5, transport_flux_max_delta_ne20: float = 0.25, fusion_surrogates_fail_mode: str = 'fallback', chi_clip_min: float = 0.03, chi_clip_max: float = 30.0, qlknn_gb_to_chi: float = 1.0, gradient_floor: float = 0.5, tglfnn_model_dir: str = 'external_models/neural', tglfnn_model_name: str = 'DIIID_ion_stiffness_60_rotation', tglfnn_fail_mode: str = 'fallback', tglfnn_jax_max_nets: int = 10, tglfnn_gb_to_chi: float = 1.0, tglfnn_use_gyrobohm_scale: bool = True, tglfnn_clip_inputs_to_training: bool = True, tglfnn_training_clip_sigma: float = 5.0, tglfnn_vpar_1: float = 0.0, tglfnn_vpar_shear_1: float = 0.0, tglfnn_vexb_shear: float = 0.0, chi_e_base: float = 0.6, chi_i_base: float = 0.45, Dn_base: float = 0.15, chi_edge_mult: float = 4.0, stiffness: float = 1.5, grad_crit_keV_per_m: float = 3.0, bohm_chi_e_bohm_coeff: float = 8e-05, bohm_chi_e_gyrobohm_coeff: float = 5e-06, bohm_chi_i_bohm_coeff: float = 8e-05, bohm_chi_i_gyrobohm_coeff: float = 5e-06, bohm_particle_c1: float = 1.0, bohm_particle_c2: float = 0.3, bohm_chi_min: float = 0.05, bohm_chi_max: float = 100.0, bohm_particle_min: float = 0.05, bohm_particle_max: float = 100.0, ntheta: int = 16, theta_grid_alignment: str = 'auto', shafranov_shift_max: float = 0.25, triangularity_profile_power: float = 1.0, elongation_profile_power: float = 1.0, transport_geometry: str = 'flux', phi_dot_over_phi: float = 0.0, auto_phi_dot_over_phi: bool = True, phi_dot_over_phi_clip: float = 5.0, reduced_geometry_metrics: bool = True, torax_circular_psi_geometry: bool = False, heat_convection_model: str = 'none', heat_convection_e_base: float = 0.0, heat_convection_i_base: float = 0.0, particle_convection_model: str = 'none', particle_convection_base: float = 0.0, ware_pinch_scale: float = 1.0, ware_pinch_bpol_min_T: float = 0.02, ware_pinch_velocity_max_m_s: float = 200.0, equilibrium_model: str = 'reduced_fixed_boundary', geqdsk_path: str = '', geqdsk_use_pressure: bool = False, geqdsk_q_profile_source: str = 'eqdsk', geqdsk_flux_coordinate: str = 'sqrt_psi', geqdsk_surface_geometry: str = 'psirz_contours', geqdsk_inner_contour_fallback: str = 'axis_hessian', geqdsk_lcfs_margin: float = 0.0, pedestal_model: str = 'eped1_nn_jax', eped1nn_model_dir: str = 'external_models/neural', eped1nn_model_name: str = 'EPED1_H_superH', eped1nn_fail_mode: str = 'fallback', eped1nn_output_scale: float = 1.0, eped1nn_jax_max_nets: int = 1, pedestal_kbm_width_coeff: float = 0.076, pedestal_width_min: float = 0.025, pedestal_width_max: float = 0.15, pedestal_alpha_scale: float = 1.0, pedestal_alpha_min: float = 1.0, pedestal_alpha_max: float = 5.5, pedestal_pressure_relax_tau: float = 0.005, pedestal_density_height20: float = 0.25, pedestal_te_fraction: float = 0.5, pedestal_transition_sharpness: float = 0.012, pedestal_enforcement: str = 'tanh_underlay', pedestal_blend_fraction: float = 1.0, pedestal_blend_core_width_factor: float = 0.5, pedestal_blend_mask_sharpness: float = 0.02, pedestal_blend_include_density: bool = True, pedestal_blend_max_delta_keV: float = 2.0, pedestal_blend_max_delta_ne20: float = 0.1, pedestal_underlay_smooth_keV: float = 0.05, pedestal_underlay_smooth_ne20: float = 0.005, pedestal_alpha_resolution_guard: bool = True, pedestal_alpha_calibration_min_width_cells: float = 0.75, pedestal_alpha_calibration_width_cells: float = 0.25, pedestal_alpha_discrete_scale_max: float = 5.0, pedestal_alpha_tracking: bool = True, pedestal_alpha_tracking_gain: float = 1.5, pedestal_source_max_delta_keV: float = 0.5, pedestal_min_temperature_keV: float = 0.25, pedestal_projection_fraction: float = 0.8, pedestal_lh_threshold_model: str = 'delabie', pedestal_lh_power_basis: str = 'net_separatrix', pedestal_lh_threshold_scale: float = 1.0, pedestal_lh_margin: float = 0.01, pedestal_lh_min_gate: float = 0.0, pedestal_lh_gate_cutoff: float = 0.01, martin_lh_coeff: float = 0.0488, martin_lh_n_exp: float = 0.717, martin_lh_bt_exp: float = 0.803, martin_lh_s_exp: float = 0.941, delabie_lh_coeff: float = 0.0441, delabie_lh_n_exp: float = 1.08, delabie_lh_bt_exp: float = 0.58, delabie_lh_meff_exp: float = 0.975, delabie_lh_d_exp: float = 1.0, delabie_lh_s_exp: float = 1.0, current_evolution_model: str = 'psi_diffusion', resistivity_multiplier: float = 1.0, saturated_current_conductivity_power: float = 1.0, saturated_current_sigma_floor: float = 0.02, saturated_current_smooth: float = 0.15, psi_solver_form: str = 'face_fv', psi_state_grid: str = 'face', new_psi_boundary_model: str = 'fixed_ip_neumann', current_source_smoothing_passes: int = 1, current_enclosed_smoothing_passes: int = 0, current_axis_regularization_faces: int = 2, current_diagnostic_smoothing_passes: int = 1, psi_edge_robin_length_m: float = 0.01, neoclassical_transport_model: str = 'neonn_jax', neonn_model_dir: str = 'external_models/neural', neonn_model_name: str = 'jbsnn', neonn_fail_mode: str = 'fallback', neonn_jax_max_nets: int = 1, neonn_transport_scale: float = 1.0, neoclassical_chi_scale: float = 1.0, neoclassical_D_scale: float = 1.0, neoclassical_chi_max: float = 5.0, chang_hinton_particle_fraction: float = 0.2, chang_hinton_epsilon_min: float = 0.03, neoclassical_abs_effective_diffusivity: bool = False, neoclassical_shaing_ion_mode: str = 'off', neoclassical_shaing_ion_multiplier: float = 1.8, neoclassical_shaing_blend_start: float = 0.2, neoclassical_shaing_blend_rate: float = 5.0, current_feedback_model: str = 'psi_boundary_loop_voltage', loop_voltage_gain: float = 0.4, loop_voltage_max: float = 4.0, bootstrap_model: str = 'sauter', neonn_bootstrap_fail_mode: str = 'fallback', neonn_bootstrap_output_name: str = '', neonn_bootstrap_output_units: str = 'auto', neonn_bootstrap_scale: float = 1.0, bootstrap_multiplier: float = 1.0, bootstrap_btheta_floor: float = 0.08, include_ohmic_heating: bool = True, include_ei_exchange: bool = True, include_radiation_losses: bool = True, include_alpha_heating: bool = True, bremsstrahlung_scale: float = 1.0, line_radiation_scale: float = 1.0, line_radiation_Lz_ref_W_m3: float = 3e-35, line_radiation_Tcut_keV: float = 1.5, line_radiation_Z_scaling_power: float = 0.5, line_radiation_edge_power: float = 3.0, synchrotron_scale: float = 1.0, synchrotron_wall_reflectivity: float = 0.8, synchrotron_escape_fraction: float = 0.05, alpha_heating_scale: float = 1.0, alpha_partition_model: str = 'slowing_down', alpha_electron_fraction_fixed: float = 0.85, alpha_ion_fraction_fixed: float = 0.15, ei_exchange_multiplier: float = 1.0)",
+      "methods": [],
+      "source_docstring": "Numerical settings and reduced-model switches."
+    },
+    {
+      "id": "scirel.fusion.configuration.PlasmaState",
+      "module": "scirel.fusion.configuration",
+      "symbol": "PlasmaState",
+      "title": "演化状态及历史几何字段",
+      "topic_id": "state-and-evolution",
+      "kind": "class",
+      "implementation_member_sha256": "9d3666822aa24d534d46f0610fbe73a263f2187fd7d13a41ffebbd6c2305870c",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "fields": [
+        {
+          "name": "Te",
+          "annotation": "jnp.ndarray",
+          "default_source": null
+        },
+        {
+          "name": "Ti",
+          "annotation": "jnp.ndarray",
+          "default_source": null
+        },
+        {
+          "name": "ne20",
+          "annotation": "jnp.ndarray",
+          "default_source": null
+        },
+        {
+          "name": "psi_ind",
+          "annotation": "jnp.ndarray",
+          "default_source": null
+        },
+        {
+          "name": "psi_edge",
+          "annotation": "jnp.ndarray",
+          "default_source": null
+        },
+        {
+          "name": "Phi_b_prev",
+          "annotation": "jnp.ndarray",
+          "default_source": "jnp.asarray(0.0)"
+        },
+        {
+          "name": "dV_drho_prev",
+          "annotation": "jnp.ndarray",
+          "default_source": "jnp.asarray(0.0)"
+        }
+      ],
+      "signature": "PlasmaState(Te: jnp.ndarray, Ti: jnp.ndarray, ne20: jnp.ndarray, psi_ind: jnp.ndarray, psi_edge: jnp.ndarray, Phi_b_prev: jnp.ndarray = jnp.asarray(0.0), dV_drho_prev: jnp.ndarray = jnp.asarray(0.0))",
+      "methods": [],
+      "source_docstring": null
+    },
+    {
+      "id": "scirel.fusion.configuration.load_static_input",
+      "module": "scirel.fusion.configuration",
+      "symbol": "load_static_input",
+      "title": "从 JSON 读取静态配置",
+      "topic_id": "state-and-evolution",
+      "kind": "function",
+      "implementation_member_sha256": "f41ac886337abe0a8e9abaf7a23576f9660f77b5fffeebd15b7b483c3e6b196e",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "load_static_input(path: str | Path, machine: MachineConfig | None=None, actuator: ActuatorConfig | None=None, sim: SimulationConfig | None=None)",
+      "source_docstring": "Load machine/actuator/simulation sections from a JSON input file."
+    },
+    {
+      "id": "scirel.fusion.configuration.load_waveform_input",
+      "module": "scirel.fusion.configuration",
+      "symbol": "load_waveform_input",
+      "title": "从 JSON 读取时变输入",
+      "topic_id": "state-and-evolution",
+      "kind": "function",
+      "implementation_member_sha256": "f41ac886337abe0a8e9abaf7a23576f9660f77b5fffeebd15b7b483c3e6b196e",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "load_waveform_input(path: str | Path, machine: MachineConfig | None=None, actuator: ActuatorConfig | None=None, sim: SimulationConfig | None=None)",
+      "source_docstring": "Load machine/actuator/simulation/waveform sections from a JSON input file."
+    },
+    {
+      "id": "scirel.fusion.controls.apply_control_vector",
+      "module": "scirel.fusion.controls",
+      "symbol": "apply_control_vector",
+      "title": "将优化控制向量映射到 pytree 配置",
+      "topic_id": "control-and-optimization",
+      "kind": "function",
+      "implementation_member_sha256": "0996334140625c5393facf2342b5458edce2def3c93616d54fb71edb0b7556de",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "apply_control_vector(x_phys, machine: PytreeMachineConfig, actuator: PytreeActuatorConfig, sim, names=CONTROL_NAMES)",
+      "source_docstring": "Apply physical controls to pytree configs.\n\n`sim` remains the legacy frozen SimulationConfig because model choices and\ngrid sizes are intentionally static.  If a control modifies a SimulationConfig\nscalar, a dataclass replace is used; the scalar may still be a JAX tracer."
+    },
+    {
+      "id": "scirel.fusion.controls.Waveform",
+      "module": "scirel.fusion.controls",
+      "symbol": "Waveform",
+      "title": "单个物理输入的时间波形",
+      "topic_id": "control-and-optimization",
+      "kind": "class",
+      "implementation_member_sha256": "3c223fa09f2d3cbb27764588bb1880ee7b73a47224fb7d187d74d61ca83e2b6e",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "fields": [
+        {
+          "name": "times",
+          "annotation": "jnp.ndarray",
+          "default_source": null
+        },
+        {
+          "name": "values",
+          "annotation": "jnp.ndarray",
+          "default_source": null
+        },
+        {
+          "name": "hold_left",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "hold_right",
+          "annotation": "bool",
+          "default_source": "True"
+        },
+        {
+          "name": "interpolation",
+          "annotation": "str",
+          "default_source": "'linear'"
+        }
+      ],
+      "signature": "Waveform(times: jnp.ndarray, values: jnp.ndarray, hold_left: bool = True, hold_right: bool = True, interpolation: str = 'linear')",
+      "methods": [],
+      "source_docstring": null
+    },
+    {
+      "id": "scirel.fusion.controls.ScenarioWaveform",
+      "module": "scirel.fusion.controls",
+      "symbol": "ScenarioWaveform",
+      "title": "多物理输入的场景波形",
+      "topic_id": "control-and-optimization",
+      "kind": "class",
+      "implementation_member_sha256": "3c223fa09f2d3cbb27764588bb1880ee7b73a47224fb7d187d74d61ca83e2b6e",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "fields": [
+        {
+          "name": "controls",
+          "annotation": "Mapping[str, Waveform]",
+          "default_source": null
+        },
+        {
+          "name": "name",
+          "annotation": "str",
+          "default_source": "'custom'"
+        }
+      ],
+      "signature": "ScenarioWaveform(controls: Mapping[str, Waveform], name: str = 'custom')",
+      "methods": [
+        {
+          "name": "value",
+          "signature": "value(self, key: str, t, default=None)"
+        }
+      ],
+      "source_docstring": null
+    },
+    {
+      "id": "scirel.fusion.controls.apply_waveform_controls",
+      "module": "scirel.fusion.controls",
+      "symbol": "apply_waveform_controls",
+      "title": "在指定时间应用场景波形",
+      "topic_id": "control-and-optimization",
+      "kind": "function",
+      "implementation_member_sha256": "3c223fa09f2d3cbb27764588bb1880ee7b73a47224fb7d187d74d61ca83e2b6e",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "apply_waveform_controls(machine: MachineConfig, actuator: ActuatorConfig, waveform: ScenarioWaveform | None, t)",
+      "source_docstring": "Return machine/actuator configs sampled at time t."
+    },
+    {
+      "id": "scirel.fusion.diagnostics.compute_diagnostics",
+      "module": "scirel.fusion.diagnostics",
+      "symbol": "compute_diagnostics",
+      "title": "计算模型诊断字典",
+      "topic_id": "heating-current-diagnostics",
+      "kind": "function",
+      "implementation_member_sha256": "09142f23b7c7420b62bf1ac2eff864316433bff3606d36fd8fd96dce1220cc3a",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "compute_diagnostics(state, machine, actuator=None, sim=None, include_equilibrium=True, *, rho=None, eq=None, current_components=None, heat_diag=None)",
+      "source_docstring": null
+    },
+    {
+      "id": "scirel.fusion.diagnostics.total_heating_sources",
+      "module": "scirel.fusion.diagnostics",
+      "symbol": "total_heating_sources",
+      "title": "组合电子和离子温度源项",
+      "topic_id": "heating-current-diagnostics",
+      "kind": "function",
+      "implementation_member_sha256": "4ddc2813365c929566f1ffc18847f27757cb8ad747e589f222ea45887cef60dd",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "total_heating_sources(rho, state, machine, actuator, sim, eq=None, dV_drho=None)",
+      "source_docstring": "Return electron/ion temperature sources [keV/s] and diagnostics.\n\nIncludes by default:\n  - auxiliary heating,\n  - ohmic heating from inductive current,\n  - electron-ion exchange,\n  - alpha heating for D-T plasma,\n  - bremsstrahlung, line, and synchrotron radiation losses."
+    },
+    {
+      "id": "scirel.fusion.diagnostics.current_components_from_state",
+      "module": "scirel.fusion.diagnostics",
+      "symbol": "current_components_from_state",
+      "title": "组合电流组成",
+      "topic_id": "heating-current-diagnostics",
+      "kind": "function",
+      "implementation_member_sha256": "d595f0aa73afc7356ba7648bc313131408f8fc3c0f126b68c7bba23e1bd11fc9",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "current_components_from_state(rho, state, machine, actuator, sim, eq=None, q=None)",
+      "source_docstring": "Return j_ohm, j_bs, j_cd, j_total."
+    },
+    {
+      "id": "scirel.fusion.dynamics.initial_state",
+      "module": "scirel.fusion.dynamics",
+      "symbol": "initial_state",
+      "title": "构造径向初始状态",
+      "topic_id": "state-and-evolution",
+      "kind": "function",
+      "implementation_member_sha256": "cb734a99eae680f6df64aaa6637b53f6f46511262a26dc878957e07dc9bce623",
+      "status": "bound-detailed-compatibility-contract",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "initial_state(machine, actuator, sim)",
+      "source_docstring": null,
+      "contract_projection": {
+        "asset_id": "scirel.fusion.initial-state",
+        "schema": "scirel.asset-document.v1",
+        "title": {
+          "en": "Source radial state initialization",
+          "zh": "来源径向状态初始化"
+        },
+        "summary": "Source radial state initialization in the explicit TokaGrad compatibility development variant; defaults and original failure semantics retained.",
+        "identity": {
+          "assumptions": [
+            "Source-admissible selected reduced analytic configuration.",
+            "Stateful calls require genuine source predecessor and geometry-history ownership.",
+            "This compatibility contract does not establish scientific correctness."
+          ],
+          "boundary": "Source axis-copy and declared edge/state boundary conventions; no new boundary rule.",
+          "coordinates": "cell-centered thermal/density fields and selected face current grid",
+          "definition": "Construct source profiles and current convention; obtain reduced geometry; bind Phi_b and dV/drho to the initial history fields. Source initial-current selectors and fixed bounded current/geometry updates remain unchanged.",
+          "direction": "Declared input fields/configuration to returned coordinate/profile/state fields.",
+          "geometry": "Reduced fixed-boundary tokamak for state mappings; radial coordinate only for grid mappings.",
+          "model": "Initialization heuristics, not an equilibrium/transport solution.",
+          "relation": "Source radial state initialization"
+        },
+        "inputs": [
+          {
+            "constraints": "Use exact source config defaults or explicitly selected source-admissible controls.",
+            "description": "Source machine configuration; R0,a in m, Bt in T, Ip in A, kappa/delta/Zeff dimensionless.",
+            "dtype": "MachineConfig",
+            "name": "machine",
+            "required": true,
+            "shape": "scalar fields",
+            "units": "mixed declared configuration units"
+          },
+          {
+            "constraints": "Caller supplies the declared domain.",
+            "description": "Source actuator configuration; P_aux_MW in MW, edge temperatures keV, positions/widths normalized.",
+            "dtype": "ActuatorConfig",
+            "name": "actuator",
+            "required": true,
+            "shape": "scalar fields",
+            "units": "mixed declared configuration units"
+          },
+          {
+            "constraints": "Review-supported reduced analytic domain; no restricted neural requirement or unevidenced branch support.",
+            "description": "Frozen model/numerical configuration, including nr, ntheta, dt in s, selectors and update cadences.",
+            "dtype": "SimulationConfig",
+            "name": "sim",
+            "required": true,
+            "shape": "scalar fields",
+            "units": "counts: 1; dt: s; closure scales per source"
+          }
+        ],
+        "outputs": [
+          {
+            "constraints": "Caller supplies the declared domain.",
+            "description": "Complete new seven-field PlasmaState with updated previous-geometry history; not an independently certified physical solution.",
+            "dtype": "PlasmaState",
+            "name": "state",
+            "required": true,
+            "shape": "Te/Ti/ne20/dV_drho_prev [nr]; psi_ind [nr+1] for selected face convention; psi_edge/Phi_b_prev scalar",
+            "units": "Te,Ti: keV; ne20: 1e20 m^-3; psi_ind,psi_edge: source poloidal-flux proxy; Phi_b_prev: Wb; dV_drho_prev: m^3"
+          }
+        ],
+        "applicability": {
+          "excluded": [
+            "All-source selector coverage, arbitrary long/default trajectories and scientific/experimental qualification.",
+            "Restricted neural inference and model weight distribution."
+          ],
+          "preconditions": [
+            "Install the pinned fusion extra in the tested Linux x86_64 CPython 3.12 profile.",
+            "Use positive grid counts/radius and compatible declared shapes; configure JAX x64 before numeric calls for the bound evidence."
+          ],
+          "supported": [
+            "Bound source-fidelity behavior for the selected cases and the stated callable contract."
+          ]
+        },
+        "failure_semantics": {
+          "invalid_input": "Original errors propagate; grid and axis selectors raise named ValueError. No newly invented checks, clipping or defaults.",
+          "nonconvergence": "No new convergence test or success flag. Initialization/reconstruction heuristics and bounded updates are not proof of a governing residual.",
+          "partial_results": "No fabricated fallback state. A normal return is the complete stated result; failures are not physical success.",
+          "runtime_failure": "Dependency, shape, source computation and nonfinite behavior propagate unchanged; optional dependency import occurs only on symbol access."
+        },
+        "public_api": {
+          "python": {
+            "module": "scirel.fusion.dynamics",
+            "signature": "initial_state(machine, actuator, sim)",
+            "symbol": "initial_state"
+          }
+        },
+        "example": {
+          "code": "from dataclasses import replace\nfrom scirel.fusion.configuration import MachineConfig, ActuatorConfig, SimulationConfig\nfrom scirel.fusion.dynamics import initial_state\nm, ac = MachineConfig(), ActuatorConfig()\ns = replace(SimulationConfig(), nr=4, ntheta=4, n_steps=1, transport_model='bohm_gyrobohm', pedestal_model='none', equilibrium_model='reduced_fixed_boundary')\nstate=initial_state(m,ac,s)\nassert state.Te.shape == (4,) and state.psi_ind.shape == (5,)\n",
+          "description": "Selected reduced compatibility example, not an independent physical oracle.",
+          "expected": "A complete seven-field initialized state, with matching selected geometry history."
+        },
+        "verification": {
+          "evidence_ceiling": "Bounded source behavior and installed nonregression only. No correctness qualification, human approval or whole D1 completion.",
+          "known_limitations": [
+            "Only the reviewed partial source domain is supported.",
+            "Source reduced models and initialization remain heuristic; scientific corrections unresolved.",
+            "Other native platforms and runtime/dependency versions are untested."
+          ],
+          "scope": [
+            "Exact source/runtime bytes, public object identity and declared grid/state ports.",
+            "Selected installed selector/waveform/scalar/final-only regressions at retained rtol=atol=2e-10."
+          ],
+          "tests": [
+            "tests/test_tokagrad_integration.py"
+          ]
+        },
+        "version": {
+          "dependencies": [],
+          "implementation_version": "0.2.0.dev2+review20261008"
+        },
+        "provenance": {
+          "license_status": "MIT; copyright (c) 2026 Jaemin Seo; full notice accompanies packaged implementation. No restricted model weights included.",
+          "lineage_summary": "Current TokaGrad source revision 53db253ef56b641e0bc796fb2dad650d9b2ce33e; byte-identical internal implementation with domain API identity adaptation.",
+          "public_references": [],
+          "source_kinds": [
+            "source implementation",
+            "bounded source-fidelity differential evidence"
+          ]
+        },
+        "projection_note": "Generated selected fields from the bound canonical record; not a separately authored scientific contract."
+      },
+      "canonical_catalog_record": {
+        "path": "records/2a/scirel.fusion.initial-state.json",
+        "sha256": "bcaf4e68f8147c3915bd7901bb3cd54f1082add89ca6c408fc7ca445306502e5"
+      }
+    },
+    {
+      "id": "scirel.fusion.dynamics.step",
+      "module": "scirel.fusion.dynamics",
+      "symbol": "step",
+      "title": "更新径向状态",
+      "topic_id": "state-and-evolution",
+      "kind": "function",
+      "implementation_member_sha256": "cb734a99eae680f6df64aaa6637b53f6f46511262a26dc878957e07dc9bce623",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "step(state: PlasmaState, machine, actuator, sim)",
+      "source_docstring": null
+    },
+    {
+      "id": "scirel.fusion.dynamics.initialize_step_cache",
+      "module": "scirel.fusion.dynamics",
+      "symbol": "initialize_step_cache",
+      "title": "建立演化缓存",
+      "topic_id": "state-and-evolution",
+      "kind": "function",
+      "implementation_member_sha256": "cb734a99eae680f6df64aaa6637b53f6f46511262a26dc878957e07dc9bce623",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "initialize_step_cache(state: PlasmaState, machine, actuator, sim) -> StepCache",
+      "source_docstring": "Build a cache for expensive submodels from the current state."
+    },
+    {
+      "id": "scirel.fusion.dynamics.step_cached",
+      "module": "scirel.fusion.dynamics",
+      "symbol": "step_cached",
+      "title": "使用缓存更新状态",
+      "topic_id": "state-and-evolution",
+      "kind": "function",
+      "implementation_member_sha256": "cb734a99eae680f6df64aaa6637b53f6f46511262a26dc878957e07dc9bce623",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "step_cached(state: PlasmaState, cache: StepCache, i, machine, actuator, sim)",
+      "source_docstring": null
+    },
+    {
+      "id": "scirel.fusion.dynamics.initial_state_0d",
+      "module": "scirel.fusion.dynamics",
+      "symbol": "initial_state_0d",
+      "title": "构造约化 0D 初始状态",
+      "topic_id": "state-and-evolution",
+      "kind": "function",
+      "implementation_member_sha256": "a94b48f223df643daa8f60c963f5e7b67ee35cef9fed999ec7ff20be225fd77b",
+      "status": "bound-detailed-compatibility-contract",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "initial_state_0d(machine: MachineConfig, actuator: ActuatorConfig, sim: SimulationConfig)",
+      "source_docstring": null,
+      "contract_projection": {
+        "asset_id": "scirel.fusion.initial-state-0d",
+        "schema": "scirel.asset-document.v1",
+        "title": {
+          "en": "Reduced energy-profile initialization",
+          "zh": "约化能量剖面初始化"
+        },
+        "summary": "Reduced energy-profile initialization in the explicit TokaGrad compatibility development variant; defaults and original failure semantics retained.",
+        "identity": {
+          "assumptions": [
+            "Source-admissible selected reduced analytic configuration.",
+            "Stateful calls require genuine source predecessor and geometry-history ownership.",
+            "This compatibility contract does not establish scientific correctness."
+          ],
+          "boundary": "Source axis-copy and declared edge/state boundary conventions; no new boundary rule.",
+          "coordinates": "complete radial carrier for reduced energy update",
+          "definition": "Use original radial initial_state, reduced geometry and thermal-energy integration, then reconstruct the source reduced profile at the same thermal energy with genuine predecessor fields.",
+          "direction": "Declared input fields/configuration to returned coordinate/profile/state fields.",
+          "geometry": "Reduced fixed-boundary tokamak for state mappings; radial coordinate only for grid mappings.",
+          "model": "0D energy/profile reduction; source reconstruction heuristics.",
+          "relation": "Reduced energy-profile initialization"
+        },
+        "inputs": [
+          {
+            "constraints": "Use exact source config defaults or explicitly selected source-admissible controls.",
+            "description": "Source machine configuration; R0,a in m, Bt in T, Ip in A, kappa/delta/Zeff dimensionless.",
+            "dtype": "MachineConfig",
+            "name": "machine",
+            "required": true,
+            "shape": "scalar fields",
+            "units": "mixed declared configuration units"
+          },
+          {
+            "constraints": "Caller supplies the declared domain.",
+            "description": "Source actuator configuration; P_aux_MW in MW, edge temperatures keV, positions/widths normalized.",
+            "dtype": "ActuatorConfig",
+            "name": "actuator",
+            "required": true,
+            "shape": "scalar fields",
+            "units": "mixed declared configuration units"
+          },
+          {
+            "constraints": "Review-supported reduced analytic domain; no restricted neural requirement or unevidenced branch support.",
+            "description": "Frozen model/numerical configuration, including nr, ntheta, dt in s, selectors and update cadences.",
+            "dtype": "SimulationConfig",
+            "name": "sim",
+            "required": true,
+            "shape": "scalar fields",
+            "units": "counts: 1; dt: s; closure scales per source"
+          }
+        ],
+        "outputs": [
+          {
+            "constraints": "Caller supplies the declared domain.",
+            "description": "Complete new seven-field PlasmaState with updated previous-geometry history; not an independently certified physical solution.",
+            "dtype": "PlasmaState",
+            "name": "state",
+            "required": true,
+            "shape": "Te/Ti/ne20/dV_drho_prev [nr]; psi_ind [nr+1] for selected face convention; psi_edge/Phi_b_prev scalar",
+            "units": "Te,Ti: keV; ne20: 1e20 m^-3; psi_ind,psi_edge: source poloidal-flux proxy; Phi_b_prev: Wb; dV_drho_prev: m^3"
+          }
+        ],
+        "applicability": {
+          "excluded": [
+            "All-source selector coverage, arbitrary long/default trajectories and scientific/experimental qualification.",
+            "Restricted neural inference and model weight distribution."
+          ],
+          "preconditions": [
+            "Install the pinned fusion extra in the tested Linux x86_64 CPython 3.12 profile.",
+            "Use positive grid counts/radius and compatible declared shapes; configure JAX x64 before numeric calls for the bound evidence."
+          ],
+          "supported": [
+            "Bound source-fidelity behavior for the selected cases and the stated callable contract."
+          ]
+        },
+        "failure_semantics": {
+          "invalid_input": "Original errors propagate; grid and axis selectors raise named ValueError. No newly invented checks, clipping or defaults.",
+          "nonconvergence": "No new convergence test or success flag. Initialization/reconstruction heuristics and bounded updates are not proof of a governing residual.",
+          "partial_results": "No fabricated fallback state. A normal return is the complete stated result; failures are not physical success.",
+          "runtime_failure": "Dependency, shape, source computation and nonfinite behavior propagate unchanged; optional dependency import occurs only on symbol access."
+        },
+        "public_api": {
+          "python": {
+            "module": "scirel.fusion.dynamics",
+            "signature": "initial_state_0d(machine: 'MachineConfig', actuator: 'ActuatorConfig', sim: 'SimulationConfig')",
+            "symbol": "initial_state_0d"
+          }
+        },
+        "example": {
+          "code": "from dataclasses import replace\nfrom scirel.fusion.configuration import MachineConfig, ActuatorConfig, SimulationConfig\nfrom scirel.fusion.dynamics import initial_state\nm, ac = MachineConfig(), ActuatorConfig()\ns = replace(SimulationConfig(), nr=4, ntheta=4, n_steps=1, transport_model='bohm_gyrobohm', pedestal_model='none', equilibrium_model='reduced_fixed_boundary')\nfrom scirel.fusion.dynamics import initial_state_0d\nstate=initial_state_0d(m,ac,replace(s,simulation_model='0d_fast'))\nassert state.Te.shape == (4,)\n",
+          "description": "Selected reduced compatibility example, not an independent physical oracle.",
+          "expected": "Complete reduced initialized profile state."
+        },
+        "verification": {
+          "evidence_ceiling": "Bounded source behavior and installed nonregression only. No correctness qualification, human approval or whole D1 completion.",
+          "known_limitations": [
+            "Only the reviewed partial source domain is supported.",
+            "Source reduced models and initialization remain heuristic; scientific corrections unresolved.",
+            "Other native platforms and runtime/dependency versions are untested."
+          ],
+          "scope": [
+            "Exact source/runtime bytes, public object identity and declared grid/state ports.",
+            "Selected installed selector/waveform/scalar/final-only regressions at retained rtol=atol=2e-10."
+          ],
+          "tests": [
+            "tests/test_tokagrad_integration.py"
+          ]
+        },
+        "version": {
+          "dependencies": [],
+          "implementation_version": "0.2.0.dev2+review20261008"
+        },
+        "provenance": {
+          "license_status": "MIT; copyright (c) 2026 Jaemin Seo; full notice accompanies packaged implementation. No restricted model weights included.",
+          "lineage_summary": "Current TokaGrad source revision 53db253ef56b641e0bc796fb2dad650d9b2ce33e; byte-identical internal implementation with domain API identity adaptation.",
+          "public_references": [],
+          "source_kinds": [
+            "source implementation",
+            "bounded source-fidelity differential evidence"
+          ]
+        },
+        "projection_note": "Generated selected fields from the bound canonical record; not a separately authored scientific contract."
+      },
+      "canonical_catalog_record": {
+        "path": "records/b2/scirel.fusion.initial-state-0d.json",
+        "sha256": "1e84042c531edb6f2060494d82581271eec68f4875daec1a5b2f1421455b92f9"
+      }
+    },
+    {
+      "id": "scirel.fusion.dynamics.zero_d_step_with_dt",
+      "module": "scirel.fusion.dynamics",
+      "symbol": "zero_d_step_with_dt",
+      "title": "更新约化 0D 状态并返回实际步长",
+      "topic_id": "state-and-evolution",
+      "kind": "function",
+      "implementation_member_sha256": "a94b48f223df643daa8f60c963f5e7b67ee35cef9fed999ec7ff20be225fd77b",
+      "status": "bound-detailed-compatibility-contract",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "zero_d_step_with_dt(state: PlasmaState, machine: MachineConfig, actuator: ActuatorConfig, sim: SimulationConfig)",
+      "source_docstring": "Advance one 0.5D step and return ``(new_state, dt_eff_s)``.\n\n``dt_eff_s`` is the actual physical timestep used in the semi-analytic\nstored-energy update.  It can be smaller than ``sim.dt`` when tau_E is\nshort, so downstream history/plot/optimization code should accumulate this\nvalue rather than assuming a uniform ``i * sim.dt`` time grid.",
+      "contract_projection": {
+        "asset_id": "scirel.fusion.zero-d-step-with-dt",
+        "schema": "scirel.asset-document.v1",
+        "title": {
+          "en": "Adaptive reduced stored-energy step",
+          "zh": "自适应约化储能单步更新"
+        },
+        "summary": "Adaptive reduced stored-energy step in the explicit TokaGrad compatibility development variant; defaults and original failure semantics retained.",
+        "identity": {
+          "assumptions": [
+            "Source-admissible selected reduced analytic configuration.",
+            "Stateful calls require genuine source predecessor and geometry-history ownership.",
+            "This compatibility contract does not establish scientific correctness."
+          ],
+          "boundary": "Source axis-copy and declared edge/state boundary conventions; no new boundary rule.",
+          "coordinates": "caller owns predecessor state and accumulated physical time",
+          "definition": "Frozen-power equation dW/dt=P_net-W/tau_E: W_new=exp(-dt_eff/(tau+1e-12))*W+(1-exp(-dt_eff/(tau+1e-12)))*tau*P_net, then max(W_new,1e-6) and source profile reconstruction. dt_eff=min(sim.dt,zero_d_dt_fraction_tauE*tau_E_proxy), with source proxy not tau_E used for this bound.",
+          "direction": "Declared input fields/configuration to returned coordinate/profile/state fields.",
+          "geometry": "Reduced fixed-boundary tokamak for state mappings; radial coordinate only for grid mappings.",
+          "model": "Semi-analytic reduced energy update and explicit source profile reconstruction; no independent physical qualification.",
+          "relation": "Adaptive reduced stored-energy step"
+        },
+        "inputs": [
+          {
+            "constraints": "Genuine initialized predecessor with selected source shape and lifecycle; no captured-answer or substituted history.",
+            "description": "Complete caller-owned PlasmaState; preserve all geometry-history fields.",
+            "dtype": "PlasmaState",
+            "name": "state",
+            "required": true,
+            "shape": "Te/Ti/ne20/dV_drho_prev [nr]; psi_ind [nr+1] for selected face convention; psi_edge/Phi_b_prev scalar",
+            "units": "Te,Ti: keV; ne20: 1e20 m^-3; psi_ind,psi_edge: source poloidal-flux proxy; Phi_b_prev: Wb; dV_drho_prev: m^3"
+          },
+          {
+            "constraints": "Use exact source config defaults or explicitly selected source-admissible controls.",
+            "description": "Source machine configuration; R0,a in m, Bt in T, Ip in A, kappa/delta/Zeff dimensionless.",
+            "dtype": "MachineConfig",
+            "name": "machine",
+            "required": true,
+            "shape": "scalar fields",
+            "units": "mixed declared configuration units"
+          },
+          {
+            "constraints": "Caller supplies the declared domain.",
+            "description": "Source actuator configuration; P_aux_MW in MW, edge temperatures keV, positions/widths normalized.",
+            "dtype": "ActuatorConfig",
+            "name": "actuator",
+            "required": true,
+            "shape": "scalar fields",
+            "units": "mixed declared configuration units"
+          },
+          {
+            "constraints": "Review-supported reduced analytic domain; no restricted neural requirement or unevidenced branch support.",
+            "description": "Frozen model/numerical configuration, including nr, ntheta, dt in s, selectors and update cadences.",
+            "dtype": "SimulationConfig",
+            "name": "sim",
+            "required": true,
+            "shape": "scalar fields",
+            "units": "counts: 1; dt: s; closure scales per source"
+          }
+        ],
+        "outputs": [
+          {
+            "constraints": "Caller supplies the declared domain.",
+            "description": "Complete new seven-field PlasmaState with updated previous-geometry history; not an independently certified physical solution.",
+            "dtype": "PlasmaState",
+            "name": "new_state",
+            "required": true,
+            "shape": "Te/Ti/ne20/dV_drho_prev [nr]; psi_ind [nr+1] for selected face convention; psi_edge/Phi_b_prev scalar",
+            "units": "Te,Ti: keV; ne20: 1e20 m^-3; psi_ind,psi_edge: source poloidal-flux proxy; Phi_b_prev: Wb; dV_drho_prev: m^3"
+          },
+          {
+            "constraints": "Caller supplies the declared domain.",
+            "description": "Actual physical timestep used; caller must accumulate this value",
+            "dtype": "floating array",
+            "name": "dt_eff_s",
+            "required": true,
+            "shape": "scalar",
+            "units": "s"
+          }
+        ],
+        "applicability": {
+          "excluded": [
+            "All-source selector coverage, arbitrary long/default trajectories and scientific/experimental qualification.",
+            "Restricted neural inference and model weight distribution."
+          ],
+          "preconditions": [
+            "Install the pinned fusion extra in the tested Linux x86_64 CPython 3.12 profile.",
+            "Use positive grid counts/radius and compatible declared shapes; configure JAX x64 before numeric calls for the bound evidence."
+          ],
+          "supported": [
+            "Bound source-fidelity behavior for the selected cases and the stated callable contract."
+          ]
+        },
+        "failure_semantics": {
+          "invalid_input": "Original errors propagate; grid and axis selectors raise named ValueError. No newly invented checks, clipping or defaults.",
+          "nonconvergence": "No new convergence test or success flag. Initialization/reconstruction heuristics and bounded updates are not proof of a governing residual.",
+          "partial_results": "No fabricated fallback state. A normal return is the complete stated result; failures are not physical success.",
+          "runtime_failure": "Dependency, shape, source computation and nonfinite behavior propagate unchanged; optional dependency import occurs only on symbol access."
+        },
+        "public_api": {
+          "python": {
+            "module": "scirel.fusion.dynamics",
+            "signature": "zero_d_step_with_dt(state: 'PlasmaState', machine: 'MachineConfig', actuator: 'ActuatorConfig', sim: 'SimulationConfig')",
+            "symbol": "zero_d_step_with_dt"
+          }
+        },
+        "example": {
+          "code": "from dataclasses import replace\nfrom scirel.fusion.configuration import MachineConfig, ActuatorConfig, SimulationConfig\nfrom scirel.fusion.dynamics import initial_state\nm, ac = MachineConfig(), ActuatorConfig()\ns = replace(SimulationConfig(), nr=4, ntheta=4, n_steps=1, transport_model='bohm_gyrobohm', pedestal_model='none', equilibrium_model='reduced_fixed_boundary')\nfrom scirel.fusion.dynamics import initial_state_0d, zero_d_step_with_dt\ns=replace(s,simulation_model='0d_fast')\nstate=initial_state_0d(m,ac,s)\nnew,dt=zero_d_step_with_dt(state,m,ac,s)\nassert new.Te.shape == (4,) and 0 < float(dt) <= s.dt\n",
+          "description": "Selected reduced compatibility example, not an independent physical oracle.",
+          "expected": "Complete post-step state and positive actual timestep bounded by sim.dt."
+        },
+        "verification": {
+          "evidence_ceiling": "Bounded source behavior and installed nonregression only. No correctness qualification, human approval or whole D1 completion.",
+          "known_limitations": [
+            "Only the reviewed partial source domain is supported.",
+            "Source reduced models and initialization remain heuristic; scientific corrections unresolved.",
+            "Other native platforms and runtime/dependency versions are untested."
+          ],
+          "scope": [
+            "Exact source/runtime bytes, public object identity and declared grid/state ports.",
+            "Selected installed selector/waveform/scalar/final-only regressions at retained rtol=atol=2e-10."
+          ],
+          "tests": [
+            "tests/test_tokagrad_integration.py"
+          ]
+        },
+        "version": {
+          "dependencies": [],
+          "implementation_version": "0.2.0.dev2+review20261008"
+        },
+        "provenance": {
+          "license_status": "MIT; copyright (c) 2026 Jaemin Seo; full notice accompanies packaged implementation. No restricted model weights included.",
+          "lineage_summary": "Current TokaGrad source revision 53db253ef56b641e0bc796fb2dad650d9b2ce33e; byte-identical internal implementation with domain API identity adaptation.",
+          "public_references": [],
+          "source_kinds": [
+            "source implementation",
+            "bounded source-fidelity differential evidence"
+          ]
+        },
+        "projection_note": "Generated selected fields from the bound canonical record; not a separately authored scientific contract."
+      },
+      "canonical_catalog_record": {
+        "path": "records/fc/scirel.fusion.zero-d-step-with-dt.json",
+        "sha256": "9b76ac2c85aea80cf86a4c1de27a5e1bb32547e6d20533722dddf310910685ba"
+      }
+    },
+    {
+      "id": "scirel.fusion.geometry.solve_fixed_boundary_equilibrium",
+      "module": "scirel.fusion.geometry",
+      "symbol": "solve_fixed_boundary_equilibrium",
+      "title": "按配置取得约化或给定磁几何",
+      "topic_id": "equilibrium-and-transport",
+      "kind": "function",
+      "implementation_member_sha256": "41663980b4504db3c6a49365be7216d8fe266f3aefa04ed3d0d22311c8816f60",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "solve_fixed_boundary_equilibrium(state, machine, actuator, sim)",
+      "source_docstring": "Dispatch equilibrium model.\n\n- reduced_fixed_boundary: fast internal Miller/moment closure.\n- geqdsk_prescribed: read prescribed G-EQDSK geometry/q/F profiles."
+    },
+    {
+      "id": "scirel.fusion.geometry.read_geqdsk",
+      "module": "scirel.fusion.geometry",
+      "symbol": "read_geqdsk",
+      "title": "读取 G-EQDSK 磁平衡文件",
+      "topic_id": "equilibrium-and-transport",
+      "kind": "function",
+      "implementation_member_sha256": "41663980b4504db3c6a49365be7216d8fe266f3aefa04ed3d0d22311c8816f60",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "read_geqdsk(path)",
+      "source_docstring": "Parse standard EFIT G-EQDSK/g-file.\n\nReturns a dict with core geometry, 1D profiles and 2D poloidal flux grid.\nThe parser covers the conventional EFIT order:\n  rdim,zdim,rcentr,rleft,zmid; rmaxis,zmaxis,simag,sibry,bcentr;\n  current, simag, xdum, rmaxis, xdum; zmaxis, xdum, sibry, xdum, xdum;\n  fpol, pres, ffprim, pprime, psirz, qpsi, boundary, limiter."
+    },
+    {
+      "id": "scirel.fusion.grid.make_grid",
+      "module": "scirel.fusion.grid",
+      "symbol": "make_grid",
+      "title": "建立径向单元中心与物理间距",
+      "topic_id": "radial-profiles",
+      "kind": "function",
+      "implementation_member_sha256": "31312b73542b5b8f1efd02a0186e367522380668fbbcf4c7ee2808a5b58aa9db",
+      "status": "bound-detailed-compatibility-contract",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "make_grid(nr: int, a: float, radial_grid: str='uniform', edge_cluster_power: float=2.0)",
+      "source_docstring": "Cell-centered radial grid.\n\nReturns\n-------\nrho : [nr]\n    Cell-center normalized radius.\nr : [nr]\n    Minor radius a*rho.\ndr : scalar or [nr]\n    Physical cell width. For uniform grid this remains a scalar for\n    backward compatibility; for non-uniform grid it is an array.\n\nNote\n----\nThe solver state remains cell-centered.  For non-uniform edge-clustered\ngrids the first cell center can be far from rho=0; axis values for\ndiagnostics/plots and selected derivative stencils use a copied axis value\ny(0)=y(rho[0]) rather than a polynomial extrapolation.",
+      "contract_projection": {
+        "asset_id": "scirel.fusion.make-grid",
+        "schema": "scirel.asset-document.v1",
+        "title": {
+          "en": "Cell-centered radial grid",
+          "zh": "径向单元中心网格"
+        },
+        "summary": "Cell-centered radial grid in the explicit TokaGrad compatibility development variant; defaults and original failure semantics retained.",
+        "identity": {
+          "assumptions": [
+            "Source-admissible selected reduced analytic configuration.",
+            "Stateful calls require genuine source predecessor and geometry-history ownership.",
+            "This compatibility contract does not establish scientific correctness."
+          ],
+          "boundary": "Source axis-copy and declared edge/state boundary conventions; no new boundary rule.",
+          "coordinates": "normalized minor radius and physical minor radius",
+          "definition": "rho_i=(face_i+face_{i+1})/2; r_i=a*rho_i; dr=a/nr for uniform, a*diff(faces) otherwise.",
+          "direction": "Declared input fields/configuration to returned coordinate/profile/state fields.",
+          "geometry": "Reduced fixed-boundary tokamak for state mappings; radial coordinate only for grid mappings.",
+          "model": "Grid generation; dr retains scalar uniform compatibility.",
+          "relation": "Cell-centered radial grid"
+        },
+        "inputs": [
+          {
+            "constraints": "Positive integer; selected evidence uses nr=4, no new validation/clamping.",
+            "description": "Number of radial cells",
+            "dtype": "int",
+            "name": "nr",
+            "required": true,
+            "shape": "scalar",
+            "units": "1"
+          },
+          {
+            "constraints": "Positive radius; selected evidence uses a=2 m.",
+            "description": "Plasma minor radius",
+            "dtype": "float",
+            "name": "a",
+            "required": true,
+            "shape": "scalar",
+            "units": "m"
+          },
+          {
+            "constraints": "uniform or edge_cluster_sqrt are evidenced; linear is a retained alias.",
+            "default": "uniform",
+            "description": "Source radial-grid selector",
+            "dtype": "str",
+            "name": "radial_grid",
+            "required": false,
+            "shape": "scalar",
+            "units": "1"
+          },
+          {
+            "constraints": "Positive exponent; evidence uses p=2.",
+            "default": 2.0,
+            "description": "Exponent in sqrt(max(1-(1-x)^p,0))",
+            "dtype": "float",
+            "name": "edge_cluster_power",
+            "required": false,
+            "shape": "scalar",
+            "units": "1"
+          }
+        ],
+        "outputs": [
+          {
+            "constraints": "Caller supplies the declared domain.",
+            "description": "Normalized cell centers",
+            "dtype": "floating array",
+            "name": "rho",
+            "required": true,
+            "shape": "[nr]",
+            "units": "1"
+          },
+          {
+            "constraints": "Caller supplies the declared domain.",
+            "description": "Physical minor-radius cell centers",
+            "dtype": "floating array",
+            "name": "r",
+            "required": true,
+            "shape": "[nr]",
+            "units": "m"
+          },
+          {
+            "constraints": "Caller supplies the declared domain.",
+            "description": "Physical cell width; scalar for uniform compatibility",
+            "dtype": "floating array",
+            "name": "dr",
+            "required": true,
+            "shape": "scalar for uniform; [nr] for clustered",
+            "units": "m"
+          }
+        ],
+        "applicability": {
+          "excluded": [
+            "All-source selector coverage, arbitrary long/default trajectories and scientific/experimental qualification.",
+            "Restricted neural inference and model weight distribution."
+          ],
+          "preconditions": [
+            "Install the pinned fusion extra in the tested Linux x86_64 CPython 3.12 profile.",
+            "Use positive grid counts/radius and compatible declared shapes; configure JAX x64 before numeric calls for the bound evidence."
+          ],
+          "supported": [
+            "Bound source-fidelity behavior for the selected cases and the stated callable contract."
+          ]
+        },
+        "failure_semantics": {
+          "invalid_input": "Original errors propagate; grid and axis selectors raise named ValueError. No newly invented checks, clipping or defaults.",
+          "nonconvergence": "No new convergence test or success flag. Initialization/reconstruction heuristics and bounded updates are not proof of a governing residual.",
+          "partial_results": "No fabricated fallback state. A normal return is the complete stated result; failures are not physical success.",
+          "runtime_failure": "Dependency, shape, source computation and nonfinite behavior propagate unchanged; optional dependency import occurs only on symbol access."
+        },
+        "public_api": {
+          "python": {
+            "module": "scirel.fusion.grid",
+            "signature": "make_grid(nr: int, a: float, radial_grid: str = 'uniform', edge_cluster_power: float = 2.0)",
+            "symbol": "make_grid"
+          }
+        },
+        "example": {
+          "code": "from scirel.fusion.grid import make_grid\nrho,r,dr=make_grid(4,2.)\nassert rho.shape == r.shape == (4,) and dr == .5\n",
+          "description": "Selected reduced compatibility example, not an independent physical oracle.",
+          "expected": "Uniform centers at 0.125, 0.375, 0.625, 0.875; dr=0.5 m."
+        },
+        "verification": {
+          "evidence_ceiling": "Bounded source behavior and installed nonregression only. No correctness qualification, human approval or whole D1 completion.",
+          "known_limitations": [
+            "Only the reviewed partial source domain is supported.",
+            "Source reduced models and initialization remain heuristic; scientific corrections unresolved.",
+            "Other native platforms and runtime/dependency versions are untested."
+          ],
+          "scope": [
+            "Exact source/runtime bytes, public object identity and declared grid/state ports.",
+            "Selected installed selector/waveform/scalar/final-only regressions at retained rtol=atol=2e-10."
+          ],
+          "tests": [
+            "tests/test_tokagrad_integration.py"
+          ]
+        },
+        "version": {
+          "dependencies": [],
+          "implementation_version": "0.2.0.dev2+review20261008"
+        },
+        "provenance": {
+          "license_status": "MIT; copyright (c) 2026 Jaemin Seo; full notice accompanies packaged implementation. No restricted model weights included.",
+          "lineage_summary": "Current TokaGrad source revision 53db253ef56b641e0bc796fb2dad650d9b2ce33e; byte-identical internal implementation with domain API identity adaptation.",
+          "public_references": [],
+          "source_kinds": [
+            "source implementation",
+            "bounded source-fidelity differential evidence"
+          ]
+        },
+        "projection_note": "Generated selected fields from the bound canonical record; not a separately authored scientific contract."
+      },
+      "canonical_catalog_record": {
+        "path": "records/0c/scirel.fusion.make-grid.json",
+        "sha256": "73e06012eb4591a76903455e303db6fa4e14bd3f879ba3f5b0d516bf5f7c76b8"
+      }
+    },
+    {
+      "id": "scirel.fusion.grid.make_rho_faces",
+      "module": "scirel.fusion.grid",
+      "symbol": "make_rho_faces",
+      "title": "建立径向单元面",
+      "topic_id": "radial-profiles",
+      "kind": "function",
+      "implementation_member_sha256": "31312b73542b5b8f1efd02a0186e367522380668fbbcf4c7ee2808a5b58aa9db",
+      "status": "bound-detailed-compatibility-contract",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "make_rho_faces(nr: int, radial_grid: str='uniform', edge_cluster_power: float=2.0)",
+      "source_docstring": "Return radial cell faces in normalized rho.\n\nradial_grid=\"uniform\": rho_f = x.\nradial_grid=\"edge_cluster_sqrt\": rho_f = sqrt(1 - (1-x)^p).\n\nThe latter clusters cell centers near rho=1.  For p=2, half of the\nuniformly-spaced x interval maps into the outer ~13% of rho, giving much\nbetter pedestal resolution.",
+      "contract_projection": {
+        "asset_id": "scirel.fusion.make-rho-faces",
+        "schema": "scirel.asset-document.v1",
+        "title": {
+          "en": "Normalized radial cell faces",
+          "zh": "归一化径向网格面"
+        },
+        "summary": "Normalized radial cell faces in the explicit TokaGrad compatibility development variant; defaults and original failure semantics retained.",
+        "identity": {
+          "assumptions": [
+            "Source-admissible selected reduced analytic configuration.",
+            "Stateful calls require genuine source predecessor and geometry-history ownership.",
+            "This compatibility contract does not establish scientific correctness."
+          ],
+          "boundary": "Source axis-copy and declared edge/state boundary conventions; no new boundary rule.",
+          "coordinates": "normalized minor radius; endpoints exactly 0 and 1",
+          "definition": "x_i=i/nr; uniform faces=x; clustered faces=sqrt(max(1-(1-x)^p,0)).",
+          "direction": "Declared input fields/configuration to returned coordinate/profile/state fields.",
+          "geometry": "Reduced fixed-boundary tokamak for state mappings; radial coordinate only for grid mappings.",
+          "model": "Grid generation; no physical evolution.",
+          "relation": "Normalized radial cell faces"
+        },
+        "inputs": [
+          {
+            "constraints": "Positive integer; selected evidence uses nr=4, no new validation/clamping.",
+            "description": "Number of radial cells",
+            "dtype": "int",
+            "name": "nr",
+            "required": true,
+            "shape": "scalar",
+            "units": "1"
+          },
+          {
+            "constraints": "uniform or edge_cluster_sqrt are evidenced; linear is a retained alias.",
+            "default": "uniform",
+            "description": "Source radial-grid selector",
+            "dtype": "str",
+            "name": "radial_grid",
+            "required": false,
+            "shape": "scalar",
+            "units": "1"
+          },
+          {
+            "constraints": "Positive exponent; evidence uses p=2.",
+            "default": 2.0,
+            "description": "Exponent in sqrt(max(1-(1-x)^p,0))",
+            "dtype": "float",
+            "name": "edge_cluster_power",
+            "required": false,
+            "shape": "scalar",
+            "units": "1"
+          }
+        ],
+        "outputs": [
+          {
+            "constraints": "Caller supplies the declared domain.",
+            "description": "Normalized radial cell faces",
+            "dtype": "floating array",
+            "name": "faces",
+            "required": true,
+            "shape": "[nr+1]",
+            "units": "1"
+          }
+        ],
+        "applicability": {
+          "excluded": [
+            "All-source selector coverage, arbitrary long/default trajectories and scientific/experimental qualification.",
+            "Restricted neural inference and model weight distribution."
+          ],
+          "preconditions": [
+            "Install the pinned fusion extra in the tested Linux x86_64 CPython 3.12 profile.",
+            "Use positive grid counts/radius and compatible declared shapes; configure JAX x64 before numeric calls for the bound evidence."
+          ],
+          "supported": [
+            "Bound source-fidelity behavior for the selected cases and the stated callable contract."
+          ]
+        },
+        "failure_semantics": {
+          "invalid_input": "Original errors propagate; grid and axis selectors raise named ValueError. No newly invented checks, clipping or defaults.",
+          "nonconvergence": "No new convergence test or success flag. Initialization/reconstruction heuristics and bounded updates are not proof of a governing residual.",
+          "partial_results": "No fabricated fallback state. A normal return is the complete stated result; failures are not physical success.",
+          "runtime_failure": "Dependency, shape, source computation and nonfinite behavior propagate unchanged; optional dependency import occurs only on symbol access."
+        },
+        "public_api": {
+          "python": {
+            "module": "scirel.fusion.grid",
+            "signature": "make_rho_faces(nr: int, radial_grid: str = 'uniform', edge_cluster_power: float = 2.0)",
+            "symbol": "make_rho_faces"
+          }
+        },
+        "example": {
+          "code": "from scirel.fusion.grid import make_rho_faces\nx=make_rho_faces(4)\nassert x.shape == (5,)\n",
+          "description": "Selected reduced compatibility example, not an independent physical oracle.",
+          "expected": "Five equally spaced normalized faces."
+        },
+        "verification": {
+          "evidence_ceiling": "Bounded source behavior and installed nonregression only. No correctness qualification, human approval or whole D1 completion.",
+          "known_limitations": [
+            "Only the reviewed partial source domain is supported.",
+            "Source reduced models and initialization remain heuristic; scientific corrections unresolved.",
+            "Other native platforms and runtime/dependency versions are untested."
+          ],
+          "scope": [
+            "Exact source/runtime bytes, public object identity and declared grid/state ports.",
+            "Selected installed selector/waveform/scalar/final-only regressions at retained rtol=atol=2e-10."
+          ],
+          "tests": [
+            "tests/test_tokagrad_integration.py"
+          ]
+        },
+        "version": {
+          "dependencies": [],
+          "implementation_version": "0.2.0.dev2+review20261008"
+        },
+        "provenance": {
+          "license_status": "MIT; copyright (c) 2026 Jaemin Seo; full notice accompanies packaged implementation. No restricted model weights included.",
+          "lineage_summary": "Current TokaGrad source revision 53db253ef56b641e0bc796fb2dad650d9b2ce33e; byte-identical internal implementation with domain API identity adaptation.",
+          "public_references": [],
+          "source_kinds": [
+            "source implementation",
+            "bounded source-fidelity differential evidence"
+          ]
+        },
+        "projection_note": "Generated selected fields from the bound canonical record; not a separately authored scientific contract."
+      },
+      "canonical_catalog_record": {
+        "path": "records/2b/scirel.fusion.make-rho-faces.json",
+        "sha256": "a0b223457b092f9d56a329c8b41b5d35ac19938cef2b7754bc8e41c654bb543f"
+      }
+    },
+    {
+      "id": "scirel.fusion.grid.radial_gradient",
+      "module": "scirel.fusion.grid",
+      "symbol": "radial_gradient",
+      "title": "按来源边界约定计算径向梯度",
+      "topic_id": "radial-profiles",
+      "kind": "function",
+      "implementation_member_sha256": "31312b73542b5b8f1efd02a0186e367522380668fbbcf4c7ee2808a5b58aa9db",
+      "status": "bound-detailed-compatibility-contract",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "radial_gradient(y, rho, a)",
+      "source_docstring": "Finite-difference gradient dy/dr on a non-uniform radial grid.\n\nThe first cell uses a copied rho=0 axis point, imposing a zero-gradient\ncenter ghost for robust coarse-grid behavior.",
+      "contract_projection": {
+        "asset_id": "scirel.fusion.radial-gradient",
+        "schema": "scirel.asset-document.v1",
+        "title": {
+          "en": "Source nonuniform radial gradient",
+          "zh": "来源非均匀径向梯度"
+        },
+        "summary": "Source nonuniform radial gradient in the explicit TokaGrad compatibility development variant; defaults and original failure semantics retained.",
+        "identity": {
+          "assumptions": [
+            "Matching one-dimensional y and rho arrays with nr >= 2 and positive minor radius a.",
+            "Copied axis ghost, centered interior stencil and backward last-cell stencil retain the exact source indexing and 1e-12 denominators.",
+            "This compatibility contract does not establish scientific correctness."
+          ],
+          "boundary": "Source axis-copy and declared edge/state boundary conventions; no new boundary rule.",
+          "coordinates": "cell centers and copied-axis zero gradient",
+          "definition": "First gradient is zero by copied axis ghost; interior (y[i+1]-y[i-1])/(a*(rho[i+1]-rho[i-1])+1e-12); last uses backward difference with same denominator regularization.",
+          "direction": "Declared input fields/configuration to returned coordinate/profile/state fields.",
+          "geometry": "Reduced fixed-boundary tokamak for state mappings; radial coordinate only for grid mappings.",
+          "model": "Explicit finite differences; original 1e-12 regularization retained.",
+          "relation": "Source nonuniform radial gradient"
+        },
+        "inputs": [
+          {
+            "constraints": "One-dimensional array of length nr >= 2; y and rho must have identical lengths. rho increases within (0,1).",
+            "description": "Scalar profile sampled at rho; unit preserved through differentiation.",
+            "dtype": "floating array",
+            "name": "y",
+            "required": true,
+            "shape": "[nr]",
+            "units": "caller field units"
+          },
+          {
+            "constraints": "One-dimensional array of length nr >= 2; y and rho must have identical lengths. rho increases within (0,1).",
+            "description": "Cell-center normalized minor-radius coordinate, increasing within (0,1).",
+            "dtype": "floating array",
+            "name": "rho",
+            "required": true,
+            "shape": "[nr]",
+            "units": "1"
+          },
+          {
+            "constraints": "Positive radius; selected evidence uses a=2 m.",
+            "description": "Plasma minor radius",
+            "dtype": "float",
+            "name": "a",
+            "required": true,
+            "shape": "scalar",
+            "units": "m"
+          }
+        ],
+        "outputs": [
+          {
+            "constraints": "One-dimensional result of the same length nr >= 2 as the matching y and rho inputs.",
+            "description": "Source dy/dr approximation",
+            "dtype": "floating array",
+            "name": "gradient",
+            "required": true,
+            "shape": "[nr]",
+            "units": "caller field units / m"
+          }
+        ],
+        "applicability": {
+          "excluded": [
+            "All-source selector coverage, arbitrary long/default trajectories and scientific/experimental qualification.",
+            "Restricted neural inference and model weight distribution.",
+            "Empty or one-cell inputs (nr < 2), unequal input lengths and non-one-dimensional arrays are outside the documented domain."
+          ],
+          "preconditions": [
+            "Install the pinned fusion extra in the tested Linux x86_64 CPython 3.12 profile.",
+            "Use matching one-dimensional y and rho arrays of length nr >= 2, increasing rho within (0,1), and positive radius a; configure JAX x64 before numeric calls for the bound evidence."
+          ],
+          "supported": [
+            "Bound source-fidelity behavior for the selected cases and the stated callable contract."
+          ]
+        },
+        "failure_semantics": {
+          "invalid_input": "The documented domain requires matching one-dimensional inputs with nr >= 2. No new validation, endpoint handling, clipping or defaults are added. Outside this domain, the original indexing, shape, error or return behavior remains unchanged and is not certified as a valid [nr] gradient.",
+          "nonconvergence": "No new convergence test or success flag. Initialization/reconstruction heuristics and bounded updates are not proof of a governing residual.",
+          "partial_results": "No fabricated fallback state. A normal return is the complete stated result; failures are not physical success.",
+          "runtime_failure": "Dependency, shape, source computation and nonfinite behavior propagate unchanged; optional dependency import occurs only on symbol access."
+        },
+        "public_api": {
+          "python": {
+            "module": "scirel.fusion.grid",
+            "signature": "radial_gradient(y, rho, a)",
+            "symbol": "radial_gradient"
+          }
+        },
+        "example": {
+          "code": "from scirel.fusion.grid import make_grid, radial_gradient\nrho,_,_=make_grid(4,2.)\ng=radial_gradient(2.+rho**2,rho,2.)\nassert g.shape == (4,) and float(g[0]) == 0.\n",
+          "description": "Selected reduced compatibility example, not an independent physical oracle.",
+          "expected": "Zero first gradient, selected centered/backward finite differences."
+        },
+        "verification": {
+          "evidence_ceiling": "Bounded source behavior and installed nonregression only. No correctness qualification, human approval or whole D1 completion.",
+          "known_limitations": [
+            "Only the reviewed partial source domain is supported.",
+            "Source reduced models and initialization remain heuristic; scientific corrections unresolved.",
+            "Other native platforms and runtime/dependency versions are untested.",
+            "The nr >= 2 domain restriction is a static source/contract correction, not a newly executed small-grid numerical gate."
+          ],
+          "scope": [
+            "Exact source/runtime bytes, public object identity and declared grid/state ports.",
+            "Selected installed selector/waveform/scalar/final-only regressions at retained rtol=atol=2e-10."
+          ],
+          "tests": [
+            "tests/test_tokagrad_integration.py"
+          ]
+        },
+        "version": {
+          "dependencies": [],
+          "implementation_version": "0.2.0.dev2+review20261008"
+        },
+        "provenance": {
+          "license_status": "MIT; copyright (c) 2026 Jaemin Seo; full notice accompanies packaged implementation. No restricted model weights included.",
+          "lineage_summary": "Current TokaGrad source revision 53db253ef56b641e0bc796fb2dad650d9b2ce33e; byte-identical internal implementation with domain API identity adaptation.",
+          "public_references": [],
+          "source_kinds": [
+            "source implementation",
+            "bounded source-fidelity differential evidence"
+          ]
+        },
+        "projection_note": "Generated selected fields from the bound canonical record; not a separately authored scientific contract."
+      },
+      "canonical_catalog_record": {
+        "path": "records/50/scirel.fusion.radial-gradient.json",
+        "sha256": "c301ef8a6e8d8350b34be8fe3a704a48fae172adcb3bdaf8b072b12af6c310f4"
+      }
+    },
+    {
+      "id": "scirel.fusion.grid.boundary_augmented_profile",
+      "module": "scirel.fusion.grid",
+      "symbol": "boundary_augmented_profile",
+      "title": "给绘图剖面补上轴和边界点",
+      "topic_id": "radial-profiles",
+      "kind": "function",
+      "implementation_member_sha256": "31312b73542b5b8f1efd02a0186e367522380668fbbcf4c7ee2808a5b58aa9db",
+      "status": "bound-detailed-compatibility-contract",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "boundary_augmented_profile(rho, y, edge_value=None, method='copy', n_points=4)",
+      "source_docstring": "Return profile points including rho=0 and rho=1 for plotting.\n\nThe rho=0 value is copied from the first cell by default.  If edge_value\nis None, the rho=1 value is copied from the last cell; otherwise the\nsupplied physical boundary condition is appended.",
+      "contract_projection": {
+        "asset_id": "scirel.fusion.boundary-augmented-profile",
+        "schema": "scirel.asset-document.v1",
+        "title": {
+          "en": "Axis and edge profile augmentation",
+          "zh": "轴心与边界剖面增广"
+        },
+        "summary": "Axis and edge profile augmentation in the explicit TokaGrad compatibility development variant; defaults and original failure semantics retained.",
+        "identity": {
+          "assumptions": [
+            "Source-admissible selected reduced analytic configuration.",
+            "Stateful calls require genuine source predecessor and geometry-history ownership.",
+            "This compatibility contract does not establish scientific correctness."
+          ],
+          "boundary": "Source axis-copy and declared edge/state boundary conventions; no new boundary rule.",
+          "coordinates": "axis rho=0, cell centers, edge rho=1",
+          "definition": "Prepend rho=0 with copied first value by default, then append rho=1 with supplied edge or last value. Explicit linear/quadratic/cubic legacy extrapolation remains selectable.",
+          "direction": "Declared input fields/configuration to returned coordinate/profile/state fields.",
+          "geometry": "Reduced fixed-boundary tokamak for state mappings; radial coordinate only for grid mappings.",
+          "model": "Plot/diagnostic augmentation, not conservative state remeshing.",
+          "relation": "Axis and edge profile augmentation"
+        },
+        "inputs": [
+          {
+            "constraints": "Caller supplies the declared domain.",
+            "description": "Cell-center normalized minor-radius coordinate, increasing within (0,1).",
+            "dtype": "floating array",
+            "name": "rho",
+            "required": true,
+            "shape": "[nr]",
+            "units": "1"
+          },
+          {
+            "constraints": "Caller supplies the declared domain.",
+            "description": "Profile values at rho.",
+            "dtype": "floating array",
+            "name": "y",
+            "required": true,
+            "shape": "[nr]",
+            "units": "caller field units"
+          },
+          {
+            "constraints": "No new edge closure is invented.",
+            "default": null,
+            "description": "Physical edge value, or None to copy last value",
+            "dtype": "float or None",
+            "name": "edge_value",
+            "required": false,
+            "shape": "scalar or None",
+            "units": "caller field units"
+          },
+          {
+            "constraints": "copy, linear, quadratic or cubic selected source policy.",
+            "default": "copy",
+            "description": "Axis extrapolation method",
+            "dtype": "str",
+            "name": "method",
+            "required": false,
+            "shape": "scalar",
+            "units": "1"
+          },
+          {
+            "constraints": "Used only for explicit polynomial legacy policies.",
+            "default": 4,
+            "description": "Number of points in polynomial fit",
+            "dtype": "int",
+            "name": "n_points",
+            "required": false,
+            "shape": "scalar",
+            "units": "1"
+          }
+        ],
+        "outputs": [
+          {
+            "constraints": "Caller supplies the declared domain.",
+            "description": "Coordinates including axis and edge",
+            "dtype": "floating array",
+            "name": "rho_aug",
+            "required": true,
+            "shape": "[nr+2]",
+            "units": "1"
+          },
+          {
+            "constraints": "Caller supplies the declared domain.",
+            "description": "Augmented values in unchanged field units",
+            "dtype": "floating array",
+            "name": "y_aug",
+            "required": true,
+            "shape": "[nr+2]",
+            "units": "caller field units"
+          }
+        ],
+        "applicability": {
+          "excluded": [
+            "All-source selector coverage, arbitrary long/default trajectories and scientific/experimental qualification.",
+            "Restricted neural inference and model weight distribution."
+          ],
+          "preconditions": [
+            "Install the pinned fusion extra in the tested Linux x86_64 CPython 3.12 profile.",
+            "Use positive grid counts/radius and compatible declared shapes; configure JAX x64 before numeric calls for the bound evidence."
+          ],
+          "supported": [
+            "Bound source-fidelity behavior for the selected cases and the stated callable contract."
+          ]
+        },
+        "failure_semantics": {
+          "invalid_input": "Original errors propagate; grid and axis selectors raise named ValueError. No newly invented checks, clipping or defaults.",
+          "nonconvergence": "No new convergence test or success flag. Initialization/reconstruction heuristics and bounded updates are not proof of a governing residual.",
+          "partial_results": "No fabricated fallback state. A normal return is the complete stated result; failures are not physical success.",
+          "runtime_failure": "Dependency, shape, source computation and nonfinite behavior propagate unchanged; optional dependency import occurs only on symbol access."
+        },
+        "public_api": {
+          "python": {
+            "module": "scirel.fusion.grid",
+            "signature": "boundary_augmented_profile(rho, y, edge_value=None, method='copy', n_points=4)",
+            "symbol": "boundary_augmented_profile"
+          }
+        },
+        "example": {
+          "code": "from scirel.fusion.grid import make_grid, boundary_augmented_profile\nrho,_,_=make_grid(4,2.)\nx,y=boundary_augmented_profile(rho,2.+rho**2,edge_value=3.)\nassert x.shape == y.shape == (6,) and float(y[-1]) == 3.\n",
+          "description": "Selected reduced compatibility example, not an independent physical oracle.",
+          "expected": "Copied axis and explicitly supplied edge are appended."
+        },
+        "verification": {
+          "evidence_ceiling": "Bounded source behavior and installed nonregression only. No correctness qualification, human approval or whole D1 completion.",
+          "known_limitations": [
+            "Only the reviewed partial source domain is supported.",
+            "Source reduced models and initialization remain heuristic; scientific corrections unresolved.",
+            "Other native platforms and runtime/dependency versions are untested."
+          ],
+          "scope": [
+            "Exact source/runtime bytes, public object identity and declared grid/state ports.",
+            "Selected installed selector/waveform/scalar/final-only regressions at retained rtol=atol=2e-10."
+          ],
+          "tests": [
+            "tests/test_tokagrad_integration.py"
+          ]
+        },
+        "version": {
+          "dependencies": [],
+          "implementation_version": "0.2.0.dev2+review20261008"
+        },
+        "provenance": {
+          "license_status": "MIT; copyright (c) 2026 Jaemin Seo; full notice accompanies packaged implementation. No restricted model weights included.",
+          "lineage_summary": "Current TokaGrad source revision 53db253ef56b641e0bc796fb2dad650d9b2ce33e; byte-identical internal implementation with domain API identity adaptation.",
+          "public_references": [],
+          "source_kinds": [
+            "source implementation",
+            "bounded source-fidelity differential evidence"
+          ]
+        },
+        "projection_note": "Generated selected fields from the bound canonical record; not a separately authored scientific contract."
+      },
+      "canonical_catalog_record": {
+        "path": "records/ad/scirel.fusion.boundary-augmented-profile.json",
+        "sha256": "47f921b4449fe5bdcde298f58de8ee2fe731567e9de14b98f0ef06f179c7cc4a"
+      }
+    },
+    {
+      "id": "scirel.fusion.optimization.autodiff_value_and_grad_pytree",
+      "module": "scirel.fusion.optimization",
+      "symbol": "autodiff_value_and_grad_pytree",
+      "title": "计算控制目标及梯度",
+      "topic_id": "control-and-optimization",
+      "kind": "function",
+      "implementation_member_sha256": "222bb2f572365269bec268b0d58f6bfb8cdaa85e5d3ecbf050f9f7948e9766be",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "autodiff_value_and_grad_pytree(z, objective='Q', base_machine: PytreeMachineConfig | None=None, base_actuator: PytreeActuatorConfig | None=None, base_sim: SimulationConfig | None=None, bounds=DEFAULT_CONTROL_BOUNDS, names=PYTREE_CONTROL_NAMES, constraints=DEFAULT_CONSTRAINTS, constraint_smooth_width: float=0.01, objective_weights=None)",
+      "source_docstring": "AD value/grad using JAX over pytree configs."
+    },
+    {
+      "id": "scirel.fusion.optimization.optimize_controls_optax",
+      "module": "scirel.fusion.optimization",
+      "symbol": "optimize_controls_optax",
+      "title": "以 Optax 迭代控制参数",
+      "topic_id": "control-and-optimization",
+      "kind": "function",
+      "implementation_member_sha256": "222bb2f572365269bec268b0d58f6bfb8cdaa85e5d3ecbf050f9f7948e9766be",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "optimize_controls_optax(x0_phys, objective='Q', base_machine: MachineConfig | PytreeMachineConfig | None=None, base_actuator: ActuatorConfig | PytreeActuatorConfig | None=None, base_sim: SimulationConfig | None=None, bounds=DEFAULT_CONTROL_BOUNDS, names=PYTREE_CONTROL_NAMES, n_iter: int=10, learning_rate: float=0.01, gradient_mode: str='autodiff', constraints=DEFAULT_CONSTRAINTS, constraint_smooth_width: float=0.01, objective_weights=None, profile_timing: bool=False, max_grad_norm: float | None=None, max_update_norm: float | None=None, iteration_callback: Callable[[dict[str, Any]], None] | None=None)",
+      "source_docstring": "Optimize controls using optax when available.\n\nParameters\n----------\ngradient_mode:\n    \"autodiff\" uses JAX value_and_grad and is the default path.\n    \"finite_difference\" is retained only as a debugging cross-check."
+    },
+    {
+      "id": "scirel.fusion.optimization.waveform_objective_from_z",
+      "module": "scirel.fusion.optimization",
+      "symbol": "waveform_objective_from_z",
+      "title": "计算波形参数目标",
+      "topic_id": "control-and-optimization",
+      "kind": "function",
+      "implementation_member_sha256": "222bb2f572365269bec268b0d58f6bfb8cdaa85e5d3ecbf050f9f7948e9766be",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "waveform_objective_from_z(z, times, bounds, base_machine=None, base_actuator=None, base_sim=None, objective='Q', keys=('Ip_MA', 'P_aux_MW'), smoothness_weight: float=0.0, slew_weight: float=0.0, constraints=DEFAULT_CONSTRAINTS, constraint_smooth_width: float=0.01, objective_weights=None, fixed_control_values=None, fixed_start: bool=False, fixed_final: bool=False, fixed_endpoint_keys=None, waveform_constraint_mode: str='auto')",
+      "source_docstring": "AD-ready waveform objective.\n\nz has shape [num_keys, num_control_points].  This objective integrates\nP_fus and P_aux over the rollout and supports regularization of waveform\nsmoothness/slew."
+    },
+    {
+      "id": "scirel.fusion.optimization.optimize_waveform_optax",
+      "module": "scirel.fusion.optimization",
+      "symbol": "optimize_waveform_optax",
+      "title": "以 Optax 迭代波形参数",
+      "topic_id": "control-and-optimization",
+      "kind": "function",
+      "implementation_member_sha256": "222bb2f572365269bec268b0d58f6bfb8cdaa85e5d3ecbf050f9f7948e9766be",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "optimize_waveform_optax(z0=None, times=None, initial_control_values=None, bounds=None, objective='Q', keys=('Ip_MA', 'P_aux_MW'), base_machine=None, base_actuator=None, base_sim=None, n_iter: int=10, learning_rate: float=0.01, gradient_mode: str='autodiff', smoothness_weight: float=0.0, slew_weight: float=0.0, constraints=DEFAULT_CONSTRAINTS, constraint_smooth_width: float=0.01, objective_weights=None, profile_timing: bool=False, fixed_endpoints: bool=True, fixed_endpoint_keys=None, fixed_start: bool | None=None, fixed_final: bool | None=None, waveform_constraint_mode: str='auto', max_grad_norm: float | None=None, max_update_norm: float | None=None, iteration_callback: Callable[[dict[str, Any]], None] | None=None)",
+      "source_docstring": "Optimize bounded piecewise-linear waveform control points.\n\nSupports AD gradients, endpoint fixing, and smoothness/slew penalties."
+    },
+    {
+      "id": "scirel.fusion.surrogates.fusion_surrogates_effective_diffusivities",
+      "module": "scirel.fusion.surrogates",
+      "symbol": "fusion_surrogates_effective_diffusivities",
+      "title": "将外部代理通量转换为有效扩散",
+      "topic_id": "equilibrium-and-transport",
+      "kind": "function",
+      "implementation_member_sha256": "136595a73a78218cd15006bceb1d62a144129bb050ee324c4ea810e15aad86e7",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "fusion_surrogates_effective_diffusivities(rho, Te, Ti, ne20, q, machine, sim, eq=None)",
+      "source_docstring": "Real QLKNN_7_11-backed effective diffusivity closure.\n\nThis function uses the actual DeepMind fusion_surrogates JAX model if the\npackage is installed. It can be used inside the solver, but the first call\nwill load model weights and may be slow. If loading fails and\nsim.fusion_surrogates_fail_mode == \"fallback\", use bohm_gyrobohm instead."
+    },
+    {
+      "id": "scirel.fusion.transport.angioni_neoclassical_diffusivities",
+      "module": "scirel.fusion.transport",
+      "symbol": "angioni_neoclassical_diffusivities",
+      "title": "取得来源 Angioni–Sauter 有效扩散",
+      "topic_id": "equilibrium-and-transport",
+      "kind": "function",
+      "implementation_member_sha256": "b5be3664c06292908db3d43200a330b22f588c1453ee7d4b991358a6a3908495",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "angioni_neoclassical_diffusivities(rho, Te, Ti, ne20, q, machine, sim, eq=None, _allow_neonn_fallback: bool=True)",
+      "source_docstring": "Angioni-Sauter neoclassical chi_e, chi_i, and D_e:\nconstruct the Angioni-Sauter K_mn matrices, dimensional L_mn matrices,\nform the heat and particle flux responses, then extract effective\n``chi_neo_e``, ``chi_neo_i``, and ``D_neo_e``.  The Ware pinch and\nconvective density pinch are not returned because tokagrad's present\ntransport interface only carries a scalar density diffusivity ``Dn``."
+    },
+    {
+      "id": "scirel.fusion.transport.chang_hinton_neoclassical_diffusivities",
+      "module": "scirel.fusion.transport",
+      "symbol": "chang_hinton_neoclassical_diffusivities",
+      "title": "取得来源约化 Chang–Hinton 有效扩散",
+      "topic_id": "equilibrium-and-transport",
+      "kind": "function",
+      "implementation_member_sha256": "b5be3664c06292908db3d43200a330b22f588c1453ee7d4b991358a6a3908495",
+      "status": "compatibility-reference-limited",
+      "notes": [
+        "Exact development wheel interface; source behavior is not independent scientific qualification."
+      ],
+      "signature": "chang_hinton_neoclassical_diffusivities(rho, Te, Ti, ne20, q, machine, sim, eq=None)",
+      "source_docstring": "Reduced positive scalar neoclassical diffusivities [m^2/s].\n\nThe ion heat channel uses the common Chang-Hinton all-collisionality fit,\nwritten as a positive scalar diffusivity proportional to\n``q^2 rho_i^2 nu_ii / epsilon^(3/2)`` with banana/plateau/Pfirsch-Schlueter\ninterpolation terms [C. S. Chang and F. L. Hinton, Phys. Fluids 25, 1493\n(1982)].  This avoids the sign-indefinite scalar projection of the full\nAngioni-Sauter flux-force matrix and is intended as a robust analytic\ncomparison model.\n\nElectron heat and particle channels are reduced random-walk estimates using\nthe same collisionality interpolation scale.  They are positive by\nconstruction and deliberately simple; tune ``neoclassical_chi_scale`` and\n``neoclassical_D_scale`` when matching a higher-fidelity neoclassical code."
+    }
+  ]
+}

@@ -9,6 +9,11 @@
 
 SciRel must describe each public scientific asset independently of any agent framework. A document is a versioned scientific and callable contract, not a copy of CodeFusion review records, source-project layout, an MCP tool definition, or marketing documentation.
 
+The maintained user manual starts at physical domains and physical functions. Operators and TaskGraphs are
+implementation choices linked below that level. A tutorial explains the physical problem and connects existing
+canonical contracts; it does not replace or duplicate them. See [user documentation](user-documentation.md) for
+the shared HTML, Markdown and progressively retrieved Agent projections.
+
 ## Production timing and source anchors
 
 Formal documents are produced after D2 comparison, deduplication, repair and runnable code stabilization,

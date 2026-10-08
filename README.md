@@ -71,6 +71,11 @@ SciRel 把这些能力整理成有明确科学含义、输入输出和适用条�
 详细规则见 [开发项目与科学包交付](docs/design/project-and-distribution.md)，文档入口见
 [项目文档](docs/README.md)，贡献要求见 [贡献指南](CONTRIBUTING.md)。
 
+用户使用文档从物理领域与物理功能开始，函数调用放在下一层。[科学使用指南](docs/user-guide/README.md)
+绑定单独构建的 `0.2.0.dev2+review20261008` 测试 wheel；它不表示本工作树的空骨架已整合这些实现。
+指南可生成独立 HTML 和按物理主题渐进读取的 Agent JSON；长期维护规则见
+[使用文档要求](docs/requirements/user-documentation.md)。
+
 ## 本地验证与构建
 
 在本工作树的独立 Python 环境安装开发依赖，依赖下载使用开发机本地代理。

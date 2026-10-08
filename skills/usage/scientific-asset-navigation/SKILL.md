@@ -41,6 +41,12 @@ This skill covers catalog navigation only. It does not perform or control:
 - candidate merging, expert review, release, or publication; or
 - a particular programming language, runtime, platform, or package layout.
 
+An explicitly authorized isolated development/platform trial may bind a supplied unapproved wheel and
+its matching catalog instead of a public release. Keep that development status and the catalog's partial
+coverage visible; this changes the admitted input, not the applicability or evidence rules. Physical-domain
+usage pages help orient the user and explain the problem. They do not admit an importable API omitted from
+the bound exact catalog or turn a compatibility reference into a scientific contract.
+
 If no catalog is available, do not block the project. Return control to
 `scientific-project-implementation`, which may use supplied source code, ordinary numerical libraries,
 or a new relation route independently.

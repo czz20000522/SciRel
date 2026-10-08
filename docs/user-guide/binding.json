@@ -1,0 +1,33 @@
+{
+  "schema": "scirel.user-guide-binding.v1",
+  "guide_revision": "20261008.1",
+  "package": "scirel",
+  "package_version": "0.2.0.dev2+review20261008",
+  "science_git_commit": "fcf97c237adf799124e5a56cc4062c54302b2b33",
+  "science_git_tree": "60c08a77f4c672c00301d14e02ee9fe02187650f",
+  "wheel_file": "scirel-0.2.0.dev2+review20261008-py3-none-any.whl",
+  "wheel_sha256": "998b88f2c54cd75f5fcc1310789e280fa96ccc69181b708a4ce31141d06a9874",
+  "catalog_sha256": "c59c5f84677341d7cc1b6318a8a01df3cd800bb4fea6995d8691e78120136038",
+  "source_bundle_sha256": "dd34e7234ca120192024f3fd992b55a8bc1599da6b39acdb4906552aaeb63197",
+  "source_project": "TokaGrad",
+  "source_commit": "53db253ef56b641e0bc796fb2dad650d9b2ce33e",
+  "public_entries": 32,
+  "detailed_contracts": 7,
+  "status": "development; source-compatible partial domain; no publication approval",
+  "tested_profile": "Linux x86_64 CPU / CPython 3.12.14 / JAX x64",
+  "reference_queries": [
+    "Q1",
+    "Q2",
+    "Q3"
+  ],
+  "public_modules": 9,
+  "catalog": {
+    "catalog_id": "scirel-tokagrad-review-correction-20261008",
+    "root_digest": "sha256:c412d9f8eabee9649e18e85fa61b46dfd9ca86481ee2938cdeace0a7a64bc36b",
+    "coverage": {
+      "declared_total_asset_count": 32,
+      "included_asset_count": 7,
+      "status": "partial"
+    }
+  }
+}

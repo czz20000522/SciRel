@@ -7,6 +7,7 @@ SciRel 将已有科研代码整理为可复用的科学算子与任务图，供 
 ## 理解项目与使用方法
 
 - [项目定位](../README.md)：为什么拆解已有代码，以及科学资产、Agent 和胶水代码各自负责什么。
+- [科学使用指南](user-guide/README.md)：按物理问题选择功能，阅读单位、近似、限制、调用和例子；当前指南绑定独立开发 wheel，不表示本工作树科学骨架已整合。
 - [历史开发测试线](history.md)：迁出的科学实现、断言、pilot 和原始证据的确切快照与复建方法。
 - [开发项目与科学包交付](design/project-and-distribution.md)：项目开发态、用户安装包、历史样本和分支/worktree 的多版本构建边界。
 - [架构与科学资产合同](architecture.md)：Operator、可复用 TaskGraph 与本次运行实例的区别，以及科学实现和编排的边界。
@@ -21,6 +22,7 @@ SciRel 将已有科研代码整理为可复用的科学算子与任务图，供 
 - [架构与科学资产合同](architecture.md)：Operator、TaskGraph、科学身份、公共 API 与治理边界。
 - [规模化目录合同](catalog.md)：分片索引、渐进检索和依赖索引。
 - [标准化资产文档需求](requirements/asset-documentation.md)与[Catalog/适配器设计](design/catalog-and-adapters.md)：exact document、可验证 catalog 和消费投影。
+- [长期使用文档要求](requirements/user-documentation.md)：物理领域高于函数实现；同一内容生成网页、Markdown 与分片 Agent 查询文件。
 - [科学领域能力](domains/README.md)：供专家完善的问题域导航；不替代 exact document，也不代表完整覆盖。
 - [开发与增量整合流程](development-process.md)及[贡献指南](../CONTRIBUTING.md)：科学变更、受影响测试、固化和发行门禁。
 
@@ -37,6 +39,7 @@ SciRel 将已有科研代码整理为可复用的科学算子与任务图，供 
 - [科学请求需求](requirements/scientific-request-workflow.md)、[设计](design/scientific-request-workflow.md)和[求解 skill](../skills/usage/scirel-solving/SKILL.md)：用户需求到能力匹配、组合、执行与证据有界解释。
 - [薄 MCP 适配需求](requirements/thin-mcp-adapter.md)及[CodeFusion 消费合同](integration/codefusion-consumer-contract.md)：适配器只消费已发布的 catalog/wheel，不定义新的科学身份。
 - [CodeFusion 宿主插件需求](requirements/codefusion-plugin.md)、[插件合同](integration/codefusion-plugin-contract.md)及[中性 Agent 验收](integration/codefusion-runner-acceptance.md)：宿主提供执行、artifact、身份和审核 UI；SciRel 拥有领域结论。
+- [出库路径平台试验材料](integration/outbound-platform-trial.md)：开发 wheel、同版 catalog、物理指南、skills、自然语言请求和预期结果一起验证真实消费路径。
 
 ## 当前实现边界
 
@@ -51,5 +54,6 @@ SciRel 将已有科研代码整理为可复用的科学算子与任务图，供 
 
 - `requirements/`、`design/`、`integration/` 保存可复用的需求、设计和跨系统合同；具体批次的状态、日志及参数不在这里维护。设计中的历史样本只说明当时的适用条件，不是当前进度。
 - `domains/` 保存有依据的领域草稿与待专家裁定问题；资产级科学合同以 exact document 为准。
+- `user-guide/` 保存按领域组织的使用说明、版本绑定和 exact API/合同的只读投影；静态网页与 Agent 文件生成到独立 `build/user-guide/`，不混入科学 wheel。
 - `evaluations/` 保存带日期和证据引用的评估结论；大体积运行产物、临时工作副本及 wheel 留在 `build/verification/<run>/` 等对应运行目录。`scripts/` 保存可复用的工具，单次运行命令与探针随运行证据保存。
 - 已有 manifest、测试或其他工作树引用的证据不直接移动；确需迁移时先核引用方与文件摘要，再在所属线路更新引用并复验。多人工作区中归属不明的文件保持原位。

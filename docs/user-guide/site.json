@@ -1,0 +1,15 @@
+{
+  "schema": "scirel.user-guide-site.v1",
+  "title": "SciRel 科学使用指南",
+  "pages": [
+    {"id": "overview", "file": "README.md", "title": "从物理问题开始", "group": "开始使用", "summary": "本版能力、阅读方法和证据边界"},
+    {"id": "installation", "file": "version-and-installation.md", "title": "版本与安装", "group": "开始使用", "summary": "确切 wheel、环境与按功能选择依赖"},
+    {"id": "radial-profiles", "file": "tokamak/radial-profiles.md", "title": "径向剖面、坐标与边界", "group": "磁约束聚变 · 托卡马克", "summary": "温度和密度分布、归一化小半径、梯度与轴边界", "questions": ["如何表示径向温度剖面？", "温度变化率用什么单位？", "为什么轴处梯度为零？"]},
+    {"id": "state-and-evolution", "file": "tokamak/state-and-evolution.md", "title": "状态初始化与时间演化", "group": "磁约束聚变 · 托卡马克", "summary": "装置参数、径向或 0D 初态、状态历史与实际时间步", "questions": ["如何建立等离子体初态？", "0D 模型如何推进时间？", "电流输入用 A 还是 MA？"]},
+    {"id": "equilibrium-and-transport", "file": "tokamak/equilibrium-and-transport.md", "title": "平衡几何与输运闭合", "group": "磁约束聚变 · 托卡马克", "summary": "约化磁几何、G-EQDSK、新经典输运和神经代理的限制", "questions": ["怎样读取磁平衡文件？", "热和粒子扩散系数如何计算？", "代理失败的后备模型意味着什么？"]},
+    {"id": "heating-current-diagnostics", "file": "tokamak/heating-current-diagnostics.md", "title": "加热、电流与诊断", "group": "磁约束聚变 · 托卡马克", "summary": "温度源项、电流组成和诊断量的含义", "questions": ["加热输出是否直接是 MW？", "如何获取电流各组成？", "诊断正常返回是否说明模型有效？"]},
+    {"id": "control-and-optimization", "file": "tokamak/control-and-optimization.md", "title": "时变驱动与优化", "group": "磁约束聚变 · 托卡马克", "summary": "物理输入的时间波形、控制映射、目标与梯度", "questions": ["如何设置加热随时间变化？", "怎样计算控制目标的梯度？", "波形插值有哪些数值约定？"]},
+    {"id": "examples", "file": "examples.md", "title": "可复现小例子", "group": "实际使用", "summary": "三个自然语言任务、输入、调用和实际参考输出"},
+    {"id": "api-reference", "file": "api-reference.md", "title": "公共调用参考", "group": "实现参考", "summary": "32 个公共入口的确切签名及已有详细合同"}
+  ]
+}

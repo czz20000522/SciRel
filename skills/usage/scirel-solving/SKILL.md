@@ -72,6 +72,11 @@ create another copy.
 
 ## Discover applicable capabilities
 
+Use the library's physical-domain manual to orient an unfamiliar user: explain the physical function,
+units, assumptions and result meaning before discussing its implementation entries. A manual topic and
+its API reference are explanatory projections. Executable selection still requires the matching exact
+record in the bound catalog; a listed compatibility callable without that record is not admitted by this skill.
+
 Use `scientific-asset-navigation` for broad searches, competing models, adapters or multi-asset compositions. Search
 the visible catalog progressively: route to a bounded shortlist, inspect summaries, then read the exact documents of
 serious candidates. Decide applicability from relation and direction, model, geometry, coordinates, units, axes,
@@ -172,6 +177,10 @@ discretization, geometry reconstruction, scientifically material unit conversion
 inside glue. If such a relation is required and no applicable released asset exists, stop with a capability gap.
 
 ## Execute and check the result
+
+For an explicitly requested controlled negative/exception test, select the matching asset's documented
+failure contract and record the deliberately invalid input and expected exception. This is an interface
+failure test, not a valid physical calculation or permission to probe rejected scientific near misses.
 
 Execute only after the plan is valid. Preserve the causal scientific-library exception and do not silently retry with another
 model, asset, convention, or tolerance.
