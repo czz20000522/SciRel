@@ -39,7 +39,7 @@ SciRel 将已有科研代码整理为可复用的科学算子与任务图，供 
 - [科学请求需求](requirements/scientific-request-workflow.md)、[设计](design/scientific-request-workflow.md)和[求解 skill](../skills/usage/scirel-solving/SKILL.md)：用户需求到能力匹配、组合、执行与证据有界解释。
 - [薄 MCP 适配需求](requirements/thin-mcp-adapter.md)及[CodeFusion 消费合同](integration/codefusion-consumer-contract.md)：适配器只消费已发布的 catalog/wheel，不定义新的科学身份。
 - [CodeFusion 宿主插件需求](requirements/codefusion-plugin.md)、[插件合同](integration/codefusion-plugin-contract.md)及[中性 Agent 验收](integration/codefusion-runner-acceptance.md)：宿主提供执行、artifact、身份和审核 UI；SciRel 拥有领域结论。
-- [出库路径平台试验材料](integration/outbound-platform-trial.md)：开发 wheel、同版 catalog、物理指南、skills、自然语言请求和预期结果一起验证真实消费路径。
+- [首次平台接入与环境适配](integration/outbound-platform-trial.md)：平台自行准备兼容环境，以有限任务链验证真实消费；Agent 材料与考官答案分开，全库功能另行验收。
 
 ## 当前实现边界
 
