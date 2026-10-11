@@ -1,0 +1,839 @@
+{
+  "schema": "scirel.focused-technical-intake.v1",
+  "receiver_base": "7bd484584bbfc184a61bb8bf4e5ff25bab9b68af",
+  "candidate": "6e49740aa145e050e394ac1f7d0ca5e47b74be90",
+  "accepted_scientific_origin": "e5bf23dad7430230cc310c990ed15c4dcf876be5",
+  "selected_wheel_sha256": "290574c787ffd032a1b58d59fa5b4c45f8d5c5bd49db3db85c431e607de97454",
+  "allowlist_sha256": "b50634987ec5bb0eb2aa2fe8ada2ef4629db69426d75faa2d6f9c027153301fd",
+  "source_file_bindings": [
+    {
+      "path": "catalog/pleiades-maintained/basis.basis-matrix.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "16c978f0a19e250eee2e923f3304491316357b07cd0172ef683b8c6767cc06a5"
+    },
+    {
+      "path": "catalog/pleiades-maintained/basis.build-basis.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "0de5dec5cb00e0e8933352c657ccf2d96f864521c67997881db1e289c7a1f563"
+    },
+    {
+      "path": "catalog/pleiades-maintained/basis.clamped-cubic-spline.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "a772f5594965ee1fea3be5c4da0f33b17960e05fa5143c64c6ea9a19e679f03e"
+    },
+    {
+      "path": "catalog/pleiades-maintained/basis.first-clamped-cubic-spline.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "793575732f6bf8ff3828fb5b2ddb9f4ae9e5405e8d86330f39f00041686c9698"
+    },
+    {
+      "path": "catalog/pleiades-maintained/basis.natural-cubic-spline.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "e76ed7f7253b9d1a36a310269973418f5401dd2d7a540aea3fa3c9f987e017ae"
+    },
+    {
+      "path": "catalog/pleiades-maintained/basis.second-clamped-cubic-spline.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "19a4f600e818021d8bc77879f277aad0604fa5d037df94d5ab3f6efe284b3200"
+    },
+    {
+      "path": "catalog/pleiades-maintained/circular-filament-green.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "2d103c1bda35a7a3bbd4dd001d0cbcb23435be02a22b1ac59c3869755b1ea902"
+    },
+    {
+      "path": "catalog/pleiades-maintained/distributed-current-flux.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "92cd914a5a7e8cb5650470c216d17e0add36af0da4269f933192e2d04d585ab1"
+    },
+    {
+      "path": "catalog/pleiades-maintained/eqdsk-class.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "7489fa4a6bb485252412b36fd65a03a9099d68affdfc734a1f6773ca3a2d6674"
+    },
+    {
+      "path": "catalog/pleiades-maintained/equilibrium.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "d296772d495abccd86ea4db0fbde44e9ba14f68fb7cbf842994b9f52eed847d1"
+    },
+    {
+      "path": "catalog/pleiades-maintained/fieldline.arclength-derivative.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "908a573a343fe2213ecf06878ba0782f9125ecd4b39d1f0fa1b25ad92d1f9be2"
+    },
+    {
+      "path": "catalog/pleiades-maintained/fieldline.boundary.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "20d3f1dc5c7b205f9e0828210910ea46c882c003ba2a92ac84cdf5173db5afad"
+    },
+    {
+      "path": "catalog/pleiades-maintained/fieldline.contour-points.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "ab084756588eb1f8ae8d9110196229e03fd59f7b408ec461f3477647d5a01180"
+    },
+    {
+      "path": "catalog/pleiades-maintained/fieldline.fieldline-set.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "b57fd923d8090db5614e9066b9fe9b467ceb75e365ad32261b6d4ac3ba66da5b"
+    },
+    {
+      "path": "catalog/pleiades-maintained/fieldline.fieldline.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "2f53758d1b4fab5a079f1d1554fc9454fdef8185547ed8e34da283c80322ed6c"
+    },
+    {
+      "path": "catalog/pleiades-maintained/fieldline.helper-contour-points.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "f1920d38845ef233ccac7a3a6c8fac580d9715834133da6d5e2569000ca36e81"
+    },
+    {
+      "path": "catalog/pleiades-maintained/fieldline.helper-fieldline.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "8f7a0349fb2d34abf6c02fa07555d9dbf7ca1fc975c2d9ae61abeb901e441de9"
+    },
+    {
+      "path": "catalog/pleiades-maintained/loop-flux-matrix.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "06fb1191556428e3cb43aeabe11c05de684c0435d8b9a2005d7bfe2ac6c35470"
+    },
+    {
+      "path": "catalog/pleiades-maintained/numerics.nonuniform-derivatives.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "6ebe0d6e75e7580cab0404f1f50a83f1325991e5ecd26212321de93cb94391ec"
+    },
+    {
+      "path": "catalog/pleiades-maintained/plotting.mirror-patches.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "9339e95f1e69d57157ca50ea09340922dc60537c986f7da74df505384fbad52e"
+    },
+    {
+      "path": "catalog/pleiades-maintained/plotting.scale-patches.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "c8f3786adcdfc1503db527ff01546c7893554deb1625a58cd9f5a41457f7784c"
+    },
+    {
+      "path": "catalog/pleiades-maintained/plotting.transpose-patches.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "2618cec652042859b8af411060ed7792a7448d43b1e927fafe9745fd78de0c41"
+    },
+    {
+      "path": "catalog/pleiades-maintained/read-eqdsk.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "c76461a915caad630107c1be25e1b3261df4ad5872509d194bcc1c2ec3c2dd44"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/03/scirel.sampling.point-nearest.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "2fbed842537843b4eb8189104e8569fde1e6c216a57574b68db3d334a0210033"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/0f/scirel.sampling.parse-segment.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "7ba2b3e40c7b59665e809e935dcf07b4f7bd71a6b81d3d044ad68916eb59c314"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/11/scirel.io.write-pleiades-eqdsk-legacy-raw.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "09a9fbcec3e0c399fb48206dfd9bf0423addb9a9a3a725d1c5ead0072c7a04ea"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/16/scirel.sampling.rectangular-nearest.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "b2dc920dc66fba19f665caa6dba5c990662f7c9088ddedf6925ede56ec9b9b94"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/1b/scirel.basis.basis-matrix.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "0e2f12e9031fca850b7eee32384ce93e3d0cba5ea04781f8216d5d09c66d3488"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/20/scirel.sampling.scattered-linear.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "191ece69d95d28ceeb88a4e794bab3ae06da6a3fb1d52d11163fda9e83b41ff7"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/2f/scirel.fieldline.arclength-derivative.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "c9abf9126455470b26577f8a120b42bd5f4d9a2397e5846f9e8fcf16ec27c495"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/30/scirel.sampling.polynomial-fit.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "8aa231b35fce2953ecef21f43e5156919ebe57d171440171cee9babe53349f86"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/32/scirel.plotting.scale-patches.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "f069891885b1b93b8bb23fbc51b6c24e5b806a5f5dc78afbe0518af461a1b42c"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/3f/scirel.geometry.theta-chord.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "9ee95f81f41cd33d01f80bca06ef791ddfcf7f634925800d053afb6f52207226"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/3f/scirel.plotting.transpose-patches.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "8cea576b317797b936ae0eb95da385a4e7cef71c520e15768218e0b64bd2c106"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/42/scirel.electromagnetism.wham.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "3af730fd28d305a9c263b792c319d8c2172cee9fff7c8bb32cb7ffc44acd61d1"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/48/scirel.basis.second-clamped-cubic-spline.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "1ebb8e26b4cfdad24ca3e104afed9181a7733630a22b1be38dda4324a804d2f6"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/48/scirel.electromagnetism.device.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "bff19346632a33edf185d4ae50ffe39733ea631d601c86a5d3acf44180d7cc13"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/4f/scirel.geometry.rotate.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "af8017c1baed6f0367eb530e916e3991d126fa3bb83132f54e5cdb0296b93cbe"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/52/scirel.numerics.nonuniform-derivatives.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "17497ff6f1a184133967f4d42009d1257d20974915f33aca23b2ff1b99600b1e"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/59/scirel.geometry.rect-mesh.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "995fe41f722f8b40eca7887c99026f3205cc897c81bbc874c241023253fd672d"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/61/scirel.fieldline.contour-points.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "78a3de3f8ec8ef3d77963845abb548a5571ebc84f62c52ccbce2c89df72952ea"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/65/scirel.basis.build-basis.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "c3426f0cfe0172a5452980064aa423653f15a078533a7e569d74a07f163ba2d9"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/67/scirel.electromagnetism.arbitrary-points.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "7c9c2cf55e327a72ecc8d8f0d8a139d06d9d8e1f91dc50b965f2dd7c892033c4"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/68/scirel.electromagnetism.loop-flux-matrix.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "710c20b832645617c62073aad7e1c87a8ada0bab81756a8ac50f3ba44389ec1c"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/71/scirel.geometry.r-chord.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "64f31c15ef55d0f79c8ab2a9f1c58165ee314a55dbd9f96852f83f483d90bb07"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/74/scirel.sampling.path-distance.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "fce37d1ca8f6d32ae2d0c700f1eac8f53a807a7e70223198ad86845e8ddda3f0"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/75/scirel.io.eqdsk-class.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "f3087dc941fade1f0a3cd24f15fecb8e51266e8b312d0b2684642acd6d2d3930"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/76/scirel.sampling.meridional-polar-forward.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "a8d720f3b1b16d8685da0ed65a484260ea418a99827d5c63483d4afde75ffa28"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/82/scirel.fieldline.helper-fieldline.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "9d0932d3bbf2f9082d5a57cac50428cf1abe367d381a404857b5f354f5734ae2"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/84/scirel.equilibrium.compute-equilibrium.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "47be75ae438d877442be2268eaed5c26b6b3917282c23a6e709c92d8b1bce996"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/8a/scirel.geometry.spherical-r-chord.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "b9b0ddeadeecae80c485a0297a1b2ba2f961f5a1498fe6fe887b0d61431818e9"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/92/scirel.sampling.scalar-reflection.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "9a986a5afe3cd80d6a224768612d5fa476260f62530cb677be6eba1ff7c557d6"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/99/scirel.electromagnetism.trex-coil.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "adab1c6565e13b854b19abaee138780eda9b480f6ce52680fe972e21e2edc857"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/9a/scirel.plotting.mirror-patches.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "d805fd16a70d0711b30344151a9fbb023ec2594fee3efc8c530b63023abb88cb"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/9a/scirel.sampling.regular-grid.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "5be619d6d0e0bc895919c9466e838fea91cf96fbab5b423bf1ecf1ed076c5726"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/a4/scirel.basis.natural-cubic-spline.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "d8a984b9e635ae48350ebb49b9905a7fd813f0686acf2374700c20f7285f8106"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/a6/scirel.fieldline.helper-contour-points.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "1ce6acfdbedaf7a1a914487b76ec938ef6cf0f4d28d4aee721bbf3607e1580c4"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/a9/scirel.sampling.meridional-polar-inverse.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "5fec45e395a7ed0d481db694c17c05526ad68a9cc9b5b1dc3cc96b6bb988be7b"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/ac/scirel.io.read-pleiades-eqdsk.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "c2a3bfc8e475520452d28e3351d4c660836596c7efc74acd49cb136a7d3cc7c0"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/af/scirel.geometry.points-mesh.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "8724cea2abcb46361a35b8f968a9c06bdd00d81f47c2f4790e39501f060b6891"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/b0/scirel.fieldline.boundary.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "7412df70b7538b115523d708b63997eaaf9aa1730ffde8c283fcc3f58a1ce95a"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/b8/scirel.sampling.rectangular-spline.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "669d612a2e2597267e561847947ccf6b0560dcb6c22ad096a04c314ad29e37c5"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/bc/scirel.basis.clamped-cubic-spline.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "f04319253cf53e712dca5bcc5c3de1ef6c5d62de722d7520f43fbecb4923ddab"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/be/scirel.fieldline.fieldline-set.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "b916e084a6cc3c3382a45f8475df6b68b269b10e995261cba8467515c02e9654"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/c2/scirel.electromagnetism.distributed-current-flux.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "52c1ad37d8c89dff68608d6244f846dac988ce2c3a3aeeea6ffef9147e927376"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/ca/scirel.sampling.select-fieldline.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "eb08be8af76248ce1dad0a27da9d7953a2340144203c3fdfac8e5cd7c4aa8394"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/cb/scirel.sampling.weighted-line-integral.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "1ec6c6f81c680f4d34fd0c83ffce03f6dda5baca82efd175b9dfcacd39930913"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/d4/scirel.fieldline.fieldline.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "964bb20366c4ab3c0d32089b31fc65ff0cd85509a67cbbfdba82d218711b6ac4"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/d4/scirel.io.write-pleiades-eqdsk.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "073fa2f33fdec2218933f62e0e5f5eece6f6d8149ff9589f4c0c80124c6fa70f"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/e4/scirel.sampling.nonuniform-first-derivative.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "89d80a702f9df16d41c04fae93fca6eee1bb572b47220f0383769a93ab9f1913"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/ea/scirel.basis.first-clamped-cubic-spline.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "23c2ac12c230cc5dc4a0a74c06a170c295427798d19bb77ec0720ba60c406b4e"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/ed/scirel.electromagnetism.magnet-ring.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "e02bba84c4de3621cc5dd318c2a6c29d5a93bcbf2d90565400276789a55686c5"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/f3/scirel.electromagnetism.rectangular-coil.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "411bc9db8ec711b1e0ccb1b6536283b85488b889fae1d9226b9308841d4a658d"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/fb/scirel.geometry.z-chord.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "29edcd8f70bbc466c45a872bf17c9b8755e513aa5ed636da05b4b2c417edb5fb"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/fc/scirel.electromagnetism.brb.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "6dc0b6b3ffda3bc655dbf00bce2c426e71e44d8f558038f6a1f638febe279684"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/records/fe/scirel.electromagnetism.circular-filament-green.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "1777bbbe7fce921affdaf7d9546f6c2287c1de3bab055e8f05657d8c33a5364e"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/release.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "e84c8d556abb210279ab5ec6cf39d684c7a5b97e95fce8504f04a3f960e00bbd"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/reverse-dependencies/all.jsonl",
+      "preimage_sha256": null,
+      "postimage_sha256": "2580d697c4e92bae21996696be304c634999a005b521271427e218f7ca56bd68"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/routes/all.jsonl",
+      "preimage_sha256": null,
+      "postimage_sha256": "9bf1a05ce84c9c09a089d7e86c026f6e1e6481301e02e1189edf59d7ef5016af"
+    },
+    {
+      "path": "catalog/pleiades-maintained/release/summaries/all.jsonl",
+      "preimage_sha256": null,
+      "postimage_sha256": "0fbd1cf09505fb4cc4c3df063c211f41bb726b53cac88cd8102a367e614f24fa"
+    },
+    {
+      "path": "catalog/pleiades-maintained/sampling.meridional-polar-forward.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "eae7aa9a46a919b9124d4feabcdb3cafe6f1614012cfad54953764fc35abfa38"
+    },
+    {
+      "path": "catalog/pleiades-maintained/sampling.meridional-polar-inverse.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "325e1d0a942df597a19fb3d24b2d18e0625fb874e0cb3dec03dde809e8dd7d4a"
+    },
+    {
+      "path": "catalog/pleiades-maintained/sampling.nonuniform-first-derivative.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "84ab2a1ec15d4df0a4da8d2a71c6bf11322a5d0e92286b4a33cdba0205d32220"
+    },
+    {
+      "path": "catalog/pleiades-maintained/sampling.parse-segment.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "153dc5bc2c67aae29658a466f55854c3ae729727b5679430bc5c22c79136a820"
+    },
+    {
+      "path": "catalog/pleiades-maintained/sampling.path-distance.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "523dbff42bbc55a6e588a32228f664abc80bf64118da0b2abd3aeda39f466271"
+    },
+    {
+      "path": "catalog/pleiades-maintained/sampling.point-nearest.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "8379a278c542153aca104f03243d40e89bb56e95ac90c9248b468264ea14a263"
+    },
+    {
+      "path": "catalog/pleiades-maintained/sampling.polynomial-fit.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "323ba6ad438bd4a85059f28e29f86a5f745e5d3f3ac0b97373f2dfda6ffd6f15"
+    },
+    {
+      "path": "catalog/pleiades-maintained/sampling.rectangular-nearest.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "f330ea906f6062024593a4fb818ce338fce40c5f14a5293a798c5ac35d1a9346"
+    },
+    {
+      "path": "catalog/pleiades-maintained/sampling.rectangular-spline.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "c1ffa00d5e19da199422770b3a87cbaafe101027eed0d99fa877ffefeec51332"
+    },
+    {
+      "path": "catalog/pleiades-maintained/sampling.regular-grid.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "0ed606c03e71b817dd441c4a01f0296ca1510e615cb1d7a49104bfd9af5cd735"
+    },
+    {
+      "path": "catalog/pleiades-maintained/sampling.scalar-reflection.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "301aaa980531c941d1e0c3038d2ab933ae7d9b7f2b2e6efdb271c73101ee8007"
+    },
+    {
+      "path": "catalog/pleiades-maintained/sampling.scattered-linear.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "8f105a9c521c21b55f5df6dd4f3c8817eb733084cbadc8838437dca6728a49a1"
+    },
+    {
+      "path": "catalog/pleiades-maintained/sampling.select-fieldline.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "23220c50339909b9974ca57f36d95849df87dcc6cd2852935ebe4a7dea70ebd5"
+    },
+    {
+      "path": "catalog/pleiades-maintained/sampling.weighted-line-integral.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "e0eb379f420b277a828afd95acd4e20ee991faadfb260c98c392507be9b26f37"
+    },
+    {
+      "path": "catalog/pleiades-maintained/scirel.electromagnetism.arbitrary-points.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "4b7c1952be411a9a3da58d7707769d1919621bdb451e12b5aff319047c1e806b"
+    },
+    {
+      "path": "catalog/pleiades-maintained/scirel.electromagnetism.brb.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "8fb720b8cb1f3481b9b78840e653830535e4720d08aad235b9d717a66f7e0295"
+    },
+    {
+      "path": "catalog/pleiades-maintained/scirel.electromagnetism.device.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "cf13dad0c60824ca5d8e02143921505affcdbb38b8ff33aa552b60d17510046e"
+    },
+    {
+      "path": "catalog/pleiades-maintained/scirel.electromagnetism.magnet-ring.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "a69bf6be1a8601804a546430b837bfda1e88642c2a6022fe9597df5bad284544"
+    },
+    {
+      "path": "catalog/pleiades-maintained/scirel.electromagnetism.rectangular-coil.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "0c7cfe5c981a7739cfc83375349a1550f9c961993745e1bdcb4b83d6cd287c9f"
+    },
+    {
+      "path": "catalog/pleiades-maintained/scirel.electromagnetism.trex-coil.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "5498ca7d30405bf9193c63d2f2152b9ed5a039fefbbb9a0372126ff3646b2345"
+    },
+    {
+      "path": "catalog/pleiades-maintained/scirel.electromagnetism.wham.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "7b1502936d8b56dad806970441f2b639a69ff215fdbef06888cdddf3380ec7b2"
+    },
+    {
+      "path": "catalog/pleiades-maintained/scirel.geometry.points-mesh.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "435a4aa8ce242981596d5778aed2c82810791d5d97db9355024d762a563bda7c"
+    },
+    {
+      "path": "catalog/pleiades-maintained/scirel.geometry.r-chord.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "bd0ddf6f909dfbb53383bc0a8265f82f09b2689c256e4a5210ea2856f923fbd5"
+    },
+    {
+      "path": "catalog/pleiades-maintained/scirel.geometry.rect-mesh.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "f5e2173c191aa91efcffdca9e2c5c3071d0a11aa3ea8788b5a6e13f1e3d6a539"
+    },
+    {
+      "path": "catalog/pleiades-maintained/scirel.geometry.rotate.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "58944fe0d270f55d4ec862a492f14ad13b7e048111cfa53cb8c797f78afe1f66"
+    },
+    {
+      "path": "catalog/pleiades-maintained/scirel.geometry.spherical-r-chord.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "04f1f847d7b3c9c07b70a8355e06012007bbfb97f10a741a8ea2d1e2c0388a6c"
+    },
+    {
+      "path": "catalog/pleiades-maintained/scirel.geometry.theta-chord.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "49b33973b53e6ed94764d53b2213c639568db4d43883560a9390f861c80d4d56"
+    },
+    {
+      "path": "catalog/pleiades-maintained/scirel.geometry.z-chord.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "3d8730ab73cf2e8d3d23295b09f3653304594f4b79ac213c797c2c929527a6c3"
+    },
+    {
+      "path": "catalog/pleiades-maintained/write-eqdsk-legacy-raw.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "88d60a5c89cfbc4eb0222d00ecd637b8409753a1b03a36675f4242c90e3bbc2d"
+    },
+    {
+      "path": "catalog/pleiades-maintained/write-eqdsk.json",
+      "preimage_sha256": null,
+      "postimage_sha256": "20c87250d5f6c2de92ee5e622789a2673d6de5b9dae1ffc48c2ed2439da030e3"
+    },
+    {
+      "path": "contracts/scientific-asset-document.schema.json",
+      "preimage_sha256": "309531b5d56fd8fc29c4a0c67f898412b7ea524329f150638b610f4ed00c22a8",
+      "postimage_sha256": "421972114e86e627b15f61f8b3d10872415c161e83fe96c005c0b9b49c967215"
+    },
+    {
+      "path": "licenses/Pleiades-MIT.txt",
+      "preimage_sha256": null,
+      "postimage_sha256": "d8b954c37e9aaf97e35624236dfe6a04eb7cc7fb031da055ab57781a61f53e0a"
+    },
+    {
+      "path": "scripts/prepare_maintained_candidate.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "b04365e5f0424ce57159549cc61f59529f65d9383bb900be3273a905fbf75864"
+    },
+    {
+      "path": "scripts/validate_asset_documents.py",
+      "preimage_sha256": "b9a0082554ea3223a49d2560688e9623664e354cc55e2c09ad4b6d62031b2aff",
+      "postimage_sha256": "af9e290f95ccd0b6830aa95776673cf97e2bec3e019481da5d118e86dd693806"
+    },
+    {
+      "path": "src/scirel/analysis.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "90e92b598dcf962515a459225631563e051cb637e6ef1d2356e77a031cc5be89"
+    },
+    {
+      "path": "src/scirel/basis.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "d2a68e4f635f41f5a23544c426ce43902074193203652820da00dd830a3a55d3"
+    },
+    {
+      "path": "src/scirel/configurations/__init__.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "3a8ca5e4d16b4146c3c306a1bb5afafe19993bfdf14af893fc573427a005558d"
+    },
+    {
+      "path": "src/scirel/configurations/brb.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "c032976ae1abf17f41ae1a8bdfae78bfb03974f3f69301fd41e422c5d33d0766"
+    },
+    {
+      "path": "src/scirel/configurations/wham.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "7dd92e8c0591d03830ce028988e8701e395c2c0af23c810cbd6e6fef0f2772c8"
+    },
+    {
+      "path": "src/scirel/electromagnetism/__init__.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "7bdb00de05adb00612986b32ac2069d9bb5c97dd4a828772f4761f50e7133bb1"
+    },
+    {
+      "path": "src/scirel/electromagnetism/distributed.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "76d4a1d7bf83d3ba57e9573c19415f333ac0ec8c51e695f64ad27b3bf69fcd5a"
+    },
+    {
+      "path": "src/scirel/electromagnetism/greens.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "a00eea84ee7e64513a36bcddaedda6975a06446f57c0bb341b4afcb8a5b33e0d"
+    },
+    {
+      "path": "src/scirel/electromagnetism/sources.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "03ae733e7cd91d7d3673145314e4b4afa6beeea733b3cd2de6eb9abc6cb1d15f"
+    },
+    {
+      "path": "src/scirel/equilibrium/__init__.py",
+      "preimage_sha256": "7c3b1494b52b06150123ba18bf610c41ef379ff0b2c5dddad9a49c7cfc9a4008",
+      "postimage_sha256": "cca8fc74b5a392bb68f8ba2046974d0c9eddbc96ef079e77e805647c49492eee"
+    },
+    {
+      "path": "src/scirel/equilibrium/pleiades_feedback.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "75176dffe3fa5d8fe9eb4f00e2fcc544a4b5f05a608df711d36a70680446f843"
+    },
+    {
+      "path": "src/scirel/equilibrium_api.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "6f3afbf6c46cc003b1748cb3e502efc47fcdd2e738dae8891d0eefcf885a8b91"
+    },
+    {
+      "path": "src/scirel/fieldline.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "04ce2b7154a31d8c29eee8889870523b324fe288ecab4cfb815d18f4b57f420c"
+    },
+    {
+      "path": "src/scirel/geometry/__init__.py",
+      "preimage_sha256": "0f7e21bac99b5b1edbb724011a8e57f3dc614b6253bc3c24661ba722d536cc08",
+      "postimage_sha256": "d0afd84c59687157a5a3e9a060adbb5c2038c887687ca2e7ebcebfa4d7d0c931"
+    },
+    {
+      "path": "src/scirel/geometry/mesh.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "afdf85f30984536ceb48aec31fcf7be1df7f91fad6b28ee4a7cc1e1b78a6cbe6"
+    },
+    {
+      "path": "src/scirel/geometry/transforms.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "21dda6b50e03ca791d6d5c19c108273e0466df6fa97a813c225b577bc145ada8"
+    },
+    {
+      "path": "src/scirel/io/__init__.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "fd143122d6338547e976736209e7c9603fa209ef81dd4be5e70a29de4c730894"
+    },
+    {
+      "path": "src/scirel/io/eqdsk.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "4c2dd81fa2d4074fb2edac36d920e9c4ea6edb8bdd4aa09174315456774bbf0e"
+    },
+    {
+      "path": "src/scirel/numerics.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "476dfbca8184f1aafb1355a17099135289569319487a2e821e3f2fe52a019417"
+    },
+    {
+      "path": "src/scirel/plotting.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "cff9005f5660e70a0647f338850bd9ce16026c89ca16509844ac1df36479c763"
+    },
+    {
+      "path": "src/scirel/sampling.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "aeed550a0e7c02e052679a0b33197d8cb74a6da4d4d3fb5bdb24299589501d15"
+    },
+    {
+      "path": "tests/pleiades/equilibrium/test_analysis_corrections.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "460363cec536c307b7ce519a37387338b3159c3c17a36feefda4c330f0fef4c5"
+    },
+    {
+      "path": "tests/pleiades/equilibrium/test_analysis_families.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "e1528da19731d2ee2eef73f69385a6893c8ea788b5eaca55e84f60f2bb6780c1"
+    },
+    {
+      "path": "tests/pleiades/equilibrium/test_curvature_consumer.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "c5d0bd7ce81037099b4e811c3a444dedc6639f0574080966a79859f2bd1945f5"
+    },
+    {
+      "path": "tests/pleiades/equilibrium/test_distributed_current.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "6aeb5ccaed4a074d422950cfc1107bce27a7231a90403de98dfb1f25128ccc44"
+    },
+    {
+      "path": "tests/pleiades/equilibrium/test_equilibrium_boundaries.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "73557287780cff09d4e8daeb09537c10f635a309bbe3c173dbed1386d5d97aa9"
+    },
+    {
+      "path": "tests/pleiades/equilibrium/test_equilibrium_governing_residual.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "64c61736f376da438d9aae9776b6b3aae4fa54a152f695bdca696aea1b5e8247"
+    },
+    {
+      "path": "tests/pleiades/equilibrium/test_equilibrium_io_consumer.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "942142e822813a989a99b2dd858606cba757c241109f3fcc4df6c93467faa8cb"
+    },
+    {
+      "path": "tests/pleiades/equilibrium/test_equilibrium_proposals.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "b45338e5794b980827f417a3647249eda0740981ce9e1f5bbc438568d75c2773"
+    },
+    {
+      "path": "tests/pleiades/equilibrium/test_equilibrium_terminal_export.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "63c697e807e92afb90899ec157cb59b3ae664729e1bce8dfce53ecad5506cfde"
+    },
+    {
+      "path": "tests/pleiades/equilibrium/test_fieldline_geometry_repair.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "158ef80ada5797ddc1c67c1570f918af42eb1ce3338916b279968448c1711d75"
+    },
+    {
+      "path": "tests/pleiades/equilibrium/test_keyword_sampling_ports.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "d2a395594244c1831911a4bf07f151a1a2aaa0e6c7bd31e7506861006a24594b"
+    },
+    {
+      "path": "tests/pleiades/equilibrium/test_retained_fieldline_primitives.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "82a08e7585c39d9937c09959b045065d4eaf9b08bd838db4aa63b244f3dc9f2f"
+    },
+    {
+      "path": "tests/pleiades/geometry/test_configurations.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "fed433f31c423250b17ea7a38244fbbaf8050f10abaa4a77b9c5e1cf0294210c"
+    },
+    {
+      "path": "tests/pleiades/geometry/test_geometry_fields.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "f149756fab900435c4e5329347cadfd1e39cbac141c27fe7220f67d2b06aaa71"
+    },
+    {
+      "path": "tests/pleiades/geometry/test_green_reflection_repair.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "1d2c092379baae4e57b97dc24bfb4c454fd0cc409e81a14dd2430f378e1ad08c"
+    },
+    {
+      "path": "tests/pleiades/geometry/test_lifecycle_boundaries.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "6b081d2001a3bda2e9c42955d8ea1e790304a29e5da7dda8dc6aeff8825d80e8"
+    },
+    {
+      "path": "tests/pleiades/geometry/test_native_geometry_qualification.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "126cd3a636a12d9d54070660a3bb5f00e062907f1d2e1dfce0080985a8a599a6"
+    },
+    {
+      "path": "tests/pleiades/geometry/test_native_lifecycle.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "7b7c82aec7a3bfc6bf7f9aef4f567c7e06327ecfa0c35e8817f719e830333770"
+    },
+    {
+      "path": "tests/pleiades/geometry/test_polar_projection_repair.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "431bc09f9f18176732a6c386fb3a1b265ef9fb3dce00ee5cfab44a4087893136"
+    },
+    {
+      "path": "tests/pleiades/geometry/test_source_d2_regressions.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "3a2d7ff3cbe92db0ccbf92829e7d1619c2f084e5b51cbbd968d97db27e274506"
+    },
+    {
+      "path": "tests/pleiades/test_eqdsk.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "86ad1ce9c693ef4755ac3acdcb68a659d18d28ba1743aacc981fe0f61e4ecff2"
+    },
+    {
+      "path": "tests/pleiades/test_eqdsk_independent.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "22189de3d736c220fdb99845edb7fd12e126b09ac7be41b00d2f03ebc476e040"
+    },
+    {
+      "path": "tests/pleiades/test_eqdsk_raw_repair.py",
+      "preimage_sha256": null,
+      "postimage_sha256": "f4d3390bfc621dd6b3cf00c5e18ef994dbfe0257814057cf50afce956917b8da"
+    }
+  ],
+  "qualification": "LIMITED_INTERNAL_PENDING_HUMAN_REVIEW",
+  "independent_tests": {
+    "exact_installed_wheel": 293,
+    "exact_documents": 53
+  },
+  "scientific_changes_from_qualified_candidate": false,
+  "dependency_adjustment": "matplotlib>=3.7; selected wheel already declared this dependency",
+  "legacy_implementations_removed": [],
+  "remaining": [
+    "Legacy contract comparison and caller-preserving absorption remain unfinished.",
+    "Receiver AOCI alignment remains pending; do not import author empty index or 717-object/716-coverage scope demotion.",
+    "Ordinary full-repository wheel is not qualified. Use the hash-bound explicit selection profile.",
+    "All 53 assets are not newly science-approved. Six bounded repair qualifications and four fixed-grid monotonicity failures remain as before.",
+    "Canonical merge, final human decisions and public release are separate unfinished states."
+  ],
+  "scientific_human_approved": false,
+  "public_release_approved": false,
+  "source_qualification_evidence": {
+    "root_reception": ".runtime/heartbeat-20261011-1621/PLEIADES_INDEPENDENT_ROOT_RECEPTION.json",
+    "independent_manifest_sha256": "53c600f28d3a20a0450a2aa6cf6658064b88870711e1de597c1b9e23d4f9376c"
+  },
+  "selected_source_profile_note": "candidate_source_commit in preserved profile names qualified scientific origin, not receiver HEAD. Use this receiver mapping as well.",
+  "receiver_validation": {
+    "affected_selector": "full_suite_required for dependency baseline and unmapped new source",
+    "source_suite": {
+      "passed": 2139,
+      "failed": 4,
+      "skipped": 83,
+      "subtests_passed": 10,
+      "environment_failures": [
+        "3 tests: pwsh absent in Linux image",
+        "1 test: source transfer has no Git metadata"
+      ],
+      "targeted_environment_recheck": "PENDING"
+    },
+    "rebuilt_selected_wheel_sha256": "f36a5ff9ebed200031b3f893a344e97881b0eafee357b02cf76fac9f4dfadc68",
+    "all_uncompressed_wheel_members_byte_identical_to_accepted_wheel": true,
+    "evidence_sha256": "6a587504f798ad8dcd8ad3924832d2c6ef1ca78b7f0abdc2bf58de220501e347"
+  }
+}

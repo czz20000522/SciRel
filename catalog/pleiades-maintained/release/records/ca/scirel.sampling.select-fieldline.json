@@ -1,0 +1,160 @@
+{
+  "aliases": [
+    "get_fieldlines"
+  ],
+  "applicability": {
+    "excluded": [
+      "Does not establish unique physical flux surface or connect separate segments"
+    ],
+    "preconditions": [
+      "Requested level exactly appears in contourset.levels",
+      "At least one finite segment exists"
+    ],
+    "supported": [
+      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+    ]
+  },
+  "asset_id": "scirel.sampling.select-fieldline",
+  "example": {
+    "code": "import numpy as np\nfrom types import SimpleNamespace\nfrom scirel.sampling import get_fieldlines\np=np.array([[0.,0.],[0.,1.],[1.,1.],[1.,0.]])\nc=SimpleNamespace(levels=[.2],allsegs=[[p]])\nassert get_fieldlines(c,.2).shape==(4,2)",
+    "description": "Bounded executable example for Contour field-line selection",
+    "expected": "Declared result shape and bounded numerical behavior are asserted."
+  },
+  "failure_semantics": {
+    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
+    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
+    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object.",
+    "runtime_failure": "Underlying numerical or interpolation exceptions propagate."
+  },
+  "identity": {
+    "assumptions": [
+      "Requested level exactly appears in contourset.levels",
+      "At least one finite segment exists"
+    ],
+    "boundary": "Nearest endpoint convention from parse_segment",
+    "coordinates": "Planar segment vertices and exact level labels",
+    "definition": "Select largest vertex-count segment at exact contour level and parse its orientation/endpoints",
+    "direction": "Declared inputs to Selected parsed vertices",
+    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "model": "Source contour segment selection; idx_check is ignored compatibility argument",
+    "relation": "Contour field-line selection"
+  },
+  "inputs": [
+    {
+      "constraints": "Each allsegs entry contains finite planar segments",
+      "description": "Object exposing levels and allsegs",
+      "dtype": "contour-like object",
+      "name": "contourset",
+      "required": true,
+      "shape": "contour object",
+      "units": "levels in caller flux-label units; vertices length"
+    },
+    {
+      "constraints": "Exact membership",
+      "description": "Requested contour level",
+      "dtype": "float64",
+      "name": "level",
+      "required": true,
+      "shape": "scalar",
+      "units": "caller flux-label units"
+    },
+    {
+      "constraints": "Exact nearest-vertex selection",
+      "default": null,
+      "description": "Nearest selected starting coordinate",
+      "dtype": "float64",
+      "name": "start_coord",
+      "required": false,
+      "shape": "(2,) or None",
+      "units": "length units"
+    },
+    {
+      "constraints": "Terminal vertex retained; no interpolated crossing",
+      "default": null,
+      "description": "Nearest terminal coordinate included in output",
+      "dtype": "float64",
+      "name": "end_coord",
+      "required": false,
+      "shape": "(2,) or None",
+      "units": "length units"
+    },
+    {
+      "constraints": "Signed shoelace-like source test",
+      "default": true,
+      "description": "Desired signed polygon orientation",
+      "dtype": "bool",
+      "name": "clockwise",
+      "required": false,
+      "shape": "scalar",
+      "units": "dimensionless"
+    },
+    {
+      "constraints": "No effect on numerical selection",
+      "default": [],
+      "description": "Unused source compatibility argument",
+      "dtype": "list",
+      "name": "idx_check",
+      "required": false,
+      "shape": "list",
+      "units": "dimensionless"
+    }
+  ],
+  "kind": "operator",
+  "outputs": [
+    {
+      "constraints": "Largest segment selected by original point count",
+      "description": "Selected parsed vertices",
+      "dtype": "float64",
+      "name": "segment",
+      "required": true,
+      "shape": "(M,2)",
+      "units": "length units"
+    }
+  ],
+  "provenance": {
+    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending.",
+    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "public_references": [],
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "independent analytic or numerical oracle"
+    ]
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.sampling",
+      "signature": "get_fieldlines(contourset, level, start_coord=None, end_coord=None, clockwise=True, idx_check=[])",
+      "symbol": "get_fieldlines"
+    }
+  },
+  "schema": "scirel.asset-document.v1",
+  "summary": "Select largest vertex-count segment at exact contour level and parse its orientation/endpoints",
+  "taxonomy": [
+    "analysis",
+    "sampling"
+  ],
+  "title": {
+    "en": "Contour field-line selection",
+    "zh": "Contour field-line selection"
+  },
+  "verification": {
+    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "known_limitations": [
+      "Does not establish unique physical flux surface or connect separate segments"
+    ],
+    "scope": [
+      "Only the explicitly stated finite input domain and direct-test fixtures"
+    ],
+    "tests": [
+      "tests/pleiades/equilibrium/test_analysis_families.py"
+    ]
+  },
+  "version": {
+    "dependencies": [
+      {
+        "asset_id": "scirel.sampling.parse-segment"
+      }
+    ],
+    "implementation_version": "0.2.0.dev3+pleiades.maintained"
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "aliases": [
+    "diff_12_central"
+  ],
+  "applicability": {
+    "excluded": [
+      "Periodic endpoints, noisy-data inference and conditioning extremes are unqualified"
+    ],
+    "preconditions": [
+      "Finite matched one-dimensional x,y with N>=3",
+      "x strictly increasing"
+    ],
+    "supported": [
+      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+    ]
+  },
+  "asset_id": "scirel.numerics.nonuniform-derivatives",
+  "example": {
+    "code": "import numpy as np\nfrom scirel.numerics import diff_12_central\nx=np.array([0.,.3,1.]);a,b=diff_12_central(x,x*x)\nassert np.allclose(a,2*x[1:-1]) and np.allclose(b,2)",
+    "description": "Bounded executable example for Nonuniform interior first and second derivatives",
+    "expected": "Declared result shape and bounded numerical behavior are asserted."
+  },
+  "failure_semantics": {
+    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
+    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
+    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object.",
+    "runtime_failure": "Underlying numerical or interpolation exceptions propagate."
+  },
+  "identity": {
+    "assumptions": [
+      "Finite matched one-dimensional x,y with N>=3",
+      "x strictly increasing"
+    ],
+    "boundary": "No endpoint values are fabricated",
+    "coordinates": "x coordinate units and y value units",
+    "definition": "Differentiate a local quadratic at each interior abscissa",
+    "direction": "Declared inputs to Interior first derivative",
+    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "model": "Three-point unequal-spacing polynomial operator",
+    "relation": "Nonuniform interior first and second derivatives"
+  },
+  "inputs": [
+    {
+      "constraints": "Finite N>=3",
+      "description": "Strictly increasing abscissae",
+      "dtype": "float64",
+      "name": "x",
+      "required": true,
+      "shape": "(N,)",
+      "units": "coordinate units"
+    },
+    {
+      "constraints": "Finite same N",
+      "description": "Sampled values",
+      "dtype": "float64",
+      "name": "y",
+      "required": true,
+      "shape": "(N,)",
+      "units": "value units"
+    }
+  ],
+  "kind": "operator",
+  "outputs": [
+    {
+      "constraints": "Quadratic exactness",
+      "description": "Interior first derivative",
+      "dtype": "float64",
+      "name": "d_one",
+      "required": true,
+      "shape": "(N-2,)",
+      "units": "value per coordinate"
+    },
+    {
+      "constraints": "Quadratic exactness",
+      "description": "Interior second derivative",
+      "dtype": "float64",
+      "name": "d_two",
+      "required": true,
+      "shape": "(N-2,)",
+      "units": "value per coordinate squared"
+    }
+  ],
+  "provenance": {
+    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending.",
+    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "public_references": [],
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "independent analytic or numerical oracle"
+    ]
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.numerics",
+      "signature": "diff_12_central(x, y)",
+      "symbol": "diff_12_central"
+    }
+  },
+  "schema": "scirel.asset-document.v1",
+  "summary": "Differentiate a local quadratic at each interior abscissa",
+  "taxonomy": [
+    "analysis",
+    "numerics"
+  ],
+  "title": {
+    "en": "Nonuniform interior first and second derivatives",
+    "zh": "Nonuniform interior first and second derivatives"
+  },
+  "verification": {
+    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "known_limitations": [
+      "Periodic endpoints, noisy-data inference and conditioning extremes are unqualified"
+    ],
+    "scope": [
+      "Only the explicitly stated finite input domain and direct-test fixtures"
+    ],
+    "tests": [
+      "tests/pleiades/equilibrium/test_analysis_families.py"
+    ]
+  },
+  "version": {
+    "dependencies": [],
+    "implementation_version": "0.2.0.dev3+pleiades.maintained"
+  }
+}

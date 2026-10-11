@@ -1,0 +1,52 @@
+{
+  "schema": "scirel.pleiades-legacy-maintenance-continuation.v1",
+  "action_id": "pleiades-qualified-intake-legacy-continuation-20261011-v1",
+  "base_commit": "8b8e38107d8ea8386e68cbd2836c4d52f269254f",
+  "base_tree": "3c2f4f61dbb6c588af653091055b786a87a4b4bf",
+  "qualified_scientific_origin": "e5bf23dad7430230cc310c990ed15c4dcf876be5",
+  "status": "bounded_retained_variant_maintenance",
+  "scope": [
+    "src/scirel/field/circular_filament_green.py",
+    "src/scirel/field/dense_axisymmetric_green.py",
+    "src/scirel/field/mirror_plasma_green.py",
+    "src/scirel/field/filament_vacuum_field.py",
+    "src/scirel/field/filament_coil_green_field.py"
+  ],
+  "dispositions": {
+    "src/scirel/field/circular_filament_green.py": "retained_variant_no_lossless_adapter",
+    "src/scirel/field/dense_axisymmetric_green.py": "retained_variant_per_source_matrix_contract",
+    "src/scirel/field/mirror_plasma_green.py": "retained_variant_reflection_symmetric_grid_contract",
+    "src/scirel/field/filament_vacuum_field.py": "retained_variant_grid_radial_quadrature_contract",
+    "src/scirel/field/filament_coil_green_field.py": "retained_variant_gseq_caller_supplied_elliptic_contract"
+  },
+  "scientific_code_changes": [],
+  "absorbed_duplicates": [],
+  "adapters": [],
+  "deleted_paths": [],
+  "evidence": {
+    "dryrun": "/evidence/legacy-dryrun-disposition.json",
+    "semantic_discriminators": "/evidence/semantic-counterexamples.json",
+    "caller_evidence": "/evidence/scoped-caller-evidence.json",
+    "qualified_preservation": "/evidence/qualified-preservation-binding.json",
+    "affected_selection": "/evidence/family-affected-selection.json",
+    "test_run": "/evidence/family-affected-run.json",
+    "selected_profile": "/evidence/exact-build-selection.json",
+    "offline_runtime": "/evidence/source-denial-selected-wheel.json",
+    "isolation_review": "/evidence/isolation-private-review.json"
+  },
+  "preserved": {
+    "exact_scientific_documents": 53,
+    "qualified_implementation_claims": 16,
+    "fixed_grid_monotonicity_failures": 4,
+    "human_review_status": "pending",
+    "public_release_status": "not_approved"
+  },
+  "aoci": "NOT_RUN_PENDING_RECEIVING_ROOT_INCREMENTAL_MAINTENANCE",
+  "full_maintenance_complete": false,
+  "technical_candidate": true,
+  "root_intake": false,
+  "canonical_merge": false,
+  "human_approved": false,
+  "public_release_approved": false,
+  "note": "This successor records a bounded scientific maintenance decision and does not rewrite frozen source, approval, or release records. The requested docs/design/project-and-distribution.md is absent from the exact 8b8 tree; existing README, development-process, distribution design and trust/version documents were used."
+}

@@ -1,0 +1,122 @@
+{
+  "aliases": [
+    "Device"
+  ],
+  "applicability": {
+    "excluded": [
+      "Plotting adapters",
+      "Persistent sweep",
+      "Arbitrary source mutation outside documented cache contract"
+    ],
+    "preconditions": [
+      "Inputs satisfy the documented finite cylindrical coordinate and shape contract"
+    ],
+    "supported": [
+      "Registration replacement/deletion",
+      "Mesh propagation",
+      "Current projection"
+    ]
+  },
+  "asset_id": "scirel.electromagnetism.device",
+  "example": {
+    "code": "from scirel.electromagnetism import Device,ArbitraryPoints\nd=Device(mesh=[[.2,.3]])\nd.a=ArbitraryPoints([[1.,0.]])\nassert d.psi().shape == (1,)",
+    "description": "Compose two child sources",
+    "expected": "Summed fields over ordered child sets."
+  },
+  "failure_semantics": {
+    "invalid_input": "Constructor or geometry setters raise ValueError for invalid supported inputs; unavailable source additions raise NotImplementedError. Source field methods reject a missing target mesh, nonfinite currents and active-filament coincidence.",
+    "nonconvergence": "Not applicable; direct geometry construction, transforms and static response.",
+    "partial_results": "No partial object is returned by a failed constructor. Atomic parameterized geometry setters preserve valid previous state.",
+    "runtime_failure": "Field evaluation propagates FloatingPointError on nonrepresentable kernel results. Failed parameterized geometry setters preserve the preceding valid state."
+  },
+  "identity": {
+    "assumptions": [
+      "Finite child sources and compatible mesh"
+    ],
+    "boundary": "Child registration and mesh state must be valid",
+    "coordinates": "Cylindrical R,Z target mesh",
+    "definition": "Per-child Green matrices projected by current vector",
+    "direction": "ordered current sets to summed fields",
+    "geometry": "Axisymmetric source composition",
+    "model": "Axisymmetric source composition",
+    "relation": "Linear source composition relation"
+  },
+  "inputs": [
+    {
+      "constraints": "Mesh accepted by conversion",
+      "default": null,
+      "description": "Optional target mesh; additional **kwargs names register CurrentFilamentSet children through attribute assignment.",
+      "dtype": "Finite float64",
+      "name": "mesh",
+      "required": false,
+      "shape": "mesh-dependent",
+      "units": "m"
+    }
+  ],
+  "kind": "operator",
+  "outputs": [
+    {
+      "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh",
+      "description": "Constructed Device object. Available properties/methods: psi: Summed flux [Wb/rad], (Nt,); BR: Summed radial field [T], (Nt,); BZ: Summed axial field [T], (Nt,) Ordered iteration/current/rzw properties and gpsi/gBR/gBZ per-child matrices; psi/BR/BZ methods accept current=None and mesh=None.",
+      "dtype": "Device",
+      "name": "source",
+      "required": true,
+      "shape": "one object",
+      "units": "Object; property units as described"
+    }
+  ],
+  "provenance": {
+    "license_status": "Source lineage and MIT license evidence are retained; human release approval remains pending.",
+    "lineage_summary": "Derived from the retained Pleiades D0 geometry/current source and stabilized SciRel D2 successor behavior.",
+    "public_references": [],
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "bounded D2 regression evidence"
+    ]
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.electromagnetism.sources",
+      "signature": "Device(mesh=None, **kwargs)",
+      "symbol": "Device"
+    }
+  },
+  "schema": "scirel.asset-document.v1",
+  "summary": "Construct an ordered filament device; child assignment registers sources. Its field methods use finite scalar or per-child current overrides and sum weighted Green matrices.",
+  "taxonomy": [
+    "electromagnetism",
+    "composition",
+    "lifecycle"
+  ],
+  "title": {
+    "en": "Ordered filament device",
+    "zh": "有序圆丝设备"
+  },
+  "verification": {
+    "evidence_ceiling": "Named geometry, lifecycle and configuration cases only; no arbitrary-input scientific correctness or release claim.",
+    "known_limitations": [
+      "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
+      "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
+      "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
+      "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
+      "All scientific, human and release approvals remain false."
+    ],
+    "scope": [
+      "Bounded rigid-geometry and coordinate invariants",
+      "Ordered current projection and source lifecycle",
+      "Full retained BRB/WHAM configuration composition at finite targets"
+    ],
+    "tests": [
+      "tests/pleiades/geometry/test_native_geometry_qualification.py",
+      "tests/pleiades/geometry/test_native_lifecycle.py"
+    ]
+  },
+  "version": {
+    "dependencies": [
+      {
+        "asset_id": "scirel.electromagnetism.circular-filament-green"
+      }
+    ],
+    "implementation_version": "0.2.0.dev3+pleiades.maintained"
+  }
+}

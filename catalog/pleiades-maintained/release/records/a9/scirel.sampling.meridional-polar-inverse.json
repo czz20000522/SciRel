@@ -1,0 +1,138 @@
+{
+  "aliases": [
+    "transform_to_rhoz"
+  ],
+  "applicability": {
+    "excluded": [
+      "Polar basis at the origin",
+      "Magnetic-axis curvature or topology"
+    ],
+    "preconditions": [
+      "Finite broadcastable real arrays; away from coordinate origin"
+    ],
+    "supported": [
+      "Axis and signed planar coordinate quadrants",
+      "Vector norm and roundtrip identity"
+    ]
+  },
+  "asset_id": "scirel.sampling.meridional-polar-inverse",
+  "example": {
+    "code": "from scirel.sampling import transform_to_rhoz\nrho,z,urho,uz=transform_to_rhoz(2.,0.,4.,3.)\nassert rho==0 and z==2 and urho==3 and uz==4",
+    "description": "Project a vector at a positive-Z axis point.",
+    "expected": "Original meridional position/vector components."
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for nonfinite input or origin; NumPy broadcasting errors propagate.",
+    "nonconvergence": "Direct transformation.",
+    "partial_results": "No partial tuple on invalid input.",
+    "runtime_failure": "NumPy arithmetic errors propagate."
+  },
+  "identity": {
+    "assumptions": [
+      "Finite real broadcastable inputs",
+      "r>0; no physical field null convention inferred"
+    ],
+    "boundary": "Origin has no polar vector basis and rejects; nonzero points on the axis are valid.",
+    "coordinates": "Caller coherent length/vector units; theta radians.",
+    "definition": "Inverse of the same orthogonal meridional basis; theta radians from +Z toward +rho. This explicit inverse fixes the forward convention and preserves vector norm.",
+    "direction": "r,theta,u_r,u_theta to rho,z,u_rho,u_z",
+    "geometry": "Planar signed rho,Z coordinates with positive distance from origin.",
+    "model": "Euclidean meridional coordinate transformation, no magnetic model.",
+    "relation": "rho=r sin(theta); z=r cos(theta); u_rho=u_r sin(theta)+u_theta cos(theta); u_z=u_r cos(theta)-u_theta sin(theta)."
+  },
+  "inputs": [
+    {
+      "constraints": "Strictly positive",
+      "description": "Distance from origin",
+      "dtype": "finite real",
+      "name": "R",
+      "required": true,
+      "shape": "broadcastable",
+      "units": "caller length"
+    },
+    {
+      "constraints": "Periodic sine/cosine convention",
+      "description": "Meridional angle from +Z toward +rho",
+      "dtype": "finite real",
+      "name": "Theta",
+      "required": true,
+      "shape": "broadcastable",
+      "units": "rad"
+    },
+    {
+      "constraints": "Coherent vector units",
+      "description": "Radial vector component",
+      "dtype": "finite real",
+      "name": "r_component",
+      "required": true,
+      "shape": "broadcastable",
+      "units": "caller vector"
+    },
+    {
+      "constraints": "Coherent vector units",
+      "description": "Angular vector component",
+      "dtype": "finite real",
+      "name": "theta_component",
+      "required": true,
+      "shape": "broadcastable",
+      "units": "caller vector"
+    }
+  ],
+  "kind": "operator",
+  "outputs": [
+    {
+      "constraints": "Orthogonal vector projection",
+      "description": "Tuple rho,z,u_rho,u_z",
+      "dtype": "float64 tuple",
+      "name": "position_and_vector",
+      "required": true,
+      "shape": "four broadcasted arrays",
+      "units": "caller length,caller length,caller vector,caller vector"
+    }
+  ],
+  "provenance": {
+    "license_status": "MIT source retained; final human decision pending.",
+    "lineage_summary": "Recovered Pleiades analysis/helpers.py meridional transform. D2 corrects forward angle sign against the source inverse and independently derived orthonormal basis. Original projection/roundtrip tolerance3e-15 retained.",
+    "public_references": [],
+    "source_kinds": [
+      "Frozen D0 source implementation",
+      "Independent orthogonal basis derivation"
+    ]
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.sampling",
+      "signature": "transform_to_rhoz(R, Theta, r_component, theta_component)",
+      "symbol": "transform_to_rhoz"
+    }
+  },
+  "schema": "scirel.asset-document.v1",
+  "summary": "Map positive r,theta and polar vector components to meridional rho,Z components.",
+  "taxonomy": [
+    "geometry",
+    "coordinates",
+    "sampling"
+  ],
+  "title": {
+    "en": "Inverse meridional polar projection",
+    "zh": "子午面极坐标与矢量逆向投影"
+  },
+  "verification": {
+    "evidence_ceiling": "Coordinate/vector identity; not physical field qualification.",
+    "known_limitations": [
+      "Coordinate origin undefined",
+      "Length and vector units remain caller supplied"
+    ],
+    "scope": [
+      "Independent projection, signed quadrants, norm and inverse roundtrip",
+      "Origin/nonfinite rejection"
+    ],
+    "tests": [
+      "tests/pleiades/geometry/test_polar_projection_repair.py"
+    ]
+  },
+  "version": {
+    "dependencies": [],
+    "implementation_version": "0.2.0.dev3+pleiades.maintained"
+  }
+}

@@ -1,0 +1,169 @@
+{
+  "aliases": [
+    "RectMesh"
+  ],
+  "applicability": {
+    "excluded": [
+      "Distorted structured coordinates",
+      "Negative radius",
+      "Noninteger counts"
+    ],
+    "preconditions": [
+      "Inputs satisfy the documented finite cylindrical coordinate and shape contract"
+    ],
+    "supported": [
+      "Regular finite rectangular grids",
+      "Atomic bound/count setters"
+    ]
+  },
+  "asset_id": "scirel.geometry.rect-mesh",
+  "example": {
+    "code": "from scirel.geometry import RectMesh\nm=RectMesh(nr=2,nz=2)\nassert m.R.shape == (2,2)",
+    "description": "Construct a small grid",
+    "expected": "Regular mesh arrays with shape (nz,nr) are returned."
+  },
+  "failure_semantics": {
+    "invalid_input": "Constructor or geometry setters raise ValueError for invalid supported inputs; unavailable source additions raise NotImplementedError. Source field methods reject a missing target mesh, nonfinite currents and active-filament coincidence.",
+    "nonconvergence": "Not applicable; direct geometry construction, transforms and static response.",
+    "partial_results": "No partial object is returned by a failed constructor. Atomic parameterized geometry setters preserve valid previous state.",
+    "runtime_failure": "Field evaluation propagates FloatingPointError on nonrepresentable kernel results. Failed parameterized geometry setters preserve the preceding valid state."
+  },
+  "identity": {
+    "assumptions": [
+      "Finite bounds",
+      "rmin <= rmax",
+      "zmin <= zmax"
+    ],
+    "boundary": "Finite ordered bounds and positive integer counts",
+    "coordinates": "Cylindrical R-Z",
+    "definition": "meshgrid over independent R and Z bounds",
+    "direction": "bounds and counts to mesh arrays",
+    "geometry": "Regular rectangular grid",
+    "model": "Regular rectangular grid",
+    "relation": "Rectangular grid relation"
+  },
+  "inputs": [
+    {
+      "constraints": "R >= 0",
+      "default": 0.0,
+      "description": "Minimum radius",
+      "dtype": "Finite float64",
+      "name": "rmin",
+      "required": false,
+      "shape": "scalar",
+      "units": "m"
+    },
+    {
+      "constraints": "rmax >= rmin",
+      "default": 1.0,
+      "description": "Maximum radius",
+      "dtype": "Finite float64",
+      "name": "rmax",
+      "required": false,
+      "shape": "scalar",
+      "units": "m"
+    },
+    {
+      "constraints": "Positive integer",
+      "default": 101,
+      "description": "Radial count",
+      "dtype": "int",
+      "name": "nr",
+      "required": false,
+      "shape": "scalar",
+      "units": "dimensionless"
+    },
+    {
+      "constraints": "zmin <= zmax",
+      "default": -0.5,
+      "description": "Minimum axial coordinate",
+      "dtype": "Finite float64",
+      "name": "zmin",
+      "required": false,
+      "shape": "scalar",
+      "units": "m"
+    },
+    {
+      "constraints": "zmax >= zmin",
+      "default": 0.5,
+      "description": "Maximum axial coordinate",
+      "dtype": "Finite float64",
+      "name": "zmax",
+      "required": false,
+      "shape": "scalar",
+      "units": "m"
+    },
+    {
+      "constraints": "Positive integer",
+      "default": 101,
+      "description": "Axial count",
+      "dtype": "int",
+      "name": "nz",
+      "required": false,
+      "shape": "scalar",
+      "units": "dimensionless"
+    }
+  ],
+  "kind": "operator",
+  "outputs": [
+    {
+      "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh",
+      "description": "Constructed RectMesh object. Available properties/methods: R: Radial mesh [m], (nz,nr); Z: Axial mesh [m], (nz,nr)",
+      "dtype": "RectMesh",
+      "name": "mesh",
+      "required": true,
+      "shape": "one object",
+      "units": "Object; property units as described"
+    }
+  ],
+  "provenance": {
+    "license_status": "Source lineage and MIT license evidence are retained; human release approval remains pending.",
+    "lineage_summary": "Derived from the retained Pleiades D0 geometry/current source and stabilized SciRel D2 successor behavior.",
+    "public_references": [],
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "bounded D2 regression evidence"
+    ]
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry",
+      "signature": "RectMesh(rmin=0.0, rmax=1.0, nr=101, zmin=-0.5, zmax=0.5, nz=101)",
+      "symbol": "RectMesh"
+    }
+  },
+  "schema": "scirel.asset-document.v1",
+  "summary": "Regular rectangular mesh in cylindrical R,Z coordinates.",
+  "taxonomy": [
+    "geometry",
+    "coordinates",
+    "mesh"
+  ],
+  "title": {
+    "en": "Rectangular R-Z mesh",
+    "zh": "矩形 R-Z 网格"
+  },
+  "verification": {
+    "evidence_ceiling": "Named geometry, lifecycle and configuration cases only; no arbitrary-input scientific correctness or release claim.",
+    "known_limitations": [
+      "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
+      "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
+      "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
+      "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
+      "All scientific, human and release approvals remain false."
+    ],
+    "scope": [
+      "Bounded rigid-geometry and coordinate invariants",
+      "Ordered current projection and source lifecycle",
+      "Full retained BRB/WHAM configuration composition at finite targets"
+    ],
+    "tests": [
+      "tests/pleiades/geometry/test_native_geometry_qualification.py",
+      "tests/pleiades/geometry/test_native_lifecycle.py"
+    ]
+  },
+  "version": {
+    "dependencies": [],
+    "implementation_version": "0.2.0.dev3+pleiades.maintained"
+  }
+}

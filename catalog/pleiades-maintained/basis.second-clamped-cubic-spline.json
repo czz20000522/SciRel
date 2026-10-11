@@ -1,0 +1,135 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.basis.second-clamped-cubic-spline",
+  "kind": "operator",
+  "title": {
+    "en": "Origin-natural cylindrical spline",
+    "zh": "Origin-natural cylindrical spline"
+  },
+  "summary": "Piecewise cubic Hermite interpolation with a boundary-specific linear slope system",
+  "taxonomy": [
+    "analysis",
+    "basis"
+  ],
+  "aliases": [
+    "SecondClampedCubicSpline"
+  ],
+  "identity": {
+    "relation": "Origin-natural cylindrical spline",
+    "direction": "Declared inputs to Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",
+    "definition": "Piecewise cubic Hermite interpolation with a boundary-specific linear slope system",
+    "model": "C2 cubic spline; Clamped/FirstClamped use corrected unequal-knot continuity rows",
+    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "coordinates": "Knots in arbitrary coherent coordinate units",
+    "boundary": "Source origin row and right fdd+fd/x-m²f/x²=0",
+    "assumptions": [
+      "Finite strictly increasing matched one-dimensional knots and values with N>=3",
+      "In-domain deriv=0/1/2 for the qualified numerical claim",
+      "x_data[0]=y_data[0]=0 and x_data[-1]>0"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "x_data",
+      "description": "Interpolation knots",
+      "units": "coordinate units",
+      "shape": "(N,)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite strictly increasing N>=3"
+    },
+    {
+      "name": "y_data",
+      "description": "Ordinate samples",
+      "units": "ordinate units",
+      "shape": "(N,)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite, same N as x_data"
+    },
+    {
+      "name": "m",
+      "description": "Coefficient in retained cylindrical Robin row",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float64",
+      "required": false,
+      "constraints": "Finite; no physical mode interpretation asserted",
+      "default": 1
+    }
+  ],
+  "outputs": [
+    {
+      "name": "spline",
+      "description": "Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",
+      "units": "ordinate units; derivative units per coordinate power",
+      "shape": "object",
+      "dtype": "Python callable object",
+      "required": true,
+      "constraints": "Query array shape preserved; zero outside knot interval"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite strictly increasing matched one-dimensional knots and values with N>=3",
+      "In-domain deriv=0/1/2 for the qualified numerical claim",
+      "x_data[0]=y_data[0]=0 and x_data[-1]>0"
+    ],
+    "supported": [
+      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+    ],
+    "excluded": [
+      "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
+      "Duplicate, unsorted or nonfinite knots are outside numerical qualification",
+      "Source left row is not a natural boundary for arbitrary nonzero first knot/ordinate",
+      "Physical cylindrical magnetic-fitting boundary interpretation remains unresolved"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
+    "runtime_failure": "Underlying numerical or interpolation exceptions propagate.",
+    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
+    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object."
+  },
+  "provenance": {
+    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "independent analytic or numerical oracle"
+    ],
+    "public_references": [],
+    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.basis",
+      "symbol": "SecondClampedCubicSpline",
+      "signature": "SecondClampedCubicSpline(x_data, y_data, m=1)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Bounded executable example for Origin-natural cylindrical spline",
+    "code": "import numpy as np\nfrom scirel.basis import SecondClampedCubicSpline\nf=SecondClampedCubicSpline(np.array([0.,.3,1.]),np.array([0.,.2,1.]))\nassert f(np.array([.3])).shape==(1,)",
+    "expected": "Declared result shape and bounded numerical behavior are asserted."
+  },
+  "verification": {
+    "scope": [
+      "Only the explicitly stated finite input domain and direct-test fixtures"
+    ],
+    "tests": [
+      "tests/pleiades/equilibrium/test_analysis_families.py",
+      "tests/pleiades/equilibrium/test_analysis_corrections.py"
+    ],
+    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "known_limitations": [
+      "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
+      "Duplicate, unsorted or nonfinite knots are outside numerical qualification",
+      "Source left row is not a natural boundary for arbitrary nonzero first knot/ordinate",
+      "Physical cylindrical magnetic-fitting boundary interpretation remains unresolved"
+    ]
+  }
+}

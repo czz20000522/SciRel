@@ -1,0 +1,119 @@
+{
+  "aliases": [
+    "d_ds_arclength"
+  ],
+  "applicability": {
+    "excluded": [
+      "Polyline chord lengths are used; no true smooth-curve arclength is inferred",
+      "Periodic endpoint stencil and noise statistics are unqualified"
+    ],
+    "preconditions": [
+      "Finite vertices and finite matched values with N>=3",
+      "Adjacent vertices are distinct"
+    ],
+    "supported": [
+      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+    ]
+  },
+  "asset_id": "scirel.fieldline.arclength-derivative",
+  "example": {
+    "code": "import numpy as np\nfrom scirel.fieldline import d_ds_arclength\np=np.array([[0.,0.],[.3,0.],[1.,0.]])\nassert np.allclose(d_ds_arclength(p,p[:,0]**2),2*p[:,0])",
+    "description": "Bounded executable example for Actual-arclength first derivative",
+    "expected": "Declared result shape and bounded numerical behavior are asserted."
+  },
+  "failure_semantics": {
+    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
+    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
+    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object.",
+    "runtime_failure": "Underlying numerical or interpolation exceptions propagate."
+  },
+  "identity": {
+    "assumptions": [
+      "Finite vertices and finite matched values with N>=3",
+      "Adjacent vertices are distinct"
+    ],
+    "boundary": "One-sided endpoint triplets; no periodic closure inference",
+    "coordinates": "Planar vertices in coherent length units",
+    "definition": "Differentiate sampled values against cumulative adjacent-vertex distance",
+    "direction": "Declared inputs to First derivative including endpoints",
+    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "model": "Three-point unequal-spacing quadratic derivative with one-sided endpoints",
+    "relation": "Actual-arclength first derivative"
+  },
+  "inputs": [
+    {
+      "constraints": "Finite and adjacent distinct",
+      "description": "Ordered planar vertices",
+      "dtype": "float64",
+      "name": "vertices",
+      "required": true,
+      "shape": "(N,2)",
+      "units": "length units"
+    },
+    {
+      "constraints": "Finite matched N",
+      "description": "Sampled scalar values",
+      "dtype": "float64",
+      "name": "values",
+      "required": true,
+      "shape": "(N,)",
+      "units": "value units"
+    }
+  ],
+  "kind": "operator",
+  "outputs": [
+    {
+      "constraints": "Derivative along declared ordering",
+      "description": "First derivative including endpoints",
+      "dtype": "float64",
+      "name": "derivative",
+      "required": true,
+      "shape": "(N,)",
+      "units": "value per length"
+    }
+  ],
+  "provenance": {
+    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending.",
+    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "public_references": [],
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "independent analytic or numerical oracle"
+    ]
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fieldline",
+      "signature": "d_ds_arclength(vertices, values)",
+      "symbol": "d_ds_arclength"
+    }
+  },
+  "schema": "scirel.asset-document.v1",
+  "summary": "Differentiate sampled values against cumulative adjacent-vertex distance",
+  "taxonomy": [
+    "analysis",
+    "fieldline"
+  ],
+  "title": {
+    "en": "Actual-arclength first derivative",
+    "zh": "Actual-arclength first derivative"
+  },
+  "verification": {
+    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "known_limitations": [
+      "Polyline chord lengths are used; no true smooth-curve arclength is inferred",
+      "Periodic endpoint stencil and noise statistics are unqualified"
+    ],
+    "scope": [
+      "Only the explicitly stated finite input domain and direct-test fixtures"
+    ],
+    "tests": [
+      "tests/pleiades/equilibrium/test_analysis_families.py",
+      "tests/pleiades/equilibrium/test_analysis_corrections.py"
+    ]
+  },
+  "version": {
+    "dependencies": [],
+    "implementation_version": "0.2.0.dev3+pleiades.maintained"
+  }
+}

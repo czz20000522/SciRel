@@ -1,0 +1,130 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.io.write-pleiades-eqdsk",
+  "kind": "operator",
+  "title": {
+    "en": "Write Pleiades extended EQDSK",
+    "zh": "Write Pleiades extended EQDSK"
+  },
+  "summary": "Serialize one validated Pleiades extended EQDSK mapping.",
+  "taxonomy": [
+    "io",
+    "eqdsk",
+    "serialization"
+  ],
+  "aliases": [
+    "write_eqdsk_fromdict"
+  ],
+  "identity": {
+    "relation": "Deterministic text serialization/deserialization of Pleiades EQDSK records",
+    "direction": "extended EQDSK text and validated dictionary/class state",
+    "definition": "48-character title, four integer fields, four 5-value scalar records, five profiles, C-order psi grid, q profile and fixed-width limiter/vessel coordinate pairs Optional supplied R/Z or r_origin/z_origin must match the dialect fixed origin; otherwise writing raises before destination truncation.",
+    "model": "Pleiades legacy extended dialect retained from D0 lexical successor",
+    "geometry": "nnr by nnz grid reconstructed as R linspace(0,rbox) and Z linspace(-zbox/2,zbox/2)",
+    "coordinates": "R/Z coordinate values in source-defined convention; units and COCOS unspecified",
+    "boundary": "Strict mode rejects trailing records; non-strict permits trailing records after complete declared sections",
+    "assumptions": [
+      "Exactly declared record dimensions",
+      "Finite real values and fixed-width coordinate fields",
+      "This is not standard EFIT gEQDSK"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "data",
+      "description": "Validated Pleiades extended-dialect mapping",
+      "units": "source-defined",
+      "shape": "mapping",
+      "dtype": "finite real arrays and exact integer fields",
+      "required": true,
+      "constraints": "Required keys and declared shapes"
+    },
+    {
+      "name": "filename",
+      "description": "EQDSK path",
+      "units": "n/a",
+      "shape": "path",
+      "dtype": "filesystem path",
+      "required": true,
+      "constraints": "Readable text file"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "file",
+      "description": "Serialized EQDSK file",
+      "units": "n/a",
+      "shape": "text file",
+      "dtype": "UTF-8 text",
+      "required": true,
+      "constraints": "Declared fixed-width records"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Pleiades extended dialect records"
+    ],
+    "supported": [
+      "Roundtrip of finite validated dictionaries",
+      "Packed negative fixed-width coordinates",
+      "Strict/non-strict trailing record policy",
+      "Class read/write wrapper",
+      "Explicit recovered raw contour workflow is exposed separately as write_pleiades_eqdsk_legacy_raw; dictionary writer remains deterministic record serializer."
+    ],
+    "excluded": [
+      "Standard EFIT gEQDSK semantics",
+      "Units or COCOS assignment",
+      "Raw contour/spline writer source route",
+      "Arbitrary malformed truncation recovery"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "EQDSKFormatError before destination truncation for writer validation or malformed reader records.",
+    "runtime_failure": "Filesystem errors propagate; parse errors are EQDSKFormatError.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "Class wrapper preserves previous mapping when a read fails."
+  },
+  "provenance": {
+    "lineage_summary": "D2 bounded structural successor from retained Pleiades io.py and D0 lexical EQDSK successor; source parser behavior and known raw-writer failures remain recorded. Predecessor silently ignored attached solver axes and shifted their geometry on readback. This successor rejects unrepresentable attached axes without assigning meanings to opaque header slots.",
+    "source_kinds": [
+      "D0-derived IO implementation",
+      "source-bound lexical EQDSK fixtures"
+    ],
+    "public_references": [
+      "L. L. Lao, G EQDSK FORMAT, 7 February 1997, EFIT format specification."
+    ],
+    "license_status": "Source/license evidence retained; scientific and release approval pending."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.io.eqdsk",
+      "symbol": "write_pleiades_eqdsk",
+      "signature": "write_pleiades_eqdsk(data: 'Mapping[str, Any]', filename: 'str | Path') -> 'None'"
+    }
+  },
+  "version": {
+    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Serialize caller supplied records to fixed-width text.",
+    "code": "from pathlib import Path\nfrom tempfile import TemporaryDirectory\nimport numpy as np\nfrom scirel.io.eqdsk import write_pleiades_eqdsk\nmapping = dict(title='EXAMPLE', cursign=1, nnr=2, nnz=2, nnv=2, rbox=1., zbox=2., psi_lim=1., Ip=0., psi=np.zeros((2,2)), nlim_pairs=0, nves_pairs=0, lim_pairs=np.empty((0,2)), ves_pairs=np.empty((0,2)))\nfor key in ('tor_flux','p_flux','rbphi_flux','pprime_flux','q_flux'):\n    mapping[key] = np.zeros(2)\nwith TemporaryDirectory() as directory:\n    path = Path(directory)/'example.eqdsk'\n    write_pleiades_eqdsk(mapping, path)\n    assert path.read_text().splitlines()[0] == 'EXAMPLE'.ljust(48)+'   1   2   2   2' ",
+    "expected": "A text file with four declared header integers and valid fixed-width arrays."
+  },
+  "verification": {
+    "scope": [
+      "Roundtrip, lexical fixed-width, malformed input and class-state tests",
+      "Nonzero-origin rejection, unchanged destination on failure, opaque scalar preservation."
+    ],
+    "tests": [
+      "tests/pleiades/test_eqdsk.py",
+      "tests/pleiades/test_eqdsk_raw_repair.py"
+    ],
+    "evidence_ceiling": "Structural IO qualification only; no physical interpretation or release approval.",
+    "known_limitations": [
+      "Not standard EFIT gEQDSK",
+      "No units/COCOS",
+      "This dialect cannot represent arbitrary radial or axial origins; attach solver axes to detect loss before writing."
+    ]
+  }
+}

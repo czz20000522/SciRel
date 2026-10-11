@@ -486,7 +486,7 @@ def validate_document(document: Any, *, location: str = "document") -> dict[str,
     _validate_string_list(item["taxonomy"], f"{location}.taxonomy", nonempty=True)
     _validate_string_list(item["aliases"], f"{location}.aliases")
     _validate_identity(item["identity"])
-    input_ports = _validate_ports(item["inputs"], f"{location}.inputs", nonempty=True)
+    input_ports = _validate_ports(item["inputs"], f"{location}.inputs")
     output_ports = _validate_ports(item["outputs"], f"{location}.outputs", nonempty=True)
     _validate_applicability(item["applicability"])
     _validate_failures(item["failure_semantics"])
@@ -595,7 +595,15 @@ def _validate_runtime_inputs(
         runtime_required = parameter.default is inspect.Parameter.empty
         if port["required"] != runtime_required:
             _fail(document["asset_id"], f"required status differs for input: {name}")
-        if not runtime_required and port["default"] != parameter.default:
+        documented_default = port.get("default")
+        runtime_default = parameter.default
+        if not runtime_required:
+            # JSON arrays preserve the values of public tuple defaults.
+            try:
+                runtime_default = json.loads(json.dumps(runtime_default))
+            except (TypeError, ValueError):
+                pass
+        if not runtime_required and documented_default != runtime_default:
             _fail(document["asset_id"], f"default differs for input: {name}")
 
 

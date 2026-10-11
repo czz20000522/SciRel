@@ -1,0 +1,105 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fieldline.boundary",
+  "kind": "operator",
+  "title": {
+    "en": "Parametric boundary interpolation",
+    "zh": "Parametric boundary interpolation"
+  },
+  "summary": "Fit a parametric spline to planar boundary vertices",
+  "taxonomy": [
+    "analysis",
+    "fieldline"
+  ],
+  "aliases": [
+    "Boundary"
+  ],
+  "identity": {
+    "relation": "Parametric boundary interpolation",
+    "direction": "Declared inputs to Object with verts,tck,u and interpolation",
+    "definition": "Fit a parametric spline to planar boundary vertices",
+    "model": "Source cubic splprep with s=0,npts=200",
+    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "coordinates": "Ordered planar coordinate pairs in length units",
+    "boundary": "Nonperiodic default source spline; no crossing guarantee",
+    "assumptions": [
+      "Finite ordered vertices sufficient for cubic splprep"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "vertices",
+      "description": "Ordered boundary vertices",
+      "units": "length units",
+      "shape": "(N,2)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "At least four appropriate finite points"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "boundary",
+      "description": "Object with verts,tck,u and interpolation",
+      "units": "length units",
+      "shape": "Python object",
+      "dtype": "Python object",
+      "required": true,
+      "constraints": "Stored verts have (200,2); interpolation returns coordinate arrays"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite ordered vertices sufficient for cubic splprep"
+    ],
+    "supported": [
+      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+    ],
+    "excluded": [
+      "No reliable intersection, polygon interior or uniqueness guarantee"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
+    "runtime_failure": "Underlying numerical or interpolation exceptions propagate.",
+    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
+    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object."
+  },
+  "provenance": {
+    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "independent analytic or numerical oracle"
+    ],
+    "public_references": [],
+    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fieldline",
+      "symbol": "Boundary",
+      "signature": "Boundary(vertices)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Bounded executable example for Parametric boundary interpolation",
+    "code": "import numpy as np\nfrom scirel.fieldline import Boundary\nb=Boundary(np.array([[0.,0.],[.3,.3],[.7,.7],[1.,1.]]))\nassert b.verts.shape==(200,2)",
+    "expected": "Declared result shape and bounded numerical behavior are asserted."
+  },
+  "verification": {
+    "scope": [
+      "Only the explicitly stated finite input domain and direct-test fixtures"
+    ],
+    "tests": [
+      "tests/pleiades/equilibrium/test_retained_fieldline_primitives.py"
+    ],
+    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "known_limitations": [
+      "No reliable intersection, polygon interior or uniqueness guarantee"
+    ]
+  }
+}

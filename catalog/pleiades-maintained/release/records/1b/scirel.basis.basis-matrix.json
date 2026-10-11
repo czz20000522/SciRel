@@ -1,0 +1,115 @@
+{
+  "aliases": [
+    "BasisMatrix"
+  ],
+  "applicability": {
+    "excluded": [
+      "Quartic and special-function factory selections are rejected; no invented implementations",
+      "Physical special-spline closures and unsupported knot domains remain unresolved"
+    ],
+    "preconditions": [
+      "Finite constructor samples and boundary-specific assumptions",
+      "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
+      "Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match"
+    ],
+    "supported": [
+      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+    ]
+  },
+  "asset_id": "scirel.basis.basis-matrix",
+  "example": {
+    "code": "import numpy as np\nfrom scirel.basis import BasisMatrix\nf=BasisMatrix('poly')\nassert f(np.array([0.,1.])).shape==(2,3)",
+    "description": "Bounded executable example for Basis design matrix",
+    "expected": "Declared result shape and bounded numerical behavior are asserted."
+  },
+  "failure_semantics": {
+    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
+    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
+    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object.",
+    "runtime_failure": "Underlying numerical or interpolation exceptions propagate."
+  },
+  "identity": {
+    "assumptions": [
+      "Finite constructor samples and boundary-specific assumptions",
+      "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
+      "Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match"
+    ],
+    "boundary": "Underlying spline endpoint/extrapolation rules",
+    "coordinates": "Rows follow input domain; columns follow basis order",
+    "definition": "Evaluate selected basis functions into columns of a design matrix",
+    "direction": "Declared inputs to Evaluator yielding matrix of basis values",
+    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "model": "Construction delegates to the explicit source basis factory",
+    "relation": "Basis design matrix"
+  },
+  "inputs": [
+    {
+      "constraints": "As build_basis",
+      "description": "Basis selector",
+      "dtype": "str",
+      "name": "basis",
+      "required": true,
+      "shape": "string",
+      "units": "dimensionless"
+    }
+  ],
+  "kind": "operator",
+  "outputs": [
+    {
+      "constraints": "Caller provides one-dimensional domain",
+      "description": "Evaluator yielding matrix of basis values",
+      "dtype": "Python callable object",
+      "name": "matrix",
+      "required": true,
+      "shape": "(M,K)",
+      "units": "basis-value units"
+    }
+  ],
+  "provenance": {
+    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending.",
+    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "public_references": [],
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "independent analytic or numerical oracle"
+    ]
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.basis",
+      "signature": "BasisMatrix(basis, **kwargs)",
+      "symbol": "BasisMatrix"
+    }
+  },
+  "schema": "scirel.asset-document.v1",
+  "summary": "Evaluate selected basis functions into columns of a design matrix",
+  "taxonomy": [
+    "analysis",
+    "basis"
+  ],
+  "title": {
+    "en": "Basis design matrix",
+    "zh": "Basis design matrix"
+  },
+  "verification": {
+    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "known_limitations": [
+      "Quartic and special-function factory selections are rejected; no invented implementations",
+      "Physical special-spline closures and unsupported knot domains remain unresolved"
+    ],
+    "scope": [
+      "Only the explicitly stated finite input domain and direct-test fixtures"
+    ],
+    "tests": [
+      "tests/pleiades/equilibrium/test_analysis_families.py"
+    ]
+  },
+  "version": {
+    "dependencies": [
+      {
+        "asset_id": "scirel.basis.build-basis"
+      }
+    ],
+    "implementation_version": "0.2.0.dev3+pleiades.maintained"
+  }
+}

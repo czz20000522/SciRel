@@ -1,0 +1,123 @@
+{
+  "aliases": [
+    "ThetaChord"
+  ],
+  "applicability": {
+    "excluded": [
+      "Negative fixed radius"
+    ],
+    "preconditions": [
+      "Inputs satisfy the documented finite cylindrical coordinate and shape contract",
+      "Generated cylindrical R must be nonnegative; use nonnegative spherical radii and degree angles in the usual 0..180 polar domain."
+    ],
+    "supported": [
+      "Finite polar-angle chord"
+    ]
+  },
+  "asset_id": "scirel.geometry.theta-chord",
+  "example": {
+    "code": "from scirel.geometry import ThetaChord\nm=ThetaChord([0.,90.])\nassert m.R[1] == 1.0",
+    "description": "Construct a polar chord",
+    "expected": "Cylindrical coordinates are generated from degree angles."
+  },
+  "failure_semantics": {
+    "invalid_input": "Constructor or geometry setters raise ValueError for invalid supported inputs; unavailable source additions raise NotImplementedError. Source field methods reject a missing target mesh, nonfinite currents and active-filament coincidence.",
+    "nonconvergence": "Not applicable; direct geometry construction, transforms and static response.",
+    "partial_results": "No partial object is returned by a failed constructor. Atomic parameterized geometry setters preserve valid previous state.",
+    "runtime_failure": "Field evaluation propagates FloatingPointError on nonrepresentable kernel results. Failed parameterized geometry setters preserve the preceding valid state."
+  },
+  "identity": {
+    "assumptions": [
+      "Finite radius and angles"
+    ],
+    "boundary": "Angles are degrees",
+    "coordinates": "Cylindrical storage derived from angle inputs",
+    "definition": "R=r0 sin(theta), Z=r0 cos(theta)",
+    "direction": "tpts,r0 to cylindrical R,Z",
+    "geometry": "Polar-angle coordinate map",
+    "model": "Polar-angle coordinate map",
+    "relation": "Polar angle coordinate relation"
+  },
+  "inputs": [
+    {
+      "constraints": "Finite degrees",
+      "description": "Polar angles",
+      "dtype": "Finite float64",
+      "name": "tpts",
+      "required": true,
+      "shape": "N",
+      "units": "degree"
+    },
+    {
+      "constraints": "Finite radius",
+      "default": 1.0,
+      "description": "Fixed spherical radius",
+      "dtype": "Finite float64",
+      "name": "r0",
+      "required": false,
+      "shape": "scalar",
+      "units": "m"
+    }
+  ],
+  "kind": "operator",
+  "outputs": [
+    {
+      "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh",
+      "description": "Constructed ThetaChord object. Available properties/methods: R: Cylindrical radius [m], N; Z: Axial coordinate [m], N",
+      "dtype": "ThetaChord",
+      "name": "mesh",
+      "required": true,
+      "shape": "one object",
+      "units": "Object; property units as described"
+    }
+  ],
+  "provenance": {
+    "license_status": "Source lineage and MIT license evidence are retained; human release approval remains pending.",
+    "lineage_summary": "Derived from the retained Pleiades D0 geometry/current source and stabilized SciRel D2 successor behavior.",
+    "public_references": [],
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "bounded D2 regression evidence"
+    ]
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry",
+      "signature": "ThetaChord(tpts: 'Iterable[float]', r0: 'float' = 1.0)",
+      "symbol": "ThetaChord"
+    }
+  },
+  "schema": "scirel.asset-document.v1",
+  "summary": "Points varying polar angle at fixed spherical radius.",
+  "taxonomy": [
+    "geometry",
+    "coordinates"
+  ],
+  "title": {
+    "en": "Polar-angle chord",
+    "zh": "极角弦"
+  },
+  "verification": {
+    "evidence_ceiling": "Named geometry, lifecycle and configuration cases only; no arbitrary-input scientific correctness or release claim.",
+    "known_limitations": [
+      "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
+      "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
+      "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
+      "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
+      "All scientific, human and release approvals remain false."
+    ],
+    "scope": [
+      "Bounded rigid-geometry and coordinate invariants",
+      "Ordered current projection and source lifecycle",
+      "Full retained BRB/WHAM configuration composition at finite targets"
+    ],
+    "tests": [
+      "tests/pleiades/geometry/test_native_geometry_qualification.py",
+      "tests/pleiades/geometry/test_native_lifecycle.py"
+    ]
+  },
+  "version": {
+    "dependencies": [],
+    "implementation_version": "0.2.0.dev3+pleiades.maintained"
+  }
+}

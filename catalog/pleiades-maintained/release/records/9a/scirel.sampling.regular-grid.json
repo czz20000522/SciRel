@@ -1,0 +1,126 @@
+{
+  "aliases": [
+    "regular_grid"
+  ],
+  "applicability": {
+    "excluded": [
+      "No outside-hull value synthesis or nonlinear interpolation accuracy claim"
+    ],
+    "preconditions": [
+      "Finite matched planar sample arrays and fields",
+      "Requested grid/query points lie inside convex/interpolation support"
+    ],
+    "supported": [
+      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+    ]
+  },
+  "asset_id": "scirel.sampling.regular-grid",
+  "example": {
+    "code": "import numpy as np\nfrom scirel.sampling import regular_grid\nx,y=np.meshgrid([0.,.5,1.],[0.,.5,1.])\nr=regular_grid(x,y,values=[x+y],nx=4,ny=5)\nassert len(r)==3 and r[2].shape==(4,5)",
+    "description": "Bounded executable example for Scattered-to-regular grid sampling",
+    "expected": "Declared result shape and bounded numerical behavior are asserted."
+  },
+  "failure_semantics": {
+    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
+    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
+    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object.",
+    "runtime_failure": "Underlying numerical or interpolation exceptions propagate."
+  },
+  "identity": {
+    "assumptions": [
+      "Finite matched planar sample arrays and fields",
+      "Requested grid/query points lie inside convex/interpolation support"
+    ],
+    "boundary": "Explicit xi,yi jointly override generated grids",
+    "coordinates": "xx,yy generic planar coordinates; generated output axes use ij order",
+    "definition": "Interpolate scalar fields onto supplied grids or generated ij-indexed grids",
+    "direction": "Declared inputs to Tuple xi,yi and interpolated scalar fields",
+    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "model": "SciPy griddata; source method=linear and nx=ny=200",
+    "relation": "Scattered-to-regular grid sampling"
+  },
+  "inputs": [
+    {
+      "constraints": "Finite",
+      "description": "Sample x coordinates",
+      "dtype": "float64",
+      "name": "xx",
+      "required": true,
+      "shape": "matching array shape",
+      "units": "length or coordinate units"
+    },
+    {
+      "constraints": "Finite",
+      "description": "Sample y coordinates",
+      "dtype": "float64",
+      "name": "yy",
+      "required": true,
+      "shape": "same shape as xx",
+      "units": "length or coordinate units"
+    },
+    {
+      "constraints": "Do not combine with positional field arguments",
+      "default": null,
+      "description": "Named scalar field arrays; alternative to positional fields",
+      "dtype": "list or None",
+      "name": "values",
+      "required": false,
+      "shape": "list of matching arrays or None",
+      "units": "field units"
+    }
+  ],
+  "kind": "operator",
+  "outputs": [
+    {
+      "constraints": "Original field order preserved",
+      "description": "Tuple xi,yi and interpolated scalar fields",
+      "dtype": "float64",
+      "name": "grid_and_fields",
+      "required": true,
+      "shape": "tuple of (nx,ny) arrays or supplied grid shape",
+      "units": "coordinate and field units"
+    }
+  ],
+  "provenance": {
+    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending.",
+    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "public_references": [],
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "independent analytic or numerical oracle"
+    ]
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.sampling",
+      "signature": "regular_grid(xx, yy, *args, **kwargs)",
+      "symbol": "regular_grid"
+    }
+  },
+  "schema": "scirel.asset-document.v1",
+  "summary": "Interpolate scalar fields onto supplied grids or generated ij-indexed grids",
+  "taxonomy": [
+    "analysis",
+    "sampling"
+  ],
+  "title": {
+    "en": "Scattered-to-regular grid sampling",
+    "zh": "Scattered-to-regular grid sampling"
+  },
+  "verification": {
+    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "known_limitations": [
+      "No outside-hull value synthesis or nonlinear interpolation accuracy claim"
+    ],
+    "scope": [
+      "Only the explicitly stated finite input domain and direct-test fixtures"
+    ],
+    "tests": [
+      "tests/pleiades/equilibrium/test_analysis_families.py"
+    ]
+  },
+  "version": {
+    "dependencies": [],
+    "implementation_version": "0.2.0.dev3+pleiades.maintained"
+  }
+}

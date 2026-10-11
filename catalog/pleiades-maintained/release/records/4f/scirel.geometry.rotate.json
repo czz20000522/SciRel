@@ -1,0 +1,136 @@
+{
+  "aliases": [
+    "rotate"
+  ],
+  "applicability": {
+    "excluded": [
+      "3-D physical rotation",
+      "Nonfinite points"
+    ],
+    "preconditions": [
+      "Inputs satisfy the documented finite cylindrical coordinate and shape contract"
+    ],
+    "supported": [
+      "Rigid rotation and inverse/metric invariants"
+    ]
+  },
+  "asset_id": "scirel.geometry.rotate",
+  "example": {
+    "code": "from scirel.geometry import rotate\nout=rotate([[1.,0.]],90.)\nassert out.shape == (1,2)",
+    "description": "Rotate one point",
+    "expected": "Shape-preserving rotated array."
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for malformed point/pivot dimensions or invalid angle conversion; finite inputs are a precondition, not complete runtime validation of all entries.",
+    "nonconvergence": "Not applicable; direct geometry construction, transforms and static response.",
+    "partial_results": "No partial object is returned by a failed constructor. Atomic parameterized geometry setters preserve valid previous state.",
+    "runtime_failure": "Propagates numerical/conversion exceptions; nonfinite point entries are outside the supported domain."
+  },
+  "identity": {
+    "assumptions": [
+      "Finite final axis length 2"
+    ],
+    "boundary": "Finite 2-vector pivot and points",
+    "coordinates": "Cylindrical R,Z",
+    "definition": "Clockwise-positive row-vector rotation in degrees",
+    "direction": "points and angle to rotated points",
+    "geometry": "Two-dimensional R,Z plane",
+    "model": "Two-dimensional R,Z plane",
+    "relation": "Rigid planar rotation relation"
+  },
+  "inputs": [
+    {
+      "constraints": "Final dimension length 2",
+      "description": "Point rows",
+      "dtype": "Finite float64",
+      "name": "pts",
+      "required": true,
+      "shape": "(...,2)",
+      "units": "m"
+    },
+    {
+      "constraints": "Finite degrees",
+      "description": "Rotation angle",
+      "dtype": "float",
+      "name": "angle",
+      "required": true,
+      "shape": "scalar",
+      "units": "degree"
+    },
+    {
+      "constraints": "Finite R,Z pivot",
+      "default": [
+        0.0,
+        0.0
+      ],
+      "description": "Rotation pivot",
+      "dtype": "Finite float64",
+      "name": "pivot",
+      "required": false,
+      "shape": "(2,)",
+      "units": "m"
+    }
+  ],
+  "kind": "operator",
+  "outputs": [
+    {
+      "constraints": "Input shape preserved",
+      "description": "Rotated points",
+      "dtype": "Finite float64",
+      "name": "rotated",
+      "required": true,
+      "shape": "(...,2)",
+      "units": "m"
+    }
+  ],
+  "provenance": {
+    "license_status": "Source lineage and MIT license evidence are retained; human release approval remains pending.",
+    "lineage_summary": "Derived from the retained Pleiades D0 geometry/current source and stabilized SciRel D2 successor behavior.",
+    "public_references": [],
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "bounded D2 regression evidence"
+    ]
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.transforms",
+      "signature": "rotate(pts, angle, pivot=(0.0, 0.0))",
+      "symbol": "rotate"
+    }
+  },
+  "schema": "scirel.asset-document.v1",
+  "summary": "Rotate row-vectors in the cylindrical R,Z plane.",
+  "taxonomy": [
+    "geometry",
+    "coordinates",
+    "transform"
+  ],
+  "title": {
+    "en": "Planar cylindrical rotation",
+    "zh": "柱面平面旋转"
+  },
+  "verification": {
+    "evidence_ceiling": "Named geometry, lifecycle and configuration cases only; no arbitrary-input scientific correctness or release claim.",
+    "known_limitations": [
+      "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
+      "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
+      "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
+      "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
+      "All scientific, human and release approvals remain false."
+    ],
+    "scope": [
+      "Bounded rigid-geometry and coordinate invariants",
+      "Ordered current projection and source lifecycle",
+      "Full retained BRB/WHAM configuration composition at finite targets"
+    ],
+    "tests": [
+      "tests/pleiades/geometry/test_native_geometry_qualification.py",
+      "tests/pleiades/geometry/test_native_lifecycle.py"
+    ]
+  },
+  "version": {
+    "dependencies": [],
+    "implementation_version": "0.2.0.dev3+pleiades.maintained"
+  }
+}

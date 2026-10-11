@@ -1,0 +1,130 @@
+{
+  "aliases": [
+    "get_gpsi"
+  ],
+  "applicability": {
+    "excluded": [
+      "Finite conductor self-inductance",
+      "Extreme-scale qualification",
+      "Physical equilibrium qualification from arbitrary matrix use"
+    ],
+    "preconditions": [
+      "Finite real matching 2-D coordinate arrays",
+      "No duplicate positive-radius pairs"
+    ],
+    "supported": [
+      "Irregular/asymmetric actual-coordinate pair evaluation",
+      "Uniform-domain source parity",
+      "Reciprocity and permutation covariance"
+    ]
+  },
+  "asset_id": "scirel.electromagnetism.loop-flux-matrix",
+  "example": {
+    "code": "import numpy as np\nfrom scirel.electromagnetism import get_gpsi\nR,Z=np.meshgrid([.4,.8,1.2],[-.5,0.,.9])\nG=get_gpsi(R,Z)\nassert G.shape==(9,9) and np.all(np.diag(G)==0)",
+    "description": "Build an irregular three-row node response.",
+    "expected": "Dense finite matrix with explicit zero-self diagonal."
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for malformed, complex, nonfinite or negative-radius geometry and duplicate active pairs.",
+    "nonconvergence": "Direct response; not applicable.",
+    "partial_results": "No partial matrix on failure.",
+    "runtime_failure": "Kernel FloatingPointError propagates on unrepresentable output."
+  },
+  "identity": {
+    "assumptions": [
+      "Vacuum permeability mu0=4pi*1e-7 H/m",
+      "No finite-wire/self-field model",
+      "Coordinates are finite real arrays; output is dense O(N^2)."
+    ],
+    "boundary": "Axis target flux and zero-radius source flux are zero. Diagonal exactly zero. Distinct positive-radius coincident entries reject.",
+    "coordinates": "R,Z in m; source column current in A; G in Wb/rad/A.",
+    "definition": "psi_i=sum_j G_ij I_j with psi=R A_phi. Flattening is C-order. The predecessor reflected shifted row blocks, valid only on equal Z spacing and identical R rows; this successor evaluates actual pair geometry.",
+    "direction": "Matching planar R,Z node arrays to a target/source flux matrix",
+    "geometry": "Finite arbitrary 2-D cylindrical node arrays; nonnegative R.",
+    "model": "Vacuum ideal circular filaments with retained zero-self discrete quadrature, not finite-wire inductance.",
+    "relation": "G_ij = (mu0/(4pi)) a_j R_i integral cos(phi)/sqrt((R_i-a_j)^2+4 R_i a_j sin(phi/2)^2+(Z_i-Z_j)^2) dphi for i != j; G_ii=0."
+  },
+  "inputs": [
+    {
+      "constraints": "Nonnegative; distinct positive-radius coordinate pairs",
+      "description": "Cylindrical radius nodes",
+      "dtype": "finite real",
+      "name": "R",
+      "required": true,
+      "shape": "2-D matching Z",
+      "units": "m"
+    },
+    {
+      "constraints": "C-order flattening fixes order",
+      "description": "Axial node coordinates",
+      "dtype": "finite real",
+      "name": "Z",
+      "required": true,
+      "shape": "same as R",
+      "units": "m"
+    }
+  ],
+  "kind": "operator",
+  "outputs": [
+    {
+      "constraints": "Zero diagonal; finite; permutation covariance",
+      "description": "Flux response matrix with target rows/source columns",
+      "dtype": "float64",
+      "name": "G",
+      "required": true,
+      "shape": "(R.size,R.size)",
+      "units": "Wb/rad/A"
+    }
+  ],
+  "provenance": {
+    "license_status": "MIT source retained; human and release approval pending.",
+    "lineage_summary": "Selectively recovered Pleiades analysis/math.py:get_gpsi. Source row-reflection optimization fails for unequal Z spacing (original error1.11255e-7); direct actual-coordinate evaluation repairs its index/geometry defect. An independently derived azimuthal vector-potential integral verifies the correction.",
+    "public_references": [],
+    "source_kinds": [
+      "Frozen D0 source implementation",
+      "Independent vacuum vector-potential integral"
+    ]
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.electromagnetism.greens",
+      "signature": "get_gpsi(R, Z)",
+      "symbol": "get_gpsi"
+    }
+  },
+  "schema": "scirel.asset-document.v1",
+  "summary": "Construct the target-row/source-column vacuum loop response using every actual coordinate; preserve explicit zero-self discrete policy.",
+  "taxonomy": [
+    "electromagnetism",
+    "axisymmetric-fields",
+    "discrete-response"
+  ],
+  "title": {
+    "en": "Actual-coordinate loop flux matrix",
+    "zh": "实际坐标圆环磁通矩阵"
+  },
+  "verification": {
+    "evidence_ceiling": "Independent numerical relation/invariants in named cases; no general extreme-scale or conductor model qualification.",
+    "known_limitations": [
+      "Dense quadratic work/storage",
+      "Zero-self is a limited discrete model",
+      "No finite wire, singular pair or physical equilibrium solution claim"
+    ],
+    "scope": [
+      "Original irregular and unchanged uniform geometry",
+      "Independent asymmetric heldout integral and permutation oracle",
+      "Axis/singularity/complex failure semantics"
+    ],
+    "tests": [
+      "tests/pleiades/geometry/test_green_reflection_repair.py"
+    ]
+  },
+  "version": {
+    "dependencies": [
+      {
+        "asset_id": "scirel.electromagnetism.circular-filament-green"
+      }
+    ],
+    "implementation_version": "0.2.0.dev3+pleiades.maintained"
+  }
+}

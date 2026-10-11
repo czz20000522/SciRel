@@ -1,0 +1,132 @@
+{
+  "aliases": [
+    "ClampedCubicSpline"
+  ],
+  "applicability": {
+    "excluded": [
+      "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
+      "Duplicate, unsorted or nonfinite knots are outside numerical qualification"
+    ],
+    "preconditions": [
+      "Finite strictly increasing matched one-dimensional knots and values with N>=3",
+      "In-domain deriv=0/1/2 for the qualified numerical claim"
+    ],
+    "supported": [
+      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+    ]
+  },
+  "asset_id": "scirel.basis.clamped-cubic-spline",
+  "example": {
+    "code": "import numpy as np\nfrom scirel.basis import ClampedCubicSpline\nf=ClampedCubicSpline(np.array([0.,.3,1.]),np.array([0.,.2,1.]))\nassert f(np.array([.3])).shape==(1,)",
+    "description": "Bounded executable example for Clamped cubic spline",
+    "expected": "Declared result shape and bounded numerical behavior are asserted."
+  },
+  "failure_semantics": {
+    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
+    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
+    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object.",
+    "runtime_failure": "Underlying numerical or interpolation exceptions propagate."
+  },
+  "identity": {
+    "assumptions": [
+      "Finite strictly increasing matched one-dimensional knots and values with N>=3",
+      "In-domain deriv=0/1/2 for the qualified numerical claim"
+    ],
+    "boundary": "Specified first derivatives at both ends",
+    "coordinates": "Knots in arbitrary coherent coordinate units",
+    "definition": "Piecewise cubic Hermite interpolation with a boundary-specific linear slope system",
+    "direction": "Declared inputs to Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",
+    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "model": "C2 cubic spline; Clamped/FirstClamped use corrected unequal-knot continuity rows",
+    "relation": "Clamped cubic spline"
+  },
+  "inputs": [
+    {
+      "constraints": "Finite strictly increasing N>=3",
+      "description": "Interpolation knots",
+      "dtype": "float64",
+      "name": "x_data",
+      "required": true,
+      "shape": "(N,)",
+      "units": "coordinate units"
+    },
+    {
+      "constraints": "Finite, same N as x_data",
+      "description": "Ordinate samples",
+      "dtype": "float64",
+      "name": "y_data",
+      "required": true,
+      "shape": "(N,)",
+      "units": "ordinate units"
+    },
+    {
+      "constraints": "Finite two slopes",
+      "default": [
+        0,
+        0
+      ],
+      "description": "Left/right endpoint slopes",
+      "dtype": "float64",
+      "name": "yp",
+      "required": false,
+      "shape": "(2,)",
+      "units": "ordinate per coordinate"
+    }
+  ],
+  "kind": "operator",
+  "outputs": [
+    {
+      "constraints": "Query array shape preserved; zero outside knot interval",
+      "description": "Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",
+      "dtype": "Python callable object",
+      "name": "spline",
+      "required": true,
+      "shape": "object",
+      "units": "ordinate units; derivative units per coordinate power"
+    }
+  ],
+  "provenance": {
+    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending.",
+    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "public_references": [],
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "independent analytic or numerical oracle"
+    ]
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.basis",
+      "signature": "ClampedCubicSpline(x_data, y_data, yp=[0, 0])",
+      "symbol": "ClampedCubicSpline"
+    }
+  },
+  "schema": "scirel.asset-document.v1",
+  "summary": "Piecewise cubic Hermite interpolation with a boundary-specific linear slope system",
+  "taxonomy": [
+    "analysis",
+    "basis"
+  ],
+  "title": {
+    "en": "Clamped cubic spline",
+    "zh": "Clamped cubic spline"
+  },
+  "verification": {
+    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "known_limitations": [
+      "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
+      "Duplicate, unsorted or nonfinite knots are outside numerical qualification"
+    ],
+    "scope": [
+      "Only the explicitly stated finite input domain and direct-test fixtures"
+    ],
+    "tests": [
+      "tests/pleiades/equilibrium/test_analysis_families.py",
+      "tests/pleiades/equilibrium/test_analysis_corrections.py"
+    ]
+  },
+  "version": {
+    "dependencies": [],
+    "implementation_version": "0.2.0.dev3+pleiades.maintained"
+  }
+}

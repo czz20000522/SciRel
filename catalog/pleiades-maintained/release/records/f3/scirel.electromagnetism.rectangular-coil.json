@@ -1,0 +1,213 @@
+{
+  "aliases": [
+    "RectangularCoil"
+  ],
+  "applicability": {
+    "excluded": [
+      "Negative radius",
+      "Nonpositive dimensions",
+      "Persistent sweep"
+    ],
+    "preconditions": [
+      "Inputs satisfy the documented finite cylindrical coordinate and shape contract"
+    ],
+    "supported": [
+      "Geometry setters, rigid transforms, field evaluation"
+    ]
+  },
+  "asset_id": "scirel.electromagnetism.rectangular-coil",
+  "example": {
+    "code": "from scirel.electromagnetism import RectangularCoil\nc=RectangularCoil(nr=2)\nassert c.npts == 2",
+    "description": "Construct a 2-point coil",
+    "expected": "Generated filament centers and area proxy are available."
+  },
+  "failure_semantics": {
+    "invalid_input": "Constructor or geometry setters raise ValueError for invalid supported inputs; unavailable source additions raise NotImplementedError. Source field methods reject a missing target mesh, nonfinite currents and active-filament coincidence.",
+    "nonconvergence": "Not applicable; direct geometry construction, transforms and static response.",
+    "partial_results": "No partial object is returned by a failed constructor. Atomic parameterized geometry setters preserve valid previous state.",
+    "runtime_failure": "Field evaluation propagates FloatingPointError on nonrepresentable kernel results. Failed parameterized geometry setters preserve the preceding valid state."
+  },
+  "identity": {
+    "assumptions": [
+      "Finite geometry parameters"
+    ],
+    "boundary": "R >= 0 and positive dimensions/counts",
+    "coordinates": "Cylindrical R,Z; angle degrees",
+    "definition": "Uniform rectangular point sampling with signed weights",
+    "direction": "geometry parameters to filament centers",
+    "geometry": "Axisymmetric circular filament array",
+    "model": "Axisymmetric circular filament array",
+    "relation": "Rectangular coil relation"
+  },
+  "inputs": [
+    {
+      "constraints": "R >= 0",
+      "default": 1.0,
+      "description": "Center radius",
+      "dtype": "Finite float64",
+      "name": "r0",
+      "required": false,
+      "shape": "scalar",
+      "units": "m"
+    },
+    {
+      "constraints": "Finite",
+      "default": 0.0,
+      "description": "Center height",
+      "dtype": "Finite float64",
+      "name": "z0",
+      "required": false,
+      "shape": "scalar",
+      "units": "m"
+    },
+    {
+      "constraints": "Positive integer",
+      "default": 1,
+      "description": "Radial count",
+      "dtype": "int",
+      "name": "nr",
+      "required": false,
+      "shape": "scalar",
+      "units": "dimensionless"
+    },
+    {
+      "constraints": "Positive integer",
+      "default": 1,
+      "description": "Axial count",
+      "dtype": "int",
+      "name": "nz",
+      "required": false,
+      "shape": "scalar",
+      "units": "dimensionless"
+    },
+    {
+      "constraints": "Positive",
+      "default": 0.1,
+      "description": "Radial spacing",
+      "dtype": "Finite float64",
+      "name": "dr",
+      "required": false,
+      "shape": "scalar",
+      "units": "m"
+    },
+    {
+      "constraints": "Positive",
+      "default": 0.1,
+      "description": "Axial spacing",
+      "dtype": "Finite float64",
+      "name": "dz",
+      "required": false,
+      "shape": "scalar",
+      "units": "m"
+    },
+    {
+      "constraints": "Finite",
+      "default": 0.0,
+      "description": "Rotation angle",
+      "dtype": "Finite float64",
+      "name": "angle",
+      "required": false,
+      "shape": "scalar",
+      "units": "degree"
+    },
+    {
+      "constraints": "Finite scalar",
+      "default": 1.0,
+      "description": "Common current",
+      "dtype": "Finite float64",
+      "name": "current",
+      "required": false,
+      "shape": "scalar",
+      "units": "A"
+    },
+    {
+      "constraints": "Finite vector matching npts",
+      "default": null,
+      "description": "Signed weights",
+      "dtype": "Finite float64",
+      "name": "weights",
+      "required": false,
+      "shape": "(nr*nz,)",
+      "units": "dimensionless"
+    },
+    {
+      "constraints": "Mesh accepted by conversion",
+      "default": null,
+      "description": "Target mesh",
+      "dtype": "Finite float64",
+      "name": "mesh",
+      "required": false,
+      "shape": "mesh-dependent",
+      "units": "m"
+    }
+  ],
+  "kind": "operator",
+  "outputs": [
+    {
+      "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh",
+      "description": "Constructed RectangularCoil object. Available properties/methods: rz_pts: Filament centers [m], (nr*nz,2); area: Conductor area proxy [m2], scalar",
+      "dtype": "RectangularCoil",
+      "name": "source",
+      "required": true,
+      "shape": "one object",
+      "units": "Object; property units as described"
+    }
+  ],
+  "provenance": {
+    "license_status": "Source lineage and MIT license evidence are retained; human release approval remains pending.",
+    "lineage_summary": "Derived from the retained Pleiades D0 geometry/current source and stabilized SciRel D2 successor behavior.",
+    "public_references": [],
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "bounded D2 regression evidence"
+    ]
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.electromagnetism.sources",
+      "signature": "RectangularCoil(r0=1.0, z0=0.0, nr=1, nz=1, dr=0.1, dz=0.1, angle=0.0, **kwargs)",
+      "symbol": "RectangularCoil"
+    }
+  },
+  "schema": "scirel.asset-document.v1",
+  "summary": "Parameterized rectangular array of circular filaments.",
+  "taxonomy": [
+    "electromagnetism",
+    "sources",
+    "geometry"
+  ],
+  "title": {
+    "en": "Rectangular filament coil",
+    "zh": "矩形圆丝线圈"
+  },
+  "verification": {
+    "evidence_ceiling": "Named geometry, lifecycle and configuration cases only; no arbitrary-input scientific correctness or release claim.",
+    "known_limitations": [
+      "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
+      "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
+      "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
+      "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
+      "All scientific, human and release approvals remain false."
+    ],
+    "scope": [
+      "Bounded rigid-geometry and coordinate invariants",
+      "Ordered current projection and source lifecycle",
+      "Full retained BRB/WHAM configuration composition at finite targets"
+    ],
+    "tests": [
+      "tests/pleiades/geometry/test_native_geometry_qualification.py",
+      "tests/pleiades/geometry/test_native_lifecycle.py"
+    ]
+  },
+  "version": {
+    "dependencies": [
+      {
+        "asset_id": "scirel.electromagnetism.circular-filament-green"
+      },
+      {
+        "asset_id": "scirel.geometry.rotate"
+      }
+    ],
+    "implementation_version": "0.2.0.dev3+pleiades.maintained"
+  }
+}

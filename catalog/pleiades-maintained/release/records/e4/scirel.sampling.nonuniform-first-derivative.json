@@ -1,0 +1,120 @@
+{
+  "aliases": [
+    "diff_central"
+  ],
+  "applicability": {
+    "excluded": [
+      "Periodic endpoints, noisy-data inference and conditioning extremes are unqualified"
+    ],
+    "preconditions": [
+      "Finite matched one-dimensional x,y with N>=3",
+      "x strictly increasing"
+    ],
+    "supported": [
+      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+    ]
+  },
+  "asset_id": "scirel.sampling.nonuniform-first-derivative",
+  "example": {
+    "code": "import numpy as np\nfrom scirel.sampling import diff_central\nx=np.array([0.,.3,1.])\nassert np.allclose(diff_central(x,x*x),2*x[1:-1])",
+    "description": "Bounded executable example for Nonuniform interior first derivative",
+    "expected": "Declared result shape and bounded numerical behavior are asserted."
+  },
+  "failure_semantics": {
+    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
+    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
+    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object.",
+    "runtime_failure": "Underlying numerical or interpolation exceptions propagate."
+  },
+  "identity": {
+    "assumptions": [
+      "Finite matched one-dimensional x,y with N>=3",
+      "x strictly increasing"
+    ],
+    "boundary": "No endpoint values",
+    "coordinates": "Generic coherent coordinate/value units",
+    "definition": "Return first interior derivative using the shared quadratic nonuniform operator",
+    "direction": "Declared inputs to First interior derivative",
+    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "model": "Absorbed finite-difference implementation",
+    "relation": "Nonuniform interior first derivative"
+  },
+  "inputs": [
+    {
+      "constraints": "Strictly increasing finite",
+      "description": "Abscissae",
+      "dtype": "float64",
+      "name": "x",
+      "required": true,
+      "shape": "(N,)",
+      "units": "coordinate units"
+    },
+    {
+      "constraints": "Finite matched N",
+      "description": "Samples",
+      "dtype": "float64",
+      "name": "y",
+      "required": true,
+      "shape": "(N,)",
+      "units": "value units"
+    }
+  ],
+  "kind": "operator",
+  "outputs": [
+    {
+      "constraints": "Quadratic exactness",
+      "description": "First interior derivative",
+      "dtype": "float64",
+      "name": "derivative",
+      "required": true,
+      "shape": "(N-2,)",
+      "units": "value per coordinate"
+    }
+  ],
+  "provenance": {
+    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending.",
+    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "public_references": [],
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "independent analytic or numerical oracle"
+    ]
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.sampling",
+      "signature": "diff_central(x, y)",
+      "symbol": "diff_central"
+    }
+  },
+  "schema": "scirel.asset-document.v1",
+  "summary": "Return first interior derivative using the shared quadratic nonuniform operator",
+  "taxonomy": [
+    "analysis",
+    "sampling"
+  ],
+  "title": {
+    "en": "Nonuniform interior first derivative",
+    "zh": "Nonuniform interior first derivative"
+  },
+  "verification": {
+    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "known_limitations": [
+      "Periodic endpoints, noisy-data inference and conditioning extremes are unqualified"
+    ],
+    "scope": [
+      "Only the explicitly stated finite input domain and direct-test fixtures"
+    ],
+    "tests": [
+      "tests/pleiades/equilibrium/test_analysis_families.py"
+    ]
+  },
+  "version": {
+    "dependencies": [
+      {
+        "asset_id": "scirel.numerics.nonuniform-derivatives"
+      }
+    ],
+    "implementation_version": "0.2.0.dev3+pleiades.maintained"
+  }
+}

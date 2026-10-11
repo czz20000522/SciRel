@@ -1,0 +1,128 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.electromagnetism.circular-filament-green",
+  "kind": "operator",
+  "title": {
+    "en": "Circular-filament Green kernel",
+    "zh": "圆环丝电流格林核"
+  },
+  "summary": "Evaluate the bounded SI Green response of signed circular filaments at cylindrical R,Z targets.",
+  "taxonomy": [
+    "electromagnetism",
+    "axisymmetric-fields",
+    "green-kernel"
+  ],
+  "aliases": [
+    "compute_greens"
+  ],
+  "identity": {
+    "relation": "Circular-filament vector potential and magnetic-field response",
+    "direction": "source filaments and target points to psi, BR, BZ",
+    "definition": "psi=R A_phi with per-ampere filament weights",
+    "model": "Ideal circular filaments with complete elliptic-integral and small-parameter analytic branch",
+    "geometry": "Axisymmetric cylindrical R,Z geometry",
+    "coordinates": "R and Z in metres; source rows are radius, height, signed weight",
+    "boundary": "Axis values are analytic; active ideal-filament coincidence is singular",
+    "assumptions": [
+      "Finite float64 inputs",
+      "No finite-wire or permeability model",
+      "Positive-radius active filaments are retained"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "rzw",
+      "description": "Source rows or a list of independent source sets.",
+      "units": "m, m, dimensionless weight",
+      "shape": "(Ns,3) or list of (Ns,3)",
+      "dtype": "finite float64",
+      "required": true,
+      "constraints": "Non-negative source radius; signed weights; list output preserves set dimension."
+    },
+    {
+      "name": "rz_pts",
+      "description": "Target cylindrical coordinates.",
+      "units": "m",
+      "shape": "(Nt,2)",
+      "dtype": "finite float64",
+      "required": true,
+      "constraints": "Non-negative target radius."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "response",
+      "description": "Tuple psi, BR, BZ; list source input returns one target axis per set.",
+      "units": "Wb/rad per ampere; T per ampere",
+      "shape": "three arrays of (Nt,) or (Nset,Nt)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite output or explicit FloatingPointError."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Inputs satisfy finite cylindrical-coordinate contract"
+    ],
+    "supported": [
+      "Named finite off-axis and axis-limit fixtures",
+      "Explicit singularity and zero-weight behavior",
+      "Independent set grouping"
+    ],
+    "excluded": [
+      "Finite-wire self-field",
+      "Arbitrary-input scientific qualification",
+      "Multiprocessing or persistent field blocks"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for malformed, nonfinite, negative-radius, or coincident active-filament inputs.",
+    "runtime_failure": "Raises FloatingPointError for overflow, invalid arithmetic, or nonfinite output.",
+    "nonconvergence": "Not applicable; this is a direct kernel.",
+    "partial_results": "No partial result is returned after a failed source evaluation."
+  },
+  "provenance": {
+    "lineage_summary": "Derived from the retained Pleiades circular-filament implementation with an explicit bounded successor contract and independent azimuthal quadrature comparison.",
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "independent numerical oracle"
+    ],
+    "public_references": [
+      "NASA-20010038494"
+    ],
+    "license_status": "Retained source lineage and license evidence are available; public release licensing remains pending."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.electromagnetism.greens",
+      "symbol": "compute_greens",
+      "signature": "compute_greens(rzw, rz_pts)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate one unit-weight filament at two finite targets.",
+    "code": "import numpy as np\nfrom scirel.electromagnetism import compute_greens\npsi, br, bz = compute_greens(np.array([[1.0, 0.0, 1.0]]), np.array([[0.2, 0.3], [0.4, -0.2]]))\nassert psi.shape == br.shape == bz.shape == (2,)",
+    "expected": "Three finite arrays with shape (2,) are returned."
+  },
+  "verification": {
+    "scope": [
+      "Bounded D2 Green comparison fixtures",
+      "Axis and derivative regressions",
+      "Explicit singularity and lifecycle tests"
+    ],
+    "tests": [
+      "tests/pleiades/geometry/test_geometry_fields.py",
+      "tests/pleiades/geometry/test_source_d2_regressions.py"
+    ],
+    "evidence_ceiling": "Named fixtures and declared API behavior only; no complete scientific correctness or interchangeability claim.",
+    "known_limitations": [
+      "Irregular legacy reflected-block mismatch is preserved and not rebound.",
+      "Extreme-scale behavior and finite-wire physics are unqualified.",
+      "Human approval and release readiness are not established."
+    ]
+  }
+}

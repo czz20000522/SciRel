@@ -17,3 +17,8 @@ __all__ = [
     'interpolate_complex_rectilinear_field',
     'project_planar_wavevector',
 ]
+
+# Repaired Pleiades geometry addition; existing maintained contracts retained.
+from .mesh import Mesh, PointsMesh, RChord, ZChord, SphericalRChord, ThetaChord, RectMesh
+from .transforms import rotate
+__all__.extend(["Mesh", "PointsMesh", "RChord", "ZChord", "SphericalRChord", "ThetaChord", "RectMesh", "rotate"])

@@ -1,0 +1,137 @@
+{
+  "aliases": [
+    "poly_fit"
+  ],
+  "applicability": {
+    "excluded": [
+      "Absolute source cutoff is not a scale-invariant statistical rank policy",
+      "No uncertainty/confidence or ill-conditioning guarantee"
+    ],
+    "preconditions": [
+      "Finite one-dimensional matched x,y",
+      "Integer order>=0 for supported fit"
+    ],
+    "supported": [
+      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+    ]
+  },
+  "asset_id": "scirel.sampling.polynomial-fit",
+  "example": {
+    "code": "import numpy as np\nfrom scirel.sampling import poly_fit\nf,c=poly_fit(np.array([-1.,0.,1.]),np.array([2.,1.,0.]),order=1)\nassert np.allclose(c,[1,-1])",
+    "description": "Bounded executable example for Ascending-power SVD polynomial fit",
+    "expected": "Declared result shape and bounded numerical behavior are asserted."
+  },
+  "failure_semantics": {
+    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
+    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
+    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object.",
+    "runtime_failure": "Underlying numerical or interpolation exceptions propagate."
+  },
+  "identity": {
+    "assumptions": [
+      "Finite one-dimensional matched x,y",
+      "Integer order>=0 for supported fit"
+    ],
+    "boundary": "No boundary model; over/underdetermined systems use same cutoff",
+    "coordinates": "Generic x,y sample units; coefficients y/x**power",
+    "definition": "Compute minimum-norm ascending-power coefficients with absolute singular cutoff1e-10",
+    "direction": "Declared inputs to Ascending power evaluators",
+    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "model": "Explicit source SVD pseudoinverse",
+    "relation": "Ascending-power SVD polynomial fit"
+  },
+  "inputs": [
+    {
+      "constraints": "Finite matched",
+      "description": "Sample coordinates",
+      "dtype": "float64",
+      "name": "x",
+      "required": true,
+      "shape": "(M,)",
+      "units": "coordinate units"
+    },
+    {
+      "constraints": "Finite matched",
+      "description": "Sample values",
+      "dtype": "float64",
+      "name": "y",
+      "required": true,
+      "shape": "(M,)",
+      "units": "value units"
+    },
+    {
+      "constraints": "Nonnegative integer",
+      "default": 3,
+      "description": "Highest polynomial power",
+      "dtype": "int",
+      "name": "order",
+      "required": false,
+      "shape": "scalar",
+      "units": "dimensionless"
+    }
+  ],
+  "kind": "operator",
+  "outputs": [
+    {
+      "constraints": "Functions retain exponent",
+      "description": "Ascending power evaluators",
+      "dtype": "float64",
+      "name": "basis_fns",
+      "required": true,
+      "shape": "list(order+1)",
+      "units": "coordinate**power"
+    },
+    {
+      "constraints": "Singular values below1e-10 discarded",
+      "description": "Minimum-norm coefficients",
+      "dtype": "float64",
+      "name": "coefficients",
+      "required": true,
+      "shape": "(order+1,)",
+      "units": "value/coordinate**power"
+    }
+  ],
+  "provenance": {
+    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending.",
+    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "public_references": [],
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "independent analytic or numerical oracle"
+    ]
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.sampling",
+      "signature": "poly_fit(x, y, order=3)",
+      "symbol": "poly_fit"
+    }
+  },
+  "schema": "scirel.asset-document.v1",
+  "summary": "Compute minimum-norm ascending-power coefficients with absolute singular cutoff1e-10",
+  "taxonomy": [
+    "analysis",
+    "sampling"
+  ],
+  "title": {
+    "en": "Ascending-power SVD polynomial fit",
+    "zh": "Ascending-power SVD polynomial fit"
+  },
+  "verification": {
+    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "known_limitations": [
+      "Absolute source cutoff is not a scale-invariant statistical rank policy",
+      "No uncertainty/confidence or ill-conditioning guarantee"
+    ],
+    "scope": [
+      "Only the explicitly stated finite input domain and direct-test fixtures"
+    ],
+    "tests": [
+      "tests/pleiades/equilibrium/test_analysis_families.py"
+    ]
+  },
+  "version": {
+    "dependencies": [],
+    "implementation_version": "0.2.0.dev3+pleiades.maintained"
+  }
+}

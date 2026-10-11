@@ -1,0 +1,134 @@
+{
+  "aliases": [
+    "interp"
+  ],
+  "applicability": {
+    "excluded": [
+      "Out-of-grid spline extrapolation and arbitrary nonlinear interpolation errors are unqualified"
+    ],
+    "preconditions": [
+      "Finite separable xy grid with at least four distinct points per axis",
+      "Finite Q and interior query coordinates"
+    ],
+    "supported": [
+      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+    ]
+  },
+  "asset_id": "scirel.sampling.rectangular-spline",
+  "example": {
+    "code": "import numpy as np\nfrom scirel.sampling import interp\nr,z=np.meshgrid(np.linspace(0,1,5),np.linspace(0,1,5))\np=np.array([[.2,.3],[.6,.7]])\nassert np.allclose(interp(r,z,r+2*z,p),p[:,0]+2*p[:,1])",
+    "description": "Bounded executable example for Rectangular spline field query",
+    "expected": "Declared result shape and bounded numerical behavior are asserted."
+  },
+  "failure_semantics": {
+    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
+    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
+    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object.",
+    "runtime_failure": "Underlying numerical or interpolation exceptions propagate."
+  },
+  "identity": {
+    "assumptions": [
+      "Finite separable xy grid with at least four distinct points per axis",
+      "Finite Q and interior query coordinates"
+    ],
+    "boundary": "Queries inside grid support for qualified result",
+    "coordinates": "xy row/column grid and planar flpoints",
+    "definition": "Evaluate bicubic rectangular field interpolation at ordered path vertices",
+    "direction": "Declared inputs to Interpolated field along path",
+    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "model": "RectBivariateSpline with source default degrees/smoothing",
+    "relation": "Rectangular spline field query"
+  },
+  "inputs": [
+    {
+      "constraints": "Rho[0,:] strictly increasing",
+      "description": "Rectangular radial x grid",
+      "dtype": "float64",
+      "name": "Rho",
+      "required": true,
+      "shape": "(Nz,Nr)",
+      "units": "length units"
+    },
+    {
+      "constraints": "Z[:,0] strictly increasing",
+      "description": "Rectangular axial y grid",
+      "dtype": "float64",
+      "name": "Z",
+      "required": true,
+      "shape": "same as Rho",
+      "units": "length units"
+    },
+    {
+      "constraints": "Finite",
+      "description": "Rectangular field",
+      "dtype": "float64",
+      "name": "Q",
+      "required": true,
+      "shape": "same as Rho",
+      "units": "field units"
+    },
+    {
+      "constraints": "Finite supplied ordering",
+      "description": "Ordered planar path vertices",
+      "dtype": "float64",
+      "name": "flpoints",
+      "required": true,
+      "shape": "(N,2)",
+      "units": "length units"
+    }
+  ],
+  "kind": "operator",
+  "outputs": [
+    {
+      "constraints": "Ordering follows flpoints",
+      "description": "Interpolated field along path",
+      "dtype": "float64",
+      "name": "values",
+      "required": true,
+      "shape": "(N,)",
+      "units": "field units"
+    }
+  ],
+  "provenance": {
+    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending.",
+    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "public_references": [],
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "independent analytic or numerical oracle"
+    ]
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.sampling",
+      "signature": "interp(Rho, Z, Q, flpoints)",
+      "symbol": "interp"
+    }
+  },
+  "schema": "scirel.asset-document.v1",
+  "summary": "Evaluate bicubic rectangular field interpolation at ordered path vertices",
+  "taxonomy": [
+    "analysis",
+    "sampling"
+  ],
+  "title": {
+    "en": "Rectangular spline field query",
+    "zh": "Rectangular spline field query"
+  },
+  "verification": {
+    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "known_limitations": [
+      "Out-of-grid spline extrapolation and arbitrary nonlinear interpolation errors are unqualified"
+    ],
+    "scope": [
+      "Only the explicitly stated finite input domain and direct-test fixtures"
+    ],
+    "tests": [
+      "tests/pleiades/equilibrium/test_analysis_families.py"
+    ]
+  },
+  "version": {
+    "dependencies": [],
+    "implementation_version": "0.2.0.dev3+pleiades.maintained"
+  }
+}
