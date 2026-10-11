@@ -1,0 +1,116 @@
+{
+  "schema": "scirel.root-selected-scientific-reception.v1",
+  "action_id": "torax-fast-ion-selected-reception-20261011-1924-v2",
+  "at": "2026-10-11T19:48:00.912880+00:00",
+  "receipt_identity": "torax-fast-ion-selected-reception-20261011-1924-v2:3b163cdcdc9251fbb4eba315f0d69046ec4f1e67e5cc71439ba68b61cbbf5b65",
+  "candidate_source_commit": "4ecd58748d2e0baf7c74b74c69d79a66ef0e5576",
+  "candidate_source_tree": "f53c8c98b7ba2b4176fb36cab476f16efe5e3cfb",
+  "asset_id": "scirel.plasma.fast-ion-heating",
+  "wheel": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/heartbeat-20261011-1924/torax-d2-independent/root-successor-v2/scirel-0.1.0.dev6-py3-none-any.whl",
+    "bytes": 13504,
+    "sha256": "0e0b73f50539de8225137ba2b64e09a91042bc8d890329542f111c45a65655bf"
+  },
+  "selection_profile": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/heartbeat-20261011-1924/torax-d2-independent/root-successor-v2/SELECTION_PROFILE.json",
+    "bytes": 959,
+    "sha256": "fbe269a7b399a01ab4ff4ba74ebfda1e88221dcaefc1be46e523378e02816333"
+  },
+  "independent_report": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/heartbeat-20261011-1924/torax-d2-independent/root-successor-v2/REPORT.json",
+    "bytes": 7493,
+    "sha256": "4ea37d1896990c0a5f449d6283030529882f6e78a204b5762a8a999910264097"
+  },
+  "independent_handoff": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/heartbeat-20261011-1924/torax-d2-independent/root-successor-v2/HANDOFF.json",
+    "bytes": 2354,
+    "sha256": "d7d428b37702f497d28bf6481c4fa34a3e7121d7a5812205c8ff0bb5cd97d14f"
+  },
+  "independent_manifest": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/heartbeat-20261011-1924/torax-d2-independent/root-successor-v2/MANIFEST.json",
+    "bytes": 7559,
+    "sha256": "3b163cdcdc9251fbb4eba315f0d69046ec4f1e67e5cc71439ba68b61cbbf5b65"
+  },
+  "root_verified_members": 26,
+  "root_verified_wheel_zip_members": 8,
+  "root_verified_runtime_modules": [
+    "scirel/__init__.py",
+    "scirel/plasma/__init__.py",
+    "scirel/plasma/fast_ion_heating.py"
+  ],
+  "root_verified_RECORD_and_source_license": true,
+  "validation": {
+    "wheel_sha256": "0e0b73f50539de8225137ba2b64e09a91042bc8d890329542f111c45a65655bf",
+    "runtime_files": [
+      "scirel/__init__.py",
+      "scirel/plasma/__init__.py",
+      "scirel/plasma/fast_ion_heating.py"
+    ],
+    "loaded_scirel_modules": [
+      "scirel",
+      "scirel.plasma",
+      "scirel.plasma.fast_ion_heating"
+    ],
+    "license_entry": "scirel-0.1.0.dev6.dist-info/licenses/licenses/torax/LICENSE",
+    "license_sha256": "3d5036bd786413156dbb51df0f3aa7bb67d5973e474a592572edb8a10fc892cc",
+    "requires_dist": [
+      "numpy>=1.24"
+    ],
+    "tests_passed": 5,
+    "test_file_sha256": "80fa59992b689ef93e62bc5be2ad0d00eaab5c243f1a94090096f48b9c50695c",
+    "document_schema": "PASS_CURRENT_PROJECT_VALIDATE_DOCUMENT; schema identifier and structure checked; optional third-party jsonschema unavailable",
+    "project_document_validator": true,
+    "document_signature": "(birth_energy, T_e, fast_ion_mass)",
+    "document_example": true,
+    "document_version": "0.1.0.dev6",
+    "distribution_version": "0.1.0.dev6",
+    "checkout_and_source_mounts": false,
+    "network": "none"
+  },
+  "independent_math": {
+    "oracle_points": 146,
+    "all_pass": true,
+    "extreme_dimensional_triples": 6,
+    "stress_pass": true,
+    "invalid_inputs": 7,
+    "invalid_pass": true,
+    "broadcast_pass": true,
+    "no_torax_import": true,
+    "max_abs_error": 1.1102230246251565e-16,
+    "max_relative_error": 5.239503715031363e-14,
+    "original_tests": {
+      "count": 5,
+      "result": "PASS",
+      "sha256": "80fa59992b689ef93e62bc5be2ad0d00eaab5c243f1a94090096f48b9c50695c",
+      "assertions_and_tolerances_unchanged": true
+    }
+  },
+  "catalog": {
+    "schema": "scirel.selected-catalog-reception.v1",
+    "source_document_sha256": "b055c0def76b431352be5a75bb9d84779b0c518b7825a4549e16d824f38d25b3",
+    "generated_exact_record_equals_validated_document": true,
+    "partitions_bytes_and_hashes_match": true,
+    "coverage": {
+      "declared_total_asset_count": 46,
+      "included_asset_count": 1,
+      "status": "partial"
+    },
+    "root_digest": "sha256:dd2852e90daeee27334ac70968eccb947213772cab1721080192a97cbb8c5251",
+    "no_human_or_release_approval": true
+  },
+  "qualification": "EXACT_SELECTED_MATHEMATICAL_ASSET_INTERNAL_PENDING_HUMAN_REVIEW",
+  "canonical_merged": false,
+  "whole_TORAX_D2_complete": false,
+  "D3_approved": false,
+  "human_approved": false,
+  "public_release_approved": false,
+  "ordinary_all_module_wheel_admitted": false,
+  "bibliographic_original_paper_validation": "NOT_RUN_INHERITED_REFERENCE_ONLY",
+  "previous_original_wheel_rejection_retained": true,
+  "original_native_scirel_commit": "129e3b1b85d11b4e3510ab5d58b8a364f61ab2b0",
+  "TORAX_derived_commit": "bf956b22fa4df3b638028ac89ed8aa84948b3b1d",
+  "TORAX_D1_commit": "2b9004aee6bced347ee674a04c630d4dea05ed3c",
+  "source_history_recovery": "Composite exact accepted D1 source/retained Git plus frozen D2 bundle; standalone bundle failure preserved in receiver receipt.",
+  "authoring_change": "Source-attributed mathematical implementation unchanged; root docstring/exact document/human-page bounded applicability, license attachment and minimal initializer package projection reviewed independently.",
+  "private_development_record": true
+}

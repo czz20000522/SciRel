@@ -1,0 +1,26 @@
+{
+  "schema": "scirel.maintained-development-selection.v1",
+  "human_approval": false,
+  "release_approval": false,
+  "candidate_source_commit": "4ecd58748d2e0baf7c74b74c69d79a66ef0e5576",
+  "candidate_source_tree": "f53c8c98b7ba2b4176fb36cab476f16efe5e3cfb",
+  "version": "0.1.0.dev6",
+  "dependencies": [
+    "numpy>=1.24"
+  ],
+  "external_import_roots": [
+    "numpy"
+  ],
+  "files": [
+    {
+      "path": "src/scirel/plasma/fast_ion_heating.py",
+      "sha256": "da378cf492c79715a224aa39578091c7792740abbdca5396d81b7c5250dd5348"
+    }
+  ],
+  "initializers": {
+    "src/scirel/__init__.py": "",
+    "src/scirel/plasma/__init__.py": "\"\"\"Plasma heating relations integrated from the TORAX D1 delivery.\"\"\"\nfrom .fast_ion_heating import fast_ion_fractional_heating\n\n__all__ = [\"fast_ion_fractional_heating\"]\n"
+  },
+  "license_path": "licenses/torax/LICENSE",
+  "license_sha256": "3d5036bd786413156dbb51df0f3aa7bb67d5973e474a592572edb8a10fc892cc"
+}
