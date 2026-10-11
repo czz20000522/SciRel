@@ -1,0 +1,41 @@
+{
+  "schema": "scirel.maintained-development-selection.v1",
+  "human_approval": false,
+  "release_approval": false,
+  "candidate_source_commit": "c5d4f6634482a74e360c77f438c75dd104c7e84c",
+  "candidate_source_tree": "1d8371914c711fe396bd5f185d99ab416fc5ebc6",
+  "version": "0.1.0.dev7+torax.leaves",
+  "dependencies": [
+    "numpy>=1.24"
+  ],
+  "external_import_roots": [
+    "numpy"
+  ],
+  "files": [
+    {
+      "path": "src/scirel/geometry/face_to_cell.py",
+      "sha256": "e98a0ccf1287e5a3f3dde1482433189ddb9fad950fb87beca197badf3090f50e"
+    },
+    {
+      "path": "src/scirel/physics/dilution.py",
+      "sha256": "1e93995477ac361f57a2ea105cca05b899c0f85796bb6809dad87bd83d63a7d8"
+    },
+    {
+      "path": "src/scirel/physics/coulomb_logs.py",
+      "sha256": "08621ee098140efc88c2ccb11fd530eb6d84f52b82933dcdeab3b4308d9c19bc"
+    },
+    {
+      "path": "src/scirel/plasma/fast_ion_heating.py",
+      "sha256": "da378cf492c79715a224aa39578091c7792740abbdca5396d81b7c5250dd5348"
+    }
+  ],
+  "initializers": {
+    "src/scirel/__init__.py": "\"\"\"Selected SciRel mathematical development candidate; pending human decision.\"\"\"\n__version__ = \"0.1.0.dev7+torax.leaves\"\n__all__ = []\n",
+    "src/scirel/geometry/__init__.py": "from .face_to_cell import face_to_cell\n__all__ = [\"face_to_cell\"]\n",
+    "src/scirel/physics/__init__.py": "\"\"\"Algebraic plasma-physics relations with explicit NumPy contracts.\"\"\"\n\nfrom .dilution import calculate_main_ion_dilution_factor\nfrom .coulomb_logs import (\n    calculate_log_lambda_ee,\n    calculate_log_lambda_ei,\n    calculate_log_lambda_ii,\n)\n\n__all__ = [\n    \"calculate_main_ion_dilution_factor\",\n    \"calculate_log_lambda_ee\",\n    \"calculate_log_lambda_ei\",\n    \"calculate_log_lambda_ii\",\n]\n",
+    "src/scirel/plasma/__init__.py": "\"\"\"Plasma heating relations integrated from the TORAX D1 delivery.\"\"\"\nfrom .fast_ion_heating import fast_ion_fractional_heating\n\n__all__ = [\"fast_ion_fractional_heating\"]\n"
+  },
+  "license_path": "licenses/torax/LICENSE",
+  "license_sha256": "3d5036bd786413156dbb51df0f3aa7bb67d5973e474a592572edb8a10fc892cc",
+  "selection_reason": "Only five supported algebra/grid APIs plus unchanged qualified fast-ion; no unsupported profile/solver/transport code is executable."
+}

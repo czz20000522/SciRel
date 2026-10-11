@@ -6,6 +6,7 @@ from .material_support import classify_material_support
 from .axisymmetric_equilibrium_grid_support import solve_axisymmetric_equilibrium_grid_mapping
 from .complex_rectilinear_interpolation import interpolate_complex_rectilinear_field
 from .planar_wavevector import project_planar_wavevector
+from .face_to_cell import face_to_cell
 
 __all__ = [
     'sample_rectilinear_field',
@@ -16,6 +17,7 @@ __all__ = [
     'solve_axisymmetric_equilibrium_grid_mapping',
     'interpolate_complex_rectilinear_field',
     'project_planar_wavevector',
+    'face_to_cell',
 ]
 
 # Repaired Pleiades geometry addition; existing maintained contracts retained.

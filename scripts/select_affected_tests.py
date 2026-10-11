@@ -15,6 +15,9 @@ from typing import Iterable
 ROOT = Path(__file__).resolve().parents[1]
 LEDGER = ROOT / "provenance" / "admitted-assets.json"
 CATALOG = ROOT / "catalog" / "examples"
+# A bounded D2 family can be indexed without mutating the historical pilot.
+# Keep this explicit rather than recursively globbing every future worktree.
+TORAX_LEAF_CATALOG = ROOT / "catalog" / "torax-algebra-grid"
 SCHEMA = "scirel.affected-tests.v1"
 
 DIRECT_TEST_OVERRIDES = {
@@ -228,7 +231,10 @@ def _load_catalog_assets() -> list[Asset]:
     if not CATALOG.is_dir():
         return []
     assets = []
-    for path in sorted(CATALOG.glob("*.json")):
+    catalog_paths = list(CATALOG.glob("*.json"))
+    if CATALOG == ROOT / "catalog" / "examples":
+        catalog_paths.extend(TORAX_LEAF_CATALOG.glob("*.json"))
+    for path in sorted(catalog_paths):
         document = json.loads(path.read_text(encoding="utf-8"))
         python_api = document["public_api"]["python"]
         module = python_api["module"]
@@ -394,7 +400,9 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
         elif path.startswith("docs/evaluations/outbound-progressive-projects/manifests/"):
             path_tests.add("tests/test_outbound_evaluation_manifests.py")
             reason = "evaluation_manifest_contract"
-        elif path.startswith("contracts/") or path.startswith("catalog/examples/"):
+        elif path.startswith("contracts/") or path.startswith(
+            ("catalog/examples/", "catalog/torax-algebra-grid/")
+        ):
             path_tests.add("tests/test_asset_documentation.py")
             reason = "asset_document_contract"
         elif path in NO_TEST_FILES or path.startswith(NO_TEST_PREFIXES):

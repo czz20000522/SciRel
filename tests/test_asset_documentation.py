@@ -10,6 +10,8 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 EXAMPLES = ROOT / "catalog" / "examples"
+TORAX_LEAF_DOCUMENTS = ROOT / "catalog" / "torax-algebra-grid"
+FAST_ION_ASSET_ID = "scirel.plasma.fast-ion-heating"
 sys.path.insert(0, str(SCRIPTS))
 
 from build_catalog import build_catalog  # noqa: E402
@@ -19,6 +21,24 @@ from validate_asset_documents import (  # noqa: E402
     validate_document,
     validate_runtime,
 )
+
+
+@pytest.fixture
+def pilot_examples(tmp_path):
+    """Retain the original 132-document dev5 pilot as an exact build fixture.
+
+    The accepted fast-ion successor was added to canonical examples at dev6.
+    It stays unchanged and is checked in the complete document-set tests; a
+    dev5 catalog build cannot combine its implementation version silently.
+    """
+    pilot = tmp_path / "pilot-documents"
+    pilot.mkdir()
+    for source in EXAMPLES.glob("*.json"):
+        document = json.loads(source.read_text(encoding="utf-8"))
+        if document["asset_id"] != FAST_ION_ASSET_ID:
+            (pilot / source.name).write_bytes(source.read_bytes())
+    assert len(list(pilot.glob("*.json"))) == 132
+    return pilot
 
 
 def _task_graph_document():
@@ -84,7 +104,9 @@ def test_contract_schemas_and_dependency_closed_examples_parse():
 
     assert asset_schema["$schema"].endswith("2020-12/schema")
     assert release_schema["properties"]["schema"]["const"] == "scirel.catalog-release.v1"
-    assert len(documents) == 132
+    assert len(documents) == 133
+    assert len([doc for doc in documents if doc["asset_id"] != FAST_ION_ASSET_ID]) == 132
+    assert [doc["asset_id"] for doc in documents if doc["asset_id"] == FAST_ION_ASSET_ID] == [FAST_ION_ASSET_ID]
     assert {item["kind"] for item in documents} == {"operator", "task_graph"}
 
 
@@ -208,10 +230,25 @@ def test_runtime_signatures_tests_and_examples_are_executable():
 
     assert completed.returncode == 0, completed.stderr
     report = json.loads(completed.stdout)
-    assert report["asset_count"] == 132
+    assert report["asset_count"] == 133
+    assert FAST_ION_ASSET_ID in report["asset_ids"]
+    assert len([asset_id for asset_id in report["asset_ids"] if asset_id != FAST_ION_ASSET_ID]) == 132
     assert report["runtime_checked"] is True
     assert report["runtime_origin"] == "source"
     assert report["examples_executed"] is True
+
+
+def test_torax_leaf_document_set_is_separate_and_dependency_closed():
+    documents = load_document_set(TORAX_LEAF_DOCUMENTS)
+    assert len(documents) == 5
+    assert all(document["version"]["dependencies"] == [] for document in documents)
+    assert {document["asset_id"] for document in documents} == {
+        "scirel.geometry.face-to-cell",
+        "scirel.physics.dilution",
+        "scirel.physics.coulomb-ee",
+        "scirel.physics.coulomb-ei",
+        "scirel.physics.coulomb-ii",
+    }
 
 
 def test_installed_runtime_mode_rejects_the_source_checkout():
@@ -221,7 +258,7 @@ def test_installed_runtime_mode_rejects_the_source_checkout():
         validate_runtime(document, installed_runtime=True)
 
 
-def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_path):
+def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_path, pilot_examples):
     first = tmp_path / "first"
     second = tmp_path / "second"
     arguments = {
@@ -230,8 +267,8 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
         "coverage_status": "complete",
         "declared_total": 132,
     }
-    first_result = build_catalog(EXAMPLES, first, **arguments)
-    second_result = build_catalog(EXAMPLES, second, **arguments)
+    first_result = build_catalog(pilot_examples, first, **arguments)
+    second_result = build_catalog(pilot_examples, second, **arguments)
 
     assert first_result["root_digest"] == second_result["root_digest"]
     first_files = {
@@ -309,10 +346,10 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
         assert private_term not in serialized
 
 
-def test_complete_catalog_cannot_hide_missing_documents(tmp_path):
+def test_complete_catalog_cannot_hide_missing_documents(tmp_path, pilot_examples):
     with pytest.raises(ValueError, match="requires every declared asset"):
         build_catalog(
-            EXAMPLES,
+            pilot_examples,
             tmp_path / "catalog",
             catalog_id="invalid-complete",
             release_version="0.1.0.dev5",
@@ -321,10 +358,10 @@ def test_complete_catalog_cannot_hide_missing_documents(tmp_path):
         )
 
 
-def test_catalog_release_version_must_match_every_document(tmp_path):
+def test_catalog_release_version_must_match_every_document(tmp_path, pilot_examples):
     with pytest.raises(ValueError, match="implementation_version must match"):
         build_catalog(
-            EXAMPLES,
+            pilot_examples,
             tmp_path / "catalog",
             catalog_id="version-mismatch",
             release_version="0.1.0.dev4",

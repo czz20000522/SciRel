@@ -167,6 +167,23 @@ def test_all_normalized_public_callables_are_importable():
     assert issubclass(ColdPlasmaOverflowError, ValueError)
 
 
+def test_torax_algebra_grid_exports_keep_domain_callables():
+    from scirel import geometry, physics
+    from scirel.geometry.face_to_cell import face_to_cell
+    from scirel.physics import coulomb_logs, dilution
+
+    assert geometry.face_to_cell is face_to_cell
+    assert "face_to_cell" in geometry.__all__
+    expected = {
+        "calculate_main_ion_dilution_factor": dilution.calculate_main_ion_dilution_factor,
+        "calculate_log_lambda_ee": coulomb_logs.calculate_log_lambda_ee,
+        "calculate_log_lambda_ei": coulomb_logs.calculate_log_lambda_ei,
+        "calculate_log_lambda_ii": coulomb_logs.calculate_log_lambda_ii,
+    }
+    assert set(physics.__all__) == set(expected)
+    assert all(getattr(physics, name) is function for name, function in expected.items())
+
+
 def test_root_namespace_supports_normal_python_imports():
     namespace = {}
     exec('from scirel import *', namespace)

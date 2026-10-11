@@ -820,8 +820,16 @@ def test_current_asset_index_unions_legacy_samples_and_exact_documents():
     namespace = runpy.run_path(str(SELECTOR))
     assets = namespace["_load_assets"]()
 
-    assert len(assets) == 132
-    assert len({asset.public_callable for asset in assets}) == 132
+    # The original pilot stays exactly 132; the bounded TORAX family is a
+    # separately named five-document set, not an expansion of that fixture.
+    direct_documents = [json.loads(path.read_text()) for path in (ROOT / "catalog/examples").glob("*.json")]
+    fast_ion = [doc for doc in direct_documents if doc["asset_id"] == "scirel.plasma.fast-ion-heating"]
+    assert len(fast_ion) == 1
+    assert fast_ion[0]["public_api"]["python"]["symbol"] == "fast_ion_fractional_heating"
+    assert len([doc for doc in direct_documents if doc["asset_id"] != "scirel.plasma.fast-ion-heating"]) == 132
+    assert len(list((ROOT / "catalog/torax-algebra-grid").glob("*.json"))) == 5
+    assert len(assets) == 138
+    assert len({asset.public_callable for asset in assets}) == 138
 
 
 def test_catalog_asset_keeps_every_declared_direct_test(tmp_path):
@@ -881,3 +889,27 @@ def test_documented_asset_without_a_test_mapping_still_fails_closed():
     assert result["full_suite_required"] is True
     assert result["test_paths"] == ["tests"]
     assert "without an asset/test mapping" in result["full_suite_reasons"][0]
+
+
+def test_separate_torax_leaf_documents_select_exact_five_assets():
+    result = select(
+        "src/scirel/geometry/face_to_cell.py",
+        "src/scirel/physics/dilution.py",
+        "src/scirel/physics/coulomb_logs.py",
+    )
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == ["tests/operator_contracts/test_torax_algebra_grid.py"]
+    assert set(result["affected_assets"]) == {
+        "scirel.geometry.face_to_cell.face_to_cell",
+        "scirel.physics.dilution.calculate_main_ion_dilution_factor",
+        "scirel.physics.coulomb_logs.calculate_log_lambda_ee",
+        "scirel.physics.coulomb_logs.calculate_log_lambda_ei",
+        "scirel.physics.coulomb_logs.calculate_log_lambda_ii",
+    }
+
+
+def test_separate_torax_exact_document_change_checks_document_contract():
+    result = select("catalog/torax-algebra-grid/physics.coulomb-ee.json")
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == ["tests/test_asset_documentation.py"]
+    assert result["reasons"][0]["classification"] == "asset_document_contract"
