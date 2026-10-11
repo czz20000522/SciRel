@@ -1,6 +1,7 @@
 """Algebraic plasma-physics relations with explicit NumPy contracts."""
 
 from .dilution import calculate_main_ion_dilution_factor
+from .thermal_energy import calculate_stored_thermal_energy
 from .coulomb_logs import (
     calculate_log_lambda_ee,
     calculate_log_lambda_ei,
@@ -8,6 +9,7 @@ from .coulomb_logs import (
 )
 
 __all__ = [
+    "calculate_stored_thermal_energy",
     "calculate_main_ion_dilution_factor",
     "calculate_log_lambda_ee",
     "calculate_log_lambda_ei",

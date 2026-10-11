@@ -240,7 +240,7 @@ def test_runtime_signatures_tests_and_examples_are_executable():
 
 def test_torax_leaf_document_set_is_separate_and_dependency_closed():
     documents = load_document_set(TORAX_LEAF_DOCUMENTS)
-    assert len(documents) == 5
+    assert len(documents) == 8
     assert all(document["version"]["dependencies"] == [] for document in documents)
     assert {document["asset_id"] for document in documents} == {
         "scirel.geometry.face-to-cell",
@@ -248,6 +248,9 @@ def test_torax_leaf_document_set_is_separate_and_dependency_closed():
         "scirel.physics.coulomb-ee",
         "scirel.physics.coulomb-ei",
         "scirel.physics.coulomb-ii",
+        "scirel.source.gaussian",
+        "scirel.source.exponential",
+        "scirel.physics.thermal-energy",
     }
 
 

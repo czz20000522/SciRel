@@ -175,6 +175,7 @@ def test_torax_algebra_grid_exports_keep_domain_callables():
     assert geometry.face_to_cell is face_to_cell
     assert "face_to_cell" in geometry.__all__
     expected = {
+        "calculate_stored_thermal_energy": physics.calculate_stored_thermal_energy,
         "calculate_main_ion_dilution_factor": dilution.calculate_main_ion_dilution_factor,
         "calculate_log_lambda_ee": coulomb_logs.calculate_log_lambda_ee,
         "calculate_log_lambda_ei": coulomb_logs.calculate_log_lambda_ei,
