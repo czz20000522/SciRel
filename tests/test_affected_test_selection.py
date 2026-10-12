@@ -821,15 +821,16 @@ def test_current_asset_index_unions_legacy_samples_and_exact_documents():
     assets = namespace["_load_assets"]()
 
     # The original pilot stays exactly 132; the bounded TORAX family is a
-    # separately named five-document set, not an expansion of that fixture.
+    # separately named bounded sets, not an expansion of that fixture.
     direct_documents = [json.loads(path.read_text()) for path in (ROOT / "catalog/examples").glob("*.json")]
     fast_ion = [doc for doc in direct_documents if doc["asset_id"] == "scirel.plasma.fast-ion-heating"]
     assert len(fast_ion) == 1
     assert fast_ion[0]["public_api"]["python"]["symbol"] == "fast_ion_fractional_heating"
     assert len([doc for doc in direct_documents if doc["asset_id"] != "scirel.plasma.fast-ion-heating"]) == 132
-    assert len(list((ROOT / "catalog/torax-algebra-grid").glob("*.json"))) == 5
-    assert len(assets) == 138
-    assert len({asset.public_callable for asset in assets}) == 138
+    assert len(list((ROOT / "catalog/torax-algebra-grid").glob("*.json"))) == 8
+    assert len(list((ROOT / "catalog/torax-bootstrap-fvm").glob("*.json"))) == 7
+    assert len(assets) == 148
+    assert len({asset.public_callable for asset in assets}) == 148
 
 
 def test_catalog_asset_keeps_every_declared_direct_test(tmp_path):
@@ -891,16 +892,19 @@ def test_documented_asset_without_a_test_mapping_still_fails_closed():
     assert "without an asset/test mapping" in result["full_suite_reasons"][0]
 
 
-def test_separate_torax_leaf_documents_select_exact_five_assets():
+def test_separate_torax_leaf_documents_select_exact_assets_and_bootstrap_consumer():
     result = select(
         "src/scirel/geometry/face_to_cell.py",
         "src/scirel/physics/dilution.py",
         "src/scirel/physics/coulomb_logs.py",
     )
     assert result["full_suite_required"] is False
-    assert result["test_paths"] == ["tests/operator_contracts/test_torax_algebra_grid.py"]
+    assert result["test_paths"] == ["tests/operator_contracts/test_torax_algebra_grid.py", "tests/test_bootstrap.py"]
     assert set(result["affected_assets"]) == {
         "scirel.geometry.face_to_cell.face_to_cell",
+        "scirel.neoclassical.bootstrap.calculate_bootstrap_current",
+        "scirel.neoclassical.bootstrap.calculate_sauter_coefficients",
+        "scirel.neoclassical.bootstrap.calculate_redl_coefficients",
         "scirel.physics.dilution.calculate_main_ion_dilution_factor",
         "scirel.physics.coulomb_logs.calculate_log_lambda_ee",
         "scirel.physics.coulomb_logs.calculate_log_lambda_ei",
