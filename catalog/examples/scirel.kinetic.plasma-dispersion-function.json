@@ -7,8 +7,15 @@
     "zh": "解析等离子体色散函数"
   },
   "summary": "Evaluate the Faddeeva function and its plasma-dispersion scaling for an already dimensionless complex argument.",
-  "taxonomy": ["kinetic", "plasma-wave", "special-function"],
-  "aliases": ["Fried-Conte Z function", "Faddeeva plasma dispersion function"],
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave",
+    "special-function"
+  ],
+  "aliases": [
+    "Fried-Conte Z function",
+    "Faddeeva plasma dispersion function"
+  ],
   "identity": {
     "relation": "Dimensionless complex phase argument to analytic Faddeeva and plasma dispersion values",
     "direction": "z -> w(z), Z(z)",
@@ -22,15 +29,17 @@
       "No dispersion root or physical mode is inferred from the function value."
     ]
   },
-  "inputs": [{
-    "name": "z",
-    "description": "Already normalized complex phase argument; evaluated elementwise.",
-    "units": "dimensionless",
-    "shape": "scalar or any nonempty array shape",
-    "dtype": "real or complex numeric array-like",
-    "required": true,
-    "constraints": "All elements finite after complex128 conversion; booleans, strings and empty arrays are rejected."
-  }],
+  "inputs": [
+    {
+      "name": "z",
+      "description": "Already normalized complex phase argument; evaluated elementwise.",
+      "units": "dimensionless",
+      "shape": "scalar or any nonempty array shape",
+      "dtype": "real or complex numeric array-like",
+      "required": true,
+      "constraints": "All elements finite after complex128 conversion; booleans, strings and empty arrays are rejected."
+    }
+  ],
   "outputs": [
     {
       "name": "w",
@@ -73,14 +82,15 @@
     "partial_results": "None; output is returned only after all elements pass validation."
   },
   "provenance": {
-    "lineage_summary": "SciRel standardizes the analytic Z/w relation appearing in saved PDRK and fluidBW plasma_dispersion_function operators. PDRK's configurable N=16 default and fluidBW's fixed N=64 are distinct numerical approximations, not exact implementation duplicates. fluidBW's saved prose incorrectly states Z(0)=i*pi; its implementation and the analytic relation give i*sqrt(pi). Both saved project candidates are outside the current qualified D1 delivery and support bounded historical development comparison only. Source-file digests and finite comparison limits are recorded in docs/evaluations/2026-09-28-plasma-dispersion-integration.md.",
+    "lineage_summary": "SciRel evaluates the analytic identity Z(z)=i*sqrt(pi)*w(z) through SciPy scipy.special.wofz. Historical rational approximations with fixed truncation orders have different numerical contracts and are not implementation dependencies.",
     "source_kinds": [
-      "saved historical fluidBW and PDRK operator contracts and implementations",
-      "saved direct source-parity tests",
-      "independent analytic special-function identity and bounded cross-project comparison"
+      "independent analytic special-function identity",
+      "SciRel wrapper of SciPy scipy.special.wofz"
     ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
+    "public_references": [
+      "SciPy scipy.special.wofz defining identity and Steven G. Johnson Faddeeva implementation reference"
+    ],
+    "license_status": "Uses NumPy and SciPy; their applicable license texts are carried with the selected distribution."
   },
   "public_api": {
     "python": {
@@ -89,7 +99,10 @@
       "signature": "evaluate_plasma_dispersion(z)"
     }
   },
-  "version": {"implementation_version": "0.1.0.dev5", "dependencies": []},
+  "version": {
+    "implementation_version": "0.1.0.dev7",
+    "dependencies": []
+  },
   "example": {
     "description": "Evaluate the analytic function at the origin.",
     "code": "import numpy as np\nfrom scirel.kinetic import evaluate_plasma_dispersion\nresult = evaluate_plasma_dispersion(0j)\nassert result['w'] == 1\nassert np.isclose(result['Z'], 1j * np.sqrt(np.pi))",
@@ -101,14 +114,15 @@
       "Scalar, array, dtype, no-mutation and failure semantics.",
       "Historical bounded comparisons against pinned PDRK N=32 and fluidBW N=64 implementations, recorded in the integration evaluation."
     ],
-    "tests": ["tests/operator_contracts/test_plasma_dispersion_function.py"],
+    "tests": [
+      "tests/operator_contracts/test_plasma_dispersion_function.py"
+    ],
     "evidence_ceiling": "Direct tests verify the declared SciRel calculation and failure behavior. Saved-source comparisons in docs/evaluations/2026-09-28-plasma-dispersion-integration.md establish numerical agreement only on listed finite arguments at stated tolerances; PDRK N=16 is a distinct approximation, and both source projects are outside the current qualified D1 delivery. They do not prove arbitrary-input source parity, a chosen physical normalization, dispersion-root correctness or expert scientific approval.",
     "known_limitations": [
       "Caller-specific thermal-speed and drift definitions are not inferred or converted.",
       "Source truncation order and diagnostic flags are not part of this standardized output.",
       "Finite z may yield unrepresentable lower-half-plane values; SciRel rejects them.",
-      "The saved first-stage source-prose error remains in frozen evidence; SciRel documents the analytic identity.",
-      "Distribution license and expert approval remain pending."
+      "The saved first-stage source-prose error remains in frozen evidence; SciRel documents the analytic identity."
     ]
   }
 }

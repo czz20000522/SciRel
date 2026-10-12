@@ -31,6 +31,8 @@ from .diagnostics.observation_residuals import reduce_observation_residuals
 from .diagnostics.parallel_pressure_residual import compute_parallel_pressure_residual
 from .kinetic.loss_cone_spectrum import solve_loss_cone_spectrum
 from .kinetic.plasma_dispersion import evaluate_plasma_dispersion
+from .kinetic.cauchy_transform import evaluate_cauchy_transform
+from .kinetic.maxwellian_electrostatic import evaluate_maxwellian_electrostatic, solve_maxwellian_electrostatic_mode
 from .kinetic.bessel_gamma import evaluate_bessel_gamma
 from .kinetic.kinetic_dispersion_sum_n import evaluate_kinetic_dispersion_sum
 from .kinetic.species_equilibrium_scales import derive_species_equilibrium_scales
@@ -116,3 +118,4 @@ __all__.extend(['assemble_neutral_upwind_transport_coefficients', 'propagate_neu
 __all__.extend(['evaluate_neutral_generation_stopping', 'update_neutral_generation_accumulation', 'evaluate_neutral_outer_seed_convergence', 'evaluate_kn1d_outer_convergence'])
 __all__.append('compute_pointwise_firehose_margin')
 __all__.append('evaluate_h_saha_equilibrium_population')
+__all__.extend(['evaluate_cauchy_transform', 'evaluate_maxwellian_electrostatic', 'solve_maxwellian_electrostatic_mode'])

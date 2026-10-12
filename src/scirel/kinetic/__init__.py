@@ -7,6 +7,8 @@ from .mirror_total_pressure import assemble_mirror_total_pressure
 from .mirror_constrained_moments import evaluate_mirror_constrained_moments
 from .loss_cone_spectrum import solve_loss_cone_spectrum
 from .plasma_dispersion import evaluate_plasma_dispersion
+from .cauchy_transform import evaluate_cauchy_transform
+from .maxwellian_electrostatic import evaluate_maxwellian_electrostatic, solve_maxwellian_electrostatic_mode
 from .bessel_gamma import evaluate_bessel_gamma
 from .kinetic_dispersion_sum_n import evaluate_kinetic_dispersion_sum
 from .kinetic_dispersion_sum_fluidbw import evaluate_fluidbw_kinetic_dispersion_sum
@@ -82,3 +84,4 @@ __all__.append('reduce_terminal_molecular_energy_transfer')
 __all__.append('reduce_qh2_total_conservation_diagnostic')
 __all__.append('reduce_terminal_molecular_ion_state')
 __all__.append('evaluate_h_saha_equilibrium_population')
+__all__.extend(['evaluate_cauchy_transform', 'evaluate_maxwellian_electrostatic', 'solve_maxwellian_electrostatic_mode'])
