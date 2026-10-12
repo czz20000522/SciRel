@@ -21,7 +21,7 @@
   "identity": {
     "relation": "Rectilinear mirror grid and reference/plug planes to end-loss-coupled local quasineutral pressure state",
     "direction": "(R-Z grid, B, psi, reference and plug planes, ion/electron state and controls) -> grid closure state, mapped end diagnostics and selected aliases",
-    "definition": "The first nearest z-axis indices to caller coordinates define left/reference/right rows, which must be ordered. The flux-profile operator interpolates B on all three rows from their psi samples to the full grid, and phi_ref from the reference row to the full grid. At each plug endpoint, the mirror ambipolar operator either evaluates a prescribed plug potential (default mode) or solves equal one-way ion/electron end currents (ambipolar_end_loss). Its reference-row endpoint potential is interpolated over full-grid psi. The nested mirror quasineutral graph solves local potential and pressure with those B/phi profiles. The parent adds endpoint diagnostics and legacy pressure/density/temperature aliases. Optional confinement zeroes only named top-level density, pressure and relative-charge-residual fields outside the nearest plug rows.",
+    "definition": "The first nearest z-axis indices to caller coordinates define left/reference/right rows, which must be ordered. The flux-profile operator interpolates B on all three rows from their psi samples to the full grid, and phi_ref from the reference row to the full grid. At each plug endpoint, the mirror ambipolar operator either evaluates a prescribed plug potential (default mode) or solves equal one-way ion/electron end currents (ambipolar_end_loss). Its reference-row endpoint potential is interpolated over full-grid psi. The nested mirror quasineutral graph solves local potential and pressure with those B/phi profiles. The parent adds endpoint diagnostics and legacy pressure/density/temperature aliases. Optional confinement zeroes only named top-level density, pressure and relative-charge-residual fields outside the nearest plug rows. Endpoint current_balance_solved flags distinguish prescribed evaluation from the requested bounded end-current solve; an unsolved endpoint is rejected in ambipolar_end_loss mode. Local converged refers to the separately terminal-verified quasineutral state.",
     "model": "One positive-ion two-temperature mirror-moment closure with prescribed-temperature Boltzmann electrons and separate source-defined end-loss flux balance. Endpoint flux balance and local quasineutrality are different calculations; neither constitutes a self-consistent R-Z magnetic equilibrium.",
     "geometry": "Caller-supplied rectilinear nonnegative-R, increasing-Z [N_Z,N_R] tensor grid with N_Z,N_R >= 2, positive B and three ordered nearest plane indices. Flux-surface interpolation assumes each selected row is representable as a single-valued scalar function of psi; the profile operator sorts and deduplicates samples with constant endpoint extension.",
     "coordinates": "R and Z are in m; arrays are [Z,R]. psi is a caller-owned flux-profile coordinate: the historical source label is Wb, while a nested SciRel Hall field supplies psi=R A_phi in Wb/rad. Every sampled row and caller profile must use the same convention; this graph does not convert between them. Requested plane coordinates map to the first nearest z-axis index and need not equal grid nodes.",
@@ -606,6 +606,24 @@
       "dtype": "float64 ndarray",
       "required": true,
       "constraints": "Original untruncated_density_m3 remains unmasked."
+    },
+    {
+      "name": "end_left_current_balance_solved",
+      "description": "Whether this endpoint was solved for current balance, separately from local quasineutral convergence.",
+      "units": "boolean",
+      "shape": "scalar",
+      "dtype": "Python bool",
+      "required": true,
+      "constraints": "False in prescribed mode; True in ambipolar_end_loss mode."
+    },
+    {
+      "name": "end_right_current_balance_solved",
+      "description": "Whether this endpoint was solved for current balance, separately from local quasineutral convergence.",
+      "units": "boolean",
+      "shape": "scalar",
+      "dtype": "Python bool",
+      "required": true,
+      "constraints": "False in prescribed mode; True in ambipolar_end_loss mode."
     }
   ],
   "applicability": {
@@ -625,12 +643,12 @@
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for nonmapping or missing required inputs, unequal/non-2-D/nonfinite grids, nonrectilinear or too-small axes, nonpositive B, nonfinite or unordered nearest plane indices, invalid mode, nonboolean confinement control, or quadrature_order that is not an integer >=8. Bound operators also reject invalid profile sample geometry, species, temperature, density, refill or potential controls; fixed 2-D profile arrays can fail at the one-dimensional endpoint call.",
-    "runtime_failure": "Profile interpolation, endpoint flux calculation or nested closure exceptions propagate without fallback. The endpoint solver can raise RuntimeError for unbracketed potential or iteration exhaustion, as can the nested quasineutral potential solve. No general finite-output check is applied after composition.",
+    "runtime_failure": "Any profile, endpoint or nested graph exception propagates. Requested end-current solves must explicitly report converged and current_balance_solved; otherwise RuntimeError. Nested local terminal residual and finite species assembly gates must pass before return.",
     "nonconvergence": "In ambipolar_end_loss mode each endpoint potential uses its bound finite iteration limit, default 100; the nested local potential solve separately uses its own default 100. Either failure aborts the whole graph. Prescribed endpoint mode evaluates fluxes at supplied potentials without solving endpoint current balance.",
     "partial_results": "No mapping is returned on any upstream failure. A successful mapping includes full-grid nested and endpoint diagnostics even when selected top-level fields are confined."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel-maintained graph, direct tests and historical Pleiades mapping were compared with the pending intake candidate. The SciRel and intake implementation text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery; this exact document records current SciRel behavior only.",
+    "lineage_summary": "The current SciRel-maintained graph, direct tests and historical Pleiades mapping were compared with the pending intake candidate. The SciRel and intake implementation text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery; this exact document records current SciRel behavior only. The scientific successor retains the declared mathematical model and repairs independently reproduced numerical failures; historical failing behavior is preserved as evidence and is not a current scientific qualification.",
     "source_kinds": [
       "historical Pleiades development TaskGraph and migration mapping",
       "pending intake development candidate",
@@ -647,7 +665,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
     "dependencies": [
       {
         "asset_id": "scirel.closures.mirror-ambipolar-potential"
@@ -662,7 +680,7 @@
   },
   "example": {
     "description": "Evaluate two end potentials and a quasineutral pressure state on a small rectilinear mirror grid.",
-    "code": "import numpy as np\nfrom scirel.kinetic import solve_grid_mirror_kinetic_closure\ne = 1.602176634e-19\nr, z = np.linspace(0.0, 0.2, 5), np.linspace(-1.0, 1.0, 7)\nR, Z = np.meshgrid(r, z)\nstate = solve_grid_mirror_kinetic_closure({'r_grid': R, 'z_grid': Z, 'b_t': 1.0 + 3.0*np.abs(Z), 'psi': 0.5*R**2, 'mass_kg': 1.67262192595e-27, 'charge_c': e, 'density_ref_m3': 1.0e18, 'temperature_parallel_j': 1000.0*e, 'temperature_perpendicular_ref_j': 2000.0*e, 'electron_temperature_j': 500.0*e, 'reference_z': 0.0, 'plug_left_z': -1.0, 'plug_right_z': 1.0, 'loss_cone_refill': 0.05, 'quadrature_order': 24, 'plug_potential_mode': 'ambipolar_end_loss'})\nassert state['p_parallel'].shape == R.shape\nassert np.all(state['end_left_potential_v'] < 0.0)\nassert np.max(np.abs(state['relative_charge_residual'])) < 1e-9",
+    "code": "import numpy as np\nfrom scirel.kinetic import solve_grid_mirror_kinetic_closure\ne = 1.602176634e-19\nr, z = np.linspace(0.0, 0.2, 5), np.linspace(-1.0, 1.0, 7)\nR, Z = np.meshgrid(r, z)\nstate = solve_grid_mirror_kinetic_closure({'r_grid': R, 'z_grid': Z, 'b_t': 1.0 + 3.0*np.abs(Z), 'psi': 0.5*R**2, 'mass_kg': 1.67262192595e-27, 'charge_c': e, 'density_ref_m3': 1.0e18, 'temperature_parallel_j': 1000.0*e, 'temperature_perpendicular_ref_j': 2000.0*e, 'electron_temperature_j': 500.0*e, 'reference_z': 0.0, 'plug_left_z': -1.0, 'plug_right_z': 1.0, 'loss_cone_refill': 0.05, 'quadrature_order': 24, 'plug_potential_mode': 'ambipolar_end_loss'})\nassert state['p_parallel'].shape == R.shape\nassert np.all(state['end_left_potential_v'] < 0.0)\nassert np.max(np.abs(state['relative_charge_residual'])) < 1e-9\nassert state['end_left_current_balance_solved'] and state['end_right_current_balance_solved']",
     "expected": "A [7,5] pressure field, negative mapped left end potential and small relative local charge residual for the selected test state."
   },
   "verification": {
@@ -671,10 +689,12 @@
       "Fixed-profile pressure, density and endpoint-potential results are unchanged when the supplied psi interpolation coordinate is rescaled by 2*pi; a separate unadjusted psi-dependent density callback changes the returned density under the same rescaling.",
       "Prescribed endpoint potentials return unbalanced end-current diagnostics while the nested local quasineutral solve converges on the selected case.",
       "Nearest-plane confinement of selected top-level rows while original moment fields, endpoint diagnostics and three full-grid pitch factors remain unmasked.",
-      "Endpoint and nested graph failures propagate without a terminal state; callable reference-density evaluation and rejection of a 2-D reference-potential field, nonrectilinear/nonfinite grids, numeric confinement flag and quadrature order below eight or nonintegral."
+      "Endpoint and nested graph failures propagate without a terminal state; callable reference-density evaluation and rejection of a 2-D reference-potential field, nonrectilinear/nonfinite grids, numeric confinement flag and quadrature order below eight or nonintegral.",
+      "Injected endpoint evaluation masquerading as a solved balance is rejected before the nested local closure."
     ],
     "tests": [
-      "tests/graph_contracts/grid_mirror_kinetic_closure/test_graph_grid_mirror_kinetic_closure.py"
+      "tests/graph_contracts/grid_mirror_kinetic_closure/test_graph_grid_mirror_kinetic_closure.py",
+      "tests/operator_contracts/test_mirror_kinetic_scientific_correction.py"
     ],
     "evidence_ceiling": "Direct SciRel graph tests support the selected [7,5] grid cases, prescribed-endpoint imbalance, endpoint and nested residual assertions, fixed-profile psi-coordinate rescaling and one unadjusted-callback counterexample, chosen masking behavior, upstream failure propagation and input rejects. They do not establish all profile domains, end-current balance over all states, physical correctness of the mirror model, full-grid array-profile support, automatic conversion or arbitrary psi-dependent callback equivalence, current expert approval or public release.",
     "known_limitations": [
@@ -822,7 +842,9 @@
           "density",
           "T_parallel_J",
           "T_perpendicular_local_J",
-          "untruncated_density"
+          "untruncated_density",
+          "end_left_current_balance_solved",
+          "end_right_current_balance_solved"
         ]
       }
     ],
@@ -1919,6 +1941,36 @@
         "description": "Masked untruncated-density alias.",
         "condition": "On success.",
         "transform": "Selected mask applies.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "end_left_current_balance_solved"
+        },
+        "to": {
+          "node": "$output",
+          "port": "end_left_current_balance_solved"
+        },
+        "description": "Whether this endpoint was solved for current balance, separately from local quasineutral convergence.",
+        "condition": "On successful return.",
+        "transform": "Copy the endpoint boolean status.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "return_projection",
+          "port": "end_right_current_balance_solved"
+        },
+        "to": {
+          "node": "$output",
+          "port": "end_right_current_balance_solved"
+        },
+        "description": "Whether this endpoint was solved for current balance, separately from local quasineutral convergence.",
+        "condition": "On successful return.",
+        "transform": "Copy the endpoint boolean status.",
         "kind": "data",
         "required": true
       }

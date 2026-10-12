@@ -33,57 +33,13 @@ def _source_hypot(left, right):
             values.append(math.inf)
     return np.asarray(values, dtype=float).reshape(left.shape)
 
-def _source_gradient(values, coordinates, axis):
-    distances = np.diff(coordinates)
-    result = np.empty_like(values)
-    uniform = (distances == distances[0]).all()
-    if axis == 0:
-        if uniform:
-            spacing = distances[0]
-            result[1:-1, :] = (values[2:, :] - values[:-2, :]) / (2.0 * spacing)
-            result[0, :] = -1.5 / spacing * values[0, :] + 2.0 / spacing * values[1, :] - 0.5 / spacing * values[2, :]
-            result[-1, :] = 0.5 / spacing * values[-3, :] - 2.0 / spacing * values[-2, :] + 1.5 / spacing * values[-1, :]
-        else:
-            dx1, dx2 = (distances[:-1], distances[1:])
-            a = -dx2 / (dx1 * (dx1 + dx2))
-            b = (dx2 - dx1) / (dx1 * dx2)
-            c = dx1 / (dx2 * (dx1 + dx2))
-            result[1:-1, :] = a[:, None] * values[:-2, :] + b[:, None] * values[1:-1, :] + c[:, None] * values[2:, :]
-            dx1, dx2 = (distances[0], distances[1])
-            a = -(2.0 * dx1 + dx2) / (dx1 * (dx1 + dx2))
-            b = (dx1 + dx2) / (dx1 * dx2)
-            c = -dx1 / (dx2 * (dx1 + dx2))
-            result[0, :] = a * values[0, :] + b * values[1, :] + c * values[2, :]
-            dx1, dx2 = (distances[-2], distances[-1])
-            a = dx2 / (dx1 * (dx1 + dx2))
-            b = -(dx2 + dx1) / (dx1 * dx2)
-            c = (2.0 * dx2 + dx1) / (dx2 * (dx1 + dx2))
-            result[-1, :] = a * values[-3, :] + b * values[-2, :] + c * values[-1, :]
-    elif uniform:
-        spacing = distances[0]
-        result[:, 1:-1] = (values[:, 2:] - values[:, :-2]) / (2.0 * spacing)
-        result[:, 0] = -1.5 / spacing * values[:, 0] + 2.0 / spacing * values[:, 1] - 0.5 / spacing * values[:, 2]
-        result[:, -1] = 0.5 / spacing * values[:, -3] - 2.0 / spacing * values[:, -2] + 1.5 / spacing * values[:, -1]
-    else:
-        dx1, dx2 = (distances[:-1], distances[1:])
-        a = -dx2 / (dx1 * (dx1 + dx2))
-        b = (dx2 - dx1) / (dx1 * dx2)
-        c = dx1 / (dx2 * (dx1 + dx2))
-        result[:, 1:-1] = a * values[:, :-2] + b * values[:, 1:-1] + c * values[:, 2:]
-        dx1, dx2 = (distances[0], distances[1])
-        a = -(2.0 * dx1 + dx2) / (dx1 * (dx1 + dx2))
-        b = (dx1 + dx2) / (dx1 * dx2)
-        c = -dx1 / (dx2 * (dx1 + dx2))
-        result[:, 0] = a * values[:, 0] + b * values[:, 1] + c * values[:, 2]
-        dx1, dx2 = (distances[-2], distances[-1])
-        a = dx2 / (dx1 * (dx1 + dx2))
-        b = -(dx2 + dx1) / (dx1 * dx2)
-        c = (2.0 * dx2 + dx1) / (dx2 * (dx2 + dx1))
-        result[:, -1] = a * values[:, -3] + b * values[:, -2] + c * values[:, -1]
-    return result
+from scirel.equilibrium._anisotropic_numerics import stable_gradient as _source_gradient
 
 def poloidal_field_from_flux(r_grid, z_grid, psi):
-    """Return ``B_R=-dpsi/dZ/R`` and ``B_Z=dpsi/dR/R`` with the source axis rule."""
+    """Return ``B_R=-dpsi/dZ/R`` and ``B_Z=dpsi/dR/R`` with the regular even-flux axis limit.
+
+    Local difference stencils annihilate a constant gauge exactly. Input
+    rounding from adding an unresolvably large constant cannot be recovered."""
     r_grid, z_grid, psi = (np.asarray(r_grid, dtype=float), np.asarray(z_grid, dtype=float), np.asarray(psi, dtype=float))
     if r_grid.shape != z_grid.shape or psi.shape != r_grid.shape or r_grid.ndim != 2:
         raise ValueError('R, Z, and psi must be equal-shape 2-D arrays')

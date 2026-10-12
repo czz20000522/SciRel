@@ -5,6 +5,7 @@ import hashlib
 from collections.abc import Mapping
 from pathlib import Path
 import numpy as np
+from ._anisotropic_numerics import cell_areas
 
 def _coerce_pressure(parallel, perpendicular, psi):
     """Broadcast scalar Pa values or validate the caller-owned grid shape."""
@@ -87,11 +88,11 @@ def run_graph(inputs, *, asset_loader):
             raise ValueError('callable plasma_mask returned the wrong shape')
         force_state = force(r_grid, z_grid, magnetic['B_R'], magnetic['B_Z'], state['p_parallel'], state['p_perpendicular'], active)
         j_phi = _apply_active_mask(force_state['J_phi'], active)
-        step = update(r_grid, z_grid, j_phi, psi, psi_vac, g_psi, relax, old_currents)
+        step = update(r_grid, z_grid, j_phi, psi, psi_vac, g_psi, relax, old_currents, cell_edges=inputs.get('cell_edges'))
         relative_change = step['relative_psi_change']
         history.append({'iteration': iteration, 'relative_psi_change': relative_change, 'relative_current_change': step['relative_current_change']})
         psi, old_currents = (step['psi_next'], step['plasma_cell_currents'])
-        if relative_change <= tol:
+        if step['fixed_point_residual'] <= tol:
             converged = True
             break
     magnetic = field(r_grid, z_grid, psi)
@@ -101,16 +102,17 @@ def run_graph(inputs, *, asset_loader):
         raise ValueError('callable plasma_mask returned the wrong shape')
     force_state = force(r_grid, z_grid, magnetic['B_R'], magnetic['B_Z'], state['p_parallel'], state['p_perpendicular'], active)
     j_phi = _apply_active_mask(force_state['J_phi'], active)
-    dr = float(r_grid[0, 1] - r_grid[0, 0])
-    dz = float(z_grid[1, 0] - z_grid[0, 0])
-    terminal_cell_currents = j_phi * abs(dr * dz)
+    terminal_cell_currents = j_phi * cell_areas(r_grid, z_grid, inputs.get('cell_edges'))
+    terminal_update=update(r_grid,z_grid,j_phi,psi,psi_vac,g_psi,0.,old_currents,cell_edges=inputs.get('cell_edges'))
+    fixed_point_residual=terminal_update['fixed_point_residual']
+    converged=bool(fixed_point_residual<=tol)
     if np.any(magnetic['B'] < minimum_field):
         raise FloatingPointError('magnetic field fell below minimum_field at the returned terminal state')
     if np.any(active & (force_state['firehose_margin'] <= minimum_firehose)):
         raise FloatingPointError('pressure closure crossed the firehose/tension singularity')
     if force_state['parallel_force_error'] > compatibility_tol and strict:
         raise ValueError(f"p_parallel and p_perpendicular leave an unbalanced parallel div(P) fraction of {force_state['parallel_force_error']:.3e}; required <= {compatibility_tol:.3e}")
-    return {'psi': psi, 'plasma_cell_currents': terminal_cell_currents, 'J_phi': j_phi, 'B_R': magnetic['B_R'], 'B_Z': magnetic['B_Z'], 'B': magnetic['B'], 'p_parallel': state['p_parallel'], 'p_perpendicular': state['p_perpendicular'], 'parallel_force': force_state['parallel_force'], 'force_R': force_state['force_R'], 'force_Z': force_state['force_Z'], 'converged': converged, 'iterations': iteration, 'relative_psi_change': relative_change, 'parallel_force_error': force_state['parallel_force_error'], 'closure_state': state, 'firehose_margin': force_state['firehose_margin'], 'iteration_history': history}
+    return {'psi': psi, 'plasma_cell_currents': terminal_cell_currents, 'J_phi': j_phi, 'B_R': magnetic['B_R'], 'B_Z': magnetic['B_Z'], 'B': magnetic['B'], 'p_parallel': state['p_parallel'], 'p_perpendicular': state['p_perpendicular'], 'parallel_force': force_state['parallel_force'], 'force_R': force_state['force_R'], 'force_Z': force_state['force_Z'], 'converged': converged, 'fixed_point_residual':fixed_point_residual, 'iterations': iteration, 'relative_psi_change': relative_change, 'parallel_force_error': force_state['parallel_force_error'], 'force_diagnostics': force_state, 'closure_state': state, 'firehose_margin': force_state['firehose_margin'], 'iteration_history': history}
 
 def solve_axisymmetric_anisotropic_picard(inputs=None, **kwargs):
     from scirel._composition import compose

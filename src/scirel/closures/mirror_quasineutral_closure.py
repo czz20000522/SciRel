@@ -88,9 +88,14 @@ def run_graph(inputs, *, asset_loader):
         ion = state_at(potential)['density_m3']
         return electron_state(potential, ion)
     solved = potential_solver(phi_ion_ref, temperature_parallel, t_e, inputs['charge_c'], active, residual, potential_tolerance_v=tolerance, quasineutral_tolerance=residual_tolerance, max_iterations=max_iterations, initial_bracket_thermal=bracket_thermal)
+    if not solved.get('converged', False):
+        raise RuntimeError('terminal quasineutral solve did not converge')
     potential = solved['potential_v']
     ion = state_at(potential)
     electrons = electron_state(potential, ion['density_m3'])
+    terminal_residual = np.asarray(electrons['logarithmic_charge_residual'], dtype=float)
+    if not np.all(np.isfinite(terminal_residual)) or np.any(np.abs(terminal_residual[active]) > residual_tolerance):
+        raise RuntimeError('terminal quasineutral state does not meet the declared residual tolerance')
     state = pressure_assembly(ion, electrons)
     state.update({'electrostatic_potential': potential, 'iterations': solved['iterations'], 'converged': solved['converged']})
     return state

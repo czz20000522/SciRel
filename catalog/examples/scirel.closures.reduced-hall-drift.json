@@ -19,7 +19,7 @@
   "identity": {
     "relation": "R-Z field, ion pressure, electrostatic potential and species closure state to reduced Hall toroidal current and drifts",
     "direction": "R-Z grid, B_R, B_Z, p_parallel, p_perpendicular, closure_state, plasma_mask and ion properties -> J_phi, toroidal species velocities and diagnostics",
-    "definition": "Form cylindrical gyrotropic pressure-force components using second-order grid gradients. Project their perpendicular part as J_phi=(B_Z force_R-B_R force_Z)/|B|^2. On active non-axis cells with ion density above the fractional peak-density floor and resolvable |B|, combine E=-grad(phi), electron pressure force and Hall multiplier to obtain the toroidal drift. Optionally iterate the radial centrifugal correction to J_phi with bounded under-relaxation and cap the ion velocity by maximum_inertial_mach times the ion thermal speed. Return masked current, species drifts and residual/scale diagnostics; the Hall multiplier and optional inertia are part of this implemented relation, not an unrestricted two-fluid solution.",
+    "definition": "Form cylindrical gyrotropic pressure-force components using second-order grid gradients. Project their perpendicular part as J_phi=(B_Z force_R-B_R force_Z)/|B|^2. On active non-axis cells with ion density above the fractional peak-density floor and resolvable |B|, combine E=-grad(phi), electron pressure force and Hall multiplier to obtain the toroidal drift. Optionally iterate the radial centrifugal correction to J_phi with bounded under-relaxation and cap the ion velocity by maximum_inertial_mach times the ion thermal speed. Return masked current, species drifts and residual/scale diagnostics; the Hall multiplier and optional inertia are part of this implemented relation, not an unrestricted two-fluid solution. The shared cylindrical force kernel includes the regular-axis axial term and difference-form derivatives. Compatibility reports the residual above a dimensioned 64-epsilon tensor/stencil rounding envelope, retaining raw absolute and relative residuals and the envelope. This is a floating-point resolution diagnostic, not a truncation-error bound or evidence that a sub-resolution physical force is exactly zero. Omitted ion pressure is total minus electron pressure. Explicit independent fits retain and report residual stress; species_sum mode rejects incompatible components. Local inertia convergence is tested by the unrelaxed current map evaluated at final J; small relaxation steps never substitute for that residual.",
     "model": "reduced axisymmetric Hall drift with gyrotropic pressure and optional local toroidal-inertia correction",
     "geometry": "rectilinear cylindrical R-Z grid, at least three nodes per axis",
     "coordinates": "R nonnegative, R and Z strictly increasing; arrays indexed [Z,R]",
@@ -92,7 +92,7 @@
       "shape": "mapping of scalars or [N_Z,N_R] arrays",
       "dtype": "Python mapping containing finite real array-like values",
       "required": true,
-      "constraints": "Required keys broadcast to the grid; ion_density and electron pressures nonnegative. Optional electron pressure components default to electron_pressure; optional ion pressure components default to primary p_parallel/p_perpendicular and must be finite and nonnegative."
+      "constraints": "Required keys broadcast to the grid; ion_density and electron pressures nonnegative. Optional electron pressure components default to electron_pressure; optional ion pressure components default to primary p_parallel/p_perpendicular and must be finite and nonnegative. Optional pressure_composition_mode is independent_fit (default) or species_sum. Ion moments default to total minus electron. Unaccounted residual stress is reported, not silently identified with ion pressure."
     },
     {
       "name": "plasma_mask",
@@ -552,6 +552,78 @@
       "dtype": "bool",
       "required": true,
       "constraints": "A false state raises before the mapping is returned."
+    },
+    {
+      "name": "parallel_force_diagnostics",
+      "description": "Mapping with error, absolute, raw_relative, roundoff and roundoff_consistent.",
+      "units": "mixed SI",
+      "shape": "mapping",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "Mapping with error, absolute, raw_relative, roundoff and roundoff_consistent."
+    },
+    {
+      "name": "ohm_diagnostics",
+      "description": "Mapping with error, absolute, raw_relative, roundoff and roundoff_consistent.",
+      "units": "mixed SI",
+      "shape": "mapping",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "Mapping with error, absolute, raw_relative, roundoff and roundoff_consistent."
+    },
+    {
+      "name": "momentum_diagnostics",
+      "description": "Mapping with error, absolute, raw_relative, roundoff and roundoff_consistent.",
+      "units": "mixed SI",
+      "shape": "mapping",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "Mapping with error, absolute, raw_relative, roundoff and roundoff_consistent."
+    },
+    {
+      "name": "pressure_composition_mode",
+      "description": "Prescribed independent_fit or checked species_sum interpretation.",
+      "units": "1",
+      "shape": "scalar",
+      "dtype": "string",
+      "required": true,
+      "constraints": "Prescribed independent_fit or checked species_sum interpretation."
+    },
+    {
+      "name": "species_pressure_sum_consistent",
+      "description": "Whether ion and electron tensor components sum to total within rounding.",
+      "units": "boolean",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "Whether ion and electron tensor components sum to total within rounding."
+    },
+    {
+      "name": "residual_stress_parallel_pa",
+      "description": "Total minus the provided ion/electron sum; a residual is not evidence of a physical extra species.",
+      "units": "Pa",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array",
+      "required": true,
+      "constraints": "Total minus the provided ion/electron sum; a residual is not evidence of a physical extra species."
+    },
+    {
+      "name": "residual_stress_perpendicular_pa",
+      "description": "Total minus the provided ion/electron sum; a residual is not evidence of a physical extra species.",
+      "units": "Pa",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array",
+      "required": true,
+      "constraints": "Total minus the provided ion/electron sum; a residual is not evidence of a physical extra species."
+    },
+    {
+      "name": "inertia_fixed_point_residual",
+      "description": "Unrelaxed local current-map residual evaluated at the returned current and its newly recomputed velocity/centrifugal force.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Norm(T(J)-J)/max(norm(J),1 A/m^2); must be <= inertia_tolerance for an inertia-enabled return. Relaxed step change remains a separate diagnostic."
     }
   ],
   "applicability": {
@@ -570,13 +642,13 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError for invalid mass, charge or scalar controls; a nonboolean inertia flag; malformed R-Z grid; nonfinite/mismatched field or pressure arrays; wrong-shaped mask; absent or nonfinite required closure_state fields; or negative density/electron and optional ion pressure components. Some malformed optional state arrays may propagate NumPy broadcasting errors.",
+    "invalid_input": "Raises ValueError for invalid mass, charge or scalar controls; a nonboolean inertia flag; malformed R-Z grid; nonfinite/mismatched field or pressure arrays; wrong-shaped mask; absent or nonfinite required closure_state fields; or negative density/electron and optional ion pressure components. Some malformed optional state arrays may propagate NumPy broadcasting errors. Negative primary total pressure or inconsistent species_sum state is rejected.",
     "runtime_failure": "A local inertia fixed point that exceeds inertia_max_iterations raises RuntimeError. Other NumPy arithmetic and conversion failures propagate; extreme finite inputs are not guaranteed to produce finite diagnostics.",
-    "nonconvergence": "The local inertia loop is bounded; when enabled and its current-change threshold is not reached, RuntimeError is raised instead of returning a partial state.",
+    "nonconvergence": "The local inertia loop is bounded; when enabled and its unrelaxed current-map residual threshold is not reached, RuntimeError is raised instead of returning a partial state.",
     "partial_results": "No result mapping is returned after an exception. A returned mapping has inertia_converged=true, including the no-inertia branch."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate. SciRel and intake source text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery; this exact document records the maintained reduced-Hall relation only.",
+    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate. SciRel and intake source text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery; this exact document records the maintained reduced-Hall relation only. This successor corrects independently manufactured cylindrical-axis, quadrature-domain, floating-point zero-force and terminal-state defects where applicable; predecessor behavior is not treated as physical authority.",
     "source_kinds": [
       "historical Pleiades development descriptor and migration mapping",
       "pending intake development candidate",
@@ -593,7 +665,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
     "dependencies": []
   },
   "example": {
@@ -606,16 +678,18 @@
       "Uniform isotropic zero-current and zero-drift limit.",
       "Manufactured electron-pressure/potential gradients and generalized-Ohm drift.",
       "Axis/vacuum mask handling, source-compatible field hypot extremes and invalid species/control rejection.",
-      "A zero Hall multiplier retains pressure-projection current, the no-inertia branch reports one update, and one-step inertia budget exhaustion raises without returning a state."
+      "A zero Hall multiplier retains pressure-projection current, the no-inertia branch reports one update, and one-step inertia budget exhaustion raises without returning a state.",
+      "Near-unit inertia_relax cannot turn a finite unrelaxed residual into convergence; the preserved iteration cap raises RuntimeError. Analytic Bz=1, P=10+R², n=mi=qi=1 has positive fixed point J=R with the uncapped velocity."
     ],
     "tests": [
-      "tests/operator_contracts/test_reduced_hall_drift.py"
+      "tests/operator_contracts/test_reduced_hall_drift.py",
+      "tests/operator_contracts/test_anisotropic_core_scientific_correction.py"
     ],
-    "evidence_ceiling": "Direct SciRel regressions check selected discrete identities, mask behavior, a manufactured drift, bounded inertia failure and input failures; they do not certify a complete two-fluid model, arbitrary equilibrium, general continuum accuracy, convergence for all inertia controls or current expert recognition.",
+    "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
     "known_limitations": [
-      "The active mask excludes the axis and selected low-density/near-zero-field cells; inactive diagnostics may still contain computed unmasked values.",
-      "The implementation uses the first-principles source-compatible discrete stencil and numerical floors; extreme finite values can still overflow.",
-      "Public distribution licensing and SciRel expert recognition remain pending."
+      "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
+      "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
+      "No expert scientific endorsement or public release follows from this numerical successor."
     ]
   }
 }

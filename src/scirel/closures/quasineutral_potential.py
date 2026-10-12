@@ -4,6 +4,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 import numpy as np
+from scirel.kinetic._mirror_numerics import _potential_midpoint
 
 
 ELEMENTARY_CHARGE_C = 1.602176634e-19
@@ -37,7 +38,9 @@ def solve_quasineutral_potential(
     ``residual`` is a caller-owned source-free evaluator returning a mapping with
     ``logarithmic_charge_residual``. Positive residuals must be on the lower
     potential side of the root. The operator owns bracket expansion and the
-    monotone bisection state, not the kinetic or electron relation.
+    monotone bisection state, not the kinetic or electron relation. Midpoints
+    avoid adding large absolute potentials; convergence still requires the
+    actual returned potential to meet both original width and residual limits.
     """
     phi_ref, t_parallel, t_e, active = np.broadcast_arrays(
         np.asarray(potential_reference_v, dtype=float),
@@ -124,9 +127,14 @@ def solve_quasineutral_potential(
     final_potential = None
     final_iterations = 0
     for iterations in range(1, iterations_limit + 1):
-        width = active_upper - active_lower
-        potential = 0.5 * (active_lower + active_upper)
+        potential = _potential_midpoint(active_lower,active_upper)
         potential_residual = evaluate_active(potential)
+        # A strict zero of the supplied residual is an exact root hit, not
+        # a tolerance-based convergence shortcut or a stalled interval.
+        exact = potential_residual == 0.0
+        active_lower = np.where(exact, potential, active_lower)
+        active_upper = np.where(exact, potential, active_upper)
+        width = active_upper - active_lower
         if (
             np.max(width) <= tolerance
             and np.max(np.abs(potential_residual)) <= residual_tolerance

@@ -19,8 +19,8 @@
   "identity": {
     "relation": "Total gyrotropic pressure and prescribed species profiles to an explicit two-fluid pressure and density state",
     "direction": "(magnetic_field, psi, pressure_law, ion_density_m3, electron_pressure_pa, electrostatic_potential_v, optional species pressure components) -> total, ion and electron pressures, equal ion/electron number densities, and electrostatic potential",
-    "definition": "Broadcast B and psi to one shape, evaluate pressure_law(B, psi) for p_parallel and p_perpendicular, and broadcast all supplied profiles onto that shape. Set electron_density=ion_density. Absent electron parallel/perpendicular components each default to electron_pressure; absent ion components are the respective total pressure minus the electron component. Explicit ion components are accepted independently and are not checked to sum to total pressure. Reject negative ion density, electron scalar/component pressures and ion component pressures; no positivity check is applied to the total pressures themselves.",
-    "model": "Prescribed gyrotropic total pressure with an explicit single-ion/single-electron bookkeeping state; no pressure law, equation of state, force balance or potential is solved here.",
+    "definition": "Broadcast B and psi to one shape, evaluate pressure_law(B, psi) for p_parallel and p_perpendicular, and broadcast all supplied profiles onto that shape. Set electron_density=ion_density. Absent electron parallel/perpendicular components each default to electron_pressure; absent ion components are the respective total pressure minus the electron component. Explicit ion components are accepted independently and are not checked to sum to total pressure. Reject negative ion density, electron scalar/component pressures and ion component pressures; no positivity check is applied to the total pressures themselves. In default independent_fit mode retain these independent prescribed total/species fields and expose residual_stress_parallel_pa=total_parallel-ion_parallel-electron_parallel and its perpendicular analogue. These are algebraic residual stresses, not validated additional particle species. In species_sum mode both residuals must vanish within 64*float64_epsilon times their local pressure scale or ValueError is raised. species_pressure_sum_consistent reports this same numerical check in either mode.",
+    "model": "Prescribed gyrotropic total stress and species bookkeeping, optionally with independent fitted residual stress; not a derived self-consistent two-fluid equilibrium. A downstream total-force law already includes the residual stress, whereas ion moments remain ion-only.",
     "geometry": "Caller-supplied scalar or broadcast array of magnetic-field magnitude and flux coordinates; the implementation does not construct an R-Z mesh.",
     "coordinates": "Profile callables receive jointly broadcast magnetic_field and psi arrays; their outputs and fixed profiles broadcast to that common shape without coordinate-axis validation.",
     "boundary": "No physical boundary condition is applied. The default species split is algebraic and fails when it gives a negative ion component; explicit ion pressures can override that split without an equality check.",
@@ -124,6 +124,16 @@
       "required": false,
       "default": null,
       "constraints": "If supplied, finite and nonnegative."
+    },
+    {
+      "name": "pressure_composition_mode",
+      "description": "Choose independent fitted total/species moments or enforce their sum.",
+      "units": "enum",
+      "shape": "scalar",
+      "dtype": "string",
+      "required": false,
+      "default": "independent_fit",
+      "constraints": "Exactly 'independent_fit' or 'species_sum'."
     }
   ],
   "outputs": [
@@ -216,6 +226,42 @@
       "dtype": "NumPy float64 array",
       "required": true,
       "constraints": "Finite and nonnegative; explicit values need not sum with electron component to total pressure."
+    },
+    {
+      "name": "pressure_composition_mode",
+      "description": "Selected composition contract.",
+      "units": "enum",
+      "shape": "scalar",
+      "dtype": "string",
+      "required": true,
+      "constraints": "'independent_fit' or 'species_sum'."
+    },
+    {
+      "name": "species_pressure_sum_consistent",
+      "description": "Both residual stresses vanish within roundoff-scaled comparison.",
+      "units": "boolean",
+      "shape": "scalar",
+      "dtype": "Python bool",
+      "required": true,
+      "constraints": "True does not certify physical self-consistency."
+    },
+    {
+      "name": "residual_stress_parallel_pa",
+      "description": "Total parallel stress minus specified ion/electron pressure components.",
+      "units": "Pa",
+      "shape": "common broadcast shape",
+      "dtype": "NumPy float64 scalar or array",
+      "required": true,
+      "constraints": "Finite and signed; algebraic residual, not an additional validated particle species."
+    },
+    {
+      "name": "residual_stress_perpendicular_pa",
+      "description": "Total perpendicular stress minus specified ion/electron pressure components.",
+      "units": "Pa",
+      "shape": "common broadcast shape",
+      "dtype": "NumPy float64 scalar or array",
+      "required": true,
+      "constraints": "Finite and signed; already included in total stress."
     }
   ],
   "applicability": {
@@ -233,13 +279,13 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError for nonfinite magnetic_field/psi, negative checked moments, or a profile that cannot broadcast; raises FloatingPointError for nonfinite pressure or profile values. A noncallable pressure_law or non-dictionary result raises TypeError; missing pressure keys raise KeyError. Numeric conversion and initial broadcasting can also raise TypeError or ValueError; profile callbacks propagate their exceptions.",
-    "runtime_failure": "No iterative runtime is used. The function does not check sum consistency for explicitly supplied components or physical compatibility of callback-produced arrays.",
+    "invalid_input": "Raises ValueError for nonfinite magnetic_field/psi, negative checked moments, or a profile that cannot broadcast; raises FloatingPointError for nonfinite pressure or profile values. A noncallable pressure_law or non-dictionary result raises TypeError; missing pressure keys raise KeyError. Numeric conversion and initial broadcasting can also raise TypeError or ValueError; profile callbacks propagate their exceptions. Unsupported composition mode or a nonzero component residual in species_sum mode raises ValueError.",
+    "runtime_failure": "Nonfinite species sums/residual stresses raise FloatingPointError. Independent-fit residual stresses are permitted explicitly; no physical closure is silently inferred from them.",
     "nonconvergence": "Not applicable; no solver iteration is performed.",
-    "partial_results": "Validation or callback failure returns no mapping; a successful call returns all ten fields."
+    "partial_results": "Validation or callback failure returns no mapping; successful return includes all original fields and the four explicit composition fields."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery.",
+    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. The scientific successor retains the declared mathematical model and repairs independently reproduced numerical failures; historical failing behavior is preserved as evidence and is not a current scientific qualification.",
     "source_kinds": [
       "historical Pleiades development descriptor and migration mapping",
       "pending intake development candidate",
@@ -252,30 +298,32 @@
     "python": {
       "module": "scirel.closures.hall_two_fluid_pressure",
       "symbol": "close_hall_two_fluid_pressure",
-      "signature": "close_hall_two_fluid_pressure(magnetic_field, psi, pressure_law, ion_density_m3, electron_pressure_pa, electrostatic_potential_v, ion_p_parallel_pa=None, ion_p_perpendicular_pa=None, electron_p_parallel_pa=None, electron_p_perpendicular_pa=None)"
+      "signature": "close_hall_two_fluid_pressure(magnetic_field, psi, pressure_law, ion_density_m3, electron_pressure_pa, electrostatic_potential_v, ion_p_parallel_pa=None, ion_p_perpendicular_pa=None, electron_p_parallel_pa=None, electron_p_perpendicular_pa=None, pressure_composition_mode='independent_fit')"
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
     "dependencies": []
   },
   "example": {
     "description": "Assemble a broadcast Hall state with the default algebraic ion pressure split.",
-    "code": "import numpy as np\nfrom scirel.closures import close_hall_two_fluid_pressure\ndef law(b, psi):\n    return {'p_parallel': 5.0 + b + psi, 'p_perpendicular': 4.0 + b + 2.0*psi}\nr = close_hall_two_fluid_pressure([[1.0, 2.0]], [[0.2, 0.4]], law, 1.0e18, 1.0, 3.0)\nnp.testing.assert_allclose(r['p_parallel'], [[6.2, 7.4]])\nnp.testing.assert_allclose(r['ion_p_parallel'] + r['electron_p_parallel'], r['p_parallel'])\nnp.testing.assert_allclose(r['electron_density'], r['ion_density'])",
+    "code": "import numpy as np\nfrom scirel.closures import close_hall_two_fluid_pressure\ndef law(b, psi):\n    return {'p_parallel': 5.0 + b + psi, 'p_perpendicular': 4.0 + b + 2.0*psi}\nr = close_hall_two_fluid_pressure([[1.0, 2.0]], [[0.2, 0.4]], law, 1.0e18, 1.0, 3.0)\nnp.testing.assert_allclose(r['p_parallel'], [[6.2, 7.4]])\nnp.testing.assert_allclose(r['ion_p_parallel'] + r['electron_p_parallel'], r['p_parallel'])\nnp.testing.assert_allclose(r['electron_density'], r['ion_density'])\nassert r['species_pressure_sum_consistent']\nnp.testing.assert_allclose(r['residual_stress_parallel_pa'], 0., atol=1e-14)",
     "expected": "The total parallel pressure is [[6.2, 7.4]] Pa; default species components sum to it and the two number-density arrays agree."
   },
   "verification": {
     "scope": [
       "Broadcast law/profile evaluation, default electron and ion pressure decomposition and equal returned species densities.",
-      "Rejection of a negative derived ion pressure component."
+      "Rejection of a negative derived ion pressure component.",
+      "Independent total=10, ion=3, electron=2 preserves residual stress=5; species_sum rejects it and accepts the default zero-residual algebraic split."
     ],
     "tests": [
-      "tests/operator_contracts/test_hall_two_fluid_pressure.py"
+      "tests/operator_contracts/test_hall_two_fluid_pressure.py",
+      "tests/operator_contracts/test_mirror_kinetic_scientific_correction.py"
     ],
     "evidence_ceiling": "Direct SciRel regressions establish the selected two-cell values, callable profiles, default component split and one negative-moment rejection. They do not verify arbitrary user pressure laws, explicit component-total consistency, all broadcast shapes, a physical Hall force balance or current, or current expert recognition.",
     "known_limitations": [
       "The pressure law, electrostatic potential and profile alignment are caller supplied; successful broadcasting cannot establish one physical coordinate frame.",
-      "Explicit ion components may disagree with total minus electron components without being rejected.",
+      "Independent fitted total and ion pressures remain a supported phenomenological contract; residual stress is not evidence for a new physical species. species_sum imposes numerical composition only.",
       "No total-pressure sign or physical gyrotropy validity test is performed.",
       "Public distribution licensing and expert recognition remain pending."
     ]

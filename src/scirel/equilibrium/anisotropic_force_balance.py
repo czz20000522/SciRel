@@ -34,58 +34,14 @@ def _source_hypot(left, right):
             values.append(math.inf)
     return np.asarray(values, dtype=float).reshape(left.shape)
 
-def _source_gradient(values, coordinates, axis):
-    """Preserve the source ``np.gradient(..., coordinates, edge_order=2)`` stencil."""
-    distances = np.diff(coordinates)
-    result = np.empty_like(values)
-    uniform = (distances == distances[0]).all()
-    if axis == 0:
-        if uniform:
-            spacing = distances[0]
-            result[1:-1, :] = (values[2:, :] - values[:-2, :]) / (2.0 * spacing)
-            result[0, :] = -1.5 / spacing * values[0, :] + 2.0 / spacing * values[1, :] - 0.5 / spacing * values[2, :]
-            result[-1, :] = 0.5 / spacing * values[-3, :] - 2.0 / spacing * values[-2, :] + 1.5 / spacing * values[-1, :]
-        else:
-            dx1, dx2 = (distances[:-1], distances[1:])
-            a = -dx2 / (dx1 * (dx1 + dx2))
-            b = (dx2 - dx1) / (dx1 * dx2)
-            c = dx1 / (dx2 * (dx1 + dx2))
-            result[1:-1, :] = a[:, None] * values[:-2, :] + b[:, None] * values[1:-1, :] + c[:, None] * values[2:, :]
-            dx1, dx2 = (distances[0], distances[1])
-            a = -(2.0 * dx1 + dx2) / (dx1 * (dx1 + dx2))
-            b = (dx1 + dx2) / (dx1 * dx2)
-            c = -dx1 / (dx2 * (dx1 + dx2))
-            result[0, :] = a * values[0, :] + b * values[1, :] + c * values[2, :]
-            dx1, dx2 = (distances[-2], distances[-1])
-            a = dx2 / (dx1 * (dx1 + dx2))
-            b = -(dx2 + dx1) / (dx1 * dx2)
-            c = (2.0 * dx2 + dx1) / (dx2 * (dx1 + dx2))
-            result[-1, :] = a * values[-3, :] + b * values[-2, :] + c * values[-1, :]
-    elif uniform:
-        spacing = distances[0]
-        result[:, 1:-1] = (values[:, 2:] - values[:, :-2]) / (2.0 * spacing)
-        result[:, 0] = -1.5 / spacing * values[:, 0] + 2.0 / spacing * values[:, 1] - 0.5 / spacing * values[:, 2]
-        result[:, -1] = 0.5 / spacing * values[:, -3] - 2.0 / spacing * values[:, -2] + 1.5 / spacing * values[:, -1]
-    else:
-        dx1, dx2 = (distances[:-1], distances[1:])
-        a = -dx2 / (dx1 * (dx1 + dx2))
-        b = (dx2 - dx1) / (dx1 * dx2)
-        c = dx1 / (dx2 * (dx1 + dx2))
-        result[:, 1:-1] = a * values[:, :-2] + b * values[:, 1:-1] + c * values[:, 2:]
-        dx1, dx2 = (distances[0], distances[1])
-        a = -(2.0 * dx1 + dx2) / (dx1 * (dx1 + dx2))
-        b = (dx1 + dx2) / (dx1 * dx2)
-        c = -dx1 / (dx2 * (dx1 + dx2))
-        result[:, 0] = a * values[:, 0] + b * values[:, 1] + c * values[:, 2]
-        dx1, dx2 = (distances[-2], distances[-1])
-        a = dx2 / (dx1 * (dx1 + dx2))
-        b = -(dx2 + dx1) / (dx1 * dx2)
-        c = (2.0 * dx2 + dx1) / (dx2 * (dx1 + dx2))
-        result[:, -1] = a * values[:, -3] + b * values[:, -2] + c * values[:, -1]
-    return result
+from ._anisotropic_numerics import stable_gradient as _source_gradient, pressure_divergence, residual_metrics
 
 def compute_anisotropic_force_balance(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular, active_mask=None):
-    """Return the source-defined ``div(P)`` force, toroidal current, and diagnostics."""
+    """Return SI div(P) and current for a smooth, axisymmetric poloidal field.
+
+    The regular-axis tensor limit is included. Compatibility error resolves
+    only force above the reported floating-point stencil uncertainty; raw
+    absolute and relative residuals are returned without alteration."""
     values = [np.asarray(value, dtype=float) for value in (r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular)]
     shape = values[0].shape
     if any((value.ndim != 2 or value.shape != shape or (not np.all(np.isfinite(value))) for value in values)):
@@ -99,30 +55,14 @@ def compute_anisotropic_force_balance(r_grid, z_grid, b_r, b_z, p_parallel, p_pe
     mask = np.ones(shape, dtype=bool) if active_mask is None else np.asarray(active_mask, dtype=bool)
     if mask.shape != shape:
         raise ValueError('active_mask must match the R-Z grid')
-    magnitude = _source_hypot(b_r, b_z)
-    inverse_b = np.divide(1.0, magnitude, out=np.zeros_like(magnitude), where=magnitude > np.finfo(float).tiny)
-    unit_r, unit_z = (b_r * inverse_b, b_z * inverse_b)
-    delta = p_parallel - p_perpendicular
-    p_rr = p_perpendicular + delta * unit_r ** 2
-    p_zz = p_perpendicular + delta * unit_z ** 2
-    p_rz = delta * unit_r * unit_z
-    force_r = _source_gradient(p_rr, r, axis=1) + _source_gradient(p_rz, z, axis=0)
-    force_z = _source_gradient(p_rz, r, axis=1) + _source_gradient(p_zz, z, axis=0)
-    off_axis = r_grid > 0.0
-    force_r[off_axis] += (p_rr[off_axis] - p_perpendicular[off_axis]) / r_grid[off_axis]
-    force_z[off_axis] += p_rz[off_axis] / r_grid[off_axis]
-    if r[0] == 0.0:
-        force_r[:, 0] = 0.0
-    b_squared = magnitude ** 2
-    j_phi = np.divide(b_z * force_r - b_r * force_z, b_squared, out=np.zeros_like(magnitude), where=b_squared > np.finfo(float).tiny)
-    parallel_force = (b_r * force_r + b_z * force_z) * inverse_b
-    if r[0] == 0.0:
-        j_phi[:, 0] = 0.0
-    force_norm = _source_hypot(force_r, force_z)
-    if np.any(mask):
-        parallel_force_error = float(np.sqrt(np.mean(parallel_force[mask] ** 2)) / max(float(np.sqrt(np.mean(force_norm[mask] ** 2))), np.finfo(float).tiny))
-    else:
-        parallel_force_error = 0.0
-    firehose_margin = 1.0 - MU0 * (p_parallel - p_perpendicular) / np.maximum(b_squared, np.finfo(float).tiny)
-    return {'force_R': force_r, 'force_Z': force_z, 'parallel_force': parallel_force, 'J_phi': j_phi, 'B': magnitude, 'parallel_force_error': parallel_force_error, 'firehose_margin': firehose_margin}
+    result = pressure_divergence(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular)
+    force_norm = np.hypot(result['force_R'], result['force_Z'])
+    diagnostics = residual_metrics(result['parallel_force'], force_norm, result['parallel_force_roundoff'], mask)
+    result.update({'parallel_force_error':diagnostics['error'],
+                   'parallel_force_absolute':diagnostics['absolute'],
+                   'parallel_force_error_raw':diagnostics['raw_relative'],
+                   'parallel_force_roundoff_rms':diagnostics['roundoff'],
+                   'parallel_force_roundoff_consistent':diagnostics['roundoff_consistent'],
+                   'firehose_margin':1.0-MU0*(p_parallel-p_perpendicular)/np.maximum(result['B']**2,np.finfo(float).tiny)})
+    return result
 __all__ = ['compute_anisotropic_force_balance']
