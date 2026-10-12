@@ -5,6 +5,7 @@ from collections.abc import Mapping
 import hashlib
 from pathlib import Path
 import numpy as np
+from ._anisotropic_numerics import cell_areas, flux_field_increment
 
 def _require_mapping(value, name):
     if not isinstance(value, Mapping):
@@ -68,8 +69,8 @@ def run_graph(inputs, *, asset_loader):
     if not np.all(np.isfinite(r_grid)) or not np.all(np.isfinite(z_grid)):
         raise ValueError('r_grid and z_grid must be finite')
     r_axis, z_axis = (r_grid[0, :], z_grid[:, 0])
-    if not np.allclose(r_grid, r_axis[np.newaxis, :]) or not np.allclose(z_grid, z_axis[:, np.newaxis]) or np.any(np.diff(r_axis) <= 0.0) or np.any(np.diff(z_axis) <= 0.0) or (not np.allclose(np.diff(r_axis), np.diff(r_axis)[0], rtol=1e-12, atol=1e-14)) or (not np.allclose(np.diff(z_axis), np.diff(z_axis)[0], rtol=1e-12, atol=1e-14)):
-        raise ValueError('r_grid and z_grid must be finite, strictly increasing, uniformly spaced tensor-product grids')
+    if not np.allclose(r_grid, r_axis[np.newaxis, :]) or not np.allclose(z_grid, z_axis[:, np.newaxis]) or np.any(np.diff(r_axis) <= 0.0) or np.any(np.diff(z_axis) <= 0.0) or r_axis[0]<0.:
+        raise ValueError('r_grid and z_grid must be finite, strictly increasing tensor-product grids with nonnegative R')
     if inputs.get('plasma_mask') is not None:
         plasma_mask = np.asarray(inputs['plasma_mask'])
         if plasma_mask.shape != r_grid.shape or plasma_mask.dtype != np.dtype(bool):
@@ -94,6 +95,11 @@ def run_graph(inputs, *, asset_loader):
     if tol <= 0.0 or not 0.0 <= relax <= 1.0:
         raise ValueError('tol, maxiter, and relax violate the declared Picard bounds')
     boundary = _boundary_config(inputs.get('boundary_correction'))
+    compatibility_tol = _require_finite_scalar(inputs.get('compatibility_tol'),'compatibility_tol',.05)
+    strict = _require_bool_scalar(inputs.get('strict_compatibility'),'strict_compatibility',True)
+    minimum_field = _require_finite_scalar(inputs.get('minimum_field'),'minimum_field',1e-8)
+    if compatibility_tol<0. or minimum_field<=0.:
+        raise ValueError('compatibility_tol and minimum_field are invalid')
     currents_old = None
     residual = float('inf')
     residual_history = []
@@ -107,12 +113,15 @@ def run_graph(inputs, *, asset_loader):
         profiles = _profiles(pressure_closure, psi, field['B'], params)
         current_parts = current(inputs['r_grid'], inputs['z_grid'], br, bz, profiles['p_parallel'], profiles['p_perp'])
         psi_previous = psi
-        step = feedback(current_parts['j_phi'], inputs['r_grid'], inputs['z_grid'], inputs.get('plasma_mask'), currents_old, relax, inputs['g_psi'], inputs.get('g_br'), inputs.get('g_bz'), inputs['psi_vac'], inputs['br_vac'], inputs['bz_vac'])
+        step = feedback(current_parts['j_phi'], inputs['r_grid'], inputs['z_grid'], inputs.get('plasma_mask'), currents_old, relax, inputs['g_psi'], inputs.get('g_br'), inputs.get('g_bz'), inputs['psi_vac'], inputs['br_vac'], inputs['bz_vac'], cell_edges=inputs.get('cell_edges'))
         psi, br, bz = (step['psi'], step['BR'], step['BZ'])
         if boundary is not None:
             boundary_result = boundary_operator(step['psi'].ravel(), boundary['boundary_sample_matrix'], boundary['green_boundary_to_boundary'], boundary['green_boundary_to_field'], rcond=boundary.get('rcond', 1e-10))
             psi = boundary_result['corrected_field_flux'].reshape(step['psi'].shape)
             boundary_flux_correction = boundary_result['field_flux_correction'].reshape(step['psi'].shape)
+            delta_field = flux_field_increment(r_grid,z_grid,boundary_flux_correction)
+            br = br+delta_field['B_R']
+            bz = bz+delta_field['B_Z']
         residual = residual_operator(psi_previous, psi)['residual']
         residual_history.append(residual)
         currents_old = step['picard_current_state']
@@ -124,12 +133,25 @@ def run_graph(inputs, *, asset_loader):
     if inputs.get('plasma_mask') is not None:
         terminal_j_phi = np.where(np.asarray(inputs['plasma_mask'], dtype=bool), terminal_j_phi, 0.0)
     if currents_old is None:
-        step = feedback(current_parts['j_phi'], inputs['r_grid'], inputs['z_grid'], inputs.get('plasma_mask'), None, relax, inputs['g_psi'], inputs.get('g_br'), inputs.get('g_bz'), inputs['psi_vac'], inputs['br_vac'], inputs['bz_vac'])
+        step = feedback(current_parts['j_phi'], inputs['r_grid'], inputs['z_grid'], inputs.get('plasma_mask'), None, relax, inputs['g_psi'], inputs.get('g_br'), inputs.get('g_bz'), inputs['psi_vac'], inputs['br_vac'], inputs['bz_vac'], cell_edges=inputs.get('cell_edges'))
         currents_old = step['initial_picard_current_state']
-    dr = float(inputs['r_grid'][0, 1] - inputs['r_grid'][0, 0])
-    dz = float(inputs['z_grid'][1, 0] - inputs['z_grid'][0, 0])
-    terminal_cell_currents = terminal_j_phi * abs(dr * dz)
-    return {'psi': psi, 'BR': br, 'BZ': bz, 'B': field['B'], 'profiles': {key: profiles[key] for key in ('p_parallel', 'p_perp', 'density', 'electron_temperature')}, 'j_phi': terminal_j_phi, 'plasma_currents': terminal_cell_currents, 'picard_current_state': currents_old, 'gradp_term': current_parts['gradp_term'], 'anisotropy_curvature_term': current_parts['anisotropy_curvature_term'], 'converged': bool(residual <= tol), 'iterations': iterations, 'residual': residual, 'residual_history': np.asarray(residual_history, dtype=float), 'parameters': params, 'boundary_currents': None if boundary_result is None else boundary_result['boundary_currents'], 'boundary_flux_correction': boundary_flux_correction, 'boundary_residual_norm': None if boundary_result is None else boundary_result['residual_norm'], 'failure_reason': None if residual <= tol else 'maxiter_reached'}
+    terminal_cell_currents = terminal_j_phi * cell_areas(r_grid,z_grid,inputs.get('cell_edges'))
+    unrelaxed=feedback(current_parts['j_phi'],r_grid,z_grid,inputs.get('plasma_mask'),None,0.,inputs['g_psi'],inputs.get('g_br'),inputs.get('g_bz'),inputs['psi_vac'],inputs['br_vac'],inputs['bz_vac'],cell_edges=inputs.get('cell_edges'))
+    target_psi=unrelaxed['psi']
+    if boundary is not None:
+        target_boundary=boundary_operator(target_psi.ravel(),boundary['boundary_sample_matrix'],boundary['green_boundary_to_boundary'],boundary['green_boundary_to_field'],rcond=boundary.get('rcond',1e-10))
+        target_psi=target_boundary['corrected_field_flux'].reshape(psi.shape)
+    fixed_point_residual=float(np.linalg.norm(target_psi-psi)/max(float(np.linalg.norm(target_psi)),float(np.linalg.norm(inputs['psi_vac'])),np.finfo(float).tiny))
+    if np.any(field['B']<minimum_field):
+        raise FloatingPointError('free-boundary terminal magnetic field fell below minimum_field')
+    force_diagnostics = current_parts['force_diagnostics']
+    active = np.ones_like(r_grid,dtype=bool) if inputs.get('plasma_mask') is None else np.asarray(inputs['plasma_mask'],dtype=bool)
+    from ._anisotropic_numerics import residual_metrics
+    compatibility = residual_metrics(force_diagnostics['parallel_force'], np.hypot(force_diagnostics['force_R'],force_diagnostics['force_Z']), force_diagnostics['parallel_force_roundoff'],active)
+    compatible = compatibility['error']<=compatibility_tol
+    if strict and not compatible:
+        raise ValueError('free-boundary parallel pressure force exceeds compatibility_tol')
+    return {'psi': psi, 'BR': br, 'BZ': bz, 'B': field['B'], 'profiles': {key: profiles[key] for key in ('p_parallel', 'p_perp', 'density', 'electron_temperature')}, 'j_phi': terminal_j_phi, 'plasma_currents': terminal_cell_currents, 'picard_current_state': currents_old, 'gradp_term': current_parts['gradp_term'], 'anisotropy_curvature_term': current_parts['anisotropy_curvature_term'], 'converged': bool(fixed_point_residual<=tol and compatible and iterations>0), 'fixed_point_residual':fixed_point_residual, 'flux_converged':bool(residual<=tol), 'equilibrium_compatible':compatible, 'force_diagnostics':force_diagnostics, 'parallel_force_diagnostics':compatibility, 'iterations': iterations, 'residual': residual, 'residual_history': np.asarray(residual_history, dtype=float), 'parameters': params, 'boundary_currents': None if boundary_result is None else boundary_result['boundary_currents'], 'boundary_flux_correction': boundary_flux_correction, 'boundary_residual_norm': None if boundary_result is None else boundary_result['residual_norm'], 'failure_reason': 'parallel_force_incompatible' if not compatible else None if fixed_point_residual<=tol and iterations>0 else 'maxiter_reached'}
 
 def solve_free_boundary_anisotropic_picard(inputs=None, **kwargs):
     from scirel._composition import compose

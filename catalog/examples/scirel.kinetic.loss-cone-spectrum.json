@@ -6,7 +6,7 @@
     "en": "Loss-cone fractional Legendre spectrum",
     "zh": "损失锥分数阶 Legendre 谱"
   },
-  "summary": "Find sampled positive fractional Legendre degrees satisfying a symmetric angular condition at zero and a zero-value loss-cone boundary, then return their eigenvalues and normalized mode samples.",
+  "summary": "Compute the lowest ordered even angular eigenmodes with integer degrees retained and a regular initial-value solution.",
   "taxonomy": [
     "kinetic",
     "loss-cone",
@@ -19,14 +19,14 @@
   "identity": {
     "relation": "Loss-cone pitch-cosine boundary and requested mode count to fractional Legendre angular eigenpairs",
     "direction": "(xi_tp, mode_count, grid_points, backend) -> xi, degrees, eigenvalues, eigenfunctions, backend",
-    "definition": "For the Legendre angular equation (1-xi^2)u''-2xi u'+lambda u=0 with lambda=nu(nu+1), form u_nu(xi)=a P_nu(xi)+b Q_nu(xi), where Q_nu(xi)=pi[cos(pi nu) P_nu(xi)-P_nu(-xi)]/[2 sin(pi nu)]. Solve [u_nu(0), centered-difference u_nu'(0)]=[1,0] for a,b using step 1e-5, and seek positive noninteger boundary-root candidates of u_nu(xi_tp) by sampled sign changes and Brent refinement. Return lambda and u_nu on xi[i]=i*xi_tp/N_grid. The default P_nu is a 15-term truncated hypergeometric series with its argument clipped to [0,1]; the alternative uses scipy.special.hyp2f1.",
-    "model": "Source-defined fractional Legendre angular eigenproblem, numerically scanned over a finite degree interval; no particle distribution or transport evolution is solved",
+    "definition": "Solve -[(1-xi^2)u′]′=lambda*u, u(0)=1, u′(0)=0, u(xi_tp)=0. Order roots through the continuous Sturm phase theta′=sqrt(lambda)[cos(theta)^2/(1-xi^2)+sin(theta)^2], theta(0)=pi/2, targeting theta(xi_tp)=(j+1)pi. Rayleigh bounds from p(xi)<=1 bracket each root. Evaluate u through an independent scaled linear initial-value equation; it is the regular even 2F1(-nu/2,(nu+1)/2;1/2;xi^2), lambda=nu(nu+1). Integer degrees are retained. There is no finite polynomial truncation.",
+    "model": "Regular self-adjoint Neumann/Dirichlet angular Sturm-Liouville problem; no distribution or kinetic evolution is solved.",
     "geometry": "One-dimensional pitch-cosine interval from the symmetry endpoint xi=0 toward a loss-cone boundary at xi_tp",
-    "coordinates": "Dimensionless pitch cosine xi; modes are columns ordered by increasing scanned degree",
-    "boundary": "The numerical P/Q combination is normalized to u(0)=1 with a centered-difference zero derivative at xi=0; root finding targets u(xi_tp)=0. The returned grid includes xi=0 and excludes xi_tp.",
+    "coordinates": "Dimensionless pitch cosine xi; eigenfunctions are columns in increasing eigenvalue order.",
+    "boundary": "u(0)=1, u′(0)=0 and a numerically checked endpoint residual |u(xi_tp)|<=2e-8. The returned grid includes zero and excludes xi_tp.",
     "assumptions": [
-      "The caller provides a loss-cone boundary strictly between zero and one and chooses the number of modes and numerical backend.",
-      "The fixed finite degree scan and 15-term default truncation are numerical conventions; returned roots are not a proof that all lower physical modes were found."
+      "0<xi_tp<1 and positive integer mode_count.",
+      "The two legacy backend names are aliases for the same corrected method, not different approximation orders."
     ]
   },
   "inputs": [
@@ -41,12 +41,12 @@
     },
     {
       "name": "mode_count",
-      "description": "Number of scanned positive fractional Legendre modes requested.",
+      "description": "Number of lowest ordered modes, including any integer degree.",
       "units": "count",
       "shape": "scalar",
-      "dtype": "int-convertible",
+      "dtype": "integer-valued real or integer",
       "required": true,
-      "constraints": "Converted with int; resulting count must be positive."
+      "constraints": "Positive integer value; booleans and fractional values are rejected."
     },
     {
       "name": "grid_points",
@@ -56,17 +56,17 @@
       "dtype": "int-convertible",
       "required": false,
       "default": 256,
-      "constraints": "Converted with int; actual N_grid=max(int(grid_points), int(mode_count)+8), so smaller or negative requests are raised to the minimum."
+      "constraints": "Integer value at least two; actual sample count is max(grid_points,mode_count+8)."
     },
     {
       "name": "backend",
-      "description": "Numerical evaluator for fractional Legendre P.",
+      "description": "Legacy evaluator name retained for API calls.",
       "units": "text",
       "shape": "scalar",
       "dtype": "string-convertible",
       "required": false,
       "default": "truncated",
-      "constraints": "Converted with str; only 'truncated' or 'hypergeometric' is accepted. The truncated backend uses 15 terms."
+      "constraints": "Only 'truncated' and 'hypergeometric'; both use regular scaled initial-value evaluation and Sturm root ordering. No truncated series is used."
     }
   ],
   "outputs": [
@@ -90,12 +90,12 @@
     },
     {
       "name": "degrees",
-      "description": "Positive noninteger fractional Legendre degrees found by the finite boundary-residual scan.",
+      "description": "Nonnegative regular even-mode degree for each eigenvalue.",
       "units": "dimensionless",
       "shape": "(N_mode,)",
       "dtype": "float64 ndarray",
       "required": true,
-      "constraints": "Ordered by scanned degree; values near integers or duplicate roots are filtered."
+      "constraints": "Ordered with the eigenvalues; integer degrees are preserved."
     },
     {
       "name": "eigenfunctions",
@@ -108,43 +108,60 @@
     },
     {
       "name": "backend",
-      "description": "Selected fractional Legendre evaluation backend.",
+      "description": "Requested legacy evaluator name; see evaluation_method for the actual numerical method.",
       "units": "text",
       "shape": "scalar",
       "dtype": "str",
       "required": true,
       "constraints": "Either 'truncated' or 'hypergeometric'."
+    },
+    {
+      "name": "evaluation_method",
+      "description": "Actual common evaluator used by both legacy backend names.",
+      "units": "text",
+      "shape": "scalar",
+      "dtype": "str",
+      "required": true,
+      "constraints": "regular_even_scaled_ivp_with_sturm_phase_ordering"
+    },
+    {
+      "name": "boundary_residuals",
+      "description": "Regular-mode values at the Dirichlet endpoint.",
+      "units": "dimensionless",
+      "shape": "(N_mode,)",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Absolute value at most 2e-8 on successful return."
     }
   ],
   "applicability": {
     "preconditions": [
-      "A float-convertible xi_tp must lie strictly inside (0,1), and the int-converted requested mode count must be positive.",
-      "The fixed degree scan must contain at least the requested number of accepted sign-change roots for the selected backend."
+      "Finite interior xi_tp and valid integer counts."
     ],
     "supported": [
-      "Finite-interval angular mode sampling for the source-defined loss-cone boundary with either truncated-series or hypergeometric Legendre evaluation.",
-      "The returned degree array can supply a separate Frank-Egedal source projection when its caller requests generated degrees."
+      "The lowest ordered angular modes, including integer degrees and small loss-cone intervals."
     ],
     "excluded": [
-      "Mirror-ratio-to-xi_tp conversion, loss-cone occupation, source coefficients, pressure closure, and particle transport.",
-      "Completeness or convergence certification of the spectrum, continuous eigenfunction output at the excluded boundary, and arbitrary numerical-backend equivalence."
+      "Physical population validation, transport, global equilibrium or an arbitrarily large mode-count performance guarantee."
     ]
   },
   "failure_semantics": {
-    "invalid_input": "float/int conversion errors propagate; ValueError is raised when xi_tp is outside (0,1), the converted mode_count is nonpositive, or the string-converted backend is unsupported. grid_points below the minimum is enlarged rather than rejected.",
-    "runtime_failure": "If the finite scan finds too few accepted roots, raises ValueError. Unexpected NumPy/SciPy evaluation, linear-algebra or allocation errors can propagate; nonfinite values may reach outputs because there is no general finite-output validation.",
-    "nonconvergence": "There is no iterative convergence result. Failed Brent brackets are skipped; if too few roots remain, the function raises ValueError rather than returning an incomplete spectrum.",
-    "partial_results": "None returned; the complete mapping is created only after degrees, eigenvalues and sampled eigenfunctions are computed."
+    "invalid_input": "ValueError for invalid interval, counts or backend; native numeric conversion failures may propagate.",
+    "runtime_failure": "RuntimeError or FloatingPointError if phase or regular-mode integration fails or returns nonfinite values.",
+    "nonconvergence": "RuntimeError if an independently evaluated endpoint residual exceeds 2e-8; no incomplete eigenpair set is returned.",
+    "partial_results": "None."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery.",
+    "lineage_summary": "Scientific correction of the local SciRel Pleiades-extension candidate. The retrieved historical extension does not establish an exact original-source mapping for this asset. The changed mathematical definitions are stated here; numerical agreement with an earlier candidate is not a correctness argument.",
     "source_kinds": [
-      "historical Pleiades development descriptor and migration mapping",
-      "pending intake development candidate",
-      "current SciRel implementation and direct tests"
+      "local SciRel implementation",
+      "explicit mathematical derivation",
+      "primary scientific references"
     ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
+    "public_references": [
+      "https://arxiv.org/html/2509.17288v4"
+    ],
+    "license_status": "Original-source mapping and applicable distribution licensing must be retained with the selected distribution; no article text or reference implementation is bundled by this document."
   },
   "public_api": {
     "python": {
@@ -154,29 +171,27 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
     "dependencies": []
   },
   "example": {
-    "description": "Solve two hypergeometric modes for an interior loss-cone boundary and check the returned grid and normalization.",
-    "code": "import numpy as np\nfrom scirel.kinetic import solve_loss_cone_spectrum\nr = solve_loss_cone_spectrum(0.6, 2, grid_points=32, backend='hypergeometric')\nassert r['xi'].shape == (32,) and r['eigenfunctions'].shape == (32, 2)\nassert r['xi'][0] == 0.0 and r['xi'][-1] == 0.6 * 31 / 32\nassert np.allclose(r['eigenfunctions'][0], 1.0)\nassert np.all(np.diff(r['degrees']) > 0)\nassert np.allclose(r['eigenvalues'], r['degrees'] * (r['degrees'] + 1))",
-    "expected": "Two increasing degrees and their nu(nu+1) eigenvalues; 32 samples start at zero, stop short of 0.6, and each mode is normalized to one at zero."
+    "description": "Recover the exact lowest integer mode at xi_tp=1/sqrt(3).",
+    "code": "import numpy as np\nfrom scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum\nr=solve_loss_cone_spectrum(1/np.sqrt(3),2,grid_points=40)\nnp.testing.assert_allclose(r['eigenvalues'][0],6.,rtol=1e-10)\nnp.testing.assert_allclose(r['eigenfunctions'][:,0],1-3*r['xi']**2,atol=2e-10)\nassert np.max(np.abs(r['boundary_residuals']))<2e-8",
+    "expected": "The lowest eigenvalue is 6 with normalized eigenfunction 1-3*xi^2; no integer-root omission."
   },
   "verification": {
     "scope": [
-      "Default truncated backend returns ordered normalized modes for xi_tp=0.6, three modes and 32 grid points.",
-      "Hypergeometric backend returns 14 degrees for the paper-style mirror-ratio boundary and independently reconstructed boundary residuals below 2e-8 for two modes at xi_tp=0.6.",
-      "Unknown backend, excluded xi_tp endpoints and nonpositive mode count raise ValueError."
+      "Integer-mode failure regression for both legacy backend names.",
+      "Independent linear shooting and 60-digit hypergeometric endpoint checks across xi_tp=1e-4 to 0.9999, up to fourteen modes.",
+      "Normalized orthogonality and independent finite-volume mesh refinement."
     ],
     "tests": [
-      "tests/operator_contracts/test_loss_cone_spectrum.py"
+      "tests/operator_contracts/test_pleiades_spectral_scientific_correction.py"
     ],
-    "evidence_ceiling": "Direct SciRel tests establish the stated sample shapes, ordering, eigenvalue relation, endpoint exclusion, normalization and selected invalid-input behavior. An independent hypergeometric reconstruction checks two boundary roots at one xi_tp and one tolerance. They do not prove spectrum completeness, error bounds for the 15-term backend, all input ranges, source-code identity, expert approval or physical transport predictions.",
+    "evidence_ceiling": "Analytic identities, explicit failure regressions and independent numerical comparisons establish the stated mathematical contract. They do not establish measured-plasma validity or a general stability theorem.",
     "known_limitations": [
-      "The default 15-term P approximation and fixed degree scan can miss or shift modes; no truncation or root-completeness estimate is returned.",
-      "The numerical derivative uses a fixed finite-difference step; xi_tp is a root target, not a returned grid point.",
-      "Input conversion accepts some nonintegral or string values, and broad nonfinite-output checks are not implemented.",
-      "Source license and current-version expert recognition remain pending."
+      "Numerical residual checks are finite precision; the endpoint xi_tp=1 is excluded by the singular differential operator.",
+      "The legacy backend names no longer request a truncated approximation."
     ]
   }
 }

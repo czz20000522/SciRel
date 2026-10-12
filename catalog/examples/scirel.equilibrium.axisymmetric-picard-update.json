@@ -19,15 +19,15 @@
   "identity": {
     "relation": "toroidal current-density grid and dense Green response to one relaxed axisymmetric flux update",
     "direction": "R-Z grid, J_phi, previous/vacuum flux, Green matrix and relax -> psi_next, cell currents and relative changes",
-    "definition": "Form raw cell currents I=J_phi*dR*dZ using the first grid spacings; candidate flux is psi_vac+reshape(G_psi @ C_order(I)); return psi_next=relax*psi_state+(1-relax)*candidate. Compare psi_next against psi_state and the raw currents against the optional previous currents with the declared norm denominators.",
+    "definition": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current. Form candidate=psi_vac+G_psi@I and psi_next=relax*psi_state+(1-relax)*candidate. Return relaxed step change, raw-current change, and unrelaxed fixed-point residual.",
     "model": "one axisymmetric dense-Green Picard step with flux relaxation, not current relaxation",
     "geometry": "rectilinear cylindrical R-Z grid with at least three nodes per axis",
     "coordinates": "[Z,R] arrays; Green rows and columns follow C-order field-point and cell-current flattening",
-    "boundary": "R starts at a nonnegative value; no external boundary solver or extrapolation is performed.",
+    "boundary": "Quadrature uses the declared input node domain or explicit cell boundaries; no implicit exterior support is invented.",
     "assumptions": [
-    "For the SciRel axisymmetric field chain, psi is R A_phi in Wb/rad and g_psi must map one cell current in A to the same field-point psi convention in the declared order. Separately documented vacuum-field outputs labelled Wb are not automatically compatible; their public convention remains unresolved.",
-      "The first R and Z spacings are the cell-area convention even if later spacings differ.",
-      "relax is the weight of the previous flux, not a mixer for current values."
+      "For the SciRel axisymmetric field chain, psi is R A_phi in Wb/rad and g_psi must map one cell current in A to the same field-point psi convention in the declared order. Separately documented vacuum-field outputs labelled Wb are not automatically compatible; their public convention remains unresolved.",
+      "relax is the weight of the previous flux, not a mixer for current values.",
+      "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
     ]
   },
   "inputs": [
@@ -103,6 +103,16 @@
       "required": false,
       "default": null,
       "constraints": "If omitted or null, compare against zeros; otherwise exactly match the grid shape."
+    },
+    {
+      "name": "cell_edges",
+      "description": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+      "units": "m",
+      "shape": "(N_R+1, N_Z+1) arrays or None",
+      "dtype": "pair of finite arrays or None",
+      "required": false,
+      "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+      "default": null
     }
   ],
   "outputs": [
@@ -117,12 +127,12 @@
     },
     {
       "name": "plasma_cell_currents",
-      "description": "Unrelaxed raw cell currents formed from J_phi and first-spacing area.",
+      "description": "Terminal or step current density integrated with the explicitly declared node/cell-domain weights.",
       "units": "A",
       "shape": "[N_Z,N_R]",
       "dtype": "float64",
       "required": true,
-      "constraints": "No relax factor is applied to this current array."
+      "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
     },
     {
       "name": "relative_psi_change",
@@ -141,6 +151,15 @@
       "dtype": "float",
       "required": true,
       "constraints": "Previous currents affect this diagnostic only, not the flux update."
+    },
+    {
+      "name": "fixed_point_residual",
+      "description": "Norm(candidate-psi_state)/max(norm(candidate),norm(psi_vac),tiny); independent of relax.",
+      "units": "1",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Norm(candidate-psi_state)/max(norm(candidate),norm(psi_vac),tiny); independent of relax."
     }
   ],
   "applicability": {
@@ -151,9 +170,9 @@
     "supported": [
       "One finite R-Z axisymmetric flux-feedback step with caller-selected current, external flux and flux-relaxation weight."
     ],
-  "excluded": [
+    "excluded": [
       "A complete converged equilibrium or automatic selection of iteration count.",
-    "Current relaxation, automatic active-cell masking, or automatic conversion of a vacuum-field output labelled Wb.",
+      "Current relaxation, automatic active-cell masking, or automatic conversion of a vacuum-field output labelled Wb.",
       "Non-axisymmetric geometry, sparse-Green optimization, or a guarantee of finite arithmetic for all extreme finite inputs."
     ]
   },
@@ -164,7 +183,7 @@
     "partial_results": "No partial mapping is returned after an exception."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping, pending intake candidate and the 2026-09-25 flux-convention audit. SciRel and intake source text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery; vacuum-to-equilibrium psi normalization remains unresolved.",
+    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping, pending intake candidate and the 2026-09-25 flux-convention audit. SciRel and intake source text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery; vacuum-to-equilibrium psi normalization remains unresolved. This successor corrects independently manufactured cylindrical-axis, quadrature-domain, floating-point zero-force and terminal-state defects where applicable; predecessor behavior is not treated as physical authority.",
     "source_kinds": [
       "historical Pleiades development descriptor and migration mapping",
       "pending intake development candidate",
@@ -177,34 +196,33 @@
     "python": {
       "module": "scirel.equilibrium.axisymmetric_picard_update",
       "symbol": "update_axisymmetric_picard_flux",
-      "signature": "update_axisymmetric_picard_flux(r_grid, z_grid, j_phi, psi_state, psi_vac, g_psi, relax, previous_cell_currents=None)"
+      "signature": "update_axisymmetric_picard_flux(r_grid, z_grid, j_phi, psi_state, psi_vac, g_psi, relax, previous_cell_currents=None, *, cell_edges=None)"
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
     "dependencies": []
   },
   "example": {
-    "description": "A diagonal unit Green response and constant current on a three-by-three grid reveal the cell area and flux-relaxation order.",
-    "code": "import numpy as np\nfrom scirel.equilibrium import update_axisymmetric_picard_flux\nr_grid, z_grid = np.meshgrid([0.0, 0.5, 1.0], [-0.5, 0.0, 0.5])\nresult = update_axisymmetric_picard_flux(r_grid, z_grid, np.ones((3,3)), np.zeros((3,3)), np.ones((3,3)), np.eye(9), 0.25)\nnp.testing.assert_allclose(result['plasma_cell_currents'], 0.25)\nnp.testing.assert_allclose(result['psi_next'], 0.9375)\nassert result['relative_current_change'] == 0.75",
-    "expected": "Raw cell currents are 0.25 A and the flux-relaxed next psi=R A_phi state is 0.9375 Wb/rad at every grid point."
+    "description": "A nonuniform node-domain integral has exact linear current total.",
+    "code": "import numpy as np\nfrom scirel.equilibrium import update_axisymmetric_picard_flux\nr,z=np.meshgrid([1.,1.2,2.],[-.4,-.1,.4])\nout=update_axisymmetric_picard_flux(r,z,r,r*0,r*0,np.zeros((9,9)),0.)\nnp.testing.assert_allclose(out['plasma_cell_currents'].sum(),1.2,rtol=1e-14,atol=1e-14)",
+    "expected": "1.2 A over exactly the supplied node domain."
   },
   "verification": {
     "scope": [
-      "Cell-area and flux-relaxation arithmetic on a small uniform grid.",
-      "Manufactured diagonal-Green update and both relative-change formulas.",
-    "A selected nonuniform grid still uses only the first R and Z spacings for every cell current; changing previous_cell_currents changes only the reported current diagnostic.",
-      "Rejection of relax=1 and negative cylindrical radius."
+      "Linear J=R integrates to 1.2 A on a nonuniform [1,2] by [-0.4,0.4] node domain.",
+      "Compact polynomial current converges to 8/225 A on nonuniform grids.",
+      "Explicit uniform cell edges reproduce the full-area center convention."
     ],
     "tests": [
-      "tests/operator_contracts/test_axisymmetric_picard_update.py"
+      "tests/operator_contracts/test_axisymmetric_picard_update.py",
+      "tests/operator_contracts/test_anisotropic_core_scientific_correction.py"
     ],
-    "evidence_ceiling": "Direct SciRel tests cover selected small-grid numerical and failure paths, including one nonuniform first-spacing example and previous-current diagnostic isolation. They do not certify a Green response's physical normalization, self-fields, arbitrary nonuniform-grid area accuracy, convergence of a containing graph or expert recognition.",
+    "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
     "known_limitations": [
-      "The function validates strictly increasing axes but does not require uniform spacing; current conversion still uses only the first spacing on each axis.",
-      "The previous-current input changes only the reported diagnostic.",
-      "The public vacuum-field psi records use a Wb label; this record's Wb/rad input convention does not settle their compatibility or authorize direct wiring.",
-      "Public distribution licensing and SciRel expert recognition remain pending."
+      "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
+      "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
+      "No expert scientific endorsement or public release follows from this numerical successor."
     ]
   }
 }

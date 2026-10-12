@@ -1,5 +1,6 @@
 """One SciRel anisotropic Picard current relaxation and Green feedback step."""
 import numpy as np
+from ._anisotropic_numerics import cell_areas, flux_field_increment
 
 def _field(name, value, shape):
     array = np.asarray(value, dtype=float)
@@ -17,12 +18,13 @@ def _matrix(name, value, size, required):
         raise ValueError(f'{name} must have shape ({size}, {size}) and finite entries')
     return matrix
 
-def update_anisotropic_picard_flux(j_phi, r_grid, z_grid, plasma_mask, currents_old, relax, g_psi, g_br, g_bz, psi_vac, br_vac, bz_vac):
-    """Relax cell currents on uniform tensor grids and project through Green matrices.
+def update_anisotropic_picard_flux(j_phi, r_grid, z_grid, plasma_mask, currents_old, relax, g_psi, g_br, g_bz, psi_vac, br_vac, bz_vac, *, cell_edges=None):
+    """Relax local control-cell currents and project through Green matrices.
 
-    Axes may ascend or descend; spacings must agree within relative tolerance
-    1e-10. A supplied plasma_mask must be boolean with the exact [Z,R] shape.
-    Nonuniform cells require explicit cell areas and are outside this operator.
+    Axes may ascend or descend and may be nonuniform. Default trapezoid
+    weights span the nodes; explicit cell_edges bind cell-center domains. A supplied
+    mask is boolean with exact [Z,R] shape. Without field Green matrices, the
+    field increment is differentiated from the same plasma flux increment.
     """
     shape = np.asarray(r_grid, dtype=float).shape
     if len(shape) != 2:
@@ -37,12 +39,7 @@ def update_anisotropic_picard_flux(j_phi, r_grid, z_grid, plasma_mask, currents_
         raise ValueError('r_grid and z_grid must be tensor-product [Z,R] grids')
     if r.shape[0] < 2 or r.shape[1] < 2:
         raise ValueError('r_grid and z_grid need at least two points per axis to define cell area')
-    steps_r, steps_z = np.diff(r[0, :]), np.diff(z[:, 0])
-    for steps in (steps_r, steps_z):
-        if (not np.all(np.isfinite(steps)) or steps[0] == 0.0
-                or not np.allclose(steps, steps[0], rtol=1e-10, atol=0.0)):
-            raise ValueError('r_grid and z_grid must have uniform nonzero spacing')
-    dr, dz = float(steps_r[0]), float(steps_z[0])
+    areas = cell_areas(r,z,cell_edges)
     size = r.size
     old = np.zeros(size, dtype=float) if currents_old is None else np.asarray(currents_old, dtype=float)
     if old.shape != (size,) or not np.all(np.isfinite(old)):
@@ -61,11 +58,16 @@ def update_anisotropic_picard_flux(j_phi, r_grid, z_grid, plasma_mask, currents_
         if mask.dtype != np.dtype(bool) or mask.shape != shape:
             raise ValueError(f'plasma_mask must be boolean with shape {shape}')
         density = np.where(mask, current_density, 0.0)
-    raw_currents = density.ravel() * abs(dr * dz)
+    raw_currents = density.ravel() * areas.ravel()
     currents = (1.0 - relaxation) * raw_currents + relaxation * old
     psi = (psi0.ravel() + green_psi @ currents).reshape(shape)
     if green_br is None:
-        br, bz = (br0, bz0)
+        # Differentiate the flux increment, preserving the supplied vacuum field.
+        # The field operator uses ascending axes, so orient only for this call.
+        reverse_z, reverse_r = z[1,0]<z[0,0], r[0,1]<r[0,0]
+        order = (slice(None,None,-1) if reverse_z else slice(None), slice(None,None,-1) if reverse_r else slice(None))
+        delta = flux_field_increment(r[order],z[order],(psi-psi0)[order])
+        br, bz = br0+delta['B_R'][order], bz0+delta['B_Z'][order]
     else:
         br = (br0.ravel() + green_br @ currents).reshape(shape)
         bz = (bz0.ravel() + green_bz @ currents).reshape(shape)

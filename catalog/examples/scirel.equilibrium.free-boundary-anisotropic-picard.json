@@ -20,16 +20,17 @@
   "identity": {
     "relation": "vacuum flux and field, dense cell-current Green responses and caller pressure closure to a bounded anisotropic R-Z equilibrium state",
     "direction": "R-Z grid, vacuum state, Green matrices, pressure closure and controls -> final flux/field/pressure/current state and iteration diagnostics",
-    "definition": "Initialize psi, BR and BZ from the supplied vacuum state. At each step, form poloidal B, call the supplied closure with {psi,B,params}, compute gyrotropic toroidal current, relax masked cell currents and apply dense Green responses. Optionally apply an ideal-conductor correction to projected psi only, then measure its relative change. Stop when residual <= tol or the nonnegative maxiter bound is reached; reevaluate B, closure and current on the returned state. For maxiter=0, perform this terminal reevaluation without a Picard update and expose a zero initial current state.",
+    "definition": "Evaluate the caller pressure/current closure, integrate declared-domain currents, relax the current state and project flux and field. When field matrices are absent, derive the plasma magnetic increment from its flux. For a wall branch, add the magnetic derivative of the same wall flux correction. Reevaluate terminal closure, currents, force compatibility and the unrelaxed fixed-point residual; maxiter=0 remains an uniterated state.",
     "model": "axisymmetric gyrotropic-pressure Picard composition with caller-owned N4 pressure closure and optional linear ideal-conductor wall correction",
-    "geometry": "finite, strictly increasing, uniformly spaced tensor-product cylindrical R-Z grid with at least three samples on each axis",
+    "geometry": "Finite, strictly increasing, nonnegative-R rectilinear tensor grid with at least three nodes per axis; nonuniform axes are supported.",
     "coordinates": "fields indexed [Z,R]; Green source and field axes use C-order flattened grid points",
-    "boundary": "Vacuum fields are additive references. Optional wall correction changes psi after Green projection but does not recalculate BR/BZ from that correction or itself impose a zero boundary residual.",
+    "boundary": "Wall flux corrections carry their same discrete poloidal-field derivative. Caller matrices must describe compatible boundary sampling and response; the operator does not validate the physical conductor geometry or eliminate a truncated-SVD residual.",
     "assumptions": [
       "The pressure_closure callback returns scientifically justified nonnegative co-located pressure arrays and optional density/temperature arrays for each state, interpreting psi as R A_phi in Wb/rad.",
       "All flux and field Green matrices share the declared current basis and appropriate Wb/rad/A or T/A units.",
       "No supplied pressure-closure parameter is interpreted by the graph except inserting B0 when absent; the caller owns its physical model.",
-      "This record follows the field chain's Wb/rad psi convention. The historical YAML and other public flux records label Wb; cross-asset normalization has not been adjudicated."
+      "This record follows the field chain's Wb/rad psi convention. The historical YAML and other public flux records label Wb; cross-asset normalization has not been adjudicated.",
+      "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
     ]
   },
   "inputs": [
@@ -40,7 +41,7 @@
       "shape": "[N_Z,N_R]",
       "dtype": "finite real array-like",
       "required": true,
-      "constraints": "At least three samples per axis; strictly increasing, uniformly spaced tensor axis; same shape as z_grid."
+      "constraints": "At least three samples per axis; strictly increasing, strictly monotone tensor axis; same shape as z_grid."
     },
     {
       "name": "z_grid",
@@ -49,7 +50,7 @@
       "shape": "[N_Z,N_R]",
       "dtype": "finite real array-like",
       "required": true,
-      "constraints": "Same shape as r_grid; strictly increasing, uniformly spaced axial axis."
+      "constraints": "Same shape as r_grid; strictly increasing, strictly monotone axial axis."
     },
     {
       "name": "psi_vac",
@@ -181,6 +182,46 @@
       "required": false,
       "default": null,
       "constraints": "When supplied, requires dimensionless boundary_sample_matrix [N_b,N_f] and Wb/rad/A green_boundary_to_boundary [N_b,N_w] and green_boundary_to_field [N_f,N_w]; optional rcond defaults to 1e-10. Matrix validation belongs to the wall Operator."
+    },
+    {
+      "name": "cell_edges",
+      "description": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+      "units": "m",
+      "shape": "(N_R+1, N_Z+1) arrays or None",
+      "dtype": "pair of finite arrays or None",
+      "required": false,
+      "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+      "default": null
+    },
+    {
+      "name": "compatibility_tol",
+      "description": "Maximum resolved parallel-force fraction.",
+      "units": "1",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": false,
+      "constraints": "Maximum resolved parallel-force fraction.",
+      "default": 0.05
+    },
+    {
+      "name": "minimum_field",
+      "description": "Positive terminal field floor in T.",
+      "units": "T",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": false,
+      "constraints": "Positive terminal field floor in T.",
+      "default": 1e-08
+    },
+    {
+      "name": "strict_compatibility",
+      "description": "Raise on incompatible parallel pressure force; false retains explicit failed compatibility.",
+      "units": "1",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": false,
+      "constraints": "Raise on incompatible parallel pressure force; false retains explicit failed compatibility.",
+      "default": true
     }
   ],
   "outputs": [
@@ -191,25 +232,25 @@
       "shape": "[N_Z,N_R]",
       "dtype": "float64",
       "required": true,
-      "constraints": "At maxiter=0 equals psi_vac after terminal evaluation; optional wall correction changes psi only."
+      "constraints": "At maxiter=0 equals psi_vac after terminal evaluation; optional wall correction changes psi and adds its consistent discrete magnetic-field increment."
     },
     {
       "name": "BR",
-      "description": "Last radial field state from optional g_br feedback.",
+      "description": "Last radial field state including plasma and optional wall-flux increments.",
       "units": "T",
       "shape": "[N_Z,N_R]",
       "dtype": "float64",
       "required": true,
-      "constraints": "Equals br_vac when field Green matrices are absent, including on the wall branch."
+      "constraints": "The supplied br_vac plus the g_br plasma response when field Green matrices are supplied, or the discrete radial field from the plasma flux increment otherwise; a completed wall correction adds its discrete radial field increment."
     },
     {
       "name": "BZ",
-      "description": "Last axial field state from optional g_bz feedback.",
+      "description": "Last axial field state including plasma and optional wall-flux increments.",
       "units": "T",
       "shape": "[N_Z,N_R]",
       "dtype": "float64",
       "required": true,
-      "constraints": "Equals bz_vac when field Green matrices are absent, including on the wall branch."
+      "constraints": "The supplied bz_vac plus the g_bz plasma response when field Green matrices are supplied, or the discrete axial field from the plasma flux increment otherwise; a completed wall correction adds its discrete axial field increment."
     },
     {
       "name": "B",
@@ -218,7 +259,7 @@
       "shape": "[N_Z,N_R]",
       "dtype": "float64",
       "required": true,
-      "constraints": "Reevaluated after bounded iteration; not reconstructed from wall-corrected psi."
+      "constraints": "Reevaluated from the returned BR/BZ after bounded iteration, including the discrete wall-flux field increment when present. Coherence of the supplied vacuum and Green responses remains a caller precondition."
     },
     {
       "name": "profiles",
@@ -240,12 +281,12 @@
     },
     {
       "name": "plasma_currents",
-      "description": "Terminal unrelaxed masked cell currents.",
+      "description": "Terminal or step current density integrated with the explicitly declared node/cell-domain weights.",
       "units": "A",
       "shape": "[N_Z,N_R]",
       "dtype": "float64",
       "required": true,
-      "constraints": "Terminal j_phi times abs(dR*dZ), not necessarily the last relaxed feedback state."
+      "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
     },
     {
       "name": "picard_current_state",
@@ -276,12 +317,12 @@
     },
     {
       "name": "converged",
-      "description": "Whether the last measured flux change is at or below tol.",
+      "description": "True only when the terminal unrelaxed fixed-point residual passes tol (and free-boundary force compatibility passes).",
       "units": "boolean",
       "shape": "scalar",
       "dtype": "bool",
       "required": true,
-      "constraints": "False when no update was performed; false at the bound is returned without raising solely for nonconvergence."
+      "constraints": "Relaxed stagnation alone does not establish convergence."
     },
     {
       "name": "iterations",
@@ -335,7 +376,7 @@
       "shape": "[N_Z,N_R] or null",
       "dtype": "float64 array or None",
       "required": true,
-      "constraints": "None without a completed wall correction; does not modify BR or BZ."
+      "constraints": "None without a completed wall correction; its discrete flux derivatives are added to BR and BZ during that update."
     },
     {
       "name": "boundary_residual_norm",
@@ -354,6 +395,51 @@
       "dtype": "str or None",
       "required": true,
       "constraints": "None when converged; otherwise 'maxiter_reached', including maxiter=0."
+    },
+    {
+      "name": "fixed_point_residual",
+      "description": "Unrelaxed flux-map residual recomputed at the returned terminal closure/current state; convergence requires <=tol.",
+      "units": "1",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Unrelaxed flux-map residual recomputed at the returned terminal closure/current state; convergence requires <=tol."
+    },
+    {
+      "name": "force_diagnostics",
+      "description": "Full terminal force mapping.",
+      "units": "mixed SI",
+      "shape": "mapping",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "Full terminal force mapping."
+    },
+    {
+      "name": "parallel_force_diagnostics",
+      "description": "Compatibility reports the residual above a dimensioned 64-epsilon tensor/stencil rounding envelope, retaining raw absolute and relative residuals and the envelope. This is a floating-point resolution diagnostic, not a truncation-error bound or evidence that a sub-resolution physical force is exactly zero.",
+      "units": "mixed SI",
+      "shape": "mapping",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "Compatibility reports the residual above a dimensioned 64-epsilon tensor/stencil rounding envelope, retaining raw absolute and relative residuals and the envelope. This is a floating-point resolution diagnostic, not a truncation-error bound or evidence that a sub-resolution physical force is exactly zero."
+    },
+    {
+      "name": "flux_converged",
+      "description": "Whether the last relaxed flux step stagnated within tol.",
+      "units": "boolean",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "Whether the last relaxed flux step stagnated within tol."
+    },
+    {
+      "name": "equilibrium_compatible",
+      "description": "Whether the resolved parallel-force compatibility gate passes.",
+      "units": "boolean",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "Whether the resolved parallel-force compatibility gate passes."
     }
   ],
   "applicability": {
@@ -363,22 +449,22 @@
       "All bound dependencies accept the data encountered both during iteration and terminal reevaluation."
     ],
     "supported": [
-      "Bounded anisotropic pressure/current Picard composition with a caller-selected N4 closure, optional field Green pair and optional ideal-conductor flux correction."
+      "Bounded anisotropic composition with declared-domain current quadrature, consistent flux/field corrections and terminal fixed-point/parallel-force diagnostics."
     ],
     "excluded": [
       "A built-in Frank-Egedal closure or independent validation of caller params and pressure physics.",
-      "Self-consistent reconstruction of BR/BZ from wall-corrected psi.",
+      "Independent physical qualification of caller-supplied vacuum, Green or wall responses; consistent discrete wall-flux field increments alone do not establish a physical boundary model.",
       "A general free-boundary equilibrium guarantee, automatic Green construction, or guaranteed Picard convergence."
     ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for missing required ports, invalid grid, mask, controls, params mapping, closure output or incomplete wall config; dependency validation errors propagate. The maintained implementation validates grid and mask before required ports, unlike the pending intake source. Non-mapping positional inputs are rejected by the composition layer with TypeError.",
-    "runtime_failure": "Callback, field/current/Green and wall-solver errors propagate without fallback. The graph does not independently check wall response consistency or all output arrays for post-arithmetic finiteness.",
+    "runtime_failure": "Callback and dependency errors propagate. Terminal field below minimum_field raises FloatingPointError; strict unresolved parallel-force incompatibility raises ValueError. Green/wall matrices still require independent physical qualification.",
     "nonconvergence": "After at most maxiter updates, return the last state with converged=false, failure_reason='maxiter_reached' and its history. maxiter=0 skips the loop, returns residual=inf and an empty history after terminal evaluation.",
     "partial_results": "No mapping is returned after an exception. Bounded nonconvergence is a complete last-state mapping, not an exception."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel TaskGraph, historical Pleiades development mapping, YAML, direct graph tests and pending intake candidate were compared. SciRel and intake source differ only in whether grid/mask or required-port validation runs first. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. Wb versus Wb/rad graph wiring remains unresolved.",
+    "lineage_summary": "The current SciRel TaskGraph, historical Pleiades development mapping, YAML, direct graph tests and pending intake candidate were compared. SciRel and intake source differ only in whether grid/mask or required-port validation runs first. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. Wb versus Wb/rad graph wiring remains unresolved. This successor corrects independently manufactured cylindrical-axis, quadrature-domain, floating-point zero-force and terminal-state defects where applicable; predecessor behavior is not treated as physical authority.",
     "source_kinds": [
       "historical Pleiades development TaskGraph mapping and YAML",
       "pending intake development candidate",
@@ -395,7 +481,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
     "dependencies": [
       {
         "asset_id": "scirel.field.poloidal-field-magnitude"
@@ -416,27 +502,24 @@
   },
   "example": {
     "description": "A constant isotropic pressure and zero Green response complete one step without changing vacuum flux or field.",
-    "code": "import numpy as np\nfrom scirel.equilibrium import solve_free_boundary_anisotropic_picard\nr, z = np.meshgrid([0.2, 0.4, 0.6], [-0.1, 0.0, 0.1])\nshape, size = r.shape, r.size\ndef closure(state):\n    p = np.full(shape, 2.0)\n    return {'p_parallel': p, 'p_perp': p, 'density': None, 'electron_temperature': None}\nresult = solve_free_boundary_anisotropic_picard(r_grid=r, z_grid=z, psi_vac=r.copy(), br_vac=np.zeros(shape), bz_vac=np.ones(shape), g_psi=np.zeros((size, size)), params={}, pressure_closure=closure, tol=1e-12, maxiter=1, relax=0.0)\nnp.testing.assert_allclose(result['psi'], r)\nnp.testing.assert_allclose(result['j_phi'], 0.0, atol=1e-12)\nassert result['converged'] and result['iterations'] == 1 and result['failure_reason'] is None",
+    "code": "import numpy as np\nfrom scirel.equilibrium import solve_free_boundary_anisotropic_picard\nr, z = np.meshgrid([0.2, 0.4, 0.6], [-0.1, 0.0, 0.1])\nshape, size = r.shape, r.size\ndef closure(state):\n    p = np.full(shape, 2.0)\n    return {'p_parallel': p, 'p_perp': p, 'density': None, 'electron_temperature': None}\nresult = solve_free_boundary_anisotropic_picard(r_grid=r, z_grid=z, psi_vac=r**2/2, br_vac=np.zeros(shape), bz_vac=np.ones(shape), g_psi=np.zeros((size, size)), params={}, pressure_closure=closure, tol=1e-12, maxiter=1, relax=0.0)\nnp.testing.assert_allclose(result['psi'], r**2/2)\nnp.testing.assert_allclose(result['j_phi'], 0.0, atol=1e-12)\nassert result['converged'] and result['iterations'] == 1 and result['failure_reason'] is None",
     "expected": "One converged update retains vacuum flux and zero toroidal current; no wall correction is applied."
   },
   "verification": {
     "scope": [
-      "Zero-response one-step convergence and isotropic zero-current limit.",
-      "Two-step feedback changes flux and retains current state.",
-      "Optional wall branch corrects psi without changing BR/BZ when field Green matrices are absent.",
-      "Missing closure/controls, invalid grids, unpaired field matrices and malformed closure fields fail.",
-      "Zero-step branch, bounded nonconvergence and terminal-state current/pressure consistency.",
-      "Maintained SciRel grid validation precedes required-port validation when both are invalid."
+      "A manufactured polynomial wall response gives matching returned flux and magnetic field.",
+      "True parallel-pressure imbalance cannot be reported as equilibrium convergence.",
+      "Full retention relax=1 cannot turn a nonzero fixed-point residual into convergence."
     ],
     "tests": [
-      "tests/graph_contracts/free_boundary_anisotropic_picard/test_graph_free_boundary_anisotropic_picard.py"
+      "tests/graph_contracts/free_boundary_anisotropic_picard/test_graph_free_boundary_anisotropic_picard.py",
+      "tests/operator_contracts/test_anisotropic_core_scientific_correction.py"
     ],
-    "evidence_ceiling": "Direct small-grid graph tests cover selected zero and diagonal Green responses, sequential feedback, a matrix-defined wall branch, bounded stopping and validation failures. They do not establish circular-filament normalization, a Frank-Egedal closure run, arbitrary closure physics, wall-branch field/flux consistency, general Green validity or expert recognition.",
+    "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
     "known_limitations": [
-      "params is mostly passed through; the graph does not independently implement or verify the caller's closure model.",
-      "Wall correction changes flux but not the magnetic-field Green response, so returned psi and BR/BZ need not be derivative-consistent.",
-      "The historical graph YAML labels psi and flux Green responses Wb and Wb/A; this record follows the field chain's Wb/rad convention without approving direct wiring to Wb-labelled residual, wall or vacuum-field records. The residual's fixed Wb floor makes unit reinterpretation consequential.",
-      "The terminal profile/current can differ from the last update's source; public distribution licensing and expert recognition remain pending."
+      "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
+      "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
+      "No expert scientific endorsement or public release follows from this numerical successor."
     ]
   },
   "graph": {
@@ -460,7 +543,11 @@
           "relax",
           "b0",
           "plasma_mask",
-          "boundary_correction"
+          "boundary_correction",
+          "cell_edges",
+          "compatibility_tol",
+          "minimum_field",
+          "strict_compatibility"
         ],
         "outputs": [
           "geometry",
@@ -533,7 +620,7 @@
         "id": "wall_correction",
         "kind": "operator",
         "asset_id": "scirel.field.ideal-conductor-boundary",
-        "description": "When configured, solve the ideal-conductor linear boundary response for projected psi only.",
+        "description": "When configured, solve the ideal-conductor linear boundary response for projected flux, then derive and add the field increment from that correction.",
         "inputs": [
           "projection",
           "config"
@@ -545,15 +632,17 @@
       {
         "id": "select_flux",
         "kind": "controlled_glue",
-        "description": "Select wall-corrected psi when enabled, otherwise projected psi; preserve projected BR/BZ and wall diagnostics.",
+        "description": "Select corrected flux and add the magnetic derivative of that same wall increment to the projected field.",
         "inputs": [
           "projection",
           "wall_result",
-          "config"
+          "config",
+          "geometry"
         ],
         "outputs": [
           "psi_next",
-          "boundary_state"
+          "boundary_state",
+          "projection"
         ]
       },
       {
@@ -601,7 +690,13 @@
           "config",
           "currents_old",
           "loop_state",
-          "boundary_state"
+          "boundary_state",
+          "cell_edges",
+          "compatibility_tol",
+          "minimum_field",
+          "strict_compatibility",
+          "vacuum",
+          "green"
         ],
         "outputs": [
           "psi",
@@ -622,7 +717,12 @@
           "boundary_currents",
           "boundary_flux_correction",
           "boundary_residual_norm",
-          "failure_reason"
+          "failure_reason",
+          "fixed_point_residual",
+          "force_diagnostics",
+          "parallel_force_diagnostics",
+          "flux_converged",
+          "equilibrium_compatible"
         ]
       }
     ],
@@ -1103,7 +1203,7 @@
         },
         "description": "Projected psi/BR/BZ.",
         "condition": "Each update.",
-        "transform": "Keep BR/BZ unchanged by wall correction.",
+        "transform": "Add the magnetic-field increment of wall-corrected minus uncorrected flux to BR/BZ.",
         "kind": "data",
         "required": true
       },
@@ -1184,16 +1284,16 @@
       },
       {
         "from": {
-          "node": "current_feedback",
+          "node": "select_flux",
           "port": "projection"
         },
         "to": {
           "node": "loop_control",
           "port": "projection"
         },
-        "description": "Next BR/BZ state.",
+        "description": "Wall-consistent projected magnetic components.",
         "condition": "Each update.",
-        "transform": "Assign projected components without wall modification.",
+        "transform": "Assign the projected components, including the discrete magnetic-field increment of the wall flux correction when enabled.",
         "kind": "data",
         "required": true
       },
@@ -1406,7 +1506,7 @@
           "node": "terminal_state",
           "port": "geometry"
         },
-        "description": "Cell area from uniform grid.",
+        "description": "Node-domain composite-trapezoid area, or physical area from explicit cell_edges.",
         "condition": "Terminal assembly.",
         "transform": "Use abs(dR*dZ).",
         "kind": "data",
@@ -1756,16 +1856,256 @@
         "transform": "Identity.",
         "kind": "data",
         "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "cell_edges"
+        },
+        "to": {
+          "node": "initial_state",
+          "port": "cell_edges"
+        },
+        "description": "Explicit cell_edges binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "cell_edges"
+        },
+        "to": {
+          "node": "terminal_state",
+          "port": "cell_edges"
+        },
+        "description": "Explicit cell_edges binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "terminal_state",
+          "port": "fixed_point_residual"
+        },
+        "to": {
+          "node": "$output",
+          "port": "fixed_point_residual"
+        },
+        "description": "Return the terminal fixed_point_residual.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "compatibility_tol"
+        },
+        "to": {
+          "node": "initial_state",
+          "port": "compatibility_tol"
+        },
+        "description": "Explicit compatibility_tol binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "compatibility_tol"
+        },
+        "to": {
+          "node": "terminal_state",
+          "port": "compatibility_tol"
+        },
+        "description": "Explicit compatibility_tol binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "minimum_field"
+        },
+        "to": {
+          "node": "initial_state",
+          "port": "minimum_field"
+        },
+        "description": "Explicit minimum_field binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "minimum_field"
+        },
+        "to": {
+          "node": "terminal_state",
+          "port": "minimum_field"
+        },
+        "description": "Explicit minimum_field binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "strict_compatibility"
+        },
+        "to": {
+          "node": "initial_state",
+          "port": "strict_compatibility"
+        },
+        "description": "Explicit strict_compatibility binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "strict_compatibility"
+        },
+        "to": {
+          "node": "terminal_state",
+          "port": "strict_compatibility"
+        },
+        "description": "Explicit strict_compatibility binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "terminal_state",
+          "port": "force_diagnostics"
+        },
+        "to": {
+          "node": "$output",
+          "port": "force_diagnostics"
+        },
+        "description": "Return the terminal force_diagnostics.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "terminal_state",
+          "port": "parallel_force_diagnostics"
+        },
+        "to": {
+          "node": "$output",
+          "port": "parallel_force_diagnostics"
+        },
+        "description": "Return the terminal parallel_force_diagnostics.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "terminal_state",
+          "port": "flux_converged"
+        },
+        "to": {
+          "node": "$output",
+          "port": "flux_converged"
+        },
+        "description": "Return the terminal flux_converged.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "terminal_state",
+          "port": "equilibrium_compatible"
+        },
+        "to": {
+          "node": "$output",
+          "port": "equilibrium_compatible"
+        },
+        "description": "Return the terminal equilibrium_compatible.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "initial_state",
+          "port": "geometry"
+        },
+        "to": {
+          "node": "select_flux",
+          "port": "geometry"
+        },
+        "description": "Geometry for differentiating the wall flux increment.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "initial_state",
+          "port": "vacuum"
+        },
+        "to": {
+          "node": "terminal_state",
+          "port": "vacuum"
+        },
+        "description": "Terminal unrelaxed map input.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "initial_state",
+          "port": "green"
+        },
+        "to": {
+          "node": "terminal_state",
+          "port": "green"
+        },
+        "description": "Terminal unrelaxed map input.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
       }
     ],
     "execution": {
       "mode": "bounded_sequential_picard_with_optional_wall_flux_correction",
-      "ordering": "Validate geometry and required ports, derive initial B and insert missing B0, then validate Picard controls. Invoke and validate caller closure, compute current, perform masked current relaxation and Green projection, optionally correct psi through the wall Operator, compute relative psi residual, then repeat while due. After stopping, recompute B, closure and current on the returned state before assembly.",
+      "ordering": "Validate geometry and required ports, derive initial B and insert missing B0, then validate Picard controls. Invoke and validate caller closure, compute current, perform masked current relaxation and Green projection, optionally correct psi through the wall Operator and add its magnetic increment, compute relative psi residual, then repeat while due. After stopping, recompute B, closure and current on the returned state before assembly. Terminal reevaluation computes the unrelaxed flux-map residual on the returned field/closure state; it determines converged independently of a small relaxed step.",
       "branches": [
-        "When boundary_correction is absent, use the projected psi directly and return null wall diagnostics.",
-        "When boundary_correction is present, correct projected psi after each update without changing projected BR/BZ.",
-        "At maxiter=0, skip updates but run terminal field/closure/current and return the zero current state, infinite residual and maxiter_reached.",
-        "When the finite bound is exhausted above tol, return the last state with converged=false and maxiter_reached."
+        "Without a wall, use projected flux and its field response.",
+        "With a wall, use projected flux plus wall correction and the derivative-consistent magnetic increment.",
+        "maxiter=0 evaluates terminal diagnostics but does not claim convergence.",
+        "Incompatible parallel force raises by default; strict_compatibility=false returns converged=false and explicit diagnostics."
       ],
       "state_ownership": "The graph owns evolving psi/BR/BZ, prior relaxed cell currents, residual and history; the caller owns vacuum state, Green matrices, fixed mask, parameter mapping and pressure_closure.",
       "failure_propagation": "Invalid inputs, closure outputs and dependency failures abort without partial mapping. Only bounded nonconvergence yields a last-state mapping with failure_reason.",
@@ -1774,7 +2114,7 @@
           "id": "free_boundary_picard",
           "state": "psi, BR, BZ, prior relaxed cell currents, residual history and update count",
           "initialization": "psi/BR/BZ start from vacuum inputs, prior currents are None, residual is infinity, history empty and count zero.",
-          "update_order": "Evaluate field and caller closure on current state, compute toroidal current, relax cell currents, project Green flux/fields, optionally correct psi only, measure relative psi change, append history, then replace evolving state.",
+          "update_order": "Evaluate field and caller closure on current state, compute toroidal current, relax cell currents, project Green flux/fields, optionally correct psi and the matching magnetic field increment, measure relative psi change, append history, then replace evolving state.",
           "continue_when": "residual > tol and executed updates < maxiter",
           "stop_when": "residual <= tol or executed updates reach maxiter, including the zero-step bound",
           "iteration_bound": "Validated runtime integer maxiter >= 0",

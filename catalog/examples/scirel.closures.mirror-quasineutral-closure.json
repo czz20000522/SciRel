@@ -20,7 +20,7 @@
   "identity": {
     "relation": "Positive-ion mirror kinetic moments and Boltzmann electrons closed by local quasineutral potential",
     "direction": "(magnetic field, flux label, ion and electron reference states, optional plug profiles, solver controls) -> quasineutral potential, terminal moments and total pressures",
-    "definition": "For each active sample, the graph solves the potential at which log(Z_i*n_i(phi))-log(n_e(phi)) is zero, where Z_i=charge_c/e, n_i comes from the mirror-constrained bi-Maxwellian moment operator and n_e from the Boltzmann electron operator. Positive ion and electron reference densities make a sample active; both zero make it inactive and preserve the ion reference potential. The potential solver uses bounded bracket expansion and at most max_iterations bisection steps. After success the graph reevaluates ion and electron states at the returned potential and adds electron pressure equally to ion parallel and perpendicular pressures.",
+    "definition": "For each active sample, the graph solves the potential at which log(Z_i*n_i(phi))-log(n_e(phi)) is zero, where Z_i=charge_c/e, n_i comes from the mirror-constrained bi-Maxwellian moment operator and n_e from the Boltzmann electron operator. Positive ion and electron reference densities make a sample active; both zero make it inactive and preserve the ion reference potential. The potential solver uses bounded bracket expansion and at most max_iterations bisection steps. After success the graph reevaluates ion and electron states at the returned potential and adds electron pressure equally to ion parallel and perpendicular pressures. Terminal reevaluation must have finite logarithmic residual within the configured tolerance on all active samples, and the returned solver status must be converged, before total pressure is assembled.",
     "model": "One positive-ion invariant bi-Maxwellian with optional two-plug loss-cone reduction, paired with prescribed-temperature Boltzmann electrons. Charge neutrality is solved locally through the explicit logarithmic residual, not an equilibrium field solve.",
     "geometry": "Local mirror magnetic-field magnitudes and optional left/right plug fields; no field-line geometry, spatial metric or flux-surface reconstruction is computed.",
     "coordinates": "b_t is scalar or exactly psi-shaped; other field/profile values are scalar, exactly psi-shaped or caller callables of the current psi array. The historical psi label is Wb, but the callable does not check flux normalization, coordinate alignment or a [Z,R] axis order.",
@@ -210,7 +210,7 @@
       "shape": "scalar",
       "dtype": "finite float-convertible scalar",
       "required": false,
-      "default": 1e-8,
+      "default": 1e-08,
       "constraints": "Strictly positive."
     },
     {
@@ -252,7 +252,7 @@
       "shape": "psi sample shape",
       "dtype": "NumPy float64 array",
       "required": true,
-      "constraints": "From terminal pressure assembly; addition has no separate finite-output check."
+      "constraints": "Finite sum from validated terminal species state."
     },
     {
       "name": "p_perpendicular",
@@ -261,7 +261,7 @@
       "shape": "psi sample shape",
       "dtype": "NumPy float64 array",
       "required": true,
-      "constraints": "From terminal pressure assembly; addition has no separate finite-output check."
+      "constraints": "Finite sum from validated terminal species state."
     },
     {
       "name": "ion_density",
@@ -297,7 +297,7 @@
       "shape": "psi sample shape",
       "dtype": "NumPy float64 array",
       "required": true,
-      "constraints": "Not the logarithmic residual used for bisection; zero-density or clipped extremes require care in physical interpretation."
+      "constraints": "Finite observational tanh log-ratio diagnostic; terminal active log residual meets the configured solve tolerance."
     },
     {
       "name": "kinetic_moments",
@@ -342,7 +342,7 @@
       "shape": "psi sample shape",
       "dtype": "NumPy float64 array",
       "required": true,
-      "constraints": "Copied from the final ion-moment mapping without extra validation by the assembler."
+      "constraints": "Finite nonnegative terminal ion density."
     },
     {
       "name": "p_parallel_pa",
@@ -387,7 +387,7 @@
       "shape": "psi sample shape",
       "dtype": "NumPy float64 array",
       "required": true,
-      "constraints": "Retained from final ion moments; includes the clipped potential exponent."
+      "constraints": "Retained from final ion moments with unclipped log-domain normalization."
     },
     {
       "name": "density_pitch_integral",
@@ -453,11 +453,11 @@
   "failure_semantics": {
     "invalid_input": "Missing required graph inputs, incompatible b_t/psi or evaluated profile shapes, invalid positive-ion/thermal inputs, mismatched zero/nonzero reference-density masks, unpaired plug fields or invalid dependency inputs raise ValueError or a propagated numeric-conversion error. max_iterations=1 passes the graph's preliminary integer check but is rejected by the potential operator, which requires at least 2.",
     "runtime_failure": "An ion-moment, electron-response, reference-density or pressure-assembly exception propagates. The potential operator raises RuntimeError if a root cannot be bracketed after bounded expansion; no alternate model or root finder is selected.",
-    "nonconvergence": "If all active surfaces do not satisfy both potential-width and logarithmic-residual tolerances within max_iterations, the potential operator raises RuntimeError and this TaskGraph returns no state.",
+    "nonconvergence": "If all active surfaces do not satisfy both potential-width and logarithmic-residual tolerances within max_iterations, the potential operator raises RuntimeError and this TaskGraph returns no state. The graph also raises RuntimeError for a nonconverged solver status or a returned potential whose reevaluated terminal residual fails; it does not trust a stale intermediate residual.",
     "partial_results": "No result mapping is returned after a validation, dependency, bracketing or nonconvergence failure; intermediate trial moments are local to the call."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel-maintained mirror quasineutral TaskGraph, its five independently documented leaves, direct graph regressions, historical Pleiades composition descriptor and pending intake development candidate were compared. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. This record documents current graph control flow and explicitly bounded potential feedback without asserting source-runtime identity or general physical closure.",
+    "lineage_summary": "The current SciRel-maintained mirror quasineutral TaskGraph, its five independently documented leaves, direct graph regressions, historical Pleiades composition descriptor and pending intake development candidate were compared. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. This record documents current graph control flow and explicitly bounded potential feedback without asserting source-runtime identity or general physical closure. The scientific successor retains the declared mathematical model and repairs independently reproduced numerical failures; historical failing behavior is preserved as evidence and is not a current scientific qualification.",
     "source_kinds": [
       "historical Pleiades development TaskGraph descriptor and migration mapping",
       "pending intake development candidate",
@@ -474,7 +474,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
     "dependencies": [
       {
         "asset_id": "scirel.closures.boltzmann-quasineutrality"
@@ -503,16 +503,18 @@
       "No-plug analytic potential and quasineutral residual, plug loss-cone behavior, zero-density reference-potential fallback and caller profile(psi) evaluation.",
       "Propagation of invalid and fractional potential iteration budgets through the graph.",
       "Injected dependency tracing confirms final ion and electron reevaluation after the potential solver and terminal pressure assembly only afterward.",
-      "Graph regressions assert all-inactive zero-iteration terminal state, explicit electron reference-density override, and propagation of a solver RuntimeError without pressure assembly."
+      "Graph regressions assert all-inactive zero-iteration terminal state, explicit electron reference-density override, and propagation of a solver RuntimeError without pressure assembly.",
+      "Injected nonconverged status and forged converged potential both fail before terminal assembly."
     ],
     "tests": [
-      "tests/graph_contracts/mirror_quasineutral_closure/test_graph_mirror_quasineutral_closure.py"
+      "tests/graph_contracts/mirror_quasineutral_closure/test_graph_mirror_quasineutral_closure.py",
+      "tests/operator_contracts/test_mirror_kinetic_scientific_correction.py"
     ],
-    "evidence_ceiling": "Direct graph regressions establish selected no-plug and loss-cone results, a zero-density fallback, one callable psi profile, two invalid iteration controls, final dependency order, a supplied electron-reference branch and an injected solver failure path. They do not establish all profile shapes, unique roots, arbitrary dependency failures, model validity for arbitrary plasmas, a flux normalization convention, or current expert recognition. The historical total-pressure descriptor implies stronger density and residual validation than the maintained assembler performs; this graph document describes the latter.",
+    "evidence_ceiling": "Analytic and plugged graph cases, final reevaluation and injected false-success rejection verify the bounded numerical composition. This does not validate arbitrary plasma inputs, orbit geometry or unique physical equilibria.",
     "known_limitations": [
       "The historical psi unit label is Wb while other SciRel poloidal-flux functions can use Wb/rad; the graph performs no conversion or convention validation.",
-      "The total-pressure assembler checks three pressure inputs but passes density and relative residual through without an independent finite or shape check; the graph obtains them from its bound ion and electron operators. The assembler can retain a supplied electron-state potential, but this graph passes no such field and then sets electrostatic_potential from the solver.",
-      "Numerical clipping and quadrature limits in the bound ion and electron operators carry into the closure; extremely large finite inputs may yield nonfinite derived fields or propagated failure.",
+      "Terminal physical density/pressure/residual fields are finite and broadcast-compatible; arbitrary extra caller metadata is not scientifically interpreted.",
+      "The bound general trapped quadrature has an absolute fraction-error target near vanishing populations; explicit underflow/output-range failures remain possible.",
       "Only one positive-ion species and a Boltzmann electron response are represented.",
       "Public distribution licensing and expert recognition remain pending."
     ]

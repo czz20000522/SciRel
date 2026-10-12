@@ -27,7 +27,12 @@ def _confine_rows(value, left_index, right_index):
     return result
 
 def run_graph(inputs, *, asset_loader, task_graph_loader):
-    """Map reference/plug planes into a local nested kinetic closure."""
+    """Map reference/plug planes into a local nested kinetic closure.
+
+    Endpoint current_balance_solved flags distinguish prescribed evaluation
+    from a solved end-current balance. Local converged describes the separately
+    verified quasineutral state, not a prescribed endpoint equilibrium.
+    """
     required = {'r_grid', 'z_grid', 'b_t', 'psi', 'mass_kg', 'charge_c', 'density_ref_m3', 'temperature_parallel_j', 'temperature_perpendicular_ref_j', 'electron_temperature_j', 'reference_z', 'plug_left_z', 'plug_right_z'}
     missing = sorted((key for key in required if key not in inputs)) if isinstance(inputs, dict) else []
     if not isinstance(inputs, dict) or missing:
@@ -77,6 +82,8 @@ def run_graph(inputs, *, asset_loader, task_graph_loader):
         phi = _field(inputs.get(phi_key, 0.0), psi_reference, phi_key)
         return end_loss(b_reference, b_plug[reference_index], psi_reference, **common, mode='evaluate', phi_plug_v=phi)
     left, right = (endpoint(b_left, 'phi_plug_left_v'), endpoint(b_right, 'phi_plug_right_v'))
+    if mode == 'ambipolar_end_loss' and any(not x.get('current_balance_solved',False) or not x.get('converged',False) for x in (left,right)):
+        raise RuntimeError('endpoint current balance has not been solved')
     phi_left = profile(psi_samples=psi_reference, values=left['potential_v'], target=psi)['values']
     phi_right = profile(psi_samples=psi_reference, values=right['potential_v'], target=psi)['values']
     ambipolar = task_graph_loader('scirel.closures.graphs.mirror_quasineutral_closure')
@@ -86,6 +93,7 @@ def run_graph(inputs, *, asset_loader, task_graph_loader):
     quadrature_order = int(raw_quadrature_order)
     state = ambipolar({'b_t': b_t, 'psi': psi, 'mass_kg': inputs['mass_kg'], 'charge_c': inputs['charge_c'], 'density_ref_m3': inputs['density_ref_m3'], 'temperature_parallel_j': inputs['temperature_parallel_j'], 'temperature_perpendicular_ref_j': inputs['temperature_perpendicular_ref_j'], 'b_ref_t': b_ref, 'phi_ref_v': phi_ref_grid, 'b_plug_left_t': b_left, 'b_plug_right_t': b_right, 'phi_plug_left_v': phi_left, 'phi_plug_right_v': phi_right, 'loss_cone_refill': inputs.get('loss_cone_refill', 0.0), 'quadrature_order': quadrature_order, 'electron_temperature_j': inputs['electron_temperature_j'], **({'electron_density_ref_m3': inputs['electron_density_ref_m3']} if 'electron_density_ref_m3' in inputs else {})})
     for side, endpoint_state in (('end_left_', left), ('end_right_', right)):
+        state[f'{side}current_balance_solved'] = bool(endpoint_state['current_balance_solved'])
         for name in ('potential_v', 'ion_particle_flux_m2_s', 'electron_particle_flux_m2_s', 'log_current_ratio', 'relative_current_residual'):
             state[f'{side}{name}'] = profile(psi_samples=psi_reference, values=endpoint_state[name], target=psi)['values']
     moments = state['kinetic_moments']

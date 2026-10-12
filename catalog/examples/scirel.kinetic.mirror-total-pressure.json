@@ -19,14 +19,14 @@
   "identity": {
     "relation": "Ion kinetic-moment state and electron response to two total-pressure components and a merged terminal state",
     "direction": "(kinetic_moments, electron_state) -> p_parallel, p_perpendicular and merged ion-electron state",
-    "definition": "Broadcast kinetic_moments['p_parallel_pa'], kinetic_moments['p_perpendicular_pa'] and electron_state['electron_pressure_pa'] after float conversion. Set p_parallel=p_parallel,ion+p_e and p_perpendicular=p_perpendicular,ion+p_e. Begin with a shallow copy of all ion-moment entries, then set the two total pressures, the converted ion pressure arrays, pass-through ion and electron densities, electron pressure, optional electrostatic potential, pass-through relative charge residual, and a reference to the original kinetic_moments mapping. Electron pressure is added equally to both directions; no electron pressure anisotropy is modeled here.",
+    "definition": "Broadcast ion/electron pressure fields together with density, residual and optional potential shapes. Require finite nonnegative species density/pressure, finite residual and optional potential; add the electron pressure equally to parallel and perpendicular ion pressure and reject a nonfinite sum. Return a shallow copy retaining the original kinetic_moments mapping and original valid density/residual/potential objects. Residual is observational: this leaf does not certify quasineutrality.",
     "model": "Terminal state assembly for a mirror kinetic-ion state with an externally supplied isotropic electron pressure; not a pressure, electron-response or quasineutrality solver",
     "geometry": "No geometry is computed; the caller supplies aligned ion and electron states for the same mirror-plasma samples.",
-    "coordinates": "Pressure arrays use NumPy broadcasting without coordinate, axis-name or grid validation; density and residual values are passed through without broadcasting.",
+    "coordinates": "Physical fields must have one NumPy-broadcast-compatible shape; successful broadcasting does not establish coordinate alignment. Original valid density/residual/potential objects are retained.",
     "boundary": "No spatial or kinetic boundary is evaluated. The potential is taken from electron_state when present and otherwise recorded as None.",
     "assumptions": [
       "The supplied ion pressure components and electron pressure are in Pa and refer to the same physical samples.",
-      "The supplied densities and relative charge residual already use compatible conventions and sample alignment; this operator does not validate them."
+      "Densities, pressure and residual use compatible conventions; numerical validation does not certify physical quasineutrality."
     ]
   },
   "inputs": [
@@ -37,7 +37,7 @@
       "shape": "dict containing pressure values broadcast-compatible with electron pressure; other entries unconstrained",
       "dtype": "dict; pressure entries convertible to float64 arrays",
       "required": true,
-      "constraints": "Must contain p_parallel_pa, p_perpendicular_pa and density_m3. The two converted pressure arrays must broadcast with electron pressure and contain only finite values. density_m3 and extra fields are not validated or converted."
+      "constraints": "Must contain p_parallel_pa, p_perpendicular_pa and density_m3. The two converted pressure arrays must broadcast with electron pressure and contain only finite values. Extra nonphysical metadata fields are not interpreted. Physical density/pressure values must be finite and nonnegative; residual and optional potential finite, with a common broadcast-compatible shape."
     },
     {
       "name": "electron_state",
@@ -46,7 +46,7 @@
       "shape": "dict containing pressure broadcast-compatible with ion pressure; other entries unconstrained",
       "dtype": "dict; electron_pressure_pa convertible to float64 array",
       "required": true,
-      "constraints": "Must contain electron_density_m3, electron_pressure_pa and relative_charge_residual. The converted electron-pressure array must broadcast with both ion pressures and be finite. Density, residual and optional potential are not validated or converted."
+      "constraints": "Must contain electron_density_m3, electron_pressure_pa and relative_charge_residual. The converted electron-pressure array must broadcast with both ion pressures and be finite. Valid density, residual and optional potential objects retain their identity after numeric validation. Physical density/pressure values must be finite and nonnegative; residual and optional potential finite, with a common broadcast-compatible shape."
     }
   ],
   "outputs": [
@@ -57,7 +57,7 @@
       "shape": "common broadcast pressure shape",
       "dtype": "NumPy float64 array",
       "required": true,
-      "constraints": "Inputs are finite, but finite output is not checked after addition."
+      "constraints": "Finite sum on successful return."
     },
     {
       "name": "p_perpendicular",
@@ -66,7 +66,7 @@
       "shape": "common broadcast pressure shape",
       "dtype": "NumPy float64 array",
       "required": true,
-      "constraints": "Inputs are finite, but finite output is not checked after addition."
+      "constraints": "Finite sum on successful return."
     },
     {
       "name": "ion_density",
@@ -75,7 +75,7 @@
       "shape": "unchanged input density shape",
       "dtype": "original input value",
       "required": true,
-      "constraints": "Passed through without finiteness, sign, shape or coordinate checks."
+      "constraints": "Finite nonnegative and common-shape broadcastable; original valid object retained."
     },
     {
       "name": "ion_p_parallel",
@@ -102,7 +102,7 @@
       "shape": "unchanged input density shape",
       "dtype": "original input value",
       "required": true,
-      "constraints": "Passed through without finiteness, sign, shape or coordinate checks."
+      "constraints": "Finite nonnegative and common-shape broadcastable; original valid object retained."
     },
     {
       "name": "electron_pressure",
@@ -120,7 +120,7 @@
       "shape": "unchanged input potential shape or None",
       "dtype": "original input value or None",
       "required": true,
-      "constraints": "Passed through without validation; absence is represented by None."
+      "constraints": "If supplied, finite and broadcast-compatible; original object retained. Absent means None."
     },
     {
       "name": "relative_charge_residual",
@@ -129,7 +129,7 @@
       "shape": "unchanged input residual shape",
       "dtype": "original input value",
       "required": true,
-      "constraints": "Passed through without finiteness, shape or neutrality checks."
+      "constraints": "Finite and broadcast-compatible; observational residual is not required to be zero."
     },
     {
       "name": "kinetic_moments",
@@ -157,13 +157,13 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError when an input is not a dict or lacks a required key, when the three pressure values cannot broadcast, or when a converted pressure input is nonfinite. Numeric conversion may also raise ValueError or TypeError.",
-    "runtime_failure": "No post-addition finiteness check: overflow of finite pressure inputs may return inf with a NumPy warning. Unexpected NumPy allocation errors may propagate; pass-through fields can contain unvalidated values.",
+    "invalid_input": "Raises ValueError for missing fields, nonbroadcastable physical states, nonfinite fields or negative species density/pressure; numeric conversion may raise TypeError or ValueError.",
+    "runtime_failure": "Raises FloatingPointError if finite species pressures overflow the total pressure. Unrecognized extra ion fields remain shallow-copy metadata and are not interpreted scientifically.",
     "nonconvergence": "Not applicable; no iterative solve is performed.",
     "partial_results": "No result dict is returned if validation or pressure conversion raises. A successful call returns all named assembled fields plus non-overwritten original ion fields."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel-maintained implementation and direct regressions were independently compared with the historical Pleiades descriptor, migration mapping and pending intake development candidate. Historical admission labels and intake r81-v1 do not establish current expert approval. The saved descriptor requires stronger density broadcasting and validation than the maintained callable performs; this exact document states the current SciRel contract.",
+    "lineage_summary": "The current SciRel-maintained implementation and direct regressions were independently compared with the historical Pleiades descriptor, migration mapping and pending intake development candidate. Historical admission labels and intake r81-v1 do not establish current expert approval. The saved descriptor requires stronger density broadcasting and validation than the maintained callable performs; this exact document states the current SciRel contract. The scientific successor retains the declared mathematical model and repairs independently reproduced numerical failures; historical failing behavior is preserved as evidence and is not a current scientific qualification.",
     "source_kinds": [
       "historical Pleiades development descriptor and migration mapping",
       "pending intake development candidate",
@@ -180,7 +180,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
     "dependencies": []
   },
   "example": {
@@ -193,17 +193,17 @@
       "Two-cell ion pressure arrays with scalar electron pressure assemble the expected total pressures and retain an extra ion field and original ion dict reference.",
       "A missing required field raises ValueError; supplied potential identity and absent-potential None behavior are directly tested.",
       "The reviewed example checks preservation of ion pressure anisotropy under the common electron-pressure addition.",
-      "Nonfinite and negative density pass-through is asserted as a current implementation boundary rather than mistaken for source-described density validation."
+      "New scientific regressions reject negative/nonfinite density; the historical assertion demanding unchecked invalid pass-through is retained separately as a superseded behavior conflict."
     ],
     "tests": [
-      "tests/operator_contracts/test_mirror_total_pressure.py"
+      "tests/operator_contracts/test_mirror_total_pressure.py",
+      "tests/operator_contracts/test_mirror_kinetic_scientific_correction.py"
     ],
-    "evidence_ceiling": "Direct SciRel tests establish selected pressure sums, ion-field retention, required-field rejection and optional-potential behavior. They do not test every broadcast or numeric failure, validate densities or neutrality, compare a currently qualified source oracle, prove physical mirror closure, or constitute expert scientific approval.",
+    "evidence_ceiling": "Selected sums, valid metadata retention, common broadcasting and invalid density rejection are verified. The function assembles a prescribed state and does not certify neutrality or an equilibrium model.",
     "known_limitations": [
-      "Only the three pressure fields are numerically validated; density, residual, potential and copied ion fields are unvalidated pass-through values.",
-      "The result is a shallow dict and retains the original kinetic_moments mapping, so nested or referenced values may change if the caller mutates them later.",
-      "Finite inputs can produce nonfinite total pressures on overflow, and NumPy broadcasting does not establish physical coordinate alignment.",
-      "The saved source descriptor's stronger density/shape constraints are not present in this maintained implementation; source reconciliation, public licensing and expert recognition remain pending."
+      "The returned state is shallow and retains the caller kinetic mapping; later caller mutation can change referenced fields.",
+      "Broadcasting is not coordinate alignment. A finite nonzero observational charge residual remains permitted.",
+      "Public licensing and scientific human recognition are separate decisions."
     ]
   }
 }

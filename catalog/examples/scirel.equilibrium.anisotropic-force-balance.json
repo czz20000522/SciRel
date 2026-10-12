@@ -19,15 +19,16 @@
   "identity": {
     "relation": "R-Z poloidal magnetic field and parallel/perpendicular pressure to cylindrical pressure force and toroidal current density",
     "direction": "R-Z grid, B_R, B_Z, p_parallel, p_perpendicular -> force_R, force_Z, parallel_force, J_phi and diagnostics",
-    "definition": "With b=B/|B|, form P_RR=p_perpendicular+(p_parallel-p_perpendicular)b_R^2, P_ZZ=p_perpendicular+(p_parallel-p_perpendicular)b_Z^2 and P_RZ=(p_parallel-p_perpendicular)b_R b_Z. Differentiate these with second-order edge stencils, add the cylindrical 1/R terms off axis, and project the force as J_phi=(B_Z force_R-B_R force_Z)/|B|^2 where its denominator is numerically resolvable.",
+    "definition": "P=p_perpendicular I+(p_parallel-p_perpendicular)bb. Evaluate the cylindrical tensor divergence using difference-form quadratic stencils. At R=0, smooth odd P_RZ contributes a second d_R P_RZ term to force_Z; regular force_R=J_phi=0. Off axis, J_phi=(B_Z force_R-B_R force_Z)/B².",
     "model": "axisymmetric gyrotropic pressure tensor and perpendicular force-balance current projection",
     "geometry": "rectilinear cylindrical R-Z grid with at least three nodes per axis",
     "coordinates": "all arrays indexed [Z,R]; R is nonnegative and both axes strictly increase",
-    "boundary": "Second-order one-sided derivatives at grid ends; if R starts at zero, force_R and J_phi are set to zero in the axis column. Tiny magnetic denominators use the implementation's zero/floor conventions.",
+    "boundary": "Second-order one-sided differences; smooth regular-axis limit force_Z=2*d_R P_RZ+d_Z P_ZZ, force_R=J_phi=0. At zero/tiny B, direction and current retain documented numerical zero conventions and have no gyrotropic physical qualification.",
     "assumptions": [
       "The supplied B_R and B_Z are components of the same poloidal field as the pressure arrays.",
       "Both pressure components are nonnegative Pa values at grid nodes.",
-      "The optional active_mask selects cells for the parallel-force error metric only; this Operator does not zero J_phi outside it."
+      "The optional active_mask selects cells for the parallel-force error metric only; this Operator does not zero J_phi outside it.",
+      "For an axis-containing mesh the physical field and tensor must have smooth axisymmetric parity: BR and PRZ odd, BZ and diagonal pressures even."
     ]
   },
   "inputs": [
@@ -144,12 +145,12 @@
     },
     {
       "name": "parallel_force_error",
-      "description": "RMS parallel-force divided by RMS total force on active cells.",
+      "description": "Resolved RMS parallel-force after subtracting its dimensioned floating-point evaluation envelope, normalized by the larger of total-force RMS and envelope.",
       "units": "dimensionless",
       "shape": "scalar",
       "dtype": "float",
       "required": true,
-      "constraints": "Denominator floored at numeric tiny; returns 0.0 when no cell is active."
+      "constraints": "Denominator also floored at numeric tiny; raw absolute, raw relative and envelope diagnostics remain available; returns 0.0 when no cell is active."
     },
     {
       "name": "firehose_margin",
@@ -159,6 +160,69 @@
       "dtype": "float64",
       "required": true,
       "constraints": "Diagnostic only; this Operator does not reject nonpositive margin."
+    },
+    {
+      "name": "force_roundoff_R",
+      "description": "Local floating-point evaluation envelope, not a truncation error.",
+      "units": "N/m^3",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array",
+      "required": true,
+      "constraints": "Local floating-point evaluation envelope, not a truncation error."
+    },
+    {
+      "name": "force_roundoff_Z",
+      "description": "Local floating-point evaluation envelope, not a truncation error.",
+      "units": "N/m^3",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array",
+      "required": true,
+      "constraints": "Local floating-point evaluation envelope, not a truncation error."
+    },
+    {
+      "name": "parallel_force_roundoff",
+      "description": "Local floating-point evaluation envelope, not a truncation error.",
+      "units": "N/m^3",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array",
+      "required": true,
+      "constraints": "Local floating-point evaluation envelope, not a truncation error."
+    },
+    {
+      "name": "parallel_force_absolute",
+      "description": "Active-mask RMS raw force or its rounding envelope.",
+      "units": "N/m^3",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Active-mask RMS raw force or its rounding envelope."
+    },
+    {
+      "name": "parallel_force_roundoff_rms",
+      "description": "Active-mask RMS raw force or its rounding envelope.",
+      "units": "N/m^3",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Active-mask RMS raw force or its rounding envelope."
+    },
+    {
+      "name": "parallel_force_error_raw",
+      "description": "Unmodified RMS parallel force divided by RMS total force.",
+      "units": "1",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Unmodified RMS parallel force divided by RMS total force."
+    },
+    {
+      "name": "parallel_force_roundoff_consistent",
+      "description": "Whether raw RMS parallel force is no larger than its rounding envelope.",
+      "units": "boolean",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "Whether raw RMS parallel force is no larger than its rounding envelope."
     }
   ],
   "applicability": {
@@ -167,7 +231,8 @@
       "The supplied magnetic and pressure fields have a meaningful gyrotropic interpretation in cylindrical R-Z geometry."
     ],
     "supported": [
-      "Evaluation of the specified discrete cylindrical pressure-force and current relation, including a tested constant-isotropic limit and manufactured varying-pressure and rotated-field examples."
+      "SI cylindrical tensor divergence and perpendicular projection with the regular-axis limit; exact curl-free anisotropic manufactured equilibrium and nonzero off-axis polynomial forces.",
+      "Compatibility reports the residual above a dimensioned 64-epsilon tensor/stencil rounding envelope, retaining raw absolute and relative residuals and the envelope. This is a floating-point resolution diagnostic, not a truncation-error bound or evidence that a sub-resolution physical force is exactly zero."
     ],
     "excluded": [
       "A complete equilibrium solver or a guarantee of parallel force compatibility.",
@@ -182,7 +247,7 @@
     "partial_results": "No partial mapping is returned after an exception."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery.",
+    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. This successor corrects independently manufactured cylindrical-axis, quadrature-domain, floating-point zero-force and terminal-state defects where applicable; predecessor behavior is not treated as physical authority.",
     "source_kinds": [
       "historical Pleiades development descriptor and migration mapping",
       "pending intake development candidate",
@@ -199,7 +264,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
     "dependencies": []
   },
   "example": {
@@ -209,20 +274,19 @@
   },
   "verification": {
     "scope": [
-      "Constant isotropic pressure yields zero force and current.",
-      "Axis rule and active-mask shape failure.",
-      "Manufactured rotating-field anisotropic force and variable isotropic pressure gradient.",
-      "Finite subnormal and large field magnitudes in the internal source-compatible hypot path.",
-      "Mask selection changes the parallel-force diagnostic without changing current; negative pressure and nonfinite field entries are rejected."
+      "Exact anisotropic vacuum tensor equilibrium on three refinements including R=0.",
+      "Sixteen constant-pressure grids retain zero force without false compatibility rejection.",
+      "Resolved parallel-force imbalance remains rejected."
     ],
     "tests": [
-      "tests/operator_contracts/test_anisotropic_force_balance.py"
+      "tests/operator_contracts/test_anisotropic_force_balance.py",
+      "tests/operator_contracts/test_anisotropic_core_scientific_correction.py"
     ],
-    "evidence_ceiling": "Direct SciRel tests cover selected discrete gradients, axis behavior and manufactured values; they do not prove general continuum force balance, arbitrary extreme-value finite output or suitability of a caller's pressure closure. No expert recognition of this development record is implied.",
+    "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
     "known_limitations": [
-      "The mask influences only parallel_force_error; downstream orchestration separately masks J_phi.",
-      "A zero or tiny magnetic field is numerically handled, not physically validated as a gyrotropic closure.",
-      "Public distribution licensing and SciRel expert recognition remain pending."
+      "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
+      "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
+      "No expert scientific endorsement or public release follows from this numerical successor."
     ]
   }
 }

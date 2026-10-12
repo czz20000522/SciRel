@@ -19,7 +19,7 @@
   "identity": {
     "relation": "Local velocity, field and potential with a reference bi-Maxwellian state to invariant distribution and particle invariants",
     "direction": "(v_parallel, v_perpendicular, B, psi, phi, species/reference profiles, optional two-plug state) -> f0, energy, magnetic moment, occupation",
-    "definition": "mu=m*v_perpendicular^2/(2*B), E=m*v_parallel^2/2+mu*B+q*phi, C=(B-B_ref)/T_parallel+B_ref/T_perp,ref. The distribution is n_ref*(m/(2*pi))^(3/2)/(T_perp,ref*sqrt(T_parallel))*exp(clip[-(E-q*phi_ref)/T_parallel-mu*B_ref*(1/T_perp,ref-1/T_parallel),-745,700])*occupation. Without both plugs occupation is one; with both plugs it is refill+(1-refill)*1[E<min(mu*B_left+q*phi_left,mu*B_right+q*phi_right)]. Equality to the barrier is in the depleted branch.",
+    "definition": "mu=m*v_perpendicular^2/(2*B), E=m*v_parallel^2/2+mu*B+q*phi, C=(B-B_ref)/T_parallel+B_ref/T_perp,ref. The distribution is n_ref*(m/(2*pi))^(3/2)/(T_perp,ref*sqrt(T_parallel))*exp[-(E-q*phi_ref)/T_parallel-mu*B_ref*(1/T_perp,ref-1/T_parallel)]*occupation. Without both plugs occupation is one; with both plugs it is refill+(1-refill)*1[E<min(mu*B_left+q*phi_left,mu*B_right+q*phi_right)]. Equality to the barrier is in the depleted branch. The normalization and exponent are combined in log space, including the occupation factor, before one exponential. The exponent is evaluated equivalently as -m*v_parallel^2/(2*T_parallel)-mu*C-q*(phi-phi_ref)/T_parallel, and trapping compares m*v_parallel^2/(2*T_parallel) strictly with mu*(B_end-B)/T_parallel+q*(phi_end-phi)/T_parallel. Represented potential differences are formed before multiplication and scaled to avoid premature range loss. The returned energy_j retains the absolute E definition; its rounded low-order kinetic contribution is not used to determine f0 or occupation.",
     "model": "Invariant guiding-centre gyrotropic bi-Maxwellian with a source-defined two-plug loss-cone occupation; it evaluates a prescribed distribution and does not solve fields or moments.",
     "geometry": "Local positive magnetic-field magnitude and optional positive left/right plug magnitudes; no field-line trajectory or spatial metric is reconstructed.",
     "coordinates": "v_parallel is signed and v_perpendicular enters squared; psi is a caller-owned flux-profile coordinate, historically labeled Wb. All five local quantities are NumPy-broadcast together, and profile callables are evaluated on that broadcast psi array; no flux normalization or axis convention is checked.",
@@ -27,7 +27,7 @@
     "assumptions": [
       "The supplied reference profiles describe the same species, flux convention and potential reference as the local state.",
       "A signed nonzero charge is accepted; this operator does not restrict the species to positive ions.",
-      "The positive integrability coefficient C is required everywhere, but no global finite-output or velocity-domain check is made."
+      "The positive finite integrability coefficient C is required everywhere; local fields, velocities and computed invariants must be finite."
     ]
   },
   "inputs": [
@@ -199,16 +199,16 @@
       "shape": "common broadcast shape",
       "dtype": "float64 ndarray",
       "required": true,
-      "constraints": "Uses a clipped exponent but has no general finite-output guarantee."
+      "constraints": "Finite on successful return; f0 underflow may round to zero."
     },
     {
       "name": "energy_j",
-      "description": "Particle total energy E=mv_parallel^2/2+mu*B+q*phi.",
+      "description": "Particle total energy E=mv_parallel^2/2+mu*B+q*phi. This absolute binary64 output can lose sub-ULP thermal contributions at a large potential origin; stable relative energies independently determine f0 and occupation.",
       "units": "J",
       "shape": "common broadcast shape",
       "dtype": "float64 ndarray",
       "required": true,
-      "constraints": "No global finite-output check."
+      "constraints": "Finite on successful return; f0 underflow may round to zero."
     },
     {
       "name": "magnetic_moment_j_t",
@@ -217,7 +217,7 @@
       "shape": "common broadcast shape",
       "dtype": "float64 ndarray",
       "required": true,
-      "constraints": "No global finite-output check."
+      "constraints": "Finite on successful return; f0 underflow may round to zero."
     },
     {
       "name": "occupation",
@@ -244,13 +244,13 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError for invalid scalar mass/charge/refill, one-sided plug fields, nonbroadcastable reference or plug profiles, nonfinite profile values, nonpositive checked fields/temperatures, or negative reference density. Nonnumeric local-array conversion and callable errors may propagate as their native exceptions; local velocity, psi and potential nonfinite values are not explicitly rejected.",
-    "runtime_failure": "Raises FloatingPointError for C<=0. Exponent clipping to [-745,700] does not guarantee finite energy, normalization or f0; NumPy overflow/underflow/warnings and nonfinite results may occur without an exception.",
+    "invalid_input": "Raises ValueError for invalid scalar mass/charge/refill, one-sided plug fields, nonbroadcastable reference or plug profiles, nonfinite profile values, nonpositive checked fields/temperatures, or negative reference density. Nonnumeric local-array conversion and callable errors may propagate as their native exceptions; nonfinite local velocities, field, psi and potential are explicitly rejected.",
+    "runtime_failure": "Raises FloatingPointError for nonpositive or nonfinite C, nonrepresentable particle invariants or normalization, or a nonfinite f0 output. Underflow to zero is permitted; the physical exponent is never clipped.",
     "nonconvergence": "Not applicable; no iterative solve or numerical quadrature is performed.",
     "partial_results": "No mapping is returned when validation or arithmetic raises; all four fields are assembled at return."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery.",
+    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. The scientific successor retains the declared mathematical model and repairs independently reproduced numerical failures; historical failing behavior is preserved as evidence and is not a current scientific qualification.",
     "source_kinds": [
       "historical Pleiades development descriptor and migration mapping",
       "pending intake development candidate",
@@ -267,7 +267,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
     "dependencies": []
   },
   "example": {
@@ -279,14 +279,18 @@
     "scope": [
       "Distribution equality at two local states constructed to share energy and magnetic moment, with rtol=2e-14.",
       "Direct plugged occupation/refill and default empty-loss-cone checks on selected scalar states.",
-      "Psi-profile versus explicit-array equivalence and selected mass/charge invalid-input cases."
+      "Psi-profile versus explicit-array equivalence and selected mass/charge invalid-input cases.",
+      "Nonfinite local velocity, B, psi and potential regression rejection, without exponent clipping.",
+      "Constant positive and negative potential shifts through 1e100 retain the distribution and strict plug occupation; physical elementary-charge cases retain representable thermal contributions even when absolute energy_j cannot resolve them."
     ],
     "tests": [
-      "tests/operator_contracts/test_mirror_invariant_distribution.py"
+      "tests/operator_contracts/test_mirror_invariant_distribution.py",
+      "tests/operator_contracts/test_mirror_kinetic_scientific_correction.py",
+      "tests/operator_contracts/test_mirror_gauge_scientific_correction.py"
     ],
     "evidence_ceiling": "The direct SciRel tests support selected invariant, loss-cone, profile and input-validation cases, including one explicit scalar normalization comparison. They do not establish universal physical validity of the prescribed distribution, all scalar/array domains, source-byte parity, expert approval or public release.",
     "known_limitations": [
-      "Velocity, psi, local potential and all computed outputs lack a uniform finite-value gate.",
+      "An unrepresentable required invariant or output raises FloatingPointError. Finite binary64 output is not an all-domain physical validity certificate.",
       "The strict barrier comparison and zero-refill default are source-defined conventions; no trapped-orbit trajectory is computed.",
       "Historical psi labeling is Wb but does not establish compatibility with Wb/rad assets.",
       "Public distribution licensing and current-version expert recognition remain pending."

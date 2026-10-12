@@ -82,14 +82,14 @@ def run_graph(inputs, *, asset_loader):
         if active.shape != psi.shape:
             raise ValueError('callable plasma_mask returned the wrong shape')
         hall = drift(r_grid, z_grid, magnetic['B_R'], magnetic['B_Z'], p_parallel, p_perpendicular, state, active, ion_mass, ion_charge, hall_multiplier=hall_multiplier, include_toroidal_inertia=include_toroidal_inertia, hall_density_floor_fraction=hall_density_floor_fraction, maximum_inertial_mach=maximum_inertial_mach, inertia_relax=inertia_relax, inertia_tolerance=inertia_tolerance, inertia_max_iterations=inertia_max_iterations)
-        update = flux_update(r_grid, z_grid, hall['J_phi'], psi, psi_vac, g_psi, relax, old_currents)
+        update = flux_update(r_grid, z_grid, hall['J_phi'], psi, psi_vac, g_psi, relax, old_currents, cell_edges=inputs.get('cell_edges'))
         next_psi = update['psi_next']
         cell_currents = update['plasma_cell_currents']
         relative_change = update['relative_psi_change']
         current_change = update['relative_current_change']
         history.append({'iteration': iteration, 'relative_psi_change': relative_change, 'relative_current_change': current_change, 'generalized_ohm_error': hall['generalized_ohm_error']})
         psi, old_currents = (next_psi, cell_currents)
-        if relative_change <= tol:
+        if update['fixed_point_residual'] <= tol:
             converged = True
             break
     magnetic = field(r_grid, z_grid, psi)
@@ -97,8 +97,12 @@ def run_graph(inputs, *, asset_loader):
     p_parallel, p_perpendicular = _coerce_pressure(state['p_parallel'], state['p_perpendicular'], psi)
     active = np.asarray(mask_port(magnetic['B'], psi), dtype=bool) if callable(mask_port) else fixed_mask
     hall = drift(r_grid, z_grid, magnetic['B_R'], magnetic['B_Z'], p_parallel, p_perpendicular, state, active, ion_mass, ion_charge, hall_multiplier=hall_multiplier, include_toroidal_inertia=include_toroidal_inertia, hall_density_floor_fraction=hall_density_floor_fraction, maximum_inertial_mach=maximum_inertial_mach, inertia_relax=inertia_relax, inertia_tolerance=inertia_tolerance, inertia_max_iterations=inertia_max_iterations)
-    final_update = flux_update(r_grid, z_grid, hall['J_phi'], psi, psi_vac, g_psi, relax, old_currents)
+    final_update = flux_update(r_grid, z_grid, hall['J_phi'], psi, psi_vac, g_psi, relax, old_currents, cell_edges=inputs.get('cell_edges'))
     cell_currents = final_update['plasma_cell_currents']
+    fixed_point_residual=final_update['fixed_point_residual']
+    converged=bool(fixed_point_residual<=tol)
+    if np.any(magnetic['B']<minimum_field):
+        raise FloatingPointError('Hall terminal magnetic field vanished')
     if minimum_firehose >= 0.0 and np.any(active & (hall['firehose_margin'] <= minimum_firehose)):
         raise FloatingPointError('Hall pressure closure crossed firehose/tension singularity')
     compatibility_tol = compatibility_tol
@@ -109,7 +113,7 @@ def run_graph(inputs, *, asset_loader):
         messages.append(f"generalized Ohm error {hall['generalized_ohm_error']:.3e} exceeds {ohm_tol:.3e}")
     if messages and strict:
         raise ValueError('; '.join(messages))
-    return {'psi': psi, 'plasma_cell_currents': cell_currents, 'J_phi': hall['J_phi'], 'B_R': magnetic['B_R'], 'B_Z': magnetic['B_Z'], 'B': magnetic['B'], 'p_parallel': p_parallel, 'p_perpendicular': p_perpendicular, 'parallel_force': hall['parallel_force'], 'force_R': hall['force_R'], 'force_Z': hall['force_Z'], 'ion_toroidal_velocity': hall['ion_toroidal_velocity'], 'electron_toroidal_velocity': hall['electron_toroidal_velocity'], 'electric_field_R': hall['electric_field_R'], 'electric_field_Z': hall['electric_field_Z'], 'hall_state': hall, 'converged': converged, 'iterations': iteration, 'relative_psi_change': relative_change, 'parallel_force_error': hall['parallel_force_error'], 'generalized_ohm_error': hall['generalized_ohm_error'], 'closure_state': state, 'firehose_margin': hall['firehose_margin'], 'compatibility_messages': messages, 'iteration_history': history}
+    return {'psi': psi, 'plasma_cell_currents': cell_currents, 'J_phi': hall['J_phi'], 'B_R': magnetic['B_R'], 'B_Z': magnetic['B_Z'], 'B': magnetic['B'], 'p_parallel': p_parallel, 'p_perpendicular': p_perpendicular, 'parallel_force': hall['parallel_force'], 'force_R': hall['force_R'], 'force_Z': hall['force_Z'], 'ion_toroidal_velocity': hall['ion_toroidal_velocity'], 'electron_toroidal_velocity': hall['electron_toroidal_velocity'], 'electric_field_R': hall['electric_field_R'], 'electric_field_Z': hall['electric_field_Z'], 'hall_state': hall, 'converged': converged, 'fixed_point_residual':fixed_point_residual, 'iterations': iteration, 'relative_psi_change': relative_change, 'parallel_force_error': hall['parallel_force_error'], 'generalized_ohm_error': hall['generalized_ohm_error'], 'closure_state': state, 'firehose_margin': hall['firehose_margin'], 'compatibility_messages': messages, 'iteration_history': history}
 
 def solve_reduced_hall_anisotropic_picard(inputs=None, **kwargs):
     from scirel._composition import compose

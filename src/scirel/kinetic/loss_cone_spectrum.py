@@ -1,84 +1,81 @@
-"""Loss-cone angular eigenpairs used by the SciRel anisotropic pressure closure."""
+"""Ordered even loss-cone eigenpairs, with an integer-regular angular basis."""
+from functools import lru_cache
 import numpy as np
+from scipy.integrate import solve_ivp
 from scipy.optimize import brentq
-from scipy.special import hyp2f1
+from ._loss_cone_modes import regular_even_mode
 
-def _legendre_p(degree, xi, n_terms=15, backend='truncated'):
-    xi = np.asarray(xi, dtype=float)
-    if backend == 'hypergeometric':
-        return hyp2f1(-float(degree), float(degree) + 1.0, 1.0, (1.0 - xi) / 2.0)
-    z = np.clip((1.0 - xi) / 2.0, 0.0, 1.0)
-    result = np.ones_like(z, dtype=float)
-    coefficient = 1.0
-    for order in range(1, int(n_terms)):
-        coefficient *= (-degree + order - 1.0) * (degree + order) / (order * order)
-        result += coefficient * np.power(z, order)
-    return result
-
-def _legendre_q(degree, xi, n_terms=15, backend='truncated'):
-    sine = np.sin(np.pi * float(degree))
-    if abs(sine) < 1e-12:
-        raise ValueError('fractional Legendre Q requires a non-integer degree')
-    return 0.5 * np.pi / sine * (np.cos(np.pi * float(degree)) * _legendre_p(degree, xi, n_terms, backend) - _legendre_p(degree, -np.asarray(xi, dtype=float), n_terms, backend))
 
 def _mode(degree, xi, n_terms=15, backend='truncated'):
-    h = 1e-05
-    p0, q0 = (float(_legendre_p(degree, 0.0, n_terms, backend)), float(_legendre_q(degree, 0.0, n_terms, backend)))
-    dp0 = float((_legendre_p(degree, h, n_terms, backend) - _legendre_p(degree, -h, n_terms, backend)) / (2.0 * h))
-    dq0 = float((_legendre_q(degree, h, n_terms, backend) - _legendre_q(degree, -h, n_terms, backend)) / (2.0 * h))
-    a_coeff, b_coeff = np.linalg.solve(np.array([[p0, q0], [dp0, dq0]]), np.array([1.0, 0.0]))
-    return a_coeff * _legendre_p(degree, xi, n_terms, backend) + b_coeff * _legendre_q(degree, xi, n_terms, backend)
+    if backend not in {'truncated', 'hypergeometric'}:
+        raise ValueError('backend must be truncated or hypergeometric')
+    return regular_even_mode(degree, xi)
 
-def _analytic_degrees(xi_tp, mode_count, n_terms=15, backend='truncated'):
-    upper = max(8.0, 4.0 * int(mode_count) + 4.0)
-    grid = np.linspace(0.05, upper, max(2048, 256 * int(mode_count)))
-    values = []
-    for degree in grid:
-        if abs(degree - round(degree)) < 1e-07:
-            values.append(np.nan)
-            continue
-        try:
-            values.append(float(_mode(degree, xi_tp, n_terms, backend)))
-        except (ValueError, np.linalg.LinAlgError, FloatingPointError):
-            values.append(np.nan)
+
+def _endpoint_phase(eigenvalue, end, order):
+    if eigenvalue == 0.0:
+        return np.pi / 2.0
+    k = np.sqrt(eigenvalue)
+    # y=rho*sin(theta), (1-x²)y'/k=rho*cos(theta).
+    # This phase is continuous through zeros and counts the ordered modes.
+    def rhs(x, theta):
+        return k * (np.cos(theta) ** 2 / (1.0 - x*x) + np.sin(theta) ** 2)
+    solution = solve_ivp(rhs, (0.0, end), [np.pi/2], method='DOP853',
+                         rtol=2e-13, atol=2e-14,
+                         max_step=end / max(32, 8*(order+1)))
+    if not solution.success or not np.isfinite(solution.y[0, -1]):
+        raise RuntimeError('loss-cone Sturm phase integration did not converge')
+    return float(solution.y[0, -1])
+
+
+@lru_cache(maxsize=128)
+def _ordered_degrees(xi_tp, mode_count):
     roots = []
-    for left, right, f_left, f_right in zip(grid[:-1], grid[1:], values[:-1], values[1:]):
-        if not np.isfinite(f_left) or not np.isfinite(f_right) or f_left * f_right >= 0.0:
-            continue
-        try:
-            root = brentq(lambda degree: float(_mode(degree, xi_tp, n_terms, backend)), left, right, xtol=1e-11)
-        except (ValueError, RuntimeError, FloatingPointError):
-            continue
-        if abs(root - round(root)) < 1e-06 or (roots and abs(root - roots[-1]) <= 1e-05):
-            continue
+    for order in range(mode_count):
+        target = (order + 1) * np.pi
+        # Rayleigh quotient: p(x)=1-x² <= 1, so this constant-p
+        # Neumann/Dirichlet eigenvalue bounds the same indexed root above.
+        upper = ((order + 0.5) * np.pi / xi_tp) ** 2
+        lower = roots[-1] if roots else 0.0
+        residual = lambda value: _endpoint_phase(value, xi_tp, order) - target
+        root = brentq(residual, lower, upper*(1.0+1e-12),
+                      xtol=2e-11, rtol=2e-12)
         roots.append(root)
-        if len(roots) >= int(mode_count):
-            break
-    if len(roots) < int(mode_count):
-        raise ValueError('unable to find the requested analytic loss-cone modes')
-    return np.asarray(roots, dtype=float)
+    degrees = (np.sqrt(1.0+4.0*np.asarray(roots))-1.0)/2.0
+    return tuple(float(x) for x in degrees)
+
 
 def solve_loss_cone_spectrum(xi_tp, mode_count, grid_points=256, backend='truncated'):
-    """Solve the source-defined loss-cone angular spectrum.
+    """Return the lowest Neumann-at-zero/Dirichlet-at-xi_tp even modes.
 
-    Returns a mapping containing the cell-centre pitch grid, the lowest
-    positive eigenvalues, fractional Legendre degrees, and eigenfunctions
-    normalized to one at the symmetry endpoint.
+    Both legacy backend names now use the regular, untruncated even
+    solution through scaled initial-value integration. ``backend`` records the requested name and
+    ``evaluation_method`` the actual method. A Sturm phase orders roots and
+    retains integer degrees; an independently evaluated boundary value must
+    agree. The xi grid includes zero and excludes the Dirichlet endpoint.
+    This angular eigenproblem does not itself validate a kinetic population.
     """
     xi_tp = float(xi_tp)
-    mode_count = int(mode_count)
-    grid_points = int(grid_points)
-    if not 0.0 < xi_tp < 1.0:
+    if not np.isfinite(xi_tp) or not 0.0 < xi_tp < 1.0:
         raise ValueError('xi_tp must be inside the open interval (0, 1)')
-    if mode_count <= 0:
-        raise ValueError('mode_count must be positive')
-    grid_points = max(grid_points, mode_count + 8)
-    xi = np.linspace(0.0, xi_tp, grid_points, endpoint=False, dtype=float)
+    if isinstance(mode_count, (bool, np.bool_)) or int(mode_count) != mode_count or mode_count <= 0:
+        raise ValueError('mode_count must be a positive integer')
+    if isinstance(grid_points, (bool, np.bool_)) or int(grid_points) != grid_points or grid_points < 2:
+        raise ValueError('grid_points must be an integer of at least two')
+    mode_count, grid_points = int(mode_count), max(int(grid_points), int(mode_count)+8)
     backend = str(backend)
     if backend not in {'truncated', 'hypergeometric'}:
         raise ValueError('backend must be truncated or hypergeometric')
-    degrees = _analytic_degrees(xi_tp, mode_count, backend=backend)
-    eigenvalues = degrees * (degrees + 1.0)
-    eigenfunctions = np.column_stack([_mode(degree, xi, backend=backend) for degree in degrees])
-    return {'xi': xi, 'eigenvalues': eigenvalues, 'degrees': degrees, 'eigenfunctions': eigenfunctions, 'backend': backend}
+    degrees = np.asarray(_ordered_degrees(xi_tp, mode_count))
+    eigenvalues = degrees*(degrees+1)
+    boundaries = np.asarray([float(regular_even_mode(v, xi_tp)) for v in degrees])
+    if np.any(np.abs(boundaries) > 2e-8):
+        raise RuntimeError('ordered eigenvalues failed independent regular-mode boundary verification')
+    xi = np.linspace(0., xi_tp, grid_points, endpoint=False)
+    modes = np.column_stack([regular_even_mode(v, xi) for v in degrees])
+    return {'xi': xi, 'eigenvalues': eigenvalues, 'degrees': degrees,
+            'eigenfunctions': modes, 'backend': backend,
+            'evaluation_method': 'regular_even_scaled_ivp_with_sturm_phase_ordering',
+            'boundary_residuals': boundaries}
+
 __all__ = ['solve_loss_cone_spectrum']

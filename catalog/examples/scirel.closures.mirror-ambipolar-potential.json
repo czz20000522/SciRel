@@ -20,7 +20,7 @@
   "identity": {
     "relation": "Single-ion mirror end-loss fluxes and ambipolar plug potential relative to a reference surface",
     "direction": "(reference/plug fields, psi, ion mass/charge, reference densities, ion/electron thermal energies, potentials, refill and solver controls) -> plug potential, one-way particle fluxes and current-balance diagnostics",
-    "definition": "For each species form a one-way half-space flux n*sqrt(T_parallel/(2*pi*m))*I(s,a)*refill, where s=(T_perpendicular/T_parallel)*(B_plug/B_reference-1) and a=q*(phi_plug-phi_reference)/T_parallel; I is the implemented piecewise mirror/electrostatic barrier pitch integral. Electrons use a fixed electron mass, charge -e and equal parallel/perpendicular thermal energies; ion charge state is q_i/e. In evaluate mode calculate fluxes at phi_plug_v without solving. In solve mode seek charge_state*ion_flux=electron_flux using a log-current ratio, an initial phi_reference +/- initial_bracket_thermal*(T_i_parallel/q_i+T_e/e) bracket, at most eight expansion rounds, then shared vectorized bisection up to max_iterations. Joint zero-density surfaces keep phi_reference_v.",
+    "definition": "For each species form a one-way half-space flux n*sqrt(T_parallel/(2*pi*m))*I(s,a)*refill, where s=(T_perpendicular/T_parallel)*(B_plug/B_reference-1) and a=q*(phi_plug-phi_reference)/T_parallel; I is the implemented piecewise mirror/electrostatic barrier pitch integral. Electrons use a fixed electron mass, charge -e and equal parallel/perpendicular thermal energies; ion charge state is q_i/e. In evaluate mode calculate fluxes at phi_plug_v without solving. In solve mode seek charge_state*ion_flux=electron_flux using a log-current ratio, an initial phi_reference +/- initial_bracket_thermal*(T_i_parallel/q_i+T_e/e) bracket, at most eight expansion rounds, then shared vectorized bisection up to max_iterations. Joint zero-density surfaces keep phi_reference_v. The barrier integral is evaluated through bounded exponential divided differences and log normalization; positive-population log fluxes survive flux underflow. The tested and returned bisection potential are identical. Electrostatic barriers use scaled relative potential differences. Bisection computes a finite midpoint without first adding two large same-sign potentials. A strictly zero evaluated log-current residual contracts that surface bracket to the evaluated point; otherwise the original half-width and residual tolerances both remain required. Adjacent-float stalling without a qualifying residual is not convergence.",
     "model": "One magnetized positive ion species and an electron half-space mirror/electrostatic end-loss model, with caller-supplied reference populations and phenomenological loss-refill fractions; not a full collisional transport or self-consistent equilibrium model.",
     "geometry": "Independent caller-defined flux surfaces with reference and plug magnetic magnitudes; scalar or array values share one NumPy broadcast shape.",
     "coordinates": "psi identifies the caller's surfaces and is passed to optional density/temperature/potential profile callables. No psi monotonicity, spatial coordinate alignment or field-line geometry is checked.",
@@ -155,7 +155,7 @@
     },
     {
       "name": "potential_tolerance_v",
-      "description": "Maximum active change between consecutive bisection midpoints for convergence.",
+      "description": "Maximum half-width of the active returned-potential bracket.",
       "units": "V",
       "shape": "scalar",
       "dtype": "finite real scalar",
@@ -231,7 +231,7 @@
       "shape": "common broadcast shape",
       "dtype": "NumPy float64 array",
       "required": true,
-      "constraints": "Zero for zero ion density or zero ion_loss_refill; no post-computation finiteness check."
+      "constraints": "Finite nonnegative; zero for absent ions or zero refill; underflow may round to zero."
     },
     {
       "name": "electron_particle_flux_m2_s",
@@ -240,25 +240,25 @@
       "shape": "common broadcast shape",
       "dtype": "NumPy float64 array",
       "required": true,
-      "constraints": "Zero for zero electron density; no post-computation finiteness check."
+      "constraints": "Finite nonnegative; zero for absent electrons; underflow may round to zero."
     },
     {
       "name": "log_current_ratio",
-      "description": "Log of charge-state-weighted ion flux minus log of electron flux, each floored at float64 tiny.",
+      "description": "Analytic log charge-weighted ion flux minus log electron flux for positive populations; inactive evaluation uses finite tiny-floor diagnostics.",
       "units": "dimensionless",
       "shape": "common broadcast shape",
       "dtype": "NumPy float64 array",
       "required": true,
-      "constraints": "A floor-dependent numerical diagnostic when a flux vanishes; zero for joint vacuum."
+      "constraints": "Finite. Active positive populations retain analytic logs when a reported flux underflows."
     },
     {
       "name": "relative_current_residual",
-      "description": "Charge-state-weighted ion flux minus electron flux divided by their sum floored at float64 tiny.",
+      "description": "tanh(log_current_ratio/2), avoiding flux-sum overflow.",
       "units": "dimensionless",
       "shape": "common broadcast shape",
       "dtype": "NumPy float64 array",
       "required": true,
-      "constraints": "Evaluate mode need not be balanced; joint vacuum gives zero. The solve stopping test uses log_current_ratio at the preceding midpoint, not this final residual."
+      "constraints": "Evaluate mode can be unbalanced. Solve mode checks log_current_ratio at the very returned potential."
     },
     {
       "name": "iterations",
@@ -277,6 +277,24 @@
       "dtype": "Python bool",
       "required": true,
       "constraints": "Always True in a returned mapping. In evaluate mode this does not assert ambipolar balance; solve failures raise."
+    },
+    {
+      "name": "evaluation_complete",
+      "description": "The requested numerical evaluation completed.",
+      "units": "boolean",
+      "shape": "scalar",
+      "dtype": "Python bool",
+      "required": true,
+      "constraints": "True on successful return."
+    },
+    {
+      "name": "current_balance_solved",
+      "description": "Whether a bounded current-balance solve was performed.",
+      "units": "boolean",
+      "shape": "scalar",
+      "dtype": "Python bool",
+      "required": true,
+      "constraints": "True in solve mode, False in prescribed evaluate mode; not a model validity certificate."
     }
   ],
   "applicability": {
@@ -295,12 +313,12 @@
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for unsupported mode, nonfinite/nonpositive required scalar controls, refill values outside their mode-specific bounds, nonfinite or nonpositive fields/temperatures, negative densities, absent evaluate-mode phi_plug_v, or one-sided-vacuum solve surfaces. Noninteger max_iterations raises ValueError; incompatible broadcasts, numeric conversion and caller profile failures may raise ValueError or TypeError.",
-    "runtime_failure": "Raises RuntimeError when any active surface cannot be bracketed after eight bounded expansion rounds. Extreme finite inputs may overflow intermediate flux or bracket calculations; derived values have no general finiteness guard.",
-    "nonconvergence": "Raises RuntimeError when max_iterations expires without both midpoint-change and absolute log-current-ratio tests passing for all active surfaces; no best-effort result is returned.",
+    "runtime_failure": "Raises RuntimeError if an active surface cannot be bracketed after eight expansion rounds. Nonfinite dimensionless barriers, fluxes or residuals raise FloatingPointError or ValueError; no NaN success is returned.",
+    "nonconvergence": "Raises RuntimeError unless all active surfaces meet half-bracket-width and absolute log-current-ratio tests at the same returned potential within max_iterations. A mathematically desired root that cannot be represented at the requested width and residual resolution still fails; no ULP-sized tolerance floor is silently introduced.",
     "partial_results": "No result mapping is returned after any validation, callback, bracketing or solve failure. Evaluate mode returns a complete diagnostic mapping even when the prescribed potential leaves a large current residual."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel-maintained relation and direct tests were compared with the historical Pleiades development descriptor, migration mapping and pending intake candidate. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery; this exact document records current SciRel behavior only.",
+    "lineage_summary": "The current SciRel-maintained relation and direct tests were compared with the historical Pleiades development descriptor, migration mapping and pending intake candidate. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery; this exact document records current SciRel behavior only. The scientific successor retains the declared mathematical model and repairs independently reproduced numerical failures; historical failing behavior is preserved as evidence and is not a current scientific qualification.",
     "source_kinds": [
       "historical Pleiades development descriptor and migration mapping",
       "pending intake development candidate",
@@ -317,29 +335,33 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
     "dependencies": []
   },
   "example": {
     "description": "Check the zero-slope half-space barrier integral at a prescribed plug potential.",
-    "code": "import numpy as np\nfrom scirel.closures import solve_mirror_ambipolar_potential\ne = 1.602176634e-19\nm_i = 1.67262192595e-27\nm_e = 9.1093837139e-31\nr = solve_mirror_ambipolar_potential(1.0, 1.0, 0.0, m_i, e, 2.0e18, 2.0*e, 3.0*e, e, electron_density_ref_m3=3.0e18, ion_loss_refill=0.25, electron_loss_refill=0.5, mode='evaluate', phi_plug_v=1.0)\nnp.testing.assert_allclose(r['ion_particle_flux_m2_s'], 2.0e18*np.sqrt(2.0*e/(2.0*np.pi*m_i))*np.exp(-0.5)*0.25)\nnp.testing.assert_allclose(r['electron_particle_flux_m2_s'], 3.0e18*np.sqrt(e/(2.0*np.pi*m_e))*0.5)\nassert r['iterations'] == 0 and r['converged']",
+    "code": "import numpy as np\nfrom scirel.closures import solve_mirror_ambipolar_potential\ne = 1.602176634e-19\nm_i = 1.67262192595e-27\nm_e = 9.1093837139e-31\nr = solve_mirror_ambipolar_potential(1.0, 1.0, 0.0, m_i, e, 2.0e18, 2.0*e, 3.0*e, e, electron_density_ref_m3=3.0e18, ion_loss_refill=0.25, electron_loss_refill=0.5, mode='evaluate', phi_plug_v=1.0)\nnp.testing.assert_allclose(r['ion_particle_flux_m2_s'], 2.0e18*np.sqrt(2.0*e/(2.0*np.pi*m_i))*np.exp(-0.5)*0.25)\nnp.testing.assert_allclose(r['electron_particle_flux_m2_s'], 3.0e18*np.sqrt(e/(2.0*np.pi*m_e))*0.5)\nassert r['iterations'] == 0 and r['converged']\nassert r['evaluation_complete'] and not r['current_balance_solved']",
     "expected": "The zero-mirror-slope ion barrier gives an exp(-1/2) factor, while the electron one-way flux has no barrier at +1 V; evaluate mode reports zero iterations without asserting current balance."
   },
   "verification": {
     "scope": [
       "An analytic zero-mirror-slope flux limit and selected vectorized, profile-callable and current-balance cases.",
       "Joint-vacuum single-update behavior, one-sided-vacuum rejection, invalid controls, bracket failure and iteration-budget nonconvergence.",
-      "Evaluate-mode unbalanced current with converged=True, and solve-mode disregard of phi_plug_v."
+      "Evaluate-mode unbalanced current with converged=True, and solve-mode disregard of phi_plug_v.",
+      "Analytic extreme downhill barrier a=-100,b=1000 yields finite flux; 100-digit independent barrier checks cover slopes around -1, zero and both signs.",
+      "Equal-mass, equal-temperature balanced roots at positive/negative common potentials 1e20 and 1e308 retain the actual zero-current state without midpoint overflow; prescribed endpoint evaluation remains distinct from solving current balance."
     ],
     "tests": [
       "tests/operator_contracts/test_mirror_ambipolar_potential.py",
-      "tests/test_reviewed_failure_semantics.py"
+      "tests/test_reviewed_failure_semantics.py",
+      "tests/operator_contracts/test_mirror_kinetic_scientific_correction.py",
+      "tests/operator_contracts/test_mirror_gauge_scientific_correction.py"
     ],
     "evidence_ceiling": "Direct SciRel tests establish selected flux values from an independent half-space limit, reference-potential retention on joint vacuum, a convergent current-balance example, callable density profile equivalence, and selected failure paths. They do not prove the physical end-loss model, all pitch-integral branches, arbitrary parameter regimes, uniqueness of roots, final residual bounds at every extreme or current expert recognition.",
     "known_limitations": [
       "Refill fractions and the prescribed reference profiles are external model inputs, not derived transport physics.",
-      "A successful evaluate call is not a current-balance solve; an extreme finite input may yield a nonfinite derived flux because no output finiteness check is applied.",
-      "The stop test uses the previous midpoint residual and the next midpoint change before final fluxes are recomputed.",
+      "Evaluate-mode converged retains the historical evaluation-success meaning; current_balance_solved explicitly distinguishes it from a solved endpoint.",
+      "Finite model inputs can require an unrepresentable flux or bracket; these fail explicitly. Refill and reference populations remain prescribed phenomenology.",
       "Public distribution licensing and expert recognition remain pending."
     ]
   }

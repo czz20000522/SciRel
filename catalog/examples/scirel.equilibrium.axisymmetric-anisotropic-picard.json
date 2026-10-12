@@ -28,7 +28,8 @@
     "assumptions": [
       "pressure_closure is a caller-owned scientific callable that interprets each current psi=R A_phi in Wb/rad and returns physically meaningful p_parallel and p_perpendicular in Pa.",
       "g_psi maps cell currents in A to psi=R A_phi in Wb/rad in the declared order; no 2*pi conversion occurs inside the graph.",
-      "The graph's plasma_mask=True cells are active; inactive current is zeroed before feedback, while the force Operator itself uses the mask only for its error metric."
+      "The graph's plasma_mask=True cells are active; inactive current is zeroed before feedback, while the force Operator itself uses the mask only for its error metric.",
+      "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
     ]
   },
   "inputs": [
@@ -84,7 +85,7 @@
       "shape": "scalar",
       "dtype": "finite real scalar",
       "required": false,
-      "default": 1e-8,
+      "default": 1e-08,
       "constraints": "Strictly positive."
     },
     {
@@ -124,7 +125,7 @@
       "shape": "scalar",
       "dtype": "finite real scalar",
       "required": false,
-      "default": 1e-8,
+      "default": 1e-08,
       "constraints": "Strictly positive; field values below it raise FloatingPointError before pressure_closure runs."
     },
     {
@@ -156,6 +157,16 @@
       "required": false,
       "default": true,
       "constraints": "When false, return the error diagnostic without applying the compatibility_tol failure gate."
+    },
+    {
+      "name": "cell_edges",
+      "description": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+      "units": "m",
+      "shape": "(N_R+1, N_Z+1) arrays or None",
+      "dtype": "pair of finite arrays or None",
+      "required": false,
+      "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+      "default": null
     }
   ],
   "outputs": [
@@ -170,12 +181,12 @@
     },
     {
       "name": "plasma_cell_currents",
-      "description": "Terminal masked J_phi times absolute first-spacing cell area.",
+      "description": "Terminal or step current density integrated with the explicitly declared node/cell-domain weights.",
       "units": "A",
       "shape": "[N_Z,N_R]",
       "dtype": "float64",
       "required": true,
-      "constraints": "Recomputed at the returned psi; may differ from the last step's raw currents."
+      "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
     },
     {
       "name": "J_phi",
@@ -260,12 +271,12 @@
     },
     {
       "name": "converged",
-      "description": "Whether a step relative_psi_change reached tol within maxiter.",
+      "description": "True only when the terminal unrelaxed fixed-point residual passes tol (and free-boundary force compatibility passes).",
       "units": "boolean",
       "shape": "scalar",
       "dtype": "bool",
       "required": true,
-      "constraints": "False at the bound is returned, not raised solely for nonconvergence."
+      "constraints": "Relaxed stagnation alone does not establish convergence."
     },
     {
       "name": "iterations",
@@ -320,6 +331,24 @@
       "dtype": "Python list of mappings",
       "required": true,
       "constraints": "Each item contains iteration, relative_psi_change and relative_current_change."
+    },
+    {
+      "name": "fixed_point_residual",
+      "description": "Unrelaxed flux-map residual recomputed at the returned terminal closure/current state; convergence requires <=tol.",
+      "units": "1",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Unrelaxed flux-map residual recomputed at the returned terminal closure/current state; convergence requires <=tol."
+    },
+    {
+      "name": "force_diagnostics",
+      "description": "Complete terminal force result including raw residual and floating-point envelope.",
+      "units": "mixed SI",
+      "shape": "mapping",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "Complete terminal force result including raw residual and floating-point envelope."
     }
   ],
   "applicability": {
@@ -344,7 +373,7 @@
     "partial_results": "No mapping is returned after an exception. Bounded nonconvergence is a complete last-state result, not an exception."
   },
   "provenance": {
-    "lineage_summary": "Maintained SciRel TaskGraph mapped to a saved Pleiades L1 anisotropic Picard composition and direct graph tests; historical review labels are development provenance, not expert recognition of this version.",
+    "lineage_summary": "Maintained SciRel TaskGraph mapped to a saved Pleiades L1 anisotropic Picard composition and direct graph tests; historical review labels are development provenance, not expert recognition of this version. This successor corrects independently manufactured cylindrical-axis, quadrature-domain, floating-point zero-force and terminal-state defects where applicable; predecessor behavior is not treated as physical authority.",
     "source_kinds": [
       "saved L1 TaskGraph contract and implementation",
       "saved direct graph tests",
@@ -361,7 +390,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
     "dependencies": [
       {
         "asset_id": "scirel.field.poloidal-field-from-flux"
@@ -388,13 +417,14 @@
       "Terminal firehose, compatibility and minimum-field checks."
     ],
     "tests": [
-      "tests/graph_contracts/axisymmetric_anisotropic_picard/test_graph_axisymmetric_anisotropic_picard.py"
+      "tests/graph_contracts/axisymmetric_anisotropic_picard/test_graph_axisymmetric_anisotropic_picard.py",
+      "tests/operator_contracts/test_anisotropic_core_scientific_correction.py"
     ],
-    "evidence_ceiling": "Direct graph and leaf regressions cover selected small-grid feedback, masks, terminal recomputation and failure paths; they do not prove real-device convergence, physical applicability of arbitrary caller closures, resolved self-fields or expert recognition.",
+    "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
     "known_limitations": [
-      "The caller-provided pressure closure is not independently standardized by this graph and must interpret psi=R A_phi; prior clients treating the Wb label as complete linked flux need a scientific compatibility review.",
-      "The returned cell currents are recomputed from the terminal force, not merely copied from the last step.",
-      "Public distribution licensing and SciRel expert recognition remain pending."
+      "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
+      "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
+      "No expert scientific endorsement or public release follows from this numerical successor."
     ]
   },
   "graph": {
@@ -509,13 +539,15 @@
           "psi_vac",
           "g_psi",
           "relax",
-          "previous_currents"
+          "previous_currents",
+          "cell_edges"
         ],
         "outputs": [
           "psi_next",
           "plasma_cell_currents",
           "relative_psi_change",
-          "relative_current_change"
+          "relative_current_change",
+          "fixed_point_residual"
         ]
       },
       {
@@ -528,7 +560,8 @@
           "psi_next",
           "plasma_cell_currents",
           "relative_psi_change",
-          "relative_current_change"
+          "relative_current_change",
+          "fixed_point_residual"
         ],
         "outputs": [
           "psi_state",
@@ -559,7 +592,11 @@
           "iterations",
           "relative_psi_change",
           "iteration_history",
-          "converged"
+          "converged",
+          "cell_edges",
+          "psi_vac",
+          "g_psi",
+          "tol"
         ],
         "outputs": [
           "psi",
@@ -579,7 +616,9 @@
           "parallel_force_error",
           "closure_state",
           "firehose_margin",
-          "iteration_history"
+          "iteration_history",
+          "fixed_point_residual",
+          "force_diagnostics"
         ]
       }
     ],
@@ -1698,11 +1737,131 @@
         "transform": "Use 1e-8 T default when omitted.",
         "kind": "control",
         "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "cell_edges"
+        },
+        "to": {
+          "node": "flux_update",
+          "port": "cell_edges"
+        },
+        "description": "Explicit cell_edges binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "cell_edges"
+        },
+        "to": {
+          "node": "terminal_state",
+          "port": "cell_edges"
+        },
+        "description": "Explicit cell_edges binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "terminal_state",
+          "port": "fixed_point_residual"
+        },
+        "to": {
+          "node": "$output",
+          "port": "fixed_point_residual"
+        },
+        "description": "Return the terminal fixed_point_residual.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "flux_update",
+          "port": "fixed_point_residual"
+        },
+        "to": {
+          "node": "loop_control",
+          "port": "fixed_point_residual"
+        },
+        "description": "Unrelaxed fixed-point stopping metric.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "psi_vac"
+        },
+        "to": {
+          "node": "terminal_state",
+          "port": "psi_vac"
+        },
+        "description": "Explicit psi_vac binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "g_psi"
+        },
+        "to": {
+          "node": "terminal_state",
+          "port": "g_psi"
+        },
+        "description": "Explicit g_psi binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "tol"
+        },
+        "to": {
+          "node": "terminal_state",
+          "port": "tol"
+        },
+        "description": "Explicit tol binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "terminal_state",
+          "port": "force_diagnostics"
+        },
+        "to": {
+          "node": "$output",
+          "port": "force_diagnostics"
+        },
+        "description": "Return the terminal force_diagnostics.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
       }
     ],
     "execution": {
       "mode": "bounded_picard_feedback_with_terminal_reevaluation",
-      "ordering": "Validate controls and geometry; for each step derive field, gate minimum B, call/normalize closure, select active cells, compute force, mask J_phi, update flux and record changes. After stopping, derive the final field, call closure and force, mask current, then check minimum B, firehose and compatibility before returning.",
+      "ordering": "Validate controls and geometry; for each step derive field, gate minimum B, call/normalize closure, select active cells, compute force, mask J_phi, update flux and record changes. After stopping, derive the final field, call closure and force, mask current, then check minimum B, firehose and compatibility before returning. Terminal reevaluation computes the unrelaxed flux-map residual on the returned field/closure state; it determines converged independently of a small relaxed step.",
       "branches": [
         "A fixed mask, dynamic mask or all-active default is selected by the caller's plasma_mask port.",
         "At maxiter with relative_psi_change above tol, return converged=false after terminal checks.",
@@ -1715,9 +1874,9 @@
           "id": "anisotropic_picard",
           "state": "psi, previous raw cell currents, relative flux/current changes and iteration count",
           "initialization": "psi is a copy of psi_vac, previous currents are zeros, relative change is initially infinite and count is zero.",
-          "update_order": "Derive field and current closure on current psi, perform one Green flux step, append diagnostics, assign psi_next and raw currents, then test relative_psi_change against tol.",
-          "continue_when": "relative_psi_change > tol and executed count < maxiter",
-          "stop_when": "relative_psi_change <= tol or executed count reaches maxiter",
+          "update_order": "Derive field and current closure on current psi, perform one Green flux step, append diagnostics, assign psi_next and raw currents, then test unrelaxed fixed_point_residual against tol.",
+          "continue_when": "Unrelaxed step fixed_point_residual > tol and executed count < maxiter.",
+          "stop_when": "Unrelaxed step fixed_point_residual <= tol or maxiter reached; terminal reevaluation independently determines the returned convergence flag.",
           "iteration_bound": "Validated runtime integer maxiter >= 1",
           "nonconvergence": "Recompute terminal field, closure and force, apply terminal gates, then return converged=false with the last state and history; no retry is hidden."
         }

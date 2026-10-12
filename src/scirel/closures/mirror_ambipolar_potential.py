@@ -1,6 +1,7 @@
 """Ambipolar end-loss potential closure for one magnetized ion species."""
 from scirel._validation import required_finite_scalar as _require_finite_scalar, required_integer_scalar as _require_integer_scalar
 import numpy as np
+from scirel.kinetic._mirror_numerics import _mirror_flux, _potential_midpoint
 ELEMENTARY_CHARGE_C = 1.602176634e-19
 ELECTRON_MASS_KG = 9.1093837139e-31
 
@@ -18,29 +19,19 @@ def _field(value, psi, name):
 
 def _one_way_flux(density, mass_kg, charge_c, temperature_parallel_j, temperature_perpendicular_j, b_reference_t, b_plug_t, phi_reference_v, phi_plug_v, refill):
     """Source-equivalent half-space flux above a mirror/electrostatic barrier."""
-    slope = temperature_perpendicular_j / temperature_parallel_j * (b_plug_t / b_reference_t - 1.0)
-    intercept = charge_c * (phi_plug_v - phi_reference_v) / temperature_parallel_j
-    epsilon = 32.0 * np.finfo(float).eps
-    pitch_integral = np.ones_like(slope)
-    flat = np.abs(slope) <= epsilon
-    pitch_integral = np.where(flat & (intercept > 0.0), np.exp(-intercept), pitch_integral)
-    increasing = slope > epsilon
-    positive_from_origin = increasing & (intercept >= 0.0)
-    pitch_integral = np.where(positive_from_origin, np.exp(-intercept) / (1.0 + slope), pitch_integral)
-    delayed_barrier = increasing & (intercept < 0.0)
-    root = np.divide(-intercept, slope, out=np.zeros_like(slope), where=increasing)
-    pitch_integral = np.where(delayed_barrier, 1.0 - np.exp(-root) * slope / (1.0 + slope), pitch_integral)
-    decreasing_barrier = (slope < -epsilon) & (intercept > 0.0)
-    decreasing_root = np.divide(-intercept, slope, out=np.zeros_like(slope), where=slope < -epsilon)
-    combined_slope = 1.0 + slope
-    finite_combined = np.abs(combined_slope) > epsilon
-    first_interval = np.where(finite_combined, np.exp(-intercept) * -np.expm1(-combined_slope * decreasing_root) / np.where(finite_combined, combined_slope, 1.0), np.exp(-intercept) * decreasing_root)
-    pitch_integral = np.where(decreasing_barrier, first_interval + np.exp(-decreasing_root), pitch_integral)
-    thermal_speed = np.sqrt(temperature_parallel_j / (2.0 * np.pi * mass_kg))
-    return density * thermal_speed * pitch_integral * refill
+    return _mirror_flux(density, mass_kg, charge_c, temperature_parallel_j,
+        temperature_perpendicular_j, b_reference_t, b_plug_t,
+        phi_reference_v, phi_plug_v, refill)
 
 def solve_mirror_ambipolar_potential(b_reference_t, b_plug_t, psi, ion_mass_kg, ion_charge_c, ion_density_ref_m3, ion_temperature_parallel_j, ion_temperature_perpendicular_j, electron_temperature_j, phi_reference_v=0.0, electron_density_ref_m3=None, ion_loss_refill=1.0, electron_loss_refill=1.0, potential_tolerance_v=1e-06, current_tolerance=1e-10, max_iterations=100, initial_bracket_thermal=8.0, mode='solve', phi_plug_v=None):
-    """Solve ``Z_i Gamma_i = Gamma_e`` independently on each flux surface."""
+    """Solve ``Z_i Gamma_i = Gamma_e`` independently on each flux surface.
+
+    Barrier fluxes use bounded exponent differences. In evaluate mode
+    converged retains its historical meaning of successful evaluation; the
+    explicit current_balance_solved flag is False and the current residual
+    must not be interpreted as a solved equilibrium. Fluxes use relative
+    potentials before species scaling, and finite stable midpoints retain a
+    large common gauge without changing the residual/width gates. Nonfinite states fail."""
     if mode not in {'solve', 'evaluate'}:
         raise ValueError('mode must be solve or evaluate')
     ion_mass_kg = _require_finite_scalar(ion_mass_kg, 'ion_mass_kg', positive=True)
@@ -76,17 +67,30 @@ def solve_mirror_ambipolar_potential(b_reference_t, b_plug_t, psi, ion_mass_kg, 
     def fluxes(phi_plug_v):
         ion_flux = _one_way_flux(ion_density, ion_mass_kg, ion_charge_c, ion_parallel, ion_perpendicular, b_reference_t, b_plug_t, phi_reference_v, phi_plug_v, ion_loss_refill)
         electron_flux = _one_way_flux(electron_density, ELECTRON_MASS_KG, -ELEMENTARY_CHARGE_C, electron_temperature, electron_temperature, b_reference_t, b_plug_t, phi_reference_v, phi_plug_v, electron_loss_refill)
-        current_ion = charge_state * ion_flux
-        residual = np.log(np.maximum(current_ion, np.finfo(float).tiny)) - np.log(np.maximum(electron_flux, np.finfo(float).tiny))
+        log_ion = _mirror_flux(ion_density, ion_mass_kg, ion_charge_c, ion_parallel,
+            ion_perpendicular, b_reference_t, b_plug_t, phi_reference_v,
+            phi_plug_v, ion_loss_refill, return_log=True) + np.log(charge_state)
+        log_electron = _mirror_flux(electron_density, ELECTRON_MASS_KG,
+            -ELEMENTARY_CHARGE_C, electron_temperature, electron_temperature,
+            b_reference_t, b_plug_t, phi_reference_v, phi_plug_v,
+            electron_loss_refill, return_log=True)
+        # The inactive/vacuum evaluator keeps finite log diagnostics. Active
+        # positive populations retain their analytic logs even when flux rounds
+        # to zero, so underflow cannot manufacture a balanced root.
+        both = (ion_density > 0) & (electron_density > 0) & (ion_loss_refill > 0)
+        tiny_log = np.log(np.finfo(float).tiny)
+        residual = np.empty(log_ion.shape)
+        residual[both] = log_ion[both]-log_electron[both]
+        residual[~both] = np.maximum(log_ion[~both],tiny_log)-np.maximum(log_electron[~both],tiny_log)
+        if not np.all(np.isfinite(residual)):
+            raise FloatingPointError('end-loss current residual must be finite')
         return (residual, ion_flux, electron_flux)
     if mode == 'evaluate':
         if phi_plug_v is None:
             raise ValueError('phi_plug_v is required when mode=evaluate')
         potential = _field(phi_plug_v, psi, 'phi_plug_v')
         log_ratio, ion_flux, electron_flux = fluxes(potential)
-        ion_current = charge_state * ion_flux
-        current_scale = np.maximum(ion_current + electron_flux, np.finfo(float).tiny)
-        return {'potential_v': potential, 'ion_particle_flux_m2_s': ion_flux, 'electron_particle_flux_m2_s': electron_flux, 'log_current_ratio': log_ratio, 'relative_current_residual': (ion_current - electron_flux) / current_scale, 'iterations': 0, 'converged': True}
+        return {'potential_v': potential, 'ion_particle_flux_m2_s': ion_flux, 'electron_particle_flux_m2_s': electron_flux, 'log_current_ratio': log_ratio, 'relative_current_residual': np.tanh(0.5*log_ratio), 'iterations': 0, 'converged': True, 'evaluation_complete': True, 'current_balance_solved': False}
     if np.any((ion_density > 0.0) != (electron_density > 0.0)):
         raise ValueError('ion and electron reference densities must be both positive or both zero on each surface for solve mode')
     active = (ion_density > 0.0) & (electron_density > 0.0)
@@ -108,23 +112,26 @@ def solve_mirror_ambipolar_potential(b_reference_t, b_plug_t, psi, ion_mass_kg, 
         upper_residual = fluxes(upper)[0]
     if np.any(active & ((lower_residual < 0.0) | (upper_residual > 0.0))):
         raise RuntimeError('failed to bracket the ambipolar end potential')
-    potential = np.where(active, 0.5 * (lower + upper), phi_reference_v)
+    potential = np.where(active, _potential_midpoint(lower,upper), phi_reference_v)
     converged = not np.any(active)
     iterations = 0
     for iterations in range(1, int(max_iterations) + 1):
         residual, _, _ = fluxes(potential)
-        lower = np.where(active & (residual > 0.0), potential, lower)
-        upper = np.where(active & (residual <= 0.0), potential, upper)
-        next_potential = np.where(active, 0.5 * (lower + upper), phi_reference_v)
-        if not np.any(active) or (np.max(np.abs(next_potential[active] - potential[active])) <= potential_tolerance_v and np.max(np.abs(residual[active])) <= current_tolerance):
-            potential = next_potential
+        exact = active & (residual == 0.0)
+        lower = np.where(exact, potential, lower)
+        upper = np.where(exact, potential, upper)
+        # Test the residual at the very potential we will return. The
+        # predecessor tested this midpoint but returned the next midpoint.
+        if not np.any(active) or (np.max(np.abs(upper[active]-lower[active])) <= 2*potential_tolerance_v and np.max(np.abs(residual[active])) <= current_tolerance):
             converged = True
             break
-        potential = next_potential
+        lower = np.where(active & (residual > 0.0), potential, lower)
+        upper = np.where(active & (residual <= 0.0), potential, upper)
+        potential = np.where(active,_potential_midpoint(lower,upper),phi_reference_v)
     if not converged:
         raise RuntimeError('ambipolar end-potential solve did not converge')
     log_ratio, ion_flux, electron_flux = fluxes(potential)
-    ion_current = charge_state * ion_flux
-    current_scale = np.maximum(ion_current + electron_flux, np.finfo(float).tiny)
-    return {'potential_v': potential, 'ion_particle_flux_m2_s': ion_flux, 'electron_particle_flux_m2_s': electron_flux, 'log_current_ratio': log_ratio, 'relative_current_residual': (ion_current - electron_flux) / current_scale, 'iterations': iterations, 'converged': bool(converged)}
+    if np.any(active) and np.max(np.abs(log_ratio[active])) > current_tolerance:
+        raise RuntimeError('returned ambipolar end potential does not satisfy current tolerance')
+    return {'potential_v': potential, 'ion_particle_flux_m2_s': ion_flux, 'electron_particle_flux_m2_s': electron_flux, 'log_current_ratio': log_ratio, 'relative_current_residual': np.tanh(0.5*log_ratio), 'iterations': iterations, 'converged': bool(converged), 'evaluation_complete': True, 'current_balance_solved': True}
 __all__ = ['solve_mirror_ambipolar_potential']

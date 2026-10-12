@@ -1,38 +1,19 @@
 """Fractional-Legendre source-mode projection for Frank--Egedal closure."""
 import math
 import numpy as np
-from scipy.special import hyp2f1
 
-def _fractional_legendre_p(degree, xi, n_terms, backend='truncated'):
-    xi = np.asarray(xi, dtype=float)
-    if backend == 'hypergeometric':
-        return hyp2f1(-float(degree), float(degree) + 1.0, 1.0, (1.0 - xi) / 2.0)
-    z = np.clip((1.0 - xi) / 2.0, 0.0, 1.0)
-    result = np.ones_like(z, dtype=float)
-    coefficient = 1.0
-    for order in range(1, int(n_terms)):
-        coefficient *= (-degree + order - 1.0) * (degree + order) / (order * order)
-        result = result + coefficient * np.power(z, order)
-    return result
+from ._loss_cone_modes import regular_even_mode
+from scipy.special import roots_legendre
 
-def _fractional_legendre_q(degree, xi, n_terms, backend='truncated'):
-    degree = float(degree)
-    sine = math.sin(math.pi * degree)
-    if abs(sine) < 1e-12:
-        raise ValueError('fractional Legendre Q requires non-integer degrees')
-    return 0.5 * math.pi / sine * (math.cos(math.pi * degree) * _fractional_legendre_p(degree, xi, n_terms, backend) - _fractional_legendre_p(degree, -np.asarray(xi, dtype=float), n_terms, backend))
-
-def _fractional_mode_coefficients(degree, n_terms, backend='truncated'):
-    step = 1e-05
-    p0 = float(_fractional_legendre_p(degree, 0.0, n_terms, backend))
-    q0 = float(_fractional_legendre_q(degree, 0.0, n_terms, backend))
-    dp0 = float((_fractional_legendre_p(degree, step, n_terms, backend) - _fractional_legendre_p(degree, -step, n_terms, backend)) / (2.0 * step))
-    dq0 = float((_fractional_legendre_q(degree, step, n_terms, backend) - _fractional_legendre_q(degree, -step, n_terms, backend)) / (2.0 * step))
-    return np.linalg.solve(np.array([[p0, q0], [dp0, dq0]], dtype=float), np.array([1.0, 0.0]))
 
 def fractional_mode(degree, xi, n_terms, backend='truncated'):
-    a_coeff, b_coeff = _fractional_mode_coefficients(float(degree), n_terms, backend)
-    return a_coeff * _fractional_legendre_p(degree, xi, n_terms, backend) + b_coeff * _fractional_legendre_q(degree, xi, n_terms, backend)
+    """Regular even angular mode; legacy n_terms does not truncate the solution."""
+    if backend not in {'truncated', 'hypergeometric'}:
+        raise ValueError('legendre_backend must be truncated or hypergeometric')
+    if int(n_terms) != n_terms or n_terms < 2:
+        raise ValueError('legendre_terms must be an integer of at least two')
+    return regular_even_mode(degree, xi)
+
 
 def project_frank_egedal_source_modes(params, spectrum_operator=None):
     """Select fractional degrees and project the NBI source onto them."""
@@ -70,9 +51,24 @@ def project_frank_egedal_source_modes(params, spectrum_operator=None):
     else:
         pitch_angle_degrees = float(params.get('nbi_pitch_angle_deg', 45.0))
         xi_nbi = float(np.clip(math.cos(math.radians(pitch_angle_degrees)), 0.0, xi_tp_mid))
-        nodes, weights = np.polynomial.legendre.leggauss(64)
-        xi = 0.5 * xi_tp_mid * (nodes + 1.0)
-        quadrature_weights = 0.5 * xi_tp_mid * weights
-        coefficients = np.asarray([float(fractional_mode(degree, xi_nbi, n_terms, backend)) / max(4.0 * math.pi * float(np.sum(quadrature_weights * fractional_mode(degree, xi, n_terms, backend) ** 2)), 1e-30) for degree in degrees])
+        coefficients = []
+        for degree in degrees:
+            previous = None
+            start_nodes = 2**int(np.ceil(np.log2(max(32.,8*np.sqrt(degree*(degree+1))*np.arcsin(xi_tp_mid)/np.pi))))
+            for node_count in (start_nodes*2**i for i in range(8)):
+                if node_count > 8192:
+                    raise RuntimeError('source-mode normalization requires unresolved angular resolution')
+                nodes, weights = roots_legendre(node_count)
+                values = fractional_mode(degree, .5*xi_tp_mid*(nodes+1.), n_terms, backend)
+                norm = .5*xi_tp_mid*float(np.dot(weights, values*values))
+                if previous is not None and abs(norm-previous) <= 1e-10*abs(norm):
+                    break
+                previous = norm
+            else:
+                raise RuntimeError('source-mode normalization quadrature failed to converge')
+            if not np.isfinite(norm) or norm <= 0.0:
+                raise RuntimeError('source-mode normalization is not finite and positive')
+            coefficients.append(float(fractional_mode(degree, xi_nbi, n_terms, backend))/(4*math.pi*norm))
+        coefficients = np.asarray(coefficients)
     return {'degrees': degrees, 'source_coefficients': coefficients, 'degree_source': degree_source, 'legendre_terms': n_terms, 'legendre_backend': backend, 'xi_tp_mid': xi_tp_mid, 'fractional_mode': lambda degree, xi, terms: fractional_mode(degree, xi, terms, backend)}
 __all__ = ['project_frank_egedal_source_modes']

@@ -28,7 +28,8 @@
     "assumptions": [
       "The caller pressure_closure(B,psi) interprets psi=R A_phi in Wb/rad and supplies a physically compatible state, including ion_density, electron_pressure and electrostatic_potential needed by the Hall leaf.",
       "The dense Green matrix maps cell currents in A to psi=R A_phi in Wb/rad on the same grid; no 2*pi conversion occurs inside the graph.",
-      "A pressure closure, mask callable and control values must remain meaningful on each iterated and terminal state; this graph does not independently certify their physical model."
+      "A pressure closure, mask callable and control values must remain meaningful on each iterated and terminal state; this graph does not independently certify their physical model.",
+      "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
     ]
   },
   "inputs": [
@@ -254,6 +255,16 @@
       "required": false,
       "default": true,
       "constraints": "Actual boolean scalar, not numeric 0/1; does not disable the separate firehose check."
+    },
+    {
+      "name": "cell_edges",
+      "description": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+      "units": "m",
+      "shape": "(N_R+1, N_Z+1) arrays or None",
+      "dtype": "pair of finite arrays or None",
+      "required": false,
+      "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+      "default": null
     }
   ],
   "outputs": [
@@ -268,12 +279,12 @@
     },
     {
       "name": "plasma_cell_currents",
-      "description": "Terminal raw cell currents from Hall J_phi and first-spacing area.",
+      "description": "Terminal or step current density integrated with the explicitly declared node/cell-domain weights.",
       "units": "A",
       "shape": "[N_Z,N_R]",
       "dtype": "float64",
       "required": true,
-      "constraints": "Recomputed via the Picard leaf after stopping; not merely copied from the last update."
+      "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
     },
     {
       "name": "J_phi",
@@ -403,12 +414,12 @@
     },
     {
       "name": "converged",
-      "description": "Whether relative_psi_change reached tol within maxiter.",
+      "description": "True only when the terminal unrelaxed fixed-point residual passes tol (and free-boundary force compatibility passes).",
       "units": "boolean",
       "shape": "scalar",
       "dtype": "bool",
       "required": true,
-      "constraints": "False at maxiter is returned rather than raised solely for outer nonconvergence."
+      "constraints": "Relaxed stagnation alone does not establish convergence."
     },
     {
       "name": "iterations",
@@ -481,31 +492,40 @@
       "dtype": "Python list of mappings",
       "required": true,
       "constraints": "Each item has iteration, relative_psi_change, relative_current_change and generalized_ohm_error."
+    },
+    {
+      "name": "fixed_point_residual",
+      "description": "Unrelaxed flux-map residual recomputed at the returned terminal closure/current state; convergence requires <=tol.",
+      "units": "1",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Unrelaxed flux-map residual recomputed at the returned terminal closure/current state; convergence requires <=tol."
     }
   ],
   "applicability": {
     "preconditions": [
       "A compatible caller pressure_closure supplies both primary pressures and Hall species-state fields at each iterated and terminal field.",
       "The caller Green response matches the grid and cell-current convention of the Picard leaf.",
-      "Iteration fields remain above the chosen minimum_field; the terminal field and Hall diagnostics must be interpreted within the intended physical domain."
+      "Iteration and returned terminal fields must remain at or above minimum_field; the numerical threshold does not by itself establish physical validity of the field or Hall diagnostics."
     ],
     "supported": [
-      "Bounded axisymmetric reduced-Hall magnetic feedback with selected gyrotropic pressure and an explicit caller-controlled closure and mask policy."
+      "Bounded axisymmetric reduced-Hall magnetic feedback with selected gyrotropic pressure and an explicit caller-controlled closure and mask policy.",
+      "After terminal field, pressure closure, Hall drift and flux-map reevaluation, reject a terminal field below minimum_field before returning; earlier callback or dependency failures still propagate."
     ],
     "excluded": [
       "A built-in kinetic pressure model, density evolution, free-boundary response or non-axisymmetric equilibrium.",
-      "A guarantee of outer convergence, local inertia convergence, compatibility or physical correctness for arbitrary caller closures.",
-      "An independent terminal minimum-field gate; terminal drift/force and subsequent checks execute without that repeated comparison."
+      "A guarantee of outer convergence, local inertia convergence, compatibility or physical correctness for arbitrary caller closures."
     ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError/TypeError for missing ports, malformed/nonfinite grid or Green response, noncallable closure, invalid controls, wrong-shaped mask or bad iteration pressure/state; bound leaf and callback exceptions propagate. The terminal path coerces pressure shape without repeating the graph-level nonnegative check, but the Hall leaf still rejects nonfinite primary pressure and invalid optional ion pressure. The graph's own grid check does not reject negative R, but the bound field/Hall leaves do.",
-    "runtime_failure": "An iteration field below minimum_field raises FloatingPointError before its closure call. Terminal active firehose margin at/below a nonnegative minimum_firehose_margin raises FloatingPointError. Strict terminal parallel-force or generalized-Ohm threshold exceedance raises ValueError. A Hall local inertia nonconvergence raises RuntimeError; other callback/dependency failures propagate. The terminal field is not independently compared to minimum_field.",
+    "runtime_failure": "An iteration field below minimum_field raises FloatingPointError before its closure call. Terminal active firehose margin at/below a nonnegative minimum_firehose_margin raises FloatingPointError. Strict terminal parallel-force or generalized-Ohm threshold exceedance raises ValueError. A Hall local inertia nonconvergence raises RuntimeError; other callback/dependency failures propagate. The terminal field is also checked against minimum_field.",
     "nonconvergence": "At maxiter without meeting the outer flux threshold, reevaluate and gate the terminal state, then return converged=false with last psi and history. Local Hall inertia nonconvergence instead raises RuntimeError.",
     "partial_results": "No mapping is returned after an exception. Outer bounded nonconvergence is a complete last-state mapping if terminal evaluation and gates succeed."
   },
   "provenance": {
-    "lineage_summary": "The maintained SciRel TaskGraph and direct regressions were compared with the frozen historical Pleiades development mapping and pending intake candidate. The implementation text matches intake; historical labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery.",
+    "lineage_summary": "The maintained SciRel TaskGraph and direct regressions were compared with the frozen historical Pleiades development mapping and pending intake candidate. The implementation text matches intake; historical labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. This successor corrects independently manufactured cylindrical-axis, quadrature-domain, floating-point zero-force and terminal-state defects where applicable; predecessor behavior is not treated as physical authority.",
     "source_kinds": [
       "historical Pleiades development descriptor and migration mapping",
       "pending intake development candidate",
@@ -522,7 +542,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
     "dependencies": [
       {
         "asset_id": "scirel.field.poloidal-field-from-flux"
@@ -548,13 +568,14 @@
       "Scalar-pressure broadcast, wrong-shape rejection, nonfinite/invalid controls and disabled firehose threshold."
     ],
     "tests": [
-      "tests/graph_contracts/reduced_hall_anisotropic_picard/test_graph_reduced_hall_anisotropic_picard.py"
+      "tests/graph_contracts/reduced_hall_anisotropic_picard/test_graph_reduced_hall_anisotropic_picard.py",
+      "tests/operator_contracts/test_anisotropic_core_scientific_correction.py"
     ],
-    "evidence_ceiling": "Direct graph tests and separately maintained leaf tests cover selected small-grid feedback, including one Hall-disabled circular-filament/mirror-Green coupling, pressure/mask/controls and failure paths; they do not establish nonzero-Hall Green coupling, arbitrary closure validity, all terminal failure ordering, convergence for every Green response, or current SciRel expert recognition.",
+    "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
     "known_limitations": [
-      "The caller's pressure_closure and Green response are not standardized or physically certified by this TaskGraph; vacuum-field documents currently label psi as Wb while this graph requires Wb/rad, so direct cross-asset wiring needs science-owner review.",
-      "The local Hall inertia iteration can fail even when the outer Picard bound is sufficient; a terminal field floor is not rechecked by this implementation.",
-      "Public distribution licensing and SciRel expert recognition remain pending."
+      "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
+      "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
+      "No expert scientific endorsement or public release follows from this numerical successor."
     ]
   },
   "graph": {
@@ -571,7 +592,8 @@
           "cell_currents",
           "relative_psi_change",
           "relative_current_change",
-          "generalized_ohm_error"
+          "generalized_ohm_error",
+          "fixed_point_residual"
         ],
         "outputs": [
           "psi_state",
@@ -680,13 +702,15 @@
           "psi_vac",
           "g_psi",
           "relax",
-          "previous_currents"
+          "previous_currents",
+          "cell_edges"
         ],
         "outputs": [
           "psi_next",
           "cell_currents",
           "relative_psi_change",
-          "relative_current_change"
+          "relative_current_change",
+          "fixed_point_residual"
         ]
       },
       {
@@ -709,7 +733,14 @@
           "minimum_firehose_margin",
           "compatibility_tol",
           "ohm_tolerance",
-          "strict_compatibility"
+          "strict_compatibility",
+          "cell_edges",
+          "psi_vac",
+          "g_psi",
+          "tol",
+          "r_grid",
+          "z_grid",
+          "minimum_field"
         ],
         "outputs": [
           "psi",
@@ -736,7 +767,8 @@
           "closure_state",
           "firehose_margin",
           "compatibility_messages",
-          "iteration_history"
+          "iteration_history",
+          "fixed_point_residual"
         ]
       }
     ],
@@ -2035,11 +2067,162 @@
         "transform": "Identity.",
         "kind": "data",
         "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "cell_edges"
+        },
+        "to": {
+          "node": "flux_update",
+          "port": "cell_edges"
+        },
+        "description": "Explicit cell_edges binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "cell_edges"
+        },
+        "to": {
+          "node": "terminal",
+          "port": "cell_edges"
+        },
+        "description": "Explicit cell_edges binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "terminal",
+          "port": "fixed_point_residual"
+        },
+        "to": {
+          "node": "$output",
+          "port": "fixed_point_residual"
+        },
+        "description": "Return the terminal fixed_point_residual.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "flux_update",
+          "port": "fixed_point_residual"
+        },
+        "to": {
+          "node": "loop_state",
+          "port": "fixed_point_residual"
+        },
+        "description": "Unrelaxed fixed-point stopping metric.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "feedback",
+        "required": true,
+        "feedback_id": "hall_picard"
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "psi_vac"
+        },
+        "to": {
+          "node": "terminal",
+          "port": "psi_vac"
+        },
+        "description": "Explicit psi_vac binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "g_psi"
+        },
+        "to": {
+          "node": "terminal",
+          "port": "g_psi"
+        },
+        "description": "Explicit g_psi binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "tol"
+        },
+        "to": {
+          "node": "terminal",
+          "port": "tol"
+        },
+        "description": "Explicit tol binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "r_grid"
+        },
+        "to": {
+          "node": "terminal",
+          "port": "r_grid"
+        },
+        "description": "Explicit r_grid binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "z_grid"
+        },
+        "to": {
+          "node": "terminal",
+          "port": "z_grid"
+        },
+        "description": "Explicit z_grid binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "minimum_field"
+        },
+        "to": {
+          "node": "terminal",
+          "port": "minimum_field"
+        },
+        "description": "Explicit minimum_field binding.",
+        "condition": "When the bound stage executes.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
       }
     ],
     "execution": {
       "mode": "bounded_picard_feedback_with_nested_bounded_hall_inertia",
-      "ordering": "Validate geometry and controls; per step derive field, reject sub-minimum B, invoke/normalize caller closure, select active cells, compute reduced-Hall state, apply Green flux update and record diagnostics. After stopping, derive field, invoke closure, compute Hall state and raw cell currents again, then check active firehose and optional strict compatibility. No terminal minimum-field comparison is executed.",
+      "ordering": "Validate geometry and controls; per step derive field, reject sub-minimum B, invoke/normalize caller closure, select active cells, compute reduced-Hall state, apply Green flux update and record diagnostics. After stopping, derive field, invoke closure, compute Hall state and raw cell currents again, then check active firehose and optional strict compatibility. A terminal minimum-field comparison is also required. Terminal reevaluation computes the unrelaxed flux-map residual on the returned field/closure state; it determines converged independently of a small relaxed step.",
       "branches": [
         "plasma_mask is a fixed grid, callable(B,psi), or all-active default.",
         "A negative minimum_firehose_margin disables its terminal gate.",
@@ -2053,9 +2236,9 @@
           "id": "hall_picard",
           "state": "psi, previous raw cell currents, last relative flux/current changes, last generalized-Ohm error, iteration count and history",
           "initialization": "psi is a copy of psi_vac, previous currents are zeros, relative flux change is infinite, count is zero and history is empty.",
-          "update_order": "For current psi compute field, pressure closure and Hall current; use the Green leaf to form psi_next and raw cell currents; append diagnostics and replace psi/prior currents, then compare relative_psi_change with tol.",
-          "continue_when": "relative_psi_change > tol and executed count < maxiter",
-          "stop_when": "relative_psi_change <= tol or executed count reaches maxiter",
+          "update_order": "For current psi compute field, pressure closure and Hall current; use the Green leaf to form psi_next and raw cell currents; append diagnostics and replace psi/prior currents, then compare unrelaxed fixed_point_residual with tol.",
+          "continue_when": "Unrelaxed step fixed_point_residual > tol and executed count < maxiter.",
+          "stop_when": "Unrelaxed step fixed_point_residual <= tol or maxiter reached; terminal reevaluation independently determines the returned convergence flag.",
           "iteration_bound": "Validated runtime integer maxiter >= 1; each Hall evaluation also has inertia_max_iterations >= 1",
           "nonconvergence": "Return the reevaluated last outer state with converged=false if terminal checks succeed. A nonconverged Hall local inertia iteration raises RuntimeError instead."
         }

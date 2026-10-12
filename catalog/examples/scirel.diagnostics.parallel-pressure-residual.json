@@ -6,7 +6,7 @@
     "en": "Parallel-pressure equilibrium residual",
     "zh": "平行压强平衡残差"
   },
-  "summary": "Compare perpendicular pressure samples with a value-space magnetic-field derivative of parallel pressure, reporting pointwise and aggregate residuals.",
+  "summary": "Evaluate a local gyrotropic pressure diagnostic with an explicitly supplied fixed-flux derivative.",
   "taxonomy": [
     "diagnostics",
     "anisotropic-pressure",
@@ -18,14 +18,15 @@
   "identity": {
     "relation": "Parallel pressure and magnetic-field samples to an expected perpendicular pressure and residual",
     "direction": "(p_parallel, p_perp, B) -> rhs, error, relative_error, aggregate errors, passed",
-    "definition": "Sort flattened samples by B, estimate d[p_parallel/max(B, 1e-30)]/dB with a first-order-edge finite gradient, and map the derivative back to input positions. Set rhs=-B^2 times that derivative, error=p_perp-rhs, and relative_error=abs(error)/max(abs(p_perp),abs(rhs),atol) elementwise; passed means max(relative_error)<=rtol.",
-    "model": "finite-sample value-space parallel-pressure consistency relation, not a spatial force-balance residual",
-    "geometry": "No spatial geometry is used; array dimensions are preserved only as sample layout",
-    "coordinates": "Derivative coordinate is magnetic-field value B after flattening and sorting, not R, Z, arc length or array index",
-    "boundary": "With one sample or magnetic-field range at most 1e-30, derivative is defined as zero. A nondegenerate field range requires sorted B samples separated by more than 1e-30.",
+    "definition": "rhs=p_parallel-B*(partial p_parallel/partial B)_psi, algebraically equal to -B^2*partial(p_parallel/B)/partial B at fixed psi. error=p_perp-rhs; relative_error=abs(error)/max(abs(p_perp),abs(rhs),atol). passed means max(relative_error)<=rtol.",
+    "model": "Gyrotropic parallel-pressure compatibility for an explicitly specified fixed-flux law; not a spatial force-balance residual.",
+    "geometry": "Explicit fixed-psi pressure law or caller-designated sample lines whose flux label is constant along field_axis.",
+    "coordinates": "Magnetic-field magnitude B at fixed flux label psi; arrays are never flattened and globally sorted to infer this partial derivative.",
+    "boundary": "An explicit derivative may be scalar, broadcastable array, or callable(B,psi). Alternatively supply field_axis and psi: B must be strictly monotone along each line, with at least two samples, and psi exactly constant along that axis. Constant-field data require explicit derivative information; no zero-derivative fallback exists.",
     "assumptions": [
-      "For a physically interpretable p_parallel/B relation, the caller supplies a meaningful positive magnetic-field magnitude, although the callable only checks finiteness.",
-      "The finite-difference result depends on the supplied B-value sampling, including endpoint spacing."
+      "B is a positive magnitude in T and both pressures use Pa.",
+      "The caller supplies a true fixed-flux partial derivative or valid fixed-psi sampling geometry.",
+      "Finite differences have endpoint/sampling error; a successful numerical diagnostic is not a spatial force-balance or global-stability proof."
     ]
   },
   "inputs": [
@@ -40,7 +41,7 @@
     },
     {
       "name": "p_perp",
-      "description": "Perpendicular pressure samples compared with the derived right-hand side.",
+      "description": "Perpendicular pressure samples.",
       "units": "Pa",
       "shape": "exactly the same shape as p_parallel",
       "dtype": "real numeric convertible to float64",
@@ -49,12 +50,12 @@
     },
     {
       "name": "magnetic_field",
-      "description": "Magnetic-field values used as the global value-space derivative coordinate.",
+      "description": "Positive magnetic-field magnitude at the pressure samples.",
       "units": "T",
       "shape": "exactly the same shape as p_parallel",
       "dtype": "real numeric convertible to float64",
       "required": true,
-      "constraints": "All values finite; the implementation does not require positivity. A nondegenerate sample set may not contain duplicate or near-duplicate B values within 1e-30."
+      "constraints": "Finite strictly positive values, same shape as pressures. Duplicate B values are allowed with an explicit derivative; sampled fixed-flux lines require strict monotonicity."
     },
     {
       "name": "rtol",
@@ -73,7 +74,7 @@
       "shape": "scalar",
       "dtype": "real numeric",
       "required": false,
-      "default": 0.000001,
+      "default": 1e-06,
       "constraints": "Finite and strictly positive."
     },
     {
@@ -85,17 +86,47 @@
       "required": false,
       "default": false,
       "constraints": "Interpreted by Python truth value; the implementation does not enforce bool type."
+    },
+    {
+      "name": "dp_parallel_dB",
+      "description": "Explicit fixed-psi pressure derivative.",
+      "units": "Pa/T",
+      "shape": "scalar/array broadcastable to B, callable(B,psi), or None",
+      "dtype": "real numeric/callable/null",
+      "required": false,
+      "constraints": "Required unless field_axis and psi are supplied; finite on evaluation. Cannot be combined with field_axis.",
+      "default": null
+    },
+    {
+      "name": "field_axis",
+      "description": "Axis along which each sample line varies B while holding psi fixed.",
+      "units": "axis index",
+      "shape": "scalar or None",
+      "dtype": "integer or null",
+      "required": false,
+      "constraints": "With no explicit derivative, requires >=2 samples, strictly monotone B on every line, and constant psi along the axis.",
+      "default": null
+    },
+    {
+      "name": "psi",
+      "description": "Flux labels for fixed-flux sample lines or explicit derivative callable.",
+      "units": "consistent caller flux coordinate",
+      "shape": "broadcastable to B, or None",
+      "dtype": "real numeric/null",
+      "required": false,
+      "constraints": "Mandatory and finite for field_axis mode, exactly constant along that axis. Forwarded to a derivative callable otherwise.",
+      "default": null
     }
   ],
   "outputs": [
     {
       "name": "rhs",
-      "description": "Value-space estimate of -B^2 d(p_parallel/B)/dB, with a 1e-30 denominator floor on B.",
+      "description": "p_parallel-B*dp_parallel_dB at fixed psi.",
       "units": "Pa",
       "shape": "same shape as input samples",
       "dtype": "float64 array",
       "required": true,
-      "constraints": "Finite on successful return; zero derivative when B has no resolved spread."
+      "constraints": "Finite on successful return. Uniform isotropic pressure passes with explicit zero derivative."
     },
     {
       "name": "error",
@@ -141,69 +172,87 @@
       "dtype": "bool",
       "required": true,
       "constraints": "No result is returned on failure when strict is truthy."
+    },
+    {
+      "name": "dp_parallel_dB",
+      "description": "Fixed-psi derivative used by the diagnostic.",
+      "units": "Pa/T",
+      "shape": "same shape as pressure",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "derivative_method",
+      "description": "How the fixed-flux derivative was obtained.",
+      "units": "text",
+      "shape": "scalar",
+      "dtype": "str",
+      "required": true,
+      "constraints": "Explicit derivative or fixed-psi axis finite difference."
     }
   ],
   "applicability": {
     "preconditions": [
-      "Pressure arrays and magnetic-field values describe the same nonempty sample set and share an exact shape.",
-      "The caller has selected a physically meaningful magnetic-field coordinate and sampling for this value-space pressure relation."
+      "Positive B with finite, shape-consistent pressure samples.",
+      "Explicit fixed-psi derivative or genuine constant-psi sample lines."
     ],
     "supported": [
-      "Scalar or array-shaped finite sample sets with a resolved, nonduplicate B-value range.",
-      "Degenerate all-equal B samples under the explicit zero-derivative convention; non-strict reporting or strict rejection of tolerance failure."
+      "Scalars and arbitrary sample layouts with an explicit derivative.",
+      "Monotone B sampling independently along each fixed-psi line; at least two samples per line."
     ],
     "excluded": [
-      "A spatial derivative or local MHD force-balance test on a grid.",
-      "Physical interpretation of negative or near-zero B values without an independently justified convention.",
-      "Finite-difference convergence or equilibrium validity beyond the supplied sample set."
+      "Inferring a fixed-psi derivative from an unstructured spatial cloud or constant-B data alone.",
+      "General Hall-flow, finite-Larmor-radius, finite-wave-number or global stability conclusions."
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError for mismatched shape, empty samples, nonfinite values, invalid rtol/atol, or duplicate B values in a nondegenerate sorted sample set. Conversion failures may propagate from NumPy.",
-    "runtime_failure": "Raises ValueError if rhs or residual outputs become nonfinite; with truthy strict, also raises ValueError when max_relative_error exceeds rtol.",
-    "nonconvergence": "Not applicable; the derivative is a finite sample gradient, not an iterative solve.",
-    "partial_results": "None; strict failure and invalid inputs return no result mapping."
+    "invalid_input": "ValueError for missing derivative information, conflicting derivative/axis inputs, nonfinite or nonpositive B, invalid shapes or nonmonotone/variable-psi derivative lines; other documented scalar controls are validated.",
+    "runtime_failure": "FloatingPointError for nonfinite computed residuals or margins; callable errors propagate.",
+    "nonconvergence": "No nonlinear solve; the caller is responsible for derivative sampling convergence.",
+    "partial_results": "None. Optional upstream parallel-equilibrium values in the margin API are forwarded without independent validation."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. The exact source qualification and scientific interpretation remain review questions.",
+    "lineage_summary": "Scientific correction of the local SciRel Pleiades-extension candidate. The retrieved historical extension does not establish an exact original-source mapping for this asset. The changed mathematical definitions are stated here; numerical agreement with an earlier candidate is not a correctness argument.",
     "source_kinds": [
-      "historical Pleiades development descriptor and migration mapping",
-      "pending intake development candidate",
-      "current SciRel implementation and direct tests"
+      "local SciRel implementation",
+      "explicit mathematical derivation",
+      "primary scientific references"
     ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
+    "public_references": [
+      "https://arxiv.org/html/2509.17288v4"
+    ],
+    "license_status": "Original-source mapping and applicable distribution licensing must be retained with the selected distribution; no article text or reference implementation is bundled by this document."
   },
   "public_api": {
     "python": {
       "module": "scirel.diagnostics.parallel_pressure_residual",
       "symbol": "compute_parallel_pressure_residual",
-      "signature": "compute_parallel_pressure_residual(p_parallel, p_perp, magnetic_field, rtol=0.01, atol=1e-06, strict=False)"
+      "signature": "compute_parallel_pressure_residual(p_parallel, p_perp, magnetic_field, rtol=0.01, atol=1e-06, strict=False, *, dp_parallel_dB=None, field_axis=None, psi=None)"
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
     "dependencies": []
   },
   "example": {
-    "description": "Check the value-space relation on unsorted magnetic-field samples.",
-    "code": "import numpy as np\nfrom scirel.diagnostics import compute_parallel_pressure_residual\nB = np.array([3.0, 1.0, 2.0, 4.0])\nr = compute_parallel_pressure_residual(B * B, -B * B, B, rtol=1e-12)\nnp.testing.assert_allclose(r['rhs'], -B * B, rtol=1e-12, atol=1e-12)\nassert r['passed'] and r['max_relative_error'] <= 1e-12",
-    "expected": "Sorting by B recovers rhs=-B^2 in the original sample order; the supplied p_perp passes the selected residual threshold."
+    "description": "Uniform isotropic pressure satisfies the fixed-flux relation when its derivative is explicitly zero.",
+    "code": "import numpy as np\nfrom scirel.diagnostics.parallel_pressure_residual import compute_parallel_pressure_residual\nr=compute_parallel_pressure_residual([3.,3.],[3.,3.],[2.,2.],dp_parallel_dB=0.)\nnp.testing.assert_array_equal(r['error'],[0.,0.])\nassert r['passed']",
+    "expected": "Zero residual, without inventing a derivative from the constant field samples."
   },
   "verification": {
     "scope": [
-      "Constant p_parallel/B and zero perpendicular-pressure identity.",
-      "Unsorted B-value example, all-equal B zero-derivative convention, strict-mode tolerance rejection and empty-input failure."
+      "Explicit uniform-isotropic and fixed-psi multi-line polynomial regressions.",
+      "Sixty-three invariant bi-Maxwellian states cross-check pressure compatibility and total-pressure-slope threshold.",
+      "Four sample refinements demonstrate finite-difference convergence along fixed-psi lines."
     ],
     "tests": [
-      "tests/operator_contracts/test_parallel_pressure_residual.py"
+      "tests/operator_contracts/test_pleiades_spectral_scientific_correction.py"
     ],
-    "evidence_ceiling": "Direct tests establish the listed algebraic and finite-sample behavior only. They do not compare a current qualified source oracle, establish a spatial derivative, prove physical equilibrium on an arbitrary geometry, or constitute expert scientific approval.",
+    "evidence_ceiling": "Analytic identities, explicit failure regressions and independent numerical comparisons establish the stated mathematical contract. They do not establish measured-plasma validity or a general stability theorem.",
     "known_limitations": [
-      "All array positions are pooled into one B-sorted derivative; spatial adjacency is discarded.",
-      "The B denominator is floored at 1e-30 and nonpositive B is not rejected, so callers must restrict physically meaningful usage themselves.",
-      "Degenerate B sampling forces a zero derivative regardless of pressure variation.",
-      "Public distribution licensing and expert recognition remain pending."
+      "The new derivative/axis/psi keywords require callers to supply missing physical information; old global-B-sort behavior is intentionally removed.",
+      "Sampled flags and residuals are local model diagnostics, not proof of global equilibrium or kinetic stability."
     ]
   }
 }
