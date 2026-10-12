@@ -74,7 +74,10 @@ For each ready item:
    missing evidence, determine whether it is derivable from the bound source/materials, observable at runtime, or
    genuinely external; continue unrelated queue items.
 5. **Repair only from a sufficient basis.** Use `scientific-relation-implementation` for the smallest change that
-   satisfies the independently stated correction. Never change an assertion, tolerance, equation, boundary, or
+   satisfies the independently stated correction. Establish that basis through necessary source/runtime
+   investigation and scientific derivation or references; its absence from the initial handoff is not a reason
+   to stop at diagnosis. A confirmed, repairable in-scope defect requires an implemented successor and validation,
+   not only a repair proposal. Never change an assertion, tolerance, equation, boundary, or
    document merely to match observed output. Freeze a successor with predecessor, exact diff, rationale, expected
    source divergence, and affected-domain declaration.
 6. **Revalidate the impact cone.** Rerun every invalidated claim gate and all TaskGraphs or dependants whose ports,
@@ -113,3 +116,10 @@ The method run is complete only when every in-scope input has a proposed disposi
 affected dependency cone has been revalidated. `failed` or `unresolved` can complete the bounded investigation but
 cannot be reported as `correctness_qualified`. Owner validation is still required before the disposition becomes a
 durable workflow fact. Do not infer any handoff, approval, normalization, package, or release state.
+
+For a repair assignment, a bounded investigation exit is not completed remediation. Before deferring an in-scope
+defect, identify the necessary investigation attempted and why behavior or a defensible correction remains
+undetermined. A temporary execution/material-access failure leaves repair pending; it does not establish
+scientific irreparability. Hand final human review the corrected implementation, original behavior, error basis,
+changes and validation/limits under the shared
+[scientific-correction disclosure](../../extraction/scientific-relation-implementation/references/scientific-correction.md#required-disclosure-at-the-current-stage).

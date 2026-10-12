@@ -8,3 +8,12 @@ dist/
 
 # Local machine configuration, credentials and runtime scratch are never source.
 /.runtime/
+
+# AOCI agent host integration (machine-bound; do not commit)
+.codex/config.toml
+.codex/config.toml.backup.*
+
+# Local agent state, editor metadata and generated instruction backups
+/.agents/
+*.DS_Store
+AGENTS.md.backup.*

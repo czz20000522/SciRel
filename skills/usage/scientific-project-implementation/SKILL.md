@@ -31,6 +31,10 @@ useful task over its integrated capabilities rather than create one application 
 Return library gaps to the D2 integration owner and source-only evidence gaps to the D1 owner. Do not rerun valid D1
 source comparisons or require new per-source formal documents for an application task.
 Final library endorsement belongs to the receiving review process; a successful user case supports only its declared scope.
+For installed-package evaluation, exercise the actual packaged Python entrypoints and any native components on
+the declared supported platform without the original source checkout or implicit development dependencies.
+Scientific defects found in application return to D2 with the exact input/version and failure evidence;
+D1 receives only missing source semantics or fidelity questions, not a demand to repair original science.
 
 ## Decide once, then act
 

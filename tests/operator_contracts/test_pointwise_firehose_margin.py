@@ -43,7 +43,9 @@ def test_margin_is_bit_identical_to_combined_diagnostic_firehose_field():
     p_perp = rng.uniform(1.0e4, 1.0e6, size=7)
     p_parallel = rng.uniform(1.0e4, 1.0e6, size=7)
     pointwise = scientific_operator(p_parallel, p_perp, magnetic_field)
-    combined = compute_firehose_mirror_margins(p_parallel, p_perp, magnetic_field)
+    combined = compute_firehose_mirror_margins(
+        p_parallel, p_perp, magnetic_field, dp_perp_dB=0.0
+    )
     np.testing.assert_array_equal(pointwise["firehose_margin"], combined["firehose_margin"])
 
 

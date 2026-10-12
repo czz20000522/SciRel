@@ -20,6 +20,24 @@ its own complete pipeline. Project intake grouping does not turn human decisions
 - Upload/decision mechanics: [review handoff](../scientific-asset-normalization/references/human-review-handoff.md).
 
 Do not repeat valid stage work just to make this handoff look independent.
+For a confirmed source defect, first require the D2 correction and applicable validation to be complete;
+a defect list is not the normal final-review deliverable. Use the existing
+[correction disclosure](../../extraction/scientific-relation-implementation/references/scientific-correction.md#required-disclosure-at-the-current-stage)
+to expose original observed behavior, independent error basis, exact implemented change, corrected results and
+remaining limits in the bound human review page. Ask the expert to judge the supplied correction, not implement it.
+An exceptional unrepairable/undetermined item remains separate with attempted investigation and a precise
+missing decision; do not label repairable work as such merely because human review follows.
+
+## Allocate review attention
+
+Use [evidence-based review attention](../../extraction/scientific-operator-review/references/evidence_based_review_attention.md)
+when preparing multiple AI review rounds and a large human queue. Separate supported package eligibility from
+consequence/uncertainty-based attention. Resolve author self-check and independent challenge findings through
+evidence, with targeted successor review where needed; neither repeated agreement nor high model confidence
+closes a material contradiction. Apply the caller's requirement for a final decision on every retained candidate;
+explicit batch confirmation can reduce reading effort without silently approving unreviewed items.
+An operator/graph review page highlights scientific decisions and residual uncertainty. The usage manual
+reorganizes the same canonical facts for tasks and APIs, retaining limits without copying review mechanics.
 
 ## Freeze the increment
 

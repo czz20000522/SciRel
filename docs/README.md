@@ -7,6 +7,7 @@ SciRel 将已有科研代码整理为可复用的科学算子与任务图，供 
 ## 理解项目与使用方法
 
 - [项目定位](../README.md)：为什么拆解已有代码，以及科学资产、Agent 和胶水代码各自负责什么。
+- [开发项目与科学包交付](design/project-and-distribution.md)：项目开发态、用户安装包、历史样本和分支/worktree 的多版本构建边界。
 - [架构与科学资产合同](architecture.md)：Operator、可复用 TaskGraph 与本次运行实例的区别，以及科学实现和编排的边界。
 - [科学请求工作流](requirements/scientific-request-workflow.md)：需求规范化、能力匹配、动态组合、执行和结果解释。
 - [开发流程](development-process.md)：来源拆解、库整合与用户应用如何交接，怎样扩充和验证能力。
@@ -21,6 +22,7 @@ SciRel 将已有科研代码整理为可复用的科学算子与任务图，供 
 - [标准化资产文档需求](requirements/asset-documentation.md)与[Catalog/适配器设计](design/catalog-and-adapters.md)：exact document、可验证 catalog 和消费投影。
 - [科学领域能力](domains/README.md)：供专家完善的问题域导航；不替代 exact document，也不代表完整覆盖。
 - [开发与增量整合流程](development-process.md)及[贡献指南](../CONTRIBUTING.md)：科学变更、受影响测试、固化和发行门禁。
+- [AOCI 项目索引与增量维护](design/aoci-index-maintenance.md)：开发认知、稳定批次维护、工作树绑定及规模增长的预算与覆盖边界。
 
 ## 从 L1 到审核
 

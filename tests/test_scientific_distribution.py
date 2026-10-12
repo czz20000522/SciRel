@@ -1,0 +1,46 @@
+"""Verify the actual developer wheel keeps project tools outside the science package."""
+
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+from zipfile import ZipFile
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_built_scientific_wheel_excludes_project_tool_packages(tmp_path):
+    source = tmp_path / "source"
+    source.mkdir()
+    shutil.copy2(ROOT / "pyproject.toml", source / "pyproject.toml")
+    shutil.copytree(
+        ROOT / "src", source / "src",
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.egg-info"),
+    )
+    wheels = tmp_path / "wheel"
+    wheels.mkdir()
+    built = subprocess.run(
+        [
+            sys.executable, "-I", "-c",
+            "from setuptools.build_meta import build_wheel; "
+            "import sys; build_wheel(sys.argv[1])",
+            str(wheels),
+        ],
+        cwd=source, capture_output=True, text=True,
+    )
+    assert built.returncode == 0, built.stdout + built.stderr
+    artifacts = list(wheels.glob("scirel-*.whl"))
+    assert len(artifacts) == 1
+    with ZipFile(artifacts[0]) as archive:
+        files = set(archive.namelist())
+    assert "scirel/__init__.py" in files
+    assert all(
+        path.startswith("scirel/") or path.split("/", 1)[0].endswith(".dist-info")
+        for path in files
+    ), sorted(files)
+    expected_scientific_source = {
+        path.relative_to(ROOT / "src").as_posix()
+        for path in (ROOT / "src" / "scirel").rglob("*.py")
+    }
+    assert expected_scientific_source <= files

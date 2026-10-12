@@ -166,7 +166,7 @@ def test_iteration_budget_has_no_hidden_convergence_evaluation():
     def residual(potential):
         values = np.asarray(potential)
         calls.append(values.copy())
-        return {"logarithmic_charge_residual": -values}
+        return {"logarithmic_charge_residual": 1.0 - values}
 
     with pytest.raises(RuntimeError, match="did not converge"):
         solve_quasineutral_potential(

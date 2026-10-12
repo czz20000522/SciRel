@@ -1,6 +1,6 @@
 ---
 name: scientific-computation-asset-extraction
-description: Coordinate source-project extraction into scientifically complete, source-validated L1 operators and task graphs, routing implementation, validation and independent review to specialists; also diagnose an existing extraction without changing it.
+description: Prepare a versioned scientific source project in D0, then coordinate faithful D1 extraction of its frozen delivery into source-free L1 operators and task graphs; also diagnose an existing extraction without changing it.
 ---
 
 # Scientific Computation Asset Extraction
@@ -11,9 +11,19 @@ For a read-only progress question, use [progress diagnosis](references/progress_
 exact snapshot. A diagnosis alone does not authorize writes. For authorized production or repair, read
 [stage boundaries](references/stage_boundary_contract.md), then use the project owner loop below.
 
-D1 owns complete declared-source coverage, source-shaped runnable implementations, implementation and numerical
-comparison against that source, source-free composition, and independent scientific challenge. D2 owns library
-comparison, deduplication, correction and assembly. Formal asset documents belong after D2 stabilizes the retained
+For authorized source preparation, use [D0 preprocessing](references/material_access_and_preprocessing.md#d0-source-preparation):
+keep official upstream read-only; first build or reuse the initial source index, then clean an owned branch/copy,
+maintain indexes for stable changes, and freeze the final D0 with its upstream differences. Initial indexing does
+not automatically require a second whole-project semantic review; repair known defects in their evidenced scope.
+For D1, consume that exact delivery; do not repeat D0 decisions or preparation for each worker. An existing valid
+D0 starts directly at D1. Preparation is not scientific-correctness qualification or an approval request per change.
+
+D1 owns complete frozen-D0 coverage, source-shaped runnable implementations, implementation and numerical
+comparison against that source, source-free composition, and read-only fidelity/completeness review.
+Here and in D1 specialists, bound/original source means the delivered D0. Preserve upstream-to-D0 lineage;
+complete D0 fidelity is not complete fidelity to unchanged upstream.
+Use `source_fidelity` for every D1 specialist invocation. Source defects are recorded for D2; introduced
+extraction defects are fixed here. D2 owns scientific correctness, library comparison, deduplication, correction and assembly. Formal asset documents belong after D2 stabilizes the retained
 code, before final review freeze; D1 does not generate them merely to satisfy a template.
 
 Default to a source-project D1 delivery after completing as much of its whole-source extraction as possible.
@@ -25,15 +35,20 @@ An explicitly agreed bounded pilot/partial intake is an exception, not whole-pro
 ## Project owner autonomy
 
 Select an independent container or equivalent isolation boundary from the actual project and platform contract,
-prepare its dependencies, then start authorized extraction with exact read-only source, an owned
+prepare its dependencies, then start D0 with read-only upstream and an editable workcopy, or D1 with frozen read-only D0, an owned
 persistent output location, applicable skills and the project objective. Retain the environment definition and
-launch command; verify actual dependency access, read-only source and output persistence before claiming readiness.
+launch command; verify actual dependency access, read-only upstream, phase-specific source writes and output persistence before claiming readiness.
 Use the selected runtime contract. If the user changes the isolation requirement, checkpoint active work and resume in the required runtime; preserve prior evidence and validate only the platform-affected behavior.
 
 The D1 project owner runs the scientific queue below autonomously, including local repair and resumable checkpoints.
 When the selected execution harness permits delegation, use subagents or workers for independent scientific families
 with private writes and one integrator. Their types, models, counts and invocation commands are run configuration;
 none is a method requirement. The host may be local, remote, cloud or a heterogeneous cluster.
+Before dispatch, verify the owner's actual delegation tool and each worker's skill/material access; an installed
+agent definition or CLI version alone does not establish usable capacity. Start from the supplied material entry
+and its literal selectors; use [material access and preprocessing](references/material_access_and_preprocessing.md)
+when the shape or index coverage is uncertain. Workers consume the shared frozen preparation and scoped evidence,
+not a new project-wide discovery or dependency install for every region.
 An outer supervisor samples existing project records for method, direction, evidence, resource and ownership drift;
 it does not prescribe each relation's steps or re-accept and hash every incremental report. Intervene for demonstrated
 drift, persistent lack of progress, an owner-unresolvable block, a resource/write conflict or a stage handoff.
@@ -42,11 +57,12 @@ judgment with a new micro-plan. Independent review findings remain attributable 
 
 ## Project owner loop
 
-1. **Fix the scope and anchors.** Preserve the exact source snapshot and evidence universe.
+1. **Fix the scope and anchors.** Preserve the exact D0 snapshot and evidence universe, including its upstream delta.
+   Reuse a supplied verified source selection and D0 entry; reopen selection only when absent, changed or contradicted.
    Before selecting a new source, cross-check its names/aliases against both history filenames and case-insensitive
    content in the supplied provenance, evaluations, handoffs and run inventories. When repository history is supplied include
    `docs/evaluations/`; a deployed bundle uses caller-supplied history instead. A negative query only describes its
-   searched scope. Inspect source availability, runnable entrypoints and independent oracles before choosing;
+   searched scope. Inspect source availability, runnable entrypoints and source-behavior oracles before choosing;
    copied directories and prior extracted assets do not establish an untouched, complete source.
    Reuse a digest-bound structural index to find source locations, then inspect science; an index or call graph cannot establish the
    scientific census. Map declared terminal outputs backward to governing relations, state and inputs, and trace
@@ -66,9 +82,10 @@ judgment with a new micro-plan. Independent review findings remain attributable 
    exact dependencies are ready; preserve order, ports, branching, state, convergence and complete terminal outputs.
    Do not hide scientific computation in graph glue or treat call adjacency as a TaskGraph.
 5. **Close the declared scope.** Reconcile the whole-source census, material branches and target paths. Run or reuse
-   attributable package, source-free and canonical/sealed-holdout reassembly evidence. Obtain independent review
-   of the exact scientific claims. Use [closure and progress](references/scientific_capability_closure_and_progress.md)
-   for the current snapshot and deterministic completion checks. No unresolved required science may become
+   attributable package, source-free and source-comparison reassembly evidence, including material branch/state cases.
+   Obtain read-only review of fidelity, source coverage and evidence sufficiency, not scientific correctness.
+   Use [closure and progress](references/scientific_capability_closure_and_progress.md)
+   within the selected evidence protocol. No unresolved required source-fidelity scope may become
    `full_freeze`; bounded material states its narrower scope. D1 completion is not human approval or release.
 6. **Hand off the project snapshot.** Preserve the exact bundle, evidence bindings, source mapping and remaining claim limits for
    the receiving D2 integration owner supplied by that environment. D2 may reuse, combine or discard equivalent
@@ -86,12 +103,14 @@ coordinator owns scope, integration and completion, never self-approval of indep
 
 | Current need | Route |
 | --- | --- |
+| Prepare, clean and freeze a source project before extraction | [D0 source preparation](references/material_access_and_preprocessing.md#d0-source-preparation); editable derivative, read-only upstream and traceable scope delta |
 | Decide operator, TaskGraph, support or disposition | [Asset boundary decision](references/asset_projection_decision_manual.md); consult [scientific operator detail](references/scientific_operator.md) only for unresolved granularity |
+| Locate existing materials or prepare source navigation | [Material access and preprocessing](references/material_access_and_preprocessing.md) |
 | Map a scientific source region | [Source framework method](references/source_framework_production_manual.md); [physics overview](references/physics_framework_production_manual.md) only when a physical map needs clarification |
-| Implement a source-backed relation or justified correction | [Scientific relation implementation](../scientific-relation-implementation/SKILL.md) with exact source scope and claim ceiling |
-| Design, execute or interpret scientific/numerical/source comparison | [Scientific computation validation](../scientific-computation-validation/SKILL.md) |
+| Extract, wrap or complete a source-backed implementation | [Scientific relation implementation](../scientific-relation-implementation/SKILL.md), `source_fidelity`, exact source scope; record source defects for D2 |
+| Design, execute or interpret source comparison | [Scientific computation validation](../scientific-computation-validation/SKILL.md), `source_fidelity`; source output/state/failure is the oracle |
 | Recover missing source observations or hidden state | [Source-free playbook](references/source_free_extraction_playbook.md), then [runtime dataset construction](../scientific-runtime-dataset-construction/SKILL.md) only when capture is necessary |
-| Independently challenge a candidate and its evidence | [Scientific operator review](../scientific-operator-review/SKILL.md) in a separate read-only context; [closure and progress](references/scientific_capability_closure_and_progress.md) owns any batch exit receipt |
+| Review fidelity, completeness and evidence | [Scientific operator review](../scientific-operator-review/SKILL.md), `source_fidelity`, in a separate read-only context; [closure and progress](references/scientific_capability_closure_and_progress.md) governs the selected exit protocol |
 | Package or load a saved L1 bundle | [Intake directory contract](references/intake_directory_contract.md); [artifact templates](references/artifact_template_pack.md) only for layout details |
 | Diagnose repeated work or evidence invalidation | [Workflow optimization](references/workflow_optimization.md) |
 | Retain or retire substantial external probes/captures | [Evidence persistence](references/evidence_persistence_boundary.md) |
@@ -99,8 +118,9 @@ coordinator owns scope, integration and completion, never self-approval of indep
 ## Repair and claim boundaries
 
 Scientific meaning is anchored in the source, verified code and necessary explicit conventions, not Markdown
-presence or heading order. D1 must still establish both implementation fidelity and numerical correctness; later
-stages are not substitutes for source comparison. A missing unit, branch, source anchor or oracle is substantive
+presence or heading order. D1 establishes implementation and numerical behavior fidelity to the source;
+scientific and numerical-method correctness belong to D2. Later stages are not substitutes for source comparison.
+A missing unit, branch, source anchor or behavior oracle is substantive
 when it prevents interpretation or validation, regardless of which file should have contained it.
 
 When a path, assertion, format or packaging hash fails, first establish whether the saved code, inputs, outputs and

@@ -33,6 +33,14 @@ fail closed instead of being overwritten. Installed bundle directories and files
 or task-local output cannot mutate the content-addressed runtime copy; run Python checks with
 `PYTHONDONTWRITEBYTECODE=1` and keep all run artifacts outside the skill root.
 
+For a pinned session that may still read its deployed files, install a new release into a new run-owned skill
+root instead of switching that shared root: the installer removes previous owned bundle directories. Keep the old
+root available for its live/frozen consumers. Native Claude can use the same verified five-skill payload through
+its own project skill root; its runtime adapter supplies Agent definitions, explicit skill preloading, MCP config
+and the material entry. Check effective tool visibility and actual calls after deployment. A bundle digest alone
+proves installed bytes, not method adoption or delegation. See the extraction skill's
+[material access and preprocessing](../../skills/extraction/scientific-computation-asset-extraction/references/material_access_and_preprocessing.md).
+
 Running sessions keep their pinned context. Restart or explicitly resume a run only after recording the installed
 bundle digest, then use the deployed validator and fresh attempt identities. A deployment does not relabel or mutate
 old run receipts; `.dev` evidence remains superseded history.
@@ -57,8 +65,9 @@ supplies the key through `SCIREL_MODEL_API_KEY`, never command arguments. It use
 the Responses API and leaves shared Codex configuration and authentication files
 unchanged. Re-run `sync` after changing the control JSON.
 
-Use `scirel-codex` in place of the direct `codex` executable for configured
-extraction coordinators and workers. Remove competing model/provider/profile
+For runs explicitly configured to use Codex, use `scirel-codex` in place of the direct `codex` executable.
+This adapter does not select the execution harness: caller-selected native Claude runs retain their private
+Claude provider/model route and use their native Agent tools. Remove competing model/provider/profile
 arguments; the launcher rejects them so stale script flags cannot select another
 model. Other Codex arguments, working directories, permissions and session IDs
 remain the launcher's caller's responsibility.

@@ -61,6 +61,33 @@ not independent scientific evidence.
 
 ## Workflow
 
+### Select D1 source-fidelity validation
+
+For D1, use `source_fidelity` and validate questions 1, 4 and 5 against the bound source behavior.
+Scientific-relation and numerical-method correctness (questions 2 and 3) are later-stage claims, not missing
+D1 gates. This route replaces the independent-science catalog, relation-specific and high-consequence gate
+requirements below for this mode; preserve the shared identity, execution, evidence and scope boundaries.
+
+- Run or reuse the original and packaged candidate on identical explicit inputs and genuine initial state.
+  Original fixtures and self-constructed source-admissible data are valid. Cover material selectors, boundaries,
+  state transitions and failures; additional cases detect translation errors, not experimental validity.
+- Compare outputs/schema, consumed state, branch/order, termination and failure behavior. Use exact comparison
+  for discrete fields and retained or predeclared precision-aware numerical criteria. Compare NaN/nonfinite
+  patterns and failure markers explicitly instead of silently dropping or sanitizing them.
+- The original implementation is the fidelity oracle even if scientifically wrong. Distinguish an introduced
+  mismatch, an original reproducible failure, a comparator defect and a runtime/dependency failure. A failure
+  expected from the source can pass fidelity; missing or undefined source behavior cannot be invented.
+- Do not impose analytical solutions, governing residuals, convergence proofs, physical calibration or a
+  separately sealed statistical holdout on D1. Never weaken existing tolerances to candidate output or call
+  self-generated data experimental evidence. A selected legacy serializer keeps its real requirements; no
+  fabricated seal or passing receipt may bridge protocols.
+- Verify the packaged dependency closure without the original checkout/environment, including native components.
+  Reuse attributable observations; rerun only changed behavior and affected composition. Record source issues
+  for D2 with their triggers/evidence; this validator does not authorize a source correction.
+
+Return named fidelity/composition/reassembly results and untested scope. Questions 2 and 3 are outside the D1
+claim, not failed fidelity tests. Use the workflow below when those scientific correctness claims are requested.
+
 1. **Freeze the testable claim.** List the governing relation, inputs/outputs, units, coordinate/index
    conventions, assumptions, closures, boundaries, numerical method, lifecycle/update order, failure semantics,
    and observable. Classify each required fact as `given`, `derived`, `assumed`, or `missing`.

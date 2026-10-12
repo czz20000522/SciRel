@@ -1,6 +1,6 @@
 ---
 name: scientific-operator-review
-description: Use for an independent read-only challenge of the scientific and numerical correctness claimed by an exact scientific operator or TaskGraph and its bound evidence. Returns findings only; it does not extract, test, repair, normalize, approve, or decide stage completion.
+description: Independently review exact scientific operators or TaskGraphs and bound evidence; D1 reviews source fidelity and completeness, later correctness tasks review scientific claims. Returns read-only findings, not repairs, approval or stage completion.
 ---
 
 # Scientific Operator Review
@@ -31,9 +31,13 @@ The scientific contract may be expressed in code, YAML, docstrings, function/mod
 records. Do not require a formal page or repeat recoverable facts. Inspect upstream deliveries read-only; findings
 and any later corrections belong to the receiving stage's derived candidate.
 
-Read [the correctness criteria](references/review_criteria.md) for detailed finding tests. Use
+For a scientific-correctness review, read [the correctness criteria](references/review_criteria.md) for detailed finding tests. Use
 `scientific-computation-validation` only in a separate validation task when a proposed or executed gate needs
 specialist assessment.
+
+For large correctness-review increments or a requested sequence of AI reviews before human judgment, use
+[evidence-based review attention](references/evidence_based_review_attention.md). Keep package eligibility,
+review attention and final human approval separate; recommendations do not grant owner authority.
 
 ## Efficient review focus
 
@@ -49,6 +53,17 @@ full unchanged review merely to produce new activity, and do not skip a material
 index.
 
 ## Review order
+
+For D1 select `source_fidelity`. Review the source-derived inventory, implementation mapping, omitted material
+branches, native/package dependency closure, state/order and attributable source-vs-candidate evidence. Check
+whether the comparison would reveal a plausible translation mismatch and whether source failures/NaNs and
+suspected defects are retained honestly. A matching known source defect is a source-issue finding for D2,
+not a fidelity blocker. Introduced behavior changes, missing source comparison, hidden checkout dependencies
+or incomplete declared coverage remain fidelity/completeness findings. Do not require independent physical
+oracles, scientific correction, analytical accuracy or experimental validation for this mode. Return advisory
+findings on these claims; do not execute tests, modify artifacts or decide stage completion.
+
+The following correctness review order applies when scientific/numerical correctness is actually claimed.
 
 1. **Confirm identity and claim.** State the exact target, relation direction, supported domain, claimed evidence
    level, and exclusions. A digest binds bytes, not scientific truth.
@@ -79,6 +94,9 @@ Use advisory outcomes only:
 - `revise`: a correctable contract, implementation, numerical, composition, or evidence defect is demonstrated;
 - `not_supported`: the target lacks a coherent scientific identity, fabricates evidence, or cannot support its
   stated claim from the supplied scope.
+
+In `source_fidelity` mode these outcomes assess fidelity/completeness claims only. A source-issue note does
+not turn `supported` fidelity into scientific correctness or make it `revise` without an actual extraction gap.
 
 Report residual risks even for `supported`. A reviewer without execution access phrases unrun tests as proposals,
 never observations. Do not mutate the target, close a human comment, approve an asset, or translate the outcome

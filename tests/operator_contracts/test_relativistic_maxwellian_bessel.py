@@ -134,7 +134,9 @@ def test_bk2_is_the_recurrence_not_an_independent_third_approximation():
     for x in (1.0e-3, 0.5, 1.0, 2.0, 5.0, 60.0, 700.0):
         result = relativistic_maxwellian_bessel(x)
         assert result["bk2"] == result["bk0"] + 2.0 * result["bk1"] / x
-        assert result["bk2"] == float(kve(2, x))
+        # The public contract fixes the recurrence; direct SciPy K2 is an
+        # independent rounded evaluation and can differ by one ulp.
+        np.testing.assert_allclose(result["bk2"], float(kve(2, x)), rtol=2e-15, atol=1e-12)
 
 
 # ---------------------------------------------------------------------------

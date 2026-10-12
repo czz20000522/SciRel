@@ -23,6 +23,31 @@ cross-owner result to the caller as evidence; the receiving owner decides whethe
 
 ## Workflow
 
+### D1 source-fidelity route
+
+For first-stage extraction select `source_fidelity` and follow this route instead of the scientific
+implementation/correction workflow below. The [stage boundary](../scientific-computation-asset-extraction/references/stage_boundary_contract.md#d1-responsibility)
+defines acceptance. The original behavior is authoritative for this mode, including source defects.
+
+1. Bind the actual source mapping, inputs/outputs, consumed state, defaults, branches, operation order and failures.
+2. Lift or wrap that implementation with the smallest necessary interface/dependency changes. Packaged native
+   code or local binaries are valid; retain source/permission, build/ABI and dependency identity. Preserve state
+   lifecycle with explicit caller state or owned/reset/isolated native state. Do not rederive the algorithm,
+   select a better solver or replace a source dependency merely for a pure-Python implementation.
+3. Compare the source and candidate on identical source-admissible inputs and genuine predecessor state,
+   including material branch/lifecycle/failure cases, using validation in `source_fidelity` mode. Self-constructed
+   inputs are allowed; no independent physical oracle is required. Reuse unchanged valid results.
+4. Fix introduced extraction/interface defects. Record suspected source defects and reproducible failures once
+   with source location, trigger, observation, impact and evidence for D2. Keep corrected variants separate;
+   never silently clamp, repair, reinterpret or substitute them for the faithful candidate. Undefined behavior
+   remains a named limitation, not a fabricated deterministic result.
+5. Deliver source mapping, callable/graph, comparison tests/evidence, build/runtime dependencies and issue records.
+   Demonstrate execution without the original checkout or hidden source environment. Return bounded fidelity
+   evidence, not scientific endorsement or stage completion.
+
+The remaining workflow applies to new science, later-stage asset completion and explicitly authorized
+scientific correction. Merely discovering a source defect in D1 does not select `scientific_correction`.
+
 ### 1. Classify the implementation request
 
 Choose one evidence origin before coding:
@@ -31,7 +56,7 @@ Choose one evidence origin before coding:
 - `asset_completion`: extraction, review, or runtime evidence identifies a concrete missing
   operator, graph edge, state schema, or numerical relation;
 - `scientific_correction`: an inspected implementation contradicts a sufficiently determined scientific
-  or numerical contract; repair is part of extraction, not deferred automatically to expert review;
+  or numerical contract under an explicitly authorized correctness task; D1 records source issues for D2;
 - `not_ready`: the requested relation is not yet uniquely specified. For a user project, return the exact
   missing scientific decisions and required evidence to `scientific-project-implementation` so it can
   continue requirement discovery with the user. Return to extraction only when the actual task is

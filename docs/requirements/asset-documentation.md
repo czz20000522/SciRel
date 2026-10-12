@@ -34,6 +34,29 @@ routine scientific/engineering choices before submission; unresolved material cl
 excluded. Human review supplies the final decision on the exact content and publication, rather than replacing
 the automated verification work. These presentation rules do not reduce required contract fields or evidence.
 
+Admission to an internal scientific package and human attention are separate decisions under the
+[version and admission policy](../design/development-trust-versions.md#准入与人工注意力分开决定).
+All retained new/changed candidates receive a final human decision; attention varies with consequence,
+evidence uncertainty and dependency reach. Low-attention candidates may be explicitly confirmed as a bound
+batch. An unresolved correctness conflict cannot be averaged away by confidence or other passing checks.
+
+An operator/operation/TaskGraph review page is for human judgment, not the package usage manual.
+Present the supported claim, meaningful limits, independent evidence, remaining AI disagreement and the precise
+decision requested before optional technical drill-down. Reuse canonical applicability and verification fields;
+attach review priority, reviewer identity, rounds and disposition as version-bound development annotations, not
+new private fields in the public scientific schema. Do not maintain a second copy of the full scientific contract.
+The usage manual reorganizes accepted scientific facts by task and API, retaining actionable limits and failure
+behavior; it does not reproduce the internal review queue. Code docstrings/comments state bounded coverage too.
+
+For a confirmed source defect, the normal human-review target is the corrected and validated implementation.
+Its review page must connect the source's observed behavior, the independent reason it is wrong, the implemented
+change, and the final numerical/behavioral results with applicability and remaining limits. Follow the existing
+[scientific-correction disclosure](../../skills/extraction/scientific-relation-implementation/references/scientific-correction.md#required-disclosure-at-the-current-stage)
+without creating another full report or placing raw logs/private paths in the scientific narrative. Diagnose-only
+or feasible-but-unimplemented repairs are not ready for final scientific approval; genuinely undetermined cases
+remain explicit exceptions with investigation attempts and the exact missing decision, not requests for experts
+to implement routine fixes.
+
 ## Required common contract
 
 Every document must bind one stable scientific `asset_id` and declare:

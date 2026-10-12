@@ -5,6 +5,28 @@ adds an equation-centered scientific capability web to the existing framework vi
 discovery denominator, target-path priority, current progress projection, and active frontier. It does
 not add a formal asset type or replace Level 0/Level 1.
 
+## D1 claim and protocol selection
+
+The [stage boundary](stage_boundary_contract.md#d1-responsibility) governs D1: closure means complete
+source-behavior extraction, comparison and source-free reassembly, including recorded source defects.
+An equation anchor describes source semantics; it does not require proving or repairing that equation.
+In a newly declared `source_fidelity` snapshot, an `independent_validation` work-unit field, when used, binds
+attributable source-fidelity comparison/evidence assessment and states that claim explicitly. Prior snapshots
+retain their original claim meanings; do not reclassify their results as a new pass. The field name alone never
+proves independent physical or numerical-method validity.
+Read-only review checks fidelity, completeness and actual evidence. Scientific-correctness findings are handed
+to D2 and do not themselves fail a matching source-behavior claim.
+
+The detailed M0--M4 JSON and canonical/sealed-case checks below describe the optional existing serializer and
+validator, not universal extra D1 claims. If selected, run its actual checks and preserve its genuine identities
+and seals. A caller source-fidelity handoff can use its existing project records for equivalent coverage,
+comparison, source-free execution and review facts without a fabricated holdout or percentage. Name the
+protocol and untested scope; do not report legacy-validator success unless actually obtained. Preserve earlier
+snapshots and corrected variants. Do not remove an executable but scientifically wrong source path merely to
+raise progress; record its outputs/failure and known issue. Undefined behavior or missing execution evidence
+remains a limitation. A reproducible expected source failure can pass a fidelity test but is not a successful
+physical solve. These distinctions apply before any mechanical milestone projection.
+
 ## 1. Discover scientific closure, not source structure
 
 Before freezing the denominator, make a source-first terminal-output inventory independently of the current

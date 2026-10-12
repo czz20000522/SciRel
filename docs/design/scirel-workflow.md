@@ -2,6 +2,10 @@
 
 ## 设计原则
 
+本设计描述项目开发与治理层。`scirel_workflow` 和宿主插件由源码工具环境或独立部署使用，
+不进入用户科学 wheel；`scirel` 包只承担所选科学能力及必要运行实现。
+发行身份、历史试验与多 worktree 的边界见 [开发项目与科学包交付](project-and-distribution.md)。
+
 workflow 是 host-independent 的领域协调器。它记录从 L1 比较得到的候选、确定性检查、专家 action，以及最终批准绑定的 catalog、wheel 和 release version。存储和传输由调用方或 plugin adapter 负责。
 
 workflow 不执行科学标准化，也不规定模型必须使用的探针、脚本或中间文件。加载

@@ -6,6 +6,29 @@ description: Coordinate D2 integration of saved scientific L1 assets into a runn
 # Scientific Asset Integration
 
 Own D2 comparison, deduplication, repair, composition and development delivery.
+Own scientific-relation and numerical-method correctness for retained claims. D1 establishes source fidelity,
+including original errors, and supplies source-issue records; it does not owe corrected behavior or independent
+physical qualification. Consume each issue with an evidenced correction, explicit compatibility variant,
+exclusion or unresolved limitation. Do not return a source defect to D1 merely to make its faithful output
+scientifically correct. Packaging/extraction mismatches may return as specific fidelity questions.
+For a confirmed defect within the authorized D2 scope, initiate the existing
+[scientific-correction workflow](../../extraction/scientific-relation-implementation/references/scientific-correction.md):
+diagnose from the source observation and independent scientific basis, implement a corrected successor through
+`scientific-relation-implementation`, obtain independent `scientific-computation-validation` evidence, and
+submit that revision to `scientific-operator-review`. Isolation protects the package while this work proceeds;
+it is not the default final disposition of a repairable defect. Do not replace implementation with a warning,
+scope reduction or request for a human to write the fix. D2 repair authority already covers this work; no
+per-defect approval is needed within that scope. Temporary runtime/resource failure leaves repair pending.
+Defer scientific repair only after necessary investigation cannot determine the behavior or a justified remedy;
+record attempts, the precise missing fact, impact and reopening condition. A complete disposition list alone
+does not establish completed remediation. Final review consumes corrected, validated code and its before/after
+explanation, not merely a list of discovered defects. Follow that protocol's disclosure instead of duplicating it.
+Apply the receiving project's internal-package admission policy before retaining those variants or limitations:
+a pending-review label is not permission to ship unresolved incorrect behavior. For supported restricted claims,
+isolation of faulty scopes and differentiated review effort, use
+[evidence-based review attention](../../extraction/scientific-operator-review/references/evidence_based_review_attention.md).
+Retain packaged native implementations when appropriate; Python public callables do not require Python-only
+internals. Verify their source/permission, build/ABI, dependency and state/exception contracts.
 Use the portable [stage boundaries](../../extraction/scientific-computation-asset-extraction/references/stage_boundary_contract.md).
 The current discovery identifier is retained for compatibility; it does not require that library or package name.
 The receiving project supplies its lifecycle policy, runtime, source/result locations, baseline and distribution format.
@@ -55,6 +78,10 @@ Generate formal exact documents after comparison and stable code, only for retai
 Reused assets keep existing documents; absorbed inputs need disposition/provenance, not duplicate review items.
 Code/YAML/tests carry recoverable detail until documentation. Build and test a clearly identified development
 distribution and matching discovery records when D3 needs them; tests grant no approval.
+Before packaging, verify the selected runtime and transitive dependencies actually implement only admissible
+claims; warnings, private naming and catalog omission do not exclude executable faulty paths. Keep unsupported
+research candidates outside the accepted runtime. Claim restrictions must be meaningful and visible in the API
+contract/docstrings, not selected merely to remove a failed fixture.
 
 ## Handoff
 

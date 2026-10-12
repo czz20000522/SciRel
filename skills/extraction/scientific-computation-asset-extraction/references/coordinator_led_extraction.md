@@ -24,6 +24,18 @@ worker's writes to the packet lane, keep shared integration coordinator-only, an
 receipt. If those controls are absent or reject the launch, return the packet to the same queue and use the serial
 fallback.
 
+Check the effective owner tool list, supplied agent definitions, skill roots, material entry, and index/root binding
+once at launch or when that configuration changes. A registered agent type with no callable delegation tool is
+not capacity; report the missing runtime capability rather than repeatedly discovering it inside scientific work.
+Pass a region's literal source/material anchors, reusable environment, exact dependency revision and private output
+lane at dispatch. Worker contexts do not automatically inherit the owner's previously read files or skills.
+
+One integrating writer does not mean one executing model: independent workers may extract simultaneously into
+private lanes. Ordinary implementation workers may read shared frozen source/contracts; reserve output-blind
+read restrictions for claims that actually require them. Lack of output-blind enforcement limits the independent
+review claim, not unrelated parallel implementation. A worker without a safely confined command tool can still
+write its private candidate; the owner runs its targeted tests before integration.
+
 The coordinator continuously performs these actions:
 
 1. update the project discovery map from accepted evidence;
