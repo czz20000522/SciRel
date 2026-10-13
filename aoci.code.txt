@@ -3,7 +3,7 @@
 ===/Users/tomczz/Projects/SciReL/===
 .gitattributes[FC5T]: F:固定历史评估证据的Git文本转换及空白检查策略 | R:- | A:-text与whitespace属性 | S:指定JSON保留原始字节，不能因换行格式重写冻结摘要
 .gitignore[FC5T]: F:排除Python构建缓存、本机配置和运行草稿 | R:code:pyproject.toml | A:Git忽略规则 | S:正式AOCI资产继续版本化；根.agents与.runtime仅为本机状态
-AGENTS.md[SC9S]: F:规定SciRel阶段职责、科学包隔离和按任务选择证据的开发约束 | R:code:docs/development-process.md,code:docs/design/aoci-index-maintenance.md | A:D0先索引再整理与增量维护、D1保真、D2修正、不可变交付 | S:首建完成不自动全量重审，已知缺陷仍修；局部任务和压缩不强制Overview，已选写入与完整链保留真实安全证明；候选与测试不授予批准
+AGENTS.md[SC9S]: F:规定科学包隔离、阶段职责、整项目连续交付和按任务选证据的开发约束 | R:code:docs/requirements/scirel-workflow.md,code:docs/design/aoci-index-maintenance.md | A:D0索引整理、D1保真、D2修正、冻结接收及包文档同步 | S:整项目以全部核心能力无源码替代为终点，局部资格不算完成；提前准备接收，新冻结优先于无关工作；压缩不强制Overview，已选写入仍须真实治理证明，候选与测试不授予批准
 CONTRIBUTING.md[SV8T]: F:定义贡献、科学兼容与受影响验证及发行要求 | R:code:scripts/check.ps1,code:docs/architecture.md | A:贡献者修改与验证流程 | S:editable安装仅提供科学库，workflow等开发模块须从源码环境使用
 README.md[SB9M]: F:介绍科学库组合价值、阶段流程、统一运行环境与中文文档入口 | R:code:docs/design/scientific-runtime-baseline.md,code:docs/searchable-documentation.md | A:项目安装、领域API、构建和验证说明 | S:多个实现版本的文档不构成单一wheel资格；历史能力迁移需后继验证，技术冻结不代表人审或发行
 pyproject.toml[FV7T]: F:声明科学包构建、固定运行依赖与开发测试环境 | R:code:scripts/scientific_runtime.py,code:uv.lock | A:Python3.14线；固定NumPy/SciPy/Matplotlib与setuptools；pytest配置 | S:常规构建收集全部scirel模块，不等于按资格选择的科学包；工作流和平台适配包不被发现
@@ -176,7 +176,7 @@ scirel-plugin-registration.dev.json[FC5T]: F:示例SciRel技能包目录连接�
 README.md[SB7T]: F:导航SciRel需求设计整合发行与领域手册及其维护入口 | R:code:docs/architecture.md,code:docs/handbook-authoring.md,code:docs/catalog.md | A:维护者项目文档入口 | S:历史账本、pilot完整覆盖及本地fixture不代表来源资格、专家认可或真实宿主闭环
 architecture.md[SB7S]: F:定义科学关系、组合图、领域子包、独立分发与渐进发现边界 | R:code:src/scirel/__init__.py,code:docs/catalog.md | A:科学身份、DAG与有界反馈、领域API与分发合同 | S:未发布且无外部用户时同步调整调用方，不保留无消费者的顶层别名；延迟导入不缩减wheel或取消依赖
 catalog.md[SB7S]: F:定义分片目录渐进检索、稳定身份、反向依赖及增量构建合同 | R:code:scripts/build_catalog.py,code:contracts/scientific-catalog-release.schema.json | A:route到summary到exact与依赖闭包发现流程 | S:分页预算耗尽不能宣称无能力；complete只文档计数覆盖，不授予批准
-development-process.md[SW7M]: F:规定D0准备、D1保真、D2修复整合、D3应用和审核发行接续 | R:code:docs/design/development-trust-versions.md,code:scripts/check.ps1 | A:先索引后清理、定向纠错与增量对齐、固定交付、修正后送审、affected验证 | S:可选复审未完不独立阻断D0；保留checkpoint与真实未审范围，已知缺陷仍须闭环；D2有据修复不逐项等批准
+development-process.md[SW7M]: F:路由D0准备、D1保真、D2修复整合、D3应用和审核发行接续 | R:code:docs/requirements/scirel-workflow.md,code:docs/design/development-trust-versions.md | A:先索引后清理、定向纠错、项目接收与affected验证 | S:异步交付是恢复能力而非默认等待；整项目预备接收并连续合入包文档；可选复审未完不单独阻断D0，已知缺陷仍需闭环
 searchable-documentation.md[SU7T]: F:说明中文Sphinx手册构建、领域函数查询与同源Agent读取 | R:code:scripts/scirel_docs.py,code:scripts/build_scirel_sphinx.py | A:不可覆盖快照、HTTP和CLI、目录与公式代码呈现 | S:网页分词搜索与HTTP字面AND排序不同；多版本文档集合不等于单一科学wheel
 handbook-authoring.md[SU7T]: F:规定领域手册、中文合同投影、用途表与完整案例的持续维护 | R:code:tools/docs/handbook.json,code:docs/requirements/asset-documentation.md | A:主题归属、参考导航、实际案例与逐批维护 | S:中文层绑定原摘要且保留全部条款，不能仅换摘要；纯导航改动复用不变且有效的运行证据
 
@@ -528,7 +528,7 @@ extraction-skill-bundle-deployment.md[SC7T]: F:规定五个D1技能的确定性�
 asset-documentation.md[SB7S]: F:规定唯一科学合同、稳定文档、目录投影与人类审查入口 | R:code:contracts/scientific-asset-document.schema.json,code:scripts/validate_asset_documents.py | A:关系端口适用域失败与来源、图反馈、修正前后呈现 | S:审核私有字段不扩公共schema；确认缺陷后正常送审对象是修正验证后的实现，不是待专家实现的问题清单
 codefusion-plugin.md[SB7S]: F:规定 SciRel 可选宿主插件的固定 release、通用 Agent 调用与逐项审查/固化职责。 | R:code:docs/integration/codefusion-plugin-contract.md,code:docs/design/project-and-distribution.md | A:科学 wheel 与部署工具分开；宿主保存 opaque references、租约/CAS/history，SciRel owns 方法、检查、动作与 release；上传固定版本，显式提交才决策，批准后新 run 检查基线漂移。 | S:action descriptors 缺字段不能以默认空数组掩盖；宿主恢复快照不成为 SciRel 兼容字段。
 scientific-request-workflow.md[SB7S]: F:定义科学请求的事实来源规范化、渐进匹配、执行前计划校验、结果检查与有界解释。 | R:code:skills/usage/scirel-solving/SKILL.md,code:docs/requirements/thin-mcp-adapter.md | A:逐条件分清用户/文件/default/假设，缺关键事实须澄清；Operator/图/动态 DAG 保留单位坐标状态，关系变更重新检索校验；交付四逻辑产物及明确检查状态，开发 D3 标证据。 | S:值数组缺坐标绑定只能有界复用；零点/趋势不得未经已计划科学关系解释为共振吸收等物理机制。
-scirel-workflow.md[SB7S]: F:定义D0到发行及全部核心物理能力独立替代的项目完成标准 | R:code:docs/development-process.md,code:src/scirel_workflow/workflow.py | A:阶段交付、能力处置、异步接续、专家批准与发行闭包 | S:完整D1仍以冻结D0为分母；整项目须另核上游核心剔除项，绘图可排除但求解必需支持不可排除
+scirel-workflow.md[SB7M]: F:定义全部核心能力独立替代、连续交付及逐项审核发行合同 | R:code:docs/development-process.md,code:src/scirel_workflow/workflow.py | A:核心任务覆盖、提前接收、新冻结优先、包文档合入及审核版本 | S:D1分母仍是冻结D0，整项目另核上游核心剔除；全链授权不推断人审发行，阶段限定或真实阻塞可停；等待与执行分计，规则写入不证明提速
 thin-mcp-adapter.md[SB7S]: F:规定 pinned catalog 与 installed distribution 下 discover/read/resolve/invoke 四操作的中性 adapter 合同。 | R:code:src/scirel_adapter/mcp.py | A:先核 manifest/partitions，渐进读取不 import 科学模块；resolve 检 exact signature/default/version，invoke 接 documented ports，图端口入 inputs mapping；输出绑定与 evidence ceiling，复杂数实虚 pair。 | S:constraints prose 不能推导可执行单位/shape 校验；detail 必须 document，列表字段 items，exhausted=false 需续 cursor。
 
 ===/Users/tomczz/Projects/SciReL/examples/===
@@ -654,7 +654,7 @@ shared_asset_contract.md[SW7T]: F:定义框架节点、局部任务图、叶科�
 source_behavior_and_controlled_repair.md[SW7S]: F:区分来源终止行为、fidelity与科学正确性，并规定有授权源意图修正和后继证据 | R:code:skills/extraction/scientific-relation-implementation/references/scientific-correction.md | A:claim lanes、termination oracle、minimal repair、repair receipt | S:shape修正需生产和消费双方extent证据；source_repaired不等于scientifically_corrected，旧失败不可覆写
 source_framework_production_manual.md[SW7S]: F:从终端反切片与输入正切片建立Level1科学源状态节点边及能力网对应 | R:code:skills/extraction/scientific-computation-asset-extraction/references/physics_framework_production_manual.md | A:科学split/merge、节点roles、port edges、coverage conflicts | S:源码函数仅锚点非能力身份；插值闭合或状态更新边须提升为科学节点，等价包装不强制domain ruling
 source_free_extraction_playbook.md[SW7S]: F:提供有界源码运行、隐式状态重建、依赖恢复与无源callable及项目闭合循环 | R:code:skills/extraction/scientific-runtime-dataset-construction/SKILL.md | A:source/runtime loop、typed carrier、blocker audit、candidate/project gates | S:source-free可随包原语言实现但不能读checkout捕获答案；没有struct不证明不可重建，零collected不作通过
-stage_boundary_contract.md[SW7S]: F:统一D0来源整理、D1保真、D2正确性整合与D3应用及不可变交付 | R:code:skills/extraction/scientific-operator-review/references/evidence_based_review_attention.md | A:阶段职责、项目接续、证据修复、完整性和反馈约束 | S:兼容源错误不自动获包资格；项目可保留未决材料而科学包隔离；D1保真不证明独立科学正确
+stage_boundary_contract.md[SW7S]: F:统一跨平台D0整理、D1保真、D2正确性整合和D3应用交付边界 | R:code:skills/extraction/scientific-operator-review/references/evidence_based_review_attention.md | A:阶段职责、不可变接续、证据修复、独立接收与完整性 | S:可延后恢复不等于默认延迟；全链保持核心任务分母并预备接收，阶段授权和真实阻塞仍可停；复现源错误不自动获科学包资格
 workflow_optimization.md[SW6S]: F:按实际关键路径减少D0索引维护与D1抽取的重复准备返工 | R:code:skills/extraction/scientific-computation-asset-extraction/references/material_access_and_preprocessing.md | A:必要范围裁决、有效绑定复用、条件性委派、final与语义差异提交门禁、真实修正耗时比较 | S:保留可选checkpoint不等于必须刷完；角色按依赖选，真实省工与同量提速分开；重叠等待不累加，机械检查不裁决语义
 material_access_and_preprocessing.md[SW7M]: F:指导D0索引整理维护冻结、共享材料读取及受治理批次接续 | R:code:skills/extraction/scientific-computation-asset-extraction/scripts/query_material.py,code:skills/extraction/scientific-computation-asset-extraction/references/workflow_optimization.md | A:来源差异、恢复闭集、literal selectors、稳定变更与定向纠错、最终提案整合 | S:可选复审保留进度不强制刷完；无取消接口不迫使全审；禁止伪造no-change或改源触发维护；缺提案不回退旧条目
 
@@ -766,7 +766,7 @@ refinement-output-contract.md[SW6T]: F:规定规范化开发候选的逐输入�
 relation-page-contract.md[SW7T]: F:规定稳定保留资产唯一exact科学文档的事实恢复、验证与catalog投影 | R:code:docs/requirements/asset-documentation.md | A:scirel.asset-document.v1、运行签名和例子、依赖闭包 | S:不从名称输出猜科学字段；未完整文档不得上catalog，冻结后科学更改须后继及受影响重验证
 
 ===/Users/tomczz/Projects/SciReL/skills/integration/scirel-integration/===
-SKILL.md[SW7T]: F:统筹D2项目比较科学诊断修复去重与受支持范围分发 | R:code:skills/integration/scientific-asset-correctness/SKILL.md | A:修正实现验证审查路由、单写者整合及D3交付 | S:确认可修缺陷须完成修正验证，不以隔离缩域或人类实现替代；兼容源错误不自动准入
+SKILL.md[SW7T]: F:统筹D2科学诊断修复去重、开发分发和完整核心能力后继 | R:code:skills/integration/scientific-asset-correctness/SKILL.md,code:skills/extraction/scientific-computation-asset-extraction/references/stage_boundary_contract.md | A:实现验证审查路由、单写者整合、预备接收及D3交付 | S:可修缺陷须修正验证，不靠隔离缩域结案；全链授权下新冻结优先接续，不预收活动字节或留常驻审查者；局部成功不替换完整目标
 
 ===/Users/tomczz/Projects/SciReL/skills/integration/scirel-integration/agents/===
 openai.yaml[FW6T]: F:配置保存L1交付与接收库比较整合的D2技能入口提示 | R:code:skills/integration/scirel-integration/SKILL.md | A:interface,allow_implicit_invocation=true | S:提示要求验证开发包而非把整合视为发行批准

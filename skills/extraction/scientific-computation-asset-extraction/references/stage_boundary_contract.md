@@ -118,6 +118,12 @@ unfinished scope and blockers explicitly, and never shrink the declared scope to
 An explicitly agreed bounded pilot/partial intake may transfer qualified material under its narrower ceiling.
 
 A receiving owner may start weeks later with no access to the original Agent, chat or temporary environment.
+This describes recoverability, not a default scheduling delay. For an authorized whole-project outcome, the
+coordinator retains the complete core-capability and installed-task coverage target across stages, prepares the
+receiving boundary while the producer works, and prioritizes reception and continuation when final evidence arrives.
+Partial capability success updates progress without replacing that target. Stage-only authorization, a requested
+archive, or an evidenced scientific/resource/permission block can legitimately stop continuation. Record the
+specific next action and reopening condition; keep final-byte reception and independent acceptance distinct.
 Provide one compact continuation entry using the existing project records: exact upstream and D0 identities/license/delta,
 whole-project census and asset/dependency dispositions, unresolved scope, callable bundle identity, source inputs,
 raw observations and criteria/evidence bindings, and pinned runtime dependencies with reconstruction/rerun commands.

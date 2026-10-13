@@ -88,5 +88,12 @@ contract/docstrings, not selected merely to remove a failed fixture.
 Deliver development SHA, complete dispositions, scientific changes, affected tests, actual distribution/discovery records,
 supported scope and gaps. Submit focused commits for integration. D3 may consume the development version.
 Stage owners and handoff times are independent; no live D1 Agent or same-night full chain is required.
+When the caller authorizes whole-project delivery, use that independence for durable recovery, not default delay.
+Before freeze, prepare the receiver's environment, independent checks and integration target from existing scope
+records; do not accept mutable bytes or retain a waiting reviewer. On observing a new frozen delivery, prioritize
+its reception and authorized continuation in the current executable work period. Preserve the complete core-task
+denominator through corrections, installed application validation, package integration and document synchronization.
+Record an actual blocker, next owner/action and reopening condition when continuation cannot proceed. Reuse valid
+evidence and measure freeze-to-reception waiting separately from scientific execution; unknown timing stays unknown.
 Select useful D3 tasks over the integrated capability set, not one new application per input asset.
 Route final review only when the retained increment is stable, not for each interim revision.
