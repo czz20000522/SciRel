@@ -175,7 +175,7 @@ README.md[SB7T]: F:导航SciRel需求设计整合发行科学请求及当前实�
 architecture.md[SB7S]: F:定义科学关系算子图、运行实例、独立包及大规模发现边界 | R:code:docs/catalog.md,code:docs/requirements/asset-documentation.md | A:科学身份、DAG和显式有界反馈架构合同 | S:代码相似或少量相同样例不足证明科学等价；运行临时组合不会自动成为公共资产
 catalog.md[SB7S]: F:定义分片目录渐进检索、稳定身份、反向依赖及增量构建合同 | R:code:scripts/build_catalog.py,code:contracts/scientific-catalog-release.schema.json | A:route到summary到exact与依赖闭包发现流程 | S:分页预算耗尽不能宣称无能力；complete只文档计数覆盖，不授予批准
 development-process.md[SW7M]: F:规定D0准备、D1保真、D2修复整合、D3应用和审核发行接续 | R:code:docs/design/development-trust-versions.md,code:scripts/check.ps1 | A:先索引后清理、定向纠错与增量对齐、固定交付、修正后送审、affected验证 | S:可选复审未完不独立阻断D0；保留checkpoint与真实未审范围，已知缺陷仍须闭环；D2有据修复不逐项等批准
-searchable-documentation.md[SU6T]: F:说明HTML手册、只读HTTP与CLI查询的共享快照和维护方法 | R:code:scripts/scirel_docs.py,code:tools/docs/index.html | A:构建、浏览、分页检索、精确合同读取 | S:文档快照保留逐条版本，不能作为同版本catalog release或科学运行资格证明
+searchable-documentation.md[SU6T]: F:说明黑白HTML手册、只读HTTP与CLI查询的共享快照和维护方法 | R:code:scripts/scirel_docs.py,code:tools/docs/index.html | A:构建、浏览、分页检索、精确合同读取 | S:文档快照保留逐条版本，不能作为同版本catalog release或科学运行资格证明
 
 ===/Users/tomczz/Projects/SciReL/docs/design/===
 aoci-index-maintenance.md[SC7T]: F:规定按任务与工作树使用AOCI及稳定变更的增量维护 | R:code:AGENTS.md,code:docs/development-process.md | A:首建与纠错路由、增删改重命名、Scope与Budget终态 | S:首建不默认二次全量重审或多代理；局部任务不强制Overview；AOCI增量不等于catalog增量，BaseRef不含未提交改动
@@ -1621,4 +1621,4 @@ bootstrap.py[KB8S]: F:计算Sauter和Redl面系数并以显式压力梯度组装
 20261013-scirel-main-baseline.json[OW3T]: F:保存主工作区18d2f2b提交与受影响测试结果的待同步知识记录 | R:- | A:PENDING_SYNC记录 | S:1580通过同时保留21失败，未称全套通过
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/===
-index.html[EU6T]: F:提供科学手册搜索筛选、分页、资产详情和渐进合同阅读界面 | R:code:scripts/scirel_docs.py | A:只读HTTP文档界面与详情锚点 | S:用textContent呈现记录，过期异步响应不得覆盖新检索；版本与限制随文档显示
+index.html[EU6T]: F:提供白底黑字的科学手册搜索筛选、分页、资产详情和渐进合同阅读界面 | R:code:scripts/scirel_docs.py | A:只读HTTP文档界面与详情锚点，响应式布局与键盘焦点 | S:用textContent呈现记录，过期异步响应不得覆盖新检索；版本与限制随文档显示
