@@ -4,7 +4,7 @@
   "records": [
     {
       "asset_id": "scirel.field.rectangular-coil-filaments",
-      "source_sha256": "791249d516d042f1e4ec98a0886ed6abfd6f739a94eb3ce5aeebf69f4e609808",
+      "source_sha256": "86b62ce950853683ffc4cd39c1ef68efdb5a650823c990d8a2aeda00db14e1f8",
       "summary": "将轴对称矩形线圈截面离散为有序的 R–Z 圆电流丝位置，可绕截面中心旋转。",
       "definition": "生成 nr×nz 个等间距点，Z 为内层索引，再按既有行向量旋转约定绕 (r0,z0) 旋转。",
       "model": "几何离散，不包含磁场模型。",
@@ -200,7 +200,7 @@
     },
     {
       "asset_id": "scirel.field.circular-filament-green",
-      "source_sha256": "29b7e7b9bf90f0214f4b47ea7b7e6d496a40440857ed3fa748f2e31c7f286d54",
+      "source_sha256": "11d97b3243f364c638b26eae058d7256fc0d89a82075cdb5f3b316f93b4e12ba",
       "summary": "逐源求和理想圆电流丝的实际坐标磁通与极向场响应，保留源权重和精确自点离散零约定。",
       "definition": "以实际坐标圆环核逐源求和，psi=R A_phi（Wb/rad）；小椭圆参数使用等价超几何表达及解析场导数避免消差。无量纲源权重只乘一次，外部驱动电流由调用者另乘。",
       "model": "真空轴对称圆电流丝格林关系。",
@@ -284,7 +284,7 @@
     },
     {
       "asset_id": "scirel.field.current-green-superposition",
-      "source_sha256": "b99ed360b2129a974913e28ddcb9c27dd158fe928fec4925541aeb31b39f6307",
+      "source_sha256": "d5d0a7c2f5cc3fdf1522dc91658ada206a6736fd689f29f51ce557deb55c5ca5",
       "summary": "将标量或向量驱动电流与对应的磁通、极向磁场格林响应收缩，得到物理磁通和磁场。",
       "definition": "单个响应向量乘以标量电流；多个源时，用一维电流向量沿三个同形二维响应数组的第 0 轴收缩。",
       "model": "线性电流叠加。",
@@ -379,7 +379,7 @@
     },
     {
       "asset_id": "scirel.field.dense-axisymmetric-green",
-      "source_sha256": "2b92ef9c2bb88d91fd972e415a16b9cd4a8bbe6cdce9273bad60406925eb851e",
+      "source_sha256": "b07480cda36c7edbba60571d6eecab0561d0fda99c5be22b21f8992dfd5c0719",
       "summary": "在理想圆电流丝的实际坐标上生成目标行、源列 Green 响应，保留各列符号、无量纲权重和明确的精确零自项。",
       "definition": "用实际源目标坐标圆环核分别保留每列，不作源求和；源第三列为无量纲权重，非电流或面积。小椭圆参数使用等价超几何求值以避免消差。",
       "model": "真空轴对称理想圆电流丝格林关系。",
@@ -465,7 +465,7 @@
     },
     {
       "asset_id": "scirel.field.multi-coil-vacuum-field",
-      "source_sha256": "9ce8d48ebe5f2bb039b77e930346c865f845406e5f948aa1f407b968434fa43e",
+      "source_sha256": "d91a2d6344fcc5826e0538a339d3106924cfc4cd4802fe9d97de09e440dbf45e",
       "summary": "将用户声明的矩形线圈展开为加权圆电流丝，为各线圈分别计算格林响应行，再按对应驱动电流叠加。",
       "definition": "逐线圈离散截面并附加无量纲权重，使用修正后的实际坐标圆环核求独立 Green 响应行，再以各线圈驱动电流收缩。保留所有正半径；精确自点按离散兼容约定为零，算术失败传播。",
       "model": "真空轴对称圆电流丝叠加。",
@@ -562,7 +562,7 @@
     },
     {
       "asset_id": "scirel.field.filament-vacuum-field",
-      "source_sha256": "b778f9467d805f3d6481dbd39048c06302156282681795b93cbb6ac2795bb257",
+      "source_sha256": "2657e723ed9c6d9cb9f4b47e102a8480250a31d28fe067291ec96ee332ac1ba5",
       "summary": "计算没有近轴截止或人工椭圆参数截断的圆电流丝磁场，保留以首半径为参考的径向梯形磁通积分。",
       "definition": "BR/BZ 使用实际坐标核及解析轴极限，正 R 的 BR 不强置零，近丝椭圆参数不裁剪。psi 仍在均匀径向网格上累计 R*BZ 的梯形积分，首点 psi=0；离散积分不是可互换的解析 R A_phi 状态。",
       "model": "轴对称理想圆电流丝真空磁场。",
@@ -949,7 +949,7 @@
     },
     {
       "asset_id": "scirel.field.mirror-plasma-green",
-      "source_sha256": "3725129c6a8ef2d1014296e0bcab08231a5b62585376d2835c8c7a9924898057",
+      "source_sha256": "23838437e92bd196e4e0ad4ddf625b9a1f30d8a82981919ff44de85f55bea418",
       "summary": "在镜像专用对称均匀 Z 张量网格的实际坐标上构造等离子体圆电流丝磁通矩阵，不按反射索引拼装。",
       "definition": "逐源逐目标用真实 R、Z 求 psi=R A_phi；两矩阵轴按 [Z,R] C 序展平，目标行、源列。仍限定递增 R、关于零对称且均匀的 Z，不拓宽到任意网格；不乘电流或面积。",
       "model": "镜像几何域内、实际坐标的轴对称理想圆电流丝磁通响应。",
@@ -1023,7 +1023,7 @@
     },
     {
       "asset_id": "scirel.field.ideal-conductor-boundary",
-      "source_sha256": "85d80d2a8ac7aa2931310b07d698f21d62e3c1dca09710697d8ced97c89a18c2",
+      "source_sha256": "1af64d940ead70c6ec7838a3b67ec757720fda4f7790c383840979603bfe56a8",
       "summary": "用截断 SVD 最小二乘求等效边界电流，并将其格林响应加到磁通向量上。",
       "definition": "令 b=S@psi，以严格大于 rcond×最大奇异值的奇异值构造截断伪逆，求 I=−pinv_rcond(Gbb)@b。返回 psi+Gbf@I、残差 b+Gbb@I，以及电流、修正、奇异值和有效秩。",
       "model": "线性理想导体边界磁通修正，采用截断 SVD 格林逆。",
@@ -1159,7 +1159,7 @@
     },
     {
       "asset_id": "scirel.field.poloidal-field-from-flux",
-      "source_sha256": "ee2c9f5aa16ffc1eace386f4239d4cc334beb3f8f11f52ab15f582f5f93a9208",
+      "source_sha256": "c90eed1280b80a750cfe23950648e0ccc1297886338eff6ce7e5a255609eace3",
       "summary": "从柱坐标直角网格上的轴对称磁通恢复极向磁场径向、轴向分量及大小。",
       "definition": "以局部值差写成的非均匀二次差分计算 BR=−∂Z psi/R、BZ=∂R psi/R；常量磁通规范严格微分为零。规则轴上采用 BR=0、BZ=2(psi(R1)−psi(0))/R1²。",
       "model": "带离散网格导数的轴对称柱坐标极向磁场关系。",
@@ -1253,7 +1253,7 @@
     },
     {
       "asset_id": "scirel.field.poloidal-field-magnitude",
-      "source_sha256": "e2ee8b6e3cf2b60a63564ee2a048dc2e0602e4e326a1591c1b95a1a69b90803b",
+      "source_sha256": "aea13bba7a21aaf25aebeae2651ca9dc9bcababc761660dd00ce5ae1f64a3941",
       "summary": "由同一 R–Z 网格上的径向和轴向分量计算带数值下限的极向场大小，以及其中位参考值。",
       "definition": "逐点 B=max(hypot(B_R,B_Z),1e-30 T)，B0_default 为返回有限 B 数组的中位数。",
       "model": "柱坐标极向磁场分量的欧几里得大小，带既有数值下限。",
@@ -1729,7 +1729,7 @@
     },
     {
       "asset_id": "scirel.equilibrium.anisotropic-force-balance",
-      "source_sha256": "b81f2f8c58183a7a1a0909e343acaaa49c5c4982ca0123d11789e3f45920ab8c",
+      "source_sha256": "118d65f5271ea5e890a2eb5773700997503a83f75a29b73caef897effd1fa979",
       "summary": "在给定 R–Z 磁场网格上计算旋磁压力张量的柱坐标散度、垂直力对应的环向电流、平行力诊断和火管裕度。",
       "definition": "P=p_perpendicular I+(p_parallel−p_perpendicular)bb。用差值形式二次模板求柱坐标散度；R=0 处光滑奇函数 P_RZ 给 force_Z 额外一个 ∂R P_RZ，规则轴上 force_R=J_phi=0；离轴 J_phi=(B_Z force_R−B_R force_Z)/B²。",
       "model": "轴对称旋磁压力张量及垂直力平衡电流投影。",
@@ -1911,7 +1911,7 @@
     },
     {
       "asset_id": "scirel.equilibrium.anisotropic-toroidal-current",
-      "source_sha256": "1f6b8a596edc568360aa110372016164085d6052e637e9e119abcf2ccef09af2",
+      "source_sha256": "654610f44765b6b1da41b2311f4f7d62ff66bb1b37ea20fd7fdfe15a280cade3",
       "summary": "将轴对称旋磁压力力投影为环向电流，分离各向同性垂直压力贡献和各向异性余项。",
       "definition": "调用压力力投影两次：一次用实际 p_parallel、p_perp，一次将两压力都设为 p_perp。第二次电流为 gradp_term；总电流与它的差为 anisotropy_curvature_term。此分解由离散差定义，不是独立离散的曲率公式。",
       "model": "轴对称旋磁压力张量及垂直电流投影。",
@@ -2031,7 +2031,7 @@
     },
     {
       "asset_id": "scirel.equilibrium.anisotropic-picard-feedback",
-      "source_sha256": "6fbbbe93d0b0f65b1d00707ac12cb504ce2413e56d6992f56197768979ba6434",
+      "source_sha256": "2e87807bf8b5c120ba91b88b87a776235fe4181142b12c494ac52afa2cd740ea",
       "summary": "将环向电流密度按掩码和网格积分为单元电流，与旧电流松弛后投影到稠密格林磁通及可选磁场响应。",
       "definition": "默认复合梯形权重恰覆盖给定节点矩形域，边界为半间隔；显式 cell_edges 则定义包围中心的单元面积。电流不乘 2πR。非激活密度置零，I=(1−relax)I_raw+relax I_old。磁通用 G_psi；成对 G_BR/G_BZ 求场，缺失时对同一新增磁通求导，再加真空场。",
       "model": "使用调用者稠密线性格林响应的一次显式单元电流 Picard 反馈。",
@@ -2203,7 +2203,7 @@
     },
     {
       "asset_id": "scirel.equilibrium.axisymmetric-picard-update",
-      "source_sha256": "79abbc8b4d5de8488ae44b5bc853297f3bf522475dfc2aa44e6a071ba6c7338c",
+      "source_sha256": "4a81a8d83e218a7a944648625ebc150f8ff7c05f7e1b4df8c969acb434507814",
       "summary": "将环向电流密度积分为单元电流，经稠密格林矩阵求磁通候选，再对旧磁通松弛，报告磁通与电流相对变化。",
       "definition": "默认复合梯形积分恰覆盖节点矩形域，边界权重为半间隔；显式 (radial_edges,axial_edges) 各有中心数加一项，有限、单调并包围中心，定义单元中心面积；不乘 2πR。 令 candidate=psi_vac+G_psi@I，psi_next=relax×psi_state+(1−relax)×candidate；返回松弛步变化、原始电流变化及未松弛固定点残差。",
       "model": "轴对称稠密格林单步 Picard，松弛对象是磁通而非电流。",
@@ -2341,7 +2341,7 @@
     },
     {
       "asset_id": "scirel.diagnostics.picard-flux-residual",
-      "source_sha256": "6fb751fffbe6dea496aebffc85f462eba86b221175e5381689811a8cb300371e",
+      "source_sha256": "d9e75180c9e3cef9fe5014c9c84265161e589cce999c983b332d487704fba8ef",
       "summary": "用缩放算术及小分母下限，测量连续两个二维磁通状态相对前态的欧几里得变化。",
       "definition": "计算 ||psi_next−psi_previous||₂/max(||psi_previous||₂,1e-30 Wb)，以输入最大绝对值作算术尺度。全零对返回零；缩放分母为零或最终比值非有限时拒绝。极端次正规数不保证可表示。",
       "model": "用于 Picard 停止判据的离散相对 L2 磁通变化。",
@@ -2414,7 +2414,7 @@
     },
     {
       "asset_id": "scirel.equilibrium.axisymmetric-anisotropic-picard",
-      "source_sha256": "f49943566736e722c88b0bb9d8a567de2e63ae3a5a032e8aab1ed99d99d4ba45",
+      "source_sha256": "70297966710ed715f19dbea3f7a4220c4708483170c9206bb2f1a54a4c7251cc",
       "summary": "将外供各向异性压力闭合与当前极向场、柱坐标压力力和稠密格林磁通更新迭代耦合，最后重新求值并检查返回的末状态。",
       "definition": "从 psi_vac 副本重构场并执行迭代场门禁，调用 pressure_closure(B,psi)，广播或验证压力，求 div(P)、掩蔽非激活 J_phi，再做磁通松弛 Green 更新。以未松弛 step.fixed_point_residual<=tol 或次数上限判停，相对松弛磁通步幅仅作诊断；末 psi 上重算场、闭合、力及电流，按所声明顺序检查最小场、火管裕度和严格平行力相容性。",
       "model": "有界轴对称旋磁压力 Picard 组合，压力闭合由调用者提供。",
@@ -2676,7 +2676,7 @@
     },
     {
       "asset_id": "scirel.equilibrium.free-boundary-anisotropic-picard",
-      "source_sha256": "68bf684b590cd1ccd62eadb64ae40379a092c44bd452d03a9e4d2b1a129fd358",
+      "source_sha256": "001d33e5063ee283777908692c6fb7c960f9a3ceced71efba745591677c7037e",
       "summary": "执行显式各向异性压力、电流与 Green 场的有界 Picard 反馈；可选墙磁通和对应磁场导数共同更新，以全部未松弛反馈状态残差及平行力相容性决定收敛。",
       "definition": "当前 psi、BR、BZ 上重求确定性压力闭合与环向电流，按节点梯形或显式单元边界积分并松弛电流后投影 Green 场。缺少场 Green 对时对新增磁通求场导数，墙分支同步加墙磁通及离散场。判停要求 psi、BR、BZ 和电流的未松弛目标全部闭合，返回态再重求闭合、电流及力相容性；零步不声称收敛。",
       "model": "外供 N4 压力闭合和可选线性理想导体壁修正的轴对称旋磁压力 Picard 组合。",
@@ -3136,7 +3136,7 @@
     },
     {
       "asset_id": "scirel.closures.hall-two-fluid-pressure",
-      "source_sha256": "cdbaa58a761d111702c3a4c2e3aef746e5017ddc128c9d0ce06655eed93be7a2",
+      "source_sha256": "2fee2b8eebc03aa8f0af001e26716f705756d30618ff520b8dcb62af8157fa99",
       "summary": "将外供总旋磁压力定律、准中性离子/电子密度、电子压力分量及静电势组装为约化 Hall 闭合所需的广播双流体状态。",
       "definition": "联合广播 B、psi 并求总压力，再广播各剖面；令电子密度等于离子密度。电子两分量缺省等于 electron_pressure，离子分量缺省为总压减电子压。默认 independent_fit 保留独立指定的总压与物种压，并显式报告两方向总压−离子压−电子压的残余应力；不是新物种。species_sum 要求两个残差在局部压力尺度的 64ε 内为零，否则拒绝。两种模式都报告数值组分一致性；不检查总压力正性。",
       "model": "给定旋磁总应力和物种分解，可含独立拟合残余应力；不是自洽双流体平衡。下游总力已包含残余应力，离子矩仍仅属离子。",
@@ -3344,7 +3344,7 @@
     },
     {
       "asset_id": "scirel.closures.quasineutral-reference-density",
-      "source_sha256": "68c885ecb13ef1abfe99c94048e0c38091362f8ee50c9731d7657a15eed2c03b",
+      "source_sha256": "5d2eb9bc1597651d1466e396310db016c9940102047998c89e8efd857febed0c",
       "summary": "将正离子参考数密度乘以荷态因子，得到参考电子数密度。",
       "definition": "输入转为 float64 并广播，计算 electron_density_ref_m3=ion_charge_state×density_ref_m3；拒绝非有限乘积。",
       "model": "单种正离子的准中性参考关系，不含动力学矩或电势求解。",
@@ -3412,7 +3412,7 @@
     },
     {
       "asset_id": "scirel.closures.boltzmann-quasineutrality",
-      "source_sha256": "cb4e52cb603d84e29ded5e9bf436f82e6779e8506fe881b637a7f2b741d666c2",
+      "source_sha256": "baf7a9f8ae1dbe9f4655c893d3c20202ee9a7be126c7a9e3b6a21d0b2640bab1",
       "summary": "在对数空间计算不截断指数的 Boltzmann 电子响应，并与给定正离子密度比较。",
       "definition": "正参考电子密度时 L_e=log(n_ref)+e(phi−phi_ref)/T_e，正离子时 L_i=log(n_i)+log(Z_i)，e=1.602176634e-19 C。返回 exp(L_e)、exp(L_e+log T_e)、Z_i n_i−n_e、L_i−L_e 和 tanh((L_i−L_e)/2)。单一物种精确缺失时用绝对值至少 1 的有符号有限对数代理及精确 ±1 相对残差，双真空残差零。先形成势差，结合尾数/指数缩放和范围边缘精确回退，避免绝对能量分别舍入及过早溢出/下溢。",
       "model": "给定温度下逐点 Boltzmann 电子响应，不是自洽电势求解。",
@@ -3532,7 +3532,7 @@
     },
     {
       "asset_id": "scirel.closures.quasineutral-potential",
-      "source_sha256": "2fa7224bacfa34d18f4ef88c4eb5ccb542b1c2ab6c52d29f5965a3c829786797",
+      "source_sha256": "686c1a28ea1502c36ca31b0b71dea207114cd1e356b02f159a30a8f86bb24194",
       "summary": "对调用者提供的对数电荷残差进行有界扩展括区与向量化二分，求激活磁面的电势。",
       "definition": "每个激活面求 R(phi)=log(Z n_i(phi))−log(n_e(phi))=0。初区间 phi_ref±k(T_parallel/q+T_e/e)，不满足端点符号时最多扩展八轮再二分；仅当全部激活面的最大区间宽度≤电势容差且最大中点残差≤准中性容差才返回。非激活势固定参考；中点避免先加大同号端点。回调精确零将该括区收缩至求值点，小非零不收缩且不改变容差。",
       "model": "外供单调递减残差的括区和二分：根下正、根上负；不计算任一密度。",
@@ -3670,7 +3670,7 @@
     },
     {
       "asset_id": "scirel.closures.mirror-ambipolar-potential",
-      "source_sha256": "a329af72c79c4e9ad5362649674ba496be82e506c17182bb99284d4d5a75fb8d",
+      "source_sha256": "d0a8eb8f1d7ec96651214b8f87575bcf0ac9da41f67316f86306b2dca1509089",
       "summary": "在指定端塞电势计算来源等价的单向离子/电子端损通量，或逐磁面通过有界括区与二分求电荷加权通量平衡。",
       "definition": "每物种通量为 n sqrt(T_parallel/(2πm)) I(s,a) refill，s=(T_perpendicular/T_parallel)(B_plug/B_reference−1)，a=q(phi_plug−phi_reference)/T_parallel。电子使用固定质量、−e 电荷和两方向相同热能。evaluate 只求给定电势通量；solve 对电荷加权离子/电子通量对数比求根，热电压初始括区最多扩展八轮再共享二分。双真空保留参考势；有界指数差商与对数归一化保留正物种下溢后的对数通量。测试电势与返回电势相同；使用缩放相对势差和安全中点，回调严格零才收缩括区，否则半宽与残差原门槛同时满足才算收敛。",
       "model": "单正离子与电子的半空间磁镜/静电端损模型，参考粒子群和补充比例外供；不是完整碰撞输运或自洽平衡。",
@@ -3895,7 +3895,7 @@
     },
     {
       "asset_id": "scirel.kinetic.mirror-total-pressure",
-      "source_sha256": "46509f60d40cc8201036b12aba88950e10ee58c73743e8f126e9c0b61db8f988",
+      "source_sha256": "e3dce8641bca5853d80d447114af5f97bf7b4b1ff5fcea6c2f1de5055a69ff05",
       "summary": "将外供各向同性电子压力同时加到两种离子压力上，组装保留密度、残差、可选势和离子矩的末态。",
       "definition": "将压力、密度、残差及可选势共同广播，要求物种密度/压力有限非负、残差/势有限；两离子压力分别加电子压力并拒绝非有限和。返回浅拷贝，保留原 kinetic_moments 映射及验证后的原密度/残差/势对象。残差只作观测，不证明准中性。",
       "model": "镜动力学离子态与外供各向同性电子压的末态组装，不求压力、电子响应或准中性。",
@@ -4025,7 +4025,7 @@
     },
     {
       "asset_id": "scirel.closures.mirror-quasineutral-closure",
-      "source_sha256": "2a192a26a6ad6ad1b7f0700a17853624f37e06a743f9bc7b88769407ac21d4a5",
+      "source_sha256": "cd5a89187376cecef027c66a2a5b390f636be014aeb6601dd8e62db7466ab725",
       "summary": "组合镜约束离子矩、Boltzmann 电子与有界电势二分求解，在最终电势重新计算物种状态并组装总压强。",
       "definition": "对活跃样本求解 log(Z_i*n_i(phi))-log(n_e(phi))=0，其中 Z_i=charge_c/e；离子矩来自镜约束双 Maxwell 分布，电子来自 Boltzmann 响应。两种参考密度均为正时活跃，均为零时保留离子参考电势。有限次扩展括区后至多二分 max_iterations 步。返回前重新计算离子和电子，核对求解器收敛状态及所有活跃样本的有限对数残差不超过容差，再把电子压强分别加到离子平行和垂直压强。",
       "model": "单一正离子的守恒量双 Maxwell 模型，可选两端磁塞损失锥；电子温度预设，满足 Boltzmann 响应。这里只局部闭合电中性，不求解平衡磁场。",
@@ -4342,7 +4342,7 @@
     },
     {
       "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure",
-      "source_sha256": "12e3d4c54b50f347e6bb77fb684cfe2caaa171ffd8b6ece279b9911bf4cbe186",
+      "source_sha256": "4bfbefbbf382085d5b2c925180702da22e57db06b71b6c7196904c8c112409d6",
       "summary": "在 R-Z 网格选择参考面与两个磁塞面，经磁通剖面插值连接端损失和局部准中性闭合，并按需限制指定输出场。",
       "definition": "以所给 z 坐标的首个最近网格点确定左、参考、右三行，要求索引严格递增。把三行 B 及参考行 phi_ref 作为 psi 剖面插值到全网格。端算子默认求值给定磁塞电势，也可在 ambipolar_end_loss 模式分别求两端单向离子/电子电流平衡，再把参考行端电势按 psi 映射到全网格。嵌套镜准中性图求局部电势和压强；父图添加端诊断及历史别名。可选限制只把磁塞行外指定顶层密度、压强、相对电荷残差置零。要求求端平衡时，未置 current_balance_solved 的端状态被拒绝。局部 converged 单独表示经终末残差验证的准中性结果。",
       "model": "单一正离子的双温镜矩闭合、预设温度的 Boltzmann 电子，以及独立端损失通量平衡。端电流平衡与局部准中性是不同计算，均不等于自洽 R-Z 磁平衡。",
@@ -4785,7 +4785,7 @@
     },
     {
       "asset_id": "scirel.kinetic.frank-egedal-radial-envelope",
-      "source_sha256": "8b7908fc41f711f02cf8dc5f2066660356d4a818ead576f29b8dfd8f96ca82ce",
+      "source_sha256": "c73a45ef8e1109b5208c9fb7a9907f68a9a47b3eadfef4cdb31e6cf38568dccb",
       "summary": "在二维磁通网格上计算截断的幂律径向包络，由参数映射给出参考磁通与指数。",
       "definition": "令 u=clip((psi-psi_axis)/(psi_edge-psi_axis),0,1)，逐点返回 clip(1-u,0,infinity)^alpha。默认 psi_axis=min(psi)、psi_edge=max(psi)、alpha=1。允许有限非零磁通区间的两种方向。按 NumPy 零次幂约定，alpha=0 时整个网格均为 1，包括外侧端点。",
       "model": "Frank-Egedal 压强构造中由来源定义的径向乘子，不计算压强或平衡。",
@@ -4856,7 +4856,7 @@
     },
     {
       "asset_id": "scirel.kinetic.frank-egedal-pressure-state",
-      "source_sha256": "81757596691fe279a6fdd67e7cb9fa25911f82eb77f7cd835fb42b39fa424238",
+      "source_sha256": "bd9cfbf00d77954151c47a62b2669d62ecca11abbddd5103a999dee3ac874985",
       "summary": "把径向包络、无量纲热离子矩形状与气体、密度、电子能量尺度组合成平行/垂直压强及可选密度和电子温度场。",
       "definition": "设 r 为径向包络，h_parallel、h_perp、h_n 为热离子形状。热压强尺度取 hot_pressure_scale，缺键才回退 p0，再缺省为 1 Pa；气体压强尺度默认为 0。配置密度尺度时 n=r*n_gas+r*h_n*n_hot，只加入存在项；均无配置则 density=None，但电子压强内部使用零密度。配置 electron_temperature 时返回其常量网格并令 p_e=n*T_e，否则返回 None 且 p_e=0。最终 p_parallel=p_gd*r+p_e+p_hot*r*h_parallel，p_perp=p_gd*r+p_e+p_hot*r*h_perp。优先键显式为 None 时不会改用后备键。",
       "model": "从外部形状逐点组装 Frank-Egedal 压强状态，不计算源模态矩、径向包络或电子温度。",
@@ -4971,7 +4971,7 @@
     },
     {
       "asset_id": "scirel.kinetic.frank-egedal-pressure-closure",
-      "source_sha256": "2bd221e9d11ec04ba2b04cd456870d025ab60f8e3f0ba51832739724ee428d5a",
+      "source_sha256": "48e779730ec350b000621c93d2b239c09fab4b289fc4e5a9b10d0933bf0b696f",
       "summary": "把同一粒子群的显式热离子矩与径向包络和预设压强/密度尺度组合成闭合。",
       "definition": "径向算子计算 r(psi)=max(1-clip((psi-psi_axis)/(psi_edge-psi_axis),0,1),0)^alpha。源算子使用给定 Legendre 阶数，或由损失锥谱算子求阶数，再选取或投影源系数。热离子算子在 b=B/B0 处积分，平行和垂直压强都以 b=1 的平行矩归一化，密度以其自身 b=1 矩归一化。压强算子加入气体项、可选 n*T_e 和相应热压强；图另附 closure_state。密度和两个热压强分量共同使用 velocity_lower（历史别名 perp_velocity_lower），默认 0；可达轨道、统一速度域和原始矩收敛遵循热离子算子。这修正了旧版只截断垂直项的做法，不宣称论文作者确认过勘误。",
       "model": "预设有限模态非负参考粒子群，加气体及可选电子压强；不求动力学演化，也不确证它是精确的物理 Frank-Egedal 分布。",
@@ -5069,7 +5069,7 @@
     },
     {
       "asset_id": "scirel.closures.reduced-hall-drift",
-      "source_sha256": "dbe6766a9d816f1251dcf5ed553cfcadf56422f9a1acc57bbd11e7ad792fe428",
+      "source_sha256": "658dc0646049ffa0e28220e3225c1a08c1d27be1b1bdd097dc0d920ffaafef43",
       "summary": "在 R-Z 网格把旋磁对称压强力投影为环向电流，可选求有限迭代的局部环向惯性修正，并给出物种漂移、广义欧姆及尺度诊断。",
       "definition": "用二阶网格导数计算柱坐标旋磁对称压强力，并取 J_phi=(B_Z*force_R-B_R*force_Z)/|B|²。在掩码内、非轴、密度超过峰值比例下限且磁场可解析的点，将 E=-grad(phi)、电子压强力和 Hall 乘子组合成环向漂移。可选欠松弛迭代径向离心修正，并以 maximum_inertial_mach 倍离子热速限制漂移。共享力核含正则轴向项和差分式导数；相容性诊断扣除有量纲的 64-epsilon 张量/差分舍入包络，同时保留原始绝对/相对残差与包络。这不是截断误差界，也不证明低于分辨率的物理力恰为零。未给离子压强时按总量减电子；独立拟合保留剩余应力，species_sum 拒绝不相容组分。惯性收敛检查返回 J 上重新求值的未松弛电流映射残差，不能以小松弛步代替。",
       "model": "约化轴对称 Hall 漂移与旋磁对称压强，可选局部环向惯性修正，不是无限制的双流体解。",
@@ -5521,7 +5521,7 @@
     },
     {
       "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
-      "source_sha256": "4408c3a3979b7762053d6dab414d2463279007f165d7bae31986fc5923fcc8e6",
+      "source_sha256": "7bc89a216d0a215bf5334aedb8157c7029b59ef084597a15574381cd6060388a",
       "summary": "将调用者压强闭合、约化 Hall 漂移/电流和稠密 Green 更新连接为轴对称磁通迭代，重算终末状态并返回收敛与相容性诊断。",
       "definition": "从 psi_vac 副本及零历史单元电流开始，每步由 psi 求 B，检查场下限，调用 pressure_closure(B,psi)，核对并广播压强，选活跃点，求约化 Hall 电流/漂移，再执行磁通松弛 Green 更新。原定义称按 relative_psi_change<=tol 或 maxiter 停止，但输出新增终末未松弛固定点残差门槛，两者存在冲突。返回 psi 上重新计算磁场、闭合、压强形状、Hall 状态和单元电流，再检查活跃点消防水龙带及可选严格力/欧姆相容性。原定义称终末不重复场下限和图级非负压强检查，但 applicability/failure 对场下限给出相反说明；Hall 叶仍验证自身输入。每次 Hall 计算可含独立有限惯性迭代。",
       "model": "由调用者闭合驱动的轴对称约化 Hall、旋磁对称压强 Picard 反馈。",
@@ -5882,7 +5882,7 @@
     },
     {
       "asset_id": "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
-      "source_sha256": "1863559ec72f2a85a9b438dbf9eb066f53d807bec35973d39a48fb03bec458ec",
+      "source_sha256": "4dd7218e0d981d017791b7ab7e7beaf2a6359d809fb8b45d0cc3078a1b8d61e8",
       "summary": "把网格镜动力学闭合绑定到约化 Hall 各向异性 Picard 图的压强入口，在每次磁更新前用当前场和磁通求动力学状态。",
       "definition": "复制 kinetic_config，构造 pressure_closure(B,psi)，向网格镜动力学图传入当前 Hall 的 B、psi，并用外层 r_grid/z_grid 覆盖配置同名项。Hall 载荷中移除 kinetic_config，以新闭合覆盖原 pressure_closure，原样返回 Hall 图结果。此封装本身不更新磁场；嵌套 Hall 图负责有限 Picard/可选惯性迭代及终末动力学重算。",
       "model": "轴对称网格镜端损失/准中性动力学闭合与约化 Hall 各向异性 Picard 反馈的组合。",
@@ -6330,7 +6330,7 @@
     },
     {
       "asset_id": "scirel.diagnostics.firehose-mirror-margins",
-      "source_sha256": "3dc3a64a39ded6dddc19b48c5a76d6a16486b1954d22c578ebc7b6363582e314",
+      "source_sha256": "406a63b50af8bc03612a1aac903d08f5da50cc9ff631bf7b5e3def0dd35080da",
       "summary": "用显式固定磁通导数计算局部旋磁对称压强诊断。",
       "definition": "firehose_margin=B²/mu0+p_perp-p_parallel；mirror_margin=B*d[p_perp+B²/(2*mu0)]/dB|psi=B²/mu0+B*dp_perp_dB。所有样本最小值严格为正时相应局部标志为 True。对守恒量双 Maxwell 分布，镜模条件为 1-beta_perp*(T_perp/T_parallel-1)>0。",
       "model": "局部无流旋磁对称张力和长波总压强斜率准则。正导数号由此定义和双 Maxwell 阈值给出，与 Frank2509.17288v4 Eq6 的字面反号冲突；不声称作者确认勘误。",
@@ -6499,7 +6499,7 @@
     },
     {
       "asset_id": "scirel.diagnostics.parallel-pressure-residual",
-      "source_sha256": "1ba003425af95df478e13763bce8ac6600fdd43ba9eae78b11515eb643fce8c5",
+      "source_sha256": "867f57cae020008e903d2f20ca1e89cb88ca41b97129b906b3c661d303b04fc7",
       "summary": "给定固定磁通导数，检查局部旋磁对称平行压强相容性。",
       "definition": "rhs=p_parallel-B*(partial p_parallel/partial B)|psi，等价于 -B²*partial(p_parallel/B)/partial B|psi。error=p_perp-rhs，relative_error=abs(error)/max(abs(p_perp),abs(rhs),atol)；最大相对误差 <=rtol 时 passed=True。",
       "model": "显式固定磁通压强定律的旋磁对称相容性，不是空间力平衡残差。",
