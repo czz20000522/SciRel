@@ -141,13 +141,14 @@ def chapter_files(asset_ids):
     return files
 
 
-def build(documents: Path, output: Path, outline: Path | None = None):
+def build(documents: Path, output: Path, outline: Path | None = None,
+          translation_paths: list[Path] | None = None):
     docs = load_document_set(documents)
     if output.exists():
         raise FileExistsError('output already exists; build a new snapshot')
     source = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     dirty = bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT))
-    translations = load_translations(ROOT, documents, docs)
+    translations = load_translations(ROOT, documents, docs, translation_paths=translation_paths)
     book = handbook_document({d['asset_id'] for d in docs}, outline)
     files = {}
     index = []
@@ -363,7 +364,7 @@ def server(docs, port):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     subs = parser.add_subparsers(dest='command', required=True)
-    b = subs.add_parser('build'); b.add_argument('--documents', type=Path, default=ROOT/'catalog/examples'); b.add_argument('--output', type=Path, required=True); b.add_argument('--outline', type=Path)
+    b = subs.add_parser('build'); b.add_argument('--documents', type=Path, default=ROOT/'catalog/examples'); b.add_argument('--output', type=Path, required=True); b.add_argument('--outline', type=Path); b.add_argument('--translations', type=Path, action='append', help='Explicit complete reader bundle(s) for the selected document set; repeatable')
     for name in ('query', 'serve'):
         sub = subs.add_parser(name); sub.add_argument('--snapshot', type=Path, required=True); sub.add_argument('--expected-digest')
         if name == 'query':
@@ -372,7 +373,7 @@ def main():
             sub.add_argument('--port', type=int, default=8765)
     a = parser.parse_args()
     if a.command == 'build':
-        result = build(a.documents, a.output, a.outline)
+        result = build(a.documents, a.output, a.outline, a.translations)
         print(json.dumps({k:v for k,v in result.items() if k != 'files'}, ensure_ascii=False)); return
     docs = Documentation(a.snapshot, a.expected_digest)
     if a.command == 'query':

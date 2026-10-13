@@ -1,0 +1,39 @@
+{
+  "schema": "scirel.chapter-execution.v1",
+  "source_commit": "33297d8ca83c9073e7b2268ff26789587da48f9f0840996d",
+  "source_identity_note": "Installed dev6 wheel re-execution and fresh results/plots, explicitly bound below.",
+  "files": {
+    "src/scirel/field/circular_filament_green.py": "7fd4e56e7caa7e03e99a50fa4e9de30c380087fb8fd9a5bfe482497908385987",
+    "src/scirel/field/current_green_superposition.py": "ef48b26b1e552fa11d54509d280ce16df4542517a833ea99e0b9a060941adf1e",
+    "src/scirel/field/rectangular_coil_filaments.py": "1615ade92a272170d0799eab6779917e2c236ce698056a4f7efeb71c080c2ecb",
+    "src/scirel/field/multi_coil_vacuum_field.py": "bfc04c817742d7bc935c88bc9f92c78036083d793ef9db94d794d2bbecb73acc",
+    "src/scirel/_composition.py": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
+    "src/scirel/electromagnetism/greens.py": "0a2425308022b01d9c394bb1c9d390562272b20a093f33f1ccfb717e0cb5fb42"
+  },
+  "scope": "Exact installed dev6 magnetostatics chapter successor; not human, release or full D3 approval",
+  "example_sha256": "feae9bb16913bcd304baa2e34b0d7d7f4ec9f65c06a04bf3d83492ab375257dc",
+  "results_sha256": "950b7df4683ab292248064e367f83467e954ea94ba838dccdbcee90e33b15179",
+  "wheel_sha256": "98e6909f558280b33f9f72b36174a27f58fc6e61ecdddd3ffc7f6a060e29791f",
+  "wheel_version": "0.2.0.dev6+pleiades.fullcore.mac",
+  "image_id": "sha256:f08ba414e70ed4f96d22f6a08b8c2df1a97191a0fe820292c8853517862c7aca",
+  "runtime": "Python3.14.7/NumPy2.5.4/SciPy1.18.1/Matplotlib3.11.2",
+  "network": "none",
+  "source_checkout_mounted": false,
+  "exit_code": 0,
+  "container_id": "ead77ff723eeacd1630d27815bfff27436d199de9ede983f14378dc9e6d355f1",
+  "figure_files": {
+    "plot.py": "d37a3c76b7107bb573fe7900b0c3ac59583801026af219c868d991de1a5bbb78",
+    "pair.svg": "d692dc10ddc0aa3ae7a8ec68069f82ac6b2459b081bf6cdc5464c54f276981e7",
+    "rectangle.svg": "5d7b62e28666bf1fc6e44839fa4d4db2088b35efce2dc89b6ad4b652243ae83f",
+    "single.svg": "8bf67957b958414bc046f0403f6bdf599686c7bf7521d571189504bf760ab554"
+  },
+  "plot_runtime": "Matplotlib3.11.2 offline source-free image, fresh dev6 results; chapter-plots-r2-writable receipt",
+  "document_files": {
+    "catalog/examples/scirel.field.circular-filament-green.json": "11d97b3243f364c638b26eae058d7256fc0d89a82075cdb5f3b316f93b4e12ba",
+    "catalog/examples/scirel.field.current-green-superposition.json": "d5d0a7c2f5cc3fdf1522dc91658ada206a6736fd689f29f51ce557deb55c5ca5",
+    "catalog/examples/scirel.field.rectangular-coil-filaments.json": "86b62ce950853683ffc4cd39c1ef68efdb5a650823c990d8a2aeda00db14e1f8",
+    "catalog/examples/scirel.field.multi-coil-vacuum-field.json": "d91a2d6344fcc5826e0538a339d3106924cfc4cd4802fe9d97de09e440dbf45e",
+    "catalog/pleiades-maintained/circular-filament-green.json": "f57fed1943386c8a02726ce3fac36d52a92d8c385d1de119b02c553a9cb169c0"
+  },
+  "previous_execution_sha256": "308656822bdea1492959af5f6da6c10a1e37b00cf70e10dfd1f5dbbcfde558a1"
+}

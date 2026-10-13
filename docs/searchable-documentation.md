@@ -54,6 +54,14 @@ python3 scripts/scirel_docs.py query --snapshot .runtime/docs-snapshot-001 --rea
 
 该工具与页面属于开发层，不加入科学 wheel。新增项目达到正式文档冻结条件后，在同一次整合中更新 exact document、中文阅读说明与目录，重新生成手册，并验证搜索与原文一致。
 
+选定科学发行内容时，可为同一份 exact documents 显式提供完整中文读者集合和目录，例如：
+
+```sh
+python3 scripts/scirel_docs.py build --documents <所选正式文档目录> --output <新快照目录> --outline tools/docs/handbooks/axisymmetric-core.json --translations tools/docs/zh/selections/axisymmetric-core.json
+```
+
+`--translations` 可重复传入多个 bundle；提供后只读取这些 bundle，仍严格校验完整资产集合、原文摘要、端口顺序及全部条款。省略时继续使用默认 `tools/docs/zh/*.json` 集合。选定 94 项轴对称核心内容的中文 bundle 与目录独立保存，不把其他候选记录混入同一选择。文档构建不执行科学计算；安装应用和正式认可仍分别验证。
+
 中文层位于 `tools/docs/zh/*.json`，格式为 `scirel.reader-translation.v1`。每项绑定原始正式 JSON 的 SHA-256，只翻译阅读字段；构建校验精确资产集合、参数名称与顺序、模型假设与适用/验证条目数量，拒绝缺项、重复、摘要失效与约束丢失。结构校验不能替代语义审阅。正式文档变化后必须重新审阅对应中文内容，不能只换摘要。中文层不能改变签名、数值、单位、默认值、实现版本、验证资格或许可。
 
 ## 全书目录与持续维护

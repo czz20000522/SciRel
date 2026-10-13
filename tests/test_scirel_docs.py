@@ -313,3 +313,28 @@ def test_reference_domains_list_linked_functions_and_keep_sidebar_compact(snapsh
         sidebar = page.select_one('nav.bd-docs-nav')
         assert len(sidebar.select('a')) == len(book['chapters'])
         assert not sidebar.select('a[href*="generated/"]')
+
+
+def test_explicit_reader_bundle_selects_exact_distribution_without_global_records(tmp_path):
+    from build_scirel_sphinx import load_translations
+    asset = "scirel.field.poloidal-field-magnitude"
+    source = example_document_sources()[asset]
+    documents = tmp_path / "documents"
+    documents.mkdir()
+    shutil.copy2(source, documents / (asset + ".json"))
+    doc = json.loads(source.read_bytes())
+    records = [record for file in (ROOT / "tools/docs/zh").glob("*.json")
+               for record in json.loads(file.read_bytes())["records"] if record["asset_id"] == asset]
+    assert len(records) == 1
+    bundle = tmp_path / "selected-readers.json"
+    bundle.write_text(json.dumps({"schema": "scirel.reader-translation.v1", "language": "zh-CN", "records": records}))
+    # Default retains the strict complete global scope and rejects this subset.
+    with pytest.raises(ValueError, match="coverage differs"):
+        load_translations(ROOT, documents, [doc])
+    selected = load_translations(ROOT, documents, [doc], translation_paths=[bundle])
+    assert set(selected) == {asset}
+    # Explicit selection still rejects missing, extra and stale records.
+    for changed in [[], records + [records[0]], [dict(records[0], source_sha256="0"*64)]]:
+        bundle.write_text(json.dumps({"schema": "scirel.reader-translation.v1", "language": "zh-CN", "records": changed}))
+        with pytest.raises(ValueError):
+            load_translations(ROOT, documents, [doc], translation_paths=[bundle])

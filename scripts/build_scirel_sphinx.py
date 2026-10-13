@@ -17,9 +17,17 @@ import tempfile
 import xml.etree.ElementTree as ET
 
 
-def load_translations(root, documents, docs):
+def load_translations(root, documents, docs, translation_paths=None):
+    """Load one exact reader set; an explicit selection keeps all binding gates.
+
+    The default repository handbook still consumes all top-level reader bundles.
+    A selected scientific distribution can supply its own complete reader set
+    without inheriting unrelated documents from another development selection.
+    """
     records = {}
-    for path in sorted((root / 'tools/docs/zh').glob('*.json')):
+    paths = (sorted((root / 'tools/docs/zh').glob('*.json'))
+             if translation_paths is None else translation_paths)
+    for path in paths:
         bundle = json.loads(path.read_bytes())
         if bundle['schema'] != 'scirel.reader-translation.v1' or bundle['language'] != 'zh-CN':
             raise ValueError('invalid reader translation: ' + str(path))
