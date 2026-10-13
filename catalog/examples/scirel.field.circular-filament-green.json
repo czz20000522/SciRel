@@ -6,42 +6,103 @@
     "en": "Axisymmetric circular-filament Green response",
     "zh": "轴对称圆电流丝 Green 响应"
   },
-  "summary": "Evaluate poloidal flux and cylindrical poloidal-field Green responses from weighted circular filaments at finite R-Z target points.",
-  "taxonomy": ["field", "green-function", "axisymmetric"],
-  "aliases": ["circular loop Green response"],
+  "summary": "逐源求和理想圆电流丝的实际坐标磁通与极向场响应，保留源权重和精确自点离散零约定。",
+  "taxonomy": [
+    "field",
+    "green-function",
+    "axisymmetric"
+  ],
+  "aliases": [
+    "circular loop Green response"
+  ],
   "identity": {
     "relation": "weighted circular filaments to axisymmetric flux and poloidal-field response",
     "direction": "filament R-Z-weight rows and target R-Z points -> gpsi, gBR, gBZ",
-    "definition": "Sums the maintained complete-elliptic-integral circular-filament response using a dimensionless weight per source filament.",
+    "definition": "以已验证的实际坐标圆环核逐源相加，psi=R A_phi（Wb/rad）；小椭圆参数用等价超几何表达与解析场导数，避免K/E消差。每源无量纲权重乘一次，调用者随后乘外部驱动电流。",
     "model": "vacuum axisymmetric circular current-filament Green relation",
     "geometry": "circular filaments and point targets in an axisymmetric domain",
     "coordinates": "cylindrical R-Z coordinates",
-    "boundary": "source and target radii are nonnegative; nonfinite singular terms are replaced by zero under the maintained implementation convention",
-    "assumptions": ["Weights are dimensionless relative source strengths.", "The returned response is per external drive ampere applied later by the caller."]
+    "boundary": "只精确零半径或零权重源无贡献，所有正半径源保留。轴上目标psi=BR=0，BZ=mu0*w*a²/[2(a²+h²)^(3/2)]。精确源目标重合的贡献按历史离散兼容规则为零；其他算术非有限不填零。",
+    "assumptions": [
+      "Weights are dimensionless relative source strengths.",
+      "The returned response is per external drive ampere applied later by the caller.",
+      "精确自点为离散兼容值，不代表有限导体自场或自感；空源数组保持本入口的历史空集简写。"
+    ]
   },
   "inputs": [
-    {"name": "rzw", "description": "Source rows [R_m,Z_m,weight].", "units": "m,m,dimensionless", "shape": "[N_filament,3]", "dtype": "real array-like", "required": true, "constraints": "Finite with nonnegative source radii; an empty source set is allowed."},
-    {"name": "rz_pts", "description": "Target rows [R_m,Z_m].", "units": "m,m", "shape": "[N_point,2]", "dtype": "real array-like", "required": true, "constraints": "Finite with nonnegative target radii."}
+    {
+      "name": "rzw",
+      "description": "Source rows [R_m,Z_m,weight].",
+      "units": "m,m,dimensionless",
+      "shape": "[N_filament,3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite with nonnegative source radii; an empty source set is allowed."
+    },
+    {
+      "name": "rz_pts",
+      "description": "Target rows [R_m,Z_m].",
+      "units": "m,m",
+      "shape": "[N_point,2]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite with nonnegative target radii."
+    }
   ],
   "outputs": [
-    {"name": "gpsi", "description": "Flux response per drive current.", "units": "Wb/A", "shape": "[N_point]", "dtype": "float64", "required": true, "constraints": "Finite under the maintained singular-value convention."},
-    {"name": "gBR", "description": "Radial field response per drive current.", "units": "T/A", "shape": "[N_point]", "dtype": "float64", "required": true, "constraints": "Finite under the maintained singular-value convention."},
-    {"name": "gBZ", "description": "Axial field response per drive current.", "units": "T/A", "shape": "[N_point]", "dtype": "float64", "required": true, "constraints": "Finite under the maintained singular-value convention."}
+    {
+      "name": "gpsi",
+      "description": "Flux response per drive current.",
+      "units": "Wb/rad/A",
+      "shape": "[N_point]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite under the maintained singular-value convention."
+    },
+    {
+      "name": "gBR",
+      "description": "Radial field response per drive current.",
+      "units": "T/A",
+      "shape": "[N_point]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite under the maintained singular-value convention."
+    },
+    {
+      "name": "gBZ",
+      "description": "Axial field response per drive current.",
+      "units": "T/A",
+      "shape": "[N_point]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite under the maintained singular-value convention."
+    }
   ],
   "applicability": {
-    "preconditions": ["Inputs use SI cylindrical coordinates and finite numeric values."],
-    "supported": ["Axisymmetric vacuum response of weighted circular filaments."],
-    "excluded": ["Finite-conductor cross-section physics.", "Non-axisymmetric three-dimensional fields.", "Resolved self-field singularities."]
+    "preconditions": [
+      "Inputs use SI cylindrical coordinates and finite numeric values."
+    ],
+    "supported": [
+      "Axisymmetric vacuum response of weighted circular filaments."
+    ],
+    "excluded": [
+      "Finite-conductor cross-section physics.",
+      "Non-axisymmetric three-dimensional fields.",
+      "Resolved self-field singularities."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for wrong array rank/width, nonfinite values, or negative radii.",
-    "runtime_failure": "SciPy elliptic-function failures propagate; maintained nonfinite per-point formula terms are replaced by zero.",
+    "runtime_failure": "核或源求和的不可表示输出、上溢、除零、非法运算抛FloatingPointError；不把算术故障替换为零。",
     "nonconvergence": "Not applicable; this operator has no iteration.",
-    "partial_results": "No validation-time partial result; individual singular formula terms follow the documented zero convention."
+    "partial_results": "失败不返回部分响应；精确自点是预声明离散约定，单独保留为零。"
   },
   "provenance": {
-    "lineage_summary": "Maintained SciRel implementation with frozen internal admission evidence; private review identifiers are not part of the public contract.",
-    "source_kinds": ["reviewed scientific implementation", "scientific regression tests"],
+    "lineage_summary": "Maintained SciRel implementation with frozen internal admission evidence; private review identifiers are not part of the public contract. 本后继保留冻结前行为为证据，修正近轴剔除、非有限静默填零或人工场核偏移/截断；psi统一明确为RAphi，单位标签Wb/rad，不乘2π也不改存储数值。",
+    "source_kinds": [
+      "reviewed scientific implementation",
+      "scientific regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
@@ -53,8 +114,12 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
-    "dependencies": []
+    "implementation_version": "0.2.0.dev5+pleiades.fullcore",
+    "dependencies": [
+      {
+        "asset_id": "scirel.electromagnetism.circular-filament-green"
+      }
+    ]
   },
   "example": {
     "description": "Evaluate one unit-weight filament at two off-axis targets and check response shape and finiteness.",
@@ -62,9 +127,21 @@
     "expected": "Three finite float64 response vectors with two entries each."
   },
   "verification": {
-    "scope": ["Axis-source skip convention.", "Weighted-source linearity.", "Midplane symmetry and analytic axis BZ check."],
-    "tests": ["tests/operator_contracts/test_circular_filament_green.py"],
+    "scope": [
+      "Axis-source skip convention.",
+      "Weighted-source linearity.",
+      "Midplane symmetry and analytic axis BZ check.",
+      "独立70/80位精度理想圆环关系核对极小正半径、近轴非零BR、近丝和公式求值分支，保持原数值断言与容差；精确离散自项与算术失败分别处理。"
+    ],
+    "tests": [
+      "tests/operator_contracts/test_circular_filament_green.py",
+      "tests/operator_contracts/test_pleiades_field_green_correction.py"
+    ],
     "evidence_ceiling": "Verified for the maintained axisymmetric circular-filament relation and tested finite points; not an independent validation of arbitrary coil geometries or singular self-fields.",
-    "known_limitations": ["Targets exactly on a filament are not a resolved self-field model.", "Axis filaments within the maintained tolerance are skipped.", "Public distribution licensing remains pending a human decision."]
+    "known_limitations": [
+      "Targets exactly on a filament are not a resolved self-field model.",
+      "Public distribution licensing remains pending a human decision.",
+      "聚合求和入口与逐源矩阵入口保留不同形状/空源接口；共同核复用不合并公共合同。"
+    ]
   }
 }

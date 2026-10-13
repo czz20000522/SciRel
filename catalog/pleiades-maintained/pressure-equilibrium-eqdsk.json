@@ -1,0 +1,166 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.io.pressure-equilibrium-eqdsk",
+  "kind": "operator",
+  "title": {
+    "en": "Converged pressure equilibrium exchange",
+    "zh": "收敛压力平衡状态的交换文件"
+  },
+  "summary": "将真实收敛的压力反馈终态写入明确赋予SI压力语义的Pleiades扩展格式，拒绝未收敛结果。",
+  "taxonomy": [
+    "io",
+    "axisymmetric-equilibrium",
+    "scientific-exchange"
+  ],
+  "aliases": [],
+  "identity": {
+    "relation": "psi_grid=result.psi; Ip=sum(result.plas_currents); profile_psi=linspace(psi(R=0,Z=0),psi_lim,nnv); p_flux=P(profile_psi); pprime_flux=dP/dpsi(profile_psi).",
+    "direction": "收敛EquilibriumResult与其R,Z网格到交换文件及显式压力采样磁通坐标。",
+    "definition": "终态psi=R A_phi，电流单元I=Jphi abs(dR*dZ)。采用已有Pleiades写读格式及稳健弧长轮廓；psi_lim为终态中最近(0.6,0)节点的psi。此后继明确赋予p_flux压力Pa、pprime_flux压力对psi的导数Pa/(Wb/rad)语义，保留压力样条域外零值。其余三profile仍为历史零值，不推断物理F或q。",
+    "model": "压力-only离散反馈终态的显式交换组合；不增加平衡模型。",
+    "geometry": "从R=0开始、Z关于0对称的规则二维网格，与压力反馈结果一致。",
+    "coordinates": "R,Z为m，[Z,R]数组次序；psi为Wb/rad，Ip为A，p_flux为Pa。",
+    "boundary": "沿用最近(0.6,0) limiter、2%磁通偏移 vessel、最长轮廓与100点弧长记录的历史选择。文件未另存profile_psi；可由读回psi的轴点、psi_lim和nnv重建。",
+    "assumptions": [
+      "结果status=converged且两残差有限，压力fit存在。",
+      "原反馈模型与压力定义域成立。",
+      "Pleiades扩展格式，不是标准EFIT/COCOS协议。",
+      "2D Jphi/P由终态独立消费，不是文件中的2D存储字段。"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "R",
+      "description": "终态径向网格。",
+      "units": "m",
+      "shape": "2-D",
+      "dtype": "finite real",
+      "required": true,
+      "constraints": "R起点为0，规则矩形，与结果同形。"
+    },
+    {
+      "name": "Z",
+      "description": "终态轴向网格。",
+      "units": "m",
+      "shape": "R.shape",
+      "dtype": "finite real",
+      "required": true,
+      "constraints": "关于0居中的规则网格，存在精确中平面。"
+    },
+    {
+      "name": "result",
+      "description": "有终态磁通、电流、压力fit和明确收敛状态的结果。",
+      "units": "psi Wb/rad; current A; pressure Pa",
+      "shape": "EquilibriumResult",
+      "dtype": "EquilibriumResult",
+      "required": true,
+      "constraints": "必须converged；非收敛和部分状态拒绝。"
+    },
+    {
+      "name": "filename",
+      "description": "输出文件。",
+      "units": "not-applicable",
+      "shape": "scalar path",
+      "dtype": "str or Path",
+      "required": true,
+      "constraints": "可写文件路径。"
+    },
+    {
+      "name": "title",
+      "description": "格式标题。",
+      "units": "not-applicable",
+      "shape": "scalar",
+      "dtype": "str",
+      "required": true,
+      "constraints": "沿用原writer标题长度规则。"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "profile_psi",
+      "description": "p_flux和pprime_flux对应的均匀终态磁通坐标。",
+      "units": "Wb/rad",
+      "shape": "(nnv,)",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "端点为实际轴点和limiter psi；文件同时写入filename。"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "真实收敛的压力only反馈终态及其网格。"
+    ],
+    "supported": [
+      "终态磁通、电流总和、几何轮廓与显式SI压力profiles写读。",
+      "无需交互图形。"
+    ],
+    "excluded": [
+      "未收敛/部分结果消费。",
+      "EFIT、COCOS或GENRAY等价。",
+      "真实q/F重建。",
+      "任意原点网格。",
+      "文件直接保存完整2D Jphi/P。"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "非converged结果或缺压力fit/有限残差抛ValueError；不可表示网格和轮廓沿用EQDSKFormatError。",
+    "runtime_failure": "IO错误或格式验证失败传播。",
+    "nonconvergence": "拒绝非收敛输入，绝不把部分状态标为成功。",
+    "partial_results": "输入状态拒绝在创建目标文件前发生；IO失败不保证原子覆盖。"
+  },
+  "provenance": {
+    "lineage_summary": "原BRB/WHAM notebook将真空psi误接至终态writer/P；已接受修正要求使用terminal psi。此组合保留已修正原几何writer，明确区别旧raw五个零profile和本后继的SI压力字段，不改旧冻结格式或伪称标准协议。",
+    "source_kinds": [
+      "Frozen D0 workflow",
+      "Accepted terminal-wiring correction",
+      "Independent polynomial pressure relation"
+    ],
+    "public_references": [],
+    "license_status": "来源许可依据保留；内部开发，未人工批准或发行。"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.io",
+      "symbol": "write_pressure_equilibrium_eqdsk",
+      "signature": "write_pressure_equilibrium_eqdsk(R, Z, result, filename: 'str | Path', title: 'str') -> 'np.ndarray'"
+    }
+  },
+  "version": {
+    "implementation_version": "0.2.0.dev5+pleiades.fullcore",
+    "dependencies": [
+      {
+        "asset_id": "scirel.equilibrium.compute-equilibrium"
+      },
+      {
+        "asset_id": "scirel.io.write-pleiades-eqdsk-legacy-raw"
+      },
+      {
+        "asset_id": "scirel.io.write-pleiades-eqdsk"
+      },
+      {
+        "asset_id": "scirel.io.read-pleiades-eqdsk"
+      }
+    ]
+  },
+  "example": {
+    "description": "精确多项式压力的收敛零Green终态写读；完整非零Green任务证据另列。",
+    "code": "import tempfile\nfrom pathlib import Path\nimport numpy as np\nfrom scirel.equilibrium import compute_equilibrium\nfrom scirel.io import write_pressure_equilibrium_eqdsk, read_pleiades_eqdsk\nR,Z=np.meshgrid(np.linspace(0,1.5,13),np.linspace(-1,1,11))\nP=lambda r: (1-r*r)**2 if r<1 else 0.\nresult=compute_equilibrium(R,Z,P,R*R/2,np.zeros((R.size,R.size)))\nwith tempfile.TemporaryDirectory() as d:\n    path=Path(d)/'pressure.eqdsk'\n    axis=write_pressure_equilibrium_eqdsk(R,Z,result,path,'pressure')\n    data=read_pleiades_eqdsk(path)\n    np.testing.assert_allclose(data['p_flux'],(1-2*axis)**2,rtol=2e-8,atol=1e-12)",
+    "expected": "显式压力profile与解析P(psi)一致；零Green例不代表完整物理平衡验证。"
+  },
+  "verification": {
+    "scope": [
+      "独立解析P(psi)及导数写读。",
+      "未收敛结果创建输出前拒绝。",
+      "完整原网格BRB/WHAM非零Green终态及安装消费按精确工件绑定。"
+    ],
+    "tests": [
+      "tests/pleiades/test_pressure_eqdsk.py"
+    ],
+    "evidence_ceiling": "具名离散终态和格式组合，不给连续力平衡、实验或标准协议等价资格。",
+    "known_limitations": [
+      "历史固定limiter/vessel选择并非真实边界反演。",
+      "三个历史零profile不提供q/F。",
+      "Jphi/P二维数组需由实际终态单独消费。"
+    ]
+  }
+}

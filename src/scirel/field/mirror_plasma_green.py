@@ -1,10 +1,21 @@
 """Reflection-symmetric plasma-cell flux Green matrix from SciRel ``get_gpsi``."""
 from __future__ import annotations
 import numpy as np
-from scipy.special import ellipe, ellipk
+from scirel.electromagnetism.greens import get_gpsi
 
 def build_mirror_plasma_flux_green(r_grid, z_grid):
-    """Build the source-compatible dense ``g_psi[target_cell, source_cell]`` matrix."""
+    """Build ``g_psi[target_cell,source_cell]`` from actual coordinates.
+
+    Retains this asset's increasing rectilinear, symmetric uniform-Z domain.
+    The corrected kernel evaluates each coordinate pair directly, not reflected
+    blocks, and retains every positive loop radius. Diagonal and zero-radius
+    source columns use the declared discrete zero convention. Other arithmetic
+    failures raise. psi=R*A_phi units are Wb/rad per ampere; source currents and
+    cell-area quadrature remain caller responsibilities.
+    原反射索引与近轴剔除改为实际坐标核，不改变此镜像专用入口的几何域。
+    """
+    if np.iscomplexobj(r_grid) or np.iscomplexobj(z_grid):
+        raise ValueError('grid coordinates must be real')
     r_grid = np.asarray(r_grid, dtype=float)
     z_grid = np.asarray(z_grid, dtype=float)
     if r_grid.ndim != 2 or z_grid.shape != r_grid.shape or min(r_grid.shape) < 2:
@@ -18,30 +29,6 @@ def build_mirror_plasma_flux_green(r_grid, z_grid):
         raise ValueError('the reflection construction requires an axis-reflection-symmetric Z grid')
     if not np.allclose(np.diff(axial), np.diff(axial)[0], rtol=1e-12, atol=1e-14):
         raise ValueError('the reflection construction requires a uniformly spaced Z grid')
-    n_z, n_r = r_grid.shape
-    targets_r, targets_z = (r_grid.ravel(), z_grid.ravel())
-    base = np.zeros((targets_r.size, n_r), dtype=float)
-    prefactor = 1e-07
-    source_z = axial[0]
-    with np.errstate(divide='ignore', invalid='ignore'):
-        for source_index, source_r in enumerate(radial):
-            if np.isclose(source_r, 0.0, rtol=0.0, atol=1e-12):
-                continue
-            z_delta_squared = (targets_z - source_z) ** 2
-            d_plus = np.sqrt(z_delta_squared + (targets_r + source_r) ** 2)
-            k_squared = 4.0 * targets_r * source_r / d_plus ** 2
-            flux = prefactor * targets_r * source_r / d_plus * 4.0 / k_squared * ((2.0 - k_squared) * ellipk(k_squared) - 2.0 * ellipe(k_squared))
-            flux[~np.isfinite(flux)] = 0.0
-            base[:, source_index] = flux
-    reflected = np.zeros((n_r * (2 * n_z - 1), n_r), dtype=float)
-    reflected[(n_z - 1) * n_r:, :] = base
-    for reflection_index in range(n_z - 1):
-        if reflection_index == 0:
-            reflected[:n_r, :] = base[-n_r:, :]
-        else:
-            reflected[reflection_index * n_r:(reflection_index + 1) * n_r, :] = base[-(reflection_index + 1) * n_r:-reflection_index * n_r, :]
-    g_psi = np.zeros((targets_r.size, targets_r.size), dtype=float)
-    for source_plane in range(n_z):
-        g_psi[:, source_plane * n_r:(source_plane + 1) * n_r] = reflected[(n_z - (source_plane + 1)) * n_r:(2 * n_z - (source_plane + 1)) * n_r, :]
+    g_psi = get_gpsi(r_grid,z_grid)
     return {'g_psi': g_psi}
 __all__ = ['build_mirror_plasma_flux_green']

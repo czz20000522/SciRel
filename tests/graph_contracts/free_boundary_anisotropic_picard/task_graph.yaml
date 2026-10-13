@@ -18,17 +18,17 @@ inputs:
   shape: '[N_Z,N_R]'
   units: m
   required: true
-  constraints: 有限、规则直角网格；第 1 轴严格递增且等间距；每个轴至少 3 个采样点
+  constraints: 有限、R非负的张量直角网格；第1轴严格递增，可非均匀；每轴至少3点
 - name: z_grid
   meaning: 柱坐标 Z 网格
   shape: '[N_Z,N_R]'
   units: m
   required: true
-  constraints: 有限、规则直角网格；第 0 轴严格递增且等间距；每个轴至少 3 个采样点
+  constraints: 有限张量直角网格；第0轴严格递增，可非均匀；每轴至少3点
 - name: psi_vac
   meaning: 外加或真空磁通
   shape: '[N_Z,N_R]'
-  units: Wb
+  units: Wb/rad
   required: true
   constraints: ravel matches Green field axis
 - name: br_vac
@@ -46,7 +46,7 @@ inputs:
 - name: g_psi
   meaning: cell current 到 field flux dense Green 矩阵
   shape: '[N_field,N_field]'
-  units: Wb/A
+  units: Wb/rad/A
   required: true
   constraints: row field; column source cell
 - name: g_br
@@ -253,7 +253,7 @@ inputs:
   shape: mapping_or_null
   units: mixed
   required: false
-  constraints: only corrects psi
+  constraints: 修正psi，并把相同墙磁通的离散磁场导数加入BR/BZ
   fields:
     boundary_sample_matrix:
       meaning: field flux 到 boundary samples 投影
@@ -264,13 +264,13 @@ inputs:
     green_boundary_to_boundary:
       meaning: wall current 到 boundary flux Green 矩阵
       shape: '[N_boundary,N_wall]'
-      units: Wb/A
+      units: Wb/rad/A
       required: true
       constraints: finite
     green_boundary_to_field:
       meaning: wall current 到 field flux Green 矩阵
       shape: '[N_field,N_wall]'
-      units: Wb/A
+      units: Wb/rad/A
       required: true
       constraints: finite
     rcond:
@@ -279,11 +279,35 @@ inputs:
       units: dimensionless
       required: false
       constraints: N7 default
+- name: cell_edges
+  meaning: 可选R和Z单元边界，代替节点梯形权重
+  shape: ([N_R+1],[N_Z+1]) or null
+  units: m
+  required: false
+  constraints: 同中心方向严格单调且有限；每中心落在对应边界内；R边界非负
+- name: minimum_field
+  meaning: 每次压力和电流计算前的磁场下界
+  shape: scalar
+  units: T
+  required: false
+  constraints: 有限严格正数，默认1e-8；低于下界在闭合回调前失败
+- name: compatibility_tol
+  meaning: 返回态平行压强力相容性阈值
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 有限非负数，默认0.05
+- name: strict_compatibility
+  meaning: 平行力不相容是否抛出错误
+  shape: boolean
+  units: boolean
+  required: false
+  constraints: 默认true，只接受布尔值
 outputs:
 - name: psi
   meaning: 当前或最终磁通
   shape: '[N_Z,N_R]'
-  units: Wb
+  units: Wb/rad
   required: true
   constraints: finite [Z,R] field
 - name: BR
@@ -291,13 +315,13 @@ outputs:
   shape: '[N_Z,N_R]'
   units: T
   required: true
-  constraints: 未提供 g_br 与 g_bz 时返回输入 br_vac；成对提供时返回 br_vac 加上 g_br 作用于 Picard 松弛单元电流状态的响应；与目标网格同形
+  constraints: 未提供成对场Green时从新增等离子体磁通导出BR增量；否则使用g_br投影；再加br_vac与墙增量
 - name: BZ
   meaning: 最终轴向磁场
   shape: '[N_Z,N_R]'
   units: T
   required: true
-  constraints: 未提供 g_br 与 g_bz 时返回输入 bz_vac；成对提供时返回 bz_vac 加上 g_bz 作用于 Picard 松弛单元电流状态的响应；与目标网格同形
+  constraints: 未提供成对场Green时从新增等离子体磁通导出BZ增量；否则使用g_bz投影；再加bz_vac与墙增量
 - name: B
   meaning: 局域或最终磁场强度
   shape: '[N_Z,N_R]'
@@ -345,7 +369,7 @@ outputs:
   shape: scalar
   units: boolean
   required: true
-  constraints: finite residual <= tol
+  constraints: 至少一轮，完整未松弛psi/BR/BZ/电流残差<=tol，且平行力相容
 - name: iterations
   meaning: 实际 Picard 次数
   shape: scalar_integer
@@ -379,13 +403,13 @@ outputs:
 - name: boundary_flux_correction
   meaning: 墙引起的磁通改变量
   shape: '[N_Z,N_R] or null'
-  units: Wb
+  units: Wb/rad
   required: true
   constraints: wall branch only
 - name: boundary_residual_norm
   meaning: 墙边界残差范数
   shape: scalar_or_null
-  units: Wb
+  units: Wb/rad
   required: true
   constraints: 非墙分支返回 null；启用 boundary_correction 时返回有限标量
 - name: failure_reason
@@ -394,6 +418,30 @@ outputs:
   units: dimensionless
   required: true
   constraints: 收敛时为空值；未收敛时返回声明的失败标记字符串
+- name: fixed_point_residual
+  meaning: 返回态psi、BR、BZ和电流未松弛残差的最大值
+  shape: scalar
+  units: dimensionless
+  required: true
+  constraints: 控制判停与收敛；各场分母是max目标/当前/真空范数，电流为max目标/当前范数；全零为零
+- name: flux_fixed_point_residual
+  meaning: 返回态未松弛psi固定点残差
+  shape: scalar
+  units: dimensionless
+  required: true
+  constraints: 非负有限L2比值
+- name: field_fixed_point_residual
+  meaning: 返回态未松弛BR和BZ残差的最大值
+  shape: scalar
+  units: dimensionless
+  required: true
+  constraints: 非负有限L2比值
+- name: current_fixed_point_residual
+  meaning: 返回态压力电流与已松弛电流状态的残差
+  shape: scalar
+  units: dimensionless
+  required: true
+  constraints: 非负有限L2比值
 execution:
   mode: sequential_state_feedback_picard
   order_policy: field_state_to_pressure_to_current_to_relaxed_cell_current_to_green_projection_to_optional_flux_boundary_correction_to_next_field_state
@@ -563,7 +611,7 @@ edges:
   data: toroidal current density [Z,R]
   condition: every iteration
   required: true
-  transform: apply plasma_mask, form C-order cell current j_phi*dR*dZ, relax against currents_old, then apply Green matrices
+  transform: apply plasma_mask, 按节点梯形权重或显式cell_edges形成C-order环向电流，不乘2πR, relax against currents_old, then apply Green matrices
   closure: asset
 - from: current_relaxation
   from_output: psi_projected
@@ -590,14 +638,14 @@ edges:
   data: wall-corrected next flux [Z,R]
   condition: boundary_correction supplied
   required: false
-  transform: N7 changes psi only
+  transform: N7磁通修正及其离散磁場导数共同进入反馈态
   closure: asset
 - from: current_relaxation
   from_output: psi_projected
   to: pressure_closure
   to_input: psi_state
   data: next flux state before optional wall correction
-  condition: boundary_correction absent and residual > tol and iterations < maxiter
+  condition: boundary_correction absent and fixed_point_residual > tol and iterations < maxiter
   required: true
   transform: state feedback only
   closure: controlled_glue
@@ -606,7 +654,17 @@ edges:
   to: pressure_closure
   to_input: psi_state
   data: wall-corrected next flux state
-  condition: boundary_correction supplied and residual > tol and iterations < maxiter
+  condition: boundary_correction supplied and fixed_point_residual > tol and iterations < maxiter
   required: false
   transform: state feedback only
   closure: controlled_glue
+
+feedback_contract:
+  state: psi、BR、BZ、已松弛电流、步幅历史和已执行次数
+  initialization: 真空场；电流为零；步幅残差为inf；历史为空
+  ordering: 检查场下界→确定性闭合→电流→完整未松弛目标判停→电流松弛→Green场→墙磁通及同一导数场→下一态
+  stop: 至少一轮后完整未松弛状态残差<=tol，或到达maxiter
+  domain: 每次压力和电流求值前B>=minimum_field；闭合不改输入且对相同状态确定
+  weights: 缺省节点梯形积分覆盖轴最小至最大；边点半邻距；显式cell_edges定义真实单元；无2πR
+  residual: psi、BR、BZ各用差范数除max(目标范数、当前范数、对应真空范数)；电流除max(目标范数、当前范数)；全零为零；fixed_point_residual取全部最大
+  nonconvergence: 返回最后完整态与maxiter_reached；平行力不相容可严格失败或返回parallel_force_incompatible

@@ -25,8 +25,12 @@ def test_array_broadcast_and_zero_density_are_finite():
 
 
 def test_exponent_is_clipped_before_electron_density():
-    result = scientific_operator(1.0e6, 1.0e-19, 1.0, 0.0, 0.0, 1.0)
-    np.testing.assert_allclose(result["electron_density_m3"], np.exp(700.0), rtol=0.0)
+    # Historical test ID: clamping exp(e*phi/Te) changes the physical law.
+    # Keep a zero-relative-tolerance representable witness above the old clamp.
+    result = scientific_operator(701.0, 1.602176634e-19, 1.0, 0.0, 0.0, 1.0)
+    np.testing.assert_allclose(result["electron_density_m3"], np.exp(701.0), rtol=0.0)
+    with pytest.raises(FloatingPointError, match="finite output range"):
+        scientific_operator(1.0e6, 1.0e-19, 1.0, 0.0, 0.0, 1.0)
 
 
 @pytest.mark.parametrize("kwargs", [{"electron_temperature_j": 0.0}, {"ion_density_m3": -1.0}])

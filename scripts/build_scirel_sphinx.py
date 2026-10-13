@@ -234,7 +234,7 @@ def render_tutorial(chapter):
     return out
 
 
-def render_site(root, docs, book, translations, chapter):
+def render_site(root, docs, book, translations, chapter, *, figure_files):
     """Return only generated public site bytes; staging sources stay temporary."""
     # Sphinx otherwise silently builds a Chinese search index of Latin words only.
     jieba_version = version('jieba')
@@ -291,7 +291,7 @@ def render_site(root, docs, book, translations, chapter):
         write('tutorials/magnetostatics', render_tutorial(chapter))
         examples = source/'_static/examples'; examples.mkdir()
         for name in ('single.svg','pair.svg','rectangle.svg'):
-            shutil.copyfile(root/'tools/docs/magnetostatics'/name, examples/name)
+            (examples/name).write_bytes(figure_files[name])
         result = subprocess.run([sys.executable, '-m', 'sphinx', '-b', 'html', '-W', '--keep-going', '-q', str(source), str(output)], capture_output=True, text=True)
         if result.returncode:
             raise RuntimeError('Sphinx build failed:\n' + result.stdout + result.stderr)

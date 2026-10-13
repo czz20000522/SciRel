@@ -96,8 +96,10 @@ def test_review_gate_uniform_bz_linear_isotropic_pressure_has_analytic_current()
     })
     np.testing.assert_allclose(result["B_Z"], 2.0, rtol=0.0, atol=2.0e-14)
     np.testing.assert_allclose(result["J_phi"], 0.5, rtol=2.0e-13, atol=2.0e-13)
-    cell_area = (r_grid[0, 1] - r_grid[0, 0]) * (z_grid[1, 0] - z_grid[0, 0])
-    np.testing.assert_allclose(result["plasma_cell_currents"], result["J_phi"] * abs(cell_area))
+    # Constant J=.5 integrates over the declared rectangle [.2,.6]x[-.2,.2].
+    weights = np.outer([.05, .1, .1, .1, .05], [.05, .1, .1, .1, .05])
+    np.testing.assert_allclose(result["plasma_cell_currents"], .5 * weights)
+    np.testing.assert_allclose(np.sum(result["plasma_cell_currents"]), .08)
 
 
 def test_review_gate_firehose_and_parallel_compatibility_fail_closed():

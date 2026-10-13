@@ -6,7 +6,7 @@
     "en": "Anisotropic free-boundary Picard equilibrium",
     "zh": "各向异性自由边界 Picard 平衡"
   },
-  "summary": "Run a bounded gyrotropic-pressure and cell-current Picard loop using caller-supplied pressure closure and Green responses, with an optional ideal-conductor flux correction after each update.",
+  "summary": "执行显式各向异性压力、电流与 Green 场的有界 Picard 反馈；可选墙磁通与其磁场导数共同更新，所有反馈状态的未松弛残差及平行力相容性决定收敛。",
   "taxonomy": [
     "equilibrium",
     "anisotropic-pressure",
@@ -20,7 +20,7 @@
   "identity": {
     "relation": "vacuum flux and field, dense cell-current Green responses and caller pressure closure to a bounded anisotropic R-Z equilibrium state",
     "direction": "R-Z grid, vacuum state, Green matrices, pressure closure and controls -> final flux/field/pressure/current state and iteration diagnostics",
-    "definition": "Evaluate the caller pressure/current closure, integrate declared-domain currents, relax the current state and project flux and field. When field matrices are absent, derive the plasma magnetic increment from its flux. For a wall branch, add the magnetic derivative of the same wall flux correction. Reevaluate terminal closure, currents, force compatibility and the unrelaxed fixed-point residual; maxiter=0 remains an uniterated state.",
+    "definition": "在当前 psi、BR、BZ 上重算确定性压力闭合和环向电流，以节点梯形权重或显式单元边界积分电流；按 relax 混合旧电流再投影 Green 场。缺少成对场 Green 时从新增等离子体磁通导出磁场。墙分支同时加入墙磁通及其离散磁场导数。判停前从当前压力电流构造未松弛目标，要求 psi、BR、BZ 和电流全部闭合。返回态重算闭合、电流及平行力相容性；maxiter=0 不执行更新且不声称收敛。",
     "model": "axisymmetric gyrotropic-pressure Picard composition with caller-owned N4 pressure closure and optional linear ideal-conductor wall correction",
     "geometry": "Finite, strictly increasing, nonnegative-R rectilinear tensor grid with at least three nodes per axis; nonuniform axes are supported.",
     "coordinates": "fields indexed [Z,R]; Green source and field axes use C-order flattened grid points",
@@ -29,8 +29,8 @@
       "The pressure_closure callback returns scientifically justified nonnegative co-located pressure arrays and optional density/temperature arrays for each state, interpreting psi as R A_phi in Wb/rad.",
       "All flux and field Green matrices share the declared current basis and appropriate Wb/rad/A or T/A units.",
       "No supplied pressure-closure parameter is interpreted by the graph except inserting B0 when absent; the caller owns its physical model.",
-      "This record follows the field chain's Wb/rad psi convention. The historical YAML and other public flux records label Wb; cross-asset normalization has not been adjudicated.",
-      "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
+      "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+      "pressure_closure 是给定 {psi,B,params} 的确定性科学关系，不修改输入数组或依赖调用次数；图在判停及终态重求此关系。所有闭合与电流计算前要求 B>=minimum_field。"
     ]
   },
   "inputs": [
@@ -96,7 +96,7 @@
       "dtype": "finite real array-like or None",
       "required": false,
       "default": null,
-      "constraints": "Supply together with g_bz; both absent leaves BR at br_vac."
+      "constraints": "必须与 g_bz 成对给定；两者均缺省时由新增等离子体 psi 的 -∂Z psi/R 导出 BR 增量，再加入 br_vac 与可选墙增量。"
     },
     {
       "name": "g_bz",
@@ -106,7 +106,7 @@
       "dtype": "finite real array-like or None",
       "required": false,
       "default": null,
-      "constraints": "Supply together with g_br; both absent leaves BZ at bz_vac."
+      "constraints": "必须与 g_br 成对给定；两者均缺省时由新增等离子体 psi 的 ∂R psi/R 导出 BZ 增量（轴上取规则极限），再加入 bz_vac 与可选墙增量。"
     },
     {
       "name": "params",
@@ -124,16 +124,16 @@
       "shape": "callable({psi,B,params})->mapping",
       "dtype": "Python callable",
       "required": true,
-      "constraints": "Returns p_parallel, p_perp, density and electron_temperature; pressures must be finite nonnegative exact-grid arrays; latter two may be None or finite nonnegative exact-grid arrays."
+      "constraints": "Returns p_parallel, p_perp, density and electron_temperature; pressures must be finite nonnegative exact-grid arrays; latter two may be None or finite nonnegative exact-grid arrays. 给定状态的关系须确定且不改写输入，允许多次求值；场低于 minimum_field 时在回调前拒绝。"
     },
     {
       "name": "tol",
-      "description": "Relative flux-change stop threshold.",
+      "description": "全部反馈状态的未松弛相对残差上限。",
       "units": "dimensionless",
       "shape": "scalar",
       "dtype": "finite real scalar",
       "required": true,
-      "constraints": "Strictly positive; compared with the post-boundary-correction residual."
+      "constraints": "有限严格正数；比较 max(flux_fixed_point_residual,field_fixed_point_residual,current_fixed_point_residual)，不用松弛后的磁通步幅代替。"
     },
     {
       "name": "maxiter",
@@ -210,7 +210,7 @@
       "shape": "scalar",
       "dtype": "float",
       "required": false,
-      "constraints": "Positive terminal field floor in T.",
+      "constraints": "有限严格正数；在每次压力闭合/电流计算前，包括初态、反馈中间态和返回态，要求所有 B>=minimum_field。",
       "default": 1e-08
     },
     {
@@ -317,12 +317,12 @@
     },
     {
       "name": "converged",
-      "description": "True only when the terminal unrelaxed fixed-point residual passes tol (and free-boundary force compatibility passes).",
+      "description": "全部未松弛状态闭合且平行压力力相容，并已执行至少一轮时为真。",
       "units": "boolean",
       "shape": "scalar",
       "dtype": "bool",
       "required": true,
-      "constraints": "Relaxed stagnation alone does not establish convergence."
+      "constraints": "fixed_point_residual<=tol 且 equilibrium_compatible 且 iterations>0；松弛造成的小磁通步幅不足以证明收敛。"
     },
     {
       "name": "iterations",
@@ -394,16 +394,16 @@
       "shape": "string or null",
       "dtype": "str or None",
       "required": true,
-      "constraints": "None when converged; otherwise 'maxiter_reached', including maxiter=0."
+      "constraints": "相容性不满足且 strict_compatibility=false 时为 parallel_force_incompatible；否则已执行更新且完整固定点通过时为 None，未通过或零步时为 maxiter_reached。"
     },
     {
       "name": "fixed_point_residual",
-      "description": "Unrelaxed flux-map residual recomputed at the returned terminal closure/current state; convergence requires <=tol.",
+      "description": "返回态的完整未松弛固定点残差。",
       "units": "1",
       "shape": "scalar",
       "dtype": "float",
       "required": true,
-      "constraints": "Unrelaxed flux-map residual recomputed at the returned terminal closure/current state; convergence requires <=tol."
+      "constraints": "max(flux_fixed_point_residual,field_fixed_point_residual,current_fixed_point_residual)；所有候选使用相同等离子体/墙投影，收敛要求此值<=tol。"
     },
     {
       "name": "force_diagnostics",
@@ -440,6 +440,33 @@
       "dtype": "bool",
       "required": true,
       "constraints": "Whether the resolved parallel-force compatibility gate passes."
+    },
+    {
+      "name": "flux_fixed_point_residual",
+      "description": "psi 的未松弛目标与当前态 L2 差；分母=max(||psi_target||,||psi_state||,||psi_vac||)，三者均零时残差为零。",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "非负无量纲观测值；二进制浮点缩放运算避免有限状态的范数溢出。"
+    },
+    {
+      "name": "field_fixed_point_residual",
+      "description": "BR、BZ 各自相对 L2 差的最大值；每分量分母=max(||B_target||,||B_state||,||B_vac||)，三者均零时该分量为零。",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "非负无量纲观测值；二进制浮点缩放运算避免有限状态的范数溢出。"
+    },
+    {
+      "name": "current_fixed_point_residual",
+      "description": "当前已松弛电流与返回态压力电流的未松弛目标 L2 差；分母=max(||I_target||,||I_state||)，均零时残差为零。",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "非负无量纲观测值；二进制浮点缩放运算避免有限状态的范数溢出。"
     }
   ],
   "applicability": {
@@ -459,8 +486,8 @@
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for missing required ports, invalid grid, mask, controls, params mapping, closure output or incomplete wall config; dependency validation errors propagate. The maintained implementation validates grid and mask before required ports, unlike the pending intake source. Non-mapping positional inputs are rejected by the composition layer with TypeError.",
-    "runtime_failure": "Callback and dependency errors propagate. Terminal field below minimum_field raises FloatingPointError; strict unresolved parallel-force incompatibility raises ValueError. Green/wall matrices still require independent physical qualification.",
-    "nonconvergence": "After at most maxiter updates, return the last state with converged=false, failure_reason='maxiter_reached' and its history. maxiter=0 skips the loop, returns residual=inf and an empty history after terminal evaluation.",
+    "runtime_failure": "压力闭合回调及依赖错误传播。每次闭合/电流求值前 B<minimum_field 均抛出 FloatingPointError；strict_compatibility=true 的返回态平行力不相容抛出 ValueError。Green/墙矩阵的物理一致性需调用方独立论证。",
+    "nonconvergence": "在最多maxiter次更新后，若返回态完整固定点残差或力相容性不通过，则返回converged=false及明确失败原因。最后允许更新恰好通过仍可converged=true。maxiter=0跳过更新，终态评估后返回residual=inf、空历史且不声称收敛。",
     "partial_results": "No mapping is returned after an exception. Bounded nonconvergence is a complete last-state mapping, not an exception."
   },
   "provenance": {
@@ -481,7 +508,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
+    "implementation_version": "0.2.0.dev5+pleiades.fullcore",
     "dependencies": [
       {
         "asset_id": "scirel.field.poloidal-field-magnitude"
@@ -509,7 +536,9 @@
     "scope": [
       "A manufactured polynomial wall response gives matching returned flux and magnetic field.",
       "True parallel-pressure imbalance cannot be reported as equilibrium convergence.",
-      "Full retention relax=1 cannot turn a nonzero fixed-point residual into convergence."
+      "Full retention relax=1 cannot turn a nonzero fixed-point residual into convergence.",
+      "解析秩一 Green 反馈检查两步状态传递及 I²+I-K=0 终态；近完全保留的松弛不能因小步幅提前退出。",
+      "磁通保持不变但场和电流仍变化时不宣称收敛；空磁场在压力回调前失败关闭。"
     ],
     "tests": [
       "tests/graph_contracts/free_boundary_anisotropic_picard/test_graph_free_boundary_anisotropic_picard.py",
@@ -562,7 +591,7 @@
         "id": "field",
         "kind": "operator",
         "asset_id": "scirel.field.poloidal-field-magnitude",
-        "description": "Compute B and the initial median reference from evolving BR/BZ, including terminal reevaluation.",
+        "description": "从当前 BR/BZ 求场强，在每次压力/电流求值前检查 minimum_field；初态另外求参考场中位数。",
         "inputs": [
           "evolving"
         ],
@@ -661,14 +690,15 @@
       {
         "id": "loop_control",
         "kind": "controlled_glue",
-        "description": "Advance state/current history and stop at tol or maxiter; retain a zero current and infinite residual for zero steps.",
+        "description": "至少一轮后完整未松弛状态残差<=tol时判停，否则继续至maxiter；松弛磁通步幅仅追加诊断历史。零步保持零电流和无穷步幅残差。",
         "inputs": [
           "psi_next",
           "projection",
           "currents_next",
           "residual",
           "config",
-          "boundary_state"
+          "boundary_state",
+          "fixed_point_residual"
         ],
         "outputs": [
           "evolving",
@@ -680,7 +710,7 @@
       {
         "id": "terminal_state",
         "kind": "controlled_glue",
-        "description": "Reevaluate field, caller closure and current on returned psi/BR/BZ, mask terminal current, form cell currents and expose all loop/wall diagnostics. In the zero-step branch, obtain the zero initial current vector from the declared feedback dependency.",
+        "description": "在返回psi/BR/BZ重算场、确定性压力闭合、电流、节点/单元权重及完整未松弛目标，验证minimum_field和平行力相容性，输出所有状态残差、迭代及墙诊断。零步返回初始零电流且不声称收敛。",
         "inputs": [
           "evolving",
           "magnetic",
@@ -722,7 +752,30 @@
           "force_diagnostics",
           "parallel_force_diagnostics",
           "flux_converged",
-          "equilibrium_compatible"
+          "equilibrium_compatible",
+          "flux_fixed_point_residual",
+          "field_fixed_point_residual",
+          "current_fixed_point_residual"
+        ]
+      },
+      {
+        "id": "fixed_point_target",
+        "kind": "controlled_glue",
+        "description": "使用当前压力/电流构造未松弛 Green 目标，施加相同墙磁通和磁场增量，独立报告 psi/BR/BZ/电流残差及其最大值。",
+        "inputs": [
+          "geometry",
+          "vacuum",
+          "green",
+          "config",
+          "evolving",
+          "current_parts",
+          "currents_old"
+        ],
+        "outputs": [
+          "fixed_point_residual",
+          "flux_fixed_point_residual",
+          "field_fixed_point_residual",
+          "current_fixed_point_residual"
         ]
       }
     ],
@@ -2096,11 +2149,178 @@
         "transform": "Identity.",
         "kind": "data",
         "required": true
+      },
+      {
+        "from": {
+          "node": "terminal_state",
+          "port": "flux_fixed_point_residual"
+        },
+        "to": {
+          "node": "$output",
+          "port": "flux_fixed_point_residual"
+        },
+        "description": "输出返回态相应未松弛固定点残差。",
+        "condition": "Successful return.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "terminal_state",
+          "port": "field_fixed_point_residual"
+        },
+        "to": {
+          "node": "$output",
+          "port": "field_fixed_point_residual"
+        },
+        "description": "输出返回态相应未松弛固定点残差。",
+        "condition": "Successful return.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "terminal_state",
+          "port": "current_fixed_point_residual"
+        },
+        "to": {
+          "node": "$output",
+          "port": "current_fixed_point_residual"
+        },
+        "description": "输出返回态相应未松弛固定点残差。",
+        "condition": "Successful return.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "initial_state",
+          "port": "geometry"
+        },
+        "to": {
+          "node": "fixed_point_target",
+          "port": "geometry"
+        },
+        "description": "未松弛目标使用同一几何、真空、Green与闭合/墙配置。",
+        "condition": "Every iteration and terminal evaluation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "initial_state",
+          "port": "vacuum"
+        },
+        "to": {
+          "node": "fixed_point_target",
+          "port": "vacuum"
+        },
+        "description": "未松弛目标使用同一几何、真空、Green与闭合/墙配置。",
+        "condition": "Every iteration and terminal evaluation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "initial_state",
+          "port": "green"
+        },
+        "to": {
+          "node": "fixed_point_target",
+          "port": "green"
+        },
+        "description": "未松弛目标使用同一几何、真空、Green与闭合/墙配置。",
+        "condition": "Every iteration and terminal evaluation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "initial_state",
+          "port": "config"
+        },
+        "to": {
+          "node": "fixed_point_target",
+          "port": "config"
+        },
+        "description": "未松弛目标使用同一几何、真空、Green与闭合/墙配置。",
+        "condition": "Every iteration and terminal evaluation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "loop_control",
+          "port": "evolving"
+        },
+        "to": {
+          "node": "fixed_point_target",
+          "port": "evolving"
+        },
+        "description": "在当前反馈场及压力电流上计算完整目标残差。",
+        "condition": "当前迭代初态或返回态评估；消费上一轮完整反馈状态。",
+        "transform": "Identity.",
+        "kind": "feedback",
+        "required": true,
+        "feedback_id": "free_boundary_picard"
+      },
+      {
+        "from": {
+          "node": "current_source",
+          "port": "current_parts"
+        },
+        "to": {
+          "node": "fixed_point_target",
+          "port": "current_parts"
+        },
+        "description": "在当前反馈场及压力电流上计算完整目标残差。",
+        "condition": "Every iteration and terminal evaluation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "loop_control",
+          "port": "currents_old"
+        },
+        "to": {
+          "node": "fixed_point_target",
+          "port": "currents_old"
+        },
+        "description": "在当前反馈场及压力电流上计算完整目标残差。",
+        "condition": "当前迭代初态或返回态评估；消费上一轮完整反馈状态。",
+        "transform": "Identity.",
+        "kind": "feedback",
+        "required": true,
+        "feedback_id": "free_boundary_picard"
+      },
+      {
+        "from": {
+          "node": "fixed_point_target",
+          "port": "fixed_point_residual"
+        },
+        "to": {
+          "node": "loop_control",
+          "port": "fixed_point_residual"
+        },
+        "description": "完整未松弛固定点残差决定停止或继续。",
+        "condition": "After at least one completed update.",
+        "transform": "Compare with tol.",
+        "kind": "data",
+        "required": true
       }
     ],
     "execution": {
       "mode": "bounded_sequential_picard_with_optional_wall_flux_correction",
-      "ordering": "Validate geometry and required ports, derive initial B and insert missing B0, then validate Picard controls. Invoke and validate caller closure, compute current, perform masked current relaxation and Green projection, optionally correct psi through the wall Operator and add its magnetic increment, compute relative psi residual, then repeat while due. After stopping, recompute B, closure and current on the returned state before assembly. Terminal reevaluation computes the unrelaxed flux-map residual on the returned field/closure state; it determines converged independently of a small relaxed step.",
+      "ordering": "验证几何和显式端口，初始化真空场并插入缺省B0，验证控制。每轮先检查minimum_field，再在当前场重算确定性压力和电流，构造完整未松弛Green/墙目标；已有至少一轮且完整残差通过时判停，否则松弛电流并更新Green场和墙磁通/磁场，记录磁通步幅，继续至maxiter。终态重算全部压力、电流、固定点与力相容性。",
       "branches": [
         "Without a wall, use projected flux and its field response.",
         "With a wall, use projected flux plus wall correction and the derivative-consistent magnetic increment.",
@@ -2114,9 +2334,9 @@
           "id": "free_boundary_picard",
           "state": "psi, BR, BZ, prior relaxed cell currents, residual history and update count",
           "initialization": "psi/BR/BZ start from vacuum inputs, prior currents are None, residual is infinity, history empty and count zero.",
-          "update_order": "Evaluate field and caller closure on current state, compute toroidal current, relax cell currents, project Green flux/fields, optionally correct psi and the matching magnetic field increment, measure relative psi change, append history, then replace evolving state.",
-          "continue_when": "residual > tol and executed updates < maxiter",
-          "stop_when": "residual <= tol or executed updates reach maxiter, including the zero-step bound",
+          "update_order": "当前场下界检查→确定性压力→电流→完整未松弛目标判停→松弛电流→Green磁通/场→墙磁通及导数场→诊断历史→下一态。",
+          "continue_when": "完整未松弛状态残差>tol 且 executed updates<maxiter；初态必须先执行一轮。",
+          "stop_when": "至少一轮后完整未松弛状态残差<=tol，或执行次数达到maxiter（含零步上限）。",
           "iteration_bound": "Validated runtime integer maxiter >= 0",
           "nonconvergence": "Return final reevaluated state with converged=false and failure_reason='maxiter_reached'; no hidden retry."
         }

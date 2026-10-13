@@ -505,8 +505,16 @@ def validate_document(document: Any, *, location: str = "document") -> dict[str,
     return item
 
 
-def load_document_set(directory: Path) -> list[dict[str, Any]]:
+def load_document_set(
+    directory: Path, *, additional_directories: tuple[Path, ...] = ()
+) -> list[dict[str, Any]]:
+    """Validate an explicitly supplied complete set; never discover siblings."""
     paths = sorted(directory.glob("*.json"))
+    for additional in additional_directories:
+        additional_paths = sorted(additional.glob("*.json"))
+        if not additional_paths:
+            raise AssetDocumentError(f"{additional}: contains no asset documents")
+        paths.extend(additional_paths)
     if not paths:
         raise AssetDocumentError(f"{directory}: contains no asset documents")
     documents = []

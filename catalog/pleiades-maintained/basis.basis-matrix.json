@@ -4,7 +4,7 @@
   "kind": "operator",
   "title": {
     "en": "Basis design matrix",
-    "zh": "Basis design matrix"
+    "zh": "基函数设计矩阵"
   },
   "summary": "Evaluate selected basis functions into columns of a design matrix",
   "taxonomy": [
@@ -87,7 +87,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev5+pleiades.fullcore",
     "dependencies": [
       {
         "asset_id": "scirel.basis.build-basis"

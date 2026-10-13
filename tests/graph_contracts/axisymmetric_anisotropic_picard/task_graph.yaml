@@ -27,13 +27,13 @@ inputs:
 - name: psi_vac
   meaning: 真空磁通 psi=R*A_phi
   shape: '[N_Z,N_R]'
-  units: Wb
+  units: Wb/rad
   required: true
   constraints: finite; same grid
 - name: g_psi
   meaning: cell current 到磁通的稠密 Green 矩阵
   shape: '[N_Z*N_R,N_Z*N_R]'
-  units: Wb/A
+  units: Wb/rad/A
   required: true
   constraints: C-order [Z,R] source and field axes
 - name: pressure_closure
@@ -90,11 +90,17 @@ inputs:
   units: dimensionless
   required: false
   constraints: 必须为布尔值；不接受用 0/1 代替布尔值
+- name: cell_edges
+  meaning: 可选实际R与Z单元边界；缺省节点梯形积分
+  shape: ([N_R+1],[N_Z+1]) or null
+  units: m
+  required: false
+  constraints: 严格递增且有限；中心在对应边界内；R边界非负
 outputs:
 - name: psi
   meaning: 返回磁通状态
   shape: '[N_Z,N_R]'
-  units: Wb
+  units: Wb/rad
   required: true
   constraints: same returned state used to recompute all final fields
 - name: plasma_cell_currents
@@ -102,7 +108,7 @@ outputs:
   shape: '[N_Z,N_R]'
   units: A
   required: true
-  constraints: J_phi*dR*dZ
+  constraints: J_phi乘节点梯形权重或显式cell_edges面积；边点半邻距；不乘2πR
 - name: J_phi
   meaning: 返回状态上的已 mask 环向电流密度
   shape: '[N_Z,N_R]'
@@ -162,7 +168,7 @@ outputs:
   shape: scalar
   units: boolean
   required: true
-  constraints: declared-order relative psi change
+  constraints: declared-order relative psi change仅为诊断；返回态未松弛fixed_point_residual<=tol决定磁通固定点
 - name: iterations
   meaning: 已执行 Picard 轮数
   shape: scalar_integer
@@ -249,7 +255,7 @@ nodes:
   asset_ref: scirel.equilibrium.axisymmetric_picard_update
   callable: scirel.equilibrium.axisymmetric_picard_update::update_axisymmetric_picard_flux
   inputs: [r_grid, z_grid, J_phi, psi_state, psi_vac, g_psi, relax, previous_cell_currents]
-  outputs: [psi_next, plasma_cell_currents, relative_psi_change, relative_current_change]
+  outputs: [psi_next, plasma_cell_currents, relative_psi_change, relative_current_change, fixed_point_residual]
 edges:
 - from: field_from_psi
   from_output: B
@@ -292,7 +298,13 @@ edges:
   to: field_from_psi
   to_input: psi_state
   data: sequential next flux state
-  condition: relative_psi_change > tol and iteration < maxiter
+  condition: 未松弛fixed_point_residual > tol and iteration < maxiter
   required: true
   transform: state feedback only
   closure: controlled_glue
+
+node_domain_contract:
+  psi: R*A_phi，Wb/rad；BR=-∂Zpsi/R，BZ=∂Rpsi/R，轴处规则极限
+  weights: 严格递增的非均匀网格可用；缺省节点梯形积分覆盖节点域；显式cell_edges可定义真实单元
+  feedback: 初始化psi=psi_vac；每步field→pressure→divP→masked_current→unrelaxed_candidate→flux_relaxation；到未松弛磁通残差<=tol或maxiter后重算终态
+  maxiter: 显式有限最大轮数，默认200；tol默认1e-8；relax默认0.5

@@ -152,7 +152,7 @@
     ],
     "excluded": [
       "Computing ion moments, Boltzmann electron response, electrostatic potential or a quasineutral root.",
-      "Validating density positivity, charge neutrality, potential units, array-axis alignment or total-pressure physical correctness.",
+      "Certifying charge neutrality, potential units, array-axis alignment or the physical correctness of the supplied pressure model; finite nonnegative species density and pressure are nevertheless mandatory numerical input checks.",
       "Electron anisotropic pressure or tensor addition."
     ]
   },
@@ -180,7 +180,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
+    "implementation_version": "0.2.0.dev5+pleiades.fullcore",
     "dependencies": []
   },
   "example": {
@@ -193,7 +193,7 @@
       "Two-cell ion pressure arrays with scalar electron pressure assemble the expected total pressures and retain an extra ion field and original ion dict reference.",
       "A missing required field raises ValueError; supplied potential identity and absent-potential None behavior are directly tested.",
       "The reviewed example checks preservation of ion pressure anisotropy under the common electron-pressure addition.",
-      "New scientific regressions reject negative/nonfinite density; the historical assertion demanding unchecked invalid pass-through is retained separately as a superseded behavior conflict."
+      "Scientific regressions reject negative/nonfinite species density and nonfinite charge residual; the original unchecked pass-through assertion is preserved as predecessor failure evidence, and the current contract test requires rejection."
     ],
     "tests": [
       "tests/operator_contracts/test_mirror_total_pressure.py",

@@ -85,16 +85,27 @@ def test_density_and_temperature_are_only_reported_when_configured():
     assert np.all(with_optional_fields["p_parallel"] >= with_optional_fields["density"] * 4.0)
 
 
-# Eq. (19b) integrates the perpendicular moment only over v >= v_c.
+# Historical node ID: a vc-only perpendicular cut selects a different population.
+# At vc=1 the common population remains nonempty, and a constant angular mode
+# at B=B0 gives p_perp/p_parallel=(3-xi_max²)/(2*xi_max²)=2.5 for Rm=2.
 def test_perpendicular_moment_is_zero_when_critical_speed_reaches_beam_speed():
     result = _run_graph(
         _inputs(
             vc_over_v0=1.0,
-            legendre_degrees=[0.5],
+            legendre_degrees=[0.0],
             source_coefficients=[1.0],
+            beta_m=0.0,
         )
     )
-    np.testing.assert_allclose(result["p_perp"], 0.0, atol=1.0e-14)
+    np.testing.assert_allclose(result["p_perp"][0, 0], 20.0, atol=1.0e-14)
+    assert np.all(result["p_perp"] >= 0.0)
+    assert result["closure_state"]["velocity_domain"]["lower"] == 0.0
+    # Preserve the original degree=.5 case as a nontrivial-mode witness too.
+    original_mode = _run_graph(_inputs(vc_over_v0=1.0,
+        legendre_degrees=[.5], source_coefficients=[1.0]))
+    # The supplied radial envelope vanishes at psi=psi_edge=1.
+    assert np.all(original_mode["p_perp"][np.array([[True, True], [True, False]])] > 0.0)
+    np.testing.assert_allclose(original_mode["p_perp"][1, 1], 0.0, atol=1e-14)
 
 
 # 验证：未给 degree 时只从 emitted operator 读取损失锥谱，而不是读取原始 SciRel 源码。

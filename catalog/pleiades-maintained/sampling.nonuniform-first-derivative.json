@@ -4,7 +4,7 @@
   "kind": "operator",
   "title": {
     "en": "Nonuniform interior first derivative",
-    "zh": "Nonuniform interior first derivative"
+    "zh": "非均匀坐标内点一阶导数"
   },
   "summary": "Return first interior derivative using the shared quadratic nonuniform operator",
   "taxonomy": [
@@ -93,7 +93,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev5+pleiades.fullcore",
     "dependencies": [
       {
         "asset_id": "scirel.numerics.nonuniform-derivatives"

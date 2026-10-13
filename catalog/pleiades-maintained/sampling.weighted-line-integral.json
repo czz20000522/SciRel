@@ -4,7 +4,7 @@
   "kind": "operator",
   "title": {
     "en": "B-weighted line reduction",
-    "zh": "B-weighted line reduction"
+    "zh": "磁场加权路径归约"
   },
   "summary": "Return integral(1/B ds) or integral(Q/B ds)/integral(1/B ds)",
   "taxonomy": [
@@ -124,7 +124,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev5+pleiades.fullcore",
     "dependencies": [
       {
         "asset_id": "scirel.sampling.rectangular-spline"

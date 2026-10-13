@@ -73,9 +73,36 @@ def handbook_document(asset_ids, outline=None):
     return book
 
 
+def chapter_directory():
+    """Select one explicitly bound successor without rewriting old evidence."""
+    selection_path = ROOT / 'tools/docs/chapter-selection.json'
+    if not selection_path.exists():
+        return ROOT / 'tools/docs/magnetostatics'
+    selection = json.loads(selection_path.read_bytes())
+    if set(selection) != {'schema', 'chapters'} or selection['schema'] != 'scirel.chapter-selection.v1':
+        raise ValueError('invalid chapter selection schema')
+    if set(selection['chapters']) != {'magnetostatics'}:
+        raise ValueError('unsupported chapter selection IDs')
+    item = selection['chapters']['magnetostatics']
+    if set(item) != {'directory', 'execution_sha256'}:
+        raise ValueError('invalid chapter selection binding')
+    directory = item['directory']
+    if not isinstance(directory, str) or not re.fullmatch(r'tools/docs/[a-z0-9][a-z0-9-]*', directory):
+        raise ValueError('invalid chapter selection path')
+    root = (ROOT / directory).resolve()
+    if not root.is_relative_to((ROOT / 'tools/docs').resolve()) or not root.is_dir():
+        raise ValueError('chapter selection path escapes documentation or is missing')
+    digest = item['execution_sha256']
+    if not isinstance(digest, str) or not re.fullmatch(r'[0-9a-f]{64}', digest):
+        raise ValueError('invalid chapter execution digest')
+    if sha((root / 'execution.json').read_bytes()) != digest:
+        raise ValueError('selected chapter execution bytes changed')
+    return root
+
+
 def chapter_files(asset_ids):
     """Bind executed examples to current implementation before publishing them."""
-    root = ROOT / 'tools/docs/magnetostatics'
+    root = chapter_directory()
     execution = json.loads((root/'execution.json').read_bytes())
     for path, digest in execution['files'].items():
         if sha((ROOT/path).read_bytes()) != digest:
@@ -91,6 +118,8 @@ def chapter_files(asset_ids):
         if sha((ROOT/path).read_bytes()) != digest:
             raise ValueError('chapter contract changed; review examples: ' + path)
     chapter = json.loads((root/'chapter.json').read_bytes())
+    if chapter.get('id') != 'magnetostatics':
+        raise ValueError('selected chapter ID differs from its route')
     if any(x['id'] not in asset_ids for x in chapter['assets']):
         raise ValueError('chapter references a missing exact document')
     results = json.loads((root/'results.json').read_bytes())
@@ -143,7 +172,11 @@ def build(documents: Path, output: Path, outline: Path | None = None):
         files['static/' + path] = (ROOT / 'tools/docs' / path).read_bytes()
     files.update(chapter_files({d['asset_id'] for d in docs}))
     chapter = json.loads(files['chapters/magnetostatics/chapter.json'])
-    files.update(render_site(ROOT, docs, book, translations, chapter))
+    files.update(render_site(
+        ROOT, docs, book, translations, chapter,
+        figure_files={name: files['chapters/magnetostatics/' + name]
+                      for name in ('single.svg', 'pair.svg', 'rectangle.svg')},
+    ))
     manifest = {'schema': SCHEMA, 'source_commit': source, 'source_dirty': dirty,
                 'asset_count': len(docs), 'notice': NOTICE,
                 'reader_language': 'zh-CN', 'human_renderer': 'sphinx-pydata',

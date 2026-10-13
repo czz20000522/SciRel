@@ -469,6 +469,58 @@ def write_pleiades_eqdsk_legacy_raw(R, Z, psi, plas_currents,
     write_pleiades_eqdsk(mapping, filename)
 
 
+def write_pressure_equilibrium_eqdsk(R, Z, result, filename: str | Path,
+                                     title: str) -> np.ndarray:
+    """Write a converged SI pressure-only result in the Pleiades dialect.
+
+    This successor explicitly assigns ``p_flux`` to pressure in Pa and
+    ``pprime_flux`` to dP/dpsi in Pa/(Wb/rad); psi=R*A_phi and Ip is in A.
+    The returned profile coordinate is ``linspace(axis_psi, psi_lim, nnv)``,
+    where axis_psi is the terminal R=0,Z=0 grid value and psi_lim retains the
+    legacy nearest-(0.6,0) contour convention. The reader can reconstruct this
+    coordinate from its psi grid and psi_lim; it is not an extra file field.
+    Pressure and derivative retain the fitted law's zero-exterior convention.
+
+    Terminal flux/current and legacy parametric contours are written; Jphi
+    is current divided by grid cell area and is not a stored 2-D file field.
+    Three other profiles remain legacy zeros. These explicit conventions do
+    not assert standard EFIT, COCOS, q/F reconstruction or GENRAY compatibility.
+    Nonconverged/partial results are refused before creating the destination.
+    """
+    from tempfile import TemporaryDirectory
+    from scirel.equilibrium.pleiades_feedback import EquilibriumResult
+    if not isinstance(result, EquilibriumResult) or result.status != 'converged':
+        raise ValueError('a converged EquilibriumResult is required')
+    if (result.p_psifit is None or
+            not np.isfinite(result.residual) or
+            not np.isfinite(result.closure_residual)):
+        raise ValueError('converged result must have finite residuals and a pressure fit')
+    R, Z = np.asarray(R), np.asarray(Z)
+    if R.ndim != 2 or Z.shape != R.shape or result.psi.shape != R.shape:
+        raise ValueError('result and R,Z must share one 2-D grid shape')
+    if not np.any(Z[:, 0] == 0.):
+        raise ValueError('pressure exchange requires an exact Z=0 midplane')
+    with TemporaryDirectory(prefix='scirel-pressure-eqdsk-') as temporary:
+        raw = Path(temporary) / 'contours.eqdsk'
+        write_pleiades_eqdsk_legacy_raw(R, Z, result.psi,
+                                        result.plas_currents, raw, title)
+        mapping = read_pleiades_eqdsk(raw)
+    # Use unrounded terminal psi to construct the producer's profile; grid
+    # origins were checked above by the retained dialect writer.
+    midplane = int(np.flatnonzero(np.asarray(Z)[:, 0] == 0.)[0])
+    axis_psi = float(result.psi[midplane, 0])
+    nearest_r = int(np.argmin(np.abs(np.asarray(R)[0] - .6)))
+    limiter_psi = float(result.psi[midplane, nearest_r])
+    profile_psi = np.linspace(axis_psi, limiter_psi, mapping['nnv'])
+    mapping['psi'] = result.psi
+    mapping['Ip'] = float(np.sum(result.plas_currents))
+    mapping['psi_lim'] = limiter_psi
+    mapping['p_flux'] = result.p_psifit(profile_psi)
+    mapping['pprime_flux'] = result.p_psifit.derivative()(profile_psi)
+    write_pleiades_eqdsk(mapping, filename)
+    return profile_psi
+
+
 # Keep the source spelling available only as an explicit legacy alias; the
 # corrected name above is preferred in new code and in catalog documents.
 write_eqdsk = write_pleiades_eqdsk_legacy_raw

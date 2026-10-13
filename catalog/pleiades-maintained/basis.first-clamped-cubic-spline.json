@@ -4,7 +4,7 @@
   "kind": "operator",
   "title": {
     "en": "Left-clamped cylindrical spline",
-    "zh": "Left-clamped cylindrical spline"
+    "zh": "左端钳制柱坐标样条"
   },
   "summary": "Piecewise cubic Hermite interpolation with a boundary-specific linear slope system",
   "taxonomy": [
@@ -117,7 +117,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev5+pleiades.fullcore",
     "dependencies": []
   },
   "example": {

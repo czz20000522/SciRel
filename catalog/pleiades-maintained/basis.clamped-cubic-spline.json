@@ -4,7 +4,7 @@
   "kind": "operator",
   "title": {
     "en": "Clamped cubic spline",
-    "zh": "Clamped cubic spline"
+    "zh": "双端钳制三次样条"
   },
   "summary": "Piecewise cubic Hermite interpolation with a boundary-specific linear slope system",
   "taxonomy": [
@@ -107,7 +107,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev5+pleiades.fullcore",
     "dependencies": []
   },
   "example": {

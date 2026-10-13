@@ -1,0 +1,282 @@
+{
+  "schema": "scirel.selected-scientific-wheel.v1",
+  "version": "0.2.0.dev5+pleiades.fullcore",
+  "files": [
+    {
+      "path": "src/scirel/_composition.py",
+      "sha256": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77"
+    },
+    {
+      "path": "src/scirel/_validation.py",
+      "sha256": "08d251465f9e03ea5e9e26066dd08fa5bbc70ec7deed2b6009dc2719345b94ee"
+    },
+    {
+      "path": "src/scirel/analysis.py",
+      "sha256": "90e92b598dcf962515a459225631563e051cb637e6ef1d2356e77a031cc5be89"
+    },
+    {
+      "path": "src/scirel/basis.py",
+      "sha256": "d2a68e4f635f41f5a23544c426ce43902074193203652820da00dd830a3a55d3"
+    },
+    {
+      "path": "src/scirel/closures/boltzmann_quasineutrality.py",
+      "sha256": "b2473dcc9046165487b70f431f8cebe0c2b1fb390bf981dc3265a16c70eff076"
+    },
+    {
+      "path": "src/scirel/closures/hall_two_fluid_pressure.py",
+      "sha256": "e689a9589a7a6d5b0438898f465b7f3b0985e6b128652a628768e2780b0a431f"
+    },
+    {
+      "path": "src/scirel/closures/mirror_ambipolar_potential.py",
+      "sha256": "0dc7567f12745a6fb881c06b40e5b6b9bddc104b3b598b9f1547e57f101c9a1d"
+    },
+    {
+      "path": "src/scirel/closures/mirror_quasineutral_closure.py",
+      "sha256": "5929dedc28d550041ed52f65b1ef9f7cb140cf66cc24bb54ea2f9b37da69d38a"
+    },
+    {
+      "path": "src/scirel/closures/quasineutral_potential.py",
+      "sha256": "d2edaf3ff564ecbd3498c541e66813087f6bbedc49ab9bb25cc55a2c892175fc"
+    },
+    {
+      "path": "src/scirel/closures/quasineutral_reference_density.py",
+      "sha256": "12e37f757c4db444f9a1d965191a2eecd6c8ad640dc366c41b55d78433c7ef60"
+    },
+    {
+      "path": "src/scirel/closures/reduced_hall_drift.py",
+      "sha256": "1be7bc7c3d7233f436ef46299065cd1befce98fcdf3824191abaaa0f6b816d68"
+    },
+    {
+      "path": "src/scirel/configurations/brb.py",
+      "sha256": "c032976ae1abf17f41ae1a8bdfae78bfb03974f3f69301fd41e422c5d33d0766"
+    },
+    {
+      "path": "src/scirel/configurations/wham.py",
+      "sha256": "7dd92e8c0591d03830ce028988e8701e395c2c0af23c810cbd6e6fef0f2772c8"
+    },
+    {
+      "path": "src/scirel/diagnostics/_fixed_flux_derivative.py",
+      "sha256": "a13754ccce4c2952b3ba52f4041a7f9f9cda0564c33a66c132565facf8b57662"
+    },
+    {
+      "path": "src/scirel/diagnostics/firehose_mirror_margins.py",
+      "sha256": "7e5f5cd6ac450f0f7ab9bee7561f7e9064f39a08555f31b3e376664d97b328a7"
+    },
+    {
+      "path": "src/scirel/diagnostics/parallel_pressure_residual.py",
+      "sha256": "4cc79aa510152f74ee01cd091fb73655e0f8d1708810471a3d1771ef3f195cfb"
+    },
+    {
+      "path": "src/scirel/diagnostics/picard_flux_residual.py",
+      "sha256": "e6ff451623be3aa6b92028eea930f4bc91edfc364a47015bd82307b4c4e5c82e"
+    },
+    {
+      "path": "src/scirel/electromagnetism/distributed.py",
+      "sha256": "76d4a1d7bf83d3ba57e9573c19415f333ac0ec8c51e695f64ad27b3bf69fcd5a"
+    },
+    {
+      "path": "src/scirel/electromagnetism/greens.py",
+      "sha256": "0a2425308022b01d9c394bb1c9d390562272b20a093f33f1ccfb717e0cb5fb42"
+    },
+    {
+      "path": "src/scirel/electromagnetism/sources.py",
+      "sha256": "03ae733e7cd91d7d3673145314e4b4afa6beeea733b3cd2de6eb9abc6cb1d15f"
+    },
+    {
+      "path": "src/scirel/equilibrium/_anisotropic_numerics.py",
+      "sha256": "e221c6a3899154be9f64e8a6b6db6a0dcf18fbcaad1139faf8c71e28a35b56fc"
+    },
+    {
+      "path": "src/scirel/equilibrium/anisotropic_force_balance.py",
+      "sha256": "7d69bc1167bf504cc918e4561bc8077a9bfaa621feb792e9071a3ae529922c33"
+    },
+    {
+      "path": "src/scirel/equilibrium/anisotropic_picard_feedback.py",
+      "sha256": "b1ed71e00a804fa74f6eece032fce3d193bb1b1b25dd72f5548d5cf2b7c4219b"
+    },
+    {
+      "path": "src/scirel/equilibrium/anisotropic_toroidal_current.py",
+      "sha256": "a283134c06bc41f7fbce2303512c10831161b44314830fe7188905e30281da76"
+    },
+    {
+      "path": "src/scirel/equilibrium/axisymmetric_anisotropic_picard.py",
+      "sha256": "e6e86bde5085d55b513db1cb8dab35dcefb0fd9ba31516a2ee1997a06569eb6f"
+    },
+    {
+      "path": "src/scirel/equilibrium/axisymmetric_picard_update.py",
+      "sha256": "2cc4d7a4dec6d4b5c05dcefff05f7a3b89cadbc4063d13d61134534161a957f5"
+    },
+    {
+      "path": "src/scirel/equilibrium/free_boundary_anisotropic_picard.py",
+      "sha256": "fb7e1c8e12136fcaf5f8c4fa6dcc4b3ec78a3dacfba41b02e205b5236fad59c7"
+    },
+    {
+      "path": "src/scirel/equilibrium/kinetic_mirror_hall_equilibrium.py",
+      "sha256": "af2fb303fb562f735180a030a6ad21f24bbf491c493b39ba0fcf4951c39c3753"
+    },
+    {
+      "path": "src/scirel/equilibrium/pleiades_feedback.py",
+      "sha256": "404d333f7d8ca533d5eb5e8956e6ce3737a7b4e6426b18e93b3460d394e043e6"
+    },
+    {
+      "path": "src/scirel/equilibrium/reduced_hall_anisotropic_picard.py",
+      "sha256": "076820bbfee11501cbdacace2f94fd4b525dd58cb1aef347a1cf4c837a2cc808"
+    },
+    {
+      "path": "src/scirel/equilibrium_api.py",
+      "sha256": "6f3afbf6c46cc003b1748cb3e502efc47fcdd2e738dae8891d0eefcf885a8b91"
+    },
+    {
+      "path": "src/scirel/field/ideal_conductor_boundary.py",
+      "sha256": "980478014b184580351244dbb7e53911ef4c867e513986aac624fab26ef9fa37"
+    },
+    {
+      "path": "src/scirel/field/poloidal_field_from_flux.py",
+      "sha256": "6243b6810dff9021afd2a1f504d5ca72ab566be38469f8e9f64f63718206bc86"
+    },
+    {
+      "path": "src/scirel/field/poloidal_field_magnitude.py",
+      "sha256": "ff631596e0ceeb52925c7e19ebc560f677cf2fa50c0edebd45f69190380c9e3c"
+    },
+    {
+      "path": "src/scirel/fieldline.py",
+      "sha256": "04ce2b7154a31d8c29eee8889870523b324fe288ecab4cfb815d18f4b57f420c"
+    },
+    {
+      "path": "src/scirel/geometry/flux_surface_profile.py",
+      "sha256": "d36f3c36e773a00cab5f38114f2a53cb763e2c254b8864683bb61e697cede26f"
+    },
+    {
+      "path": "src/scirel/geometry/mesh.py",
+      "sha256": "afdf85f30984536ceb48aec31fcf7be1df7f91fad6b28ee4a7cc1e1b78a6cbe6"
+    },
+    {
+      "path": "src/scirel/geometry/transforms.py",
+      "sha256": "21dda6b50e03ca791d6d5c19c108273e0466df6fa97a813c225b577bc145ada8"
+    },
+    {
+      "path": "src/scirel/io/eqdsk.py",
+      "sha256": "b9582dc2d43ce991ad6cf84490167abe5b6d061aac4818a366925f75522b68a2"
+    },
+    {
+      "path": "src/scirel/kinetic/_loss_cone_modes.py",
+      "sha256": "f3c29af29553358e6577cc5e65ec50e525f417e379b8de60886dd95c1719bad0"
+    },
+    {
+      "path": "src/scirel/kinetic/_mirror_numerics.py",
+      "sha256": "3dc16125682f870dc1c274bab7f365fade058a8ed71ae796c3f012979d04a197"
+    },
+    {
+      "path": "src/scirel/kinetic/frank_egedal_hot_ion_moments.py",
+      "sha256": "c26ba5c56d8f7749adf584f0daf78b8f09b295cc40f1ce70f60e09d5c10b2104"
+    },
+    {
+      "path": "src/scirel/kinetic/frank_egedal_pressure_closure.py",
+      "sha256": "3bcbd5ebe9d8e8522b3d5dafd4724f4bb2a2e1e4c6a12aafa3112cef282030fd"
+    },
+    {
+      "path": "src/scirel/kinetic/frank_egedal_pressure_state.py",
+      "sha256": "0b082d23c12387a57429ff88969ab199b1d2da03f246b4032e9b2aa2c206b5ba"
+    },
+    {
+      "path": "src/scirel/kinetic/frank_egedal_radial_envelope.py",
+      "sha256": "20680282fc2808fdbb5debd2e3a1bd86a0d84dfec00f2b1d01b9306c9db23223"
+    },
+    {
+      "path": "src/scirel/kinetic/frank_egedal_source_projection.py",
+      "sha256": "f4a6b6991de76944bdd8d6fa9bd72ac4a84c7dad6e1b0150a24f81d9114d3aee"
+    },
+    {
+      "path": "src/scirel/kinetic/grid_mirror_kinetic_closure.py",
+      "sha256": "2796512eed9915a45cde442d636d63bec5843819e90d3130a2056b76573e956e"
+    },
+    {
+      "path": "src/scirel/kinetic/loss_cone_spectrum.py",
+      "sha256": "8625cd7c2828e479d271ba5ad393994b94f799cbfd6e386262e41a8718e7bdda"
+    },
+    {
+      "path": "src/scirel/kinetic/mirror_constrained_moments.py",
+      "sha256": "bb1c76e2f3deccb12a10f817ec9f01031e554f4e22f613a2cf0a8da4eaa3a473"
+    },
+    {
+      "path": "src/scirel/kinetic/mirror_invariant_distribution.py",
+      "sha256": "5a8c12eb2e6090b73ba048abf8f8723ac478bdf4d585e5a14cd70328284c753f"
+    },
+    {
+      "path": "src/scirel/kinetic/mirror_total_pressure.py",
+      "sha256": "30ac97757ebe0552eee722a72b5917c75d6c55e05290b58ce3b08584f211fdbc"
+    },
+    {
+      "path": "src/scirel/numerics.py",
+      "sha256": "476dfbca8184f1aafb1355a17099135289569319487a2e821e3f2fe52a019417"
+    },
+    {
+      "path": "src/scirel/plotting.py",
+      "sha256": "cff9005f5660e70a0647f338850bd9ce16026c89ca16509844ac1df36479c763"
+    },
+    {
+      "path": "src/scirel/sampling.py",
+      "sha256": "aeed550a0e7c02e052679a0b33197d8cb74a6da4d4d3fb5bdb24299589501d15"
+    },
+    {
+      "path": "src/scirel/field/circular_filament_green.py",
+      "sha256": "7fd4e56e7caa7e03e99a50fa4e9de30c380087fb8fd9a5bfe482497908385987"
+    },
+    {
+      "path": "src/scirel/field/dense_axisymmetric_green.py",
+      "sha256": "b42ee9db75f7bec6a5315fb9861975298c609515a89097fabe88872648379450"
+    },
+    {
+      "path": "src/scirel/field/mirror_plasma_green.py",
+      "sha256": "5b3f20f893db6124422e0c36e13c203942ffad8ba37f0ae86b0f4e5b3979bc97"
+    },
+    {
+      "path": "src/scirel/field/filament_vacuum_field.py",
+      "sha256": "93c428fdc1a850601cb3de1240609ef807cc8d14e51d526605aa51d97fa5f98f"
+    },
+    {
+      "path": "src/scirel/field/current_green_superposition.py",
+      "sha256": "ef48b26b1e552fa11d54509d280ce16df4542517a833ea99e0b9a060941adf1e"
+    },
+    {
+      "path": "src/scirel/field/multi_coil_vacuum_field.py",
+      "sha256": "bfc04c817742d7bc935c88bc9f92c78036083d793ef9db94d794d2bbecb73acc"
+    },
+    {
+      "path": "src/scirel/field/rectangular_coil_filaments.py",
+      "sha256": "1615ade92a272170d0799eab6779917e2c236ce698056a4f7efeb71c080c2ecb"
+    }
+  ],
+  "initializers": {
+    "src/scirel/__init__.py": "\"\"\"SciRel scientific development library: Pleiades full core successor.\"\"\"\n__version__ = \"0.2.0.dev5+pleiades.fullcore\"\n__all__ = []\n",
+    "src/scirel/configurations/__init__.py": "\"\"\"Source-supported configuration geometry models.\"\"\"\nfrom .brb import BRB, TREXCoil\nfrom .wham import WHAM\n\n__all__ = [\"BRB\", \"TREXCoil\", \"WHAM\"]\n",
+    "src/scirel/electromagnetism/__init__.py": "\"\"\"Axisymmetric circular-filament electromagnetism.\"\"\"\nfrom .greens import compute_greens, get_gpsi, green_response_matrices\nfrom .distributed import get_deltapsi\nfrom .sources import CurrentFilamentSet, ArbitraryPoints, RectangularCoil, MagnetRing, Device\n__all__=['compute_greens','get_gpsi','green_response_matrices','get_deltapsi','CurrentFilamentSet','ArbitraryPoints','RectangularCoil','MagnetRing','Device']\n",
+    "src/scirel/geometry/__init__.py": "\"\"\"Geometry objects used by the electromagnetic filament API.\"\"\"\nfrom .mesh import Mesh, PointsMesh, RChord, ZChord, SphericalRChord, ThetaChord, RectMesh\nfrom .transforms import rotate\n__all__ = ['Mesh','PointsMesh','RChord','ZChord','SphericalRChord','ThetaChord','RectMesh','rotate']\nfrom .flux_surface_profile import evaluate_flux_surface_profile\n__all__ += ['evaluate_flux_surface_profile']\n",
+    "src/scirel/io/__init__.py": "\"\"\"Pleiades extended-dialect scientific exchange helpers.\"\"\"\n\nfrom .eqdsk import (\n    DIALECT,\n    EQDSK,\n    EQDSKFormatError,\n    read_eqdsk,\n    read_pleiades_eqdsk,\n    write_eqdsk_fromdict,\n    write_pleiades_eqdsk,\n    write_pleiades_eqdsk_legacy_raw,\n    write_pressure_equilibrium_eqdsk,\n    write_eqdsk,\n)\n\n__all__ = [\n    \"DIALECT\",\n    \"EQDSK\",\n    \"EQDSKFormatError\",\n    \"read_eqdsk\",\n    \"read_pleiades_eqdsk\",\n    \"write_eqdsk_fromdict\",\n    \"write_pleiades_eqdsk\",\n    \"write_pleiades_eqdsk_legacy_raw\",\n    \"write_pressure_equilibrium_eqdsk\",\n    \"write_eqdsk\",\n]\n",
+    "src/scirel/equilibrium/__init__.py": "\"\"\"Bounded supplied-G pressure-only discrete feedback; no physical equilibrium certification.\"\"\"\nfrom .pleiades_feedback import EquilibriumResult, compute_equilibrium\n__all__ = [\"EquilibriumResult\", \"compute_equilibrium\"]\nfrom .anisotropic_force_balance import compute_anisotropic_force_balance\nfrom .anisotropic_picard_feedback import update_anisotropic_picard_flux\nfrom .anisotropic_toroidal_current import compute_anisotropic_toroidal_current\nfrom .axisymmetric_anisotropic_picard import solve_axisymmetric_anisotropic_picard\nfrom .axisymmetric_picard_update import update_axisymmetric_picard_flux\nfrom .free_boundary_anisotropic_picard import solve_free_boundary_anisotropic_picard\nfrom .kinetic_mirror_hall_equilibrium import solve_kinetic_mirror_hall_equilibrium\nfrom .reduced_hall_anisotropic_picard import solve_reduced_hall_anisotropic_picard\n__all__ += ['compute_anisotropic_force_balance', 'compute_anisotropic_toroidal_current', 'solve_axisymmetric_anisotropic_picard', 'solve_free_boundary_anisotropic_picard', 'solve_kinetic_mirror_hall_equilibrium', 'solve_reduced_hall_anisotropic_picard', 'update_anisotropic_picard_flux', 'update_axisymmetric_picard_flux']\n",
+    "src/scirel/diagnostics/__init__.py": "\"\"\"Selected scientific relations in this domain.\"\"\"\n__all__ = []\nfrom .firehose_mirror_margins import compute_firehose_mirror_margins\nfrom .parallel_pressure_residual import compute_parallel_pressure_residual\nfrom .picard_flux_residual import compute_picard_flux_residual\n__all__ += ['compute_firehose_mirror_margins', 'compute_parallel_pressure_residual', 'compute_picard_flux_residual']\n",
+    "src/scirel/field/__init__.py": "\"\"\"Selected scientific relations in this domain.\"\"\"\n__all__ = []\nfrom .ideal_conductor_boundary import correct_ideal_conductor_boundary_flux\nfrom .poloidal_field_from_flux import poloidal_field_from_flux\nfrom .poloidal_field_magnitude import compute_poloidal_field_magnitude\n__all__ += ['compute_poloidal_field_magnitude', 'correct_ideal_conductor_boundary_flux', 'poloidal_field_from_flux']\nfrom .circular_filament_green import circular_filament_green_response\n__all__ += [\"circular_filament_green_response\"]\nfrom .dense_axisymmetric_green import dense_axisymmetric_green_response\n__all__ += [\"dense_axisymmetric_green_response\"]\nfrom .mirror_plasma_green import build_mirror_plasma_flux_green\n__all__ += [\"build_mirror_plasma_flux_green\"]\nfrom .filament_vacuum_field import integrate_filament_vacuum_field\n__all__ += [\"integrate_filament_vacuum_field\"]\nfrom .current_green_superposition import superpose_current_green_field\n__all__ += [\"superpose_current_green_field\"]\nfrom .multi_coil_vacuum_field import solve_multi_coil_vacuum_field\n__all__ += [\"solve_multi_coil_vacuum_field\"]\nfrom .rectangular_coil_filaments import discretize_rectangular_coil\n__all__ += [\"discretize_rectangular_coil\"]\n",
+    "src/scirel/closures/__init__.py": "\"\"\"Selected scientific relations in this domain.\"\"\"\n__all__ = []\nfrom .boltzmann_quasineutrality import compute_boltzmann_electron_state\nfrom .hall_two_fluid_pressure import close_hall_two_fluid_pressure\nfrom .mirror_ambipolar_potential import solve_mirror_ambipolar_potential\nfrom .mirror_quasineutral_closure import solve_mirror_quasineutral_closure\nfrom .quasineutral_potential import solve_quasineutral_potential\nfrom .quasineutral_reference_density import compute_reference_electron_density\nfrom .reduced_hall_drift import close_reduced_hall_drift\n__all__ += ['close_hall_two_fluid_pressure', 'close_reduced_hall_drift', 'compute_boltzmann_electron_state', 'compute_reference_electron_density', 'solve_mirror_ambipolar_potential', 'solve_mirror_quasineutral_closure', 'solve_quasineutral_potential']\n",
+    "src/scirel/kinetic/__init__.py": "\"\"\"Selected scientific relations in this domain.\"\"\"\n__all__ = []\nfrom .frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments\nfrom .frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure\nfrom .frank_egedal_pressure_state import assemble_frank_egedal_pressure\nfrom .frank_egedal_radial_envelope import evaluate_frank_egedal_radial_envelope\nfrom .frank_egedal_source_projection import project_frank_egedal_source_modes\nfrom .grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure\nfrom .loss_cone_spectrum import solve_loss_cone_spectrum\nfrom .mirror_constrained_moments import evaluate_mirror_constrained_moments\nfrom .mirror_invariant_distribution import evaluate_mirror_invariant_distribution\nfrom .mirror_total_pressure import assemble_mirror_total_pressure\n__all__ += ['assemble_frank_egedal_pressure', 'assemble_mirror_total_pressure', 'evaluate_frank_egedal_hot_ion_moments', 'evaluate_frank_egedal_radial_envelope', 'evaluate_mirror_constrained_moments', 'evaluate_mirror_invariant_distribution', 'project_frank_egedal_source_modes', 'solve_frank_egedal_pressure_closure', 'solve_grid_mirror_kinetic_closure', 'solve_loss_cone_spectrum']\n"
+  },
+  "dependencies": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "matplotlib==3.11.2",
+    "netCDF4==1.7.4"
+  ],
+  "licenses": [
+    {
+      "path": "licenses/Pleiades-MIT.txt",
+      "sha256": "d8b954c37e9aaf97e35624236dfe6a04eb7cc7fb031da055ab57781a61f53e0a"
+    },
+    {
+      "path": "licenses/Pleiades-Anisotropy-NOTICE.txt",
+      "sha256": "fd89ba537415955a8047c28a69fc337f40b26c87418b4baa9c1831e70db3e0b0"
+    }
+  ],
+  "human_approval": false,
+  "release_approval": false,
+  "scope": "Pleiades complete retained core physical capability successor and distinct selected axisymmetric field variants; D2 candidate, no D3 or release approval",
+  "unchanged_inherited_profile": "provenance/selections/pleiades-anisotropy-20261012.json"
+}

@@ -17,6 +17,7 @@ LEDGER = ROOT / "provenance" / "admitted-assets.json"
 CATALOG = ROOT / "catalog" / "examples"
 # A bounded D2 family can be indexed without mutating the historical pilot.
 # Keep this explicit rather than recursively globbing every future worktree.
+PLEIADES_MAINTAINED_CATALOG = ROOT / "catalog" / "pleiades-maintained"
 TORAX_LEAF_CATALOG = ROOT / "catalog" / "torax-algebra-grid"
 TORAX_BOOTSTRAP_FVM_CATALOG = ROOT / "catalog" / "torax-bootstrap-fvm"
 SCHEMA = "scirel.affected-tests.v1"
@@ -64,6 +65,12 @@ ENGINEERING_TESTS = {
     ),
     "examples/user_acceptance.py": ("tests/test_user_acceptance.py",),
     "scripts/build_catalog.py": ("tests/test_asset_documentation.py",),
+    "scripts/scirel_docs.py": ("tests/test_scirel_docs.py",),
+    "scripts/build_scirel_sphinx.py": ("tests/test_scirel_docs.py",),
+    "tests/_document_fixtures.py": (
+        "tests/test_asset_documentation.py", "tests/test_thin_mcp_adapter.py",
+        "tests/test_scirel_docs.py",
+    ),
     "scripts/finalize_release.py": (
         "tests/test_release_finalization.py", "tests/test_release_index.py",
     ),
@@ -234,6 +241,7 @@ def _load_catalog_assets() -> list[Asset]:
     assets = []
     catalog_paths = list(CATALOG.glob("*.json"))
     if CATALOG == ROOT / "catalog" / "examples":
+        catalog_paths.extend(PLEIADES_MAINTAINED_CATALOG.glob("*.json"))
         catalog_paths.extend(TORAX_LEAF_CATALOG.glob("*.json"))
         catalog_paths.extend(TORAX_BOOTSTRAP_FVM_CATALOG.glob("*.json"))
     for path in sorted(catalog_paths):
@@ -241,6 +249,7 @@ def _load_catalog_assets() -> list[Asset]:
         python_api = document["public_api"]["python"]
         module = python_api["module"]
         symbol = python_api["symbol"]
+        implementation_module = _exported_module(module, symbol)
         direct_tests = tuple(document["verification"]["tests"])
         for direct_test in direct_tests:
             if not (ROOT / direct_test).is_file():
@@ -248,8 +257,8 @@ def _load_catalog_assets() -> list[Asset]:
         assets.append(
             Asset(
                 public_callable=f"{module}.{symbol}",
-                module=module,
-                source_path="src/" + module.replace(".", "/") + ".py",
+                module=implementation_module,
+                source_path="src/" + implementation_module.replace(".", "/") + ".py",
                 kind=document["kind"],
                 asset_ref=document["asset_id"],
                 dependency_refs=frozenset(
@@ -260,6 +269,24 @@ def _load_catalog_assets() -> list[Asset]:
             )
         )
     return assets
+
+
+def _exported_module(module: str, symbol: str) -> str:
+    """Resolve an explicit package re-export without importing scientific code."""
+    initializer = ROOT / "src" / Path(*module.split(".")) / "__init__.py"
+    if not initializer.is_file():
+        return module
+    tree = ast.parse(initializer.read_text(encoding="utf-8"))
+    for node in tree.body:
+        if isinstance(node, ast.ImportFrom) and any(
+            (alias.asname or alias.name) == symbol for alias in node.names
+        ):
+            base = module.split(".")
+            if node.level:
+                base = base[:len(base) - node.level + 1]
+                return ".".join([*base, *(node.module or "").split(".")])
+            return node.module or module
+    return module
 
 
 def _load_assets() -> list[Asset]:
@@ -314,18 +341,24 @@ def _imported_modules(path: Path, module: str) -> set[str]:
             else:
                 target = node.module or ""
             if target.startswith("scirel"):
-                imported.add(target)
-                imported.update(
-                    f"{target}.{alias.name}"
-                    for alias in node.names
-                    if alias.name != "*"
-                )
+                resolved = {
+                    _exported_module(target, alias.name)
+                    for alias in node.names if alias.name != "*"
+                }
+                imported.update(resolved)
+                if any(alias.name == "*" for alias in node.names) or not resolved:
+                    imported.add(target)
     return imported
 
 
 def _reverse_imports() -> dict[str, set[str]]:
     reverse: dict[str, set[str]] = {}
     for path in (ROOT / "src" / "scirel").rglob("*.py"):
+        # Namespace re-exports are resolved at the consuming symbol above.
+        # Their initializer's body is checked separately for export changes;
+        # a changed leaf must not connect every unrelated package export.
+        if path.name == "__init__.py":
+            continue
         module = _module_name(path)
         for imported in _imported_modules(path, module):
             reverse.setdefault(imported, set()).add(module)
@@ -396,6 +429,9 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
         elif path in ENGINEERING_TESTS:
             path_tests.update(ENGINEERING_TESTS[path])
             reason = "engineering_contract"
+        elif path.startswith("tools/docs/"):
+            path_tests.add("tests/test_scirel_docs.py")
+            reason = "documentation_contract"
         elif path in WORKFLOW_CONTRACTS:
             path_tests.update((*WORKFLOW_TESTS, *PLUGIN_TESTS))
             reason = "workflow_contract"
@@ -403,7 +439,7 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
             path_tests.add("tests/test_outbound_evaluation_manifests.py")
             reason = "evaluation_manifest_contract"
         elif path.startswith("contracts/") or path.startswith(
-            ("catalog/examples/", "catalog/torax-algebra-grid/", "catalog/torax-bootstrap-fvm/")
+            ("catalog/examples/", "catalog/pleiades-maintained/", "catalog/torax-algebra-grid/", "catalog/torax-bootstrap-fvm/")
         ):
             path_tests.add("tests/test_asset_documentation.py")
             reason = "asset_document_contract"

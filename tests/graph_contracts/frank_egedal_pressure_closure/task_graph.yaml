@@ -13,7 +13,7 @@ inputs:
 - name: psi
   meaning: 当前或最终磁通
   shape: '[N_Z,N_R]'
-  units: Wb
+  units: Wb/rad
   required: true
   constraints: finite [Z,R] field
 - name: B
@@ -113,12 +113,18 @@ inputs:
       units: dimensionless
       required: false
       constraints: source-valid
-    perp_velocity_lower:
-      meaning: 垂直矩速度积分下限与 v0 的比值
+    velocity_lower:
+      meaning: 三个速度矩共同人口下限与v0的比值
       shape: scalar
       units: dimensionless
       required: false
-      constraints: '[0,1]; defaults to vc_over_v0'
+      constraints: '[0,1)；默认0；与perp_velocity_lower同时提供时须相等'
+    perp_velocity_lower:
+      meaning: 三个速度矩共同人口下限的历史别名
+      shape: scalar
+      units: dimensionless
+      required: false
+      constraints: '[0,1)；默认0；等同velocity_lower并作用于密度、平行和垂直矩；两别名同时提供须相等'
     zeff:
       meaning: 有效离子电荷别名
       shape: scalar
@@ -290,3 +296,9 @@ edges:
   condition: always
   transform: pass all three hot moment shapes; pressure assembly applies params scales and radial_shape
   closure: asset
+
+common_population_contract:
+  velocity_domain: velocity_lower默认0，所有密度和压力矩共用[lower,1]；perp_velocity_lower只作相同下限的历史别名
+  critical_speed: vc_over_v0是慢化速度尺度，不是垂直矩专用积分下限；vc=1仍有非零共同人口
+  normalization: 三个原始矩先按相同人口算，压力除b=1平行矩，密度除b=1密度矩；随后乘径向包络和尺度
+  convergence: 逐次加倍速度和pitch节点验证原始矩，不允许发散归一化抵消；失败抛RuntimeError

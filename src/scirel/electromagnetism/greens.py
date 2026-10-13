@@ -56,7 +56,11 @@ def compute_greens(rzw, rz_pts):
             d = np.hypot(r+a, h)
             q = (np.hypot(r-a, h)/d)**2
             m = 4*(r/d)*(a/d)
-            small = m < .05
+            # The K/E vector-potential subtraction loses relative precision
+            # well above m=.05 (an 80-digit witness at m=.1096 exceeds 2e-14).
+            # Use the equivalent analytic expression through m<.5; this is a
+            # numerical formula partition, never a geometry/field cutoff.
+            small = m < .5
             psi, br, bz = np.zeros((3, len(points)))
             if np.any(small):
                 rs, hs, ds, ms = r[small], h[small], d[small], m[small]
@@ -75,7 +79,9 @@ def compute_greens(rzw, rz_pts):
                 rho2 = np.hypot(rl-a, hl)**2
                 psi[large] = 1e-7*dl*((2-ml)*K-2*E)
                 br[large] = 2e-7*hl/(rl*dl)*(-K+(a*a+rl*rl+hl*hl)/rho2*E)
-                bz[large] = 2e-7/dl*(K+(a*a-rl*rl-hl*hl)/rho2*E)
+                # Factor the difference of squares before multiplying: near a
+                # wire, separately rounded a² and R² erase radial separation.
+                bz[large] = 2e-7/dl*(K+((a-rl)*(a+rl)-hl*hl)/rho2*E)
             out += weight*np.array([psi, br, bz])
     if np.any(~np.isfinite(out)):
         raise FloatingPointError('Green function output is not representable as finite float64')
@@ -113,4 +119,51 @@ def get_gpsi(R, Z):
     return matrix
 
 
-__all__ = ['compute_greens','get_gpsi']
+def green_response_matrices(rz_pts, rzw=None):
+    """Return ordered per-filament ``(psi, BR, BZ)`` response matrices.
+
+    Each matrix has shape ``(Ntarget, Nsource)``; neither coordinate order is
+    sorted or reflected. Targets are ``(R,Z)`` metres. Sources are ``(R,Z,w)``
+    with signed dimensionless weights (the predecessor's ``csign``), or
+    ``(R,Z)`` with unit weights. ``rzw=None`` uses the target coordinates as
+    unit-weight sources. Multiply a matrix by an ordered source-current vector
+    in amperes to obtain Wb/rad (psi=R*A_phi) or tesla. Weights are applied once;
+    no device current is inferred.
+
+    Exact source/target coordinate coincidences contribute zero by the explicit
+    discrete compatibility convention of Pleiades analysis/math.py. This is
+    neither a finite-wire self-field nor a near-coincidence cutoff. Nonzero
+    separation uses the actual-coordinate corrected kernel; its arithmetic
+    failures propagate. Zero-radius *sources* contribute zero; axis targets
+    retain the analytic nonzero BZ. Repeated positive-radius target nodes are
+    rejected when they implicitly define the source grid. Explicit sources may
+    repeat, representing independently weighted columns at the same position.
+
+    This serial composite absorbs the old full/parallel per-source builders;
+    acceleration and their original spelling are not scientific capabilities.
+    """
+    if np.iscomplexobj(rz_pts) or (rzw is not None and np.iscomplexobj(rzw)):
+        raise ValueError('target and source coordinates/weights must be real')
+    targets = _array(rz_pts, 2, 'rz_pts')
+    if rzw is None:
+        active = targets[targets[:, 0] > 0]
+        if len(np.unique(active, axis=0)) != len(active):
+            raise ValueError('implicit positive-radius source nodes cannot be coincident')
+        sources = np.column_stack((targets, np.ones(len(targets))))
+    else:
+        raw = np.asarray(rzw, dtype=float)
+        if raw.ndim != 2 or raw.shape[1] not in (2, 3):
+            raise ValueError('rzw must have shape (Nsource, 2) or (Nsource, 3)')
+        sources = (np.column_stack((raw, np.ones(len(raw))))
+                   if raw.shape[1] == 2 else raw)
+        sources = _array(sources, 3, 'rzw')
+    response = np.zeros((3, len(targets), len(sources)))
+    for j, (a, z0, weight) in enumerate(sources):
+        if a == 0 or weight == 0:
+            continue
+        off_self = ~((targets[:, 0] == a) & (targets[:, 1] == z0))
+        response[:, off_self, j] = compute_greens(sources[j:j+1], targets[off_self])
+    return tuple(response)
+
+
+__all__ = ['compute_greens','get_gpsi','green_response_matrices']

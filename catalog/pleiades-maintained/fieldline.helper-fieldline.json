@@ -4,7 +4,7 @@
   "kind": "operator",
   "title": {
     "en": "HelperFieldLine geometry and diagnostics",
-    "zh": "HelperFieldLine geometry and diagnostics"
+    "zh": "辅助场线几何与诊断"
   },
   "summary": "Parametric contour spline, chord arclength, gradient and corrected curvature=(bhat dot grad)bhat",
   "taxonomy": [
@@ -74,12 +74,11 @@
     "excluded": [
       "Intersection is bounded to fitted parameter intervals and rejects no-crossing/multiple-root cases; tangency/completeness remains unqualified",
       "Arbitrary contour topology, magnetic-axis limit and physical stability are unqualified",
-      "get_kappa_n_2 requires uniform xy grid and nonzero flux gradient",
       "Polar projection is supplied separately with explicit theta and origin failure; no topology or magnetic-axis claim is inferred."
     ]
   },
   "failure_semantics": {
-    "invalid_input": "ValueError for nonfinite/null interpolated B or zero tangent projection; d_ds rejects duplicate adjacent vertices. get_kappa_n_2 rejects nonuniform/nonseparable/nonfinite grids and zero flux-gradient support. Other SciPy constructor/interpolation errors propagate.",
+    "invalid_input": "ValueError for nonfinite/null interpolated B or zero tangent projection; d_ds rejects duplicate adjacent vertices. Other SciPy constructor/interpolation errors propagate.",
     "runtime_failure": "Underlying numerical or interpolation exceptions propagate.",
     "nonconvergence": "Bounded multistart distance solve accepts a crossing only when separation is within geometry-scaled tolerance; no found crossing or multiple found crossings raises ValueError. Finite search does not certify all spline roots or tangencies.",
     "partial_results": "apply_boundary commits both parameter bounds only after both solves succeed; a failed update leaves existing bounds unchanged."
@@ -101,7 +100,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev5+pleiades.fullcore",
     "dependencies": [
       {
         "asset_id": "scirel.fieldline.arclength-derivative"
@@ -128,8 +127,8 @@
     "known_limitations": [
       "Intersection is bounded to fitted parameter intervals and rejects no-crossing/multiple-root cases; tangency/completeness remains unqualified",
       "Arbitrary contour topology, magnetic-axis limit and physical stability are unqualified",
-      "get_kappa_n_2 requires uniform xy grid and nonzero flux gradient",
-      "Polar projection is supplied separately with explicit theta and origin failure; magnetic-axis limit remains unqualified."
+      "Polar projection is supplied separately with explicit theta and origin failure; magnetic-axis limit remains unqualified.",
+      "HelperFieldLine has field-based curvature only; flux-gradient curvature belongs to the separate FieldLine variant. Effective cubic interpolation has no universal absolute-gradient or second-order field-curvature error guarantee."
     ]
   }
 }

@@ -13,12 +13,14 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
 from scirel_docs import Documentation, build, server
+from _document_fixtures import copy_example_closure, example_document_sources
 
 
 @pytest.fixture(scope='session')
 def built_snapshot(tmp_path_factory):
     output = tmp_path_factory.mktemp('sphinx') / 'docs'
-    build(ROOT / 'catalog/examples', output)
+    documents = copy_example_closure(tmp_path_factory.mktemp('reader-inputs') / 'documents')
+    build(documents, output)
     return output
 
 
@@ -35,7 +37,7 @@ def test_queries_are_bounded_and_exact_records_unchanged(snapshot):
     assert docs.search('pleiades')['total'] == p['total']
     assert docs.search('unfindable-xyz')['items'] == []
     asset = p['items'][0]['asset_id']
-    original = json.loads((ROOT / 'catalog/examples' / f'{asset}.json').read_text())
+    original = json.loads(example_document_sources()[asset].read_text())
     assert docs.asset(asset)['document'] == original
     assert docs.search(kind='task_graph', domain='equilibrium')['total'] > 0
     assert docs.search('中文未找到', offset=999)['next_offset'] is None
@@ -90,7 +92,7 @@ def test_http_matches_cli_core_and_does_not_serve_source(snapshot):
 
 def test_build_refuses_overwrite_and_invalid_documents(snapshot, tmp_path):
     with pytest.raises(FileExistsError):
-        build(ROOT / 'catalog/examples', snapshot)
+        build(copy_example_closure(tmp_path / 'documents'), snapshot)
     bad = tmp_path / 'bad'; bad.mkdir()
     (bad / 'fake.json').write_text('{"title":"invented"}')
     with pytest.raises(ValueError):
@@ -122,11 +124,20 @@ def test_chapter_build_rejects_stale_execution(tmp_path, monkeypatch):
     import scirel_docs
     copy = tmp_path/'repo'
     shutil.copytree(ROOT/'tools/docs', copy/'tools/docs')
+    # This test exercises the preserved historical checker fixture. Current
+    # successor qualification is tested by the normal snapshot build above.
+    (copy/'tools/docs/chapter-selection.json').unlink(missing_ok=True)
     binding = json.loads((copy/'tools/docs/magnetostatics/execution.json').read_text())
     for path in list(binding['files']) + list(binding['document_files']):
         target = copy/path
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(ROOT/path, target)
+        # The qualification record is historical evidence. Seed this checker
+        # fixture with its bound committed bytes, not the changed successor.
+        body = subprocess.check_output(['git', 'show', 'f669ee6c0f4b5d973d3f2c95666d970d48f42ac7:' + path], cwd=ROOT)
+        import hashlib
+        expected = (binding['files'] | binding['document_files'])[path]
+        assert hashlib.sha256(body).hexdigest() == expected
+        target.write_bytes(body)
     monkeypatch.setattr(scirel_docs, 'ROOT', copy)
     asset_ids = {x['id'] for x in json.loads((copy/'tools/docs/magnetostatics/chapter.json').read_text())['assets']}
     scirel_docs.chapter_files(asset_ids)
@@ -134,6 +145,27 @@ def test_chapter_build_rejects_stale_execution(tmp_path, monkeypatch):
     path.write_text(path.read_text()+'\n# changed\n')
     with pytest.raises(ValueError, match='implementation changed'):
         scirel_docs.chapter_files(asset_ids)
+
+
+def test_successor_chapter_selection_is_explicit_and_digest_bound(tmp_path, monkeypatch):
+    import hashlib
+    import scirel_docs
+    root = tmp_path/'tools/docs'; root.mkdir(parents=True)
+    successor = root/'magnetostatics-20261013'; successor.mkdir()
+    execution = successor/'execution.json'; execution.write_text('{}')
+    selection = {'schema': 'scirel.chapter-selection.v1', 'chapters': {
+        'magnetostatics': {'directory': 'tools/docs/magnetostatics-20261013',
+                          'execution_sha256': hashlib.sha256(execution.read_bytes()).hexdigest()}}}
+    path = root/'chapter-selection.json'; path.write_text(json.dumps(selection))
+    monkeypatch.setattr(scirel_docs, 'ROOT', tmp_path)
+    assert scirel_docs.chapter_directory() == successor
+    execution.write_text('{"changed":true}')
+    with pytest.raises(ValueError, match='execution bytes changed'):
+        scirel_docs.chapter_directory()
+    selection['chapters']['magnetostatics']['directory'] = 'tools/docs/../../outside'
+    path.write_text(json.dumps(selection))
+    with pytest.raises(ValueError, match='selection path'):
+        scirel_docs.chapter_directory()
 
 
 def test_handbook_covers_exact_records_and_topic_queries_match(snapshot):
@@ -225,7 +257,8 @@ def test_reader_translation_cannot_drift_or_drop_contracts(tmp_path, change):
     elif change == 'clause': first['applicability']['supported'].append('invented')
     path.write_text(json.dumps(data))
     with pytest.raises(ValueError):
-        load_translations(tmp_path, ROOT/'catalog/examples', load_document_set(ROOT/'catalog/examples'))
+        documents = copy_example_closure(tmp_path / 'documents')
+        load_translations(tmp_path, documents, load_document_set(documents))
 
 
 def test_all_reference_pages_exist_and_use_bound_chinese_prose(snapshot):

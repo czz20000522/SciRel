@@ -24,7 +24,7 @@
     "coordinates": "cylindrical R-Z, arrays indexed [Z,R]",
     "boundary": "At an included R=0 column, use the stated axis rule; at other grid edges, use one-sided second-order derivatives.",
     "assumptions": [
-      "For this operator, psi denotes R A_phi in Wb/rad, with R and Z in metres. Compatibility with separately documented vacuum-field outputs labelled Wb remains unresolved and is not inferred from this definition.",
+      "psi denotes R A_phi in Wb/rad, with R and Z in metres. The maintained circular-filament and current-Green vacuum-field contracts use the same normalization; full linked flux is 2*pi*psi.",
       "The sampled flux is sufficiently resolved for the finite-difference derivative to represent the intended field.",
       "Adding an extremely large gauge can destroy the represented flux variation before this function is called; the derivative cannot recover lost input bits."
     ]
@@ -98,7 +98,7 @@
     "excluded": [
       "Toroidal magnetic-field reconstruction.",
       "Non-axisymmetric or curvilinear meshes.",
-      "Automatic conversion of a vacuum-field output labelled Wb or direct vacuum-to-equilibrium wiring without a resolved flux convention.",
+      "Automatic conversion of full linked flux into psi=R A_phi; callers must divide full linked flux by 2*pi before using this operator.",
       "A general proof of axis regularity or derivative convergence for arbitrary flux data."
     ]
   },
@@ -109,7 +109,7 @@
     "partial_results": "No dictionary is returned if validation fails or execution raises."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping, pending intake candidate and the 2026-09-25 flux-convention audit. SciRel and intake source text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery; the vacuum-field Wb versus equilibrium Wb/rad boundary remains unresolved. This successor corrects independently manufactured cylindrical-axis, quadrature-domain, floating-point zero-force and terminal-state defects where applicable; predecessor behavior is not treated as physical authority.",
+    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping, pending intake candidate and the 2026-09-25 flux-convention audit. SciRel and intake source text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery; the successor circular-filament and current-Green contracts now explicitly share the equilibrium R A_phi (Wb/rad) normalization, without a numeric rescaling. This successor corrects independently manufactured cylindrical-axis, quadrature-domain, floating-point zero-force and terminal-state defects where applicable; predecessor behavior is not treated as physical authority.",
     "source_kinds": [
       "historical Pleiades development descriptor and migration mapping",
       "pending intake development candidate",
@@ -126,7 +126,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
+    "implementation_version": "0.2.0.dev5+pleiades.fullcore",
     "dependencies": []
   },
   "example": {
@@ -137,7 +137,7 @@
   "verification": {
     "scope": [
       "Quadratic-flux uniform-field and axis-rule regression on uniform and selected nonuniform grids.",
-      "A 2*pi rescaling of the psi input rescales the recovered axial field in a controlled quadratic example; this does not establish a cross-asset conversion.",
+      "A 2*pi rescaling of the psi input rescales the recovered axial field in a controlled quadratic example; full linked flux must be divided by 2*pi to recover psi=R A_phi.",
       "Nonrectilinear and nonfinite-coordinate rejection.",
       "Finite subnormal and large-magnitude hypot helper regression.",
       "Constant psi=3.7 produces exactly zero field for three distinct grids.",

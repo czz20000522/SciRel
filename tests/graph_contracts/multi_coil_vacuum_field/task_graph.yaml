@@ -29,7 +29,7 @@ outputs:
 - name: psi_vac
   meaning: 线圈真空磁通
   shape: '[N_Z,N_R]'
-  units: Wb
+  units: Wb/rad
 - name: b_r_vac
   meaning: 线圈真空径向磁场
   shape: '[N_Z,N_R]'

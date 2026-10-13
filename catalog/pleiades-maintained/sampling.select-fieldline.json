@@ -4,7 +4,7 @@
   "kind": "operator",
   "title": {
     "en": "Contour field-line selection",
-    "zh": "Contour field-line selection"
+    "zh": "等值场线选择"
   },
   "summary": "Select largest vertex-count segment at exact contour level and parse its orientation/endpoints",
   "taxonomy": [
@@ -133,7 +133,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev5+pleiades.fullcore",
     "dependencies": [
       {
         "asset_id": "scirel.sampling.parse-segment"

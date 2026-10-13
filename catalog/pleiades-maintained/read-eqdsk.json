@@ -4,7 +4,7 @@
   "kind": "operator",
   "title": {
     "en": "Read Pleiades extended EQDSK",
-    "zh": "Read Pleiades extended EQDSK"
+    "zh": "读取Pleiades扩展EQDSK"
   },
   "summary": "Parse one validated Pleiades extended EQDSK text file.",
   "taxonomy": [
@@ -103,7 +103,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev5+pleiades.fullcore",
     "dependencies": []
   },
   "example": {
@@ -120,7 +120,7 @@
     ],
     "evidence_ceiling": "Structural IO qualification only; no physical interpretation or release approval.",
     "known_limitations": [
-      "Raw contour writer remains unresolved/excluded",
+      "This reader does not select raw contours or write them; the separate write-pleiades-eqdsk-legacy-raw contract defines that bounded writer qualification",
       "Not standard EFIT gEQDSK",
       "No units/COCOS"
     ]

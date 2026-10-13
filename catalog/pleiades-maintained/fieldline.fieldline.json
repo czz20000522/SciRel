@@ -4,7 +4,7 @@
   "kind": "operator",
   "title": {
     "en": "FieldLine geometry and diagnostics",
-    "zh": "FieldLine geometry and diagnostics"
+    "zh": "场线几何与诊断"
   },
   "summary": "Parametric contour spline, chord arclength, gradient and corrected curvature=(bhat dot grad)bhat",
   "taxonomy": [
@@ -101,7 +101,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev5+pleiades.fullcore",
     "dependencies": [
       {
         "asset_id": "scirel.fieldline.arclength-derivative"

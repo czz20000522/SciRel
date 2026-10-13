@@ -29,7 +29,7 @@ def _candidate_entry_id(path):
 
 def _pending_item(
     *, release_ready=False,
-    document_name="scirel.field.circular-filament-green.json",
+    document_name="scirel.field.rectangular-coil-filaments.json",
     support_files=(),
     omit_dependencies=False,
 ):
@@ -100,7 +100,7 @@ def _multi_item_workflow_body(*, release_ready=False, asset_count=2):
             encoding="utf-8"
         )
     )
-    excluded = {"scirel.field.circular-filament-green.json",
+    excluded = {"scirel.field.rectangular-coil-filaments.json",
                 "scirel.closures.hall-two-fluid-pressure.json"}
     additional_paths = [
         path for path in sorted((ROOT / "catalog/examples").glob("*.json"))
@@ -1114,7 +1114,7 @@ def test_strict_finalizer_rejects_a_candidate_without_item_approval(tmp_path):
 
 def _reviewed_release_inputs(
     tmp_path, *, multi_item=False, multi_item_count=2,
-    document_name="scirel.field.circular-filament-green.json",
+    document_name="scirel.field.rectangular-coil-filaments.json",
     git_revision="a" * 40,
     support_files=(),
     build_release_catalog=True,
@@ -1284,7 +1284,7 @@ def test_reviewed_finalization_binds_item_document_test_and_wheel(tmp_path, monk
     assert manifest["approved_items"][0]["revision"] == projection["revision"]
     assert len(manifest["approved_items"]) == 1
     assert manifest["verified_tests"] == [
-        "tests/operator_contracts/test_circular_filament_green.py"
+        "tests/operator_contracts/test_rectangular_coil_filaments.py"
     ]
     assert manifest["verified_test_run"]["exit_code"] == 0
     assert index["entries"][-1]["status"] == "released"
@@ -1309,7 +1309,7 @@ def test_first_reviewed_distribution_builds_only_the_selected_asset(tmp_path, mo
     )
     assert result["asset_count"] == 1
     assert result["test_paths"] == [
-        "tests/operator_contracts/test_circular_filament_green.py"
+        "tests/operator_contracts/test_rectangular_coil_filaments.py"
     ]
     wheel_dir = tmp_path / "built-wheel"
     wheel_dir.mkdir()
@@ -1325,7 +1325,7 @@ def test_first_reviewed_distribution_builds_only_the_selected_asset(tmp_path, mo
     assert source_members == {
         "scirel/__init__.py",
         "scirel/field/__init__.py",
-        "scirel/field/circular_filament_green.py",
+        "scirel/field/rectangular_coil_filaments.py",
     }
     installed = tmp_path / "installed"
     subprocess.run(
@@ -1338,11 +1338,11 @@ def test_first_reviewed_distribution_builds_only_the_selected_asset(tmp_path, mo
 import sys
 sys.path.insert(0, sys.argv[1])
 import scirel
-from scirel.field import circular_filament_green_response
+from scirel.field import discretize_rectangular_coil
 assert scirel.__file__.startswith(sys.argv[1])
 assert scirel.__all__ == ["field"]
-assert not hasattr(scirel, "circular_filament_green_response")
-assert callable(circular_filament_green_response)
+assert not hasattr(scirel, "discretize_rectangular_coil")
+assert callable(discretize_rectangular_coil)
 ''', str(installed)],
         cwd=tmp_path, capture_output=True, text=True,
     )
@@ -1350,7 +1350,7 @@ assert callable(circular_filament_green_response)
     catalog = tmp_path / "built-catalog"
     build_catalog(
         staging / "documents", catalog, catalog_id="test-reviewed-subset",
-        release_version="0.1.0.dev5", coverage_status="complete", declared_total=1,
+        release_version=json.loads(next((staging / "documents").glob("*.json")).read_text())["version"]["implementation_version"], coverage_status="complete", declared_total=1,
     )
     monkeypatch.setattr(finalize_release, "_git_revision", lambda root: "a" * 40)
     monkeypatch.setattr(finalize_release, "_git_changed_files", lambda root, revision: set())
@@ -1454,12 +1454,13 @@ def test_reviewed_finalization_rejects_changed_wheel_code(tmp_path, monkeypatch)
     import finalize_release
 
     artifacts, documents, catalog, wheel, _ = _reviewed_release_inputs(tmp_path)
+    version = json.loads(next(documents.glob("*.json")).read_text())["version"]["implementation_version"]
     with ZipFile(wheel, "w") as archive:
         archive.writestr(
-            "scirel-0.1.0.dev5.dist-info/METADATA",
-            "Metadata-Version: 2.1\nName: scirel\nVersion: 0.1.0.dev5\n",
+            f"scirel-{version}.dist-info/METADATA",
+            f"Metadata-Version: 2.1\nName: scirel\nVersion: {version}\n",
         )
-        archive.writestr("scirel/field/circular_filament_green.py", b"changed")
+        archive.writestr("scirel/field/rectangular_coil_filaments.py", b"changed")
     monkeypatch.setattr(finalize_release, "_git_revision", lambda root: "a" * 40)
     monkeypatch.setattr(finalize_release, "_git_changed_files", lambda root, revision: set())
     monkeypatch.setattr(finalize_release, "_require_clean_release_sources", lambda root: None)
@@ -1482,12 +1483,13 @@ def test_reviewed_finalization_rejects_unapproved_science_module(tmp_path, monke
     import finalize_release
 
     artifacts, documents, catalog, wheel, _ = _reviewed_release_inputs(tmp_path)
-    approved_module = "scirel/field/circular_filament_green.py"
+    approved_module = "scirel/field/rectangular_coil_filaments.py"
     unapproved_module = "scirel/field/poloidal_field_magnitude.py"
+    version = json.loads(next(documents.glob("*.json")).read_text())["version"]["implementation_version"]
     with ZipFile(wheel, "w") as archive:
         archive.writestr(
-            "scirel-0.1.0.dev5.dist-info/METADATA",
-            "Metadata-Version: 2.1\nName: scirel\nVersion: 0.1.0.dev5\n",
+            f"scirel-{version}.dist-info/METADATA",
+            f"Metadata-Version: 2.1\nName: scirel\nVersion: {version}\n",
         )
         for name in (approved_module, unapproved_module):
             archive.writestr(name, (ROOT / "src" / name).read_bytes())
@@ -1599,7 +1601,7 @@ def test_reviewed_wheel_import_closure_rejects_unfiltered_package_initializer():
         name: (ROOT / "src" / name).read_bytes()
         for name in (
             "scirel/field/__init__.py",
-            "scirel/field/circular_filament_green.py",
+            "scirel/field/rectangular_coil_filaments.py",
         )
     }
 

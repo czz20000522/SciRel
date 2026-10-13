@@ -788,6 +788,7 @@ def test_documented_dense_green_selects_its_direct_test():
     assert result["full_suite_required"] is False
     assert result["test_paths"] == [
         "tests/operator_contracts/test_dense_axisymmetric_green.py",
+        "tests/operator_contracts/test_pleiades_field_green_correction.py",
     ]
 
 
@@ -796,6 +797,7 @@ def test_documented_mirror_green_selects_its_direct_test():
     assert result["full_suite_required"] is False
     assert result["test_paths"] == [
         "tests/operator_contracts/test_mirror_plasma_green.py",
+        "tests/operator_contracts/test_pleiades_field_green_correction.py",
     ]
 
 
@@ -804,6 +806,7 @@ def test_documented_filament_vacuum_field_selects_its_direct_test():
     assert result["full_suite_required"] is False
     assert result["test_paths"] == [
         "tests/operator_contracts/test_filament_vacuum_field.py",
+        "tests/operator_contracts/test_pleiades_field_green_correction.py",
     ]
 
 
@@ -829,8 +832,28 @@ def test_current_asset_index_unions_legacy_samples_and_exact_documents():
     assert len([doc for doc in direct_documents if doc["asset_id"] != "scirel.plasma.fast-ion-heating"]) == 132
     assert len(list((ROOT / "catalog/torax-algebra-grid").glob("*.json"))) == 8
     assert len(list((ROOT / "catalog/torax-bootstrap-fvm").glob("*.json"))) == 7
-    assert len(assets) == 148
-    assert len({asset.public_callable for asset in assets}) == 148
+    maintained_count = len(list((ROOT / "catalog/pleiades-maintained").glob("*.json")))
+    assert len(assets) == 148 + maintained_count
+    assert len({asset.public_callable for asset in assets}) == 148 + maintained_count
+
+
+def test_shared_corrected_green_keeps_maintained_and_legacy_consumers():
+    result = select("src/scirel/electromagnetism/greens.py")
+    assert result["full_suite_required"] is False
+    assert {
+        "tests/pleiades/geometry/test_green_response_matrices.py",
+        "tests/pleiades/geometry/test_green_reflection_repair.py",
+        "tests/operator_contracts/test_dense_axisymmetric_green.py",
+        "tests/operator_contracts/test_mirror_plasma_green.py",
+        "tests/operator_contracts/test_pleiades_field_green_correction.py",
+        "tests/graph_contracts/multi_coil_vacuum_field/test_graph_multi_coil_vacuum_field.py",
+    } <= set(result["test_paths"])
+
+
+def test_maintained_green_document_is_classified_as_an_exact_contract():
+    result = select("catalog/pleiades-maintained/green-response-matrices.json")
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == ["tests/test_asset_documentation.py"]
 
 
 def test_catalog_asset_keeps_every_declared_direct_test(tmp_path):

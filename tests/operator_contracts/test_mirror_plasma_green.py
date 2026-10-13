@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from scipy.special import ellipe, ellipk
+import mpmath as mp
 
 from scirel.field.mirror_plasma_green import build_mirror_plasma_flux_green, build_mirror_plasma_flux_green as scientific_operator
 from scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response
@@ -13,22 +13,20 @@ def _grid():
 
 
 def _direct_first_plane_response(r_grid, z_grid, source_r):
-    target_r, target_z = r_grid.ravel(), z_grid.ravel()
-    source_z = z_grid[0, 0]
-    with np.errstate(divide="ignore", invalid="ignore"):
-        distance = np.sqrt((target_z - source_z) ** 2 + (target_r + source_r) ** 2)
-        k_squared = 4.0 * target_r * source_r / distance**2
-        response = (
-            1.0e-7
-            * target_r
-            * source_r
-            / distance
-            * 4.0
-            / k_squared
-            * ((2.0 - k_squared) * ellipk(k_squared) - 2.0 * ellipe(k_squared))
-        )
-    response[~np.isfinite(response)] = 0.0
-    return response
+    # The original binary64 K/E subtraction cancels at small m, exceeding
+    # this test's unchanged 2e-14 gate. Evaluate the independent formula at
+    # 80 digits using exact binary64 fixture values; do not weaken tolerances.
+    result = np.zeros(r_grid.size)
+    with mp.workdps(80):
+        a,z0 = mp.mpf(float(source_r)),mp.mpf(float(z_grid[0,0]))
+        for i,(r,z) in enumerate(zip(r_grid.ravel(),z_grid.ravel())):
+            r,z = mp.mpf(float(r)),mp.mpf(float(z))
+            if r==0 or (r==a and z==z0):
+                continue
+            d=mp.sqrt((r+a)**2+(z-z0)**2)
+            m=4*r*a/d**2
+            result[i]=float(mp.mpf('1e-7')*d*((2-m)*mp.ellipk(m)-2*mp.ellipe(m)))
+    return result
 
 
 def test_first_source_plane_matches_independent_circular_filament_formula():

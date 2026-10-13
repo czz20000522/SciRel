@@ -9,6 +9,7 @@ from .eqdsk import (
     write_eqdsk_fromdict,
     write_pleiades_eqdsk,
     write_pleiades_eqdsk_legacy_raw,
+    write_pressure_equilibrium_eqdsk,
     write_eqdsk,
 )
 
@@ -21,5 +22,6 @@ __all__ = [
     "write_eqdsk_fromdict",
     "write_pleiades_eqdsk",
     "write_pleiades_eqdsk_legacy_raw",
+    "write_pressure_equilibrium_eqdsk",
     "write_eqdsk",
 ]

@@ -7,8 +7,14 @@
     "zh": "矩形线圈电流丝离散"
   },
   "summary": "Discretize an axisymmetric rectangular coil cross-section into ordered cylindrical R-Z filament locations, with an optional in-plane rotation about the section center.",
-  "taxonomy": ["field", "coil-geometry", "axisymmetric"],
-  "aliases": ["rectangular coil filaments"],
+  "taxonomy": [
+    "field",
+    "coil-geometry",
+    "axisymmetric"
+  ],
+  "aliases": [
+    "rectangular coil filaments"
+  ],
   "identity": {
     "relation": "rectangular coil section to ordered circular-filament coordinates",
     "direction": "coil geometry parameters -> filament R-Z locations",
@@ -17,24 +23,99 @@
     "geometry": "axisymmetric rectangular coil cross-section represented by circular filaments",
     "coordinates": "cylindrical R-Z coordinates",
     "boundary": "all generated cylindrical radii must remain nonnegative",
-    "assumptions": ["nr and nz are positive integers", "dr and dz are positive finite center spacings"]
+    "assumptions": [
+      "nr and nz are positive integers",
+      "dr and dz are positive finite center spacings"
+    ]
   },
   "inputs": [
-    {"name": "r0", "description": "Coil-section center radius.", "units": "m", "shape": "scalar", "dtype": "real", "required": true, "constraints": "Finite and nonnegative."},
-    {"name": "z0", "description": "Coil-section center axial coordinate.", "units": "m", "shape": "scalar", "dtype": "real", "required": true, "constraints": "Finite."},
-    {"name": "nr", "description": "Number of radial filament centers.", "units": "count", "shape": "scalar", "dtype": "integer", "required": true, "constraints": "Positive integer; booleans and fractional values are rejected."},
-    {"name": "nz", "description": "Number of axial filament centers.", "units": "count", "shape": "scalar", "dtype": "integer", "required": true, "constraints": "Positive integer; booleans and fractional values are rejected."},
-    {"name": "dr", "description": "Radial center spacing.", "units": "m", "shape": "scalar", "dtype": "real", "required": true, "constraints": "Positive finite value."},
-    {"name": "dz", "description": "Axial center spacing.", "units": "m", "shape": "scalar", "dtype": "real", "required": true, "constraints": "Positive finite value."},
-    {"name": "angle_deg", "description": "In-plane rotation using the maintained row-vector sign convention.", "units": "degree", "shape": "scalar", "dtype": "real", "required": false, "default": 0.0, "constraints": "Finite."}
+    {
+      "name": "r0",
+      "description": "Coil-section center radius.",
+      "units": "m",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and nonnegative."
+    },
+    {
+      "name": "z0",
+      "description": "Coil-section center axial coordinate.",
+      "units": "m",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "nr",
+      "description": "Number of radial filament centers.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": true,
+      "constraints": "Positive integer; booleans and fractional values are rejected."
+    },
+    {
+      "name": "nz",
+      "description": "Number of axial filament centers.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": true,
+      "constraints": "Positive integer; booleans and fractional values are rejected."
+    },
+    {
+      "name": "dr",
+      "description": "Radial center spacing.",
+      "units": "m",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Positive finite value."
+    },
+    {
+      "name": "dz",
+      "description": "Axial center spacing.",
+      "units": "m",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Positive finite value."
+    },
+    {
+      "name": "angle_deg",
+      "description": "In-plane rotation using the maintained row-vector sign convention.",
+      "units": "degree",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": false,
+      "default": 0.0,
+      "constraints": "Finite."
+    }
   ],
   "outputs": [
-    {"name": "rz_pts", "description": "Ordered filament center coordinates [R,Z].", "units": "m,m", "shape": "[nr*nz,2]", "dtype": "float64", "required": true, "constraints": "Radii are nonnegative; unrotated ordering is radial outer loop and axial inner loop."}
+    {
+      "name": "rz_pts",
+      "description": "Ordered filament center coordinates [R,Z].",
+      "units": "m,m",
+      "shape": "[nr*nz,2]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Radii are nonnegative; unrotated ordering is radial outer loop and axial inner loop."
+    }
   ],
   "applicability": {
-    "preconditions": ["The rectangular section and its rotated points do not cross the cylindrical axis."],
-    "supported": ["Uniform rectangular cross-section discretization for axisymmetric circular-filament models."],
-    "excluded": ["Nonuniform filament placement.", "Three-dimensional non-axisymmetric coil paths."]
+    "preconditions": [
+      "The rectangular section and its rotated points do not cross the cylindrical axis."
+    ],
+    "supported": [
+      "Uniform rectangular cross-section discretization for axisymmetric circular-filament models."
+    ],
+    "excluded": [
+      "Nonuniform filament placement.",
+      "Three-dimensional non-axisymmetric coil paths."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for nonfinite centers/angle, invalid counts/spacings, or geometry crossing R=0.",
@@ -44,7 +125,10 @@
   },
   "provenance": {
     "lineage_summary": "Maintained SciRel implementation with frozen internal admission evidence; private review identifiers are not part of the public contract.",
-    "source_kinds": ["reviewed scientific implementation", "scientific regression tests"],
+    "source_kinds": [
+      "reviewed scientific implementation",
+      "scientific regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
@@ -56,7 +140,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev5+pleiades.fullcore",
     "dependencies": []
   },
   "example": {
@@ -65,9 +149,19 @@
     "expected": "A float64 array with shape [6,2] in radial-outer, axial-inner order."
   },
   "verification": {
-    "scope": ["Source ordering.", "Ninety-degree rotation convention.", "Invalid count, spacing, and axis-crossing failures."],
-    "tests": ["tests/operator_contracts/test_rectangular_coil_filaments.py"],
+    "scope": [
+      "Source ordering.",
+      "Ninety-degree rotation convention.",
+      "Invalid count, spacing, and axis-crossing failures."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_rectangular_coil_filaments.py"
+    ],
     "evidence_ceiling": "Verified against the maintained SciRel contract for finite axisymmetric rectangular sections; this does not validate a physical winding or field solution.",
-    "known_limitations": ["Only uniform center spacing is supported.", "Rotation is confined to the R-Z cross-section.", "Public distribution licensing remains pending a human decision."]
+    "known_limitations": [
+      "Only uniform center spacing is supported.",
+      "Rotation is confined to the R-Z cross-section.",
+      "Public distribution licensing remains pending a human decision."
+    ]
   }
 }

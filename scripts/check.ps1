@@ -100,7 +100,7 @@ function Invoke-Python {
 try {
     $env:PYTHONPATH = [string]::Join(
         [IO.Path]::PathSeparator,
-        @($sourcePath, $testsPath)
+        (@($sourcePath, $testsPath) + $(if ([string]::IsNullOrWhiteSpace($previousPythonPath)) { @() } else { @($previousPythonPath) }))
     )
 
     Push-Location $repoRoot

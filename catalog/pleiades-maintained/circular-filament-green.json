@@ -19,7 +19,7 @@
     "relation": "Circular-filament vector potential and magnetic-field response",
     "direction": "source filaments and target points to psi, BR, BZ",
     "definition": "psi=R A_phi with per-ampere filament weights",
-    "model": "Ideal circular filaments with complete elliptic-integral and small-parameter analytic branch",
+    "model": "理想圆电流丝：完全椭圆积分与数学等价的超几何表达按椭圆参数分区计算；小参数分区m<0.5避免消差，近丝BZ分子用(a-R)(a+R)-h²因式形式。",
     "geometry": "Axisymmetric cylindrical R,Z geometry",
     "coordinates": "R and Z in metres; source rows are radius, height, signed weight",
     "boundary": "Axis values are analytic; active ideal-filament coincidence is singular",
@@ -100,7 +100,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev5+pleiades.fullcore",
     "dependencies": []
   },
   "example": {
@@ -112,17 +112,19 @@
     "scope": [
       "Bounded D2 Green comparison fixtures",
       "Axis and derivative regressions",
-      "Explicit singularity and lifecycle tests"
+      "Explicit singularity and lifecycle tests",
+      "独立70/140位角积分检验近导线BZ与m=0.5两侧连续响应，保留原定容差；正半径极小源、轴上BZ与不可表示算术失败。"
     ],
     "tests": [
       "tests/pleiades/geometry/test_geometry_fields.py",
-      "tests/pleiades/geometry/test_source_d2_regressions.py"
+      "tests/pleiades/geometry/test_source_d2_regressions.py",
+      "tests/operator_contracts/test_pleiades_field_green_correction.py"
     ],
     "evidence_ceiling": "Named fixtures and declared API behavior only; no complete scientific correctness or interchangeability claim.",
     "known_limitations": [
-      "Irregular legacy reflected-block mismatch is preserved and not rebound.",
-      "Extreme-scale behavior and finite-wire physics are unqualified.",
-      "Human approval and release readiness are not established."
+      "理想丝的精确活动自点发散并拒绝；其他矩阵入口各自声明离散零自点。",
+      "有限导体内部自场、材料磁导率与全连续域误差界未建立。",
+      "独立科学计算和安装任务不构成人工批准或发行批准。"
     ]
   }
 }

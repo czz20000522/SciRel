@@ -28,7 +28,7 @@ def catalog(tmp_path, release_examples):
         catalog_id="scirel-development-pilot",
         release_version=CATALOG_TEST_VERSION,
         coverage_status="partial",
-        declared_total=len(list(EXAMPLES.glob("*.json"))) + 1,
+        declared_total=len(list(release_examples.glob("*.json"))) + 1,
     )
     return output, result["root_digest"]
 
