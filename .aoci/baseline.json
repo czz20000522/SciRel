@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-13T06:38:25Z",
+  "updated_at": "2026-10-13T07:10:20Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -59,9 +59,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "31aba7744965931389bbc0d284a92de8808086fa2ae7aef516d03122c717a0c9",
-      "size": 413090,
-      "normalized_sha256": "31aba7744965931389bbc0d284a92de8808086fa2ae7aef516d03122c717a0c9"
+      "sha256": "f3bb8b4d6ebca0743ef39cf78c529baf2f20f29b353b3b5523b18fde4644c261",
+      "size": 415717,
+      "normalized_sha256": "f3bb8b4d6ebca0743ef39cf78c529baf2f20f29b353b3b5523b18fde4644c261"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -3749,9 +3749,9 @@
     },
     "docs/searchable-documentation.md": {
       "role": "index",
-      "sha256": "a09cbfafd700d6ee16d17ee12f9708334ca01c2945306015843300e0b4ca8c7f",
-      "size": 4146,
-      "normalized_sha256": "a09cbfafd700d6ee16d17ee12f9708334ca01c2945306015843300e0b4ca8c7f"
+      "sha256": "53f3f8103c87e42afe517a650a77e1b8aff68ee0629c26d7a694d1c8c581e51b",
+      "size": 6001,
+      "normalized_sha256": "53f3f8103c87e42afe517a650a77e1b8aff68ee0629c26d7a694d1c8c581e51b"
     },
     "examples/README.md": {
       "role": "index",
@@ -4163,9 +4163,9 @@
     },
     "scripts/scirel_docs.py": {
       "role": "index",
-      "sha256": "98b4cc0b78991a7766331201cf552fc91e336062bbd398e87f55838241c20d02",
-      "size": 10070,
-      "normalized_sha256": "98b4cc0b78991a7766331201cf552fc91e336062bbd398e87f55838241c20d02"
+      "sha256": "b76c6ba4244dbb5c9f08c9aa839bdbc72326618c19fe1724b7582e4e24eda0e7",
+      "size": 13567,
+      "normalized_sha256": "b76c6ba4244dbb5c9f08c9aa839bdbc72326618c19fe1724b7582e4e24eda0e7"
     },
     "scripts/select_affected_tests.py": {
       "role": "index",
@@ -7373,9 +7373,9 @@
     },
     "tests/test_scirel_docs.py": {
       "role": "index",
-      "sha256": "7f516be89b38897711d154c09d37cb4c6d65ef2a5447062ae89e801303831f90",
-      "size": 3777,
-      "normalized_sha256": "7f516be89b38897711d154c09d37cb4c6d65ef2a5447062ae89e801303831f90"
+      "sha256": "b5ab09a398162b68f924d76b0384413e3dc6925d762f145a035a7363526f2034",
+      "size": 5748,
+      "normalized_sha256": "b5ab09a398162b68f924d76b0384413e3dc6925d762f145a035a7363526f2034"
     },
     "tests/test_spark_codex.py": {
       "role": "index",
@@ -7437,11 +7437,65 @@
       "size": 45605,
       "normalized_sha256": "6c85d5b39dec10f2f8819e243cc13927fca1b8a7b2b2f8b75ee7af2c040b3bc4"
     },
+    "tools/docs/chapter.html": {
+      "role": "index",
+      "sha256": "ac3241f800cb85cab952d62d06f8e295c7eb708f3c451b084d85bcf26c6e7e55",
+      "size": 9194,
+      "normalized_sha256": "ac3241f800cb85cab952d62d06f8e295c7eb708f3c451b084d85bcf26c6e7e55"
+    },
     "tools/docs/index.html": {
       "role": "index",
-      "sha256": "d9245fb533beda738c87209b92f509fc7fcebe19a6faea2002371db83de7a18b",
-      "size": 10958,
-      "normalized_sha256": "d9245fb533beda738c87209b92f509fc7fcebe19a6faea2002371db83de7a18b"
+      "sha256": "4cb48e32360b86a546ac0fa9ff9dff5935314f2cfed5aa5e1cdf50c2734ef96d",
+      "size": 10973,
+      "normalized_sha256": "4cb48e32360b86a546ac0fa9ff9dff5935314f2cfed5aa5e1cdf50c2734ef96d"
+    },
+    "tools/docs/magnetostatics/chapter.json": {
+      "role": "index",
+      "sha256": "d47b39469b3ffb3dbe50ebd1130c901b5437ec6fd75f88b2d4fb6e97c7bd15b7",
+      "size": 7179,
+      "normalized_sha256": "d47b39469b3ffb3dbe50ebd1130c901b5437ec6fd75f88b2d4fb6e97c7bd15b7"
+    },
+    "tools/docs/magnetostatics/example.py": {
+      "role": "index",
+      "sha256": "feae9bb16913bcd304baa2e34b0d7d7f4ec9f65c06a04bf3d83492ab375257dc",
+      "size": 4230,
+      "normalized_sha256": "feae9bb16913bcd304baa2e34b0d7d7f4ec9f65c06a04bf3d83492ab375257dc"
+    },
+    "tools/docs/magnetostatics/execution.json": {
+      "role": "index",
+      "sha256": "34798c6831361f9ceb3fca2eabf25137e92aa68163281e8df4ebd5ea98ed88b6",
+      "size": 2365,
+      "normalized_sha256": "34798c6831361f9ceb3fca2eabf25137e92aa68163281e8df4ebd5ea98ed88b6"
+    },
+    "tools/docs/magnetostatics/pair.svg": {
+      "role": "index",
+      "sha256": "e53f5c7a40783070a5b9cbf089c4625f99ff87b680742a960b6bb120c7c2160c",
+      "size": 34232,
+      "normalized_sha256": "e53f5c7a40783070a5b9cbf089c4625f99ff87b680742a960b6bb120c7c2160c"
+    },
+    "tools/docs/magnetostatics/plot.py": {
+      "role": "index",
+      "sha256": "d37a3c76b7107bb573fe7900b0c3ac59583801026af219c868d991de1a5bbb78",
+      "size": 2020,
+      "normalized_sha256": "d37a3c76b7107bb573fe7900b0c3ac59583801026af219c868d991de1a5bbb78"
+    },
+    "tools/docs/magnetostatics/rectangle.svg": {
+      "role": "index",
+      "sha256": "abc751e8537da48c25885e129d6b882be9547c88a0ec372764e50dce9c67b27e",
+      "size": 107284,
+      "normalized_sha256": "abc751e8537da48c25885e129d6b882be9547c88a0ec372764e50dce9c67b27e"
+    },
+    "tools/docs/magnetostatics/results.json": {
+      "role": "index",
+      "sha256": "1843dc5b7c200a47193da2b3e4066d5f4a2bb4f3dca0ec5aa1f1b2ce3ad6a704",
+      "size": 194684,
+      "normalized_sha256": "1843dc5b7c200a47193da2b3e4066d5f4a2bb4f3dca0ec5aa1f1b2ce3ad6a704"
+    },
+    "tools/docs/magnetostatics/single.svg": {
+      "role": "index",
+      "sha256": "5f0d34ed3addaba7d0aa57df5cbb99f65e1d31d8dc283da4f929cbe1a6081955",
+      "size": 20444,
+      "normalized_sha256": "5f0d34ed3addaba7d0aa57df5cbb99f65e1d31d8dc283da4f929cbe1a6081955"
     }
   },
   "managed_scope": {
