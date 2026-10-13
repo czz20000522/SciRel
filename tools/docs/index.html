@@ -1,10 +1,39 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SciRel · 科学关系手册</title>
 <style>
-:root{--ink:#19332f;--muted:#62716c;--line:#dce5df;--green:#136954;--paper:#fafbf8}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.65 system-ui,-apple-system,sans-serif}header{padding:24px 5%;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:#fff}header strong{font-size:24px;letter-spacing:-1px}header span{color:var(--muted);margin-left:16px}a{color:var(--green)}.hero{padding:38px 5% 24px;max-width:1250px;margin:auto}.eyebrow{font-size:12px;letter-spacing:2px;color:var(--green)}h1{font-size:34px;letter-spacing:-1px;margin:8px 0}h2{font-size:24px;line-height:1.35;margin:12px 0}h3{font-size:17px;margin:28px 0 10px}.muted{color:var(--muted)}.notice{border-left:3px solid #c6984a;background:#f8f2e7;padding:12px 18px;font-size:13px}.toolbar{display:flex;gap:10px;margin:22px 0 12px;flex-wrap:wrap}input,select,button{font:inherit;border:1px solid #bdcfc3;border-radius:7px;padding:10px;background:white;color:var(--ink)}input{flex:1;min-width:220px}button{cursor:pointer}button:hover,button:focus-visible{border-color:var(--green);background:#eaf3ed}button:disabled{opacity:.4;cursor:default}.layout{display:grid;grid-template-columns:360px minmax(0,1fr);gap:28px;max-width:1250px;margin:auto;padding:0 5% 50px}.results{display:flex;flex-direction:column;gap:10px}.card{text-align:left;padding:16px;border:1px solid var(--line);border-radius:9px;display:block;width:100%}.card.active{border-color:var(--green);box-shadow:inset 3px 0 var(--green)}.card strong{display:block;font-size:16px}.card small{display:block;color:var(--muted);margin-top:5px;overflow-wrap:anywhere}.badge{font-size:11px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:.5px}.detail{min-width:0;padding:26px 30px;background:#fff;border:1px solid var(--line);border-radius:12px;align-self:start;overflow-wrap:anywhere}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#eff4ef;padding:16px;border-radius:7px;font-size:12px;line-height:1.7}code{font:12px/1.6 ui-monospace,monospace}table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;vertical-align:top;border-bottom:1px solid var(--line);padding:9px 7px}th{color:var(--muted);font-weight:500}.scroll{overflow-x:auto}.pair{margin:12px 0}.pair b{display:block;font-size:13px;color:var(--muted)}ul{padding-left:20px}.pager{display:flex;justify-content:space-between;margin:16px 0}.empty{padding:30px;border:1px dashed var(--line);color:var(--muted)}details{margin:14px 0}summary{cursor:pointer;color:var(--green)}footer{font-size:12px;padding:20px 5%;border-top:1px solid var(--line);color:var(--muted)}@media(max-width:850px){.layout{grid-template-columns:1fr}.detail{padding:20px}.hero{padding-top:24px}h1{font-size:28px}header span{display:none}.results{max-height:400px;overflow:auto}}
+:root{color-scheme:light;--ink:#000;--muted:#000;--line:#ddd;--paper:#fff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.65 system-ui,-apple-system,sans-serif}
+header{padding:18px 5%;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px}
+header strong{font-size:22px}header span{margin-left:16px}
+a{color:inherit;text-underline-offset:3px}
+.hero{padding:24px 5% 20px;max-width:1250px;margin:auto}
+.eyebrow{font-size:12px}h1{font-size:28px;margin:8px 0}h2{font-size:24px;line-height:1.35;margin:12px 0}h3{font-size:17px;margin:28px 0 10px}
+.notice{border-left:2px solid #000;padding:8px 14px;font-size:13px}
+.toolbar{display:flex;gap:10px;margin:20px 0 12px;flex-wrap:wrap}
+input,select,button{font:inherit;border:1px solid #999;border-radius:0;padding:10px;background:#fff;color:#000}
+input{flex:1;min-width:220px}input::placeholder{color:#555;opacity:1}button{cursor:pointer}
+button:hover{border-color:#000;background:#f5f5f5}
+:focus-visible{outline:2px solid #000;outline-offset:3px}
+button:disabled{color:#666;border-color:#ddd;cursor:default;background:#fff}
+.layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:28px;max-width:1250px;margin:auto;padding:0 5% 50px}
+.results{display:flex;flex-direction:column;gap:8px}
+.card{text-align:left;padding:14px;border:1px solid var(--line);display:block;width:100%}
+.card.active{border-color:#000;border-left:4px solid #000;padding-left:11px}
+.card strong{display:block;font-size:16px}.card small{display:block;margin-top:5px;overflow-wrap:anywhere}
+.badge{font-size:11px;font-weight:600}
+.detail{min-width:0;padding:0 0 0 28px;border-left:1px solid var(--line);align-self:start;overflow-wrap:anywhere}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#fff;border:1px solid var(--line);padding:16px;font-size:12px;line-height:1.7}
+code{font:12px/1.6 ui-monospace,monospace}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;vertical-align:top;border-bottom:1px solid var(--line);padding:9px 7px}th{font-weight:600}
+.scroll{overflow-x:auto}.pair{margin:12px 0}.pair b{display:block;font-size:13px}ul{padding-left:20px}
+.pager{display:flex;justify-content:space-between;margin:16px 0}.empty{padding:30px;border:1px dashed var(--line)}
+details{margin:14px 0}summary{cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+footer{font-size:12px;padding:20px 5%;border-top:1px solid var(--line);overflow-wrap:anywhere}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.detail{padding:20px 0 0;border-left:0;border-top:1px solid var(--line)}.hero{padding-top:20px}h1{font-size:26px}header span{display:none}.results{max-height:400px;overflow:auto}}
 </style></head><body>
-<header><div><strong>SciRel<span style="color:#136954"> / </span></strong><span>Scientific Relations Library</span></div><a href="/api" target="_blank" rel="noopener">Agent 查询接口 ↗</a></header>
-<section class="hero"><div class="eyebrow">SCIENTIFIC REFERENCE · 开发文档</div><h1>找到关系，理解边界，再调用。</h1><p class="muted">按科学问题、中文名称、API 或来源检索。每条记录给出输入输出、适用条件、失败行为和可运行示例。</p><div class="notice" id="notice">正在核对文档快照…</div>
+<header><div><strong>SciRel</strong><span>Scientific Relations Library</span></div><a href="/api" target="_blank" rel="noopener">Agent 查询接口 ↗</a></header>
+<section class="hero"><div class="eyebrow">SCIENTIFIC REFERENCE · 开发文档</div><h1>科学关系手册</h1><p class="muted">按科学问题、中文名称、API 或来源检索。每条记录给出输入输出、适用条件、失败行为和可运行示例。</p><div class="notice" id="notice">正在核对文档快照…</div>
 <form class="toolbar" id="search"><input id="q" aria-label="搜索科学关系" placeholder="搜索：Pleiades、磁场、pressure、API 名称…"><select id="kind" aria-label="资产类型"><option value="">所有类型</option><option value="operator">算子</option><option value="task_graph">组合任务图</option></select><select id="domain" aria-label="科学领域"><option value="">所有领域</option></select><button>搜索</button></form><div id="count" class="muted" role="status" aria-live="polite"></div></section>
 <main class="layout"><aside><div class="results" id="results"></div><div class="pager"><button id="prev">← 上一页</button><button id="next">下一页 →</button></div></aside><article class="detail" id="detail"><h2>如何使用本手册</h2><p>先检索所需科学关系，查看它是否适用于你的模型、单位与边界条件，再读取示例与完整调用签名。</p><p>例如搜索 <button id="pleiades">Pleiades</button>，查看已收录的磁场、平衡与动理学关系。</p><h3>给 Agent 的同一份文档</h3><p>先查询摘要，再按资产 ID 读取完整合同与依赖。HTTP 和 CLI 返回同一快照标识；接口只查询文档。</p><pre>GET /api/search?q=Pleiades&amp;limit=10
 GET /api/asset?id=scirel.field.current-green-superposition</pre><p class="muted">每条文档保留其自身版本。验证与许可限制展示在详情中，文档快照不替代安装包资格证明。</p></article></main><footer id="binding"></footer>
