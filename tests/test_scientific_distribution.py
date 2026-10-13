@@ -56,7 +56,8 @@ def test_built_scientific_wheel_excludes_project_tool_packages(tmp_path):
          'import sys; sys.path.insert(0, sys.argv[1]); import scirel; '
          'assert scirel.__file__.startswith(sys.argv[1]); '
          'assert not any(n.startswith("scirel.") for n in sys.modules); '
-         'assert "numpy" not in sys.modules', str(installed)],
+         'assert "numpy" not in sys.modules; '
+         'assert not hasattr(scirel, "solve_multi_coil_vacuum_field")', str(installed)],
         cwd=tmp_path, capture_output=True, text=True,
     )
     assert checked.returncode == 0, checked.stdout + checked.stderr

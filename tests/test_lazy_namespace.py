@@ -28,16 +28,23 @@ else:
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_domain_and_compatibility_alias_refer_to_the_same_callable():
+def test_scientific_functions_are_exposed_only_within_their_domain():
     result = subprocess.run(
         [sys.executable, '-I', '-c', '''
 import sys
 sys.path.insert(0, sys.argv[1])
 import scirel
-from scirel import field, poloidal_field_from_flux
+from scirel import field
 from scirel.field.poloidal_field_from_flux import poloidal_field_from_flux as direct
-assert field.poloidal_field_from_flux is poloidal_field_from_flux is direct
-assert scirel.poloidal_field_from_flux is direct
+assert field.poloidal_field_from_flux is direct
+assert not hasattr(scirel, "poloidal_field_from_flux")
+assert "poloidal_field_from_flux" not in dir(scirel)
+try:
+    from scirel import poloidal_field_from_flux
+except ImportError:
+    pass
+else:
+    raise AssertionError("scientific functions belong in their domain subpackage")
 assert "scirel.kinetic" not in sys.modules
 assert "scirel.inference" not in sys.modules
 assert "matplotlib" not in sys.modules

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import ast
-from collections import Counter
 import hashlib
 from importlib.util import resolve_name
 import json
@@ -397,11 +396,6 @@ def _reviewed_initializers(
         packages.update(".".join(parts[:index]) for index in range(1, len(parts) + 1))
 
     initializers = {}
-    root_exports = [item for values in exports.values() for item in values]
-    root_counts = Counter(symbol for _, symbol in root_exports)
-    unique_root_exports = sorted(
-        (module, symbol) for module, symbol in root_exports if root_counts[symbol] == 1
-    )
     for package in sorted(packages):
         members = sorted(exports.get(package, []))
         public_children = sorted(
@@ -414,14 +408,7 @@ def _reviewed_initializers(
             f"from .{module.removeprefix(package + '.')} import {symbol}"
             for module, symbol in members
         )
-        if package == "scirel":
-            lines.extend(
-                f"from .{module.removeprefix('scirel.')} import {symbol}"
-                for module, symbol in unique_root_exports
-            )
         names = [*public_children, *(symbol for _, symbol in members)]
-        if package == "scirel":
-            names.extend(symbol for _, symbol in unique_root_exports)
         if len(names) != len(set(names)):
             raise ValueError(f"reviewed package exports duplicate a name: {package}")
         lines.append(f"__all__ = {sorted(names)!r}")

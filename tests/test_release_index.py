@@ -1325,6 +1325,26 @@ def test_first_reviewed_distribution_builds_only_the_selected_asset(tmp_path, mo
         "scirel/field/__init__.py",
         "scirel/field/circular_filament_green.py",
     }
+    installed = tmp_path / "installed"
+    subprocess.run(
+        [sys.executable, "-m", "pip", "install", "--no-deps", "--no-index",
+         "--target", str(installed), str(wheel)],
+        capture_output=True, text=True, check=True,
+    )
+    checked = subprocess.run(
+        [sys.executable, "-I", "-c", '''
+import sys
+sys.path.insert(0, sys.argv[1])
+import scirel
+from scirel.field import circular_filament_green_response
+assert scirel.__file__.startswith(sys.argv[1])
+assert scirel.__all__ == ["field"]
+assert not hasattr(scirel, "circular_filament_green_response")
+assert callable(circular_filament_green_response)
+''', str(installed)],
+        cwd=tmp_path, capture_output=True, text=True,
+    )
+    assert checked.returncode == 0, checked.stdout + checked.stderr
     catalog = tmp_path / "built-catalog"
     build_catalog(
         staging / "documents", catalog, catalog_id="test-reviewed-subset",

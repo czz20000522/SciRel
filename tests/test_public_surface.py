@@ -188,56 +188,47 @@ def test_torax_algebra_grid_exports_keep_domain_callables():
 def test_root_namespace_supports_normal_python_imports():
     namespace = {}
     exec('from scirel import *', namespace)
-    assert all(callable(namespace[name]) for name in scirel.__all__ if not hasattr(scirel, name) or not hasattr(getattr(scirel, name), '__path__'))
+    from types import ModuleType
+
+    assert all(isinstance(namespace[name], ModuleType) for name in scirel.__all__)
+    assert "poloidal_field_from_flux" not in namespace
 
 
-def test_plasma_dispersion_is_exported_from_both_public_namespaces():
-    assert scirel.evaluate_plasma_dispersion is evaluate_plasma_dispersion
+def test_plasma_dispersion_is_exported_from_the_kinetic_domain():
     assert scirel.kinetic.evaluate_plasma_dispersion is evaluate_plasma_dispersion
-    assert "evaluate_plasma_dispersion" in scirel.__all__
     assert "evaluate_plasma_dispersion" in scirel.kinetic.__all__
 
 
-def test_bessel_gamma_is_exported_from_both_public_namespaces():
-    assert scirel.evaluate_bessel_gamma is evaluate_bessel_gamma
+def test_bessel_gamma_is_exported_from_the_kinetic_domain():
     assert scirel.kinetic.evaluate_bessel_gamma is evaluate_bessel_gamma
-    assert "evaluate_bessel_gamma" in scirel.__all__
     assert "evaluate_bessel_gamma" in scirel.kinetic.__all__
 
 
-def test_kinetic_dispersion_sum_is_exported_from_both_public_namespaces():
-    assert scirel.evaluate_kinetic_dispersion_sum is evaluate_kinetic_dispersion_sum
+def test_kinetic_dispersion_sum_is_exported_from_the_kinetic_domain():
     assert scirel.kinetic.evaluate_kinetic_dispersion_sum is evaluate_kinetic_dispersion_sum
-    assert "evaluate_kinetic_dispersion_sum" in scirel.__all__
     assert "evaluate_kinetic_dispersion_sum" in scirel.kinetic.__all__
 
 
-def test_species_equilibrium_scales_is_exported_from_both_public_namespaces():
-    assert scirel.derive_species_equilibrium_scales is derive_species_equilibrium_scales
+def test_species_equilibrium_scales_is_exported_from_the_kinetic_domain():
     assert scirel.kinetic.derive_species_equilibrium_scales is derive_species_equilibrium_scales
-    assert "derive_species_equilibrium_scales" in scirel.__all__
     assert "derive_species_equilibrium_scales" in scirel.kinetic.__all__
 
 
-def test_neutral_scale_and_density_are_exported_from_both_public_namespaces():
+def test_neutral_scale_and_density_are_exported_from_the_kinetic_domain():
     for name, function in (
         ("compute_thermal_speed_m_s", compute_thermal_speed_m_s),
         ("reduce_generation_density", reduce_generation_density),
     ):
-        assert getattr(scirel, name) is function
         assert getattr(scirel.kinetic, name) is function
-        assert name in scirel.__all__
         assert name in scirel.kinetic.__all__
 
 
-def test_neutral_normalizations_are_exported_from_both_public_namespaces():
+def test_neutral_normalizations_are_exported_from_the_kinetic_domain():
     for name, function in (
         ("normalize_incoming_neutral_boundary", normalize_incoming_neutral_boundary),
         ("normalize_spatial_source_shape", normalize_spatial_source_shape),
     ):
-        assert getattr(scirel, name) is function
         assert getattr(scirel.kinetic, name) is function
-        assert name in scirel.__all__
         assert name in scirel.kinetic.__all__
 
 
