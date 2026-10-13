@@ -25,7 +25,9 @@
       "figure": "single.svg",
       "caption": "图 1　圆环的轴上磁场。实线为数值计算，圆点为独立轴上公式；二者在本图尺度下重合。",
       "result_key": "single",
-      "interpretation": "中心处磁场最大，沿轴线向两侧对称衰减。轴上公式提供了不依赖椭圆积分实现的交叉检查；这个检查只覆盖本例的轴上点，不等于验证了所有几何与所有观测位置。"
+      "interpretation": "中心处磁场最大，沿轴线向两侧对称衰减。轴上公式提供了不依赖椭圆积分实现的交叉检查；这个检查只覆盖本例的轴上点，不等于验证了所有几何与所有观测位置。",
+      "formula_mathml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><mrow><msub><mi>B</mi><mi>z</mi></msub><mo>(</mo><mn>0</mn><mo>,</mo><mi>z</mi><mo>)</mo><mo>=</mo><mfrac><mrow><msub><mi>μ</mi><mn>0</mn></msub><mi>I</mi><msup><mi>a</mi><mn>2</mn></msup></mrow><mrow><mn>2</mn><msup><mrow><mo>(</mo><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>z</mi><mn>2</mn></msup><mo>)</mo></mrow><mfrac><mn>3</mn><mn>2</mn></mfrac></msup></mrow></mfrac></mrow></math>",
+      "formula_note": "a 为圆环半径，z 为相对圆环中心的轴向距离。本实现采用 μ₀ = 4π × 10⁻⁷ H/m。"
     },
     {
       "id": "pair",
@@ -37,7 +39,9 @@
       "figure": "pair.svg",
       "caption": "图 2　左：各自按中心值归一化，比较单环与同向线圈对的轴向均匀程度。右：反向通电时中心磁场为零，轴线两侧符号相反。",
       "result_key": "pair",
-      "interpretation": "同向线圈对在中心提供非零磁场，且中心附近的相对变化更小。反向电流使中心轴向磁场相消，但离开中心后一般不为零。不能把“中心为零”解释为整个空间没有磁场。"
+      "interpretation": "同向线圈对在中心提供非零磁场，且中心附近的相对变化更小。反向电流使中心轴向磁场相消，但离开中心后一般不为零。不能把“中心为零”解释为整个空间没有磁场。",
+      "formula_mathml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><mrow><msub><mi>B</mi><mi>z</mi></msub><mo>(</mo><mn>0</mn><mo>,</mo><mn>0</mn><mo>)</mo><mo>=</mo><msup><mrow><mo>(</mo><mfrac><mn>4</mn><mn>5</mn></mfrac><mo>)</mo></mrow><mfrac><mn>3</mn><mn>2</mn></mfrac></msup><mfrac><mrow><msub><mi>μ</mi><mn>0</mn></msub><mi>I</mi></mrow><mi>a</mi></mfrac></mrow></math>",
+      "formula_note": "两圆环半径和间距均为 a，每环同向通入电流 I。中心轴向二阶导数为零，使中心附近的轴向曲线更平坦。"
     },
     {
       "id": "rectangle",

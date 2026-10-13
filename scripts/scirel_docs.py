@@ -90,6 +90,7 @@ def build(documents: Path, output: Path):
         index.append(summary)
     files['index.json'] = encode(index)
     files['index.html'] = (ROOT / 'tools/docs/index.html').read_bytes()
+    files['static/presentation.js'] = (ROOT / 'tools/docs/presentation.js').read_bytes()
     files.update(chapter_files({d['asset_id'] for d in docs}))
     manifest = {'schema': SCHEMA, 'source_commit': source, 'source_dirty': dirty,
                 'asset_count': len(docs), 'notice': NOTICE,
@@ -210,6 +211,8 @@ def server(docs, port):
                     data, content_type = docs.read('chapter.html'), 'text/html; charset=utf-8'
                 elif self.path == '/reference':
                     data, content_type = docs.read('index.html'), 'text/html; charset=utf-8'
+                elif self.path == '/static/presentation.js':
+                    data, content_type = docs.read('static/presentation.js'), 'text/javascript; charset=utf-8'
                 elif self.path.startswith('/chapters/') and self.path[1:] in docs.manifest['files']:
                     suffix = Path(self.path).suffix
                     content_type = {'.svg': 'image/svg+xml', '.json': 'application/json; charset=utf-8', '.py': 'text/plain; charset=utf-8'}[suffix]

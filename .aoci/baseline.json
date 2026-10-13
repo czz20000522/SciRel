@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-13T07:10:20Z",
+  "updated_at": "2026-10-13T07:52:26Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -59,9 +59,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "f3bb8b4d6ebca0743ef39cf78c529baf2f20f29b353b3b5523b18fde4644c261",
-      "size": 415717,
-      "normalized_sha256": "f3bb8b4d6ebca0743ef39cf78c529baf2f20f29b353b3b5523b18fde4644c261"
+      "sha256": "e8fff9534c0018794aa43f4bd014358ddbcd1ba4a890ef9b082bbf51f9be5bb9",
+      "size": 416042,
+      "normalized_sha256": "e8fff9534c0018794aa43f4bd014358ddbcd1ba4a890ef9b082bbf51f9be5bb9"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -3707,9 +3707,9 @@
     },
     "docs/requirements/scirel-workflow.md": {
       "role": "index",
-      "sha256": "8505f5dfbc756ca8ac0702e8e79e1b7eb53b8c51e45f2b6b55dd52f5362d9daf",
-      "size": 22107,
-      "normalized_sha256": "8505f5dfbc756ca8ac0702e8e79e1b7eb53b8c51e45f2b6b55dd52f5362d9daf"
+      "sha256": "b82db90383bc9df89f6790cb26de0ce6ab048563712d7710c9928fae920a1989",
+      "size": 23841,
+      "normalized_sha256": "b82db90383bc9df89f6790cb26de0ce6ab048563712d7710c9928fae920a1989"
     },
     "docs/requirements/thin-mcp-adapter.md": {
       "role": "index",
@@ -3749,9 +3749,9 @@
     },
     "docs/searchable-documentation.md": {
       "role": "index",
-      "sha256": "53f3f8103c87e42afe517a650a77e1b8aff68ee0629c26d7a694d1c8c581e51b",
-      "size": 6001,
-      "normalized_sha256": "53f3f8103c87e42afe517a650a77e1b8aff68ee0629c26d7a694d1c8c581e51b"
+      "sha256": "68f19c08c5dea1154b3c0c628c5299751736ee722d4abdfc306bdc4adc9c32b2",
+      "size": 8197,
+      "normalized_sha256": "68f19c08c5dea1154b3c0c628c5299751736ee722d4abdfc306bdc4adc9c32b2"
     },
     "examples/README.md": {
       "role": "index",
@@ -4163,9 +4163,9 @@
     },
     "scripts/scirel_docs.py": {
       "role": "index",
-      "sha256": "b76c6ba4244dbb5c9f08c9aa839bdbc72326618c19fe1724b7582e4e24eda0e7",
-      "size": 13567,
-      "normalized_sha256": "b76c6ba4244dbb5c9f08c9aa839bdbc72326618c19fe1724b7582e4e24eda0e7"
+      "sha256": "cf774a40167819a92f51bd1a0ad6664a5cf3ee7bb0a01fa492131b8310f21b2e",
+      "size": 13828,
+      "normalized_sha256": "cf774a40167819a92f51bd1a0ad6664a5cf3ee7bb0a01fa492131b8310f21b2e"
     },
     "scripts/select_affected_tests.py": {
       "role": "index",
@@ -7439,21 +7439,21 @@
     },
     "tools/docs/chapter.html": {
       "role": "index",
-      "sha256": "ac3241f800cb85cab952d62d06f8e295c7eb708f3c451b084d85bcf26c6e7e55",
-      "size": 9194,
-      "normalized_sha256": "ac3241f800cb85cab952d62d06f8e295c7eb708f3c451b084d85bcf26c6e7e55"
+      "sha256": "e74e77fb4f97f0c0e399428b6bf89531b4ce4cbd5d8c44336f0ff70a8fea6d0d",
+      "size": 9961,
+      "normalized_sha256": "e74e77fb4f97f0c0e399428b6bf89531b4ce4cbd5d8c44336f0ff70a8fea6d0d"
     },
     "tools/docs/index.html": {
       "role": "index",
-      "sha256": "4cb48e32360b86a546ac0fa9ff9dff5935314f2cfed5aa5e1cdf50c2734ef96d",
-      "size": 10973,
-      "normalized_sha256": "4cb48e32360b86a546ac0fa9ff9dff5935314f2cfed5aa5e1cdf50c2734ef96d"
+      "sha256": "955d5706be5d75cebcf753eac066ec70261b81ae39fb55ddc4dcc9e4e8cb3200",
+      "size": 11572,
+      "normalized_sha256": "955d5706be5d75cebcf753eac066ec70261b81ae39fb55ddc4dcc9e4e8cb3200"
     },
     "tools/docs/magnetostatics/chapter.json": {
       "role": "index",
-      "sha256": "d47b39469b3ffb3dbe50ebd1130c901b5437ec6fd75f88b2d4fb6e97c7bd15b7",
-      "size": 7179,
-      "normalized_sha256": "d47b39469b3ffb3dbe50ebd1130c901b5437ec6fd75f88b2d4fb6e97c7bd15b7"
+      "sha256": "7d28a1a9472861ca338c1a82eab826625e83315aad94f9860e4e19b4cc72734a",
+      "size": 8380,
+      "normalized_sha256": "7d28a1a9472861ca338c1a82eab826625e83315aad94f9860e4e19b4cc72734a"
     },
     "tools/docs/magnetostatics/example.py": {
       "role": "index",
@@ -7496,6 +7496,12 @@
       "sha256": "5f0d34ed3addaba7d0aa57df5cbb99f65e1d31d8dc283da4f929cbe1a6081955",
       "size": 20444,
       "normalized_sha256": "5f0d34ed3addaba7d0aa57df5cbb99f65e1d31d8dc283da4f929cbe1a6081955"
+    },
+    "tools/docs/presentation.js": {
+      "role": "index",
+      "sha256": "e8c9530a3b7c3de3404c8dd74b200948da2981ceed37b0d5fda77ad5eda313ce",
+      "size": 2066,
+      "normalized_sha256": "e8c9530a3b7c3de3404c8dd74b200948da2981ceed37b0d5fda77ad5eda313ce"
     }
   },
   "managed_scope": {
