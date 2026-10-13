@@ -1,8 +1,26 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-12T11:38:40Z",
+  "updated_at": "2026-10-13T06:08:06Z",
   "files": {
+    ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
+      "role": "index",
+      "sha256": "cec76a010a980c447a250c15bcb8499aec46d98422f76c70f9b1d83b8a0dcf91",
+      "size": 1228,
+      "normalized_sha256": "cec76a010a980c447a250c15bcb8499aec46d98422f76c70f9b1d83b8a0dcf91"
+    },
+    ".agents/state/notion-work-management/outbox/20261012-pleiades-anisotropy-correction.json": {
+      "role": "index",
+      "sha256": "76612a69198a321f416a1184ad528df0887416845a4c6047ca983ad90b8f7c6d",
+      "size": 1770,
+      "normalized_sha256": "76612a69198a321f416a1184ad528df0887416845a4c6047ca983ad90b8f7c6d"
+    },
+    ".agents/state/notion-work-management/outbox/20261013-scirel-main-baseline.json": {
+      "role": "index",
+      "sha256": "23e5ce85f0724507469c0dfef2cc517c06db64800b9e70538b60b755cf2b012d",
+      "size": 1290,
+      "normalized_sha256": "23e5ce85f0724507469c0dfef2cc517c06db64800b9e70538b60b755cf2b012d"
+    },
     ".codex/config.toml": {
       "role": "index",
       "sha256": "f38941a81691e471c98c2af30e3af2f59f34b7f74df76f19c9631a30894b889c",
@@ -17,9 +35,9 @@
     },
     ".gitignore": {
       "role": "index",
-      "sha256": "99cb4d4c893697191fad05a1435eda74826f48e798d133ec42a235da7af43bde",
-      "size": 272,
-      "normalized_sha256": "99cb4d4c893697191fad05a1435eda74826f48e798d133ec42a235da7af43bde"
+      "sha256": "938be04249156850ec98272898100b60109c3c317d13c7e15c42c1418acec4e2",
+      "size": 384,
+      "normalized_sha256": "938be04249156850ec98272898100b60109c3c317d13c7e15c42c1418acec4e2"
     },
     "AGENTS.md": {
       "role": "index",
@@ -35,15 +53,15 @@
     },
     "README.md": {
       "role": "index",
-      "sha256": "67be427fada131012eaa39f3491407c391171fb9afa1be4267ef016e0bd6c385",
-      "size": 18649,
-      "normalized_sha256": "67be427fada131012eaa39f3491407c391171fb9afa1be4267ef016e0bd6c385"
+      "sha256": "e6ee830c1c251872336c20874f3a340536a6da7e8c9ac5436749c388d0c53dbd",
+      "size": 18966,
+      "normalized_sha256": "e6ee830c1c251872336c20874f3a340536a6da7e8c9ac5436749c388d0c53dbd"
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "ac29778e6037d74b0731bdeb6eaa5bdba955d6563018fd065541f6aa67fb904e",
-      "size": 411129,
-      "normalized_sha256": "ac29778e6037d74b0731bdeb6eaa5bdba955d6563018fd065541f6aa67fb904e"
+      "sha256": "3cc6accb688ff82100b8bf5cf1e59485e58a12642124cfd328dd9a765727f83c",
+      "size": 413036,
+      "normalized_sha256": "3cc6accb688ff82100b8bf5cf1e59485e58a12642124cfd328dd9a765727f83c"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -3729,6 +3747,12 @@
       "size": 1465,
       "normalized_sha256": "801828bbaf93343849ef9bd75ea8d95f3675e3c63d53f98d84f30e1d5f9db26c"
     },
+    "docs/searchable-documentation.md": {
+      "role": "index",
+      "sha256": "7ecf5379f74a10492f7507dbec1a12184daa99c4e7b76224629b10758826007e",
+      "size": 4056,
+      "normalized_sha256": "7ecf5379f74a10492f7507dbec1a12184daa99c4e7b76224629b10758826007e"
+    },
     "examples/README.md": {
       "role": "index",
       "sha256": "92f2b34b0cb6c8728d5efccbf515a40e0902352e8c59d3d41015fbb1b1811a79",
@@ -4136,6 +4160,12 @@
       "sha256": "038276693dd5b27aa0ec8bd39be0bb8a31484f594aa4324fbe45756e3c39c608",
       "size": 1694,
       "normalized_sha256": "038276693dd5b27aa0ec8bd39be0bb8a31484f594aa4324fbe45756e3c39c608"
+    },
+    "scripts/scirel_docs.py": {
+      "role": "index",
+      "sha256": "98b4cc0b78991a7766331201cf552fc91e336062bbd398e87f55838241c20d02",
+      "size": 10070,
+      "normalized_sha256": "98b4cc0b78991a7766331201cf552fc91e336062bbd398e87f55838241c20d02"
     },
     "scripts/select_affected_tests.py": {
       "role": "index",
@@ -6905,9 +6935,9 @@
     },
     "tests/operator_contracts/test_pointwise_firehose_margin.py": {
       "role": "index",
-      "sha256": "9f006f6a609ba43ed9a5b3bef654e5c18d4d68fdf1300f60ac53c3a7fae4ae8f",
-      "size": 5545,
-      "normalized_sha256": "9f006f6a609ba43ed9a5b3bef654e5c18d4d68fdf1300f60ac53c3a7fae4ae8f"
+      "sha256": "99bf2d805207193222f00ecb75d2e3af4b0f86112c18cf96e9a4d96fb7e5815d",
+      "size": 5575,
+      "normalized_sha256": "99bf2d805207193222f00ecb75d2e3af4b0f86112c18cf96e9a4d96fb7e5815d"
     },
     "tests/operator_contracts/test_poloidal_field_from_flux.py": {
       "role": "index",
@@ -6929,9 +6959,9 @@
     },
     "tests/operator_contracts/test_quasineutral_potential.py": {
       "role": "index",
-      "sha256": "5ad01d8da53fb8bad7a885fb733c5539de891be17a38dca975b1c3ff25853185",
-      "size": 7109,
-      "normalized_sha256": "5ad01d8da53fb8bad7a885fb733c5539de891be17a38dca975b1c3ff25853185"
+      "sha256": "48a2e52826176e7a2fe210ea9174d2d9d0dbe86e500b76d02e16bd0867e6be94",
+      "size": 7114,
+      "normalized_sha256": "48a2e52826176e7a2fe210ea9174d2d9d0dbe86e500b76d02e16bd0867e6be94"
     },
     "tests/operator_contracts/test_quasineutral_reference_density.py": {
       "role": "index",
@@ -6953,9 +6983,9 @@
     },
     "tests/operator_contracts/test_relativistic_maxwellian_bessel.py": {
       "role": "index",
-      "sha256": "aa7f181740d114fcf4eb94a9181dac7308b39c83ee59d46f54048ba15a3b18b7",
-      "size": 14513,
-      "normalized_sha256": "aa7f181740d114fcf4eb94a9181dac7308b39c83ee59d46f54048ba15a3b18b7"
+      "sha256": "4c8b39b1d3f2170cbb9e2b1fcda0063543732baa6cc6d4b640bbce6b965ccf73",
+      "size": 14698,
+      "normalized_sha256": "4c8b39b1d3f2170cbb9e2b1fcda0063543732baa6cc6d4b640bbce6b965ccf73"
     },
     "tests/operator_contracts/test_shifted_maxwellian_seed.py": {
       "role": "index",
@@ -7341,6 +7371,12 @@
       "size": 4050,
       "normalized_sha256": "67c18c0d822937cbab58fb31731f6dfbaf78d2af716663b756d6a17723452876"
     },
+    "tests/test_scirel_docs.py": {
+      "role": "index",
+      "sha256": "7f516be89b38897711d154c09d37cb4c6d65ef2a5447062ae89e801303831f90",
+      "size": 3777,
+      "normalized_sha256": "7f516be89b38897711d154c09d37cb4c6d65ef2a5447062ae89e801303831f90"
+    },
     "tests/test_spark_codex.py": {
       "role": "index",
       "sha256": "846517b35ae4255496b93eebce69129701a90507c415cb84930263ff6e4f5b5c",
@@ -7400,6 +7436,12 @@
       "sha256": "6c85d5b39dec10f2f8819e243cc13927fca1b8a7b2b2f8b75ee7af2c040b3bc4",
       "size": 45605,
       "normalized_sha256": "6c85d5b39dec10f2f8819e243cc13927fca1b8a7b2b2f8b75ee7af2c040b3bc4"
+    },
+    "tools/docs/index.html": {
+      "role": "index",
+      "sha256": "0a974fba999faea74b540bb1766454af123755e42061c05309f07e98f1fd047f",
+      "size": 11133,
+      "normalized_sha256": "0a974fba999faea74b540bb1766454af123755e42061c05309f07e98f1fd047f"
     }
   },
   "managed_scope": {

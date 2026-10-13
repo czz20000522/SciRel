@@ -118,7 +118,7 @@ assert result["B"][0, 0] == 5.0
 - `provenance/`：来源关系和审核状态，不参与运行时加载。
 - `docs/architecture.md`：Operator、TaskGraph、公共接口、科学身份和目录投影的权威边界。
 - `docs/catalog.md`：面向数万 Operator、数千 TaskGraph 的分片目录和渐进检索合同。
-- `contracts/` 与 `catalog/examples/`：标准资产/catalog Schema，以及依赖闭合的 132/132 开发 pilot。
+- `contracts/` 与 `catalog/examples/`：标准资产/catalog Schema，以及当前开发资产的正式文档集合。
 - `docs/development-process.md`：首次/增量整合、验证分层和发行候选流程。
 - `docs/design/project-and-distribution.md`：开发项目、用户科学包、历史样本和隔离分支/worktree 的构建边界。
 - `docs/requirements/scirel-workflow.md` 与 `docs/design/scirel-workflow.md`：L1 到 release 的领域需求和设计。
@@ -132,11 +132,12 @@ assert result["B"][0, 0] == 5.0
 项目文档入口见 [`docs/README.md`](docs/README.md)，贡献与兼容要求见
 [`CONTRIBUTING.md`](CONTRIBUTING.md)。
 
-标准化资产文档是 framework-neutral catalog 的唯一科学输入。当前 pilot 可执行验证与构建：
+标准化资产文档是 framework-neutral catalog 与 HTML 手册的唯一科学输入。当前 133 条记录包含多个实现版本，先验证结构与依赖，再构建开发文档快照：
 
 ```powershell
-python scripts/validate_asset_documents.py catalog/examples --check-runtime --execute-examples
-python scripts/build_catalog.py catalog/examples --output-dir build/catalog/<new-run> --catalog-id scirel-development-pilot --release-version 0.1.0.dev5 --coverage-status complete --declared-total 132
+python scripts/validate_asset_documents.py catalog/examples
+python scripts/scirel_docs.py build --output .runtime/docs-snapshot-001
+python scripts/scirel_docs.py serve --snapshot .runtime/docs-snapshot-001
 ```
 
 L1 workflow 的小型 fixture 使用 `tests/fixtures/l1/pleiades-minimal.json`，只验证 candidate、draft、审核和 release artifact 的确定性关联。真实保存目录或 ZIP 使用 SciRel 自己的转换入口生成内容寻址的 UTF-8 bundle；它保留每个文件的路径、原始字节和摘要，随后由 `scirel.import_l1` 映射 Operator/TaskGraph，不代替模型完成真实科学整合：
@@ -205,8 +206,7 @@ SciRel 源码或公共基线变更会 fail closed 到全套测试。`focused` �
 干净离线 wheelhouse 重装全部依赖，也不证明同目录的其他包不可见。正式发行门禁仍需固定依赖 wheelhouse。
 安装后的测试不得依赖 editable 安装或把 src 放进 PYTHONPATH。上面的版本号随 pyproject.toml 更新，不是永久发行版本。
 
-当前 catalog 是 `complete: 132/132` 文档覆盖的开发 pilot，不表示专家批准；发行目录另由实际获批子集构建，
-其 `complete` 只指所选发布内容的文档覆盖。合成审核 fixture 的闭环测试不代表真实批准。正式首发前必须让可见发布基线获得
+当前文档集合是多版本开发记录，不代表一个完整可安装发行包。单版本 catalog 仍须从确切同版本、依赖闭合的所选文档构建；其 `complete` 只指所选内容的文档覆盖，不表示专家批准。合成审核 fixture 的闭环测试不代表真实批准。正式首发前必须让可见发布基线获得
 对应的批量/逐项专家批准并补齐 exact documents，同时把开发期 `.dev` workflow 合同统一冻结为 `v1`。
 
 项目尚未声明独立分发许可证，保留来源对应关系；正式分发前需确认输入资产与项目许可证选择。
