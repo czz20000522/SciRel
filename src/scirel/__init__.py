@@ -1,121 +1,133 @@
-"""Scientific Relations Library (SciRel) runtime."""
+"""Scientific Relations Library, with scientific domains loaded on demand.
 
-from . import closures
-from . import collisions
-from . import diagnostics
-from . import dielectric
-from . import equilibrium
-from . import field
-from . import fusion
-from . import geometry
-from . import inference
-from . import kinetic
-from .kinetic.frank_egedal_pressure_state import assemble_frank_egedal_pressure
-from .kinetic.frank_egedal_radial_envelope import evaluate_frank_egedal_radial_envelope
-from .kinetic.frank_egedal_source_projection import project_frank_egedal_source_modes
-from .kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
-from .closures.hall_two_fluid_pressure import close_hall_two_fluid_pressure
-from .diagnostics.picard_flux_residual import compute_picard_flux_residual
-from .closures.quasineutral_reference_density import compute_reference_electron_density
-from .closures.quasineutral_potential import solve_quasineutral_potential
-from .equilibrium.isotropic_picard_step import pressure_flux_picard_step
-from .equilibrium.pressure_flux_state import build_pressure_flux_state
-from .kinetic.mirror_invariant_distribution import evaluate_mirror_invariant_distribution
-from .kinetic.mirror_total_pressure import assemble_mirror_total_pressure
-from .kinetic.mirror_constrained_moments import evaluate_mirror_constrained_moments
-from .equilibrium.anisotropic_picard_feedback import update_anisotropic_picard_flux
-from .equilibrium.anisotropic_toroidal_current import compute_anisotropic_toroidal_current
-from .inference.latin_hypercube_sampling import sample_latin_hypercube
-from .inference.anisotropic_parameter_optimization import optimize_anisotropic_parameters
-from .diagnostics.observation_residuals import reduce_observation_residuals
-from .diagnostics.parallel_pressure_residual import compute_parallel_pressure_residual
-from .kinetic.loss_cone_spectrum import solve_loss_cone_spectrum
-from .kinetic.plasma_dispersion import evaluate_plasma_dispersion
-from .kinetic.cauchy_transform import evaluate_cauchy_transform
-from .kinetic.maxwellian_electrostatic import evaluate_maxwellian_electrostatic, solve_maxwellian_electrostatic_mode
-from .kinetic.bessel_gamma import evaluate_bessel_gamma
-from .kinetic.kinetic_dispersion_sum_n import evaluate_kinetic_dispersion_sum
-from .kinetic.species_equilibrium_scales import derive_species_equilibrium_scales
-from .kinetic.thermal_speed_scale import compute_thermal_speed_m_s
-from .kinetic.hydrogen_saha_equilibrium_population import evaluate_h_saha_equilibrium_population
-from .kinetic.generation_density_reduction import reduce_generation_density
-from .kinetic.incoming_boundary_flux_normalization import normalize_incoming_neutral_boundary
-from .kinetic.spatial_source_shape_normalization import normalize_spatial_source_shape
-from .kinetic.cylindrical_velocity_quadrature import make_cylindrical_velocity_quadrature
-from .kinetic.shifted_maxwellian_seed import build_shifted_maxwellian_seed
-from .kinetic.axisymmetric_neutral_moments import reduce_axisymmetric_neutral_moments
-from .kinetic.adaptive_neutral_velocity_mesh import create_adaptive_neutral_velocity_mesh
-from .kinetic.cross_mesh_scalar_interpolation import interpolate_scalar_across_mesh
-from .kinetic.cross_mesh_distribution_interpolation import interp_distribution_across_mesh
-from .kinetic.upwind_transport_coefficients import assemble_neutral_upwind_transport_coefficients
-from .kinetic.neutral_generation_propagation import propagate_neutral_generation
-from .kinetic.neutral_boltzmann_rhs import assemble_neutral_boltzmann_rhs
-from .kinetic.neutral_generation_stopping import evaluate_neutral_generation_stopping
-from .kinetic.generation_accumulation_update import update_neutral_generation_accumulation
-from .kinetic.outer_seed_convergence import evaluate_neutral_outer_seed_convergence
-from .kinetic.kn1d_outer_convergence import evaluate_kn1d_outer_convergence
-from .field.poloidal_field_magnitude import compute_poloidal_field_magnitude
-from .field.permanent_ring_filaments import discretize_permanent_ring
-from .diagnostics.firehose_mirror_margins import compute_firehose_mirror_margins
-from .diagnostics.pointwise_firehose_margin import compute_pointwise_firehose_margin
-from .field.ideal_conductor_boundary import correct_ideal_conductor_boundary_flux
-from .closures.boltzmann_quasineutrality import compute_boltzmann_electron_state
-from .field.rectangular_coil_filaments import discretize_rectangular_coil
-from .closures.tabulated_pressure_closure import evaluate_tabulated_pressure
-from .field.current_green_superposition import superpose_current_green_field
-from .geometry.bilinear_grid_sampling import sample_rectilinear_field
-from .geometry.flux_surface_profile import evaluate_flux_surface_profile
-from .equilibrium.axisymmetric_picard_update import update_axisymmetric_picard_flux
-from .geometry.flux_surface_inverse_field_average import compute_flux_surface_inverse_field_average
-from .geometry.axisymmetric_grid_mapping import map_axisymmetric_equilibrium_to_cartesian_grid
-from .geometry.material_support import classify_material_support
-from .geometry.axisymmetric_equilibrium_grid_support import solve_axisymmetric_equilibrium_grid_mapping
-from .geometry.complex_rectilinear_interpolation import interpolate_complex_rectilinear_field
-from .diagnostics.species_absorption_fraction import compute_species_absorption_fraction
-from .closures.reduced_hall_drift import close_reduced_hall_drift
-from .equilibrium.anisotropic_force_balance import compute_anisotropic_force_balance
-from .field.filament_vacuum_field import integrate_filament_vacuum_field
-from .field.circular_filament_green import circular_filament_green_response
-from .field.poloidal_field_from_flux import poloidal_field_from_flux
-from .field.dense_axisymmetric_green import dense_axisymmetric_green_response
-from .field.mirror_plasma_green import build_mirror_plasma_flux_green
-from .closures.mirror_ambipolar_potential import solve_mirror_ambipolar_potential
-from .equilibrium.free_boundary_anisotropic_picard import solve_free_boundary_anisotropic_picard
-from .equilibrium.isotropic_pressure_flux import solve_isotropic_pressure_flux
-from .diagnostics.equilibrium_synthesis_diagnostics import synthesize_equilibrium_diagnostics
-from .closures.mirror_quasineutral_closure import solve_mirror_quasineutral_closure
-from .kinetic.grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
-from .equilibrium.axisymmetric_anisotropic_picard import solve_axisymmetric_anisotropic_picard
-from .inference.direct_anisotropic_inversion import solve_direct_anisotropic_inversion
-from .inference.anisotropic_trial_evaluation import evaluate_anisotropic_trial
-from .equilibrium.reduced_hall_anisotropic_picard import solve_reduced_hall_anisotropic_picard
-from .equilibrium.kinetic_mirror_hall_equilibrium import solve_kinetic_mirror_hall_equilibrium
-from .field.multi_coil_vacuum_field import solve_multi_coil_vacuum_field
-from .kinetic.frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure
-from .collisions.relativistic_maxwellian_bessel import (
-    BesselBackendEvaluationError,
-    InvalidBesselArgumentError,
-    relativistic_maxwellian_bessel,
-)
-from .collisions.momentum_scales import normalized_momentum, thermal_electron_momentum
-from .collisions.maxwellian_relative_speed_rate_average import average_cross_section_over_maxwellian
-from .fusion.dd_neutron_lab_energy import calculate_dd_neutron_lab_energy_kev
-from .dielectric.cold_plasma_tensor import (
-    ColdPlasmaOverflowError,
-    ColdPlasmaResonanceError,
-    cold_plasma_dielectric_tensor,
-)
+Prefer domain imports, for example ``from scirel import field``. Existing
+top-level function aliases remain available for compatibility. Importing
+``scirel`` alone does not import scientific backends.
+"""
 
-__all__ = ['closures', 'collisions', 'diagnostics', 'dielectric', 'equilibrium', 'field', 'fusion', 'geometry', 'inference', 'kinetic', 'assemble_frank_egedal_pressure', 'evaluate_frank_egedal_radial_envelope', 'project_frank_egedal_source_modes', 'evaluate_frank_egedal_hot_ion_moments', 'close_hall_two_fluid_pressure', 'compute_picard_flux_residual', 'compute_reference_electron_density', 'solve_quasineutral_potential', 'pressure_flux_picard_step', 'build_pressure_flux_state', 'evaluate_mirror_invariant_distribution', 'assemble_mirror_total_pressure', 'evaluate_mirror_constrained_moments', 'update_anisotropic_picard_flux', 'compute_anisotropic_toroidal_current', 'sample_latin_hypercube', 'optimize_anisotropic_parameters', 'evaluate_anisotropic_trial', 'reduce_observation_residuals', 'compute_parallel_pressure_residual', 'solve_loss_cone_spectrum', 'evaluate_plasma_dispersion', 'evaluate_bessel_gamma', 'evaluate_kinetic_dispersion_sum', 'derive_species_equilibrium_scales', 'compute_thermal_speed_m_s', 'reduce_generation_density', 'compute_poloidal_field_magnitude', 'discretize_permanent_ring', 'compute_firehose_mirror_margins', 'correct_ideal_conductor_boundary_flux', 'compute_boltzmann_electron_state', 'discretize_rectangular_coil', 'evaluate_tabulated_pressure', 'superpose_current_green_field', 'sample_rectilinear_field', 'evaluate_flux_surface_profile', 'update_axisymmetric_picard_flux', 'compute_flux_surface_inverse_field_average', 'map_axisymmetric_equilibrium_to_cartesian_grid', 'classify_material_support', 'solve_axisymmetric_equilibrium_grid_mapping', 'interpolate_complex_rectilinear_field', 'compute_species_absorption_fraction', 'close_reduced_hall_drift', 'compute_anisotropic_force_balance', 'integrate_filament_vacuum_field', 'circular_filament_green_response', 'poloidal_field_from_flux', 'dense_axisymmetric_green_response', 'build_mirror_plasma_flux_green', 'solve_mirror_ambipolar_potential', 'solve_free_boundary_anisotropic_picard', 'solve_isotropic_pressure_flux', 'synthesize_equilibrium_diagnostics', 'solve_mirror_quasineutral_closure', 'solve_grid_mirror_kinetic_closure', 'solve_axisymmetric_anisotropic_picard', 'solve_direct_anisotropic_inversion', 'solve_reduced_hall_anisotropic_picard', 'solve_kinetic_mirror_hall_equilibrium', 'solve_multi_coil_vacuum_field', 'solve_frank_egedal_pressure_closure', 'BesselBackendEvaluationError', 'InvalidBesselArgumentError', 'relativistic_maxwellian_bessel', 'normalized_momentum', 'thermal_electron_momentum', 'calculate_dd_neutron_lab_energy_kev', 'ColdPlasmaOverflowError', 'ColdPlasmaResonanceError', 'cold_plasma_dielectric_tensor']
-__all__.extend(['normalize_incoming_neutral_boundary', 'normalize_spatial_source_shape'])
-__all__.extend(['make_cylindrical_velocity_quadrature', 'average_cross_section_over_maxwellian'])
-__all__.append('build_shifted_maxwellian_seed')
-__all__.append('reduce_axisymmetric_neutral_moments')
-__all__.append('create_adaptive_neutral_velocity_mesh')
-__all__.append('interpolate_scalar_across_mesh')
-__all__.append('interp_distribution_across_mesh')
-__all__.extend(['assemble_neutral_upwind_transport_coefficients', 'propagate_neutral_generation', 'assemble_neutral_boltzmann_rhs'])
-__all__.extend(['evaluate_neutral_generation_stopping', 'update_neutral_generation_accumulation', 'evaluate_neutral_outer_seed_convergence', 'evaluate_kn1d_outer_convergence'])
-__all__.append('compute_pointwise_firehose_margin')
-__all__.append('evaluate_h_saha_equilibrium_population')
-__all__.extend(['evaluate_cauchy_transform', 'evaluate_maxwellian_electrostatic', 'solve_maxwellian_electrostatic_mode'])
+from importlib import import_module as _import_module
+
+# Explicit bindings keep discovery independent of scientific imports.
+_EXPORTS = {
+    'closures': ('.closures', None),
+    'collisions': ('.collisions', None),
+    'diagnostics': ('.diagnostics', None),
+    'dielectric': ('.dielectric', None),
+    'equilibrium': ('.equilibrium', None),
+    'field': ('.field', None),
+    'fusion': ('.fusion', None),
+    'geometry': ('.geometry', None),
+    'inference': ('.inference', None),
+    'kinetic': ('.kinetic', None),
+    'assemble_frank_egedal_pressure': ('.kinetic.frank_egedal_pressure_state', 'assemble_frank_egedal_pressure'),
+    'evaluate_frank_egedal_radial_envelope': ('.kinetic.frank_egedal_radial_envelope', 'evaluate_frank_egedal_radial_envelope'),
+    'project_frank_egedal_source_modes': ('.kinetic.frank_egedal_source_projection', 'project_frank_egedal_source_modes'),
+    'evaluate_frank_egedal_hot_ion_moments': ('.kinetic.frank_egedal_hot_ion_moments', 'evaluate_frank_egedal_hot_ion_moments'),
+    'close_hall_two_fluid_pressure': ('.closures.hall_two_fluid_pressure', 'close_hall_two_fluid_pressure'),
+    'compute_picard_flux_residual': ('.diagnostics.picard_flux_residual', 'compute_picard_flux_residual'),
+    'compute_reference_electron_density': ('.closures.quasineutral_reference_density', 'compute_reference_electron_density'),
+    'solve_quasineutral_potential': ('.closures.quasineutral_potential', 'solve_quasineutral_potential'),
+    'pressure_flux_picard_step': ('.equilibrium.isotropic_picard_step', 'pressure_flux_picard_step'),
+    'build_pressure_flux_state': ('.equilibrium.pressure_flux_state', 'build_pressure_flux_state'),
+    'evaluate_mirror_invariant_distribution': ('.kinetic.mirror_invariant_distribution', 'evaluate_mirror_invariant_distribution'),
+    'assemble_mirror_total_pressure': ('.kinetic.mirror_total_pressure', 'assemble_mirror_total_pressure'),
+    'evaluate_mirror_constrained_moments': ('.kinetic.mirror_constrained_moments', 'evaluate_mirror_constrained_moments'),
+    'update_anisotropic_picard_flux': ('.equilibrium.anisotropic_picard_feedback', 'update_anisotropic_picard_flux'),
+    'compute_anisotropic_toroidal_current': ('.equilibrium.anisotropic_toroidal_current', 'compute_anisotropic_toroidal_current'),
+    'sample_latin_hypercube': ('.inference.latin_hypercube_sampling', 'sample_latin_hypercube'),
+    'optimize_anisotropic_parameters': ('.inference.anisotropic_parameter_optimization', 'optimize_anisotropic_parameters'),
+    'evaluate_anisotropic_trial': ('.inference.anisotropic_trial_evaluation', 'evaluate_anisotropic_trial'),
+    'reduce_observation_residuals': ('.diagnostics.observation_residuals', 'reduce_observation_residuals'),
+    'compute_parallel_pressure_residual': ('.diagnostics.parallel_pressure_residual', 'compute_parallel_pressure_residual'),
+    'solve_loss_cone_spectrum': ('.kinetic.loss_cone_spectrum', 'solve_loss_cone_spectrum'),
+    'evaluate_plasma_dispersion': ('.kinetic.plasma_dispersion', 'evaluate_plasma_dispersion'),
+    'evaluate_bessel_gamma': ('.kinetic.bessel_gamma', 'evaluate_bessel_gamma'),
+    'evaluate_kinetic_dispersion_sum': ('.kinetic.kinetic_dispersion_sum_n', 'evaluate_kinetic_dispersion_sum'),
+    'derive_species_equilibrium_scales': ('.kinetic.species_equilibrium_scales', 'derive_species_equilibrium_scales'),
+    'compute_thermal_speed_m_s': ('.kinetic.thermal_speed_scale', 'compute_thermal_speed_m_s'),
+    'reduce_generation_density': ('.kinetic.generation_density_reduction', 'reduce_generation_density'),
+    'compute_poloidal_field_magnitude': ('.field.poloidal_field_magnitude', 'compute_poloidal_field_magnitude'),
+    'discretize_permanent_ring': ('.field.permanent_ring_filaments', 'discretize_permanent_ring'),
+    'compute_firehose_mirror_margins': ('.diagnostics.firehose_mirror_margins', 'compute_firehose_mirror_margins'),
+    'correct_ideal_conductor_boundary_flux': ('.field.ideal_conductor_boundary', 'correct_ideal_conductor_boundary_flux'),
+    'compute_boltzmann_electron_state': ('.closures.boltzmann_quasineutrality', 'compute_boltzmann_electron_state'),
+    'discretize_rectangular_coil': ('.field.rectangular_coil_filaments', 'discretize_rectangular_coil'),
+    'evaluate_tabulated_pressure': ('.closures.tabulated_pressure_closure', 'evaluate_tabulated_pressure'),
+    'superpose_current_green_field': ('.field.current_green_superposition', 'superpose_current_green_field'),
+    'sample_rectilinear_field': ('.geometry.bilinear_grid_sampling', 'sample_rectilinear_field'),
+    'evaluate_flux_surface_profile': ('.geometry.flux_surface_profile', 'evaluate_flux_surface_profile'),
+    'update_axisymmetric_picard_flux': ('.equilibrium.axisymmetric_picard_update', 'update_axisymmetric_picard_flux'),
+    'compute_flux_surface_inverse_field_average': ('.geometry.flux_surface_inverse_field_average', 'compute_flux_surface_inverse_field_average'),
+    'map_axisymmetric_equilibrium_to_cartesian_grid': ('.geometry.axisymmetric_grid_mapping', 'map_axisymmetric_equilibrium_to_cartesian_grid'),
+    'classify_material_support': ('.geometry.material_support', 'classify_material_support'),
+    'solve_axisymmetric_equilibrium_grid_mapping': ('.geometry.axisymmetric_equilibrium_grid_support', 'solve_axisymmetric_equilibrium_grid_mapping'),
+    'interpolate_complex_rectilinear_field': ('.geometry.complex_rectilinear_interpolation', 'interpolate_complex_rectilinear_field'),
+    'compute_species_absorption_fraction': ('.diagnostics.species_absorption_fraction', 'compute_species_absorption_fraction'),
+    'close_reduced_hall_drift': ('.closures.reduced_hall_drift', 'close_reduced_hall_drift'),
+    'compute_anisotropic_force_balance': ('.equilibrium.anisotropic_force_balance', 'compute_anisotropic_force_balance'),
+    'integrate_filament_vacuum_field': ('.field.filament_vacuum_field', 'integrate_filament_vacuum_field'),
+    'circular_filament_green_response': ('.field.circular_filament_green', 'circular_filament_green_response'),
+    'poloidal_field_from_flux': ('.field.poloidal_field_from_flux', 'poloidal_field_from_flux'),
+    'dense_axisymmetric_green_response': ('.field.dense_axisymmetric_green', 'dense_axisymmetric_green_response'),
+    'build_mirror_plasma_flux_green': ('.field.mirror_plasma_green', 'build_mirror_plasma_flux_green'),
+    'solve_mirror_ambipolar_potential': ('.closures.mirror_ambipolar_potential', 'solve_mirror_ambipolar_potential'),
+    'solve_free_boundary_anisotropic_picard': ('.equilibrium.free_boundary_anisotropic_picard', 'solve_free_boundary_anisotropic_picard'),
+    'solve_isotropic_pressure_flux': ('.equilibrium.isotropic_pressure_flux', 'solve_isotropic_pressure_flux'),
+    'synthesize_equilibrium_diagnostics': ('.diagnostics.equilibrium_synthesis_diagnostics', 'synthesize_equilibrium_diagnostics'),
+    'solve_mirror_quasineutral_closure': ('.closures.mirror_quasineutral_closure', 'solve_mirror_quasineutral_closure'),
+    'solve_grid_mirror_kinetic_closure': ('.kinetic.grid_mirror_kinetic_closure', 'solve_grid_mirror_kinetic_closure'),
+    'solve_axisymmetric_anisotropic_picard': ('.equilibrium.axisymmetric_anisotropic_picard', 'solve_axisymmetric_anisotropic_picard'),
+    'solve_direct_anisotropic_inversion': ('.inference.direct_anisotropic_inversion', 'solve_direct_anisotropic_inversion'),
+    'solve_reduced_hall_anisotropic_picard': ('.equilibrium.reduced_hall_anisotropic_picard', 'solve_reduced_hall_anisotropic_picard'),
+    'solve_kinetic_mirror_hall_equilibrium': ('.equilibrium.kinetic_mirror_hall_equilibrium', 'solve_kinetic_mirror_hall_equilibrium'),
+    'solve_multi_coil_vacuum_field': ('.field.multi_coil_vacuum_field', 'solve_multi_coil_vacuum_field'),
+    'solve_frank_egedal_pressure_closure': ('.kinetic.frank_egedal_pressure_closure', 'solve_frank_egedal_pressure_closure'),
+    'BesselBackendEvaluationError': ('.collisions.relativistic_maxwellian_bessel', 'BesselBackendEvaluationError'),
+    'InvalidBesselArgumentError': ('.collisions.relativistic_maxwellian_bessel', 'InvalidBesselArgumentError'),
+    'relativistic_maxwellian_bessel': ('.collisions.relativistic_maxwellian_bessel', 'relativistic_maxwellian_bessel'),
+    'normalized_momentum': ('.collisions.momentum_scales', 'normalized_momentum'),
+    'thermal_electron_momentum': ('.collisions.momentum_scales', 'thermal_electron_momentum'),
+    'calculate_dd_neutron_lab_energy_kev': ('.fusion.dd_neutron_lab_energy', 'calculate_dd_neutron_lab_energy_kev'),
+    'ColdPlasmaOverflowError': ('.dielectric.cold_plasma_tensor', 'ColdPlasmaOverflowError'),
+    'ColdPlasmaResonanceError': ('.dielectric.cold_plasma_tensor', 'ColdPlasmaResonanceError'),
+    'cold_plasma_dielectric_tensor': ('.dielectric.cold_plasma_tensor', 'cold_plasma_dielectric_tensor'),
+    'normalize_incoming_neutral_boundary': ('.kinetic.incoming_boundary_flux_normalization', 'normalize_incoming_neutral_boundary'),
+    'normalize_spatial_source_shape': ('.kinetic.spatial_source_shape_normalization', 'normalize_spatial_source_shape'),
+    'make_cylindrical_velocity_quadrature': ('.kinetic.cylindrical_velocity_quadrature', 'make_cylindrical_velocity_quadrature'),
+    'average_cross_section_over_maxwellian': ('.collisions.maxwellian_relative_speed_rate_average', 'average_cross_section_over_maxwellian'),
+    'build_shifted_maxwellian_seed': ('.kinetic.shifted_maxwellian_seed', 'build_shifted_maxwellian_seed'),
+    'reduce_axisymmetric_neutral_moments': ('.kinetic.axisymmetric_neutral_moments', 'reduce_axisymmetric_neutral_moments'),
+    'create_adaptive_neutral_velocity_mesh': ('.kinetic.adaptive_neutral_velocity_mesh', 'create_adaptive_neutral_velocity_mesh'),
+    'interpolate_scalar_across_mesh': ('.kinetic.cross_mesh_scalar_interpolation', 'interpolate_scalar_across_mesh'),
+    'interp_distribution_across_mesh': ('.kinetic.cross_mesh_distribution_interpolation', 'interp_distribution_across_mesh'),
+    'assemble_neutral_upwind_transport_coefficients': ('.kinetic.upwind_transport_coefficients', 'assemble_neutral_upwind_transport_coefficients'),
+    'propagate_neutral_generation': ('.kinetic.neutral_generation_propagation', 'propagate_neutral_generation'),
+    'assemble_neutral_boltzmann_rhs': ('.kinetic.neutral_boltzmann_rhs', 'assemble_neutral_boltzmann_rhs'),
+    'evaluate_neutral_generation_stopping': ('.kinetic.neutral_generation_stopping', 'evaluate_neutral_generation_stopping'),
+    'update_neutral_generation_accumulation': ('.kinetic.generation_accumulation_update', 'update_neutral_generation_accumulation'),
+    'evaluate_neutral_outer_seed_convergence': ('.kinetic.outer_seed_convergence', 'evaluate_neutral_outer_seed_convergence'),
+    'evaluate_kn1d_outer_convergence': ('.kinetic.kn1d_outer_convergence', 'evaluate_kn1d_outer_convergence'),
+    'compute_pointwise_firehose_margin': ('.diagnostics.pointwise_firehose_margin', 'compute_pointwise_firehose_margin'),
+    'evaluate_h_saha_equilibrium_population': ('.kinetic.hydrogen_saha_equilibrium_population', 'evaluate_h_saha_equilibrium_population'),
+    'evaluate_cauchy_transform': ('.kinetic.cauchy_transform', 'evaluate_cauchy_transform'),
+    'evaluate_maxwellian_electrostatic': ('.kinetic.maxwellian_electrostatic', 'evaluate_maxwellian_electrostatic'),
+    'solve_maxwellian_electrostatic_mode': ('.kinetic.maxwellian_electrostatic', 'solve_maxwellian_electrostatic_mode'),
+}
+
+__all__ = list(_EXPORTS)
+
+
+def __getattr__(name):
+    try:
+        module, symbol = _EXPORTS[name]
+    except KeyError:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from None
+    value = _import_module(module, __name__)
+    if symbol is not None:
+        value = getattr(value, symbol)
+    globals()[name] = value
+    return value
+
+
+def __dir__():
+    return sorted(set(globals()) | set(__all__))

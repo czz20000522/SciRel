@@ -36,3 +36,14 @@ copybutton_copy_empty_lines = True
 nitpicky = True
 rst_prolog = '.. role:: scirel-math(raw)\n   :format: html\n'
 exclude_patterns = []
+
+
+def reference_navigation(app, pagename, templatename, context, doctree):
+    # Keep scientific domains visible on overview and function pages alike.
+    # Functions live in summary tables; the right sidebar lists page topics.
+    if pagename.startswith('reference/'):
+        context['theme_navigation_depth'] = 1
+
+
+def setup(app):
+    app.connect('html-page-context', reference_navigation)

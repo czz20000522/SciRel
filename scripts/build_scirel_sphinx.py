@@ -125,6 +125,18 @@ def doclink(label, path):
     return ':doc:`' + label.replace('`', '') + ' <' + path + '>`'
 
 
+def function_table(records, translations):
+    """One linked callable and its bound Chinese purpose per row."""
+    out = '.. list-table::\n   :header-rows: 1\n   :widths: 40 60\n   :class: scirel-api-summary\n\n   * - 函数 / 复合入口\n     - 用途\n'
+    for doc in records:
+        label = doc['public_api']['python']['symbol']
+        purpose = plain(translations[doc['asset_id']]['summary'])
+        if doc['kind'] == 'task_graph':
+            purpose += ' **（复合入口）**'
+        out += '   * - ' + doclink(label, api_path(doc['asset_id'])) + '\n     - ' + purpose + '\n'
+    return out + '\n'
+
+
 def ports(doc, translated, side):
     out = ''
     for original, zh in zip(doc[side], translated[side], strict=True):
@@ -243,7 +255,7 @@ def render_site(root, docs, book, translations, chapter):
         write('getting-started', (root/'tools/docs/sphinx/getting-started.rst').read_text())
         write('agent', (root/'tools/docs/sphinx/agent.rst').read_text())
         write('user-guide/index', title('用户指南') + '用户指南解释科学问题、模型选择与组合方式。函数的完整参数、单位和失败行为见 API 参考。\n\n' + toctree([c['id'] for c in book['chapters']]) + title('完整计算案例','-') + toctree(['/tutorials/magnetostatics']))
-        write('reference/index', title('API 参考') + '按科学领域查阅函数与复合入口。每个函数页提供中文说明、精确调用签名、输入输出、适用范围与示例；来源项目不作为分类。\n\n' + toctree([c['id'] for c in book['chapters']]))
+        write('reference/index', title('API 参考') + '按科学领域查阅函数与复合入口。选择左侧领域，在正文中按问题浏览函数及用途，点击函数名查看参数、返回值、适用范围与示例。\n\n' + toctree([c['id'] for c in book['chapters']], maxdepth=1))
         for c in book['chapters']:
             write('user-guide/'+c['id'], title(c['title']) + c['introduction'] + '\n\n' + toctree(['topics/'+t['id'] for t in c['topics']]))
             ref = title(c['title']) + c['introduction'] + '\n\n'
@@ -251,10 +263,8 @@ def render_site(root, docs, book, translations, chapter):
                 records = [by_id[a] for a in topic['assets']]
                 intro = title(topic['title']) + topic['introduction'] + '\n\n'
                 intro += title('选择计算入口','-')
-                intro += '.. list-table::\n   :header-rows: 1\n   :widths: 40 60\n\n   * - 计算入口\n     - 解决的问题\n'
-                for d in records:
-                    intro += '   * - ' + doclink(d['public_api']['python']['symbol'], api_path(d['asset_id'])) + '\n     - ' + plain(translations[d['asset_id']]['summary']) + '\n'
-                intro += '\n' + title('模型与使用条件','-')
+                intro += function_table(records, translations)
+                intro += title('模型与使用条件','-')
                 for d in records:
                     z = translations[d['asset_id']]
                     intro += title(d['title']['zh'], '~') + plain(z['definition']) + '\n\n' + plain(z['boundary']) + '\n\n'
@@ -268,7 +278,8 @@ def render_site(root, docs, book, translations, chapter):
                     intro += title('计算案例','-') + doclink('轴对称线圈磁场：代码、实际结果与解释','/tutorials/magnetostatics') + '\n'
                 write('user-guide/topics/'+topic['id'], intro)
                 ref += title(topic['title'], '-') + topic['introduction'] + '\n\n'
-                ref += toctree(['generated/'+d['asset_id'] for d in records], maxdepth=1)
+                ref += function_table(records, translations)
+                ref += toctree(['generated/'+d['asset_id'] for d in records], hidden=True, maxdepth=1)
                 for d in records:
                     related_ids = [x['asset_id'] for x in records if x['asset_id'] != d['asset_id']]
                     for dependency in d['version'].get('dependencies', []):

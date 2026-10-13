@@ -172,11 +172,11 @@ scirel-plugin-registration.dev.json[FC5T]: F:示例SciRel技能包目录连接�
 
 ===/Users/tomczz/Projects/SciReL/docs/===
 README.md[SB7T]: F:导航SciRel需求设计整合发行与领域手册及其维护入口 | R:code:docs/architecture.md,code:docs/handbook-authoring.md,code:docs/catalog.md | A:维护者项目文档入口 | S:历史账本、pilot完整覆盖及本地fixture不代表来源资格、专家认可或真实宿主闭环
-architecture.md[SB7S]: F:定义科学关系算子图、运行实例、独立包及大规模发现边界 | R:code:docs/catalog.md,code:docs/requirements/asset-documentation.md | A:科学身份、DAG和显式有界反馈架构合同 | S:代码相似或少量相同样例不足证明科学等价；运行临时组合不会自动成为公共资产
+architecture.md[SB7S]: F:定义科学关系、组合图、领域子包、独立分发与渐进发现边界 | R:code:src/scirel/__init__.py,code:docs/catalog.md | A:科学身份、DAG与有界反馈、导入和公共API合同 | S:延迟导入不缩减wheel或取消依赖；代码相似不证明科学等价，运行临时组合不自动成为公共资产
 catalog.md[SB7S]: F:定义分片目录渐进检索、稳定身份、反向依赖及增量构建合同 | R:code:scripts/build_catalog.py,code:contracts/scientific-catalog-release.schema.json | A:route到summary到exact与依赖闭包发现流程 | S:分页预算耗尽不能宣称无能力；complete只文档计数覆盖，不授予批准
 development-process.md[SW7M]: F:规定D0准备、D1保真、D2修复整合、D3应用和审核发行接续 | R:code:docs/design/development-trust-versions.md,code:scripts/check.ps1 | A:先索引后清理、定向纠错与增量对齐、固定交付、修正后送审、affected验证 | S:可选复审未完不独立阻断D0；保留checkpoint与真实未审范围，已知缺陷仍须闭环；D2有据修复不逐项等批准
-searchable-documentation.md[SU7S]: F:说明中文Sphinx手册构建、离线浏览及同源Agent查询维护 | R:code:scripts/scirel_docs.py,code:scripts/build_scirel_sphinx.py | A:不可覆盖快照、HTTP和CLI、教程与参考、中文层 | S:网页分词检索与HTTP字面AND排序不同；多版本文档集不等于单一科学wheel
-handbook-authoring.md[SU7T]: F:规定领域手册组织、中文说明、完整教程与逐批维护方法 | R:code:tools/docs/handbook.json,code:docs/requirements/asset-documentation.md | A:主题归属、实际案例、版本绑定、更新步骤 | S:中文层须保留合同条款并绑定原摘要，不能仅换摘要；纯导航复用不变运行证据
+searchable-documentation.md[SU7T]: F:说明中文Sphinx手册构建、领域函数查询与同源Agent读取 | R:code:scripts/scirel_docs.py,code:scripts/build_scirel_sphinx.py | A:不可覆盖快照、HTTP和CLI、目录与公式代码呈现 | S:网页分词搜索与HTTP字面AND排序不同；多版本文档集合不等于单一科学wheel
+handbook-authoring.md[SU7T]: F:规定领域手册、中文合同投影、用途表与完整案例的持续维护 | R:code:tools/docs/handbook.json,code:docs/requirements/asset-documentation.md | A:主题归属、参考导航、实际案例与逐批维护 | S:中文层绑定原摘要且保留全部条款，不能仅换摘要；纯导航改动复用不变且有效的运行证据
 
 ===/Users/tomczz/Projects/SciReL/docs/design/===
 aoci-index-maintenance.md[SC7T]: F:规定按任务与工作树使用AOCI及稳定变更的增量维护 | R:code:AGENTS.md,code:docs/development-process.md | A:首建与纠错路由、增删改重命名、Scope与Budget终态 | S:首建不默认二次全量重审或多代理；局部任务不强制Overview；AOCI增量不等于catalog增量，BaseRef不含未提交改动
@@ -593,7 +593,7 @@ prepare_maintained_candidate.py[XV8S]: F:按精确选择profile生成全新独�
 build_gpdf_selected.py[XV6T]: F:按显式运行闭集和依赖声明构建GPDF动理学开发wheel | R:code:src/scirel/kinetic/cauchy_transform.py,code:src/scirel/kinetic/maxwellian_electrostatic.py | A:main;--notices | S:只复制三实现并生成两个最小初始化文件，须提供三份许可说明；输出目录须不存在，离线构建不授予发行权
 build_pleiades_selected.py[XV6S]: F:按精确Pleiades各向异性选择清单构建隔离wheel并核对源码、导入闭包和包元数据 | R:code:provenance/selections/pleiades-anisotropy-20261012.json,code:tests/pleiades | A:隔离暂存;源码摘要;wheel构建;RECORD和版本校验 | S:构建与安装证据不能替代科学资格、人审或发行决定
 scirel_docs.py[XU7M]: F:构建完整科学文档快照并提供中文阅读及原合同的只读查询 | R:code:scripts/build_scirel_sphinx.py,code:scripts/validate_asset_documents.py | A:build,query,serve,Documentation | S:正式JSON保留原字节；读文件逐项验摘要，静态路由仅开放清单成员；查询运行不依赖渲染库或科学包
-build_scirel_sphinx.py[XU7M]: F:校验摘要绑定中文层并从精确合同生成领域指南、函数参考与实际教程 | R:code:tools/docs/sphinx/conf.py,code:scripts/scirel_docs.py | A:load_translations,render_site,render_api,render_tutorial,plain | S:不导入科学模块或执行案例；中文漏项、摘要漂移和Sphinx警告阻断构建，显式行内公式离线转换
+build_scirel_sphinx.py[XU7M]: F:从精确合同及摘要绑定中文层生成领域用途表、函数参考和实际教程 | R:code:tools/docs/sphinx/conf.py,code:scripts/scirel_docs.py | A:load_translations,render_site,render_api,render_tutorial,function_table,plain | S:不导入科学模块或执行案例；中文漏项、摘要漂移与Sphinx警告阻断构建，隐藏目录保留函数层级
 
 ===/Users/tomczz/Projects/SciReL/skills/extraction/scientific-computation-asset-extraction/===
 SKILL.md[SW7S]: F:路由D0准备和冻结D0的D1保真抽取并统筹项目交付 | R:code:skills/extraction/scientific-computation-asset-extraction/references/material_access_and_preprocessing.md,code:skills/extraction/scientific-computation-asset-extraction/references/stage_boundary_contract.md | A:先索引后整理与维护、owner队列、source_fidelity专科及完整性复核 | S:首建不自动全量重审；D1不重裁D0或等同完整上游保真，正式文档在D2稳定后生成；worker须实际取得材料技能
@@ -802,7 +802,7 @@ openai.yaml[FW6T]: F:配置规范科学请求、选择授权资产、执行和�
 thin-adapter-run.md[SW6T]: F:给出显式选定适配器运行的SDK无关discover/read/invoke请求和可观察证据范式 | R:code:src/scirel_adapter/mcp.py | A:ThinMcpAdapter.handle、exact document items、operation响应记录 | S:catalog自身root读取不算独立pin；直接Python调用不证明adapter路径，Trace不dump原始数据或凭据
 
 ===/Users/tomczz/Projects/SciReL/src/scirel/===
-__init__.py[LB7S]: F:汇集科学领域模块与公开计算函数并接入三项GPDF接口 | R:code:src/scirel/kinetic/__init__.py,code:scripts/build_gpdf_selected.py | A:scirel公共函数;__all__ | S:顶层导入会加载现有领域模块；此广泛出口不等于所选wheel闭集，导出身份也不是科学批准
+__init__.py[LB7S]: F:按需解析科学领域与兼容函数导出并缓存原实现对象 | R:code:tests/test_lazy_namespace.py,code:tests/test_public_surface.py | A:__all__,__getattr__,__dir__ | S:根导入和dir不加载科学后端；星号导入仍解析全部导出，具体领域传递依赖与缺失依赖异常保持
 _composition.py[CB7T]: F:合并映射输入并为普通组合函数注入模块声明的依赖解析器 | R:code:src/scirel/closures/mirror_quasineutral_closure.py | A:compose | S:关键字覆盖位置映射；解析器拒绝未声明函数与不匹配的属性别名
 _validation.py[CB7T]: F:共享有限实数、整数和布尔输入校验并区分必填与默认合同 | R:code:src/scirel/closures/mirror_ambipolar_potential.py | A:required_finite_scalar,required_integer_scalar,finite_scalar,integer_scalar,bool_scalar | S:必填实数拒绝布尔值；默认实数校验允许None回落且不执行同样的布尔排除
 analysis.py[LA5T]: F:导出限定分析入口，复用实际坐标Green矩阵、弧长导数与中心差分。 | R:code:src/scirel/electromagnetism/greens.py;code:src/scirel/fieldline.py;code:src/scirel/numerics.py | A:get_gpsi;d_ds_arclength;diff_12_central;NumericalContractError | S:只转出底层合同，不为这些函数增加通用物理资格。
@@ -1026,7 +1026,7 @@ test_release_finalization.py[TV6M]: F:用单draft fixture检验人工批准内�
 test_release_index.py[TV7L]: F:覆盖候选与开发快照、消费恢复、宿主证据、退役生命周期和精确审核wheel发行门禁 | R:code:scripts/release_index.py,code:scripts/finalize_release.py | A:pytest | S:追加证据不改旧条目且维持未批准状态；伪轮子、错误源码/工件元组及缺审核支持实现都失败
 test_review_selection.py[TV6M]: F:检验双宿主快照选择与精确批准工件转换链、共享候选群体及篡改拒绝 | R:code:scripts/verify_review_selection.py | A:pytest | S:一致性证明不发行资产；允许未选择项前进但必须保留候选全 census 和相同已选当前版本
 test_reviewed_failure_semantics.py[TB6T]: F:保留科学审核发现的重复磁场节点、非有限导出压强、单侧真空和规定评估模式反例 | R:code:src/scirel/closures/mirror_ambipolar_potential.py | A:pytest | S:联合真空可收敛，单侧真空必须拒绝；evaluate模式可返回不平衡电流但converged为真
-test_scientific_distribution.py[TV7T]: F:实际构建开发wheel并核验所有科学源码包含且顶层内容限于scirel及分发元数据 | R:code:pyproject.toml | A:pytest | S:使用复制源码和隔离setuptools构建；工程、adapter与工作流包不能随科学wheel发行
+test_scientific_distribution.py[TV7T]: F:构建并离线安装开发wheel，验证科学源码覆盖与轻量根导入 | R:code:pyproject.toml,code:src/scirel/__init__.py | A:pytest实际wheel内容与无源码导入检查 | S:复制源码隔离构建后在临时安装目录关闭site验证；不等同科学计算验收或精确发行批准
 test_scientific_request_workflow_docs.py[TW5S]: F:约束科学请求文档与技能保留中间产物摘要、再发现、机制解释和未决真空耦合边界 | R:code:docs/design/scientific-request-workflow.md | A:pytest | S:文档和使用技能变更必须精确选择本合同测试；既有shortlist不能证明新关系不存在
 test_spark_codex.py[TS5T]: F:用假凭证验证模型启动器环境保密、覆盖拒绝、HTTPS地址限制和私有安装输出 | R:code:scripts/spark_codex.py | A:ModelConfigurationTests | S:-
 test_thin_mcp_adapter.py[TE6L]: F:验证catalog驱动的惰性发现读取、callable解析调用、签名默认值及摘要和请求拒绝 | R:code:src/scirel_adapter/mcp.py | A:pytest | S:发现读取与adapter导入不得加载科学模块；非法私有字段和未记载输入在科学import前失败
@@ -1036,7 +1036,8 @@ test_profile_energy.py[TB7S]: F:回归径向剖面的离散守恒、边界和独
 test_thermal_cancellation.py[TB7T]: F:锁定储热有符号相消和中间上下溢的精确结果回归 | R:code:src/scirel/physics/thermal_energy.py | A:六排列保留1.5焦耳残量;超大中间乘积相消;次正规乘积先累加后舍入;最终上溢和舍零仍失败 | S:普通正压力用例通过不足以覆盖有符号合同，不能用longdouble替换精确乘加
 test_bootstrap.py[TQ7T]: F:回归自举系数有限极限、实际电流约定及严格输入边界 | R:code:src/scirel/neoclassical/bootstrap.py,code:src/scirel/geometry/face_to_cell.py | A:大碰撞率alpha极限;Redl L34;常规源式比较;总磁通符号与轴零;指数抵消;极端中点与布尔拒绝 | S:微俘获分数与大碰撞率的组合防止修成对数抵消；这些回归不单独建立经验拟合的物理适用性
 test_fvm.py[TQ8S]: F:验证有限体积守恒、制造解阶数、theta因果及Neumann不等宽重构修正 | R:code:src/scirel/fvm/cell_variable.py,code:src/scirel/fvm/diffusion.py,code:src/scirel/fvm/convection.py,code:src/scirel/fvm/implicit.py | A:边界非零通量守恒;上风极限;均匀扩散二阶;对流一阶;奇异失败;五网格多项式与掩码回归 | S:原不等末宽0.74对0.8反例与等宽通过例均保留；Neumann含N2，Dirichlet端点割线和面值线性外推仍按旧定义，不外推任意网格稳定性
-test_scirel_docs.py[TU7M]: F:验证中文覆盖绑定、完整导航、HTML参考与HTTP和CLI读取一致性 | R:code:scripts/scirel_docs.py,code:scripts/build_scirel_sphinx.py | A:pytest文档合同、漂移拒绝、公式与相关入口测试 | S:共享构建快照按用例复制后做破坏检查；文档测试不替代科学示例执行或浏览器渲染
+test_scirel_docs.py[TU7M]: F:验证中文绑定、同源查询、领域用途表与函数详情导航完整性 | R:code:scripts/scirel_docs.py,code:scripts/build_scirel_sphinx.py | A:pytest文档合同、漂移拒绝、公式和全部参考链接检查 | S:共享快照按用例复制后做破坏检查；静态页面测试不替代科学示例执行或浏览器渲染
+test_lazy_namespace.py[TB7T]: F:用新解释器验证轻量根导入与领域和顶层别名的对象兼容 | R:code:src/scirel/__init__.py | A:依赖缺失时发现、领域首次导入、函数对象同一性测试 | S:隔离解释器关闭site后根导入仍成功，真正访问磁场才暴露缺失NumPy；避免测试顺序掩盖预加载
 
 ===/Users/tomczz/Projects/SciReL/tests/fixtures/l1/===
 cycle-rework.json[TW4T]: F:提供两任务图互相依赖且dependency_closure失败的L1重做分支fixture | R:code:tests/test_l1_wire_smoke.py | A:scirel.l1-inventory.dev | S:-
@@ -1644,13 +1645,13 @@ results.json[TD5L]: F:保存磁场章节实际运行的轴场序列、区域场�
 single.svg[SU4L]: F:叠绘单圆环轴向磁场数值曲线和独立轴上公式采样 | R:code:tools/docs/magnetostatics/plot.py | A:教程图1 | S:图中重合仅验证所选轴上案例
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/sphinx/_static/===
-scirel.css[FU5T]: F:在PyData布局上统一白底黑字、正文间距、长标题与代码公式排版 | R:code:tools/docs/sphinx/conf.py | A:主题变量、侧栏、代码、公式、提示框样式 | S:明暗两种主题均固定浅色；语法高亮保留颜色，长Python行不重新排版
+scirel.css[FU5T]: F:统一PyData文档白底黑字、领域函数表及代码公式排版 | R:code:tools/docs/sphinx/conf.py | A:主题变量、侧栏、等宽用途表、公式与提示框样式 | S:明暗主题均固定浅色；语法高亮保留颜色，长Python代码不重新排版
 scirel.js[IU5T]: F:将旧单页资产及主题锚点迁移到独立Sphinx文档页并固定浅色 | R:code:tools/docs/sphinx/conf.py | A:DOMContentLoaded旧地址跳转 | S:仅根路径和旧reference路径处理迁移，不劫持独立文档页内部锚点
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/sphinx/===
 agent.rst[SU6T]: F:指导Agent按主题渐进检索并读取原科学合同与绑定中文说明 | R:code:scripts/scirel_docs.py | A:发现、搜索、HTTP详情、离线CLI用法 | S:接口只读且不执行科学函数；当前无MCP传输，中文层不是独立科学合同
-conf.py[FU6T]: F:配置中文PyData文档导航、搜索、复制与严格Sphinx构建 | R:code:tools/docs/sphinx/_static/scirel.css,code:tools/docs/sphinx/_static/scirel.js | A:Sphinx配置、扩展、主题、语言与角色 | S:不开科学autodoc；内联MathML使用生成器提供的raw角色，复制剥离交互提示符
-getting-started.rst[SU6T]: F:引导从领域问题选择科学入口、精确安装包及首个磁场案例 | R:code:tools/docs/magnetostatics/chapter.json | A:选择能力、安装版本、完整案例、结果判断 | S:安装命令路径为占位；多版本文档不能承诺一个通用wheel覆盖，预期行为与实跑结果分开
+conf.py[FU6T]: F:配置中文PyData文档、复制与领域参考的浅层侧栏导航 | R:code:tools/docs/sphinx/_static/scirel.css,code:tools/docs/sphinx/_static/scirel.js | A:Sphinx主题扩展配置、reference_navigation、setup | S:参考页和函数页侧栏均只列领域，指南保留深层树；不启科学autodoc，复制剥离交互提示符
+getting-started.rst[SU6T]: F:引导选择科学能力、精确安装包、领域导入与磁场案例 | R:code:tools/docs/magnetostatics/chapter.json,code:src/scirel/__init__.py | A:模型选择、安装版本、领域导入、案例和结果判断 | S:导入片段不等于执行计算；多版本手册不承诺一个wheel覆盖全部能力，安装路径是占位示意
 requirements.txt[FV5T]: F:固定Sphinx中文手册生成所需主题、高亮复制、分词与公式转换依赖 | R:code:scripts/build_scirel_sphinx.py | A:文档开发环境安装清单 | S:依赖只用于文档构建，不进入科学wheel；jieba保证中文搜索分词
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/zh/===

@@ -250,3 +250,33 @@ def test_inline_scientific_math_and_code_do_not_execute_rest():
     assert '<msub>' in value and ' ``evaluate`` ' in value
     assert '\\*' in plain('*未声明标记*')
     assert '\n' not in plain('\n.. include:: /etc/passwd')
+
+
+def test_reference_domains_list_linked_functions_and_keep_sidebar_compact(snapshot):
+    from bs4 import BeautifulSoup
+    docs = Documentation(snapshot)
+    book = json.loads((ROOT/'tools/docs/handbook.json').read_bytes())
+    seen = set()
+    for chapter in book['chapters']:
+        page = BeautifulSoup(docs.read('web/reference/'+chapter['id']+'.html'), 'html.parser')
+        rows = page.select('article table.scirel-api-summary tbody tr')
+        expected = [asset for topic in chapter['topics'] for asset in topic['assets']]
+        assert len(rows) == len(expected)
+        for row, asset in zip(rows, expected, strict=True):
+            seen.add(asset)
+            cells = row.find_all('td')
+            record = docs.asset(asset)['document']
+            link = cells[0].find('a')
+            assert link['href'] == 'generated/'+asset+'.html'
+            assert link.get_text(strip=True) == record['public_api']['python']['symbol']
+            assert len(cells[1].get_text(strip=True)) > 10
+            assert ('（复合入口）' in cells[1].get_text()) == (record['kind'] == 'task_graph')
+        sidebar = page.select_one('nav.bd-docs-nav')
+        assert len(sidebar.select('a')) == len(book['chapters'])
+        assert not sidebar.select('a[href*="generated/"]')
+    assert seen == set(docs.ids)
+    for asset in docs.ids:
+        page = BeautifulSoup(docs.read('web/reference/generated/'+asset+'.html'), 'html.parser')
+        sidebar = page.select_one('nav.bd-docs-nav')
+        assert len(sidebar.select('a')) == len(book['chapters'])
+        assert not sidebar.select('a[href*="generated/"]')

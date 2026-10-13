@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-13T10:07:58Z",
+  "updated_at": "2026-10-13T10:26:37Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -59,9 +59,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "4366829a3d240aea15120e16b72e6831d6150ac0928d56f4db4c7ca856daa170",
-      "size": 421224,
-      "normalized_sha256": "4366829a3d240aea15120e16b72e6831d6150ac0928d56f4db4c7ca856daa170"
+      "sha256": "34ad446728cdcbf0410e4c5e380b62cff7e9d374471b0df92c79799368efe74e",
+      "size": 421736,
+      "normalized_sha256": "34ad446728cdcbf0410e4c5e380b62cff7e9d374471b0df92c79799368efe74e"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -1769,9 +1769,9 @@
     },
     "docs/architecture.md": {
       "role": "index",
-      "sha256": "4019f9d2407e2e09a7c0385bb87bb4da8b00a6f0e9b235af9e902ac80e1d4521",
-      "size": 14082,
-      "normalized_sha256": "4019f9d2407e2e09a7c0385bb87bb4da8b00a6f0e9b235af9e902ac80e1d4521"
+      "sha256": "122c36418412b3bc8c8d6b1f540cc83a9f57fc76f11da7397f5abdb1c4f28434",
+      "size": 16218,
+      "normalized_sha256": "122c36418412b3bc8c8d6b1f540cc83a9f57fc76f11da7397f5abdb1c4f28434"
     },
     "docs/catalog.md": {
       "role": "index",
@@ -3659,9 +3659,9 @@
     },
     "docs/handbook-authoring.md": {
       "role": "index",
-      "sha256": "48759f73637c936c5793fa17719f5e8018e1a04e0d72f70ce861b127cf3142bf",
-      "size": 10499,
-      "normalized_sha256": "48759f73637c936c5793fa17719f5e8018e1a04e0d72f70ce861b127cf3142bf"
+      "sha256": "cb77594e27437d7fb1f50cc2a866dc8cb4471dc1d4df1f55027fabf6f9a0a510",
+      "size": 10901,
+      "normalized_sha256": "cb77594e27437d7fb1f50cc2a866dc8cb4471dc1d4df1f55027fabf6f9a0a510"
     },
     "docs/integration/codefusion-consumer-contract.md": {
       "role": "index",
@@ -3755,9 +3755,9 @@
     },
     "docs/searchable-documentation.md": {
       "role": "index",
-      "sha256": "d5e98c018fa301870f420742a8340c5585068e1833e95a1e4719da147babf243",
-      "size": 12814,
-      "normalized_sha256": "d5e98c018fa301870f420742a8340c5585068e1833e95a1e4719da147babf243"
+      "sha256": "4a8f82f1db65ade5f23d7cc41583b3cadcd709773a452b991b4982fcbfbf99d4",
+      "size": 13028,
+      "normalized_sha256": "4a8f82f1db65ade5f23d7cc41583b3cadcd709773a452b991b4982fcbfbf99d4"
     },
     "examples/README.md": {
       "role": "index",
@@ -4109,9 +4109,9 @@
     },
     "scripts/build_scirel_sphinx.py": {
       "role": "index",
-      "sha256": "543e6af3aa309079ad3691bb6f373d74c23131a2d0229acf7631aadbc98fddad",
-      "size": 20223,
-      "normalized_sha256": "543e6af3aa309079ad3691bb6f373d74c23131a2d0229acf7631aadbc98fddad"
+      "sha256": "3b6b9b706e621412e95ac44be1eb50f30b3a6242962cd471caaab676fdf07a14",
+      "size": 20642,
+      "normalized_sha256": "3b6b9b706e621412e95ac44be1eb50f30b3a6242962cd471caaab676fdf07a14"
     },
     "scripts/check.ps1": {
       "role": "index",
@@ -4889,9 +4889,9 @@
     },
     "src/scirel/__init__.py": {
       "role": "index",
-      "sha256": "e5caf410d4494e67ef0934fd27f670856ce33fdd193875e1e62935a74c161caf",
-      "size": 11201,
-      "normalized_sha256": "e5caf410d4494e67ef0934fd27f670856ce33fdd193875e1e62935a74c161caf"
+      "sha256": "97626a128bf486fffdab42335bb9d8bbdef4968abb0d219451e446f53a2c2203",
+      "size": 12061,
+      "normalized_sha256": "97626a128bf486fffdab42335bb9d8bbdef4968abb0d219451e446f53a2c2203"
     },
     "src/scirel/_composition.py": {
       "role": "index",
@@ -7317,6 +7317,12 @@
       "size": 3291,
       "normalized_sha256": "8b70a8ee88e81d73a79b4d9d7d34a760bc4f9f6327ff9a5032323146be1f9860"
     },
+    "tests/test_lazy_namespace.py": {
+      "role": "index",
+      "sha256": "0a4b923e7cf481d25079a66b04ecd019d6fcb7621179844b9b963e263f1274c5",
+      "size": 1651,
+      "normalized_sha256": "0a4b923e7cf481d25079a66b04ecd019d6fcb7621179844b9b963e263f1274c5"
+    },
     "tests/test_library_composition.py": {
       "role": "index",
       "sha256": "57aa88572e045b4d6262c362514a39d83a8c4c5c298406241f651cb137c5ef79",
@@ -7373,9 +7379,9 @@
     },
     "tests/test_scientific_distribution.py": {
       "role": "index",
-      "sha256": "aa24cd242d551e41fecf73fb4c28a8e93d7656925b5b095bc61deeba53b8b3d0",
-      "size": 1518,
-      "normalized_sha256": "aa24cd242d551e41fecf73fb4c28a8e93d7656925b5b095bc61deeba53b8b3d0"
+      "sha256": "479802f5e9b7dc5d6a89c3058dd58e67ed7b77efc88204eb00f6ec7a6d184233",
+      "size": 2253,
+      "normalized_sha256": "479802f5e9b7dc5d6a89c3058dd58e67ed7b77efc88204eb00f6ec7a6d184233"
     },
     "tests/test_scientific_request_workflow_docs.py": {
       "role": "index",
@@ -7385,9 +7391,9 @@
     },
     "tests/test_scirel_docs.py": {
       "role": "index",
-      "sha256": "9684cbd3fbd5560ba82561f8c725e4ce574b12dc1774d8dffa61f60b4a116bf0",
-      "size": 12485,
-      "normalized_sha256": "9684cbd3fbd5560ba82561f8c725e4ce574b12dc1774d8dffa61f60b4a116bf0"
+      "sha256": "ddc3d4ffd786c32e3e6b444f64beddff9e8bdc6ad402132b01705ff4ff322fa9",
+      "size": 14099,
+      "normalized_sha256": "ddc3d4ffd786c32e3e6b444f64beddff9e8bdc6ad402132b01705ff4ff322fa9"
     },
     "tests/test_spark_codex.py": {
       "role": "index",
@@ -7553,9 +7559,9 @@
     },
     "tools/docs/sphinx/_static/scirel.css": {
       "role": "index",
-      "sha256": "647361193e1cbfdf97d53bf74b01e25f3e33e4fa90cac4a8b1737271d04958cf",
-      "size": 1942,
-      "normalized_sha256": "647361193e1cbfdf97d53bf74b01e25f3e33e4fa90cac4a8b1737271d04958cf"
+      "sha256": "d3c68cdb53cd71bd519fedb7fe319d769eb5d223479887719c8c26b0423103b4",
+      "size": 2270,
+      "normalized_sha256": "d3c68cdb53cd71bd519fedb7fe319d769eb5d223479887719c8c26b0423103b4"
     },
     "tools/docs/sphinx/_static/scirel.js": {
       "role": "index",
@@ -7571,15 +7577,15 @@
     },
     "tools/docs/sphinx/conf.py": {
       "role": "index",
-      "sha256": "197e8abc5bc70a1df5c88cf5bc5a586ebb29dde9cd0fc953c74d4d526b6db535",
-      "size": 1265,
-      "normalized_sha256": "197e8abc5bc70a1df5c88cf5bc5a586ebb29dde9cd0fc953c74d4d526b6db535"
+      "sha256": "9938b271676b98bfaeabefa6f35947138a6af748ec344ee6879a2ded6a83a6e8",
+      "size": 1658,
+      "normalized_sha256": "9938b271676b98bfaeabefa6f35947138a6af748ec344ee6879a2ded6a83a6e8"
     },
     "tools/docs/sphinx/getting-started.rst": {
       "role": "index",
-      "sha256": "23d7221a15ba69b5482bc2b57d1d27489193c9ff74dc9efba1a3bba0e8598129",
-      "size": 2255,
-      "normalized_sha256": "23d7221a15ba69b5482bc2b57d1d27489193c9ff74dc9efba1a3bba0e8598129"
+      "sha256": "b9f5ac9f3ae00d08e35ed89cf016a9a5a6a8b2f4d6b7b2e1b9bb7539760c769a",
+      "size": 3257,
+      "normalized_sha256": "b9f5ac9f3ae00d08e35ed89cf016a9a5a6a8b2f4d6b7b2e1b9bb7539760c769a"
     },
     "tools/docs/sphinx/requirements.txt": {
       "role": "index",

@@ -44,3 +44,19 @@ def test_built_scientific_wheel_excludes_project_tool_packages(tmp_path):
         for path in (ROOT / "src" / "scirel").rglob("*.py")
     }
     assert expected_scientific_source <= files
+
+    installed = tmp_path / 'installed'
+    subprocess.run(
+        [sys.executable, '-m', 'pip', 'install', '--no-deps', '--no-index',
+         '--target', str(installed), str(artifacts[0])],
+        cwd=tmp_path, check=True, capture_output=True, text=True,
+    )
+    checked = subprocess.run(
+        [sys.executable, '-I', '-S', '-c',
+         'import sys; sys.path.insert(0, sys.argv[1]); import scirel; '
+         'assert scirel.__file__.startswith(sys.argv[1]); '
+         'assert not any(n.startswith("scirel.") for n in sys.modules); '
+         'assert "numpy" not in sys.modules', str(installed)],
+        cwd=tmp_path, capture_output=True, text=True,
+    )
+    assert checked.returncode == 0, checked.stdout + checked.stderr

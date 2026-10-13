@@ -33,6 +33,10 @@ div.highlight pre { white-space: pre; tab-size: 4; }
 .scirel-contract { font-size: .9rem; color: #444; }
 .scirel-module { font-family: var(--pst-font-family-monospace); margin-top: 1rem; margin-bottom: 0; font-size: 1.15rem; }
 table.docutils td { overflow-wrap: anywhere; }
+table.scirel-api-summary { width: 100%; table-layout: fixed; }
+table.scirel-api-summary td:first-child { font-family: var(--pst-font-family-monospace); font-size: .9em; }
+table.scirel-api-summary td { vertical-align: top; }
+table.scirel-api-summary td a { color: #111; text-decoration: underline; text-underline-offset: .2em; }
 .bd-article .admonition { box-shadow: none !important; border-left-color: #888 !important; }
 .bd-article .admonition > .admonition-title { background: #f3f3f3 !important; color: #111 !important; }
 .bd-article .admonition > .admonition-title::after { color: #444 !important; }
