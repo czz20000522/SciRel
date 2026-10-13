@@ -1,11 +1,14 @@
 """Parametric Pleiades field lines with corrected curvature and bounded crossings.
 
 Selective recovery from accepted D2 FieldLine/HelperFieldLine after maintained
-exclusion. Curvature interpolates B components before pointwise normalization:
-interpolation and normalization do not commute, and differentiation amplifies
-the former scattered unit-field mapping error. kappa=(bhat dot grad)bhat is
-independent of reversing B. FieldLine returns (N,2), HelperFieldLine a tuple;
-finite-Q filtering and construction signatures retain their distinct contracts.
+exclusion. The Mac D2 successor resolves cubic physical-component interpolation
+on complete rectilinear grids with tensor splines and on scattered support with
+a tightly converged Clough-Tocher gradient estimate. Curvature differentiates
+geometry and normalized B in one common local curve parameter, then applies
+sign(p_prime dot bhat) b_prime / abs(p_prime). This avoids the polygonal chord
+metric bias while retaining public d_ds_arclength's three-point contract.
+Curvature requires actual smooth magnetic field lines; a nonzero tangent
+projection alone cannot certify tangency. Reversing B preserves kappa.
 Open vertices keep supplied order, preventing cyclic rolls from creating an
 artificial internal jump. Closed periodic FITPACK interpolation is retained.
 Intersections use bounded distance solves and reject numerical noncrossings or
@@ -49,9 +52,96 @@ def d_ds_arclength(vertices, values):
     return out
 
 
-from scipy.interpolate import griddata
+from scipy.interpolate import griddata, CloughTocher2DInterpolator, RectBivariateSpline
 from scipy.interpolate import splprep,splev
 from scipy.optimize import least_squares
+
+def _sample_fieldline(vertices, R, Z, Q, method, filter_nonfinite):
+    """Interpolate physical samples without degrading a complete tensor grid.
+
+    Cubic rectangular data use an interpolating tensor-product spline, with
+    explicit support masking (FITPACK itself would extrapolate). Scattered or
+    incomplete data retain Clough-Tocher, with gradient estimation resolved to
+    1e-12 rather than griddata's default 1e-6. Linear/nearest remain griddata.
+    The two public classes retain their distinct finite-Q filtering behavior.
+    """
+    R, Z, Q = (np.asarray(v) for v in (R, Z, Q))
+    if (method == "cubic" and not np.iscomplexobj(Q) and R.ndim == 2 and
+            min(R.shape) >= 4 and Z.shape == R.shape == Q.shape and
+            all(np.all(np.isfinite(v)) for v in (R, Z, Q)) and
+            np.array_equal(R, np.broadcast_to(R[0], R.shape)) and
+            np.array_equal(Z, np.broadcast_to(Z[:, 0, None], Z.shape))):
+        x, y, q = R[0].copy(), Z[:, 0].copy(), Q.copy()
+        if np.all(np.diff(x) < 0):
+            x, q = x[::-1], q[:, ::-1]
+        if np.all(np.diff(y) < 0):
+            y, q = y[::-1], q[::-1, :]
+        if np.all(np.diff(x) > 0) and np.all(np.diff(y) > 0):
+            vr, vz = vertices[:, 0], vertices[:, 1]
+            inside = (np.isfinite(vr) & np.isfinite(vz) &
+                      (vr >= x[0]) & (vr <= x[-1]) &
+                      (vz >= y[0]) & (vz <= y[-1]))
+            result = np.full(len(vertices), np.nan)
+            spline = RectBivariateSpline(y, x, q, kx=3, ky=3, s=0)
+            result[inside] = spline.ev(vz[inside], vr[inside])
+            # Enforce the exact interpolation constraint at supplied nodes,
+            # including field nulls; no absolute magnetic-field cutoff.
+            ix = np.clip(np.searchsorted(x, vr), 0, len(x)-1)
+            iy = np.clip(np.searchsorted(y, vz), 0, len(y)-1)
+            nodes = inside & (vr == x[ix]) & (vz == y[iy])
+            result[nodes] = q[iy[nodes], ix[nodes]]
+            return result
+    idx = np.isfinite(Q.ravel()) if filter_nonfinite else np.ones(Q.size, dtype=bool)
+    points = np.column_stack((R.ravel()[idx], Z.ravel()[idx]))
+    values = Q.ravel()[idx]
+    query = (vertices[:, 0], vertices[:, 1])
+    if method == "cubic":
+        return CloughTocher2DInterpolator(points, values, tol=1e-12)(*query)
+    return griddata(points, values, xi=query, method=method)
+
+
+def _curve_curvature(vertices, br, bz):
+    """Differentiate direction and geometry in the same local curve parameter.
+
+    For a genuine smooth field line p(t), kappa=sign(p' dot b)*b'/|p'|.
+    Common polynomial derivative weights cancel the leading chord-coordinate
+    scale error. Five local points give quartic derivatives; N=3/4 uses the
+    available quadratic/cubic stencil. Public polygonal d_ds stays unchanged.
+    """
+    p = np.asarray(vertices, dtype=float)
+    field = np.column_stack((br, bz))
+    if (p.ndim != 2 or p.shape[1] != 2 or len(p) < 3 or
+            field.shape != p.shape or not np.all(np.isfinite(p))):
+        raise ValueError("curvature requires finite vertices (N,2), N >= 3")
+    magnitude = np.hypot(field[:, 0], field[:, 1])
+    if not (np.all(np.isfinite(magnitude)) and np.all(magnitude > 0)):
+        raise ValueError("curvature requires finite nonzero field inside interpolation support")
+    ds = np.linalg.norm(np.diff(p, axis=0), axis=1)
+    if np.any(ds <= 0):
+        raise ValueError("adjacent vertices must be distinct")
+    t = np.r_[0., np.cumsum(ds)]
+    b = field / magnitude[:, None]
+    values = np.column_stack((p, b))
+    derivative = np.empty_like(values)
+    width = min(5, len(p))
+    for i in range(len(p)):
+        start = min(max(i-width//2, 0), len(p)-width)
+        local = t[start:start+width]-t[i]
+        scale = np.max(np.abs(local))
+        x = local/scale
+        moments = np.zeros(width)
+        moments[1] = 1.
+        weights = np.linalg.solve(np.vander(x, N=width, increasing=True).T, moments)/scale
+        # Subtract the central value to avoid cancellation under translation.
+        derivative[i] = weights @ (values[start:start+width]-values[i])
+    tangent, db = derivative[:, :2], derivative[:, 2:]
+    speed = np.linalg.norm(tangent, axis=1)
+    direction = np.sign(np.sum(tangent*b, axis=1))
+    if not (np.all(np.isfinite(speed)) and np.all(speed > 0) and
+            np.all(np.isfinite(direction)) and np.all(direction != 0)):
+        raise ValueError("curvature requires finite nonzero tangent-aligned field")
+    return direction[:, None]*db/speed[:, None]
+
 
 def _bounded_intersection(line,boundary):
     lower = np.array([float(line.u.min()),float(boundary.u.min())])
@@ -125,25 +215,13 @@ class FieldLine(object):
         return np.sqrt((r[1]-r[0])**2+(z[1]-z[0])**2)
 
     def interpolate_onto(self,R,Z,Q,method="cubic"):
-        idx = np.isfinite(Q.ravel())
-        r, z, q = R.ravel()[idx], Z.ravel()[idx], Q.ravel()[idx]
-        return griddata((r,z),q,xi=(self.verts[:,0],self.verts[:,1]),method=method)
+        return _sample_fieldline(self.verts, R, Z, Q, method, filter_nonfinite=True)
 
     def get_kappa_n(self,R,Z,BR,BZ,method="cubic"):
         # Normalize the interpolated physical vector, not its grid-node direction.
         br = self.interpolate_onto(R,Z,BR,method=method)
         bz = self.interpolate_onto(R,Z,BZ,method=method)
-        modB = np.hypot(br,bz)
-        if not (np.all(np.isfinite(modB)) and np.all(modB > 0)):
-            raise ValueError("curvature requires finite nonzero field inside interpolation support")
-        bhatr_terp, bhatz_terp = br/modB, bz/modB
-        tangent_r = self.d_ds(self.verts[:,0])
-        tangent_z = self.d_ds(self.verts[:,1])
-        signb = np.sign(tangent_r*bhatr_terp + tangent_z*bhatz_terp)
-        if not (np.all(np.isfinite(signb)) and np.all(signb != 0)):
-            raise ValueError("curvature requires finite nonzero tangent-aligned field")
-        kap_r, kap_z = signb*self.d_ds(bhatr_terp), signb*self.d_ds(bhatz_terp)
-        return np.vstack((kap_r,kap_z)).T
+        return _curve_curvature(self.verts, br, bz)
 
     def get_kappa_n_2(self,R,Z,psi,method="cubic"):
         # The inherited stencil is defined only on a finite uniform xy grid.
@@ -267,30 +345,21 @@ class HelperFieldLine(object):
         return np.sqrt((r[1]-r[0])**2+(z[1]-z[0])**2)
 
     def interpolate_onto(self,R,Z,Q,method="cubic"):
-        return griddata((R.ravel(),Z.ravel()),Q.ravel(),xi=(self.verts[:,0],self.verts[:,1]),method=method)
+        return _sample_fieldline(self.verts, R, Z, Q, method, filter_nonfinite=False)
 
     def get_kappa_n(self,R,Z,BR,BZ,method="cubic"):
         # Normalize the interpolated physical vector, not its grid-node direction.
         br = self.interpolate_onto(R,Z,BR,method=method)
         bz = self.interpolate_onto(R,Z,BZ,method=method)
-        modB = np.hypot(br,bz)
-        if not (np.all(np.isfinite(modB)) and np.all(modB > 0)):
-            raise ValueError("curvature requires finite nonzero field inside interpolation support")
-        bhatr_terp, bhatz_terp = br/modB, bz/modB
-        tangent_r = self.d_ds(self.verts[:,0])
-        tangent_z = self.d_ds(self.verts[:,1])
-        signb = np.sign(tangent_r*bhatr_terp + tangent_z*bhatz_terp)
-        if not (np.all(np.isfinite(signb)) and np.all(signb != 0)):
-            raise ValueError("curvature requires finite nonzero tangent-aligned field")
-        kap_r, kap_z = signb*self.d_ds(bhatr_terp), signb*self.d_ds(bhatz_terp)
-        return kap_r, kap_z
+        value = _curve_curvature(self.verts, br, bz)
+        return value[:, 0], value[:, 1]
 
     def d_ds(self,Q):
         return d_ds_arclength(self.verts, Q)
 
     def get_gradpsi(self,R,Z,BR,BZ,method="cubic"):
-        gradpsi_r = self.interpolate_onto(R,Z,R*BZ)
-        gradpsi_z = -self.interpolate_onto(R,Z,R*BR)
+        gradpsi_r = self.interpolate_onto(R,Z,R*BZ,method=method)
+        gradpsi_z = -self.interpolate_onto(R,Z,R*BR,method=method)
         return gradpsi_r,gradpsi_z
 
     def intersection(self,boundary):
