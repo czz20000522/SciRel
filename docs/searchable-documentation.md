@@ -6,29 +6,34 @@
 
 ## 生成与浏览
 
-在 SciRel 开发 checkout 中运行（仅使用 Python 标准库）：
+在 SciRel 开发 checkout 中创建独立文档环境。生成 HTML 使用与 SciPy 相同的 Sphinx + PyData Sphinx Theme；科学模块不被导入，查询与服务只使用 Python 标准库：
 
 ```sh
-python3 scripts/scirel_docs.py build --output .runtime/docs-snapshot-001
-python3 scripts/scirel_docs.py serve --snapshot .runtime/docs-snapshot-001 --port 8765
+python3 -m venv .runtime/docs-venv
+.runtime/docs-venv/bin/python -m pip install -r tools/docs/sphinx/requirements.txt
+.runtime/docs-venv/bin/python scripts/scirel_docs.py build --output .runtime/docs-snapshot-001
+.runtime/docs-venv/bin/python scripts/scirel_docs.py serve --snapshot .runtime/docs-snapshot-001 --port 8765
 ```
 
-打开 <http://127.0.0.1:8765> 阅读全书目录与各领域导读；`/#chapter/<id>` 进入章节，`/#topic/<id>` 进入具体求解问题，`/reference` 查询函数。`/tutorials/magnetostatics` 保留完整磁场案例；旧的 `/#single` 等案例锚点会转到该地址。章节小节与资产详情均可用地址中的锚点收藏。旧的根路径资产锚点会转到函数参考。服务器仅绑定本机回环地址；结束时 Ctrl-C。新内容构建到新目录，工具拒绝覆盖已有快照。默认输入为 `catalog/examples`，也可通过 `--documents` 指定完整依赖闭包的正式文档目录，并用 `--outline` 指定覆盖同一精确文档集合的目录 JSON。当前已执行案例还要求其引用的正式文档齐备，不允许把不完整子集伪装成完整手册。
+打开 <http://127.0.0.1:8765>。`/user-guide/index.html` 提供领域指南，`/reference/index.html` 提供 API 参考；具体函数使用 `/reference/generated/<asset-id>.html`，主题使用 `/user-guide/topics/<topic-id>.html`。完整磁场案例为 `/tutorials/magnetostatics.html`。顶部区分指南与参考，左侧为当前部分的领域目录树，右侧为页内导航。旧根路径的资产、章节、主题与案例锚点保留跳转。服务器仅绑定本机回环地址；结束时 Ctrl-C。新内容构建到新目录，工具拒绝覆盖已有快照。默认输入为 `catalog/examples`，也可通过 `--documents` 指定完整依赖闭包的正式文档目录，并用 `--outline` 指定覆盖同一精确文档集合的目录 JSON；该集合还必须有对应的完整中文说明与案例依赖。
 
-页面采用白底黑字、细分隔线和清晰的键盘焦点，不使用彩色装饰。页面是使用手册，不是人审队列。适用范围与限制在调用示例前展示；科学定义、验证证据、来源、任务图和 JSON 合同可继续查看。中文标题来自正式记录，英文科学正文保持原意，不凭名称补写翻译或科学字段。
+页面采用白底黑字、细分隔线和清晰的键盘焦点。函数页沿 SciPy/numpydoc 的顺序展示签名、参数、返回值、失败行为、说明、适用范围、相关函数和示例。正文默认中文；Python 名称、单位符号与原始示例代码不翻译。源码字段或验证结论存在内部冲突时明确标注，不能把翻译当成科学裁决。
 
 ## Agent 渐进查询
 
-HTML 与 HTTP、CLI 使用同一个查询实现和快照。无需加载所有完整文档，也不导入或执行科学函数。
+HTML 与 HTTP、CLI 使用同一个内容快照。网页采用 Sphinx 的分词与全文排序；HTTP/CLI 共用有界字面 AND 查询，两者排序不保证相同。中文网页搜索在构建时依赖 jieba 分词，缺少依赖会拒绝构建。Agent 无需加载所有完整文档，也不导入或执行科学函数。
 
 ```sh
 # 查询摘要，支持 q、kind、domain、topic、offset、limit
 curl 'http://127.0.0.1:8765/api/search?q=field&limit=5'
 # 按精确 ID 读取完整正式文档（含依赖 ID）
 curl 'http://127.0.0.1:8765/api/asset?id=scirel.field.current-green-superposition'
+# 同时取得原合同与摘要绑定的中文阅读说明
+curl 'http://127.0.0.1:8765/api/reader?id=scirel.field.current-green-superposition'
 # 不启动服务也可以查询相同快照
 python3 scripts/scirel_docs.py query --snapshot .runtime/docs-snapshot-001 --q field --limit 5
 python3 scripts/scirel_docs.py query --snapshot .runtime/docs-snapshot-001 --asset scirel.field.current-green-superposition
+python3 scripts/scirel_docs.py query --snapshot .runtime/docs-snapshot-001 --reader scirel.field.current-green-superposition
 ```
 
 `GET /api/handbook` 返回完整学科目录与主题资产 ID，`GET /api/topic?id=<id>` 返回单个主题，`GET /api/search?topic=<id>&limit=20` 分页读取该主题下的正式合同摘要；CLI 对应 `query --snapshot … --handbook` 与 `query --snapshot … --topic <id>`。全书搜索同时查主题导读与正式科学合同，结果可继续在函数参考筛选。
@@ -47,7 +52,9 @@ python3 scripts/scirel_docs.py query --snapshot .runtime/docs-snapshot-001 --ass
 
 文档构建不重新验证数值、不执行示例、不证明当前宽 wheel 可发行。已有验证范围、已知限制、历史来源资格和许可状态全部原样展示；原有科学资格不因页面可访问而扩大。人审和公开发行决定仍然独立。
 
-该工具与页面属于开发层，不加入科学 wheel。新增项目达到正式文档冻结条件后，在同一次整合中更新 exact document，重新生成手册，并验证搜索与原文一致；不维护第二份可漂移的科学描述。
+该工具与页面属于开发层，不加入科学 wheel。新增项目达到正式文档冻结条件后，在同一次整合中更新 exact document、中文阅读说明与目录，重新生成手册，并验证搜索与原文一致。
+
+中文层位于 `tools/docs/zh/*.json`，格式为 `scirel.reader-translation.v1`。每项绑定原始正式 JSON 的 SHA-256，只翻译阅读字段；构建校验精确资产集合、参数名称与顺序、模型假设与适用/验证条目数量，拒绝缺项、重复、摘要失效与约束丢失。结构校验不能替代语义审阅。正式文档变化后必须重新审阅对应中文内容，不能只换摘要。中文层不能改变签名、数值、单位、默认值、实现版本、验证资格或许可。
 
 ## 全书目录与持续维护
 
@@ -73,14 +80,14 @@ python3 scripts/scirel_docs.py query --snapshot .runtime/docs-snapshot-001 --ass
 
 复合入口必须核对单位、坐标/轴序、归一化、边界、模型假设、误差与状态；各节点正确不自动证明组合正确。迭代使用显式初始状态、更新顺序、停止条件、上限和不收敛结果，不伪装成普通 DAG。公共调用保持简洁，内部依赖与版本、诊断和中间量按需披露；避免为每个参数组合新增公共图。
 
-章节的两条公式使用带分式、上下标的原生 MathML 渲染，保留同内容的文本公式给 Agent 和辅助阅读；页面不加载外网公式服务。当前未实现对任意正文 LaTeX 的自动解析。代码块采用等宽字体，右上角复制按钮复制完整原始内容；剪贴板不可用时选中内容并提示手动复制，输出与代码不混抄。教程与函数参考共享展示脚本，JSON 合同不因排版被改写。
+章节的两条展示公式继续使用原生 MathML。正文中显式以 `$…$` 标记的行内 LaTeX 在构建时经 latex2mathml 转为 MathML，保留原式作为辅助阅读标签；不猜测未标记的普通文本公式，也不支持任意 TeX 文档。转换错误会阻止构建。公式不加载外网服务，Agent 仍取得原合同与中文文本。代码块采用等宽字体，右上角复制按钮复制代码；失败时由 Copybutton 提示手动复制。输出与代码分别显示，教程与函数参考共享主题资源，JSON 合同不因排版被改写。
 
-参考采用：[SciPy 领域教程](https://docs.scipy.org/doc/scipy/tutorial/)与 [API 参考的分工](https://docs.scipy.org/doc/scipy/reference/)；适配 [Sphinx Copybutton](https://sphinx-copybutton.readthedocs.io/en/latest/) 的代码复制交互。保留当前轻量、离线、摘要绑定的 HTML/HTTP/CLI 构建器，不为展示变更迁移科学合同或引入执行依赖。
+参考采用：[SciPy 领域教程](https://docs.scipy.org/doc/scipy/tutorial/)与 [API 参考](https://docs.scipy.org/doc/scipy/reference/)。实际使用 Sphinx 8.1.3、PyData Sphinx Theme 0.19.0 和 Sphinx Copybutton 0.5.2；版本见 `tools/docs/sphinx/requirements.txt`。构建器以正式合同和中文阅读层生成 reStructuredText，再用 Sphinx 的 warnings-as-errors 构建 HTML。主题脚本、字体、样式和搜索索引随不可覆写快照保存；阅读不依赖 CDN。`renderer.json` 保存实际构建版本，清单覆盖输出字节。
 
 ## 代码阅读与后续交互
 
-教程与函数参考使用本地随快照分发的 [Highlight.js](https://highlightjs.org/) 11.12.0 进行语法高亮，BSD-3-Clause 许可、下载来源与摘要位于 `tools/docs/vendor/highlightjs/`。构建和阅读均不依赖 CDN。显式标注 Python、Shell、JSON；未标注内容按纯文本显示，不靠自动识别猜测语言。共享样式 `code.css` 只为语法使用少量颜色，页面保持白底黑字。
+当前 Sphinx 页面使用构建时 Pygments 语法高亮与 Sphinx Copybutton。显式标注 Python、Shell、JSON；只为语法使用少量颜色，页面保持白底黑字。旧 Highlight.js 资源继续为历史页面保留，不参与新的 Sphinx 页面渲染。
 
-保留原始空格、缩进与换行，制表符按四列显示；长行可横向滚动，不自动重新排版 Python。顶部标注语言并提供复制按钮，复制的是完整原文，不包含标签与高亮标记。高亮库不可用或文本过长时保留纯文本与复制功能。高亮不执行示例，也不改变科学合同和已有结果。
+保留原始空格、缩进与换行，制表符按四列显示；长行可横向滚动，不自动重新排版 Python。右上角提供复制按钮，复制原始代码并去掉交互提示符，不复制标签与高亮标记。高亮不执行示例，也不改变科学合同和已有结果。
 
 后续可以提供类似 Jupyter 的可运行示例，但需另行落实隔离运行环境、精确 SciRel 与依赖版本、单元格顺序与状态、超时/资源上限及实际结果绑定。当前阶段只改进阅读与复制，不展示没有执行能力的“运行”按钮。

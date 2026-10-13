@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import sys
 import subprocess
+import shutil
 import threading
 from urllib.error import HTTPError
 from urllib.request import urlopen
@@ -14,11 +15,16 @@ sys.path.insert(0, str(ROOT / 'scripts'))
 from scirel_docs import Documentation, build, server
 
 
-@pytest.fixture
-def snapshot(tmp_path):
-    output = tmp_path / 'docs'
+@pytest.fixture(scope='session')
+def built_snapshot(tmp_path_factory):
+    output = tmp_path_factory.mktemp('sphinx') / 'docs'
     build(ROOT / 'catalog/examples', output)
     return output
+
+
+@pytest.fixture
+def snapshot(tmp_path, built_snapshot):
+    return Path(shutil.copytree(built_snapshot, tmp_path / 'docs'))
 
 
 def test_queries_are_bounded_and_exact_records_unchanged(snapshot):
@@ -71,7 +77,7 @@ def test_http_matches_cli_core_and_does_not_serve_source(snapshot):
         with urlopen(base + '/api/search?q=Pleiades&limit=2') as r:
             assert json.load(r) == docs.search('Pleiades', limit=2)
         with urlopen(base + '/') as r:
-            assert '科学关系手册' in r.read().decode()
+            assert 'SciRel 中文文档' in r.read().decode()
         with pytest.raises(HTTPError) as e:
             urlopen(base + '/../../pyproject.toml')
         assert e.value.code == 404
@@ -174,3 +180,73 @@ def test_handbook_invalid_navigation_fails_closed(tmp_path, monkeypatch):
         target.write_text(json.dumps(book))
         with pytest.raises(ValueError):
             scirel_docs.handbook_document(ids)
+
+
+def test_chinese_reader_http_cli_and_exact_source(snapshot):
+    docs = Documentation(snapshot)
+    asset = 'scirel.field.current-green-superposition'
+    response = docs.reader(asset)
+    assert response['document'] == docs.asset(asset)['document']
+    assert docs.read(f'records/{asset}.json') == (ROOT/'catalog/examples'/f'{asset}.json').read_bytes()
+    assert response['translation']['asset_id'] == asset
+    assert any('\u4e00' <= c <= '\u9fff' for c in response['translation']['summary'])
+    assert docs.search('线圈')['total'] > 0
+    assert docs.handle('/api/reader?id=' + asset) == response
+    cli = subprocess.check_output([sys.executable, str(ROOT/'scripts/scirel_docs.py'),
+                                   'query', '--snapshot', str(snapshot), '--reader', asset])
+    assert json.loads(cli) == response
+    http = server(docs, 0)
+    thread = threading.Thread(target=http.serve_forever, daemon=True); thread.start()
+    try:
+        with urlopen(f'http://127.0.0.1:{http.server_port}/api/reader?id=' + asset) as r:
+            assert json.load(r) == response
+        with urlopen(f'http://127.0.0.1:{http.server_port}/reference/generated/{asset}.html') as r:
+            page = r.read().decode()
+            assert 'pydata-sphinx-theme' in page and '参数' in page and '返回值' in page
+            assert 'copybutton.js' in page
+    finally:
+        http.shutdown(); http.server_close(); thread.join()
+    (snapshot/'readers'/f'{asset}.json').write_text('{}')
+    with pytest.raises(ValueError, match='bytes changed'):
+        docs.reader(asset)
+
+
+@pytest.mark.parametrize('change', ['missing', 'duplicate', 'stale', 'port', 'clause'])
+def test_reader_translation_cannot_drift_or_drop_contracts(tmp_path, change):
+    from build_scirel_sphinx import load_translations
+    from validate_asset_documents import load_document_set
+    shutil.copytree(ROOT/'tools/docs/zh', tmp_path/'tools/docs/zh')
+    path = next((tmp_path/'tools/docs/zh').glob('*.json'))
+    data = json.loads(path.read_bytes()); first = data['records'][0]
+    if change == 'missing': data['records'].pop()
+    elif change == 'duplicate': data['records'].append(first)
+    elif change == 'stale': first['source_sha256'] = '0'*64
+    elif change == 'port': first['inputs'][0]['name'] = 'invented'
+    elif change == 'clause': first['applicability']['supported'].append('invented')
+    path.write_text(json.dumps(data))
+    with pytest.raises(ValueError):
+        load_translations(tmp_path, ROOT/'catalog/examples', load_document_set(ROOT/'catalog/examples'))
+
+
+def test_all_reference_pages_exist_and_use_bound_chinese_prose(snapshot):
+    docs = Documentation(snapshot)
+    for asset in docs.ids:
+        page = docs.read('web/reference/generated/' + asset + '.html').decode()
+        assert all(label in page for label in ['参数', '返回值', '说明', '示例', '验证与限制'])
+        assert docs.reader(asset)['translation']['source_sha256'] in page
+    assert b'copybutton.js' in docs.read('web/index.html')
+    renderer = json.loads(docs.read('renderer.json'))
+    assert renderer['source_documents'] == len(docs.ids)
+    assert renderer['warnings_as_errors'] and not renderer['science_imports']
+    graph = docs.read('web/reference/generated/scirel.equilibrium.free-boundary-anisotropic-picard.html').decode()
+    assert 'href="scirel.field.poloidal-field-magnitude.html"' in graph
+    wave = docs.read('web/reference/generated/scirel.kinetic.kinetic-dispersion-ronnmark.html').decode()
+    assert '<math ' in wave and '<msub>' in wave and 'aria-label=' in wave
+
+
+def test_inline_scientific_math_and_code_do_not_execute_rest():
+    from build_scirel_sphinx import plain
+    value = plain(r'张量 $K_{ij}=\delta_{ij}$；调用 `evaluate`。')
+    assert '<msub>' in value and ' ``evaluate`` ' in value
+    assert '\\*' in plain('*未声明标记*')
+    assert '\n' not in plain('\n.. include:: /etc/passwd')

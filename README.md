@@ -137,9 +137,12 @@ assert result["B"][0, 0] == 5.0
 
 ```powershell
 python scripts/validate_asset_documents.py catalog/examples
+python -m pip install -r tools/docs/sphinx/requirements.txt
 python scripts/scirel_docs.py build --output .runtime/docs-snapshot-001
 python scripts/scirel_docs.py serve --snapshot .runtime/docs-snapshot-001
 ```
+
+中文手册采用 Sphinx 与 PyData Sphinx Theme，分别提供用户指南和 API 参考；安装构建依赖应使用独立开发环境。中文阅读说明逐项绑定正式文档摘要，HTTP/CLI 查询与页面消费同一快照，详见[文档构建与维护](docs/searchable-documentation.md)。
 
 L1 workflow 的小型 fixture 使用 `tests/fixtures/l1/pleiades-minimal.json`，只验证 candidate、draft、审核和 release artifact 的确定性关联。真实保存目录或 ZIP 使用 SciRel 自己的转换入口生成内容寻址的 UTF-8 bundle；它保留每个文件的路径、原始字节和摘要，随后由 `scirel.import_l1` 映射 Operator/TaskGraph，不代替模型完成真实科学整合：
 

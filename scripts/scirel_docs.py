@@ -9,6 +9,7 @@ import argparse
 import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import mimetypes
 from pathlib import Path
 import re
 import subprocess
@@ -16,6 +17,7 @@ import tempfile
 from urllib.parse import parse_qs, urlsplit
 
 from validate_asset_documents import load_document_set
+from build_scirel_sphinx import load_translations, render_site
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = 'scirel.documentation-snapshot.v1'
@@ -116,28 +118,35 @@ def build(documents: Path, output: Path, outline: Path | None = None):
         raise FileExistsError('output already exists; build a new snapshot')
     source = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     dirty = bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT))
+    translations = load_translations(ROOT, documents, docs)
+    book = handbook_document({d['asset_id'] for d in docs}, outline)
     files = {}
     index = []
     for doc in docs:
         asset = doc['asset_id']
-        files[f'records/{asset}.json'] = encode(doc)
+        files[f'records/{asset}.json'] = (documents / (asset + '.json')).read_bytes()
+        files[f'readers/{asset}.json'] = encode(translations[asset])
         summary = {k: doc[k] for k in ('asset_id', 'kind', 'title', 'summary', 'taxonomy', 'aliases', 'version')}
         summary['public_api'] = doc['public_api']
+        summary['summary_zh'] = translations[asset]['summary']
         summary['evidence_ceiling'] = doc['verification']['evidence_ceiling']
         summary['known_limitations'] = doc['verification']['known_limitations']
         summary['license_status'] = doc['provenance']['license_status']
         # Lexical retrieval of existing scientific text, never generated semantics.
-        summary['search_text'] = json.dumps(doc, ensure_ascii=False).lower()
+        summary['search_text'] = json.dumps([doc, translations[asset]], ensure_ascii=False).lower()
         index.append(summary)
     files['index.json'] = encode(index)
     files['index.html'] = (ROOT / 'tools/docs/index.html').read_bytes()
     files['handbook.html'] = (ROOT / 'tools/docs/handbook.html').read_bytes()
-    files['handbook.json'] = encode(handbook_document({d['asset_id'] for d in docs}, outline))
+    files['handbook.json'] = encode(book)
     for path in STATIC_FILES:
         files['static/' + path] = (ROOT / 'tools/docs' / path).read_bytes()
     files.update(chapter_files({d['asset_id'] for d in docs}))
+    chapter = json.loads(files['chapters/magnetostatics/chapter.json'])
+    files.update(render_site(ROOT, docs, book, translations, chapter))
     manifest = {'schema': SCHEMA, 'source_commit': source, 'source_dirty': dirty,
                 'asset_count': len(docs), 'notice': NOTICE,
+                'reader_language': 'zh-CN', 'human_renderer': 'sphinx-pydata',
                 'validation': {'schema_and_dependency_closure': True,
                                'scientific_runtime_revalidated': False},
                 'files': {p: {'sha256': sha(b), 'bytes': len(b)} for p, b in sorted(files.items())}}
@@ -210,6 +219,13 @@ class Documentation:
             raise KeyError('unknown asset_id')
         return self.envelope(document=json.loads(self.read(f'records/{asset_id}.json')))
 
+    def reader(self, asset_id):
+        result = self.asset(asset_id)
+        result['translation'] = json.loads(self.read(f'readers/{asset_id}.json'))
+        if result['translation']['source_sha256'] != sha(self.read(f'records/{asset_id}.json')):
+            raise ValueError('Chinese reader is not bound to the served exact document')
+        return result
+
     def chapter(self, chapter_id):
         if chapter_id != 'magnetostatics':
             raise KeyError('unknown chapter')
@@ -241,6 +257,8 @@ class Documentation:
             return self.search(**p)
         if parsed.path == '/api/asset' and set(p) == {'id'}:
             return self.asset(p['id'])
+        if parsed.path == '/api/reader' and set(p) == {'id'}:
+            return self.reader(p['id'])
         if parsed.path == '/api/chapter' and set(p) == {'id'}:
             return self.chapter(p['id'])
         if parsed.path == '/api/handbook' and not p:
@@ -253,6 +271,7 @@ class Documentation:
         if parsed.path == '/api' and not p:
             return self.envelope(endpoints={'search': '/api/search?q=&kind=&domain=&offset=0&limit=20',
                                             'asset': '/api/asset?id=scirel.…',
+                                            'reader': '/api/reader?id=scirel.…',
                                             'manifest': '/api/manifest',
                                             'chapters': '/api/chapters',
                                             'chapter': '/api/chapter?id=magnetostatics'},
@@ -269,7 +288,15 @@ def server(docs, port):
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
             try:
-                if self.path in ('/', '/index.html'):
+                path = urlsplit(self.path).path
+                page = {'/': 'index.html', '/reference': 'reference/index.html',
+                        '/tutorials/magnetostatics': 'tutorials/magnetostatics.html'}.get(path, path.lstrip('/'))
+                if 'web/' + page in docs.manifest['files']:
+                    data = docs.read('web/' + page)
+                    content_type = mimetypes.guess_type(page)[0] or 'application/octet-stream'
+                    if content_type.startswith('text/'):
+                        content_type += '; charset=utf-8'
+                elif self.path in ('/', '/index.html'):
                     data, content_type = docs.read('handbook.html'), 'text/html; charset=utf-8'
                 elif self.path == '/tutorials/magnetostatics':
                     data, content_type = docs.read('chapter.html'), 'text/html; charset=utf-8'
@@ -307,7 +334,7 @@ def main():
     for name in ('query', 'serve'):
         sub = subs.add_parser(name); sub.add_argument('--snapshot', type=Path, required=True); sub.add_argument('--expected-digest')
         if name == 'query':
-            sub.add_argument('--q', default=''); sub.add_argument('--kind', default=''); sub.add_argument('--domain', default=''); sub.add_argument('--offset', type=int, default=0); sub.add_argument('--limit', type=int, default=20); sub.add_argument('--asset'); sub.add_argument('--chapter'); sub.add_argument('--handbook', action='store_true'); sub.add_argument('--topic', default='')
+            sub.add_argument('--q', default=''); sub.add_argument('--kind', default=''); sub.add_argument('--domain', default=''); sub.add_argument('--offset', type=int, default=0); sub.add_argument('--limit', type=int, default=20); sub.add_argument('--asset'); sub.add_argument('--reader'); sub.add_argument('--chapter'); sub.add_argument('--handbook', action='store_true'); sub.add_argument('--topic', default='')
         else:
             sub.add_argument('--port', type=int, default=8765)
     a = parser.parse_args()
@@ -316,7 +343,7 @@ def main():
         print(json.dumps({k:v for k,v in result.items() if k != 'files'}, ensure_ascii=False)); return
     docs = Documentation(a.snapshot, a.expected_digest)
     if a.command == 'query':
-        result = docs.handbook() if a.handbook else (docs.chapter(a.chapter) if a.chapter else (docs.asset(a.asset) if a.asset else docs.search(a.q, a.kind, a.domain, a.offset, a.limit, a.topic)))
+        result = docs.reader(a.reader) if a.reader else (docs.handbook() if a.handbook else (docs.chapter(a.chapter) if a.chapter else (docs.asset(a.asset) if a.asset else docs.search(a.q, a.kind, a.domain, a.offset, a.limit, a.topic))))
         print(encode(result).decode()); return
     http = server(docs, a.port)
     print(f'SciRel documentation: http://127.0.0.1:{http.server_port}', flush=True)

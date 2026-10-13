@@ -1,0 +1,39 @@
+/* Use the real PyData layout; the user's monochrome reading palette wins. */
+html[data-theme="light"], html[data-theme="dark"] {
+  --pst-color-background: #fff;
+  --pst-color-on-background: #fff;
+  --pst-color-surface: #f7f7f7;
+  --pst-color-on-surface: #f7f7f7;
+  --pst-color-text-base: #111;
+  --pst-color-text-muted: #444;
+  --pst-color-heading: #111;
+  --pst-color-primary: #111;
+  --pst-color-secondary: #333;
+  --pst-color-link: #111;
+  --pst-color-link-hover: #111;
+  --pst-color-border: #ddd;
+  --pst-color-inline-code: #111;
+  --pst-color-primary-bg: #f4f4f4;
+  --pst-color-secondary-bg: #f4f4f4;
+  color-scheme: light;
+}
+body { background: #fff; color: #111; }
+.bd-header { background: #fff; border-bottom: 1px solid #ddd; box-shadow: none; }
+.bd-article-container { max-width: 58em; }
+.bd-sidebar-primary { border-right: 1px solid #eee; }
+.bd-sidebar-secondary { border-left: 1px solid #eee; }
+.bd-content p, .bd-content li { line-height: 1.8; }
+.sd-card { border-color: #ddd !important; box-shadow: none !important; }
+.sig, .bd-article h1, .scirel-module { overflow-wrap: anywhere; }
+div.highlight { background: #f7f7f7; }
+div.highlight pre { white-space: pre; tab-size: 4; }
+.scirel-formula { overflow-x: auto; padding: 1rem 0; text-align: center; }
+.scirel-formula math { font-size: 1.25rem; }
+.scirel-output { border-left: 3px solid #777; padding-left: 1rem; }
+.scirel-contract { font-size: .9rem; color: #444; }
+.scirel-module { font-family: var(--pst-font-family-monospace); margin-top: 1rem; margin-bottom: 0; font-size: 1.15rem; }
+table.docutils td { overflow-wrap: anywhere; }
+.bd-article .admonition { box-shadow: none !important; border-left-color: #888 !important; }
+.bd-article .admonition > .admonition-title { background: #f3f3f3 !important; color: #111 !important; }
+.bd-article .admonition > .admonition-title::after { color: #444 !important; }
+@media (max-width: 767px) { .bd-article { padding-inline: 1rem; } }
