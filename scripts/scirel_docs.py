@@ -30,6 +30,45 @@ def sha(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def chapter_files(asset_ids):
+    """Bind executed examples to current implementation before publishing them."""
+    root = ROOT / 'tools/docs/magnetostatics'
+    execution = json.loads((root/'execution.json').read_bytes())
+    for path, digest in execution['files'].items():
+        if sha((ROOT/path).read_bytes()) != digest:
+            raise ValueError('chapter implementation changed; rerun examples: ' + path)
+    for name in ('example', 'results'):
+        suffix = '.py' if name == 'example' else '.json'
+        if sha((root/(name+suffix)).read_bytes()) != execution[name+'_sha256']:
+            raise ValueError('chapter execution binding changed: ' + name)
+    for name, digest in execution['figure_files'].items():
+        if sha((root/name).read_bytes()) != digest:
+            raise ValueError('chapter figure binding changed: ' + name)
+    for path, digest in execution['document_files'].items():
+        if sha((ROOT/path).read_bytes()) != digest:
+            raise ValueError('chapter contract changed; review examples: ' + path)
+    chapter = json.loads((root/'chapter.json').read_bytes())
+    if any(x['id'] not in asset_ids for x in chapter['assets']):
+        raise ValueError('chapter references a missing exact document')
+    results = json.loads((root/'results.json').read_bytes())
+    if not results.get('all_checks_passed') or execution['exit_code'] != 0:
+        raise ValueError('chapter examples have not passed')
+    script = (root/'example.py').read_text()
+    sections = {}
+    for block in script.split('# %% ')[1:]:
+        name, code = block.split('\n', 1)
+        sections[name] = code.split('output = dict(')[0].strip()
+    for section in chapter['sections']:
+        section['code'] = sections[section.pop('code_section')]
+    chapter.update(results=results, execution=execution)
+    prefix = 'chapters/magnetostatics/'
+    files = {prefix+'chapter.json': encode(chapter),
+             'chapter.html': (ROOT/'tools/docs/chapter.html').read_bytes()}
+    for name in ('example.py', 'results.json', 'single.svg', 'pair.svg', 'rectangle.svg'):
+        files[prefix+name] = (root/name).read_bytes()
+    return files
+
+
 def build(documents: Path, output: Path):
     docs = load_document_set(documents)
     if output.exists():
@@ -51,6 +90,7 @@ def build(documents: Path, output: Path):
         index.append(summary)
     files['index.json'] = encode(index)
     files['index.html'] = (ROOT / 'tools/docs/index.html').read_bytes()
+    files.update(chapter_files({d['asset_id'] for d in docs}))
     manifest = {'schema': SCHEMA, 'source_commit': source, 'source_dirty': dirty,
                 'asset_count': len(docs), 'notice': NOTICE,
                 'validation': {'schema_and_dependency_closure': True,
@@ -124,6 +164,11 @@ class Documentation:
             raise KeyError('unknown asset_id')
         return self.envelope(document=json.loads(self.read(f'records/{asset_id}.json')))
 
+    def chapter(self, chapter_id):
+        if chapter_id != 'magnetostatics':
+            raise KeyError('unknown chapter')
+        return self.envelope(document=json.loads(self.read('chapters/magnetostatics/chapter.json')))
+
     def handle(self, url):
         parsed = urlsplit(url)
         params = parse_qs(parsed.query, keep_blank_values=True)
@@ -139,10 +184,17 @@ class Documentation:
             return self.search(**p)
         if parsed.path == '/api/asset' and set(p) == {'id'}:
             return self.asset(p['id'])
+        if parsed.path == '/api/chapter' and set(p) == {'id'}:
+            return self.chapter(p['id'])
+        if parsed.path == '/api/chapters' and not p:
+            c = self.chapter('magnetostatics')['document']
+            return self.envelope(items=[{k: c[k] for k in ('id', 'title', 'discipline', 'introduction')}])
         if parsed.path == '/api' and not p:
             return self.envelope(endpoints={'search': '/api/search?q=&kind=&domain=&offset=0&limit=20',
                                             'asset': '/api/asset?id=scirel.…',
-                                            'manifest': '/api/manifest'},
+                                            'manifest': '/api/manifest',
+                                            'chapters': '/api/chapters',
+                                            'chapter': '/api/chapter?id=magnetostatics'},
                                  operations='read-only; no callable execution',
                                  discovery='lexical AND search, lowercase, whitespace separated; exact domain/kind filters')
         if parsed.path == '/api/manifest' and not p:
@@ -155,7 +207,13 @@ def server(docs, port):
         def do_GET(self):
             try:
                 if self.path in ('/', '/index.html'):
+                    data, content_type = docs.read('chapter.html'), 'text/html; charset=utf-8'
+                elif self.path == '/reference':
                     data, content_type = docs.read('index.html'), 'text/html; charset=utf-8'
+                elif self.path.startswith('/chapters/') and self.path[1:] in docs.manifest['files']:
+                    suffix = Path(self.path).suffix
+                    content_type = {'.svg': 'image/svg+xml', '.json': 'application/json; charset=utf-8', '.py': 'text/plain; charset=utf-8'}[suffix]
+                    data = docs.read(self.path[1:])
                 else:
                     data, content_type = encode(docs.handle(self.path)), 'application/json; charset=utf-8'
                 status = 200
@@ -182,7 +240,7 @@ def main():
     for name in ('query', 'serve'):
         sub = subs.add_parser(name); sub.add_argument('--snapshot', type=Path, required=True); sub.add_argument('--expected-digest')
         if name == 'query':
-            sub.add_argument('--q', default=''); sub.add_argument('--kind', default=''); sub.add_argument('--domain', default=''); sub.add_argument('--offset', type=int, default=0); sub.add_argument('--limit', type=int, default=20); sub.add_argument('--asset')
+            sub.add_argument('--q', default=''); sub.add_argument('--kind', default=''); sub.add_argument('--domain', default=''); sub.add_argument('--offset', type=int, default=0); sub.add_argument('--limit', type=int, default=20); sub.add_argument('--asset'); sub.add_argument('--chapter')
         else:
             sub.add_argument('--port', type=int, default=8765)
     a = parser.parse_args()
@@ -191,7 +249,7 @@ def main():
         print(json.dumps({k:v for k,v in result.items() if k != 'files'}, ensure_ascii=False)); return
     docs = Documentation(a.snapshot, a.expected_digest)
     if a.command == 'query':
-        result = docs.asset(a.asset) if a.asset else docs.search(a.q, a.kind, a.domain, a.offset, a.limit)
+        result = docs.chapter(a.chapter) if a.chapter else (docs.asset(a.asset) if a.asset else docs.search(a.q, a.kind, a.domain, a.offset, a.limit))
         print(encode(result).decode()); return
     http = server(docs, a.port)
     print(f'SciRel documentation: http://127.0.0.1:{http.server_port}', flush=True)

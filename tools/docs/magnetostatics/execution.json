@@ -1,0 +1,34 @@
+{
+  "source_commit": "242b9703546af236e85747fb1205060a5fbe0f97",
+  "files": {
+    "src/scirel/field/circular_filament_green.py": "4be4663adfabc8df207421c5365853a4fa1dc67a5e9da515f438a8cfd9433947",
+    "src/scirel/field/current_green_superposition.py": "ef48b26b1e552fa11d54509d280ce16df4542517a833ea99e0b9a060941adf1e",
+    "src/scirel/field/rectangular_coil_filaments.py": "1615ade92a272170d0799eab6779917e2c236ce698056a4f7efeb71c080c2ecb",
+    "src/scirel/field/multi_coil_vacuum_field.py": "bfc04c817742d7bc935c88bc9f92c78036083d793ef9db94d794d2bbecb73acc",
+    "src/scirel/_composition.py": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77"
+  },
+  "scope": "Selected unchanged scientific implementation for chapter execution only; not a public release",
+  "schema": "scirel.chapter-execution.v1",
+  "example_sha256": "feae9bb16913bcd304baa2e34b0d7d7f4ec9f65c06a04bf3d83492ab375257dc",
+  "results_sha256": "1843dc5b7c200a47193da2b3e4066d5f4a2bb4f3dca0ec5aa1f1b2ce3ad6a704",
+  "wheel_sha256": "1efb5987f271d8d8302686fdd91cfa3d1905cf8330b2386fc6e37f0280e7c0ad",
+  "wheel_version": "0.1.0.dev5+field.chapter",
+  "image_id": "sha256:ff5092c4de5b9c6f705bf90efa300fd424665e9ade645fa66adb164facf6a18a",
+  "runtime": "Python 3.12.3 / NumPy 1.26.4 / SciPy 1.11.4",
+  "network": "none",
+  "source_checkout_mounted": false,
+  "exit_code": 0,
+  "figure_files": {
+    "plot.py": "d37a3c76b7107bb573fe7900b0c3ac59583801026af219c868d991de1a5bbb78",
+    "single.svg": "5f0d34ed3addaba7d0aa57df5cbb99f65e1d31d8dc283da4f929cbe1a6081955",
+    "pair.svg": "e53f5c7a40783070a5b9cbf089c4625f99ff87b680742a960b6bb120c7c2160c",
+    "rectangle.svg": "abc751e8537da48c25885e129d6b882be9547c88a0ec372764e50dce9c67b27e"
+  },
+  "plot_runtime": "Matplotlib 3.11.2 on Mac; rendering recorded values only",
+  "document_files": {
+    "catalog/examples/scirel.field.circular-filament-green.json": "e89cc0daab45bb68841b7202a901689c0fd589e4d0f0af289db56dfbbb5ae319",
+    "catalog/examples/scirel.field.current-green-superposition.json": "9a1b151a55729589af862fbb74014668a3575d30063b280a228fc772d214579c",
+    "catalog/examples/scirel.field.rectangular-coil-filaments.json": "6a131fd666668d15ab669fbd9e2ecfc76d75fd7cdae9e5550233fa3c14fccb52",
+    "catalog/examples/scirel.field.multi-coil-vacuum-field.json": "5d1e69a512931b412328c9f5a0fed04bfd29e8ee89c6a175a68630c117f5e65d"
+  }
+}

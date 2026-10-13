@@ -90,3 +90,41 @@ def test_build_refuses_overwrite_and_invalid_documents(snapshot, tmp_path):
     with pytest.raises(ValueError):
         build(bad, tmp_path / 'out')
     assert not (tmp_path / 'out').exists()
+
+
+def test_chapter_http_cli_and_download_share_execution(snapshot):
+    docs = Documentation(snapshot)
+    chapter = docs.handle('/api/chapter?id=magnetostatics')['document']
+    assert chapter['discipline'] == ['电磁学', '磁静力学']
+    assert chapter['results']['all_checks_passed'] is True
+    assert 0.00179 < chapter['results']['center_single_T'] < 0.00180
+    assert all(x['id'] in docs.ids for x in chapter['assets'])
+    assert 'circular_filament_green_response' in chapter['sections'][0]['code']
+    assert docs.handle('/api/chapters')['items'][0]['id'] == chapter['id']
+    cli = subprocess.check_output([sys.executable, str(ROOT/'scripts/scirel_docs.py'),
+                                  'query', '--snapshot', str(snapshot), '--chapter', chapter['id']])
+    assert json.loads(cli)['document'] == chapter
+    with pytest.raises(KeyError):
+        docs.chapter('../../source')
+    (snapshot/'chapters/magnetostatics/chapter.json').write_text('{}')
+    with pytest.raises(ValueError, match='bytes changed'):
+        docs.chapter(chapter['id'])
+
+
+def test_chapter_build_rejects_stale_execution(tmp_path, monkeypatch):
+    import shutil
+    import scirel_docs
+    copy = tmp_path/'repo'
+    shutil.copytree(ROOT/'tools/docs', copy/'tools/docs')
+    binding = json.loads((copy/'tools/docs/magnetostatics/execution.json').read_text())
+    for path in list(binding['files']) + list(binding['document_files']):
+        target = copy/path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT/path, target)
+    monkeypatch.setattr(scirel_docs, 'ROOT', copy)
+    asset_ids = {x['id'] for x in json.loads((copy/'tools/docs/magnetostatics/chapter.json').read_text())['assets']}
+    scirel_docs.chapter_files(asset_ids)
+    path = copy/next(iter(binding['files']))
+    path.write_text(path.read_text()+'\n# changed\n')
+    with pytest.raises(ValueError, match='implementation changed'):
+        scirel_docs.chapter_files(asset_ids)
