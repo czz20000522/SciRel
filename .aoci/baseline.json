@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-13T14:31:49Z",
+  "updated_at": "2026-10-13T16:56:43Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -23,9 +23,9 @@
     },
     ".codex/config.toml": {
       "role": "index",
-      "sha256": "f38941a81691e471c98c2af30e3af2f59f34b7f74df76f19c9631a30894b889c",
-      "size": 337,
-      "normalized_sha256": "f38941a81691e471c98c2af30e3af2f59f34b7f74df76f19c9631a30894b889c"
+      "sha256": "3c7948787a6e242efc5a0d8b269709212814da65127907f131b477304208a254",
+      "size": 146,
+      "normalized_sha256": "3c7948787a6e242efc5a0d8b269709212814da65127907f131b477304208a254"
     },
     ".gitattributes": {
       "role": "index",
@@ -65,9 +65,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "0f34f33df6ea8544305f8ed3d2294cca42d09cee77dfc99411793c2b35d3babf",
-      "size": 422269,
-      "normalized_sha256": "0f34f33df6ea8544305f8ed3d2294cca42d09cee77dfc99411793c2b35d3babf"
+      "sha256": "0a11c084411647e05293faa8af7b925f46f3a6a8e653b2c46534d76fd94a6883",
+      "size": 427938,
+      "normalized_sha256": "0a11c084411647e05293faa8af7b925f46f3a6a8e653b2c46534d76fd94a6883"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -83,45 +83,45 @@
     },
     "catalog/examples/scirel.closures.boltzmann-quasineutrality.json": {
       "role": "index",
-      "sha256": "cb4e52cb603d84e29ded5e9bf436f82e6779e8506fe881b637a7f2b741d666c2",
-      "size": 11876,
-      "normalized_sha256": "cb4e52cb603d84e29ded5e9bf436f82e6779e8506fe881b637a7f2b741d666c2"
+      "sha256": "baf7a9f8ae1dbe9f4655c893d3c20202ee9a7be126c7a9e3b6a21d0b2640bab1",
+      "size": 11880,
+      "normalized_sha256": "baf7a9f8ae1dbe9f4655c893d3c20202ee9a7be126c7a9e3b6a21d0b2640bab1"
     },
     "catalog/examples/scirel.closures.hall-two-fluid-pressure.json": {
       "role": "index",
-      "sha256": "cdbaa58a761d111702c3a4c2e3aef746e5017ddc128c9d0ce06655eed93be7a2",
-      "size": 19058,
-      "normalized_sha256": "cdbaa58a761d111702c3a4c2e3aef746e5017ddc128c9d0ce06655eed93be7a2"
+      "sha256": "2fee2b8eebc03aa8f0af001e26716f705756d30618ff520b8dcb62af8157fa99",
+      "size": 19062,
+      "normalized_sha256": "2fee2b8eebc03aa8f0af001e26716f705756d30618ff520b8dcb62af8157fa99"
     },
     "catalog/examples/scirel.closures.mirror-ambipolar-potential.json": {
       "role": "index",
-      "sha256": "a329af72c79c4e9ad5362649674ba496be82e506c17182bb99284d4d5a75fb8d",
-      "size": 21983,
-      "normalized_sha256": "a329af72c79c4e9ad5362649674ba496be82e506c17182bb99284d4d5a75fb8d"
+      "sha256": "d0a8eb8f1d7ec96651214b8f87575bcf0ac9da41f67316f86306b2dca1509089",
+      "size": 21987,
+      "normalized_sha256": "d0a8eb8f1d7ec96651214b8f87575bcf0ac9da41f67316f86306b2dca1509089"
     },
     "catalog/examples/scirel.closures.mirror-quasineutral-closure.json": {
       "role": "index",
-      "sha256": "2a192a26a6ad6ad1b7f0700a17853624f37e06a743f9bc7b88769407ac21d4a5",
-      "size": 67909,
-      "normalized_sha256": "2a192a26a6ad6ad1b7f0700a17853624f37e06a743f9bc7b88769407ac21d4a5"
+      "sha256": "cd5a89187376cecef027c66a2a5b390f636be014aeb6601dd8e62db7466ab725",
+      "size": 67913,
+      "normalized_sha256": "cd5a89187376cecef027c66a2a5b390f636be014aeb6601dd8e62db7466ab725"
     },
     "catalog/examples/scirel.closures.quasineutral-potential.json": {
       "role": "index",
-      "sha256": "2fa7224bacfa34d18f4ef88c4eb5ccb542b1c2ab6c52d29f5965a3c829786797",
-      "size": 13794,
-      "normalized_sha256": "2fa7224bacfa34d18f4ef88c4eb5ccb542b1c2ab6c52d29f5965a3c829786797"
+      "sha256": "686c1a28ea1502c36ca31b0b71dea207114cd1e356b02f159a30a8f86bb24194",
+      "size": 13798,
+      "normalized_sha256": "686c1a28ea1502c36ca31b0b71dea207114cd1e356b02f159a30a8f86bb24194"
     },
     "catalog/examples/scirel.closures.quasineutral-reference-density.json": {
       "role": "index",
-      "sha256": "68c885ecb13ef1abfe99c94048e0c38091362f8ee50c9731d7657a15eed2c03b",
-      "size": 6574,
-      "normalized_sha256": "68c885ecb13ef1abfe99c94048e0c38091362f8ee50c9731d7657a15eed2c03b"
+      "sha256": "5d2eb9bc1597651d1466e396310db016c9940102047998c89e8efd857febed0c",
+      "size": 6578,
+      "normalized_sha256": "5d2eb9bc1597651d1466e396310db016c9940102047998c89e8efd857febed0c"
     },
     "catalog/examples/scirel.closures.reduced-hall-drift.json": {
       "role": "index",
-      "sha256": "dbe6766a9d816f1251dcf5ed553cfcadf56422f9a1acc57bbd11e7ad792fe428",
-      "size": 31349,
-      "normalized_sha256": "dbe6766a9d816f1251dcf5ed553cfcadf56422f9a1acc57bbd11e7ad792fe428"
+      "sha256": "658dc0646049ffa0e28220e3225c1a08c1d27be1b1bdd097dc0d920ffaafef43",
+      "size": 31353,
+      "normalized_sha256": "658dc0646049ffa0e28220e3225c1a08c1d27be1b1bdd097dc0d920ffaafef43"
     },
     "catalog/examples/scirel.closures.tabulated-pressure.json": {
       "role": "index",
@@ -251,9 +251,9 @@
     },
     "catalog/examples/scirel.diagnostics.firehose-mirror-margins.json": {
       "role": "index",
-      "sha256": "3dc3a64a39ded6dddc19b48c5a76d6a16486b1954d22c578ebc7b6363582e314",
-      "size": 13798,
-      "normalized_sha256": "3dc3a64a39ded6dddc19b48c5a76d6a16486b1954d22c578ebc7b6363582e314"
+      "sha256": "406a63b50af8bc03612a1aac903d08f5da50cc9ff631bf7b5e3def0dd35080da",
+      "size": 13802,
+      "normalized_sha256": "406a63b50af8bc03612a1aac903d08f5da50cc9ff631bf7b5e3def0dd35080da"
     },
     "catalog/examples/scirel.diagnostics.observation-residuals.json": {
       "role": "index",
@@ -263,15 +263,15 @@
     },
     "catalog/examples/scirel.diagnostics.parallel-pressure-residual.json": {
       "role": "index",
-      "sha256": "1ba003425af95df478e13763bce8ac6600fdd43ba9eae78b11515eb643fce8c5",
-      "size": 11975,
-      "normalized_sha256": "1ba003425af95df478e13763bce8ac6600fdd43ba9eae78b11515eb643fce8c5"
+      "sha256": "867f57cae020008e903d2f20ca1e89cb88ca41b97129b906b3c661d303b04fc7",
+      "size": 11979,
+      "normalized_sha256": "867f57cae020008e903d2f20ca1e89cb88ca41b97129b906b3c661d303b04fc7"
     },
     "catalog/examples/scirel.diagnostics.picard-flux-residual.json": {
       "role": "index",
-      "sha256": "6fb751fffbe6dea496aebffc85f462eba86b221175e5381689811a8cb300371e",
-      "size": 6610,
-      "normalized_sha256": "6fb751fffbe6dea496aebffc85f462eba86b221175e5381689811a8cb300371e"
+      "sha256": "d9e75180c9e3cef9fe5014c9c84265161e589cce999c983b332d487704fba8ef",
+      "size": 6614,
+      "normalized_sha256": "d9e75180c9e3cef9fe5014c9c84265161e589cce999c983b332d487704fba8ef"
     },
     "catalog/examples/scirel.diagnostics.pointwise-firehose-margin.json": {
       "role": "index",
@@ -293,39 +293,39 @@
     },
     "catalog/examples/scirel.equilibrium.anisotropic-force-balance.json": {
       "role": "index",
-      "sha256": "b81f2f8c58183a7a1a0909e343acaaa49c5c4982ca0123d11789e3f45920ab8c",
-      "size": 14239,
-      "normalized_sha256": "b81f2f8c58183a7a1a0909e343acaaa49c5c4982ca0123d11789e3f45920ab8c"
+      "sha256": "118d65f5271ea5e890a2eb5773700997503a83f75a29b73caef897effd1fa979",
+      "size": 14243,
+      "normalized_sha256": "118d65f5271ea5e890a2eb5773700997503a83f75a29b73caef897effd1fa979"
     },
     "catalog/examples/scirel.equilibrium.anisotropic-picard-feedback.json": {
       "role": "index",
-      "sha256": "6fbbbe93d0b0f65b1d00707ac12cb504ce2413e56d6992f56197768979ba6434",
-      "size": 15897,
-      "normalized_sha256": "6fbbbe93d0b0f65b1d00707ac12cb504ce2413e56d6992f56197768979ba6434"
+      "sha256": "2e87807bf8b5c120ba91b88b87a776235fe4181142b12c494ac52afa2cd740ea",
+      "size": 15901,
+      "normalized_sha256": "2e87807bf8b5c120ba91b88b87a776235fe4181142b12c494ac52afa2cd740ea"
     },
     "catalog/examples/scirel.equilibrium.anisotropic-toroidal-current.json": {
       "role": "index",
-      "sha256": "1f6b8a596edc568360aa110372016164085d6052e637e9e119abcf2ccef09af2",
-      "size": 10198,
-      "normalized_sha256": "1f6b8a596edc568360aa110372016164085d6052e637e9e119abcf2ccef09af2"
+      "sha256": "654610f44765b6b1da41b2311f4f7d62ff66bb1b37ea20fd7fdfe15a280cade3",
+      "size": 10202,
+      "normalized_sha256": "654610f44765b6b1da41b2311f4f7d62ff66bb1b37ea20fd7fdfe15a280cade3"
     },
     "catalog/examples/scirel.equilibrium.axisymmetric-anisotropic-picard.json": {
       "role": "index",
-      "sha256": "f49943566736e722c88b0bb9d8a567de2e63ae3a5a032e8aab1ed99d99d4ba45",
-      "size": 61715,
-      "normalized_sha256": "f49943566736e722c88b0bb9d8a567de2e63ae3a5a032e8aab1ed99d99d4ba45"
+      "sha256": "70297966710ed715f19dbea3f7a4220c4708483170c9206bb2f1a54a4c7251cc",
+      "size": 61719,
+      "normalized_sha256": "70297966710ed715f19dbea3f7a4220c4708483170c9206bb2f1a54a4c7251cc"
     },
     "catalog/examples/scirel.equilibrium.axisymmetric-picard-update.json": {
       "role": "index",
-      "sha256": "79abbc8b4d5de8488ae44b5bc853297f3bf522475dfc2aa44e6a071ba6c7338c",
-      "size": 12504,
-      "normalized_sha256": "79abbc8b4d5de8488ae44b5bc853297f3bf522475dfc2aa44e6a071ba6c7338c"
+      "sha256": "4a81a8d83e218a7a944648625ebc150f8ff7c05f7e1b4df8c969acb434507814",
+      "size": 12508,
+      "normalized_sha256": "4a81a8d83e218a7a944648625ebc150f8ff7c05f7e1b4df8c969acb434507814"
     },
     "catalog/examples/scirel.equilibrium.free-boundary-anisotropic-picard.json": {
       "role": "index",
-      "sha256": "68bf684b590cd1ccd62eadb64ae40379a092c44bd452d03a9e4d2b1a129fd358",
-      "size": 79829,
-      "normalized_sha256": "68bf684b590cd1ccd62eadb64ae40379a092c44bd452d03a9e4d2b1a129fd358"
+      "sha256": "001d33e5063ee283777908692c6fb7c960f9a3ceced71efba745591677c7037e",
+      "size": 79833,
+      "normalized_sha256": "001d33e5063ee283777908692c6fb7c960f9a3ceced71efba745591677c7037e"
     },
     "catalog/examples/scirel.equilibrium.isotropic-picard-step.json": {
       "role": "index",
@@ -341,9 +341,9 @@
     },
     "catalog/examples/scirel.equilibrium.kinetic-mirror-hall-equilibrium.json": {
       "role": "index",
-      "sha256": "1863559ec72f2a85a9b438dbf9eb066f53d807bec35973d39a48fb03bec458ec",
-      "size": 52433,
-      "normalized_sha256": "1863559ec72f2a85a9b438dbf9eb066f53d807bec35973d39a48fb03bec458ec"
+      "sha256": "4dd7218e0d981d017791b7ab7e7beaf2a6359d809fb8b45d0cc3078a1b8d61e8",
+      "size": 52437,
+      "normalized_sha256": "4dd7218e0d981d017791b7ab7e7beaf2a6359d809fb8b45d0cc3078a1b8d61e8"
     },
     "catalog/examples/scirel.equilibrium.pressure-flux-state.json": {
       "role": "index",
@@ -353,15 +353,15 @@
     },
     "catalog/examples/scirel.equilibrium.reduced-hall-anisotropic-picard.json": {
       "role": "index",
-      "sha256": "4408c3a3979b7762053d6dab414d2463279007f165d7bae31986fc5923fcc8e6",
-      "size": 73959,
-      "normalized_sha256": "4408c3a3979b7762053d6dab414d2463279007f165d7bae31986fc5923fcc8e6"
+      "sha256": "7bc89a216d0a215bf5334aedb8157c7029b59ef084597a15574381cd6060388a",
+      "size": 73963,
+      "normalized_sha256": "7bc89a216d0a215bf5334aedb8157c7029b59ef084597a15574381cd6060388a"
     },
     "catalog/examples/scirel.field.circular-filament-green.json": {
       "role": "index",
-      "sha256": "29b7e7b9bf90f0214f4b47ea7b7e6d496a40440857ed3fa748f2e31c7f286d54",
-      "size": 6604,
-      "normalized_sha256": "29b7e7b9bf90f0214f4b47ea7b7e6d496a40440857ed3fa748f2e31c7f286d54"
+      "sha256": "11d97b3243f364c638b26eae058d7256fc0d89a82075cdb5f3b316f93b4e12ba",
+      "size": 6608,
+      "normalized_sha256": "11d97b3243f364c638b26eae058d7256fc0d89a82075cdb5f3b316f93b4e12ba"
     },
     "catalog/examples/scirel.field.coil-green-geometry.json": {
       "role": "index",
@@ -377,15 +377,15 @@
     },
     "catalog/examples/scirel.field.current-green-superposition.json": {
       "role": "index",
-      "sha256": "b99ed360b2129a974913e28ddcb9c27dd158fe928fec4925541aeb31b39f6307",
-      "size": 6030,
-      "normalized_sha256": "b99ed360b2129a974913e28ddcb9c27dd158fe928fec4925541aeb31b39f6307"
+      "sha256": "d5d0a7c2f5cc3fdf1522dc91658ada206a6736fd689f29f51ce557deb55c5ca5",
+      "size": 6034,
+      "normalized_sha256": "d5d0a7c2f5cc3fdf1522dc91658ada206a6736fd689f29f51ce557deb55c5ca5"
     },
     "catalog/examples/scirel.field.dense-axisymmetric-green.json": {
       "role": "index",
-      "sha256": "2b92ef9c2bb88d91fd972e415a16b9cd4a8bbe6cdce9273bad60406925eb851e",
-      "size": 7600,
-      "normalized_sha256": "2b92ef9c2bb88d91fd972e415a16b9cd4a8bbe6cdce9273bad60406925eb851e"
+      "sha256": "b07480cda36c7edbba60571d6eecab0561d0fda99c5be22b21f8992dfd5c0719",
+      "size": 7604,
+      "normalized_sha256": "b07480cda36c7edbba60571d6eecab0561d0fda99c5be22b21f8992dfd5c0719"
     },
     "catalog/examples/scirel.field.filament-coil-green-field.json": {
       "role": "index",
@@ -395,27 +395,27 @@
     },
     "catalog/examples/scirel.field.filament-vacuum-field.json": {
       "role": "index",
-      "sha256": "b778f9467d805f3d6481dbd39048c06302156282681795b93cbb6ac2795bb257",
-      "size": 8337,
-      "normalized_sha256": "b778f9467d805f3d6481dbd39048c06302156282681795b93cbb6ac2795bb257"
+      "sha256": "2657e723ed9c6d9cb9f4b47e102a8480250a31d28fe067291ec96ee332ac1ba5",
+      "size": 8341,
+      "normalized_sha256": "2657e723ed9c6d9cb9f4b47e102a8480250a31d28fe067291ec96ee332ac1ba5"
     },
     "catalog/examples/scirel.field.ideal-conductor-boundary.json": {
       "role": "index",
-      "sha256": "85d80d2a8ac7aa2931310b07d698f21d62e3c1dca09710697d8ced97c89a18c2",
-      "size": 11236,
-      "normalized_sha256": "85d80d2a8ac7aa2931310b07d698f21d62e3c1dca09710697d8ced97c89a18c2"
+      "sha256": "1af64d940ead70c6ec7838a3b67ec757720fda4f7790c383840979603bfe56a8",
+      "size": 11240,
+      "normalized_sha256": "1af64d940ead70c6ec7838a3b67ec757720fda4f7790c383840979603bfe56a8"
     },
     "catalog/examples/scirel.field.mirror-plasma-green.json": {
       "role": "index",
-      "sha256": "3725129c6a8ef2d1014296e0bcab08231a5b62585376d2835c8c7a9924898057",
-      "size": 7989,
-      "normalized_sha256": "3725129c6a8ef2d1014296e0bcab08231a5b62585376d2835c8c7a9924898057"
+      "sha256": "23838437e92bd196e4e0ad4ddf625b9a1f30d8a82981919ff44de85f55bea418",
+      "size": 7993,
+      "normalized_sha256": "23838437e92bd196e4e0ad4ddf625b9a1f30d8a82981919ff44de85f55bea418"
     },
     "catalog/examples/scirel.field.multi-coil-vacuum-field.json": {
       "role": "index",
-      "sha256": "9ce8d48ebe5f2bb039b77e930346c865f845406e5f948aa1f407b968434fa43e",
-      "size": 22697,
-      "normalized_sha256": "9ce8d48ebe5f2bb039b77e930346c865f845406e5f948aa1f407b968434fa43e"
+      "sha256": "d91a2d6344fcc5826e0538a339d3106924cfc4cd4802fe9d97de09e440dbf45e",
+      "size": 22701,
+      "normalized_sha256": "d91a2d6344fcc5826e0538a339d3106924cfc4cd4802fe9d97de09e440dbf45e"
     },
     "catalog/examples/scirel.field.permanent-ring-filaments.json": {
       "role": "index",
@@ -425,21 +425,21 @@
     },
     "catalog/examples/scirel.field.poloidal-field-from-flux.json": {
       "role": "index",
-      "sha256": "ee2c9f5aa16ffc1eace386f4239d4cc334beb3f8f11f52ab15f582f5f93a9208",
-      "size": 8499,
-      "normalized_sha256": "ee2c9f5aa16ffc1eace386f4239d4cc334beb3f8f11f52ab15f582f5f93a9208"
+      "sha256": "c90eed1280b80a750cfe23950648e0ccc1297886338eff6ce7e5a255609eace3",
+      "size": 8503,
+      "normalized_sha256": "c90eed1280b80a750cfe23950648e0ccc1297886338eff6ce7e5a255609eace3"
     },
     "catalog/examples/scirel.field.poloidal-field-magnitude.json": {
       "role": "index",
-      "sha256": "e2ee8b6e3cf2b60a63564ee2a048dc2e0602e4e326a1591c1b95a1a69b90803b",
-      "size": 5577,
-      "normalized_sha256": "e2ee8b6e3cf2b60a63564ee2a048dc2e0602e4e326a1591c1b95a1a69b90803b"
+      "sha256": "aea13bba7a21aaf25aebeae2651ca9dc9bcababc761660dd00ce5ae1f64a3941",
+      "size": 5581,
+      "normalized_sha256": "aea13bba7a21aaf25aebeae2651ca9dc9bcababc761660dd00ce5ae1f64a3941"
     },
     "catalog/examples/scirel.field.rectangular-coil-filaments.json": {
       "role": "index",
-      "sha256": "791249d516d042f1e4ec98a0886ed6abfd6f739a94eb3ce5aeebf69f4e609808",
-      "size": 5986,
-      "normalized_sha256": "791249d516d042f1e4ec98a0886ed6abfd6f739a94eb3ce5aeebf69f4e609808"
+      "sha256": "86b62ce950853683ffc4cd39c1ef68efdb5a650823c990d8a2aeda00db14e1f8",
+      "size": 5990,
+      "normalized_sha256": "86b62ce950853683ffc4cd39c1ef68efdb5a650823c990d8a2aeda00db14e1f8"
     },
     "catalog/examples/scirel.fusion.dd-neutron-lab-energy.json": {
       "role": "index",
@@ -479,9 +479,9 @@
     },
     "catalog/examples/scirel.geometry.flux-surface-profile.json": {
       "role": "index",
-      "sha256": "bef7bd7526ef00c34a82e7e1fa3a8149994681d244dc3fedc6b2e6cf3a09d6d7",
-      "size": 9031,
-      "normalized_sha256": "bef7bd7526ef00c34a82e7e1fa3a8149994681d244dc3fedc6b2e6cf3a09d6d7"
+      "sha256": "8b7d9eb0c14a22b379f850434cf0e41328f4b634f9fa85ef358afcfc62555e79",
+      "size": 9035,
+      "normalized_sha256": "8b7d9eb0c14a22b379f850434cf0e41328f4b634f9fa85ef358afcfc62555e79"
     },
     "catalog/examples/scirel.geometry.material-support-classification.json": {
       "role": "index",
@@ -605,33 +605,33 @@
     },
     "catalog/examples/scirel.kinetic.frank-egedal-hot-ion-moments.json": {
       "role": "index",
-      "sha256": "6aadf4eda5f62d66c3f5c17cf330b90f231b5570af092080ad88352204d3f50f",
-      "size": 15406,
-      "normalized_sha256": "6aadf4eda5f62d66c3f5c17cf330b90f231b5570af092080ad88352204d3f50f"
+      "sha256": "cdce8058cafb66d99e4b79adc225f28dee5d3c898be75cd2d99d8fc98e642e94",
+      "size": 15410,
+      "normalized_sha256": "cdce8058cafb66d99e4b79adc225f28dee5d3c898be75cd2d99d8fc98e642e94"
     },
     "catalog/examples/scirel.kinetic.frank-egedal-pressure-closure.json": {
       "role": "index",
-      "sha256": "2bd221e9d11ec04ba2b04cd456870d025ab60f8e3f0ba51832739724ee428d5a",
-      "size": 31374,
-      "normalized_sha256": "2bd221e9d11ec04ba2b04cd456870d025ab60f8e3f0ba51832739724ee428d5a"
+      "sha256": "48e779730ec350b000621c93d2b239c09fab4b289fc4e5a9b10d0933bf0b696f",
+      "size": 31378,
+      "normalized_sha256": "48e779730ec350b000621c93d2b239c09fab4b289fc4e5a9b10d0933bf0b696f"
     },
     "catalog/examples/scirel.kinetic.frank-egedal-pressure-state.json": {
       "role": "index",
-      "sha256": "81757596691fe279a6fdd67e7cb9fa25911f82eb77f7cd835fb42b39fa424238",
-      "size": 12247,
-      "normalized_sha256": "81757596691fe279a6fdd67e7cb9fa25911f82eb77f7cd835fb42b39fa424238"
+      "sha256": "bd9cfbf00d77954151c47a62b2669d62ecca11abbddd5103a999dee3ac874985",
+      "size": 12251,
+      "normalized_sha256": "bd9cfbf00d77954151c47a62b2669d62ecca11abbddd5103a999dee3ac874985"
     },
     "catalog/examples/scirel.kinetic.frank-egedal-radial-envelope.json": {
       "role": "index",
-      "sha256": "8b7908fc41f711f02cf8dc5f2066660356d4a818ead576f29b8dfd8f96ca82ce",
-      "size": 8481,
-      "normalized_sha256": "8b7908fc41f711f02cf8dc5f2066660356d4a818ead576f29b8dfd8f96ca82ce"
+      "sha256": "c73a45ef8e1109b5208c9fb7a9907f68a9a47b3eadfef4cdb31e6cf38568dccb",
+      "size": 8485,
+      "normalized_sha256": "c73a45ef8e1109b5208c9fb7a9907f68a9a47b3eadfef4cdb31e6cf38568dccb"
     },
     "catalog/examples/scirel.kinetic.frank-egedal-source-projection.json": {
       "role": "index",
-      "sha256": "182952cde1eef4508ff31c8cc85087c89280d4f9a7c30309959ae63fd1de7146",
-      "size": 11112,
-      "normalized_sha256": "182952cde1eef4508ff31c8cc85087c89280d4f9a7c30309959ae63fd1de7146"
+      "sha256": "5ef5ae053ca3bba9419dec5228b9825c89b413a30de44e831963942eccdab3d4",
+      "size": 11116,
+      "normalized_sha256": "5ef5ae053ca3bba9419dec5228b9825c89b413a30de44e831963942eccdab3d4"
     },
     "catalog/examples/scirel.kinetic.gamma-lpole-coefficients.json": {
       "role": "index",
@@ -653,9 +653,9 @@
     },
     "catalog/examples/scirel.kinetic.grid-mirror-kinetic-closure.json": {
       "role": "index",
-      "sha256": "12e3d4c54b50f347e6bb77fb684cfe2caaa171ffd8b6ece279b9911bf4cbe186",
-      "size": 72954,
-      "normalized_sha256": "12e3d4c54b50f347e6bb77fb684cfe2caaa171ffd8b6ece279b9911bf4cbe186"
+      "sha256": "4bfbefbbf382085d5b2c925180702da22e57db06b71b6c7196904c8c112409d6",
+      "size": 72958,
+      "normalized_sha256": "4bfbefbbf382085d5b2c925180702da22e57db06b71b6c7196904c8c112409d6"
     },
     "catalog/examples/scirel.kinetic.hydrogen-saha-equilibrium-population.json": {
       "role": "index",
@@ -713,27 +713,27 @@
     },
     "catalog/examples/scirel.kinetic.loss-cone-spectrum.json": {
       "role": "index",
-      "sha256": "a03a2adf0af1891ec4e1673e0dcc7f59a262ec95f866c62155f17daf6d2d520c",
-      "size": 9216,
-      "normalized_sha256": "a03a2adf0af1891ec4e1673e0dcc7f59a262ec95f866c62155f17daf6d2d520c"
+      "sha256": "409535a97496ad6db66ec5abbe2c104f710a45d053bbbec4dbc5c3c16c27c088",
+      "size": 9220,
+      "normalized_sha256": "409535a97496ad6db66ec5abbe2c104f710a45d053bbbec4dbc5c3c16c27c088"
     },
     "catalog/examples/scirel.kinetic.mirror-constrained-moments.json": {
       "role": "index",
-      "sha256": "c22451725ab46429649386f8a586f1a7e1ecb2a691a2270150a5f7ff23bbc776",
-      "size": 21025,
-      "normalized_sha256": "c22451725ab46429649386f8a586f1a7e1ecb2a691a2270150a5f7ff23bbc776"
+      "sha256": "63f3b8126c39e3f569e178df868c98e31be7f2827f82913d409bcea5efc64e4d",
+      "size": 21029,
+      "normalized_sha256": "63f3b8126c39e3f569e178df868c98e31be7f2827f82913d409bcea5efc64e4d"
     },
     "catalog/examples/scirel.kinetic.mirror-invariant-distribution.json": {
       "role": "index",
-      "sha256": "c4ecff009ff1df7712b77ca21d281ac16be66bf0fd8bf937697a61983152db57",
-      "size": 17782,
-      "normalized_sha256": "c4ecff009ff1df7712b77ca21d281ac16be66bf0fd8bf937697a61983152db57"
+      "sha256": "6878e96044a3f2607a096b042e4dafa4a68ba52c748f23f5c7e90f4776400664",
+      "size": 17786,
+      "normalized_sha256": "6878e96044a3f2607a096b042e4dafa4a68ba52c748f23f5c7e90f4776400664"
     },
     "catalog/examples/scirel.kinetic.mirror-total-pressure.json": {
       "role": "index",
-      "sha256": "46509f60d40cc8201036b12aba88950e10ee58c73743e8f126e9c0b61db8f988",
-      "size": 13525,
-      "normalized_sha256": "46509f60d40cc8201036b12aba88950e10ee58c73743e8f126e9c0b61db8f988"
+      "sha256": "e3dce8641bca5853d80d447114af5f97bf7b4b1ff5fcea6c2f1de5055a69ff05",
+      "size": 13529,
+      "normalized_sha256": "e3dce8641bca5853d80d447114af5f97bf7b4b1ff5fcea6c2f1de5055a69ff05"
     },
     "catalog/examples/scirel.kinetic.molecular-alpha-contraction.json": {
       "role": "index",
@@ -899,153 +899,153 @@
     },
     "catalog/pleiades-maintained/basis.basis-matrix.json": {
       "role": "index",
-      "sha256": "b1a33c2478c1cd399cb7aaacec7b7bfc2132d436b5a43c3d02ff26ed3e577c4d",
-      "size": 4688,
-      "normalized_sha256": "b1a33c2478c1cd399cb7aaacec7b7bfc2132d436b5a43c3d02ff26ed3e577c4d"
+      "sha256": "c01b8583fdf1eb692b7c0790e92c7a3d9100e00bc675b69ac7d78769f4799c62",
+      "size": 4692,
+      "normalized_sha256": "c01b8583fdf1eb692b7c0790e92c7a3d9100e00bc675b69ac7d78769f4799c62"
     },
     "catalog/pleiades-maintained/basis.build-basis.json": {
       "role": "index",
-      "sha256": "06f049f467841d8cbf75d0fd637d9a189196c6a3b8dc23b533a973de1184ad20",
-      "size": 4719,
-      "normalized_sha256": "06f049f467841d8cbf75d0fd637d9a189196c6a3b8dc23b533a973de1184ad20"
+      "sha256": "6ea048a43488afc369013f33bcf4371c2fac3c191315d42aced066c282befd11",
+      "size": 4723,
+      "normalized_sha256": "6ea048a43488afc369013f33bcf4371c2fac3c191315d42aced066c282befd11"
     },
     "catalog/pleiades-maintained/basis.clamped-cubic-spline.json": {
       "role": "index",
-      "sha256": "74efb4be3de469864988bc7421a69e3c4cd195c9412334a4972318e68989b95a",
-      "size": 5248,
-      "normalized_sha256": "74efb4be3de469864988bc7421a69e3c4cd195c9412334a4972318e68989b95a"
+      "sha256": "5d19537023e10f9234d495eec74e630d5beabb1274b7df9b2e9fa92cddbf4937",
+      "size": 5252,
+      "normalized_sha256": "5d19537023e10f9234d495eec74e630d5beabb1274b7df9b2e9fa92cddbf4937"
     },
     "catalog/pleiades-maintained/basis.first-clamped-cubic-spline.json": {
       "role": "index",
-      "sha256": "ff9c9d93f52c5d7354a8e6013e70e5cef23c77efe890558e62583348cc75da99",
-      "size": 5810,
-      "normalized_sha256": "ff9c9d93f52c5d7354a8e6013e70e5cef23c77efe890558e62583348cc75da99"
+      "sha256": "e81488a5910b3e3b3d299ad8320dc0e8cb36497ae46e6067959b4d8e2f9c4c19",
+      "size": 5814,
+      "normalized_sha256": "e81488a5910b3e3b3d299ad8320dc0e8cb36497ae46e6067959b4d8e2f9c4c19"
     },
     "catalog/pleiades-maintained/basis.natural-cubic-spline.json": {
       "role": "index",
-      "sha256": "32f6feb0ec7e1d088d4c6f59bb9ef792cf4dc9719bb817b6f6a60bd58fc59ad4",
-      "size": 4939,
-      "normalized_sha256": "32f6feb0ec7e1d088d4c6f59bb9ef792cf4dc9719bb817b6f6a60bd58fc59ad4"
+      "sha256": "375220cf8970efa5a560fead6f1cea8db557dc5a7448833b82083f9ee237dbdb",
+      "size": 4943,
+      "normalized_sha256": "375220cf8970efa5a560fead6f1cea8db557dc5a7448833b82083f9ee237dbdb"
     },
     "catalog/pleiades-maintained/basis.second-clamped-cubic-spline.json": {
       "role": "index",
-      "sha256": "39e05257732f58cdf261d5f27b2962be90609070f227ac800cccfea0bb2208a4",
-      "size": 5811,
-      "normalized_sha256": "39e05257732f58cdf261d5f27b2962be90609070f227ac800cccfea0bb2208a4"
+      "sha256": "0584731223ead53d3b16b4ae94a0e4acfb1f3a09ceed1f2c8c8e58687cf2457a",
+      "size": 5815,
+      "normalized_sha256": "0584731223ead53d3b16b4ae94a0e4acfb1f3a09ceed1f2c8c8e58687cf2457a"
     },
     "catalog/pleiades-maintained/circular-filament-green.json": {
       "role": "index",
-      "sha256": "a5f495f46ede885fb6937c01eb288c9a4458f5f05b58e4fb7a0502f829656134",
-      "size": 5352,
-      "normalized_sha256": "a5f495f46ede885fb6937c01eb288c9a4458f5f05b58e4fb7a0502f829656134"
+      "sha256": "f57fed1943386c8a02726ce3fac36d52a92d8c385d1de119b02c553a9cb169c0",
+      "size": 5356,
+      "normalized_sha256": "f57fed1943386c8a02726ce3fac36d52a92d8c385d1de119b02c553a9cb169c0"
     },
     "catalog/pleiades-maintained/distributed-current-flux.json": {
       "role": "index",
-      "sha256": "389afacb32f03910f3d0b9b4b3a69211f832cd899e554d5700c1c604cd599d3a",
-      "size": 6620,
-      "normalized_sha256": "389afacb32f03910f3d0b9b4b3a69211f832cd899e554d5700c1c604cd599d3a"
+      "sha256": "f1c81b623ec58e72295b1823d8f937598d23dca881fd40cd06a42b90a0d4ef74",
+      "size": 6624,
+      "normalized_sha256": "f1c81b623ec58e72295b1823d8f937598d23dca881fd40cd06a42b90a0d4ef74"
     },
     "catalog/pleiades-maintained/eqdsk-class.json": {
       "role": "index",
-      "sha256": "978c08fd7993e6cbc848aa70d357827b292da9241329420b7c32e01a2f0074bc",
-      "size": 4853,
-      "normalized_sha256": "978c08fd7993e6cbc848aa70d357827b292da9241329420b7c32e01a2f0074bc"
+      "sha256": "b1d5be369d09645f845515d265e221a1eb739d053199455bc6a89ea1583c94a7",
+      "size": 4857,
+      "normalized_sha256": "b1d5be369d09645f845515d265e221a1eb739d053199455bc6a89ea1583c94a7"
     },
     "catalog/pleiades-maintained/equilibrium.json": {
       "role": "index",
-      "sha256": "2aa8fff0a5216d50a2ecef5781af6083c68387676bb583fd1d8ad1f39e90b6d9",
-      "size": 9589,
-      "normalized_sha256": "2aa8fff0a5216d50a2ecef5781af6083c68387676bb583fd1d8ad1f39e90b6d9"
+      "sha256": "3bd8f36a8ebe987044eb0c25c3f62fe0d50b6f7889631d4a9f030d86a4d5e8b0",
+      "size": 9593,
+      "normalized_sha256": "3bd8f36a8ebe987044eb0c25c3f62fe0d50b6f7889631d4a9f030d86a4d5e8b0"
     },
     "catalog/pleiades-maintained/fieldline.arclength-derivative.json": {
       "role": "index",
-      "sha256": "c40c15cacdd5cc7a72f1ab1048b6fc542fcdeb4da97ffe9f11e79475b46624a8",
-      "size": 4646,
-      "normalized_sha256": "c40c15cacdd5cc7a72f1ab1048b6fc542fcdeb4da97ffe9f11e79475b46624a8"
+      "sha256": "b621f1f8c7a1184545911343e718712b457dbf86c25ae025a1cfa3c69a7396d5",
+      "size": 4650,
+      "normalized_sha256": "b621f1f8c7a1184545911343e718712b457dbf86c25ae025a1cfa3c69a7396d5"
     },
     "catalog/pleiades-maintained/fieldline.boundary.json": {
       "role": "index",
-      "sha256": "ab02982fdb4411fa943b2ce3f9505d6723f183367aee800f7c02219d70b237b1",
-      "size": 4063,
-      "normalized_sha256": "ab02982fdb4411fa943b2ce3f9505d6723f183367aee800f7c02219d70b237b1"
+      "sha256": "c8c42837b7cb71e4b72adf5d59f93681c9a7de745512629998691994af76b17f",
+      "size": 4067,
+      "normalized_sha256": "c8c42837b7cb71e4b72adf5d59f93681c9a7de745512629998691994af76b17f"
     },
     "catalog/pleiades-maintained/fieldline.contour-points.json": {
       "role": "index",
-      "sha256": "50cbc3849547cba47b419e0d568887e6d93a6e76dcc1bb3a22bc3cec8984d393",
-      "size": 5371,
-      "normalized_sha256": "50cbc3849547cba47b419e0d568887e6d93a6e76dcc1bb3a22bc3cec8984d393"
+      "sha256": "ea712f4a30a25d6a7dbca47ff09d5cf8c401b5645ff9e0a7d36b62688c41f0b1",
+      "size": 5375,
+      "normalized_sha256": "ea712f4a30a25d6a7dbca47ff09d5cf8c401b5645ff9e0a7d36b62688c41f0b1"
     },
     "catalog/pleiades-maintained/fieldline.fieldline-set.json": {
       "role": "index",
-      "sha256": "8966db2f6ee19a929a9cb3e2fd7d1452a5419ab93a9310f8f85e166c14079220",
-      "size": 5367,
-      "normalized_sha256": "8966db2f6ee19a929a9cb3e2fd7d1452a5419ab93a9310f8f85e166c14079220"
+      "sha256": "b9c5fa6db6b4e55523aa3810e2a4e1df95168bb8e0933298596f08085c03b8fe",
+      "size": 5371,
+      "normalized_sha256": "b9c5fa6db6b4e55523aa3810e2a4e1df95168bb8e0933298596f08085c03b8fe"
     },
     "catalog/pleiades-maintained/fieldline.fieldline.json": {
       "role": "index",
-      "sha256": "719fff469e616ffd93b91dd80bc20023234ccd96fa38925c13c61a829a75c5e8",
-      "size": 7419,
-      "normalized_sha256": "719fff469e616ffd93b91dd80bc20023234ccd96fa38925c13c61a829a75c5e8"
+      "sha256": "023aabf644957d299390342a6acce154d03efe326f1cae96096761fe2421ffa6",
+      "size": 12115,
+      "normalized_sha256": "023aabf644957d299390342a6acce154d03efe326f1cae96096761fe2421ffa6"
     },
     "catalog/pleiades-maintained/fieldline.helper-contour-points.json": {
       "role": "index",
-      "sha256": "4f3a78102de2a045bb062bf316d2351715aeb16677c44cf83cca0804539bffc4",
-      "size": 5557,
-      "normalized_sha256": "4f3a78102de2a045bb062bf316d2351715aeb16677c44cf83cca0804539bffc4"
+      "sha256": "33457ad8c3f919df5f5ab025ece8a14a67d938862c6b76bcbdd9485fe5854b92",
+      "size": 5561,
+      "normalized_sha256": "33457ad8c3f919df5f5ab025ece8a14a67d938862c6b76bcbdd9485fe5854b92"
     },
     "catalog/pleiades-maintained/fieldline.helper-fieldline.json": {
       "role": "index",
-      "sha256": "dff6cf72942bddb866d22a206ec878ca7fc817b01b05a71302fad2e83c7d3e5c",
-      "size": 7513,
-      "normalized_sha256": "dff6cf72942bddb866d22a206ec878ca7fc817b01b05a71302fad2e83c7d3e5c"
+      "sha256": "b2f33dc1a19e106a9f819b6c695d213125072a8dfd529438c384e159da0ae4b5",
+      "size": 12293,
+      "normalized_sha256": "b2f33dc1a19e106a9f819b6c695d213125072a8dfd529438c384e159da0ae4b5"
     },
     "catalog/pleiades-maintained/green-response-matrices.json": {
       "role": "index",
-      "sha256": "36527d9af6b37592598412ee0a5118cc755dd67c611a8e2c60b50165ddaf3b38",
-      "size": 6307,
-      "normalized_sha256": "36527d9af6b37592598412ee0a5118cc755dd67c611a8e2c60b50165ddaf3b38"
+      "sha256": "4aae3f38a60271fe4e5e19b05e25d032bb84fbeb5f1a55b459aec7f5377638f3",
+      "size": 6311,
+      "normalized_sha256": "4aae3f38a60271fe4e5e19b05e25d032bb84fbeb5f1a55b459aec7f5377638f3"
     },
     "catalog/pleiades-maintained/loop-flux-matrix.json": {
       "role": "index",
-      "sha256": "d0924b31d2f4621fbe99b269d3a2e95cfd96cdff50640057b326808524d76590",
-      "size": 5222,
-      "normalized_sha256": "d0924b31d2f4621fbe99b269d3a2e95cfd96cdff50640057b326808524d76590"
+      "sha256": "8197f6bd83ec8ab6b7546b168b12ccf56cfac57cd691c0f3504124123c058e91",
+      "size": 5226,
+      "normalized_sha256": "8197f6bd83ec8ab6b7546b168b12ccf56cfac57cd691c0f3504124123c058e91"
     },
     "catalog/pleiades-maintained/numerics.nonuniform-derivatives.json": {
       "role": "index",
-      "sha256": "48c18ae13cd8f08a2a70cc30fa263ce93ae5e8db61fa5975d427fdd25092d120",
-      "size": 4581,
-      "normalized_sha256": "48c18ae13cd8f08a2a70cc30fa263ce93ae5e8db61fa5975d427fdd25092d120"
+      "sha256": "f06f2e6b25c85727b793f33814cb0c16eba6ef8fc2cef628e0ece7794ea0c822",
+      "size": 4585,
+      "normalized_sha256": "f06f2e6b25c85727b793f33814cb0c16eba6ef8fc2cef628e0ece7794ea0c822"
     },
     "catalog/pleiades-maintained/plotting.mirror-patches.json": {
       "role": "index",
-      "sha256": "12d22ec25f7c6b159c3ad4951bbcb14f5899752081589e2f91207fac373041de",
-      "size": 4891,
-      "normalized_sha256": "12d22ec25f7c6b159c3ad4951bbcb14f5899752081589e2f91207fac373041de"
+      "sha256": "b845021b7b10c54c02db663f1c6a764ce421b49e3698fdb774d94fa40e7b73d0",
+      "size": 4895,
+      "normalized_sha256": "b845021b7b10c54c02db663f1c6a764ce421b49e3698fdb774d94fa40e7b73d0"
     },
     "catalog/pleiades-maintained/plotting.scale-patches.json": {
       "role": "index",
-      "sha256": "b21b07ae469fdfedf04fcdc135b33e58150df420b9438bd26fc2e2142f1eb33d",
-      "size": 4559,
-      "normalized_sha256": "b21b07ae469fdfedf04fcdc135b33e58150df420b9438bd26fc2e2142f1eb33d"
+      "sha256": "19eea75be512592106fcea23a754f11f89e8d608ac617deaf1affb31c7c4a97b",
+      "size": 4563,
+      "normalized_sha256": "19eea75be512592106fcea23a754f11f89e8d608ac617deaf1affb31c7c4a97b"
     },
     "catalog/pleiades-maintained/plotting.transpose-patches.json": {
       "role": "index",
-      "sha256": "ecb4cc3bcbfd13bbb6016a726a10ea0a162e4a10d67e69cf6e6508e211e27636",
-      "size": 4357,
-      "normalized_sha256": "ecb4cc3bcbfd13bbb6016a726a10ea0a162e4a10d67e69cf6e6508e211e27636"
+      "sha256": "eb08dd710c7d1528982aee5b1a6e8b0f66ff6307db68cdda4e84c0bb846ee621",
+      "size": 4361,
+      "normalized_sha256": "eb08dd710c7d1528982aee5b1a6e8b0f66ff6307db68cdda4e84c0bb846ee621"
     },
     "catalog/pleiades-maintained/pressure-equilibrium-eqdsk.json": {
       "role": "index",
-      "sha256": "d4b655fa4404bb5992d812367628e70d891b8f539782d8f8f292b3730eb996a8",
-      "size": 7271,
-      "normalized_sha256": "d4b655fa4404bb5992d812367628e70d891b8f539782d8f8f292b3730eb996a8"
+      "sha256": "9c5d3cac6caec9a20433c47b2375f5b20360818f298502c4de312b86fce4c66d",
+      "size": 7275,
+      "normalized_sha256": "9c5d3cac6caec9a20433c47b2375f5b20360818f298502c4de312b86fce4c66d"
     },
     "catalog/pleiades-maintained/read-eqdsk.json": {
       "role": "index",
-      "sha256": "6416c0addca4e6b14ce907c8b6811469d6b74d3f5130a725b98f0f9dbbe74ea3",
-      "size": 5251,
-      "normalized_sha256": "6416c0addca4e6b14ce907c8b6811469d6b74d3f5130a725b98f0f9dbbe74ea3"
+      "sha256": "1dd2e16080acdc56eaf06df4480bc9ea5904ba6be4bf293504f6b56f2bce650e",
+      "size": 5255,
+      "normalized_sha256": "1dd2e16080acdc56eaf06df4480bc9ea5904ba6be4bf293504f6b56f2bce650e"
     },
     "catalog/pleiades-maintained/release/records/03/scirel.sampling.point-nearest.json": {
       "role": "index",
@@ -1391,183 +1391,183 @@
     },
     "catalog/pleiades-maintained/sampling.meridional-polar-forward.json": {
       "role": "index",
-      "sha256": "232dba5cbb20a11a7b9e38a800d38fc9981f58ebcc7acc51fd68cb5c2b2957c5",
-      "size": 5007,
-      "normalized_sha256": "232dba5cbb20a11a7b9e38a800d38fc9981f58ebcc7acc51fd68cb5c2b2957c5"
+      "sha256": "b224a82a8df489c7b0430c0ff0d2788dd83b5f557fd2ef5ce53aea1b0a69dcea",
+      "size": 5011,
+      "normalized_sha256": "b224a82a8df489c7b0430c0ff0d2788dd83b5f557fd2ef5ce53aea1b0a69dcea"
     },
     "catalog/pleiades-maintained/sampling.meridional-polar-inverse.json": {
       "role": "index",
-      "sha256": "b343601a5e3c2bfe475eda4403fe3ba7ea2c03bf93d5347f5fc900dffc625d53",
-      "size": 4896,
-      "normalized_sha256": "b343601a5e3c2bfe475eda4403fe3ba7ea2c03bf93d5347f5fc900dffc625d53"
+      "sha256": "daf1379b8b33967480dc4eabad170e3ee8604a2a6b6d6c9fe73d66da838f0dd9",
+      "size": 4900,
+      "normalized_sha256": "daf1379b8b33967480dc4eabad170e3ee8604a2a6b6d6c9fe73d66da838f0dd9"
     },
     "catalog/pleiades-maintained/sampling.nonuniform-first-derivative.json": {
       "role": "index",
-      "sha256": "0862a5243f9566d3c6b6a5cd0263bdd89a29f3db4e3efcd1564ce2342df5b7f8",
-      "size": 4351,
-      "normalized_sha256": "0862a5243f9566d3c6b6a5cd0263bdd89a29f3db4e3efcd1564ce2342df5b7f8"
+      "sha256": "2089645ebfdbaa3cebf8cf2a75c734eda2b7eb873636ea4c2318d42a823822e8",
+      "size": 4355,
+      "normalized_sha256": "2089645ebfdbaa3cebf8cf2a75c734eda2b7eb873636ea4c2318d42a823822e8"
     },
     "catalog/pleiades-maintained/sampling.parse-segment.json": {
       "role": "index",
-      "sha256": "b3ba0194f76a5743f0685f57cf44b1e01337d50113b5813613734106df4fad92",
-      "size": 5154,
-      "normalized_sha256": "b3ba0194f76a5743f0685f57cf44b1e01337d50113b5813613734106df4fad92"
+      "sha256": "1c3ce816d7e9f0ce068a2cfad825f11c09b2cbc942e1b8d9a201a04ffe3bec86",
+      "size": 5158,
+      "normalized_sha256": "1c3ce816d7e9f0ce068a2cfad825f11c09b2cbc942e1b8d9a201a04ffe3bec86"
     },
     "catalog/pleiades-maintained/sampling.path-distance.json": {
       "role": "index",
-      "sha256": "38ac55557cdfdc2f6649bb08b1ac064b90468973bf150b70d5b0cd7541858a1d",
-      "size": 3920,
-      "normalized_sha256": "38ac55557cdfdc2f6649bb08b1ac064b90468973bf150b70d5b0cd7541858a1d"
+      "sha256": "39a03f2eb13e2c7e8d55d8676200350fa9cfdf8a7d8cc1961d56be641a00c39e",
+      "size": 3924,
+      "normalized_sha256": "39a03f2eb13e2c7e8d55d8676200350fa9cfdf8a7d8cc1961d56be641a00c39e"
     },
     "catalog/pleiades-maintained/sampling.point-nearest.json": {
       "role": "index",
-      "sha256": "4b9efea121b1d6805c886828ef30adc465d79f9f6bafb349f219956e7a038250",
-      "size": 5211,
-      "normalized_sha256": "4b9efea121b1d6805c886828ef30adc465d79f9f6bafb349f219956e7a038250"
+      "sha256": "69087cf1e37db14de37cc19e7ac89ae059783d724da52c75cea6c202ed1a5f05",
+      "size": 5215,
+      "normalized_sha256": "69087cf1e37db14de37cc19e7ac89ae059783d724da52c75cea6c202ed1a5f05"
     },
     "catalog/pleiades-maintained/sampling.polynomial-fit.json": {
       "role": "index",
-      "sha256": "a9447082c9683ba119de0e3b24ba517b60d09b82869d3c221c5a33bce3dcd051",
-      "size": 4964,
-      "normalized_sha256": "a9447082c9683ba119de0e3b24ba517b60d09b82869d3c221c5a33bce3dcd051"
+      "sha256": "4c9adfa45bb0cd65f9f580af14c99f592e763bc1b3f13a80ce6cbf2d025a3cc1",
+      "size": 4968,
+      "normalized_sha256": "4c9adfa45bb0cd65f9f580af14c99f592e763bc1b3f13a80ce6cbf2d025a3cc1"
     },
     "catalog/pleiades-maintained/sampling.rectangular-nearest.json": {
       "role": "index",
-      "sha256": "809b5f4bbabd5197e97f048045fb6837b0ee81487724cf8a2fd24048dcfdbdae",
-      "size": 5186,
-      "normalized_sha256": "809b5f4bbabd5197e97f048045fb6837b0ee81487724cf8a2fd24048dcfdbdae"
+      "sha256": "e60bb53f81ce6b2d27211843a4b8bfbf3a830df0770c6c5aa59a75bee0cc8350",
+      "size": 5190,
+      "normalized_sha256": "e60bb53f81ce6b2d27211843a4b8bfbf3a830df0770c6c5aa59a75bee0cc8350"
     },
     "catalog/pleiades-maintained/sampling.rectangular-spline.json": {
       "role": "index",
-      "sha256": "170a677f567225a35ab156eaeb97b13bece9f48ac30eb6bd7d8e1159cf50404c",
-      "size": 4947,
-      "normalized_sha256": "170a677f567225a35ab156eaeb97b13bece9f48ac30eb6bd7d8e1159cf50404c"
+      "sha256": "5a04611e984455a031b3e8fbddb161b4a8873b27c2d71cd20d7ea07599faf739",
+      "size": 4951,
+      "normalized_sha256": "5a04611e984455a031b3e8fbddb161b4a8873b27c2d71cd20d7ea07599faf739"
     },
     "catalog/pleiades-maintained/sampling.regular-grid.json": {
       "role": "index",
-      "sha256": "51f4437913a590d21847dc14935dfb78555644b20c717c69a20d0585fc756a6f",
-      "size": 4942,
-      "normalized_sha256": "51f4437913a590d21847dc14935dfb78555644b20c717c69a20d0585fc756a6f"
+      "sha256": "335be5d0ba0c485a4b866039747fc979945cc6cc15ad2989958b800906f8708f",
+      "size": 4946,
+      "normalized_sha256": "335be5d0ba0c485a4b866039747fc979945cc6cc15ad2989958b800906f8708f"
     },
     "catalog/pleiades-maintained/sampling.scalar-reflection.json": {
       "role": "index",
-      "sha256": "fb66c71aa5a31e278adc5948cf84dd1ed9c8490321091e15c663a33293f7f467",
-      "size": 4907,
-      "normalized_sha256": "fb66c71aa5a31e278adc5948cf84dd1ed9c8490321091e15c663a33293f7f467"
+      "sha256": "57786a3a28b5c30473f202b8dc06235f8c815208fd2565875b96c66d5c37612d",
+      "size": 4911,
+      "normalized_sha256": "57786a3a28b5c30473f202b8dc06235f8c815208fd2565875b96c66d5c37612d"
     },
     "catalog/pleiades-maintained/sampling.scattered-linear.json": {
       "role": "index",
-      "sha256": "fd9ddaf2a5394aa894451d6a9550094e652942c16982143a34fc3a9ba241cc11",
-      "size": 5121,
-      "normalized_sha256": "fd9ddaf2a5394aa894451d6a9550094e652942c16982143a34fc3a9ba241cc11"
+      "sha256": "637b2cdcee8c54774952f9a9e3e9526b8d0e1561454806a5537b2263d3d5aff7",
+      "size": 5125,
+      "normalized_sha256": "637b2cdcee8c54774952f9a9e3e9526b8d0e1561454806a5537b2263d3d5aff7"
     },
     "catalog/pleiades-maintained/sampling.select-fieldline.json": {
       "role": "index",
-      "sha256": "f74be86917159c5f33fba4fbf95de2421a4e643f64fd5d380b49aea3876aa61c",
-      "size": 5944,
-      "normalized_sha256": "f74be86917159c5f33fba4fbf95de2421a4e643f64fd5d380b49aea3876aa61c"
+      "sha256": "e29b506bdb0c104680562a4be06bbd66e2c2444c95e3866276baf00118ce833b",
+      "size": 5948,
+      "normalized_sha256": "e29b506bdb0c104680562a4be06bbd66e2c2444c95e3866276baf00118ce833b"
     },
     "catalog/pleiades-maintained/sampling.weighted-line-integral.json": {
       "role": "index",
-      "sha256": "6a51aeb6b452bf272f56c284ef04032f8392e245f0991489fe3f707703a1c801",
-      "size": 5804,
-      "normalized_sha256": "6a51aeb6b452bf272f56c284ef04032f8392e245f0991489fe3f707703a1c801"
+      "sha256": "4d837120990a983aa33bfa98af131ab1d39b08cee04a00cceb1648fb60a9c1fd",
+      "size": 5808,
+      "normalized_sha256": "4d837120990a983aa33bfa98af131ab1d39b08cee04a00cceb1648fb60a9c1fd"
     },
     "catalog/pleiades-maintained/scirel.electromagnetism.arbitrary-points.json": {
       "role": "index",
-      "sha256": "b59c26289872eab721d18f6771693305ccee1c890a57b23cd499cde1796d8745",
-      "size": 5740,
-      "normalized_sha256": "b59c26289872eab721d18f6771693305ccee1c890a57b23cd499cde1796d8745"
+      "sha256": "eda022dcfbdc6f80dcf98533b8b6687aa78320a5d3ff3edc5f1fffa89677c6d1",
+      "size": 5744,
+      "normalized_sha256": "eda022dcfbdc6f80dcf98533b8b6687aa78320a5d3ff3edc5f1fffa89677c6d1"
     },
     "catalog/pleiades-maintained/scirel.electromagnetism.brb.json": {
       "role": "index",
-      "sha256": "5cb6e249944465c64ff70c64f9469d40b208bb3bc643f1a5a5b54d1394115b76",
-      "size": 5393,
-      "normalized_sha256": "5cb6e249944465c64ff70c64f9469d40b208bb3bc643f1a5a5b54d1394115b76"
+      "sha256": "c641f6ed0b0cdbe2326a00bc1c7ca284b0beb16c5d7e2df237e76437f72c44a6",
+      "size": 5397,
+      "normalized_sha256": "c641f6ed0b0cdbe2326a00bc1c7ca284b0beb16c5d7e2df237e76437f72c44a6"
     },
     "catalog/pleiades-maintained/scirel.electromagnetism.device.json": {
       "role": "index",
-      "sha256": "157d336b827630a26ad50223469cf3cda9fd491ae20004964963289d716cbaeb",
-      "size": 5379,
-      "normalized_sha256": "157d336b827630a26ad50223469cf3cda9fd491ae20004964963289d716cbaeb"
+      "sha256": "e5b8b475b58c4056ff48890e2f82d38fd5fde0b3c66b21f45e73208b43e2c43a",
+      "size": 5383,
+      "normalized_sha256": "e5b8b475b58c4056ff48890e2f82d38fd5fde0b3c66b21f45e73208b43e2c43a"
     },
     "catalog/pleiades-maintained/scirel.electromagnetism.magnet-ring.json": {
       "role": "index",
-      "sha256": "d25740e0f391c93310bf552383b75a37cf00a70f951684963916515c2aa88bca",
-      "size": 6690,
-      "normalized_sha256": "d25740e0f391c93310bf552383b75a37cf00a70f951684963916515c2aa88bca"
+      "sha256": "b7f37a8c661cf1601601aca6dfb3de57cd97c61ca36b6ba12ee0b3698d6b2cb6",
+      "size": 6694,
+      "normalized_sha256": "b7f37a8c661cf1601601aca6dfb3de57cd97c61ca36b6ba12ee0b3698d6b2cb6"
     },
     "catalog/pleiades-maintained/scirel.electromagnetism.rectangular-coil.json": {
       "role": "index",
-      "sha256": "1be0ed0cc5e61ecbc757412ea79914ee88383b26a5c2f93c290e92a23e867549",
-      "size": 7156,
-      "normalized_sha256": "1be0ed0cc5e61ecbc757412ea79914ee88383b26a5c2f93c290e92a23e867549"
+      "sha256": "48731b1ce3b5f6791079507551b7d6b8ec132f187fe5be5b841986ebb258ddc1",
+      "size": 7160,
+      "normalized_sha256": "48731b1ce3b5f6791079507551b7d6b8ec132f187fe5be5b841986ebb258ddc1"
     },
     "catalog/pleiades-maintained/scirel.electromagnetism.trex-coil.json": {
       "role": "index",
-      "sha256": "7e02f340eb22831c8d38c8d52cf8bf5518d1874d5a4c9216cea6f683f9ec24a4",
-      "size": 6347,
-      "normalized_sha256": "7e02f340eb22831c8d38c8d52cf8bf5518d1874d5a4c9216cea6f683f9ec24a4"
+      "sha256": "88319b804f4e45d4bb23b950644b3f79c098c518c8310431e6e5f593e924ddb8",
+      "size": 6351,
+      "normalized_sha256": "88319b804f4e45d4bb23b950644b3f79c098c518c8310431e6e5f593e924ddb8"
     },
     "catalog/pleiades-maintained/scirel.electromagnetism.wham.json": {
       "role": "index",
-      "sha256": "eaea1232fc6b52faac36701ae9a4af3677cba197338a7cdf2cfcf149bb791de3",
-      "size": 5187,
-      "normalized_sha256": "eaea1232fc6b52faac36701ae9a4af3677cba197338a7cdf2cfcf149bb791de3"
+      "sha256": "735260f8d0fe2ae9705fcea1ab1d6d3847ff7f24f73bed624276950822006631",
+      "size": 5191,
+      "normalized_sha256": "735260f8d0fe2ae9705fcea1ab1d6d3847ff7f24f73bed624276950822006631"
     },
     "catalog/pleiades-maintained/scirel.geometry.points-mesh.json": {
       "role": "index",
-      "sha256": "7177a593b270b7437dc712e4ad948670317c8c13206865c95148af33fc778e54",
-      "size": 4793,
-      "normalized_sha256": "7177a593b270b7437dc712e4ad948670317c8c13206865c95148af33fc778e54"
+      "sha256": "61768c4f4f7d1306cfc3816901b83373dbdfa72d25dcd526938be0389ad9c423",
+      "size": 4797,
+      "normalized_sha256": "61768c4f4f7d1306cfc3816901b83373dbdfa72d25dcd526938be0389ad9c423"
     },
     "catalog/pleiades-maintained/scirel.geometry.r-chord.json": {
       "role": "index",
-      "sha256": "57772d7260b294ae35f9e675c1806b181d70409742ab8a49c1852de2f21e8822",
-      "size": 4641,
-      "normalized_sha256": "57772d7260b294ae35f9e675c1806b181d70409742ab8a49c1852de2f21e8822"
+      "sha256": "976bada596acb2890967174093bc57c2ab17a93fa1bf913ba279aa388455a7a2",
+      "size": 4645,
+      "normalized_sha256": "976bada596acb2890967174093bc57c2ab17a93fa1bf913ba279aa388455a7a2"
     },
     "catalog/pleiades-maintained/scirel.geometry.rect-mesh.json": {
       "role": "index",
-      "sha256": "41bf4e5b8c41732cf0716135884bf10c8f559e9fe08669808c1136e1e6bfdc8a",
-      "size": 5936,
-      "normalized_sha256": "41bf4e5b8c41732cf0716135884bf10c8f559e9fe08669808c1136e1e6bfdc8a"
+      "sha256": "9e465a3befa26e93906bcb3f78db097aec21d968bc59c1078b77cd909e621c2d",
+      "size": 5940,
+      "normalized_sha256": "9e465a3befa26e93906bcb3f78db097aec21d968bc59c1078b77cd909e621c2d"
     },
     "catalog/pleiades-maintained/scirel.geometry.rotate.json": {
       "role": "index",
-      "sha256": "d85c11487a03422f32a205de1b2d78ab36a90b6aa48723b857ae5248c3a0ff34",
-      "size": 4743,
-      "normalized_sha256": "d85c11487a03422f32a205de1b2d78ab36a90b6aa48723b857ae5248c3a0ff34"
+      "sha256": "af1a71c4cfd2710bc0a2ba28ebfcbe0b7b2802d1a28696c5f44a8b0d6178a9a7",
+      "size": 4747,
+      "normalized_sha256": "af1a71c4cfd2710bc0a2ba28ebfcbe0b7b2802d1a28696c5f44a8b0d6178a9a7"
     },
     "catalog/pleiades-maintained/scirel.geometry.spherical-r-chord.json": {
       "role": "index",
-      "sha256": "d1f73b496b5b4a8fb137bf4c7938b855ac2d6530e9bc72384e829d8fc212ce05",
-      "size": 5046,
-      "normalized_sha256": "d1f73b496b5b4a8fb137bf4c7938b855ac2d6530e9bc72384e829d8fc212ce05"
+      "sha256": "6f4fbad28291fa45a31b0b110298779aae3a58a32a1c3356bd9f571fc136aed3",
+      "size": 5050,
+      "normalized_sha256": "6f4fbad28291fa45a31b0b110298779aae3a58a32a1c3356bd9f571fc136aed3"
     },
     "catalog/pleiades-maintained/scirel.geometry.theta-chord.json": {
       "role": "index",
-      "sha256": "3ebb7b4aa52bd8b821cd26c56e5171b576352e5df761c4b83ca99a41f7d7048d",
-      "size": 4935,
-      "normalized_sha256": "3ebb7b4aa52bd8b821cd26c56e5171b576352e5df761c4b83ca99a41f7d7048d"
+      "sha256": "ce4615b3ab471b6c8c9b5cbdfc3a7147067646d5ca7efc2794fc03bcc0091a74",
+      "size": 4939,
+      "normalized_sha256": "ce4615b3ab471b6c8c9b5cbdfc3a7147067646d5ca7efc2794fc03bcc0091a74"
     },
     "catalog/pleiades-maintained/scirel.geometry.z-chord.json": {
       "role": "index",
-      "sha256": "d27737f2cf7065a59c3b63c7900a1d744541fc110f536766ffd45b511550e7e7",
-      "size": 4638,
-      "normalized_sha256": "d27737f2cf7065a59c3b63c7900a1d744541fc110f536766ffd45b511550e7e7"
+      "sha256": "5144666acaf45d52882c5267f159f7353a1e4064ee6ccf2272cc5e0a77d094f8",
+      "size": 4642,
+      "normalized_sha256": "5144666acaf45d52882c5267f159f7353a1e4064ee6ccf2272cc5e0a77d094f8"
     },
     "catalog/pleiades-maintained/write-eqdsk-legacy-raw.json": {
       "role": "index",
-      "sha256": "5c771ca2b4d1e10a8ebf45119e8394361e278d3042a6b112da32fff1dc71c560",
-      "size": 6889,
-      "normalized_sha256": "5c771ca2b4d1e10a8ebf45119e8394361e278d3042a6b112da32fff1dc71c560"
+      "sha256": "ba78481ec364f4db2f53a075c9bfafcf6a2c948a10e4eb551141c3a61ffc0b95",
+      "size": 6893,
+      "normalized_sha256": "ba78481ec364f4db2f53a075c9bfafcf6a2c948a10e4eb551141c3a61ffc0b95"
     },
     "catalog/pleiades-maintained/write-eqdsk.json": {
       "role": "index",
-      "sha256": "654e273900b6fc4fee09e871f156e68438d43429919c212e9cf6af25c2b6c216",
-      "size": 5903,
-      "normalized_sha256": "654e273900b6fc4fee09e871f156e68438d43429919c212e9cf6af25c2b6c216"
+      "sha256": "f7755adc2d44f325105a21b128c54c8ce070c6f4ad18dd70cfa715f1db4021a3",
+      "size": 5907,
+      "normalized_sha256": "f7755adc2d44f325105a21b128c54c8ce070c6f4ad18dd70cfa715f1db4021a3"
     },
     "catalog/torax-algebra-grid/geometry.face-to-cell.json": {
       "role": "index",
@@ -3785,15 +3785,15 @@
     },
     "docs/searchable-documentation.md": {
       "role": "index",
-      "sha256": "4a8f82f1db65ade5f23d7cc41583b3cadcd709773a452b991b4982fcbfbf99d4",
-      "size": 13028,
-      "normalized_sha256": "4a8f82f1db65ade5f23d7cc41583b3cadcd709773a452b991b4982fcbfbf99d4"
+      "sha256": "003dba0aac20278c1bd35e5c187bd76cccc76f62bb54cebcb6cd099ec0ee19cf",
+      "size": 13806,
+      "normalized_sha256": "003dba0aac20278c1bd35e5c187bd76cccc76f62bb54cebcb6cd099ec0ee19cf"
     },
     "docs/usage/axisymmetric-core.md": {
       "role": "index",
-      "sha256": "efe016cfb9d2cedd0c3c29f0bbbfbc0c4e3b8cc1157f8d44290dd9c7b478acd8",
-      "size": 9402,
-      "normalized_sha256": "efe016cfb9d2cedd0c3c29f0bbbfbc0c4e3b8cc1157f8d44290dd9c7b478acd8"
+      "sha256": "942c9f9cc09aa506a0a258726b9c842783ca0c0da5f682ae286f3f944f37c319",
+      "size": 10805,
+      "normalized_sha256": "942c9f9cc09aa506a0a258726b9c842783ca0c0da5f682ae286f3f944f37c319"
     },
     "examples/README.md": {
       "role": "index",
@@ -4011,6 +4011,18 @@
       "size": 17475,
       "normalized_sha256": "789983f90a4039962a07fa921b33dedb6d49fcf651737fa4b55611930b8e330f"
     },
+    "provenance/selections/pleiades-full-core-mac-20261014.json": {
+      "role": "index",
+      "sha256": "2971f1f58d6127fc2b0885e1d0bacd5ca96b2faa2119a6cbfefa5dfa175b2d27",
+      "size": 17797,
+      "normalized_sha256": "2971f1f58d6127fc2b0885e1d0bacd5ca96b2faa2119a6cbfefa5dfa175b2d27"
+    },
+    "provenance/selections/pleiades-full-core-mac-document-reception-20261014.json": {
+      "role": "index",
+      "sha256": "51a840ee5c93bfb05a6be044ca5f95df62fbc618e587c5ec61c709e3db260164",
+      "size": 37335,
+      "normalized_sha256": "51a840ee5c93bfb05a6be044ca5f95df62fbc618e587c5ec61c709e3db260164"
+    },
     "provenance/selections/pleiades-maintained-20261011.json": {
       "role": "index",
       "sha256": "5dd6a57fab99a9793d2836d46100936a57009d238c4e2423f9aa63402ea9e2cb",
@@ -4151,9 +4163,9 @@
     },
     "scripts/build_scirel_sphinx.py": {
       "role": "index",
-      "sha256": "6540f59c2a5c4655aa29e83f9e4f9b63498e4c037471e410643db98ed2e86e51",
-      "size": 20637,
-      "normalized_sha256": "6540f59c2a5c4655aa29e83f9e4f9b63498e4c037471e410643db98ed2e86e51"
+      "sha256": "64ccf648a592caea16afcbcd35450e6e16e58af2153e8e5cfd62fb2a05a2c14b",
+      "size": 21074,
+      "normalized_sha256": "64ccf648a592caea16afcbcd35450e6e16e58af2153e8e5cfd62fb2a05a2c14b"
     },
     "scripts/check.ps1": {
       "role": "index",
@@ -4223,9 +4235,9 @@
     },
     "scripts/scirel_docs.py": {
       "role": "index",
-      "sha256": "3de2f267951449b0060991649e58239e14d34635688bb548b85e381252fccfbe",
-      "size": 21123,
-      "normalized_sha256": "3de2f267951449b0060991649e58239e14d34635688bb548b85e381252fccfbe"
+      "sha256": "5e3aa2b2208c025d255607e0b3406af8aa1d52ddc2cc33396080d43a9b58dcae",
+      "size": 21378,
+      "normalized_sha256": "5e3aa2b2208c025d255607e0b3406af8aa1d52ddc2cc33396080d43a9b58dcae"
     },
     "scripts/select_affected_tests.py": {
       "role": "index",
@@ -5441,9 +5453,9 @@
     },
     "src/scirel/fieldline.py": {
       "role": "index",
-      "sha256": "04ce2b7154a31d8c29eee8889870523b324fe288ecab4cfb815d18f4b57f420c",
-      "size": 14051,
-      "normalized_sha256": "04ce2b7154a31d8c29eee8889870523b324fe288ecab4cfb815d18f4b57f420c"
+      "sha256": "7e525f9fe770fbb2410b333b6657db104139fd86665688d63dde6b6217e2338c",
+      "size": 17551,
+      "normalized_sha256": "7e525f9fe770fbb2410b333b6657db104139fd86665688d63dde6b6217e2338c"
     },
     "src/scirel/fusion/__init__.py": {
       "role": "index",
@@ -7239,6 +7251,12 @@
       "size": 3659,
       "normalized_sha256": "158ef80ada5797ddc1c67c1570f918af42eb1ce3338916b279968448c1711d75"
     },
+    "tests/pleiades/equilibrium/test_fieldline_t7_precision.py": {
+      "role": "index",
+      "sha256": "06d345eafb693f568fc96a4bc3289fa23fae7ee263c011b82e6c7b7016de0afd",
+      "size": 2825,
+      "normalized_sha256": "06d345eafb693f568fc96a4bc3289fa23fae7ee263c011b82e6c7b7016de0afd"
+    },
     "tests/pleiades/equilibrium/test_keyword_sampling_ports.py": {
       "role": "index",
       "sha256": "d2a395594244c1831911a4bf07f151a1a2aaa0e6c7bd31e7506861006a24594b",
@@ -7475,9 +7493,9 @@
     },
     "tests/test_scirel_docs.py": {
       "role": "index",
-      "sha256": "b821eed9af97cb45f2afb2b54e427755a7724a487d66ec3c3fa54fcf7ed53a54",
-      "size": 16093,
-      "normalized_sha256": "b821eed9af97cb45f2afb2b54e427755a7724a487d66ec3c3fa54fcf7ed53a54"
+      "sha256": "e87c4986cde264a9510d30e5fed39f2cb8ea3fafc2e3d7fd8d6ffcfad30b2779",
+      "size": 17594,
+      "normalized_sha256": "e87c4986cde264a9510d30e5fed39f2cb8ea3fafc2e3d7fd8d6ffcfad30b2779"
     },
     "tests/test_spark_codex.py": {
       "role": "index",
@@ -7541,9 +7559,9 @@
     },
     "tools/docs/chapter-selection.json": {
       "role": "index",
-      "sha256": "573002ea00419dbc3e34ffb4fd1c49f07ad559dd2af2e6762591c958cac55e3f",
-      "size": 247,
-      "normalized_sha256": "573002ea00419dbc3e34ffb4fd1c49f07ad559dd2af2e6762591c958cac55e3f"
+      "sha256": "6d6d6e7377a22f9c877b640e157ee95e61cff715f50e65d130e2dfe78b04ad6e",
+      "size": 251,
+      "normalized_sha256": "6d6d6e7377a22f9c877b640e157ee95e61cff715f50e65d130e2dfe78b04ad6e"
     },
     "tools/docs/chapter.html": {
       "role": "index",
@@ -7580,6 +7598,12 @@
       "sha256": "6f04734f3e0714d2fc0fb36f35912f674fc5ec6e7b2d3a0e8bff6fa3a0b02614",
       "size": 29574,
       "normalized_sha256": "6f04734f3e0714d2fc0fb36f35912f674fc5ec6e7b2d3a0e8bff6fa3a0b02614"
+    },
+    "tools/docs/handbooks/axisymmetric-core.json": {
+      "role": "index",
+      "sha256": "019138a45c7b7cec91ad68bfac5f9b867e5875675f7cf5144d3feb69725f2e8e",
+      "size": 16004,
+      "normalized_sha256": "019138a45c7b7cec91ad68bfac5f9b867e5875675f7cf5144d3feb69725f2e8e"
     },
     "tools/docs/index.html": {
       "role": "index",
@@ -7634,6 +7658,54 @@
       "sha256": "484d6b0ed84b4136f0487538548f6b36a220697e6385f5dd769c0dffde70cbbf",
       "size": 20444,
       "normalized_sha256": "484d6b0ed84b4136f0487538548f6b36a220697e6385f5dd769c0dffde70cbbf"
+    },
+    "tools/docs/magnetostatics-20261014-mac/chapter.json": {
+      "role": "index",
+      "sha256": "d0156b050c0ccf5838f8a824ac689cbee15a6f7607d70e4f98b4b2f32913843e",
+      "size": 8499,
+      "normalized_sha256": "d0156b050c0ccf5838f8a824ac689cbee15a6f7607d70e4f98b4b2f32913843e"
+    },
+    "tools/docs/magnetostatics-20261014-mac/example.py": {
+      "role": "index",
+      "sha256": "feae9bb16913bcd304baa2e34b0d7d7f4ec9f65c06a04bf3d83492ab375257dc",
+      "size": 4230,
+      "normalized_sha256": "feae9bb16913bcd304baa2e34b0d7d7f4ec9f65c06a04bf3d83492ab375257dc"
+    },
+    "tools/docs/magnetostatics-20261014-mac/execution.json": {
+      "role": "index",
+      "sha256": "1d8371aa086c6c725f07b2df7802551513c8889101745a5d2955b849096c7913",
+      "size": 2965,
+      "normalized_sha256": "1d8371aa086c6c725f07b2df7802551513c8889101745a5d2955b849096c7913"
+    },
+    "tools/docs/magnetostatics-20261014-mac/pair.svg": {
+      "role": "index",
+      "sha256": "d692dc10ddc0aa3ae7a8ec68069f82ac6b2459b081bf6cdc5464c54f276981e7",
+      "size": 34232,
+      "normalized_sha256": "d692dc10ddc0aa3ae7a8ec68069f82ac6b2459b081bf6cdc5464c54f276981e7"
+    },
+    "tools/docs/magnetostatics-20261014-mac/plot.py": {
+      "role": "index",
+      "sha256": "d37a3c76b7107bb573fe7900b0c3ac59583801026af219c868d991de1a5bbb78",
+      "size": 2020,
+      "normalized_sha256": "d37a3c76b7107bb573fe7900b0c3ac59583801026af219c868d991de1a5bbb78"
+    },
+    "tools/docs/magnetostatics-20261014-mac/rectangle.svg": {
+      "role": "index",
+      "sha256": "5d7b62e28666bf1fc6e44839fa4d4db2088b35efce2dc89b6ad4b652243ae83f",
+      "size": 107284,
+      "normalized_sha256": "5d7b62e28666bf1fc6e44839fa4d4db2088b35efce2dc89b6ad4b652243ae83f"
+    },
+    "tools/docs/magnetostatics-20261014-mac/results.json": {
+      "role": "index",
+      "sha256": "950b7df4683ab292248064e367f83467e954ea94ba838dccdbcee90e33b15179",
+      "size": 194688,
+      "normalized_sha256": "950b7df4683ab292248064e367f83467e954ea94ba838dccdbcee90e33b15179"
+    },
+    "tools/docs/magnetostatics-20261014-mac/single.svg": {
+      "role": "index",
+      "sha256": "8bf67957b958414bc046f0403f6bdf599686c7bf7521d571189504bf760ab554",
+      "size": 20444,
+      "normalized_sha256": "8bf67957b958414bc046f0403f6bdf599686c7bf7521d571189504bf760ab554"
     },
     "tools/docs/magnetostatics/chapter.json": {
       "role": "index",
@@ -7731,23 +7803,29 @@
       "size": 190,
       "normalized_sha256": "25e9765ab3268ae50fad47ba98129dce83a1b9ceb739dea3de1497cd92273b4c"
     },
+    "tools/docs/zh/selections/axisymmetric-core.json": {
+      "role": "index",
+      "sha256": "de567419ce16953442b17d421bc38409fa6675b13c87b9a5e0f428ef8117eaac",
+      "size": 534824,
+      "normalized_sha256": "de567419ce16953442b17d421bc38409fa6675b13c87b9a5e0f428ef8117eaac"
+    },
     "tools/docs/zh/zh_green_dependencies.json": {
       "role": "index",
-      "sha256": "e313874f84199359471de4543efe7e2c86fd72bd5a5c50c4de2b95fa2f140227",
+      "sha256": "ef37a772ffe223348e6dc4f9c1d2e1154afe196fbb1b851a91a047e5e90544e9",
       "size": 10418,
-      "normalized_sha256": "e313874f84199359471de4543efe7e2c86fd72bd5a5c50c4de2b95fa2f140227"
+      "normalized_sha256": "ef37a772ffe223348e6dc4f9c1d2e1154afe196fbb1b851a91a047e5e90544e9"
     },
     "tools/docs/zh/zh_kinetics.json": {
       "role": "index",
-      "sha256": "15eaacb7ac3371eb010eccaf3456e5fc9285202a44382520d7404c648ac70650",
+      "sha256": "9400b61dfa329ef54612eb0c0efb3b353fcc5e8cd38b77cc73a97b51a38735e4",
       "size": 400279,
-      "normalized_sha256": "15eaacb7ac3371eb010eccaf3456e5fc9285202a44382520d7404c648ac70650"
+      "normalized_sha256": "9400b61dfa329ef54612eb0c0efb3b353fcc5e8cd38b77cc73a97b51a38735e4"
     },
     "tools/docs/zh/zh_physics.json": {
       "role": "index",
-      "sha256": "f468ba6b9fdc4e2f7dae9f01239d99fb63896b3a2e691e8ae2dd1771cb69d848",
+      "sha256": "16818d863419c1b7e8e16d8478758b5fae0536d08cf27c663c6f905d398f0128",
       "size": 486871,
-      "normalized_sha256": "f468ba6b9fdc4e2f7dae9f01239d99fb63896b3a2e691e8ae2dd1771cb69d848"
+      "normalized_sha256": "16818d863419c1b7e8e16d8478758b5fae0536d08cf27c663c6f905d398f0128"
     },
     "uv.lock": {
       "role": "index",

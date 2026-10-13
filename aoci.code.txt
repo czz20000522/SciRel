@@ -592,8 +592,8 @@ verify_review_selection.py[XV7M]: F:核验两次宿主导出的确切审核选�
 prepare_maintained_candidate.py[XV8S]: F:核验选择profile的源码许可与静态导入闭包并生成独立包暂存树 | R:code:scripts/scientific_runtime.py,code:licenses/Pleiades-MIT.txt | A:stage；显式初始化；固定依赖；选择回执 | S:拒绝动态导入与exec/eval、缺失父包及未声明外部导入；必须全新输出，包装闭包不等于科学批准
 build_gpdf_selected.py[XV6T]: F:构建三实现四入口的GPDF动理学所选wheel | R:code:scripts/scientific_runtime.py,code:src/scirel/kinetic/cauchy_transform.py | A:output与--notices；生成包初始化和离线构建 | S:要求三份许可说明和全新输出；依赖来自维护基线并记摘要，构建不授予科学或发行资格
 build_pleiades_selected.py[XV7T]: F:按绑定源码与许可清单构建Pleiades所选科学wheel | R:code:scripts/scientific_runtime.py,code:provenance/selections/pleiades-anisotropy-20261012.json | A:profile/output/--source-root；安全路径和摘要验证；BUILD_RECEIPT | S:写入前验证全部绑定；拒绝已有输出和符号链接；历史依赖冲突须重新验证，构建不证明科学资格
-scirel_docs.py[XL7L]: F:按文档、中文与精确执行章节摘要构建人读文档包 | R:code:scripts/build_scirel_sphinx.py,code:tools/docs/chapter-selection.json | A:文档构建及下载路由 | S:选章节路径及execution摘要严格校验，篡改不回落旧章节；历史资格不可改写。
-build_scirel_sphinx.py[XL6L]: F:将领域手册与中文文档渲染为Sphinx静态人读站点 | R:code:scripts/scirel_docs.py,code:tools/docs/handbook.json | A:render_site及页面渲染 | S:图由已验证选择章节字节传入，不回读旧资格目录；严格Sphinx错误阻止输出。
+scirel_docs.py[XL7L]: F:按exact文档、中文及执行章节构建可查询人读快照 | R:code:scripts/build_scirel_sphinx.py,code:tools/docs/chapter-selection.json | A:build、query、serve；可重复--translations | S:不覆盖快照；章节路径及摘要严格校验，无旧章节回落。显式中文选择须完整匹配文档集，构建不提供科学运行批准。
+build_scirel_sphinx.py[XL6L]: F:严格加载中文读者集合并将领域手册渲染为Sphinx静态站点 | R:code:scripts/scirel_docs.py,code:tools/docs/handbook.json | A:load_translations显式完整bundle选择；render_site | S:显式选择保留集合、摘要、端口及条款门禁；默认仍取顶层bundle。图只取传入执行章节，严格Sphinx错误阻止输出。
 scientific_runtime.py[CV7T]: F:从维护元数据读取科学与构建依赖并约束所选新包 | R:code:pyproject.toml,code:docs/design/scientific-runtime-baseline.md | A:pin_dependencies；python_requirement；build_requirements；baseline_receipt | S:只接受基线已登记精确版本；冲突范围、URL、extras和条件依赖拒绝，不回退旧版本或转移旧资格
 
 ===/Users/tomczz/Projects/SciReL/skills/extraction/scientific-computation-asset-extraction/===
@@ -809,7 +809,7 @@ _validation.py[CB7T]: F:共享有限实数、整数和布尔输入校验并区�
 analysis.py[LA5T]: F:导出限定分析入口，复用实际坐标Green矩阵、弧长导数与中心差分。 | R:code:src/scirel/electromagnetism/greens.py;code:src/scirel/fieldline.py;code:src/scirel/numerics.py | A:get_gpsi;d_ds_arclength;diff_12_central;NumericalContractError | S:只转出底层合同，不为这些函数增加通用物理资格。
 basis.py[KA8M]: F:提供多项式与四种三次样条基、导数求值和BasisMatrix组合。 | R:code:catalog/pleiades-maintained/basis.clamped-cubic-spline.json | A:不等距内点C2矩阵;自然或给定斜率端点;两种特殊右端关系;区间外零;导数1或2;工厂按列建基 | S:资格限严格递增有限结点N>=3；非1/2导数值仍走函数值旧分支。第二特殊闭合另限左端x=y=0；特殊边界无磁拟合物理认证，quartic和特殊函数工厂明确拒绝。
 equilibrium_api.py[LA5T]: F:公开有显式终末状态的压力反馈求解与结果类型。 | R:code:src/scirel/equilibrium/pleiades_feedback.py | A:EquilibriumResult;compute_equilibrium | S:仅转出限定离散反馈合同，不扩为通用平衡认证。
-fieldline.py[KA9M]: F:拟合参数化场线，计算弧长导数、曲率和有界边界交点。 | R:code:src/scirel/numerics.py;code:tests/pleiades/equilibrium/test_curvature_consumer.py | A:实际非均匀弧长;先插值B再归一化;反向场曲率不变;开曲线不循环重排;边界双求解后原子提交;空场或越域拒绝 | S:FieldLine曲率为N×2，Helper为二元组且有限Q过滤不同。交点多起点有限搜索非全拓扑证书；flux梯度曲率限均匀非零梯度网格，固定场网格仅加密曲线不保证单调降误差。
+fieldline.py[KB9L]: F:拟合参数场线并计算梯度、弧长导数、有向曲率及有界交点 | R:code:tests/pleiades/equilibrium/test_fieldline_t7_precision.py,code:tests/pleiades/equilibrium/test_curvature_consumer.py | A:FieldLine曲率N×2、Helper二元组；公开d_ds三点非均匀弦长；边界双求解后提交 | S:物理B先插值再hypot归一；实完整张量cubic保节点限域，散点tol为1e-12且两类Q过滤不同。曲率的几何与单位场同用最多五点局部导数；投影不证明路径为场线。开放线不滚动，零场及越域诊断拒绝；磁通曲率另限均匀非零梯度。有限多起点交点搜索不证明全拓扑，固定场仅加密路径不保证单调。
 numerics.py[KA8T]: F:用非均匀三点二次插值返回内部节点一、二阶导数。 | R:code:src/scirel/sampling.py;code:src/scirel/analysis.py | A:有限一维同长数组N>=3;严格递增横坐标;输出长度N-2;NumericalContractError拒无效域 | S:不伪造端点导数，不把该有限单调域扩张到任意来源差分输入。
 plotting.py[LA7T]: F:复用来源绘图工具执行缩放、镜像与转置patch的数据变换。 | R:code:tests/pleiades/equilibrium/test_analysis_families.py | A:缩放原地并返回列表;镜像浅拷贝;转置原地返回None;只组合data transform | S:包含patch内在几何的总变换不能再次拼接，否则几何重复施加；绘图仿射不等于科学向量或场坐标变换。
 sampling.py[KA8M]: F:提供规则化采样、位置取值、多项式拟合、场线选段与加权积分。 | R:code:src/scirel/numerics.py;code:src/scirel/fieldline.py | A:regular_grid默认ij;其他网格采样xy;SVD绝对截断1e-10;选段保留末端;共享非均匀差分;具名与位置字段互斥 | S:镜像是标量偶对称非向量奇偶法则；flux_surface_avg为∫Q/B ds除∫1/B ds，无2π亦不闭合开线。适用域要求有限B>0且在插值支撑内；极坐标原点无基。
@@ -1037,7 +1037,7 @@ test_profile_energy.py[TB7S]: F:回归径向剖面的离散守恒、边界和独
 test_thermal_cancellation.py[TB7T]: F:锁定储热有符号相消和中间上下溢的精确结果回归 | R:code:src/scirel/physics/thermal_energy.py | A:六排列保留1.5焦耳残量;超大中间乘积相消;次正规乘积先累加后舍入;最终上溢和舍零仍失败 | S:普通正压力用例通过不足以覆盖有符号合同，不能用longdouble替换精确乘加
 test_bootstrap.py[TQ7T]: F:回归自举系数有限极限、实际电流约定及严格输入边界 | R:code:src/scirel/neoclassical/bootstrap.py,code:src/scirel/geometry/face_to_cell.py | A:大碰撞率alpha极限;Redl L34;常规源式比较;总磁通符号与轴零;指数抵消;极端中点与布尔拒绝 | S:微俘获分数与大碰撞率的组合防止修成对数抵消；这些回归不单独建立经验拟合的物理适用性
 test_fvm.py[TQ8S]: F:验证有限体积守恒、制造解阶数、theta因果及Neumann不等宽重构修正 | R:code:src/scirel/fvm/cell_variable.py,code:src/scirel/fvm/diffusion.py,code:src/scirel/fvm/convection.py,code:src/scirel/fvm/implicit.py | A:边界非零通量守恒;上风极限;均匀扩散二阶;对流一阶;奇异失败;五网格多项式与掩码回归 | S:原不等末宽0.74对0.8反例与等宽通过例均保留；Neumann含N2，Dirichlet端点割线和面值线性外推仍按旧定义，不外推任意网格稳定性
-test_scirel_docs.py[TQ7L]: F:验证中文领域站点、精确下载及章节选择摘要拒绝 | R:code:scripts/scirel_docs.py,code:tests/_document_fixtures.py | A:真实Sphinx及路由回归 | S:旧执行fixture取历史绑定Git字节，当前章节独立资格；篡改不回落旧章节。
+test_scirel_docs.py[TQ7L]: F:验证中文站点、查询下载、绑定章节及显式完整读者选择 | R:code:scripts/scirel_docs.py,code:tests/_document_fixtures.py | A:真实Sphinx与HTTP/CLI回归，缺项重复失效摘要拒绝 | S:旧fixture读历史绑定字节，当前章节独立资格；显式子集不弱化默认完整集合门禁，篡改不回落旧章节。
 test_lazy_namespace.py[TB7T]: F:在新解释器核验轻量根导入、领域函数身份及旧顶层调用被拒绝 | R:code:src/scirel/__init__.py | A:根发现无依赖、领域导入、无顶层别名测试 | S:关闭site后根导入成功，访问磁场才暴露缺失NumPy；新进程避免测试顺序掩盖预加载
 test_scientific_runtime.py[TQ7T]: F:验证共同科学pins、旧兼容请求及冲突失败关闭 | R:code:scripts/scientific_runtime.py,code:pyproject.toml | A:科学环境开发门禁 | S:只返回所请求共同基线子集；netCDF4运行pin明确，不额外塞其他选择依赖。
 _document_fixtures.py[TQ5T]: F:复制开发示例及显式依赖成闭合测试文档集 | R:code:catalog/examples/scirel.field.dense-axisymmetric-green.json,code:catalog/pleiades-maintained/green-response-matrices.json | A:copy_example_closure测试夹具 | S:133历史例加3真实Green依赖为136；不改正式文档或猜填科学字段。
@@ -1287,9 +1287,9 @@ fieldline.arclength-derivative.json[SB6S]: F:定义相邻顶点累积距离上�
 fieldline.boundary.json[SB5S]: F:界定边界平面顶点的参数样条拟合 | R:code:src/scirel/fieldline.py | A:Boundary合同 | S:默认非周期；不保证交点完备、内部区域定义或唯一性。
 fieldline.contour-points.json[SB6S]: F:规定各层等值线分段转FieldLine对象的入口 | R:code:src/scirel/fieldline.py | A:contour_points合同 | S:复用有界交点和零场拒绝；磁通曲率另需均匀xy网格及非零梯度。
 fieldline.fieldline-set.json[SB6S]: F:界定按等值线层组织的FieldLine集合 | R:code:src/scirel/fieldline.py | A:FieldLineSet合同 | S:集合组织不证明拓扑或稳定性；交点只在拟合参数有限区间内求解。
-fieldline.fieldline.json[SB6S]: F:定义轮廓参数样条、梯度及两种有资格域的曲率消费 | R:code:src/scirel/fieldline.py | A:FieldLine精确合同 | S:开放线保持供给次序；磁通曲率需均匀xy与非零梯度，不保证任意拓扑或加密单调性。
+fieldline.fieldline.json[SB6S]: F:定义轮廓几何、物理场分量插值及共用局部几何度量的有向曲率 | R:code:src/scirel/fieldline.py | A:FieldLine精确合同 | S:完整实张量网格cubic显式限域保节点；散点保有限Q过滤差异。曲率与公开三点弦长导数分离，切向投影不认证任意路径为场线。
 fieldline.helper-contour-points.json[SB6S]: F:规定轮廓分层分段构造辅助FieldLine的入口 | R:code:src/scirel/fieldline.py | A:helper_contour_points合同 | S:仅继承辅助类磁场曲率，没有psi曲率入口；不授任意拓扑与轴限。
-fieldline.helper-fieldline.json[SB6S]: F:界定辅助轮廓样条、沿线距离及基于场的曲率 | R:code:src/scirel/fieldline.py | A:HelperFieldLine合同 | S:梯度实际cubic且忽略method；无get_kappa_n_2，不授普适误差或二阶场曲率。
+fieldline.helper-fieldline.json[SB6S]: F:界定辅助轮廓样条、可选物理分量插值及共用几何度量的场曲率 | R:code:src/scirel/fieldline.py | A:HelperFieldLine合同 | S:get_gradpsi转发method；散点路径不滤Q，区别于FieldLine。无get_kappa_n_2；张量cubic限域，非零切向投影不证明路径是磁场线。
 loop-flux-matrix.json[SB6S]: F:规定所有实际网格坐标的圆环磁通矩阵与零对角 | R:code:src/scirel/electromagnetism/greens.py | A:get_gpsi合同 | S:对角离散零保留，异索引活动重合拒绝；不按反射索引猜坐标。
 numerics.nonuniform-derivatives.json[SB6S]: F:定义非均匀三点局部二次一阶及二阶内点导数 | R:code:src/scirel/numerics.py | A:diff_12_central合同 | S:原入口严格递增且不制造端点；下降存储需反转输入再反转内点结果。
 plotting.mirror-patches.json[SB4S]: F:定义图形patch浅拷贝及坐标变换反射 | R:code:src/scirel/plotting.py | A:get_mirror_patches合同 | S:保留图形对象变异约定，不是物理向量场变换。
@@ -1516,6 +1516,8 @@ torax-profile-energy-20261011.json[FV7T]: F:以源码摘要和命名空间投影
 torax-bootstrap-fvm-20261012.json[FV8T]: F:按确切运行文件与初始化器定义TORAX十六项科学API的开发选包边界 | R:code:provenance/integrations/torax-bootstrap-fvm-receiver-20261012.json,code:licenses/torax/LICENSE | A:十三运行文件摘要;七个显式初始化器;NumPy唯一外部根;完整Apache许可;派生TORAX身份;dev11版本 | S:原九项实现字节保留；候选标识不能代替各文件与wheel实测，不包含workflow、旧全库或JAX编排，未授人审发行
 pleiades-anisotropy-20261012.json[FQ6S]: F:定义Pleiades各向异性wheel的精确实现、测试、文档、许可与排除范围 | R:code:provenance/integrations/pleiades-anisotropy-receiver-20261012.json,code:licenses/Pleiades-Anisotropy-NOTICE.txt | A:54实现;85文档;选定版本与包摘要;排除未核验旧模块 | S:选择清单只定义内部待审包边界，不等于全Pleiades物理、人审或发行
 pleiades-full-core-20261013.json[FV7M]: F:声明完整核心wheel的源码摘要、内联初始化及依赖许可闭包 | R:code:scripts/build_pleiades_selected.py,code:pyproject.toml | A:scirel.selected-scientific-wheel.v1 | S:61源码与10初始化分别绑定；精确wheel资格不授human或release批准。
+pleiades-full-core-mac-20261014.json[FV7L]: F:冻结Mac后继科学wheel的实现、初始化器、依赖与许可选择 | R:code:scripts/build_pleiades_selected.py,code:src/scirel/fieldline.py | A:scirel.selected-scientific-wheel.v1，dev6科学选择 | S:61实现仅场线相对前驱改变；开发文档、索引、来源与工具不随科学wheel分发。选择摘要不能代替无源码安装验证或人工批准。
+pleiades-full-core-mac-document-reception-20261014.json[SV7L]: F:逐项保存92不变科学合同的发行版本派生与中文摘要接续证据 | R:code:provenance/selections/pleiades-full-core-mac-20261014.json | A:scirel.scientific-document-successor-reception.v1 | S:旧正式字节保留；两项场线科学合同另审。729测试与94示例支持此wheel，版本元数据一致不代表D3或人工批准。
 
 ===/Users/tomczz/Projects/SciReL/src/scirel/configurations/===
 __init__.py[LA5T]: F:公开BRB、TREXCoil与WHAM的有限电流丝几何模型。 | R:code:src/scirel/configurations/brb.py;code:src/scirel/configurations/wham.py | A:BRB;TREXCoil;WHAM | S:入口保留底层几何和电流默认，不承诺完整装置物理。
@@ -1546,6 +1548,7 @@ test_fieldline_geometry_repair.py[TQ8T]: F:验证开场线顺序、边界求交�
 test_keyword_sampling_ports.py[TQ6T]: F:核验采样具名科学端口与原位置参数路径完全一致且互斥。 | R:code:src/scirel/sampling.py | A:regular_grid的values;reflect_and_hstack的quantities;逐数组精确相等;同时两种传参拒绝 | S:包装端口一致不增加底层算法的科学适用域。
 test_retained_fieldline_primitives.py[TQ6T]: F:确认选择包保留边界插值、场线类型出口及非均匀弧长二次导数。 | R:code:src/scirel/fieldline.py | A:直线边界端点oracle;五类相关出口存在;解析非均匀二次导数 | S:出口可得性只是包装条件，不代表所有场线方法获得科学资格。
 test_descending_pressure_equilibrium.py[TQ7T]: F:比较上升与下降网格的同一压力终态及电流顺序 | R:code:src/scirel/equilibrium/pleiades_feedback.py | A:下降存储科学失败回归 | S:Green双轴按同一排列变换，结果保持原存储；不静默只反坐标。
+test_fieldline_t7_precision.py[TB7T]: F:保留T7两类场线的原始梯度与空间加密失败回归并检查方法转发和极端场尺度 | R:code:src/scirel/fieldline.py | A:pytest九例，4e-9梯度、40/80/160网格、401点、误差比>3.4及末级<.004 | S:仅空间网格加密，不能替代固定插值场上的路径加密试验；旧断言容差没有放宽。
 
 ===/Users/tomczz/Projects/SciReL/tests/pleiades/geometry/===
 test_configurations.py[TQ7T]: F:验证BRB/WHAM点数和线圈磁环变换后的参数状态一致。 | R:code:src/scirel/configurations/brb.py;code:src/scirel/configurations/wham.py;code:src/scirel/electromagnetism/sources.py | A:BRB40源含36环;TREX88点面积;WHAM32/32/10/10;有限场求值;旋转平移保持中心角度 | S:源数量和场可算只证明几何对象合同，不认证运行电流或实验场精度。
@@ -1639,7 +1642,7 @@ handbook.html[EU5T]: F:提供科学手册的目录、全书搜索与动态正文
 handbook.js[EU6S]: F:呈现领域章节、主题资产与全书搜索，连接函数参考和已执行案例 | R:code:tools/docs/navigation.js,code:scripts/scirel_docs.py | A:章节与主题hash路由、搜索结果、旧锚点转向 | S:主题合同分页读取且旧异步响应不能覆盖新页；无案例主题明确待补充，不生成科学结果
 handbook.json[SL6L]: F:按科学领域与问题主题导航唯一exact资产 | R:code:tools/docs/zh/zh_green_dependencies.json,code:scripts/scirel_docs.py | A:领域手册结构 | S:实际坐标一般Green与镜专用域分开；面积和电流需caller显式声明。
 navigation.js[EU5T]: F:将绑定学科目录挂载为手册与案例共享的折叠树并定位当前页 | R:code:tools/docs/handbook.json,code:tools/docs/handbook.js | A:ScirelNavigation.mount | S:案例原TOC移入对应主题；跳到正文仅移动焦点不触发hash路由
-chapter-selection.json[FL6T]: F:绑定当前磁静力学章节目录及精确执行摘要 | R:code:scripts/scirel_docs.py,code:tools/docs/magnetostatics-20261013/execution.json | A:scirel.chapter-selection.v1 | S:不重写旧章节八文件；缺路径或错摘要失败关闭，无隐式fallback。
+chapter-selection.json[FL6T]: F:选择Mac dev6磁静力学章节与精确执行记录 | R:code:scripts/scirel_docs.py,code:tools/docs/magnetostatics-20261014-mac/execution.json | A:scirel.chapter-selection.v1 | S:旧章节保留；路径或摘要不匹配失败关闭，不隐式回落。
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/magnetostatics/===
 chapter.json[SU6T]: F:定义轴对称线圈教程的问题、方法、双格式公式与结果解释 | R:code:tools/docs/magnetostatics/example.py,code:tools/docs/chapter.html | A:圆环、线圈对、矩形截面、加密检查、限制与API引用 | S:代码由已运行脚本提取；文本和MathML须等义，固定总安匝数且不将局部加密当全域误差界
@@ -1678,3 +1681,22 @@ plot.py[XL4T]: F:将已保存章节结果绘制为三张单色SVG | R:code:tools
 rectangle.svg[SL4L]: F:展示两矩形截面线圈组空腔区域轴向场 | R:code:tools/docs/magnetostatics-20261013/results.json,code:tools/docs/magnetostatics-20261013/plot.py | A:安装计算等值图 | S:绘图区避开导体，不赋导体内部或材料模型资格。
 results.json[FL6L]: F:保存圆环双环矩形线圈实际结果与原强度解析检查 | R:code:tools/docs/magnetostatics-20261013/example.py,code:tools/docs/magnetostatics-20261013/execution.json | A:scirel.chapter-results.v1 | S:保存新NumPySciPy版本与原始场数组；有限中心加密不是全域误差界。
 single.svg[SL4L]: F:比较单圆环轴向数值场与独立解析轴公式 | R:code:tools/docs/magnetostatics-20261013/results.json,code:tools/docs/magnetostatics-20261013/plot.py | A:真实安装章节图 | S:仅轴线上解析比较，不延伸为任意几何域证明。
+
+===/Users/tomczz/Projects/SciReL/.codex/===
+config.toml[FC5T]: F:为本机独立Pleiades工作区绑定AOCI MCP服务 | R:- | A:mcp_servers.aoci.command,args | S:运行根固定为本工作区；该机器配置不进入科学wheel，也不代表完整认知证明。
+
+===/Users/tomczz/Projects/SciReL/tools/docs/handbooks/===
+axisymmetric-core.json[SU7T]: F:按六个科学领域与28个主题组织94项Pleiades核心手册入口 | R:code:scripts/scirel_docs.py,code:tools/docs/zh/selections/axisymmetric-core.json | A:scirel.handbook.v1；每项资产恰好出现一次 | S:区分磁通规范、源电流与反馈状态；绘图是非核心支持，目录本身不提供科学批准。
+
+===/Users/tomczz/Projects/SciReL/tools/docs/magnetostatics-20261014-mac/===
+chapter.json[SU6S]: F:解释单环、同反向线圈对及矩形截面离散的中文磁静力学教程 | R:code:tools/docs/magnetostatics-20261014-mac/example.py,code:tools/docs/magnetostatics-20261014-mac/execution.json | A:scirel.learning-chapter.v1，四节示例与公式 | S:归一权重保持总安匝，观测避导线；只解释BRBZ，不把psi输出当磁通归一验证或普适加密误差界。
+example.py[TB6T]: F:从安装包计算并验证磁静力学教程的场及加密记录 | R:code:src/scirel/field/circular_filament_green.py,code:src/scirel/field/multi_coil_vacuum_field.py | A:命令行results.json；轴公式、对称、反向和线性断言 | S:截面节点权重和为一，分辨率加密不增加电流；中心加密记录不构成全域误差上界。
+execution.json[SV7T]: F:绑定dev6安装包教程的源码、合同、结果、图与独立容器执行身份 | R:code:tools/docs/magnetostatics-20261014-mac/example.py,code:tools/docs/magnetostatics-20261014-mac/results.json | A:scirel.chapter-execution.v1，wheel摘要、无源码无网络、exit0 | S:前驱记录摘要保留，绘图另有运行回执；章节通过不是全项目D3、人工或发行批准。
+pair.svg[SU4L]: F:展示单环与同向线圈对归一轴场及反向对的中心抵消 | R:code:tools/docs/magnetostatics-20261014-mac/plot.py | A:SVG双面板，Z以m、反向BZ以mT | S:左图各自按中心值归一，不能据曲线高度比较两者绝对中心场。
+plot.py[XU5T]: F:将本章节已记录的计算结果渲染为三个灰度SVG图 | R:code:tools/docs/magnetostatics-20261014-mac/results.json | A:single.svg、pair.svg、rectangle.svg | S:只做绘图不执行科学函数，结果资格来自独立示例执行；轴公式圆点另作比较。
+rectangle.svg[SU4L]: F:展示双矩形截面线圈的轴向磁场二维灰度与等值线 | R:code:tools/docs/magnetostatics-20261014-mac/plot.py | A:SVG，RZ以m、BZ以mT | S:图只覆盖避开导线的空腔观测区，不是导体内部连续电流解。
+results.json[SV6L]: F:保存dev6教程轴线、矩形观测区场及独立恒等检查的数值结果 | R:code:tools/docs/magnetostatics-20261014-mac/example.py | A:scirel.chapter-results.v1，all_checks_passed | S:该结果由安装包新计算，不作为再次计算输入答案；有限中心加密记录不证明普适收敛。
+single.svg[SU4L]: F:对照单圆环轴向磁场数值曲线和独立轴公式圆点 | R:code:tools/docs/magnetostatics-20261014-mac/plot.py | A:SVG，Z以m、BZ以mT | S:轴上公式只交叉检查本例轴点，不覆盖任意几何观测位置。
+
+===/Users/tomczz/Projects/SciReL/tools/docs/zh/selections/===
+axisymmetric-core.json[SL7L]: F:为所选94项Pleiades资产提供精确摘要绑定的完整中文读者集合 | R:code:tools/docs/handbooks/axisymmetric-core.json,code:scripts/build_scirel_sphinx.py | A:scirel.reader-translation.v1，zh-CN，端口及条款完整 | S:52项新中文与42项继承记录共同覆盖，独立选择不混入全局其他候选；场线共用几何度量与公开弦长导数分开，中文不可改变科学资格或批准状态。
