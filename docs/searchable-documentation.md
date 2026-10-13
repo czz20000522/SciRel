@@ -66,3 +66,11 @@ python3 scripts/scirel_docs.py query --snapshot .runtime/docs-snapshot-001 --ass
 章节的两条公式使用带分式、上下标的原生 MathML 渲染，保留同内容的文本公式给 Agent 和辅助阅读；页面不加载外网公式服务。当前未实现对任意正文 LaTeX 的自动解析。代码块采用等宽字体，右上角复制按钮复制完整原始内容；剪贴板不可用时选中内容并提示手动复制，输出与代码不混抄。教程与函数参考共享展示脚本，JSON 合同不因排版被改写。
 
 参考采用：[SciPy 领域教程](https://docs.scipy.org/doc/scipy/tutorial/)与 [API 参考的分工](https://docs.scipy.org/doc/scipy/reference/)；适配 [Sphinx Copybutton](https://sphinx-copybutton.readthedocs.io/en/latest/) 的代码复制交互。保留当前轻量、离线、摘要绑定的 HTML/HTTP/CLI 构建器，不为展示变更迁移科学合同或引入执行依赖。
+
+## 代码阅读与后续交互
+
+教程与函数参考使用本地随快照分发的 [Highlight.js](https://highlightjs.org/) 11.12.0 进行语法高亮，BSD-3-Clause 许可、下载来源与摘要位于 `tools/docs/vendor/highlightjs/`。构建和阅读均不依赖 CDN。显式标注 Python、Shell、JSON；未标注内容按纯文本显示，不靠自动识别猜测语言。共享样式 `code.css` 只为语法使用少量颜色，页面保持白底黑字。
+
+保留原始空格、缩进与换行，制表符按四列显示；长行可横向滚动，不自动重新排版 Python。顶部标注语言并提供复制按钮，复制的是完整原文，不包含标签与高亮标记。高亮库不可用或文本过长时保留纯文本与复制功能。高亮不执行示例，也不改变科学合同和已有结果。
+
+后续可以提供类似 Jupyter 的可运行示例，但需另行落实隔离运行环境、精确 SciRel 与依赖版本、单元格顺序与状态、超时/资源上限及实际结果绑定。当前阶段只改进阅读与复制，不展示没有执行能力的“运行”按钮。

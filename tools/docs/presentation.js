@@ -8,11 +8,24 @@ window.ScirelPresentation = {
       wrap.className = 'code-block'; pre.replaceWith(wrap); wrap.append(pre);
       const code = document.createElement('code'); code.textContent = text;
       pre.replaceChildren(code);
+      const language = pre.dataset.language || 'plaintext';
+      const labels = {python: 'Python', bash: 'Shell', json: 'JSON', plaintext: '文本'};
+      pre.tabIndex = 0; pre.setAttribute('aria-label', (labels[language] || '文本') + '代码块，可横向滚动');
+      // Explicit language only; never execute examples or reformat source text.
+      if (window.hljs && language !== 'plaintext' && hljs.getLanguage(language) && text.length <= 100000) {
+        try {
+          code.innerHTML = hljs.highlight(text, {language, ignoreIllegals: true}).value;
+          code.className = 'hljs language-' + language;
+        } catch (_) { code.textContent = text; }
+      }
+      const toolbar = document.createElement('div'); toolbar.className = 'code-toolbar';
+      const label = document.createElement('span'); label.textContent = labels[language] || '文本';
+      toolbar.append(label); wrap.prepend(toolbar);
       const button = document.createElement('button');
       button.type = 'button'; button.className = 'copy-code';
       button.textContent = '复制'; button.setAttribute('aria-label', '复制代码块');
       const status = document.createElement('span'); status.className = 'copy-status';
-      status.setAttribute('role', 'status'); wrap.append(button, status);
+      status.setAttribute('role', 'status'); toolbar.append(button); wrap.append(status);
       button.onclick = async () => {
         try {
           await navigator.clipboard.writeText(text);

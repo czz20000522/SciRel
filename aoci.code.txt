@@ -175,7 +175,7 @@ README.md[SB7T]: F:导航SciRel需求设计整合发行科学请求及当前实�
 architecture.md[SB7S]: F:定义科学关系算子图、运行实例、独立包及大规模发现边界 | R:code:docs/catalog.md,code:docs/requirements/asset-documentation.md | A:科学身份、DAG和显式有界反馈架构合同 | S:代码相似或少量相同样例不足证明科学等价；运行临时组合不会自动成为公共资产
 catalog.md[SB7S]: F:定义分片目录渐进检索、稳定身份、反向依赖及增量构建合同 | R:code:scripts/build_catalog.py,code:contracts/scientific-catalog-release.schema.json | A:route到summary到exact与依赖闭包发现流程 | S:分页预算耗尽不能宣称无能力；complete只文档计数覆盖，不授予批准
 development-process.md[SW7M]: F:规定D0准备、D1保真、D2修复整合、D3应用和审核发行接续 | R:code:docs/design/development-trust-versions.md,code:scripts/check.ps1 | A:先索引后清理、定向纠错与增量对齐、固定交付、修正后送审、affected验证 | S:可选复审未完不独立阻断D0；保留checkpoint与真实未审范围，已知缺陷仍须闭环；D2有据修复不逐项等批准
-searchable-documentation.md[SU6T]: F:说明领域教程、科学算子与复合入口的文档组织和共享快照维护 | R:code:scripts/scirel_docs.py,code:tools/docs/presentation.js | A:构建浏览、章节与资产查询、案例绑定、排版与复制 | S:章节不强制对应单函数；现有两条公式用MathML，未实现任意LaTeX解析，文档可查不授予科学资格
+searchable-documentation.md[SU6T]: F:说明领域教程与函数参考的共用文档、排版和后续可运行示例边界 | R:code:scripts/scirel_docs.py,code:tools/docs/presentation.js | A:构建浏览、渐进查询、案例维护、代码阅读 | S:文档快照不授予科学资格；高亮不执行或重排示例，可运行单元格仍待环境与状态合同
 
 ===/Users/tomczz/Projects/SciReL/docs/design/===
 aoci-index-maintenance.md[SC7T]: F:规定按任务与工作树使用AOCI及稳定变更的增量维护 | R:code:AGENTS.md,code:docs/development-process.md | A:首建与纠错路由、增删改重命名、Scope与Budget终态 | S:首建不默认二次全量重审或多代理；局部任务不强制Overview；AOCI增量不等于catalog增量，BaseRef不含未提交改动
@@ -591,7 +591,7 @@ verify_review_selection.py[XV7M]: F:核验两次宿主导出的确切审核选�
 prepare_maintained_candidate.py[XV8S]: F:按精确选择profile生成全新独立包暂存区并验证源码和静态导入闭包。 | R:code:provenance/selections/pleiades-maintained-20261011.json;code:licenses/Pleiades-MIT.txt | A:安全相对路径及SHA;显式父包初始化;拒动态导入和exec/eval;外部依赖白名单;许可验证后写入;记录排除模块和收据 | S:暂存目录必须全新；既有目录不得覆盖。导入闭包和哈希是包装门禁，不是科学批准；中途复制失败须保留失败状态。
 build_gpdf_selected.py[XV6T]: F:按显式运行闭集和依赖声明构建GPDF动理学开发wheel | R:code:src/scirel/kinetic/cauchy_transform.py,code:src/scirel/kinetic/maxwellian_electrostatic.py | A:main;--notices | S:只复制三实现并生成两个最小初始化文件，须提供三份许可说明；输出目录须不存在，离线构建不授予发行权
 build_pleiades_selected.py[XV6S]: F:按精确Pleiades各向异性选择清单构建隔离wheel并核对源码、导入闭包和包元数据 | R:code:provenance/selections/pleiades-anisotropy-20261012.json,code:tests/pleiades | A:隔离暂存;源码摘要;wheel构建;RECORD和版本校验 | S:构建与安装证据不能替代科学资格、人审或发行决定
-scirel_docs.py[XU7M]: F:验证文档与执行绑定，构建含展示脚本的不可覆盖快照及只读查询服务 | R:code:scripts/validate_asset_documents.py,code:tools/docs/presentation.js | A:build,query,serve,Documentation | S:案例实现或证据摘要漂移阻断构建；静态脚本也绑定摘要，查询不导入科学包
+scirel_docs.py[XU7M]: F:验证科学文档与案例绑定，构建含本地展示依赖的不可覆盖快照及只读查询服务 | R:code:scripts/validate_asset_documents.py,code:tools/docs/presentation.js | A:build,query,serve,Documentation | S:案例绑定漂移阻断构建；静态资源按白名单且摘要核对，查询不导入科学包
 
 ===/Users/tomczz/Projects/SciReL/skills/extraction/scientific-computation-asset-extraction/===
 SKILL.md[SW7S]: F:路由D0准备和冻结D0的D1保真抽取并统筹项目交付 | R:code:skills/extraction/scientific-computation-asset-extraction/references/material_access_and_preprocessing.md,code:skills/extraction/scientific-computation-asset-extraction/references/stage_boundary_contract.md | A:先索引后整理与维护、owner队列、source_fidelity专科及完整性复核 | S:首建不自动全量重审；D1不重裁D0或等同完整上游保真，正式文档在D2稳定后生成；worker须实际取得材料技能
@@ -1621,9 +1621,10 @@ bootstrap.py[KB8S]: F:计算Sauter和Redl面系数并以显式压力梯度组装
 20261013-scirel-main-baseline.json[OW3T]: F:保存主工作区18d2f2b提交与受影响测试结果的待同步知识记录 | R:- | A:PENDING_SYNC记录 | S:1580通过同时保留21失败，未称全套通过
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/===
-index.html[EU6T]: F:提供黑白函数参考的检索筛选、分页、合同阅读与代码复制 | R:code:scripts/scirel_docs.py,code:tools/docs/presentation.js | A:reference页面、详情锚点、学习指南入口 | S:textContent保留合同原文；过期异步响应不能覆盖新查询，版本和限制随详情显示
-chapter.html[EU6T]: F:以学科目录树展示磁场教程、数学公式、可复制代码和黑白结果图 | R:code:tools/docs/magnetostatics/chapter.json,code:tools/docs/presentation.js | A:章节定位、本章搜索、案例阅读、参考与下载 | S:正文与Agent读取同一章节；旧资产锚点转reference，不以来源项目导航
-presentation.js[CU6T]: F:为教程和参考页提供原文复制与受限MathML展示 | R:code:tools/docs/chapter.html,code:tools/docs/index.html | A:ScirelPresentation.enhance,ScirelPresentation.formula | S:重复增强不嵌套包装；剪贴板拒绝则选中原文，未知数学元素或属性回退文本且不加载外网
+index.html[EU6T]: F:提供科学函数检索、分页及含高亮代码的精确合同阅读 | R:code:scripts/scirel_docs.py,code:tools/docs/presentation.js,code:tools/docs/code.css | A:reference页面、资产详情锚点、学习指南 | S:异步旧响应不能覆盖新查询；展示显式区分Python与JSON，版本和限制随详情显示
+chapter.html[EU6T]: F:以学科目录树展示磁场教程、公式、语言标注代码与结果图 | R:code:tools/docs/magnetostatics/chapter.json,code:tools/docs/presentation.js,code:tools/docs/code.css | A:章节定位、本章搜索、案例阅读、下载 | S:正文与Agent消费同一章节；旧资产锚点转reference，不按来源项目导航
+presentation.js[CU6T]: F:共享代码语言高亮、原文复制与受限MathML展示 | R:code:tools/docs/chapter.html,code:tools/docs/index.html,code:tools/docs/code.css | A:ScirelPresentation.enhance,ScirelPresentation.formula | S:仅显式语言高亮且不执行；库缺失或超过十万字符保留纯文本；复制原文，剪贴板拒绝则选中，非法MathML回退文本
+code.css[CU5T]: F:为共享文档代码块提供白底语法配色、工具栏与保真缩进排版 | R:code:tools/docs/presentation.js | A:代码工具栏、高亮token、窄屏与打印样式 | S:屏幕长行横向滚动且制表符四列；打印才折行
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/magnetostatics/===
 chapter.json[SU6T]: F:定义轴对称线圈教程的问题、方法、双格式公式与结果解释 | R:code:tools/docs/magnetostatics/example.py,code:tools/docs/chapter.html | A:圆环、线圈对、矩形截面、加密检查、限制与API引用 | S:代码由已运行脚本提取；文本和MathML须等义，固定总安匝数且不将局部加密当全域误差界

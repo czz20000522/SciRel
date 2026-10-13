@@ -1,0 +1,17 @@
+/* White documentation surface; color is reserved for syntax, not decoration. */
+.code-block{margin:20px 0;min-width:0;border:1px solid #d8d8d8;border-radius:4px;overflow:hidden;background:#fff}
+.code-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:7px 14px;border-bottom:1px solid #e5e5e5;font:12px/1.5 system-ui,sans-serif;color:#555}
+.code-block .copy-code{position:static;padding:3px 10px;border:1px solid #aaa;border-radius:3px;background:#fff;color:#222;font:12px/1.5 system-ui,sans-serif;cursor:pointer}
+.code-block .copy-code:hover{background:#f3f3f3}
+.code-block pre{margin:0;border:0;padding:18px 20px;overflow:auto;white-space:pre;overflow-wrap:normal;tab-size:4;font:14px/1.75 ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;font-variant-ligatures:none;background:#fff;color:#24292f}
+.code-block pre code{font:inherit;white-space:inherit;tab-size:inherit}
+.copy-status{display:block;font:12px/1.5 system-ui,sans-serif;color:#444;overflow-wrap:anywhere}
+.copy-status:not(:empty){padding:7px 14px;border-top:1px solid #e5e5e5}
+.hljs-keyword,.hljs-selector-tag,.hljs-literal{color:#a62638}
+.hljs-string,.hljs-regexp,.hljs-doctag{color:#245c30}
+.hljs-number,.hljs-built_in,.hljs-type,.hljs-attr{color:#1857a4}
+.hljs-title,.hljs-section{color:#6f42a0}
+.hljs-comment,.hljs-quote{color:#61666d;font-style:italic}
+.hljs-meta,.hljs-variable,.hljs-template-variable{color:#855315}
+@media(max-width:800px){.code-block pre{font-size:13px;padding:14px}}
+@media print{.code-toolbar,.copy-status{display:none}.code-block pre{white-space:pre-wrap;overflow-wrap:anywhere;padding:12px}.code-block{break-inside:avoid}}

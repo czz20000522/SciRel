@@ -20,6 +20,13 @@ ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = 'scirel.documentation-snapshot.v1'
 NOTICE = ('开发文档 · 按每条资产的版本与证据范围使用。文档收录不代表人工批准、'
           '全项目通过或公开发行；此快照不是单一 wheel 的安装清单。')
+STATIC_FILES = {
+    'presentation.js': 'text/javascript; charset=utf-8',
+    'code.css': 'text/css; charset=utf-8',
+    'vendor/highlightjs/highlight.min.js': 'text/javascript; charset=utf-8',
+    'vendor/highlightjs/LICENSE': 'text/plain; charset=utf-8',
+    'vendor/highlightjs/provenance.json': 'application/json; charset=utf-8',
+}
 
 
 def encode(value):
@@ -90,7 +97,8 @@ def build(documents: Path, output: Path):
         index.append(summary)
     files['index.json'] = encode(index)
     files['index.html'] = (ROOT / 'tools/docs/index.html').read_bytes()
-    files['static/presentation.js'] = (ROOT / 'tools/docs/presentation.js').read_bytes()
+    for path in STATIC_FILES:
+        files['static/' + path] = (ROOT / 'tools/docs' / path).read_bytes()
     files.update(chapter_files({d['asset_id'] for d in docs}))
     manifest = {'schema': SCHEMA, 'source_commit': source, 'source_dirty': dirty,
                 'asset_count': len(docs), 'notice': NOTICE,
@@ -211,8 +219,8 @@ def server(docs, port):
                     data, content_type = docs.read('chapter.html'), 'text/html; charset=utf-8'
                 elif self.path == '/reference':
                     data, content_type = docs.read('index.html'), 'text/html; charset=utf-8'
-                elif self.path == '/static/presentation.js':
-                    data, content_type = docs.read('static/presentation.js'), 'text/javascript; charset=utf-8'
+                elif self.path.startswith('/static/') and self.path[8:] in STATIC_FILES:
+                    data, content_type = docs.read(self.path[1:]), STATIC_FILES[self.path[8:]]
                 elif self.path.startswith('/chapters/') and self.path[1:] in docs.manifest['files']:
                     suffix = Path(self.path).suffix
                     content_type = {'.svg': 'image/svg+xml', '.json': 'application/json; charset=utf-8', '.py': 'text/plain; charset=utf-8'}[suffix]

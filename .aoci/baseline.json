@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-13T07:52:26Z",
+  "updated_at": "2026-10-13T08:07:33Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -59,9 +59,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "e8fff9534c0018794aa43f4bd014358ddbcd1ba4a890ef9b082bbf51f9be5bb9",
-      "size": 416042,
-      "normalized_sha256": "e8fff9534c0018794aa43f4bd014358ddbcd1ba4a890ef9b082bbf51f9be5bb9"
+      "sha256": "04882899b892bd326aa66c35da124b994c39d6a825d8a6e8efd9055cd43e7325",
+      "size": 416370,
+      "normalized_sha256": "04882899b892bd326aa66c35da124b994c39d6a825d8a6e8efd9055cd43e7325"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -3749,9 +3749,9 @@
     },
     "docs/searchable-documentation.md": {
       "role": "index",
-      "sha256": "68f19c08c5dea1154b3c0c628c5299751736ee722d4abdfc306bdc4adc9c32b2",
-      "size": 8197,
-      "normalized_sha256": "68f19c08c5dea1154b3c0c628c5299751736ee722d4abdfc306bdc4adc9c32b2"
+      "sha256": "d24e5b4cbdffb3c92479a6fdda1949ba031ba14d447d22da351960146b3230c1",
+      "size": 9309,
+      "normalized_sha256": "d24e5b4cbdffb3c92479a6fdda1949ba031ba14d447d22da351960146b3230c1"
     },
     "examples/README.md": {
       "role": "index",
@@ -4163,9 +4163,9 @@
     },
     "scripts/scirel_docs.py": {
       "role": "index",
-      "sha256": "cf774a40167819a92f51bd1a0ad6664a5cf3ee7bb0a01fa492131b8310f21b2e",
-      "size": 13828,
-      "normalized_sha256": "cf774a40167819a92f51bd1a0ad6664a5cf3ee7bb0a01fa492131b8310f21b2e"
+      "sha256": "db509754d5b996a795d40d6d81f42b20c9471534f09cc73209754a20695bc830",
+      "size": 14193,
+      "normalized_sha256": "db509754d5b996a795d40d6d81f42b20c9471534f09cc73209754a20695bc830"
     },
     "scripts/select_affected_tests.py": {
       "role": "index",
@@ -7439,15 +7439,21 @@
     },
     "tools/docs/chapter.html": {
       "role": "index",
-      "sha256": "e74e77fb4f97f0c0e399428b6bf89531b4ce4cbd5d8c44336f0ff70a8fea6d0d",
-      "size": 9961,
-      "normalized_sha256": "e74e77fb4f97f0c0e399428b6bf89531b4ce4cbd5d8c44336f0ff70a8fea6d0d"
+      "sha256": "61bfa6f14d436dc8d0ff0467c463e9daf635236deef07aba9dd4d361bf04ca33",
+      "size": 10176,
+      "normalized_sha256": "61bfa6f14d436dc8d0ff0467c463e9daf635236deef07aba9dd4d361bf04ca33"
+    },
+    "tools/docs/code.css": {
+      "role": "index",
+      "sha256": "52c77a358f2fbe9cee4eaf9921c11e17b67c466f40f266e21bb4077d0cb7819d",
+      "size": 1674,
+      "normalized_sha256": "52c77a358f2fbe9cee4eaf9921c11e17b67c466f40f266e21bb4077d0cb7819d"
     },
     "tools/docs/index.html": {
       "role": "index",
-      "sha256": "955d5706be5d75cebcf753eac066ec70261b81ae39fb55ddc4dcc9e4e8cb3200",
-      "size": 11572,
-      "normalized_sha256": "955d5706be5d75cebcf753eac066ec70261b81ae39fb55ddc4dcc9e4e8cb3200"
+      "sha256": "653b3910486daca42fd78903b62e39bec0ce6715541c880e6abb36b28b9201ed",
+      "size": 11763,
+      "normalized_sha256": "653b3910486daca42fd78903b62e39bec0ce6715541c880e6abb36b28b9201ed"
     },
     "tools/docs/magnetostatics/chapter.json": {
       "role": "index",
@@ -7499,9 +7505,9 @@
     },
     "tools/docs/presentation.js": {
       "role": "index",
-      "sha256": "e8c9530a3b7c3de3404c8dd74b200948da2981ceed37b0d5fda77ad5eda313ce",
-      "size": 2066,
-      "normalized_sha256": "e8c9530a3b7c3de3404c8dd74b200948da2981ceed37b0d5fda77ad5eda313ce"
+      "sha256": "5cd81817121664137f816011d29498b691827f7972f6e8d3fd28a2bfa1430f63",
+      "size": 3001,
+      "normalized_sha256": "5cd81817121664137f816011d29498b691827f7972f6e8d3fd28a2bfa1430f63"
     }
   },
   "managed_scope": {
