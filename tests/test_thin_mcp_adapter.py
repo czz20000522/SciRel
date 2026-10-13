@@ -16,16 +16,17 @@ sys.path.insert(0, str(SCRIPTS))
 
 from build_catalog import build_catalog  # noqa: E402
 from scirel_adapter import ThinMcpAdapter, ThinMcpAdapterError  # noqa: E402
+from test_asset_documentation import CATALOG_TEST_VERSION, release_examples
 
 
 @pytest.fixture
-def catalog(tmp_path):
+def catalog(tmp_path, release_examples):
     output = tmp_path / "catalog"
     result = build_catalog(
-        EXAMPLES,
+        release_examples,
         output,
         catalog_id="scirel-development-pilot",
-        release_version="0.1.0.dev5",
+        release_version=CATALOG_TEST_VERSION,
         coverage_status="partial",
         declared_total=len(list(EXAMPLES.glob("*.json"))) + 1,
     )
@@ -34,7 +35,7 @@ def catalog(tmp_path):
 
 @pytest.fixture(autouse=True)
 def installed_scirel_version():
-    with mock.patch("scirel_adapter.mcp.metadata.version", return_value="0.1.0.dev5"):
+    with mock.patch("scirel_adapter.mcp.metadata.version", return_value=CATALOG_TEST_VERSION):
         yield
 
 
@@ -53,6 +54,8 @@ def test_documents_drive_progressive_discovery_and_retrieval(catalog):
             encoding="utf-8"
         )
     )
+
+    source_document["version"]["implementation_version"] = CATALOG_TEST_VERSION
 
     discovery = adapter.handle(
         {
@@ -163,7 +166,7 @@ def test_callable_binding_and_invocation_are_document_driven(catalog):
         "BZ": [-5.0, 0.0],
     }
     assert response["asset_id"] == asset_id
-    assert response["implementation_version"] == "0.1.0.dev5"
+    assert response["implementation_version"] == CATALOG_TEST_VERSION
     assert response["evidence_ceiling"]
     serialized = json.dumps(response, sort_keys=True)
     for forbidden in ("session_id", "project_id", "workbench_id", "admission_ref"):
@@ -428,6 +431,7 @@ def test_documented_default_must_match_the_runtime_callable(catalog):
             encoding="utf-8"
         )
     )
+    document["version"]["implementation_version"] = CATALOG_TEST_VERSION
     document["inputs"][-1]["default"] = 90.0
 
     with mock.patch.object(adapter, "_document", return_value=document):

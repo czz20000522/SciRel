@@ -12,6 +12,8 @@ from pathlib import Path, PurePosixPath
 import subprocess
 import sys
 
+from scientific_runtime import baseline_receipt, build_requirements, pin_dependencies, python_requirement
+
 
 def bound_source(root, record):
     relative = PurePosixPath(record['path'])
@@ -35,6 +37,7 @@ def main():
     profile = json.loads(args.profile.read_text())
     if profile['schema'] != 'scirel.selected-scientific-wheel.v1':
         raise ValueError('unsupported selection schema')
+    dependencies = pin_dependencies(profile['dependencies'])
     # Validate every binding before creating the isolated staging tree.
     files = [bound_source(args.source_root, row) for row in profile['files']]
     licenses = [bound_source(args.source_root, row) for row in profile['licenses']]
@@ -60,10 +63,10 @@ def main():
     # JSON string syntax is a valid TOML basic string for these simple metadata fields.
     q = json.dumps
     project = '\n'.join([
-        '[build-system]', 'requires = ["setuptools>=77"]', 'build-backend = "setuptools.build_meta"',
+        '[build-system]', 'requires = '+q(build_requirements()), 'build-backend = "setuptools.build_meta"',
         '[project]', 'name = "scirel"', 'version = '+q(profile['version']),
         'description = "SciRel selected Pleiades scientific development distribution"',
-        'requires-python = ">=3.10"', 'dependencies = '+q(profile['dependencies']),
+        'requires-python = '+q(python_requirement()), 'dependencies = '+q(dependencies),
         'license-files = ["licenses/*"]', '[tool.setuptools.packages.find]',
         'where = ["src"]', 'include = ["scirel", "scirel.*"]', ''])
     (stage / 'pyproject.toml').write_text(project)
@@ -73,7 +76,7 @@ def main():
         'import setuptools.build_meta,sys; print(setuptools.build_meta.build_wheel(sys.argv[1]))',str(wheels)],
         cwd=stage, env=env, check=True)
     wheel = next(wheels.glob('*.whl'))
-    result = {'profile_sha256':hashlib.sha256(args.profile.read_bytes()).hexdigest(),
+    result = {'scientific_runtime_baseline':baseline_receipt(), 'profile_sha256':hashlib.sha256(args.profile.read_bytes()).hexdigest(),
               'wheel':str(wheel), 'sha256':hashlib.sha256(wheel.read_bytes()).hexdigest(),
               'bytes':wheel.stat().st_size, 'implementation_count':len(files),
               'human_approval':False, 'release_approval':False}

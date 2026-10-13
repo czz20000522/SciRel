@@ -70,8 +70,8 @@ def test_the_module_publishes_exactly_one_callable():
     assert shifted_maxwellian_seed.__all__ == ["build_shifted_maxwellian_seed"]
 
 
-def test_the_package_and_root_namespace_export_the_callable():
-    assert callable(scirel.build_shifted_maxwellian_seed)
+def test_only_the_domain_namespace_exports_the_callable():
+    assert not hasattr(scirel, "build_shifted_maxwellian_seed")
     assert callable(scirel.kinetic.build_shifted_maxwellian_seed)
 
 

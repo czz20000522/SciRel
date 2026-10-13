@@ -38,8 +38,8 @@ def test_the_module_publishes_exactly_one_callable():
     ]
 
 
-def test_the_package_and_root_namespace_export_the_callable():
-    assert callable(scirel.make_cylindrical_velocity_quadrature)
+def test_only_the_domain_namespace_exports_the_callable():
+    assert not hasattr(scirel, "make_cylindrical_velocity_quadrature")
     assert callable(scirel.kinetic.make_cylindrical_velocity_quadrature)
 
 

@@ -23,22 +23,28 @@ from validate_asset_documents import (  # noqa: E402
 )
 
 
-@pytest.fixture
-def pilot_examples(tmp_path):
-    """Retain the original 132-document dev5 pilot as an exact build fixture.
+CATALOG_TEST_VERSION = "0.0.0.dev0+catalogtest"
 
-    The accepted fast-ion successor was added to canonical examples at dev6.
-    It stays unchanged and is checked in the complete document-set tests; a
-    dev5 catalog build cannot combine its implementation version silently.
+
+@pytest.fixture
+def release_examples(tmp_path):
+    """Synthetic release of all current contracts, solely for catalog mechanics.
+
+    Canonical documents carry several real implementation versions. Keep their
+    bytes untouched; explicitly project only the version in temporary copies.
+    Real mixed-version rejection is tested separately below.
     """
-    pilot = tmp_path / "pilot-documents"
-    pilot.mkdir()
-    for source in EXAMPLES.glob("*.json"):
-        document = json.loads(source.read_text(encoding="utf-8"))
-        if document["asset_id"] != FAST_ION_ASSET_ID:
-            (pilot / source.name).write_bytes(source.read_bytes())
-    assert len(list(pilot.glob("*.json"))) == 132
-    return pilot
+    target = tmp_path / "synthetic-release-documents"
+    target.mkdir()
+    originals = {path: path.read_bytes() for path in EXAMPLES.glob("*.json")}
+    assert len(originals) == 133
+    for source, body in originals.items():
+        document = json.loads(body)
+        document["version"]["implementation_version"] = CATALOG_TEST_VERSION
+        (target / source.name).write_text(json.dumps(document), encoding="utf-8")
+    assert len(load_document_set(target)) == 133
+    yield target
+    assert all(path.read_bytes() == body for path, body in originals.items())
 
 
 def _task_graph_document():
@@ -261,17 +267,17 @@ def test_installed_runtime_mode_rejects_the_source_checkout():
         validate_runtime(document, installed_runtime=True)
 
 
-def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_path, pilot_examples):
+def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_path, release_examples):
     first = tmp_path / "first"
     second = tmp_path / "second"
     arguments = {
         "catalog_id": "scirel-development-pilot",
-        "release_version": "0.1.0.dev5",
+        "release_version": CATALOG_TEST_VERSION,
         "coverage_status": "complete",
-        "declared_total": 132,
+        "declared_total": 133,
     }
-    first_result = build_catalog(pilot_examples, first, **arguments)
-    second_result = build_catalog(pilot_examples, second, **arguments)
+    first_result = build_catalog(release_examples, first, **arguments)
+    second_result = build_catalog(release_examples, second, **arguments)
 
     assert first_result["root_digest"] == second_result["root_digest"]
     first_files = {
@@ -289,8 +295,8 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
     release = json.loads(first_files["release.json"])
     assert release["coverage"] == {
         "status": "complete",
-        "included_asset_count": 132,
-        "declared_total_asset_count": 132,
+        "included_asset_count": 133,
+        "declared_total_asset_count": 133,
     }
     digest = release.pop("root_digest")
     assert digest == "sha256:" + hashlib.sha256(_canonical(release)).hexdigest()
@@ -308,7 +314,7 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
         json.loads(line)
         for line in first_files["reverse-dependencies/all.jsonl"].splitlines()
     ]
-    assert len(routes) == len(summaries) == len(reverse) == 132
+    assert len(routes) == len(summaries) == len(reverse) == 133
     partition_paths = {item["path"] for item in release["partitions"]}
     for route in routes:
         assert set(route["exact_record"]) == {"path"}
@@ -349,25 +355,37 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
         assert private_term not in serialized
 
 
-def test_complete_catalog_cannot_hide_missing_documents(tmp_path, pilot_examples):
+def test_complete_catalog_cannot_hide_missing_documents(tmp_path, release_examples):
+    (release_examples / f"{FAST_ION_ASSET_ID}.json").unlink()
     with pytest.raises(ValueError, match="requires every declared asset"):
         build_catalog(
-            pilot_examples,
+            release_examples,
             tmp_path / "catalog",
             catalog_id="invalid-complete",
-            release_version="0.1.0.dev5",
+            release_version=CATALOG_TEST_VERSION,
             coverage_status="complete",
             declared_total=133,
         )
 
 
-def test_catalog_release_version_must_match_every_document(tmp_path, pilot_examples):
+def test_catalog_release_version_must_match_every_document(tmp_path, release_examples):
     with pytest.raises(ValueError, match="implementation_version must match"):
         build_catalog(
-            pilot_examples,
+            release_examples,
             tmp_path / "catalog",
             catalog_id="version-mismatch",
             release_version="0.1.0.dev4",
             coverage_status="partial",
-            declared_total=132,
+            declared_total=133,
         )
+
+
+def test_canonical_mixed_versions_cannot_be_relabelled_as_one_release(tmp_path):
+    versions = {doc["version"]["implementation_version"] for doc in load_document_set(EXAMPLES)}
+    assert len(versions) > 1
+    for index, version in enumerate(sorted(versions)):
+        output = tmp_path / str(index)
+        with pytest.raises(ValueError, match="implementation_version must match"):
+            build_catalog(EXAMPLES, output, catalog_id="mixed-versions",
+                          release_version=version, coverage_status="complete", declared_total=133)
+        assert not output.exists()

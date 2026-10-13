@@ -5,8 +5,10 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import re
 import sys
 import tempfile
+import tomllib
 from typing import Any
 
 from finalize_release import (
@@ -17,11 +19,37 @@ from finalize_release import (
     _reviewed_initializers,
     _validate_wheel_import_closure,
 )
+from scientific_runtime import baseline_receipt, build_requirements, pin_dependencies, python_requirement
 from release_index import current_unpublished_entries, read_index
 from validate_asset_documents import ASSET_ID_RE, load_document_set
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _project_for_release(source_root: Path, documents: dict) -> str:
+    """Bind package metadata to the exact, version-consistent review selection."""
+    versions = {document["version"]["implementation_version"] for document in documents.values()}
+    if len(versions) != 1:
+        raise ValueError("reviewed documents must share one implementation_version")
+    version = versions.pop()
+    if not re.fullmatch(r"[0-9A-Za-z.+!-]+", version):
+        raise ValueError("reviewed implementation_version is not a simple package version")
+    project = (source_root / "pyproject.toml").read_text(encoding="utf-8")
+    metadata = tomllib.loads(project)
+    requirements = metadata["project"]["dependencies"]
+    if (requirements != pin_dependencies(requirements)
+            or metadata["project"]["requires-python"] != python_requirement()
+            or metadata["build-system"]["requires"] != build_requirements()):
+        raise ValueError("source project must use the maintained scientific runtime baseline; requalify historical inputs")
+    section = re.search(r"(?ms)^\[project\][ \t]*\n(?P<body>.*?)(?=^\[|\Z)", project)
+    if section is None:
+        raise ValueError("pyproject.toml has no project section")
+    body, count = re.subn(r'(?m)^version\s*=\s*"[^"\n]+"[ \t]*$',
+                          'version = ' + json.dumps(version), section["body"])
+    if count != 1:
+        raise ValueError("pyproject.toml must declare one literal project version")
+    return project[:section.start("body")] + body + project[section.end("body"):]
 
 
 def prepare_reviewed_distribution(
@@ -122,6 +150,7 @@ def prepare_reviewed_distribution(
         test_paths.update(document["verification"]["tests"])
     if not test_paths <= test_files.keys():
         raise ValueError("reviewed test files do not cover every selected document")
+    project = _project_for_release(source_root, documents)
 
     support_modules = set()
     for name, body in code_files.items():
@@ -146,7 +175,7 @@ def prepare_reviewed_distribution(
     staging_dir.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=f".{staging_dir.name}-", dir=staging_dir.parent) as temporary:
         stage = Path(temporary)
-        (stage / "pyproject.toml").write_bytes((source_root / "pyproject.toml").read_bytes())
+        (stage / "pyproject.toml").write_text(project, encoding="utf-8", newline="\n")
         members = {}
         for name in sorted(set(selected_modules) | set(code_files)):
             relative = name.removeprefix("src/")
@@ -173,6 +202,7 @@ def prepare_reviewed_distribution(
             json.dumps({
                 "schema": "scirel.reviewed-distribution-selection.dev",
                 "candidate_entry_id": candidate_entry_id,
+                "scientific_runtime_baseline": baseline_receipt(),
                 "asset_ids": sorted(documents),
                 "test_paths": sorted(test_paths),
             }, ensure_ascii=False, indent=2, sort_keys=True) + "\n",

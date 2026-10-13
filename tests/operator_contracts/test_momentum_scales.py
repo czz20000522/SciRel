@@ -85,9 +85,9 @@ def test_the_module_is_named_for_what_it_contains():
     } <= set(scirel.collisions.__all__)
 
 
-def test_the_package_and_root_namespace_export_both_leaves():
-    assert callable(scirel.normalized_momentum)
-    assert callable(scirel.thermal_electron_momentum)
+def test_only_the_domain_namespace_exports_both_leaves():
+    assert not hasattr(scirel, "normalized_momentum")
+    assert not hasattr(scirel, "thermal_electron_momentum")
     assert callable(scirel.collisions.normalized_momentum)
     assert callable(scirel.collisions.thermal_electron_momentum)
     assert {"collisions"} <= set(scirel.__all__)

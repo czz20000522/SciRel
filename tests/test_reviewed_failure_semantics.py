@@ -13,12 +13,20 @@ E = 1.602176634e-19
 def test_duplicate_field_nodes_cannot_pass_by_ignoring_nan(strict):
     b = np.array([1., 1., 2., 3.])
     with pytest.raises(ValueError, match='unique'):
-        compute_parallel_pressure_residual(b, np.zeros_like(b), b, strict=strict)
+        compute_parallel_pressure_residual(
+            b, np.zeros_like(b), b, strict=strict, field_axis=0, psi=np.zeros_like(b))
 
 
 def test_nonfinite_derived_pressure_cannot_pass():
-    with np.errstate(all='ignore'), pytest.raises(ValueError, match='finite'):
-        compute_parallel_pressure_residual([1e308, 1e308], [0., 0.], [-2., -1.])
+    with np.errstate(all='ignore'), pytest.raises(FloatingPointError, match='finite'):
+        compute_parallel_pressure_residual(
+            [1e308, 1e308], [0., 0.], [2., 3.], dp_parallel_dB=-1e308)
+
+
+def test_negative_field_magnitude_cannot_enter_pressure_diagnostic():
+    with pytest.raises(ValueError, match='strictly positive'):
+        compute_parallel_pressure_residual(
+            [1e308, 1e308], [0., 0.], [-2., -1.], dp_parallel_dB=0.)
 
 
 def _end_loss(ions, electrons, **kwargs):
@@ -56,7 +64,23 @@ def test_prescribed_end_loss_evaluation_still_exposes_unbalanced_current():
     assert result['converged'] is True
 
 
-def test_constant_field_retains_declared_zero_derivative():
-    result = compute_parallel_pressure_residual([2., 3.], [0., 0.], [1., 1.], strict=True)
+def test_constant_field_without_derivative_evidence_is_indeterminate():
+    with pytest.raises(ValueError, match='fixed-flux derivative'):
+        compute_parallel_pressure_residual([2., 3.], [0., 0.], [1., 1.], strict=True)
+
+
+def test_constant_field_with_explicit_pressure_law():
+    # p_parallel(B, psi) = C(psi)*B gives p_perp = 0. Repeated B samples
+    # alone cannot establish that derivative across separate flux surfaces.
+    result = compute_parallel_pressure_residual(
+        [2., 3.], [0., 0.], [1., 1.], strict=True, dp_parallel_dB=[2., 3.])
     assert result['passed']
     np.testing.assert_array_equal(result['rhs'], [0., 0.])
+
+
+def test_constant_field_retains_declared_zero_derivative():
+    result = compute_parallel_pressure_residual(
+        [2., 3.], [2., 3.], [1., 1.], strict=True, dp_parallel_dB=0.)
+    assert result['passed']
+    np.testing.assert_array_equal(result['dp_parallel_dB'], [0., 0.])
+    np.testing.assert_array_equal(result['rhs'], [2., 3.])

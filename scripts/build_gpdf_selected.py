@@ -10,6 +10,8 @@ import shutil
 import subprocess
 import sys
 
+from scientific_runtime import baseline_receipt, build_requirements, pin_dependencies, python_requirement
+
 RUNTIME = ("cauchy_transform.py", "maxwellian_electrostatic.py", "plasma_dispersion.py")
 EXPORTS = ("evaluate_cauchy_transform", "evaluate_maxwellian_electrostatic",
            "solve_maxwellian_electrostatic_mode", "evaluate_plasma_dispersion")
@@ -40,15 +42,15 @@ def main():
     notices.mkdir()
     for name in ("NUMPY-LICENSE.txt", "SCIPY-LICENSE.txt", "SCIREL-GPDF-D2-NOTICE.txt"):
         shutil.copyfile(args.notices / name, notices / name)
-    (stage / "pyproject.toml").write_text('''[build-system]
-requires = ["setuptools>=68"]
+    (stage / "pyproject.toml").write_text(f'''[build-system]
+requires = {json.dumps(build_requirements())}
 build-backend = "setuptools.build_meta"
 [project]
 name = "scirel"
 version = "0.1.0.dev7"
 description = "SciRel bounded kinetic D2 development candidate"
-requires-python = ">=3.10"
-dependencies = ["numpy>=1.24", "scipy>=1.10"]
+requires-python = {json.dumps(python_requirement())}
+dependencies = {json.dumps(pin_dependencies(["numpy", "scipy"]))}
 license-files = ["licenses/*"]
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -58,7 +60,7 @@ include = ["scirel", "scirel.kinetic"]
     subprocess.run([sys.executable, "-m", "pip", "wheel", "--no-index",
                     "--no-build-isolation", "--no-deps", "--wheel-dir", str(wheels),
                     str(stage)], check=True)
-    print(json.dumps({"runtime": RUNTIME, "exports": EXPORTS,
+    print(json.dumps({"scientific_runtime_baseline": baseline_receipt(), "runtime": RUNTIME, "exports": EXPORTS,
                       "wheel": str(next(wheels.glob("*.whl")))}))
 
 

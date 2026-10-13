@@ -96,6 +96,12 @@ CodeFusion 联调先选定索引中的确切 `entry_id`，再按该条目的状�
 不定义后续正式主线的资产数量、构建输入或永久门禁；后续内容以接收的 D1 交付、D2 整合和发行选择为准。
 历史实现如被保留，须明确复用、来源资格及验证依据；冻结记录与仍被引用的许可/来源证据保持可取得。
 
+## 统一科学运行环境
+
+当前维护基线为 Python 3.14.7、NumPy 2.5.4、SciPy 1.18.1、Matplotlib 3.11.2，
+用 `uv sync --locked --extra test` 建立独立开发环境。历史能力也逐项迁入这一基线；
+版本固定与科学验收分别记录，见[科学运行依赖基线](docs/design/scientific-runtime-baseline.md)。
+
 ## 维护者 API 示例
 
 ```python

@@ -109,8 +109,8 @@ def test_the_module_publishes_exactly_one_callable_and_the_frozen_constants():
     assert ELEMENTARY_CHARGE_C == 1.602177e-19
 
 
-def test_the_package_and_root_namespace_export_the_callable():
-    assert callable(scirel.average_cross_section_over_maxwellian)
+def test_only_the_domain_namespace_exports_the_callable():
+    assert not hasattr(scirel, "average_cross_section_over_maxwellian")
     assert callable(scirel.collisions.average_cross_section_over_maxwellian)
     assert {"collisions"} <= set(scirel.__all__)
 

@@ -30,7 +30,7 @@ def _candidate_entry_id(path):
 def _pending_item(
     *, release_ready=False,
     document_name="scirel.field.circular-filament-green.json",
-    support_file=None,
+    support_files=(),
     omit_dependencies=False,
 ):
     document = json.loads(
@@ -49,11 +49,12 @@ def _pending_item(
             "kind": "none", "content": None,
             "rationale": "The maintained implementation is reused unchanged.",
         }
-        if support_file is not None:
+        if support_files:
             code = {
                 "kind": "files",
                 "content": {"files": {
-                    support_file: (ROOT / support_file).read_bytes().decode("utf-8"),
+                    name: (ROOT / name).read_bytes().decode("utf-8")
+                    for name in support_files
                 }},
                 "rationale": "The selected implementation binds this exact support module.",
             }
@@ -1115,7 +1116,7 @@ def _reviewed_release_inputs(
     tmp_path, *, multi_item=False, multi_item_count=2,
     document_name="scirel.field.circular-filament-green.json",
     git_revision="a" * 40,
-    support_file=None,
+    support_files=(),
     build_release_catalog=True,
     omit_dependencies=False,
 ):
@@ -1130,7 +1131,7 @@ def _reviewed_release_inputs(
     else:
         item = _pending_item(
             release_ready=True, document_name=document_name,
-            support_file=support_file,
+            support_files=support_files,
             omit_dependencies=omit_dependencies,
         )
         pending_body = json.dumps(item, ensure_ascii=False, sort_keys=True).encode("utf-8")
@@ -1178,18 +1179,19 @@ def _reviewed_release_inputs(
     documents.mkdir()
     (documents / "asset.json").write_text(json.dumps(item["asset"]), encoding="utf-8")
     catalog = tmp_path / "catalog"
+    version = item["asset"]["version"]["implementation_version"]
     if build_release_catalog:
         build_catalog(
             documents, catalog, catalog_id="test-reviewed-release",
-            release_version="0.1.0.dev5", coverage_status="complete",
+            release_version=version, coverage_status="complete",
             declared_total=1,
         )
-    wheel = tmp_path / "scirel-0.1.0.dev5-py3-none-any.whl"
+    wheel = tmp_path / f"scirel-{version}-py3-none-any.whl"
     module_name = item["asset"]["public_api"]["python"]["module"].replace(".", "/") + ".py"
     with ZipFile(wheel, "w") as archive:
         archive.writestr(
-            "scirel-0.1.0.dev5.dist-info/METADATA",
-            "Metadata-Version: 2.1\nName: scirel\nVersion: 0.1.0.dev5\n",
+            f"scirel-{version}.dist-info/METADATA",
+            f"Metadata-Version: 2.1\nName: scirel\nVersion: {version}\n",
         )
         archive.writestr(module_name, (ROOT / "src" / module_name).read_bytes())
     return artifacts, documents, catalog, wheel, projection
@@ -1368,15 +1370,20 @@ assert callable(circular_filament_green_response)
     assert Path(finalized["release_manifest"]).is_file()
 
 
-def test_first_reviewed_distribution_requires_bound_private_support(tmp_path):
+@pytest.mark.parametrize("support_files, missing_module", [
+    ((), "scirel._validation"),
+    (("src/scirel/_validation.py",), "scirel.kinetic._mirror_numerics"),
+])
+def test_first_reviewed_distribution_requires_bound_private_support(tmp_path, support_files, missing_module):
     from prepare_reviewed_distribution import prepare_reviewed_distribution
 
     artifacts, _, _, _, _ = _reviewed_release_inputs(
         tmp_path,
         document_name="scirel.closures.mirror-ambipolar-potential.json",
+        support_files=support_files,
     )
     staging = tmp_path / "reviewed-source"
-    with pytest.raises(ValueError, match="missing internal import.*scirel._validation"):
+    with pytest.raises(ValueError, match="missing internal import") as error:
         prepare_reviewed_distribution(
             release_index=tmp_path / "index.json",
             candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
@@ -1385,6 +1392,7 @@ def test_first_reviewed_distribution_requires_bound_private_support(tmp_path):
             source_root=ROOT,
             staging_dir=staging,
         )
+    assert missing_module in str(error.value)
     assert not staging.exists()
 
 
@@ -1393,11 +1401,11 @@ def test_first_reviewed_distribution_includes_bound_private_support(tmp_path, mo
     from build_catalog import build_catalog
     from prepare_reviewed_distribution import prepare_reviewed_distribution
 
-    support = "src/scirel/_validation.py"
-    artifacts, _, _, _, _ = _reviewed_release_inputs(
+    support = ("src/scirel/_validation.py", "src/scirel/kinetic/_mirror_numerics.py")
+    artifacts, _, _, _, projection = _reviewed_release_inputs(
         tmp_path,
         document_name="scirel.closures.mirror-ambipolar-potential.json",
-        support_file=support,
+        support_files=support,
     )
     staging = tmp_path / "reviewed-source"
     result = prepare_reviewed_distribution(
@@ -1409,7 +1417,8 @@ def test_first_reviewed_distribution_includes_bound_private_support(tmp_path, mo
         staging_dir=staging,
     )
     assert result["asset_count"] == 1
-    assert (staging / support).read_bytes() == (ROOT / support).read_bytes()
+    for name in support:
+        assert (staging / name).read_bytes() == (ROOT / name).read_bytes()
     assert not (staging / "src/scirel/field").exists()
     wheel_dir = tmp_path / "built-wheel"
     wheel_dir.mkdir()
@@ -1421,7 +1430,7 @@ def test_first_reviewed_distribution_includes_bound_private_support(tmp_path, mo
     catalog = tmp_path / "built-catalog"
     build_catalog(
         staging / "documents", catalog, catalog_id="test-reviewed-support",
-        release_version="0.1.0.dev5", coverage_status="complete", declared_total=1,
+        release_version=projection["asset"]["version"]["implementation_version"], coverage_status="complete", declared_total=1,
     )
     monkeypatch.setattr(finalize_release, "_git_revision", lambda root: "a" * 40)
     monkeypatch.setattr(finalize_release, "_git_changed_files", lambda root, revision: set())
@@ -1572,10 +1581,15 @@ def test_reviewed_wheel_import_closure_accepts_bound_private_support():
     support = "scirel/_validation.py"
     members = {
         name: (ROOT / "src" / name).read_bytes()
-        for name in (module, support)
+        for name in (module, support, "scirel/kinetic/_mirror_numerics.py")
     }
 
     _validate_wheel_import_closure(members, ROOT)
+    for missing in (support, "scirel/kinetic/_mirror_numerics.py"):
+        incomplete = {name: body for name, body in members.items() if name != missing}
+        with pytest.raises(ValueError, match="missing internal import") as error:
+            _validate_wheel_import_closure(incomplete, ROOT)
+        assert missing.removesuffix(".py").replace("/", ".") in str(error.value)
 
 
 def test_reviewed_wheel_import_closure_rejects_unfiltered_package_initializer():

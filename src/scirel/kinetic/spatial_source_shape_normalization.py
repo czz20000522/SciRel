@@ -23,6 +23,7 @@ D1 qualification has been withdrawn.
 from __future__ import annotations
 
 import numpy as np
+from scipy.integrate import trapezoid
 
 __all__ = [
     "normalize_spatial_source_shape",
@@ -79,13 +80,13 @@ def normalize_spatial_source_shape(source, x_m):
         or np.any(np.diff(coordinates) <= 0.0)
     ):
         raise ValueError("source and x_m must be aligned finite one-dimensional profiles")
-    integral = float(np.trapezoid(profile, coordinates))
+    integral = float(trapezoid(profile, coordinates))
     if not np.isfinite(integral) or integral <= 0.0:
         raise ValueError("source must have a positive spatial integral")
     shape = profile / integral
     if not np.all(np.isfinite(shape)):
         raise ValueError("normalized source shape must be finite")
-    normalized_integral = float(np.trapezoid(shape, coordinates))
+    normalized_integral = float(trapezoid(shape, coordinates))
     if not np.isclose(normalized_integral, 1.0, rtol=1.0e-12, atol=1.0e-14):
         raise ValueError("normalized source shape failed its unit-integral check")
     return {"shape_m_inv": shape, "integral_source": integral}

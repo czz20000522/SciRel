@@ -1,16 +1,17 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools==84.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "scirel"
 version = "0.1.0.dev5"
 description = "Scientific Relations Library"
-requires-python = ">=3.10"
-dependencies = ["numpy>=1.24", "scipy>=1.10", "matplotlib>=3.7"]
+requires-python = ">=3.14,<3.15"
+dependencies = ["numpy==2.5.4", "scipy==1.18.1", "matplotlib==3.11.2"]
 
 [project.optional-dependencies]
-test = ["pytest>=7", "setuptools>=68", "wheel"]
+test = ["pytest==9.1.1", "setuptools==84.0.0", "wheel==0.48.0",
+        "mpmath==1.4.1", "netCDF4==1.7.4"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

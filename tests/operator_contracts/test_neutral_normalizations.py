@@ -1,5 +1,7 @@
 """Scientific and failure contracts for neutral boundary and source normalization."""
 
+import math
+
 import numpy as np
 import pytest
 
@@ -120,7 +122,12 @@ def test_source_shape_uses_trapezoidal_spatial_measure():
     result = normalize_spatial_source_shape(source, x_m)
     assert result["integral_source"] == 7.0
     np.testing.assert_array_equal(result["shape_m_inv"], source / 7.0)
-    assert np.trapezoid(result["shape_m_inv"], x_m) == pytest.approx(1.0)
+    shape = result["shape_m_inv"]
+    independent_integral = math.fsum(
+        float((shape[i] + shape[i + 1]) * (x_m[i + 1] - x_m[i]) / 2)
+        for i in range(len(x_m) - 1)
+    )
+    assert independent_integral == pytest.approx(1.0)
 
 
 @pytest.mark.parametrize(

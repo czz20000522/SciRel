@@ -12,6 +12,7 @@ import importlib.util
 import json
 from pathlib import Path
 import sys
+from scientific_runtime import baseline_receipt, build_requirements, pin_dependencies, python_requirement
 
 
 def digest(data: bytes) -> str:
@@ -109,6 +110,7 @@ def stage(source_root: Path, profile_path: Path, output: Path) -> dict:
             if (parent / "__init__.py").as_posix() not in bodies:
                 raise ValueError(f"selected module has no explicit package initializer: {relative}")
     closure = inspect_closure(bodies, set(profile["external_import_roots"]))
+    dependencies = pin_dependencies(profile["dependencies"])
     license_path = Path(profile["license_path"])
     if license_path.is_absolute() or ".." in license_path.parts:
         raise ValueError("license path escapes source")
@@ -125,15 +127,15 @@ def stage(source_root: Path, profile_path: Path, output: Path) -> dict:
     (output / license_path).parent.mkdir(parents=True, exist_ok=True)
     (output / license_path).write_bytes(license_bytes)
     project = f'''[build-system]
-requires = ["setuptools>=68"]
+requires = {json.dumps(build_requirements())}
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "scirel"
 version = {json.dumps(profile["version"])}
 description = "SciRel bounded maintained development candidate"
-requires-python = ">=3.10"
-dependencies = {json.dumps(profile["dependencies"])}
+requires-python = {json.dumps(python_requirement())}
+dependencies = {json.dumps(dependencies)}
 
 [tool.setuptools]
 license-files = [{json.dumps(license_path.as_posix())}]
@@ -145,7 +147,7 @@ include = ["scirel", "scirel.*"]
     (output / "pyproject.toml").write_text(project)
     excluded = sorted(path.relative_to(source_root).as_posix() for path in (source_root / "src/scirel").rglob("*.py")
                       if path.relative_to(source_root).as_posix() not in bodies)
-    receipt = {"schema": "scirel.maintained-development-stage.v1", "profile_sha256": digest(profile_bytes),
+    receipt = {"schema": "scirel.maintained-development-stage.v1", "profile_sha256": digest(profile_bytes), "scientific_runtime_baseline": baseline_receipt(),
                "candidate_source_commit": profile["candidate_source_commit"], "candidate_source_tree": profile["candidate_source_tree"],
                "selected_files": sorted(records, key=lambda record: record["path"]), "excluded_python_paths": excluded,
                "closure": closure, "human_approval": False, "release_approval": False}
