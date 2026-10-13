@@ -10,6 +10,7 @@ import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
+import re
 import subprocess
 import tempfile
 from urllib.parse import parse_qs, urlsplit
@@ -23,6 +24,9 @@ NOTICE = ('开发文档 · 按每条资产的版本与证据范围使用。文�
 STATIC_FILES = {
     'presentation.js': 'text/javascript; charset=utf-8',
     'code.css': 'text/css; charset=utf-8',
+    'guide.css': 'text/css; charset=utf-8',
+    'navigation.js': 'text/javascript; charset=utf-8',
+    'handbook.js': 'text/javascript; charset=utf-8',
     'vendor/highlightjs/highlight.min.js': 'text/javascript; charset=utf-8',
     'vendor/highlightjs/LICENSE': 'text/plain; charset=utf-8',
     'vendor/highlightjs/provenance.json': 'application/json; charset=utf-8',
@@ -35,6 +39,36 @@ def encode(value):
 
 def sha(data):
     return hashlib.sha256(data).hexdigest()
+
+
+def handbook_document(asset_ids, outline=None):
+    """Validate model-authored navigation without inventing scientific contracts."""
+    book = json.loads((outline or ROOT / 'tools/docs/handbook.json').read_bytes())
+    if book.get('schema') != 'scirel.handbook.v1':
+        raise ValueError('invalid handbook schema')
+    seen, placements = set(), []
+    for chapter in book['chapters']:
+        for node in [chapter, *chapter['topics']]:
+            if not re.fullmatch(r'[a-z][a-z0-9-]*', node['id']) or node['id'] in seen:
+                raise ValueError('invalid or duplicate handbook ID')
+            seen.add(node['id'])
+            if not node['title'].strip() or not node['introduction'].strip():
+                raise ValueError('handbook nodes need a title and introduction')
+        if not chapter['discipline'] or not chapter['topics']:
+            raise ValueError('empty handbook chapter')
+        for topic in chapter['topics']:
+            if not topic['assets']:
+                raise ValueError('empty handbook topic')
+            if topic.get('tutorial_id') not in (None, 'magnetostatics'):
+                raise ValueError('handbook tutorial has no execution-backed renderer')
+            placements.extend(topic['assets'])
+    if len(placements) != len(set(placements)):
+        raise ValueError('duplicate handbook asset placement')
+    if set(placements) != set(asset_ids):
+        raise ValueError('handbook coverage differs from exact documents: missing=' +
+                         str(sorted(set(asset_ids) - set(placements))) + '; unknown=' +
+                         str(sorted(set(placements) - set(asset_ids))))
+    return book
 
 
 def chapter_files(asset_ids):
@@ -76,7 +110,7 @@ def chapter_files(asset_ids):
     return files
 
 
-def build(documents: Path, output: Path):
+def build(documents: Path, output: Path, outline: Path | None = None):
     docs = load_document_set(documents)
     if output.exists():
         raise FileExistsError('output already exists; build a new snapshot')
@@ -97,6 +131,8 @@ def build(documents: Path, output: Path):
         index.append(summary)
     files['index.json'] = encode(index)
     files['index.html'] = (ROOT / 'tools/docs/index.html').read_bytes()
+    files['handbook.html'] = (ROOT / 'tools/docs/handbook.html').read_bytes()
+    files['handbook.json'] = encode(handbook_document({d['asset_id'] for d in docs}, outline))
     for path in STATIC_FILES:
         files['static/' + path] = (ROOT / 'tools/docs' / path).read_bytes()
     files.update(chapter_files({d['asset_id'] for d in docs}))
@@ -153,15 +189,16 @@ class Documentation:
                 'snapshot_sha256': self.manifest['snapshot_sha256'],
                 'source_commit': self.manifest['source_commit'], 'notice': NOTICE, **items}
 
-    def search(self, q='', kind='', domain='', offset=0, limit=20):
+    def search(self, q='', kind='', domain='', offset=0, limit=20, topic=''):
         if len(q) > 512 or offset < 0 or not 1 <= limit <= 100:
             raise ValueError('q <= 512 characters, offset >= 0, limit 1..100 required')
         if kind not in ('', 'operator', 'task_graph'):
             raise ValueError('kind must be operator or task_graph')
         # Read the bound index again so mutation after startup also fails closed.
         index = json.loads(self.read('index.json'))
+        topic_ids = set(self.topic(topic)['document']['assets']) if topic else self.ids
         terms = q.lower().split()
-        matches = [x for x in index if (not kind or x['kind'] == kind)
+        matches = [x for x in index if x['asset_id'] in topic_ids and (not kind or x['kind'] == kind)
                    and (not domain or domain in x['taxonomy'])
                    and all(t in x['search_text'] for t in terms)]
         page = [{k: v for k, v in x.items() if k != 'search_text'} for x in matches[offset:offset+limit]]
@@ -178,6 +215,17 @@ class Documentation:
             raise KeyError('unknown chapter')
         return self.envelope(document=json.loads(self.read('chapters/magnetostatics/chapter.json')))
 
+    def handbook(self):
+        return self.envelope(document=json.loads(self.read('handbook.json')))
+
+    def topic(self, topic_id):
+        for chapter in self.handbook()['document']['chapters']:
+            for topic in chapter['topics']:
+                if topic['id'] == topic_id:
+                    return self.envelope(document=topic, chapter_id=chapter['id'],
+                                         discipline=[*chapter['discipline'], chapter['title']])
+        raise KeyError('unknown handbook topic')
+
     def handle(self, url):
         parsed = urlsplit(url)
         params = parse_qs(parsed.query, keep_blank_values=True)
@@ -185,7 +233,7 @@ class Documentation:
             raise ValueError('duplicate query parameter')
         p = {k: v[0] for k, v in params.items()}
         if parsed.path == '/api/search':
-            if set(p) - {'q', 'kind', 'domain', 'offset', 'limit'}:
+            if set(p) - {'q', 'kind', 'domain', 'offset', 'limit', 'topic'}:
                 raise ValueError('unknown search parameter')
             for key in ('offset', 'limit'):
                 if key in p:
@@ -195,6 +243,10 @@ class Documentation:
             return self.asset(p['id'])
         if parsed.path == '/api/chapter' and set(p) == {'id'}:
             return self.chapter(p['id'])
+        if parsed.path == '/api/handbook' and not p:
+            return self.handbook()
+        if parsed.path == '/api/topic' and set(p) == {'id'}:
+            return self.topic(p['id'])
         if parsed.path == '/api/chapters' and not p:
             c = self.chapter('magnetostatics')['document']
             return self.envelope(items=[{k: c[k] for k in ('id', 'title', 'discipline', 'introduction')}])
@@ -204,6 +256,8 @@ class Documentation:
                                             'manifest': '/api/manifest',
                                             'chapters': '/api/chapters',
                                             'chapter': '/api/chapter?id=magnetostatics'},
+                                 handbook='/api/handbook', topic='/api/topic?id=…',
+                                 topic_search='/api/search?topic=…&q=&offset=0&limit=20',
                                  operations='read-only; no callable execution',
                                  discovery='lexical AND search, lowercase, whitespace separated; exact domain/kind filters')
         if parsed.path == '/api/manifest' and not p:
@@ -216,8 +270,10 @@ def server(docs, port):
         def do_GET(self):
             try:
                 if self.path in ('/', '/index.html'):
+                    data, content_type = docs.read('handbook.html'), 'text/html; charset=utf-8'
+                elif self.path == '/tutorials/magnetostatics':
                     data, content_type = docs.read('chapter.html'), 'text/html; charset=utf-8'
-                elif self.path == '/reference':
+                elif urlsplit(self.path).path == '/reference':
                     data, content_type = docs.read('index.html'), 'text/html; charset=utf-8'
                 elif self.path.startswith('/static/') and self.path[8:] in STATIC_FILES:
                     data, content_type = docs.read(self.path[1:]), STATIC_FILES[self.path[8:]]
@@ -247,20 +303,20 @@ def server(docs, port):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     subs = parser.add_subparsers(dest='command', required=True)
-    b = subs.add_parser('build'); b.add_argument('--documents', type=Path, default=ROOT/'catalog/examples'); b.add_argument('--output', type=Path, required=True)
+    b = subs.add_parser('build'); b.add_argument('--documents', type=Path, default=ROOT/'catalog/examples'); b.add_argument('--output', type=Path, required=True); b.add_argument('--outline', type=Path)
     for name in ('query', 'serve'):
         sub = subs.add_parser(name); sub.add_argument('--snapshot', type=Path, required=True); sub.add_argument('--expected-digest')
         if name == 'query':
-            sub.add_argument('--q', default=''); sub.add_argument('--kind', default=''); sub.add_argument('--domain', default=''); sub.add_argument('--offset', type=int, default=0); sub.add_argument('--limit', type=int, default=20); sub.add_argument('--asset'); sub.add_argument('--chapter')
+            sub.add_argument('--q', default=''); sub.add_argument('--kind', default=''); sub.add_argument('--domain', default=''); sub.add_argument('--offset', type=int, default=0); sub.add_argument('--limit', type=int, default=20); sub.add_argument('--asset'); sub.add_argument('--chapter'); sub.add_argument('--handbook', action='store_true'); sub.add_argument('--topic', default='')
         else:
             sub.add_argument('--port', type=int, default=8765)
     a = parser.parse_args()
     if a.command == 'build':
-        result = build(a.documents, a.output)
+        result = build(a.documents, a.output, a.outline)
         print(json.dumps({k:v for k,v in result.items() if k != 'files'}, ensure_ascii=False)); return
     docs = Documentation(a.snapshot, a.expected_digest)
     if a.command == 'query':
-        result = docs.chapter(a.chapter) if a.chapter else (docs.asset(a.asset) if a.asset else docs.search(a.q, a.kind, a.domain, a.offset, a.limit))
+        result = docs.handbook() if a.handbook else (docs.chapter(a.chapter) if a.chapter else (docs.asset(a.asset) if a.asset else docs.search(a.q, a.kind, a.domain, a.offset, a.limit, a.topic)))
         print(encode(result).decode()); return
     http = server(docs, a.port)
     print(f'SciRel documentation: http://127.0.0.1:{http.server_port}', flush=True)

@@ -1,6 +1,6 @@
 # SciRel 科学关系手册与 Agent 查询
 
-学习指南按通行学科与问题分章，左侧使用可折叠目录树，不按来源项目组织。首章为“电磁学 → 磁静力学 → 轴对称线圈磁场”，包含单圆环、亥姆霍兹线圈对、矩形截面线圈组和离散加密检查。每节依次说明问题、输入与单位、代码、实际结果和解释。来源仅保留在函数参考的溯源记录中。
+手册是持续维护的领域文档入口。学习指南按通行学科与问题分章，左侧使用全书可折叠目录树，不按来源项目组织。已运行的首个完整案例为“电磁学 → 磁静力学 → 轴对称线圈磁场”，包含单圆环、亥姆霍兹线圈对、矩形截面线圈组和离散加密检查。每节依次说明问题、输入与单位、代码、实际结果和解释。来源仅保留在函数参考的溯源记录中。
 
 函数参考支持科学问题、中文名称与 API 检索，以及领域与资产类型筛选；正式输入输出、适用条件、失败行为与验证限制仍来自唯一 exact document。
 
@@ -13,7 +13,7 @@ python3 scripts/scirel_docs.py build --output .runtime/docs-snapshot-001
 python3 scripts/scirel_docs.py serve --snapshot .runtime/docs-snapshot-001 --port 8765
 ```
 
-打开 <http://127.0.0.1:8765> 阅读章节；`/reference` 查询函数。章节小节与资产详情均可用地址中的锚点收藏。旧的根路径资产锚点会转到函数参考。服务器仅绑定本机回环地址；结束时 Ctrl-C。新内容构建到新目录，工具拒绝覆盖已有快照。默认输入为 `catalog/examples`，也可通过 `--documents` 指定完整依赖闭包的正式文档目录。
+打开 <http://127.0.0.1:8765> 阅读全书目录与各领域导读；`/#chapter/<id>` 进入章节，`/#topic/<id>` 进入具体求解问题，`/reference` 查询函数。`/tutorials/magnetostatics` 保留完整磁场案例；旧的 `/#single` 等案例锚点会转到该地址。章节小节与资产详情均可用地址中的锚点收藏。旧的根路径资产锚点会转到函数参考。服务器仅绑定本机回环地址；结束时 Ctrl-C。新内容构建到新目录，工具拒绝覆盖已有快照。默认输入为 `catalog/examples`，也可通过 `--documents` 指定完整依赖闭包的正式文档目录，并用 `--outline` 指定覆盖同一精确文档集合的目录 JSON。当前已执行案例还要求其引用的正式文档齐备，不允许把不完整子集伪装成完整手册。
 
 页面采用白底黑字、细分隔线和清晰的键盘焦点，不使用彩色装饰。页面是使用手册，不是人审队列。适用范围与限制在调用示例前展示；科学定义、验证证据、来源、任务图和 JSON 合同可继续查看。中文标题来自正式记录，英文科学正文保持原意，不凭名称补写翻译或科学字段。
 
@@ -22,7 +22,7 @@ python3 scripts/scirel_docs.py serve --snapshot .runtime/docs-snapshot-001 --por
 HTML 与 HTTP、CLI 使用同一个查询实现和快照。无需加载所有完整文档，也不导入或执行科学函数。
 
 ```sh
-# 查询摘要，支持 q、kind、domain、offset、limit
+# 查询摘要，支持 q、kind、domain、topic、offset、limit
 curl 'http://127.0.0.1:8765/api/search?q=field&limit=5'
 # 按精确 ID 读取完整正式文档（含依赖 ID）
 curl 'http://127.0.0.1:8765/api/asset?id=scirel.field.current-green-superposition'
@@ -31,7 +31,9 @@ python3 scripts/scirel_docs.py query --snapshot .runtime/docs-snapshot-001 --q f
 python3 scripts/scirel_docs.py query --snapshot .runtime/docs-snapshot-001 --asset scirel.field.current-green-superposition
 ```
 
-`GET /api/chapters` 返回章节目录，`GET /api/chapter?id=magnetostatics` 返回与页面相同的完整章节、代码、实际结果及执行绑定；CLI 对应 `query --snapshot … --chapter magnetostatics`。
+`GET /api/handbook` 返回完整学科目录与主题资产 ID，`GET /api/topic?id=<id>` 返回单个主题，`GET /api/search?topic=<id>&limit=20` 分页读取该主题下的正式合同摘要；CLI 对应 `query --snapshot … --handbook` 与 `query --snapshot … --topic <id>`。全书搜索同时查主题导读与正式科学合同，结果可继续在函数参考筛选。
+
+`GET /api/chapters` 返回已具备执行绑定的案例目录，`GET /api/chapter?id=magnetostatics` 返回与页面相同的完整章节、代码、实际结果及执行绑定；CLI 对应 `query --snapshot … --chapter magnetostatics`。
 
 `GET /api` 返回接口发现说明，`GET /api/manifest` 返回快照身份。查询结果包括 `snapshot_sha256`、`source_commit`、`items`、`total`、`next_offset`；详情返回 `document`。空格分隔关键词采用小写字面 AND 匹配；领域匹配已有 taxonomy 标签，类型为 `operator` 或 `task_graph`。页大小 1–100，默认 20，关键词最长 512 字符。重复/未知参数和非法分页返回 400；不存在的资产或路径返回 404。HTTP 不支持科学调用或写入。可用 `--expected-digest` 固定预期快照身份。
 
@@ -46,6 +48,14 @@ python3 scripts/scirel_docs.py query --snapshot .runtime/docs-snapshot-001 --ass
 文档构建不重新验证数值、不执行示例、不证明当前宽 wheel 可发行。已有验证范围、已知限制、历史来源资格和许可状态全部原样展示；原有科学资格不因页面可访问而扩大。人审和公开发行决定仍然独立。
 
 该工具与页面属于开发层，不加入科学 wheel。新增项目达到正式文档冻结条件后，在同一次整合中更新 exact document，重新生成手册，并验证搜索与原文一致；不维护第二份可漂移的科学描述。
+
+## 全书目录与持续维护
+
+`tools/docs/handbook.json` 是模型审阅后的学科目录，只写导读与精确资产 ID；公共 API、参数、科学范围、版本、失败行为、证据和许可仍从正式资产文档读取。每条正式文档有且只有一个主主题，多个记录可共用同一 Python 模块；不由路径、来源项目或函数名自动推导学科。构建拒绝缺漏、未知 ID、重复主归属、空主题和没有执行绑定呈现器的案例链接。新增资产必须同步目录，删除或合并资产必须处理旧链接，不能静默丢到“其他”。
+
+全书导读、函数参考、已执行案例是不同层次。主题已有参考文档不表示已有完整教程；尚未编写并运行的案例明确显示待补充。文档覆盖率只以输入的正式记录集合为分母，不表示源码所有公共接口、科学 wheel 闭包或完整项目验收。旧快照保留，稳定更新始终生成新快照。
+
+每次科学资产整合同时执行的步骤与章节编写模板见 [手册编写与维护](handbook-authoring.md)。本手册以现有磁场案例的形式继续扩展；新主题无需改写页面目录，新的案例结果结构须有明确的执行绑定和对应呈现支持。
 
 ## 章节的案例与维护
 

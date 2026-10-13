@@ -6,6 +6,7 @@ SciRel 将已有科研代码整理为可复用的科学算子与任务图，供 
 
 ## 理解项目与使用方法
 
+- [科学关系手册与查询入口](searchable-documentation.md)：按领域和求解问题阅读导读、已运行案例及正式函数合同，人和 Agent 共用文档快照。
 - [项目定位](../README.md)：为什么拆解已有代码，以及科学资产、Agent 和胶水代码各自负责什么。
 - [开发项目与科学包交付](design/project-and-distribution.md)：项目开发态、用户安装包、历史样本和分支/worktree 的多版本构建边界。
 - [架构与科学资产合同](architecture.md)：Operator、可复用 TaskGraph 与本次运行实例的区别，以及科学实现和编排的边界。
@@ -17,6 +18,7 @@ SciRel 将已有科研代码整理为可复用的科学算子与任务图，供 
 
 ## 维护科学库
 
+- [手册编写与维护](handbook-authoring.md)：目录主归属、增章模板、案例执行证据和每批科学资产整合时的同步步骤。
 - [架构与科学资产合同](architecture.md)：Operator、TaskGraph、科学身份、公共 API 与治理边界。
 - [规模化目录合同](catalog.md)：分片索引、渐进检索和依赖索引。
 - [标准化资产文档需求](requirements/asset-documentation.md)与[Catalog/适配器设计](design/catalog-and-adapters.md)：exact document、可验证 catalog 和消费投影。

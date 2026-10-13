@@ -128,3 +128,49 @@ def test_chapter_build_rejects_stale_execution(tmp_path, monkeypatch):
     path.write_text(path.read_text()+'\n# changed\n')
     with pytest.raises(ValueError, match='implementation changed'):
         scirel_docs.chapter_files(asset_ids)
+
+
+def test_handbook_covers_exact_records_and_topic_queries_match(snapshot):
+    docs = Documentation(snapshot)
+    book = docs.handle('/api/handbook')['document']
+    topics = [t for c in book['chapters'] for t in c['topics']]
+    ids = [a for t in topics for a in t['assets']]
+    assert len(ids) == len(set(ids)) == len(docs.ids)
+    assert set(ids) == docs.ids
+    for topic in topics:
+        assert docs.handle('/api/topic?id=' + topic['id'])['document'] == topic
+        result = docs.search(topic=topic['id'], limit=100)
+        assert {x['asset_id'] for x in result['items']} == set(topic['assets'])
+        for item in result['items']:
+            assert item['public_api'] == docs.asset(item['asset_id'])['document']['public_api']
+    cli = subprocess.check_output([sys.executable, str(ROOT/'scripts/scirel_docs.py'),
+                                   'query', '--snapshot', str(snapshot), '--handbook'])
+    assert json.loads(cli) == docs.handbook()
+    cli = subprocess.check_output([sys.executable, str(ROOT/'scripts/scirel_docs.py'),
+                                   'query', '--snapshot', str(snapshot), '--topic', topics[0]['id'], '--limit', '100'])
+    assert json.loads(cli) == docs.search(topic=topics[0]['id'], limit=100)
+    with pytest.raises(KeyError):
+        docs.handle('/api/search?topic=unknown')
+    with pytest.raises(KeyError):
+        docs.handle('/api/topic?id=../../anything')
+    (snapshot/'handbook.json').write_text('{}')
+    with pytest.raises(ValueError, match='bytes changed'):
+        docs.search(topic=topics[0]['id'])
+
+
+def test_handbook_invalid_navigation_fails_closed(tmp_path, monkeypatch):
+    import scirel_docs
+    original = json.loads((ROOT/'tools/docs/handbook.json').read_text())
+    ids = {a for c in original['chapters'] for t in c['topics'] for a in t['assets']}
+    target = tmp_path/'tools/docs/handbook.json'; target.parent.mkdir(parents=True)
+    monkeypatch.setattr(scirel_docs, 'ROOT', tmp_path)
+    for mode in ['missing', 'unknown', 'duplicate', 'tutorial', 'duplicate_id']:
+        book = json.loads(json.dumps(original)); topics = book['chapters'][0]['topics']
+        if mode == 'missing': topics[0]['assets'].pop()
+        if mode == 'unknown': topics[0]['assets'].append('unknown')
+        if mode == 'duplicate': topics[0]['assets'].append(topics[0]['assets'][0])
+        if mode == 'tutorial': topics[0]['tutorial_id'] = '../../not-executed'
+        if mode == 'duplicate_id': topics[0]['id'] = book['chapters'][0]['id']
+        target.write_text(json.dumps(book))
+        with pytest.raises(ValueError):
+            scirel_docs.handbook_document(ids)

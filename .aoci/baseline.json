@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-13T08:07:33Z",
+  "updated_at": "2026-10-13T08:51:40Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -53,15 +53,15 @@
     },
     "README.md": {
       "role": "index",
-      "sha256": "e6ee830c1c251872336c20874f3a340536a6da7e8c9ac5436749c388d0c53dbd",
-      "size": 18966,
-      "normalized_sha256": "e6ee830c1c251872336c20874f3a340536a6da7e8c9ac5436749c388d0c53dbd"
+      "sha256": "3957679ac96e05711641af5b1f3de09d110409236e559662706646f99220b9bf",
+      "size": 19081,
+      "normalized_sha256": "3957679ac96e05711641af5b1f3de09d110409236e559662706646f99220b9bf"
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "04882899b892bd326aa66c35da124b994c39d6a825d8a6e8efd9055cd43e7325",
-      "size": 416370,
-      "normalized_sha256": "04882899b892bd326aa66c35da124b994c39d6a825d8a6e8efd9055cd43e7325"
+      "sha256": "5e371f2e3b64a915fad4660203fa4c1e46f195a6ae357df090baa77b0d97ca5a",
+      "size": 418234,
+      "normalized_sha256": "5e371f2e3b64a915fad4660203fa4c1e46f195a6ae357df090baa77b0d97ca5a"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -1763,9 +1763,9 @@
     },
     "docs/README.md": {
       "role": "index",
-      "sha256": "6ad0d73b24a765ac3d4bb029f9860c1e3c5f7dbb95affaa4f8e499a45238a527",
-      "size": 6198,
-      "normalized_sha256": "6ad0d73b24a765ac3d4bb029f9860c1e3c5f7dbb95affaa4f8e499a45238a527"
+      "sha256": "3da8502de517e8e87699171852aba620aacb7aeb9434882a708cf6352067a2f2",
+      "size": 6531,
+      "normalized_sha256": "3da8502de517e8e87699171852aba620aacb7aeb9434882a708cf6352067a2f2"
     },
     "docs/architecture.md": {
       "role": "index",
@@ -3657,6 +3657,12 @@
       "size": 3866,
       "normalized_sha256": "8a1e09de2ef72dd144d5193ef4f643c33279e5680b1c9ae7626c5deec2e00af8"
     },
+    "docs/handbook-authoring.md": {
+      "role": "index",
+      "sha256": "b8c18094ec43f5dbf0b9a4dcafdd77dbc9456bf03f1e03c21050cd87444c5880",
+      "size": 9845,
+      "normalized_sha256": "b8c18094ec43f5dbf0b9a4dcafdd77dbc9456bf03f1e03c21050cd87444c5880"
+    },
     "docs/integration/codefusion-consumer-contract.md": {
       "role": "index",
       "sha256": "fe9df57eaf726f3dd48b098e6eb29618d29dc16dc42f006f43d4522d9efa6eb8",
@@ -3749,9 +3755,9 @@
     },
     "docs/searchable-documentation.md": {
       "role": "index",
-      "sha256": "d24e5b4cbdffb3c92479a6fdda1949ba031ba14d447d22da351960146b3230c1",
-      "size": 9309,
-      "normalized_sha256": "d24e5b4cbdffb3c92479a6fdda1949ba031ba14d447d22da351960146b3230c1"
+      "sha256": "541287d868245b3395f007de9dd3eb06f6e3bcc67d5a2938a90dc2e5a1098c5d",
+      "size": 11453,
+      "normalized_sha256": "541287d868245b3395f007de9dd3eb06f6e3bcc67d5a2938a90dc2e5a1098c5d"
     },
     "examples/README.md": {
       "role": "index",
@@ -4163,9 +4169,9 @@
     },
     "scripts/scirel_docs.py": {
       "role": "index",
-      "sha256": "db509754d5b996a795d40d6d81f42b20c9471534f09cc73209754a20695bc830",
-      "size": 14193,
-      "normalized_sha256": "db509754d5b996a795d40d6d81f42b20c9471534f09cc73209754a20695bc830"
+      "sha256": "b83079039d339e7781058e6e2cdd226981e4fe6ef6371b05a7f973e6b886b068",
+      "size": 17604,
+      "normalized_sha256": "b83079039d339e7781058e6e2cdd226981e4fe6ef6371b05a7f973e6b886b068"
     },
     "scripts/select_affected_tests.py": {
       "role": "index",
@@ -7373,9 +7379,9 @@
     },
     "tests/test_scirel_docs.py": {
       "role": "index",
-      "sha256": "b5ab09a398162b68f924d76b0384413e3dc6925d762f145a035a7363526f2034",
-      "size": 5748,
-      "normalized_sha256": "b5ab09a398162b68f924d76b0384413e3dc6925d762f145a035a7363526f2034"
+      "sha256": "48d69a46d2b6f0e4c97cea79232abfd53237086bf5fb1635a57bf0d2fea83114",
+      "size": 8374,
+      "normalized_sha256": "48d69a46d2b6f0e4c97cea79232abfd53237086bf5fb1635a57bf0d2fea83114"
     },
     "tests/test_spark_codex.py": {
       "role": "index",
@@ -7439,9 +7445,9 @@
     },
     "tools/docs/chapter.html": {
       "role": "index",
-      "sha256": "61bfa6f14d436dc8d0ff0467c463e9daf635236deef07aba9dd4d361bf04ca33",
-      "size": 10176,
-      "normalized_sha256": "61bfa6f14d436dc8d0ff0467c463e9daf635236deef07aba9dd4d361bf04ca33"
+      "sha256": "bc758b874f9c3a03c415f90875a3ddbc730667f001e945d7e472b736cba809ef",
+      "size": 6928,
+      "normalized_sha256": "bc758b874f9c3a03c415f90875a3ddbc730667f001e945d7e472b736cba809ef"
     },
     "tools/docs/code.css": {
       "role": "index",
@@ -7449,11 +7455,35 @@
       "size": 1674,
       "normalized_sha256": "52c77a358f2fbe9cee4eaf9921c11e17b67c466f40f266e21bb4077d0cb7819d"
     },
+    "tools/docs/guide.css": {
+      "role": "index",
+      "sha256": "3b14d9c0493d5bd4a21800833214db69e35012de74592b994635d8c6712d8caa",
+      "size": 4377,
+      "normalized_sha256": "3b14d9c0493d5bd4a21800833214db69e35012de74592b994635d8c6712d8caa"
+    },
+    "tools/docs/handbook.html": {
+      "role": "index",
+      "sha256": "2330f13263c8ec99e29a50c255a68f2407e3b54a9d9d4c79f9edc17f9fffdffe",
+      "size": 1119,
+      "normalized_sha256": "2330f13263c8ec99e29a50c255a68f2407e3b54a9d9d4c79f9edc17f9fffdffe"
+    },
+    "tools/docs/handbook.js": {
+      "role": "index",
+      "sha256": "149535969cdb8a74c8f37fe885b748dba779171e693d2e0c9661fa81ae3dc531",
+      "size": 6779,
+      "normalized_sha256": "149535969cdb8a74c8f37fe885b748dba779171e693d2e0c9661fa81ae3dc531"
+    },
+    "tools/docs/handbook.json": {
+      "role": "index",
+      "sha256": "169a1e33d533ffea9339d91fd7cabd35d4d9a7083b48ebe8604c675aa9ea620d",
+      "size": 29378,
+      "normalized_sha256": "169a1e33d533ffea9339d91fd7cabd35d4d9a7083b48ebe8604c675aa9ea620d"
+    },
     "tools/docs/index.html": {
       "role": "index",
-      "sha256": "653b3910486daca42fd78903b62e39bec0ce6715541c880e6abb36b28b9201ed",
-      "size": 11763,
-      "normalized_sha256": "653b3910486daca42fd78903b62e39bec0ce6715541c880e6abb36b28b9201ed"
+      "sha256": "172f72f4a5824d4df6f1a04c0acddcc68a7846b393e1d16a78dda08d4e589fc9",
+      "size": 11832,
+      "normalized_sha256": "172f72f4a5824d4df6f1a04c0acddcc68a7846b393e1d16a78dda08d4e589fc9"
     },
     "tools/docs/magnetostatics/chapter.json": {
       "role": "index",
@@ -7502,6 +7532,12 @@
       "sha256": "5f0d34ed3addaba7d0aa57df5cbb99f65e1d31d8dc283da4f929cbe1a6081955",
       "size": 20444,
       "normalized_sha256": "5f0d34ed3addaba7d0aa57df5cbb99f65e1d31d8dc283da4f929cbe1a6081955"
+    },
+    "tools/docs/navigation.js": {
+      "role": "index",
+      "sha256": "0d59c2409f408721a38f798d027e14bfa24b9f4c8217e64b7799c9bf1b103395",
+      "size": 2142,
+      "normalized_sha256": "0d59c2409f408721a38f798d027e14bfa24b9f4c8217e64b7799c9bf1b103395"
     },
     "tools/docs/presentation.js": {
       "role": "index",
