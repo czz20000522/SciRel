@@ -1670,7 +1670,7 @@ zh_physics.json[SL7L]: F:翻译场、闭合、平衡与色散的领域科学合�
 zh_green_dependencies.json[SL6M]: F:中文解释三个实际坐标Green依赖的精确科学域 | R:code:catalog/pleiades-maintained/circular-filament-green.json,code:catalog/pleiades-maintained/loop-flux-matrix.json,code:catalog/pleiades-maintained/green-response-matrices.json | A:摘要绑定中文reader记录 | S:集合奇点拒绝与矩阵离散零分别保留；权重、电流和RAphi单位不混用。
 
 ===/Users/tomczz/Projects/SciReL/docs/usage/===
-axisymmetric-core.md[SL7S]: F:按科学领域指导几何电流、Green、压力及数据消费 | R:code:catalog/pleiades-maintained/green-response-matrices.json,code:catalog/pleiades-maintained/pressure-equilibrium-eqdsk.json | A:中文科学使用及真实示例 | S:明确RAphi规范、源电流赋值与最近点语义；默认cubic不授任意域精度保证。
+axisymmetric-core.md[SL7S]: F:按科学领域指导几何电流、Green、压力、场线与数据消费 | R:code:catalog/pleiades-maintained/green-response-matrices.json,code:catalog/pleiades-maintained/pressure-equilibrium-eqdsk.json,code:provenance/validation/pleiades-home-fullsize-d3-20261014.json | A:中文科学使用及dev6原尺寸安装样例 | S:RAphi规范、源电流与最近点语义保留；全尺寸离散压力闭合和文件消费不证明任意连续平衡，默认cubic不授任意域精度。
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/magnetostatics-20261013/===
 chapter.json[SL6T]: F:解释圆环、Helmholtz及矩形线圈真实安装计算与结果 | R:code:tools/docs/magnetostatics-20261013/example.py,code:tools/docs/magnetostatics-20261013/execution.json | A:中文磁静力学章节 | S:新基线与精确自点零约定说明；中心加密证据不授全域收敛或自场资格。
@@ -1700,3 +1700,6 @@ single.svg[SU4L]: F:对照单圆环轴向磁场数值曲线和独立轴公式圆
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/zh/selections/===
 axisymmetric-core.json[SL7L]: F:为所选94项Pleiades资产提供精确摘要绑定的完整中文读者集合 | R:code:tools/docs/handbooks/axisymmetric-core.json,code:scripts/build_scirel_sphinx.py | A:scirel.reader-translation.v1，zh-CN，端口及条款完整 | S:52项新中文与42项继承记录共同覆盖，独立选择不混入全局其他候选；场线共用几何度量与公开弦长导数分开，中文不可改变科学资格或批准状态。
+
+===/Users/tomczz/Projects/SciReL/provenance/validation/===
+pleiades-home-fullsize-d3-20261014.json[SV7S]: F:绑定dev6精确wheel在Home原尺寸压力应用及四项独立校验的结果资格 | R:code:docs/usage/axisymmetric-core.md,code:provenance/selections/pleiades-full-core-mac-20261014.json | A:scirel.installed-application-qualification.v1；六项结果摘要与Home交付manifest | S:实际HomeAMD64运行与前驱MacARM五项分别绑定；科学源码和wheel不变，原探针Mac阶段文字保留为历史标签；owner技术通过不冒充root、人工或发行批准。
