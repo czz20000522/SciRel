@@ -12,6 +12,10 @@ SCRIPTS = ROOT / "scripts"
 EXAMPLES = ROOT / "catalog" / "examples"
 TORAX_LEAF_DOCUMENTS = ROOT / "catalog" / "torax-algebra-grid"
 FAST_ION_ASSET_ID = "scirel.plasma.fast-ion-heating"
+PDRF_ASSET_IDS = {
+    "scirel.kinetic.pdrf-plasma-state", "scirel.kinetic.pdrf-temporal-matrix",
+    "scirel.kinetic.pdrf-temporal-spectrum", "scirel.kinetic.pdrf-dispersion-scan",
+}
 sys.path.insert(0, str(SCRIPTS))
 
 from build_catalog import build_catalog  # noqa: E402
@@ -127,7 +131,8 @@ def test_contract_schemas_and_dependency_closed_examples_parse(tmp_path):
     assert asset_schema["$schema"].endswith("2020-12/schema")
     assert release_schema["properties"]["schema"]["const"] == "scirel.catalog-release.v1"
     assert len(documents) == EXAMPLE_CLOSURE_COUNT
-    assert len([doc for doc in documents if doc["asset_id"] != FAST_ION_ASSET_ID]) == EXAMPLE_CLOSURE_COUNT - 1
+    assert len([doc for doc in documents if doc["asset_id"] not in PDRF_ASSET_IDS | {FAST_ION_ASSET_ID}]) == EXAMPLE_CLOSURE_COUNT - len(PDRF_ASSET_IDS) - 1
+    assert {doc["asset_id"] for doc in documents} >= PDRF_ASSET_IDS
     assert [doc["asset_id"] for doc in documents if doc["asset_id"] == FAST_ION_ASSET_ID] == [FAST_ION_ASSET_ID]
     assert {item["kind"] for item in documents} == {"operator", "task_graph"}
 
@@ -255,7 +260,8 @@ def test_runtime_signatures_tests_and_examples_are_executable(tmp_path):
     report = json.loads(completed.stdout)
     assert report["asset_count"] == EXAMPLE_CLOSURE_COUNT
     assert FAST_ION_ASSET_ID in report["asset_ids"]
-    assert len([asset_id for asset_id in report["asset_ids"] if asset_id != FAST_ION_ASSET_ID]) == EXAMPLE_CLOSURE_COUNT - 1
+    assert PDRF_ASSET_IDS <= set(report["asset_ids"])
+    assert len([asset_id for asset_id in report["asset_ids"] if asset_id not in PDRF_ASSET_IDS | {FAST_ION_ASSET_ID}]) == EXAMPLE_CLOSURE_COUNT - len(PDRF_ASSET_IDS) - 1
     assert report["runtime_checked"] is True
     assert report["runtime_origin"] == "source"
     assert report["examples_executed"] is True

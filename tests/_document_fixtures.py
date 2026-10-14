@@ -11,7 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = ROOT / "catalog/examples"
 MAINTAINED = ROOT / "catalog/pleiades-maintained"
-EXAMPLE_CLOSURE_COUNT = 136
+EXAMPLE_CLOSURE_COUNT = 141
 
 
 def example_document_sources():
@@ -19,7 +19,7 @@ def example_document_sources():
     for path in EXAMPLES.glob("*.json"):
         document = json.loads(path.read_bytes())
         sources[document["asset_id"]] = path
-    assert len(sources) == 133
+    assert len(sources) == 137
     dependencies = {}
     for path in MAINTAINED.glob("*.json"):
         document = json.loads(path.read_bytes())
@@ -38,6 +38,7 @@ def example_document_sources():
         "scirel.electromagnetism.circular-filament-green",
         "scirel.electromagnetism.loop-flux-matrix",
         "scirel.electromagnetism.green-response-matrices",
+        "scirel.equilibrium.compute-equilibrium",
     }
     assert len(sources) == EXAMPLE_CLOSURE_COUNT
     return sources

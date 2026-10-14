@@ -1,0 +1,13 @@
+{
+  "schema": "scirel.pdrf.d2.saved-delivery-destination.v1",
+  "destination": "Frozen asynchronous D2 delivery in outputs/REPORT.json, outputs/HANDOFF.json and outputs/FINAL_MANIFEST.json",
+  "next_owner": "Root independent receiving owner; no live D1 author or child continuity required",
+  "D3_started": false,
+  "publish": false,
+  "public_distribution": false,
+  "rights": "Source and paper redistribution NOT_ESTABLISHED",
+  "artifact_recovery": "Final delivery includes the selected wheel/catalog/exact documents and an overlay for build/verification/pdrf-d2-20261013 references after Git restoration",
+  "candidate_build_commit": "5bacba69465f6cb42201abdecdcb9e7bf66ebd6b",
+  "wheel_sha256": "90f6bbff465af6b22e3f0e9d5c559054c31d0b73784ac91bf2eb31510c09f0d7",
+  "approval": {"human": false, "release": false, "root_independent_reception": false}
+}

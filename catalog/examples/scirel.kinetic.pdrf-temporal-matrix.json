@@ -1,0 +1,198 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.pdrf-temporal-matrix",
+  "kind": "operator",
+  "title": {
+    "en": "Effective multi-fluid temporal matrix",
+    "zh": "多流体时间色散矩阵"
+  },
+  "summary": "Assemble the independently corrected local fluid/Maxwell generator and relativistic inertia.",
+  "taxonomy": [
+    "kinetic",
+    "plasma",
+    "effective-multifluid"
+  ],
+  "aliases": [
+    "assemble_pdrf_matrix"
+  ],
+  "identity": {
+    "relation": "Local effective multi-fluid Maxwell temporal matrix",
+    "direction": "plasma state,kx,kz,rel -> M,A,state,physical scales",
+    "definition": "For k=(kx,0,kz), eps=(epsx,epsy,0): dn_dot=-i(k.v0)dn-n0*(i*k+eps).dv. Momentum A_v*d(v)_dot=-i(k.v0)A_v*dv+(q/m)*(dv cross B0+v0 cross dB+dE)-i*diag(csp2,csp2,csz2)*k*dn/n0+diag(csp2,csp2,csz2)*eps*dn/(gamma*n0)+collision. With D=(Psz-Psp)/B0/rho, add [-i*kz*D*dBx,-i*kz*D*dBy,-2*D*((i*kx+epsx)*dBx+epsy*dBy)] when B0!=0. Maxwell dE_dot=i*c2*(k cross dB)-sum(q*(n0*dv+v0*dn))/epsilon0; dB_dot=-i*(k cross dE). A_v=gamma_rel*I+gamma_rel^3*v0*v0^T/c2 if rel=1. The extra density and magnetic-coefficient gradient terms correct omitted derivatives of the source pressure acceleration. Positive self forcing is replaced by dissipative friction. No Lorentz overwrite correction is claimed: the original Lorentz and anisotropy entries use different columns.",
+    "model": "Algebraic anisotropic multi-fluid closure with empirical longitudinal magnetic-pressure factor two",
+    "geometry": "B0=(0,0,B0), k=(kx,0,kz), grad(log n0)=(epsx,epsy,0)",
+    "coordinates": "Species-major [dn,dvx,dvy,dvz], followed by Cartesian E then B",
+    "boundary": "B0=0 sets director-response terms to zero and retains explicit fixed-z pressure; rel=1 excludes luminal/superluminal drift",
+    "assumptions": [
+      "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
+      "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
+      "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
+      "Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "state",
+      "description": "Fresh plasma state with explicit primary data and configuration.",
+      "units": "mixed physical quantities as declared by state",
+      "shape": "mapping",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "Produced by initialize_pdrf_plasma; primary inputs are revalidated and all derived fields recomputed."
+    },
+    {
+      "name": "kx",
+      "description": "x wave number.",
+      "units": "m^-1 SI or normalized inverse length",
+      "shape": "scalar",
+      "dtype": "finite complex scalar",
+      "required": true,
+      "constraints": "Complex values describe the local spatial analytic symbol."
+    },
+    {
+      "name": "kz",
+      "description": "z wave number.",
+      "units": "m^-1 SI or normalized inverse length",
+      "shape": "scalar",
+      "dtype": "finite complex scalar",
+      "required": true,
+      "constraints": "Same convention as kx."
+    },
+    {
+      "name": "rel",
+      "description": "Relativistic inertia selector.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": false,
+      "constraints": "0 or 1; rel=1 requires |v0|<c.",
+      "default": 0
+    }
+  ],
+  "outputs": [
+    {
+      "name": "M",
+      "description": "Temporal generator with species [dn,dvx,dvy,dvz] then [Ex,Ey,Ez,Bx,By,Bz].",
+      "units": "row output units per second divided by column state units; normalized analog",
+      "shape": "[4s+6,4s+6]",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Finite; lambda*A*x=M*x and omega=i*lambda."
+    },
+    {
+      "name": "A",
+      "description": "Inertia matrix.",
+      "units": "dimensionless within equally scaled velocity blocks",
+      "shape": "[4s+6,4s+6]",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Identity except d(gamma*v)/dv in rel=1 velocity blocks."
+    },
+    {
+      "name": "state",
+      "description": "Revalidated fresh state used by the matrix.",
+      "units": "per-state quantity conventions",
+      "shape": "mapping",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "No stale derived fields; preserves explicit collision classes."
+    },
+    {
+      "name": "scales",
+      "description": "Positive physical state-column scales for similarity transformation.",
+      "units": "density,velocity,electric field,magnetic field by component",
+      "shape": "[4s+6]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Density=n_j, velocity=c, B=sqrt(sum(rho)/epsilon0), E=c*B; transforms rows and columns consistently."
+    },
+    {
+      "name": "kx",
+      "description": "Accepted wave number x.",
+      "units": "m^-1 SI or normalized inverse length",
+      "shape": "scalar",
+      "dtype": "complex",
+      "required": true,
+      "constraints": "Same as requested."
+    },
+    {
+      "name": "kz",
+      "description": "Accepted wave number z.",
+      "units": "m^-1 SI or normalized inverse length",
+      "shape": "scalar",
+      "dtype": "complex",
+      "required": true,
+      "constraints": "Same as requested."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "State primary data and configuration satisfy the fresh-state contract; derived fields are recomputed.",
+      "Finite complex kx/kz; rel is 0 or 1, with strictly subluminal drift for rel=1. Units must be consistent with state."
+    ],
+    "supported": [
+      "Corrected local fluid/Maxwell generator, relativistic tangent inertia, algebraic anisotropic pressure response and physical similarity scales. No eigenspectrum, scans or plots are calculated."
+    ],
+    "excluded": [
+      "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
+      "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
+      "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
+      "Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for invalid state, wave numbers, rel selector, luminal/superluminal rel=1 drift or unrepresentable matrix/scales. State validation failures propagate.",
+    "runtime_failure": "Native numerical conversion or assembly failures propagate.",
+    "nonconvergence": "No iteration or eigensolver.",
+    "partial_results": "No mapping returned after failure; no file side effects."
+  },
+  "provenance": {
+    "lineage_summary": "Newly authored Python D2 successor of the retained PDRF 1.1 model, with independently justified scientific and interface corrections. This is not a clean-room license determination. Upstream code and prior source-fidelity evidence stay frozen; this document defines the corrected effective relation only.",
+    "source_kinds": [
+      "retained PDRF 1.1 equations and implementations",
+      "independent vector-calculus derivation and numerical validation",
+      "D2 corrected successor"
+    ],
+    "public_references": [
+      "H. S. Xie, Computer Physics Communications 185 (2014) 670–675, DOI:10.1016/j.cpc.2013.10.012; accompanying erratum"
+    ],
+    "license_status": "Source and paper redistribution NOT_ESTABLISHED; local authorized D2 candidate only; public distribution blocked."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.pdrf",
+      "symbol": "assemble_pdrf_matrix",
+      "signature": "assemble_pdrf_matrix(state, kx, kz, *, rel=0)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev20261013",
+    "dependencies": [
+      {
+        "asset_id": "scirel.kinetic.pdrf-plasma-state"
+      }
+    ]
+  },
+  "example": {
+    "description": "Default matrix shape.",
+    "code": "from scirel.kinetic import initialize_pdrf_plasma, assemble_pdrf_matrix\nm = assemble_pdrf_matrix(initialize_pdrf_plasma(), .1, .2)\nassert m['M'].shape == (14, 14)",
+    "expected": "A finite 14 by 14 temporal generator."
+  },
+  "verification": {
+    "scope": [
+      "Independent vector action of continuity, pressure including density/magnetic-coefficient gradients, Lorentz, collision and Maxwell blocks.",
+      "Finite-difference relativistic tangent, normalized/SI similarity, complex k, zero field and primary-state reconstruction."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_pdrf_d2.py"
+    ],
+    "evidence_ceiling": "Evidence supports this effective local algebraic model and its stated numerical contract in the tested Linux-amd64 Python runtime. D1 fidelity does not establish physical truth. Independent exact-revision validation and before/after observations are separately bound in the development delivery. No universal continuous-input, experimental, MATLAB, cross-platform or human approval claim.",
+    "known_limitations": [
+      "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
+      "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
+      "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
+      "Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim.",
+      "Only local authorized D2 evaluation; source and paper redistribution NOT_ESTABLISHED, no public distribution permission or human/release approval."
+    ]
+  }
+}

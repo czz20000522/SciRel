@@ -1,0 +1,58 @@
+{
+  "schema": "scirel.pdrf.d2.candidate-evidence.v1",
+  "candidate_build_commit": "5bacba69465f6cb42201abdecdcb9e7bf66ebd6b",
+  "science_sha256": "f56e3dddd5a35d831559f5148a419945ba446601c92bb91a3997dfc975e09baa",
+  "wheel_sha256": "90f6bbff465af6b22e3f0e9d5c559054c31d0b73784ac91bf2eb31510c09f0d7",
+  "actual_installed": {
+    "regressions": 19,
+    "independent_core": 90,
+    "independent_extended": 121,
+    "documents": 4,
+    "default_full_scans": 6,
+    "exit": 0
+  },
+  "references": [
+    {
+      "path": "/evidence/owner/SOURCEFREE_EXECUTION.json",
+      "sha256": "078b7acbd2bf10ac2700a417dd036042edd11c1076a74382005567e607b96613"
+    },
+    {
+      "path": "/evidence/owner/TEST_BASELINE_COMPARISON.json",
+      "sha256": "21410326da4b65b07242d7d05951f0fe65980581b05176d9f70104085fb2b789"
+    },
+    {
+      "path": "/evidence/child-1/FINAL_REVIEW.json",
+      "sha256": "3468550b0ebdbe83ac4ff75bb66b6135f4f99e383c5ffc74ed33d4e303f94149"
+    },
+    {
+      "path": "/evidence/child-1/FINAL_REVIEW_V4_ADDENDUM.json",
+      "sha256": "7c6d0f52b1e54da3263d6616cc27241011d277ab5c22e3c88c21eaf00ba23f46"
+    },
+    {
+      "path": "/evidence/child-3/v4-source-document-review.json",
+      "sha256": "a814faa45cc6da51ce72db250eb38cd042d14f44d037bd1cdc59aedc238c667b"
+    },
+    {
+      "path": "/evidence/child-3/selected-wheel-audit.json",
+      "sha256": "878e1fbafc0a827d8ff6b9a68cbe268a40a188236466f1bae773f1f92367e361"
+    },
+    {
+      "path": "/evidence/child-2/corrected_v4/RESULTS.json",
+      "sha256": "89351cdb2d32b081023ed6e2a908369e4406ad453b9d6fdfbea1abbad4aaf9d0"
+    }
+  ],
+  "source_qualification": "bounded_d1",
+  "source_qualification_meaning": "Existing index enum retained. Full retained frozen D0 intake is accounted; original D1 evidence remains bounded to its40branches/9arities/6scans+receiver selector declarations, not a complete-upstream or independent physics certificate. New D2 corrections and independently validated scientific contract have separate evidence.",
+  "effective_limits": [
+    "Local algebraic thermal relation; per-mass background support; fixed-z zero-field director; empirical factor2; noncovariant pressure/friction under relativistic tangent.",
+    "Backward error does not certify universal forward error or track branches.",
+    "Canonical full-suite40fail17errors and final affected2 inherited catalog failures remain outside selected scientific wheel.",
+    "Original source/paper rights NOT_ESTABLISHED; no public distribution or clean-room claim.",
+    "SymPy ancillary CLI/relocatable RECORD R003 remains unverified; new runtime does not depend on SymPy/Octave."
+  ],
+  "approval": {
+    "human": false,
+    "release": false,
+    "D3": false
+  }
+}

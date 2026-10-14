@@ -1,4 +1,18 @@
 {
+  "coverage": {
+    "current_unpublished_entry_ids": [
+      "development:84d0882deca15fdba4dbb9dafeea773b34203f6200628b528ab3fd4636953d7c",
+      "candidate:af9f1e067df3a354a8059787315e199ccb73816ed709ecf2dc8722b8f9f06562",
+      "development:c34b22afc988ce05c58808f2aa8955ecf2f3d721ccb2b19fbc4df0d30dd07722",
+      "development:271691729425196cd37f8adf813da846fb531f6f92542266ed880bf518490a1c"
+    ],
+    "scope": "registered_entries_only",
+    "unindexed_scopes": {
+      "d1_inputs_not_handed_to_d2": "not_independently_inventoried",
+      "external_source_checkouts": "not_independently_inventoried",
+      "host_artifacts_outside_index": "not_independently_inventoried"
+    }
+  },
   "entries": [
     {
       "approval_state": "pending_unapproved",
@@ -695,20 +709,43 @@
       "evidence_type": "development_consumer_acceptance",
       "status": "evidence",
       "subject_entry_id": "development:c34b22afc988ce05c58808f2aa8955ecf2f3d721ccb2b19fbc4df0d30dd07722"
+    },
+    {
+      "approval_state": "pending_unapproved",
+      "catalog": {
+        "digest": "sha256:b826f36f6de66958fa747465eadae85b25638def817eebf4e6f115047174ebf8",
+        "ref": "build/verification/pdrf-d2-20261013/catalog/release.json",
+        "root_digest": "sha256:bba36a8a921b6940ac55ff413b41fe161529b76a028f7dcbae8a0af64cacde6c"
+      },
+      "destination_refs": [
+        {
+          "digest": "sha256:1d45bf868217098a59dce04c0b722697c09141deb8babf48df93cc7d0b429d5e",
+          "ref": "provenance/pdrf-d2/DELIVERY_PLAN.json"
+        }
+      ],
+      "entry_digest": "sha256:58e24c4d4d8a15dd323be7bf639c54493346891718e5b369f5f5d289dbeea729",
+      "entry_id": "development:271691729425196cd37f8adf813da846fb531f6f92542266ed880bf518490a1c",
+      "evidence_refs": [
+        {
+          "digest": "sha256:019bf62fa330ad865f0fe2f0b6c77207edb467650ab0490a5f95edddc6184d40",
+          "ref": "provenance/pdrf-d2/CANDIDATE_EVIDENCE.json"
+        },
+        {
+          "digest": "sha256:10f55890a4bba8fb90ac38158ff6904e0d3ce0710444047d2762d401282bb60c",
+          "ref": "provenance/pdrf-d2/DISPOSITIONS.json"
+        }
+      ],
+      "snapshot_id": "pdrf-full-retained-d2-dev20261013",
+      "source_binding": {
+        "git_revision": "5bacba69465f6cb42201abdecdcb9e7bf66ebd6b"
+      },
+      "source_qualification": "bounded_d1",
+      "status": "development",
+      "wheel": {
+        "digest": "sha256:90f6bbff465af6b22e3f0e9d5c559054c31d0b73784ac91bf2eb31510c09f0d7",
+        "ref": "build/verification/pdrf-d2-20261013/wheel/scirel-0.1.0.dev20261013-py3-none-any.whl"
+      }
     }
   ],
-  "schema": "scirel.release-index.dev",
-  "coverage": {
-    "scope": "registered_entries_only",
-    "current_unpublished_entry_ids": [
-      "development:84d0882deca15fdba4dbb9dafeea773b34203f6200628b528ab3fd4636953d7c",
-      "candidate:af9f1e067df3a354a8059787315e199ccb73816ed709ecf2dc8722b8f9f06562",
-      "development:c34b22afc988ce05c58808f2aa8955ecf2f3d721ccb2b19fbc4df0d30dd07722"
-    ],
-    "unindexed_scopes": {
-      "external_source_checkouts": "not_independently_inventoried",
-      "host_artifacts_outside_index": "not_independently_inventoried",
-      "d1_inputs_not_handed_to_d2": "not_independently_inventoried"
-    }
-  }
+  "schema": "scirel.release-index.dev"
 }
