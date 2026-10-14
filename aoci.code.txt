@@ -6,7 +6,7 @@
 AGENTS.md[SC9S]: F:规定科学包隔离、三类依赖、阶段职责和整项目连续交付约束 | R:code:docs/requirements/scirel-workflow.md,code:docs/design/project-and-distribution.md | A:D0索引整理、D1保真、D2修正、冻结接收及包文档同步 | S:完整核心能力无源码替代才计整项目；先判D0保留入口再准备源码依赖，统一版本不等于清单并集；缺开发工具不算数值失败；压缩不强制Overview，已选写入仍须真实治理证明
 CONTRIBUTING.md[SV8T]: F:定义贡献、科学兼容与受影响验证及发行要求 | R:code:scripts/check.ps1,code:docs/architecture.md | A:贡献者修改与验证流程 | S:editable安装仅提供科学库，workflow等开发模块须从源码环境使用
 README.md[SB9M]: F:说明独立科学库、领域API、完整核心能力交付与250项累计科学包的开发和安装入口 | R:code:docs/scientific-core-installation.md,code:docs/design/scientific-runtime-baseline.md,code:docs/searchable-documentation.md | A:开发安装、精确包安装、领域调用、分层验证及中文手册 | S:来源对照、wheel运行、开发工具分别选依赖；250份合同不等于全部来源项目完成或任意宽wheel资格；历史基线另列，PDRK部分入口需Octave，技术接收不授予人审或发行
-pyproject.toml[FV7T]: F:声明科学库普通构建、Python小版本线及固定运行和开发测试依赖 | R:code:scripts/scientific_runtime.py,code:uv.lock | A:setuptools构建；五运行依赖含mpmath；pytest开发配置 | S:普通包发现收集全部scirel模块，不等于精确科学选择；外部Octave不由pip依赖声明自动安装
+pyproject.toml[FV7T]: F:声明 SciRel 构建依赖及 fluidBW 原生 .m 包数据 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:package-data只打包_fluidbw_native/*.m；Octave等外部运行时不由pip依赖安装
 .python-version[FC5T]: F:固定维护环境的Python解释器补丁版本 | R:code:pyproject.toml,code:uv.lock | A:3.14.7 | S:包元数据约束小版本线，解释器补丁固定由本文件承担
 uv.lock[FV7L]: F:锁定Python3.14开发项目及测试extra的包版本、解析条件和发行工件摘要 | R:code:pyproject.toml,code:docs/design/scientific-runtime-baseline.md | A:uv锁格式1/revision3；24包、206个sdist/wheel记录及平台marker | S:mpmath是实际运行依赖；锁不含Octave等系统运行时，也不代替源码对照子集或selected-wheel闭包；工件列表不是各平台安装/科学验证
 
@@ -302,6 +302,7 @@ gpdf-r1-r2-correction.md[SB7T]: F:记录冷极限导数、top-hat远近场和显
 gpdf-r3-scaling-correction.md[SB6T]: F:说明Maxwellian FFT在最终常数缩放后的不可表示性防护 | R:code:src/scirel/kinetic/faddeeva_variants.py | A:负虚轴阈值推导、标量和混合矩阵失败回归 | S:w有限而Z溢出仍须整调用失败；新oracle阈值分类纠正保留原失败，不放宽容差
 gpdf-vp-core.md[SB7S]: F:推导线性VP离散秩一反馈、全阶段Poisson闭合及四族初值能力 | R:code:src/scirel/kinetic/vlasov_poisson.py | A:来源映射、弱导数、完整时序、矩阵指数与全尺度验证边界 | S:截断质量保留不重归一化；峰诊断限站立振荡，速度复现与时间误差分开
 2026-10-13-pdrf-d2.md[SS6S]: F:记录PDRF D2候选的科学修正、验证边界和接收状态 | R:code:provenance/pdrf-d2/CANDIDATE_EVIDENCE.json,code:src/scirel/kinetic/pdrf.py | A:记录PDRF D2候选的科学修正、验证边界和接收状态 | S:文档只记录技术证据；人类科学批准、公开许可和发行状态仍独立未决
+2026-10-13-fluidbw-full-retained-d2.md[SD7S]: F:记录 fluidBW D2 技术范围、修正、证据边界与未批准状态 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:技术冻结不等于科学人审、公开许可或发行批准
 
 ===/Users/tomczz/Projects/SciReL/docs/evaluations/outbound-progressive-projects/===
 closure-2026-09-27.md[SW5T]: F:汇总三日出库开发评估的交付、修正与证据上限 | R:code:docs/evaluations/outbound-progressive-projects/examiner.md | A:有界历史结项 | S:共享文件系统及宿主依赖不构成严格盲测或产品验收
@@ -948,7 +949,7 @@ direct_anisotropic_inversion.py[AB7T]: F:绑定试点评估、残差、采样及
 latin_hypercube_sampling.py[KB6T]: F:按给定有界参数和种子生成逐维分层Latin超立方设计 | R:code:src/scirel/inference/anisotropic_parameter_optimization.py | A:sample_latin_hypercube | S:参数次序依bounds或fit_keys；逐维独立置乱分层，返回参数映射列表
 
 ===/Users/tomczz/Projects/SciReL/src/scirel/kinetic/===
-__init__.py[DD7T]: F:汇集动理学领域函数并导出PDRF公共入口 | R:code:src/scirel/kinetic/pdrf.py | A:汇集动理学领域函数并导出PDRF公共入口 | S:领域导出不等于所选wheel资格；PDRF仍受独立D2证据和许可边界约束
+__init__.py[DD7T]: F:汇集动理学导出并保持 fluidBW 公共入口的包级可见性 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:导出可见性不等于D2科学批准；运行仍受fluidBW证据和许可边界约束
 adaptive_neutral_velocity_mesh.py[KB7S]: F:按温度范围及指定能量生成对称中性粒子速度网格和归一温度 | R:code:src/scirel/kinetic/cylindrical_velocity_quadrature.py | A:create_adaptive_neutral_velocity_mesh | S:能量即使被温度帽排除仍插节点；重复节点拒绝，索引仅对应最后正能量，标量或数组返回
 atomic_alpha_contraction.py[KB7S]: F:将四族原子氢SIG矩阵与显式分布收缩为Alpha碰撞频率 | R:code:src/scirel/collisions/atomic_hydrogen_collision_matrices.py | A:contract_atomic_hydrogen_alpha_frequencies | S:按Fortran布局展平还原；带符号弹性单元不截零，CX和H-P使用fi_hat乘ni
 atomic_scattered_sources_reduction.py[KB6T]: F:同网格归约原子电荷交换和弹性散射源 | R:code:src/scirel/kinetic/elastic_regeneration_aggregation.py | A:reduce_atomic_scattered_sources | S:保持Beta_CX+OmegaM来源加法顺序，允许有符号单元但拒绝非有限总和
@@ -1017,6 +1018,7 @@ faddeeva_variants.py[KB8S]: F:实现双默认Faddeeva、FFT Maxwellian及固定J
 generalized_dispersion.py[KB8M]: F:提供受限密度表达式、七分布广义响应和四类顺序静电根扫描 | R:code:src/scirel/kinetic/cauchy_transform.py,code:src/scirel/kinetic/maxwellian_electrostatic.py | A:DensityExpression、Hilbert、Z/Zp、残差、小k渐近及scan_gpdf_roots | S:非解析分段下半平面只作实轴积分，跳跃导数显式加入；Gaussian冷极限和top-hat微分量走稳定式，表达式可积性由调用者保障；扫描保留原网格种子分支，不承诺唯一根
 vlasov_poisson.py[KB8M]: F:实现四分布单Fourier线性VP的闭合初值、RK4演化和场诊断 | R:code:docs/evaluations/gpdf-vp-core.md | A:vp_distribution/init/field/rhs/rk4_step/evolve/envelope/diagnostic及复合solve | S:端点全权重、每阶段Poisson闭合；截断慢化分布默认含弱跳跃且不重归一，smooth仅旧内部强迫；恰好nt步，峰不足保留演化，速度复现与时间误差分开，不证明非线性动力学
 pdrf.py[DD8L]: F:实现PDRF有效多流体局部色散、状态、矩阵和扫描入口 | R:code:tests/operator_contracts/test_pdrf_d2.py,code:catalog/examples/scirel.kinetic.pdrf-plasma-state.json | A:实现PDRF有效多流体局部色散、状态、矩阵和扫描入口 | S:这是有效局部代数模型，不是CGL、动理学或全局Maxwell边界解；正阻尼和互易摩擦守恒必须保留
+fluidbw.py[DA8S]: F:提供 fluidBW 完整 D2 Python 适配器、状态与任务图 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW 公共适配器与任务图 | S:显式保留单位、默认值、失败行为和外部Octave边界，不把技术冻结当作科学批准
 
 ===/Users/tomczz/Projects/SciReL/src/scirel_adapter/===
 __init__.py[LE7T]: F:导出无MCP SDK依赖的固定catalog科学发现与调用边界 | R:code:src/scirel_adapter/mcp.py | A:ThinMcpAdapter,ThinMcpAdapterError | S:适配器属于开发集成层，科学函数不依赖该入口
@@ -1315,6 +1317,7 @@ test_collision_physical_closure.py[TB6M]: F:以独立角积分和离散物理分
 test_inference_physical_closure.py[TB7M]: F:验证显式观测单位、固定维度试点评估、优化终点一致性与失败状态闭合 | R:code:src/scirel/diagnostics/equilibrium_synthesis_diagnostics.py,code:src/scirel/diagnostics/observation_residuals.py,code:src/scirel/inference/anisotropic_trial_evaluation.py,code:src/scirel/inference/anisotropic_parameter_optimization.py | A:pytest | S:单位不隐式换算；失败残差保持固定形状且无效试点不成为最佳；预算含有限差分与终点复核。
 test_positive_conservative_remap.py[TB7L]: F:以独立有限体积面重构验证正分布跨网格的密度、动量、能量守恒及可行性失败。 | R:code:src/scirel/kinetic/cross_mesh_distribution_interpolation.py | A:pytest | S:独立标量求和不调用生产助手；凸包不可行与修正耗尽均拒绝部分结果，correct=0仍允许原始有限输出。
 test_pdrf_d2.py[TQ7M]: F:验证PDRF D2接口、边界、碰撞守恒和扫描方法 | R:code:src/scirel/kinetic/pdrf.py | A:验证PDRF D2接口、边界、碰撞守恒和扫描方法 | S:回归保留完整输入域和失败行为；测试通过不替代独立科学、人审或发行验收
+test_fluidbw_full_d2.py[TD7M]: F:验证 fluidBW D2 公共合同、状态所有权、打包与失败行为 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 operator contract tests | S:测试保留原始数值断言与平台边界，不放宽门槛以制造通过
 
 ===/Users/tomczz/Projects/SciReL/tests/plugin/===
 test_codefusion_plugin_contract.py[TE6L]: F:验证SciRel窄宿主适配的工件、权限、审核及精确结果绑定 | R:code:src/scirel_plugin/plugin.py,code:src/scirel_plugin/adapter.py | A:pytest；FakeHost；逐项版本；无状态body导入；依赖并集 | S:FakeHost非实际宿主验收；后继依赖保留正式合同所有项，未知字段及错误摘要失败
@@ -1560,6 +1563,8 @@ SCIREL-LEGACY-SIX-NOTICE.txt[SV6T]: F:声明六项旧核心关系吸收修正的
 SCIREL-COLLISION-MOMENT-NOTICE.txt[SD7T]: F:保存KN1D碰撞矩与经验截面的来源及内部科学候选许可边界 | R:code:provenance/integrations/collision-physical-20261014.json | A:归属原报告和IDL，说明10eV及局部矩状态后继修正 | S:社区可取得不等于再分发许可；BGK、同位素与黏性近似保留，NumPy为该选择运行依赖，不要求开发求积或来源环境
 SCIREL-POSITIVE-REMAP-NOTICE.txt[SD7T]: F:保留跨网格分布接口来源与非负三矩熵投影后继的内部使用边界 | R:code:src/scirel/kinetic/cross_mesh_distribution_interpolation.py,code:provenance/validation/remap-root-composite-20261014.json | A:标识保存实现摘要、共享求积和替换AN/BN修正的关系 | S:修正分支故意不同于错误源算术，不恢复撤回D1、不授予上游缺失权利、人认可或公开发行
 SciRel-Inference-Closure-NOTICE.txt[SD7T]: F:界定各向异性反演科学修正的来源、许可与最小运行依赖 | R:code:licenses/Pleiades-MIT.txt,code:licenses/Pleiades-Anisotropy-NOTICE.txt | A:保留历史来源并说明单位、残差和有效终态修正 | S:此选择仅需NumPy/SciPy，历史大选择提及Matplotlib不是新依赖；技术接收不增加再分发权或人工认可
+fluidbw-D1-source-NOTICE.md[SD6S]: F:记录 fluidBW 来源、许可与公开发布边界 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:来源再分发权限未建立，不能据此公开发布
+fluidbw-D2-NOTICE.md[SD6S]: F:记录 fluidBW 来源、许可与公开发布边界 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:来源再分发权限未建立，不能据此公开发布
 
 ===/Users/tomczz/Projects/SciReL/provenance/integrations/===
 pleiades-legacy-continuation-20261011.json[SD7T]: F:冻结作者对五个旧Green与filament家族的比较结果和无删除维护候选身份。 | R:code:provenance/integrations/pleiades-legacy-receiver-20261011.json | A:绑定8b8基线和e5修正版;五家族保留变体;零公式变动与零删除;记录测试和隔离wheel;AOCI当时未运行 | S:作者的适用域措辞和旧证据别名由独立receiver附录澄清；原件不覆盖，历史批准标志不代替当前根接收。
@@ -2048,3 +2053,61 @@ anisotropic_recovery.py[TB8T]: F:提供真实Picard非零Green反馈的双参数
 CANDIDATE_EVIDENCE.json[OR7S]: F:绑定PDRF D2候选wheel与独立安装验证证据 | R:code:provenance/pdrf-d2/DISPOSITIONS.json,code:provenance/release-index.dev.json | A:绑定PDRF D2候选wheel与独立安装验证证据 | S:19回归、90核心和121扩展是证据摘要，不把全库失败或许可限制转成批准
 DELIVERY_PLAN.json[OR6S]: F:保存PDRF冻结D2的接收路径和构建绑定 | R:code:provenance/pdrf-d2/CANDIDATE_EVIDENCE.json | A:保存PDRF冻结D2的接收路径和构建绑定 | S:计划绑定精确manifest、构建提交和wheel摘要；它不表示D3已启动
 DISPOSITIONS.json[OR7M]: F:记录PDRF全部源边界、问题、失败和材料处置 | R:code:src/scirel/kinetic/pdrf.py,code:docs/evaluations/2026-10-13-pdrf-d2.md | A:记录PDRF全部源边界、问题、失败和材料处置 | S:完整记账保留D1边界、失败和未建立许可；不得由候选通过推断来源项目完成
+
+===/Users/tomczz/Projects/SciReL/catalog/fluidbw-full-retained/===
+scirel.kinetic.fluidbw-bonk-search.json[SD7S]: F:记录 fluidBW 保留科学资产的精确输入、输出、默认值与失败合同 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:文档声明的单位、默认值、近似与失败行为不可由名称推断或静默放宽
+scirel.kinetic.fluidbw-case-state.json[SD7S]: F:记录 fluidBW 保留科学资产的精确输入、输出、默认值与失败合同 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:文档声明的单位、默认值、近似与失败行为不可由名称推断或静默放宽
+scirel.kinetic.fluidbw-dispersion-response.json[SD7S]: F:记录 fluidBW 保留科学资产的精确输入、输出、默认值与失败合同 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:文档声明的单位、默认值、近似与失败行为不可由名称推断或静默放宽
+scirel.kinetic.fluidbw-em-matrix.json[SD7S]: F:记录 fluidBW 保留科学资产的精确输入、输出、默认值与失败合同 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:文档声明的单位、默认值、近似与失败行为不可由名称推断或静默放宽
+scirel.kinetic.fluidbw-em-spectrum.json[SD7S]: F:记录 fluidBW 保留科学资产的精确输入、输出、默认值与失败合同 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:文档声明的单位、默认值、近似与失败行为不可由名称推断或静默放宽
+scirel.kinetic.fluidbw-materials.json[SD7S]: F:记录 fluidBW 保留科学资产的精确输入、输出、默认值与失败合同 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:文档声明的单位、默认值、近似与失败行为不可由名称推断或静默放宽
+scirel.kinetic.fluidbw-special-functions.json[SD7S]: F:记录 fluidBW 保留科学资产的精确输入、输出、默认值与失败合同 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:文档声明的单位、默认值、近似与失败行为不可由名称推断或静默放宽
+
+===/Users/tomczz/Projects/SciReL/provenance/integrations/fluidbw-full-retained-20261013/===
+comparison.json[SD7S]: F:记录 fluidBW 与现有 SciRel 能力的逐维比较和吸收裁决 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:该记录保留来源比较和未决边界，不构成人工批准
+full-scope-dispositions.json[SD7S]: F:记录 fluidBW 全部源材料的 D2 去向与保留范围 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:该记录保留来源比较和未决边界，不构成人工批准
+
+===/Users/tomczz/Projects/SciReL/src/scirel.egg-info/===
+PKG-INFO[FV3T]: F:记录当前 SciRel wheel 的构建元数据 | R:code:pyproject.toml | A:fluidBW D2 技术整合 | S:该文件由构建元数据生成，必须与当前pyproject和wheel保持一致
+SOURCES.txt[FV3T]: F:记录当前 SciRel wheel 的构建元数据 | R:code:pyproject.toml | A:fluidBW D2 技术整合 | S:该文件由构建元数据生成，必须与当前pyproject和wheel保持一致
+dependency_links.txt[FV3T]: F:记录当前 SciRel wheel 的构建元数据 | R:code:pyproject.toml | A:fluidBW D2 技术整合 | S:该文件由构建元数据生成，必须与当前pyproject和wheel保持一致
+requires.txt[FV3T]: F:记录当前 SciRel wheel 的构建元数据 | R:code:pyproject.toml | A:fluidBW D2 技术整合 | S:该文件由构建元数据生成，必须与当前pyproject和wheel保持一致
+top_level.txt[FV3T]: F:记录当前 SciRel wheel 的构建元数据 | R:code:pyproject.toml | A:fluidBW D2 技术整合 | S:该文件由构建元数据生成，必须与当前pyproject和wheel保持一致
+
+===/Users/tomczz/Projects/SciReL/src/scirel/kinetic/_fluidbw_native/===
+Gamman.m[DD6S]: F:提供 fluidBW Gamman 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:保留原生MATLAB/Octave文件作为随包执行组件；源权限未建立
+Gammapn.m[DD6S]: F:提供 fluidBW Gammapn 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:保留原生MATLAB/Octave文件作为随包执行组件；源权限未建立
+RASY.m[DD6S]: F:提供 fluidBW RASY 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:保留原生MATLAB/Octave文件作为随包执行组件；源权限未建立
+RINT.m[DD6S]: F:提供 fluidBW RINT 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+RTAY.m[DD6S]: F:提供 fluidBW RTAY 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+RYLA.m[DD6S]: F:提供 fluidBW RYLA 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fD.m[DD6S]: F:提供 fluidBW fD 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fDR.m[DD6S]: F:提供 fluidBW fDR 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fDtensor.m[DD6S]: F:提供 fluidBW fDtensor 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_assemble.m[DD6S]: F:提供 fluidBW fb_assemble 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_bonk.m[DD6S]: F:提供 fluidBW fb_bonk 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_bonk_parameters.m[DD6S]: F:提供 fluidBW fb_bonk_parameters 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_bonk_plot.m[DD6S]: F:提供 fluidBW fb_bonk_plot 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_bonk_scaled.m[DD6S]: F:提供 fluidBW fb_bonk_scaled 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_bonk_sweep.m[DD6S]: F:提供 fluidBW fb_bonk_sweep 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_dispersion.m[DD6S]: F:提供 fluidBW fb_dispersion 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_dispersion_observe.m[DD6S]: F:提供 fluidBW fb_dispersion_observe 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_em.m[DD6S]: F:提供 fluidBW fb_em 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_em_matrix.m[DD6S]: F:提供 fluidBW fb_em_matrix 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_em_parameters.m[DD6S]: F:提供 fluidBW fb_em_parameters 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_em_plot.m[DD6S]: F:提供 fluidBW fb_em_plot 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_em_poles.m[DD6S]: F:提供 fluidBW fb_em_poles 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_em_roots.m[DD6S]: F:提供 fluidBW fb_em_roots 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_em_sweep.m[DD6S]: F:提供 fluidBW fb_em_sweep 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_evaluate.m[DD6S]: F:提供 fluidBW fb_evaluate 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_global_state.m[DD6S]: F:提供 fluidBW fb_global_state 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_materials.m[DD6S]: F:提供 fluidBW fb_materials 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_normalize_poles.m[DD6S]: F:提供 fluidBW fb_normalize_poles 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_pack_workspace.m[DD6S]: F:提供 fluidBW fb_pack_workspace 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_r_harmonic.m[DD6S]: F:提供 fluidBW fb_r_harmonic 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_special.m[DD6S]: F:提供 fluidBW fb_special 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_tensor.m[DD6S]: F:提供 fluidBW fb_tensor 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_unpack_workspace.m[DD6S]: F:提供 fluidBW fb_unpack_workspace 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_validate_state.m[DD6S]: F:提供 fluidBW fb_validate_state 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+fb_z_stable.m[DD6S]: F:提供 fluidBW fb_z_stable 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
+zfun.m[DD6S]: F:提供 fluidBW zfun 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
