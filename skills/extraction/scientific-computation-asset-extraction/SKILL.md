@@ -59,6 +59,23 @@ drift, persistent lack of progress, an owner-unresolvable block, a resource/writ
 Resume an idle incomplete owner from its checkpoint under the existing objective, without replacing its scientific
 judgment with a new micro-plan. Independent review findings remain attributable and are resolved by the owner.
 
+### Portable external-runner preflight
+
+The decomposition runtime is an external asset boundary: a worker may run in a fresh Codex or Claude Code
+environment without importing SciRel, and its source checkout, evidence, work directory and FINAL bundle stay under
+the project asset root. Before dispatching a worker, execute a bounded smoke check for the exact requested model
+selector, workspace trust and write location. A CLI accepting a `--model` string does not prove that the model is
+available; an unrecognized or inaccessible model is a real blocked state. Do not silently fall back to another model,
+rerun through a different provider, or mark the worker started when the first request was rejected. Preserve the exact
+error, command, model selector, project path and time in the run log, then either repair the runner configuration or
+report the blocker.
+
+For non-interactive workers, persist the literal prompt, PID/session identity, stdout/stderr log and a resumable
+`LESSONS.md` beside the worker's private output. Background or interactive launch modes can create an idle session
+without submitting a task, so verify that the session reaches a working state and produces a first attributable event.
+Only a completed, evidence-bound `decomposition/FINAL/FINAL.json` is eligible for later SciRel intake; a prompt,
+process, compact report or test-only receipt is not a FINAL artifact.
+
 ## Project owner loop
 
 1. **Fix the scope and anchors.** Preserve the exact D0 snapshot and evidence universe, including its upstream delta.
