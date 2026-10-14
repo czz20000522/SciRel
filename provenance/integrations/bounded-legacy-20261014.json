@@ -213,7 +213,7 @@
     {
       "asset_id": "scirel.field.complete-elliptic-integrals-approx",
       "formal_document": "catalog/examples/scirel.field.complete-elliptic-integrals-approx.json",
-      "document_sha256": "4ebf00ddf9921de9f4d36afe3b38a539b36bed51a2a96b76566f9e9aee31e810",
+      "document_sha256": "d24a297d643176af5555ce8ef6bbaee0fed5960111af1f0c00b198d0f0b182af",
       "implementation": "src/scirel/field/complete_elliptic_integrals_approx.py",
       "implementation_sha256": "942f690148a2327043b693f575cd3375ff94de0587f767a95553ad7d2baf84d3",
       "public_api": {
@@ -244,7 +244,14 @@
       "new_work": "D2 successor: K(1)=+Inf and E(1)=1 independently at each endpoint; preserve all interior polynomial/log operations and measured tolerances. Downstream coincident line-current geometry still rejected.",
       "source_wide_completion": false,
       "human_approval": false,
-      "release_approval": false
+      "release_approval": false,
+      "document_successor": {
+        "action_id": "scirel-208-lineage-document-successor-20261014-v1",
+        "previous_document_sha256": "4ebf00ddf9921de9f4d36afe3b38a539b36bed51a2a96b76566f9e9aee31e810",
+        "current_document_sha256": "d24a297d643176af5555ce8ef6bbaee0fed5960111af1f0c00b198d0f0b182af",
+        "reason": "Documentation-only lineage successor distinguishes preserved historical source behavior from already accepted current D2 numerical correction. reused_evidence_ceiling and reused_limitations remain original historical evidence, not claims about the corrected present implementation.",
+        "science_bytes_unchanged": true
+      }
     },
     {
       "asset_id": "scirel.field.filament-coil-green-field",
@@ -1641,7 +1648,7 @@
     {
       "asset_id": "scirel.kinetic.thermal-speed-scale",
       "formal_document": "catalog/examples/scirel.kinetic.thermal-speed-scale.json",
-      "document_sha256": "82db28f3984b1d2b1dfeccb3f4e07654867635975faaeb9c0a1052c45695ca8a",
+      "document_sha256": "a40686c62fc9262601743d34d41cb8d79e60a2cd227c9366d0900c66f637bd28",
       "implementation": "src/scirel/kinetic/thermal_speed_scale.py",
       "implementation_sha256": "ecd2b0fccfeea898d8b2876aa1d79634d46e3d8d31e1bc174500fe9226d45408",
       "public_api": {
@@ -1673,7 +1680,14 @@
       "new_work": "D2 successor: exact-float Decimal sqrt fallback for dangerous intermediate underflow/overflow; ordinary operation order and constants retained. Truly nonrepresentable final speed still rejected.",
       "source_wide_completion": false,
       "human_approval": false,
-      "release_approval": false
+      "release_approval": false,
+      "document_successor": {
+        "action_id": "scirel-208-lineage-document-successor-20261014-v1",
+        "previous_document_sha256": "82db28f3984b1d2b1dfeccb3f4e07654867635975faaeb9c0a1052c45695ca8a",
+        "current_document_sha256": "a40686c62fc9262601743d34d41cb8d79e60a2cd227c9366d0900c66f637bd28",
+        "reason": "Documentation-only lineage successor distinguishes preserved historical source behavior from already accepted current D2 numerical correction. reused_evidence_ceiling and reused_limitations remain original historical evidence, not claims about the corrected present implementation.",
+        "science_bytes_unchanged": true
+      }
     }
   ],
   "license_decision": "Internal technical integration only; existing per-asset pending rights and all historical notices retained. Not public redistribution authorization."
