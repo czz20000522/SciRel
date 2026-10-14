@@ -1,7 +1,9 @@
-"""Bounded analysis primitives retained from the equilibrium D2 candidate."""
+"""Compatibility imports for the domain-organized SciRel API.
 
-from .electromagnetism.greens import get_gpsi
-from .fieldline import d_ds_arclength
-from .numerics import NumericalContractError, diff_12_central
+The implementation lives in ``scirel.geometry.analysis``; this module remains as a stable
+bridge for callers using the pre-domain package paths.
+"""
 
-__all__ = ["get_gpsi", "NumericalContractError", "d_ds_arclength", "diff_12_central"]
+from .geometry.analysis import get_gpsi, NumericalContractError, d_ds_arclength, diff_12_central
+
+__all__ = ['get_gpsi', 'NumericalContractError', 'd_ds_arclength', 'diff_12_central']

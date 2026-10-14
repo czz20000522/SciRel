@@ -24,3 +24,35 @@ __all__ = [
 from .mesh import Mesh, PointsMesh, RChord, ZChord, SphericalRChord, ThetaChord, RectMesh
 from .transforms import rotate
 __all__.extend(["Mesh", "PointsMesh", "RChord", "ZChord", "SphericalRChord", "ThetaChord", "RectMesh", "rotate"])
+
+# Domain-organized general primitives.  Legacy top-level modules re-export these
+# names so existing callers keep working while new code can depend on geometry.
+from .basis import (
+    NaturalCubicSpline, ClampedCubicSpline, FirstClampedCubicSpline,
+    SecondClampedCubicSpline, build_basis, BasisMatrix,
+)
+from .fieldline import (
+    d_ds_arclength, FieldLineSet, FieldLine, HelperFieldLine, Boundary,
+    contour_points, helper_contour_points,
+)
+from .numerics import NumericalContractError, diff_12_central
+from .plotting import scale_patches, get_mirror_patches, transpose_patches
+from .sampling import (
+    transform_to_rtheta, transform_to_rhoz, regular_grid, poly_fit,
+    reflect_and_hstack, locs_to_vals, locs_to_vals_griddata, locs_to_vals1D,
+    get_fieldlines, parse_segment, get_fieldline_distance, interp,
+    flux_surface_avg, diff_central,
+)
+from .analysis import get_gpsi
+__all__.extend([
+    "NaturalCubicSpline", "ClampedCubicSpline", "FirstClampedCubicSpline",
+    "SecondClampedCubicSpline", "build_basis", "BasisMatrix", "d_ds_arclength",
+    "FieldLineSet", "FieldLine", "HelperFieldLine", "Boundary",
+    "contour_points", "helper_contour_points", "NumericalContractError",
+    "diff_12_central", "scale_patches", "get_mirror_patches",
+    "transpose_patches", "transform_to_rtheta", "transform_to_rhoz",
+    "regular_grid", "poly_fit", "reflect_and_hstack", "locs_to_vals",
+    "locs_to_vals_griddata", "locs_to_vals1D", "get_fieldlines",
+    "parse_segment", "get_fieldline_distance", "interp", "flux_surface_avg",
+    "diff_central", "get_gpsi",
+])

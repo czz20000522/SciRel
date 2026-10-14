@@ -1,5 +1,9 @@
-"""Public equilibrium feedback API."""
+"""Compatibility imports for the domain-organized SciRel API.
 
-from .equilibrium import EquilibriumResult, compute_equilibrium
+The implementation lives in ``scirel.equilibrium.api``; this module remains as a stable
+bridge for callers using the pre-domain package paths.
+"""
 
-__all__ = ["EquilibriumResult", "compute_equilibrium"]
+from .equilibrium.api import EquilibriumResult, compute_equilibrium
+
+__all__ = ['EquilibriumResult', 'compute_equilibrium']
