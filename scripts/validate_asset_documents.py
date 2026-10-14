@@ -671,15 +671,15 @@ def _validate_runtime_inputs(
     mapping = signature.parameters.get("inputs")
     accepts_keywords = any(parameter.kind is inspect.Parameter.VAR_KEYWORD
                            for parameter in signature.parameters.values())
-    if document.get("kind") == "task_graph" and mapping is not None and not accepts_keywords:
-        if (len(signature.parameters) != 1
+    if document.get("kind") == "task_graph" and mapping is not None:
+        if function is None:
+            _fail(document["asset_id"], "TaskGraph mapping requires its actual callable binding")
+        bound_signature = _explicit_mapping_signature(document, function)
+        if bound_signature is None and (len(signature.parameters) != 1
                 or mapping.default is not inspect.Parameter.empty
                 or mapping.kind not in (inspect.Parameter.POSITIONAL_OR_KEYWORD,
                                         inspect.Parameter.KEYWORD_ONLY)):
             _fail(document["asset_id"], "TaskGraph inputs mapping must be its one required callable parameter")
-        if function is None:
-            _fail(document["asset_id"], "TaskGraph mapping requires its actual callable binding")
-        bound_signature = _explicit_mapping_signature(document, function)
         signature = bound_signature if bound_signature is not None else inspect.signature(_mapping_delegate(document, function))
         if any(p.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
                for p in signature.parameters.values()):

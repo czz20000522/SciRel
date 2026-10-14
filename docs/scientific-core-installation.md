@@ -1,9 +1,9 @@
 # 当前科学包与中文手册
 
-当前累积技术选择为 `0.2.0.dev7+scientific.core`，对应
-`provenance/selections/scientific-core-20261014.json` 与
-`provenance/selections/scientific-core-documents-20261014.json`。
-它用同一安装包提供 162 份精确合同；科学 API 按领域组织，函数和复合任务入口均可从中文 API 目录检索。
+当前累积技术选择为 `0.2.0.dev8+scientific.core`，对应
+`provenance/selections/scientific-core-20261014-r2.json` 与
+`provenance/selections/scientific-core-documents-20261014-r2.json`。
+它用同一安装包提供 208 份精确合同；科学 API 按领域组织，函数和复合任务入口均可从中文 API 目录检索。
 正式合同的原实现版本和历史证据保留，不能将它们批量改写成新包版本来制造新科学资格。
 
 ## 安装已接收的确切包
@@ -11,7 +11,7 @@
 根接收记录会给出确切 wheel 的 SHA-256；先核对摘要，再在独立环境安装该文件：
 
 ```bash
-python -m pip install 'scirel-0.2.0.dev7+scientific.core-py3-none-any.whl'
+python -m pip install 'scirel-0.2.0.dev8+scientific.core-py3-none-any.whl'
 ```
 
 Python 使用 3.14（本次验证 3.14.7）。本选择实际声明 NumPy 2.5.4、SciPy 1.18.1、Matplotlib 3.11.2、netCDF4 1.7.4、mpmath 1.4.1。
@@ -23,6 +23,10 @@ Python wheel 不会替用户安装这个系统运行时，缺少时该类入口�
 只调用纯 Python 的磁场、平衡、有限体积、色散函数等入口时无需先安装 Octave。
 带可选绘图的入口及其依赖不代表绘图已成为项目核心物理验收要求。
 来源对照环境、科学包运行环境和 SciRel 项目开发环境分别选依赖，版本统一不等于三类清单合并。
+
+新增 46 项覆盖中性粒子输运归约、碰撞平均、网格与材料支撑、诊断及采样等有界科学关系。
+它们复用逐项独立证据并完成当前安装闭包；不据此宣称任一旧来源项目的全部核心能力已完成。
+带符号功率相消、热速度极值和椭圆积分端点采用已证反例的后继修正；原交付仍保留。
 
 ## 按问题查找入口
 
@@ -48,14 +52,14 @@ print(p_grid)
 
 ## 维护相同的可查询内容
 
-手册目录入口是 `tools/docs/handbooks/scientific-core.json`，中文阅读层是
-`tools/docs/zh/selections/scientific-core.json`。每份阅读层以正式文档 SHA-256 绑定，不从函数名猜补参数或适用域。
-构建新快照时，先按 `scientific-core-documents-20261014.json` 的清单复制并逐字核对正式合同，再运行：
+手册目录入口是 `tools/docs/handbooks/scientific-core-r2.json`，中文阅读层是
+`tools/docs/zh/selections/scientific-core-r2.json`。每份阅读层以正式文档 SHA-256 绑定，不从函数名猜补参数或适用域。
+构建新快照时，先按 `scientific-core-documents-20261014-r2.json` 的清单复制并逐字核对正式合同，再运行：
 
 ```bash
 python scripts/scirel_docs.py build --documents /path/to/exact-documents \
-  --outline tools/docs/handbooks/scientific-core.json \
-  --translations tools/docs/zh/selections/scientific-core.json \
+  --outline tools/docs/handbooks/scientific-core-r2.json \
+  --translations tools/docs/zh/selections/scientific-core-r2.json \
   --output /path/to/new-snapshot
 ```
 

@@ -23,7 +23,7 @@
     "model": "the saved formal implementation's explicit scalar relation",
     "geometry": "none; a scalar material scale",
     "coordinates": "temperature in eV; mass_amu is a multiple of the saved hydrogen mass, not the standard atomic mass unit; speed in m/s",
-    "boundary": "both scalars finite and strictly positive; the derived mass in kg and result must remain finite and strictly positive",
+    "boundary": "Both input scalars are finite and strictly positive; the final thermal speed must be finite and positive. Intermediate conversion underflow does not exclude a representable result.",
     "assumptions": [
       "The frozen hydrogen mass and elementary charge are the saved source's values, not CODATA-current values.",
       "This is a normalization scale, not a measured temperature diagnostic."
@@ -73,7 +73,7 @@
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for boolean, string, complex or nonscalar inputs, or when temperature_ev or mass_amu is non-finite or nonpositive.",
-    "runtime_failure": "Raises ValueError when the derived mass in kg collapses to zero or the evaluated speed is non-finite or nonpositive; no fallback is selected.",
+    "runtime_failure": "Raises ValueError only if the final speed is non-finite or nonpositive. Dangerous intermediate range uses 100-digit Decimal evaluation of the defining relation with exact binary64 inputs before final float rounding.",
     "nonconvergence": "Not applicable.",
     "partial_results": "Never returned; a rejected call produces no result."
   },
@@ -96,28 +96,29 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev8+scientific.core",
     "dependencies": []
   },
   "example": {
     "description": "Evaluate the thermal speed for one temperature/mass pair and confirm the frozen-constant relation and the rejections.",
     "code": "import math\nfrom scirel.kinetic import compute_thermal_speed_m_s\nresult = compute_thermal_speed_m_s(1.0, 2.0)\nassert result['thermal_speed_m_s'] == math.sqrt(2.0 * 1.602177e-19 / (2.0 * 1.6726231e-27))\nassert compute_thermal_speed_m_s(4.0, 2.0)['thermal_speed_m_s'] == 2.0 * result['thermal_speed_m_s']\ntry:\n    compute_thermal_speed_m_s(0.0, 1.0)\nexcept ValueError as error:\n    assert 'temperature_ev' in str(error)\nelse:\n    raise AssertionError('a nonpositive temperature must be rejected')",
-    "expected": "The mapping with the frozen-constant thermal speed; doubling the temperature doubles the speed; a nonpositive temperature is rejected."
+    "expected": "The frozen-constant thermal speed; quadrupling the temperature doubles the speed at fixed mass; a nonpositive temperature is rejected."
   },
   "verification": {
     "scope": [
       "That the speed equals the independent frozen-constant relation exactly.",
-      "That the speed scales with the square root of temperature and inversely with mass.",
-      "The input and failure contracts, including non-real and nonscalar rejection and underflowed mass conversion.",
+      "Temperature square-root scaling and inverse-square-root mass scaling.",
+      "Input/type failures and high-precision recovery across intermediate underflow/overflow; true final overflow remains rejected.",
       "Read-only digest-bound archived-source replay at three finite positive scalar points during integration."
     ],
     "tests": [
-      "tests/operator_contracts/test_thermal_speed_and_density_reduction.py"
+      "tests/operator_contracts/test_thermal_speed_and_density_reduction.py",
+      "tests/operator_contracts/test_legacy_admission_regressions.py"
     ],
-    "evidence_ceiling": "Maintained tests establish the frozen-constant formula and declared failure behavior. Read-only digest-bound archived-source replay found exact agreement at three finite positive scalar points; coercion and underflow behavior differ as declared. This does not prove all-input source parity, qualified D1, global applicability, expert approval or release.",
+    "evidence_ceiling": "Maintained tests establish the frozen-constant formula and declared failure behavior. Read-only digest-bound archived-source replay found exact agreement at three finite positive scalar points; coercion and underflow behavior differ as declared. This does not prove all-input source parity, qualified D1, global applicability, expert approval or release. New independent Decimal100 regression checks preserve representable thermal speeds despite intermediate range loss; ordinary valid operation order is unchanged.",
     "known_limitations": [
       "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
-      "The historical mass_amu name denotes multiples of the saved hydrogen mass, not the standard atomic mass unit; source coercion of booleans and numeric strings and an underflowed mass conversion are rejected here.",
+      "The historical mass_amu name denotes saved hydrogen-mass multiples, not standard amu. Non-real coercions are rejected; dangerous intermediate range is evaluated at higher precision.",
       "Public distribution licensing remains pending a human decision."
     ]
   }

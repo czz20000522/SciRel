@@ -20,13 +20,23 @@ html[data-theme="light"], html[data-theme="dark"] {
 body { background: #fff; color: #111; }
 .bd-header { background: #fff; border-bottom: 1px solid #ddd; box-shadow: none; }
 .bd-article-container { max-width: 58em; }
+/* Scientific parameter names and shape expressions must not enlarge the
+   PyData article grid. Code blocks keep their own horizontal scrolling. */
+.bd-content, .bd-article-container, .bd-article { min-width: 0; }
+.bd-article dl.field-list { grid-template-columns: fit-content(30%) minmax(0, 1fr); }
+.bd-article dl.field-list > dt, .bd-article dl.field-list > dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.bd-article dl.field-list p, .bd-article dl.field-list li,
+.bd-article dl.field-list code:not(pre code) { overflow-wrap: anywhere; }
 .bd-sidebar-primary { border-right: 1px solid #eee; }
 .bd-sidebar-secondary { border-left: 1px solid #eee; }
 .bd-content p, .bd-content li { line-height: 1.8; }
 .sd-card { border-color: #ddd !important; box-shadow: none !important; }
 .sig, .bd-article h1, .scirel-module { overflow-wrap: anywhere; }
 div.highlight { background: #f7f7f7; }
-div.highlight pre { white-space: pre; tab-size: 4; }
+div.highlight pre { white-space: pre; tab-size: 4; overflow-x: auto; }
 .scirel-formula { overflow-x: auto; padding: 1rem 0; text-align: center; }
 .scirel-formula math { font-size: 1.25rem; }
 .scirel-output { border-left: 3px solid #777; padding-left: 1rem; }

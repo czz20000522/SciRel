@@ -6,17 +6,25 @@
     "en": "Species absorption fraction closure",
     "zh": "物种吸收占比闭合"
   },
-  "summary": "Close a four-species absorbed-power ledger into source-ordered percentage shares, failing closed when the derived total is zero instead of emitting an undefined split.",
-  "taxonomy": ["diagnostics", "power-ledger", "closure", "rf-absorption"],
-  "aliases": ["Wdot species fractions", "E-star-dot-J species fractions"],
+  "summary": "Close a four-species signed absorbed-power ledger into ordered percentage shares, using stable signed summation and exact rational evaluation at dangerous numerical extremes; reject zero total and nonrepresentable results.",
+  "taxonomy": [
+    "diagnostics",
+    "power-ledger",
+    "closure",
+    "rf-absorption"
+  ],
+  "aliases": [
+    "Wdot species fractions",
+    "E-star-dot-J species fractions"
+  ],
   "identity": {
     "relation": "four-species absorbed-power ledger to source-ordered percentage shares and the closure residual",
     "direction": "species_power_values -> total_power, species_fraction_percent, total_fraction_percent, fraction_sum_residual_percent, branch",
-    "definition": "Sum the four ledger entries in caller order, divide each entry by that sum and scale by one hundred, then report the sum of the resulting percentages and its residual against one hundred percent.",
+    "definition": "Sum the four supplied real binary64 powers, divide each by the total and scale by one hundred. Signed totals use the exact rational sum before binary64 rounding; same-sign ordinary totals retain the established floating reduction. Ordinary percentages retain divide-then-scale rounding. Severe cancellation or intermediate range loss triggers exact rational percentage evaluation. The residual uses the actual returned floating percentages, not unrounded theoretical shares.",
     "model": "source-defined absorbed-power split across exactly four species",
     "geometry": "not applicable; the relation is a per-ledger scalar closure with no spatial dependence",
     "coordinates": "not applicable; entries are carried in the caller's species order and never reordered",
-    "boundary": "the derived total is required to be finite and exactly non-zero; a zero total is rejected rather than approximated",
+    "boundary": "The mathematical total must be nonzero and its returned binary64 value finite. Every returned percentage and their reported sum must be finite. Severe signed cancellation can make the returned sum differ substantially from 100 because individual shares were rounded.",
     "assumptions": [
       "The four entries are the absorbed powers of one source-defined species ordering; the operator never infers or reorders species.",
       "A negative entry is a physically meaningful signed contribution and is reported as computed, not clipped.",
@@ -31,7 +39,7 @@
       "shape": "[4]",
       "dtype": "real array-like",
       "required": true,
-      "constraints": "Exactly four entries; real-valued, non-boolean, non-string, and finite. Complex, boolean, string, or object entries are rejected."
+      "constraints": "Exactly four entries convertible to finite float64. Complex, boolean, and string array dtypes are rejected; numeric object arrays are accepted when conversion succeeds. Object values that fail conversion or convert to non-finite values are rejected."
     }
   ],
   "outputs": [
@@ -51,7 +59,7 @@
       "shape": "[4]",
       "dtype": "float64",
       "required": true,
-      "constraints": "Entry i equals 100 * value_i / total_power; entries may be negative when the corresponding ledger entry is negative."
+      "constraints": "Entry i equals 100 * value_i / total_power; entries may be negative when the corresponding ledger entry is negative. Every share must be finite; otherwise the call is rejected."
     },
     {
       "name": "total_fraction_percent",
@@ -60,7 +68,7 @@
       "shape": "scalar",
       "dtype": "float64",
       "required": true,
-      "constraints": "Reported as computed; it is close to but not exactly 100.0 in floating point."
+      "constraints": "Sum of the actual returned binary64 shares. Ordinary ledgers retain the floating reduction; severe cancellation or reduction overflow uses exact summation of those returned values. It need not be close to 100 under severe signed cancellation. A nonrepresentable sum is rejected."
     },
     {
       "name": "fraction_sum_residual_percent",
@@ -98,7 +106,7 @@
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError when the ledger is not a length-four vector, is complex, boolean, or string typed, contains non-finite entries, or cannot be converted to float; and when the derived total is non-finite or exactly zero.",
-    "runtime_failure": "No runtime failure path beyond input validation; the arithmetic is a fixed number of NumPy reductions.",
+    "runtime_failure": "Raises ValueError only when the exact total is zero or a required final total/share/returned-share sum cannot be represented as finite binary64; dangerous intermediate overflow and underflow are evaluated using exact rational arithmetic.",
     "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
     "partial_results": "Never returned; a rejected ledger produces no mapping."
   },
@@ -120,7 +128,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev8+scientific.core",
     "dependencies": []
   },
   "example": {
@@ -130,15 +138,19 @@
   },
   "verification": {
     "scope": [
-      "Exact reproduction of both observed source routes on identical ledgers, including the returned keys and array values.",
-      "Source ordering of the returned shares and closure to one hundred percent.",
+      "Ordinary ledger arithmetic and keys remain identical to the two observed source routes; extreme signed cancellation and intermediate range loss are corrected against exact rational arithmetic.",
+      "Caller species ordering and explicit residual of the returned shares; no unconditional numerical closure-to-100 claim for ill-conditioned signed ledgers.",
       "Single-species ledgers, negative ledgers, and small-total ledgers.",
       "Fail-closed behavior at the exact zero-total boundary and under signed cancellation.",
       "Fail-closed validation of ledger length, dtype, and finiteness.",
-      "Exposure of exactly one public callable after the merge."
+      "Exposure of exactly one public callable after the merge.",
+      "Exact zero despite overflowing partial sums; preservation of small terms in signed cancellation; finite final results despite partial sum overflow; subnormal shares; rejection of truly nonrepresentable percentages."
     ],
-    "tests": ["tests/operator_contracts/test_species_absorption_fraction.py"],
-    "evidence_ceiling": "Establishes that the merged relation reproduces both observed routes on the tested ledgers and that the zero-total boundary fails closed. It does not establish that the four supplied powers are the correct physical absorbed powers for any particular run.",
+    "tests": [
+      "tests/operator_contracts/test_species_absorption_fraction.py",
+      "tests/operator_contracts/test_legacy_admission_regressions.py"
+    ],
+    "evidence_ceiling": "Independent rational counterexamples establish the numerical ledger relation and its failure boundaries; ordinary route assertions are retained. No evidence here establishes that the caller supplied physically correct absorbed powers.",
     "known_limitations": [
       "The species count is fixed at four; no general-length ledger is supported.",
       "The zero-total branch is unavailable by design, so a physically zero-absorption run cannot be represented.",

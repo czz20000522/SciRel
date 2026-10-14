@@ -14,8 +14,11 @@ that the axisymmetric moment reduction and boundary-flux normalization
 relations below use internally.
 
 For representable finite positive real scalars, the source formula and
-operation order are retained. SciRel rejects non-real coercions and a
-mass-to-kg conversion that underflows to zero.
+operation order are retained. Dangerous intermediate overflow/underflow uses
+the same defining relation with exact binary64 inputs at 100 decimal digits,
+then rounds once to the returned float. Only a nonpositive or non-finite
+final result is rejected; losing a representable value in mass-to-kg
+conversion is not a scientific failure.
 
 Evidence ceiling: maintained tests establish the scalar relation against an
 independent recomputation with the frozen constants and mass monotonicity.
@@ -27,6 +30,8 @@ qualified-L1 provenance.
 from __future__ import annotations
 
 import math
+from decimal import Decimal, localcontext
+import sys
 
 import numpy as np
 
@@ -77,9 +82,17 @@ def compute_thermal_speed_m_s(temperature_ev, mass_amu):
     if not math.isfinite(mass) or mass <= 0.0:
         raise ValueError("mass_amu must be finite and positive")
     mass_kg = mass * _HYDROGEN_MASS_KG
-    if mass_kg == 0.0:
-        raise ValueError("thermal speed must be finite and positive")
-    value = math.sqrt(2.0 * _ELECTRON_VOLT_J * temperature / mass_kg)
+    numerator = 2.0 * _ELECTRON_VOLT_J * temperature
+    ratio = numerator / mass_kg if mass_kg else math.inf
+    if (not math.isfinite(ratio) or min(mass_kg, numerator, ratio) < sys.float_info.min):
+        with localcontext() as context:
+            context.prec = 100
+            exact = (Decimal(2) * Decimal.from_float(_ELECTRON_VOLT_J)
+                     * Decimal.from_float(temperature)
+                     / (Decimal.from_float(mass) * Decimal.from_float(_HYDROGEN_MASS_KG)))
+            value = float(exact.sqrt())
+    else:
+        value = math.sqrt(ratio)
     if not math.isfinite(value) or value <= 0.0:
         raise ValueError("thermal speed must be finite and positive")
     return {"thermal_speed_m_s": value}

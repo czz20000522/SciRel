@@ -1,0 +1,1680 @@
+{
+  "schema": "scirel.bounded-legacy-integration.v1",
+  "action": "scirel-legacy-qualified-increment-20261014-v1",
+  "base_commit": "1e4c6567b2fb3925b9a7eb3e37666c6313b21118",
+  "scope": "46 explicitly bounded independently evidenced relations plus unchanged accepted162 scientific payload, 208 unique exact scientific documents. This does not mark any incomplete source project full core complete.",
+  "unchanged_predecessor_payload_files": 178,
+  "dependency_policy": {
+    "source_runtime": "No historical source checkout or source dependency installation needed for this increment. Optional source replay remains SKIPPED rather than new parity evidence.",
+    "wheel_runtime": "New46 use NumPy/SciPy/stdlib and selected _validation only. Reuse existing162 native/data closure; no new runtime dependency.",
+    "development": "Git, PowerShell,pytest,build,Sphinx,formal validation and independent reference calculation are development tools and absent from scientific wheel."
+  },
+  "duplicate_and_variant_decisions": {
+    "filament": "Offset-radius scalar observation, approximate K/E and per-coil current-times-turns response remain a distinct valid variant from exact elliptic/axis-limit arbitrary-point unit-current response. Source self-ring singularity rejects here; no name/hash synonym inference.",
+    "mesh": "Real R-Z bilinear reject-outside and complex XYZ trilinear validity-mask/clamping-tolerance interfaces are different scientific contracts. Grid field mapping plus material/PML/PEC classification is a DAG, not equilibrium solving.",
+    "neutral": "General axisymmetric moments permit molecularity1/2 and caller normalization/empty policy; terminal neutral moment leaves use their explicit H2/velocity/mass conventions. Stopping thresholds and generation/state boundaries are kept distinct; no generic merge by similar formula.",
+    "closure": "A supplied cross section averaged over a declared quadrature is a bounded mathematical relation, not external validation of empirical cross sections. Caller physical model validity remains an explicit precondition."
+  },
+  "scientific_corrections": {
+    "scirel.diagnostics.species-absorption-fraction": "D2 successor: exact signed binary64 summation and dangerous-ratio rational evaluation; preserve ordinary rounding, reject only required nonrepresentable final results. Four additional true RED witnesses recorded after initial finite-output fix.",
+    "scirel.field.complete-elliptic-integrals-approx": "D2 successor: K(1)=+Inf and E(1)=1 independently at each endpoint; preserve all interior polynomial/log operations and measured tolerances. Downstream coincident line-current geometry still rejected.",
+    "scirel.kinetic.thermal-speed-scale": "D2 successor: exact-float Decimal sqrt fallback for dangerous intermediate underflow/overflow; ordinary operation order and constants retained. Truly nonrepresentable final speed still rejected.",
+    "scirel.geometry.material-support-classification": "Documentation successor only: positive minimum-radius column may add eligible axis-proxy cells. Earlier broad exclusion contradicted implementation and existing independent tests; no numerical code changed.",
+    "scirel.field.filament-coil-green-field": "Documentation-only source change: acknowledge corrected elliptic endpoint; singular geometry rejection and interior field formula unchanged."
+  },
+  "records": [
+    {
+      "asset_id": "scirel.collisions.maxwellian-relative-speed-rate-average",
+      "formal_document": "catalog/examples/scirel.collisions.maxwellian-relative-speed-rate-average.json",
+      "document_sha256": "2507f415de5dcc65a7ca2c9343e73f19b532afc85b1b0c8789f9f02233b37599",
+      "implementation": "src/scirel/collisions/maxwellian_relative_speed_rate_average.py",
+      "implementation_sha256": "4344e458cb524d269c40c17b38615245c2841378a8de09a86d68ee1aee1a2325",
+      "public_api": {
+        "module": "scirel.collisions.maxwellian_relative_speed_rate_average",
+        "symbol": "average_cross_section_over_maxwellian",
+        "signature": "average_cross_section_over_maxwellian(*, particle_energy_ev, particle_mass_amu, target_temperature_ev, target_mass_amu, vx, vr, tnorm_ev, cylindrical_volume, cross_section_m2)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        ".._validation",
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "The maintained tests establish the discrete relation against an in-file independent formulation, the two analytic limits to mesh-converged tolerances, the volume-scale invariance, the input and failure contracts including the documented repairs, and the composition contract of the saved consumer graph. The separately executed intake replay establishes bounded numerical agreement with the saved KN1DPy implementation on the compared constant- and linear-sigma domain only. No test establishes that the particle-mass collision-energy convention is the physically correct model, that any caller cross section or mesh is physically valid, or that the source project behaves correctly outside the compared domain. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+      "reused_limitations": [
+        "The collision energy uses the particle mass, the saved source's convention; a reduced-mass model is a different relation and is not provided.",
+        "No cross-section model is included. A caller whose callable is wrong gets a wrong rate with no warning; the asset checks only shape, finiteness and nonnegativity of the returned values.",
+        "The asset does not enforce that vr is a nonnegative radial axis or that the volume weights follow the vr-weighted cylindrical measure; a mismatched measure silently misweights the quadrature. Only proportionality of the measure is required and a constant factor is irrelevant.",
+        "Quadrature accuracy is entirely the mesh's. Coarse meshes misresolve the Maxwellian tail and the beam resonance; no convergence check runs at runtime, and the analytic limits above hold only in the mesh-refined regime.",
+        "Non-finite and non-real input rejection, finite-output rejection and the collision-energy representability gate are documented development repairs, not source behavior: a caller migrating from the saved implementation sees a ValueError where it previously saw either coercion, an unrelated TypeError, a silent non-finite rate or a callback invoked with values the asset never declared.",
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_maxwellian_relative_speed_rate_average.py",
+          "sha256": "556671ed7cc3943a12c2b4f34e089bd03ed709fc54f2a636a8f99826b6ab47fb"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.collisions.relativistic-maxwellian-bessel-closure",
+      "formal_document": "catalog/examples/scirel.collisions.relativistic-maxwellian-bessel-closure.json",
+      "document_sha256": "b7377006270fb0b52c5e19863ce95e5ffd8243a7870c743222260443e684668c",
+      "implementation": "src/scirel/collisions/relativistic_maxwellian_bessel.py",
+      "implementation_sha256": "7ce887d662817e86522ccaa2beb77c025c981badc355be6565937363819a898d",
+      "public_api": {
+        "module": "scirel.collisions.relativistic_maxwellian_bessel",
+        "symbol": "relativistic_maxwellian_bessel",
+        "signature": "relativistic_maxwellian_bessel(x)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "math",
+        "scipy.special"
+      ],
+      "reused_evidence_ceiling": "Establishes, on the frozen review's external comparison, the measured distance from the retained route and from its boundary discontinuity, and that the change is the approximation rather than the relation. Establishes, on the maintained self-contained tests, that the closure is the exponentially rescaled modified Bessel functions of orders zero, one and two, that bk2 is the recurrence, that every accepted call returns three finite floats, and the response to a backend that does not return finite values. The maintained tests depend on no source checkout, candidate directory or L1 payload. This asset does not establish the physical accuracy of the closure for any distribution, temperature or relativistic parameter, does not establish or bound the domain over which the installed backend can evaluate the relation, does not establish that the retained Abramowitz-Stegun coefficients or its x = 2 split were the right ones to have replaced, and consults no independent special-function table.",
+      "reused_limitations": [
+        "The relation is evaluated through scipy.special.kve, so this asset has a runtime dependency on SciPy that the retained route did not have. That is the point of the change, but it is a dependency the caller inherits.",
+        "The direct evaluation's representable domain is a property of the installed SciPy build and the platform, and is narrower than the retained route's, whose asymptotic polynomial stays finite at arguments where the backend does not. This asset states no bound for it, deliberately: a bound measured from one build would be a false contract on another. A caller that needs one must derive it from its own platform, and a caller that samples a wide argument range must handle BesselBackendEvaluationError.",
+        "Rejection is whole-call and gives the caller no partial result, so a caller sweeping many arguments must decide per argument whether to skip it.",
+        "No physical accuracy claim is made for any distribution. The closure is established as a special-function evaluation, not as an adequate collision-coefficient model.",
+        "The retained route's coefficients, its choice of Abramowitz-Stegun fits and its x = 2 split are taken as given; the bundle cites no reference for any of them.",
+        "Public distribution licensing remains pending a human decision.",
+        "The frozen V5 review's comparisons against the retained route and the frozen V2 and V3 candidates are not replayable from this repository: those arms live outside it, and the maintained tests neither reach them nor depend on them. The claims they established are recorded in this document's verification scope and marked as not replayed; a reviewer who needs to re-check them must return to the frozen review environment. The maintained tests protect the self-contained subset, and no public test requires an external checkout."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_relativistic_maxwellian_bessel.py",
+          "sha256": "4c8b39b1d3f2170cbb9e2b1fcda0063543732baa6cc6d4b640bbce6b965ccf73"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.diagnostics.observation-residuals",
+      "formal_document": "catalog/examples/scirel.diagnostics.observation-residuals.json",
+      "document_sha256": "3615d96a536f79c8e2fc80edb38c7626e313d422ea0eaf2e748fa82a3f3f14f2",
+      "implementation": "src/scirel/diagnostics/observation_residuals.py",
+      "implementation_sha256": "7309f5e6f4841b8541535b1e318d4f074d3a51b8d1ec369ea5e8e8402e88061a",
+      "public_api": {
+        "module": "scirel.diagnostics.observation_residuals",
+        "symbol": "reduce_observation_residuals",
+        "signature": "reduce_observation_residuals(*, predicted, observations)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "collections.abc",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Direct tests establish the stated finite-array reduction and selected failures; they do not validate measurement alignment, covariance assumptions, physical predictions or expert recognition.",
+      "reused_limitations": [
+        "Unmatched Thomson-like channels and unknown observation keys are silently ignored if another usable signal exists.",
+        "No covariance, robust loss or degrees-of-freedom normalization is applied.",
+        "Public distribution licensing and SciRel expert recognition remain pending."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_observation_residuals.py",
+          "sha256": "db3df109d58a9d7fe755dfce0c8630291aa8d8927c188184ec3fa001effedeee"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.diagnostics.species-absorption-fraction",
+      "formal_document": "catalog/examples/scirel.diagnostics.species-absorption-fraction.json",
+      "document_sha256": "3c7c7a2a4de3218c13e95119d2a1c581fc6413e4c293abd9fec2eff336c6d25c",
+      "implementation": "src/scirel/diagnostics/species_absorption_fraction.py",
+      "implementation_sha256": "50ed9b10e610447df2a8a4413c4e45d1d42f2a98034f4029eaf15eed67480668",
+      "public_api": {
+        "module": "scirel.diagnostics.species_absorption_fraction",
+        "symbol": "compute_species_absorption_fraction",
+        "signature": "compute_species_absorption_fraction(species_power_values)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "fractions",
+        "numpy",
+        "sys"
+      ],
+      "reused_evidence_ceiling": "Establishes that the merged relation reproduces both observed routes on the tested ledgers and that the zero-total boundary fails closed. It does not establish that the four supplied powers are the correct physical absorbed powers for any particular run.",
+      "reused_limitations": [
+        "The species count is fixed at four; no general-length ledger is supported.",
+        "The zero-total branch is unavailable by design, so a physically zero-absorption run cannot be represented.",
+        "The observed-route comparison requires the read-only source checkout to be reachable; it is skipped rather than silently passed when it is not.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_species_absorption_fraction.py",
+          "sha256": "e810b28db711d097ef74ad3eddc01c34f4e64332b388703f47893164bae6c0f4"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "D2 successor: exact signed binary64 summation and dangerous-ratio rational evaluation; preserve ordinary rounding, reject only required nonrepresentable final results. Four additional true RED witnesses recorded after initial finite-output fix.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.field.coil-green-geometry",
+      "formal_document": "catalog/examples/scirel.field.coil-green-geometry.json",
+      "document_sha256": "04371fdd3753af323450073b0ba98eb37849079029d56739321ad1632a486ced",
+      "implementation": "src/scirel/field/coil_green_geometry.py",
+      "implementation_sha256": "b978b947b1766e7089048e829504f14b15094345c43744204053dac7774ddae5",
+      "public_api": {
+        "module": "scirel.field.coil_green_geometry",
+        "symbol": "compute_axisymmetric_coil_modulus",
+        "signature": "compute_axisymmetric_coil_modulus(observation_radius_m, observation_z_m, coil_radius_m, coil_z_m)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "The maintained direct tests establish the regularized radius, per-coil moduli and distance denominators against an independent recomputation (exact float equality on the offset, rtol=1e-15 on the closed forms), the (0, 1] modulus range on admissible geometry, axis-point admissibility through the source offset, and the fail-closed input contracts. No test establishes the geometry against an external physics reference; the relation is a direct closed-form contract of the saved source. The extreme underflow regression establishes rejection of one finite positive geometry whose computed modulus rounds to zero.",
+      "reused_limitations": [
+        "The saved GSEQ bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+        "Registered input hardening: raw observation radii in (-1e-8, 0) are rejected rather than silently regularized to positive values by the source axis offset.",
+        "Registered output hardening: finite but extreme input magnitudes (e.g. r0 = rl = 1e308) that overflow the squared geometry sums are rejected with ValueError instead of handing non-finite modulus/distance downstream (the saved implementation returns them silently).",
+        "A modulus of exactly 1 (observation point on a filament ring) is an admissible output; consumers must reject it (the response operator does).",
+        "Public distribution licensing remains pending a human decision.",
+        "A zero modulus caused by floating-point underflow is rejected here; this is an additional SciRel boundary beyond the saved package."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_filament_coil_green_gseq.py",
+          "sha256": "d575bf1f99c4f59f2f34dc69da4069efdb80a409ccfeb2c9109678617090a202"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.field.complete-elliptic-integrals-approx",
+      "formal_document": "catalog/examples/scirel.field.complete-elliptic-integrals-approx.json",
+      "document_sha256": "4ebf00ddf9921de9f4d36afe3b38a539b36bed51a2a96b76566f9e9aee31e810",
+      "implementation": "src/scirel/field/complete_elliptic_integrals_approx.py",
+      "implementation_sha256": "942f690148a2327043b693f575cd3375ff94de0587f767a95553ad7d2baf84d3",
+      "public_api": {
+        "module": "scirel.field.complete_elliptic_integrals_approx",
+        "symbol": "evaluate_complete_elliptic_integrals",
+        "signature": "evaluate_complete_elliptic_integrals(modulus_squared)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "The maintained direct tests establish the polynomial-log evaluation against an independent recomputation (exact array equality), the whole-array sentinel and mixed-array Inf/NaN singular paths, and the fail-closed domain contract. Sampled accuracy evidence: on a 200,001-point sweep of m in [1e-6, 0.999999] the approximation agrees with scipy.special.ellipk/ellipe to at most 1e-8 relative in K and 2e-8 relative in E; this is sampled evidence, not a bound over the continuous domain, and the baseline filament assets are not required to reproduce it. The mixed-array boundary is checked against the current SciRel contract and inspected MATLAB text, not a MATLAB runtime replay; the saved L1 Python implementation differs there.",
+      "reused_limitations": [
+        "The saved GSEQ bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+        "The approximation is less accurate than library special functions (~1e-8 relative sampled); consumers needing higher accuracy should use the baseline scipy-elliptic filament relation instead.",
+        "The mixed-array m == 1 path returns Inf/NaN by source contract; the companion Green-response operator rejects the corresponding geometry rather than consuming it.",
+        "Public distribution licensing remains pending a human decision.",
+        "The saved L1 Python operator returns E=1 for a mixed-array m=1 element; this callable returns NaN there following the original MATLAB whole-array branch. No runtime MATLAB parity is claimed."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_filament_coil_green_gseq.py",
+          "sha256": "d575bf1f99c4f59f2f34dc69da4069efdb80a409ccfeb2c9109678617090a202"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "D2 successor: K(1)=+Inf and E(1)=1 independently at each endpoint; preserve all interior polynomial/log operations and measured tolerances. Downstream coincident line-current geometry still rejected.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.field.filament-coil-green-field",
+      "formal_document": "catalog/examples/scirel.field.filament-coil-green-field.json",
+      "document_sha256": "5cb3026d55bf413a3b5c1ea804ca8775eecedaccf5e9d9faea9cd56ea2a84bf0",
+      "implementation": "src/scirel/field/filament_coil_green_field.py",
+      "implementation_sha256": "49ca4bebc96e04c27edfb841ce6d3352cf786aacf8e98f337f4bb86fcc22f9d0",
+      "public_api": {
+        "module": "scirel.field.filament_coil_green_field",
+        "symbol": "evaluate_filament_coil_green_field",
+        "signature": "evaluate_filament_coil_green_field(regularized_radius_m, observation_z_m, coil_radius_m, coil_z_m, current_a, turns, modulus_squared, complete_k, complete_e)"
+      },
+      "declared_dependencies": [
+        "scirel.field.coil-green-geometry",
+        "scirel.field.complete-elliptic-integrals-approx"
+      ],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "The maintained direct tests establish the three responses against an independent closed-form recomputation (exact float equality), linear superposition in current, midplane B_r cancellation of a mirrored pair, and the fail-closed input contracts including the registered singular-geometry rejection. Cross-implementation evidence: with identical scipy-evaluated K, E the GSEQ closed form agrees with the baseline scirel.field.circular-filament-green response to rtol 1e-12 on probed geometries (same physics, different arrangement); feeding the source's polynomial-log approximation instead shifts responses by up to ~1e-5 relative on the probed set, consistent with the approximation's documented ~1e-8 K/E error amplified by the closed form -- sampled evidence over probed geometries, not a continuous bound. No test establishes the responses against an external physics reference beyond the shared closed form.",
+      "reused_limitations": [
+        "The saved GSEQ bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+        "This asset is a declared relation variant of scirel.field.circular-filament-green, not a new Green capability; the variant boundary (caller-supplied elliptic values, scalar target, source regularization, fail-closed singulars) must not be collapsed by silent unification.",
+        "Registered input hardening chain (documented for the family): the geometry operator rejects raw negative observation radii, and this operator rejects zero-separation/modulus-1 singular geometry; both boundaries are silently accepted (or NaN-returned) by the saved implementations.",
+        "Registered output hardening: finite but extreme current/turns magnitudes that overflow the combined response factor raise ValueError instead of returning Inf/NaN (the saved implementation returns them silently).",
+        "The singular-geometry rejection (observation point on a filament ring) deliberately diverges from the saved implementation, which returns NaN responses silently on that boundary.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_filament_coil_green_gseq.py",
+          "sha256": "d575bf1f99c4f59f2f34dc69da4069efdb80a409ccfeb2c9109678617090a202"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Documentation-only source change: acknowledge corrected elliptic endpoint; singular geometry rejection and interior field formula unchanged.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.fusion.dd-neutron-lab-energy",
+      "formal_document": "catalog/examples/scirel.fusion.dd-neutron-lab-energy.json",
+      "document_sha256": "aad6aecf6cdc81a6f0edc9a82e6c8898b5b1ed89a5abb6c8ade77cb52624b730",
+      "implementation": "src/scirel/fusion/dd_neutron_lab_energy.py",
+      "implementation_sha256": "e347aecdc969be87e0c133a402234c9ed780390e39896121ad1c1d97caaeb4b1",
+      "public_api": {
+        "module": "scirel.fusion.dd_neutron_lab_energy",
+        "symbol": "calculate_dd_neutron_lab_energy_kev",
+        "signature": "calculate_dd_neutron_lab_energy_kev(*, reactant1_velocity_cm_s, reactant2_velocity_cm_s, detector_unit_vector)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "math",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Establishes, on the frozen review's external comparison, the retained route's two-body lab-energy relation, its input contract, the behaviour and reachability of the non-positive branch it removes, and the rounding bound against the retained ordering. Establishes, on the maintained self-contained tests, the non-negativity of the returned value by construction, the exactness of the zero at the complete-cancellation configuration, the census showing no clamp is applied, and the failure of non-representable arithmetic. The maintained tests depend on no source checkout, candidate directory or L1 payload. This asset does not establish the accuracy of the non-relativistic approximation at any energy, does not establish the mass constants, the atomic mass unit or the MeV-per-joule factor against any independent measurement, and does not establish that the source's Fortran implements this expression, since the retained bundle is source-free.",
+      "reused_limitations": [
+        "The reformulation is a change of evaluation order and not a change of relation, so the returned energy is no longer bit-identical to the retained route. The difference is asserted within a measured rounding bound of 8 units in the last place of E_cm + E_boost, but that bound is an assertion over the sampled input scales rather than a proof over the whole accepted domain.",
+        "The returned value is no longer exactly 0.0 at the two speeds V4 pinned: it is 2.9996435921028974e-25 and 2.2132478772107012e-25 keV, because E_cm and E_boost differ by one and three units in the last place there. Both are twenty-two orders of magnitude below the 1 keV scale of the relation, and neither is negative, but a caller that compared against an exact zero at those two inputs would see a change.",
+        "Non-negativity is structural for the evaluated form, but the terms E_cm and E_boost are themselves rounded. The guarantee is that the returned value cannot be negative, not that it is the correctly rounded value of the exact relation.",
+        "The representability check rejects a finite input whose arithmetic overflows, but it does not establish where the non-relativistic approximation stops being scientifically meaningful. That boundary remains a physical statement about the relation and is not enforced by a magnitude threshold.",
+        "The mass constants, the atomic mass unit and the MeV-per-joule factor are carried from the retained route unverified. The bundle cites no reference and states no licence for them.",
+        "The Q value is fixed at 3.27 MeV; no excitation or channel competition is modelled.",
+        "No angular weighting is applied. A caller that multiplies the returned energy by an angular factor is applying a distribution this asset does not own.",
+        "The detector unit-norm precondition is enforced rather than relaxed, so a caller holding a slightly non-unit line-of-sight vector must normalise it first.",
+        "The single unit test that sweeps the +-4000 ulp neighbourhood takes about 27 seconds, because the relation is evaluated 8001 times. The frozen review measured the same band on three arms at once; the maintained test evaluates only this asset.",
+        "Public distribution licensing remains pending a human decision.",
+        "The frozen V5 review's comparisons against the retained route and the frozen V2, V3 and V4 candidates are not replayable from this repository: those arms live outside it, and the maintained tests neither reach them nor depend on them. The claims they established are recorded in this document's verification scope and marked as not replayed; a reviewer who needs to re-check them must return to the frozen review environment. The maintained tests protect the self-contained subset, and no public test requires an external checkout."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_dd_neutron_lab_energy.py",
+          "sha256": "5a5734623af4782fede86943121543a93e8d3d4bb2f996db4f744eee29c07bec"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
+      "formal_document": "catalog/examples/scirel.geometry.axisymmetric-equilibrium-grid-mapping.json",
+      "document_sha256": "eb435dfb253ff41e8e58bc9131487cfa9431e0b397424f124bec5b18f783aac1",
+      "implementation": "src/scirel/geometry/axisymmetric_grid_mapping.py",
+      "implementation_sha256": "7efafc12724b2f7c3c4f52b9328f23d85a6111ab94f0084bef4e616bfbed9992",
+      "public_api": {
+        "module": "scirel.geometry.axisymmetric_grid_mapping",
+        "symbol": "map_axisymmetric_equilibrium_to_cartesian_grid",
+        "signature": "map_axisymmetric_equilibrium_to_cartesian_grid(equilibrium, x_m, y_m, z_m)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "collections.abc",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Establishes that the declared tensor-product reconstruction reproduces the retained mapping relation and reports its clamping honestly. It does not establish that the equilibrium map itself is physically correct, nor that bilinear interpolation is adequate at any particular grid resolution, nor that the map's coordinate convention matches any specific device.",
+      "reused_limitations": [
+        "The interpolation is linear; a coarse map produces a piecewise-bilinear field with discontinuous derivatives across map cells.",
+        "Query points outside the map box silently receive the box-face value. The coverage mask and the clamp counters report this, but a caller that ignores them will not notice.",
+        "The retained asymmetry that only radii above the outer map radius are counted is preserved; radii below the inner map radius are clamped and counted by neither counter.",
+        "The relation assumes the axial coordinate is shared between the cylindrical map and the Cartesian grid; a target grid with a different axial origin would be mapped silently wrong.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_axisymmetric_grid_mapping.py",
+          "sha256": "71778a61641e73c1dc5bc8dd962b37fdb7ec743efac10f6199e1a2ed2ee6dda5"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-support",
+      "formal_document": "catalog/examples/scirel.geometry.axisymmetric-equilibrium-grid-support.json",
+      "document_sha256": "82648dca5e7e64284033414b0593b5fc87cf2b04d4e49cfdda80c7858c4ddaf8",
+      "implementation": "src/scirel/geometry/axisymmetric_equilibrium_grid_support.py",
+      "implementation_sha256": "468292de4d8f80c43182ea0ed276f48a9a2d99a8ab9652542f0bc745647d2bd6",
+      "public_api": {
+        "module": "scirel.geometry.axisymmetric_equilibrium_grid_support",
+        "symbol": "solve_axisymmetric_equilibrium_grid_mapping",
+        "signature": "solve_axisymmetric_equilibrium_grid_mapping(inputs=None, **kwargs)"
+      },
+      "declared_dependencies": [
+        "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
+        "scirel.geometry.material-support-classification"
+      ],
+      "direct_import_evidence": [
+        ".axisymmetric_grid_mapping",
+        ".material_support",
+        "__future__",
+        "collections.abc",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Establishes that the composition reproduces the retained entry and that its declared dependency closure, connectivity, and purity hold. It does not establish that either dependency is physically adequate for a device, and it does not establish the composition's suitability for grids or equilibria outside the tested contracts.",
+      "reused_limitations": [
+        "The composition inherits both dependencies' limitations, including the clamped out-of-box policy and the innermost-radius proxy for the magnetic axis.",
+        "The two added diagnostic masks are not part of the retained output set, so a caller that compares output key sets against the retained entry must account for them.",
+        "The graph has no feedback loop by design, so an equilibrium that would need to be re-derived from the reconstructed field is out of scope.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/graph_contracts/axisymmetric_equilibrium_grid_support/test_graph_axisymmetric_equilibrium_grid_support.py",
+          "sha256": "46feb8858b0b64e35eda8eedd68e00d81a10d8915d45bdb540564a98aa8d12dd"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.geometry.bilinear-grid-sampling",
+      "formal_document": "catalog/examples/scirel.geometry.bilinear-grid-sampling.json",
+      "document_sha256": "3ecf81cf2bc179c8b5aeb1c4cfd31f66cc58f2daeb4aad7cd197ad034e84bc0a",
+      "implementation": "src/scirel/geometry/bilinear_grid_sampling.py",
+      "implementation_sha256": "8b4f3506833e1cc4a00369959352d80e8dd45cc7f138f0304ac047bb84b4c251",
+      "public_api": {
+        "module": "scirel.geometry.bilinear_grid_sampling",
+        "symbol": "sample_rectilinear_field",
+        "signature": "sample_rectilinear_field(r_grid, z_grid, quantity, points)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Direct SciRel tests establish interpolation arithmetic and selected boundary behavior on small rectilinear grids, not the physical validity of any quantity supplied by a caller or expert recognition of this development record.",
+      "reused_limitations": [
+        "Only one real scalar quantity is sampled per call.",
+        "No coordinate-unit conversion or extrapolation is performed.",
+        "Public distribution licensing and SciRel expert recognition remain pending."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_bilinear_grid_sampling.py",
+          "sha256": "1d90a315ba620001c8243853fe1bf77984097b56938f3b818ba813bbf585df7c"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.geometry.complex-rectilinear-interpolation",
+      "formal_document": "catalog/examples/scirel.geometry.complex-rectilinear-interpolation.json",
+      "document_sha256": "ec17ae63c7781cc9dbb35b7ac3a039d4db6c9e12dc0f92bca794ed899c6518e0",
+      "implementation": "src/scirel/geometry/complex_rectilinear_interpolation.py",
+      "implementation_sha256": "101be468d0cecbf9cb2c72d5b269ec00b33d4bad7dd0af79fbc02b7dfdab6ef5",
+      "public_api": {
+        "module": "scirel.geometry.complex_rectilinear_interpolation",
+        "symbol": "interpolate_complex_rectilinear_field",
+        "signature": "interpolate_complex_rectilinear_field(source_axes_m, source_values, target_points_m)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "collections.abc",
+        "numpy",
+        "scipy.interpolate"
+      ],
+      "reused_evidence_ceiling": "Establishes the declared trilinear reconstruction and out-of-domain reporting contract against an independent reference; it does not establish that a particular source field is adequately resolved by the supplied grid, nor does it bound the interpolation error for any physical field.",
+      "reused_limitations": [
+        "Only trilinear (first-order) reconstruction is offered; no higher-order or conservative scheme is included.",
+        "valid_mask reports geometry only and must not be used as a finiteness test on the returned values.",
+        "No extrapolation is performed outside the tolerance-expanded box, so callers with points beyond the shell receive nan rather than a clamped edge value.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_complex_rectilinear_interpolation.py",
+          "sha256": "57c272b441e9e5f80068c385a509bddcd141f46278a3909814cfed4de451e40b"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.geometry.flux-surface-inverse-field-average",
+      "formal_document": "catalog/examples/scirel.geometry.flux-surface-inverse-field-average.json",
+      "document_sha256": "11e9bb2ed9231c56efd637b7598430c6897879c9d8572ffe9838f23e9735b0f0",
+      "implementation": "src/scirel/geometry/flux_surface_inverse_field_average.py",
+      "implementation_sha256": "5f54008eceeff7645b8f0f52343cefeb212df891fbcd5eeaca84a59628ad7616",
+      "public_api": {
+        "module": "scirel.geometry.flux_surface_inverse_field_average",
+        "symbol": "compute_flux_surface_inverse_field_average",
+        "signature": "compute_flux_surface_inverse_field_average(r_grid, z_grid, magnetic_field, field_line_points, quantity=None)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy",
+        "scipy.integrate",
+        "scipy.interpolate"
+      ],
+      "reused_evidence_ceiling": "Direct tests cover maintained cubic interpolation and discrete polyline quadrature on small grids; they do not validate the caller's path as a complete magnetic flux surface or prove source-project completeness.",
+      "reused_limitations": [
+        "The callable does not trace field lines or close a flux surface; its output name retains the historical relation name.",
+        "Negative radius coordinates are not rejected by the implementation and are outside the physical cylindrical interpretation.",
+        "Spline interpolation can fail the positivity precondition even when grid-node B values are positive.",
+        "Public distribution licensing and expert recognition remain pending."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_flux_surface_inverse_field_average.py",
+          "sha256": "a1a4b811a7c55f03d3cd704eef07b6f73f44d113d840aec9ba71c62936b18160"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.geometry.material-support-classification",
+      "formal_document": "catalog/examples/scirel.geometry.material-support-classification.json",
+      "document_sha256": "4c51d2fb9569ac61a5f359d67fa67b101afa7d6896215f98249b30c3c31ffb9f",
+      "implementation": "src/scirel/geometry/material_support.py",
+      "implementation_sha256": "8aebf91aef6c8d6dfedf94646bb6cb305d75d1e2456afb079bcc3281a2946b4b",
+      "public_api": {
+        "module": "scirel.geometry.material_support",
+        "symbol": "classify_material_support",
+        "signature": "classify_material_support(poloidal_flux_wb_per_rad, covered_mask, radii_m, axial_coordinate_m, *, separatrix_flux_wb_per_rad, closed_flux_side, xpoint_half_length_m, pml_cells, pec_mask)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "math",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Establishes that the declared classification reproduces the retained support mask, that the zero-thickness defect is replaced by an explicit precondition, and that the innermost-radius segment's interaction with the coverage mask is preserved and documented. It does not establish that the selected side of the separatrix flux is physically the confined region for any device, nor that the innermost grid radius coincides with the magnetic axis.",
+      "reused_limitations": [
+        "The magnetic axis is identified with the grid's innermost radius, which is the grid's r = 0 only when the grid contains the origin. On a grid that does not, the axis term marks a thin column at the smallest sampled radius instead of the axis.",
+        "The innermost-radius segment is intersected with the coverage mask, so it cannot add points when the equilibrium map's radial axis begins above the grid's minimum radius. The retained relation behaves the same way, so this is preserved rather than repaired.",
+        "A solver grid with no PML frame is rejected rather than supported. A no-frame run is a different relation and would need its own asset.",
+        "The relation is purely geometric in the sampled flux; it does not verify that the sampled flux is a physical equilibrium.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_material_support.py",
+          "sha256": "48c9cdcd678fb9c1c77fac0440d839c8c6f19c697c810fb717aa8c09cca5cfcd"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Documentation successor only: positive minimum-radius column may add eligible axis-proxy cells. Earlier broad exclusion contradicted implementation and existing independent tests; no numerical code changed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.geometry.planar-wavevector-projection",
+      "formal_document": "catalog/examples/scirel.geometry.planar-wavevector-projection.json",
+      "document_sha256": "6d2b397120be0b14ebf820a91e55cfca0cbecddda2e37818d567c3ac50c29705",
+      "implementation": "src/scirel/geometry/planar_wavevector.py",
+      "implementation_sha256": "5c3f5ccb384736d796b78d97fd0d3e386a76b1687f20ab401c09e8dee4667711",
+      "public_api": {
+        "module": "scirel.geometry.planar_wavevector",
+        "symbol": "project_planar_wavevector",
+        "signature": "project_planar_wavevector(*, k_grid=None, theta_rad=None, kx_grid=None, kz_grid=None)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "The source-free direct tests establish this callable's declared bounded arithmetic, boolean-pseudo-number rejection and failures in this tree. The PDRF/PDRK comparison runs described in docs/evaluations were performed once against saved source implementations during intake; they are provisional development evidence, are not re-runnable from this repository, and neither set proves source physics, a strict D1 freeze, or expert approval.",
+      "reused_limitations": [
+        "PDRF normalized input-card wave numbers lack a verified conversion to 1/m.",
+        "The PDRF/PDRK comparison covers only the mapped real numeric domain; SciRel additionally rejects string/boolean numeric surrogates, so the source comparison does not exercise this rejection.",
+        "Cartesian hypot intentionally differs from the PDRF square-and-sum overflow at large finite components.",
+        "PDRK scan-state semantics require a separate relation.",
+        "Strict source handoff, expert recognition and distribution licensing remain pending."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_planar_wavevector.py",
+          "sha256": "d9bd67b109dc45fd840acf630b551fd28ae47abe6596ac31b8d6d2650e222dbb"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.inference.latin-hypercube-sampling",
+      "formal_document": "catalog/examples/scirel.inference.latin-hypercube-sampling.json",
+      "document_sha256": "91511a267b2aad8352ebfd37219d6744735807bac21db9d518b359c3949a7bfb",
+      "implementation": "src/scirel/inference/latin_hypercube_sampling.py",
+      "implementation_sha256": "dd8171f58e24391f858b7bbf7edfd37c7e6a89c73d0c0aff594e75c7b27f99f1",
+      "public_api": {
+        "module": "scirel.inference.latin_hypercube_sampling",
+        "symbol": "sample_latin_hypercube",
+        "signature": "sample_latin_hypercube(*, bounds, n_samples, seed=None, fit_keys=None)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Direct tests establish selected deterministic stratification and input failures only; they do not certify statistical quality across RNG implementations, physical parameter validity or expert approval.",
+      "reused_limitations": [
+        "The implementation validates only selected bounds and does not enforce unique or nonempty fit_keys.",
+        "A fixed seed is not a promise of identical samples across different NumPy RNG versions.",
+        "Public distribution licensing and SciRel expert recognition remain pending."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_latin_hypercube_sampling.py",
+          "sha256": "bef2562f0f3c33618b518f7996e43f0b90bdc1c2b1ea148fe0b029957aabebb7"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.adaptive-neutral-velocity-mesh",
+      "formal_document": "catalog/examples/scirel.kinetic.adaptive-neutral-velocity-mesh.json",
+      "document_sha256": "7590d112821f0797974504470d28e925bcebc1c910c07992ac6784639fbf42bd",
+      "implementation": "src/scirel/kinetic/adaptive_neutral_velocity_mesh.py",
+      "implementation_sha256": "aeb4906d7aea8e8830616345fdd23d32de9e1e80bfd52eefa9e87863c3973ca9",
+      "public_api": {
+        "module": "scirel.kinetic.adaptive_neutral_velocity_mesh",
+        "symbol": "create_adaptive_neutral_velocity_mesh",
+        "signature": "create_adaptive_neutral_velocity_mesh(nv, ion_temperature_ev, requested_energy_ev=None, temperature_cap_ev=0.0)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "The maintained source-free tests establish the uniform and stretched formulas, requested-energy and cap behavior, input/failure contracts, and composition with cylindrical quadrature, shifted seed and moment reduction. A separate read-only replay matched five output fields on six valid saved points; rejection behavior intentionally differs. That replay is historical development evidence, not qualified-L1 provenance. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_adaptive_neutral_velocity_mesh.py",
+          "sha256": "7fd65b475d22675abc75036cddf4f812ac4b9672e4cd65b79efc07979604b05e"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.atomic-alpha-contraction",
+      "formal_document": "catalog/examples/scirel.kinetic.atomic-alpha-contraction.json",
+      "document_sha256": "275b95030f31b6ea9e38d2e1fcd06a16499f29e759f963176dc4ab324cf82598",
+      "implementation": "src/scirel/kinetic/atomic_alpha_contraction.py",
+      "implementation_sha256": "96f9dffb2150349263a2c16bef538e591a2efdd797cc32aefac55bd13e454733",
+      "public_api": {
+        "module": "scirel.kinetic.atomic_alpha_contraction",
+        "symbol": "contract_atomic_hydrogen_alpha_frequencies",
+        "signature": "contract_atomic_hydrogen_alpha_frequencies(SIG_CX, SIG_H_H, SIG_H_H2, SIG_H_P, fi_hat, ni, fH2, fH)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "The maintained direct tests establish output keys and shapes, finite real and alignment failures, a one-hot Fortran-order mapping, and exact small diagonal-matrix witnesses for all four family/carrier bindings including signed elastic cells. The environment-gated replay test can establish bit-identical agreement with the SHA-256-pinned saved KN1DPy implementation on its finite samples. That replay is provisional historical development evidence, not qualified-L1 provenance. No test establishes the relation against an external atomic-physics reference; the saved package records that residual as validation_oracle_gap.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Negative cells in the elastic families and negative densities are reproduced or contracted as given; their physical acceptability is an open expert question, not a runtime gate.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_alpha_contraction.py",
+          "sha256": "501e32fd67dfbc56614e06b02af407384ae5b5bf24f02b54dddf04745b22413f"
+        },
+        {
+          "path": "tests/operator_contracts/test_alpha_contraction_l1.py",
+          "sha256": "64a6d5041d493f54520908c31ed9182ceee5817fdcacf3204efd24759aff395c"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.atomic-scattered-sources-reduction",
+      "formal_document": "catalog/examples/scirel.kinetic.atomic-scattered-sources-reduction.json",
+      "document_sha256": "a740b0ddd00bd31eb57e4decafbae4d816eb202da1c5cbfe6eaa97868a11efa2",
+      "implementation": "src/scirel/kinetic/atomic_scattered_sources_reduction.py",
+      "implementation_sha256": "69e09b66d9b48bfb548212f4ff8d81ee72c4d6d049f921dbda152a028d2c9e34",
+      "public_api": {
+        "module": "scirel.kinetic.atomic_scattered_sources_reduction",
+        "symbol": "reduce_atomic_scattered_sources",
+        "signature": "reduce_atomic_scattered_sources(charge_exchange_source_distribution, elastic_source_distribution)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "The maintained source-free tests establish saved-order arithmetic, signed-value and fail-closed contracts. A separate read-only replay can compare bounded finite real inputs with the SHA-256-pinned saved implementation; it does not establish malformed-input parity, qualified-L1 provenance, expert recognition, version-level trust or distribution licensing.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_neutral_scattered_sources.py",
+          "sha256": "820cc7fdbd17473d0aad4fce6b46fc1b80e95ee8df13f2e8a46cf424af1e4ff1"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.axisymmetric-neutral-moments",
+      "formal_document": "catalog/examples/scirel.kinetic.axisymmetric-neutral-moments.json",
+      "document_sha256": "97988779a4e7b79e55bd975160e844792c2f16e20c9c414e022aa61b3cd6be30",
+      "implementation": "src/scirel/kinetic/axisymmetric_neutral_moments.py",
+      "implementation_sha256": "db6aa2f845a19325e92b55fc410f08435c574851198bb12035f9377fa9a71aee",
+      "public_api": {
+        "module": "scirel.kinetic.axisymmetric_neutral_moments",
+        "symbol": "reduce_axisymmetric_neutral_moments",
+        "signature": "reduce_axisymmetric_neutral_moments(distribution, vx, vr, cylindrical_volume, normalization_temperature_ev, isotope_mass_amu, molecularity, *, axial_quadrature=None, radial_quadrature=None, empty_slice_policy='reject')"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "The maintained source-free tests establish the relation against an independent Maxwellian-moment witness, the documented fail-closed contracts and the quadrature/seed composition. A separate read-only replay compares valid saved points against the SHA-256-pinned KN1DPy implementation; invalid-input behavior intentionally differs. That replay is historical development evidence, not qualified-L1 provenance. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+      "reused_limitations": [
+        "The sigma_zz = sigma_yy identification is the saved source's; an independent zz stress is not provided. Whether that identification is the intended published contract is carried over as an open expert question.",
+        "Under 'source_default', zero-density slices report the saved neutral values (flow 0 m/s, temperature 1 eV), which are not physical measurements.",
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_axisymmetric_neutral_moments.py",
+          "sha256": "24c6c07e50cdb7031ba1a33c51ca161572f08877b4ba0cda4508f812b8ecf311"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.cross-mesh-scalar-interpolation",
+      "formal_document": "catalog/examples/scirel.kinetic.cross-mesh-scalar-interpolation.json",
+      "document_sha256": "35ecfe25b6734d88f2a8e049cfecc20e5bf9055423dd1ca20d62ff732e37169c",
+      "implementation": "src/scirel/kinetic/cross_mesh_scalar_interpolation.py",
+      "implementation_sha256": "e7cce327d4626e6459756cc871b4c387c776b81451ea2003fecf2dd3049b4c98",
+      "public_api": {
+        "module": "scirel.kinetic.cross_mesh_scalar_interpolation",
+        "symbol": "interpolate_scalar_across_mesh",
+        "signature": "interpolate_scalar_across_mesh(fa, xa, xb, do_warn=0)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy",
+        "scipy",
+        "warnings"
+      ],
+      "reused_evidence_ceiling": "The maintained source-free tests establish the relation against a manufactured closed-form linear profile, zero fill, affine invariance, boundary-warning behavior and fail-closed contracts. A separate read-only comparison with the SHA-256-pinned saved KN1DPy implementation covers finite real valid points; rejection behavior intentionally differs. That comparison is historical development evidence, not qualified-L1 provenance. KN1DPy's strict D1 qualification is withdrawn; expert recognition, version-level trust and distribution licensing remain pending.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_cross_mesh_scalar_interpolation.py",
+          "sha256": "56db4e5951976cf5c7cede5677b24d4eef4c83160a66376c20af37d35a292353"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.cylindrical-velocity-quadrature",
+      "formal_document": "catalog/examples/scirel.kinetic.cylindrical-velocity-quadrature.json",
+      "document_sha256": "a9ef487e8fc3f2d5f76eea1bf4c183473a04c02120b842c0526c961ad8bd2f12",
+      "implementation": "src/scirel/kinetic/cylindrical_velocity_quadrature.py",
+      "implementation_sha256": "381ac005afc13d829e2b088205d5c26206cb2b0389bc29a1901561fce5d8e35d",
+      "public_api": {
+        "module": "scirel.kinetic.cylindrical_velocity_quadrature",
+        "symbol": "make_cylindrical_velocity_quadrature",
+        "signature": "make_cylindrical_velocity_quadrature(*, vr, vx)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "The maintained tests establish the construction against hand-derived values, the partition closure, the ghost-shell contract, the composition with the Maxwellian rate average, and the input contract including the documented repairs. The separately executed intake replay establishes bounded numerical agreement with the saved KN1DPy implementation on the compared meshes only. No test establishes that the ghost-face convention is the right discretization for any downstream scheme beyond the consumers documented here, that any caller mesh is physically valid, or that the source project behaves correctly outside the compared domain. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+      "reused_limitations": [
+        "The outer faces use the saved source's half-cell extrapolation (mirror the last node); schemes expecting different face placements must not reuse the measure unreviewed.",
+        "The asset performs no unit conversion: the meshes and every output share the caller's normalized velocity unit, and the physical thermal-speed scale is the caller's.",
+        "Non-finite and non-real mesh rejection are documented development repairs, not source behavior: a caller migrating from the saved implementation sees a ValueError where it previously saw coercion, an unrelated TypeError or a silently corrupted quadrature. The same holds for the nonnegative radial domain and the output representability check: a negative or float64-ceiling mesh that the saved implementation accepted with negative or non-finite measures is rejected here.",
+        "The nonnegative radial domain makes the saved source's positive-radial-speed convention explicit; a caller that believes a signed radial axis is meaningful is looking at a different relation.",
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_cylindrical_velocity_quadrature.py",
+          "sha256": "546182312e7b442a34bab0cb296f12715ce14f37f0a3a46be1cf713a3bef7b3f"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.elastic-frequency-channels",
+      "formal_document": "catalog/examples/scirel.kinetic.elastic-frequency-channels.json",
+      "document_sha256": "5bc11238411b216f4fbcce5f01b0e1d66ae191fcdbcd31031f34b6923eeaba50",
+      "implementation": "src/scirel/kinetic/elastic_frequency_channels.py",
+      "implementation_sha256": "e4260ffe97009b2f0f8f0e0ae99bf068507457c0a39033074573cf3cd3675d5c",
+      "public_api": {
+        "module": "scirel.kinetic.elastic_frequency_channels",
+        "symbol": "sum_elastic_frequency_channels",
+        "signature": "sum_elastic_frequency_channels(frequency_profiles)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "The maintained source-free tests establish the caller-order sum and fail-closed contracts. A separate read-only replay on bounded finite real inputs can compare with the SHA-256-pinned saved implementation; it does not establish malformed-input parity, qualified-L1 provenance, expert recognition, version-level trust or distribution licensing.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_neutral_frequency_assembly.py",
+          "sha256": "0dc8ec81b7568915cb1eb0b57efa787e8ea7db7f51cea4306bdec378ee3d66ff"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.elastic-regeneration-aggregation",
+      "formal_document": "catalog/examples/scirel.kinetic.elastic-regeneration-aggregation.json",
+      "document_sha256": "e65c72fe99b083806ecf355406a1a76adef3098306a763391f6d03a68963bc32",
+      "implementation": "src/scirel/kinetic/elastic_regeneration_aggregation.py",
+      "implementation_sha256": "328f3e76741892f6d6edce1d681425189a0e73a0969a3ba8ca02d6e1c2023335",
+      "public_api": {
+        "module": "scirel.kinetic.elastic_regeneration_aggregation",
+        "symbol": "aggregate_elastic_regeneration_source",
+        "signature": "aggregate_elastic_regeneration_source(frequencies_s_inv, regenerated_distributions)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "collections.abc",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "The maintained source-free tests establish saved-order arithmetic, nonnegative-channel and fail-closed contracts. A separate read-only replay can compare bounded finite real inputs with the SHA-256-pinned saved implementation; it does not establish malformed-input parity, qualified-L1 provenance, expert recognition, version-level trust or distribution licensing.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_neutral_scattered_sources.py",
+          "sha256": "820cc7fdbd17473d0aad4fce6b46fc1b80e95ee8df13f2e8a46cf424af1e4ff1"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.generation-accumulation-update",
+      "formal_document": "catalog/examples/scirel.kinetic.generation-accumulation-update.json",
+      "document_sha256": "05c3a16a0873ff72e4342f3a231f01142f397f9f5dfab42817943ac88278bdfe",
+      "implementation": "src/scirel/kinetic/generation_accumulation_update.py",
+      "implementation_sha256": "16ed9c15e9b0833142b528a265c831dac4c82f4df77918dc8775362fd40b4c69",
+      "public_api": {
+        "module": "scirel.kinetic.generation_accumulation_update",
+        "symbol": "update_neutral_generation_accumulation",
+        "signature": "update_neutral_generation_accumulation(state, generation_distribution, generation_density_m3)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "collections.abc",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Source-free direct tests cover first and later calls, signed distribution cells, caller-state immutability, state consistency and overflow failures. Separate SHA-256-pinned read-only replay matches bounded valid saved results and selected rejections. This is historical development evidence, not qualified-L1 provenance or an external physics oracle.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_convergence_accumulation.py",
+          "sha256": "d043f0efcb6f7e2555a6be96e2ef08ba2f0dcb70e4a6485047db60aebd332b66"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.generation-density-reduction",
+      "formal_document": "catalog/examples/scirel.kinetic.generation-density-reduction.json",
+      "document_sha256": "00ecaa48f0cee4fbde4a463a20c1b3a0c9fcd0907c73f2617c399ae703c33aa1",
+      "implementation": "src/scirel/kinetic/generation_density_reduction.py",
+      "implementation_sha256": "426e6dfd9add91e5487360dfeaac0315dbfa8aa97c32bcac05537ecb78e1dee9",
+      "public_api": {
+        "module": "scirel.kinetic.generation_density_reduction",
+        "symbol": "reduce_generation_density",
+        "signature": "reduce_generation_density(distribution, cylindrical_weight, dvx)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Maintained tests establish the three reduction paths and declared failure behavior. Read-only digest-bound archived-source replay found exact agreement on one finite case per weight path; input coercion and overflow behavior differ as declared. This does not prove all-input source parity, qualified D1, global applicability, expert approval or release.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Real-input rejection and finite-output enforcement differ from the archived implementation's coercion and overflow behavior.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_thermal_speed_and_density_reduction.py",
+          "sha256": "df6edac27ecf5144b3a24511fa805ab816ad3159082626533f4e799b78a1d0da"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.incoming-boundary-flux-normalization",
+      "formal_document": "catalog/examples/scirel.kinetic.incoming-boundary-flux-normalization.json",
+      "document_sha256": "16cf61995ed1dcbc44658cf9dc609d1738bff91724e1822bbc935213ee097021",
+      "implementation": "src/scirel/kinetic/incoming_boundary_flux_normalization.py",
+      "implementation_sha256": "c2a0aee42faaf812202050e9d96f4832daa067cea73068e21293cd769e8e7555",
+      "public_api": {
+        "module": "scirel.kinetic.incoming_boundary_flux_normalization",
+        "symbol": "normalize_incoming_neutral_boundary",
+        "signature": "normalize_incoming_neutral_boundary(boundary_shape, vx, cylindrical_volume, thermal_speed_m_s, target_flux_m2_s)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Maintained tests establish the positive-half integral, scale, zero target and declared failure behavior. Read-only digest-bound archived-source replay found exact agreement on three finite valid target cases; input and non-finite-output behavior differ as declared. This does not prove all-input source parity, qualified D1, global applicability, expert approval or release.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "The historical function accepts some coercible non-real inputs and does not fully enforce finite quadrature or derived outputs; SciRel rejects them. A zero target is valid and produces zero scale, contrary to the intake document's positive-scale wording.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_neutral_normalizations.py",
+          "sha256": "5a2a87e5e6d2281d4b4602082a03c6f09bc04d0b8ed1396ce5b485d8bd934bac"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.kn1d-outer-convergence",
+      "formal_document": "catalog/examples/scirel.kinetic.kn1d-outer-convergence.json",
+      "document_sha256": "91efd8ea8c408cea70e237880052c32285da32f2a1e383a9720dd3f7ddf27024",
+      "implementation": "src/scirel/kinetic/kn1d_outer_convergence.py",
+      "implementation_sha256": "725214b5156e18c227d193a41dd52b1b776c9586834a942a5fb514e487367790",
+      "public_api": {
+        "module": "scirel.kinetic.kn1d_outer_convergence",
+        "symbol": "evaluate_kn1d_outer_convergence",
+        "signature": "evaluate_kn1d_outer_convergence(previous_density_m3, current_density_m3, truncate)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Source-free direct tests cover the top-level truncate threshold, equality and input/overflow failures. Separate SHA-256-pinned read-only replay matches bounded valid saved results. This is historical development evidence, not qualified-L1 provenance or an external physics oracle.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_convergence_accumulation.py",
+          "sha256": "d043f0efcb6f7e2555a6be96e2ef08ba2f0dcb70e4a6485047db60aebd332b66"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.molecular-alpha-contraction",
+      "formal_document": "catalog/examples/scirel.kinetic.molecular-alpha-contraction.json",
+      "document_sha256": "d77415c5f95196f14438a74a7b1e1cbe5f0f646d4bf65ad47363a24772986576",
+      "implementation": "src/scirel/kinetic/molecular_alpha_contraction.py",
+      "implementation_sha256": "3b0e5eb5998b206efece4e3202cd3a17d6e5d02fc55625b8290bb33111b50d21",
+      "public_api": {
+        "module": "scirel.kinetic.molecular_alpha_contraction",
+        "symbol": "contract_molecular_hydrogen_alpha_frequencies",
+        "signature": "contract_molecular_hydrogen_alpha_frequencies(SIG_CX, SIG_H2_H, SIG_H2_P, fH, fHp_hat, fi_hat, n, nHP, ni_correct=False)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "The maintained direct tests establish output keys and shapes, finite real and alignment failures, exact small diagonal-matrix witnesses for all three family/carrier bindings, and both ni_correct branches including clipping at zero. The environment-gated replay test can establish bit-identical agreement with the SHA-256-pinned saved KN1DPy implementation on its finite samples after the registered Alpha_CX reshape repair. That replay is provisional historical development evidence, not qualified-L1 provenance. No test establishes the relation against an external atomic-physics reference; the saved package records that residual as validation_oracle_gap.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "The Alpha_CX reshape repair relative to the raw kinetic_h2.py source is registered, not silently absorbed; its scientific framing remains an expert-review item.",
+        "Negative cells in the elastic families and negative densities are reproduced or contracted as given; their physical acceptability is an open expert question, not a runtime gate.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_alpha_contraction.py",
+          "sha256": "501e32fd67dfbc56614e06b02af407384ae5b5bf24f02b54dddf04745b22413f"
+        },
+        {
+          "path": "tests/operator_contracts/test_alpha_contraction_l1.py",
+          "sha256": "64a6d5041d493f54520908c31ed9182ceee5817fdcacf3204efd24759aff395c"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.molecular-scattered-sources-reduction",
+      "formal_document": "catalog/examples/scirel.kinetic.molecular-scattered-sources-reduction.json",
+      "document_sha256": "6e5e9ba834cbbf692eba87f845eacc14cd6953bd8bfa0cced440f93217db1061",
+      "implementation": "src/scirel/kinetic/molecular_scattered_sources_reduction.py",
+      "implementation_sha256": "d0303878932cbc2898bc5f2ad887d2c51627a8627b9e370f7f4b05a7f3956f9a",
+      "public_api": {
+        "module": "scirel.kinetic.molecular_scattered_sources_reduction",
+        "symbol": "reduce_molecular_scattered_sources",
+        "signature": "reduce_molecular_scattered_sources(wall_source_distribution, charge_exchange_source_distribution, elastic_source_distribution)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "The maintained source-free tests establish saved-order arithmetic, signed-value and fail-closed contracts. A separate read-only replay can compare bounded finite real inputs with the SHA-256-pinned saved implementation; it does not establish malformed-input parity, qualified-L1 provenance, expert recognition, version-level trust or distribution licensing.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_neutral_scattered_sources.py",
+          "sha256": "820cc7fdbd17473d0aad4fce6b46fc1b80e95ee8df13f2e8a46cf424af1e4ff1"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.neutral-boltzmann-rhs",
+      "formal_document": "catalog/examples/scirel.kinetic.neutral-boltzmann-rhs.json",
+      "document_sha256": "ab90c9a0f7025aab0f4555a1f33c0811fcd4a5a21f5c32c91af6b0f13c7ec726",
+      "implementation": "src/scirel/kinetic/neutral_boltzmann_rhs.py",
+      "implementation_sha256": "cc106c10fbb10be58ded1e98c4d4135f1321d433636bb565af0dad4256c86a07",
+      "public_api": {
+        "module": "scirel.kinetic.neutral_boltzmann_rhs",
+        "symbol": "assemble_neutral_boltzmann_rhs",
+        "signature": "assemble_neutral_boltzmann_rhs(thermal_speed_m_s, coefficient_source_distribution, charge_exchange_source_sum, collision_frequency_s_inv, total_distribution, elastic_source_sum, wall_source_sum)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Source-free direct tests cover the signed sum, input and overflow contracts. A separate read-only SHA-256-pinned replay compares bounded valid outputs bit for bit with the saved implementation. The archived comparison is historical development evidence, not qualified-L1 provenance or an external transport-model oracle.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_transport_step.py",
+          "sha256": "1f9686e896a40de163d72279ac7ce9110ec021c7d886506fb23f1282e749e20b"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.neutral-generation-propagation",
+      "formal_document": "catalog/examples/scirel.kinetic.neutral-generation-propagation.json",
+      "document_sha256": "8b3a45221b3a9c0eaeda31cf965e54e7de10d0b1f6b337162f7c1d6a582b92a1",
+      "implementation": "src/scirel/kinetic/neutral_generation_propagation.py",
+      "implementation_sha256": "610c7042024a411b525af7e9c580acd1d4d862bb781a05e9eb424084514982e0",
+      "public_api": {
+        "module": "scirel.kinetic.neutral_generation_propagation",
+        "symbol": "propagate_neutral_generation",
+        "signature": "propagate_neutral_generation(vx, Ak, Bk, Fk, Ck, Dk, Gk, generation_kind, incoming_boundary=None, scattered_source_distribution=None)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Source-free direct tests cover both recurrence branches, the right-boundary convention, input and overflow contracts. A separate read-only SHA-256-pinned replay compares bounded valid outputs bit for bit with the saved implementation. The archived comparison is historical development evidence, not qualified-L1 provenance or an external transport-model oracle.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_transport_step.py",
+          "sha256": "1f9686e896a40de163d72279ac7ce9110ec021c7d886506fb23f1282e749e20b"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.neutral-generation-stopping",
+      "formal_document": "catalog/examples/scirel.kinetic.neutral-generation-stopping.json",
+      "document_sha256": "e805a16bd7b2cb2e88f076be17ad4578bb212ae43589798be3dd714fea3c4db1",
+      "implementation": "src/scirel/kinetic/neutral_generation_stopping.py",
+      "implementation_sha256": "87475ebc11199981b41982e919179357a38ac916804e169e15c07916ab82202f",
+      "public_api": {
+        "module": "scirel.kinetic.neutral_generation_stopping",
+        "symbol": "evaluate_neutral_generation_stopping",
+        "signature": "evaluate_neutral_generation_stopping(generation_density_m3, accumulated_density_m3, truncate, seed_iteration_enabled=False, seed_error=None)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Source-free direct tests cover ratio-of-max, strict stop branches, control parameters and overflow failures. Separate SHA-256-pinned read-only replay matches bounded valid saved results and selected rejections. This is historical development evidence, not qualified-L1 provenance or an external physics oracle.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_convergence_accumulation.py",
+          "sha256": "d043f0efcb6f7e2555a6be96e2ef08ba2f0dcb70e4a6485047db60aebd332b66"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.neutral-total-collision-frequency",
+      "formal_document": "catalog/examples/scirel.kinetic.neutral-total-collision-frequency.json",
+      "document_sha256": "0bf5ae6a3c092ee33925fb19cde74a57a89fc2dad20060d3937d5f5d425792c4",
+      "implementation": "src/scirel/kinetic/neutral_total_collision_frequency.py",
+      "implementation_sha256": "98fa797d2886288f7bead1a4e35b9e6ea4974ceeff1578b1a2f947428472861f",
+      "public_api": {
+        "module": "scirel.kinetic.neutral_total_collision_frequency",
+        "symbol": "assemble_neutral_total_collision_frequency",
+        "signature": "assemble_neutral_total_collision_frequency(vr, vx, base_loss_frequency_s_inv, elastic_frequency_s_inv, pipe_diameter_m, charge_exchange_frequency_s_inv=None, charge_exchange_enabled=True)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "The maintained source-free tests establish the wall/CX assembly and fail-closed contracts. A separate read-only replay on bounded finite real inputs can compare with the SHA-256-pinned saved implementation; it does not establish malformed-input parity, qualified-L1 provenance, expert recognition, version-level trust or distribution licensing.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_neutral_frequency_assembly.py",
+          "sha256": "0dc8ec81b7568915cb1eb0b57efa787e8ea7db7f51cea4306bdec378ee3d66ff"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.neutral-upwind-transport-coefficients",
+      "formal_document": "catalog/examples/scirel.kinetic.neutral-upwind-transport-coefficients.json",
+      "document_sha256": "0c01f9dc6ff84f268a213136233421562b31849db22c6abfacd27cd86ab10300",
+      "implementation": "src/scirel/kinetic/upwind_transport_coefficients.py",
+      "implementation_sha256": "f14dfc9ad1e6cf08f794177baf7aaa81ace395ca7e541685dade63dd5040860e",
+      "public_api": {
+        "module": "scirel.kinetic.upwind_transport_coefficients",
+        "symbol": "assemble_neutral_upwind_transport_coefficients",
+        "signature": "assemble_neutral_upwind_transport_coefficients(x_m, vx, collision_frequency_s_inv, source_distribution)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Source-free direct tests cover the coefficient formula, branch separation, input and overflow contracts. A separate read-only SHA-256-pinned replay compares bounded valid outputs bit for bit with the saved implementation. The archived comparison is historical development evidence, not qualified-L1 provenance or an external transport-model oracle.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_transport_step.py",
+          "sha256": "1f9686e896a40de163d72279ac7ce9110ec021c7d886506fb23f1282e749e20b"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.outer-seed-convergence",
+      "formal_document": "catalog/examples/scirel.kinetic.outer-seed-convergence.json",
+      "document_sha256": "4912f08d0647313804104976ca0d8fd5fc23ff2965556173c84e143a2347d49f",
+      "implementation": "src/scirel/kinetic/outer_seed_convergence.py",
+      "implementation_sha256": "c71901b1bd325fc0917746f1a12216a0a19eb437eb1a9267b7e2780b95c89708",
+      "public_api": {
+        "module": "scirel.kinetic.outer_seed_convergence",
+        "symbol": "evaluate_neutral_outer_seed_convergence",
+        "signature": "evaluate_neutral_outer_seed_convergence(previous_density_m3, current_density_m3, truncate)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Source-free direct tests distinguish ratio-of-max from per-node division, enforce strict threshold equality and input/overflow failures. Separate SHA-256-pinned read-only replay matches bounded valid saved results. This is historical development evidence, not qualified-L1 provenance or an external physics oracle.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_convergence_accumulation.py",
+          "sha256": "d043f0efcb6f7e2555a6be96e2ef08ba2f0dcb70e4a6485047db60aebd332b66"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.shifted-maxwellian-seed",
+      "formal_document": "catalog/examples/scirel.kinetic.shifted-maxwellian-seed.json",
+      "document_sha256": "527a1943e7c752d170e328190e2fb35ff8344b04a51ea298170dbacf2467ea62",
+      "implementation": "src/scirel/kinetic/shifted_maxwellian_seed.py",
+      "implementation_sha256": "d3a19a2c4a4f112f4a5838bc8a2cfe050df9277aaf78cc13e7734bb1ad7ab707",
+      "public_api": {
+        "module": "scirel.kinetic.shifted_maxwellian_seed",
+        "symbol": "build_shifted_maxwellian_seed",
+        "signature": "build_shifted_maxwellian_seed(*, vr, vx, tnorm_ev, shifted_vx_m_s, temperature_ev, mass_amu, molecule_count, cylindrical_volume)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        ".._validation",
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "The maintained tests establish the seed relation against an in-file independent formulation, the clamp and far-shift limits, the molecule-count scaling, the input contract, and the composition chain with the quadrature and the rate average. The separately executed intake replay establishes bounded numerical agreement with the saved KN1DPy implementation on the compared holdouts only. No test establishes that the pre-compensation seed is physically adequate for any caller purpose without the saved source's moment-compensation loop, that any caller mesh or volume measure is physically valid, or that the source project behaves correctly outside the compared domain. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+      "reused_limitations": [
+        "The seed is explicitly the pre-compensation stage: the saved source's moment-compensation loop is outside this leaf, and the saved chain does not end at this distribution.",
+        "The constants are the saved source's historical values, not current best estimates; AMU_KG names the saved hydrogen mass rather than standard amu, and no conversion is performed.",
+        "The exponent floor is a numerical device: distribution values in the floored region carry no exponential resolution, and the uniform-limit regime must not be read as a physical Maxwellian.",
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_shifted_maxwellian_seed.py",
+          "sha256": "7df1a76242357acbdd02401705b615f27f59b126f51081dd70c71652ccc7a424"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.simple-charge-exchange-source",
+      "formal_document": "catalog/examples/scirel.kinetic.simple-charge-exchange-source.json",
+      "document_sha256": "31d9c7710891a22d588b709d9c64d8a2fc576ad1bf6ca25cd87d153da40d7955",
+      "implementation": "src/scirel/kinetic/simple_charge_exchange_source.py",
+      "implementation_sha256": "ba8f478054b9e1e00b74c52b72c44d91e76a9d044fac9f9ce9a1c1faa59aa7d1",
+      "public_api": {
+        "module": "scirel.kinetic.simple_charge_exchange_source",
+        "symbol": "assemble_simple_charge_exchange_source",
+        "signature": "assemble_simple_charge_exchange_source(target_distribution, charge_exchange_frequency_s_inv, previous_generation_distribution, cylindrical_weight, dvx)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "The maintained source-free tests establish saved-order arithmetic, signed-value and fail-closed contracts. A separate read-only replay can compare bounded finite real inputs with the SHA-256-pinned saved implementation; it does not establish malformed-input parity, qualified-L1 provenance, expert recognition, version-level trust or distribution licensing.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_neutral_scattered_sources.py",
+          "sha256": "820cc7fdbd17473d0aad4fce6b46fc1b80e95ee8df13f2e8a46cf424af1e4ff1"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.spatial-source-shape-normalization",
+      "formal_document": "catalog/examples/scirel.kinetic.spatial-source-shape-normalization.json",
+      "document_sha256": "cf70cf9a4da0563ea18c739a4d04a17b084cdd5f5e1969879f8bedf391a4ae90",
+      "implementation": "src/scirel/kinetic/spatial_source_shape_normalization.py",
+      "implementation_sha256": "8b0c3e67bd052d0a9a044f2a8a8b944af4fde5ea6a7d2f8b8cbefd667ec82040",
+      "public_api": {
+        "module": "scirel.kinetic.spatial_source_shape_normalization",
+        "symbol": "normalize_spatial_source_shape",
+        "signature": "normalize_spatial_source_shape(source, x_m)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy",
+        "scipy.integrate"
+      ],
+      "reused_evidence_ceiling": "Maintained tests establish the trapezoidal normalization and declared failure behavior. Read-only digest-bound archived-source replay found exact agreement on three finite valid profiles; coercion behavior differs as declared. This does not prove all-input source parity, qualified D1, global applicability, expert approval or release.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "The historical function accepts boolean and numeric-string coercions, and complex input may raise TypeError; SciRel consistently rejects these as invalid real-array inputs.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_neutral_normalizations.py",
+          "sha256": "5a2a87e5e6d2281d4b4602082a03c6f09bc04d0b8ed1396ce5b485d8bd934bac"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.terminal-conservation-diagnostic",
+      "formal_document": "catalog/examples/scirel.kinetic.terminal-conservation-diagnostic.json",
+      "document_sha256": "721e8bec727434c2dd000383049aba4909f423f4a8e96f00d8d798a191a6a8f8",
+      "implementation": "src/scirel/kinetic/terminal_conservation_diagnostic.py",
+      "implementation_sha256": "096656a18a5667d2fa71a3aed2ecc3c9f7cc9ee03c6736827c1201902d63de2a",
+      "public_api": {
+        "module": "scirel.kinetic.terminal_conservation_diagnostic",
+        "symbol": "reduce_qh2_total_conservation_diagnostic",
+        "signature": "reduce_qh2_total_conservation_diagnostic(axial_position_m, total_heat_flux_profile_w_m2, total_energy_transfer_rate_profile_w_m3)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Direct tests and optional saved replay establish this discrete diagnostic on tested profiles, not the upstream total profile normalization, full boundary balance, whole-source D1 qualification or expert approval.",
+      "reused_limitations": [
+        "The saved source's strict D1 qualification is withdrawn; replay is historical development evidence only.",
+        "Absolute physical meaning of the upstream total profiles and their unit labels requires expert review.",
+        "The final node is not independently checked and a zero error does not establish a complete conservation law.",
+        "Public distribution licensing remains pending."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_terminal_molecular_conservation.py",
+          "sha256": "3a0c1cf3fa09f54984774bd66efd949b52afeec7fbbde1a481b7d46e65cdc66e"
+        },
+        {
+          "path": "tests/operator_contracts/test_terminal_molecular_conservation_l1.py",
+          "sha256": "98acfdf95214ce098cb33bdfeb3de3642220980fbffa7fefd3fdeb8a806c9585"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.terminal-energy-transfer-reduction",
+      "formal_document": "catalog/examples/scirel.kinetic.terminal-energy-transfer-reduction.json",
+      "document_sha256": "0e8b447e101ee158ead0d743aed45a0bcf9c770a2c8ce2b3a3fe6367b9a832fc",
+      "implementation": "src/scirel/kinetic/terminal_energy_transfer_reduction.py",
+      "implementation_sha256": "9d10e3dcfe6cfd2b0e440dfa8f20a63a222e9b91db70ccea3091547b567bb7b9",
+      "public_api": {
+        "module": "scirel.kinetic.terminal_energy_transfer_reduction",
+        "symbol": "reduce_terminal_molecular_energy_transfer",
+        "signature": "reduce_terminal_molecular_energy_transfer(radial_velocity_normalized, axial_velocity_normalized, mass_ratio, thermal_speed_m_s, terminal_distribution, collision_rhs, cylindrical_weight, dvx, external_molecular_source_profile_m3_s)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Direct and optional saved comparisons establish the finite discrete RHS reduction and boundary differences on tested carriers. They do not establish the upstream terminal distribution or RHS, absolute physical normalization, whole-source D1 qualification or expert approval.",
+      "reused_limitations": [
+        "The source's strict D1 qualification is withdrawn; historical parity is only bounded development evidence.",
+        "The source-labeled momentum unit and absolute distribution/RHS normalization require expert review.",
+        "Public distribution licensing remains pending."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_terminal_molecular_energy_transfer.py",
+          "sha256": "2f9e01732fd6c268358fdeb4088b16afc4cabe0406307d5faa28a86d147300ef"
+        },
+        {
+          "path": "tests/operator_contracts/test_terminal_molecular_energy_transfer_l1.py",
+          "sha256": "ee184a41e7c4af821053f3f035558ef4d61128535b5c5720653a1093297c3b8a"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.terminal-flux-velocity-reduction",
+      "formal_document": "catalog/examples/scirel.kinetic.terminal-flux-velocity-reduction.json",
+      "document_sha256": "dcb1bca80a6cdd0cab96ba6a01586871f9e4b677343b8e19d90e51dce4e7381a",
+      "implementation": "src/scirel/kinetic/terminal_flux_velocity_reduction.py",
+      "implementation_sha256": "5206cab8b5c578d51949c807dc11db2e603ccb846942eaee6c649551b23e353c",
+      "public_api": {
+        "module": "scirel.kinetic.terminal_flux_velocity_reduction",
+        "symbol": "reduce_terminal_molecular_flux_velocity",
+        "signature": "reduce_terminal_molecular_flux_velocity(vx, thermal_speed_m_s, terminal_distribution, cylindrical_weight, dvx)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Direct and optional saved comparisons establish the stated finite discrete relation and boundary differences on tested carriers. They do not establish the upstream terminal distribution, physical normalization, whole-source D1 qualification or expert approval.",
+      "reused_limitations": [
+        "The source's strict D1 qualification is withdrawn; historical parity is only bounded development evidence.",
+        "The physical normalization of the supplied distribution and source flux label requires expert review.",
+        "Public distribution licensing remains pending."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_terminal_molecular_flux_velocity.py",
+          "sha256": "7792d85ec23eeb8ce2ed69be7b18e3401b73716effed313bdf67f30a3458cf98"
+        },
+        {
+          "path": "tests/operator_contracts/test_terminal_molecular_flux_velocity_l1.py",
+          "sha256": "7cb3760dbabc801a484911f9c82b170f1f42cd13d1b511f395d912fc994f2506"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.terminal-heat-flux-reduction",
+      "formal_document": "catalog/examples/scirel.kinetic.terminal-heat-flux-reduction.json",
+      "document_sha256": "a60593c168642610ed06fe0d3667a3a6ac148c8e7fbf44dee552ac5edff460dc",
+      "implementation": "src/scirel/kinetic/terminal_heat_flux_reduction.py",
+      "implementation_sha256": "abde9a993e921893b0e1b12514fdcbd1a7fd00d2b47b1a7fd8a0e0a514b90f1e",
+      "public_api": {
+        "module": "scirel.kinetic.terminal_heat_flux_reduction",
+        "symbol": "reduce_terminal_molecular_heat_flux",
+        "signature": "reduce_terminal_molecular_heat_flux(radial_velocity_normalized, axial_velocity_normalized, mass_ratio, thermal_speed_m_s, terminal_distribution, cylindrical_weight, dvx)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Direct and optional saved comparisons establish the finite discrete heat-flux relation and boundary differences on tested carriers. They do not establish the upstream terminal distribution, physical normalization, whole-source D1 qualification or expert approval.",
+      "reused_limitations": [
+        "The source's strict D1 qualification is withdrawn; historical parity is only bounded development evidence.",
+        "The physical normalization of the supplied distribution requires expert review.",
+        "Public distribution licensing remains pending."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_terminal_molecular_heat_flux.py",
+          "sha256": "65e2c3458e9a0259edc6248b6dcfecb62c296c13b4b68e8abe64c04b6474057e"
+        },
+        {
+          "path": "tests/operator_contracts/test_terminal_molecular_heat_flux_l1.py",
+          "sha256": "d3d2c0c8e689a4c8a8062b711d9351110ad876b4b60422c4d6825b0b2670eb14"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.terminal-ion-state-reduction",
+      "formal_document": "catalog/examples/scirel.kinetic.terminal-ion-state-reduction.json",
+      "document_sha256": "2533a15223ecec9c0abe3d8d502a0426414fcc29346bc7714fbd3f3bcd4149d6",
+      "implementation": "src/scirel/kinetic/terminal_ion_state_reduction.py",
+      "implementation_sha256": "4edf2d644e0dd4f5082156eb37627d79c3e01b067991ddbebcf8b63e17f978cb",
+      "public_api": {
+        "module": "scirel.kinetic.terminal_ion_state_reduction",
+        "symbol": "reduce_terminal_molecular_ion_state",
+        "signature": "reduce_terminal_molecular_ion_state(molecular_density_m3, neutral_density_m3, ion_temperature_ev, mass_ratio, ionization_rate_s_inv, reaction_rate_table_s_inv, loss_frequency_s_inv)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Direct and optional saved comparisons establish the finite discrete algebraic relation and boundary differences on tested carriers. They do not establish rate-table provenance, absolute units, a full H2+ kinetic closure, whole-source D1 qualification or expert approval.",
+      "reused_limitations": [
+        "The source's strict D1 qualification is withdrawn; historical parity is only bounded development evidence.",
+        "The density-scaled ionization/reaction-rate units and absolute H2+ density normalization require expert review.",
+        "Public distribution licensing remains pending."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_terminal_molecular_ion_state.py",
+          "sha256": "86e5759af176711076290ef16c9e91fa04705af956e7f79128f2cd2dac4351e2"
+        },
+        {
+          "path": "tests/operator_contracts/test_terminal_molecular_ion_state_l1.py",
+          "sha256": "c662d61ad12ef5476b21446b5aa95851335bd1d4973699771e125f71324365bc"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.terminal-pressure-temperature-reduction",
+      "formal_document": "catalog/examples/scirel.kinetic.terminal-pressure-temperature-reduction.json",
+      "document_sha256": "27b0e199c2eaba5423913b8d1ddcc1622d5432d0c02652ff995719a0a9d216b8",
+      "implementation": "src/scirel/kinetic/terminal_pressure_temperature_reduction.py",
+      "implementation_sha256": "880c859289e674548b304cde0ea8e4be7c645be6dd0f1418770a62f8dbc72fd8",
+      "public_api": {
+        "module": "scirel.kinetic.terminal_pressure_temperature_reduction",
+        "symbol": "reduce_terminal_molecular_pressure_temperature",
+        "signature": "reduce_terminal_molecular_pressure_temperature(vr, vx, mass_ratio, thermal_speed_m_s, terminal_distribution, cylindrical_weight, dvx)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "numpy"
+      ],
+      "reused_evidence_ceiling": "Direct and optional saved comparisons establish the finite discrete centered-moment relation and boundary differences on tested carriers. They do not establish the upstream terminal distribution, physical normalization, whole-source D1 qualification or expert approval.",
+      "reused_limitations": [
+        "The source's strict D1 qualification is withdrawn; historical parity is only bounded development evidence.",
+        "The physical normalization of the supplied distribution requires expert review.",
+        "Public distribution licensing remains pending."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_terminal_molecular_pressure_temperature.py",
+          "sha256": "ee5c3abbddbbbcb49b0eafbdb1f57a6f7919ff63f36f35609021358d90d60de6"
+        },
+        {
+          "path": "tests/operator_contracts/test_terminal_molecular_pressure_temperature_l1.py",
+          "sha256": "7ae357bf6320adbf9c0cfc2ef9e81259759c00da346eb3f210db537702f81a06"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "Scientific code/formal document unchanged; current unified runtime, public export, exact example and installed contract evidence renewed.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    },
+    {
+      "asset_id": "scirel.kinetic.thermal-speed-scale",
+      "formal_document": "catalog/examples/scirel.kinetic.thermal-speed-scale.json",
+      "document_sha256": "82db28f3984b1d2b1dfeccb3f4e07654867635975faaeb9c0a1052c45695ca8a",
+      "implementation": "src/scirel/kinetic/thermal_speed_scale.py",
+      "implementation_sha256": "ecd2b0fccfeea898d8b2876aa1d79634d46e3d8d31e1bc174500fe9226d45408",
+      "public_api": {
+        "module": "scirel.kinetic.thermal_speed_scale",
+        "symbol": "compute_thermal_speed_m_s",
+        "signature": "compute_thermal_speed_m_s(temperature_ev, mass_amu)"
+      },
+      "declared_dependencies": [],
+      "direct_import_evidence": [
+        "__future__",
+        "decimal",
+        "math",
+        "numpy",
+        "sys"
+      ],
+      "reused_evidence_ceiling": "Maintained tests establish the frozen-constant formula and declared failure behavior. Read-only digest-bound archived-source replay found exact agreement at three finite positive scalar points; coercion and underflow behavior differ as declared. This does not prove all-input source parity, qualified D1, global applicability, expert approval or release.",
+      "reused_limitations": [
+        "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+        "The historical mass_amu name denotes multiples of the saved hydrogen mass, not the standard atomic mass unit; source coercion of booleans and numeric strings and an underflowed mass conversion are rejected here.",
+        "Public distribution licensing remains pending a human decision."
+      ],
+      "tests": [
+        {
+          "path": "tests/operator_contracts/test_thermal_speed_and_density_reduction.py",
+          "sha256": "df6edac27ecf5144b3a24511fa805ab816ad3159082626533f4e799b78a1d0da"
+        }
+      ],
+      "decision": "INCLUDE_BOUNDED_SCIENTIFIC_CONTRACT",
+      "new_work": "D2 successor: exact-float Decimal sqrt fallback for dangerous intermediate underflow/overflow; ordinary operation order and constants retained. Truly nonrepresentable final speed still rejected.",
+      "source_wide_completion": false,
+      "human_approval": false,
+      "release_approval": false
+    }
+  ],
+  "license_decision": "Internal technical integration only; existing per-asset pending rights and all historical notices retained. Not public redistribution authorization."
+}

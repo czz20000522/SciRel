@@ -129,3 +129,65 @@ def test_complex_mapping_module_drift_fails(tmp_path,monkeypatch):
     changed=tmp_path/'changed.py';changed.write_bytes(Path(module.__file__).read_bytes()+b'\n# changed binding\n')
     monkeypatch.setattr(module,'__file__',str(changed))
     with pytest.raises(ValueError,match='source binding differs'):check(d,module.scan_fluid_corrected)
+
+
+@pytest.mark.parametrize('change',[None,'extra','missing','renamed','required','default','source'])
+def test_equilibrium_grid_mapping_binding_rejects_contract_or_source_drift(change,tmp_path,monkeypatch):
+    import json, importlib
+    from pathlib import Path
+    root=Path(__file__).resolve().parents[1]
+    d=json.loads((root/'catalog/examples/scirel.geometry.axisymmetric-equilibrium-grid-support.json').read_text())
+    module=importlib.import_module(d['public_api']['python']['module'])
+    f=getattr(module,d['public_api']['python']['symbol'])
+    if change is None:
+        check(d,f)
+        with pytest.raises(ValueError,match='missing'):
+            f({})
+        return
+    if change=='extra': d['inputs'].append({'name':'extra','required':True})
+    elif change=='missing': d['inputs'].pop(0)
+    elif change=='renamed': d['inputs'][0]['name']='different_equilibrium'
+    elif change=='required': d['inputs'][0]['required']=False
+    elif change=='default': d['inputs'][0]['default']=None
+    else:
+        changed=tmp_path/'changed.py';changed.write_bytes(Path(module.__file__).read_bytes()+b'\n# changed binding\n')
+        monkeypatch.setattr(module,'__file__',str(changed))
+    with pytest.raises(ValueError,match='source binding differs' if change=='source' else 'ports/defaults differ'):
+        check(d,f)
+
+
+def unbound_keywords(inputs=None, **kwargs):
+    return relation(**inputs)
+
+
+def test_unbound_keyword_mapping_cannot_bypass_scientific_ports():
+    with pytest.raises(ValueError,match='one required callable parameter'):
+        check(contract(),unbound_keywords)
+
+@pytest.mark.parametrize('asset_id',[
+    'scirel.closures.mirror-quasineutral-closure',
+    'scirel.equilibrium.axisymmetric-anisotropic-picard',
+    'scirel.equilibrium.free-boundary-anisotropic-picard',
+    'scirel.equilibrium.kinetic-mirror-hall-equilibrium',
+    'scirel.equilibrium.reduced-hall-anisotropic-picard',
+    'scirel.field.multi-coil-vacuum-field',
+    'scirel.kinetic.frank-egedal-pressure-closure',
+    'scirel.kinetic.grid-mirror-kinetic-closure'])
+def test_existing_composed_graph_ports_remain_exact(asset_id,tmp_path,monkeypatch):
+    import json,importlib,copy
+    from pathlib import Path
+    root=Path(__file__).resolve().parents[1]
+    row=next(r for r in json.loads((root/'provenance/selections/scientific-core-documents-20261014-r2.json').read_text())['records'] if r['asset_id']==asset_id)
+    d=json.loads((root/row['path']).read_text());api=d['public_api']['python']
+    module=importlib.import_module(api['module']);f=getattr(module,api['symbol']);check(d,f)
+    for mutation in ('extra','missing','renamed','required','default'):
+        bad=copy.deepcopy(d)
+        if mutation=='extra':bad['inputs'].append({'name':'extra','required':True})
+        elif mutation=='missing':bad['inputs'].pop(0)
+        elif mutation=='renamed':bad['inputs'][0]['name']='different'
+        elif mutation=='required':bad['inputs'][0]['required']=not bad['inputs'][0]['required']
+        else:bad['inputs'][0]['default']='wrong'
+        with pytest.raises(ValueError,match='ports/defaults differ'):check(bad,f)
+    changed=tmp_path/'changed.py';changed.write_bytes(Path(module.__file__).read_bytes()+b'\n# changed binding\n')
+    monkeypatch.setattr(module,'__file__',str(changed))
+    with pytest.raises(ValueError,match='source binding differs'):check(d,f)

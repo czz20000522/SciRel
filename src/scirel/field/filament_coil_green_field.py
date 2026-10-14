@@ -28,8 +28,10 @@ closed form then produces ``0 * Inf = NaN`` responses which the saved
 implementation returns silently) raise ``ValueError`` here; (ii) the
 input-level validations below reject non-positive radii, out-of-range
 moduli and misaligned pairings.  The companion elliptic-integral operator
-keeps the source's sentinel semantics verbatim; this operator refuses to
-consume the geometry that triggers them.
+now evaluates its mathematical endpoint as K(1)=+Inf and E(1)=1
+pointwise. This downstream field operator still rejects coincident filament
+geometry; a mathematically correct elliptic limit does not remove the physical
+line-current field singularity.
 """
 from __future__ import annotations
 

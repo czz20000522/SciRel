@@ -116,15 +116,15 @@ def test_elliptic_approximation_matches_the_source_polynomial_log_form():
     assert np.max(np.abs(e_apx - e_ref) / e_ref) < 2e-8
 
 
-def test_elliptic_approximation_whole_array_sentinel_and_mixed_singular_path():
-    # every element == 1: finite sentinel branch
+def test_elliptic_approximation_mathematical_endpoint_in_whole_and_mixed_arrays():
+    # Corrected D2 endpoint: K diverges, while E is exactly one.
     k, e = evaluate_complete_elliptic_integrals(np.array([1.0, 1.0]))
-    assert np.array_equal(k, np.array([1.0e300, 1.0e300]))
+    assert np.all(np.isposinf(k))
     assert np.array_equal(e, np.array([1.0, 1.0]))
-    # mixed: the m == 1 element takes the polynomial-log branch (K=+Inf, E=NaN)
+    # Neighboring nonsingular entries cannot change either endpoint limit.
     k, e = evaluate_complete_elliptic_integrals(np.array([0.5, 1.0]))
     assert np.isinf(k[1]) and k[1] > 0
-    assert np.isnan(e[1])
+    assert e[1] == 1.0
     assert np.isfinite(k[0]) and np.isfinite(e[0])
     with pytest.raises(ValueError):
         evaluate_complete_elliptic_integrals(np.array([-0.1, 0.5]))
@@ -233,28 +233,26 @@ def test_source_approximation_degrades_the_response_within_documented_error():
 def test_singular_coincident_chain_is_rejected_not_returned_as_nan():
     """The recorded pre-review failure chain: a regularized radius that lands
     exactly on the filament ring drives the geometry operator to modulus == 1,
-    the elliptic operator to its finite sentinel, and the source response to
-    silent (2e293, NaN, NaN).  This port must reject at the response stage."""
+    the old elliptic operator to a false finite sentinel, and the source response
+    to silent (2e293, NaN, NaN). The corrected integral exposes its mathematical
+    divergence; the physical field still rejects the singular geometry."""
     radius, modulus, _ = compute_axisymmetric_coil_modulus(
         0.99999999, 0.0, np.array([1.0]), np.array([0.0]))
     assert modulus[0] == 1.0
     k, e = evaluate_complete_elliptic_integrals(modulus)
-    assert np.array_equal(k, np.array([1.0e300]))
+    assert np.all(np.isposinf(k))
     assert np.array_equal(e, np.array([1.0]))
     with pytest.raises(ValueError, match="singular coil geometry"):
         evaluate_filament_coil_green_field(
             radius, 0.0, np.array([1.0]), np.array([0.0]),
             np.array([1.0]), np.array([1.0]), modulus, k, e)
-    # mixed singular coil among regular ones is likewise rejected: the m == 1
-    # element takes the polynomial-log branch (K=+Inf, E=NaN) and is caught by
-    # the input validation, which only tolerates non-finite pairings via the
-    # separate zero-separation/modulus gate
+    # The mixed singular coil is rejected by the same physical singularity gate.
     coil_radius = np.array([0.2, float(radius)])
     coil_z = np.array([0.0, 0.0])
     r2, modulus2, _ = compute_axisymmetric_coil_modulus(0.99999999, 0.0, coil_radius, coil_z)
     assert np.any(modulus2 == 1.0)
     k2, e2 = evaluate_complete_elliptic_integrals(modulus2)
-    assert np.isinf(k2[1]) and np.isnan(e2[1])
+    assert np.isposinf(k2[1]) and e2[1] == 1.0
     with pytest.raises(ValueError):
         evaluate_filament_coil_green_field(
             r2, 0.0, coil_radius, coil_z,

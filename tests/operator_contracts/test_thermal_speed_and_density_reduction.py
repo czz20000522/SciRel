@@ -42,9 +42,16 @@ def test_thermal_speed_rejects_nonreal_scalars(temperature, mass):
         compute_thermal_speed_m_s(temperature, mass)
 
 
-def test_thermal_speed_rejects_underflowed_mass_scale():
-    with pytest.raises(ValueError, match="thermal speed"):
-        compute_thermal_speed_m_s(1.0, np.nextafter(0.0, 1.0))
+def test_thermal_speed_retains_finite_result_despite_underflowed_mass_scale():
+    from decimal import Decimal, localcontext
+    mass = np.nextafter(0.0, 1.0)
+    with localcontext() as context:
+        context.prec = 100
+        expected = float((Decimal(2) * Decimal.from_float(1.602177e-19)
+                          / (Decimal.from_float(float(mass))
+                             * Decimal.from_float(1.6726231e-27))).sqrt())
+    actual = compute_thermal_speed_m_s(1.0, mass)["thermal_speed_m_s"]
+    assert abs(actual - expected) <= 2 * abs(np.spacing(expected))
 
 
 def test_density_reduction_2d_weight_sums_over_both_velocity_axes():

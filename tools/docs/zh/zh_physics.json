@@ -752,15 +752,15 @@
     },
     {
       "asset_id": "scirel.field.complete-elliptic-integrals-approx",
-      "source_sha256": "6d5b20a661dfae9fe88852e9645cb456fcf07845cb4df21e9938da18e4e3f18a",
-      "summary": "按平方模数 m 计算完全椭圆积分 K(m)、E(m) 的多项式—对数近似，保留来源的整数组奇异分支。",
-      "definition": "沿用原 MATLAB apx==1 的嵌套多项式—对数算术。只有数组所有元素均为 1 时返回 K=1e300、E=1；混合数组走一般分支，其中 m=1 元素得到 K=+Inf、E=NaN（0×−Inf）。这些是编码的奇异返回，不是输入错误。",
-      "model": "原 GSEQ MATLAB apx==1 算术及整数组奇异判断；保存的 L1 Python 实现使用不同的逐元素替换。",
+      "source_sha256": "4ebf00ddf9921de9f4d36afe3b38a539b36bed51a2a96b76566f9e9aee31e810",
+      "summary": "计算完全椭圆积分 K(m)、E(m) 的多项式—对数近似；奇异端点按元素返回数学极限。",
+      "definition": "m<1 时保持原多项式—对数算术。每个 m=1 元素返回 K=+Inf、E=1，与相邻数组元素无关；修正旧整数组伪有限哨兵与混合数组 E=NaN。",
+      "model": "来源内点逼近与已纠正的数学端点极限。",
       "assumptions": [
         "此近似用于来源一致性，不是精度最高的 K/E 求值方法。",
         "未绑定外部物理参考；对 SciPy ellipk、ellipe 的精度比较仅为采样证据。"
       ],
-      "boundary": "输入必须有限且在 [0,1]；m=1 的哨兵值、Inf、NaN 属于来源奇异边界。",
+      "boundary": "有限输入位于[0,1]；K(1)发散，以+Inf表示；E(1)=1。后继线圈磁场入口仍拒绝丝线上的奇异几何。",
       "inputs": [
         {
           "name": "modulus_squared",
@@ -773,13 +773,13 @@
         {
           "name": "complete_k",
           "description": "第一类完全椭圆积分 K(m) 的来源近似。",
-          "constraints": "m<1 时有限；整数组 m=1 时为 1e300；混合数组的 m=1 项为 +Inf。",
+          "constraints": "m<1 时有限；每个 m=1 元素为+Inf，表示积分发散。",
           "dtype": "float64 双精度数组"
         },
         {
           "name": "complete_e",
           "description": "第二类完全椭圆积分 E(m) 的来源近似。",
-          "constraints": "m<1 时有限；整数组 m=1 时为 1；混合数组的 m=1 项为 NaN。",
+          "constraints": "m<1 时有限；每个 m=1 元素精确为1。",
           "dtype": "float64 双精度数组"
         }
       ],
@@ -788,7 +788,7 @@
           "调用者提供 [0,1] 中的平方模数，例如来自线圈格林几何算子。"
         ],
         "supported": [
-          "为来源一致性链提供 apx==1 的 K(m)、E(m)。"
+          "带有正确数学端点极限的多项式—对数 K/E 近似。"
         ],
         "excluded": [
           "高精度 K/E（应使用科学函数库）、模数生成、线圈几何及磁场响应。"
@@ -796,27 +796,26 @@
       },
       "failure_semantics": {
         "invalid_input": "任何值非有限或越出 [0,1] 时抛出 ValueError。",
-        "runtime_failure": "不适用；m=1 的哨兵值、Inf、NaN 是编码的来源奇异边界，不是运行失败。",
+        "runtime_failure": "无迭代失败；K(1)=+Inf是数学发散，不是有限磁场结果，端点不再返回NaN或伪有限哨兵。",
         "nonconvergence": "不适用。",
         "partial_results": "不返回部分结果。"
       },
       "example": {
-        "description": "计算若干模数的近似值，检查 m<1 的有限性及整数组 m=1 哨兵分支。",
-        "expected": "m<1 时 K/E 有限；整数组 m=1 返回 K=1e300、E=1，混合数组保留 Inf/NaN 路径。"
+        "description": "计算内点逼近及整数组、混合数组端点极限。",
+        "expected": "内点K/E有限；每个m=1返回K=+Inf、E=1。"
       },
       "verification": {
         "scope": [
           "多项式—对数计算与独立重算比较。",
-          "编码的奇异边界及输入失败合同。",
+          "逐元素解析端点极限以及不变的非法输入拒绝。",
           "对 SciPy ellipk、ellipe 的采样精度。"
         ],
-        "evidence_ceiling": "直接测试检查算术的数组精确相等、整数组及混合数组分支和定义域。在 [1e-6,0.999999] 的 200001 点采样中，K 相对误差≤1e-8，E≤2e-8；这不是连续域误差界。混合数组边界依据 SciRel 合同及 MATLAB 文本，未作 MATLAB 运行重放；保存 L1 Python 行为不同。",
+        "evidence_ceiling": "内点算术保持精确数组相等；200001点采样对SciPy的相对误差界仍为K<1e-8、E<2e-8。独立解析极限K(1)=+Inf、E(1)=1与数组邻项无关，物理场消费者仍拒绝重合丝线；不是连续域误差证明或全输入来源一致性。",
         "known_limitations": [
           "保存 GSEQ 包仅为有界历史比较，qualified-L1 根为空。",
           "近似精度低于库特殊函数，较高精度应采用基线 SciPy 椭圆积分关系。",
-          "混合数组 m=1 返回 Inf/NaN；配套响应算子拒绝此奇异几何。",
-          "公开分发许可仍待人工决定。",
-          "保存 L1 Python 对混合数组 m=1 给 E=1，此实现按原 MATLAB 整数组分支给 NaN；不声称 MATLAB 运行一致性。"
+          "端点修正有意偏离历史来源分支；不能将K(1)视作有限磁场。",
+          "公开分发许可仍待人工决定。"
         ]
       }
     },
