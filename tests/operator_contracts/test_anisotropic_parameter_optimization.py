@@ -11,8 +11,8 @@ def test_recovers_scalar_trial_minimum_and_keeps_fallback():
     result = direct_anisotropic_optimizer(initial_params={"x": 0.0}, bounds={"x": (-5.0, 5.0)}, method="least_squares", trial_evaluator=trial)
     assert result["best_parameters"]["x"] == pytest.approx(3.0)
     assert result["converged"]
-    failed = direct_anisotropic_optimizer(initial_params={"x": 0.0}, bounds={"x": (-1.0, 1.0)}, method="bad", trial_evaluator=trial)
-    assert failed["failure_reason"] is not None
+    with pytest.raises(ValueError, match="method must be"):
+        direct_anisotropic_optimizer(initial_params={"x": 0.0}, bounds={"x": (-1.0, 1.0)}, method="bad", trial_evaluator=trial)
 
 
 def test_reviewed_relation_example():
@@ -62,15 +62,6 @@ def test_reviewed_relation_example():
     ]
     assert seeded["evaluation_log"][2]["params"]["x"] == 2.5
 
-    # 未知方法进入受控 fallback：在起点补做 trial，但不伪造优化收敛。
-    fallback = optimize_anisotropic_parameters(
-        initial_params={"x": 1.0},
-        bounds={"x": (-5.0, 5.0)},
-        method="unknown",
-        trial_evaluator=trial,
-    )
-    assert fallback["optimizer_summary"] is None
-    assert "method must be" in fallback["failure_reason"]
-    assert not fallback["converged"]
-    assert len(fallback["evaluation_log"]) == 1
-    assert fallback["evaluation_log"][0]["source"] == "optimizer"
+    # 错误方法属于配置错误，先拒绝；原 fallback 断言按摘要保存在前驱交付。
+    with pytest.raises(ValueError, match="method must be"):
+        optimize_anisotropic_parameters(initial_params={"x": 1.0}, bounds={"x": (-5.0, 5.0)}, method="unknown", trial_evaluator=trial)

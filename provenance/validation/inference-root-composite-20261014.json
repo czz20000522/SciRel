@@ -1,0 +1,89 @@
+{
+  "schema": "scirel.root-scientific-reception.v1",
+  "action_id": "scirel-anisotropic-inference-physical-closure-20261014-v1",
+  "at_utc": "2026-10-14T07:42:32.364167+00:00",
+  "status": "QUALIFIED_EXACT_INFERENCE_CANDIDATE_PENDING_CUMULATIVE_INTEGRATION",
+  "owner": "/root/pdrk_chinese",
+  "role_ended": true,
+  "starts_consumed": 1,
+  "report": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/legacy-inference-closure/REPORT.json",
+    "bytes": 9105,
+    "sha256": "700a2df582daad8aea91dbfdf351b8bcd35f19aa1b68ba2cc6b67aeb0bcec924"
+  },
+  "handoff": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/legacy-inference-closure/HANDOFF.json",
+    "bytes": 1488,
+    "sha256": "aea0bbf3b57b6f5223616e6d609b2486926973cd26bafda38e0c8dd665f9e7a1"
+  },
+  "manifest": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/legacy-inference-closure/MANIFEST.json",
+    "bytes": 30975,
+    "sha256": "6403c57bed9bbbe010dbcad7b7118572d4b3a2daf6530243d5f82f7f1cd0654b"
+  },
+  "candidate_commit": "6585aec9adc6f2e1e33c22d395be3b5eb72d04f3",
+  "candidate_tree": "fffb801d2c2713ea99795b102ebcc728c2a422dc",
+  "wheel": {
+    "path": "build-dev12/wheel/scirel-0.2.0.dev12+inference.physical-py3-none-any.whl",
+    "sha256": "04aa06f71693228225fa85b0ac2b23339a3ce607d86abc112eb971896da0e1f8",
+    "bytes": 34641,
+    "version": "0.2.0.dev12+inference.physical",
+    "runtime_dependencies": [
+      "numpy==2.5.4",
+      "scipy==1.18.1"
+    ],
+    "runtime_python_files": 23,
+    "implementation_files": 16,
+    "source_bound_profile": "SELECTED_PROFILE.json",
+    "plainvenv": "no system site packages; no source checkout; PATH only venv; no Git/pwsh/pytest/gcc; network none; empty result directory at start"
+  },
+  "physical": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/inference-root/PHYSICAL_VERIFICATION.json",
+    "bytes": 207,
+    "sha256": "fd078974aa670fd792f4130122d36f71daf3cd7d12d02ac38485f7ff496082a5"
+  },
+  "static": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/inference-root/STATIC_VERIFICATION.json",
+    "bytes": 320,
+    "sha256": "fe9237b97b97b4e9c0255bd619897c095ed70ee84a89a913934665575ac5d4da"
+  },
+  "author_terminal": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/inference-root/AUTHOR_CONTAINER_READBACK.json",
+    "bytes": 13901,
+    "sha256": "783374a13cb18cec29412a18da9ff3e1ce5893a6731cd7347bdaf70850c3c355"
+  },
+  "root_terminal": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/inference-root/ROOT_CONTAINER_READBACK.json",
+    "bytes": 8574,
+    "sha256": "41ada92ac6002f42eb54f6bbd08fc9c9821f62d156a73a3ba8b8c0995a5f8bd6"
+  },
+  "root_installed": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/inference-root/results/ROOT_INDEPENDENT.json",
+    "bytes": 1041,
+    "sha256": "9ada48f83edd93a9db7b23bdf3065c3eb1043bbd98522cd50993f4c79c4fbbfe"
+  },
+  "author_source_tests": 120,
+  "scientific_review": "Root inspected sampler, residual dimensions, optimizer contract and invalid-trial ranking/terminal return consistency. Root independently generated two nine-observation physical cases using scalar force-balance and nonzero Green feedback, recovered 1.35/1.45 and 2.1/1.9, including actual nonconverged trials and budget accounting. Also independently verified analytic bilinear flux normalization and missing-channel/all-numerical-failure behavior. Author separate Biot-Savart angular quadrature/tensor-divergence/root solution oracle inspected: discrete curved-field evidence does not claim continuum convergence.",
+  "graph_review": "Forward equilibrium qualification reused unchanged; four new public assets plus necessary shared residual implementation; injected scientific closures retain explicit caller contracts. Optimizer/forward/identifiability/fit are separate results.",
+  "Chinese_changed_assets": [
+    "scirel.diagnostics.equilibrium-synthesis-diagnostics",
+    "scirel.diagnostics.observation-residuals",
+    "scirel.inference.anisotropic-parameter-optimization",
+    "scirel.inference.anisotropic-trial-evaluation",
+    "scirel.inference.direct-anisotropic-inversion"
+  ],
+  "other_Chinese_records_unchanged": 67,
+  "limitations": [
+    "Rank-one Green case is declared manufactured response, not a calibrated device.",
+    "Curved-field independent quadrature/tensor/root oracle certifies stated finite-grid equations; no continuum convergence or finite-wire self-field proof.",
+    "The physical recovery evidence is two explicit parameter families, not arbitrary closure validity/global uniqueness/experimental identifiability. Generic identifiability remains not_established.",
+    "Caller owns flux gauge/reference, source psi normalization, physical closures, observation noise/units and acceptance of fit.",
+    "Historical Pleiades/extension license notices remain; selected wheel is internal technical candidate, no new redistribution right.",
+    "Exact documentation and Chinese readers updated; cumulative selection/handbook rebuild and canonical AOCI remain root responsibilities."
+  ],
+  "canonical_integrated": false,
+  "whole_source_project_complete": false,
+  "human_approval": false,
+  "public_release": false,
+  "next_action": "Integrate exact 22-path delta against current canonical with five reader and two mapping records merged selectively; cumulative239 build and source-free checks before adoption."
+}

@@ -6,7 +6,7 @@
     "en": "Equilibrium synthetic point diagnostics",
     "zh": "平衡合成诊断"
   },
-  "summary": "Sample the caller's fixed equilibrium psi and selected local profile fields at explicitly requested R-Z points; the flux_loops key retains psi units and unrequested keys are absent.",
+  "summary": "在同一 R–Z 网格上按明确单位采样磁通与所请求的压强、密度或电子温度；区分原始 psi 样本与完整圆环磁通。",
   "taxonomy": [
     "diagnostics",
     "equilibrium",
@@ -17,102 +17,109 @@
     "equilibrium flux-loop and Thomson-like sampling"
   ],
   "identity": {
-    "relation": "declared equilibrium fields and diagnostic point requests to sampled predictions",
-    "direction": "equilibrium, R-Z grid and observation requests -> optional flux_loops and thomson predictions",
-    "definition": "For a flux_loops request, bilinearly sample equilibrium.psi at its points without converting to complete loop flux. For a thomson request, separately sample equilibrium.profiles.p_parallel and p_perp and any present non-null density and electron_temperature at its points. Assemble only requested diagnostic keys, with no measurement or instrument response model.",
-    "model": "read-only point projection of supplied equilibrium fields using the bound bilinear R-Z sampler",
-    "geometry": "two-dimensional rectilinear cylindrical R-Z diagnostic grid supplied by the caller",
-    "coordinates": "fields and grids are indexed [Z,R]; every diagnostic point is ordered [R,Z]",
-    "boundary": "The bound sampler accepts points on the closed grid boundary and rejects out-of-domain points; no extrapolation is performed.",
+    "relation": "平衡场和显式观测约定到指定位置的物理量样本",
+    "direction": "equilibrium、R、Z、observations → flux_loops / thomson 与 units",
+    "definition": "使用既有双线性采样器。flux_loops.quantity=raw_psi 时保留 equilibrium.psi_unit；quantity=magnetic_flux 时输出 Wb，仅对明确声明为 Wb/rad 的 psi 乘以 2π，Wb 输入不变。thomson 只采样明确请求且具有相同单位声明的实际 profile，不推算缺失通道。所有结果附 units。",
+    "model": "平衡场的只读点采样；thomson 是历史命名空间，不是 Thomson 散射仪器模型",
+    "geometry": "柱坐标 R–Z 矩形网格",
+    "coordinates": "场采用 [Z,R] 排列，采样点逐项为 [R,Z]，坐标单位 m",
+    "boundary": "闭网格边界内的双线性采样，无外推。空或未知请求、空点集、遗漏字段、单位冲突均拒绝；不隐含线圈匝数、参考环差分或仪器响应。",
     "assumptions": [
-      "All sampled fields correspond to the same caller-supplied R-Z grid.",
-      "The caller supplies physically meaningful fields and mutually consistent units; this graph does not infer or convert them. In particular, psi=R A_phi from current SciRel free-boundary equilibrium is Wb/rad, whereas a complete axisymmetric circular-loop flux is 2π psi in Wb."
+      "输入场来自同一物理状态与同一网格。",
+      "psi 的单位与规范由调用者明确声明；当前已验证 Pleiades 约定为 psi=R A_phi，单位 Wb/rad。",
+      "压强使用 Pa，密度使用 m^-3；电子温度显式使用 K、eV 或 J，且与 profile_units 完全一致，不在此换算。"
     ]
   },
   "inputs": [
     {
       "name": "equilibrium",
-      "description": "Read-only state mapping; flux_loops requires a non-null psi field, and thomson requires a profiles mapping with non-null p_parallel and p_perp fields. Non-null density and electron_temperature fields are sampled when present.",
-      "units": "mixed; psi retains caller units (Wb/rad for current SciRel free-boundary equilibrium), pressure fields Pa, other profile units as supplied",
-      "shape": "mapping of fields [N_Z,N_R]",
-      "dtype": "Python mapping with real scalar field array-likes",
+      "description": "要采样的平衡态；磁通使用 psi 与 psi_unit，profile 使用 profiles 与 profile_units。",
+      "units": "各字段声明的物理单位",
+      "shape": "mapping；场 [N_Z,N_R]",
+      "dtype": "映射与实数数组",
       "required": true,
-      "constraints": "Fields used by a requested branch must be finite and match R and Z under the bound sampler contract; an unused field is not inspected."
+      "constraints": "只访问请求字段；各字段有限并与网格同形。"
     },
     {
       "name": "R",
-      "description": "Radial coordinate mesh for every sampled field.",
+      "description": "径向坐标网格。",
       "units": "m",
       "shape": "[N_Z,N_R]",
-      "dtype": "real array-like convertible to float64",
+      "dtype": "实数数组",
       "required": true,
-      "constraints": "Explicit key required; when sampling, must be finite and rectilinear with a strictly increasing radial axis and at least two columns."
+      "constraints": "有限、矩形网格、径向严格递增且至少两列。"
     },
     {
       "name": "Z",
-      "description": "Vertical coordinate mesh for every sampled field.",
+      "description": "轴向坐标网格。",
       "units": "m",
       "shape": "[N_Z,N_R]",
-      "dtype": "real array-like convertible to float64",
+      "dtype": "实数数组",
       "required": true,
-      "constraints": "Explicit key required; when sampling, must match R and have a strictly increasing vertical axis with at least two rows."
+      "constraints": "有限、与 R 同形、轴向严格递增且至少两行。"
     },
     {
       "name": "observations",
-      "description": "Request mapping. A flux_loops and/or thomson key requests that branch; each requested mapping must contain non-null points. Other keys are ignored.",
-      "units": "point coordinates m,m; any additional request fields are ignored",
-      "shape": "mapping with optional flux_loops and thomson mappings, each holding points [N_point,2]",
-      "dtype": "Python mapping with real point array-likes",
+      "description": "磁通请求包含 points、quantity 与 unit；profile 请求在 thomson 下包含 points 和逐通道 {unit}，亦可包含反演所用 values/sigma。",
+      "units": "points 为 m；各通道单位显式声明",
+      "shape": "非空 mapping",
+      "dtype": "映射",
       "required": true,
-      "constraints": "Each requested points array is finite and ordered [R,Z] inside the closed grid; an empty or unknown-only mapping returns an empty mapping."
+      "constraints": "只允许 flux_loops、thomson；磁通 quantity 必为 raw_psi 或 magnetic_flux；profile 键仅 density、electron_temperature、p_parallel、p_perp。所有请求必须实际有值，不忽略未知 kind/channel/flux 字段。"
     }
   ],
   "outputs": [
     {
       "name": "flux_loops",
-      "description": "Point samples of equilibrium.psi in requested order, not integrated loop flux; the key is absent when flux_loops is not requested.",
-      "units": "same as equilibrium.psi; Wb/rad for current SciRel free-boundary equilibrium, with no automatic 2π conversion",
-      "shape": "[N_flux] when requested; otherwise absent",
-      "dtype": "float64 array when present",
+      "description": "按点顺序返回原始 psi 样本或单匝完整圆环磁通。",
+      "units": "raw_psi：原单位；magnetic_flux：Wb",
+      "shape": "[N_flux]",
+      "dtype": "float64 数组",
       "required": false,
-      "default": "absent",
-      "constraints": "Emitted only on a successful flux_loops branch, never as a null placeholder. Physical Wb loop observations require an explicit compatible diagnostic relation before residual comparison."
+      "constraints": "仅在请求时出现；raw_psi 不乘 2π，磁通转换不可产生非有限值。",
+      "default": "absent"
     },
     {
       "name": "thomson",
-      "description": "Mapping of sampled p_parallel and p_perp and, when present and non-null, density and electron_temperature; the key is absent when thomson is not requested.",
-      "units": "p_parallel/p_perp Pa; density and electron_temperature retain caller field units",
-      "shape": "mapping of [N_thomson] arrays when requested; otherwise absent",
-      "dtype": "mapping of float64 arrays when present",
+      "description": "按明确请求返回 profiles 的采样；不从压强猜测温度或密度。",
+      "units": "压强 Pa；密度 m^-3；电子温度按声明",
+      "shape": "mapping[channel → [N_point]]",
+      "dtype": "映射与 float64 数组",
       "required": false,
-      "default": "absent",
-      "constraints": "Mandatory pressure keys are emitted on success; optional nested profile keys are omitted when their source field is missing or null."
+      "constraints": "只返回请求的通道，缺少任一请求字段即失败。",
+      "default": "absent"
+    },
+    {
+      "name": "units",
+      "description": "与实际输出一一对应的单位元数据。",
+      "units": "identifier",
+      "shape": "mapping",
+      "dtype": "字符串映射",
+      "required": true,
+      "constraints": "residual reducer 使用此元数据与显式观测单位匹配。"
     }
   ],
   "applicability": {
     "preconditions": [
-      "The caller has supplied equilibrium fields on the declared [Z,R] grid and has chosen diagnostic requests and in-domain [R,Z] points.",
-      "The interpretation and units of optional density and electron_temperature profiles are established by the caller."
+      "源场、网格、观测点和单位明确且彼此一致。"
     ],
     "supported": [
-      "Flux-loop-like point sampling of supplied psi without unit conversion.",
-      "Thomson-like point sampling of supplied pressure and optional local profile fields.",
-      "An empty or unknown-only request mapping yielding no predictions."
+      "原始 psi 样本与 Wb 圆环磁通的显式区分。",
+      "所提供压强、密度及电子温度的点采样。"
     ],
     "excluded": [
-      "Automatic 2π psi-to-complete-loop-flux conversion, instrument response, line integration, measurement noise, or synthetic spectra.",
-      "Equilibrium reconstruction or physical validation of caller-provided state.",
-      "Interpolation outside the rectilinear grid or automatic conversion of profile units."
+      "Thomson 光谱响应、校准、空间卷积、温度反演或未提供的电子分布。",
+      "自动推断磁通规范、匝数、参考环差分或全部 raw psi 的 2π 转换。"
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError when inputs, equilibrium, or observations is not a mapping; when R or Z is absent; when a requested branch is not a mapping or lacks non-null points; when its required equilibrium field is absent or null; or when the bound sampler rejects its grid, field, or points. An unused optional field is not checked.",
-    "runtime_failure": "The first dependency error propagates immediately; there is no fallback or retry. Unexpected array conversion or arithmetic failures also propagate.",
-    "nonconvergence": "Not applicable; the graph has no iteration or feedback.",
-    "partial_results": "No partial result mapping is returned if a requested branch fails, including failure in thomson after flux_loops has been sampled."
+    "invalid_input": "缺字段、空/未知请求、错误点集、单位不匹配或越界点抛 ValueError。",
+    "runtime_failure": "采样器异常传播；磁通换算为非有限时抛 FloatingPointError。",
+    "nonconvergence": "本函数不求平衡；反演 trial 必须在进入此函数之前核对前向收敛。",
+    "partial_results": "出现错误时不返回部分成功结果；不修改调用方平衡态。"
   },
   "provenance": {
-    "lineage_summary": "Maintained SciRel composition mapped to a saved Pleiades L1 diagnostic TaskGraph and direct graph tests. Historical candidate and admission records are development provenance, not expert recognition of this version.",
+    "lineage_summary": "Maintained SciRel composition mapped to a saved Pleiades L1 diagnostic TaskGraph and direct graph tests. Historical candidate and admission records are development provenance, not expert recognition of this version. 本后继针对已证实的观测约定、漏通道、失败维数和无效最优试探问题修正；保留前驱字节与失败证据，未继承错误 fallback。物理组合复用已资格化各向异性 Picard、场恢复及 Green 能力；不把旧候选来源或本作者测试解释为根接收、人工认可或再分发许可。",
     "source_kinds": [
       "saved L1 TaskGraph contract and implementation",
       "saved direct graph tests",
@@ -129,7 +136,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev12+inference.physical",
     "dependencies": [
       {
         "asset_id": "scirel.geometry.bilinear-grid-sampling"
@@ -137,57 +144,48 @@
     ]
   },
   "example": {
-    "description": "Request both branches on a two-by-two R-Z grid, then verify the caller-psi and pressure point samples; the example does not model a physical loop flux.",
-    "code": "import numpy as np\nfrom scirel.diagnostics import synthesize_equilibrium_diagnostics\nR, Z = np.meshgrid([0.0, 1.0], [0.0, 1.0])\nresult = synthesize_equilibrium_diagnostics(R=R, Z=Z, equilibrium={'psi': R + 2.0*Z, 'profiles': {'p_parallel': 10.0 + R + Z, 'p_perp': 20.0 + 2.0*R + Z}}, observations={'flux_loops': {'points': [[0.5, 0.5]]}, 'thomson': {'points': [[0.5, 0.5]]}})\nassert list(result) == ['flux_loops', 'thomson']\nnp.testing.assert_allclose(result['flux_loops'], [1.5])\nnp.testing.assert_allclose(result['thomson']['p_parallel'], [11.0])\nnp.testing.assert_allclose(result['thomson']['p_perp'], [21.5])\nassert set(result['thomson']) == {'p_parallel', 'p_perp'}",
-    "expected": "Caller-psi point sample [1.5] under the flux_loops key and Thomson-like pressure samples [11.0] and [21.5]; optional profile keys are absent."
+    "description": "Bz=2 T 的均匀轴向场有 psi=R² Wb/rad；R=1 m 处单匝磁通应为 2π Wb。",
+    "code": "import numpy as np\nfrom scirel.diagnostics import synthesize_equilibrium_diagnostics\nR,Z=np.meshgrid([0.,1.,2.],[-1.,0.,1.])\nr=synthesize_equilibrium_diagnostics(R=R,Z=Z,equilibrium={'psi':R**2,'psi_unit':'Wb/rad'},observations={'flux_loops':{'points':[[1.,0.]],'quantity':'magnetic_flux','unit':'Wb'}})\nnp.testing.assert_allclose(r['flux_loops'],[2*np.pi],rtol=1e-14)\nassert r['units']['flux_loops']=='Wb'",
+    "expected": "得到 [2π] Wb，与独立解析圆面积乘 Bz 一致；raw_psi 请求则得到 [1] Wb/rad。"
   },
   "verification": {
     "scope": [
-      "Public callable injects the declared sampler dependency.",
-      "Flux-only and combined requests preserve flux-before-Thomson output order and point values; a uniform-Bz manufactured psi field confirms the flux_loops channel has no implicit 2π conversion.",
-      "Missing optional profile fields and unrequested diagnostic branches are omitted.",
-      "Out-of-domain points or missing required state fields raise, and the equilibrium mapping remains unchanged."
+      "均匀 Bz 的 psi→完整磁通解析关系。",
+      "线性制造 profile 的内部点/边界采样、单位与非修改性。",
+      "漏通道/未知请求/不支持的匝数与参考环字段拒绝；真实 Picard 反演消费者。"
     ],
     "tests": [
-      "tests/graph_contracts/equilibrium_synthesis_diagnostics/test_graph_equilibrium_synthesis_diagnostics.py"
+      "tests/operator_contracts/test_inference_physical_closure.py",
+      "tests/operator_contracts/test_anisotropic_inference_independent.py"
     ],
-    "evidence_ceiling": "Maintained SciRel direct tests establish selected branch, interpolation, failure, and nonmutation behavior on small grids. They do not establish the physical validity of the supplied equilibrium, a real diagnostic instrument model, or expert recognition of this development record.",
+    "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
     "known_limitations": [
-      "Despite its historical flux_loops key, the graph returns supplied psi point samples; physical Wb loop observations must not be compared directly with Wb/rad psi from current SciRel equilibrium.",
-      "The graph samples supplied fields but does not infer density or temperature from pressure.",
-      "Unknown observation keys are silently ignored.",
-      "Public distribution licensing and SciRel expert recognition remain pending."
+      "双线性插值存在离散插值误差；节点位置可直接验证解析值。",
+      "单位标签无法证明调用者的实际数据已正确标度。",
+      "历史许可状态仍待最终判断。"
     ]
   },
   "graph": {
     "nodes": [
       {
-        "id": "flux_request",
+        "id": "requests",
         "kind": "controlled_glue",
-        "description": "On a flux_loops key, require its mapping and non-null points without altering them.",
+        "description": "验证所有观测类型、单位和源字段；形成逐通道采样请求及显式转换约定。",
         "inputs": [
-          "observations"
-        ],
-        "outputs": [
-          "points"
-        ]
-      },
-      {
-        "id": "flux_field",
-        "kind": "controlled_glue",
-        "description": "On a flux_loops request, require non-null equilibrium.psi.",
-        "inputs": [
+          "observations",
           "equilibrium"
         ],
         "outputs": [
-          "quantity"
+          "quantities",
+          "points",
+          "conventions"
         ]
       },
       {
-        "id": "flux_sampling",
+        "id": "sampling",
         "kind": "operator",
         "asset_id": "scirel.geometry.bilinear-grid-sampling",
-        "description": "Sample psi once at the requested flux-loop points.",
+        "description": "对每个明确请求字段调用同一双线性算子；请求未满足则失败。",
         "inputs": [
           "r_grid",
           "z_grid",
@@ -199,102 +197,17 @@
         ]
       },
       {
-        "id": "thomson_request",
+        "id": "pack",
         "kind": "controlled_glue",
-        "description": "On a thomson key, require its mapping and non-null points without altering them.",
+        "description": "只对明确 Wb/rad→Wb 磁通作 2π 转换，按原始字段装配采样与单位。",
         "inputs": [
-          "observations"
+          "samples",
+          "conventions"
         ],
         "outputs": [
-          "points"
-        ]
-      },
-      {
-        "id": "profile_projection",
-        "kind": "controlled_glue",
-        "description": "On a thomson request, require p_parallel and p_perp, and expose only present non-null optional profiles.",
-        "inputs": [
-          "equilibrium"
-        ],
-        "outputs": [
-          "p_parallel",
-          "p_perp",
-          "density",
-          "electron_temperature"
-        ]
-      },
-      {
-        "id": "parallel_pressure_sampling",
-        "kind": "operator",
-        "asset_id": "scirel.geometry.bilinear-grid-sampling",
-        "description": "Sample the required parallel-pressure field.",
-        "inputs": [
-          "r_grid",
-          "z_grid",
-          "quantity",
-          "points"
-        ],
-        "outputs": [
-          "samples"
-        ]
-      },
-      {
-        "id": "perpendicular_pressure_sampling",
-        "kind": "operator",
-        "asset_id": "scirel.geometry.bilinear-grid-sampling",
-        "description": "Sample the required perpendicular-pressure field.",
-        "inputs": [
-          "r_grid",
-          "z_grid",
-          "quantity",
-          "points"
-        ],
-        "outputs": [
-          "samples"
-        ]
-      },
-      {
-        "id": "density_sampling",
-        "kind": "operator",
-        "asset_id": "scirel.geometry.bilinear-grid-sampling",
-        "description": "Sample density only when the source profile is non-null.",
-        "inputs": [
-          "r_grid",
-          "z_grid",
-          "quantity",
-          "points"
-        ],
-        "outputs": [
-          "samples"
-        ]
-      },
-      {
-        "id": "temperature_sampling",
-        "kind": "operator",
-        "asset_id": "scirel.geometry.bilinear-grid-sampling",
-        "description": "Sample electron_temperature only when the source profile is non-null.",
-        "inputs": [
-          "r_grid",
-          "z_grid",
-          "quantity",
-          "points"
-        ],
-        "outputs": [
-          "samples"
-        ]
-      },
-      {
-        "id": "thomson_pack",
-        "kind": "controlled_glue",
-        "description": "Pack mandatory pressure samples and only the optional samples actually produced, preserving field names.",
-        "inputs": [
-          "p_parallel",
-          "p_perp",
-          "density",
-          "electron_temperature"
-        ],
-        "outputs": [
-          "thomson"
+          "flux_loops",
+          "thomson",
+          "units"
         ]
       }
     ],
@@ -305,14 +218,14 @@
           "port": "observations"
         },
         "to": {
-          "node": "flux_request",
+          "node": "requests",
           "port": "observations"
         },
-        "description": "Flux-loop request lookup.",
-        "condition": "If observations contains flux_loops.",
-        "transform": "Extract request mapping and points.",
+        "description": "读取全部请求。",
+        "condition": "正常执行。",
+        "transform": "保持该端口值。",
         "kind": "data",
-        "required": false
+        "required": true
       },
       {
         "from": {
@@ -320,14 +233,44 @@
           "port": "equilibrium"
         },
         "to": {
-          "node": "flux_field",
+          "node": "requests",
           "port": "equilibrium"
         },
-        "description": "State lookup for psi.",
-        "condition": "If observations contains flux_loops.",
-        "transform": "Read-only field extraction.",
+        "description": "读取匹配字段和单位。",
+        "condition": "正常执行。",
+        "transform": "保持该端口值。",
         "kind": "data",
-        "required": false
+        "required": true
+      },
+      {
+        "from": {
+          "node": "requests",
+          "port": "quantities"
+        },
+        "to": {
+          "node": "sampling",
+          "port": "quantity"
+        },
+        "description": "逐请求取得场。",
+        "condition": "正常执行。",
+        "transform": "逐项投影；不发明缺失 profile。",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "requests",
+          "port": "points"
+        },
+        "to": {
+          "node": "sampling",
+          "port": "points"
+        },
+        "description": "逐请求取得坐标。",
+        "condition": "正常执行。",
+        "transform": "保持该端口值。",
+        "kind": "data",
+        "required": true
       },
       {
         "from": {
@@ -335,14 +278,14 @@
           "port": "R"
         },
         "to": {
-          "node": "flux_sampling",
+          "node": "sampling",
           "port": "r_grid"
         },
-        "description": "Diagnostic radial grid.",
-        "condition": "If observations contains flux_loops.",
-        "transform": "Identity.",
+        "description": "共用径向网格。",
+        "condition": "正常执行。",
+        "transform": "保持该端口值。",
         "kind": "data",
-        "required": false
+        "required": true
       },
       {
         "from": {
@@ -350,416 +293,100 @@
           "port": "Z"
         },
         "to": {
-          "node": "flux_sampling",
+          "node": "sampling",
           "port": "z_grid"
         },
-        "description": "Diagnostic vertical grid.",
-        "condition": "If observations contains flux_loops.",
-        "transform": "Identity.",
+        "description": "共用轴向网格。",
+        "condition": "正常执行。",
+        "transform": "保持该端口值。",
         "kind": "data",
-        "required": false
+        "required": true
       },
       {
         "from": {
-          "node": "flux_field",
-          "port": "quantity"
-        },
-        "to": {
-          "node": "flux_sampling",
-          "port": "quantity"
-        },
-        "description": "Equilibrium flux field.",
-        "condition": "If observations contains flux_loops.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "flux_request",
-          "port": "points"
-        },
-        "to": {
-          "node": "flux_sampling",
-          "port": "points"
-        },
-        "description": "Flux-loop coordinates.",
-        "condition": "If observations contains flux_loops.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "flux_sampling",
+          "node": "sampling",
           "port": "samples"
+        },
+        "to": {
+          "node": "pack",
+          "port": "samples"
+        },
+        "description": "收集实际样本。",
+        "condition": "正常执行。",
+        "transform": "保持该端口值。",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "requests",
+          "port": "conventions"
+        },
+        "to": {
+          "node": "pack",
+          "port": "conventions"
+        },
+        "description": "提供明确单位与磁通约定。",
+        "condition": "正常执行。",
+        "transform": "保持该端口值。",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "pack",
+          "port": "flux_loops"
         },
         "to": {
           "node": "$output",
           "port": "flux_loops"
         },
-        "description": "Predicted flux-loop samples.",
-        "condition": "Only after a successful flux_loops request.",
-        "transform": "Rename samples to flux_loops without conversion.",
+        "description": "磁通或原始 psi 输出。",
+        "condition": "请求 flux_loops 时。",
+        "transform": "保持该端口值。",
         "kind": "data",
         "required": false
       },
       {
         "from": {
-          "node": "$input",
-          "port": "observations"
-        },
-        "to": {
-          "node": "thomson_request",
-          "port": "observations"
-        },
-        "description": "Thomson-like request lookup.",
-        "condition": "If observations contains thomson.",
-        "transform": "Extract request mapping and points.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "equilibrium"
-        },
-        "to": {
-          "node": "profile_projection",
-          "port": "equilibrium"
-        },
-        "description": "State lookup for local profiles.",
-        "condition": "If observations contains thomson.",
-        "transform": "Read-only profile extraction.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "R"
-        },
-        "to": {
-          "node": "parallel_pressure_sampling",
-          "port": "r_grid"
-        },
-        "description": "Radial grid for parallel pressure.",
-        "condition": "If observations contains thomson.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "Z"
-        },
-        "to": {
-          "node": "parallel_pressure_sampling",
-          "port": "z_grid"
-        },
-        "description": "Vertical grid for parallel pressure.",
-        "condition": "If observations contains thomson.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "profile_projection",
-          "port": "p_parallel"
-        },
-        "to": {
-          "node": "parallel_pressure_sampling",
-          "port": "quantity"
-        },
-        "description": "Required parallel-pressure field.",
-        "condition": "If observations contains thomson.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "thomson_request",
-          "port": "points"
-        },
-        "to": {
-          "node": "parallel_pressure_sampling",
-          "port": "points"
-        },
-        "description": "Thomson-like point coordinates.",
-        "condition": "If observations contains thomson.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "R"
-        },
-        "to": {
-          "node": "perpendicular_pressure_sampling",
-          "port": "r_grid"
-        },
-        "description": "Radial grid for perpendicular pressure.",
-        "condition": "If observations contains thomson.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "Z"
-        },
-        "to": {
-          "node": "perpendicular_pressure_sampling",
-          "port": "z_grid"
-        },
-        "description": "Vertical grid for perpendicular pressure.",
-        "condition": "If observations contains thomson.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "profile_projection",
-          "port": "p_perp"
-        },
-        "to": {
-          "node": "perpendicular_pressure_sampling",
-          "port": "quantity"
-        },
-        "description": "Required perpendicular-pressure field.",
-        "condition": "If observations contains thomson.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "thomson_request",
-          "port": "points"
-        },
-        "to": {
-          "node": "perpendicular_pressure_sampling",
-          "port": "points"
-        },
-        "description": "Thomson-like point coordinates.",
-        "condition": "If observations contains thomson.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "R"
-        },
-        "to": {
-          "node": "density_sampling",
-          "port": "r_grid"
-        },
-        "description": "Radial grid for density.",
-        "condition": "If thomson is requested and density is non-null.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "Z"
-        },
-        "to": {
-          "node": "density_sampling",
-          "port": "z_grid"
-        },
-        "description": "Vertical grid for density.",
-        "condition": "If thomson is requested and density is non-null.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "profile_projection",
-          "port": "density"
-        },
-        "to": {
-          "node": "density_sampling",
-          "port": "quantity"
-        },
-        "description": "Optional density field.",
-        "condition": "If thomson is requested and density is non-null.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "thomson_request",
-          "port": "points"
-        },
-        "to": {
-          "node": "density_sampling",
-          "port": "points"
-        },
-        "description": "Thomson-like point coordinates.",
-        "condition": "If thomson is requested and density is non-null.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "R"
-        },
-        "to": {
-          "node": "temperature_sampling",
-          "port": "r_grid"
-        },
-        "description": "Radial grid for temperature.",
-        "condition": "If thomson is requested and electron_temperature is non-null.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "Z"
-        },
-        "to": {
-          "node": "temperature_sampling",
-          "port": "z_grid"
-        },
-        "description": "Vertical grid for temperature.",
-        "condition": "If thomson is requested and electron_temperature is non-null.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "profile_projection",
-          "port": "electron_temperature"
-        },
-        "to": {
-          "node": "temperature_sampling",
-          "port": "quantity"
-        },
-        "description": "Optional temperature field.",
-        "condition": "If thomson is requested and electron_temperature is non-null.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "thomson_request",
-          "port": "points"
-        },
-        "to": {
-          "node": "temperature_sampling",
-          "port": "points"
-        },
-        "description": "Thomson-like point coordinates.",
-        "condition": "If thomson is requested and electron_temperature is non-null.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "parallel_pressure_sampling",
-          "port": "samples"
-        },
-        "to": {
-          "node": "thomson_pack",
-          "port": "p_parallel"
-        },
-        "description": "Required sampled parallel pressure.",
-        "condition": "After successful thomson pressure sampling.",
-        "transform": "Rename samples to p_parallel.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "perpendicular_pressure_sampling",
-          "port": "samples"
-        },
-        "to": {
-          "node": "thomson_pack",
-          "port": "p_perp"
-        },
-        "description": "Required sampled perpendicular pressure.",
-        "condition": "After successful thomson pressure sampling.",
-        "transform": "Rename samples to p_perp.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "density_sampling",
-          "port": "samples"
-        },
-        "to": {
-          "node": "thomson_pack",
-          "port": "density"
-        },
-        "description": "Optional sampled density.",
-        "condition": "Only if a non-null density field was supplied.",
-        "transform": "Rename samples to density.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "temperature_sampling",
-          "port": "samples"
-        },
-        "to": {
-          "node": "thomson_pack",
-          "port": "electron_temperature"
-        },
-        "description": "Optional sampled electron temperature.",
-        "condition": "Only if a non-null electron_temperature field was supplied.",
-        "transform": "Rename samples to electron_temperature.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "thomson_pack",
+          "node": "pack",
           "port": "thomson"
         },
         "to": {
           "node": "$output",
           "port": "thomson"
         },
-        "description": "Thomson-like local profile predictions.",
-        "condition": "Only after a successful thomson request.",
-        "transform": "Identity; omit the entire key otherwise.",
+        "description": "profile 输出。",
+        "condition": "请求 thomson 时。",
+        "transform": "保持该端口值。",
         "kind": "data",
         "required": false
+      },
+      {
+        "from": {
+          "node": "pack",
+          "port": "units"
+        },
+        "to": {
+          "node": "$output",
+          "port": "units"
+        },
+        "description": "与输出匹配的单位。",
+        "condition": "正常执行。",
+        "transform": "保持该端口值。",
+        "kind": "data",
+        "required": true
       }
     ],
     "execution": {
-      "mode": "ordered_dag_with_conditional_branches",
-      "ordering": "Validate the three required mappings and presence of R and Z; process flux_loops first if requested, then thomson if requested. Within thomson, sample p_parallel, p_perp, optional density, then optional electron_temperature.",
+      "mode": "ordered_dag",
+      "ordering": "先请求与单位验证，再按 flux_loops、各请求 profile 执行双线性采样，最后转换并装配。",
       "branches": [
-        "A flux_loops key triggers psi sampling; without it, omit flux_loops from the output.",
-        "A thomson key triggers mandatory pressure sampling plus each present non-null optional profile; without it, omit thomson from the output.",
-        "Empty or unknown-only observations yield an empty mapping, while unknown keys alongside recognized requests are ignored."
+        "只执行明确请求的分支。",
+        "quantity=magnetic_flux 且 psi_unit=Wb/rad 时乘 2π；raw_psi 或 Wb 源不套用该转换。"
       ],
-      "state_ownership": "The caller retains ownership of equilibrium, observations, grids, and point arrays. The graph owns only a per-call output mapping and per-call sample arrays; it does not mutate the equilibrium state or retain persistent state.",
-      "failure_propagation": "A missing requested field or dependency failure aborts immediately; no fallback or partial prediction mapping is returned.",
+      "state_ownership": "读取调用方场，不修改数组；输出样本由本次调用持有。",
+      "failure_propagation": "任一请求错误或转换溢出终止整次调用，不返回删通道的成功。",
       "feedback": []
     }
   }

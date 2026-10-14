@@ -1,6 +1,7 @@
 """Standalone orchestration for direct anisotropic parameter inversion."""
 from __future__ import annotations
 from functools import partial
+from scirel.diagnostics.observation_residuals import _observation_layout
 
 def _mapping(value, name):
     if not isinstance(value, dict):
@@ -13,11 +14,17 @@ def _callable_port(value, name):
     return value
 
 def run_graph(inputs, *, operator_loader):
-    """Dispatch YAML-declared operators with explicit N6/N9 caller ports."""
+    """Bind fixed observation layout and bounded valid-trial optimization.
+
+    Caller ports supply the physical closure and observation units. Numerical
+    optimizer convergence and forward convergence are reported separately;
+    neither proves a global optimum or parameter identifiability.
+    """
     inputs = _mapping(inputs, 'inputs')
     initial_params = dict(_mapping(inputs.get('initial_params'), 'initial_params'))
     bounds = dict(_mapping(inputs.get('bounds'), 'bounds'))
     observations = _mapping(inputs.get('observations'), 'observations')
+    residual_size = sum(values.size for _, _, values, _, _ in _observation_layout(observations))
     solver_config = dict(_mapping(inputs.get('solver_config'), 'solver_config'))
     equilibrium_solver = _callable_port(inputs.get('equilibrium_solver'), 'equilibrium_solver')
     diagnostic_evaluator = _callable_port(inputs.get('diagnostic_evaluator'), 'diagnostic_evaluator')
@@ -39,8 +46,8 @@ def run_graph(inputs, *, operator_loader):
         'evaluate_anisotropic_trial',
     )
     optimizer = operator_loader('scirel.inference.anisotropic_parameter_optimization', 'optimize_anisotropic_parameters')
-    trial_port = partial(trial_evaluator, observations=observations, solver_config=solver_config, equilibrium_solver=equilibrium_port, diagnostic_evaluator=diagnostic_evaluator, residual_reducer=residual_reducer)
-    arguments = {'initial_params': initial_params, 'bounds': bounds, 'method': inputs['method'], 'trial_evaluator': trial_port, 'fit_keys': inputs.get('fit_keys'), 'n_initial_samples': inputs.get('n_initial_samples'), 'seed': inputs.get('seed')}
+    trial_port = partial(trial_evaluator, observations=observations, solver_config=solver_config, equilibrium_solver=equilibrium_port, diagnostic_evaluator=diagnostic_evaluator, residual_reducer=residual_reducer, residual_size=residual_size, failure_penalty=inputs.get('failure_penalty', 1.e12))
+    arguments = {'initial_params': initial_params, 'bounds': bounds, 'method': inputs['method'], 'trial_evaluator': trial_port, 'fit_keys': inputs.get('fit_keys'), 'n_initial_samples': inputs.get('n_initial_samples'), 'seed': inputs.get('seed'), 'residual_size': residual_size, 'failure_penalty': inputs.get('failure_penalty',1.e12), 'max_evaluations': inputs.get('max_evaluations',200)}
     if inputs.get('n_initial_samples') is not None:
         arguments['lhs_sampler'] = operator_loader('scirel.inference.latin_hypercube_sampling', 'sample_latin_hypercube')
     result = optimizer(**arguments)

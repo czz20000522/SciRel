@@ -927,10 +927,11 @@
       ],
       "modules": {
         "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
-        "scirel.diagnostics.equilibrium_synthesis_diagnostics": "082b779eb0654a941c6fa3eb94a37fd3465ebde051b9593fd206c8ec72d84806",
-        "scirel.geometry.bilinear_grid_sampling": "8b4f3506833e1cc4a00369959352d80e8dd45cc7f138f0304ac047bb84b4c251"
+        "scirel.diagnostics.equilibrium_synthesis_diagnostics": "f4185e7184d3ee3db66ead6fd45be9a41f4f6daa60bf3455c5ce69340ee3f96a",
+        "scirel.geometry.bilinear_grid_sampling": "8b4f3506833e1cc4a00369959352d80e8dd45cc7f138f0304ac047bb84b4c251",
+        "scirel.diagnostics.observation_residuals": "e2e8df4d18ae438372c06c212bfb5784bc2909ca9c7c5ba5784c3c811a0074bc"
       },
-      "review_basis": "Port identity only, not scientific qualification: run_graph requires equilibrium/observations mappings and explicit R/Z, samples requested psi/profile fields through bilinear sampler. Unknown observation keys ignored by retained runtime; no psi-to-loop flux conversion added."
+      "review_basis": "Port identity only; root scientific acceptance is separate. Current run_graph validates nonempty explicit observation requests, source/profile units and psi-to-Wb convention before sampling. Shared channel vocabulary is source-bound; requested missing channels reject."
     },
     {
       "asset_id": "scirel.inference.direct-anisotropic-inversion",
@@ -942,6 +943,10 @@
         },
         {
           "name": "bounds",
+          "required": true
+        },
+        {
+          "name": "method",
           "required": true
         },
         {
@@ -961,10 +966,6 @@
           "required": true
         },
         {
-          "name": "method",
-          "required": true
-        },
-        {
           "name": "fit_keys",
           "required": false,
           "default": null
@@ -978,17 +979,27 @@
           "name": "seed",
           "required": false,
           "default": null
+        },
+        {
+          "name": "failure_penalty",
+          "required": false,
+          "default": 1000000000000.0
+        },
+        {
+          "name": "max_evaluations",
+          "required": false,
+          "default": 200
         }
       ],
       "modules": {
         "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
-        "scirel.diagnostics.observation_residuals": "7309f5e6f4841b8541535b1e318d4f074d3a51b8d1ec369ea5e8e8402e88061a",
-        "scirel.inference.anisotropic_parameter_optimization": "7e3798409b4c3796536a3ec0a4ef9d424ced3ceb6d0dc27eae076d83835397f0",
-        "scirel.inference.anisotropic_trial_evaluation": "02d4f2a0423741b1833b9408f2ad89d9f776fd47d46210519da7bb86cb4a5e7d",
-        "scirel.inference.direct_anisotropic_inversion": "cfeef6483b1aa6f0b05d63fa32680e50342190e0e5eab4ee543bb4c176012a3c",
+        "scirel.diagnostics.observation_residuals": "e2e8df4d18ae438372c06c212bfb5784bc2909ca9c7c5ba5784c3c811a0074bc",
+        "scirel.inference.anisotropic_parameter_optimization": "39bf671acbac17817df39943dbe16c2728ca4351c5e087b0292765531c8183e0",
+        "scirel.inference.anisotropic_trial_evaluation": "58d49ae22273a533682726e539d44408214c41ee2a3e9cf2a6387f98dabad4fa",
+        "scirel.inference.direct_anisotropic_inversion": "d34a78aab257aaf02948b92fe210aa56409154a8d8f8affcb60c42a5a9a981dd",
         "scirel.inference.latin_hypercube_sampling": "dd8171f58e24391f858b7bbf7edfd37c7e6a89c73d0c0aff594e75c7b27f99f1"
       },
-      "review_basis": "Port identity only, not scientific qualification: seven required mapping/callable/method inputs validated by run_graph; fit_keys,n_initial_samples,seed absent pass None to optimizer, optional sampler is invoked only when n_initial_samples supplied. Science gaps remain separately queued."
+      "review_basis": "Port identity only; root scientific acceptance is separate. Fixed standard observation layout supplies N to trial and optimizer; finite failure penalty and actual scientific call budget are explicit. Numerical failed trials are excluded from best, terminal parameters are freshly evaluated, optimizer/forward/identifiability states remain distinct."
     },
     {
       "asset_id": "scirel.equilibrium.isotropic-pressure-flux",

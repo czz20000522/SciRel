@@ -1,43 +1,48 @@
-"""Source-free cross-mesh distribution interpolation (interp_fvrvxx).
+"""Nonnegative conservative remapping of cylindrical velocity distributions.
 
-Reproduces KN1DPy ``interp_fvrvxx`` (``KN1DPy/interp_fvrvxx.py``), the N5 outer
-H<->H2 handoff seam that transfers a velocity distribution between two phase
-space meshes (``fH -> fHM``, ``fH2 -> fH2A``, ``fSH -> fSHA``;
-``KN1DPy/kn1d.py:439,475-476``).
+The default ``correct=1`` is a scientific successor to the saved KN1DPy
+``interp_fvrvxx`` handoff. It retains cell-overlap interpolation and the
+stateless two-velocity/one-spatial-axis interface, but replaces the defective
+AN/BN correction. Historical source parity is not claimed for the correction.
 
-The saved formal operator has no cache or w_new branch; this stateless port
-recomputes the weight matrix on each call. The original runtime's cache
-lifecycle is outside this saved-operator comparison. SciRel uses its existing
-cylindrical quadrature for the same source-defined velocity-cell geometry:
+Discrete cell masses use ``pi*(r_right**2-r_left**2)*dvx``. Source density,
+axial momentum density and squared-speed energy density are converted to
+mesh_b normalization and linearly interpolated in x BEFORE division by
+density. This preserves extensive moments when density varies spatially.
+At each nonzero-density slice, a relative-entropy projection of overlap cell
+probabilities enforces those three moments and nonnegativity. Its reference
+mixes 1e-12 cell-volume probability into the normalized overlap; this opens
+zero-overlap cells, without changing target moments or clipping the result.
+Targets on a convex-hull face use only nodes on that face. Damped Newton
+updates solve the dual with gradient equal to the moment residual and
+covariance Hessian; max_correction_iterations bounds updates per slice.
 
-- ``fV = sqrt(Tnorm_b / Tnorm_a)`` scales mesh_b velocity cells onto mesh_a.
-- ``weight`` (nvrb*nvxb, nvra*nvxa) holds the 4-D cell-overlap volume integral
-  ``2*pi*(vraMax^2 - vraMin^2)*(vxaMax - vxaMin)/(Vr2pidVrb*dVxb)`` for every
-  overlapping (ib,jb,ia,ja) velocity cell.
-- ``fb_xa = weight @ fa.reshape(nvra*nvxa, nxa, order='F')`` transfers the
-  distribution onto mesh_b's velocity space evaluated on the mesh_a x grid.
-- x-interpolation: ``kL = locate(mesh_a.x, mesh_b.x[k])`` (searchsorted),
-  ``f = (x_b[k]-x_a[kL])/(x_a[kR]-x_a[kL])`` linear in x.
-- Moment correction (``correct=1``): AN/BN perturbation moments built from the
-  padded ``Nij`` cell densities, four sign branches for (alpha,beta), step
-  ``s = min(1/max(-RHS[ii]/Nij[ii]), 1)``, iterate while ``s < 1`` within
-  an explicit caller-bounded number of updates. Exhaustion raises ValueError.
-- Density rescale: ``tot_b[k0:k1+1] = interp1d(x_a, tot_a,
-  fill_value="extrapolate")(x_b[k0:k1+1])``, renormalising ``fb`` where its
-  own integrated total exceeds ``min(fb>0)``.
+A finite destination grid cannot represent every source moment. Targets
+outside conv{(vx_j, vr_i**2+vx_j**2)} raise InfeasibleMomentsError with a
+separating-inequality diagnostic. A numerically unresolved feasible target
+raises MomentCorrectionConvergenceError; neither failure returns a partial
+result. Face classification uses 64 binary64 eps in scaled geometry; every
+returned corrected slice must satisfy all three scaled moments within
+128 eps. These are roundoff checks, not physical target relaxation.
 
-Input contract: ``fa (nvra,nvxa,nxa)``, mesh_a ``(vr,vx,x,Tnorm)``, mesh_b
-``(vr,vx,x,Tnorm)``, ``correct`` branch selector.  ``do_warn`` triggers the
-source boundary warnings only (output unchanged).
+Zero density returns zero. Identical velocity meshes/normalizations use exact
+convex spatial interpolation; identical spatial nodes therefore give identity.
+Spatial nodes outside the source interval are zero-filled. Nonuniform grids,
+nonzero drift and unequal positive Tnorm are supported when target moments
+are realizable and the binary64 computation is representable. The retained
+``correct=0`` algebraic compatibility branch includes its historical density
+rescale and has no three-moment or nonnegative-physical-distribution contract.
+``do_warn`` emits the historical boundary warnings without changing values.
 
-The operator is stateless. Non-real inputs, undefined cylindrical axes and
-correction nonconvergence fail closed. KN1DPy's strict D1 qualification is
-withdrawn; source comparison is bounded historical development evidence.
+This validates a finite-grid mathematical transfer, not atomic physics or a
+whole KN1D project. The prior strict D1 qualification remains withdrawn;
+original failure/replay evidence and pending redistribution licensing remain.
 """
 from __future__ import annotations
 
 import numpy as np
 from scipy import interpolate
+from scipy.special import logsumexp
 
 from .cylindrical_velocity_quadrature import make_cylindrical_velocity_quadrature
 
@@ -118,6 +123,171 @@ def _real_scalar(value, name):
     return float(array)
 
 
+class InfeasibleMomentsError(ValueError):
+    """No nonnegative distribution on the destination nodes has these moments.
+
+    ``diagnostics`` contains the target spatial index, normalized requested
+    mean velocity/energy and the separating convex-hull inequality residual.
+    """
+
+    def __init__(self, message, diagnostics):
+        super().__init__(message)
+        self.diagnostics = diagnostics
+
+
+class MomentCorrectionConvergenceError(ValueError):
+    """A feasible moment projection could not meet its numerical postcondition."""
+
+
+def _positive_moment_projection(raw, volume, vx, vr, density, mean_v,
+                                mean_e, max_iterations, spatial_index):
+    """Relative-entropy projection of cell probabilities, with exact targets.
+
+    The feasible moments form conv{(vx_j, vr_i**2+vx_j**2)}. Its lower
+    boundary is the polygonal interpolation of vr_min**2+vx_j**2, its upper
+    boundary joins the two extreme-vx points at vr_max, and its sides bound
+    vx. Boundary targets restrict the support to the corresponding faces.
+    On that support minimize sum p*log(p/q), sum p=1, E_p[(v,e)]=target.
+    The dual has gradient = moment residual and Hessian = covariance.
+    No negative-cell clipping, moment relaxation or partial result is used.
+    """
+    eps = np.finfo(float).eps
+    vscale = max(abs(vx[0]), abs(vx[-1]))
+    with np.errstate(over="ignore", invalid="ignore"):
+        energies = vr[:, None]**2 + vx[None, :]**2
+        escale = np.max(energies)
+        features = np.column_stack((
+            np.broadcast_to(vx / vscale, raw.shape).ravel(),
+            (energies / escale).ravel(),
+        ))
+        target = np.array([mean_v / vscale, mean_e / escale])
+        slopes = vx[:-1] + vx[1:]
+        lower_intercepts = vr[0]**2 - vx[:-1]*vx[1:]
+        upper_slope = vx[0] + vx[-1]
+        upper_intercept = vr[-1]**2 - vx[0]*vx[-1]
+        normals = np.vstack((
+            [1., 0.], [-1., 0.],
+            np.column_stack((-slopes * vscale / escale, np.ones(slopes.size))),
+            [upper_slope * vscale / escale, -1.],
+        ))
+        offsets = np.concatenate(([-vx[0]/vscale, vx[-1]/vscale],
+                                  -lower_intercepts / escale,
+                                  [upper_intercept / escale]))
+    if not all(np.all(np.isfinite(a)) for a in
+               (features, target, normals, offsets)):
+        raise ValueError(f"moment features are not representable at x_b index {spatial_index}")
+    norm = np.linalg.norm(normals, axis=1)
+    normals, offsets = normals/norm[:, None], offsets/norm
+    margins = normals @ target + offsets
+    geometry_tolerance = 64 * eps
+    if np.min(margins) < -geometry_tolerance:
+        raise InfeasibleMomentsError(
+            f"target moments are outside the destination convex hull at x_b index {spatial_index}",
+            {"x_b_index": spatial_index, "mean_v_destination_units": float(mean_v),
+             "mean_energy_destination_units": float(mean_e),
+             "maximum_node_energy": float(escale),
+             "separating_inequality": int(np.argmin(margins)),
+             "scaled_margin": float(np.min(margins))},
+        )
+    # Equality on a hull face forces all probability off its exterior nodes.
+    boundary = margins <= geometry_tolerance
+    support = np.ones(raw.size, dtype=bool)
+    if np.any(boundary):
+        on_faces = features @ normals[boundary].T + offsets[boundary]
+        support = np.all(np.abs(on_faces) <= 128 * eps, axis=1)
+    if not np.any(support):
+        raise MomentCorrectionConvergenceError(
+            f"cannot resolve destination hull face at x_b index {spatial_index}")
+
+    with np.errstate(over="ignore", invalid="ignore"):
+        seed = (raw * volume).ravel()
+        seed_total = np.sum(seed)
+    if not np.isfinite(seed_total) or np.any(seed < 0):
+        raise ValueError(f"overlap cell masses are invalid at x_b index {spatial_index}")
+    if seed_total > 0:
+        original = seed / seed_total
+        if np.max(np.abs(original @ features - target)) <= 16 * eps:
+            result = (density * original).reshape(raw.shape) / volume
+            if np.all(np.isfinite(result)):
+                return result
+    else:
+        original = np.zeros_like(seed)
+
+    # Explicit positive reference measure (NOT a relaxed target): mixing
+    # 1e-12 cell-volume probability opens cells with zero overlap. The final
+    # constrained density, momentum and energy are unchanged by this choice.
+    reference_volume = volume.ravel()[support]
+    reference_volume = reference_volume / np.sum(reference_volume)
+    q = original[support]
+    if np.sum(q) > 0:
+        q = q / np.sum(q)
+        q = (1 - 1e-12) * q + 1e-12 * reference_volume
+    else:
+        q = reference_volume
+    centered = features[support] - target
+    # A boundary edge/vertex has only one/zero independent moment direction.
+    _, singular, vh = np.linalg.svd(centered, full_matrices=False)
+    rank = int(np.count_nonzero(singular > 128 * eps * max(1., singular[0])))
+    basis = vh[:rank].T
+    x = centered @ basis
+    theta = np.zeros(rank)
+    logq = np.log(q)
+    probability = q
+    for iteration in range(max_iterations + 1):
+        z = logq + x @ theta
+        value = logsumexp(z)
+        probability = np.exp(z - value)
+        residual = probability @ centered
+        if np.max(np.abs(residual)) <= 32 * eps:
+            break
+        if iteration == max_iterations:
+            raise MomentCorrectionConvergenceError(
+                f"moment correction did not converge within {max_iterations} iterations at x_b index {spatial_index}")
+        gradient = probability @ x
+        deviation = x - gradient
+        hessian = (deviation.T * probability) @ deviation
+        try:
+            step = np.linalg.solve(hessian, gradient)
+        except np.linalg.LinAlgError as exc:
+            raise MomentCorrectionConvergenceError(
+                f"moment correction covariance is singular at x_b index {spatial_index}") from exc
+        slope = float(gradient @ step)
+        if not np.isfinite(slope) or slope <= 0:
+            raise MomentCorrectionConvergenceError(
+                f"moment correction has no descent direction at x_b index {spatial_index}")
+        damping = 1.
+        for _ in range(64):
+            trial = theta - damping * step
+            trial_z = logq + x @ trial
+            trial_value = logsumexp(trial_z)
+            trial_probability = np.exp(trial_z - trial_value)
+            # The second criterion avoids objective cancellation near a root;
+            # it still requires a strict reduction of the actual moment error.
+            if (trial_value <= value - 1e-4*damping*slope or
+                    np.linalg.norm(trial_probability @ x) <
+                    (1 - 1e-4*damping)*np.linalg.norm(gradient)):
+                theta = trial
+                break
+            damping *= .5
+        else:
+            raise MomentCorrectionConvergenceError(
+                f"moment correction line search failed at x_b index {spatial_index}")
+    result_mass = np.zeros(raw.size)
+    result_mass[support] = density * probability
+    result = result_mass.reshape(raw.shape) / volume
+    # Postcondition is checked on the actual returned distribution, after
+    # conversion back from cell probabilities (including any underflow).
+    actual = (result * volume).ravel()
+    actual_density = np.sum(actual)
+    actual_mean = (actual / density) @ features
+    if (not np.all(np.isfinite(result)) or np.any(result < 0)
+            or abs(actual_density / density - 1) > 128 * eps
+            or np.max(np.abs(actual_mean - target)) > 128 * eps):
+        raise MomentCorrectionConvergenceError(
+            f"moment correction postcondition failed at x_b index {spatial_index}")
+    return result
+
+
 def interp_distribution_across_mesh(
     fa,
     vr_a,
@@ -132,25 +302,56 @@ def interp_distribution_across_mesh(
     do_warn=None,
     max_correction_iterations=1000,
 ):
-    """Interpolate a distribution between two phase-space meshes.
+    """Remap a cylindrical distribution while preserving three discrete moments.
 
     Parameters
     ----------
-    fa : (nvra,nvxa,nxa) input distribution on mesh_a.
-    vr_a, vx_a, x_a : mesh_a radial/axial velocity and spatial nodes.
-    Tnorm_a : mesh_a normalisation temperature (eV).
-    vr_b, vx_b, x_b : mesh_b radial/axial velocity and spatial nodes.
-    Tnorm_b : mesh_b normalisation temperature (eV).
-    correct : 1 to apply the source moment-correction loop (default), 0 to
-        return the raw interpolant.
-    do_warn : None to skip boundary warnings; integer values apply the saved
-        threshold without changing the output.
-    max_correction_iterations : positive integer limit for the correction
-        updates at each target spatial node (default 1000).
+    fa : array_like, shape (nvra, nvxa, nxa)
+        Finite real distribution; nonnegative when ``correct=1``.
+    vr_a, vx_a, x_a : array_like
+        Source radial velocity, axial velocity and spatial nodes. Each axis
+        is finite, strictly increasing and has at least two nodes; radial
+        nodes are nonnegative and axial nodes include both signs.
+    Tnorm_a : float
+        Positive finite source normalization temperature (eV).
+    vr_b, vx_b, x_b : array_like
+        Destination axes, subject to the same node contracts and the retained
+        velocity/spatial overlap requirements. Outside-source x nodes get zero.
+    Tnorm_b : float
+        Positive finite destination normalization temperature (eV).
+    correct : {0, 1}, optional
+        Default 1 applies nonnegative relative-entropy moment projection.
+        0 retains the historical algebraic interpolant and density rescale,
+        without a physical positivity or three-moment conservation guarantee.
+    do_warn : int or None, optional
+        Historical boundary-warning threshold; it does not change output.
+    max_correction_iterations : int, optional
+        Positive cap on Newton updates per target spatial slice; default 1000.
 
     Returns
     -------
-    fb : (nvrb,nvxb,nxb) interpolated distribution on mesh_b.
+    fb : ndarray, shape (nvrb, nvxb, nxb)
+        Finite destination distribution. For ``correct=1`` it is nonnegative
+        and reproduces the spatially interpolated density, axial momentum
+        density and squared-speed energy density, to scaled binary64 roundoff.
+
+    Raises
+    ------
+    InfeasibleMomentsError
+        Requested normalized moments lie outside the convex hull of destination
+        node velocity/energy pairs. Its ``diagnostics`` identifies the slice
+        and a separating inequality; changing solver iterations cannot fix it.
+    MomentCorrectionConvergenceError
+        A projection fails its iteration bound or numerical postcondition.
+    ValueError
+        Invalid inputs, missing overlap or unrepresentable intermediates.
+
+    Notes
+    -----
+    Spatial interpolation acts on extensive moments before normalizing by
+    density. The 1e-12 positive reference mixture changes the entropy prior,
+    never the target moments. No negative clipping or partial result is used.
+    Finite-grid conservation does not establish an atomic-physics model.
     """
     vr_a = _as_1d(vr_a, "vr_a")
     vx_a = _as_1d(vx_a, "vx_a")
@@ -200,6 +401,8 @@ def interp_distribution_across_mesh(
     nvra, nvxa, nxa = vr_a.size, vx_a.size, x_a.size
     nvrb, nvxb, nxb = vr_b.size, vx_b.size, x_b.size
     fa = _as_3d(fa, "fa", nvra, nvxa, nxa)
+    if correct and np.any(fa < 0):
+        raise ValueError("fa must be nonnegative for positive moment correction")
 
     fV = np.sqrt(Tnorm_b / Tnorm_a)
     if not np.isfinite(fV) or fV <= 0.0:
@@ -254,145 +457,83 @@ def interp_distribution_across_mesh(
     _fa = np.reshape(fa, (nvra * nvxa, nxa), order='F')
     fb_xa = weight @ _fa
 
-    #   Desired moments of fb on the mesh_a x grid (source _Wxa/_Ea)
-    na = np.zeros(nxa)
-    _Wxa = np.zeros(nxa)
-    _Ea = np.zeros(nxa)
-    for k in range(nxa):
-        na[k] = np.sum(Vr2pidVra * (fa[:, :, k] @ dVxa))
-        if na[k] > 0:
-            _Wxa[k] = np.sqrt(Tnorm_a) * np.sum(Vr2pidVra * (fa[:, :, k] @ (vx_a * dVxa))) / na[k]
-            _Ea[k] = Tnorm_a * np.sum(Vr2pidVra * ((Vra2Vxa2 * fa[:, :, k]) @ dVxa)) / na[k]
+    # Density, momentum density and energy density are linear functionals.
+    # Interpolate these extensive moments in x BEFORE dividing by density;
+    # interpolating mean velocity/energy would violate conservation whenever
+    # the source density varies. Velocities here use mesh_b normalized units.
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+        va = vx_a / fV
+        ea = (vr_a[:, None] / fV)**2 + va[None, :]**2
+        volume_a = Vr2pidVra[:, None] * dVxa[None, :]
+        masses_a = fa * volume_a[:, :, None]
+        density_a = np.sum(masses_a, axis=(0, 1))
+        momentum_a = np.sum(masses_a * va[None, :, None], axis=(0, 1))
+        energy_a = np.sum(masses_a * ea[:, :, None], axis=(0, 1))
+    if (not np.all(np.isfinite(fb_xa)) or
+            (correct and not all(np.all(np.isfinite(v)) for v in
+                                 (density_a, momentum_a, energy_a)))):
+        raise ValueError("source moments or overlap interpolant are not representable")
+    if correct and np.any((density_a == 0) & np.any(fa > 0, axis=(0, 1))):
+        raise ValueError("positive source density underflows to zero")
 
-    #   x-interpolation of fb and of the moment targets
-    wxa = np.zeros(nxb)
-    Ea = np.zeros(nxb)
+    same_velocity_mesh = (
+        Tnorm_a == Tnorm_b and np.array_equal(vr_a, vr_b)
+        and np.array_equal(vx_a, vx_b)
+    )
     for k in range(k0, k1 + 1):
-        kL = np.maximum(_locate(x_a, x_b[k]), 0)
-        kR = np.minimum(kL + 1, x_a.size - 1)
-        kL = np.minimum(kL, kR - 1)
+        kL = max(int(_locate(x_a, x_b[k])), 0)
+        kR = min(kL + 1, x_a.size - 1)
+        kL = min(kL, kR - 1)
+        t = (x_b[k] - x_a[kL]) / (x_a[kR] - x_a[kL])
+        if correct and same_velocity_mesh:
+            # Exact identity at source nodes; convex spatial interpolation
+            # already preserves every discrete velocity moment.
+            fb[:, :, k] = (1 - t) * fa[:, :, kL] + t * fa[:, :, kR]
+            continue
+        if correct:
+            raw = (1 - t) * fb_xa[:, kL] + t * fb_xa[:, kR]
+        else:
+            # The uncorrected algebraic branch is retained for compatibility.
+            raw = fb_xa[:, kL] + (fb_xa[:, kR] - fb_xa[:, kL]) * t
+        fb[:, :, k] = raw.reshape((nvrb, nvxb), order="F")
+        if correct:
+            density = (1 - t) * density_a[kL] + t * density_a[kR]
+            if density == 0:
+                fb[:, :, k] = 0
+                continue
+            momentum = (1 - t) * momentum_a[kL] + t * momentum_a[kR]
+            energy = (1 - t) * energy_a[kL] + t * energy_a[kR]
+            fb[:, :, k] = _positive_moment_projection(
+                fb[:, :, k], Vol, vx_b, vr_b, density,
+                momentum / density, energy / density,
+                max_correction_iterations, k,
+            )
 
-        f = (x_b[k] - x_a[kL]) / (x_a[kR] - x_a[kL])
-        fb[:, :, k] = np.reshape((fb_xa[:, kL] + (fb_xa[:, kR] - fb_xa[:, kL]) * f),
-                                 fb[:, :, k].shape, order='F')
-        wxa[k] = _Wxa[kL] + (_Wxa[kR] - _Wxa[kL]) * f
-        Ea[k] = _Ea[kL] + (_Ea[kR] - _Ea[kL]) * f
-
-    #   Moment correction (source correct loop)
     if correct:
-        AN = np.zeros((nvrb, nvxb, 2))
-        BN = np.zeros((nvrb, nvxb, 2))
-        sgn = np.array([1, -1])
-
-        for k in range(nxb):
-            allow_neg = 0
-            nb = np.sum(Vr2pidVrb * (fb[:, :, k] @ dVxb))
-            if not np.isfinite(nb):
-                raise ValueError(f"moment correction density is non-finite at x_b index {k}")
-            if nb > 0:
-                goto_correct = True
-                iterations = 0
-                while goto_correct:
-                    if iterations >= max_correction_iterations:
-                        raise ValueError(
-                            f"moment correction did not converge within "
-                            f"{max_correction_iterations} iterations at x_b index {k}"
-                        )
-                    iterations += 1
-                    goto_correct = False
-                    nb = np.sum(Vr2pidVrb * (fb[:, :, k] @ dVxb))
-                    Wxb = np.sqrt(Tnorm_b) * np.sum(Vr2pidVrb * (fb[:, :, k] @ (vx_b * dVxb))) / nb
-                    Eb = Tnorm_b * np.sum(Vr2pidVrb * ((Vrb2Vxb2 * fb[:, :, k]) @ dVxb)) / nb
-
-                    Nij = np.zeros((nvrb + 2, nvxb + 2))
-                    Nij[1:nvrb + 1, 1:nvxb + 1] = fb[:, :, k] * Vol / nb
-
-                    cutoff = 1.0e-6 * np.max(Nij)
-                    ii = np.where((abs(Nij) < cutoff) & (abs(Nij) > 0))
-                    if ii[0].size > 0:
-                        Nij[ii] = 0.0
-
-                    if max(Nij[2, :]) <= 0:
-                        allow_neg = 1
-
-                    Nijp1_vx_Dvx = np.roll(Nij * Vx_DVx, shift=-1, axis=1)
-                    Nij_vx_Dvx = Nij * Vx_DVx
-                    Nijm1_vx_Dvx = np.roll(Nij * Vx_DVx, shift=1, axis=1)
-                    Nip1j_vr_Dvr = np.roll(Nij * Vr_DVr, shift=-1, axis=0)
-                    Nij_vr_Dvr = Nij * Vr_DVr
-                    Nim1j_vr_Dvr = np.roll(Nij * Vr_DVr, shift=1, axis=0)
-
-                    _AN = np.roll(Nij * Vth_DVx, shift=1, axis=1) - Nij * Vth_DVx
-                    AN[:, :, 0] = _AN[1:nvrb + 1, 1:nvxb + 1]
-
-                    _AN = -np.roll(Nij * Vth_DVx, shift=-1, axis=1) + Nij * Vth_DVx
-                    AN[:, :, 1] = _AN[1:nvrb + 1, 1:nvxb + 1]
-
-                    BN[:, jpa + 1:jpb + 1, 0] = (Nijm1_vx_Dvx[1:nvrb + 1, jpa + 2:jpb + 2]
-                                                - Nij_vx_Dvx[1:nvrb + 1, jpa + 2:jpb + 2])
-                    BN[:, jpa, 0] = -Nij_vx_Dvx[1:nvrb + 1, jpa + 1]
-                    BN[:, jnb, 0] = Nij_vx_Dvx[1:nvrb + 1, jnb + 1]
-                    BN[:, jna:jnb, 0] = (-Nijp1_vx_Dvx[1:nvrb + 1, jna + 1:jnb + 1]
-                                         + Nij_vx_Dvx[1:nvrb + 1, jna + 1:jnb + 1])
-                    BN[:, :, 0] = (BN[:, :, 0]
-                                   + Nim1j_vr_Dvr[1:nvrb + 1, 1:nvxb + 1]
-                                   - Nij_vr_Dvr[1:nvrb + 1, 1:nvxb + 1])
-
-                    BN[:, jpa + 1:jpb + 1, 1] = (-Nijp1_vx_Dvx[1:nvrb + 1, jpa + 2:jpb + 2]
-                                                 + Nij_vx_Dvx[1:nvrb + 1, jpa + 2:jpb + 2])
-                    BN[:, jpa, 1] = -Nijp1_vx_Dvx[1:nvrb + 1, jpa + 1]
-                    BN[:, jnb, 1] = Nijm1_vx_Dvx[1:nvrb + 1, jnb + 1]
-                    BN[:, jna:jnb, 1] = (Nijm1_vx_Dvx[1:nvrb + 1, jna + 1:jnb + 1]
-                                         - Nij_vx_Dvx[1:nvrb + 1, jna + 1:jnb + 1])
-                    BN[1:nvrb, :, 1] = (BN[1:nvrb, :, 1]
-                                        - Nip1j_vr_Dvr[2:nvrb + 1, 1:nvxb + 1]
-                                        + Nij_vr_Dvr[2:nvrb + 1, 1:nvxb + 1])
-                    BN[0, :, 1] = BN[0, :, 1] - Nip1j_vr_Dvr[1, 1:nvxb + 1]
-
-                    if allow_neg:
-                        BN[0, :, 1] = BN[0, :, 1] - Nij_vr_Dvr[1, 1:nvxb + 1]
-                        BN[1, :, 1] = BN[1, :, 1] + Nij_vr_Dvr[1, 1:nvxb + 1]
-
-                    Nij = Nij[1:nvrb + 1, 1:nvxb + 1]
-
-                    TB1 = np.zeros(2, float)
-                    TB2 = np.zeros(2, float)
-
-                    for ia in range(2):
-                        TA1 = np.sqrt(Tnorm_b) * np.sum((AN[:, :, ia] @ vx_b))
-                        TA2 = Tnorm_b * np.sum(Vrb2Vxb2 * AN[:, :, ia])
-                        for ib in range(2):
-                            if TB1[ib] == 0:
-                                TB1[ib] = np.sqrt(Tnorm_b) * np.sum((BN[:, :, ib] @ vx_b))
-                            if TB2[ib] == 0:
-                                TB2[ib] = Tnorm_b * np.sum(Vrb2Vxb2 * BN[:, :, ib])
-
-                            denom = TA2 * TB1[ib] - TA1 * TB2[ib]
-                            beta = 0
-                            alpha = 0
-
-                            if (denom != 0) and (TA1 != 0):
-                                beta = (TA2 * (wxa[k] - Wxb) - TA1 * (Ea[k] - Eb)) / denom
-                                alpha = (wxa[k] - Wxb - TB1[ib] * beta) / TA1
-
-                            do_break = ((alpha * sgn[ia]) > 0) and ((beta * sgn[ib]) > 0)
-                            if do_break:
-                                break
-                        if do_break:
-                            break
-
-                    RHS = AN[:, :, ia] * alpha + BN[:, :, ib] * beta
-
-                    s = 1
-                    if not allow_neg:
-                        ii = np.nonzero(Nij)
-                        if np.size(ii) > 0:
-                            s = min(1 / np.max(-RHS[ii] / Nij[ii]), 1)
-
-                    fb[:, :, k] = nb * (Nij + s * RHS) / Vol
-                    if not np.all(np.isfinite(fb[:, :, k])):
-                        raise ValueError(f"moment correction is non-finite at x_b index {k}")
-                    goto_correct = (s < 1)
+        feature_v = np.broadcast_to(vx_b[None, :], Vol.shape)
+        feature_e = Vrb2Vxb2
+        vscale = max(abs(vx_b[0]), abs(vx_b[-1]))
+        escale = np.max(feature_e)
+        for k in range(k0, k1 + 1):
+            desired = np.array([np.interp(x_b[k], x_a, arr)
+                                for arr in (density_a, momentum_a, energy_a)])
+            if desired[0] == 0:
+                if np.any(fb[:, :, k] != 0):
+                    raise MomentCorrectionConvergenceError("zero density postcondition failed")
+                continue
+            actual_mass = fb[:, :, k] * Vol
+            actual = np.array([np.sum(actual_mass),
+                               np.sum(actual_mass * feature_v),
+                               np.sum(actual_mass * feature_e)])
+            with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+                normalized_actual = (actual / desired[0]) / np.array([1., vscale, escale])
+                normalized_desired = (desired / desired[0]) / np.array([1., vscale, escale])
+                residual = normalized_actual - normalized_desired
+            if (np.any(fb[:, :, k] < 0) or not np.all(np.isfinite(actual))
+                    or not np.all(np.isfinite(residual))
+                    or np.any(np.abs(residual) > 128 * np.finfo(float).eps)):
+                raise MomentCorrectionConvergenceError(
+                    f"returned distribution fails conservation at x_b index {k}")
 
     #   Boundary warnings (source do_warn block; output unchanged)
     if do_warn is not None:
@@ -420,19 +561,22 @@ def interp_distribution_across_mesh(
                     if (k1 < nxb - 1) and (fb[i, j, k1] > do_warn * big):
                         warn('Non-zero value of fb detected at max(Xa) boundary')
 
-    #   Density rescale (source rescale block)
-    tot_a = np.zeros(nxa)
-    for k in range(nxa):
-        tot_a[k] = np.sum(Vr2pidVra * (fa[:, :, k] @ dVxa))
-    tot_b = np.zeros(nxb)
-    tot_b[k0:k1 + 1] = interpolate.interp1d(x_a, tot_a, fill_value="extrapolate")(x_b[k0:k1 + 1])
-    ii = np.where(fb > 0)
-    if ii[0].size > 0:
-        min_tot = np.min(np.array(fb[ii]))
-        for k in range(k0, k1 + 1):
-            tot = np.sum(Vr2pidVrb * (fb[:, :, k] @ dVxb))
-            if tot > min_tot:
-                fb[:, :, k] = fb[:, :, k] * tot_b[k] / tot
+    # The legacy correct=0 branch keeps its historical algebraic rescale.
+    # Corrected slices have already satisfied all three explicit moments.
+    if not correct:
+        #   Density rescale (source rescale block)
+        tot_a = np.zeros(nxa)
+        for k in range(nxa):
+            tot_a[k] = np.sum(Vr2pidVra * (fa[:, :, k] @ dVxa))
+        tot_b = np.zeros(nxb)
+        tot_b[k0:k1 + 1] = interpolate.interp1d(x_a, tot_a, fill_value="extrapolate")(x_b[k0:k1 + 1])
+        ii = np.where(fb > 0)
+        if ii[0].size > 0:
+            min_tot = np.min(np.array(fb[ii]))
+            for k in range(k0, k1 + 1):
+                tot = np.sum(Vr2pidVrb * (fb[:, :, k] @ dVxb))
+                if tot > min_tot:
+                    fb[:, :, k] = fb[:, :, k] * tot_b[k] / tot
 
     if not np.all(np.isfinite(fb)):
         raise ValueError("fb must be finite")
