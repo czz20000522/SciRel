@@ -12,7 +12,7 @@ from typing import Callable
 from numbers import Integral
 
 import numpy as np
-from scipy.interpolate import InterpolatedUnivariateSpline
+from ._pressure_current import fit_pressure_spline, pressure_derivative, current_target, relaxed_green_update
 
 
 @dataclass(frozen=True)
@@ -25,6 +25,8 @@ class EquilibriumResult:
     residual: float
     closure_residual: float
     reason: str
+    residual_history: tuple = ()
+    closure_residual_history: tuple = ()
 
     def as_tuple(self):
         return self.psi, self.plas_currents, self.p_psifit
@@ -131,35 +133,27 @@ def compute_equilibrium(
     if dr == 0 or dz == 0:
         raise ValueError("R and Z spacing must be nonzero")
 
+    update_history, closure_history = [], []
+    def result(*args):
+        return EquilibriumResult(*args, tuple(update_history), tuple(closure_history))
+
     def fit(psi_mid):
-        x = np.asarray(psi_mid[:lim_idx + 1], dtype=float)
-        y = p_z0[:lim_idx + 1]
-        if np.any(~np.isfinite(x)) or np.any(np.diff(x) <= 0):
-            raise FloatingPointError("midplane flux must be finite and strictly increasing")
-        return InterpolatedUnivariateSpline(x, y, ext="zeros")
+        return fit_pressure_spline(psi_mid[:lim_idx + 1], p_z0[:lim_idx + 1])
 
     try:
         pfit = fit(psi[z0_idx])
     except Exception as exc:
-        return EquilibriumResult(psi.reshape(R.shape), currents.reshape(R.shape), None, "nonfinite", 0, np.nan, np.nan, str(exc))
+        return result(psi.reshape(R.shape), currents.reshape(R.shape), None, "nonfinite", 0, np.nan, np.nan, str(exc))
     edge = float(psi[z0_idx][lim_idx])
     if not np.isfinite(edge) or edge == 0:
-        return EquilibriumResult(psi.reshape(R.shape), currents.reshape(R.shape), pfit, "nonfinite", 0, np.nan, np.nan, "zero or nonfinite edge flux")
+        return result(psi.reshape(R.shape), currents.reshape(R.shape), pfit, "nonfinite", 0, np.nan, np.nan, "zero or nonfinite edge flux")
 
     residual = np.inf
     closure_residual = np.inf
     def closure(fitted_pressure, flux, edge_flux):
-        derivative = fitted_pressure.derivative()(flux)
-        if not np.all(np.isfinite(derivative)):
-            raise FloatingPointError("nonfinite pressure-current derivative")
-        derivative[flux > edge_flux] = 0.0
-        if plas_clip is not None:
-            derivative[clip] = 0.0
-        with np.errstate(over="ignore", invalid="ignore"):
-            target = r * derivative * dr * dz
-        if not np.all(np.isfinite(target)):
-            raise FloatingPointError("nonfinite pressure-current target")
-        return target
+        derivative = pressure_derivative(fitted_pressure, flux, edge_flux,
+            clip if plas_clip is not None else None)
+        return current_target(r, derivative, dr, dz)
 
     # State owner: this call. Order is spline derivative -> clip -> relaxed
     # current -> Green contraction -> flux -> edge/fit -> normalized update.
@@ -170,25 +164,24 @@ def compute_equilibrium(
         try:
             target_currents = closure(pfit, psi, edge)
         except FloatingPointError as exc:
-            return EquilibriumResult(psi.reshape(R.shape), currents.reshape(R.shape), pfit, "nonfinite", iteration - 1, np.nan, np.nan, str(exc))
+            return result(psi.reshape(R.shape), currents.reshape(R.shape), pfit, "nonfinite", iteration - 1, np.nan, np.nan, str(exc))
         old = psi.copy()
         old_currents = currents.copy()
-        currents = (1.0 - relax) * target_currents + relax * old_currents
-        psi_plas = g_psi.dot(currents)
-        if not np.all(np.isfinite(psi_plas)):
-            return EquilibriumResult(old.reshape(R.shape), currents.reshape(R.shape), pfit, "nonfinite", iteration, np.nan, np.nan, "nonfinite Green update")
-        psi = psi_plas + psi0
+        try:
+            currents, psi = relaxed_green_update(target_currents, old_currents, relax, g_psi, psi0)
+        except FloatingPointError as exc:
+            return result(old.reshape(R.shape), old_currents.reshape(R.shape), pfit, "nonfinite", iteration, np.nan, np.nan, str(exc))
         psi_mid = psi[z0_idx]
         try:
             edge = float(psi_mid[lim_idx])
             pfit = fit(psi_mid)
         except Exception as exc:
-            return EquilibriumResult(psi.reshape(R.shape), currents.reshape(R.shape), None, "nonfinite", iteration, np.nan, np.nan, str(exc))
+            return result(psi.reshape(R.shape), currents.reshape(R.shape), None, "nonfinite", iteration, np.nan, np.nan, str(exc))
         if not np.isfinite(edge) or edge == 0:
-            return EquilibriumResult(psi.reshape(R.shape), currents.reshape(R.shape), pfit, "nonfinite", iteration, np.nan, np.nan, "zero or nonfinite edge flux")
+            return result(psi.reshape(R.shape), currents.reshape(R.shape), pfit, "nonfinite", iteration, np.nan, np.nan, "zero or nonfinite edge flux")
         residual = float(np.linalg.norm(psi - old) / abs(edge))
         if not np.isfinite(residual):
-            return EquilibriumResult(psi.reshape(R.shape), currents.reshape(R.shape), pfit, "nonfinite", iteration, residual, np.nan, "nonfinite update residual")
+            return result(psi.reshape(R.shape), currents.reshape(R.shape), pfit, "nonfinite", iteration, residual, np.nan, "nonfinite update residual")
 
         # The update residual only measures a fixed point of the Green map.  A
         # zero (or otherwise insensitive) Green map can therefore report a
@@ -200,15 +193,17 @@ def compute_equilibrium(
         try:
             target_new = closure(pfit, psi, edge)
         except FloatingPointError as exc:
-            return EquilibriumResult(psi.reshape(R.shape), currents.reshape(R.shape), pfit, "nonfinite", iteration, residual, np.nan, str(exc))
+            return result(psi.reshape(R.shape), currents.reshape(R.shape), pfit, "nonfinite", iteration, residual, np.nan, str(exc))
         # Use common component scaling before norms.  The denominator is only
         # the target norm, giving the declared
         # ||I_new-I_target||_2 / ||I_target||_2 relation; using the actual
         # current as a competing denominator would under-report an oversized
         # current and make the public closure contract state-dependent.
         closure_residual = _normalized_closure_residual(currents, target_new)
+        update_history.append(residual)
+        closure_history.append(closure_residual)
         if not np.isfinite(closure_residual):
-            return EquilibriumResult(psi.reshape(R.shape), currents.reshape(R.shape), pfit, "nonfinite", iteration, residual, closure_residual, "nonfinite pressure-current closure residual")
+            return result(psi.reshape(R.shape), currents.reshape(R.shape), pfit, "nonfinite", iteration, residual, closure_residual, "nonfinite pressure-current closure residual")
         if residual <= tol and closure_residual <= tol:
-            return EquilibriumResult(psi.reshape(R.shape), currents.reshape(R.shape), pfit, "converged", iteration, residual, closure_residual, "update and pressure-current closure residuals <= tol")
-    return EquilibriumResult(psi.reshape(R.shape), currents.reshape(R.shape), pfit, "maxiter", int(maxiter), residual, closure_residual, "iteration bound reached")
+            return result(psi.reshape(R.shape), currents.reshape(R.shape), pfit, "converged", iteration, residual, closure_residual, "update and pressure-current closure residuals <= tol")
+    return result(psi.reshape(R.shape), currents.reshape(R.shape), pfit, "maxiter", int(maxiter), residual, closure_residual, "iteration bound reached")

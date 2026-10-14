@@ -2368,9 +2368,9 @@
     },
     {
       "asset_id": "scirel.diagnostics.firehose-mirror-margins",
-      "source_sha256": "406a63b50af8bc03612a1aac903d08f5da50cc9ff631bf7b5e3def0dd35080da",
+      "source_sha256": "81f2865194d475cd2e9a4760c378a69e7706246bf59308e5dff9bdfe908ee308",
       "summary": "用显式固定磁通导数计算局部旋磁对称压强诊断。",
-      "definition": "firehose_margin=B²/mu0+p_perp-p_parallel；mirror_margin=B*d[p_perp+B²/(2*mu0)]/dB|psi=B²/mu0+B*dp_perp_dB。所有样本最小值严格为正时相应局部标志为 True。对守恒量双 Maxwell 分布，镜模条件为 1-beta_perp*(T_perp/T_parallel-1)>0。",
+      "definition": "firehose_margin=B²/mu0+p_perp-p_parallel；mirror_margin=B*d[p_perp+B²/(2*mu0)]/dB|psi=B²/mu0+B*dp_perp_dB。所有样本最小值严格为正时相应局部标志为 True。对守恒量双 Maxwell 分布，镜模条件为 1-beta_perp*(T_perp/T_parallel-1)>0。 普通非严重相消数值保留原 float64 运算顺序。异号贡献抵消后，若结果幅度不大于最大项的一半，或中间乘积/商丢失量级，则对完整关系使用精确二进制有理数求值，最后一次舍入到 float64。此算术分支不是物理容差，不把结果钳制为零，也不只特判相等压强；最终确实不可表示时仍失败。",
       "model": "局部无流旋磁对称张力和长波总压强斜率准则。正导数号由此定义和双 Maxwell 阈值给出，与 Frank2509.17288v4 Eq6 的字面反号冲突；不声称作者确认勘误。",
       "assumptions": [
         "B 是 T 单位正磁场模，两个压强用 Pa。",
@@ -2512,19 +2512,21 @@
       },
       "failure_semantics": {
         "invalid_input": "导数信息缺失、导数与轴冲突、非有限/非正 B、错形或非单调/变 psi 采样线抛 ValueError；其他标量控制按合同验证。",
-        "runtime_failure": "计算残差或裕度非有限抛 FloatingPointError；回调错误传播。",
+        "runtime_failure": "FloatingPointError 表示最终数学裕度不可表示为有限 float64；不因可恢复的 B 平方中间溢出拒绝可表示结果，其他转换或回调错误继续抛出。",
         "nonconvergence": "不求非线性方程；导数采样收敛由调用者负责。",
         "partial_results": "无部分结果；可选上游平行相容性值不经独立验证直接转发。"
       },
       "example": {
         "description": "显式各向异性双 Maxwell 局部状态不满足镜模条件，但保留正消防水龙带张力。",
-        "expected": "原文预期：消防水龙带裕度 2、镜模裕度 -3；导数符号与显式总压强导数及动力学阈值一致。"
+        "expected": "原文预期：消防水龙带裕度 2、镜模裕度 -3；导数符号与显式总压强导数及动力学阈值一致。 两个 1e100 Pa 压强精确抵消后仍保留 1 Pa 磁张力；组合入口据此保持严格正值标志。"
       },
       "verification": {
         "scope": [
           "显式均匀各向同性和固定 psi 多线多项式回归。",
           "63 个守恒量双 Maxwell 状态交叉核对压强相容性与总压强斜率阈值。",
-          "四级采样加密展示固定 psi 线上有限差分收敛。"
+          "四级采样加密展示固定 psi 线上有限差分收敛。",
+          "以独立高精度 Decimal 验证有限输入的中间平方上下溢及相消；最终不可表示的结果仍拒绝。",
+          "无源码安装 wheel 中，以独立 2000 位 Decimal 算术核对相等/不等压强抵消、不同量纲下相邻浮点输入、镜模余量正负号、非连续多维数组及精确零值标志。"
         ],
         "evidence_ceiling": "解析恒等式、显式失败回归和独立数值比较支持所述数学合同，不确证实测等离子体有效性或一般稳定性定理。",
         "known_limitations": [
@@ -4723,7 +4725,7 @@
     },
     {
       "asset_id": "scirel.equilibrium.compute-equilibrium",
-      "source_sha256": "3bd8f36a8ebe987044eb0c25c3f62fe0d50b6f7889631d4a9f030d86a4d5e8b0",
+      "source_sha256": "3fdd43d8e39d27820a49629cc94213bbb1e2b9938ea1fbb87e18fa639d1b3050",
       "summary": "根据径向压力样条和给定 Green 矩阵迭代等离子体电流，返回明确终态状态。",
       "definition": "在 ψ=R Aφ 约定下使用仅含压力的轴对称闭合 jφ=R dP/dψ。I目标=R(dP/dψ)|dR dZ|，I新=(1−relax)I目标+relax I旧，ψ新=ψ真空+G I新，并重新拟合给定中平面 P(R)。保留更新残差 ‖ψ新−ψ旧‖₂/|新边界磁通|，另算终态电流闭合残差 ‖I新−I目标(ψ新,新拟合)‖₂/‖I目标‖₂。零目标且零误差记零；零目标而电流非零记无穷并触发非有限终态失败。两残差都≤tol 才收敛。状态仅属于本次调用，按拟合导数、遮罩、松弛电流、Green 收缩、新磁通、边界／拟合及两残差的次序更新，至收敛、状态无效或 maxiter 停止。",
       "model": "来源派生的径向压力反馈，使用 InterpolatedUnivariateSpline 和调用者给定 Green 矩阵。",
@@ -4799,8 +4801,8 @@
       "outputs": [
         {
           "name": "EquilibriumResult",
-          "description": "包含磁通、等离子体电流、终态压力拟合、状态、步数、原更新残差、closure_residual 和原因；磁通／电流形状为 R.shape，SI 电流为 A。",
-          "constraints": "status 为 converged、maxiter 或 nonfinite；有限值或状态标签本身不证明物理平衡。",
+          "description": "包含磁通、等离子体电流、终态压力拟合、状态、步数、原更新残差、closure_residual 和原因；磁通／电流形状为 R.shape，SI 电流为 A。；另含不可变 residual_history、closure_residual_history 元组，保存已完成双残差评价。",
+          "constraints": "status 为 converged、maxiter 或 nonfinite；有限值或状态标签本身不证明物理平衡。；数值失败步骤可在历史追加前终止，历史长度可小于尝试次数。",
           "dtype": "数据类"
         }
       ],
@@ -4828,7 +4830,7 @@
         "invalid_input": "形状、类型、网格、参数、掩码或合同违反在迭代前抛出 ValueError。",
         "runtime_failure": "导数、电流、Green、拟合或残差非有限时返回 nonfinite；不把非有限压力导数静默替换成零。",
         "nonconvergence": "maxiter 状态包含最后局部状态及残差；maxiter=0 时残差为 +inf。",
-        "partial_results": "nonfinite 可包含部分状态，明确不予接受。"
+        "partial_results": "nonfinite 状态明确未通过；Green 算术失败保留前一有限磁通/电流对；历史仅含已完成双残差评价。"
       },
       "verification": {
         "scope": [

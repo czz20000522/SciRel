@@ -1,0 +1,45 @@
+{
+  "action_id": "scirel-legacy-firehose-cancellation-repair-20261014-v1",
+  "at_utc": "2026-10-14T06:51:44.331736+00:00",
+  "result": "ACCEPTED_SIX_ASSET_COMPOSITE_WITH_FINITE_MARGIN_CORRECTION",
+  "manifest_sha256": "78226f5c54a1a93fdfc3e3300cebe35075f5a5fa85b0313b13733d76e39cdf48",
+  "physical_members": 119,
+  "physical_bytes": 53506856,
+  "candidate": {
+    "base": "56a75fc3afe3857a195879eff251103789ea8153",
+    "commit": "2be781f384b350b52e58dd3b6546633d561ed85f",
+    "tree": "893851634d2a1b23f29edd8ae9042f1acff309ec",
+    "worktree": "/Users/tomczz/.codex/worktrees/legacy-core-absorption/SciReL",
+    "clean": true,
+    "changed_paths": 9
+  },
+  "wheel": {
+    "wheel": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/legacy-firehose-cancellation/build/wheel/scirel-0.1.0.dev15+legacy6-py3-none-any.whl",
+    "sha256": "800ce0467099ad59f5189d59600d78c7b7d0e3d3dcff109ea3002e3bac23fcf3",
+    "bytes": 32932,
+    "python_members": 22,
+    "source_files": 15,
+    "all_exact_source_and_initializers": true,
+    "RECORD_verified": true,
+    "licenses_verified": true,
+    "metadata_runtime_requirements": [
+      "Requires-Python: <3.15,>=3.14",
+      "Requires-Dist: numpy==2.5.4",
+      "Requires-Dist: scipy==1.18.1"
+    ]
+  },
+  "root_probe": "legacy-firehose-root",
+  "root_analytic_checks": 13,
+  "root_cancellation_checks": 31,
+  "root_container": "4770c3cdb5ff33d6a7955ba3b20633520bb31c623f5cab51ca4020e70a419d6b",
+  "source_author_tests": 79,
+  "installed_author_decimal_checks": 95,
+  "role_ended": true,
+  "current_identity_reservation": 0,
+  "scientific_scope": "Six retained APIs plus shared corrected consumers; no new full source-project completion. Original dev14 failure preserved. Existing model and derivative limits retained.",
+  "human_endorsement": false,
+  "public_release": false,
+  "integration_pending": true,
+  "source_receipt_sha256": "1e185d8bbe29e1daa835800ab2dd5428221a7f38d36f8123d16efc53660e0216",
+  "role": "Root technical scientific composite acceptance, not canonical cumulative-wheel acceptance"
+}

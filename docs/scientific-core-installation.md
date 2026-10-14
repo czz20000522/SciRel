@@ -1,9 +1,9 @@
 # 当前科学包与中文手册
 
-当前累积技术选择为 `0.2.0.dev9+scientific.core`，对应
-`provenance/selections/scientific-core-20261014-r3.json` 与
-`provenance/selections/scientific-core-documents-20261014-r3.json`。
-它用同一安装包提供 227 份精确合同；科学 API 按领域组织，函数和复合任务入口均可从中文 API 目录检索。
+当前累积技术选择为 `0.2.0.dev10+scientific.core`，对应
+`provenance/selections/scientific-core-20261014-r4.json` 与
+`provenance/selections/scientific-core-documents-20261014-r4.json`。
+它用同一安装包提供 233 份精确合同；科学 API 按领域组织，函数和复合任务入口均可从中文 API 目录检索。
 正式合同的原实现版本和历史证据保留，不能将它们批量改写成新包版本来制造新科学资格。
 
 ## 安装已接收的确切包
@@ -11,7 +11,7 @@
 根接收记录会给出确切 wheel 的 SHA-256；先核对摘要，再在独立环境安装该文件：
 
 ```bash
-python -m pip install 'scirel-0.2.0.dev9+scientific.core-py3-none-any.whl'
+python -m pip install 'scirel-0.2.0.dev10+scientific.core-py3-none-any.whl'
 ```
 
 Python 使用 3.14（本次验证 3.14.7）。本选择实际声明 NumPy 2.5.4、SciPy 1.18.1、Matplotlib 3.11.2、netCDF4 1.7.4、mpmath 1.4.1。
@@ -29,6 +29,8 @@ Python wheel 不会替用户安装这个系统运行时，缺少时该类入口�
 带符号功率相消、热速度极值和椭圆积分端点采用已证反例的后继修正；原交付仍保留。
 
 新增的 19 个入口补全复误差函数、一般速度分布响应、静电根扫描和线性 Vlasov–Poisson 初值计算；连同已有 4 个入口构成此次完整的动理学功能组。它们只需 NumPy 与 SciPy，不要求 MATLAB、Octave 或来源绘图库。
+
+本次增加 6 个已独立核验入口：表格压力、逐点火蛇裕度、单步 Picard 更新、完整压力反馈、可重建压力状态和固定十六丝磁环几何。完整压力求解复用同一闭合感知迭代，磁镜及火蛇裕度保留危险相消后的有限残量；不新增 Python 运行依赖。
 
 ## 按问题查找入口
 
@@ -54,14 +56,14 @@ print(p_grid)
 
 ## 维护相同的可查询内容
 
-手册目录入口是 `tools/docs/handbooks/scientific-core-r3.json`，中文阅读层是
-`tools/docs/zh/selections/scientific-core-r3.json`。每份阅读层以正式文档 SHA-256 绑定，不从函数名猜补参数或适用域。
-构建新快照时，先按 `scientific-core-documents-20261014-r3.json` 的清单复制并逐字核对正式合同，再运行：
+手册目录入口是 `tools/docs/handbooks/scientific-core-r4.json`，中文阅读层是
+`tools/docs/zh/selections/scientific-core-r4.json`。每份阅读层以正式文档 SHA-256 绑定，不从函数名猜补参数或适用域。
+构建新快照时，先按 `scientific-core-documents-20261014-r4.json` 的清单复制并逐字核对正式合同，再运行：
 
 ```bash
 python scripts/scirel_docs.py build --documents /path/to/exact-documents \
-  --outline tools/docs/handbooks/scientific-core-r3.json \
-  --translations tools/docs/zh/selections/scientific-core-r3.json \
+  --outline tools/docs/handbooks/scientific-core-r4.json \
+  --translations tools/docs/zh/selections/scientific-core-r4.json \
   --output /path/to/new-snapshot
 ```
 

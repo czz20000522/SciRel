@@ -12,16 +12,16 @@ def _asset_loader(asset_ref):
     return _load_asset(asset_ref)
 
 def _run_graph(inputs):
-    return graph.run_graph(inputs, asset_loader=_asset_loader)
+    return graph.run_graph(inputs)
 
 
 # 验证：YAML 的 PFM 映射和 Picard 反馈边必须与入口图同步。
-def test_yaml_declares_historical_picard_contract():
+def test_yaml_declares_single_closure_aware_solver():
     contract = Path(__file__).with_name("task_graph.yaml").read_text(encoding="utf-8")
     assert "primary_pfm_node: N2" in contract
     assert "asset_ref: scirel.equilibrium.pressure_flux_state" in contract
-    assert "asset_ref: scirel.equilibrium.isotropic_picard_step" in contract
-    assert "to_input: psi_state" in contract
+    assert "asset_ref: scirel.equilibrium.compute-equilibrium" in contract
+    assert "to_input: psi" in contract
 
 
 def _pressure_of_radius(radius):

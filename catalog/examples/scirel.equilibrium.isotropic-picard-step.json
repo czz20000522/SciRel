@@ -18,7 +18,7 @@
   "identity": {
     "relation": "isotropic pressure derivative and previous cell currents to relaxed cell currents, updated flux and normalized flux residual",
     "direction": "current flux state, pressure derivative, Green matrix and old currents -> one updated current-flux state and residual",
-    "definition": "For each C-order flattened [Z,R] cell, form I_new = (1-relax)*R*(dp/dpsi)*dR*dZ + relax*I_old. Set psi_plasma = g_psi @ I_new, replace its nonfinite entries with zero, then psi_next = psi_plasma + psi_vac. Return ||psi_next - psi_state||_2 / |psi_edge| as residual. This is one update, not an iterative convergence solver.",
+    "definition": "For each C-order flattened [Z,R] cell form I_target=R*(dp/dpsi)*dR*dZ and I_new=(1-relax)*I_target+relax*I_old. At relax=1 explicitly retain old currents without forming an unused target. Compute psi_plasma=g_psi@I_new, psi_next=psi_plasma+psi_vac and residual=||psi_next-psi_state||_2/abs(psi_edge). Reject any nonfinite current, Green contraction, total flux or residual; no value is silently replaced by zero. This single update does not establish iterative convergence.",
     "model": "historical axisymmetric isotropic pressure-flux Picard cell-current update using a caller-supplied Green response",
     "geometry": "uniform rectilinear cylindrical R-Z tensor-product grid",
     "coordinates": "R and Z in metres; arrays indexed [Z,R] and cell vectors flattened in C order",
@@ -128,7 +128,7 @@
       "shape": "[N_Z,N_R]",
       "dtype": "float64",
       "required": true,
-      "constraints": "Same grid shape; nonfinite entries in the intermediate plasma response are replaced by zero before adding psi_vac."
+      "constraints": "Finite and same grid shape on successful return; no silent nonfinite masking."
     },
     {
       "name": "residual",
@@ -137,7 +137,7 @@
       "shape": "scalar",
       "dtype": "Python float",
       "required": true,
-      "constraints": "No grid-size normalization; extreme finite inputs can overflow the unguarded norm calculation."
+      "constraints": "Finite normalized L2 update norm; no grid-size normalization; overflow raises FloatingPointError."
     }
   ],
   "applicability": {
@@ -157,12 +157,12 @@
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for mismatched or non-2D flux/grid shapes, nonfinite grid or vector entries, nonrectilinear/nonuniform/non-increasing grid axes, wrong Green-matrix size, relax outside [0,1], or zero/nonfinite psi_edge. Conversion and missing-argument failures may raise TypeError or ValueError.",
-    "runtime_failure": "NumPy matrix multiplication and arithmetic errors may propagate. Nonfinite computed plasma-flux entries are silently replaced by zero; extreme finite inputs can still produce a nonfinite residual.",
+    "runtime_failure": "FloatingPointError for nonfinite calculated current, Green contraction, total flux or update residual. Other NumPy errors propagate; no vacuum fallback.",
     "nonconvergence": "Not applicable to this single step; an enclosing task graph owns the iteration limit and convergence decision.",
-    "partial_results": "No mapping is returned if validation or execution raises. A successful mapping may contain a nonfinite residual after numerical overflow; no partial-result flag is emitted."
+    "partial_results": "No mapping after validation or arithmetic failure. Every successful numerical result is finite."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery.",
+    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. The bounded legacy-six successor repairs independently reproduced defects or absorbs an equivalent maintained implementation. Original frozen failures and provenance remain available; technical checks do not constitute human or redistribution approval.",
     "source_kinds": [
       "historical Pleiades development descriptor and migration mapping",
       "pending intake development candidate",
@@ -179,7 +179,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.1.0.dev14+legacy6",
     "dependencies": []
   },
   "example": {
@@ -191,16 +191,18 @@
     "scope": [
       "Direct example checks the area-weighted current, identity-Green flux and normalized residual for one four-cell grid.",
       "A graph-level one-cell current projection matches a selected off-source circular-filament psi=R A_phi response.",
-      "Direct test checks rejection of an incomplete call."
+      "Direct test checks rejection of an incomplete call.",
+      "Finite inputs that overflow current, Green contraction or total flux are independently reproduced as explicit failures."
     ],
     "tests": [
       "tests/operator_contracts/test_isotropic_picard_step.py",
-      "tests/graph_contracts/isotropic_pressure_flux/test_graph_isotropic_pressure_flux.py"
+      "tests/graph_contracts/isotropic_pressure_flux/test_graph_isotropic_pressure_flux.py",
+      "tests/operator_contracts/test_legacy_six_absorption.py"
     ],
-    "evidence_ceiling": "The maintained tests establish one arithmetic example, an incomplete-call rejection and one finite circular-filament graph projection. They do not establish source parity across other grids, arbitrary Green/pressure physics, iterative convergence or expert recognition.",
+    "evidence_ceiling": "Targeted source regressions, explicit analytic fixtures and a selected no-source installed-wheel replay cover this finite contract. No arbitrary physical-model suitability, continuum convergence, human scientific endorsement or redistribution permission is inferred.",
     "known_limitations": [
       "The caller supplies pressure_derivative, g_psi, vacuum flux and the Picard iteration policy.",
-      "Nonfinite intermediate plasma flux is replaced by zero, while residual overflow has no explicit check.",
+      "A finite flux-update norm alone does not establish pressure-current closure; the full solver checks a second residual.",
       "The implementation does not enforce nonnegative radii or a Z=0 plane.",
       "Public distribution licensing and SciRel expert recognition remain pending."
     ]

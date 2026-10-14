@@ -103,15 +103,15 @@
     },
     {
       "asset_id": "scirel.field.permanent-ring-filaments",
-      "source_sha256": "6bd2f5f7cfd5954e3749ae055339d05e4aa98d80979cee13ea223a46e71bba5e",
+      "source_sha256": "4d56c6ca7d403895247b1b1d4307a222ee3ca8062d6d83118a938156e651084b",
       "summary": "用两组各八根的圆电流丝表示矩形永磁环截面两侧表面，并赋予相反的无量纲权重。",
-      "definition": "在 r0−width/2 和 r0+width/2 两个径向面各取八个等间距 Z 点；前八点权重为 −1，后八点为 +1。可按行向量 R–Z 约定绕中心旋转，顺序和权重保持不变。",
+      "definition": "在 r0−width/2 和 r0+width/2 两个径向面各取八个等间距 Z 点；前八点权重为 −1，后八点为 +1。可按行向量 R–Z 约定绕中心旋转，顺序和权重保持不变。 几何委派给维护中的 MagnetRing 默认十六点实现并复制结果；任意非零角度都旋转，不做微角归零。",
       "model": "以固定 16 根电流丝近似永磁环的相反表面电流。",
       "assumptions": [
         "权重为无量纲相对值，不是安培电流。",
         "尺寸使用米；磁化强度或电流幅值由调用者另行缩放。"
       ],
-      "boundary": "生成半径非负；角度绝对值不超过 1e-12° 时采用未旋转分支。",
+      "boundary": "全部生成坐标有限、半径非负。任何非零有限角度按顺时针度数旋转；仅精确零使用未旋转分支。",
       "inputs": [
         {
           "name": "r0",
@@ -140,7 +140,7 @@
         {
           "name": "mu_hat_deg",
           "description": "按既有行向量符号约定绕形心旋转的角度。",
-          "constraints": "有限；绝对值不超过 1e-12° 时不旋转。",
+          "constraints": "有限度数，所有非零值都旋转；极大角度的相位精度受 float64 三角参数约化限制。",
           "dtype": "实数标量，转换为 float"
         }
       ],
@@ -148,7 +148,7 @@
         {
           "name": "rz_pts",
           "description": "有序电流丝位置，每行 [R,Z]。",
-          "constraints": "前八点属于负权重面，后八点属于正权重面；半径非负。",
+          "constraints": "有限且半径非负；前八点负权重、后八点正权重，旋转保持顺序。",
           "dtype": "float64 双精度浮点数"
         },
         {
@@ -173,8 +173,8 @@
         ]
       },
       "failure_semantics": {
-        "invalid_input": "非有限标量、非正宽高、负中心半径或生成负半径时抛出 ValueError。",
-        "runtime_failure": "意外浮点或 NumPy 错误继续抛出；极大有限角度转换为弧度可能溢出，生成坐标未逐项再次检查有限性。",
+        "invalid_input": "非有限标量、非正尺寸、负中心半径，或任一生成坐标非有限/半径为负时 ValueError。",
+        "runtime_failure": "不静默回退；生成溢出由坐标有限性门禁拒绝；避免先乘 π 造成不必要的角度溢出，但极大角度相位精度仍受 float64 限制。",
         "nonconvergence": "不适用；无迭代。",
         "partial_results": "验证抛异常时不返回结果字典。"
       },
@@ -187,13 +187,13 @@
           "两面顺序、Z 间距和权重符号。",
           "绕形心旋转 90° 的符号约定。",
           "非正宽高的拒绝行为。",
-          "跨轴拒绝及零角度容差内的顺序保持。"
+          "跨轴及非有限几何拒绝、真实微角旋转和极大有限角度的有限结果。"
         ],
-        "evidence_ceiling": "直接测试覆盖固定几何和部分非法输入，不构成磁响应物理验证或专家认可。",
+        "evidence_ceiling": "有针对性的源码回归、明确解析构造例和所选 wheel 的无源码安装运行覆盖本有限合同；不推断任意物理模型适用性、连续体收敛、人工科学认可或再分发许可。",
         "known_limitations": [
           "固定返回 16 点及相对权重。",
           "不包含绝对电流或磁化强度。",
-          "极端有限角度未独立防护溢出。",
+          "极大角度仅验证有限性，不证明任意巨大角度的相位准确度。",
           "公开分发许可及专家认可仍待人工决定。"
         ]
       }
@@ -1330,13 +1330,13 @@
     },
     {
       "asset_id": "scirel.equilibrium.pressure-flux-state",
-      "source_sha256": "75ebeff7b53f7389a81e8d81030f2ec4acf92de1b653a08feec88fea843bdea7",
+      "source_sha256": "9d78dcd8578fbf4c8110d59b52d7198f9efc2b4c1622c04aa77c1a9e80637445",
       "summary": "在严格 Z=0 的一行采样径向压力，将首个零压点之前含该点的递增磁通段拟合为压力样条，返回截断后的压力导数和样条状态。",
-      "definition": "按唯一严格中平面行的网格顺序求 P(R)，以首个精确零压点为边界，对至少四个严格递增的 psi 前缀用 ext=zeros 三次插值样条拟合。对 C 顺序展平的全网格磁通求一阶导数，将非有限、psi>psi_edge 或掩码为真的项置零，并返回样条表示和同形零电流向量。",
-      "model": "保持来源顺序的轴对称各向同性压力—磁通三次插值构造。",
+      "definition": "只把唯一精确 Z=0 中平面索引按物理半径递增排序，并拒绝重复半径。逐点采样有限非负压力，用至第一个向外零压点的至少四点严格递增磁通前缀拟合；序列化同一前缀、样条节点、系数及三次阶数。在原 C 顺序网格求导，先拒绝非有限系数或导数，再按边界和真实布尔掩码置零。",
+      "model": "按物理径向遍历、可精确重建的各向同性压力—磁通三次样条。",
       "assumptions": [
         "P(R) 为非负标量函数且存在精确零压边界。",
-        "唯一精确中平面行具有预期径向顺序，至首零压点的 psi 严格递增。",
+        "中平面物理半径互异；沿半径递增至第一个零压点的磁通严格递增，与数组存储方向无关。",
         "各向同性 Picard 链中 psi 为 Wb/rad 的 R A_phi；样条本身不证明平衡或强制磁通归一化。"
       ],
       "boundary": "首个精确 P=0 样本确定 limiter 与 psi_edge；psi>psi_edge 及真掩码处导数为零，样条采用 ext=zeros。",
@@ -1344,7 +1344,7 @@
         {
           "name": "r_grid",
           "description": "用于精确中平面压力采样的半径网格。",
-          "constraints": "有限二维，与 z_grid、psi 同形；不检查直角性或径向单调性。",
+          "constraints": "有限同形二维网格；中平面半径互异，仅拟合遍历排序，输出仍保持原网格顺序。",
           "dtype": "实数数组，转换为 float64"
         },
         {
@@ -1362,21 +1362,21 @@
         {
           "name": "pressure_of_radius",
           "description": "为每个中平面半径返回标量压力的函数。",
-          "constraints": "各样本有限且非负，至少一个精确为零；按网格顺序逐半径调用一次。",
+          "constraints": "按物理半径递增调用，每个样本有限非负标量；精确零确定边界。",
           "dtype": "可调用对象，返回可转换为 float64 的实标量"
         },
         {
           "name": "plasma_mask",
           "description": "可选掩码，真值处对应的展平压力导数置零。",
-          "constraints": "提供时与 r_grid 形状完全一致；按 NumPy 布尔真值转换。",
-          "dtype": "可转换为 bool 的数组或 None"
+          "constraints": "真实布尔且同形；不接受数字掩码转换。",
+          "dtype": "布尔数组或 None"
         }
       ],
       "outputs": [
         {
           "name": "pressure_derivative",
-          "description": "样条 dP/dpsi，在非有限值、边界及掩码处理后的全网格值。",
-          "constraints": "按 C 顺序展平；psi>psi_edge、真掩码及非有限计算值处为零。",
+          "description": "边界和布尔掩码处理后的有限导数，保持 C 顺序。",
+          "constraints": "先验证有限再截断；psi>psi_edge 或真掩码处为零。",
           "dtype": "float64 双精度数组"
         },
         {
@@ -1394,13 +1394,13 @@
         {
           "name": "pressure_of_psi",
           "description": "拟合后的压力—磁通样条结构表示。",
-          "constraints": "包含全中平面 psi_samples、pressure_samples，以及拟合节点、系数、次数、extrapolation=zeros 和求值说明；实际拟合只用 limiter_index 前缀。",
+          "constraints": "psi_samples、pressure_samples 正好是拟合到 limiter_index 的前缀，节点/系数/阶数与零延拓描述同一三次样条。",
           "dtype": "含 float64 数组、整数次数和文本说明的映射"
         },
         {
           "name": "limiter_index",
-          "description": "中平面首个精确零压样本的位置。",
-          "constraints": "从零开始的行内位置，不是全网格展平索引。",
+          "description": "按物理半径递增后的首个精确零压位置。",
+          "constraints": "从零计数的排序中平面位置，不是原存储或全网格索引。",
           "dtype": "整数"
         }
       ],
@@ -1410,7 +1410,7 @@
           "至首零压点的磁通前缀至少四点且严格递增。"
         ],
         "supported": [
-          "为既有各向同性平衡组合按来源顺序构造三次 P(psi) 样条及截断 dP/dpsi。"
+          "调用者网格顺序下的三次压力样条和有限截断导数，支持降序径向存储及内部零压边界。"
         ],
         "excluded": [
           "一般磁轴、限制器或磁面几何推断。",
@@ -1419,8 +1419,8 @@
         ]
       },
       "failure_semantics": {
-        "invalid_input": "网格非二维、非有限或错形，严格中平面缺失或不唯一，压力不可调用、样本非有限或为负、无精确零边界，磁通前缀不足或不递增，掩码错形时抛出 ValueError。",
-        "runtime_failure": "压力函数或 SciPy 样条构建/求值异常继续抛出，无备用路径；仅非有限导数值置零。",
+        "invalid_input": "网格非二维、非有限或错形，严格中平面缺失或不唯一，压力不可调用、样本非有限或为负、无精确零边界，磁通前缀不足或不递增，掩码错形时抛出 ValueError。 重复中平面半径及非布尔掩码也拒绝。",
+        "runtime_failure": "非有限拟合系数或导数抛 FloatingPointError；回调及 SciPy 异常继续抛出，截断不能掩盖无效数值。",
         "nonconvergence": "不适用；样条构建不迭代求平衡。",
         "partial_results": "验证或样条构建失败不返回部分映射。"
       },
@@ -1432,21 +1432,23 @@
         "scope": [
           "有限网格的精确中平面样条及导数截断。",
           "掩码、首零压索引及零电流向量。",
-          "所选非法中平面和缺失零压边界案例。"
+          "所选非法中平面和缺失零压边界案例。",
+          "内部零压边界只序列化实际四个拟合点，独立重建压力和导数。",
+          "降序存储保留物理边界及输出顺序；数字掩码和非有限拟合/导数失败。"
         ],
-        "evidence_ceiling": "直接测试支持所选输入上的中平面样条和掩码行为，不证明物理磁通约定、任意网格适用性、压力模型正确性或专家认可。",
+        "evidence_ceiling": "有针对性的源码回归、明确解析构造例和所选 wheel 的无源码安装运行覆盖本有限合同；不推断任意物理模型适用性、连续体收敛、人工科学认可或再分发许可。",
         "known_limitations": [
           "中平面和压力边界都要求精确零，近零值不被接受。",
-          "返回样本含全中平面，实际拟合仅用首零压点前缀。",
+          "前缀与样条是同一插值关系的精确表示，不证明压力定律或外推物理适用性。",
           "不验证直角网格或压力剖面物理；公开许可及专家认可仍待人工决定。"
         ]
       }
     },
     {
       "asset_id": "scirel.equilibrium.isotropic-picard-step",
-      "source_sha256": "1dc0b48fb14e4e7b5214dd23215174b2a0fe2d400990aeb0c54c7fa2b59874cc",
+      "source_sha256": "777485051a1bbc2b99b86d30afc0a97d6086a3f22ecedeafe8d428b413b027f8",
       "summary": "由压力导数构造松弛后的网格电流，用外供格林矩阵更新磁通，并计算一次 Picard 更新的磁通变化。",
-      "definition": "按 [Z,R] 的 C 顺序逐单元计算 I_new=(1−relax)R(dP/dpsi)dR dZ+relax I_old；psi_plasma=g_psi@I_new，非有限项置零后加 psi_vac。残差为 ||psi_next−psi_state||₂/|psi_edge|。这只是单步，不是迭代收敛求解器。",
+      "definition": "按 C 顺序计算 I_target=R(dP/dpsi)dR dZ、I_new=(1−relax)I_target+relax I_old，再计算 Green 磁通和真空磁通之和。relax=1 明确保留旧电流，不计算未使用的目标。电流、Green 收缩、总磁通及 ||psi_next−psi_state||₂/|psi_edge| 任一非有限均失败，不静默置零；此接口只执行一步。",
       "model": "历史轴对称各向同性压力—磁通 Picard 网格电流更新，采用外供格林响应。",
       "assumptions": [
         "g_psi 将同一 C 顺序电流映射为 Wb/rad 的 psi=R A_phi；R dP/dpsi 使用同一每弧度坐标。",
@@ -1519,13 +1521,13 @@
         {
           "name": "psi_next",
           "description": "等离子体格林响应与固定真空磁通之和。",
-          "constraints": "保持网格形状；相加前将等离子体响应的非有限项置零。",
+          "constraints": "成功时有限且保持网格形状；不掩盖非有限 Green 响应。",
           "dtype": "float64 双精度浮点数"
         },
         {
           "name": "residual",
           "description": "新旧磁通差的 L2 范数除以边界磁通绝对值。",
-          "constraints": "不按网格大小归一化；极端有限输入可使未防护范数溢出。",
+          "constraints": "有限的归一化 L2 更新范数；不按网格大小归一化，溢出抛 FloatingPointError。",
           "dtype": "Python 浮点数"
         }
       ],
@@ -1546,9 +1548,9 @@
       },
       "failure_semantics": {
         "invalid_input": "网格/磁通错形或非二维、非有限值、非直角/非均匀/不递增坐标、格林尺寸错误、relax 越界、psi_edge 为零或非有限时抛出 ValueError；转换或缺参数也可抛 TypeError/ValueError。",
-        "runtime_failure": "NumPy 矩阵或算术错误可继续抛出；非有限等离子体磁通静默置零，但极端有限输入仍可使残差非有限。",
+        "runtime_failure": "计算电流、Green 收缩、总磁通或残差非有限时抛 FloatingPointError；其他 NumPy 异常继续抛出，没有真空回退。",
         "nonconvergence": "不适用于单步；外层任务图决定迭代上限与收敛。",
-        "partial_results": "抛异常不返回映射；溢出后成功映射可能含非有限残差且没有部分结果标志。"
+        "partial_results": "任何验证或算术异常不返回映射；成功的数值字段均有限。"
       },
       "example": {
         "description": "对四个网格单元使用单位响应矩阵，检查松弛电流及残差。",
@@ -1558,12 +1560,13 @@
         "scope": [
           "四单元例的面积电流、单位格林磁通和归一化残差。",
           "图层单单元电流投影与选定离源圆电流丝 psi 响应匹配。",
-          "拒绝不完整调用。"
+          "拒绝不完整调用。",
+          "有限输入导致电流、Green 收缩或总磁通溢出的真实失败回归。"
         ],
-        "evidence_ceiling": "既有测试证明一个算术例、一个缺参数拒绝和一个有限电流丝图投影，不证明其他网格来源一致性、任意格林/压力物理、迭代收敛或专家认可。",
+        "evidence_ceiling": "有针对性的源码回归、明确解析构造例和所选 wheel 的无源码安装运行覆盖本有限合同；不推断任意物理模型适用性、连续体收敛、人工科学认可或再分发许可。",
         "known_limitations": [
           "压力导数、格林矩阵、真空磁通和迭代策略由调用者提供。",
-          "中间非有限磁通置零，残差溢出未检查。",
+          "有限磁通更新量不等于压力电流闭合；完整求解器另验闭合残差。",
           "不强制非负半径或 Z=0 平面。",
           "公开许可及专家认可仍待人工决定。"
         ]
@@ -1571,10 +1574,10 @@
     },
     {
       "asset_id": "scirel.equilibrium.isotropic-pressure-flux",
-      "source_sha256": "97bfa2699ded1e148a603a495c0a43144de9498c0539ca98e9347be3d3eb41ed",
-      "summary": "构造精确中平面压力—磁通状态，在指定上限内迭代稠密格林网格电流更新，返回末状态及明确收敛标志。",
-      "definition": "从严格 Z=0 中平面及首个精确零压点建立 P(psi)；每步由 dP/dpsi 构造松弛电流，应用稠密格林矩阵并加真空磁通，计算以 psi_edge 归一化的 L2 残差，再以新磁通重建压力状态。",
-      "model": "历史轴对称各向同性压力—磁通 Picard 闭合。",
+      "source_sha256": "0ab8f4b102c6fab15b633624be197c784862ef2f8dcde031a4d31991abce8536",
+      "summary": "通过唯一共享的轴对称压力电流求解器执行有界反馈，同时检查磁通更新和末态电流闭合残差，并序列化最终压力样条。",
+      "definition": "委派给已维护的 compute_equilibrium：按物理半径向外构造压力样条，求目标电流、松弛电流及 Green 磁通，重建末态样条；同时检查归一化磁通变化和 ||I_new−I_target(psi_new)||₂/||I_target||₂。零目标且零误差取零，零目标而电流非零失败。只有实际更新后两项有限且不大于 tol 才收敛。适配入口不再维护第二迭代环，并返回精确拟合前缀。",
+      "model": "复用共享双残差求解器的轴对称各向同性纯压力离散闭合。",
       "assumptions": [
         "调用者提供物理适用的 Wb/rad 真空 psi=R A_phi 和 Wb/rad/A 格林矩阵；压力导数须相对同一 psi。",
         "中平面压力非负，至首零压点有至少四个严格递增磁通样本。",
@@ -1585,13 +1588,13 @@
         {
           "name": "r_grid",
           "description": "场单元的柱坐标半径。",
-          "constraints": "均匀且严格递增 R 轴的直角网格；每轴至少两点，与 z_grid、psi_vac 同形。",
+          "constraints": "均匀严格单调的 R 轴，允许升序或降序存储；直角网格且与 z_grid、psi_vac 同形，每轴至少两点。",
           "dtype": "有限实数数组"
         },
         {
           "name": "z_grid",
           "description": "场单元轴向坐标。",
-          "constraints": "Z 均匀且严格递增；恰一整行精确等于 Z=0。",
+          "constraints": "均匀严格单调 Z 轴，可升序或降序；恰一完整精确 Z=0 行。",
           "dtype": "有限实数数组"
         },
         {
@@ -1614,8 +1617,8 @@
         },
         {
           "name": "tol",
-          "description": "相对磁通残差停止阈值。",
-          "constraints": "严格为正；初始残差哨兵为 1.0。",
+          "description": "磁通更新与压力电流闭合两项残差的共同阈值。",
+          "constraints": "有限且严格为正；无更新时两残差保持正无穷。",
           "dtype": "有限实标量"
         },
         {
@@ -1627,13 +1630,13 @@
         {
           "name": "relax",
           "description": "旧网格电流在更新中的权重。",
-          "constraints": "在 [0,1]；零只用当前压力导数。",
+          "constraints": "0≤relax<1；relax=1 会冻结初始零电流，完整求解拒绝该值。",
           "dtype": "有限实标量"
         },
         {
           "name": "plasma_mask",
           "description": "电流组装前将压力导数置零的单元。",
-          "constraints": "若提供须同形；True 抑制该处导数。",
+          "constraints": "同形的真实布尔数组；True 抑制导数；拒绝数字真值转换。",
           "dtype": "布尔数组或 None"
         }
       ],
@@ -1653,38 +1656,56 @@
         {
           "name": "pressure_of_psi",
           "description": "最终压力磁通样本和三次样条表示。",
-          "constraints": "包含样本、节点、系数、次数及零延拓元数据。",
-          "dtype": "由数组、整数次数和字符串组成的映射"
+          "constraints": "精确拟合前缀、节点、系数、次数及零延拓；没有有效末态样条时为 None。",
+          "dtype": "样条映射或 None"
         },
         {
           "name": "iterations",
-          "description": "实际执行的 Picard 更新次数。",
+          "description": "已尝试的 Picard 更新次数，初始无效可在零次终止。",
           "constraints": "0 至 maxiter（含端点）。",
           "dtype": "整数"
         },
         {
           "name": "residual",
-          "description": "末次归一化 L2 磁通变化残差，初始为 1.0。",
-          "constraints": "非有限结果表示失败；步内除以 abs(psi_edge)。",
+          "description": "末次归一化 L2 磁通变化，未更新时为正无穷。",
+          "constraints": "与闭合残差均有限且不大于 tol 才收敛；非有限状态明确标记。",
           "dtype": "浮点数"
         },
         {
           "name": "residual_history",
-          "description": "每次执行更新后的残差。",
-          "constraints": "无更新时为空；不包含初始哨兵。",
+          "description": "已经完成双残差评价的磁通残差序列。",
+          "constraints": "长度不大于尝试次数；失败步骤可在追加之前终止，不含初始哨兵。",
           "dtype": "float64 双精度数组"
         },
         {
           "name": "converged",
-          "description": "最终残差是否有限且不大于 tol。",
-          "constraints": "tol≥1.0 时可在零次更新下为真。",
+          "description": "是否在实际更新后同时满足两项有限残差阈值。",
+          "constraints": "零次更新在任何 tol 下均为假；非有限终末均为假。",
           "dtype": "布尔值"
         },
         {
           "name": "failure_reason",
           "description": "明确失败标志；收敛时为 None。",
-          "constraints": "有限不收敛为 maxiter_reached；非有限残差为 nonfinite_source_residual。",
+          "constraints": "收敛为 None，到上限为 maxiter_reached；数值失败保留具体原因。",
           "dtype": "字符串或 None"
+        },
+        {
+          "name": "closure_residual",
+          "description": "末态压力电流方程的归一化残差。",
+          "constraints": "共同分量缩放保留目标范数定义；无更新时为正无穷。",
+          "dtype": "浮点数"
+        },
+        {
+          "name": "closure_residual_history",
+          "description": "与磁通残差对应的闭合残差历史。",
+          "constraints": "与 residual_history 等长、同序。",
+          "dtype": "float64 数组"
+        },
+        {
+          "name": "status",
+          "description": "求解器终末状态。",
+          "constraints": "converged、maxiter 或 nonfinite。",
+          "dtype": "字符串"
         }
       ],
       "applicability": {
@@ -1694,7 +1715,7 @@
           "执行至少一步时 psi_edge 必须非零。"
         ],
         "supported": [
-          "声明的均匀 R–Z 网格上有迭代上限的历史各向同性压力驱动磁通迭代。"
+          "升序或降序均匀存储上的有界纯压力反馈、末态双残差门禁和明确终末状态。"
         ],
         "excluded": [
           "各向异性闭合。",
@@ -1703,10 +1724,10 @@
         ]
       },
       "failure_semantics": {
-        "invalid_input": "缺必要控制、非法形状/网格、非有限数组、非法压力、掩码不匹配或非法迭代控制时抛出 ValueError；依赖验证失败继续抛出。",
-        "runtime_failure": "依赖或压力回调失败直接抛出，无备用实现；依赖返回非有限残差时给出明确失败结果。",
-        "nonconvergence": "到上限仍高于 tol 时返回 converged=false、maxiter_reached；非有限残差标为 nonfinite_source_residual。",
-        "partial_results": "有界不收敛返回末磁通、电流、压力表示及残差历史；异常不返回映射。"
+        "invalid_input": "数组、网格、回调、控制量或布尔掩码不满足合同则 ValueError；压力样本须有限非负标量。",
+        "runtime_failure": "计算导数、电流、Green 收缩、拟合或残差无效时共享求解器返回 nonfinite 和具体原因；输入或回调异常直接抛出，无备用路径。",
+        "nonconvergence": "到上限而未同时满足两门禁时返回 maxiter、converged=False 和 maxiter_reached；maxiter=0 时两残差正无穷。",
+        "partial_results": "失败保留可取得的末态与历史；样条无效则 pressure_of_psi=None。Green 算术失败保留前一个有限磁通/电流对；部分状态不当成解。"
       },
       "example": {
         "description": "零格林响应下，一次更新保持真空磁通并构造压力样条。",
@@ -1719,9 +1740,11 @@
           "明确反馈及上限不收敛。",
           "压力掩码抑制电流。",
           "错格林形状、缺控制、非均匀网格、非整数 maxiter 拒绝。",
-          "零步返回独立磁通数组。"
+          "零步返回独立磁通数组。",
+          "零 Green 松弛电流与零次更新的假收敛均被拒绝。",
+          "非零对角 Green 构造解满足独立二次方程，电流、磁通及双历史得到核对。"
         ],
-        "evidence_ceiling": "图和算子回归仅支持所选算术、状态顺序、失败路径和一个电流丝投影；不证明任意压力/格林下来源一致性、收敛或物理适用性，也非专家认可。",
+        "evidence_ceiling": "有针对性的源码回归、明确解析构造例和所选 wheel 的无源码安装运行覆盖本有限合同；不推断任意物理模型适用性、连续体收敛、人工科学认可或再分发许可。",
         "known_limitations": [
           "稠密方格林矩阵，压力样条要求精确中平面及精确零压样本。",
           "不做自适应阻尼或模型选择。",
@@ -3019,9 +3042,9 @@
     },
     {
       "asset_id": "scirel.closures.tabulated-pressure",
-      "source_sha256": "4d0b52af876cc772a60555af8880ca897ccc23acd6359a23efc55d67720f2dbc",
+      "source_sha256": "a74b30a504aaa605ebba425b3c55b210a3a699d6be92d930b7d857b3ce8b568a",
       "summary": "在广播后的磁场、磁通查询点插值平行与垂直压力表；一维磁通表返回各向同性压力，二维 (B,psi) 表分别插值两分量。",
-      "definition": "B、psi 联合广播。无 b_grid 时要求一维平行表，若提供垂直表须有限非负、同形且 NumPy-allclose；用 interp1d 对 psi 线性插值，两输出相同，is_isotropic=True。有 b_grid 时两表形状为 (N_B,N_psi)，缺垂直表复用平行表，用 RegularGridInterpolator 分别双线性插值；即使表相等也标 False。结果非有限或负值均拒绝。",
+      "definition": "B 与 psi 联合广播。无 b_grid 时用一维线性插值；若给出垂直表，转换为 float64 后必须与平行表逐项完全相等，否则拒绝而不丢弃差异。有 b_grid 时分别双线性插值两个分量。is_isotropic 表示完整分量表是否严格相等；table_dimension 独立记录 1 或 2 维。结果须有限非负；分量表相等不构成热力学证明。",
       "model": "给定各向同性/旋磁压力表的一维线性或二维双线性插值，不推导压力定律或求力平衡。",
       "assumptions": [
         "表中 Pa 压力已适合目标等离子体和磁通规范。",
@@ -3056,7 +3079,7 @@
         {
           "name": "p_perpendicular_table",
           "description": "可选垂直压力表；二维分支缺省复用平行表。",
-          "constraints": "一维分支要求有限、非负、同形且 allclose 于平行表，但返回时不用它；二维分支要求有限、非负、同形。",
+          "constraints": "有限、非负且同形；无 b_grid 时转换为 float64 后必须与平行表严格相等，近似相等但不同的表被拒绝。",
           "dtype": "转换为 float64 的实数数组或 None"
         },
         {
@@ -3093,9 +3116,15 @@
         },
         {
           "name": "is_isotropic",
-          "description": "分支标志：仅一维磁通表为 True，不是二维压力表相等性的检测。",
-          "constraints": "存在 b_grid 时总为 False，即使两表相同。",
+          "description": "完整输入分量表在 float64 转换后是否严格相等。",
+          "constraints": "一维各向同性路径为真；二维分量表相等时也为真，与插值维数无关。",
           "dtype": "Python 布尔值"
+        },
+        {
+          "name": "table_dimension",
+          "description": "插值表坐标数。",
+          "constraints": "无 b_grid 为 1，有 b_grid 为 2。",
+          "dtype": "整数"
         }
       ],
       "applicability": {
@@ -3116,23 +3145,23 @@
         "invalid_input": "轴维数/长度/顺序/有限性非法、表错形/非有限/负值、非布尔控制、非法填充值、非有限或不可广播查询、非有限或负插值结果时抛 ValueError；转换及 SciPy 错误可继续抛出。",
         "runtime_failure": "默认越界抛异常；外推后非有限或负值拒绝，无物理备用或截断修复；SciPy/NumPy 错误继续抛出。",
         "nonconvergence": "不适用；无根或平衡迭代。",
-        "partial_results": "验证或插值异常不返回部分映射；成功返回两压力及分支标志。"
+        "partial_results": "失败不返回部分结果；成功时返回两压力分量、严格分量相等标志和表格维数。"
       },
       "example": {
         "description": "插值二维仿射压力对，再插值独立一维各向同性表。",
-        "expected": "二维返回 3.5、4.5 Pa，标志 False；一维两分量均 4 Pa，标志 True。"
+        "expected": "二维仿射例返回 3.5、4.5 Pa，is_isotropic=False、table_dimension=2；一维两分量均为 4 Pa，is_isotropic=True、table_dimension=1。"
       },
       "verification": {
         "scope": [
           "所选二维双线性值与输入表比较。",
-          "一维各向同性极限、已审二维仿射例及部分非法填充/外推。"
+          "一维各向同性极限、已审二维仿射例及部分非法填充/外推。",
+          "拒绝近似相等却不同的一维分量表；二维完全相等表的标志与网格维数分离。"
         ],
-        "evidence_ceiling": "直接测试仅支持所选插值及拒绝路径，不涵盖全部查询域、当前资格来源一致性、表物理适用性、跨模型单位兼容或专家批准。",
+        "evidence_ceiling": "有针对性的源码回归、明确解析构造例和所选 wheel 的无源码安装运行覆盖本有限合同；不推断任意物理模型适用性、连续体收敛、人工科学认可或再分发许可。",
         "known_limitations": [
-          "一维垂直表通过 allclose 后不用于输出，近似相等输入会返回严格相等压力。",
-          "二维 is_isotropic=False 只标识分支，不测量各向异性。",
           "不检查正 B 或坐标对齐，历史 Wb 标签不能推导到 Wb/rad 的转换。",
-          "非负表不保证外推非负，非法外推直接抛异常。"
+          "非负表不保证外推非负，非法外推直接抛异常。",
+          "分量表严格相等不证明热力学一致性或外推物理适用性。"
         ]
       }
     },
@@ -6245,15 +6274,15 @@
     },
     {
       "asset_id": "scirel.diagnostics.pointwise-firehose-margin",
-      "source_sha256": "492eda4fc3ccf3b3ae8bee8de0b8c201a0edef3fb231a496114fc75345225d9e",
+      "source_sha256": "9f7933dbf95ac74f0db3df36b2352e72a5b2073f7a5e38abd761c5b1f06397e0",
       "summary": "逐点计算 B²/mu0+p_perp-p_parallel（Pa），不求导、不进入镜模分支，也不生成稳定性标志。",
-      "definition": "firehose_margin=B²/mu0+p_perp-p_parallel，各样本独立求值。不排序、不求导、不取全局最小值，也不作汇总判定。单样本或所有 B 相同与其他同形输入同样有效。",
-      "model": "以压强单位表达的局部流体 CGL 序消防水龙带判别量。样本值为正只是算术观察，不是完整不稳定性准则；梯度、动力学及有限回旋半径修正不在此关系内，且不表示镜模稳定性。",
+      "definition": "firehose_margin=B²/mu0+p_perp-p_parallel，各样本独立求值。不排序、不求导、不取全局最小值，也不作汇总判定。单样本或所有 B 相同与其他同形输入同样有效。 与组合诊断共享同一算术内核；独立入口保留单点、重复及无序磁场，不构造任何压力导数。 普通非严重相消数值保留原 float64 运算顺序。异号贡献抵消后，若结果幅度不大于最大项的一半，或中间乘积/商丢失量级，则对完整关系使用精确二进制有理数求值，最后一次舍入到 float64。此算术分支不是物理容差，不把结果钳制为零，也不只特判相等压强；最终确实不可表示时仍失败。",
+      "model": "以压强单位表示的局部流体 CGL 序 firehose 判别量。正值只是算术观察；梯度、动力学、有限回旋半径修正及完整稳定性判定不在此关系内。",
       "assumptions": [
         "两个压强用 Pa，与 T 单位 B 在同一批样本一致取值。",
         "正负裕度是否有物理解释由调用者决定，此资产不作准则断言。"
       ],
-      "boundary": "拒绝空样本；B²/mu0 溢出导致非有限结果时拒绝；没有跨样本量，因此没有重复 B 限制。",
+      "boundary": "拒绝空样本；中间量级丢失和严重相消按同一精确关系求值再舍入，最终不可表示才失败。无跨样本量，不限制重复 B。",
       "inputs": [
         {
           "name": "p_parallel",
@@ -6305,36 +6334,36 @@
       },
       "failure_semantics": {
         "invalid_input": "错形、空集、非有限压强/磁场、非标量或非正/非有限 mu0 抛 ValueError。",
-        "runtime_failure": "裕度非有限（例如 B²/mu0 溢出）抛 ValueError；其他 NumPy 转换异常可传播。",
+        "runtime_failure": "ValueError 表示最终数学裕度不可表示为有限 float64；不因可恢复的 B 平方中间溢出拒绝可表示结果，其他转换或回调错误继续抛出。",
         "nonconvergence": "不适用，无迭代。",
         "partial_results": "无部分结果；成功才返回唯一裕度字段。"
       },
       "example": {
         "description": "对单样本和无序数组计算逐点裕度，全程不求导或产生标志。",
-        "expected": "原文预期：单样本直接给代数值；无序数组精确复现组合诊断的 firehose_margin，结果无 mirror、minimum 或 stable 字段。"
+        "expected": "原文预期：单样本直接给代数值；无序数组精确复现组合诊断的 firehose_margin，结果无 mirror、minimum 或 stable 字段。 两个 1e100 Pa 压强精确抵消后仍保留 1 Pa 磁张力。"
       },
       "verification": {
         "scope": [
           "标量/数组闭式恒等式、与组合诊断相同字段一致及负裕度忠实返回。",
-          "单样本/全相等 B 有效性，错形/空集/非有限/非标量或无效 mu0 拒绝及溢出门槛。"
+          "单样本/全相等 B 有效性，错形/空集/非有限/非标量或无效 mu0 拒绝及溢出门槛。",
+          "共享内核保留独立单点、重复和无序样本，不臆造镜模导数。",
+          "以独立高精度 Decimal 验证有限输入的中间平方上下溢及相消；最终不可表示的结果仍拒绝。",
+          "无源码安装 wheel 中，以独立 2000 位 Decimal 算术核对相等/不等压强抵消、不同量纲下相邻浮点输入、镜模余量正负号、非连续多维数组及精确零值标志。"
         ],
-        "evidence_ceiling": "直接测试只支持列明代数与失败行为，不建立当前来源数值基准资格、完整消防水龙带准则、镜模信息、任何状态物理稳定性或专家认可。",
+        "evidence_ceiling": "有针对性的源码回归、明确解析构造例和所选 wheel 的无源码安装运行覆盖本有限合同；不推断任意物理模型适用性、连续体收敛、人工科学认可或再分发许可。",
         "known_limitations": [
           "返回值为算术观察，此资产不给正值标签、准则断言或稳定性含义。",
           "关系仅为局部流体序判别量，不含梯度驱动、动力学及有限回旋半径修正。",
-          "原文称同家族组合诊断仍有单样本零导数约定；但当前组合文档已要求显式固定磁通导数、禁止零导数回退，此处为未同步的源描述。调用者须按当前各自合同选择。",
+          "组合诊断的镜模分支要求明确的固定磁通导数；此入口独立支持单点和重复 B，不使用零导数回退。",
           "公开分发许可与专家认可仍待完成。"
         ]
-      },
-      "source_conflicts": [
-        "verification.known_limitations[2] 描述组合 firehose/mirror 诊断存在单样本零导数约定；当前 scirel.diagnostics.firehose-mirror-margins 的 identity.boundary 明确无零导数回退，二者不一致。"
-      ]
+      }
     },
     {
       "asset_id": "scirel.diagnostics.firehose-mirror-margins",
-      "source_sha256": "406a63b50af8bc03612a1aac903d08f5da50cc9ff631bf7b5e3def0dd35080da",
+      "source_sha256": "81f2865194d475cd2e9a4760c378a69e7706246bf59308e5dff9bdfe908ee308",
       "summary": "用显式固定磁通导数计算局部旋磁对称压强诊断。",
-      "definition": "firehose_margin=B²/mu0+p_perp-p_parallel；mirror_margin=B*d[p_perp+B²/(2*mu0)]/dB|psi=B²/mu0+B*dp_perp_dB。所有样本最小值严格为正时相应局部标志为 True。对守恒量双 Maxwell 分布，镜模条件为 1-beta_perp*(T_perp/T_parallel-1)>0。",
+      "definition": "firehose_margin=B²/mu0+p_perp-p_parallel；mirror_margin=B*d[p_perp+B²/(2*mu0)]/dB|psi=B²/mu0+B*dp_perp_dB。所有样本最小值严格为正时相应局部标志为 True。对守恒量双 Maxwell 分布，镜模条件为 1-beta_perp*(T_perp/T_parallel-1)>0。 普通非严重相消数值保留原 float64 运算顺序。异号贡献抵消后，若结果幅度不大于最大项的一半，或中间乘积/商丢失量级，则对完整关系使用精确二进制有理数求值，最后一次舍入到 float64。此算术分支不是物理容差，不把结果钳制为零，也不只特判相等压强；最终确实不可表示时仍失败。",
       "model": "局部无流旋磁对称张力和长波总压强斜率准则。正导数号由此定义和双 Maxwell 阈值给出，与 Frank2509.17288v4 Eq6 的字面反号冲突；不声称作者确认勘误。",
       "assumptions": [
         "B 是 T 单位正磁场模，两个压强用 Pa。",
@@ -6476,19 +6505,21 @@
       },
       "failure_semantics": {
         "invalid_input": "导数信息缺失、导数与轴冲突、非有限/非正 B、错形或非单调/变 psi 采样线抛 ValueError；其他标量控制按合同验证。",
-        "runtime_failure": "计算残差或裕度非有限抛 FloatingPointError；回调错误传播。",
+        "runtime_failure": "FloatingPointError 表示最终数学裕度不可表示为有限 float64；不因可恢复的 B 平方中间溢出拒绝可表示结果，其他转换或回调错误继续抛出。",
         "nonconvergence": "不求非线性方程；导数采样收敛由调用者负责。",
         "partial_results": "无部分结果；可选上游平行相容性值不经独立验证直接转发。"
       },
       "example": {
         "description": "显式各向异性双 Maxwell 局部状态不满足镜模条件，但保留正消防水龙带张力。",
-        "expected": "原文预期：消防水龙带裕度 2、镜模裕度 -3；导数符号与显式总压强导数及动力学阈值一致。"
+        "expected": "原文预期：消防水龙带裕度 2、镜模裕度 -3；导数符号与显式总压强导数及动力学阈值一致。 两个 1e100 Pa 压强精确抵消后仍保留 1 Pa 磁张力；组合入口据此保持严格正值标志。"
       },
       "verification": {
         "scope": [
           "显式均匀各向同性和固定 psi 多线多项式回归。",
           "63 个守恒量双 Maxwell 状态交叉核对压强相容性与总压强斜率阈值。",
-          "四级采样加密展示固定 psi 线上有限差分收敛。"
+          "四级采样加密展示固定 psi 线上有限差分收敛。",
+          "以独立高精度 Decimal 验证有限输入的中间平方上下溢及相消；最终不可表示的结果仍拒绝。",
+          "无源码安装 wheel 中，以独立 2000 位 Decimal 算术核对相等/不等压强抵消、不同量纲下相邻浮点输入、镜模余量正负号、非连续多维数组及精确零值标志。"
         ],
         "evidence_ceiling": "解析恒等式、显式失败回归和独立数值比较支持所述数学合同，不确证实测等离子体有效性或一般稳定性定理。",
         "known_limitations": [

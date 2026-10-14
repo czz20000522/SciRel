@@ -128,12 +128,12 @@
   "outputs": [
     {
       "name": "EquilibriumResult",
-      "description": "Flux, plasma currents, final pressure fit, status, iteration count, original update residual, closure_residual and reason",
+      "description": "Flux, plasma currents, final pressure fit, status, iteration count, original update residual, closure_residual and reason; immutable residual_history and closure_residual_history tuples for completed paired residual evaluations",
       "units": "source-unspecified",
       "shape": "psi/plas_currents R.shape",
       "dtype": "dataclass",
       "required": true,
-      "constraints": "status is converged, maxiter or nonfinite"
+      "constraints": "status is converged, maxiter or nonfinite; history length may be less than attempted iterations when an update fails before residual evaluation"
     }
   ],
   "applicability": {
@@ -160,10 +160,10 @@
     "invalid_input": "ValueError before iteration for shape, dtype, grid, parameter, mask or contract violations.",
     "runtime_failure": "nonfinite status for nonfinite derivative/current/Green/fit/residual; no nonfinite pressure derivative is silently replaced by zero.",
     "nonconvergence": "maxiter status with last local state and residual; maxiter=0 has residual +inf.",
-    "partial_results": "nonfinite may contain a partial state and is explicitly not accepted."
+    "partial_results": "nonfinite is explicitly not accepted; failed Green arithmetic retains the preceding finite flux/current pair. Histories contain only completed paired residual evaluations."
   },
   "provenance": {
-    "lineage_summary": "D2 bounded successor derived from Pleiades eq_solve.py compute_equilibrium and inherited equilibrium handoff; update order and defaults preserved where supported. The predecessor used only a flux update norm and could falsely report convergence for zero G with relaxed currents. D2 successor retains that metric and additionally measures the final-state pressure-current equation before stopping. 后继修复下降R存储误把外侧零压点当首边界的索引缺陷；仅排序物理中平面拟合索引，不改Green或结果次序。",
+    "lineage_summary": "D2 bounded successor derived from Pleiades eq_solve.py compute_equilibrium and inherited equilibrium handoff; update order and defaults preserved where supported. The predecessor used only a flux update norm and could falsely report convergence for zero G with relaxed currents. D2 successor retains that metric and additionally measures the final-state pressure-current equation before stopping. 后继修复下降R存储误把外侧零压点当首边界的索引缺陷；仅排序物理中平面拟合索引，不改Green或结果次序。 The legacy-six successor shares finite spline/current kernels with the single-step and pressure-state APIs and exposes immutable paired histories; no second iteration loop is introduced.",
     "source_kinds": [
       "D0-derived source implementation",
       "D2 independent manufactured feedback fixtures"
@@ -179,7 +179,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
+    "implementation_version": "0.1.0.dev14+legacy6",
     "dependencies": []
   },
   "example": {
@@ -199,7 +199,8 @@
       "tests/pleiades/equilibrium/test_equilibrium_proposals.py",
       "tests/pleiades/equilibrium/test_equilibrium_boundaries.py",
       "tests/pleiades/equilibrium/test_equilibrium_governing_residual.py",
-      "tests/pleiades/equilibrium/test_descending_pressure_equilibrium.py"
+      "tests/pleiades/equilibrium/test_descending_pressure_equilibrium.py",
+      "tests/operator_contracts/test_legacy_six_absorption.py"
     ],
     "evidence_ceiling": "Bounded numerical contract only; no scientific approval.",
     "known_limitations": [

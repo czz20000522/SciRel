@@ -6,7 +6,7 @@
     "en": "Historical isotropic pressure-flux Picard equilibrium",
     "zh": "历史各向同性压力磁通 Picard 平衡"
   },
-  "summary": "Construct an exact-midplane pressure-flux state and iterate a dense Green-matrix cell-current update up to a caller-specified bound, returning the last state and explicit convergence status.",
+  "summary": "Solve bounded axisymmetric isotropic pressure-current feedback with both a flux-update and a terminal current-closure residual, then serialize the final pressure spline.",
   "taxonomy": [
     "equilibrium",
     "isotropic-pressure",
@@ -19,8 +19,8 @@
   "identity": {
     "relation": "midplane radial pressure, vacuum flux and cell-current Green response to an isotropic pressure-driven flux state",
     "direction": "R-Z grid, P(R), vacuum flux, Green matrix and Picard controls -> flux, cell currents, P(psi) representation and convergence diagnostics",
-    "definition": "Build P(psi) from an exact zero-Z midplane and its first exact zero-pressure boundary; at each bounded Picard step form relaxed cell currents from dP/dpsi, apply the dense current-to-flux Green matrix, add vacuum flux, evaluate a psi-edge-normalized L2 residual, and rebuild the pressure state on the updated flux.",
-    "model": "historical axisymmetric isotropic pressure-flux Picard closure",
+    "definition": "Delegate feedback to the maintained compute_equilibrium implementation. At each bounded update build the outward midplane pressure spline, evaluate I_target=R*dP/dpsi*abs(dR*dZ), relax current, contract the supplied Green matrix, rebuild the terminal spline and check both ||psi_new-psi_old||_2/abs(psi_edge_new) and ||I_new-I_target(psi_new)||_2/||I_target(psi_new)||_2. A zero target and zero error give zero closure residual; a zero target with nonzero current fails. Converged requires both finite residuals <=tol after an actual update. The adapter owns no second iteration loop and returns an exactly reconstructible pressure prefix.",
+    "model": "Axisymmetric isotropic pressure-only discrete closure using the shared bounded dual-residual solver",
     "geometry": "uniform rectilinear cylindrical R-Z grid with one complete exact Z=0 row",
     "coordinates": "[Z,R] arrays and C-order field-cell/field-point Green-matrix row and column order",
     "boundary": "The first exact zero in the radial midplane pressure samples defines the pressure edge; the pressure spline extrapolates to zero outside its sampled flux interval.",
@@ -38,7 +38,7 @@
       "shape": "[N_Z,N_R]",
       "dtype": "finite real array-like",
       "required": true,
-      "constraints": "Uniform strictly increasing R axis, rectilinear grid, at least two points per axis; same shape as z_grid and psi_vac."
+      "constraints": "Uniform strictly monotone R axis in either storage direction; rectilinear grid and same shape as z_grid and psi_vac; at least two points per axis."
     },
     {
       "name": "z_grid",
@@ -47,7 +47,7 @@
       "shape": "[N_Z,N_R]",
       "dtype": "finite real array-like",
       "required": true,
-      "constraints": "Uniform strictly increasing Z axis; exactly one complete row must equal Z=0 exactly."
+      "constraints": "Uniform strictly monotone Z axis in either storage direction; one complete exact Z=0 row."
     },
     {
       "name": "pressure_of_radius",
@@ -78,12 +78,12 @@
     },
     {
       "name": "tol",
-      "description": "Stopping threshold for the relative flux residual.",
+      "description": "Threshold for both normalized flux-update and pressure-current closure residuals.",
       "units": "dimensionless",
       "shape": "scalar",
       "dtype": "finite real scalar",
       "required": true,
-      "constraints": "Strictly positive; the initial residual sentinel is 1.0."
+      "constraints": "Finite and strictly positive; no-update residuals remain +inf."
     },
     {
       "name": "maxiter",
@@ -101,7 +101,7 @@
       "shape": "scalar",
       "dtype": "finite real scalar",
       "required": true,
-      "constraints": "0 <= relax <= 1; zero uses only the current pressure derivative."
+      "constraints": "0 <= relax < 1; zero uses only the current target; relax=1 is rejected because it freezes zero initial currents."
     },
     {
       "name": "plasma_mask",
@@ -111,7 +111,7 @@
       "dtype": "boolean array-like or None",
       "required": false,
       "default": null,
-      "constraints": "If supplied, same shape as the grids; True suppresses the local derivative."
+      "constraints": "Actual boolean array of the same shape as the grid; True suppresses the local derivative; numeric masks are rejected."
     }
   ],
   "outputs": [
@@ -137,14 +137,14 @@
       "name": "pressure_of_psi",
       "description": "Final pressure-flux samples and cubic-spline representation.",
       "units": "Pa and Wb/rad",
-      "shape": "mapping",
-      "dtype": "mapping of arrays, integer degree and strings",
+      "shape": "mapping or None",
+      "dtype": "mapping of arrays, integer degree and strings, or None",
       "required": true,
-      "constraints": "Includes psi_samples, pressure_samples, knots, coefficients, degree and zero-extrapolation metadata."
+      "constraints": "Exactly the fitted prefix samples, knots, coefficients, degree and zero-extrapolation metadata; None when no valid terminal spline is available."
     },
     {
       "name": "iterations",
-      "description": "Number of executed Picard updates.",
+      "description": "Number of attempted Picard updates; initial validation can terminate at zero.",
       "units": "iteration",
       "shape": "scalar",
       "dtype": "integer",
@@ -153,30 +153,30 @@
     },
     {
       "name": "residual",
-      "description": "Last normalized L2 flux-change residual, initially 1.0.",
+      "description": "Last normalized L2 flux-change residual; +inf before any update.",
       "units": "dimensionless",
       "shape": "scalar",
       "dtype": "float",
       "required": true,
-      "constraints": "A nonfinite result marks failure; the step normalizes by abs(psi_edge)."
+      "constraints": "Convergence requires this and closure_residual finite and <=tol; nonfinite states are explicitly marked."
     },
     {
       "name": "residual_history",
-      "description": "Residual after each executed update.",
+      "description": "Flux residuals after completed paired residual evaluations.",
       "units": "dimensionless",
-      "shape": "[iterations]",
+      "shape": "[N_completed]",
       "dtype": "float64 array",
       "required": true,
-      "constraints": "Empty when no step runs; excludes the initial sentinel."
+      "constraints": "N_completed<=iterations; an invalid attempted update may terminate before appending; no initial sentinel."
     },
     {
       "name": "converged",
-      "description": "Whether the final residual is finite and at most tol.",
+      "description": "Whether the shared solver achieved both finite residual thresholds after an update.",
       "units": "boolean",
       "shape": "scalar",
       "dtype": "bool",
       "required": true,
-      "constraints": "Can be true with zero iterations when tol >= 1.0."
+      "constraints": "False for maxiter=0 at every tol and for every nonfinite terminal state."
     },
     {
       "name": "failure_reason",
@@ -185,7 +185,34 @@
       "shape": "scalar",
       "dtype": "string or None",
       "required": true,
-      "constraints": "maxiter_reached for finite nonconvergence; nonfinite_source_residual for a nonfinite residual."
+      "constraints": "None on convergence; maxiter_reached at the bound; specific solver reason for nonfinite/invalid terminal state."
+    },
+    {
+      "name": "closure_residual",
+      "description": "Terminal pressure-current normalized residual.",
+      "shape": "scalar",
+      "dtype": "float",
+      "constraints": "Common component scaling preserves the target-norm definition; +inf before any update.",
+      "units": "dimensionless",
+      "required": true
+    },
+    {
+      "name": "closure_residual_history",
+      "description": "Closure residuals at the same evaluated states as residual_history.",
+      "shape": "[N_completed]",
+      "dtype": "float64 array",
+      "constraints": "Same length and ordering as residual_history.",
+      "units": "dimensionless",
+      "required": true
+    },
+    {
+      "name": "status",
+      "description": "Terminal solver status.",
+      "shape": "scalar",
+      "dtype": "str",
+      "constraints": "converged, maxiter or nonfinite.",
+      "units": "dimensionless",
+      "required": true
     }
   ],
   "applicability": {
@@ -195,7 +222,7 @@
       "A nonzero psi_edge is required when at least one Picard step runs."
     ],
     "supported": [
-      "Bounded historical isotropic pressure-driven flux iteration on a declared uniform R-Z grid."
+      "Bounded pressure-only feedback with increasing or decreasing uniform coordinate storage, final closure gates and explicit terminal state."
     ],
     "excluded": [
       "Anisotropic pressure closure.",
@@ -204,13 +231,13 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError for missing required controls, invalid shapes or grids, nonfinite supplied arrays, invalid pressure samples, mask mismatch, or invalid Picard controls; bound Operator failures propagate.",
-    "runtime_failure": "Dependency or pressure callback failures propagate without fallback. A nonfinite computed residual is returned as an explicit failed result if the dependency returns it.",
-    "nonconvergence": "Returns the final state with converged=false and failure_reason=maxiter_reached when the finite residual remains above tol at maxiter; nonfinite residual uses nonfinite_source_residual.",
-    "partial_results": "A bounded nonconverged result includes last flux, currents, pressure representation and residual history; exceptions return no mapping."
+    "invalid_input": "ValueError for invalid finite-array, grid, callback, control or boolean-mask contracts; supplied pressure samples must be finite nonnegative scalars.",
+    "runtime_failure": "The shared solver returns status=nonfinite for invalid computed derivative/current/Green/fit/residual with a specific reason. Invalid inputs and pressure callback exceptions propagate without fallback.",
+    "nonconvergence": "status=maxiter, converged=False and failure_reason=maxiter_reached when the bound is reached before both residual gates. With maxiter=0 both residuals remain +inf.",
+    "partial_results": "Failed results retain the available terminal state and histories; pressure_of_psi is None if no valid spline exists. A failed Green update retains the preceding finite flux/current pair. No partial state is accepted as a solution."
   },
   "provenance": {
-    "lineage_summary": "Maintained SciRel composition mapped to saved Pleiades L1 pressure-flux TaskGraph and direct graph tests; historical review labels are development provenance, not expert recognition of this version.",
+    "lineage_summary": "Maintained SciRel composition mapped to saved Pleiades L1 pressure-flux TaskGraph and direct graph tests; historical review labels are development provenance, not expert recognition of this version. The bounded legacy-six successor repairs independently reproduced defects or absorbs an equivalent maintained implementation. Original frozen failures and provenance remain available; technical checks do not constitute human or redistribution approval.",
     "source_kinds": [
       "saved L1 TaskGraph contract and implementation",
       "saved graph tests",
@@ -227,19 +254,19 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.1.0.dev14+legacy6",
     "dependencies": [
       {
-        "asset_id": "scirel.equilibrium.pressure-flux-state"
+        "asset_id": "scirel.equilibrium.compute-equilibrium"
       },
       {
-        "asset_id": "scirel.equilibrium.isotropic-picard-step"
+        "asset_id": "scirel.equilibrium.pressure-flux-state"
       }
     ]
   },
   "example": {
     "description": "With a zero Green response, one update leaves the vacuum flux unchanged while constructing a pressure spline.",
-    "code": "import numpy as np\nfrom scirel.equilibrium import solve_isotropic_pressure_flux\nr_grid, z_grid = np.meshgrid(np.linspace(0.2, 0.8, 4), [-0.1, 0.0, 0.1])\nresult = solve_isotropic_pressure_flux(r_grid=r_grid, z_grid=z_grid, pressure_of_radius=lambda r: max(1.0-r/0.8, 0.0), psi_vac=r_grid.copy(), g_psi=np.zeros((12, 12)), tol=1e-12, maxiter=1, relax=0.0)\nnp.testing.assert_allclose(result['psi'], r_grid)\nassert result['iterations'] == 1 and result['converged']\nassert result['pressure_of_psi']['extrapolation'] == 'zeros'",
+    "code": "import numpy as np\nfrom scirel.equilibrium import solve_isotropic_pressure_flux\nr_grid, z_grid = np.meshgrid(np.linspace(0.2, 0.8, 4), [-0.1, 0.0, 0.1])\nresult = solve_isotropic_pressure_flux(r_grid=r_grid, z_grid=z_grid, pressure_of_radius=lambda r: max(1.0-r/0.8, 0.0), psi_vac=r_grid.copy(), g_psi=np.zeros((12, 12)), tol=1e-12, maxiter=1, relax=0.0)\nnp.testing.assert_allclose(result['psi'], r_grid)\nassert result['iterations'] == 1 and result['converged']\nassert result['pressure_of_psi']['extrapolation'] == 'zeros'\nassert result['closure_residual']<=1e-12 and result['status']=='converged'",
     "expected": "One converged update, unchanged vacuum flux, a [3,4] current array and a zero-extrapolating pressure-spline representation."
   },
   "verification": {
@@ -249,12 +276,15 @@
       "Explicit feedback and maxiter nonconvergence.",
       "Pressure-mask current suppression.",
       "Wrong Green shape, missing controls, nonuniform grid and fractional maxiter failures.",
-      "Zero-iteration return owns an independent flux array."
+      "Zero-iteration return owns an independent flux array.",
+      "Zero-G relaxed-current and no-update false convergence are rejected.",
+      "Independent nonzero diagonal-G analytic fixed point and both residual histories agree with the quadratic defining equation."
     ],
     "tests": [
-      "tests/graph_contracts/isotropic_pressure_flux/test_graph_isotropic_pressure_flux.py"
+      "tests/graph_contracts/isotropic_pressure_flux/test_graph_isotropic_pressure_flux.py",
+      "tests/operator_contracts/test_legacy_six_absorption.py"
     ],
-    "evidence_ceiling": "Direct graph and Operator regressions establish selected arithmetic, state order, failure paths and one finite circular-filament flux projection for the historical isotropic model. They do not prove source parity, convergence or physical suitability for arbitrary pressure functions and Green matrices, nor confer expert recognition.",
+    "evidence_ceiling": "Targeted source regressions, explicit analytic fixtures and a selected no-source installed-wheel replay cover this finite contract. No arbitrary physical-model suitability, continuum convergence, human scientific endorsement or redistribution permission is inferred.",
     "known_limitations": [
       "Uses a dense square Green matrix and a pressure spline defined by an exact midplane and exact zero-pressure sample.",
       "No adaptive damping or physical-model selection is performed.",
@@ -264,81 +294,50 @@
   "graph": {
     "nodes": [
       {
-        "id": "initial_state",
-        "kind": "controlled_glue",
-        "description": "Copy vacuum flux and initialize previous currents to null and residual to 1.0.",
-        "inputs": [
-          "psi_vac"
-        ],
-        "outputs": [
-          "psi_state",
-          "currents_old"
-        ]
-      },
-      {
-        "id": "pressure_state",
+        "id": "closure_aware_equilibrium",
         "kind": "operator",
-        "asset_id": "scirel.equilibrium.pressure-flux-state",
-        "description": "Build the exact-midplane P(psi) spline, masked derivative and edge flux on the current psi.",
+        "asset_id": "scirel.equilibrium.compute-equilibrium",
+        "description": "Own the only bounded pressure-current/Green feedback loop, with both residual gates and explicit terminal status.",
         "inputs": [
           "r_grid",
           "z_grid",
-          "psi_state",
           "pressure_of_radius",
-          "plasma_mask"
-        ],
-        "outputs": [
-          "pressure_derivative",
-          "psi_edge",
-          "pressure_of_psi",
-          "zero_currents"
-        ]
-      },
-      {
-        "id": "picard_step",
-        "kind": "operator",
-        "asset_id": "scirel.equilibrium.isotropic-picard-step",
-        "description": "Compute relaxed cell currents, dense Green flux and a normalized flux residual.",
-        "inputs": [
-          "r_grid",
-          "z_grid",
-          "psi_state",
           "psi_vac",
           "g_psi",
-          "pressure_derivative",
-          "psi_edge",
-          "currents_old",
-          "relax"
-        ],
-        "outputs": [
-          "psi_next",
-          "plasma_currents",
-          "residual"
-        ]
-      },
-      {
-        "id": "bounded_result",
-        "kind": "controlled_glue",
-        "description": "Apply tol/maxiter stopping and return the last available state, pressure representation and explicit diagnostics.",
-        "inputs": [
           "tol",
           "maxiter",
-          "psi_initial",
-          "zero_currents",
-          "pressure_of_psi",
-          "psi_next",
-          "plasma_currents",
-          "residual"
+          "relax",
+          "plasma_mask",
+          "psi_state",
+          "currents_old"
         ],
         "outputs": [
           "psi",
           "plasma_currents",
-          "pressure_of_psi",
           "iterations",
           "residual",
           "residual_history",
           "converged",
-          "failure_reason"
+          "failure_reason",
+          "closure_residual",
+          "closure_residual_history",
+          "status"
+        ]
+      },
+      {
+        "id": "terminal_pressure",
+        "kind": "operator",
+        "asset_id": "scirel.equilibrium.pressure-flux-state",
+        "description": "Serialize the valid terminal pressure spline without adding an iteration loop.",
+        "inputs": [
+          "r_grid",
+          "z_grid",
+          "psi",
+          "pressure_of_radius",
+          "plasma_mask"
+        ],
+        "outputs": [
+          "pressure_of_psi"
         ]
       }
     ],
@@ -349,89 +348,134 @@
           "port": "r_grid"
         },
         "to": {
-          "node": "pressure_state",
+          "node": "closure_aware_equilibrium",
           "port": "r_grid"
         },
-        "description": "Grid radius for pressure sampling.",
-        "condition": "Initial construction and each update.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "z_grid"
-        },
-        "to": {
-          "node": "pressure_state",
-          "port": "z_grid"
-        },
-        "description": "Grid axial coordinate for the exact midplane.",
-        "condition": "Initial construction and each update.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "pressure_of_radius"
-        },
-        "to": {
-          "node": "pressure_state",
-          "port": "pressure_of_radius"
-        },
-        "description": "Caller radial pressure function.",
-        "condition": "Initial construction and each update.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "plasma_mask"
-        },
-        "to": {
-          "node": "pressure_state",
-          "port": "plasma_mask"
-        },
-        "description": "Optional current-suppression mask.",
-        "condition": "When supplied; otherwise None.",
-        "transform": "Identity or declared default None.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "psi_vac"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "psi_vac"
-        },
-        "description": "Vacuum flux initializes an independent psi state.",
+        "description": "Validated public port to the shared solver.",
         "condition": "Once.",
-        "transform": "Copy to float array.",
+        "transform": "Named argument mapping; plasma_mask maps to plas_clip.",
         "kind": "data",
         "required": true
       },
       {
         "from": {
-          "node": "initial_state",
-          "port": "psi_state"
+          "node": "$input",
+          "port": "z_grid"
         },
         "to": {
-          "node": "pressure_state",
-          "port": "psi_state"
+          "node": "closure_aware_equilibrium",
+          "port": "z_grid"
         },
-        "description": "Initial flux for the first pressure state.",
-        "condition": "Once before updates.",
-        "transform": "Identity.",
+        "description": "Validated public port to the shared solver.",
+        "condition": "Once.",
+        "transform": "Named argument mapping; plasma_mask maps to plas_clip.",
         "kind": "data",
         "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "pressure_of_radius"
+        },
+        "to": {
+          "node": "closure_aware_equilibrium",
+          "port": "pressure_of_radius"
+        },
+        "description": "Validated public port to the shared solver.",
+        "condition": "Once.",
+        "transform": "Named argument mapping; plasma_mask maps to plas_clip.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "psi_vac"
+        },
+        "to": {
+          "node": "closure_aware_equilibrium",
+          "port": "psi_vac"
+        },
+        "description": "Validated public port to the shared solver.",
+        "condition": "Once.",
+        "transform": "Named argument mapping; plasma_mask maps to plas_clip.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "g_psi"
+        },
+        "to": {
+          "node": "closure_aware_equilibrium",
+          "port": "g_psi"
+        },
+        "description": "Validated public port to the shared solver.",
+        "condition": "Once.",
+        "transform": "Named argument mapping; plasma_mask maps to plas_clip.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "tol"
+        },
+        "to": {
+          "node": "closure_aware_equilibrium",
+          "port": "tol"
+        },
+        "description": "Validated public port to the shared solver.",
+        "condition": "Once.",
+        "transform": "Named argument mapping; plasma_mask maps to plas_clip.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "maxiter"
+        },
+        "to": {
+          "node": "closure_aware_equilibrium",
+          "port": "maxiter"
+        },
+        "description": "Validated public port to the shared solver.",
+        "condition": "Once.",
+        "transform": "Named argument mapping; plasma_mask maps to plas_clip.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "relax"
+        },
+        "to": {
+          "node": "closure_aware_equilibrium",
+          "port": "relax"
+        },
+        "description": "Validated public port to the shared solver.",
+        "condition": "Once.",
+        "transform": "Named argument mapping; plasma_mask maps to plas_clip.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "plasma_mask"
+        },
+        "to": {
+          "node": "closure_aware_equilibrium",
+          "port": "plasma_mask"
+        },
+        "description": "Validated public port to the shared solver.",
+        "condition": "Once.",
+        "transform": "Named argument mapping; plasma_mask maps to plas_clip.",
+        "kind": "data",
+        "required": false
       },
       {
         "from": {
@@ -439,11 +483,11 @@
           "port": "r_grid"
         },
         "to": {
-          "node": "picard_step",
+          "node": "terminal_pressure",
           "port": "r_grid"
         },
-        "description": "Cell radii and spacing.",
-        "condition": "Each update.",
+        "description": "Terminal spline input.",
+        "condition": "A valid finite terminal spline exists.",
         "transform": "Identity.",
         "kind": "data",
         "required": true
@@ -454,41 +498,26 @@
           "port": "z_grid"
         },
         "to": {
-          "node": "picard_step",
+          "node": "terminal_pressure",
           "port": "z_grid"
         },
-        "description": "Cell spacing in Z.",
-        "condition": "Each update.",
+        "description": "Terminal spline input.",
+        "condition": "A valid finite terminal spline exists.",
         "transform": "Identity.",
         "kind": "data",
         "required": true
       },
       {
         "from": {
-          "node": "initial_state",
-          "port": "psi_state"
+          "node": "closure_aware_equilibrium",
+          "port": "psi"
         },
         "to": {
-          "node": "picard_step",
-          "port": "psi_state"
+          "node": "terminal_pressure",
+          "port": "psi"
         },
-        "description": "Initial flux for first residual calculation.",
-        "condition": "First update.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "psi_vac"
-        },
-        "to": {
-          "node": "picard_step",
-          "port": "psi_vac"
-        },
-        "description": "Vacuum contribution to every updated flux.",
-        "condition": "Each update.",
+        "description": "Terminal spline input.",
+        "condition": "A valid finite terminal spline exists.",
         "transform": "Identity.",
         "kind": "data",
         "required": true
@@ -496,59 +525,14 @@
       {
         "from": {
           "node": "$input",
-          "port": "g_psi"
+          "port": "pressure_of_radius"
         },
         "to": {
-          "node": "picard_step",
-          "port": "g_psi"
+          "node": "terminal_pressure",
+          "port": "pressure_of_radius"
         },
-        "description": "Dense cell-current Green response.",
-        "condition": "Each update.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "pressure_state",
-          "port": "pressure_derivative"
-        },
-        "to": {
-          "node": "picard_step",
-          "port": "pressure_derivative"
-        },
-        "description": "Current-state masked dP/dpsi.",
-        "condition": "Each update.",
-        "transform": "Identity; masking belongs to pressure_state.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "pressure_state",
-          "port": "psi_edge"
-        },
-        "to": {
-          "node": "picard_step",
-          "port": "psi_edge"
-        },
-        "description": "Edge flux for residual normalization.",
-        "condition": "Each update.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "currents_old"
-        },
-        "to": {
-          "node": "picard_step",
-          "port": "currents_old"
-        },
-        "description": "Null previous-current state becomes zeros in the first step.",
-        "condition": "First update.",
+        "description": "Terminal spline input.",
+        "condition": "A valid finite terminal spline exists.",
         "transform": "Identity.",
         "kind": "data",
         "required": true
@@ -556,326 +540,235 @@
       {
         "from": {
           "node": "$input",
-          "port": "relax"
+          "port": "plasma_mask"
         },
         "to": {
-          "node": "picard_step",
-          "port": "relax"
+          "node": "terminal_pressure",
+          "port": "plasma_mask"
         },
-        "description": "Previous-current mixing weight.",
-        "condition": "Each update.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "picard_step",
-          "port": "psi_next"
-        },
-        "to": {
-          "node": "pressure_state",
-          "port": "psi_state"
-        },
-        "description": "Updated flux rebuilds the pressure state before the next decision.",
-        "condition": "After an executed step.",
-        "transform": "Identity.",
-        "kind": "feedback",
-        "required": true,
-        "feedback_id": "isotropic_picard"
-      },
-      {
-        "from": {
-          "node": "picard_step",
-          "port": "psi_next"
-        },
-        "to": {
-          "node": "picard_step",
-          "port": "psi_state"
-        },
-        "description": "Current updated flux becomes the preceding flux for the next residual.",
-        "condition": "Residual > tol and iteration count < maxiter.",
-        "transform": "Identity.",
-        "kind": "feedback",
-        "required": true,
-        "feedback_id": "isotropic_picard"
-      },
-      {
-        "from": {
-          "node": "picard_step",
-          "port": "plasma_currents"
-        },
-        "to": {
-          "node": "picard_step",
-          "port": "currents_old"
-        },
-        "description": "Current array becomes the old-current state for the next relaxed step.",
-        "condition": "Residual > tol and iteration count < maxiter.",
-        "transform": "Identity.",
-        "kind": "feedback",
-        "required": true,
-        "feedback_id": "isotropic_picard"
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "tol"
-        },
-        "to": {
-          "node": "bounded_result",
-          "port": "tol"
-        },
-        "description": "Convergence threshold.",
-        "condition": "Every stop decision.",
-        "transform": "Identity.",
-        "kind": "control",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "maxiter"
-        },
-        "to": {
-          "node": "bounded_result",
-          "port": "maxiter"
-        },
-        "description": "Finite update bound.",
-        "condition": "Every stop decision.",
-        "transform": "Identity.",
-        "kind": "control",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "psi_state"
-        },
-        "to": {
-          "node": "bounded_result",
-          "port": "psi_initial"
-        },
-        "description": "Return value before any step.",
-        "condition": "When no update executes.",
+        "description": "Terminal spline input.",
+        "condition": "A valid finite terminal spline exists.",
         "transform": "Identity.",
         "kind": "data",
         "required": false
       },
       {
         "from": {
-          "node": "pressure_state",
-          "port": "zero_currents"
-        },
-        "to": {
-          "node": "bounded_result",
-          "port": "zero_currents"
-        },
-        "description": "Current array before any step.",
-        "condition": "When no update executes.",
-        "transform": "Reshape to the R-Z grid.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "pressure_state",
-          "port": "pressure_of_psi"
-        },
-        "to": {
-          "node": "bounded_result",
-          "port": "pressure_of_psi"
-        },
-        "description": "Latest pressure-spline representation, including after the last step.",
-        "condition": "After initial construction and each update.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "picard_step",
-          "port": "psi_next"
-        },
-        "to": {
-          "node": "bounded_result",
-          "port": "psi_next"
-        },
-        "description": "Last updated flux.",
-        "condition": "When at least one step executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "picard_step",
-          "port": "plasma_currents"
-        },
-        "to": {
-          "node": "bounded_result",
-          "port": "plasma_currents"
-        },
-        "description": "Last updated cell currents.",
-        "condition": "When at least one step executes.",
-        "transform": "Reshape to the R-Z grid.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "picard_step",
-          "port": "residual"
-        },
-        "to": {
-          "node": "bounded_result",
-          "port": "residual"
-        },
-        "description": "Accumulate residual history and final convergence status.",
-        "condition": "After each executed step.",
-        "transform": "Append to history without the initial sentinel.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "bounded_result",
+          "node": "closure_aware_equilibrium",
           "port": "psi"
         },
         "to": {
           "node": "$output",
           "port": "psi"
         },
-        "description": "Final flux state.",
-        "condition": "On successful bounded return.",
-        "transform": "Identity.",
+        "description": "Explicit terminal result.",
+        "condition": "Return; pressure representation may be None on failure.",
+        "transform": "Terminal diagnostic mapping.",
         "kind": "data",
         "required": true
       },
       {
         "from": {
-          "node": "bounded_result",
+          "node": "closure_aware_equilibrium",
           "port": "plasma_currents"
         },
         "to": {
           "node": "$output",
           "port": "plasma_currents"
         },
-        "description": "Final cell-current array.",
-        "condition": "On successful bounded return.",
-        "transform": "Identity.",
+        "description": "Explicit terminal result.",
+        "condition": "Return; pressure representation may be None on failure.",
+        "transform": "Terminal diagnostic mapping.",
         "kind": "data",
         "required": true
       },
       {
         "from": {
-          "node": "bounded_result",
+          "node": "terminal_pressure",
           "port": "pressure_of_psi"
         },
         "to": {
           "node": "$output",
           "port": "pressure_of_psi"
         },
-        "description": "Final pressure representation.",
-        "condition": "On successful bounded return.",
-        "transform": "Identity.",
+        "description": "Explicit terminal result.",
+        "condition": "Return; pressure representation may be None on failure.",
+        "transform": "Terminal diagnostic mapping.",
         "kind": "data",
         "required": true
       },
       {
         "from": {
-          "node": "bounded_result",
+          "node": "closure_aware_equilibrium",
           "port": "iterations"
         },
         "to": {
           "node": "$output",
           "port": "iterations"
         },
-        "description": "Actual update count.",
-        "condition": "On successful bounded return.",
-        "transform": "Identity.",
+        "description": "Explicit terminal result.",
+        "condition": "Return; pressure representation may be None on failure.",
+        "transform": "Terminal diagnostic mapping.",
         "kind": "data",
         "required": true
       },
       {
         "from": {
-          "node": "bounded_result",
+          "node": "closure_aware_equilibrium",
           "port": "residual"
         },
         "to": {
           "node": "$output",
           "port": "residual"
         },
-        "description": "Final normalized residual or initial sentinel.",
-        "condition": "On successful bounded return.",
-        "transform": "Identity.",
+        "description": "Explicit terminal result.",
+        "condition": "Return; pressure representation may be None on failure.",
+        "transform": "Terminal diagnostic mapping.",
         "kind": "data",
         "required": true
       },
       {
         "from": {
-          "node": "bounded_result",
+          "node": "closure_aware_equilibrium",
           "port": "residual_history"
         },
         "to": {
           "node": "$output",
           "port": "residual_history"
         },
-        "description": "Per-step residual sequence.",
-        "condition": "On successful bounded return.",
-        "transform": "Identity.",
+        "description": "Explicit terminal result.",
+        "condition": "Return; pressure representation may be None on failure.",
+        "transform": "Terminal diagnostic mapping.",
         "kind": "data",
         "required": true
       },
       {
         "from": {
-          "node": "bounded_result",
+          "node": "closure_aware_equilibrium",
           "port": "converged"
         },
         "to": {
           "node": "$output",
           "port": "converged"
         },
-        "description": "Finite threshold comparison.",
-        "condition": "On successful bounded return.",
-        "transform": "Identity.",
+        "description": "Explicit terminal result.",
+        "condition": "Return; pressure representation may be None on failure.",
+        "transform": "Terminal diagnostic mapping.",
         "kind": "data",
         "required": true
       },
       {
         "from": {
-          "node": "bounded_result",
+          "node": "closure_aware_equilibrium",
           "port": "failure_reason"
         },
         "to": {
           "node": "$output",
           "port": "failure_reason"
         },
-        "description": "Explicit nonconvergence cause or null.",
-        "condition": "On successful bounded return.",
-        "transform": "Identity.",
+        "description": "Explicit terminal result.",
+        "condition": "Return; pressure representation may be None on failure.",
+        "transform": "Terminal diagnostic mapping.",
         "kind": "data",
         "required": true
+      },
+      {
+        "from": {
+          "node": "closure_aware_equilibrium",
+          "port": "closure_residual"
+        },
+        "to": {
+          "node": "$output",
+          "port": "closure_residual"
+        },
+        "description": "Explicit terminal result.",
+        "condition": "Return; pressure representation may be None on failure.",
+        "transform": "Terminal diagnostic mapping.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "closure_aware_equilibrium",
+          "port": "closure_residual_history"
+        },
+        "to": {
+          "node": "$output",
+          "port": "closure_residual_history"
+        },
+        "description": "Explicit terminal result.",
+        "condition": "Return; pressure representation may be None on failure.",
+        "transform": "Terminal diagnostic mapping.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "closure_aware_equilibrium",
+          "port": "status"
+        },
+        "to": {
+          "node": "$output",
+          "port": "status"
+        },
+        "description": "Explicit terminal result.",
+        "condition": "Return; pressure representation may be None on failure.",
+        "transform": "Terminal diagnostic mapping.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "closure_aware_equilibrium",
+          "port": "psi"
+        },
+        "to": {
+          "node": "closure_aware_equilibrium",
+          "port": "psi_state"
+        },
+        "description": "Internal state transition owned by the single shared solver, not an adapter loop.",
+        "condition": "Both residual gates not yet achieved; state finite; iteration bound not reached.",
+        "transform": "Use the completed preceding internal state.",
+        "kind": "feedback",
+        "required": true,
+        "feedback_id": "shared_pressure_current_feedback"
+      },
+      {
+        "from": {
+          "node": "closure_aware_equilibrium",
+          "port": "plasma_currents"
+        },
+        "to": {
+          "node": "closure_aware_equilibrium",
+          "port": "currents_old"
+        },
+        "description": "Internal state transition owned by the single shared solver, not an adapter loop.",
+        "condition": "Both residual gates not yet achieved; state finite; iteration bound not reached.",
+        "transform": "Use the completed preceding internal state.",
+        "kind": "feedback",
+        "required": true,
+        "feedback_id": "shared_pressure_current_feedback"
       }
     ],
     "execution": {
-      "mode": "bounded_picard_feedback",
-      "ordering": "Validate all graph controls and geometry, construct initial pressure state, then while residual > tol and iterations < maxiter run the step, rebuild pressure state, append residual and increment iterations; return the last state.",
+      "mode": "dag_with_bounded_solver",
+      "ordering": "Validate inputs; call the single shared bounded solver; serialize a valid terminal pressure prefix; return explicit status and histories.",
       "branches": [
-        "maxiter=0 or initial residual 1.0 <= tol: skip all Picard updates but return the initial pressure representation.",
-        "A finite residual above tol at the bound returns maxiter_reached; a nonfinite residual returns nonfinite_source_residual."
+        "maxiter=0 returns unsolved state with both residuals +inf.",
+        "Invalid computed state returns nonfinite; convergence requires both finite residuals <=tol."
       ],
-      "state_ownership": "The graph owns copies of evolving psi, currents, residual history and count; the caller owns the input grids, vacuum flux, pressure callable and Green matrix.",
-      "failure_propagation": "Invalid input or a dependency exception aborts without a result; bounded nonconvergence is returned as explicit data, not raised.",
+      "state_ownership": "Only compute_equilibrium owns evolving flux/current state and paired histories. The adapter adds no feedback loop.",
+      "failure_propagation": "Input/callback exceptions propagate; failed numerical terminal states remain explicit data.",
       "feedback": [
         {
-          "id": "isotropic_picard",
-          "state": "psi, old cell currents, pressure derivative, edge flux, residual and iteration count",
-          "initialization": "psi is a copy of psi_vac; old currents are None, residual is 1.0, count is zero, and the initial pressure state is built before the loop.",
-          "update_order": "Step from current pressure state and old currents; assign psi_next and currents; rebuild P(psi) on psi_next; append residual and increment count.",
-          "continue_when": "residual > tol and iterations < maxiter",
-          "stop_when": "Residual <= tol, the iteration bound is reached, or a NaN residual makes the comparison false; an infinite residual continues until the bound.",
-          "iteration_bound": "Validated runtime integer maxiter >= 0",
-          "nonconvergence": "Return the final state with converged=false and maxiter_reached for finite residual, or nonfinite_source_residual for nonfinite residual."
+          "id": "shared_pressure_current_feedback",
+          "state": "psi, currents, pressure spline, paired residuals and iteration count internal to compute_equilibrium",
+          "initialization": "Copy vacuum flux, zero current, both residuals +inf, empty histories.",
+          "update_order": "Pressure derivative and target; current relaxation; Green flux; terminal fit; flux and closure residuals.",
+          "continue_when": "Either residual exceeds tol and finite state remains and count<maxiter.",
+          "stop_when": "Both finite residuals <=tol, invalid state, or maxiter.",
+          "iteration_bound": "Validated nonnegative integer maxiter.",
+          "nonconvergence": "Explicit maxiter/nonfinite status; never silently accepted."
         }
       ]
     }

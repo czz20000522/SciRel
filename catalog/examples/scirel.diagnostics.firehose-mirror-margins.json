@@ -19,7 +19,7 @@
   "identity": {
     "relation": "Anisotropic pressures and magnetic-field samples to two sampled margin criteria",
     "direction": "(p_parallel, p_perp, B, mu0) -> firehose_margin, mirror_margin, minima and positivity flags",
-    "definition": "firehose_margin=B^2/mu0+p_perp-p_parallel. mirror_margin=B*d[p_perp+B^2/(2*mu0)]/dB at fixed psi = B^2/mu0+B*dp_perp_dB. Strictly positive sampled minima set the two local flags. For an invariant bi-Maxwellian this mirror criterion is 1-beta_perp*(T_perp/T_parallel-1)>0.",
+    "definition": "firehose_margin=B^2/mu0+p_perp-p_parallel. mirror_margin=B*d[p_perp+B^2/(2*mu0)]/dB at fixed psi = B^2/mu0+B*dp_perp_dB. Strictly positive sampled minima set the two local flags. For an invariant bi-Maxwellian this mirror criterion is 1-beta_perp*(T_perp/T_parallel-1)>0. Normal non-cancelling values retain ordinary float64 operation order. If opposing contributions leave at most half the magnitude of the largest term, or an intermediate product/quotient loses range, the same complete relation is evaluated as an exact binary-rational expression and rounded once to float64. This protects finite cancellation residuals without a zero clamp or an equal-pressure special case; genuinely unrepresentable final margins fail.",
     "model": "Local gyrotropic no-flow tension and long-wavelength total-pressure-slope criteria. The positive derivative sign follows this definition and the kinetic bi-Maxwellian threshold; it conflicts with the literal opposite sign printed in Frank2509.17288v4 Eq6. No author-confirmed erratum is asserted.",
     "geometry": "Explicit fixed-psi pressure law or caller-designated sample lines whose flux label is constant along field_axis.",
     "coordinates": "Magnetic-field magnitude B at fixed flux label psi; arrays are never flattened and globally sorted to infer this partial derivative.",
@@ -226,12 +226,12 @@
   },
   "failure_semantics": {
     "invalid_input": "ValueError for missing derivative information, conflicting derivative/axis inputs, nonfinite or nonpositive B, invalid shapes or nonmonotone/variable-psi derivative lines; other documented scalar controls are validated.",
-    "runtime_failure": "FloatingPointError for nonfinite computed residuals or margins; callable errors propagate.",
+    "runtime_failure": "FloatingPointError when the final mathematical margin cannot be represented as finite float64; representable results are not rejected solely because an intermediate B square exceeds range. Other conversion/callback errors propagate.",
     "nonconvergence": "No nonlinear solve; the caller is responsible for derivative sampling convergence.",
     "partial_results": "None. Optional upstream parallel-equilibrium values in the margin API are forwarded without independent validation."
   },
   "provenance": {
-    "lineage_summary": "Scientific correction of the local SciRel Pleiades-extension candidate. The retrieved historical extension does not establish an exact original-source mapping for this asset. The changed mathematical definitions are stated here; numerical agreement with an earlier candidate is not a correctness argument.",
+    "lineage_summary": "Scientific correction of the local SciRel Pleiades-extension candidate. The retrieved historical extension does not establish an exact original-source mapping for this asset. The changed mathematical definitions are stated here; numerical agreement with an earlier candidate is not a correctness argument. A subsequent independently detected finite-cancellation defect is corrected in both shared margin consumers; original dev14 failure evidence remains retained separately.",
     "source_kinds": [
       "local SciRel implementation",
       "explicit mathematical derivation",
@@ -252,22 +252,26 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
+    "implementation_version": "0.1.0.dev15+legacy6",
     "dependencies": []
   },
   "example": {
     "description": "An explicit anisotropic bi-Maxwellian local state fails the mirror criterion but retains positive firehose tension.",
-    "code": "from scirel.diagnostics.firehose_mirror_margins import compute_firehose_mirror_margins\nr=compute_firehose_mirror_margins(1.,2.,1.,mu0=1.,dp_perp_dB=-4.)\nassert abs(float(r['firehose_margin'])-2.)<1e-12\nassert abs(float(r['mirror_margin'])+3.)<1e-12\nassert r['firehose_stable'] and not r['mirror_stable']",
-    "expected": "Firehose margin 2 and mirror margin -3; the derivative sign matches the explicit total-pressure derivative and kinetic threshold."
+    "code": "from scirel.diagnostics.firehose_mirror_margins import compute_firehose_mirror_margins\nr=compute_firehose_mirror_margins(1.,2.,1.,mu0=1.,dp_perp_dB=-4.)\nassert abs(float(r['firehose_margin'])-2.)<1e-12\nassert abs(float(r['mirror_margin'])+3.)<1e-12\nassert r['firehose_stable'] and not r['mirror_stable']\nr=compute_firehose_mirror_margins(1e100,1e100,1.,mu0=1.,dp_perp_dB=0.)\nassert float(r['firehose_margin'])==1. and r['firehose_stable']",
+    "expected": "Firehose margin 2 and mirror margin -3; the derivative sign matches the explicit total-pressure derivative and kinetic threshold. Equal large pressures retain 1 Pa of magnetic tension and its strictly positive sampled flag."
   },
   "verification": {
     "scope": [
       "Explicit uniform-isotropic and fixed-psi multi-line polynomial regressions.",
       "Sixty-three invariant bi-Maxwellian states cross-check pressure compatibility and total-pressure-slope threshold.",
-      "Four sample refinements demonstrate finite-difference convergence along fixed-psi lines."
+      "Four sample refinements demonstrate finite-difference convergence along fixed-psi lines.",
+      "Finite-input intermediate square overflow/underflow and cancellation are checked against an independent high-precision Decimal evaluation; genuinely unrepresentable final results still fail.",
+      "Finite equal and unequal-pressure cancellation, neighbouring binary64 inputs across dimensional scales, mirror residual signs, noncontiguous multidimensional arrays and exact-zero flags are checked against independent 2000-digit Decimal arithmetic in a no-source installed wheel."
     ],
     "tests": [
-      "tests/operator_contracts/test_pleiades_spectral_scientific_correction.py"
+      "tests/operator_contracts/test_pleiades_spectral_scientific_correction.py",
+      "tests/operator_contracts/test_legacy_six_absorption.py",
+      "tests/operator_contracts/test_pressure_margin_cancellation.py"
     ],
     "evidence_ceiling": "Analytic identities, explicit failure regressions and independent numerical comparisons establish the stated mathematical contract. They do not establish measured-plasma validity or a general stability theorem.",
     "known_limitations": [

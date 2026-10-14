@@ -1,6 +1,7 @@
 """Local gyrotropic tension and fixed-flux total-pressure-slope diagnostics."""
 import numpy as np
 from ._fixed_flux_derivative import fixed_flux_derivative
+from .pointwise_firehose_margin import _firehose_kernel, _mirror_kernel
 MU0 = 4e-7*np.pi
 
 
@@ -33,8 +34,8 @@ def compute_firehose_mirror_margins(p_parallel,p_perp,magnetic_field,mu0=MU0,
         raise ValueError('mu0 must be positive and finite')
     derivative,method=fixed_flux_derivative(p_perp,magnetic_field,
         derivative=dp_perp_dB,field_axis=field_axis,psi=psi)
-    firehose=magnetic_field**2/mu0+p_perp-p_parallel
-    mirror=magnetic_field**2/mu0+magnetic_field*derivative
+    firehose=_firehose_kernel(p_parallel,p_perp,magnetic_field,mu0)
+    mirror=_mirror_kernel(magnetic_field,derivative,mu0)
     if not np.all(np.isfinite(firehose)) or not np.all(np.isfinite(mirror)):
         raise FloatingPointError('local pressure margins are not finite')
     if parallel_equilibrium is not None and not isinstance(parallel_equilibrium,dict):

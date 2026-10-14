@@ -1,0 +1,65 @@
+{
+  "schema": "scirel.bounded-scientific-integration.v1",
+  "action_id": "scirel-cumulative233-legacy6-integration-20261014-v1",
+  "base": "1bf17f50a0b98e28aad8e6c1c587d1d3268a62df",
+  "new_assets": [
+    "scirel.closures.tabulated-pressure",
+    "scirel.diagnostics.pointwise-firehose-margin",
+    "scirel.equilibrium.isotropic-picard-step",
+    "scirel.equilibrium.isotropic-pressure-flux",
+    "scirel.equilibrium.pressure-flux-state",
+    "scirel.field.permanent-ring-filaments"
+  ],
+  "shared_updated_assets": [
+    "scirel.diagnostics.firehose-mirror-margins",
+    "scirel.equilibrium.compute-equilibrium"
+  ],
+  "accepted_composite": "provenance/validation/legacy-six-root-composite-20261014.json",
+  "comparison": "Table equality metadata keeps rank independent; pointwise diagnostic preserves singleton/repeated B; Picard step rejects nonfinite intermediate states; full pressure solve reuses one qualified closure-aware loop; pressure-state prefix reconstructs the fitted spline; sixteen-filament geometry delegates to MagnetRing without micro-angle snapping. Shared pressure margins retain exact finite-cancellation residuals.",
+  "dependencies": "Six added APIs need NumPy/SciPy/stdlib and selected shared implementations. Cumulative predecessor five Python dependencies and Octave-dependent PDRK runtime are retained without adding any development or source-comparison dependency.",
+  "records": [
+    {
+      "asset_id": "scirel.closures.tabulated-pressure",
+      "path": "catalog/examples/scirel.closures.tabulated-pressure.json",
+      "sha256": "a74b30a504aaa605ebba425b3c55b210a3a699d6be92d930b7d857b3ce8b568a"
+    },
+    {
+      "asset_id": "scirel.diagnostics.firehose-mirror-margins",
+      "path": "catalog/examples/scirel.diagnostics.firehose-mirror-margins.json",
+      "sha256": "81f2865194d475cd2e9a4760c378a69e7706246bf59308e5dff9bdfe908ee308"
+    },
+    {
+      "asset_id": "scirel.diagnostics.pointwise-firehose-margin",
+      "path": "catalog/examples/scirel.diagnostics.pointwise-firehose-margin.json",
+      "sha256": "9f7933dbf95ac74f0db3df36b2352e72a5b2073f7a5e38abd761c5b1f06397e0"
+    },
+    {
+      "asset_id": "scirel.equilibrium.compute-equilibrium",
+      "path": "catalog/pleiades-maintained/equilibrium.json",
+      "sha256": "3fdd43d8e39d27820a49629cc94213bbb1e2b9938ea1fbb87e18fa639d1b3050"
+    },
+    {
+      "asset_id": "scirel.equilibrium.isotropic-picard-step",
+      "path": "catalog/examples/scirel.equilibrium.isotropic-picard-step.json",
+      "sha256": "777485051a1bbc2b99b86d30afc0a97d6086a3f22ecedeafe8d428b413b027f8"
+    },
+    {
+      "asset_id": "scirel.equilibrium.isotropic-pressure-flux",
+      "path": "catalog/examples/scirel.equilibrium.isotropic-pressure-flux.json",
+      "sha256": "0ab8f4b102c6fab15b633624be197c784862ef2f8dcde031a4d31991abce8536"
+    },
+    {
+      "asset_id": "scirel.equilibrium.pressure-flux-state",
+      "path": "catalog/examples/scirel.equilibrium.pressure-flux-state.json",
+      "sha256": "9d78dcd8578fbf4c8110d59b52d7198f9efc2b4c1622c04aa77c1a9e80637445"
+    },
+    {
+      "asset_id": "scirel.field.permanent-ring-filaments",
+      "path": "catalog/examples/scirel.field.permanent-ring-filaments.json",
+      "sha256": "4d56c6ca7d403895247b1b1d4307a222ee3ca8062d6d83118a938156e651084b"
+    }
+  ],
+  "not_qualified": "Other ten pending legacy relations, including cold tensor correction, are not admitted by this increment.",
+  "human_approval": false,
+  "public_release": false
+}

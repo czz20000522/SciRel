@@ -19,14 +19,14 @@
   "identity": {
     "relation": "midplane pressure P(R) and flux psi(R,Z) to pressure-flux spline and dP/dpsi",
     "direction": "R-Z grid, psi and P(R) -> pressure-of-psi representation, flattened derivative and zero-current state",
-    "definition": "Evaluate P(R) on the unique exact Z=0 row in its grid order. Find the first exact zero-pressure sample and fit InterpolatedUnivariateSpline(psi_prefix, pressure_prefix, ext='zeros') through that sample; psi_prefix must contain at least four strictly increasing values. Evaluate its first derivative at every C-order-flattened psi point, replace nonfinite derivative values by zero, then set values to zero where psi exceeds psi_edge or plasma_mask is true. Return the spline representation, psi_edge, limiter_index and an equally shaped all-zero current vector.",
-    "model": "source-order axisymmetric isotropic pressure-flux construction using an interpolating cubic spline",
+    "definition": "Sort only the unique exact Z=0 midplane indices by physical radius, rejecting duplicate radii. Sample nonnegative finite P(R); fit the strictly increasing flux prefix of at least four points through the first outward exact zero-pressure edge. Serialize that exact prefix, knots, coefficients and cubic degree. Evaluate dP/dpsi in original C-order grid layout, reject nonfinite coefficients or derivatives before clipping, then zero values above psi_edge or at true boolean plasma_mask cells. Return the finite derivative and aligned zero-current vector.",
+    "model": "Axisymmetric isotropic cubic pressure-flux construction with physical radial traversal and exactly reconstructible fit",
     "geometry": "two-dimensional cylindrical R-Z sample arrays with one complete exact Z=0 row",
     "coordinates": "cylindrical R and Z in metres; arrays indexed [Z,R], output derivative and current vectors flattened in C order",
     "boundary": "The first exact zero P(R) sample is the limiter and sets psi_edge; derivative is zero for psi > psi_edge and at true plasma_mask entries. The spline is constructed with ext='zeros'.",
     "assumptions": [
       "The supplied pressure profile is a nonnegative scalar function of cylindrical radius and defines an exact zero-pressure boundary.",
-      "The unique exact midplane row is in the intended radial order, and psi rises strictly through the first zero-pressure sample.",
+      "Physical midplane radii are distinct; psi rises strictly along increasing physical radius through the first zero-pressure sample, independently of storage order.",
       "For the maintained isotropic Picard chain the caller supplies psi=R A_phi in Wb/rad; the spline alone does not independently establish physical equilibrium or enforce a flux normalization."
     ]
   },
@@ -38,7 +38,7 @@
       "shape": "[N_Z,N_R]",
       "dtype": "real array-like, converted to float64",
       "required": true,
-      "constraints": "Finite two-dimensional values; same shape as z_grid and psi. Rectilinearity and radial monotonicity are not checked."
+      "constraints": "Finite 2-D values matching z_grid and psi; midplane radii must be distinct. Only midplane traversal is sorted by radius; output layout is preserved."
     },
     {
       "name": "z_grid",
@@ -65,28 +65,28 @@
       "shape": "callable(scalar R) -> scalar pressure",
       "dtype": "callable returning real scalar values convertible to float64",
       "required": true,
-      "constraints": "Every sampled result must be finite and nonnegative; at least one must equal exactly zero. The callable is invoked once for each midplane radius in grid order."
+      "constraints": "Finite nonnegative scalar at every midplane radius, called in increasing physical-radius order; an exact zero defines the boundary."
     },
     {
       "name": "plasma_mask",
       "description": "Optional mask whose true entries set the corresponding flattened pressure derivative to zero.",
       "units": "1",
       "shape": "[N_Z,N_R] or null",
-      "dtype": "array-like converted to bool, or None",
+      "dtype": "boolean array-like or None",
       "required": false,
       "default": null,
-      "constraints": "When supplied, must have exactly the same shape as r_grid; conversion uses NumPy boolean truth values."
+      "constraints": "Must be genuinely boolean and shape-matched; numeric truth-value coercion is not accepted."
     }
   ],
   "outputs": [
     {
       "name": "pressure_derivative",
-      "description": "Spline derivative dP/dpsi at flattened grid fluxes after nonfinite-value, edge and mask clipping.",
+      "description": "Finite spline derivative in C order after edge and boolean-mask clipping.",
       "units": "Pa/(Wb/rad)",
       "shape": "[N_Z*N_R]",
       "dtype": "float64 array",
       "required": true,
-      "constraints": "C-order flattened; zero for psi > psi_edge and at true mask entries. Nonfinite computed entries are replaced by zero."
+      "constraints": "Nonfinite values fail before any clipping. Zero for psi > psi_edge and true mask entries."
     },
     {
       "name": "zero_currents",
@@ -113,16 +113,16 @@
       "shape": "mapping",
       "dtype": "mapping of float64 arrays, integer degree and string descriptors",
       "required": true,
-      "constraints": "Contains psi_samples and pressure_samples for the entire midplane row, plus fitted spline knots, coefficients, degree, extrapolation='zeros' and evaluation text; the fit itself uses only the prefix through limiter_index."
+      "constraints": "psi_samples and pressure_samples contain exactly the fitted prefix through limiter_index; knots, coefficients, degree and extrapolation=zeros describe the same cubic spline."
     },
     {
       "name": "limiter_index",
-      "description": "Position of the first exact-zero pressure sample within the midplane row.",
+      "description": "First exact-zero pressure index in increasing physical-radius order.",
       "units": "index",
       "shape": "scalar",
       "dtype": "int",
       "required": true,
-      "constraints": "Zero-based midplane position, not a whole-grid flattened index."
+      "constraints": "Zero-based position in the physically sorted midplane, not a whole-grid or storage-order index."
     }
   ],
   "applicability": {
@@ -131,7 +131,7 @@
       "The first-zero prefix of midplane psi is strictly increasing and has at least four samples."
     ],
     "supported": [
-      "Source-order construction of a cubic pressure-versus-flux spline and clipped dP/dpsi state for the maintained isotropic equilibrium composition."
+      "Cubic pressure-flux interpolation and finite clipped derivative in caller grid order, including descending radial storage and an interior zero-pressure boundary."
     ],
     "excluded": [
       "General inference of the magnetic axis, limiter or flux-surface geometry.",
@@ -140,13 +140,13 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError for non-2D, nonfinite or shape-mismatched grids; a missing or nonunique complete exact-zero row; noncallable pressure; nonfinite or negative pressure samples; no exact-zero pressure boundary; an insufficient or non-increasing midplane flux prefix; or wrong-shaped plasma_mask.",
-    "runtime_failure": "Exceptions raised by pressure_of_radius or SciPy spline construction/evaluation propagate; the operator provides no fallback. Nonfinite computed derivative entries alone are replaced by zero.",
+    "invalid_input": "Raises ValueError for non-2D, nonfinite or shape-mismatched grids; a missing or nonunique complete exact-zero row; noncallable pressure; nonfinite or negative pressure samples; no exact-zero pressure boundary; an insufficient or non-increasing midplane flux prefix; or wrong-shaped plasma_mask. Duplicate midplane radii and nonboolean masks also raise ValueError.",
+    "runtime_failure": "FloatingPointError for nonfinite fitted coefficients or derivative; callback/SciPy failures propagate. Clipping cannot hide invalid numerical states.",
     "nonconvergence": "Not applicable; this spline construction does not iterate toward equilibrium.",
     "partial_results": "No partial result mapping is returned if validation or spline construction raises."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery.",
+    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. The bounded legacy-six successor repairs independently reproduced defects or absorbs an equivalent maintained implementation. Original frozen failures and provenance remain available; technical checks do not constitute human or redistribution approval.",
     "source_kinds": [
       "historical Pleiades development descriptor and migration mapping",
       "pending intake development candidate",
@@ -163,7 +163,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.1.0.dev14+legacy6",
     "dependencies": []
   },
   "example": {
@@ -175,15 +175,18 @@
     "scope": [
       "Exact-midplane pressure-spline construction and clipped derivative on a finite grid.",
       "Mask clipping, first-zero limiter index and zero-current vector.",
-      "Selected invalid midplane and missing-zero-pressure boundary cases."
+      "Selected invalid midplane and missing-zero-pressure boundary cases.",
+      "An interior edge serializes exactly four fit points and independently reconstructs pressure and derivative.",
+      "Descending radial storage preserves physical edge and original output order; numeric masks and nonfinite fit/derivative fail."
     ],
     "tests": [
-      "tests/operator_contracts/test_pressure_flux_state.py"
+      "tests/operator_contracts/test_pressure_flux_state.py",
+      "tests/operator_contracts/test_legacy_six_absorption.py"
     ],
-    "evidence_ceiling": "Direct SciRel tests establish the maintained midplane spline and mask behavior on selected inputs. They do not establish the physical flux convention, arbitrary-grid suitability, pressure-model correctness or expert recognition.",
+    "evidence_ceiling": "Targeted source regressions, explicit analytic fixtures and a selected no-source installed-wheel replay cover this finite contract. No arbitrary physical-model suitability, continuum convergence, human scientific endorsement or redistribution permission is inferred.",
     "known_limitations": [
       "Strict exact-zero tests for both midplane and pressure boundary do not tolerate near-zero samples.",
-      "The returned psi_samples and pressure_samples cover the full midplane row although the fitted spline uses only the prefix through limiter_index.",
+      "The prefix and spline are identical representations of the chosen interpolant; this does not prove the prescribed pressure law or extrapolation physically suitable.",
       "Grid rectilinearity and pressure-profile physics are not validated; public distribution licensing and expert recognition remain pending."
     ]
   }

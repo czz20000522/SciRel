@@ -18,11 +18,11 @@
   "identity": {
     "relation": "rectangular permanent-ring section to weighted surface-filament geometry",
     "direction": "section center, width, height and angle -> ordered R-Z points and relative weights",
-    "definition": "Place eight evenly spaced Z coordinates on each of the two R faces at r0-width/2 and r0+width/2. The first face receives weight -1 per filament and the second +1. Optionally rotate all points about (r0,z0) using the maintained row-vector R-Z convention; weights and order do not change.",
+    "definition": "Place eight evenly spaced Z coordinates on each of the two R faces at r0-width/2 and r0+width/2. The first face receives weight -1 per filament and the second +1. Optionally rotate all points about (r0,z0) using the maintained row-vector R-Z convention; weights and order do not change. The function delegates geometry to the maintained MagnetRing with its default sixteen signed weights and returns copied arrays. Every nonzero finite angle is rotated; no small-angle snap is used.",
     "model": "fixed 16-filament geometric approximation to opposing permanent-ring surface currents",
     "geometry": "rectangular ring cross-section represented by circular filaments in an axisymmetric R-Z drawing",
     "coordinates": "cylindrical radius R and axial coordinate Z; positive angle uses the source row-vector convention, clockwise in the standard R-Z drawing",
-    "boundary": "Generated filament radii must remain nonnegative; angles within 1e-12 degree of zero follow the unrotated branch.",
+    "boundary": "All generated coordinates must remain finite and radii nonnegative. Any nonzero finite angle uses clockwise degree rotation, including tiny angles; zero alone takes the unrotated path.",
     "assumptions": [
       "The returned weights are relative and dimensionless, not current amplitudes in amperes.",
       "The caller supplies SI metre dimensions and applies any physical magnetization/current scaling separately."
@@ -73,7 +73,7 @@
       "dtype": "real scalar, converted to float",
       "required": false,
       "default": 0.0,
-      "constraints": "Finite; the implementation treats absolute values up to 1e-12 degree as unrotated."
+      "constraints": "Finite scalar degrees; every nonzero angle is rotated. Large-angle trigonometric argument reduction inherits float64 accuracy."
     }
   ],
   "outputs": [
@@ -84,7 +84,7 @@
       "shape": "[16,2]",
       "dtype": "float64",
       "required": true,
-      "constraints": "First eight points belong to the negative-weight face, last eight to the positive-weight face; all valid generated radii are nonnegative."
+      "constraints": "Finite, nonnegative-radius points; first eight negative-weight face, last eight positive-weight face, with unchanged ordering through rotation."
     },
     {
       "name": "default_weights",
@@ -111,13 +111,13 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError for nonfinite scalar inputs, nonpositive width or height, negative center radius, or generated points with negative radius.",
-    "runtime_failure": "Unexpected floating-point and NumPy errors propagate; extremely large finite angles may overflow during degree conversion, and the implementation does not postvalidate all generated coordinates for finiteness.",
+    "invalid_input": "ValueError for nonfinite scalar inputs, nonpositive dimensions, negative center radius, or any generated nonfinite/negative-radius coordinate.",
+    "runtime_failure": "No silent geometry fallback. Generation overflow is rejected through coordinate validation; NumPy/conversion errors propagate. Large finite angles avoid unnecessary pi-times-angle overflow but retain float64 argument-reduction limits.",
     "nonconvergence": "Not applicable; no iteration is performed.",
     "partial_results": "No result dictionary is returned when validation raises."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery.",
+    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. The bounded legacy-six successor repairs independently reproduced defects or absorbs an equivalent maintained implementation. Original frozen failures and provenance remain available; technical checks do not constitute human or redistribution approval.",
     "source_kinds": [
       "historical Pleiades development descriptor and migration mapping",
       "pending intake development candidate",
@@ -134,7 +134,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.1.0.dev14+legacy6",
     "dependencies": []
   },
   "example": {
@@ -147,16 +147,17 @@
       "Unrotated two-face ordering, Z spacing and relative weight signs.",
       "Ninety-degree rotation about the centroid with the maintained sign convention.",
       "Nonpositive width/height rejection.",
-      "Axis-crossing geometry is rejected; angles within the zero-angle tolerance preserve the unrotated point order."
+      "Axis-crossing and nonfinite geometry rejection, exact tiny-angle rotation, and finite generation at a very large finite angle."
     ],
     "tests": [
-      "tests/operator_contracts/test_permanent_ring_filaments.py"
+      "tests/operator_contracts/test_permanent_ring_filaments.py",
+      "tests/operator_contracts/test_legacy_six_absorption.py"
     ],
-    "evidence_ceiling": "Direct SciRel tests cover the fixed geometry and selected invalid inputs, not a physical validation of magnetic response or expert recognition of this development record.",
+    "evidence_ceiling": "Targeted source regressions, explicit analytic fixtures and a selected no-source installed-wheel replay cover this finite contract. No arbitrary physical-model suitability, continuum convergence, human scientific endorsement or redistribution permission is inferred.",
     "known_limitations": [
       "Exactly sixteen filament points and fixed relative weights are returned.",
       "The result does not encode absolute current or magnetization strength.",
-      "Extreme finite angles are not separately guarded against numerical overflow.",
+      "Large-angle finiteness is checked, but float64 argument reduction does not certify arbitrary huge-angle phase accuracy.",
       "Public distribution licensing and SciRel expert recognition remain pending."
     ]
   }
