@@ -6,21 +6,21 @@
 AGENTS.md[SC9S]: F:规定科学包隔离、阶段职责、整项目连续交付和按任务选证据的开发约束 | R:code:docs/requirements/scirel-workflow.md,code:docs/design/aoci-index-maintenance.md | A:D0索引整理、D1保真、D2修正、冻结接收及包文档同步 | S:整项目以全部核心能力无源码替代为终点，局部资格不算完成；提前准备接收，新冻结优先于无关工作；压缩不强制Overview，已选写入仍须真实治理证明，候选与测试不授予批准
 CONTRIBUTING.md[SV8T]: F:定义贡献、科学兼容与受影响验证及发行要求 | R:code:scripts/check.ps1,code:docs/architecture.md | A:贡献者修改与验证流程 | S:editable安装仅提供科学库，workflow等开发模块须从源码环境使用
 README.md[SB9M]: F:介绍科学库组合价值、阶段流程、统一运行环境与中文文档入口 | R:code:docs/design/scientific-runtime-baseline.md,code:docs/searchable-documentation.md | A:项目安装、领域API、构建和验证说明 | S:多个实现版本的文档不构成单一wheel资格；历史能力迁移需后继验证，技术冻结不代表人审或发行
-pyproject.toml[FV7T]: F:声明科学包构建、固定运行依赖与开发测试环境 | R:code:scripts/scientific_runtime.py,code:uv.lock | A:Python3.14线；固定NumPy/SciPy/Matplotlib与setuptools；pytest配置 | S:常规构建收集全部scirel模块，不等于按资格选择的科学包；工作流和平台适配包不被发现
+pyproject.toml[FV7T]: F:声明科学包构建、现代固定依赖及开发测试环境 | R:code:scripts/scientific_runtime.py,code:uv.lock | A:Python3.14线；NumPy/SciPy/Matplotlib/netCDF4固定版本；测试与包发现 | S:普通构建收集全部scirel模块，不等于精确资格选择；工作流和平台适配不进入科学包
 .python-version[FC5T]: F:固定维护环境的Python解释器补丁版本 | R:code:pyproject.toml,code:uv.lock | A:3.14.7 | S:包元数据约束小版本线，解释器补丁固定由本文件承担
-uv.lock[FV7L]: F:锁定统一科学与开发测试环境的传递依赖版本和分发摘要 | R:code:pyproject.toml,code:.python-version | A:uv sync --locked --extra test；平台标记；sdist与wheel哈希 | S:锁记录不是跨平台运行证明；只提供可复现解析，科学资格仍绑定实际安装与执行
+uv.lock[FV7L]: F:锁定统一科学和开发测试依赖的传递版本、平台分发和摘要 | R:code:pyproject.toml,code:.python-version | A:uv锁定同步；平台标记；wheel及sdist；netCDF4运行依赖 | S:netCDF4已由测试附加转科学运行依赖；锁可复现解析不代替各架构真实安装资格
 
 ===/Users/tomczz/Projects/SciReL/.codex/===
 config.toml[FC6T]: F:绑定本checkout的Codex AOCI stdio服务 | R:code:AGENTS.md | A:mcp_servers.aoci | S:配置文件存在不证明当前聊天已加载服务
 
 ===/Users/tomczz/Projects/SciReL/catalog/examples/===
-scirel.closures.boltzmann-quasineutrality.json[SB6T]: F:固定Boltzmann电子响应及离子电荷残差的科学合同 | R:code:src/scirel/closures/boltzmann_quasineutrality.py | A:scirel.asset-document.v1 | S:相对电势先算无量纲指数，避免大公共电势相消；非有限物理输出明确失败。
-scirel.closures.hall-two-fluid-pressure.json[SB6M]: F:固定Hall双流体压强及密度电势组装合同 | R:code:src/scirel/closures/hall_two_fluid_pressure.py | A:scirel.asset-document.v1 | S:保留各向异性压力与Hall项的单位和掩码边界；有限输入异常状态不静默转为有效结果。
-scirel.closures.mirror-ambipolar-potential.json[SB6M]: F:描述镜端损失流求值及逐磁面双极电势求解合同 | R:code:src/scirel/closures/mirror_ambipolar_potential.py | A:evaluate与solve模式的科学合同 | S:中点使用有限表示并仅在严格零残差时收缩区间；宽度与残差门禁均保留，无法收敛明确失败。
-scirel.closures.mirror-quasineutral-closure.json[SB6L]: F:规定镜约束离子矩、电子响应与准中性求解组合图 | R:code:src/scirel/closures/mirror_quasineutral_closure.py | A:TaskGraph科学文档及依赖闭包 | S:镜约束与准中性图复用相对电势算术；严格零根可收缩，非零且不可继续缩小时失败。
-scirel.closures.quasineutral-potential.json[SB6T]: F:规定回调电荷残差的有界扩区与二分电势求解合同 | R:code:src/scirel/closures/quasineutral_potential.py | A:scirel.asset-document.v1 | S:大公共参考电势采用有限中点；严格零残差才算根，区间宽度和残差门禁不放宽。
-scirel.closures.quasineutral-reference-density.json[SB5T]: F:定义参考离子密度乘电荷态得到电子密度的合同 | R:code:src/scirel/closures/quasineutral_reference_density.py | A:scirel.asset-document.v1 | S:参考密度电荷乘积保持有限输出与显式失败边界，不以截断隐藏不可表示结果。
-scirel.closures.reduced-hall-drift.json[SB6L]: F:固定R-Z网格压强力、Hall漂移与有界惯性修正合同 | R:code:src/scirel/closures/reduced_hall_drift.py | A:scirel.asset-document.v1 | S:Hall漂移仍受活动掩码、低场与惯性失败合同约束；不以警告或零填充掩盖未定义状态。
+scirel.closures.boltzmann-quasineutrality.json[SB6M]: F:规定无截断Boltzmann电子态和准中性残差的正式合同 | R:code:src/scirel/closures/boltzmann_quasineutrality.py | A:compute_boltzmann_electron_state文档 | S:先形成相对电势；正种群下溢仍保留解析对数，严格exp(701)回归不允许指数截断。
+scirel.closures.hall-two-fluid-pressure.json[SB6M]: F:规定给定总压及物种剖面的双流体状态组装 | R:code:src/scirel/closures/hall_two_fluid_pressure.py | A:close_hall_two_fluid_pressure文档 | S:默认独立拟合允许显式残余应力；species_sum才检查分量和，广播成功不证明物理闭合。
+scirel.closures.mirror-ambipolar-potential.json[SB6M]: F:定义镜端单向损失流与逐磁面双极电势求解合同 | R:code:src/scirel/closures/mirror_ambipolar_potential.py | A:evaluate与solve模式文档 | S:evaluate成功不表示电流平衡；二分返回同一被测电势，严格零残差才收缩区间，浮点停滞不算收敛。
+scirel.closures.mirror-quasineutral-closure.json[SB6L]: F:规定镜约束离子矩、Boltzmann电子及有界准中性求解组合 | R:code:src/scirel/closures/mirror_quasineutral_closure.py | A:TaskGraph依赖及终态合同 | S:求解后重新计算离子和电子态并验证终态残差，伪converged状态不得进入总压组装。
+scirel.closures.quasineutral-potential.json[SB6M]: F:定义回调电荷残差的有限扩区和二分电势求解 | R:code:src/scirel/closures/quasineutral_potential.py | A:solve_quasineutral_potential文档 | S:回调须按低端正高端负定向；同时满足区间宽度和残差门槛，无ULP容差地板。
+scirel.closures.quasineutral-reference-density.json[SB5S]: F:规定单正离子参考密度与电荷态的电子密度换算 | R:code:src/scirel/closures/quasineutral_reference_density.py | A:参考密度广播合同 | S:正浮点电荷态不强制整数；有限输入乘积溢出明确失败，广播不核实坐标同一性。
+scirel.closures.reduced-hall-drift.json[SB6L]: F:固定柱坐标压力投影、Hall漂移和有限惯性迭代的合同 | R:code:src/scirel/closures/reduced_hall_drift.py | A:约化Hall电流及诊断文档 | S:惯性判断绑定最终电流的未松弛映射残差；舍入包络不代表离散误差界或物理零力。
 scirel.closures.tabulated-pressure.json[SB6M]: F:规定一维各向同性与二维双压强表插值的科学合同 | R:code:src/scirel/closures/tabulated_pressure_closure.py | A:scirel.asset-document.v1 | S:一维近等垂直表被忽略；二维同表仍标isotropic为false
 scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient.json[SB5T]: F:定义电子温度到氢基态辐射复合速率的保存拟合合同 | R:code:src/scirel/collisions/atomic_hydrogen_1s_radiative_recombination_rate.py | A:scirel.asset-document.v1 | S:Ry保留13.58eV；无外部物理参考核验且来源D1资格撤回
 scirel.collisions.atomic-hydrogen-charge-exchange-cross-section.json[SB5S]: F:定义原子氢电荷交换的Janev与Freeman-Jones截面合同 | R:code:src/scirel/collisions/atomic_hydrogen_charge_exchange_cross_section.py | A:scirel.asset-document.v1 | S:域外重复各分支端点；源对照不等于外部物理准确性
@@ -42,45 +42,45 @@ scirel.collisions.proton-molecular-hydrogen-elastic-cross-section.json[SB5S]: F:
 scirel.collisions.relativistic-maxwellian-bessel-closure.json[SB6S]: F:规定相对论Maxwellian链需要的指数缩放K0/K1/K2关系 | R:code:src/scirel/collisions/relativistic_maxwellian_bessel.py | A:relativistic_maxwellian_bessel及两种命名失败 | S:可表示域取决于SciPy构建和平台，不得把单平台测量阈值固化为科学域界
 scirel.collisions.thermal-electron-momentum.json[SB5S]: F:规定温度与静能形成热电子归一动量平方根定义 | R:code:src/scirel/collisions/momentum_scales.py | A:thermal_electron_momentum科学合同 | S:返回无量纲c单位比值而非速度；高温关系不自动获得相对论修正
 scirel.diagnostics.equilibrium-synthesis-diagnostics.json[SB6L]: F:规定按显式R-Z测点采样平衡通量和所选剖面的组合图 | R:code:src/scirel/diagnostics/equilibrium_synthesis_diagnostics.py | A:TaskGraph科学合同及请求分支 | S:flux_loops实为psi点值，Wb观测不能直接比较Wb/rad平衡psi；未知观测键忽略
-scirel.diagnostics.firehose-mirror-margins.json[SB6M]: F:规定firehose及mirror裕量字段、最小值和正值标志合同 | R:code:src/scirel/diagnostics/firehose_mirror_margins.py | A:scirel.asset-document.v1 | S:镜/火焰裕量沿空间邻接计算；退化采样和非有限压力保持显式边界，不代表物理稳定性批准。
+scirel.diagnostics.firehose-mirror-margins.json[SB6M]: F:规定固定磁通压力导数下的firehose和mirror局部裕量 | R:code:src/scirel/diagnostics/firehose_mirror_margins.py | A:compute_firehose_mirror_margins文档 | S:禁止全局排序B猜偏导；mirror正导数定义与论文原符号冲突明确保留，不冒称勘误或全局稳定。
 scirel.diagnostics.observation-residuals.json[SB5S]: F:规定匹配预测与观测的sigma归一残差拼接和平方和 | R:code:src/scirel/diagnostics/observation_residuals.py | A:reduce_observation_residuals科学合同 | S:有其他可用信号时未匹配Thomson通道静默忽略；不处理协方差或自由度归一
-scirel.diagnostics.parallel-pressure-residual.json[SB6M]: F:规定平行压强B值导数与垂直压强的点wise及聚合残差 | R:code:src/scirel/diagnostics/parallel_pressure_residual.py | A:scirel.asset-document.v1 | S:平行压强残差保留空间邻接与正场约束；退化采样不被静默解释为零物理误差。
-scirel.diagnostics.picard-flux-residual.json[SB5S]: F:规定二维前后通量状态的缩放欧氏相对变化诊断 | R:code:src/scirel/diagnostics/picard_flux_residual.py | A:compute_picard_flux_residual科学合同 | S:通量残差按有意义的尺度计算并保留极小量边界；数值零不替代收敛或物理正确性证明。
+scirel.diagnostics.parallel-pressure-residual.json[SB6M]: F:规定固定磁通平行压力导数与垂直压力兼容残差 | R:code:src/scirel/diagnostics/parallel_pressure_residual.py | A:compute_parallel_pressure_residual文档 | S:常B必须显式给偏导；采样路线须恒psi且B单调，诊断不是空间力平衡证明。
+scirel.diagnostics.picard-flux-residual.json[SB5S]: F:定义两二维磁通状态的缩放欧氏相对变化 | R:code:src/scirel/diagnostics/picard_flux_residual.py | A:compute_picard_flux_residual文档 | S:1e-30 Wb分母地板有单位；极端下溢有声明限制，数值零不等于物理平衡。
 scirel.diagnostics.pointwise-firehose-margin.json[SB5S]: F:规定无导数的点式B平方压强firehose判别量算术合同 | R:code:src/scirel/diagnostics/pointwise_firehose_margin.py | A:scirel.asset-document.v1 | S:只提供Pa算术量，不生成稳定标志；不覆盖梯度、动力学或有限Larmor修正
 scirel.diagnostics.species-absorption-fraction.json[SB5S]: F:规定四物种吸收功率账本到来源顺序百分比分配的合同 | R:code:src/scirel/diagnostics/species_absorption_fraction.py | A:compute_species_absorption_fraction科学合同 | S:物种数固定四；总功率零整次拒绝，因此不能用本资产表示零吸收运行
 scirel.dielectric.cold-plasma-tensor.json[SB6S]: F:规定局域冷等离子介电张量、共振及不可表示失败合同 | R:code:src/scirel/dielectric/cold_plasma_tensor.py | A:cold_plasma_dielectric_tensor及命名异常 | S:精确共振拒绝整数组，近共振不设容差；输入Cartesian基底不旋转，真实零场可用
-scirel.equilibrium.anisotropic-force-balance.json[SB6M]: F:规定R-Z陀螺压强张量散度、电流投影及平行力诊断合同 | R:code:src/scirel/equilibrium/anisotropic_force_balance.py | A:scirel.asset-document.v1 | S:各向异性压力散度和电流投影保留小场、掩码与平行残差边界；诊断通过不等于物理闭包。
-scirel.equilibrium.anisotropic-picard-feedback.json[SB6M]: F:规定掩码电流、旧电流松弛及稠密Green通量场反馈合同 | R:code:src/scirel/equilibrium/anisotropic_picard_feedback.py | A:update_anisotropic_picard_flux科学合同 | S:Picard反馈保留电流松弛、网格与单位合同；终态残差和边界失败不可由松弛掩盖。
-scirel.equilibrium.anisotropic-toroidal-current.json[SB6S]: F:规定陀螺压强力到环向电流的各向同性与异性拆分合同 | R:code:src/scirel/equilibrium/anisotropic_toroidal_current.py | A:scirel.asset-document.v1 | S:环向电流保留各向异性余项与单位边界；曲率项不是独立公式，非有限输入显式失败。
-scirel.equilibrium.axisymmetric-anisotropic-picard.json[SB6L]: F:规定外供各向异性压强闭包、Green通量反馈及终态复核图 | R:code:src/scirel/equilibrium/axisymmetric_anisotropic_picard.py | A:TaskGraph状态、停止规则及失败合同 | S:各向异性平衡与迭代保留单位、边界、默认和失败合同；数值通过不等于物理普适。
-scirel.equilibrium.axisymmetric-picard-update.json[SB6M]: F:规定单步网格电流转通量、通量松弛及相对变化诊断 | R:code:src/scirel/equilibrium/axisymmetric_picard_update.py | A:scirel.asset-document.v1 | S:各向异性平衡与迭代保留单位、边界、默认和失败合同；数值通过不等于物理普适。
-scirel.equilibrium.free-boundary-anisotropic-picard.json[SB6L]: F:规定外供压强闭包、Green电流迭代及可选导体壁修正图 | R:code:src/scirel/equilibrium/free_boundary_anisotropic_picard.py | A:TaskGraph状态、有界反馈及失败合同 | S:各向异性平衡与迭代保留单位、边界、默认和失败合同；数值通过不等于物理普适。
+scirel.equilibrium.anisotropic-force-balance.json[SB6M]: F:固定柱坐标陀螺压力散度、环向电流投影和平行力诊断 | R:code:src/scirel/equilibrium/anisotropic_force_balance.py | A:compute_anisotropic_force_balance文档 | S:轴上force_Z含双倍径向PRZ导数；活动掩码仅选诊断，零小场数值约定没有陀螺物理资格。
+scirel.equilibrium.anisotropic-picard-feedback.json[SB6M]: F:定义电流松弛、积分权重及同源磁通磁场反馈合同 | R:code:src/scirel/equilibrium/anisotropic_picard_feedback.py | A:update_anisotropic_picard_flux文档 | S:缺少成对场Green时从新增磁通求场并加真空场；节点梯形权重与显式单元边界不同，无2πR因子。
+scirel.equilibrium.anisotropic-toroidal-current.json[SB6M]: F:规定陀螺压力电流的各向同性项与异性余项拆分 | R:code:src/scirel/equilibrium/anisotropic_toroidal_current.py | A:compute_anisotropic_toroidal_current文档 | S:曲率余项是两次离散压力投影之差，不是另立曲率公式；投影本身不证明完整平衡。
+scirel.equilibrium.axisymmetric-anisotropic-picard.json[SB6L]: F:规定各向异性压力闭合、Green更新及终态复核的迭代图 | R:code:src/scirel/equilibrium/axisymmetric_anisotropic_picard.py | A:状态与停止合同 | S:未松弛固定点残差决定停止；返回态重算场、压力、电流并依次检查低场、firehose及平行力。
+scirel.equilibrium.axisymmetric-picard-update.json[SB6M]: F:规定网格电流积分与磁通松弛的单步Picard关系 | R:code:src/scirel/equilibrium/axisymmetric_picard_update.py | A:update_axisymmetric_picard_flux文档 | S:节点域梯形与显式单元边界有不同积分范围；返回未松弛残差，relax加权旧磁通且不含2πR。
+scirel.equilibrium.free-boundary-anisotropic-picard.json[SB6L]: F:定义带可选导体响应的各向异性压力电流全状态反馈 | R:code:src/scirel/equilibrium/free_boundary_anisotropic_picard.py | A:自由边界TaskGraph合同 | S:墙及等离子体磁通须携带同源场导数；psi、BR、BZ和电流同时闭合，maxiter=0不声称收敛。
 scirel.equilibrium.isotropic-picard-step.json[SB6M]: F:规定压强导数形成松弛电流、Green投影及单步通量残差 | R:code:src/scirel/equilibrium/isotropic_picard_step.py | A:scirel.asset-document.v1 | S:非有限中间plasma flux置零，残差溢出不另检查；松弛作用于电流
 scirel.equilibrium.isotropic-pressure-flux.json[SB6L]: F:规定精确中平面压强通量状态及有界Green电流迭代图 | R:code:src/scirel/equilibrium/isotropic_pressure_flux.py | A:TaskGraph状态和收敛失败合同 | S:压强样本要求精确Z=0及零压边界；非有限残差返回显式失败而非自动重试
-scirel.equilibrium.kinetic-mirror-hall-equilibrium.json[SB6L]: F:规定镜动力学闭包绑定到约化Hall平衡压强端口的图 | R:code:src/scirel/equilibrium/kinetic_mirror_hall_equilibrium.py | A:TaskGraph组合与可注入图合同 | S:各向异性平衡与迭代保留单位、边界、默认和失败合同；数值通过不等于物理普适。
+scirel.equilibrium.kinetic-mirror-hall-equilibrium.json[SB6L]: F:规定镜动力学闭合接入约化Hall平衡的组合入口 | R:code:src/scirel/equilibrium/kinetic_mirror_hall_equilibrium.py | A:嵌套TaskGraph文档 | S:外层网格覆盖kinetic_config同名项；Hall与动力学质量电荷不自动核对，psi无单位转换。
 scirel.equilibrium.pressure-flux-state.json[SB6S]: F:规定精确中平面压强对通量前缀样条及导数状态 | R:code:src/scirel/equilibrium/pressure_flux_state.py | A:build_pressure_flux_state科学合同 | S:要求精确零而非近零边界；返回全行样本但样条只用首零压前缀，非有限导数置零
-scirel.equilibrium.reduced-hall-anisotropic-picard.json[SB6L]: F:规定外供压强闭包、Hall漂移及Green更新的有界平衡图 | R:code:src/scirel/equilibrium/reduced_hall_anisotropic_picard.py | A:TaskGraph状态与兼容诊断合同 | S:各向异性平衡与迭代保留单位、边界、默认和失败合同；数值通过不等于物理普适。
-scirel.field.circular-filament-green.json[SB6T]: F:规定加权圆丝到R-Z目标的通量及磁场Green响应 | R:code:src/scirel/field/circular_filament_green.py | A:scirel.asset-document.v1 | S:近轴丝略过且非有限逐点公式项置零，不能解释为自场物理模型
+scirel.equilibrium.reduced-hall-anisotropic-picard.json[SB6L]: F:描述压力闭合、Hall电流、磁通更新及终态诊断的有界图 | R:code:src/scirel/equilibrium/reduced_hall_anisotropic_picard.py | A:Hall平衡TaskGraph合同 | S:内层惯性循环与外层Picard各有上限；终态不重走所有步前门槛，保留明确的检查范围。
+scirel.field.circular-filament-green.json[SB6S]: F:规定实际坐标加权圆丝的磁通和磁场聚合响应 | R:code:src/scirel/field/circular_filament_green.py | A:圆丝Green科学文档 | S:正半径源不略过；轴上BZ解析非零，精确自点按离散规则零置而其他非有限算术拒绝。
 scirel.field.coil-green-geometry.json[SB5S]: F:规定GSEQ圆线圈椭圆模数及距离的正则化几何合同 | R:code:src/scirel/field/coil_green_geometry.py | A:scirel.asset-document.v1 | S:半径固定加1e-8；m=1几何可输出但响应端须拒绝，原始负半径已加拒绝
 scirel.field.complete-elliptic-integrals-approx.json[SB5S]: F:规定GSEQ多项式对数完整椭圆积分近似合同 | R:code:src/scirel/field/complete_elliptic_integrals_approx.py | A:K/E平方模数近似及奇点约定 | S:整数组奇点分支保留；混合m=1的E按原MATLAB为NaN，非保存Python的1
-scirel.field.current-green-superposition.json[SB5T]: F:规定标量及向量电流与匹配Green响应的收缩合同 | R:code:src/scirel/field/current_green_superposition.py | A:scirel.asset-document.v1 | S:不推断或重排源轴；电流仅支持标量或一维
-scirel.field.dense-axisymmetric-green.json[SB6S]: F:规定R-Z目标逐圆源列的稠密通量及场Green矩阵 | R:code:src/scirel/field/dense_axisymmetric_green.py | A:scirel.asset-document.v1 | S:逐源列不求和；奇异项置零；Wb/rad/A与旧Wb/A标签兼容性仍待裁定
+scirel.field.current-green-superposition.json[SB5S]: F:规定电流与三组同形Green响应的标量乘法或源轴收缩 | R:code:src/scirel/field/current_green_superposition.py | A:电流叠加文档 | S:一维电流只收缩二维响应轴0，不推断或重排源序；继承响应的物理规范。
+scirel.field.dense-axisymmetric-green.json[SB6S]: F:固定目标行源列的逐圆丝稠密磁通场响应合同 | R:code:src/scirel/field/dense_axisymmetric_green.py | A:稠密Green矩阵文档 | S:第三源列为无量纲权重而非面积或电流；精确自点零，正半径及轴上非零BZ保留。
 scirel.field.filament-coil-green-field.json[SB6M]: F:规定GSEQ圆线圈外供椭圆值的通量及磁场求和变体 | R:code:src/scirel/field/filament_coil_green_field.py | A:scirel.asset-document.v1 | S:标量目标、外供椭圆值及奇点拒绝为变体边界，不能静默等同基线圆丝关系
-scirel.field.filament-vacuum-field.json[SB6S]: F:规定均匀径向网格圆丝场叠加及径向通量积分合同 | R:code:src/scirel/field/filament_vacuum_field.py | A:scirel.asset-document.v1 | S:首径向点作通量参考并省2pi因子；历史Wb标签不授权直接Wb/rad接线
-scirel.field.ideal-conductor-boundary.json[SB6M]: F:规定截断SVD边界电流求解及Green场通量修正 | R:code:src/scirel/field/ideal_conductor_boundary.py | A:scirel.asset-document.v1 | S:场与几何算子保留坐标、边界、单位和失败合同；有限运行证据不扩展物理适用域。
-scirel.field.mirror-plasma-green.json[SB6S]: F:规定反射对称R-Z网格的稠密镜等离子通量响应 | R:code:src/scirel/field/mirror_plasma_green.py | A:scirel.asset-document.v1 | S:矩阵平方规模；近轴源列与非有限核置零，面积和电流收缩须调用者负责
-scirel.field.multi-coil-vacuum-field.json[SB6S]: F:规定矩形线圈展丝、逐线圈响应及驱动电流叠加图 | R:code:src/scirel/field/multi_coil_vacuum_field.py | A:无反馈TaskGraph科学合同 | S:无场缓存或设备对象；依赖失败整图退出不选择回落实现
+scirel.field.filament-vacuum-field.json[SB6S]: F:规定圆丝解析磁场与径向梯形磁通的真空场入口 | R:code:src/scirel/field/filament_vacuum_field.py | A:真空场科学文档 | S:首径向点psi=0；离散积分磁通不可替代解析RAphi，活动丝重合拒绝而非裁剪。
+scirel.field.ideal-conductor-boundary.json[SB6M]: F:规定截断SVD边界电流与磁通修正关系 | R:code:src/scirel/field/ideal_conductor_boundary.py | A:理想导体响应文档 | S:只验维度不验S与两Green的物理耦合；截断可留非零边界残差，无几何重建。
+scirel.field.mirror-plasma-green.json[SB6S]: F:定义专用镜像网格上实际坐标的稠密RAphi响应 | R:code:src/scirel/field/mirror_plasma_green.py | A:镜等离子体Green文档 | S:Z仍限均匀且零对称，R严格递增；精确自点零，电流和单元面积由调用者收缩。
+scirel.field.multi-coil-vacuum-field.json[SB6L]: F:规定矩形展丝、逐线圈Green和独立驱动电流组合 | R:code:src/scirel/field/multi_coil_vacuum_field.py | A:无反馈真空场TaskGraph | S:权重与电流各乘一次，无缓存设备状态；活动核保留正半径，依赖错误传播不回落。
 scirel.field.permanent-ring-filaments.json[SB5S]: F:规定矩形永磁环截面两组反号表面丝的离散合同 | R:code:src/scirel/field/permanent_ring_filaments.py | A:scirel.asset-document.v1 | S:固定16点及相对权重，不编码绝对磁化强度；极端角度转换不后验检查
-scirel.field.poloidal-field-from-flux.json[SB6S]: F:规定轴对称R-Z通量恢复极向场分量及幅度的合同 | R:code:src/scirel/field/poloidal_field_from_flux.py | A:scirel.asset-document.v1 | S:场与几何算子保留坐标、边界、单位和失败合同；有限运行证据不扩展物理适用域。
-scirel.field.poloidal-field-magnitude.json[SB5S]: F:规定极向场分量形成带下限幅度及中位参考值 | R:code:src/scirel/field/poloidal_field_magnitude.py | A:scirel.asset-document.v1 | S:场与几何算子保留坐标、边界、单位和失败合同；有限运行证据不扩展物理适用域。
-scirel.field.rectangular-coil-filaments.json[SB5T]: F:规定矩形轴对称线圈截面均匀丝离散及面内旋转 | R:code:src/scirel/field/rectangular_coil_filaments.py | A:scirel.asset-document.v1 | S:只支持均匀中心间距及R-Z面内旋转，跨R=0几何拒绝
+scirel.field.poloidal-field-from-flux.json[SB6S]: F:规定R-Z磁通通过非均匀二阶差分恢复极向场 | R:code:src/scirel/field/poloidal_field_from_flux.py | A:磁通导数科学文档 | S:局部差值消除常量规范，轴BZ取首径向磁通差的二倍极限；不是任意轴奇异场解。
+scirel.field.poloidal-field-magnitude.json[SB5S]: F:规定极向场hypot幅度及中位参考尺度 | R:code:src/scirel/field/poloidal_field_magnitude.py | A:场强科学合同 | S:1e-30 T数值下限代替物理零；中位数只是默认计算尺度。
+scirel.field.rectangular-coil-filaments.json[SB5S]: F:定义矩形截面均匀展丝与中心面内旋转 | R:code:src/scirel/field/rectangular_coil_filaments.py | A:线圈离散文档 | S:Z为源序内索引，旋转使用行向量约定；任何生成负半径均拒绝。
 scirel.fusion.dd-neutron-lab-energy.json[SB6S]: F:规定D(d,n)3He非相对论双体运动的实验室中子能量 | R:code:src/scirel/fusion/dd_neutron_lab_energy.py | A:scirel.asset-document.v1 | S:去掉零能2450keV回落且重组非负项；可表示性不证明非相对论适用性
 scirel.geometry.axisymmetric-equilibrium-grid-mapping.json[SB6S]: F:规定轴对称R-Z平衡到Cartesian网格的双线性场通量重建 | R:code:src/scirel/geometry/axisymmetric_grid_mapping.py | A:scirel.asset-document.v1 | S:域外夹到箱面；内半径下方夹取不计两种counter，轴向原点一致由调用者负责
 scirel.geometry.axisymmetric-equilibrium-grid-support.json[SB6L]: F:规定平衡Cartesian重建与材料支撑分类的顺序组合图 | R:code:src/scirel/geometry/axisymmetric_equilibrium_grid_support.py | A:TaskGraph数据端口及失败合同 | S:新增两种诊断mask并非保留来源输出键集；继承内半径代磁轴和夹箱策略
 scirel.geometry.bilinear-grid-sampling.json[SB5S]: F:规定矩形R-Z网格单实标量场的域内双线性点采样 | R:code:src/scirel/geometry/bilinear_grid_sampling.py | A:scirel.asset-document.v1 | S:不做坐标换算或外推；有限输入插值溢出不另设输出门禁
 scirel.geometry.complex-rectilinear-interpolation.json[SB6S]: F:规定三轴复场的三线性插值与几何有效mask | R:code:src/scirel/geometry/complex_rectilinear_interpolation.py | A:scirel.asset-document.v1 | S:valid_mask只表示几何不保证返回有限；扩展容差箱外返回nan+nanj而非夹边
 scirel.geometry.flux-surface-inverse-field-average.json[SB6S]: F:规定外供R-Z折线上dl/B积分及同权标量平均 | R:code:src/scirel/geometry/flux_surface_inverse_field_average.py | A:scirel.asset-document.v1 | S:不追踪场线或闭合磁面；节点B正仍可能样条出负值而拒绝
-scirel.geometry.flux-surface-profile.json[SB5S]: F:规定通量配对样本排序去重、线性剖面及常数端点外推 | R:code:src/scirel/geometry/flux_surface_profile.py | A:scirel.asset-document.v1 | S:场与几何算子保留坐标、边界、单位和失败合同；有限运行证据不扩展物理适用域。
+scirel.geometry.flux-surface-profile.json[SB5S]: F:规定磁通配对样本去重、线性插值和常数外延 | R:code:src/scirel/geometry/flux_surface_profile.py | A:剖面构造合同 | S:重复磁通按排序后首项取值，原输入同值顺序无保证；不重建物理磁面或转换磁通单位。
 scirel.geometry.material-support-classification.json[SB6M]: F:规定通量侧、覆盖、PML与PEC合成冷等离子材料支撑 | R:code:src/scirel/geometry/material_support.py | A:scirel.asset-document.v1 | S:磁轴采用最内采样半径代理；无PML框拒绝，几何支撑不验证物理平衡
 scirel.geometry.planar-wavevector-projection.json[SB5T]: F:规定实x-z波矢的极坐标投影或成对分量幅值计算 | R:code:src/scirel/geometry/planar_wavevector.py | A:scirel.asset-document.v1 | S:PDRF卡片归一波数到1/m未验证；hypot在极大有限分量故意不同来源平方和
 scirel.inference.anisotropic-parameter-optimization.json[SB6M]: F:规定可选LHS初点、SciPy参数搜索及最佳试验保留合同 | R:code:src/scirel/inference/anisotropic_parameter_optimization.py | A:scirel.asset-document.v1 | S:最佳chi2和optimizer成功可来自不同试验；LHS及部分bounds失败发生回落块之外
@@ -101,15 +101,15 @@ scirel.kinetic.elastic-regeneration-aggregation.json[SB5S]: F:规定通道频率
 scirel.kinetic.fluid-dispersion-matrix.json[SB6M]: F:规定固定角频率和平行波数的一阶流体稠密本征矩阵 | R:code:src/scirel/kinetic/fluid_dispersion_matrix.py | A:scirel.asset-document.v1 | S:源共振分母不得为零且最终M须有限；不替换回落关系
 scirel.kinetic.fluid-wavevector-eigensolve.json[SB6S]: F:规定复流体本征矩阵求解及正实最弱阻尼kx分支选择 | R:code:src/scirel/kinetic/fluid_wavevector_eigensolve.py | A:scirel.asset-document.v1 | S:拒绝不传播模式且最多keep条分支；LAPACK不收敛传播LinAlgError
 scirel.kinetic.fluid-wavevector-scan.json[SB6L]: F:规定平衡频率阶梯、L/J极点矩阵及流体kx分支扫描图 | R:code:src/scirel/kinetic/fluid_wavevector_scan.py | A:TaskGraph科学合同 | S:J仅8或12且L极点表谐波只至7；每个频率须非零，失败不返回部分扫描
-scirel.kinetic.frank-egedal-hot-ion-moments.json[SB6M]: F:规定速度与捕获俯仰积分的热离子参考归一密度压强矩 | R:code:src/scirel/kinetic/frank_egedal_hot_ion_moments.py | A:scirel.asset-document.v1 | S:镜约束与动理学积分保留原模型、单位和适用域；非有限、非收敛及不可表示结果明确失败。
-scirel.kinetic.frank-egedal-pressure-closure.json[SB6L]: F:规定径向包络、损失锥源及热矩压强组装的规定闭包图 | R:code:src/scirel/kinetic/frank_egedal_pressure_closure.py | A:TaskGraph中间状态及科学合同 | S:镜约束与动理学积分保留原模型、单位和适用域；非有限、非收敛及不可表示结果明确失败。
-scirel.kinetic.frank-egedal-pressure-state.json[SB6S]: F:规定包络热矩及气体电子尺度到双压强和可选密度状态 | R:code:src/scirel/kinetic/frank_egedal_pressure_state.py | A:scirel.asset-document.v1 | S:镜约束与动理学积分保留原模型、单位和适用域；非有限、非收敛及不可表示结果明确失败。
-scirel.kinetic.frank-egedal-radial-envelope.json[SB5S]: F:规定二维通量坐标的截断幂律径向包络 | R:code:src/scirel/kinetic/frank_egedal_radial_envelope.py | A:scirel.asset-document.v1 | S:镜约束与动理学积分保留原模型、单位和适用域；非有限、非收敛及不可表示结果明确失败。
-scirel.kinetic.frank-egedal-source-projection.json[SB6S]: F:规定分数Legendre阶选择及NBI俯仰源系数投影 | R:code:src/scirel/kinetic/frank_egedal_source_projection.py | A:scirel.asset-document.v1 | S:无内置谱生成，未显式degree时须注入callable；inactive分支绕过active后端检查
+scirel.kinetic.frank-egedal-hot-ion-moments.json[SB6M]: F:定义共同速度俯仰域上的热离子密度与双压力矩 | R:code:src/scirel/kinetic/frank_egedal_hot_ion_moments.py | A:热矩积分及归一合同 | S:三矩共享截断和可达轨道域，先收敛原始积分再归一；零碰撞零下限的发散密度拒绝。
+scirel.kinetic.frank-egedal-pressure-closure.json[SB6L]: F:规定径向包络、损失锥源、热矩与压力组装的闭包图 | R:code:src/scirel/kinetic/frank_egedal_pressure_closure.py | A:压力TaskGraph合同 | S:共同速度下限同时改变密度与双压而非只截垂直矩；b<1仅保留可达参考面的总体。
+scirel.kinetic.frank-egedal-pressure-state.json[SB6S]: F:规定径向形状及热矩尺度到双压力和密度状态的组装 | R:code:src/scirel/kinetic/frank_egedal_pressure_state.py | A:压力状态文档 | S:形状必须精确匹配psi不广播；无密度尺度时温度可存在但电子压为零、density为None。
+scirel.kinetic.frank-egedal-radial-envelope.json[SB5S]: F:定义轴边磁通之间截断幂律径向包络 | R:code:src/scirel/kinetic/frank_egedal_radial_envelope.py | A:径向包络文档 | S:反向轴边区间有效，零指数使截断边缘也等于一；参考磁面和单位由调用者给定。
+scirel.kinetic.frank-egedal-source-projection.json[SB6S]: F:规定正则偶Legendre模的点注入源投影与归一 | R:code:src/scirel/kinetic/frank_egedal_source_projection.py | A:源谱投影合同 | S:给定阶不自动获得本征值资格；保留整数阶，归一积分逐次加密而非截断多项式。
 scirel.kinetic.gamma-lpole-coefficients.json[SB5S]: F:规定按Bessel绝对阶加一索引的固定有理留数极点表 | R:code:src/scirel/kinetic/gamma_lpole_coefficients.py | A:scirel.asset-document.v1 | S:冻结表只覆盖绝对阶0至7，超出失败而非外推
 scirel.kinetic.generation-accumulation-update.json[SB5S]: F:规定将单代分布密度及代堆栈追加到累积状态 | R:code:src/scirel/kinetic/generation_accumulation_update.py | A:scirel.asset-document.v1 | S:供给状态须内部一致，有限代相加溢出拒绝；本关系不判断收敛
 scirel.kinetic.generation-density-reduction.json[SB5S]: F:规定中性代分布按圆柱权重和dvx归约空间密度 | R:code:src/scirel/kinetic/generation_density_reduction.py | A:scirel.asset-document.v1 | S:保留一维径向权重投影和均匀列路由；有限输出门禁与保存源溢出行为不同
-scirel.kinetic.grid-mirror-kinetic-closure.json[SB6L]: F:规定参考及plug平面选取、端损与嵌套镜准中性闭包图 | R:code:src/scirel/kinetic/grid_mirror_kinetic_closure.py | A:TaskGraph状态及约束外掩码合同 | S:共享profile须同时支持一维二维psi；约束mask只掩部分顶层场，嵌套mapping仍全网格
+scirel.kinetic.grid-mirror-kinetic-closure.json[SB6L]: F:规定网格参考面与双plug选取及镜准中性闭合图 | R:code:src/scirel/kinetic/grid_mirror_kinetic_closure.py | A:端损模式和约束掩码文档 | S:端损求解与局部准中性各有状态；约束只掩选定顶层字段，嵌套矩仍全网格。
 scirel.kinetic.hydrogen-saha-equilibrium-population.json[SB6T]: F:规定成对电子密度温度的保存氢Saha能级平衡粒子数 | R:code:src/scirel/kinetic/hydrogen_saha_equilibrium_population.py | A:scirel.asset-document.v1 | S:假设Saha且n_H+=n_e；遵循实现仅一维而非旧文档scalar措辞
 scirel.kinetic.incoming-boundary-flux-normalization.json[SB6S]: F:规定正轴向半空间边界分布到目标中性粒子入流归一 | R:code:src/scirel/kinetic/incoming_boundary_flux_normalization.py | A:scirel.asset-document.v1 | S:零目标有效且scale为零，与旧正scale描述不同；非零目标scale下溢拒绝
 scirel.kinetic.kinetic-dispersion-relation.json[SB6L]: F:规定同一平衡波点常规有限谐波与Ronnmark行列式组合 | R:code:src/scirel/kinetic/kinetic_dispersion_relation.py | A:无反馈TaskGraph科学合同 | S:常规求和夹绝对kz小于1e-10为正1e-10，Ronnmark保留零kz
@@ -119,10 +119,10 @@ scirel.kinetic.kinetic-dispersion-sum.json[SB6M]: F:规定实x-z波点Maxwellian
 scirel.kinetic.kinetic-wavevector-roots.json[SB6M]: F:规定每供给频率从固定种子解复Ronnmark kx根 | R:code:src/scirel/kinetic/kinetic_wavevector_roots.py | A:scirel.asset-document.v1 | S:多重有符号根不镜像；退出标志及残差显露非收敛，不能只读取根值
 scirel.kinetic.kinetic-wavevector-scan.json[SB6L]: F:规定频率阶梯及固定种子驱动有符号复kx根扫描图 | R:code:src/scirel/kinetic/kinetic_wavevector_scan.py | A:TaskGraph科学合同 | S:允许零kz并保留根符号和非正exit flags；不回落成无符号根
 scirel.kinetic.kn1d-outer-convergence.json[SB5S]: F:规定KN1D外层前后分子密度变化与truncate再入判断 | R:code:src/scirel/kinetic/kn1d_outer_convergence.py | A:scirel.asset-document.v1 | S:仅判断不执行迭代；现密度最大值须正，来源D1资格撤回
-scirel.kinetic.loss-cone-spectrum.json[SB6S]: F:规定采样分数Legendre正阶的损失锥边界根及模样本 | R:code:src/scirel/kinetic/loss_cone_spectrum.py | A:scirel.asset-document.v1 | S:固定degree扫描不证明根完整；xi_tp是根目标非返回网格点，少grid_points自动扩充
-scirel.kinetic.mirror-constrained-moments.json[SB6M]: F:规定不变量双Maxwellian局部矩及可选双plug损失锥积分 | R:code:src/scirel/kinetic/mirror_constrained_moments.py | A:scirel.asset-document.v1 | S:refill恰好1不求plug；积分x截40无误差估计，mass验证但不用于矩计算
-scirel.kinetic.mirror-invariant-distribution.json[SB6M]: F:规定能量磁矩双Maxwellian分布及双plug分数补充占据 | R:code:src/scirel/kinetic/mirror_invariant_distribution.py | A:scirel.asset-document.v1 | S:严格势垒比较且默认零refill为源约定；不计算轨迹，局部量不统一检查有限
-scirel.kinetic.mirror-total-pressure.json[SB6M]: F:规定电子各向同性压强加双离子压强的终态浅组装 | R:code:src/scirel/kinetic/mirror_total_pressure.py | A:scirel.asset-document.v1 | S:只验证三压强输入；密度残差浅传递及原kinetic mapping引用可随调用者后改
+scirel.kinetic.loss-cone-spectrum.json[SB6S]: F:规定Sturm相位排序的损失锥本征根及正则模采样 | R:code:src/scirel/kinetic/loss_cone_spectrum.py | A:损失锥谱文档 | S:整数阶不排除，返回网格不含xi_tp；独立线性初值解检验端点，不再使用有限多项式截断。
+scirel.kinetic.mirror-constrained-moments.json[SB6M]: F:定义不变量双Maxwellian矩与双plug损失锥分数 | R:code:src/scirel/kinetic/mirror_constrained_moments.py | A:局部矩科学合同 | S:refill=1不求plug；x>40尾界小于1.75e-16，近零分数按绝对误差控制，质量验证但不入矩。
+scirel.kinetic.mirror-invariant-distribution.json[SB6M]: F:定义能量磁矩分布与严格双plug俘获占据 | R:code:src/scirel/kinetic/mirror_invariant_distribution.py | A:分布函数文档 | S:势垒相等属耗尽分支；相对电势决定分布及俘获，返回的绝对能量舍入不反向用于判别。
+scirel.kinetic.mirror-total-pressure.json[SB6M]: F:规定双离子压力与各向同性电子压的终态浅组装 | R:code:src/scirel/kinetic/mirror_total_pressure.py | A:总压力状态文档 | S:有限非零电荷残差允许观察而非准中性证明；原kinetic映射引用保留，调用者后续改动可传播。
 scirel.kinetic.molecular-alpha-contraction.json[SB6M]: F:规定分子三组SIG到Alpha频率场的前驱分布收缩 | R:code:src/scirel/kinetic/molecular_alpha_contraction.py | A:scirel.asset-document.v1 | S:ni_correct用max(n-nHP,0)；Alpha_CX reshape修正须保留登记，负弹性格非物理裁定
 scirel.kinetic.molecular-scattered-sources-reduction.json[SB5S]: F:规定分子墙源、CX及弹性代源的来源顺序求和 | R:code:src/scirel/kinetic/molecular_scattered_sources_reduction.py | A:scirel.asset-document.v1 | S:保留带符号分布；墙源先于CX及弹性加和，不以重排浮点运算统一原子关系
 scirel.kinetic.neutral-boltzmann-rhs.json[SB6S]: F:规定源、CX、碰撞损失、弹性与墙源的中性Boltzmann RHS | R:code:src/scirel/kinetic/neutral_boltzmann_rhs.py | A:scirel.asset-document.v1 | S:热速度在合成括号后相乘；只组装显式RHS不求输运解
@@ -177,7 +177,7 @@ README.md[SB7T]: F:导航SciRel需求设计整合发行与领域手册及其维�
 architecture.md[SB7S]: F:定义科学关系、组合图、领域子包、独立分发与渐进发现边界 | R:code:src/scirel/__init__.py,code:docs/catalog.md | A:科学身份、DAG与有界反馈、领域API与分发合同 | S:未发布且无外部用户时同步调整调用方，不保留无消费者的顶层别名；延迟导入不缩减wheel或取消依赖
 catalog.md[SB7S]: F:定义分片目录渐进检索、稳定身份、反向依赖及增量构建合同 | R:code:scripts/build_catalog.py,code:contracts/scientific-catalog-release.schema.json | A:route到summary到exact与依赖闭包发现流程 | S:分页预算耗尽不能宣称无能力；complete只文档计数覆盖，不授予批准
 development-process.md[SW7M]: F:路由D0准备、D1保真、D2修复整合、D3应用和审核发行接续 | R:code:docs/requirements/scirel-workflow.md,code:docs/design/development-trust-versions.md | A:先索引后清理、定向纠错、项目接收与affected验证 | S:异步交付是恢复能力而非默认等待；整项目预备接收并连续合入包文档；可选复审未完不单独阻断D0，已知缺陷仍需闭环
-searchable-documentation.md[SU7T]: F:说明中文Sphinx手册构建、领域函数查询与同源Agent读取 | R:code:scripts/scirel_docs.py,code:scripts/build_scirel_sphinx.py | A:不可覆盖快照、HTTP和CLI、目录与公式代码呈现 | S:网页分词搜索与HTTP字面AND排序不同；多版本文档集合不等于单一科学wheel
+searchable-documentation.md[SU7S]: F:说明中文领域手册、精确函数参考及同源只读Agent查询的构建维护 | R:code:scripts/scirel_docs.py,code:scripts/build_scirel_sphinx.py | A:不可覆写快照；显式文档与翻译集合；HTTP和CLI；案例绑定；公式与代码呈现 | S:网页分词与HTTP字面AND排序不同；文档构建不重跑科学，记录集合不等于一个合格wheel
 handbook-authoring.md[SU7T]: F:规定领域手册、中文合同投影、用途表与完整案例的持续维护 | R:code:tools/docs/handbook.json,code:docs/requirements/asset-documentation.md | A:主题归属、参考导航、实际案例与逐批维护 | S:中文层绑定原摘要且保留全部条款，不能仅换摘要；纯导航改动复用不变且有效的运行证据
 
 ===/Users/tomczz/Projects/SciReL/docs/design/===
@@ -577,26 +577,26 @@ build_extraction_skill_bundle.py[XE5S]: F:将固定五个抽取技能打包为�
 build_l1_bundle.py[XW4T]: F:把仓库源码加入导入路径，委托工作流模块构建目录或ZIP的规范UTF-8 L1 bundle | R:code:src/scirel_workflow/l1_bundle.py | A:CLI main | S:-
 build_l1_inventory.py[XW5T]: F:将保存的来源项目L1工件汇成库存JSON并报告算子、任务图与缺口数量 | R:code:src/scirel_workflow/l1_inventory.py | A:main root --output --project | S:仅选一个项目时输出项目级候选输入；多项目时输出总库存，不覆盖已有输出
 build_l1_wire_fixture.py[XW5S]: F:把保存的L1 JSON重放为导入和自动检查请求、响应、原始body及摘要fixture | R:code:src/scirel_plugin/plugin.py | A:build_fixture,main | S:摘要绑定UTF-8原始字节；fixture输出目录存在即拒绝
-check.ps1[XQ7M]: F:执行局部、影响范围、全套与发行检查，并把已审核选择构建为隔离安装的科学wheel及catalog | R:code:scripts/select_affected_tests.py,code:scripts/finalize_release.py | A:-Mode affected/focused/full/release | S:发行输出必须是新目录；安装验证清除PYTHONPATH并置SCIREL_INSTALLED_RUNTIME，结束恢复原环境变量
+check.ps1[XQ7M]: F:执行局部、影响范围、全套及精确发行的构建安装检查 | R:code:scripts/select_affected_tests.py,code:scripts/finalize_release.py | A:affected/focused/full/release；外部Python路径继承；安装验证 | S:发行目录必须新建；安装检查清PYTHONPATH并置SCIREL_INSTALLED_RUNTIME，结束恢复环境
 check_helpers.ps1[XV4T]: F:按Windows或POSIX布局定位新建虚拟环境的Python，并拒绝不存在的解释器 | R:code:scripts/check.ps1 | A:Resolve-SciRelVenvPython | S:-
-finalize_release.py[XV7L]: F:核对审核工件、源码、catalog和wheel并生成精确发行清单与索引 | R:code:scripts/release_index.py,code:scripts/prepare_reviewed_distribution.py | A:finalize_reviewed_release,finalize_single_draft_fixture,main | S:所选测试须实际重跑；初始化器只向所属领域导出科学符号，不再按名称唯一性复制到根包；未审支持模块被拒绝
+finalize_release.py[XV7L]: F:核对审核、来源、文档集合及wheel并生成精确发行清单 | R:code:scripts/release_index.py,code:scripts/prepare_reviewed_distribution.py | A:finalize_reviewed_release；显式附加维护家族；selected安装测试；发行索引 | S:未审支持模块拒绝；科学符号仅向领域导出；同模块其他合同从明确维护目录检查，不递归收集任意候选
 install_extraction_skill_bundle.py[XE6M]: F:验证五技能bundle完整性，以内容寻址只读目录和原子活动链接安装，并生成安装回执 | R:code:scripts/build_extraction_skill_bundle.py | A:install_bundle,main --dry-run | S:拒绝外国技能目录与链接；仅清理本工具拥有的旧sha256目录，活动链接切换后才删除旧版本
 package_catalog_snapshot.py[XV5S]: F:校验catalog根摘要、分片字节及文件全集后输出确定性ZIP快照 | R:code:scripts/build_catalog.py | A:package_catalog_snapshot,main | S:拒绝符号链接、额外文件与目录内输出；输出存在即失败
 prepare_reviewed_distribution.py[XV7M]: F:从当前候选的精确审核投影生成绑定版本的首发源码树 | R:code:scripts/finalize_release.py,code:scripts/scientific_runtime.py | A:prepare_reviewed_distribution；同版文档和基线核验；暂存选择回执 | S:拒绝已有released基线及混合实现版本；科学代码测试必须逐字匹配审核材料；旧环境不静默迁移
 release_index.py[XV7L]: F:维护摘要绑定且只追加的候选、未批准开发快照、主机与消费证据和退役发行索引 | R:code:scripts/finalize_release.py | A:read_index,current_unpublished_entries,append_entry,main | S:证据绑定确切源码wheel和catalog元组且开发证据保持pending_unapproved；退役项不再进入当前未发行选择
 run_l1_wire_smoke.py[XW5T]: F:通过body-wire执行L1导入与自动检查并保存候选、检查数量和缺口的smoke报告 | R:code:src/scirel_plugin/plugin.py | A:run_smoke,main | S:每次响应均核验body_digest；技术重放状态不代表科学批准，报告不覆盖
 run_scirel_https.py[XN5T]: F:加载证书与私钥启动无状态SciRel body-wire HTTPS监听器并报告实际端点 | R:code:src/scirel_plugin/http_listener.py | A:main --certfile --keyfile | S:默认仅绑定127.0.0.1；退出时关闭server
-select_affected_tests.py[XQ8L]: F:由变更路径与正式科学文档选择直接及反向依赖测试，未知归属回落全套 | R:code:tests/test_affected_test_selection.py,code:provenance/admitted-assets.json,code:scripts/check.ps1 | A:显式路径或Git差异;旧ID归一;import及图依赖闭包;工程工具分流;输出原因与测试路径 | S:正式文档覆盖同callable旧记录；仅默认catalog附加TORAX代数和bootstrap/FVM目录，隔离fixture不夹带。BaseRef三点至HEAD不含WIP，未知源码和共享测试材料全套。
+select_affected_tests.py[XQ8L]: F:沿变更资产、显式导出及反向依赖选测试，未知归属回落全套 | R:code:tests/test_affected_test_selection.py,code:scripts/validate_asset_documents.py | A:Git或路径输入；合同优先；领域导出解析；工程分流；原因及pytest节点 | S:仅默认目录附加维护家族；初始化器不令所有叶子互连。文件存在性只验节点ID前的路径，pytest解析选择器；BaseRef不含WIP
 spark_codex.py[XS6S]: F:从私有JSON组装Codex提供方配置，并经SSH stdin同步私有启动器与配置 | R:code:tests/test_spark_codex.py | A:load_config,command,sync,main | S:凭证仅经环境或stdin传递；拒绝竞争模型覆盖，远端失败只报退出码，安装拒绝符号链接
 submit_standardization.py[XW6S]: F:加载候选、模型标准化提交和候选池，以Git基线与技能摘要验证后生成审核工作流 | R:code:src/scirel_workflow/workflow.py | A:build_review_workflow,main | S:使用当前仓库HEAD和技能文件摘要绑定提交；输出采用独占创建，拒绝覆盖
-validate_asset_documents.py[XQ8L]: F:独立校验科学文档结构、图闭合、Python签名和可选运行示例。 | R:code:contracts/scientific-asset-document.schema.json | A:递归拒私有治理字段;资产和callable唯一;依赖在文档集闭合;普通图DAG;反馈有状态与上限;安装模式拒源码导入 | S:示例在子进程执行；安装模式清PYTHONPATH并用-I。图输入、节点输入、输出均须连通；声明测试须在仓库内存在。结构与执行不代替科学正确性。
+validate_asset_documents.py[XQ8L]: F:校验科学文档结构、依赖闭合、图状态、Python合同与可选示例 | R:code:contracts/scientific-asset-document.schema.json | A:validate_document；load_document_set；resolve_test_reference；validate_runtime；示例执行 | S:额外文档目录须显式传入；节点ID只对文件段查存在且禁止逃逸。安装模式清路径用-I，结构与示例通过不代替科学正确性
 verify_outbound_evaluation_manifests.py[XQ5S]: F:显式核验外送评估manifest中冻结归档、trace与证据文件的真实摘要 | R:code:tests/test_outbound_evaluation_manifests.py | A:main | S:不属于普通pytest基线；冻结工件缺失直接失败，不能把缺失解释为通过
 verify_review_selection.py[XV7M]: F:核验两次宿主导出的确切审核选择、工件连续转换链和授权批准者，生成发行选择绑定 | R:code:scripts/release_index.py | A:verify_review_selection,main | S:第二快照必须回绑第一且使用新nonce；选择必须为有最终认证批准动作的当前精确投影
 prepare_maintained_candidate.py[XV8S]: F:核验选择profile的源码许可与静态导入闭包并生成独立包暂存树 | R:code:scripts/scientific_runtime.py,code:licenses/Pleiades-MIT.txt | A:stage；显式初始化；固定依赖；选择回执 | S:拒绝动态导入与exec/eval、缺失父包及未声明外部导入；必须全新输出，包装闭包不等于科学批准
 build_gpdf_selected.py[XV6T]: F:构建三实现四入口的GPDF动理学所选wheel | R:code:scripts/scientific_runtime.py,code:src/scirel/kinetic/cauchy_transform.py | A:output与--notices；生成包初始化和离线构建 | S:要求三份许可说明和全新输出；依赖来自维护基线并记摘要，构建不授予科学或发行资格
 build_pleiades_selected.py[XV7T]: F:按绑定源码与许可清单构建Pleiades所选科学wheel | R:code:scripts/scientific_runtime.py,code:provenance/selections/pleiades-anisotropy-20261012.json | A:profile/output/--source-root；安全路径和摘要验证；BUILD_RECEIPT | S:写入前验证全部绑定；拒绝已有输出和符号链接；历史依赖冲突须重新验证，构建不证明科学资格
-scirel_docs.py[XU7M]: F:构建完整科学文档快照并提供中文阅读及原合同的只读查询 | R:code:scripts/build_scirel_sphinx.py,code:scripts/validate_asset_documents.py | A:build,query,serve,Documentation | S:正式JSON保留原字节；读文件逐项验摘要，静态路由仅开放清单成员；查询运行不依赖渲染库或科学包
-build_scirel_sphinx.py[XU7M]: F:从精确合同及摘要绑定中文层生成领域用途表、函数参考和实际教程 | R:code:tools/docs/sphinx/conf.py,code:scripts/scirel_docs.py | A:load_translations,render_site,render_api,render_tutorial,function_table,plain | S:不导入科学模块或执行案例；中文漏项、摘要漂移与Sphinx警告阻断构建，隐藏目录保留函数层级
+scirel_docs.py[XU7M]: F:构建精确中文科学文档快照并提供同源HTTP和CLI查询 | R:code:scripts/build_scirel_sphinx.py,code:scripts/validate_asset_documents.py | A:build；query；serve；Documentation；摘要绑定章节选择；显式翻译集 | S:快照不可覆写；章节选择校验路径与执行摘要；正式JSON保留原字节，路由只开放清单，查询不导入科学
+build_scirel_sphinx.py[XU7M]: F:从精确合同和摘要绑定中文层构建领域表、函数参考与实跑教程 | R:code:tools/docs/sphinx/conf.py,code:scripts/scirel_docs.py | A:load_translations；render_site；render_api；render_tutorial；显式翻译集和图字节 | S:不执行科学示例；中文漏项、摘要漂移或Sphinx警告阻断构建，图取已绑定章节而非固定旧目录
 scientific_runtime.py[CV7T]: F:从维护元数据读取科学与构建依赖并约束所选新包 | R:code:pyproject.toml,code:docs/design/scientific-runtime-baseline.md | A:pin_dependencies；python_requirement；build_requirements；baseline_receipt | S:只接受基线已登记精确版本；冲突范围、URL、extras和条件依赖拒绝，不回退旧版本或转移旧资格
 
 ===/Users/tomczz/Projects/SciReL/skills/extraction/scientific-computation-asset-extraction/===
@@ -812,7 +812,7 @@ _validation.py[CB7T]: F:共享有限实数、整数和布尔输入校验并区�
 analysis.py[LA5T]: F:导出限定分析入口，复用实际坐标Green矩阵、弧长导数与中心差分。 | R:code:src/scirel/electromagnetism/greens.py;code:src/scirel/fieldline.py;code:src/scirel/numerics.py | A:get_gpsi;d_ds_arclength;diff_12_central;NumericalContractError | S:只转出底层合同，不为这些函数增加通用物理资格。
 basis.py[KA8M]: F:提供多项式与四种三次样条基、导数求值和BasisMatrix组合。 | R:code:catalog/pleiades-maintained/basis.clamped-cubic-spline.json | A:不等距内点C2矩阵;自然或给定斜率端点;两种特殊右端关系;区间外零;导数1或2;工厂按列建基 | S:资格限严格递增有限结点N>=3；非1/2导数值仍走函数值旧分支。第二特殊闭合另限左端x=y=0；特殊边界无磁拟合物理认证，quartic和特殊函数工厂明确拒绝。
 equilibrium_api.py[LA5T]: F:公开有显式终末状态的压力反馈求解与结果类型。 | R:code:src/scirel/equilibrium/pleiades_feedback.py | A:EquilibriumResult;compute_equilibrium | S:仅转出限定离散反馈合同，不扩为通用平衡认证。
-fieldline.py[KA9M]: F:拟合参数化场线，计算弧长导数、曲率和有界边界交点。 | R:code:src/scirel/numerics.py;code:tests/pleiades/equilibrium/test_curvature_consumer.py | A:实际非均匀弧长;先插值B再归一化;反向场曲率不变;开曲线不循环重排;边界双求解后原子提交;空场或越域拒绝 | S:FieldLine曲率为N×2，Helper为二元组且有限Q过滤不同。交点多起点有限搜索非全拓扑证书；flux梯度曲率限均匀非零梯度网格，固定场网格仅加密曲线不保证单调降误差。
+fieldline.py[KA9M]: F:拟合参数场线并计算插值、弧长导数、曲率和有界交点 | R:code:src/scirel/numerics.py,code:tests/pleiades/equilibrium/test_fieldline_t7_precision.py | A:FieldLine；HelperFieldLine；张量或散点插值；局部同参数曲率；原子交点提交 | S:完整实矩形cubic用张量样条且禁外推，散点cubic解梯度至1e-12。曲率共用几何/方向导数消弦尺度误差，先插值再归一；两类返回形状及Q过滤不同，固定网格曲线加密不保证单调
 numerics.py[KA8T]: F:用非均匀三点二次插值返回内部节点一、二阶导数。 | R:code:src/scirel/sampling.py;code:src/scirel/analysis.py | A:有限一维同长数组N>=3;严格递增横坐标;输出长度N-2;NumericalContractError拒无效域 | S:不伪造端点导数，不把该有限单调域扩张到任意来源差分输入。
 plotting.py[LA7T]: F:复用来源绘图工具执行缩放、镜像与转置patch的数据变换。 | R:code:tests/pleiades/equilibrium/test_analysis_families.py | A:缩放原地并返回列表;镜像浅拷贝;转置原地返回None;只组合data transform | S:包含patch内在几何的总变换不能再次拼接，否则几何重复施加；绘图仿射不等于科学向量或场坐标变换。
 sampling.py[KA8M]: F:提供规则化采样、位置取值、多项式拟合、场线选段与加权积分。 | R:code:src/scirel/numerics.py;code:src/scirel/fieldline.py | A:regular_grid默认ij;其他网格采样xy;SVD绝对截断1e-10;选段保留末端;共享非均匀差分;具名与位置字段互斥 | S:镜像是标量偶对称非向量奇偶法则；flux_surface_avg为∫Q/B ds除∫1/B ds，无2π亦不闭合开线。适用域要求有限B>0且在插值支撑内；极坐标原点无基。
@@ -876,26 +876,26 @@ anisotropic_picard_feedback.py[KB7T]: F:在均匀张量网格松弛单元电流�
 anisotropic_toroidal_current.py[KB6T]: F:从全张量与各向同性压力力平衡分解环向电流 | R:code:src/scirel/equilibrium/anisotropic_force_balance.py | A:compute_anisotropic_toroidal_current | S:各向同性基线以p_perp替代两压力，曲率项为两次Jphi之差
 axisymmetric_anisotropic_picard.py[AB7S]: F:迭代显式压力闭包、极向场、力平衡和磁通Green更新 | R:code:src/scirel/equilibrium/axisymmetric_picard_update.py,code:src/scirel/equilibrium/anisotropic_force_balance.py | A:solve_axisymmetric_anisotropic_picard | S:磁场低限与终态firehose越界抛错；strict默认拒绝平行不兼容，达迭代上限可返回未收敛
 axisymmetric_picard_update.py[KB7T]: F:按来源顺序离散电流、投影Green磁通并松弛磁通状态 | R:code:src/scirel/equilibrium/axisymmetric_anisotropic_picard.py | A:update_axisymmetric_picard_flux | S:使用首网格间距乘积，relax作用于旧磁通，区别于电流松弛路线；relax必须小于1
-free_boundary_anisotropic_picard.py[AB7S]: F:调度外部压力闭包、各向异性电流反馈和可选导体边界的自由边界迭代 | R:code:src/scirel/equilibrium/anisotropic_picard_feedback.py,code:src/scirel/field/ideal_conductor_boundary.py | A:solve_free_boundary_anisotropic_picard | S:边界修正只作用psi；maxiter可零，终态仍评估压力和电流；缺B0取初场中位值
+free_boundary_anisotropic_picard.py[AB8M]: F:组合压力闭包、各向异性电流及导体壁修正，迭代完整场和电流状态 | R:code:src/scirel/equilibrium/anisotropic_picard_feedback.py,code:src/scirel/field/ideal_conductor_boundary.py | A:solve_free_boundary_anisotropic_picard；未松弛目标；三类残差；终态重算；相容诊断 | S:壁修正同时作用ψ及磁场导数；每次压力前检查B下界。很小的松弛更新不能停止，须完整未松弛状态闭合且力相容；maxiter零仍评估但不声称收敛
 isotropic_picard_step.py[KB7T]: F:执行历史各向同性电流松弛、Green磁通和边缘磁通归一残差步 | R:code:src/scirel/equilibrium/pressure_flux_state.py | A:pressure_flux_picard_step | S:psi_edge不可零；来源非有限等离子磁通项置零，relax=1允许，残差尺度不是状态L2
 isotropic_pressure_flux.py[AB7T]: F:组合中平面压力样条和历史Picard步迭代压力磁通平衡 | R:code:src/scirel/equilibrium/pressure_flux_state.py,code:src/scirel/equilibrium/isotropic_picard_step.py | A:solve_isotropic_pressure_flux | S:tol/maxiter/relax须显式提供；非有限残差返回失败标签，maxiter=0保留初态
 kinetic_mirror_hall_equilibrium.py[AB7T]: F:将网格镜动理学闭包嵌入约化Hall磁平衡反馈 | R:code:src/scirel/kinetic/grid_mirror_kinetic_closure.py,code:src/scirel/equilibrium/reduced_hall_anisotropic_picard.py | A:solve_kinetic_mirror_hall_equilibrium | S:每次Hall压力请求以当前B/psi覆盖kinetic_config对应字段，嵌套依赖可显式替换
 pressure_flux_state.py[KB7T]: F:建立精确中平面压力-磁通样条、边缘磁通与电流导数状态 | R:code:src/scirel/equilibrium/isotropic_picard_step.py | A:build_pressure_flux_state | S:唯一完整Z=0行及首个精确零压边界；plasma_mask的true位置反而将导数清零，保留历史行为
 reduced_hall_anisotropic_picard.py[AB7S]: F:按来源顺序组合压力闭包、Hall漂移与磁通Picard反馈 | R:code:src/scirel/closures/reduced_hall_drift.py,code:src/scirel/equilibrium/axisymmetric_picard_update.py | A:solve_reduced_hall_anisotropic_picard | S:终态再次求闭包和Hall诊断；strict默认拒绝平行力或Ohm不兼容，负firehose阈值可禁用检查
-pleiades_feedback.py[KW9M]: F:执行有界压力—电流—Green通量迭代并分别报告更新残差与终末闭合残差。 | R:code:src/scirel/electromagnetism/greens.py | A:有限规则矩形网格及精确中平面;压力含精确零边;relax∈[0,1);布尔裁剪;双残差达tol才收敛;maxiter或nonfinite显式结束 | S:闭合分母仅目标电流范数，零目标非零实际电流给inf；用新样条复核闭合，零Green下也不能凭通量静止假收敛。拒绘图；这是离散压力反馈，不是连续力平衡或通用物理认证。
+pleiades_feedback.py[KW9M]: F:执行有界压力电流Green反馈并复核终态电流闭合 | R:code:src/scirel/electromagnetism/greens.py | A:compute_equilibrium；精确中平面及零压边；压力拟合；松弛反馈；更新与闭合双残差；显式终止状态 | S:仅中平面按物理半径排序找首零边，不重排Green、电流或输出；闭合分母仅目标电流范数，零目标非零实际给inf。零Green或小更新不代表闭合；这是离散压力反馈
 _anisotropic_numerics.py[KB7S]: F:提供各向异性平衡族共享的柱坐标梯度、压力张量散度、误差包络、面积和磁通增量数值核 | R:code:src/scirel/equilibrium/anisotropic_force_balance.py,code:src/scirel/equilibrium/axisymmetric_picard_update.py | A:stable_gradient;gradient_roundoff;pressure_divergence;cell_areas;flux_field_increment | S:数组按[Z,R]且psi为R Aphi；轴上分支和无2piR丝电流合同保留，有限运行不扩展物理域
 
 ===/Users/tomczz/Projects/SciReL/src/scirel/field/===
 __init__.py[LB6T]: F:导出线圈几何、Green响应、磁通磁场和导体边界函数 | R:code:src/scirel/field/multi_coil_vacuum_field.py | A:scirel.field及__all__ | S:-
-circular_filament_green.py[KB7T]: F:叠加带权圆电流丝的磁通与极向磁场Green响应 | R:code:src/scirel/field/multi_coil_vacuum_field.py | A:circular_filament_green_response | S:来源规则将非有限响应项置零；源半径距零1e-12内跳过，与拒绝奇点的其他路线不同
+circular_filament_green.py[KB7T]: F:复用稳定圆丝核计算有符号权重源集合的磁通与极向场 | R:code:src/scirel/electromagnetism/greens.py | A:circular_filament_green_response；SI；ψ=R*Aphi；空集合简写 | S:所有正半径保留，轴上BZ非零；精确自点零为离散约定，其他算术失败传播，不以零掩盖
 coil_green_geometry.py[KB7T]: F:求GSEQ线圈观测几何的正则半径、椭圆参数及距离 | R:code:src/scirel/field/filament_coil_green_field.py | A:compute_axisymmetric_coil_modulus | S:原始R加1e-8米且只加一次；原始负半径和几何溢出或参数下溢拒绝
 complete_elliptic_integrals_approx.py[KB7T]: F:复现GSEQ多项式对数完全椭圆积分K(m)、E(m)近似 | R:code:src/scirel/field/filament_coil_green_field.py | A:evaluate_complete_elliptic_integrals | S:m为模平方；全数组m=1才给K=1e300/E=1，混合数组奇点保留Inf/NaN
 current_green_superposition.py[KB6T]: F:将标量或矢量电流线性收缩为磁通和极向场 | R:code:src/scirel/field/multi_coil_vacuum_field.py | A:superpose_current_green_field | S:矢量输入响应的源轴在第0维，与dense矩阵目标优先布局不同
-dense_axisymmetric_green.py[KB7T]: F:建立显式目标点与源点的逐源磁通和磁场Green矩阵 | R:code:src/scirel/field/circular_filament_green.py | A:dense_axisymmetric_green_response | S:矩阵形状目标×源，第三源列是线性权重并非电流或面积；非有限单项置零
+dense_axisymmetric_green.py[KB7T]: F:以显式目标源构建磁通和磁场的逐源响应列 | R:code:src/scirel/electromagnetism/greens.py | A:dense_axisymmetric_green_response；目标×源；三个矩阵；源第三列权重 | S:权重不是电流或面积；只允许一维空列表简写；精确自点离散零，近轴和算术失败不截断填零
 filament_coil_green_field.py[KB7T]: F:由GSEQ几何及给定椭圆积分求线圈磁通和Br/Bz总响应 | R:code:src/scirel/field/coil_green_geometry.py,code:src/scirel/field/complete_elliptic_integrals_approx.py | A:evaluate_filament_coil_green_field | S:消耗已偏移半径，不再次正则；m=1或重合线圈拒绝，输入极端值响应溢出报错
-filament_vacuum_field.py[KB7T]: F:求矩形R-Z网格圆丝真空磁场并径向梯形积分磁通 | R:code:src/scirel/equilibrium/free_boundary_anisotropic_picard.py | A:integrate_filament_vacuum_field | S:径向轴须等距可沿任一维；磁通从首径向点零起，重合丝点拒绝，近轴Br置零
+filament_vacuum_field.py[KB7T]: F:计算圆丝场并按保留的径向梯形积分生成网格磁通 | R:code:src/scirel/electromagnetism/greens.py | A:integrate_filament_vacuum_field；R沿任一轴；均匀递增径向网格；SI | S:ψ首径向点零参考，不等于直接R*Aphi；活动自点拒绝，近轴BR保留；源第三列是安培电流
 ideal_conductor_boundary.py[KB7T]: F:用截断SVD边界电流抵消采样磁通并给出场修正及残差 | R:code:src/scirel/field/dense_axisymmetric_green.py | A:correct_ideal_conductor_boundary_flux | S:保留奇异值严格大于rcond乘最大值；全部剔除仍返回零电流与原残差
-mirror_plasma_green.py[KB7T]: F:利用Z反射建立等网格等离子单元磁通Green矩阵 | R:code:src/scirel/equilibrium/axisymmetric_anisotropic_picard.py | A:build_mirror_plasma_flux_green | S:Z轴必须等距且关于零反射对称；非有限响应置零，矩阵本身不乘单元面积
+mirror_plasma_green.py[KB7T]: F:在声明的镜像网格域用实际坐标构建单元磁通Green矩阵 | R:code:src/scirel/electromagnetism/greens.py | A:build_mirror_plasma_flux_green；目标单元×源单元；递增矩形网格 | S:Z仍须均匀且关于零对称；不再靠反射索引求值；对角及零半径源置零，不乘单元面积
 multi_coil_vacuum_field.py[AB7T]: F:组合矩形线圈离散、逐线圈Green与电流叠加为真空磁通场 | R:code:src/scirel/field/rectangular_coil_filaments.py,code:src/scirel/field/current_green_superposition.py | A:solve_multi_coil_vacuum_field | S:丝权重与每线圈电流分开，权重缺省全1；显式配置列表必须非空
 permanent_ring_filaments.py[KB6T]: F:离散永磁环表面为16个圆丝位置和双侧符号权重 | R:code:src/scirel/field/circular_filament_green.py | A:discretize_permanent_ring | S:正角按行向量旋转为R-Z图中的顺时针；左8点权重负，跨轴几何拒绝
 poloidal_field_from_flux.py[KB7S]: F:由psi=R Aphi的二维网格梯度恢复极向Br/Bz及幅值 | R:code:src/scirel/equilibrium/axisymmetric_anisotropic_picard.py | A:poloidal_field_from_flux | S:至少每轴3点；R=0用邻点磁通二阶轴规则，保留来源梯度及hypot算术
@@ -1016,8 +1016,8 @@ workflow.py[AW7L]: F:驱动可恢复候选检查、完整来源归账、标准�
 ===/Users/tomczz/Projects/SciReL/tests/===
 _review_bindings.py[TQ5T]: F:为归一化历史TaskGraph测试包装器提供惰性算子与任务图引用解析 | R:code:src/scirel/_composition.py | A:load_asset,load_graph,load_operator | S:只解析显式绑定表；未知引用或未授权callable别名抛KeyError，不扫描运行注册
 conftest.py[TQ6S]: F:提供候选或安装包定位、非可分离合成平衡、笛卡尔轴和独立柱坐标的共享科学fixture | R:code:src/scirel/geometry/axisymmetric_grid_mapping.py | A:candidate,equilibrium,axes,cylindrical | S:SCIREL_INSTALLED_RUNTIME=1时必须从sys.prefix载入wheel；合成平衡使用固定随机种子且保留轴向扰动
-test_affected_test_selection.py[TQ7L]: F:验证直接测试与传递图或源码依赖选择及无法归属时全套回落 | R:code:scripts/select_affected_tests.py,code:provenance/admitted-assets.json,code:tests/test_asset_documentation.py | A:CLI输出;共享源码和导出;工程工具分流;正式文档优先及旧ID归一;隔离目录;TORAX中点至bootstrap传播 | S:历史132文档fixture独立保留；当前148含快离子、八代数文档及七bootstrap/FVM文档，未知范围不得静默跳过
-test_asset_documentation.py[TQ7L]: F:验证科学文档合同、运行接口及渐进catalog确定性和拒绝边界 | R:code:scripts/validate_asset_documents.py,code:scripts/build_catalog.py | A:pytest；133文档；单位默认值；DAG反馈；完整性与版本门禁 | S:合成测试仅在临时副本统一版本且断言原件不变；真实混版本继续拒绝，不能算生产发行资格
+test_affected_test_selection.py[TQ7L]: F:验证正式资产与反向源码依赖的测试选择、节点ID保持和全套回落 | R:code:scripts/select_affected_tests.py,code:tests/_document_fixtures.py | A:CLI；共享Green消费者；维护合同；显式导出；隔离目录；工程分流 | S:历史132示例与新增集合分别计数；runpy显式带脚本路径，pytest选择器不能当文件名；未知归属不得跳过
+test_asset_documentation.py[TQ7L]: F:验证科学合同结构、运行接口、节点测试引用和确定性catalog | R:code:scripts/validate_asset_documents.py,code:tests/_document_fixtures.py | A:136闭包；DAG和反馈；版本一致；节点路径；示例执行；摘要覆盖 | S:同版本投影只在测试副本，真实混版本仍拒绝；解析节点文件不伪造pytest收集，原正式字节不改
 test_catalog_snapshot_package.py[TV5T]: F:检验catalog ZIP确定性、逐字节文件对应及损坏、额外文件和路径逃逸拒绝 | R:code:scripts/package_catalog_snapshot.py | A:pytest | S:-
 test_codefusion_consumer_contract.py[TE5T]: F:核验消费文档及注册示例以固定插件发行、摘要工件和三个技能入口绑定运行依赖 | R:code:docs/integration/codefusion-consumer-contract.md | A:pytest | S:-
 test_incremental_admissions.py[TB5T]: F:以调用者端口检验各向异性trial的失败惩罚和嵌套Hall图回调动理学压力闭合的顺序 | R:code:src/scirel/inference/anisotropic_trial_evaluation.py | A:pytest | S:失败trial保留1e12残差及1e24惩罚；组合执行先Hall后通过压力闭合触发动理学图
@@ -1026,23 +1026,24 @@ test_library_composition.py[TB5T]: F:验证组合不改调用者输入、关键�
 test_outbound_evaluation_manifests.py[TQ5L]: F:约束外送冻结评估记录的状态、来源、摘要配对与受协助历史修复及科学证据上限 | R:code:scripts/verify_outbound_evaluation_manifests.py | A:pytest | S:技术评估不能宣称trusted release、专家批准或公共v1；原记录边界补充通过另行摘要绑定更正
 test_public_surface.py[TB7M]: F:验证领域科学函数和异常导出、模块化根导入及代表性数值组合 | R:code:src/scirel/__init__.py,code:src/scirel/physics/__init__.py | A:公共可调用、领域对象身份、错误类型、几何磁场和平衡冒烟测试 | S:根星号导出须全为模块；physics精确五函数保留储热；源码导出检查不代表安装包完整科学资格
 test_release_environment.py[TV7S]: F:验证跨平台venv解释器、发行输入先决条件及源码外安装科学测试的release脚本门禁 | R:code:scripts/check.ps1,code:scripts/check_helpers.ps1 | A:pytest | S:完整发行smoke须显式SCIREL_RUN_RELEASE_SMOKE=1；子进程标记防递归，常规测试不证明该smoke已跑
-test_release_finalization.py[TV6M]: F:用单draft fixture检验人工批准内容、catalog字节覆盖及wheel摘要到发行状态的绑定 | R:code:scripts/finalize_release.py | A:pytest | S:此文件调用finalize_single_draft_fixture，wheel仅为假字节，不能替代真实wheel门禁验证
-test_release_index.py[TV7L]: F:覆盖候选生命周期、消费恢复和精确审核选包的构建安装发行门禁 | R:code:scripts/release_index.py,code:scripts/prepare_reviewed_distribution.py | A:pytest；实际wheel安装；选择版本与支持闭包 | S:批准私有支持必须逐字绑定，分别遗漏验证层或镜数值层均拒绝；选包版本随文档，根函数别名缺席
+test_release_finalization.py[TV6M]: F:以单draft fixture验证人工审核、catalog和wheel摘要的发行绑定 | R:code:scripts/finalize_release.py | A:pytest；矩形线圈单资产；版本随精确文档；拒绝变更 | S:使用finalize_single_draft_fixture及假wheel字节，不能代替真实安装或科学门禁
+test_release_index.py[TV7L]: F:覆盖发行候选生命周期、恢复与精确审核选包安装门禁 | R:code:scripts/release_index.py,code:scripts/prepare_reviewed_distribution.py | A:真实单资产wheel；逐项批准；支持闭包；改包拒绝；初始化器过滤 | S:单资产fixture用无外部科学依赖的矩形线圈；版本绑定文档，未审支持逐字拒绝，根无函数回退别名
 test_review_selection.py[TV6M]: F:检验双宿主快照选择与精确批准工件转换链、共享候选群体及篡改拒绝 | R:code:scripts/verify_review_selection.py | A:pytest | S:一致性证明不发行资产；允许未选择项前进但必须保留候选全 census 和相同已选当前版本
 test_reviewed_failure_semantics.py[TB6T]: F:独立检验镜压强固定磁通导数、非有限结果与真空闭合失败边界 | R:code:src/scirel/diagnostics/parallel_pressure_residual.py,code:src/scirel/closures/mirror_ambipolar_potential.py | A:pytest；显式压强律；重复B拒绝；联合真空 | S:重复常量B不足以推出零导数；给定C乘B压强律保留零垂直压强，evaluate可报告未平衡电流
 test_scientific_distribution.py[TV7T]: F:构建并离线安装开发wheel，验证科学源码覆盖和轻量领域根入口 | R:code:pyproject.toml,code:src/scirel/__init__.py | A:pytest实际wheel内容与安装导入检查 | S:临时安装目录关闭site验证根导入无科学后端及无顶层求解别名；不等同科学计算验收
 test_scientific_request_workflow_docs.py[TW5S]: F:约束科学请求文档与技能保留中间产物摘要、再发现、机制解释和未决真空耦合边界 | R:code:docs/design/scientific-request-workflow.md | A:pytest | S:文档和使用技能变更必须精确选择本合同测试；既有shortlist不能证明新关系不存在
 test_spark_codex.py[TS5T]: F:用假凭证验证模型启动器环境保密、覆盖拒绝、HTTPS地址限制和私有安装输出 | R:code:scripts/spark_codex.py | A:ModelConfigurationTests | S:-
-test_thin_mcp_adapter.py[TE6L]: F:验证文档驱动的惰性发现、查询调用、签名与摘要请求拒绝 | R:code:src/scirel_adapter/mcp.py,code:tests/test_asset_documentation.py | A:pytest；合成同版catalog与安装版本模拟；结构化调用结果 | S:临时版本投影只测查询机制；发现不得加载科学模块，私有字段和未记载输入在导入前失败
+test_thin_mcp_adapter.py[TE6L]: F:验证文档驱动的惰性发现、请求合同及摘要签名拒绝 | R:code:src/scirel_adapter/mcp.py,code:tests/test_asset_documentation.py | A:pytest；完整闭包fixture；安装版本模拟；结构化查询调用 | S:临时版本投影只测适配机制；发现不得加载科学模块，私有字段及未知输入须在导入前拒绝
 test_user_acceptance.py[TB6S]: F:执行维护的用户任务并验证结果文件、强中间产物复用、后续多线圈历史保留及安装完整性 | R:code:examples/user_acceptance.py | A:pytest | S:弱绑定中间产物标为不复用且不采样；安装校验拒绝editable和与wheel不同的包字节
 test_workflow_contracts.py[TW5M]: F:对照开发JSON Schema检验候选、L1、标准化、审核、发行与工作流快照字段集合和动作 | R:code:src/scirel_workflow/models.py | A:pytest | S:body-wire公共输入仅允许工件和不透明body及操作payload；平台租户/项目与幂等字段不进入科学合同
 test_profile_energy.py[TB7S]: F:回归径向剖面的离散守恒、边界和独立储热组合 | R:code:src/scirel/source/gaussian.py,code:src/scirel/source/exponential.py,code:src/scirel/physics/thermal_energy.py | A:整数及微小有符号宽度;NaN宽度边界;非均匀守恒;远中心和平坦极限;压力独立及无广播;不可表示总量失败 | S:指数参考位置变化必须逐字相等；微小尾部可舍零但不可消除目标积分
 test_thermal_cancellation.py[TB7T]: F:锁定储热有符号相消和中间上下溢的精确结果回归 | R:code:src/scirel/physics/thermal_energy.py | A:六排列保留1.5焦耳残量;超大中间乘积相消;次正规乘积先累加后舍入;最终上溢和舍零仍失败 | S:普通正压力用例通过不足以覆盖有符号合同，不能用longdouble替换精确乘加
 test_bootstrap.py[TQ7T]: F:回归自举系数有限极限、实际电流约定及严格输入边界 | R:code:src/scirel/neoclassical/bootstrap.py,code:src/scirel/geometry/face_to_cell.py | A:大碰撞率alpha极限;Redl L34;常规源式比较;总磁通符号与轴零;指数抵消;极端中点与布尔拒绝 | S:微俘获分数与大碰撞率的组合防止修成对数抵消；这些回归不单独建立经验拟合的物理适用性
 test_fvm.py[TQ8S]: F:验证有限体积守恒、制造解阶数、theta因果及Neumann不等宽重构修正 | R:code:src/scirel/fvm/cell_variable.py,code:src/scirel/fvm/diffusion.py,code:src/scirel/fvm/convection.py,code:src/scirel/fvm/implicit.py | A:边界非零通量守恒;上风极限;均匀扩散二阶;对流一阶;奇异失败;五网格多项式与掩码回归 | S:原不等末宽0.74对0.8反例与等宽通过例均保留；Neumann含N2，Dirichlet端点割线和面值线性外推仍按旧定义，不外推任意网格稳定性
-test_scirel_docs.py[TU7M]: F:验证中文绑定、同源查询、领域用途表与函数详情导航完整性 | R:code:scripts/scirel_docs.py,code:scripts/build_scirel_sphinx.py | A:pytest文档合同、漂移拒绝、公式和全部参考链接检查 | S:共享快照按用例复制后做破坏检查；静态页面测试不替代科学示例执行或浏览器渲染
+test_scirel_docs.py[TU7M]: F:验证中文绑定、领域导航、同源查询和明确后继章节选择 | R:code:scripts/scirel_docs.py,code:scripts/build_scirel_sphinx.py | A:136闭包；不可覆盖快照；漂移拒绝；公式和参考链接；显式中文集；摘要路径 | S:旧章节fixture从绑定提交取字节；新选择仍拒漏项重复漂移，静态测试不代替科学运行或视觉验收
 test_lazy_namespace.py[TB7T]: F:在新解释器核验轻量根导入、领域函数身份及旧顶层调用被拒绝 | R:code:src/scirel/__init__.py | A:根发现无依赖、领域导入、无顶层别名测试 | S:关闭site后根导入成功，访问磁场才暴露缺失NumPy；新进程避免测试顺序掩盖预加载
-test_scientific_runtime.py[TV6T]: F:验证统一依赖迁移拒绝边界与实际所选wheel元数据及源码字节 | R:code:scripts/scientific_runtime.py,code:scripts/build_pleiades_selected.py | A:pytest；旧兼容范围固定；混版本和旧环境拒绝；真实wheel | S:合成科学与许可仅用于构建测试；Python条件按SpecifierSet比较避免元数据排序误判
+test_scientific_runtime.py[TV6T]: F:检验统一依赖迁移、兼容子集固定及真实所选wheel元数据 | R:code:scripts/scientific_runtime.py,code:scripts/build_pleiades_selected.py | A:旧范围固定；netCDF4；混版本拒绝；环境拒绝；构建摘要 | S:选包只带所请求兼容依赖子集；合成许可不授予科学资格，Python范围按SpecifierSet比较
+_document_fixtures.py[TQ6T]: F:为开发测试复制历史示例及其明确声明的Green依赖闭包 | R:code:catalog/examples/field.dense-axisymmetric-green.json,code:tests/test_asset_documentation.py | A:example_document_sources；copy_example_closure；136记录闭包 | S:固定133示例仅补三项维护Green合同；是测试副本，不扩大规范校验器或生成科学内容
 
 ===/Users/tomczz/Projects/SciReL/tests/fixtures/l1/===
 cycle-rework.json[TW4T]: F:提供两任务图互相依赖且dependency_closure失败的L1重做分支fixture | R:code:tests/test_l1_wire_smoke.py | A:scirel.l1-inventory.dev | S:-
@@ -1057,8 +1058,8 @@ test_kinetic_mirror_hall_equilibrium.py[TB6M]: F:检验动理学镜场/Hall嵌�
 graph.py[TE2T]: F:测试兼容入口把输入交给维护包Frank-Egedal压强闭合图。 | R:code:src/scirel/kinetic/frank_egedal_pressure_closure.py | A:run_graph(inputs, **_ignored_loaders) | S:额外loader参数被忽略。
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/axisymmetric_anisotropic_picard/===
-task_graph.yaml[TB6M]: F:声明当前轴对称Picard场导出、调用方压强、柱坐标力和掩膜电流反馈及终态重算合同。 | R:code:src/scirel/equilibrium/axisymmetric_anisotropic_picard.py | A:scientific_task_graph contract | S:mask=False禁用；松弛保留磁通状态且relax<1，终态所有字段来自返回psi。
-test_graph_axisymmetric_anisotropic_picard.py[TB6S]: F:检验当前各向异性Picard图反馈、终态场/闭合重算、动态掩膜与解析电流，验证firehose及相容失败。 | R:code:src/scirel/equilibrium/axisymmetric_anisotropic_picard.py | A:pytest | S:终态更新后必须再次检查minimum_field并按返回psi重新闭合，不能返回上一轮压力。
+task_graph.yaml[TB6M]: F:声明轴对称各向异性Picard完整节点、状态反馈及终态合同 | R:code:src/scirel/equilibrium/axisymmetric_anisotropic_picard.py | A:Wb/rad；梯形或显式单元；压力闭包；mask；未松弛残差；有限迭代 | S:电流面积不乘2πR；mask=False禁用；小松弛步只是诊断，返回字段重算自终态ψ
+test_graph_axisymmetric_anisotropic_picard.py[TB6S]: F:验证Picard图的解析电流、终态闭合、动态掩膜及失效边界 | R:code:src/scirel/equilibrium/axisymmetric_anisotropic_picard.py | A:pytest；恒BZ线性压力；节点积分权重；firehose与平行力失败 | S:恒J=.5在声明矩形积分为.08；终态须重查minimum_field并重算压力，不能返回前一轮
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/axisymmetric_equilibrium_grid_support/===
 test_graph_axisymmetric_equilibrium_grid_support.py[TB6M]: F:检验网格映射后材料分类的纯有序DAG、两依赖精确绑定、文档端口闭包和分类参数透传。 | R:code:src/scirel/geometry/axisymmetric_equilibrium_grid_support.py | A:pytest | S:源/安装环境分别定位实现；运行图不得依赖YAML、来源checkout或隐式文件加载。
@@ -1072,12 +1073,12 @@ task_graph.yaml[TB5S]: F:声明观测者图的磁通环/Thomson双线性采样�
 test_graph_equilibrium_synthesis_diagnostics.py[TB5S]: F:检验双线性合成诊断的公开依赖注入、磁通优先顺序、必需/可选Thomson字段和只读状态。 | R:code:src/scirel/diagnostics/equilibrium_synthesis_diagnostics.py | A:pytest | S:未知/空observations返回空mapping，越界点不得外推；可选密度温度缺失即不输出。
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/frank_egedal_pressure_closure/===
-task_graph.yaml[TB6M]: F:声明Frank-Egedal损失锥谱、源模式、热矩、径向包络与压力组装的显式配置和非交换依赖。 | R:code:src/scirel/kinetic/frank_egedal_pressure_closure.py | A:scientific_task_graph contract | S:先以b=1归一再应用压力尺度；电子温度用J以便密度乘积为Pa。
-test_graph_frank_egedal_pressure_closure.py[TB6S]: F:检验Frank-Egedal闭合非交换管线、b=1归一、可选密度/温度及调用方模式或损失锥依赖选择。 | R:code:src/scirel/kinetic/frank_egedal_pressure_closure.py | A:pytest | S:垂直压力以平行参考矩归一，可在b=1不同；vc达v0时垂直矩为0。
+task_graph.yaml[TB6M]: F:声明Frank-Egedal谱、共同速度人口、热矩及压力组装的有序组合 | R:code:src/scirel/kinetic/frank_egedal_pressure_closure.py | A:显式模式；损失锥依赖；共同下限；b=1归一；径向包络；收敛检查 | S:vc是慢化尺度非垂直专用截断；三矩同人口，归一前原始矩须收敛，电子温度用J
+test_graph_frank_egedal_pressure_closure.py[TB6S]: F:检验热矩闭合顺序、归一化、可选物种字段及损失锥依赖选择 | R:code:src/scirel/kinetic/frank_egedal_pressure_closure.py | A:pytest；共同人口；vc=1解析比值；非平凡模态 | S:历史测试名保留但vc=1人口非空；恒模Rm=2给垂直/平行比2.5，包络零点另验
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/free_boundary_anisotropic_picard/===
-task_graph.yaml[TB6L]: F:声明自由边界Picard压强端口、单元电流松弛、Green场反馈、可选墙修正和收敛终态合同。 | R:code:src/scirel/equilibrium/free_boundary_anisotropic_picard.py | A:scientific_task_graph contract | S:墙只改psi；场Green须成对，未提供则磁场留真空；零步残差inf且maxiter_reached。
-test_graph_free_boundary_anisotropic_picard.py[TB6M]: F:检验自由边界各向异性Picard真实顺序反馈、零步/上限状态、闭合端口、墙磁通和终态一致性。 | R:code:src/scirel/equilibrium/free_boundary_anisotropic_picard.py | A:pytest | S:墙只修正psi；不提供成对g_br/g_bz时磁场保留真空值，零步残差为inf。
+task_graph.yaml[TB6L]: F:声明自由边界压力闭合、电流反馈、墙场修正及全状态判停合同 | R:code:src/scirel/equilibrium/free_boundary_anisotropic_picard.py | A:非均匀网格；cell_edges；场下界；完整残差；有限反馈；终态相容性 | S:墙同时修ψ及其场导数；缺场Green从磁通增量求场；松弛步小不证明收敛，电流面积无2πR
+test_graph_free_boundary_anisotropic_picard.py[TB6M]: F:验证自由边界全状态反馈、解析固定点、墙场一致及失败域 | R:code:src/scirel/equilibrium/free_boundary_anisotropic_picard.py | A:顺序两步；独立固定点；单元权重；小步反例；不变ψ变场；空场拒绝 | S:历史节点名不决定旧行为；全ψ清零的墙也消B而触发下界，不能保留虚构真空场
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/grid_mirror_kinetic_closure/===
 task_graph.yaml[TB6M]: F:声明网格镜端参考/plug剖面映射、端损失电位与嵌套准中性组合、屏蔽范围及显式载体。 | R:code:src/scirel/kinetic/grid_mirror_kinetic_closure.py | A:scientific_task_graph contract | S:参考/plug电位只接受径向剖面；端塞外屏蔽不触碰pitch积分、电位和端态诊断。
@@ -1092,7 +1093,7 @@ task_graph.yaml[TB6M]: F:声明双温镜动理学矩/Boltzmann电子/括根二�
 test_graph_mirror_quasineutral_closure.py[TB6S]: F:独立无plug解析电位检验双温镜准中性图，覆盖损失锥、零密度、回调剖面和失败顺序传播。 | R:code:src/scirel/closures/mirror_quasineutral_closure.py | A:pytest | S:电位求根后重算离子/电子再组装压力；求根失败不执行终态组装。
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/multi_coil_vacuum_field/===
-task_graph.yaml[TB5S]: F:声明测试用多线圈真空场有序组合、几何/Green/独立驱动关系和显式SI输入输出。 | R:code:src/scirel/field/multi_coil_vacuum_field.py | A:scientific_task_graph contract | S:各组独立计算再叠加；current_a不乘入丝权重也不按丝数分摊。
+task_graph.yaml[TB5S]: F:声明多线圈几何、Green响应与独立驱动的有序真空场组合 | R:code:src/scirel/field/multi_coil_vacuum_field.py | A:scientific_task_graph；SI输入；Wb/rad磁通；分组叠加 | S:current_a不并入丝权重也不按丝数分摊，各组保持独立驱动
 test_graph_multi_coil_vacuum_field.py[TB5T]: F:独立矩形丝和圆Green检验多线圈真空场线性叠加、不同驱动独立性与必需电流端口。 | R:code:src/scirel/field/multi_coil_vacuum_field.py | A:pytest | S:current_a是整组驱动，不能除以丝数；各丝权重和各组驱动分开。
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/reduced_hall_anisotropic_picard/===
@@ -1135,7 +1136,7 @@ test_alpha_contraction.py[TB5S]: F:以不对称矩阵与标记载体验证原子
 test_alpha_contraction_l1.py[TB4S]: F:对SHA锁定的保存KN1DPy Alpha收缩实现逐位重放原子/分子分支与拒绝行为 | R:code:tests/operator_contracts/test_alpha_contraction.py | A:pytest | S:需SCIREL_KN1DPY_REVIEW_ROOT；该来源D1资格已撤销，仅为历史算术证据
 test_anisotropic_force_balance.py[TB5T]: F:用恒压、制造解和极端磁场验证各向异性力、电流、轴线规则及诊断mask合同 | R:code:src/scirel/equilibrium/anisotropic_force_balance.py | A:pytest | S:active_mask仅影响诊断误差，不改变电流场
 test_anisotropic_parameter_optimization.py[TB5T]: F:检验直接参数优化最小值、固定参数、LHS起点选择与未知方法的受控失败 | R:code:src/scirel/inference/anisotropic_parameter_optimization.py | A:pytest | S:LHS只选起点；未知方法补做trial但不得伪造收敛
-test_anisotropic_picard_feedback.py[TB5S]: F:核验各向异性Picard电流状态松弛、mask、磁场Green配对和均匀网格面积条件 | R:code:src/scirel/equilibrium/anisotropic_picard_feedback.py | A:pytest | S:relax=1完整保留旧电流状态但仍输出原始plasma_currents；降序轴面积保持正
+test_anisotropic_picard_feedback.py[TB5S]: F:检验电流状态松弛、掩膜、Green配对及节点域积分 | R:code:src/scirel/equilibrium/anisotropic_picard_feedback.py | A:pytest；梯形权重；非均匀轴；降序轴；relax=1；非法掩膜 | S:原失败名保留；非均匀单调轴按逐节点权重积分，降序面积正，完整保留旧态不改变原始电流输出
 test_anisotropic_toroidal_current.py[TB5T]: F:独立验证恒压、径向压力梯度和恒模变方向磁场下的各向异性环向电流两贡献 | R:code:src/scirel/equilibrium/anisotropic_toroidal_current.py | A:pytest | S:R=0轴列强制电流和两个贡献为零
 test_atomic_hydrogen_1s_radiative_recombination_rate.py[TB5T]: F:以保存参考点及独立公式验证H1s辐射复合速率、温度夹取和实数正域拒绝 | R:code:src/scirel/collisions/atomic_hydrogen_1s_radiative_recombination_rate.py | A:pytest | S:-
 test_atomic_hydrogen_1s_radiative_recombination_rate_l1.py[TB4T]: F:对保存H1s复合拟合实现进行SHA门控精确重放并记录维护合同拒绝旧强制转换 | R:code:tests/operator_contracts/test_atomic_hydrogen_1s_radiative_recombination_rate.py | A:pytest | S:未设置SCIREL_KN1DPY_REVIEW_ROOT即skip，重放不证明人工批准
@@ -1149,10 +1150,10 @@ test_atomic_hydrogen_elastic_cross_section_l1.py[TB4T]: F:SHA门控精确重放�
 test_atomic_hydrogen_omega_frequencies.py[TB5M]: F:独立积分验证原子H的体速度、三Omega通道、Wperp分支、开关和总和及零分母拒绝 | R:code:src/scirel/collisions/atomic_hydrogen_omega_frequencies.py | A:pytest | S:MH_H_sum总符号选择全局分支；全部弹性关闭允许零密度，零速度差/垂直矩仍须拒绝
 test_axisymmetric_grid_mapping.py[TB5M]: F:以独立张量积双线性oracle核验轴对称平衡到Cartesian场的重建、闭盒覆盖与夹取报告 | R:code:src/scirel/geometry/axisymmetric_grid_mapping.py | A:pytest | S:夹取点仍返回有限场但covered为假；本关系不参与材料分类，也不复用越界失败的RZ采样器
 test_axisymmetric_neutral_moments.py[TB5M]: F:以Maxwellian和独立圆柱积分核验九个中性矩、空切片策略、量纲及严格输入类型 | R:code:src/scirel/kinetic/axisymmetric_neutral_moments.py | A:pytest | S:stress_zz按来源取stress_yy的独立副本；热速度导出不可表示时拒绝
-test_axisymmetric_picard_update.py[TB5T]: F:核验轴对称Picard磁通松弛、电流面积和旧电流诊断，以及负半径与relax边界 | R:code:src/scirel/equilibrium/axisymmetric_picard_update.py | A:pytest | S:非均匀网格沿来源规则仍用首间距作为所有单元面积，relax=1拒绝
+test_axisymmetric_picard_update.py[TB5T]: F:验证磁通松弛、非均匀节点电流积分及独立固定点诊断 | R:code:src/scirel/equilibrium/axisymmetric_picard_update.py | A:pytest；梯形面积；旧电流诊断；relax边界；负半径失败 | S:历史首间距测试名保留，断言按声明矩形积分；旧电流仅影响电流变化诊断
 test_bessel_gamma.py[TB5T]: F:以邻阶Bessel解析导数检验Gamma函数、原点、复数广播和大参数可表示性 | R:code:src/scirel/kinetic/bessel_gamma.py | A:pytest | S:-
 test_bilinear_grid_sampling.py[TB4T]: F:验证双线性RZ采样恢复线性及双线性场、空查询和任意越界点拒绝 | R:code:src/scirel/geometry/bilinear_grid_sampling.py | A:pytest | S:-
-test_boltzmann_quasineutrality.py[TB5T]: F:验证Boltzmann电子密度压强、电荷残差、联合零密度和指数限制 | R:code:src/scirel/closures/boltzmann_quasineutrality.py | A:pytest | S:指数先夹至700再计算密度，零密度残差保持有限
+test_boltzmann_quasineutrality.py[TB5T]: F:检验Boltzmann密度压力、准中性残差、零密度及指数范围 | R:code:src/scirel/closures/boltzmann_quasineutrality.py | A:pytest；广播；联合零态；exp701；不可表示值拒绝 | S:禁止以exp700钳制改写物理律；保留零相对容差的可表示701见证
 test_circular_filament_green.py[TB4T]: F:核验圆电流丝Green线性、轴上线圈跳过、空源与目标轴上磁场解析极限 | R:code:src/scirel/field/circular_filament_green.py | A:pytest | S:-
 test_cold_plasma_tensor.py[TB6L]: F:独立Stix与精确有理数oracle覆盖冷等离子介电张量的基底、符号、碰撞、共振和可表示性 | R:code:src/scirel/dielectric/cold_plasma_tensor.py | A:pytest | S:非零cyclotron或场范数下溢不能当数学零；整次调用以命名Overflow/Resonance错误拒绝
 test_collision_cross_section_input_types.py[TB4T]: F:对七个碰撞截面叶节点统一验证混合字符串、布尔及复能量按energy_ev拒绝 | R:code:src/scirel/collisions/_energy_input.py | A:pytest | S:-
@@ -1167,13 +1168,13 @@ test_dd_neutron_lab_energy.py[TB6L]: F:以两体解析括号和取消带证人�
 test_dense_axisymmetric_green.py[TB5T]: F:核验稠密轴对称Green各列对应单丝响应、权重缩放、轴极限及空源形状 | R:code:src/scirel/field/dense_axisymmetric_green.py | A:pytest | S:空列表可为零源简写，其他错误空形状不能借简写通过
 test_filament_coil_green_gseq.py[TB5M]: F:独立闭式与scipy交叉比较GSEQ几何、椭圆近似及电流丝响应，锁定奇点和极值拒绝 | R:code:src/scirel/field/filament_coil_green_field.py | A:pytest | S:源半径加1e-8但原始负半径仍拒绝；K/E近似误差仅为采样证据，m=1链必须在响应阶段拒绝
 test_filament_vacuum_field.py[TB5T]: F:验证电流丝真空场叠加、轴上解析磁场、径向梯形磁通和转置直角网格 | R:code:src/scirel/field/filament_vacuum_field.py | A:pytest | S:磁通参照每行首半径，比较RAphi须减去同一首点值
-test_firehose_mirror_margins.py[TB5T]: F:独立核验firehose与mirror裕度、磁场值空间排序求导和退化/重复节点规则 | R:code:src/scirel/diagnostics/firehose_mirror_margins.py | A:pytest | S:全等B的导数按合同为零，非退化重复B样本必须拒绝
+test_firehose_mirror_margins.py[TB5T]: F:独立检验firehose与mirror裕度及固定磁通导数输入 | R:code:src/scirel/diagnostics/firehose_mirror_margins.py | A:解析常压；失稳；显式斜率；固定ψ采样轴；重复样本拒绝 | S:mirror使用B²/μ0+B偏导；同B空间样本不能猜零导数，必须提供压力律偏导或合法固定ψ轴
 test_fluidbw_r43_fluid.py[TB5S]: F:锁定源pole系数、流体矩阵关键块和特征分支排序及整数维度拒绝 | R:code:src/scirel/kinetic/fluid_dispersion_matrix.py | A:pytest | S:特征根只选择传播方向门限以上分支，按虚部绝对值排序
 test_fluidbw_r43_kinetic.py[TB5S]: F:验证Ronnmark三算法分支、冻结复波点、15谐波张量诊断及带符号复根状态 | R:code:src/scirel/kinetic/kinetic_dispersion_ronnmark.py | A:pytest | S:保存根允许负实/虚部并保留非收敛exit flag，不把数值根自动视为成功
 test_fluidbw_r43_variants.py[TB5T]: F:核验Weideman源值分支和fluidbw谐波求和数值变体，与已有解析关系区分零kz失败 | R:code:src/scirel/kinetic/kinetic_dispersion_sum_fluidbw.py | A:pytest | S:来源变体kz=0夹为1e-10；原有求和合同仍拒绝零kz
 test_flux_surface_inverse_field_average.py[TB5T]: F:核验折线dl/B测度与可选量加权平均、反向不变性和越界/退化拒绝 | R:code:src/scirel/geometry/flux_surface_inverse_field_average.py | A:pytest | S:cubic采样至少四点每轴；路径非退化且场严格正
 test_flux_surface_profile.py[TB5T]: F:检验磁通面剖面排序去重、首重复值保留、端点扩展与一致磁通重标不变 | R:code:src/scirel/geometry/flux_surface_profile.py | A:pytest | S:-
-test_frank_egedal_hot_ion_moments.py[TB5T]: F:以独立自适应速度/俯仰积分验证FrankEgedal热离子矩、模态依赖和垂直积分下界 | R:code:src/scirel/kinetic/frank_egedal_hot_ion_moments.py | A:pytest | S:perp_velocity_lower=0支持完整垂直矩积分区间
+test_frank_egedal_hot_ion_moments.py[TB5T]: F:用独立自适应速度俯仰积分检验共同人口热离子矩 | R:code:src/scirel/kinetic/frank_egedal_hot_ion_moments.py | A:pytest；完整区间；解析角比；模式依赖；共同下限 | S:省略下限与显式零相同；vc不是隐式垂直截断，独立平行与垂直积分都用声明人口
 test_frank_egedal_pressure_admitted.py[TB5T]: F:独立逐单元核验FrankEgedal压力/密度组合、尺度fallback、零包络与输入所有权 | R:code:src/scirel/kinetic/frank_egedal_pressure_state.py | A:pytest | S:未给密度尺度返回density=None，区别显式零密度；显式hot_pressure_scale=0覆盖p0
 test_frank_egedal_pressure_state.py[TB5T]: F:检验FrankEgedal热/气体/电子压力闭式组合、缺密度及非有限磁通载体拒绝 | R:code:src/scirel/kinetic/frank_egedal_pressure_state.py | A:pytest | S:缺密度时保留electron_temperature输出但不产生电子压力
 test_frank_egedal_radial_envelope.py[TB4T]: F:核验FrankEgedal径向幂包络的夹取、指数效应、反磁通方向和退化区间拒绝 | R:code:src/scirel/kinetic/frank_egedal_radial_envelope.py | A:pytest | S:-
@@ -1203,8 +1204,8 @@ test_maxwellian_relative_speed_rate_average.py[TB6L]: F:用单束循环和解析
 test_mirror_ambipolar_potential.py[TB6S]: F:检验镜场双极电位逐磁面电流平衡、真空结果、函数剖面等价及求根失败界限。 | R:code:src/scirel/closures/mirror_ambipolar_potential.py | A:pytest | S:evaluate模式即使未平衡也报告converged且迭代为0；solve忽略输入phi_plug_v。
 test_mirror_constrained_moments.py[TB6M]: F:以解析无限域矩和分锥根独立积分检验镜场截断分布矩，覆盖填充、带符号电荷及求积输入合同。 | R:code:src/scirel/kinetic/mirror_constrained_moments.py | A:pytest | S:refill=1跳过plug函数但仍验证求积；分数阶16.9按来源截为16，仅单侧plug失败。
 test_mirror_invariant_distribution.py[TB5S]: F:检验镜场分布在等能量/磁矩下的不变性、损失锥填充、剖面取值和独立归一表达式。 | R:code:src/scirel/kinetic/mirror_invariant_distribution.py | A:pytest | S:有plug时默认损失锥填充为0；并行和垂直速度反号保留分布。
-test_mirror_plasma_green.py[TB5T]: F:独立椭圆积分与稠密Green比较镜场响应矩阵、轴源零列和镜像块复用，拒绝非对称轴向网格。 | R:code:src/scirel/field/mirror_plasma_green.py,code:src/scirel/field/dense_axisymmetric_green.py | A:pytest | S:镜像优化依赖轴向反射对称网格，不能用于一般轴向网格。
-test_mirror_total_pressure.py[TB5T]: F:检验离子各向异性压力与电子标量压力合成、原状态引用保留和必需字段检查。 | R:code:src/scirel/kinetic/mirror_total_pressure.py | A:pytest | S:密度/电荷残差透传且不验证；电位缺省为None，透传不代表物理有效。
+test_mirror_plasma_green.py[TB5T]: F:以高精度独立圆环式及dense实现核对镜像域磁通矩阵 | R:code:src/scirel/field/mirror_plasma_green.py,code:src/scirel/field/dense_axisymmetric_green.py | A:80位公式；轴源零列；实际坐标；对称域拒绝 | S:原2e-14门槛不变；参考式采用精确binary64输入的80位计算避免K/E相减消失
+test_mirror_total_pressure.py[TB5S]: F:检验离子各向异性与电子标量压力组合及物种字段验证 | R:code:src/scirel/kinetic/mirror_total_pressure.py | A:pytest；必需字段；非负有限密度；有限电荷残差；状态引用 | S:历史透传测试名保留但非法物种数据必须拒绝；有限非零残差只是观测，不证明准中性
 test_molecular_hydrogen_charge_exchange_cross_section.py[TB5S]: F:用独立Janev多项式、留出网格和Maxwell平均组合检验分子氢电荷交换截面及裁剪/失败合同。 | R:code:src/scirel/collisions/molecular_hydrogen_charge_exchange_cross_section.py | A:pytest | S:H2与H2+反应不能替代为原子氢分支；负能量拒绝属于对旧来源裁剪的修正。
 test_molecular_hydrogen_charge_exchange_cross_section_l1.py[TB5T]: F:SHA固定保存来源比较分子电荷交换截面一维/二维分支，并检验旧负能量裁剪的维护修正。 | R:code:src/scirel/collisions/molecular_hydrogen_charge_exchange_cross_section.py | A:pytest | S:来源环境缺失跳过；严格D1已经撤回，仅为历史开发证据。
 test_molecular_hydrogen_collision_matrices.py[TB6M]: F:独立广播几何和角度求积检验分子氢四种SIG碰撞矩阵、载体布局、前驱场及数值边界失败。 | R:code:src/scirel/collisions/molecular_hydrogen_collision_matrices.py | A:pytest | S:弹性矩阵负元为固有有符号贡献；CX能量因子不含0.5或mu且展平使用Fortran顺序。
@@ -1215,7 +1216,7 @@ test_neutral_normalizations.py[TB5S]: F:独立验证半空间通量和逐段梯�
 test_neutral_scattered_sources.py[TB5S]: F:检验原子/分子有符号散射源求和、映射顺序的弹性再生和局域简单CX源，覆盖对齐与派生溢出。 | R:code:src/scirel/kinetic/elastic_regeneration_aggregation.py,code:src/scirel/kinetic/simple_charge_exchange_source.py | A:pytest | S:有符号源及映射加法顺序必须保留，不能统一非负裁剪。
 test_observation_residuals.py[TB5T]: F:检验磁通优先的标准化观测残差向量与chi²，覆盖sigma缩放、预测缺失和同形有限值合同。 | R:code:src/scirel/diagnostics/observation_residuals.py | A:pytest | S:-
 test_omega_frequencies_l1.py[TB5S]: F:SHA绑定历史来源比较原子/分子Omega各符号矩分支，固定零速度差和零垂直矩由非有限值到失败的修正。 | R:code:src/scirel/collisions/atomic_hydrogen_omega_frequencies.py,code:src/scirel/collisions/molecular_hydrogen_omega_frequencies.py | A:pytest | S:来源环境缺失跳过；来源待重新审核，比较不构成合格L1或专家批准。
-test_parallel_pressure_residual.py[TB5T]: F:检验平行压力沿B空间导数关系、乱序样本回映、退化零跨度和strict违反时失败。 | R:code:src/scirel/diagnostics/parallel_pressure_residual.py | A:pytest | S:B完全相同时导数按合同为0，不能据此推断一般平衡正确。
+test_parallel_pressure_residual.py[TB5T]: F:用显式固定ψ导数检验平行压力关系及严格失配失败 | R:code:src/scirel/diagnostics/parallel_pressure_residual.py | A:常比值；二次压力律；乱序输入；同B欠定拒绝；strict | S:同B不同压力不能定义偏导，不得按零跨度自动通过；声明导数后才可计算关系
 test_permanent_ring_filaments.py[TB5T]: F:检验永磁环两侧各八丝布局、默认符号、质心旋转与柱轴穿越/退化尺寸失败。 | R:code:src/scirel/field/permanent_ring_filaments.py | A:pytest | S:两侧权重分别负/正；极小角度按未旋转处理，顺序需保留。
 test_picard_flux_residual.py[TB5T]: F:检验Picard磁通L2相对变化、极大/极小可表示边界和同形二维状态失败合同。 | R:code:src/scirel/diagnostics/picard_flux_residual.py | A:pytest | S:不可表示残差拒绝；不得直接平方溢出而丢失可表示结果。
 test_planar_wavevector.py[TB5T]: F:检验极坐标投影、成对笛卡尔波数与稳定hypot计算，拒绝混用模式和布尔隐式数值转换。 | R:code:src/scirel/geometry/planar_wavevector.py | A:pytest | S:零幅度仍保留声明角度；混合布尔容器必须在NumPy类型转换前拒绝。
@@ -1258,9 +1259,10 @@ test_mirror_gauge_scientific_correction.py[TQ6S]: F:验证镜动理学相对势�
 test_mirror_kinetic_scientific_correction.py[TQ6S]: F:验证镜不变量分布、端损通量、捕获矩和有限输出失败合同 | R:code:src/scirel/kinetic/mirror_invariant_distribution.py,code:src/scirel/kinetic/mirror_constrained_moments.py | A:pytest科学回归;极端输入;损失锥边界;积分误差界 | S:不靠指数截断或放宽容差通过；非有限和未达积分误差界必须失败
 test_pleiades_independent_correction.py[TQ6S]: F:独立验证Pleiades各向异性核心的单位、边界、规范与真实失败行为 | R:code:src/scirel/equilibrium,code:src/scirel/kinetic | A:pytest独立复核;源绑定;极端数值;失败门禁 | S:独立复核只覆盖声明范围，不等于全物理、人审或发行
 test_pleiades_spectral_scientific_correction.py[TQ6S]: F:验证Pleiades谱与损失锥模式的正则解、根和非有限失败合同 | R:code:src/scirel/kinetic/_loss_cone_modes.py,code:src/scirel/kinetic/loss_cone_spectrum.py | A:pytest谱回归;模式边界;根重复拒绝;精度检查 | S:谱样例不证明任意高阶或全物理适用域；输入和积分失败明确保留
+test_pleiades_field_green_correction.py[TB7S]: F:以独立高精度圆环式检验四类场入口的近轴近丝纠正 | R:code:src/scirel/electromagnetism/greens.py,code:src/scirel/field/filament_vacuum_field.py | A:70位基准；小正半径；公式切换；自点与溢出；梯形规范；复数拒绝 | S:参考来自预声明坐标和独立公式，不用候选答案；径向ψ保留首点零，活动自点拒绝与离散零入口分开
 
 ===/Users/tomczz/Projects/SciReL/tests/plugin/===
-test_codefusion_plugin_contract.py[TE6L]: F:验证窄宿主插件的工件/任务/事件、权限及作用域、无状态body导入和逐项审核转换合同 | R:code:src/scirel_plugin/plugin.py,code:src/scirel_plugin/adapter.py | A:pytest | S:FakeHost证据不等于真实宿主验收；错误摘要或未知字段失败，系统字段由宿主生成而不混入领域payload
+test_codefusion_plugin_contract.py[TE6L]: F:验证SciRel窄宿主适配的工件、权限、审核及精确结果绑定 | R:code:src/scirel_plugin/plugin.py,code:src/scirel_plugin/adapter.py | A:pytest；FakeHost；逐项版本；无状态body导入；依赖并集 | S:FakeHost非实际宿主验收；后继依赖保留正式合同所有项，未知字段及错误摘要失败
 test_http_listener.py[TN5M]: F:通过临时本地HTTP服务验证body-wire L1和审核操作、16MiB限制、错误路由及TLS包裹 | R:code:src/scirel_plugin/http_listener.py | A:pytest | S:返回工件body摘要必须对应UTF-8字节；每例关闭server并回收线程
 
 ===/Users/tomczz/Projects/SciReL/tests/scirel.inference.latin_hypercube_sampling/===
@@ -1270,63 +1272,65 @@ scientific_operator.py[TE1T]: F:为历史资产测试目录重导出维护包的
 test_l1_bundle.py[TW5M]: F:验证目录和包裹ZIP同内容身份、UTF-8与原始文件保持及bundle篡改/逃逸/符号链接拒绝 | R:code:src/scirel_workflow/l1_bundle.py | A:pytest | S:L1传输检查不伪造科学正确性；算子文档可缺但任务图依赖合同缺失仍阻断
 test_l1_inventory.py[TW5L]: F:验证保存L1项目的文件锚点、原语言资产、空材料、图依赖解析和按项目隔离缺口投影 | R:code:src/scirel_workflow/l1_inventory.py | A:pytest | S:算子不必已有正式文档，图仍须依赖合同；跨项目缺口不能污染单项目候选输入
 test_standardization_submission.py[TW6M]: F:检验标准化官方提交门禁保留文档/代码/测试三件材料，以及纯复用无新增的完成分支 | R:code:scripts/submit_standardization.py | A:pytest | S:纯复用完成为no_changes且不排审核不生成draft或发行；提交不可伪造automated_checks
-test_vertical_slice.py[TW6M]: F:用本地保存L1和FakeHost跑候选到审核发行，检验自动结果不能伪修复源码缺口和图环 | R:code:src/scirel_workflow/workflow.py | A:pytest | S:自动结果不能更新资产或清除真实图环；未上报的失败检查保持阻断
-test_workflow.py[TW6L]: F:验证独立候选工作流标准化、审核分支、重做历史、发行门禁与快照恢复的完整状态约束 | R:code:src/scirel_workflow/workflow.py | A:pytest | S:自动ready不等于科学批准；有未解gap不能批准；恢复不能以重排历史或伪摘要越过当前状态
+test_vertical_slice.py[TW6M]: F:以保存L1和FakeHost验证候选到审核发行的工作流衔接 | R:code:src/scirel_workflow/workflow.py | A:pytest；精确文档版本；源码缺口；图环；未报告检查 | S:自动结果不能更新资产或清除真实图环；fixture版本跟文档不替代人工决定
+test_workflow.py[TW6L]: F:验证候选标准化、重做历史、审核、发行和快照恢复状态约束 | R:code:src/scirel_workflow/workflow.py | A:pytest；精确版本；no-change；逐项门禁；恢复拒绝；重做历史 | S:自动ready非科学批准；未解gap不能批准，版本错配仍独立测试，不能重排历史或伪摘要越级恢复
 
 ===/Users/tomczz/Projects/SciReL/catalog/pleiades-maintained/===
-basis.basis-matrix.json[SB5S]: F:规定 BasisMatrix 将多项式或受支持三次样条求值为设计矩阵的合同 | R:code:src/scirel/basis.py | A:BasisMatrix;默认poly_deg=3产生三列;样条默认五节点;有限匹配输入 | S:特种物理边界与任意输入正确性未资格化，unsupported factory 不得推断支持
-basis.build-basis.json[SB5S]: F:规定基函数工厂的选择器与默认多项式列数 | R:code:src/scirel/basis.py | A:build_basis;小写选择器;默认1,x,x²;受支持三次样条 | S:poly_deg表示列数，未支持的quartic或special选择器仍拒绝
-basis.clamped-cubic-spline.json[SB5S]: F:定义两端一阶导数约束的非均匀节点三次样条合同 | R:code:src/scirel/basis.py | A:ClampedCubicSpline;N>=3严格递增有限节点;yp默认[0,0];deriv=0/1/2 | S:区间外返回零是兼容约定，不是外推正确性，其他导数选择器不获资格
-basis.first-clamped-cubic-spline.json[SB5S]: F:定义左端斜率与右端柱坐标Robin条件的样条合同 | R:code:src/scirel/basis.py | A:FirstClampedCubicSpline;yp=0; m=0;末节点正值;有限递增节点 | S:右端为f''+f'/x-m²f/x²=0，物理模态解释仍未解决
-basis.natural-cubic-spline.json[SB5S]: F:定义两端二阶导数为零的自然三次样条合同 | R:code:src/scirel/basis.py | A:NaturalCubicSpline;N>=3有限递增匹配节点;deriv=0/1/2;保持查询形状 | S:区间外置零和其他deriv回落值是兼容行为，不扩展数值资格
-basis.second-clamped-cubic-spline.json[SB5S]: F:定义原点约束与右端柱坐标Robin条件的保留样条合同 | R:code:src/scirel/basis.py | A:SecondClampedCubicSpline;m=1;x0=y0=0;末节点正;deriv=0/1/2 | S:左端源行仅在声明原点域解释为自然条件，任意非零首点和物理边界不获资格
-circular-filament-green.json[SB6S]: F:规定圆丝电流到psi、BR、BZ的SI响应与轴极限合同 | R:code:src/scirel/electromagnetism/greens.py | A:compute_greens;有限非负半径;有符号权重;独立源组轴保留;返回三数组 | S:psi=R A_phi，活动丝重合拒绝而非自场，极端尺度与有限导线未资格化
-distributed-current-flux.json[SB6S]: F:定义均匀网格加性环电流层的离散磁通与插值合同 | R:code:src/scirel/electromagnetism/distributed.py | A:get_deltapsi;A/cm²转SI;Z,R尾轴;全节点面积;匹配二维目标 | S:前导层为加性而非时间，零自节点是离散约定，不代表有限自场或连续精度
-eqdsk-class.json[SB6S]: F:规定Pleiades扩展EQDSK可变映射的读取与写入边界 | R:code:src/scirel/io/eqdsk.py | A:EQDSK;可空构造;失败读取保留旧状态;写前完整验证 | S:非标准EFIT格式，无单位/COCOS认定，附加坐标必须符合固定原点以防几何静默移位
-equilibrium.json[SB7M]: F:定义压力反馈、电流闭合与磁通更新组成的有界平衡迭代合同 | R:code:src/scirel/equilibrium/pleiades_feedback.py | A:compute_equilibrium;均匀网格含Z=0;tol=1e-10;maxiter=100;relax∈[0,1);显式状态 | S:收敛须同时满足归一磁通与电流残差，任意G及压力反馈不证明全物理力平衡，零目标残差按零误差或无穷区分
-fieldline.arclength-derivative.json[SB5S]: F:定义实际多边形弧长上的非均匀三点导数合同 | R:code:src/scirel/fieldline.py,code:src/scirel/numerics.py | A:d_ds_arclength;N>=3有限二维顶点;相邻点不同;端点单侧二次公式 | S:弦长不是光滑曲线真弧长，不承诺周期或噪声统计性质
-fieldline.boundary.json[SB5S]: F:规定Boundary的非周期三次参数边界拟合 | R:code:src/scirel/fieldline.py | A:Boundary;至少四个有限有序点;s=0;npts=200;输出verts,tck,u | S:拟合存在不保证内部区域或交点唯一性
-fieldline.contour-points.json[SB5S]: F:规定等值线分段到每层FieldLine列表的映射合同 | R:code:src/scirel/fieldline.py | A:contour_points;levels/allsegs输入;按层返回列表;有限足量顶点 | S:只构造集合，后续交点、曲率及支持域限制继承FieldLine，不由构造成功证明
-fieldline.fieldline-set.json[SB5S]: F:规定封装等值线分段集合的FieldLineSet接口 | R:code:src/scirel/fieldline.py | A:FieldLineSet;contourset及kwargs;flset保存逐层线对象列表 | S:集合封装不添加场重建或拓扑保证，后续诊断须满足线对象合同
-fieldline.fieldline.json[SB6S]: F:规定FieldLine拟合、有向弧长曲率和有界交点的修正版合同 | R:code:src/scirel/fieldline.py | A:FieldLine;开放路径保持顺序;曲率(N,2);k=2/s=0/npts=1000;边界更新原子性 | S:先插值物理B再归一化，空场/零切向投影拒绝，有限交点搜索不证明全部根或任意网格精度
-fieldline.helper-contour-points.json[SB5S]: F:规定等值分段到每层HelperFieldLine列表的独立映射 | R:code:src/scirel/fieldline.py | A:helper_contour_points;levels/allsegs;有限足量顶点;按层线列表 | S:该集合依赖HelperFieldLine的不同返回合同，不得按同名功能替换为FieldLine
-fieldline.helper-fieldline.json[SB6S]: F:定义保留未过滤网格与固定采样的HelperFieldLine修正版合同 | R:code:src/scirel/fieldline.py | A:HelperFieldLine;曲率返回两数组元组;固定构造采样;有效三次插值;开放路径顺序 | S:先插值B再归一化，拒绝空场及非交点，保持与FieldLine的过滤及返回差异，不宣称通用精度
-loop-flux-matrix.json[SB6S]: F:定义按实际坐标求取目标行/源列的圆环磁通矩阵 | R:code:src/scirel/electromagnetism/greens.py | A:get_gpsi;匹配二维R,Z;C顺序展平;零对角;不规则节点;有限非负半径 | S:不沿用等距Z反射假设，正半径重合点拒绝，零自项不代表有限导线电感，存储和计算为二次规模
-numerics.nonuniform-derivatives.json[SB5S]: F:规定非均匀三点二次插值的一二阶内部导数 | R:code:src/scirel/numerics.py | A:diff_12_central;有限匹配一维x,y;N>=3严格递增;两数组长N-2 | S:不制造端点值，周期边界、噪声及极端条件数不在资格范围
-plotting.mirror-patches.json[SB5S]: F:规定浅拷贝Patch并反射数据变换的绘图合同 | R:code:src/scirel/plotting.py | A:get_mirror_patches;axis=0反射y否则x;scale=1;返回副本列表 | S:只组合数据变换避免重复内禀几何，不是物理向量变换或任意Artist所有权保证
-plotting.scale-patches.json[SB5S]: F:规定原位缩放Patch数据变换并返回列表的合同 | R:code:src/scirel/plotting.py | A:scale_patches;有限scale;原位改变Patch;保持内禀几何一次应用 | S:不得与mirror浅拷贝或transpose的None返回混同，不承诺任意自定义Patch
-plotting.transpose-patches.json[SB5S]: F:规定原位交换Patch数据坐标的兼容接口 | R:code:src/scirel/plotting.py | A:transpose_patches;Patch列表;原位变换;返回None | S:内禀几何只应用一次，不是科学坐标场变换，不能改为返回列表
-read-eqdsk.json[SB6S]: F:规定Pleiades扩展EQDSK固定宽度读取与严格尾记录策略 | R:code:src/scirel/io/eqdsk.py | A:read_pleiades_eqdsk;strict=True;有限完整记录;C顺序psi;返回含R,Z映射 | S:四整数标题扩展非标准EFIT，strict=False只允许尾记录而不允许缺字段，单位和COCOS不推定
-sampling.meridional-polar-forward.json[SB6S]: F:规定子午面位置和矢量到极坐标正交基的转换 | R:code:src/scirel/sampling.py | A:transform_to_rtheta;θ=atan2(rho,Z);弧度;有限可广播;r>0 | S:θ从+Z向+rho，原点拒绝而非零轴点，坐标恒等不证明磁轴物理
-sampling.meridional-polar-inverse.json[SB6S]: F:规定极坐标位置和矢量到子午面分量的逆变换 | R:code:src/scirel/sampling.py | A:transform_to_rhoz;R>0;Theta弧度;有限可广播;四数组元组 | S:角从+Z向+rho，原点无基，单位由调用者保持一致
-sampling.nonuniform-first-derivative.json[SB5S]: F:规定共享非均匀二次算子的内部一阶导数接口 | R:code:src/scirel/sampling.py,code:src/scirel/numerics.py | A:diff_central;有限递增x;匹配y;N>=3;输出N-2 | S:不补端点，不承诺周期、噪声或极端条件数
-sampling.parse-segment.json[SB5S]: F:规定轮廓最近起止顶点与方向解析 | R:code:src/scirel/sampling.py | A:parse_segment;默认全点;clockwise=True;旋转至最近起点;包含终点 | S:无插值交点，开放闭合及重复顶点拓扑不推广
-sampling.path-distance.json[SB5S]: F:规定有序折线相邻距离的零起点累计 | R:code:src/scirel/sampling.py | A:get_fieldline_distance;有限(N,2)顶点;输出N项;重复点零增量 | S:不隐式闭合，不代表光滑曲线真弧长
-sampling.point-nearest.json[SB5S]: F:规定几何最近平面采样点的取值合同 | R:code:src/scirel/sampling.py | A:locs_to_vals1D;匹配有限X/Y/Q;平方距离最小展平点;逐查询返回 | S:不规则点上不等价于独立矩形轴最近点，支持域外及非有限场未资格化
-sampling.polynomial-fit.json[SB5S]: F:规定升幂多项式SVD最小范数拟合 | R:code:src/scirel/sampling.py | A:poly_fit;order默认3最高幂;order+1基函数系数;有限匹配一维数据 | S:绝对奇异阈值1e-10不等于尺度无关统计秩或误差置信度
-sampling.rectangular-nearest.json[SB5S]: F:规定矩形可分坐标轴独立最近行列的取值 | R:code:src/scirel/sampling.py | A:locs_to_vals;X首行/Y首列;匹配有限Q;逐坐标对查询 | S:不能用于声称任意不规则点几何最近，支持域外未资格化
-sampling.rectangular-spline.json[SB5S]: F:规定双三次矩形场沿有序路径插值 | R:code:src/scirel/sampling.py | A:interp;各轴至少四递增点;有限可分网格Q;域内路径;N值输出 | S:保留RectBivariateSpline默认参数，域外外推和任意非线性误差未资格化
-sampling.regular-grid.json[SB5S]: F:规定散点场到规则或指定网格的插值合同 | R:code:src/scirel/sampling.py | A:regular_grid;linear默认;nx=ny=200;ij生成顺序;xi/yi共同覆盖;保持场序 | S:values与位置场互斥，支持域外不合成有效值
-sampling.scalar-reflection.json[SB5S]: F:规定径向半平面及偶标量的无重复零列反射 | R:code:src/scirel/sampling.py | A:reflect_and_hstack;首径列零;反序拼接;宽2Nr-1;位置/命名量互斥 | S:只支持偶标量，不推断矢量奇偶性或负半径物理
-sampling.scattered-linear.json[SB5S]: F:规定线性griddata平面场查询合同 | R:code:src/scirel/sampling.py | A:locs_to_vals_griddata;匹配有限X/Y/Q;域内坐标对;查询值 | S:不是最近点方案，不承诺支持域外和非有限场有效结果
-sampling.select-fieldline.json[SB5S]: F:规定精确等值层最大顶点数段选择与切段 | R:code:src/scirel/sampling.py | A:get_fieldlines;精确level;最大点数;最近起止;终点包含;clockwise=True | S:idx_check无效兼容，不拼接独立段或证明唯一物理磁面
-sampling.weighted-line-integral.json[SB6S]: F:规定矩形场沿折线的B权重积分与平均 | R:code:src/scirel/sampling.py | A:flux_surface_avg;正有限B;矩形样条;弦长梯形法;Q可省 | S:Q省略是∫ds/B，否则为∫Qds/B归一，无隐式闭合、环向因子或磁通体积解释
-scirel.electromagnetism.arbitrary-points.json[SB6S]: F:发布共享电流的加权圆丝点集及响应合同 | R:code:src/scirel/electromagnetism/sources.py | A:ArbitraryPoints;有限非负半径;current=1;weights可有符号;可选mesh | S:活动丝重合拒绝，内容变动触发缓存失效，不承诺有限导线或任意参数数组失同步
-scirel.electromagnetism.brb.json[SB6S]: F:发布BRB四十组有序圆丝源的配置合同 | R:code:src/scirel/configurations/brb.py | A:BRB;两88丝TREX;两130丝镜线圈;36组16丝磁环 | S:保留源常数不等于实验校准，有限导线、材料磁化、电极及持久扫描未批准
-scirel.electromagnetism.device.json[SB6S]: F:发布有序圆丝子源注册、网格传播和电流投影合同 | R:code:src/scirel/electromagnetism/sources.py | A:Device;属性注册替换删除;mesh可选;标量或逐子源电流;psi/BR/BZ | S:缓存按内容变化失效，参数化几何与直接数组失同步不在支持域，持久扫描和绘图未准入
-scirel.electromagnetism.magnet-ring.json[SB6S]: F:发布两径向面有符号圆丝近似磁环合同 | R:code:src/scirel/electromagnetism/sources.py | A:MagnetRing;默认16点;r0=1;正宽高各.01;方向为度;有符号权重 | S:零和权重的total_current设置拒绝，不把电流代理解释为材料磁化定律
-scirel.electromagnetism.rectangular-coil.json[SB6M]: F:发布矩形圆丝线圈参数化几何和状态合同 | R:code:src/scirel/electromagnetism/sources.py | A:RectangularCoil;nr=nz=1;dr=dz=.1;angle度;有符号权重;原子setter | S:面积仅导体面积代理，参数/直接数组失同步未支持，不宣称有限导线或实验正确
-scirel.electromagnetism.trex-coil.json[SB6S]: F:发布TREX的88丝线圈布局及电流响应合同 | R:code:src/scirel/configurations/brb.py | A:TREXCoil;z0=1.1;五列各16点加外列8点;current=1;可选权重/mesh | S:面积88*(.0134166m)²是源约定，不证明导体或装置实验标定，变换须保留参数一致
-scirel.electromagnetism.wham.json[SB6S]: F:发布WHAM四组圆丝线圈的保留几何合同 | R:code:src/scirel/configurations/wham.py | A:WHAM;32/32/10/10丝数;有序组合;各组默认1A | S:源几何常数不等于实验校准，无有限导线、磁导率或电极物理批准
-scirel.geometry.points-mesh.json[SB5S]: F:发布有限非结构柱面点集合同 | R:code:src/scirel/geometry/mesh.py | A:PointsMesh;匹配rpts/zpts;半径非负;支持标量和向量 | S:theta仅在原点外有定义，不接受错配形状
-scirel.geometry.r-chord.json[SB5S]: F:发布固定Z的非负径向弦坐标合同 | R:code:src/scirel/geometry/mesh.py | A:RChord;rpts有限非负;z0=0;等长R,Z | S:坐标构造不代表实验设备或场的验证
-scirel.geometry.rect-mesh.json[SB5S]: F:发布规则柱面矩形网格及原子参数设置合同 | R:code:src/scirel/geometry/mesh.py | A:RectMesh;R默认0..1;Z默认-.5...5;nr=nz=101;形状(nz,nr);正整数点数 | S:非法setter保留前状态，非规则畸变坐标和负半径不支持
-scirel.geometry.rotate.json[SB5S]: F:发布R,Z行向量顺时针正角度平面旋转合同 | R:code:src/scirel/geometry/transforms.py | A:rotate;角度为度;pivot=(0,0);末轴长2;保持形状 | S:有限输入是前提而非全部逐元素运行校验，不等同三维物理旋转
-scirel.geometry.spherical-r-chord.json[SB5S]: F:发布固定极角球径向弦的柱面坐标合同 | R:code:src/scirel/geometry/mesh.py | A:SphericalRChord;theta0=0度;有限非负球半径;R=r sinθ;Z=r cosθ | S:生成R必须非负，通常极角0..180，角度非弧度
-scirel.geometry.theta-chord.json[SB5S]: F:发布固定球半径极角弦到柱面坐标的合同 | R:code:src/scirel/geometry/mesh.py | A:ThetaChord;tpts为度;r0=1;R=r0 sinθ;Z=r0 cosθ | S:生成R须非负，通常角域0..180，不是任意三维旋转
-scirel.geometry.z-chord.json[SB5S]: F:发布固定非负R的轴向弦坐标合同 | R:code:src/scirel/geometry/mesh.py | A:ZChord;有限zpts;r0=0;等长R,Z | S:有限坐标构造不是设备场或实验资格
-write-eqdsk-legacy-raw.json[SD6S]: F:限定原始网格到EQDSK导出的正式科学合同，约束轮廓选取与序列化。 | R:code:src/scirel/io/eqdsk.py | A:同形有限R/Z/psi与电流;零径起点和轴向居中均匀网格;最长等值线弧长重采样;写前验证;零剖面不解释为物理量 | S:不支持EFIT或COCOS物理认证；无法得到有效边界时必须报错，不能用占位边界冒充成功。
-write-eqdsk.json[SD6S]: F:定义字典式EQDSK写出的字段、形状与文件失败契约。 | R:code:src/scirel/io/eqdsk.py | A:有限完整字典;定宽头与20标量;C序psi和剖面;写前检查附带R/Z原点;无效输入不截断目标 | S:字段是序列化合同，不提供EFIT有效性或单位约定推断；原始网格适配另有合同。
+basis.basis-matrix.json[SB5S]: F:规定多项式或三次样条评估为设计矩阵的接口 | R:code:src/scirel/basis.py | A:BasisMatrix文档 | S:列由显式工厂选择；不支持quartic和special，矩阵存在不授予特种物理边界资格。
+basis.build-basis.json[SB5S]: F:定义升幂多项式与保留三次样条的基函数工厂 | R:code:src/scirel/basis.py | A:build_basis文档 | S:poly_deg表示列数而非最高幂；各样条端点合同分别继承，缺失实现不猜补。
+basis.clamped-cubic-spline.json[SB5S]: F:规定双端斜率约束的分段三次Hermite样条 | R:code:src/scirel/basis.py | A:ClampedCubicSpline文档 | S:默认双端斜率为零；域外零及非1/2导数选择器回落值是保留行为，非一般外推资格。
+basis.first-clamped-cubic-spline.json[SB5S]: F:规定左斜率与右柱坐标Robin条件的三次样条 | R:code:src/scirel/basis.py | A:FirstClampedCubicSpline文档 | S:右端f''+f'/x-m²f/x²=0，需正末节点；该关系不自动认定磁拟合物理边界。
+basis.natural-cubic-spline.json[SB5S]: F:规定两端零二阶导数的自然三次样条 | R:code:src/scirel/basis.py | A:NaturalCubicSpline文档 | S:严格递增有限节点属于数值域，域外零为保留约定而非物理外推。
+basis.second-clamped-cubic-spline.json[SB5S]: F:规定原点行与右柱坐标Robin条件的保留样条 | R:code:src/scirel/basis.py | A:SecondClampedCubicSpline文档 | S:左端仅在x0=y0=0域解释为自然条件；任意非零首点不能沿用该解释。
+circular-filament-green.json[SB6S]: F:定义电流丝集合到RAphi及两磁场分量的SI响应 | R:code:src/scirel/electromagnetism/greens.py | A:compute_greens文档 | S:活动丝精确自点拒绝，不能与其他矩阵的离散零自点混同；轴上场解析求值。
+distributed-current-flux.json[SB6S]: F:定义网格加性电流层到离散磁通及目标插值 | R:code:src/scirel/electromagnetism/distributed.py | A:get_deltapsi文档 | S:A/cm²换SI且每节点取完整面积；前导层相加非时间轴，保留均匀源网格而非任意坐标矩阵。
+eqdsk-class.json[SB6S]: F:规定扩展EQDSK可变映射的严格读写格式 | R:code:src/scirel/io/eqdsk.py | A:EQDSK文档 | S:方言原点固定，附加坐标不匹配须在截断文件前失败；不代表标准EFIT或COCOS。
+equilibrium.json[SB7M]: F:定义压力电流闭合与磁通反馈的有界平衡迭代 | R:code:src/scirel/equilibrium/pleiades_feedback.py | A:compute_equilibrium文档 | S:中平面拟合按物理R排序而Green及状态保持原序；磁通更新与终态电流残差同时过门槛。
+fieldline.arclength-derivative.json[SB5S]: F:规定沿相邻顶点累计弦长的非均匀三点导数 | R:code:src/scirel/fieldline.py,code:src/scirel/numerics.py | A:d_ds_arclength文档 | S:端点用单侧三点，不推断周期或真实光滑弧长。
+fieldline.boundary.json[SB5S]: F:定义平面顶点的非周期参数边界样条 | R:code:src/scirel/fieldline.py | A:Boundary文档 | S:拟合成功不证明区域内外或交点唯一，交点与拓扑须另验。
+fieldline.contour-points.json[SB5S]: F:规定等值线各层分段到FieldLine列表的构造 | R:code:src/scirel/fieldline.py | A:contour_points文档 | S:后续交点须落在拟合区间并排除无根多根；构造不赋予相切或任意拓扑资格。
+fieldline.fieldline-set.json[SB5S]: F:定义等值线分段集合的FieldLineSet封装 | R:code:src/scirel/fieldline.py | A:FieldLineSet文档 | S:逐层封装继承线对象边界，不增加物理场重建；磁通曲率仍需均匀网格非零梯度。
+fieldline.fieldline.json[SB6S]: F:规定有向场线拟合、物理场采样及同参数曲率 | R:code:src/scirel/fieldline.py | A:FieldLine文档 | S:先采样物理B再归一化，同一局部多项式导数消除弦长曲率偏差；固定场路径加密不保证单调改善。
+fieldline.helper-contour-points.json[SB5S]: F:规定等值分段到HelperFieldLine逐层集合 | R:code:src/scirel/fieldline.py | A:helper_contour_points文档 | S:Helper无磁通梯度曲率入口，集合不补充FieldLine才有的合同。
+fieldline.helper-fieldline.json[SB6S]: F:定义Helper场线的采样、同参数曲率及有界交点 | R:code:src/scirel/fieldline.py | A:HelperFieldLine文档 | S:显式method必须传递，曲率仍为两数组元组；不筛除Q及固定采样区别保留，非任意误差界。
+loop-flux-matrix.json[SB6S]: F:定义不规则实际节点的圆环RAphi磁通矩阵 | R:code:src/scirel/electromagnetism/greens.py | A:get_gpsi文档 | S:C序保持且只对角自项零置，其他正半径重合拒绝；不沿用等距Z反射假设。
+numerics.nonuniform-derivatives.json[SB5S]: F:规定非均匀三点二次内点一二阶导数 | R:code:src/scirel/numerics.py | A:diff_12_central文档 | S:严格递增一维样本，输出N-2，不制造端点或推断周期。
+plotting.mirror-patches.json[SB5S]: F:规定Patch浅副本的数据坐标反射 | R:code:src/scirel/plotting.py | A:get_mirror_patches文档 | S:内禀几何只应用一次；浅副本非物理矢量转换，也不保证任意Artist所有权。
+plotting.scale-patches.json[SB5S]: F:规定Patch数据变换的原位缩放 | R:code:src/scirel/plotting.py | A:scale_patches文档 | S:原位改变并返回列表，区别于mirror浅副本与transpose返回None；不是科学场缩放。
+plotting.transpose-patches.json[SB5S]: F:规定Patch数据坐标的原位交换 | R:code:src/scirel/plotting.py | A:transpose_patches文档 | S:返回None保持原合同，内禀几何不得重复作用；不转换物理场。
+read-eqdsk.json[SB6S]: F:规定固定宽度扩展EQDSK读取与完整节验证 | R:code:src/scirel/io/eqdsk.py | A:read_pleiades_eqdsk文档 | S:四整数标题与独立nnv为方言特征，宽松模式仅容尾记录，不推断EFIT单位或COCOS。
+sampling.meridional-polar-forward.json[SB6S]: F:规定子午面位置矢量到正交极坐标基 | R:code:src/scirel/sampling.py | A:transform_to_rtheta文档 | S:角从+Z向+rho且用弧度；原点拒绝，非零轴点有效，修正旧前后变换不互逆问题。
+sampling.meridional-polar-inverse.json[SB6S]: F:规定子午面极坐标基的正交逆变换 | R:code:src/scirel/sampling.py | A:transform_to_rhoz文档 | S:沿同一+Z起算角保持范数；原点无极基，单位由调用者维持。
+sampling.nonuniform-first-derivative.json[SB5S]: F:规定非均匀二次内点一阶导数包装 | R:code:src/scirel/sampling.py,code:src/scirel/numerics.py | A:diff_central文档 | S:只返回N-2内点且坐标递增；不补端点或声称噪声推断资格。
+sampling.parse-segment.json[SB5S]: F:规定轮廓最近起止点选段及有向顶点排序 | R:code:src/scirel/sampling.py | A:parse_segment文档 | S:按最近顶点而非插值交点取端点并包含终点；不推广开放闭合拓扑。
+sampling.path-distance.json[SB5S]: F:定义有序折线的零起点累计欧氏距离 | R:code:src/scirel/sampling.py | A:get_fieldline_distance文档 | S:无隐式闭合边；弦长不等于光滑曲线真弧长。
+sampling.point-nearest.json[SB5S]: F:规定最小平方距离的展平平面最近点查询 | R:code:src/scirel/sampling.py | A:locs_to_vals1D文档 | S:不规则点上不可替代独立矩形轴最近选择；支持域外结果不获物理资格。
+sampling.polynomial-fit.json[SB5S]: F:规定升幂多项式的SVD最小范数系数拟合 | R:code:src/scirel/sampling.py | A:poly_fit文档 | S:order为最高幂，绝对奇异阈值1e-10并非尺度不变统计秩或置信度。
+sampling.rectangular-nearest.json[SB5S]: F:规定矩形采样各轴独立最近行列取值 | R:code:src/scirel/sampling.py | A:locs_to_vals文档 | S:首行X首列Y定义轴，不能冒称任意不规则点的几何最近。
+sampling.rectangular-spline.json[SB5S]: F:规定矩形场在有序路径点的双三次样条采样 | R:code:src/scirel/sampling.py | A:interp文档 | S:查询须在支持域且每轴至少四点；库可外推不代表域外科学资格。
+sampling.regular-grid.json[SB5S]: F:定义散点标量到显式或生成ij网格的插值 | R:code:src/scirel/sampling.py | A:regular_grid文档 | S:xi和yi须共同覆盖生成网格，位置场与values互斥，不合成凸包外有效值。
+sampling.scalar-reflection.json[SB5S]: F:定义径向半平面偶标量的反射拼接 | R:code:src/scirel/sampling.py | A:reflect_and_hstack文档 | S:零首列不重复，宽度2Nr-1；不推断矢量分量奇偶或负半径物理。
+sampling.scattered-linear.json[SB5S]: F:规定平面散点场的线性griddata查询 | R:code:src/scirel/sampling.py | A:locs_to_vals_griddata文档 | S:线性插值不同于最近点方案；不把支持域外和非有限场当作有效结果。
+sampling.select-fieldline.json[SB5S]: F:规定精确等值层最大点数分段及端点方向解析 | R:code:src/scirel/sampling.py | A:get_fieldlines文档 | S:idx_check无数值作用；不拼接独立段或证明唯一磁面。
+sampling.weighted-line-integral.json[SB6S]: F:定义矩形场沿折线的ds/B积分与加权平均 | R:code:src/scirel/sampling.py | A:flux_surface_avg文档 | S:无Q返回积分，有Q才除总权重；无隐式闭合或环向因子，不能直接解释磁通体积。
+scirel.electromagnetism.arbitrary-points.json[SB6S]: F:规定共同电流加权圆丝点集及响应接口 | R:code:src/scirel/electromagnetism/sources.py | A:ArbitraryPoints文档 | S:活动自点拒绝，内容变动使缓存失效；直接数组与参数化几何失同步不属支持域。
+scirel.electromagnetism.brb.json[SB6S]: F:规定BRB四十组有序电流丝配置 | R:code:src/scirel/configurations/brb.py | A:BRB文档 | S:两TREX、两镜线圈及36磁环是保留参数，不等于实验校准或材料本构资格。
+scirel.electromagnetism.device.json[SB6S]: F:定义子源注册、网格传播与逐子源电流投影 | R:code:src/scirel/electromagnetism/sources.py | A:Device文档 | S:缓存按实际内容变化失效；属性替换删除影响源序，不将绘图或持久扫描当核心场解。
+scirel.electromagnetism.magnet-ring.json[SB6S]: F:规定两径向面有符号电流丝构成的等效磁环 | R:code:src/scirel/electromagnetism/sources.py | A:MagnetRing文档 | S:零和权重不能设置total_current；等效电流并未确定材料磁化本构。
+scirel.electromagnetism.rectangular-coil.json[SB6M]: F:定义矩形线圈均匀采样、旋转与可变状态 | R:code:src/scirel/electromagnetism/sources.py | A:RectangularCoil文档 | S:参数setter原子更新，改变源数须保持权重匹配；截面面积只是源代理而非导体自场模型。
+scirel.electromagnetism.trex-coil.json[SB6S]: F:规定TREX五列加外列的88丝布局 | R:code:src/scirel/configurations/brb.py | A:TREXCoil文档 | S:面积88乘0.0134166米平方是保留约定，不代表装置实验标定。
+scirel.electromagnetism.wham.json[SB6S]: F:规定WHAM四组有序线圈的原几何和电流默认值 | R:code:src/scirel/configurations/wham.py | A:WHAM文档 | S:32/32/10/10丝且各组默认1A；示例另设电流不能冒充构造器或实验校准。
+scirel.geometry.points-mesh.json[SB5S]: F:规定匹配柱面R-Z数组构成的非结构点集 | R:code:src/scirel/geometry/mesh.py | A:PointsMesh文档 | S:R非负且形状匹配，原点角未定义；几何构造不构成物理场验证。
+scirel.geometry.r-chord.json[SB5S]: F:规定固定Z的非负径向弦 | R:code:src/scirel/geometry/mesh.py | A:RChord文档 | S:输出仅配对坐标，默认z0=0不识别设备中平面。
+scirel.geometry.rect-mesh.json[SB5S]: F:规定规则柱面矩形网格及可变边界点数 | R:code:src/scirel/geometry/mesh.py | A:RectMesh文档 | S:输出轴序为nz,nr，非法setter保留原状态；不能把直接畸变坐标当参数化规则网格。
+scirel.geometry.rotate.json[SB5S]: F:规定R-Z行向量的平面旋转 | R:code:src/scirel/geometry/transforms.py | A:rotate文档 | S:正角顺时针且单位度，末轴长二；不是三维物理旋转或逐元素有限性保证。
+scirel.geometry.spherical-r-chord.json[SB5S]: F:规定固定极角球径向弦到柱面坐标的映射 | R:code:src/scirel/geometry/mesh.py | A:SphericalRChord文档 | S:theta0用度，从+Z起算且生成R须非负，不按弧度解释。
+scirel.geometry.theta-chord.json[SB5S]: F:规定固定球半径极角弦的柱面坐标 | R:code:src/scirel/geometry/mesh.py | A:ThetaChord文档 | S:输入角用度，R=r0 sinθ且需非负；不表示任意三维旋转。
+scirel.geometry.z-chord.json[SB5S]: F:规定固定非负R的轴向坐标弦 | R:code:src/scirel/geometry/mesh.py | A:ZChord文档 | S:默认r0=0仅几何选择，不授予轴上场或设备验证。
+write-eqdsk-legacy-raw.json[SD6S]: F:定义原网格EQDSK导出及轮廓弧长重采样合同 | R:code:src/scirel/io/eqdsk.py | A:write_pleiades_eqdsk_legacy_raw文档 | S:最近0.6,0节点定limiter，vessel取1.02倍磁通；缺失轮廓报错，不用占位边界成功。
+write-eqdsk.json[SD6S]: F:规定完整映射到固定宽度EQDSK的文件写出 | R:code:src/scirel/io/eqdsk.py | A:write_pleiades_eqdsk文档 | S:附带坐标原点不合方言时写前拒绝而不截断目标；序列化不推断EFIT物理有效性。
+green-response-matrices.json[SB6S]: F:规定实际坐标圆环的目标行源列磁通场矩阵 | R:code:src/scirel/electromagnetism/greens.py | A:green_response_matrices文档 | S:省略源时目标按原序作单位源；第三列权重只乘一次，精确重合零是离散约定而非导线自场。
+pressure-equilibrium-eqdsk.json[SB6S]: F:定义收敛压力终态的扩展EQDSK压力剖面导出 | R:code:src/scirel/io/eqdsk.py | A:write_pressure_equilibrium_eqdsk文档 | S:P及导数有Pa与Pa/(Wb/rad)语义，Jphi二维数组另存；固定limiter选择不等于边界反演。
 
 ===/Users/tomczz/Projects/SciReL/catalog/pleiades-maintained/release/records/03/===
 scirel.sampling.point-nearest.json[SB5S]: F:发布几何最近采样点算子的分片合同 | R:code:src/scirel/sampling.py | A:locs_to_vals1D;有限匹配平面坐标与Q;平方距离最小展平点;查询值列表 | S:不规则输入上不等价于独立矩形轴最近点，支持域外与非有限场未资格化
@@ -1514,6 +1518,9 @@ torax-profile-leaves-20261011.json[FV7T]: F:以确切源码摘要和显式初始
 torax-profile-energy-20261011.json[FV7T]: F:以源码摘要和命名空间投影限定九项TORAX科学资产的开发选包 | R:code:scripts/prepare_maintained_candidate.py,code:licenses/torax/LICENSE | A:八实现及辅助模块;五初始化器投影;NumPy外部依赖;完整Apache许可;dev9版本;人工发行标志false | S:根初始化器故意清空旧模块导入；来源提交须由接收记录另行绑定，不能只用占位身份
 torax-bootstrap-fvm-20261012.json[FV8T]: F:按确切运行文件与初始化器定义TORAX十六项科学API的开发选包边界 | R:code:provenance/integrations/torax-bootstrap-fvm-receiver-20261012.json,code:licenses/torax/LICENSE | A:十三运行文件摘要;七个显式初始化器;NumPy唯一外部根;完整Apache许可;派生TORAX身份;dev11版本 | S:原九项实现字节保留；候选标识不能代替各文件与wheel实测，不包含workflow、旧全库或JAX编排，未授人审发行
 pleiades-anisotropy-20261012.json[FQ6S]: F:定义Pleiades各向异性wheel的精确实现、测试、文档、许可与排除范围 | R:code:provenance/integrations/pleiades-anisotropy-receiver-20261012.json,code:licenses/Pleiades-Anisotropy-NOTICE.txt | A:54实现;85文档;选定版本与包摘要;排除未核验旧模块 | S:选择清单只定义内部待审包边界，不等于全Pleiades物理、人审或发行
+pleiades-full-core-20261013.json[FV7M]: F:冻结首个完整核心候选wheel的61个实现摘要、初始化器、固定依赖与许可 | R:code:provenance/selections/pleiades-anisotropy-20261012.json | A:dev5选择；依赖四项；两个许可；领域导出 | S:此历史选择为D2候选，无D3或发行认可；后继修正不能覆写其绑定
+pleiades-full-core-mac-20261014.json[FV8M]: F:冻结全核心Mac科学修正后继的61文件选择及精确开发wheel版本 | R:code:provenance/selections/pleiades-full-core-20261013.json,code:src/scirel/fieldline.py | A:dev6选择；领域初始化器；四项固定依赖；许可；前驱wheel绑定 | S:相对前驱仅fieldline实现改变；构建选择本身不表示人审或发行许可，资格须联用独立接收
+pleiades-full-core-mac-document-reception-20261014.json[SQ7L]: F:记录科学修正后94项正式文档与精确安装示例的后继接收 | R:code:provenance/selections/pleiades-full-core-mac-20261014.json | A:92项不变合同摘要对照；2项场线合同单审；729科学检查；94安装示例 | S:统一文档版本不是新增资格；本记录冻结时D3未通过，后继D3不能追写原件
 
 ===/Users/tomczz/Projects/SciReL/src/scirel/configurations/===
 __init__.py[LA5T]: F:公开BRB、TREXCoil与WHAM的有限电流丝几何模型。 | R:code:src/scirel/configurations/brb.py;code:src/scirel/configurations/wham.py | A:BRB;TREXCoil;WHAM | S:入口保留底层几何和电流默认，不承诺完整装置物理。
@@ -1521,14 +1528,14 @@ brb.py[KH7T]: F:构造TREX的88点线圈和BRB的镜像线圈及磁环布局。 
 wham.py[KH6T]: F:以来源坐标与匝点数创建WHAM两只HTS和两只中心线圈。 | R:code:src/scirel/electromagnetism/sources.py | A:HTS镜像Z=±0.942;中心线圈Z=±0.205;RectangularCoil组成Device;构造电流默认1A | S:几何配置不自动赋予实验运行电流，应用必须显式设置。
 
 ===/Users/tomczz/Projects/SciReL/src/scirel/electromagnetism/===
-__init__.py[LA6T]: F:公开轴对称电流丝Green核、分布电流通量和源设备模型。 | R:code:src/scirel/electromagnetism/greens.py;code:src/scirel/electromagnetism/distributed.py;code:src/scirel/electromagnetism/sources.py | A:compute_greens与get_gpsi;get_deltapsi;五类源和Device | S:各入口共享psi=R*Aphi约定，但自项处理与输入形状按各自合同。
+__init__.py[LA6T]: F:公开轴对称电流丝Green响应、分布磁通及可变源设备 | R:code:src/scirel/electromagnetism/greens.py,code:src/scirel/electromagnetism/sources.py | A:compute_greens；get_gpsi；green_response_matrices；get_deltapsi；源集合与Device | S:共享ψ=R*Aphi约定，但矩阵轴序、自点和输入合同按各入口分别成立
 distributed.py[KA8T]: F:把规则电流网格转换为逐电流丝通量并线性插值到目标R/Z。 | R:code:src/scirel/electromagnetism/greens.py | A:A/cm²转A/m²;可加和一层前导维;全节点单元面积;自项及零半径源为零;精确节点值恢复;拒掩码非有限形状单位不符 | S:自项置零是兼容求积约定，非有限导线自感。未修复不规则反射分块方法，不宣称连续极限或网格加密精度。
-greens.py[KA9S]: F:计算静态圆电流丝psi/BR/BZ及实际坐标的离散通量矩阵。 | R:code:src/scirel/electromagnetism/sources.py;code:src/scirel/electromagnetism/distributed.py | A:SI且psi=R*Aphi;小椭圆参数超几何解析表达;轴线解析值;零半径或零权重贡献零;活跃源重合报错;非有限运算失败 | S:列表表示独立电流丝集合而非普通行列表。get_gpsi以目标×源次序使用实际不规则坐标，自对角为零且拒不同正半径条目重合；该零自项不是有限导体自感，极端尺度精度未资格化。
+greens.py[KA9S]: F:计算实际坐标圆电流丝ψ/BR/BZ及逐丝响应矩阵 | R:code:src/scirel/electromagnetism/sources.py,code:src/scirel/electromagnetism/distributed.py | A:compute_greens；get_gpsi；green_response_matrices；解析轴限；带符号权重；近轴及近丝稳定表达 | S:列表表示独立源集合；compute拒活动自点，矩阵明确零自点且目标行源列，非有限运算失败。m<.5是解析公式分区非几何截断；显式源可重合，隐式正半径节点不可重复；离散自项非导体自感
 sources.py[DH8M]: F:管理带权电流丝、参数化线圈磁环和按注册顺序线性叠加的Device。 | R:code:src/scirel/electromagnetism/greens.py;code:src/scirel/geometry/mesh.py;code:src/scirel/geometry/transforms.py | A:有限点云权重电流;几何变化原子回滚;点数保持权重基数;内容敏感Green缓存;设备传播mesh;标量或逐源电流叠加 | S:缓存按点云和mesh字节失效，Green返回副本；同一源不能重复注册。设备矩阵为集合×目标，显式电流不改存储电流；净权重零不可设置total_current，simplify无实现。
 
 ===/Users/tomczz/Projects/SciReL/src/scirel/io/===
-__init__.py[LA6T]: F:公开Pleiades扩展EQDSK读写、字典封装与显式旧拼写别名。 | R:code:src/scirel/io/eqdsk.py | A:格式标识和异常;严格字典读写;legacy_raw轮廓导出;EQDSK;保留别名 | S:别名仍遵守Pleiades扩展方言，不表示标准EFIT gEQDSK兼容。
-eqdsk.py[DI9L]: F:校验并交换Pleiades扩展EQDSK字典、定宽文本与原始场轮廓。 | R:code:tests/pleiades/test_eqdsk.py | A:48字符标题四整数;五个nnv剖面和C序psi;合并边界点记录;写前全量结构验证;raw弧长重采样;字典读成功后替换状态 | S:不是标准EFIT/COCOS合同；只保存R跨度与居中Z，附带网格必须精确R起于零且Z对称。raw选最近(.6,0)通量和1.02倍最长轮廓，100点边界、101零剖面无物理赋义。strict=false仅放宽尾行。
+__init__.py[LA6T]: F:公开扩展EQDSK读写、收敛压力终态导出和字典对象 | R:code:src/scirel/io/eqdsk.py | A:格式和异常；严格字典读写；raw轮廓；write_pressure_equilibrium_eqdsk；EQDSK及旧拼写 | S:所有入口仍为Pleiades扩展方言，不表示标准EFIT或COCOS兼容
+eqdsk.py[DI9L]: F:校验并交换扩展EQDSK文本、字典、轮廓及收敛压力结果 | R:code:tests/pleiades/test_eqdsk.py,code:tests/pleiades/test_pressure_eqdsk.py | A:定宽读写；C序ψ；边界；raw采样；压力Pa及导数；原子对象读入 | S:网格R起零且Z对称，不是标准EFIT。压力入口拒非收敛，取轴ψ到最近(.6,0)ψ重建剖面；Jphi不存二维字段，其他三剖面保留零不赋物理意义；strict=false仅放宽尾行
 
 ===/Users/tomczz/Projects/SciReL/tests/pleiades/equilibrium/===
 test_analysis_corrections.py[TQ8S]: F:以解析多项式、Hermite端点与精确圆切向场核验分析修正。 | R:code:src/scirel/basis.py;code:src/scirel/fieldline.py;code:src/scirel/sampling.py | A:不等距夹持三次精确复现;一阶夹持C2与Robin;非均匀弧长导数;场反向曲率不变;选段末端保留;可切换冻结来源 | S:曲率测试替换插值以隔离微分，不能代替实际插值consumer；断言前后固定且来源失败保留。
@@ -1543,6 +1550,8 @@ test_equilibrium_terminal_export.py[TQ8T]: F:核验反馈后导出与压力诊�
 test_fieldline_geometry_repair.py[TQ8T]: F:验证开场线顺序、边界求交原子性与通量曲率失败域。 | R:code:src/scirel/fieldline.py | A:横交和端点交;无交及多交拒绝;失败保留已有界限;开弧无循环跳跃;两类构造形状;轴点非均匀复数越域拒绝 | S:有限测试和有界多起点搜索不证明全部拓扑或切触点；不得由找到一个根推导唯一真实交点。
 test_keyword_sampling_ports.py[TQ6T]: F:核验采样具名科学端口与原位置参数路径完全一致且互斥。 | R:code:src/scirel/sampling.py | A:regular_grid的values;reflect_and_hstack的quantities;逐数组精确相等;同时两种传参拒绝 | S:包装端口一致不增加底层算法的科学适用域。
 test_retained_fieldline_primitives.py[TQ6T]: F:确认选择包保留边界插值、场线类型出口及非均匀弧长二次导数。 | R:code:src/scirel/fieldline.py | A:直线边界端点oracle;五类相关出口存在;解析非均匀二次导数 | S:出口可得性只是包装条件，不代表所有场线方法获得科学资格。
+test_descending_pressure_equilibrium.py[TB6T]: F:检验翻转R/Z存储及Green排列后压力解和电流保持对应 | R:code:src/scirel/equilibrium/pleiades_feedback.py | A:正反轴收敛；ψ重排比较；电流重排比较 | S:输入Green两轴同时按网格排列，防止把物理径向边界误作存储顺序
+test_fieldline_t7_precision.py[TB7T]: F:保留T7原门槛验证场线默认插值、梯度与空间加密曲率 | R:code:src/scirel/fieldline.py | A:两类FieldLine；仿射梯度4e-9；40/80/160网格；反向场；线性method；极端幅值 | S:固定401曲线点，误差比>3.4且末误差<.004；不以改变网格或容差绕过原失败
 
 ===/Users/tomczz/Projects/SciReL/tests/pleiades/geometry/===
 test_configurations.py[TQ7T]: F:验证BRB/WHAM点数和线圈磁环变换后的参数状态一致。 | R:code:src/scirel/configurations/brb.py;code:src/scirel/configurations/wham.py;code:src/scirel/electromagnetism/sources.py | A:BRB40源含36环;TREX88点面积;WHAM32/32/10/10;有限场求值;旋转平移保持中心角度 | S:源数量和场可算只证明几何对象合同，不认证运行电流或实验场精度。
@@ -1553,11 +1562,13 @@ test_native_geometry_qualification.py[TQ8S]: F:以独立几何不变量和整装
 test_native_lifecycle.py[TQ8S]: F:核验设备电流端口、源注册及TREX参考高度随变换的完整生命周期。 | R:code:src/scirel/electromagnetism/sources.py;code:src/scirel/configurations/brb.py | A:有限标量源电流;设备有序电流矩阵;mesh传播与清空;TREX平移旋转后z0;空设备;重复子源拒绝 | S:保留current-first签名和已保存mesh-first调用；返回矩阵可写副本不能污染缓存。重复注册失败不得留下半注册属性。
 test_polar_projection_repair.py[TQ8T]: F:以独立正交投影与正逆往返验证子午面极坐标和向量分量。 | R:code:src/scirel/sampling.py | A:theta由+Z向+R;位置三角关系;向量长度守恒;四字段往返;原点拒绝 | S:往返之外还核对独立分量式，防止正逆函数共享同一错误；原点基底不可用而非任意指定。
 test_source_d2_regressions.py[TQ8T]: F:保留针对冻结来源行为预写的原点、奇点、电流权重和缓存修正回归。 | R:code:src/scirel/electromagnetism/sources.py;code:src/scirel/electromagnetism/greens.py;code:src/scirel/geometry/mesh.py | A:原点theta拒绝;活跃电流丝重合拒绝;零权重和不可赋总电流;子几何变动父缓存更新 | S:这些断言故意与冻结D1来源失败行为不同，证明的是D2后继有限合同而不是源保真。
+test_green_response_matrices.py[TB7T]: F:用直接圆环积分验证逐丝矩阵、顺序与电流收缩 | R:code:src/scirel/electromagnetism/greens.py | A:带符号权重；重排等变；目标×源；隐式源；轴限；非法源 | S:独立积分不复用生产特殊函数；离散自点为零但轴上非重合BZ必须非零
 
 ===/Users/tomczz/Projects/SciReL/tests/pleiades/===
 test_eqdsk.py[TQ8M]: F:验证扩展EQDSK读写结构、定宽边界、原点可表示性和失败状态保护。 | R:code:src/scirel/io/eqdsk.py | A:标量与剖面读回;整数不强制转换;有限值及宽度;标题分隔符拒绝;截断与尾行区别;失败保持文件和wrapper | S:strict=false只能允许额外尾行，不能接受缺失值。附带非零原点网格必须写前拒绝；通过文本结构测试不表明标准EFIT或物理正确。
 test_eqdsk_independent.py[TQ8T]: F:以手工独立定宽文本验证解析次序和序列化字节一致。 | R:code:src/scirel/io/eqdsk.py | A:有符号矩形psi;独立剖面尺寸;保留20标量;合并边界点;读写字节一致;标准三整数头拒绝 | S:oracle不调用库writer构造答案；Pleiades四整数方言与标准GEQDSK明确分开。
 test_eqdsk_raw_repair.py[TQ8T]: F:用圆柱与椭圆解析曲面验证原始EQDSK轮廓工作流及写前失败保护。 | R:code:src/scirel/io/eqdsk.py | A:正负psi等效边界;100点弧长轮廓;101剖面;椭圆留出;无轮廓关图保留目标;开弧反向一致 | S:任意R原点不得悄悄平移；曲面容差证明此受限几何流程，不为零剖面赋予物理解释。
+test_pressure_eqdsk.py[TB7T]: F:验证收敛压力终态的EQDSK剖面、导数、磁通与电流读回 | R:code:src/scirel/io/eqdsk.py | A:解析二次压力；SI剖面；未收敛拒绝；缺中平面和错形拒绝 | S:二进制精确节点含零压边避免额外样条节点改变参考关系；非法结果不得创建目标文件
 
 ===/Users/tomczz/Projects/SciReL/docs/reviews/===
 torax-fast-ion-20261011.md[SB6T]: F:向人工呈现快离子分配的原零点缺陷、修正依据、文档限定与待决定范围 | R:code:catalog/examples/scirel.plasma.fast-ion-heating.json | A:限定数学关系接受决策 | S:作者宽wheel仍不符合单资产准入；本页不代表全项目D2、人审或发行通过
@@ -1565,6 +1576,7 @@ torax-profile-energy-20261011.md[SB6T]: F:呈现两种源剖面与储热修正�
 torax-profile-energy-correction-20261011.md[SB7T]: F:解释储热有符号相消反例、精确累加修正与验证边界 | R:code:src/scirel/physics/thermal_energy.py,code:tests/test_thermal_cancellation.py | A:单位权重反例原输出0而应为1.5J;转换binary64后精确乘加且最终舍入;六排列及中间上下溢回归;原失败条件保留 | S:修正不改变物理公式或压力独立性，也不验证等离子体校准及其余科学家族
 torax-bootstrap-fvm-20261012.md[SB7T]: F:集中呈现自举电流与有限体积七项增量的修正依据、数值证据和审查边界 | R:code:src/scirel/neoclassical/bootstrap.py,code:src/scirel/fvm/cell_variable.py,code:tests/test_fvm.py | A:alpha指数缩放;正Peclet极限;总磁通2π约定;Neumann二次推导;selected16范围 | S:独立反例与已拒修订保留；经验拟合、任意畸变网格和完整输运均未资格化，人审与发行另决
 pleiades-anisotropy-20261012.md[SZ6S]: F:记录Pleiades各向异性动理学选定包的内部资格、源码绑定、失败保留、限制与安装证据 | R:code:provenance/selections/pleiades-anisotropy-20261012.json,code:provenance/integrations/pleiades-anisotropy-receiver-20261012.json | A:内部待审资格记录;wheel与catalog摘要;独立复核和无源码安装证据 | S:保留科学限制、历史失败、人审与发行边界；内部资格不等于公开发行
+pleiades-full-core-20261013.md[SB7T]: F:汇总全核心科学修正、原失败裁决及独立D3接收证据 | R:code:docs/usage/axisymmetric-core.md,code:provenance/validation/pleiades-root-full-core-20261014.json | A:人工科学审查材料 | S:五轻量与六全尺寸任务组合覆盖107核心组；四路径加密失败保留，技术接收与人认可发行分开。
 
 ===/Users/tomczz/Projects/SciReL/licenses/torax/===
 LICENSE[SV6L]: F:保留TORAX源码Apache条款及随原文件提供的数据第三方许可文本 | R:code:provenance/selections/torax-fast-ion-20261011.json | A:来源许可文本 | S:完整原许可附件含数据条款不表示本次选择包包含对应数据；源码版权和修改说明仍另行保留
@@ -1636,8 +1648,9 @@ code.css[CU5T]: F:为共享文档代码块提供白底语法配色、工具栏�
 guide.css[EU4T]: F:统一手册和案例的白底排版、目录树及响应式与打印布局 | R:code:tools/docs/handbook.html,code:tools/docs/chapter.html | A:共享CSS | S:窄屏取消侧栏粘附和限高
 handbook.html[EU5T]: F:提供科学手册的目录、全书搜索与动态正文页面外壳 | R:code:tools/docs/handbook.js,code:tools/docs/guide.css | A:学习指南主页 | S:内容由同快照接口读取，页面本身不复制科学合同
 handbook.js[EU6S]: F:呈现领域章节、主题资产与全书搜索，连接函数参考和已执行案例 | R:code:tools/docs/navigation.js,code:scripts/scirel_docs.py | A:章节与主题hash路由、搜索结果、旧锚点转向 | S:主题合同分页读取且旧异步响应不能覆盖新页；无案例主题明确待补充，不生成科学结果
-handbook.json[SU6L]: F:按八个科学领域组织四十主题导读及133项精确资产的主要归属 | R:code:docs/handbook-authoring.md,code:scripts/scirel_docs.py | A:scirel.handbook.v1目录数据 | S:模型依据正式合同归类，来源项目不作章节；目录不复制签名版本或授予同包资格
+handbook.json[SU6L]: F:按八领域四十主题组织136项精确合同的学习导读和主要归属 | R:code:docs/handbook-authoring.md,code:scripts/scirel_docs.py | A:scirel.handbook.v1；领域树；主题；案例链接；资产ID | S:三项共享Green依赖纳入明确主题，来源不作为章节；目录不授予同版本包或科学资格
 navigation.js[EU5T]: F:将绑定学科目录挂载为手册与案例共享的折叠树并定位当前页 | R:code:tools/docs/handbook.json,code:tools/docs/handbook.js | A:ScirelNavigation.mount | S:案例原TOC移入对应主题；跳到正文仅移动焦点不触发hash路由
+chapter-selection.json[FU6T]: F:指定当前磁静力学章节后继及冻结执行摘要 | R:code:scripts/scirel_docs.py,code:tools/docs/magnetostatics-20261014-mac/execution.json | A:magnetostatics路由；显式目录；execution_sha256 | S:选择后继不覆盖历史案例；目录与摘要由构建器联合验证，不按最近文件自动选择
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/magnetostatics/===
 chapter.json[SU6T]: F:定义轴对称线圈教程的问题、方法、双格式公式与结果解释 | R:code:tools/docs/magnetostatics/example.py,code:tools/docs/chapter.html | A:圆环、线圈对、矩形截面、加密检查、限制与API引用 | S:代码由已运行脚本提取；文本和MathML须等义，固定总安匝数且不将局部加密当全域误差界
@@ -1660,5 +1673,39 @@ getting-started.rst[SU6T]: F:引导选择科学能力、精确安装包、领域
 requirements.txt[FV5T]: F:固定Sphinx中文手册生成所需主题、高亮复制、分词与公式转换依赖 | R:code:scripts/build_scirel_sphinx.py | A:文档开发环境安装清单 | S:依赖只用于文档构建，不进入科学wheel；jieba保证中文搜索分词
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/zh/===
-zh_kinetics.json[SL7L]: F:提供碰撞、中性粒子输运、聚变诊断与数值几何72项合同的中文阅读正文 | R:code:scripts/build_scirel_sphinx.py,code:tools/docs/handbook.json | A:定义、端口、适用条件、失败、示例解释与验证限制 | S:逐项绑定原JSON摘要及端口顺序；5项原文冲突显式保留，译文不新增科学资格
-zh_physics.json[SL7L]: F:提供磁场、平衡与波动61项科学关系及复合入口的中文阅读正文 | R:code:scripts/build_scirel_sphinx.py,code:tools/docs/handbook.json | A:科学定义、端口说明、适用范围、示例解释和验证边界 | S:逐项绑定原JSON摘要；13项原文冲突显式标注，科学公式与实现资格不由翻译修正
+zh_kinetics.json[SL7L]: F:提供碰撞、分布输运、聚变诊断与数值几何72项中文合同正文 | R:code:scripts/build_scirel_sphinx.py,code:tools/docs/handbook.json | A:定义；端口；边界；失败；例子；验证限制 | S:每项绑定原JSON及端口顺序；本批六项仅版本摘要后继，既有原文冲突不被翻译消除
+zh_physics.json[SL7L]: F:提供磁场、压力平衡及波动61项中文科学参考 | R:code:scripts/build_scirel_sphinx.py,code:tools/docs/handbook.json | A:公式和端口；适用域；失败；样例；Green及全状态反馈后继 | S:中文同步实际修正与Wb/rad约定，保留有限验证和许可边界；摘要变化须按确切合同绑定而非科学再批准
+zh_green_dependencies.json[SL7M]: F:提供三项共享圆丝Green和逐源矩阵合同的中文阅读层 | R:code:src/scirel/electromagnetism/greens.py,code:scripts/build_scirel_sphinx.py | A:轴限；实际坐标；矩阵方向；权重；失败；高精度证据 | S:逐源求和拒活动自点而矩阵声明离散零，两者不可混同；译文绑定正式摘要不授予任意域资格
+
+===/Users/tomczz/Projects/SciReL/docs/usage/===
+axisymmetric-core.md[SB7S]: F:解释轴对称几何、电流源、磁通、压力平衡与数据消费者的领域用法和实跑结果 | R:code:src/scirel/electromagnetism/greens.py,code:src/scirel/equilibrium.py | A:源状态；矩阵轴与奇异点；双残差收敛；全尺寸结果；场线及EQDSK | S:ψ为Wb/rad；矩阵目标行源列不同于Device源集合行；原尺寸通过不授予连续模型或实验资格
+
+===/Users/tomczz/Projects/SciReL/provenance/validation/===
+pleiades-home-fullsize-d3-20261014.json[SQ7S]: F:绑定Home六项原尺寸无源码应用的环境、结果摘要及作者技术结论 | R:code:provenance/selections/pleiades-full-core-mac-20261014.json | A:BRB201x201；WHAM201x76；终态与消费验证；镜像和wheel | S:作者技术通过与根独立接收分列；仅限定离散压力闭合，不证明连续力平衡或任意拓扑
+pleiades-root-full-core-20261014.json[SQ8M]: F:记录107组全核心能力的独立组合D3技术接收与精确科学交付身份 | R:code:provenance/validation/pleiades-home-fullsize-d3-20261014.json | A:243定义及95材料；独立数值复算；五轻六重组合；排除依据；限制 | S:完整替代针对保留核心及声明合同；原固定网格限制仍保留，技术认可不代表人工背书或公开发行
+
+===/Users/tomczz/Projects/SciReL/tools/docs/handbooks/===
+axisymmetric-core.json[SU7T]: F:为选定94项科学合同编排六领域二十八主题的完整中文目录 | R:code:tools/docs/zh/selections/axisymmetric-core.json,code:scripts/scirel_docs.py | A:几何；电流磁场；压力平衡；磁镜闭合；场线数值；数据交换 | S:构造器与必要数据消费同样列入能力，绘图辅助另列；内容齐备不代替执行或人审
+
+===/Users/tomczz/Projects/SciReL/tools/docs/magnetostatics-20261013/===
+chapter.json[SU6T]: F:按问题、方法、代码、结果解释组织四节线圈磁静力学教程 | R:code:tools/docs/magnetostatics-20261013/example.py,code:tools/docs/magnetostatics-20261013/results.json | A:单环；同反向对；矩形线圈；离散加密；MathML；限制 | S:观测点避导线，离散零不是自场；8到16中心差非全域误差界，章节不验证ψ规范
+example.py[TB6T]: F:实际调用安装科学包生成单环、线圈对和矩形组的数值案例 | R:code:src/scirel/field/multi_coil_vacuum_field.py | A:轴上解析；对称；反向电流；总安匝保持；加密；结果JSON | S:权重和为一使加密不增加电流；小节顺序共享变量，任何断言失败不能写all_checks_passed
+execution.json[SQ7T]: F:绑定dev5无源码安装章节的实现、合同、示例、结果及图字节 | R:code:tools/docs/magnetostatics-20261013/example.py,code:tools/docs/magnetostatics-20261013/plot.py | A:镜像；wheel；容器；无网络；exit0；前驱摘要 | S:source_commit是工作树基线，执行候选由文件摘要界定；历史章节执行不代表全D3或人工批准
+pair.svg[SU5L]: F:展示已记录同向线圈对中心平坦度及反向电流轴场 | R:code:tools/docs/magnetostatics-20261013/plot.py | A:黑白双图；归一化同向场；反向mT轴场 | S:左图各自中心归一化，不能据高度比较绝对场强；只是记录结果的呈现
+plot.py[XU5T]: F:从冻结数值结果绘制三张黑白磁场SVG | R:code:tools/docs/magnetostatics-20261013/results.json | A:Agg；轴场与公式；归一化线圈对；反向场；截面等值图 | S:只呈现已算结果，不运行SciRel；读固定同目录结果并写同目录三图
+rectangle.svg[SU5L]: F:呈现矩形线圈组目标R-Z区域的BZ灰阶及等值线 | R:code:tools/docs/magnetostatics-20261013/plot.py | A:R/Z米坐标；BZ毫特斯拉；等比例截面 | S:只显示指定区域及轴向分量，不证明全空间均匀性
+results.json[SD6L]: F:保存dev5安装章节的轴线数组、矩形场、加密中心值和实算检查 | R:code:tools/docs/magnetostatics-20261013/example.py,code:tools/docs/magnetostatics-20261013/execution.json | A:141轴点；101x61截面；单环及对中心；四级加密；三数值检查 | S:原始量为T、绘图才转mT；通过声明只覆盖该脚本检查，不能充作原尺寸压力D3
+single.svg[SU5L]: F:比较记录的圆环轴场与独立轴上解析公式 | R:code:tools/docs/magnetostatics-20261013/plot.py | A:黑实线数值；空心点解析；Z米；BZ毫特斯拉 | S:视觉重合仅为选定轴线，不证明离轴或自场正确
+
+===/Users/tomczz/Projects/SciReL/tools/docs/magnetostatics-20261014-mac/===
+chapter.json[SU6T]: F:提供当前dev6章节的中文问题导向磁场教程与限制 | R:code:tools/docs/magnetostatics-20261014-mac/example.py,code:tools/docs/magnetostatics-20261014-mac/results.json | A:单圆环；线圈对；矩形组；加密；MathML；结果解释 | S:单环经响应和电流叠加两个调用，非虚构单函数；有限样例不证明任意网格收敛
+example.py[TB6T]: F:在dev6安装包重跑磁静力学章节并输出真实数值与检查 | R:code:src/scirel/field/multi_coil_vacuum_field.py | A:轴限解析；正反向对；矩形组；四级中心加密；线性叠加；JSON | S:与前驱脚本字节相同仍须新运行绑定；归一权重保持总安匝，结果通过不自动扩展科学范围
+execution.json[SQ7T]: F:绑定Mac dev6章节重新执行的精确wheel、源码、合同、结果与图 | R:code:tools/docs/magnetostatics-20261014-mac/example.py,code:tools/docs/magnetostatics-20261014-mac/plot.py | A:33297来源；98e690包；离线无源码；真实容器；新图；前驱摘要 | S:当前结果是dev6实跑而非复用dev5答案；章节通过独立于全核心D3、人认可及发行
+pair.svg[SU5L]: F:展示dev6重算的同向线圈对平坦度及反向轴场 | R:code:tools/docs/magnetostatics-20261014-mac/plot.py | A:双面板；中心归一化；反向电流mT场；黑白线型 | S:左图分别归一化，曲线高度不表示绝对幅值；新图绑定新结果
+plot.py[XU5T]: F:将dev6重算结果呈现为单环、线圈对和矩形截面黑白图 | R:code:tools/docs/magnetostatics-20261014-mac/results.json | A:Agg；SVG文本；轴解析对照；归一化曲线；灰阶等值线 | S:脚本同前驱但输入为当前同目录结果，不重复计算科学内核；输出三图用于章节绑定
+rectangle.svg[SU5L]: F:展示dev6矩形线圈组在指定R-Z截面的BZ分布 | R:code:tools/docs/magnetostatics-20261014-mac/plot.py | A:灰阶场；黑色等值线；mT标尺；等比例坐标 | S:截面图仅呈现BZ和所选空间域，不包含材料或等离子体响应
+results.json[SD6L]: F:保存dev6安装章节新算出的场数组、中心加密和解析检查 | R:code:tools/docs/magnetostatics-20261014-mac/example.py,code:tools/docs/magnetostatics-20261014-mac/execution.json | A:单环0.0017952T；同向对0.0025691T；截面；四级加密；误差 | S:与历史版本相近的结果仍有独立执行身份；all_checks_passed只对应章节有限断言
+single.svg[SU5L]: F:展示dev6单圆环轴场与解析值的重算对照 | R:code:tools/docs/magnetostatics-20261014-mac/plot.py | A:Z米；BZ毫特斯拉；数值曲线；解析空心点 | S:图上重合不扩展至任意位置或细丝自场
+
+===/Users/tomczz/Projects/SciReL/tools/docs/zh/selections/===
+axisymmetric-core.json[SL7L]: F:为选定94项轴对称核心科学合同提供完整摘要绑定中文读者说明 | R:code:tools/docs/handbooks/axisymmetric-core.json,code:scripts/build_scirel_sphinx.py | A:定义模型；端口；适用域；失败；验证限制；例子解释 | S:只作为显式选择集合，不能与默认中文包重复混用；保留原合同资格上限，翻译不升级科学结论
