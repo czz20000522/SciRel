@@ -4,7 +4,7 @@
   "kind": "operator",
   "title": {
     "en": "Basis evaluator factory",
-    "zh": "Basis evaluator factory"
+    "zh": "基函数求值器构造"
   },
   "summary": "Construct a list of ascending-power polynomial or retained cubic-spline evaluators",
   "taxonomy": [
@@ -88,7 +88,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
     "dependencies": []
   },
   "example": {

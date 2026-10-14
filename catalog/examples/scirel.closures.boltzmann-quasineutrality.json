@@ -170,7 +170,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
+    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
     "dependencies": []
   },
   "example": {
@@ -182,7 +182,7 @@
     "scope": [
       "Representable densities from n_ref=1e-300, e*phi/T_e=+800 and n_ref=1e300, e*phi/T_e=-800 without clipping.",
       "Overflow-safe relative residual, underflow-safe positive-population log residual, joint-vacuum behavior and pressure retained despite density underflow.",
-      "Ordinary analytic response and existing invalid-input checks; the old exponent-clipping assertion is retained separately as a superseded scientific behavior.",
+      "Ordinary analytic response, invalid-input and finite-output checks; the current regression preserves a strict no-clipping exp(701) witness and rejects an unrepresentable positive response. The predecessor clipping assertion remains frozen failure evidence.",
       "Adjacent binary64 potentials near +/-1e20 reproduce the exact-rational dimensionless exponent; opposite-sign potentials of magnitude 1e308 and subnormal thermal-energy cases preserve representable final responses."
     ],
     "tests": [

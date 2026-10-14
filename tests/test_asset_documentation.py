@@ -18,12 +18,27 @@ from build_catalog import build_catalog  # noqa: E402
 from validate_asset_documents import (  # noqa: E402
     AssetDocumentError,
     load_document_set,
+    resolve_test_reference,
     validate_document,
     validate_runtime,
 )
 
 
+from _document_fixtures import (EXAMPLE_CLOSURE_COUNT, copy_example_closure, example_document_sources)
+
+
 CATALOG_TEST_VERSION = "0.0.0.dev0+catalogtest"
+
+
+def test_pytest_reference_resolves_file_and_preserves_collection_responsibility(tmp_path):
+    file = tmp_path / "test_example.py"
+    file.write_text("def test_example():\n    assert True\n")
+    assert resolve_test_reference("test_example.py::test_example[value]", tmp_path) == file
+    assert resolve_test_reference("test_example.py", tmp_path) == file
+    for invalid in ("missing.py::test_example", "test_example.py::", "test_example.py::::case",
+                    "../test_example.py::case", str(file) + "::case", "::case"):
+        with pytest.raises(ValueError):
+            resolve_test_reference(invalid, tmp_path)
 
 
 @pytest.fixture
@@ -36,13 +51,14 @@ def release_examples(tmp_path):
     """
     target = tmp_path / "synthetic-release-documents"
     target.mkdir()
-    originals = {path: path.read_bytes() for path in EXAMPLES.glob("*.json")}
-    assert len(originals) == 133
+    sources = example_document_sources()
+    originals = {path: path.read_bytes() for path in sources.values()}
+    assert len(originals) == EXAMPLE_CLOSURE_COUNT
     for source, body in originals.items():
         document = json.loads(body)
         document["version"]["implementation_version"] = CATALOG_TEST_VERSION
-        (target / source.name).write_text(json.dumps(document), encoding="utf-8")
-    assert len(load_document_set(target)) == 133
+        (target / (document["asset_id"] + ".json")).write_text(json.dumps(document), encoding="utf-8")
+    assert len(load_document_set(target)) == EXAMPLE_CLOSURE_COUNT
     yield target
     assert all(path.read_bytes() == body for path, body in originals.items())
 
@@ -95,7 +111,7 @@ def _feedback_contract(feedback_id):
     }
 
 
-def test_contract_schemas_and_dependency_closed_examples_parse():
+def test_contract_schemas_and_dependency_closed_examples_parse(tmp_path):
     asset_schema = json.loads(
         (ROOT / "contracts/scientific-asset-document.schema.json").read_text(
             encoding="utf-8"
@@ -106,12 +122,12 @@ def test_contract_schemas_and_dependency_closed_examples_parse():
             encoding="utf-8"
         )
     )
-    documents = load_document_set(EXAMPLES)
+    documents = load_document_set(copy_example_closure(tmp_path / "documents"))
 
     assert asset_schema["$schema"].endswith("2020-12/schema")
     assert release_schema["properties"]["schema"]["const"] == "scirel.catalog-release.v1"
-    assert len(documents) == 133
-    assert len([doc for doc in documents if doc["asset_id"] != FAST_ION_ASSET_ID]) == 132
+    assert len(documents) == EXAMPLE_CLOSURE_COUNT
+    assert len([doc for doc in documents if doc["asset_id"] != FAST_ION_ASSET_ID]) == EXAMPLE_CLOSURE_COUNT - 1
     assert [doc["asset_id"] for doc in documents if doc["asset_id"] == FAST_ION_ASSET_ID] == [FAST_ION_ASSET_ID]
     assert {item["kind"] for item in documents} == {"operator", "task_graph"}
 
@@ -220,12 +236,13 @@ def test_dependency_must_resolve_to_a_canonical_document(tmp_path):
         load_document_set(tmp_path)
 
 
-def test_runtime_signatures_tests_and_examples_are_executable():
+def test_runtime_signatures_tests_and_examples_are_executable(tmp_path):
+    documents = copy_example_closure(tmp_path / "documents")
     completed = subprocess.run(
         [
             sys.executable,
             str(SCRIPTS / "validate_asset_documents.py"),
-            str(EXAMPLES),
+            str(documents),
             "--check-runtime",
             "--execute-examples",
         ],
@@ -236,9 +253,9 @@ def test_runtime_signatures_tests_and_examples_are_executable():
 
     assert completed.returncode == 0, completed.stderr
     report = json.loads(completed.stdout)
-    assert report["asset_count"] == 133
+    assert report["asset_count"] == EXAMPLE_CLOSURE_COUNT
     assert FAST_ION_ASSET_ID in report["asset_ids"]
-    assert len([asset_id for asset_id in report["asset_ids"] if asset_id != FAST_ION_ASSET_ID]) == 132
+    assert len([asset_id for asset_id in report["asset_ids"] if asset_id != FAST_ION_ASSET_ID]) == EXAMPLE_CLOSURE_COUNT - 1
     assert report["runtime_checked"] is True
     assert report["runtime_origin"] == "source"
     assert report["examples_executed"] is True
@@ -274,7 +291,7 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
         "catalog_id": "scirel-development-pilot",
         "release_version": CATALOG_TEST_VERSION,
         "coverage_status": "complete",
-        "declared_total": 133,
+        "declared_total": EXAMPLE_CLOSURE_COUNT,
     }
     first_result = build_catalog(release_examples, first, **arguments)
     second_result = build_catalog(release_examples, second, **arguments)
@@ -295,8 +312,8 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
     release = json.loads(first_files["release.json"])
     assert release["coverage"] == {
         "status": "complete",
-        "included_asset_count": 133,
-        "declared_total_asset_count": 133,
+        "included_asset_count": EXAMPLE_CLOSURE_COUNT,
+        "declared_total_asset_count": EXAMPLE_CLOSURE_COUNT,
     }
     digest = release.pop("root_digest")
     assert digest == "sha256:" + hashlib.sha256(_canonical(release)).hexdigest()
@@ -314,7 +331,7 @@ def test_catalog_build_is_deterministic_progressive_and_framework_neutral(tmp_pa
         json.loads(line)
         for line in first_files["reverse-dependencies/all.jsonl"].splitlines()
     ]
-    assert len(routes) == len(summaries) == len(reverse) == 133
+    assert len(routes) == len(summaries) == len(reverse) == EXAMPLE_CLOSURE_COUNT
     partition_paths = {item["path"] for item in release["partitions"]}
     for route in routes:
         assert set(route["exact_record"]) == {"path"}
@@ -364,7 +381,7 @@ def test_complete_catalog_cannot_hide_missing_documents(tmp_path, release_exampl
             catalog_id="invalid-complete",
             release_version=CATALOG_TEST_VERSION,
             coverage_status="complete",
-            declared_total=133,
+            declared_total=EXAMPLE_CLOSURE_COUNT,
         )
 
 
@@ -376,16 +393,17 @@ def test_catalog_release_version_must_match_every_document(tmp_path, release_exa
             catalog_id="version-mismatch",
             release_version="0.1.0.dev4",
             coverage_status="partial",
-            declared_total=133,
+            declared_total=EXAMPLE_CLOSURE_COUNT,
         )
 
 
 def test_canonical_mixed_versions_cannot_be_relabelled_as_one_release(tmp_path):
-    versions = {doc["version"]["implementation_version"] for doc in load_document_set(EXAMPLES)}
+    documents = copy_example_closure(tmp_path / "documents")
+    versions = {doc["version"]["implementation_version"] for doc in load_document_set(documents)}
     assert len(versions) > 1
     for index, version in enumerate(sorted(versions)):
         output = tmp_path / str(index)
         with pytest.raises(ValueError, match="implementation_version must match"):
-            build_catalog(EXAMPLES, output, catalog_id="mixed-versions",
-                          release_version=version, coverage_status="complete", declared_total=133)
+            build_catalog(documents, output, catalog_id="mixed-versions",
+                          release_version=version, coverage_status="complete", declared_total=EXAMPLE_CLOSURE_COUNT)
         assert not output.exists()

@@ -4,7 +4,7 @@
   "kind": "operator",
   "title": {
     "en": "Affine patch scale-patches",
-    "zh": "Affine patch scale-patches"
+    "zh": "图形片的仿射缩放"
   },
   "summary": "Scale patch data transforms in place while applying intrinsic geometry exactly once",
   "taxonomy": [
@@ -92,7 +92,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
     "dependencies": []
   },
   "example": {

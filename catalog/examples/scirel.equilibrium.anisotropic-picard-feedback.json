@@ -27,8 +27,8 @@
     "assumptions": [
       "The caller's Green matrices match the declared cell-current ordering and SI response units.",
       "relax weights the previous cell-current state, not the previous flux.",
-      "psi_vac and g_psi use this field chain's Wb/rad convention; public vacuum-field outputs labelled Wb cannot be wired here without a science-approved normalization.",
-      "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
+      "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+      "psi与Green磁通响应均使用RAphi的Wb/rad约定；实际圆环方程未含2π，真空场/叠加链旧Wb标签已纠正，不修改数值。"
     ]
   },
   "inputs": [
@@ -163,21 +163,21 @@
     },
     {
       "name": "BR",
-      "description": "Vacuum radial field plus optional Green response.",
+      "description": "Vacuum radial field plus the same added plasma-flux field response.",
       "units": "T",
       "shape": "[N_Z,N_R]",
       "dtype": "float64",
       "required": true,
-      "constraints": "Equals br_vac when both field Green matrices are None."
+      "constraints": "With paired field Green matrices, add g_br times the relaxed source currents; when both are None, add -dZ(psi-psi_vac)/R using the maintained discrete flux derivative and regular-axis rule."
     },
     {
       "name": "BZ",
-      "description": "Vacuum axial field plus optional Green response.",
+      "description": "Vacuum axial field plus the same added plasma-flux field response.",
       "units": "T",
       "shape": "[N_Z,N_R]",
       "dtype": "float64",
       "required": true,
-      "constraints": "Equals bz_vac when both field Green matrices are None."
+      "constraints": "With paired field Green matrices, add g_bz times the relaxed source currents; when both are None, add dR(psi-psi_vac)/R using the maintained discrete flux derivative and regular-axis rule."
     },
     {
       "name": "j_phi",
@@ -235,7 +235,7 @@
     "partial_results": "No partial dictionary is returned after input or matrix-operation failure."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping, pending intake candidate and existing flux-convention audit; SciRel and intake source text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. Public Wb vacuum flux and this Wb/rad field chain remain unresolved for direct wiring. This successor corrects independently manufactured cylindrical-axis, quadrature-domain, floating-point zero-force and terminal-state defects where applicable; predecessor behavior is not treated as physical authority.",
+    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping, pending intake candidate and existing flux-convention audit; SciRel and intake source text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. 圆环/真空/场反馈链统一RAphi的Wb/rad单位标签，未修改数值。 This successor corrects independently manufactured cylindrical-axis, quadrature-domain, floating-point zero-force and terminal-state defects where applicable; predecessor behavior is not treated as physical authority.",
     "source_kinds": [
       "historical Pleiades development descriptor and migration mapping",
       "pending intake development candidate",
@@ -252,7 +252,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
+    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
     "dependencies": []
   },
   "example": {

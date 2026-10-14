@@ -73,9 +73,36 @@ def handbook_document(asset_ids, outline=None):
     return book
 
 
+def chapter_directory():
+    """Select one explicitly bound successor without rewriting old evidence."""
+    selection_path = ROOT / 'tools/docs/chapter-selection.json'
+    if not selection_path.exists():
+        return ROOT / 'tools/docs/magnetostatics'
+    selection = json.loads(selection_path.read_bytes())
+    if set(selection) != {'schema', 'chapters'} or selection['schema'] != 'scirel.chapter-selection.v1':
+        raise ValueError('invalid chapter selection schema')
+    if set(selection['chapters']) != {'magnetostatics'}:
+        raise ValueError('unsupported chapter selection IDs')
+    item = selection['chapters']['magnetostatics']
+    if set(item) != {'directory', 'execution_sha256'}:
+        raise ValueError('invalid chapter selection binding')
+    directory = item['directory']
+    if not isinstance(directory, str) or not re.fullmatch(r'tools/docs/[a-z0-9][a-z0-9-]*', directory):
+        raise ValueError('invalid chapter selection path')
+    root = (ROOT / directory).resolve()
+    if not root.is_relative_to((ROOT / 'tools/docs').resolve()) or not root.is_dir():
+        raise ValueError('chapter selection path escapes documentation or is missing')
+    digest = item['execution_sha256']
+    if not isinstance(digest, str) or not re.fullmatch(r'[0-9a-f]{64}', digest):
+        raise ValueError('invalid chapter execution digest')
+    if sha((root / 'execution.json').read_bytes()) != digest:
+        raise ValueError('selected chapter execution bytes changed')
+    return root
+
+
 def chapter_files(asset_ids):
     """Bind executed examples to current implementation before publishing them."""
-    root = ROOT / 'tools/docs/magnetostatics'
+    root = chapter_directory()
     execution = json.loads((root/'execution.json').read_bytes())
     for path, digest in execution['files'].items():
         if sha((ROOT/path).read_bytes()) != digest:
@@ -91,6 +118,8 @@ def chapter_files(asset_ids):
         if sha((ROOT/path).read_bytes()) != digest:
             raise ValueError('chapter contract changed; review examples: ' + path)
     chapter = json.loads((root/'chapter.json').read_bytes())
+    if chapter.get('id') != 'magnetostatics':
+        raise ValueError('selected chapter ID differs from its route')
     if any(x['id'] not in asset_ids for x in chapter['assets']):
         raise ValueError('chapter references a missing exact document')
     results = json.loads((root/'results.json').read_bytes())
@@ -112,13 +141,14 @@ def chapter_files(asset_ids):
     return files
 
 
-def build(documents: Path, output: Path, outline: Path | None = None):
+def build(documents: Path, output: Path, outline: Path | None = None,
+          translation_paths: list[Path] | None = None):
     docs = load_document_set(documents)
     if output.exists():
         raise FileExistsError('output already exists; build a new snapshot')
     source = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     dirty = bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT))
-    translations = load_translations(ROOT, documents, docs)
+    translations = load_translations(ROOT, documents, docs, translation_paths=translation_paths)
     book = handbook_document({d['asset_id'] for d in docs}, outline)
     files = {}
     index = []
@@ -143,7 +173,11 @@ def build(documents: Path, output: Path, outline: Path | None = None):
         files['static/' + path] = (ROOT / 'tools/docs' / path).read_bytes()
     files.update(chapter_files({d['asset_id'] for d in docs}))
     chapter = json.loads(files['chapters/magnetostatics/chapter.json'])
-    files.update(render_site(ROOT, docs, book, translations, chapter))
+    files.update(render_site(
+        ROOT, docs, book, translations, chapter,
+        figure_files={name: files['chapters/magnetostatics/' + name]
+                      for name in ('single.svg', 'pair.svg', 'rectangle.svg')},
+    ))
     manifest = {'schema': SCHEMA, 'source_commit': source, 'source_dirty': dirty,
                 'asset_count': len(docs), 'notice': NOTICE,
                 'reader_language': 'zh-CN', 'human_renderer': 'sphinx-pydata',
@@ -330,7 +364,7 @@ def server(docs, port):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     subs = parser.add_subparsers(dest='command', required=True)
-    b = subs.add_parser('build'); b.add_argument('--documents', type=Path, default=ROOT/'catalog/examples'); b.add_argument('--output', type=Path, required=True); b.add_argument('--outline', type=Path)
+    b = subs.add_parser('build'); b.add_argument('--documents', type=Path, default=ROOT/'catalog/examples'); b.add_argument('--output', type=Path, required=True); b.add_argument('--outline', type=Path); b.add_argument('--translations', type=Path, action='append', help='Explicit complete reader bundle(s) for the selected document set; repeatable')
     for name in ('query', 'serve'):
         sub = subs.add_parser(name); sub.add_argument('--snapshot', type=Path, required=True); sub.add_argument('--expected-digest')
         if name == 'query':
@@ -339,7 +373,7 @@ def main():
             sub.add_argument('--port', type=int, default=8765)
     a = parser.parse_args()
     if a.command == 'build':
-        result = build(a.documents, a.output, a.outline)
+        result = build(a.documents, a.output, a.outline, a.translations)
         print(json.dumps({k:v for k,v in result.items() if k != 'files'}, ensure_ascii=False)); return
     docs = Documentation(a.snapshot, a.expected_digest)
     if a.command == 'query':

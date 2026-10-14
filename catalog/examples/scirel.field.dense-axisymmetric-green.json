@@ -6,7 +6,7 @@
     "en": "Dense axisymmetric circular-filament Green matrices",
     "zh": "轴对称圆电流丝稠密 Green 矩阵"
   },
-  "summary": "Evaluate separate flux and poloidal-field response columns for every weighted circular source at every cylindrical R-Z target point.",
+  "summary": "生成目标行、源列的理想圆电流丝实际坐标Green响应，保留每列符号与权重以及明确的精确零自项。",
   "taxonomy": [
     "field",
     "green-function",
@@ -18,11 +18,11 @@
   "identity": {
     "relation": "weighted circular filaments to per-source axisymmetric flux and poloidal-field response matrices",
     "direction": "target [R,Z] rows and source [R,Z,weight] rows -> gpsi, gBR, gBZ matrices",
-    "definition": "Computes one elliptic-integral circular-filament response column per source and multiplies that column by its dimensionless linear weight without summing columns.",
+    "definition": "使用实际源目标坐标的已验证圆环矩阵构造，分别保留每列而不求和；源第三列是无量纲权重，不是电流或面积。小椭圆参数改用等价超几何表达保持精度。",
     "model": "vacuum axisymmetric ideal circular-filament Green relation",
     "geometry": "point targets and circular source filaments in a cylindrical R-Z plane",
     "coordinates": "SI cylindrical R-Z coordinates",
-    "boundary": "an axis source within 1e-12 m yields a zero column; nonfinite singular formula elements are replaced by zero",
+    "boundary": "精确零半径源与精确自点贡献为零，任何正半径仍计算；轴上目标保留解析非零BZ。非零距离的非法算术或不可表示输出拒绝，不填零。",
     "assumptions": [
       "The flux kernel is psi=R A_phi, not the complete linked flux 2*pi*psi.",
       "Source weights are dimensionless multipliers, not currents or cell-area factors.",
@@ -94,12 +94,12 @@
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for wrong target/source row shape, nonfinite coordinates or weights, or negative cylindrical radii.",
-    "runtime_failure": "SciPy elliptic-function errors propagate; nonfinite evaluated formula elements follow the maintained zero convention.",
+    "runtime_failure": "核的不可表示输出、上溢、除零和非法运算抛FloatingPointError；不吞为零。",
     "nonconvergence": "Not applicable; this operator has no solver iteration.",
-    "partial_results": "No validation-time partial result; per-element nonfinite formula values are replaced with zero."
+    "partial_results": "失败不返回部分矩阵。仅精确自点离散约定为零，非有限数值无此豁免。"
   },
   "provenance": {
-    "lineage_summary": "The maintained SciRel implementation and direct tests were compared with the frozen historical Pleiades development mapping and pending intake candidate. SciRel and intake implementation text matched; historical labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery.",
+    "lineage_summary": "The maintained SciRel implementation and direct tests were compared with the frozen historical Pleiades development mapping and pending intake candidate. SciRel and intake implementation text matched; historical labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. 本后继保留冻结前行为为证据，修正近轴剔除、非有限静默填零或人工场核偏移/截断；psi统一明确为RAphi，单位标签Wb/rad，不乘2π也不改存储数值。",
     "source_kinds": [
       "historical Pleiades development descriptor and migration mapping",
       "pending intake development candidate",
@@ -116,8 +116,12 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
-    "dependencies": []
+    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
+    "dependencies": [
+      {
+        "asset_id": "scirel.electromagnetism.green-response-matrices"
+      }
+    ]
   },
   "example": {
     "description": "Compare one source response with a changed weight and an empty source list.",
@@ -130,16 +134,16 @@
       "Axis-source zero-column convention.",
       "Circular-filament analytic axial-field limit.",
       "Columnwise equality with the separately maintained circular-filament flux and field kernel.",
-      "Invalid radius and source-shape rejection."
+      "Invalid radius and source-shape rejection.",
+      "独立70/80位精度理想圆环关系核对极小正半径、近轴非零BR、近丝和公式求值分支，保持原数值断言与容差；精确离散自项与算术失败分别处理。"
     ],
     "tests": [
-      "tests/operator_contracts/test_dense_axisymmetric_green.py"
+      "tests/operator_contracts/test_dense_axisymmetric_green.py",
+      "tests/operator_contracts/test_pleiades_field_green_correction.py"
     ],
     "evidence_ceiling": "Validated for the maintained ideal-filament Green columns and tested axis/weight cases; historical candidate evidence does not establish complete source-project closure or expert approval.",
     "known_limitations": [
-      "Singular formula elements are zeroed, not resolved physically.",
       "The result preserves separate source columns and does not sum them.",
-      "The numerical flux column matches the circular-filament kernel, but its Wb/rad/A convention differs from the existing vacuum-field document's Wb/A label; public cross-asset unit naming remains for science-owner adjudication.",
       "Public distribution licensing remains pending a human decision."
     ]
   }

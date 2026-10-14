@@ -4,7 +4,7 @@
   "kind": "operator",
   "title": {
     "en": "Origin-natural cylindrical spline",
-    "zh": "Origin-natural cylindrical spline"
+    "zh": "零原点自然边界柱坐标样条"
   },
   "summary": "Piecewise cubic Hermite interpolation with a boundary-specific linear slope system",
   "taxonomy": [
@@ -108,7 +108,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
     "dependencies": []
   },
   "example": {

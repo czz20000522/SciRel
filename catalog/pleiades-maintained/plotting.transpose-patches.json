@@ -4,7 +4,7 @@
   "kind": "operator",
   "title": {
     "en": "Affine patch transpose-patches",
-    "zh": "Affine patch transpose-patches"
+    "zh": "图形片的仿射转置"
   },
   "summary": "Transpose patch data coordinates in place while preserving source None return",
   "taxonomy": [
@@ -83,7 +83,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
     "dependencies": []
   },
   "example": {

@@ -17,9 +17,17 @@ import tempfile
 import xml.etree.ElementTree as ET
 
 
-def load_translations(root, documents, docs):
+def load_translations(root, documents, docs, translation_paths=None):
+    """Load one exact reader set; an explicit selection keeps all binding gates.
+
+    The default repository handbook still consumes all top-level reader bundles.
+    A selected scientific distribution can supply its own complete reader set
+    without inheriting unrelated documents from another development selection.
+    """
     records = {}
-    for path in sorted((root / 'tools/docs/zh').glob('*.json')):
+    paths = (sorted((root / 'tools/docs/zh').glob('*.json'))
+             if translation_paths is None else translation_paths)
+    for path in paths:
         bundle = json.loads(path.read_bytes())
         if bundle['schema'] != 'scirel.reader-translation.v1' or bundle['language'] != 'zh-CN':
             raise ValueError('invalid reader translation: ' + str(path))
@@ -234,7 +242,7 @@ def render_tutorial(chapter):
     return out
 
 
-def render_site(root, docs, book, translations, chapter):
+def render_site(root, docs, book, translations, chapter, *, figure_files):
     """Return only generated public site bytes; staging sources stay temporary."""
     # Sphinx otherwise silently builds a Chinese search index of Latin words only.
     jieba_version = version('jieba')
@@ -291,7 +299,7 @@ def render_site(root, docs, book, translations, chapter):
         write('tutorials/magnetostatics', render_tutorial(chapter))
         examples = source/'_static/examples'; examples.mkdir()
         for name in ('single.svg','pair.svg','rectangle.svg'):
-            shutil.copyfile(root/'tools/docs/magnetostatics'/name, examples/name)
+            (examples/name).write_bytes(figure_files[name])
         result = subprocess.run([sys.executable, '-m', 'sphinx', '-b', 'html', '-W', '--keep-going', '-q', str(source), str(output)], capture_output=True, text=True)
         if result.returncode:
             raise RuntimeError('Sphinx build failed:\n' + result.stdout + result.stderr)

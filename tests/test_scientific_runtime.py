@@ -18,7 +18,13 @@ from prepare_reviewed_distribution import _project_for_release
 
 
 def test_old_compatible_selection_gets_exact_current_pins():
-    assert pin_dependencies(["numpy>=1.24", "scipy>=1.10", "matplotlib>=3.7"]) == baseline()["project"]["dependencies"]
+    requested = ["numpy>=1.24", "scipy>=1.10", "matplotlib>=3.7"]
+    # Selected builders declare the requested compatible subset, rather than
+    # importing every dependency used by another selected scientific reader.
+    expected = [pin for pin in baseline()["project"]["dependencies"]
+                if pin.split('==')[0].lower() in {'numpy', 'scipy', 'matplotlib'}]
+    assert pin_dependencies(requested) == expected
+    assert pin_dependencies(["netCDF4>=1.7"]) == ["netCDF4==1.7.4"]
     assert baseline_receipt()["pyproject_sha256"] == hashlib.sha256((ROOT / "pyproject.toml").read_bytes()).hexdigest()
 
 

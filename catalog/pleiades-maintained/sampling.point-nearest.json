@@ -4,7 +4,7 @@
   "kind": "operator",
   "title": {
     "en": "Field query Geometric nearest sample on any matching planar arrays",
-    "zh": "Field query Geometric nearest sample on any matching planar arrays"
+    "zh": "平面样点几何最近值"
   },
   "summary": "Choose flattened point of minimum squared coordinate distance",
   "taxonomy": [
@@ -112,7 +112,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
     "dependencies": []
   },
   "example": {

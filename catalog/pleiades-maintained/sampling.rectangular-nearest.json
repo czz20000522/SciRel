@@ -4,7 +4,7 @@
   "kind": "operator",
   "title": {
     "en": "Field query Separable xy grid axis nearest-neighbor sampling",
-    "zh": "Field query Separable xy grid axis nearest-neighbor sampling"
+    "zh": "可分离网格逐轴最近点采样"
   },
   "summary": "Choose x-column and y-row independently nearest each query",
   "taxonomy": [
@@ -112,7 +112,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
     "dependencies": []
   },
   "example": {

@@ -114,7 +114,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
     "dependencies": [
       {
         "asset_id": "scirel.electromagnetism.circular-filament-green"
@@ -130,7 +130,8 @@
     "scope": [
       "Signed rectangular unequal-layer quadrature comparison at rtol=1e-12 and atol=1e-18",
       "Layer sum, sign, transpose, nonmutation and boundary failures",
-      "Exact self-node policy"
+      "Exact self-node policy",
+      "真实netCDF4输入，独立生成两层A/cm²电流、转置命名维度及单位拒绝；真实离散磁通消费以独立角积分比较，不用预存答案。"
     ],
     "tests": [
       "tests/pleiades/equilibrium/test_distributed_current.py"

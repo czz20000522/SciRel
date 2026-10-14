@@ -7,8 +7,14 @@
     "zh": "电流加权 Green 响应叠加"
   },
   "summary": "Contract scalar or vector drive currents with matching flux and poloidal-field Green responses without changing their scientific meaning.",
-  "taxonomy": ["field", "linear-superposition", "axisymmetric"],
-  "aliases": ["current Green contraction"],
+  "taxonomy": [
+    "field",
+    "linear-superposition",
+    "axisymmetric"
+  ],
+  "aliases": [
+    "current Green contraction"
+  ],
   "identity": {
     "relation": "drive currents and per-current Green responses to physical flux and field",
     "direction": "currents plus gpsi/gBR/gBZ -> psi/BR/BZ",
@@ -17,23 +23,91 @@
     "geometry": "geometry-independent contraction of already evaluated responses",
     "coordinates": "inherits the target ordering of the Green response arrays",
     "boundary": "does not add boundary conditions",
-    "assumptions": ["All three response arrays share shape and source ordering.", "Response axis 0 corresponds exactly to the current vector."]
+    "assumptions": [
+      "All three response arrays share shape and source ordering.",
+      "Response axis 0 corresponds exactly to the current vector.",
+      "此链psi=R A_phi（Wb/rad），不是2πpsi的完整链磁通；此次只改错误单位标签，不改数值。"
+    ]
   },
   "inputs": [
-    {"name": "currents", "description": "One drive current or one current per response row.", "units": "A", "shape": "scalar or [N_source]", "dtype": "real array-like", "required": true, "constraints": "Finite; rank must be zero or one."},
-    {"name": "gpsi", "description": "Flux Green response.", "units": "Wb/A", "shape": "[N_point] or [N_source,N_point]", "dtype": "real array-like", "required": true, "constraints": "Finite and shape-compatible with currents and the other responses."},
-    {"name": "gBR", "description": "Radial field Green response.", "units": "T/A", "shape": "[N_point] or [N_source,N_point]", "dtype": "real array-like", "required": true, "constraints": "Finite and same shape as gpsi."},
-    {"name": "gBZ", "description": "Axial field Green response.", "units": "T/A", "shape": "[N_point] or [N_source,N_point]", "dtype": "real array-like", "required": true, "constraints": "Finite and same shape as gpsi."}
+    {
+      "name": "currents",
+      "description": "One drive current or one current per response row.",
+      "units": "A",
+      "shape": "scalar or [N_source]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite; rank must be zero or one."
+    },
+    {
+      "name": "gpsi",
+      "description": "Flux Green response.",
+      "units": "Wb/rad/A",
+      "shape": "[N_point] or [N_source,N_point]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and shape-compatible with currents and the other responses."
+    },
+    {
+      "name": "gBR",
+      "description": "Radial field Green response.",
+      "units": "T/A",
+      "shape": "[N_point] or [N_source,N_point]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and same shape as gpsi."
+    },
+    {
+      "name": "gBZ",
+      "description": "Axial field Green response.",
+      "units": "T/A",
+      "shape": "[N_point] or [N_source,N_point]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and same shape as gpsi."
+    }
   ],
   "outputs": [
-    {"name": "psi", "description": "Current-weighted flux.", "units": "Wb", "shape": "[N_point]", "dtype": "float64", "required": true, "constraints": "Preserves target order."},
-    {"name": "BR", "description": "Current-weighted radial field.", "units": "T", "shape": "[N_point]", "dtype": "float64", "required": true, "constraints": "Preserves target order."},
-    {"name": "BZ", "description": "Current-weighted axial field.", "units": "T", "shape": "[N_point]", "dtype": "float64", "required": true, "constraints": "Preserves target order."}
+    {
+      "name": "psi",
+      "description": "Current-weighted flux.",
+      "units": "Wb/rad",
+      "shape": "[N_point]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Preserves target order."
+    },
+    {
+      "name": "BR",
+      "description": "Current-weighted radial field.",
+      "units": "T",
+      "shape": "[N_point]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Preserves target order."
+    },
+    {
+      "name": "BZ",
+      "description": "Current-weighted axial field.",
+      "units": "T",
+      "shape": "[N_point]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Preserves target order."
+    }
   ],
   "applicability": {
-    "preconditions": ["The upstream response is linear in the supplied currents."],
-    "supported": ["One scalar drive and one response row.", "Several currents and one response row per current."],
-    "excluded": ["Nonlinear source coupling.", "Implicit broadcasting across mismatched source axes."]
+    "preconditions": [
+      "The upstream response is linear in the supplied currents."
+    ],
+    "supported": [
+      "One scalar drive and one response row.",
+      "Several currents and one response row per current."
+    ],
+    "excluded": [
+      "Nonlinear source coupling.",
+      "Implicit broadcasting across mismatched source axes."
+    ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for nonfinite values, unsupported current rank, response-rank mismatch, shape mismatch, or a wrong source axis.",
@@ -43,7 +117,10 @@
   },
   "provenance": {
     "lineage_summary": "Maintained SciRel implementation with frozen internal admission evidence; private review identifiers are not part of the public contract.",
-    "source_kinds": ["reviewed scientific implementation", "scientific regression tests"],
+    "source_kinds": [
+      "reviewed scientific implementation",
+      "scientific regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
@@ -55,7 +132,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
     "dependencies": []
   },
   "example": {
@@ -64,9 +141,19 @@
     "expected": "A mapping containing psi, BR, and BZ vectors in the original target order."
   },
   "verification": {
-    "scope": ["Scalar scaling.", "Vector source-axis contraction.", "Wrong source-axis and nonfinite failure behavior."],
-    "tests": ["tests/operator_contracts/test_current_green_superposition.py"],
+    "scope": [
+      "Scalar scaling.",
+      "Vector source-axis contraction.",
+      "Wrong source-axis and nonfinite failure behavior."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_current_green_superposition.py"
+    ],
     "evidence_ceiling": "Verifies the maintained linear contraction and shape contract; it does not establish that an upstream Green model is scientifically applicable.",
-    "known_limitations": ["Only scalar and one-dimensional current inputs are supported.", "The operator does not infer or reorder source axes.", "Public distribution licensing remains pending a human decision."]
+    "known_limitations": [
+      "Only scalar and one-dimensional current inputs are supported.",
+      "The operator does not infer or reorder source axes.",
+      "Public distribution licensing remains pending a human decision."
+    ]
   }
 }

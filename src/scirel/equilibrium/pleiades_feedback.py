@@ -110,6 +110,11 @@ def compute_equilibrium(
         raise ValueError("at least three exact midplane points are required")
     r = R.ravel().astype(float)
     z = Z.ravel().astype(float)
+    # The pressure edge is the first zero encountered outward in R, not the
+    # first zero in storage order. Preserve the declared descending-axis
+    # capability without reordering the Green matrix, currents or outputs.
+    # Only the physical midplane spline/edge traversal is put in radial order.
+    z0_idx = z0_idx[np.argsort(r[z0_idx])]
     r_z0 = r[z0_idx]
     p_z0 = np.asarray([Pfunc(x) for x in r_z0], dtype=float)
     if not np.all(np.isfinite(p_z0)):

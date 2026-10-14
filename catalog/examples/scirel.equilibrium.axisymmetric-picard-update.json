@@ -25,9 +25,9 @@
     "coordinates": "[Z,R] arrays; Green rows and columns follow C-order field-point and cell-current flattening",
     "boundary": "Quadrature uses the declared input node domain or explicit cell boundaries; no implicit exterior support is invented.",
     "assumptions": [
-      "For the SciRel axisymmetric field chain, psi is R A_phi in Wb/rad and g_psi must map one cell current in A to the same field-point psi convention in the declared order. Separately documented vacuum-field outputs labelled Wb are not automatically compatible; their public convention remains unresolved.",
       "relax is the weight of the previous flux, not a mixer for current values.",
-      "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
+      "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+      "psi与Green磁通响应均使用RAphi的Wb/rad约定；实际圆环方程未含2π，真空场/叠加链旧Wb标签已纠正，不修改数值。"
     ]
   },
   "inputs": [
@@ -172,7 +172,7 @@
     ],
     "excluded": [
       "A complete converged equilibrium or automatic selection of iteration count.",
-      "Current relaxation, automatic active-cell masking, or automatic conversion of a vacuum-field output labelled Wb.",
+      "Current relaxation, automatic active-cell masking, or automatic conversion to complete linked flux 2*pi*psi.",
       "Non-axisymmetric geometry, sparse-Green optimization, or a guarantee of finite arithmetic for all extreme finite inputs."
     ]
   },
@@ -183,7 +183,7 @@
     "partial_results": "No partial mapping is returned after an exception."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping, pending intake candidate and the 2026-09-25 flux-convention audit. SciRel and intake source text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery; vacuum-to-equilibrium psi normalization remains unresolved. This successor corrects independently manufactured cylindrical-axis, quadrature-domain, floating-point zero-force and terminal-state defects where applicable; predecessor behavior is not treated as physical authority.",
+    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping, pending intake candidate and the 2026-09-25 flux-convention audit. SciRel and intake source text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery; 实际圆环与平衡反馈均用RAphi，旧真空Wb标签纠正为Wb/rad而不改数值。 This successor corrects independently manufactured cylindrical-axis, quadrature-domain, floating-point zero-force and terminal-state defects where applicable; predecessor behavior is not treated as physical authority.",
     "source_kinds": [
       "historical Pleiades development descriptor and migration mapping",
       "pending intake development candidate",
@@ -200,7 +200,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
+    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
     "dependencies": []
   },
   "example": {

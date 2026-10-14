@@ -4,7 +4,7 @@
   "kind": "operator",
   "title": {
     "en": "Contour field-line collection contour_points",
-    "zh": "Contour field-line collection contour_points"
+    "zh": "等值场线集合构造"
   },
   "summary": "Construct per-level lists of FieldLine from contour segments",
   "taxonomy": [
@@ -90,7 +90,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
     "dependencies": [
       {
         "asset_id": "scirel.fieldline.fieldline"

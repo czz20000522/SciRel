@@ -6,7 +6,7 @@
     "en": "Circular-filament vacuum field on a cylindrical grid",
     "zh": "柱坐标网格上的圆电流丝真空场"
   },
-  "summary": "Superpose circular-filament magnetic fields on a uniform radial R-Z grid and integrate R times B_Z radially to obtain the maintained flux convention.",
+  "summary": "计算无近轴截止和无人工椭圆参数截断的理想圆电流丝磁场，同时保留首半径参考的径向梯形磁通生产者。",
   "taxonomy": [
     "field",
     "vacuum-field",
@@ -18,11 +18,11 @@
   "identity": {
     "relation": "circular-filament currents to axisymmetric vacuum flux and poloidal field on a grid",
     "direction": "R-Z grids and [source R, source Z, current] rows -> psi, b_r, b_z",
-    "definition": "Evaluates elliptic-integral field contributions from each ideal circular filament, sums them, and applies radial trapezoidal quadrature to R times B_Z from the first radial grid point.",
+    "definition": "BR/BZ使用实际坐标核和解析轴极限；近轴BR不强置零，近丝椭圆参数不裁剪。psi仍按原均匀径向梯形求积累计R*BZ，首半径psi=0。直接解析RAphi与这一离散积分不是可互换状态；不改数值生产者。",
     "model": "axisymmetric ideal circular-filament vacuum field",
     "geometry": "circular sources and a rectilinear cylindrical R-Z target grid",
     "coordinates": "SI cylindrical R-Z coordinates; either array axis may be radial",
-    "boundary": "psi is zero at the first radial grid point; B_R is set to zero for R < 1e-9 m",
+    "boundary": "psi在首径向网格点为零；只有精确R=0时BR解析为零，正R仍计算。正电流源的精确重合拒绝；零电流源无贡献。",
     "assumptions": [
       "The radial grid is uniformly spaced and strictly increasing.",
       "Each source row carries current in amperes, not a dimensionless Green weight.",
@@ -102,13 +102,13 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError for invalid grid rank, shape, radial spacing/order, nonfinite values, nonpositive source radius or coincident source and target.",
+    "invalid_input": "畸形或非实数/非有限输入、非正源半径、径向非均匀/非递增/非张量网格，或活跃源与目标精确重合抛ValueError；保留空源简写及转置径向布局。",
     "runtime_failure": "Unexpected SciPy or NumPy errors propagate; a nonfinite computed field or flux raises FloatingPointError.",
     "nonconvergence": "Not applicable; the field formula and quadrature have no solver iteration.",
     "partial_results": "No partial mapping is returned after validation or computation failure."
   },
   "provenance": {
-    "lineage_summary": "The maintained SciRel implementation and direct tests were compared with the frozen historical Pleiades development mapping and pending intake candidate. SciRel and intake implementation text matched; historical labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery.",
+    "lineage_summary": "The maintained SciRel implementation and direct tests were compared with the frozen historical Pleiades development mapping and pending intake candidate. SciRel and intake implementation text matched; historical labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. 本后继保留冻结前行为为证据，修正近轴剔除、非有限静默填零或人工场核偏移/截断；psi统一明确为RAphi，单位标签Wb/rad，不乘2π也不改存储数值。",
     "source_kinds": [
       "historical Pleiades development descriptor and migration mapping",
       "pending intake development candidate",
@@ -125,8 +125,12 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
-    "dependencies": []
+    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
+    "dependencies": [
+      {
+        "asset_id": "scirel.electromagnetism.circular-filament-green"
+      }
+    ]
   },
   "example": {
     "description": "Evaluate one off-grid filament and check the axis limit and radial flux reference.",
@@ -139,17 +143,19 @@
       "Circular-filament analytic axial-field limit.",
       "Radial quadrature increment and first-grid-point reference.",
       "Comparison with independent circular-filament psi=R A_phi Green values away from the source.",
-      "Transposed rectilinear layout and invalid radial grid."
+      "Transposed rectilinear layout and invalid radial grid.",
+      "独立70/80位精度理想圆环关系核对极小正半径、近轴非零BR、近丝和公式求值分支，保持原数值断言与容差；精确离散自项与算术失败分别处理。"
     ],
     "tests": [
-      "tests/operator_contracts/test_filament_vacuum_field.py"
+      "tests/operator_contracts/test_filament_vacuum_field.py",
+      "tests/operator_contracts/test_pleiades_field_green_correction.py"
     ],
     "evidence_ceiling": "Direct regressions cover selected ideal-filament superposition, axial field, radial quadrature and a fine-grid comparison with the circular-filament psi kernel after subtracting the first-radius reference. They do not establish arbitrary-grid quadrature accuracy, complete source-project closure or expert approval.",
     "known_limitations": [
       "The returned flux uses the first radial grid point as reference and omits a 2-pi flux factor.",
       "The ideal source is singular at coincident targets, which are rejected.",
-      "The implemented psi=R A_phi relation uses Wb/rad, while existing vacuum-field documents label flux Wb; public cross-asset unit naming remains for science-owner adjudication.",
-      "Public distribution licensing remains pending a human decision."
+      "Public distribution licensing remains pending a human decision.",
+      "psi的径向梯形误差需由网格加密验证；即便磁场按解析关系计算，离散psi也不宣称等于解析RAphi。"
     ]
   }
 }

@@ -20,7 +20,7 @@
     "model": "Source-derived pressure-versus-radius feedback with InterpolatedUnivariateSpline and supplied Green matrix",
     "geometry": "Finite rectangular uniformly spaced 2-D R,Z arrays with exact Z=0 midplane",
     "coordinates": "Caller must supply coherent units and Green/pressure convention. The pressure-only SI interpretation is R,Z in m, P in Pa, psi=R A_phi in Wb/rad, I in A; arbitrary supplied G is not a verified physical equilibrium Green operator.",
-    "boundary": "Pressure must contain an exact zero edge on the midplane; psi midplane fit must be finite and strictly increasing through edge",
+    "boundary": "压力边界为沿物理半径向外遍历时的第一个精确零点；从轴侧至边界的磁通须严格增加。下降的存储坐标先仅将中平面拟合索引按R排序，Green双轴、电流及结果均保留调用者次序。",
     "assumptions": [
       "Finite real arrays",
       "Green matrix shape is (R.size,R.size)",
@@ -144,7 +144,8 @@
     "supported": [
       "Bounded update feedback with optional boolean plasma mask",
       "Explicit terminal state for convergence, iteration cap and nonfinite update",
-      "Convergence cannot be triggered by a stationary flux when relaxed current still violates the pressure closure."
+      "Convergence cannot be triggered by a stationary flux when relaxed current still violates the pressure closure.",
+      "Coherent descending R/Z storage preserves the physical radial pressure traversal and caller-ordered outputs."
     ],
     "excluded": [
       "Physical equilibrium correctness",
@@ -162,7 +163,7 @@
     "partial_results": "nonfinite may contain a partial state and is explicitly not accepted."
   },
   "provenance": {
-    "lineage_summary": "D2 bounded successor derived from Pleiades eq_solve.py compute_equilibrium and inherited equilibrium handoff; update order and defaults preserved where supported. The predecessor used only a flux update norm and could falsely report convergence for zero G with relaxed currents. D2 successor retains that metric and additionally measures the final-state pressure-current equation before stopping.",
+    "lineage_summary": "D2 bounded successor derived from Pleiades eq_solve.py compute_equilibrium and inherited equilibrium handoff; update order and defaults preserved where supported. The predecessor used only a flux update norm and could falsely report convergence for zero G with relaxed currents. D2 successor retains that metric and additionally measures the final-state pressure-current equation before stopping. 后继修复下降R存储误把外侧零压点当首边界的索引缺陷；仅排序物理中平面拟合索引，不改Green或结果次序。",
     "source_kinds": [
       "D0-derived source implementation",
       "D2 independent manufactured feedback fixtures"
@@ -178,7 +179,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev3+pleiades.maintained",
+    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
     "dependencies": []
   },
   "example": {
@@ -191,12 +192,14 @@
       "Manufactured update/residual and terminal status fixtures",
       "Input boundary rejection regressions",
       "Inherited equilibrium proposal tests",
-      "Analytic current closure and near-unit-relaxation false-convergence regression."
+      "Analytic current closure and near-unit-relaxation false-convergence regression.",
+      "Ascending/descending paired nonzero-G pressure feedback and independent derivative/current closure."
     ],
     "tests": [
       "tests/pleiades/equilibrium/test_equilibrium_proposals.py",
       "tests/pleiades/equilibrium/test_equilibrium_boundaries.py",
-      "tests/pleiades/equilibrium/test_equilibrium_governing_residual.py"
+      "tests/pleiades/equilibrium/test_equilibrium_governing_residual.py",
+      "tests/pleiades/equilibrium/test_descending_pressure_equilibrium.py"
     ],
     "evidence_ceiling": "Bounded numerical contract only; no scientific approval.",
     "known_limitations": [

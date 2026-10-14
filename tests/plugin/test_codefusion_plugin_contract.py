@@ -766,7 +766,10 @@ def test_completed_results_return_only_exact_approved_item_versions():
             "item_ref": item["item_ref"],
             "revision": successor_base["artifact_digest"],
             "asset": ASSET_DOCUMENT,
-            "dependency_asset_ids": ["scirel.shared.dependency"],
+            "dependency_asset_ids": list(dict.fromkeys(
+                [dependency["asset_id"] for dependency in ASSET_DOCUMENT["version"]["dependencies"]]
+                + ["scirel.shared.dependency"]
+            )),
             "decision": completed["approved_items"][0]["decision"],
             "evidence": [],
         }

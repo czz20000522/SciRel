@@ -28,7 +28,8 @@
             "scirel.field.current-green-superposition",
             "scirel.field.dense-axisymmetric-green",
             "scirel.field.multi-coil-vacuum-field",
-            "scirel.field.filament-vacuum-field"
+            "scirel.field.filament-vacuum-field",
+            "scirel.electromagnetism.circular-filament-green"
           ]
         },
         {
@@ -44,10 +45,12 @@
         {
           "id": "current-and-conductor-response",
           "title": "构造等离子体电流与导体边界响应",
-          "introduction": "镜像对称网格上的 Green 矩阵将电流源与磁通响应联系起来；导体边界入口使用给定响应矩阵进行截断 SVD 修正。矩阵构造不包含电流面积积分，边界最小二乘也不保证任意系统残差为零。",
+          "introduction": "实际坐标矩阵保持目标行、源列和源权重；一般矩阵支持不规则坐标，镜像专用入口仍要求均匀对称 Z 网格。电流和单元面积权重由调用者明确施加；导体边界的截断 SVD 不保证任意系统残差为零。",
           "assets": [
             "scirel.field.mirror-plasma-green",
-            "scirel.field.ideal-conductor-boundary"
+            "scirel.field.ideal-conductor-boundary",
+            "scirel.electromagnetism.loop-flux-matrix",
+            "scirel.electromagnetism.green-response-matrices"
           ]
         },
         {

@@ -25,7 +25,7 @@ from finalize_release import finalize_single_draft_fixture as finalize_release  
 def _approved_snapshot(tmp_path: Path, *, alter_asset: bool = False) -> Path:
     document = json.loads(
         (
-            ROOT / "catalog/examples/scirel.field.circular-filament-green.json"
+            ROOT / "catalog/examples/scirel.field.rectangular-coil-filaments.json"
         ).read_text(encoding="utf-8")
     )
     if alter_asset:
@@ -56,18 +56,19 @@ def _approved_snapshot(tmp_path: Path, *, alter_asset: bool = False) -> Path:
 def _release_inputs(tmp_path: Path) -> tuple[Path, Path, Path]:
     documents = tmp_path / "documents"
     documents.mkdir()
-    source = ROOT / "catalog/examples/scirel.field.circular-filament-green.json"
+    source = ROOT / "catalog/examples/scirel.field.rectangular-coil-filaments.json"
     (documents / source.name).write_bytes(source.read_bytes())
     catalog = tmp_path / "catalog"
+    version = json.loads(source.read_bytes())["version"]["implementation_version"]
     build_catalog(
         documents,
         catalog,
         catalog_id="scirel-release-test",
-        release_version="0.1.0.dev5",
+        release_version=version,
         coverage_status="complete",
         declared_total=1,
     )
-    wheel = tmp_path / "scirel-0.1.0.dev5-py3-none-any.whl"
+    wheel = tmp_path / f"scirel-{version}-py3-none-any.whl"
     wheel.write_bytes(b"wheel fixture")
     return documents, catalog, wheel
 
@@ -96,7 +97,7 @@ def test_finalization_binds_approved_snapshot_to_exact_artifacts(tmp_path):
     catalog_release = json.loads((catalog / "release.json").read_text(encoding="utf-8"))
     assert released.status is WorkflowStatus.RELEASED
     assert manifest["approved_assets"] == [
-        "scirel.field.circular-filament-green"
+        "scirel.field.rectangular-coil-filaments"
     ]
     assert manifest["catalog_digest"] == catalog_release["root_digest"]
     assert manifest["wheel_digest"] == result["wheel_digest"]

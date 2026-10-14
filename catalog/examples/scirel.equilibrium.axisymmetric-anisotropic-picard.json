@@ -20,7 +20,7 @@
   "identity": {
     "relation": "vacuum flux, dense cell-current Green response and caller pressure closure to a bounded anisotropic axisymmetric equilibrium state",
     "direction": "R-Z grid, psi_vac, g_psi, pressure_closure and controls -> final psi, magnetic/pressure/force fields, cell currents and iteration diagnostics",
-    "definition": "Starting at a copy of psi_vac, derive B_R/B_Z/B from psi, gate the iteration field, call pressure_closure(B,psi), broadcast scalar pressures or require exact grid shapes, evaluate cylindrical div(P), mask inactive J_phi, and apply a flux-relaxed Green update. Stop when the step's relative psi change reaches tol or maxiter is exhausted; then rederive the terminal field, call the closure and force, recompute masked cell currents, and check minimum field, firehose and parallel-force compatibility in that order.",
+    "definition": "Starting at a copy of psi_vac, derive B_R/B_Z/B from psi, gate the iteration field, call pressure_closure(B,psi), broadcast scalar pressures or require exact grid shapes, evaluate cylindrical div(P), mask inactive J_phi, and apply a flux-relaxed Green update. Stop when the step's unrelaxed fixed_point_residual reaches tol or maxiter is exhausted; the relaxed relative_psi_change is diagnostic; then rederive the terminal field, call the closure and force, recompute masked cell currents, and check minimum field, firehose and parallel-force compatibility in that order.",
     "model": "bounded axisymmetric gyrotropic pressure Picard composition with externally supplied pressure closure",
     "geometry": "rectilinear cylindrical R-Z grid with at least three nodes per axis",
     "coordinates": "all state arrays indexed [Z,R]; dense Green axes use C-order field points and cell currents",
@@ -80,13 +80,13 @@
     },
     {
       "name": "tol",
-      "description": "Relative flux-change stopping threshold.",
+      "description": "Unrelaxed flux-map residual threshold for step stopping and terminal convergence.",
       "units": "dimensionless",
       "shape": "scalar",
       "dtype": "finite real scalar",
       "required": false,
       "default": 1e-08,
-      "constraints": "Strictly positive."
+      "constraints": "Strictly positive; relative_psi_change does not determine convergence."
     },
     {
       "name": "maxiter",
@@ -271,7 +271,7 @@
     },
     {
       "name": "converged",
-      "description": "True only when the terminal unrelaxed fixed-point residual passes tol (and free-boundary force compatibility passes).",
+      "description": "True exactly when the terminal unrelaxed flux-map fixed_point_residual <=tol after the declared terminal gates.",
       "units": "boolean",
       "shape": "scalar",
       "dtype": "bool",
@@ -390,7 +390,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.2.0.dev4+pleiades.anisotropy",
+    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
     "dependencies": [
       {
         "asset_id": "scirel.field.poloidal-field-from-flux"
@@ -553,7 +553,7 @@
       {
         "id": "loop_control",
         "kind": "controlled_glue",
-        "description": "Count steps, accumulate both relative changes, stop at tol or maxiter and retain next psi/current state.",
+        "description": "Count steps and retain diagnostic relative flux/current changes; stop only when the unrelaxed step fixed_point_residual <= tol or maxiter is reached. Retain next psi/current state.",
         "inputs": [
           "tol",
           "maxiter",
@@ -1067,7 +1067,7 @@
           "node": "loop_control",
           "port": "tol"
         },
-        "description": "Relative flux stopping threshold.",
+        "description": "Unrelaxed flux-map residual threshold; relative_psi_change is diagnostic.",
         "condition": "Every stop decision; default 1e-8.",
         "transform": "Identity or default.",
         "kind": "control",
@@ -1129,7 +1129,7 @@
         },
         "description": "Convergence diagnostic.",
         "condition": "After each step.",
-        "transform": "Append to history and compare to tol.",
+        "transform": "Append to history; the unrelaxed fixed_point_residual governs stopping.",
         "kind": "data",
         "required": true
       },
@@ -1206,7 +1206,7 @@
           "port": "psi_state"
         },
         "description": "Previous flux in next step's relaxation and residual.",
-        "condition": "When relative change exceeds tol and count is below maxiter.",
+        "condition": "When unrelaxed step fixed_point_residual exceeds tol and count is below maxiter.",
         "transform": "Identity.",
         "kind": "feedback",
         "required": true,
@@ -1864,7 +1864,7 @@
       "ordering": "Validate controls and geometry; for each step derive field, gate minimum B, call/normalize closure, select active cells, compute force, mask J_phi, update flux and record changes. After stopping, derive the final field, call closure and force, mask current, then check minimum B, firehose and compatibility before returning. Terminal reevaluation computes the unrelaxed flux-map residual on the returned field/closure state; it determines converged independently of a small relaxed step.",
       "branches": [
         "A fixed mask, dynamic mask or all-active default is selected by the caller's plasma_mask port.",
-        "At maxiter with relative_psi_change above tol, return converged=false after terminal checks.",
+        "At maxiter, reevaluate the terminal unrelaxed flux-map residual and return converged=true exactly when it is <=tol, otherwise false after terminal checks.",
         "strict_compatibility=false returns an above-threshold parallel-force error without the compatibility ValueError."
       ],
       "state_ownership": "The graph owns evolving psi, previous raw currents, iteration count and history; the caller owns grid, Green matrix, pressure_closure and mask policy.",

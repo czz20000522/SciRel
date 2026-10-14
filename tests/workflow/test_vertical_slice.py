@@ -22,6 +22,10 @@ ASSET_DOCUMENT = json.loads(
     ).read_text(encoding="utf-8")
 )
 
+# Workflow fixtures follow the exact document version; mismatch regressions
+# below still supply an independently different explicit version.
+ASSET_VERSION = ASSET_DOCUMENT["version"]["implementation_version"]
+
 
 def test_saved_l1_runs_to_release_with_host_adapter():
     payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
@@ -69,7 +73,7 @@ def test_saved_l1_runs_to_release_with_host_adapter():
         wheel_ref="artifact://wheel/dev/vertical",
         wheel_digest="sha256:" + "d" * 64,
         correlation_id="build://vertical/release",
-        release_version="0.1.0.dev5",
+        release_version=ASSET_VERSION,
     )
     release = release_result.release
 

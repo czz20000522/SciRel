@@ -505,8 +505,16 @@ def validate_document(document: Any, *, location: str = "document") -> dict[str,
     return item
 
 
-def load_document_set(directory: Path) -> list[dict[str, Any]]:
+def load_document_set(
+    directory: Path, *, additional_directories: tuple[Path, ...] = ()
+) -> list[dict[str, Any]]:
+    """Validate an explicitly supplied complete set; never discover siblings."""
     paths = sorted(directory.glob("*.json"))
+    for additional in additional_directories:
+        additional_paths = sorted(additional.glob("*.json"))
+        if not additional_paths:
+            raise AssetDocumentError(f"{additional}: contains no asset documents")
+        paths.extend(additional_paths)
     if not paths:
         raise AssetDocumentError(f"{directory}: contains no asset documents")
     documents = []
@@ -540,6 +548,23 @@ def load_document_set(directory: Path) -> list[dict[str, Any]]:
     return documents
 
 
+def resolve_test_reference(reference: str, source_root: Path) -> Path:
+    """Check a repository test file, preserving any opaque pytest node selector.
+
+    Pytest resolves the selected case during collection/execution; filesystem
+    existence applies only to the path before ``::``, never to the whole node ID.
+    """
+    filename, separator, selector = reference.partition("::")
+    if not filename or (separator and any(not part for part in selector.split("::"))):
+        raise ValueError(f"invalid test reference: {reference}")
+    candidate = (source_root / filename).resolve()
+    if Path(filename).is_absolute() or not candidate.is_relative_to(source_root.resolve()):
+        raise ValueError(f"test path escapes the repository: {reference}")
+    if not candidate.is_file():
+        raise ValueError(f"declared test is missing: {reference}")
+    return candidate
+
+
 def validate_runtime(
     document: dict[str, Any],
     source_root: Path = ROOT,
@@ -567,13 +592,10 @@ def validate_runtime(
         )
     _validate_runtime_inputs(document, signature)
     for test_path in document["verification"]["tests"]:
-        candidate = (source_root / test_path).resolve()
         try:
-            candidate.relative_to(source_root.resolve())
-        except ValueError:
-            _fail(document["asset_id"], f"test path escapes the repository: {test_path}")
-        if not candidate.is_file():
-            _fail(document["asset_id"], f"declared test is missing: {test_path}")
+            resolve_test_reference(test_path, source_root)
+        except ValueError as error:
+            _fail(document["asset_id"], str(error))
 
 
 def _validate_runtime_inputs(

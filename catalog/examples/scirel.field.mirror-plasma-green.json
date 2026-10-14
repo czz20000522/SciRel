@@ -6,7 +6,7 @@
     "en": "Reflection-symmetric plasma-cell flux Green matrix",
     "zh": "镜像对称等离子体 Green 磁通矩阵"
   },
-  "summary": "Build a dense flux-response matrix for circular plasma-cell sources and targets sharing a reflection-symmetric rectilinear R-Z grid.",
+  "summary": "在镜像专用对称均匀Z张量网格的实际坐标上构造等离子体圆电流丝磁通矩阵，不按反射索引拼装。",
   "taxonomy": [
     "field",
     "green-function",
@@ -18,11 +18,11 @@
   "identity": {
     "relation": "circular plasma-cell source currents to axisymmetric flux at the same R-Z grid points",
     "direction": "shared R-Z source/target grid -> g_psi[target_cell,source_cell]",
-    "definition": "Evaluate the maintained complete-elliptic-integral circular-filament flux response for sources on the first Z plane, then populate other source planes by the axial reflection and translation indexing permitted by the symmetric, uniformly spaced Z axis. Both matrix axes use C-order flattening of [Z,R]. No cell-area factor or current contraction is included.",
-    "model": "axisymmetric ideal circular-filament flux Green relation with source-compatible axial reflection construction",
+    "definition": "逐源逐目标用实际R、Z计算psi=R A_phi响应；矩阵两轴按[Z,R] C序展开，target-row/source-column。保留此专用入口的严格递增R、均匀且关于零对称Z合同；不把它拓宽为任意网格入口。无电流或单元面积乘因子。",
+    "model": "镜像几何域内的轴对称理想圆电流丝磁通响应，使用实际坐标核。",
     "geometry": "source and target cells share a nonnegative-radius rectilinear R-Z mesh",
     "coordinates": "SI cylindrical R-Z coordinates; grid arrays indexed [Z,R], matrix target and source axes flattened in C order",
-    "boundary": "A source radius within 1e-12 m of the axis yields a zero source column; nonfinite evaluated kernel elements, including unresolved singular values, are replaced by zero.",
+    "boundary": "对角精确自项和精确零半径源列为零；每个正半径源均保留，其他非有限算术抛错。",
     "assumptions": [
       "The Z axis is strictly increasing, uniformly spaced and reflection-symmetric about zero within the implementation tolerances.",
       "Each source column is a psi=R A_phi response per ampere of that circular source, not complete linked flux; the caller applies current or cell-current weights separately."
@@ -75,12 +75,12 @@
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for wrong grid rank/shape, fewer than two points per axis, nonfinite coordinates, nonrectilinear grids, negative or non-increasing R axis, non-increasing Z axis, or Z symmetry/uniform-spacing violations.",
-    "runtime_failure": "SciPy elliptic-function or unexpected NumPy errors propagate; nonfinite evaluated kernel elements are set to zero rather than raising.",
+    "runtime_failure": "实际坐标核的非法算术和不可表示输出抛FloatingPointError，不填零。",
     "nonconvergence": "Not applicable; no iterative solver is used.",
-    "partial_results": "No matrix is returned when grid validation or execution raises; individual nonfinite kernel values follow the documented zero convention."
+    "partial_results": "验证或运算失败不返回矩阵；精确对角及零半径源是独立声明的离散零约定。"
   },
   "provenance": {
-    "lineage_summary": "The maintained SciRel relation and direct tests were compared with the frozen historical Pleiades development mapping and pending intake candidate. SciRel and intake implementation text matched; historical labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery.",
+    "lineage_summary": "The maintained SciRel relation and direct tests were compared with the frozen historical Pleiades development mapping and pending intake candidate. SciRel and intake implementation text matched; historical labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. 本后继保留冻结前行为为证据，修正近轴剔除、非有限静默填零或人工场核偏移/截断；psi统一明确为RAphi，单位标签Wb/rad，不乘2π也不改存储数值。",
     "source_kinds": [
       "historical Pleiades development descriptor and migration mapping",
       "pending intake development candidate",
@@ -97,8 +97,12 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
-    "dependencies": []
+    "implementation_version": "0.2.0.dev6+pleiades.fullcore.mac",
+    "dependencies": [
+      {
+        "asset_id": "scirel.electromagnetism.loop-flux-matrix"
+      }
+    ]
   },
   "example": {
     "description": "Build a symmetric three-plane, four-radius response and check source-axis and axial-reflection blocks.",
@@ -107,21 +111,22 @@
   },
   "verification": {
     "scope": [
-      "First source-plane columns against an independently written circular-filament formula.",
+      "第一源平面逐列对照80位独立椭圆积分表达；原binary64 checker消差被独立高精度证明并修复，rtol2e-14保持。",
       "Whole-matrix equality with direct dense filament columns on a symmetric grid.",
       "Square shape, finite output and axis-source zero-column convention.",
-      "Rejection of an axially nonsymmetric grid and reflection-block relation."
+      "Rejection of an axially nonsymmetric grid and reflection-block relation.",
+      "独立70/80位精度理想圆环关系核对极小正半径、近轴非零BR、近丝和公式求值分支，保持原数值断言与容差；精确离散自项与算术失败分别处理。"
     ],
     "tests": [
-      "tests/operator_contracts/test_mirror_plasma_green.py"
+      "tests/operator_contracts/test_mirror_plasma_green.py",
+      "tests/operator_contracts/test_pleiades_field_green_correction.py"
     ],
     "evidence_ceiling": "Direct SciRel tests establish selected source-plane formula values, whole-matrix agreement with the maintained dense filament response on one symmetric grid, indexing invariants and one invalid-grid case. They do not prove resolved self-fields, arbitrary-grid validity, whole-project reassembly or expert recognition of this development record.",
     "known_limitations": [
       "The result is a dense O((N_Z*N_R)^2) matrix and may be costly on large grids.",
-      "Near-axis source columns and nonfinite kernel values use a zero convention rather than a physical singularity model.",
       "Current contraction and cell-area factors are caller responsibilities.",
-      "This psi=R A_phi response uses Wb/rad/A, while existing vacuum-field documents still label flux response Wb/A; public cross-asset unit naming remains for science-owner adjudication.",
-      "Public distribution licensing and SciRel expert recognition remain pending."
+      "Public distribution licensing and SciRel expert recognition remain pending.",
+      "专用镜像入口仍限定均匀对称Z张量网格；一般不规则坐标请使用electromagnetism领域的实际坐标矩阵接口。"
     ]
   }
 }

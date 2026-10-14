@@ -22,7 +22,13 @@ def test_perpendicular_velocity_lower_accepts_full_moment_interval():
         15,
         mode,
     )
-    assert full["hot_perpendicular_shape"][0, 0] > critical["hot_perpendicular_shape"][0, 0]
+    # Omitted and explicit zero cutoff define the SAME population. Critical
+    # speed is a slowing-down scale, not an implicit perpendicular-only cut.
+    import numpy as np
+    np.testing.assert_array_equal(full["hot_perpendicular_shape"], critical["hot_perpendicular_shape"])
+    xi2 = 1.0 - 1.0 / 20.0
+    np.testing.assert_allclose(full["hot_perpendicular_shape"],
+        (3.0 - xi2) / (2.0 * xi2), rtol=2e-12)
 
 
 def test_reviewed_relation_example():
@@ -48,7 +54,7 @@ def test_reviewed_relation_example():
         xi_mid = math.sqrt(1.0 - 1.0 / base["mirror_ratio"])
         vc = base["vc_over_v0"]
         lower = base["perp_velocity_lower"]
-        speed_parallel = quad(lambda v: v**4 / (v**3 + vc**3), 0.0, 1.0, epsabs=1e-13)[0]
+        speed_parallel = quad(lambda v: v**4 / (v**3 + vc**3), lower, 1.0, epsabs=1e-13)[0]
         speed_perp = quad(lambda v: v**4 / (v**3 + vc**3), lower, 1.0, epsabs=1e-13)[0]
         pitch_parallel = quad(lambda xi: xi**2 * (1.0 + degree * xi), 0.0, xi_mid, epsabs=1e-13)[0]
         pitch_perp = quad(lambda xi: (1.0 - xi**2) * (1.0 + degree * xi), 0.0, xi_mid, epsabs=1e-13)[0]
