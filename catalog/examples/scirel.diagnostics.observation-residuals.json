@@ -6,7 +6,7 @@
     "en": "Normalized observation residual reduction",
     "zh": "归一化观测残差归约"
   },
-  "summary": "Concatenate matched flux-loop and selected Thomson-like prediction errors divided by observation sigma, then compute their squared Euclidean norm.",
+  "summary": "对预先声明的每个观测通道计算固定顺序、固定维数的归一化残差；缺预测或单位不符均拒绝。",
   "taxonomy": [
     "diagnostics",
     "inference",
@@ -16,80 +16,79 @@
     "flux-first inversion residual vector"
   ],
   "identity": {
-    "relation": "matched diagnostic predictions and observations to a normalized residual vector and chi-squared",
-    "direction": "predicted, observations -> residual_vector, chi2",
-    "definition": "For a present flux_loops observation, append (prediction-values)/sigma first. Then, only if both thomson containers are mappings, append matching channels in density, electron_temperature, p_parallel, p_perp order. Scalar sigma defaults to 1 and is broadcast to each observation shape; flatten each channel in NumPy C order and concatenate, then chi2 is the dot product of the vector with itself.",
-    "model": "diagonal-sigma weighted residual sum without covariance or instrument model",
-    "geometry": "the reducer has no geometry; prediction and observation arrays must already refer to the same diagnostic samples",
-    "coordinates": "flux_loops precedes Thomson-like channels; positions within each channel follow NumPy flattening order",
-    "boundary": "Channel predictions and values must have exact shape; sigma may broadcast to that shape and must be finite and positive.",
+    "relation": "完整匹配的预测与观测到归一化残差与平方和",
+    "direction": "predicted、observations → residual_vector、chi2",
+    "definition": "首先验证观测布局，依次取 flux_loops、thomson.density、electron_temperature、p_parallel、p_perp。每个请求通道均要求预测与 values 精确同形；计算 (prediction-values)/sigma，按 NumPy C 顺序展平拼接，chi2=r·r。sigma 默认 1，可广播；绝不跳过缺少预测的通道。",
+    "model": "对角 sigma 加权最小二乘，无协方差、自由度校正或仪器模型",
+    "geometry": "无几何计算；观测与预测的位置对齐由调用者负责",
+    "coordinates": "磁通优先，其后四个 profile 通道固定顺序；通道内部按 C 顺序",
+    "boundary": "values 非空且有限、sigma 有限正值、残差及 chi2 可表示；显式 unit 必须与 predicted.units 一致。",
     "assumptions": [
-      "The caller owns measurement units, point alignment and sigma interpretation; this function performs no unit conversion.",
-      "Only recognized and mutually present Thomson-like channels contribute; unknown channels are ignored."
+      "数值与 sigma 具有相同单位、相同采样对应关系。",
+      "未声明 unit 的记录仍可用于纯归一化代数；不由此获得物理单位匹配证明。"
     ]
   },
   "inputs": [
     {
       "name": "predicted",
-      "description": "Diagnostic predictions; flux_loops is required if observed, while Thomson-like channels are used only when both sides supply matching keys.",
-      "units": "each channel matches its observation values",
-      "shape": "mapping with optional flux_loops array and thomson mapping",
-      "dtype": "Python Mapping containing float-convertible arrays",
+      "description": "逐通道预测；观测声明 unit 时，还必须提供匹配的 units 元数据。",
+      "units": "与对应 values 相同",
+      "shape": "mapping；flux_loops 数组及/或 thomson 映射",
+      "dtype": "映射与实数数组",
       "required": true,
-      "constraints": "Recognized used predictions must be finite and exactly match corresponding values shapes."
+      "constraints": "每个请求通道都必须存在、有限并精确同形，不允许缺 Thomson 通道。"
     },
     {
       "name": "observations",
-      "description": "Observed flux_loops and/or Thomson-like channels; each used channel holds values and optional sigma.",
-      "units": "channel values in caller units; sigma in same units",
-      "shape": "mapping[signal -> {values, sigma?}] with optional nested thomson",
-      "dtype": "Python Mapping containing float-convertible arrays",
+      "description": "flux_loops 与/或 thomson 请求，每个通道含 values、可选 sigma 和可选 unit。",
+      "units": "values 与 sigma 同单位",
+      "shape": "mapping",
+      "dtype": "映射与实数数组",
       "required": true,
-      "constraints": "At least one usable recognized signal with matching prediction; used values finite, sigma finite and strictly positive. A present flux_loops key requires a prediction and values mapping."
+      "constraints": "只允许已知 kind/channel；values 非空有限；sigma 默认 1 且必须正且可广播；unit 如有须非空字符串。"
     }
   ],
   "outputs": [
     {
       "name": "residual_vector",
-      "description": "Concatenated signed (prediction-observation)/sigma values in declared channel and flatten order.",
+      "description": "固定通道顺序拼接的有符号归一化残差。",
       "units": "dimensionless",
-      "shape": "[N_residual]",
-      "dtype": "float64 NumPy array",
+      "shape": "[N_residual]，N>0",
+      "dtype": "float64 数组",
       "required": true,
-      "constraints": "May be empty if a recognized matched channel itself contains zero samples; finite on success."
+      "constraints": "N 由观测 values 总元素数确定，不由可用预测决定；全有限。"
     },
     {
       "name": "chi2",
-      "description": "Unreduced sum of squared normalized residuals, without degrees-of-freedom adjustment.",
+      "description": "残差平方和，不除自由度。",
       "units": "dimensionless",
       "shape": "scalar",
       "dtype": "float",
       "required": true,
-      "constraints": "Finite and nonnegative on successful return."
+      "constraints": "有限、非负，等于 residual_vector 的内积。"
     }
   ],
   "applicability": {
     "preconditions": [
-      "Predictions and observations are already aligned in channel, sample location, shape and units.",
-      "The caller accepts independent sigma normalization, with no covariance matrix."
+      "预测与观测在同一点、同单位且按相同形状排列。"
     ],
     "supported": [
-      "Flux-loop-like residuals and matching Thomson-like density, electron_temperature, p_parallel and p_perp residuals.",
-      "Flux-first deterministic channel ordering and scalar or broadcastable sigma."
+      "对角 sigma 权重的多通道归一化残差。",
+      "所有请求通道的严格存在性、形状与显式单位匹配。"
     ],
     "excluded": [
-      "A synthetic diagnostic calculator, a likelihood with correlated errors, or a physical validation of the supplied equilibrium.",
-      "Automatic rejection of unmatched Thomson-like channels; those are skipped when no usable match remains unless another signal contributes."
+      "相关噪声协方差、仪器标定、自由度修正或拟合显著性判断。",
+      "根据剩余预测自动缩小拟合问题。"
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError for non-mapping top-level inputs, missing observed flux prediction or values, used malformed channel, exact-shape mismatch, nonbroadcastable/nonfinite/nonpositive sigma, nonfinite used values, or no usable signal. NumPy conversion failures may propagate.",
-    "runtime_failure": "Raises ValueError if normalized residuals or their squared sum become nonfinite; unexpected NumPy failures propagate.",
-    "nonconvergence": "Not applicable; one finite reduction is performed.",
-    "partial_results": "No mapping is returned if any used channel fails, even after prior channels were reduced."
+    "invalid_input": "空或未知观测、缺预测、空值、非有限值、形状错误、非正 sigma、显式单位不一致抛 ValueError。",
+    "runtime_failure": "归一化或平方和溢出被检测为 ValueError。",
+    "nonconvergence": "无迭代；前向有效性由 trial 层单独判定。",
+    "partial_results": "不返回删掉错误通道后的部分残差。"
   },
   "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery.",
+    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. 本后继针对已证实的观测约定、漏通道、失败维数和无效最优试探问题修正；保留前驱字节与失败证据，未继承错误 fallback。物理组合复用已资格化各向异性 Picard、场恢复及 Green 能力；不把旧候选来源或本作者测试解释为根接收、人工认可或再分发许可。",
     "source_kinds": [
       "historical Pleiades development descriptor and migration mapping",
       "pending intake development candidate",
@@ -106,27 +105,28 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev12+inference.physical",
     "dependencies": []
   },
   "example": {
-    "description": "A flux-loop residual precedes a Thomson-like perpendicular-pressure residual.",
-    "code": "import numpy as np\nfrom scirel.diagnostics import reduce_observation_residuals\nresult = reduce_observation_residuals(predicted={'flux_loops': [3.0], 'thomson': {'p_perp': [5.0]}}, observations={'flux_loops': {'values': [1.0], 'sigma': [2.0]}, 'thomson': {'p_perp': {'values': [3.0], 'sigma': [1.0]}}})\nnp.testing.assert_allclose(result['residual_vector'], [1.0, 2.0])\nassert result['chi2'] == 5.0",
-    "expected": "The ordered normalized vector is [1, 2] and the unadjusted squared sum is 5."
+    "description": "磁通残差排在垂直压强残差之前；单位由两侧显式绑定。",
+    "code": "import numpy as np\nfrom scirel.diagnostics import reduce_observation_residuals\nr=reduce_observation_residuals(predicted={'flux_loops':[3.],'thomson':{'p_perp':[5.]},'units':{'flux_loops':'Wb','thomson':{'p_perp':'Pa'}}}, observations={'flux_loops':{'values':[1.],'sigma':[2.],'unit':'Wb'},'thomson':{'p_perp':{'values':[3.],'sigma':[1.],'unit':'Pa'}}})\nnp.testing.assert_allclose(r['residual_vector'],[1.,2.])\nassert r['chi2']==5.",
+    "expected": "固定顺序向量为 [1,2]，平方和为 5；缺少 p_perp 预测必须失败。"
   },
   "verification": {
     "scope": [
-      "Flux-first ordering and sigma scaling on two channels.",
-      "Rejection of no matching channel, shape mismatch, nonpositive sigma and nonfinite predictions."
+      "保留原归一化与 sigma 数值断言。",
+      "混合磁通与 Thomson 请求缺任一通道时拒绝；单位冲突与空值拒绝。",
+      "固定维数 trial 与真实前向反演组合。"
     ],
     "tests": [
-      "tests/operator_contracts/test_observation_residuals.py"
+      "tests/operator_contracts/test_inference_physical_closure.py",
+      "tests/operator_contracts/test_anisotropic_inference_independent.py"
     ],
-    "evidence_ceiling": "Direct tests establish the stated finite-array reduction and selected failures; they do not validate measurement alignment, covariance assumptions, physical predictions or expert recognition.",
+    "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
     "known_limitations": [
-      "Unmatched Thomson-like channels and unknown observation keys are silently ignored if another usable signal exists.",
-      "No covariance, robust loss or degrees-of-freedom normalization is applied.",
-      "Public distribution licensing and SciRel expert recognition remain pending."
+      "unit 为声明匹配，不自动转换单位，也不验证仪器校准。",
+      "chi2 只表示该对角权重下的代数平方和，不能单独解释为统计显著性。"
     ]
   }
 }

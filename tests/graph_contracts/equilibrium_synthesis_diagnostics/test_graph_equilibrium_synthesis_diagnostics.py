@@ -28,6 +28,8 @@ def _inputs():
         "Z": Z,
         "equilibrium": {
             "psi": R + 2.0 * Z,
+            "psi_unit": "Wb/rad",
+            "profile_units": {"p_parallel":"Pa", "p_perp":"Pa", "density":"m^-3", "electron_temperature":"eV"},
             "profiles": {
                 "p_parallel": 10.0 + R + Z,
                 "p_perp": 20.0 + 2.0 * R + Z,
@@ -36,8 +38,8 @@ def _inputs():
             },
         },
         "observations": {
-            "flux_loops": {"points": np.array([[0.5, 0.5]])},
-            "thomson": {"points": np.array([[0.5, 0.5]])},
+            "flux_loops": {"points": np.array([[0.5, 0.5]]), "quantity":"raw_psi", "unit":"Wb/rad"},
+            "thomson": {"points": np.array([[0.5, 0.5]]), "p_parallel":{"unit":"Pa"}, "p_perp":{"unit":"Pa"}, "density":{"unit":"m^-3"}, "electron_temperature":{"unit":"eV"}},
         },
     }
 
@@ -54,16 +56,16 @@ def test_yaml_declares_observer_only_sampling_contract():
 # 验证：flux 分支读取 psi，结果按 source 的 flux-first key 顺序出现。
 def test_predicts_flux_loop_from_equilibrium_flux_only():
     inputs = _inputs()
-    inputs["observations"] = {"flux_loops": {"points": np.array([[0.5, 0.5]])}}
+    inputs["observations"] = {"flux_loops": {"points": np.array([[0.5, 0.5]]), "quantity":"raw_psi", "unit":"Wb/rad"}}
     result = _run(inputs)
-    assert list(result) == ["flux_loops"]
+    assert list(result) == ["flux_loops", "units"]
     np.testing.assert_allclose(result["flux_loops"], [1.5])
 
 
 # 验证：Thomson 压强为必需端口，密度和电子温度仅在 source profile 实际提供时加入。
 def test_predicts_required_and_optional_thomson_fields():
     result = _run(_inputs())
-    assert list(result) == ["flux_loops", "thomson"]
+    assert list(result) == ["flux_loops", "thomson", "units"]
     np.testing.assert_allclose(result["thomson"]["p_parallel"], [11.0])
     np.testing.assert_allclose(result["thomson"]["p_perp"], [21.5])
     np.testing.assert_allclose(result["thomson"]["density"], [3.5])
@@ -71,17 +73,22 @@ def test_predicts_required_and_optional_thomson_fields():
     inputs = _inputs()
     inputs["equilibrium"]["profiles"]["density"] = None
     inputs["equilibrium"]["profiles"]["electron_temperature"] = None
+    # Optional source profiles need not exist only when those channels were not requested.
+    del inputs["observations"]["thomson"]["density"]
+    del inputs["observations"]["thomson"]["electron_temperature"]
     thomson = _run(inputs)["thomson"]
     assert set(thomson) == {"p_parallel", "p_perp"}
 
 
-# 验证：空和未知 observations 严格保持 predict_observations 的空 mapping 语义。
+# 验证：空和未知 observations 是配置错误，不再静默返回空 mapping。
 def test_empty_or_unknown_observations_return_empty_mapping():
     inputs = _inputs()
     inputs["observations"] = {}
-    assert _run(inputs) == {}
+    with pytest.raises(ValueError):
+        _run(inputs)
     inputs["observations"] = {"unknown": {"points": np.array([[0.5, 0.5]])}}
-    assert _run(inputs) == {}
+    with pytest.raises(ValueError):
+        _run(inputs)
 
 
 @pytest.mark.parametrize(

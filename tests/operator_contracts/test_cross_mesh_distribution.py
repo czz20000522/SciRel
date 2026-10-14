@@ -2,9 +2,11 @@
 (the N5 H<->H2 cross-grid distribution interpolation, saved anchor
 ``KN1DPy/interp_fvrvxx.py`` as recorded by the saved bundle's provenance).
 
-The saved valid-domain arithmetic is checked against independent cylindrical
-moments. Input coercions, undefined axes and correction nonconvergence fail
-closed under SciRel's declared contract.
+The retained valid numerical assertions are checked against independent
+cylindrical moments. The corrected branch is a scientific successor rather
+than a replay of the defective saved AN/BN correction. Input coercions,
+undefined axes and correction nonconvergence fail closed under SciRel's
+declared contract.
 
 The saved formal operator has no cache or w_new branch: it recomputes the
 weight matrix every call, exactly like this stateless port.  The original
@@ -281,6 +283,10 @@ def test_iteration_limit_must_be_positive_integer(limit):
 def test_correction_limit_exhaustion_returns_no_partial_distribution():
     vr_a, vx_a, x_a, vr_b, vx_b, x_b = _meshes()
     fa = np.exp(np.random.default_rng(0).normal(size=(vr_a.size, vx_a.size, x_a.size)))
+    # The original narrow grid cannot represent the requested energy; a
+    # feasible wider grid isolates bounded iteration exhaustion.
+    vr_b = np.linspace(0.1, 2.8, 8)
+    vx_b = np.linspace(-2.7, 2.7, 11)
     original = fa.copy()
     with pytest.raises(ValueError, match="did not converge within 1 iterations at x_b index 0"):
         interp_distribution_across_mesh(
@@ -290,11 +296,14 @@ def test_correction_limit_exhaustion_returns_no_partial_distribution():
     np.testing.assert_array_equal(fa, original)
 
 
-def test_positive_input_does_not_guarantee_nonnegative_corrected_output():
+def test_original_negative_output_witness_now_fails_as_infeasible():
+    # Historical assertion of negative output is frozen with the original
+    # failure receipt. It is not a physical correctness requirement.
+    from scirel.kinetic.cross_mesh_distribution_interpolation import InfeasibleMomentsError
     vr_a, vx_a, x_a, vr_b, vx_b, x_b = _meshes()
     fa = np.exp(np.random.default_rng(0).normal(size=(vr_a.size, vx_a.size, x_a.size)))
     assert np.all(fa > 0)
-    fb = interp_distribution_across_mesh(
-        fa, vr_a, vx_a, x_a, 2.0, vr_b, vx_b, x_b, 1.5
-    )
-    assert np.any(fb < 0)
+    with pytest.raises(InfeasibleMomentsError, match="convex hull"):
+        interp_distribution_across_mesh(
+            fa, vr_a, vx_a, x_a, 2.0, vr_b, vx_b, x_b, 1.5
+        )

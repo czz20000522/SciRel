@@ -1,0 +1,19 @@
+{
+  "schema": "scirel.bounded-scientific-integration.v1",
+  "action_id": "scirel-cumulative-remap-inference-integration-20261014-v1",
+  "base": "a161c50ea4a49118889b30c763364a2d00c10757",
+  "new_assets": [
+    "scirel.kinetic.cross-mesh-distribution-interpolation"
+  ],
+  "accepted_composite": "provenance/validation/remap-root-composite-20261014.json",
+  "comparison": "Exact6-path scientific successor plus cumulative selection/export. Nonnegative entropy projection respects finite-grid moment feasibility and spatial extensive-moment targets. The shared quadrature and all155 previous cumulative implementation files remain exact. Existing71 other Chinese kinetic records are unchanged.",
+  "dependencies": "NumPy/SciPy already present; no new source-comparison or development dependency in runtime. Existing cumulative five Python dependencies and Octave-bound PDRK runtime remain.",
+  "record": {
+    "asset_id": "scirel.kinetic.cross-mesh-distribution-interpolation",
+    "path": "catalog/examples/scirel.kinetic.cross-mesh-distribution-interpolation.json",
+    "sha256": "f815591f0e8d00cce325b5dea1175557f821cdbe6af40052f4a1815f5578fdae"
+  },
+  "human_approval": false,
+  "public_release": false,
+  "whole_source_project_complete": false
+}

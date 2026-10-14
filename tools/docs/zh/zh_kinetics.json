@@ -5018,143 +5018,151 @@
     },
     {
       "asset_id": "scirel.kinetic.cross-mesh-distribution-interpolation",
-      "source_sha256": "0cf1c01f988f8b2180a98d66e7979a5038f330b2f6eab952c72200904ba1714c",
-      "summary": "通过速度单元重叠、空间线性插值、可选有界矩修正及密度缩放，在两个相空间网格之间传递分布。",
-      "definition": "用fV=sqrt(Tnorm_b/Tnorm_a)换算目标速度单元，四维重叠体积矩阵传递速度分布，再按searchsorted位置作空间线性插值。correct=1执行AN/BN扰动矩循环直到s≥1或达到上限，最后在目标积分量超过min(fb>0)的位置重标密度。",
-      "model": "冻结网格接口的无状态移植，每次重新计算权重矩阵。",
+      "source_sha256": "f815591f0e8d00cce325b5dea1175557f821cdbe6af40052f4a1815f5578fdae",
+      "summary": "在两个相空间网格之间转移柱坐标速度分布。默认分支通过带约束的相对熵投影保持分布非负，并保持经过空间插值的离散密度、轴向动量密度和速度平方能量密度；目标网格无法实现所需矩时明确报错。",
+      "definition": "单元体积为 w_ij = pi*(r_right^2-r_left^2)*dvx，速度尺度为 fV = sqrt(Tnorm_b/Tnorm_a)。先在源网格计算 M_a = sum w_a*fa*(1, vx_a/fV, (vr_a/fV)^2+(vx_a/fV)^2)，再对这三个广延矩进行空间线性插值。对 n=M_0>0 的目标位置，求满足 p>=0、sum p=1、E_p[vx_b]=M_1/n 和 E_p[vr_b^2+vx_b^2]=M_2/n 的单元概率，并最小化 sum p*log(p/q)。参考概率 q 在可行面上把归一化重叠质量与 1e-12 的单元体积概率混合。最后返回 fb=n*p/w_b。零密度返回零；相同速度网格和归一化温度直接采用凸空间插值。",
+      "model": "两个速度维度、一个空间维度的无状态单元重叠重映射，随后执行非负相对熵投影。这是对保存的 AN/BN 算法的科学修正，不再声称修正分支与旧源码逐值一致。",
+      "boundary": "各坐标轴均须为至少两个节点的有限实数严格递增数组；径向节点非负，轴向节点同时含正、负速度；满足保留的速度节点与空间重叠检查。Tnorm 有限正值且尺度比可表示；fa 为匹配网格的有限数组，在 correct=1 时还须非负。目标平均速度和能量须位于目标节点凸包内，且二进制浮点计算须满足返回值后置条件。",
       "assumptions": [
-        "冻结正式算子没有缓存分支；原运行程序的缓存生命周期不在该回放范围。",
-        "复用柱坐标速度求积，统一非负径向、双符号轴向约束；有限回放保留逐位结果。",
-        "单点vx原实现可产生IndexError；当前要求至少两个双符号节点并给出ValueError。",
-        "拒绝原实现可接受的布尔/字符串/复数转换；温度须有限实数，correct为二值整数，警告阈值为整数或None。",
-        "原s=min(1,...)循环没有有限迭代保证；当前每个目标x节点最多max_correction_iterations次，默认1000，耗尽即ValueError且不返回部分结果。",
-        "矩修正不保证非负：已记录正输入在两实现均产生140格中的37个负格，最小约−740.8。需要非负分布时必须核对结果或选择其他已验证传递；能量矩及外部原子物理正确性未独立建立。",
-        "未绑定外部原子物理参考，保留validation_oracle_gap。"
+        "算子无状态，每次调用重新计算单元重叠权重；源运行时的缓存生命周期和整个 KN1D 状态不在合同范围内。",
+        "柱坐标单元体积采用共享 SciRel 求积关系 pi*(r_right^2-r_left^2)*dvx。守恒的是离散节点的动量和能量矩，不是连续重建分布的解析积分。",
+        "使用 fV=sqrt(Tnorm_b/Tnorm_a) 转换源归一化。密度、轴向动量密度和速度平方能量密度先做空间插值，再除以密度；密度随空间变化时，直接插值平均速度或平均能量会破坏守恒。",
+        "correct=1 要求有限非负输入。参考概率含 1e-12 的单元体积混合，可向原来零重叠的单元分配质量；它在可行解之间选择熵投影，不放松矩约束、不截断负输出，也不保证所有高阶矩不变。",
+        "可实现的归一化目标位于 conv{(vx_j, vr_i^2+vx_j^2)} 内；边界面上的目标只使用该面节点。归一化几何判定使用二进制双精度的 64 eps，返回分布的三个归一化矩残差均须不超过 128 eps。",
+        "用阻尼 Newton 法求解熵对偶问题，Hessian 为协方差矩阵，指数归一化使用稳定的 log-sum-exp。max_correction_iterations 限制每个空间切片的更新数，默认 1000；不可行和数值不收敛是不同错误，均不返回部分分布。",
+        "零密度切片返回零。速度网格和 Tnorm 相同时采用凸空间插值，在共同空间节点上严格保持恒等；源空间区间以外填零。",
+        "correct=0 保留历史代数插值及条件密度重标定，仍接受有正有负的输入；它不提供默认分支的非负性及三个物理矩守恒保证。",
+        "修正后的数学重映射有意改变有缺陷的旧源码修正。历史源码比较、已撤回的严格 KN1DPy D1 资格、外部原子物理参照缺口及待定的公开分发许可均继续保留。"
       ],
-      "boundary": "所有速度/空间轴有限实数严格递增且至少两点；径向非负、轴向双符号；速度与空间域重叠；正有限温度比可表示；分布有限对齐；correct二值整数，迭代上限正整数。",
       "inputs": [
         {
           "name": "fa",
-          "description": "源相空间分布。",
-          "constraints": "有限实数三维且与源网格对齐；拒绝布尔/字符串/复数。",
-          "dtype": "转为 float64 的实数类数组"
+          "description": "源网格上的输入分布。",
+          "constraints": "匹配源网格的有限实数三维数组；correct=1 时必须非负。有正有负的有限输入仅由 correct=0 代数分支接受。拒绝布尔、字符串和复数的隐式转换。",
+          "dtype": "实数类数组"
         },
         {
           "name": "vr_a",
-          "description": "源径向速度节点。",
-          "constraints": "有限实数非负、严格递增、至少两点。",
-          "dtype": "转为 float64 的实数类数组"
+          "description": "源网格的径向速度节点。",
+          "constraints": "有限实数、非负、严格递增，至少两个节点。",
+          "dtype": "实数类数组"
         },
         {
           "name": "vx_a",
-          "description": "源轴向速度节点。",
-          "constraints": "有限实数严格递增、至少两点且含正负支。",
-          "dtype": "转为 float64 的实数类数组"
+          "description": "源网格的轴向速度节点。",
+          "constraints": "有限实数、严格递增，至少两个节点，并同时覆盖负、正轴向速度。",
+          "dtype": "实数类数组"
         },
         {
           "name": "x_a",
-          "description": "源空间节点。",
-          "constraints": "有限实数严格递增、至少两点。",
-          "dtype": "转为 float64 的实数类数组"
+          "description": "源网格的空间节点。",
+          "constraints": "有限实数、严格递增，至少两个节点。",
+          "dtype": "实数类数组"
         },
         {
           "name": "Tnorm_a",
-          "description": "源归一化温度。",
-          "constraints": "有限实数正；与目标温度之比须产生有限正速度尺度。",
+          "description": "源网格的归一化温度。",
+          "constraints": "有限正实数；与 Tnorm_b 的比值须产生有限正速度尺度。",
           "dtype": "实数标量"
         },
         {
           "name": "vr_b",
-          "description": "目标径向速度节点。",
-          "constraints": "有限实数非负、严格递增、至少两点。",
-          "dtype": "转为 float64 的实数类数组"
+          "description": "目标网格的径向速度节点。",
+          "constraints": "有限实数、非负、严格递增，至少两个节点。",
+          "dtype": "实数类数组"
         },
         {
           "name": "vx_b",
-          "description": "目标轴向速度节点。",
-          "constraints": "有限实数严格递增、至少两点且含正负支。",
-          "dtype": "转为 float64 的实数类数组"
+          "description": "目标网格的轴向速度节点。",
+          "constraints": "有限实数、严格递增，至少两个节点，并同时覆盖负、正轴向速度。",
+          "dtype": "实数类数组"
         },
         {
           "name": "x_b",
-          "description": "目标空间节点。",
-          "constraints": "有限实数严格递增、至少两点。",
-          "dtype": "转为 float64 的实数类数组"
+          "description": "目标网格的空间节点。",
+          "constraints": "有限实数、严格递增，至少两个节点。",
+          "dtype": "实数类数组"
         },
         {
           "name": "Tnorm_b",
-          "description": "目标归一化温度。",
-          "constraints": "有限实数正；与源温度之比须产生有限正速度尺度。",
+          "description": "目标网格的归一化温度。",
+          "constraints": "有限正实数；与 Tnorm_a 的比值须产生有限正速度尺度。",
           "dtype": "实数标量"
         },
         {
           "name": "correct",
-          "description": "是否执行矩修正。",
-          "constraints": "整数1执行有界修正，整数0仅原始插值；拒绝布尔及隐式转换。",
+          "description": "矩修正分支选择器。",
+          "constraints": "整数 1 执行非负守恒熵投影；整数 0 保留代数插值及历史条件密度重标定，不提供物理矩保证。拒绝布尔值及其他可强制转换类型。",
           "dtype": "整数标量"
         },
         {
           "name": "do_warn",
-          "description": "边界截断警告开关。",
-          "constraints": "默认None不警告；整数使用do_warn×max(fb)阈值但不改变输出；拒绝其他类型。",
-          "dtype": "整数或 None"
+          "description": "源边界截断警告开关。",
+          "constraints": "默认 None 不发警告；整数使用保存的 do_warn * max(fb) 阈值，不改变输出。拒绝其他类型。",
+          "dtype": "整数标量"
         },
         {
           "name": "max_correction_iterations",
-          "description": "每个目标空间节点的修正上限。",
-          "constraints": "正整数；耗尽时ValueError，无部分结果。",
+          "description": "每个目标空间节点最多执行的阻尼 Newton 更新次数。",
+          "constraints": "须为正整数；数值耗尽抛出 ValueError 子类 MomentCorrectionConvergenceError，不返回部分结果。目标不可实现则独立抛出 InfeasibleMomentsError，不受此预算影响。",
           "dtype": "整数标量"
         }
       ],
       "outputs": [
         {
           "name": "fb",
-          "description": "目标相空间分布。",
-          "constraints": "有限的修正或原始代数传递结果；正输入也不保证非负。",
-          "dtype": "float64 数组"
+          "description": "目标网格上的插值分布。",
+          "dtype": "float64 数组",
+          "constraints": "correct=1 时为有限非负分布，离散密度、轴向动量密度和速度平方能量密度与空间插值后的源目标在归一化舍入精度内一致；源空间区间外为零。correct=0 仅为有限代数结果，不带上述物理保证。"
         }
       ],
       "applicability": {
         "preconditions": [
-          "两网格满足轴/形状合同，速度域与空间域重叠。",
-          "调用者接受冻结矩修正、域外零填充和不保证非负的语义。"
+          "两个网格满足坐标轴、形状、重叠和数值可表示性合同。",
+          "correct=1 时 fa 非负，每个非零密度目标的平均矩位于目标速度/能量节点凸包内。"
         ],
         "supported": [
-          "共享空间域上原子/分子分布的特定代数网格传递。",
-          "计算前拒绝形状失配、非正Tnorm和无重叠域。"
+          "非均匀柱坐标速度网格、非零轴向漂移、不等归一化温度和随空间变化的密度。",
+          "默认分支同时保持离散密度、轴向动量密度和速度平方能量密度，并返回非负分布。",
+          "零密度、相同网格恒等、凸空间插值、凸包边/顶点以及明确的不可行诊断。",
+          "保留无状态 correct=0 兼容分支和不改变数值的边界警告选择器。"
         ],
         "excluded": [
-          "不支持不相交速度域之间的保守重映射。",
-          "不支持二维空间或3V速度网格。",
-          "不提供矩修正目标的外部原子物理验证。",
-          "不可未经检查即作为非负分布使用；正输入也会产生负格。"
+          "有限目标网格无法实现的物理矩；不通过截断、放松目标或静默扩大网格制造结果。",
+          "缺少保留要求的速度节点/空间重叠、二维空间网格或三个速度维度。",
+          "不保证高阶矩、细致分布形状或熵不变；熵目标只在满足三个矩的可行分布之间选择解。",
+          "原子物理验证、完整 KN1D 能力和源缓存状态等价性。",
+          "不对可含负值的 correct=0 代数分支作物理守恒或非负性承诺。"
         ]
       },
       "failure_semantics": {
-        "invalid_input": "轴非法实数/非有限/非递增/不足两点、负径向、轴向缺一符号、温度非正/非有限或尺度比不可表示、分布失配、选择器或上限非法、域不重叠时 ValueError。",
-        "runtime_failure": "求积、中间修正密度或最终结果非有限/不可表示时ValueError；有限结果仍可能有负值。",
-        "nonconvergence": "每个目标x节点按原顺序计算矩、alpha/beta与s并更新fb；s≥1停止。默认1000次上限后仍s<1时，带目标x索引的ValueError，无部分结果。",
-        "partial_results": "不返回部分结果。"
+        "invalid_input": "坐标轴、形状、实数类型、温度、选择器、重叠条件不满足，或 correct=1 的 fa 含负值时抛出 ValueError。目标矩不可实现时抛出其子类 InfeasibleMomentsError；diagnostics 包含 x_b 索引、请求的归一化平均矩、最大节点能量及分离不等式残差。",
+        "runtime_failure": "求积、重叠插值、源矩或最终数值不可表示时抛出 ValueError。无法分辨凸包面、协方差奇异、没有下降/线搜索步，或有限非负三矩后置条件失败时，抛出 ValueError 子类 MomentCorrectionConvergenceError。",
+        "nonconvergence": "迭代状态是可行凸包面上的熵对偶参数。每次有界更新计算矩残差和协方差 Hessian，再执行阻尼 Newton 步，每步最多 64 次线搜索。归一化矩残差不超过二进制双精度的 32 eps 时停止；返回值还须通过 128 eps 的实际输出三矩检查。超过每个切片的 max_correction_iterations 更新上限时，抛出带空间索引的 MomentCorrectionConvergenceError；不可行目标使用另一种错误。",
+        "partial_results": "从不返回部分结果；任一空间切片被拒绝都会终止调用，不返回部分分布，也不修改输入。"
       },
       "example": {
-        "description": "跨两个相空间网格传递分布，检查形状、有限性与密度矩。",
-        "expected": "目标形状正确且处处有限；目标求积密度匹配空间插值后的源密度，相对容差1e−9。"
+        "description": "转移具有非零漂移和空间变密度的分布，并检查非负性及三个独立组装的离散矩。",
+        "expected": "返回形状为 (8,11,4) 的有限非负数组。独立组装的密度、轴向动量密度和速度平方能量密度与空间插值后的源剖面在 rtol=1e-11、atol=1e-13 下相符。这是离散重映射示例，不是原子物理验证。"
       },
       "verification": {
         "scope": [
-          "目标求积密度与源密度空间插值相符，相对容差1e−9。",
-          "轴向速度对称输入保持零轴向流矩。",
-          "correct=0与1结果不同，证实修正分支生效。",
-          "重复无状态调用具有确定性。",
-          "核验有限实数、轴最少点数、径向非负、轴向双符号、二值选择、重叠与温度尺度门禁。",
-          "正随机分布需要多于一次修正；上限1拒绝且不修改输入、不返回部分结果。",
-          "两网格与两分支、重复调用、基础拒绝及正输入负输出反例的摘要绑定只读回放；仅历史证据。"
+          "保留原正输入产生负输出的 RED 失败证据；凸包能量上界证明旧网格前两个目标不可能实现，修正版 API 对其明确拒绝。",
+          "同一随机正输入在扩大后的可行网格上，以及旧网格可行的末两个切片上，得到非负分布并满足三个独立积分矩。",
+          "独立标量柱坐标求积检查非均匀网格、非零漂移、不等温度，以及空间密度变化时广延矩的插值。",
+          "检查严格零密度、相同网格恒等及凸空间插值，并检查源空间区间外填零。",
+          "检查凸包下边、上边、顶点和靠近边界的内点，不截断负数或放松目标。",
+          "检查输入拒绝、不可行与有界数值耗尽的区别、输入不变性、重复调用确定性及保留的 correct=0/警告行为。",
+          "保留的数值断言与新增科学回归连同求积依赖运行；对精确 wheel 在无源码、无 pytest、无参考答案、无网络的环境独立检查用户运行。"
         ],
-        "evidence_ceiling": "无源码测试建立密度/零流矩例子、确定性、输入失败和有界耗尽；四个有限分支/网格回放与负输出反例不恢复撤回的D1，也不保证非负或外部物理正确性。专家认可、版本信任和许可仍待决定。",
+        "evidence_ceiling": "作者候选证据支持测试域内的有限网格非负三矩重映射，以及明确的不可实现/迭代失败，并包含无源码的精确 wheel 运行。根独立接收、人工科学认可和发行许可分别处理；不因此恢复已撤回的 KN1DPy D1 来源资格、不声称修正后的数组与旧源码相同、不覆盖连续分布全部矩，也不验证原子物理。",
         "known_limitations": [
-          "来源严格 D1 已撤回；历史回放不能升级资格。",
-          "正输入可产生强负修正结果；需要物理非负分布时须检查或另用已验证传递。",
-          "公开分发许可待人工决定。"
+          "历史 KN1DPy 严格 D1 资格继续撤回；此数学后继不是整个来源项目的替代。",
+          "有限目标节点可能无法实现请求的矩；调用方须提供可行网格或处理 InfeasibleMomentsError。",
+          "熵参考概率包含 1e-12 单元体积混合，可填充零重叠单元；三个矩约束不保持高阶矩或细致分布形状。",
+          "二进制双精度条件数、极近凸包面的目标或不可表示的中间值可能导致明确数值失败；迭代上限不构成普遍收敛保证。",
+          "correct=0 仅保留代数兼容性，不具备默认分支的物理保证。",
+          "公开分发许可和人工科学认可仍待决定。"
         ]
       }
     },
@@ -6073,289 +6081,326 @@
     },
     {
       "asset_id": "scirel.diagnostics.equilibrium-synthesis-diagnostics",
-      "source_sha256": "869ed39b30fda4093a7ad941e3ef7c9281f0bee9a999a413263697776c408dcb",
-      "summary": "在指定R–Z点采样给定平衡的ψ及所选局部剖面；flux_loops保留ψ单位，未请求的键不输出。",
-      "definition": "flux_loops分支双线性采样equilibrium.psi，不转换完整环磁通；thomson分别采样p_parallel、p_perp及存在且非空的density、electron_temperature。只返回请求的诊断键，不加入仪器或测量模型。",
-      "model": "通过绑定双线性R–Z采样器只读投影给定平衡场。",
+      "source_sha256": "010c70827b5871a8d577200286dc9d003c55bda9c09240570399e8155f6471e6",
+      "summary": "在同一 R–Z 网格上按明确单位采样磁通与所请求的压强、密度或电子温度；区分原始 psi 样本与完整圆环磁通。",
+      "definition": "使用既有双线性采样器。flux_loops.quantity=raw_psi 时保留 equilibrium.psi_unit；quantity=magnetic_flux 时输出 Wb，仅对明确声明为 Wb/rad 的 psi 乘以 2π，Wb 输入不变。thomson 只采样明确请求且具有相同单位声明的实际 profile，不推算缺失通道。所有结果附 units。",
+      "model": "平衡场的只读点采样；thomson 是历史命名空间，不是 Thomson 散射仪器模型",
+      "boundary": "闭网格边界内的双线性采样，无外推。空或未知请求、空点集、遗漏字段、单位冲突均拒绝；不隐含线圈匝数、参考环差分或仪器响应。",
       "assumptions": [
-        "所有被采样场共享调用者给定的R–Z网格。",
-        "调用者保证场的物理意义与单位一致。当前自由边界平衡ψ=R A_phi单位Wb/rad，完整圆环磁通为2πψ，单位Wb；此图不推断或换算。"
+        "输入场来自同一物理状态与同一网格。",
+        "psi 的单位与规范由调用者明确声明；当前已验证 Pleiades 约定为 psi=R A_phi，单位 Wb/rad。",
+        "压强使用 Pa，密度使用 m^-3；电子温度显式使用 K、eV 或 J，且与 profile_units 完全一致，不在此换算。"
       ],
-      "boundary": "闭网格边界可采样，域外拒绝，不外推。",
       "inputs": [
         {
           "name": "equilibrium",
-          "description": "只读平衡映射。flux_loops需要非空psi；thomson需要profiles中的非空p_parallel和p_perp，存在的非空density和electron_temperature也采样。",
-          "constraints": "仅请求分支使用的场须有限且与R/Z符合采样合同；不用的场不检查。",
-          "dtype": "含实数标量场数组的Python映射"
+          "description": "要采样的平衡态；磁通使用 psi 与 psi_unit，profile 使用 profiles 与 profile_units。",
+          "constraints": "只访问请求字段；各字段有限并与网格同形。",
+          "dtype": "映射与实数数组"
         },
         {
           "name": "R",
-          "description": "各场共用的径向网格。",
-          "constraints": "键必须显式存在；采样时有限直角网格，径向严格递增，至少两列。",
-          "dtype": "转为 float64 的实数类数组"
+          "description": "径向坐标网格。",
+          "constraints": "有限、矩形网格、径向严格递增且至少两列。",
+          "dtype": "实数数组"
         },
         {
           "name": "Z",
-          "description": "各场共用的竖直网格。",
-          "constraints": "键必须显式存在；采样时与R同形，竖直轴严格递增，至少两行。",
-          "dtype": "转为 float64 的实数类数组"
+          "description": "轴向坐标网格。",
+          "constraints": "有限、与 R 同形、轴向严格递增且至少两行。",
+          "dtype": "实数数组"
         },
         {
           "name": "observations",
-          "description": "诊断请求映射；flux_loops/thomson各需非空points，其他键忽略。",
-          "constraints": "点有限、按[R,Z]排列且位于闭域内；空映射或仅未知键返回空映射。",
-          "dtype": "含点数组的Python映射"
+          "description": "磁通请求包含 points、quantity 与 unit；profile 请求在 thomson 下包含 points 和逐通道 {unit}，亦可包含反演所用 values/sigma。",
+          "constraints": "只允许 flux_loops、thomson；磁通 quantity 必为 raw_psi 或 magnetic_flux；profile 键仅 density、electron_temperature、p_parallel、p_perp。所有请求必须实际有值，不忽略未知 kind/channel/flux 字段。",
+          "dtype": "映射"
         }
       ],
       "outputs": [
         {
           "name": "flux_loops",
-          "description": "按请求顺序排列的psi点样本，不是完整环磁通；未请求则无此键。",
-          "constraints": "成功分支才输出，不用null占位；物理Wb观测须先建立兼容诊断转换，不能直接比较Wb/rad。",
-          "dtype": "存在时为float64数组"
+          "description": "按点顺序返回原始 psi 样本或单匝完整圆环磁通。",
+          "constraints": "仅在请求时出现；raw_psi 不乘 2π，磁通转换不可产生非有限值。",
+          "dtype": "float64 数组"
         },
         {
           "name": "thomson",
-          "description": "压力及可选密度、电子温度样本映射；未请求则无此键。",
-          "constraints": "成功时输出两压力键；原可选场缺失或null时省略相应键。",
-          "dtype": "存在时为float64数组映射"
+          "description": "按明确请求返回 profiles 的采样；不从压强猜测温度或密度。",
+          "constraints": "只返回请求的通道，缺少任一请求字段即失败。",
+          "dtype": "映射与 float64 数组"
+        },
+        {
+          "name": "units",
+          "description": "与实际输出一一对应的单位元数据。",
+          "constraints": "residual reducer 使用此元数据与显式观测单位匹配。",
+          "dtype": "字符串映射"
         }
       ],
       "applicability": {
         "preconditions": [
-          "平衡场位于所声明[Z,R]网格，诊断点按[R,Z]且在域内。",
-          "调用者确定可选density和electron_temperature的解释及单位。"
+          "源场、网格、观测点和单位明确且彼此一致。"
         ],
         "supported": [
-          "不换单位的psi磁通环式点采样。",
-          "压力及可选局部剖面的Thomson式点采样。",
-          "空或仅未知请求返回无预测。"
+          "原始 psi 样本与 Wb 圆环磁通的显式区分。",
+          "所提供压强、密度及电子温度的点采样。"
         ],
         "excluded": [
-          "不自动做2π磁通换算，不模拟仪器、视线积分、测量噪声或光谱。",
-          "不重建平衡或验证给定状态的物理正确性。",
-          "不做网格外插值或剖面单位自动转换。"
+          "Thomson 光谱响应、校准、空间卷积、温度反演或未提供的电子分布。",
+          "自动推断磁通规范、匝数、参考环差分或全部 raw psi 的 2π 转换。"
         ]
       },
       "failure_semantics": {
-        "invalid_input": "顶层/平衡/请求非映射、缺R/Z、请求分支非映射或缺非空points、所需场缺失/null、采样器拒绝网格/场/点时ValueError；不用的可选场不检查。",
-        "runtime_failure": "首个依赖错误立即传播，无回退或重试；未预期数组转换/算术错误也传播。",
-        "nonconvergence": "无迭代或反馈。",
-        "partial_results": "任一请求分支失败均不返回部分映射，包括已采样flux后thomson失败。"
-      },
-      "example": {
-        "description": "在2×2网格请求两分支，核对ψ与压力点值；不模拟物理环磁通。",
-        "expected": "flux_loops的调用者ψ样本为[1.5]，两压力样本为[11.0]和[21.5]；可选剖面键省略。"
+        "invalid_input": "缺字段、空/未知请求、错误点集、单位不匹配或越界点抛 ValueError。",
+        "runtime_failure": "采样器异常传播；磁通换算为非有限时抛 FloatingPointError。",
+        "nonconvergence": "本函数不求平衡；反演 trial 必须在进入此函数之前核对前向收敛。",
+        "partial_results": "出现错误时不返回部分成功结果；不修改调用方平衡态。"
       },
       "verification": {
         "scope": [
-          "公共入口注入声明采样器依赖。",
-          "仅flux和组合请求保留flux先于Thomson的顺序与点值；均匀Bz构造ψ确认没有隐式2π转换。",
-          "缺失可选场及未请求诊断键省略。",
-          "域外点或缺必需状态引发错误，平衡映射不修改。"
+          "均匀 Bz 的 psi→完整磁通解析关系。",
+          "线性制造 profile 的内部点/边界采样、单位与非修改性。",
+          "漏通道/未知请求/不支持的匝数与参考环字段拒绝；真实 Picard 反演消费者。"
         ],
-        "evidence_ceiling": "小网格直接测试建立所选分支、插值、失败与不修改行为，不验证平衡物理性、真实仪器模型或专家认可。",
+        "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
         "known_limitations": [
-          "历史flux_loops名称实际返回ψ点样本；不能把Wb观测与当前Wb/rad平衡ψ直接比较。",
-          "不从压力推断密度或温度。",
-          "未知观测键静默忽略。",
-          "公开分发许可与SciRel专家认可待决定。"
+          "双线性插值存在离散插值误差；节点位置可直接验证解析值。",
+          "单位标签无法证明调用者的实际数据已正确标度。",
+          "历史许可状态仍待最终判断。"
         ]
+      },
+      "example": {
+        "description": "Bz=2 T 的均匀轴向场有 psi=R² Wb/rad；R=1 m 处单匝磁通应为 2π Wb。",
+        "expected": "得到 [2π] Wb，与独立解析圆面积乘 Bz 一致；raw_psi 请求则得到 [1] Wb/rad。"
       }
     },
     {
       "asset_id": "scirel.diagnostics.observation-residuals",
-      "source_sha256": "3615d96a536f79c8e2fc80edb38c7626e313d422ea0eaf2e748fa82a3f3f14f2",
-      "summary": "按顺序连接预测减观测再除sigma的残差，并计算平方欧氏范数χ²。",
-      "definition": "先追加flux_loops残差；仅当两边thomson均为映射时，按density、electron_temperature、p_parallel、p_perp顺序追加匹配通道。sigma默认1并广播，各通道按NumPy C序展开后连接，χ²为向量自点积。",
-      "model": "只用独立sigma权重的残差平方和，无协方差或仪器模型。",
+      "source_sha256": "32f3a76802ba7a7bb26b4b4bd418cb6790399e0d1f0e20f8a578322096b58d36",
+      "summary": "对预先声明的每个观测通道计算固定顺序、固定维数的归一化残差；缺预测或单位不符均拒绝。",
+      "definition": "首先验证观测布局，依次取 flux_loops、thomson.density、electron_temperature、p_parallel、p_perp。每个请求通道均要求预测与 values 精确同形；计算 (prediction-values)/sigma，按 NumPy C 顺序展平拼接，chi2=r·r。sigma 默认 1，可广播；绝不跳过缺少预测的通道。",
+      "model": "对角 sigma 加权最小二乘，无协方差、自由度校正或仪器模型",
+      "boundary": "values 非空且有限、sigma 有限正值、残差及 chi2 可表示；显式 unit 必须与 predicted.units 一致。",
       "assumptions": [
-        "调用者负责单位、测点对齐与sigma解释，此函数不换算单位。",
-        "只使用识别且双方均存在的Thomson式通道；未知通道忽略。"
+        "数值与 sigma 具有相同单位、相同采样对应关系。",
+        "未声明 unit 的记录仍可用于纯归一化代数；不由此获得物理单位匹配证明。"
       ],
-      "boundary": "预测和值形状必须精确相等；sigma可广播且有限正。",
       "inputs": [
         {
           "name": "predicted",
-          "description": "诊断预测；观测有flux时预测必须提供，Thomson仅用双方匹配键。",
-          "constraints": "使用的预测有限且与对应观测值严格同形。",
-          "dtype": "含可转浮点数组的Python映射"
+          "description": "逐通道预测；观测声明 unit 时，还必须提供匹配的 units 元数据。",
+          "constraints": "每个请求通道都必须存在、有限并精确同形，不允许缺 Thomson 通道。",
+          "dtype": "映射与实数数组"
         },
         {
           "name": "observations",
-          "description": "观测flux_loops和/或Thomson通道，各使用通道含values及可选sigma。",
-          "constraints": "至少一可用识别匹配信号；使用值有限、sigma有限正；存在flux键时要求预测及values映射。",
-          "dtype": "含可转浮点数组的Python映射"
+          "description": "flux_loops 与/或 thomson 请求，每个通道含 values、可选 sigma 和可选 unit。",
+          "constraints": "只允许已知 kind/channel；values 非空有限；sigma 默认 1 且必须正且可广播；unit 如有须非空字符串。",
+          "dtype": "映射与实数数组"
         }
       ],
       "outputs": [
         {
           "name": "residual_vector",
-          "description": "按规定通道与展平顺序连接的有符号归一化残差。",
-          "constraints": "成功时有限；匹配通道自身零样本时可为空。",
-          "dtype": "float64 NumPy数组"
+          "description": "固定通道顺序拼接的有符号归一化残差。",
+          "constraints": "N 由观测 values 总元素数确定，不由可用预测决定；全有限。",
+          "dtype": "float64 数组"
         },
         {
           "name": "chi2",
-          "description": "未做自由度归一化的残差平方和。",
-          "constraints": "成功时有限非负。",
-          "dtype": "Python浮点数（float）"
+          "description": "残差平方和，不除自由度。",
+          "constraints": "有限、非负，等于 residual_vector 的内积。",
+          "dtype": "float"
         }
       ],
       "applicability": {
         "preconditions": [
-          "预测与观测已按通道、位置、形状和单位对齐。",
-          "调用者接受无协方差的独立sigma归一化。"
+          "预测与观测在同一点、同单位且按相同形状排列。"
         ],
         "supported": [
-          "磁通环式及匹配的密度、电子温度、平行/垂直压力Thomson式残差。",
-          "flux优先的确定顺序，sigma可标量或可广播。"
+          "对角 sigma 权重的多通道归一化残差。",
+          "所有请求通道的严格存在性、形状与显式单位匹配。"
         ],
         "excluded": [
-          "不是合成诊断计算器，不提供相关误差似然或平衡物理验证。",
-          "不自动拒绝未匹配Thomson通道；存在其他可用信号时跳过，无可用信号时拒绝。"
+          "相关噪声协方差、仪器标定、自由度修正或拟合显著性判断。",
+          "根据剩余预测自动缩小拟合问题。"
         ]
       },
       "failure_semantics": {
-        "invalid_input": "顶层非映射、flux预测/values缺失、使用通道错误、形状不精确匹配、sigma不能广播/非有限/非正、值非有限或无可用信号时ValueError；NumPy转换错误可传播。",
-        "runtime_failure": "归一化残差或平方和非有限时ValueError，其他NumPy错误传播。",
-        "nonconvergence": "单次归约，无迭代。",
-        "partial_results": "任一使用通道失败则无映射，即使此前已归约其他通道。"
-      },
-      "example": {
-        "description": "先计算磁通环残差，再算Thomson式垂直压力残差。",
-        "expected": "按序残差为[1,2]，未校正平方和为5。"
+        "invalid_input": "空或未知观测、缺预测、空值、非有限值、形状错误、非正 sigma、显式单位不一致抛 ValueError。",
+        "runtime_failure": "归一化或平方和溢出被检测为 ValueError。",
+        "nonconvergence": "无迭代；前向有效性由 trial 层单独判定。",
+        "partial_results": "不返回删掉错误通道后的部分残差。"
       },
       "verification": {
         "scope": [
-          "两通道flux优先排序和sigma缩放。",
-          "拒绝无匹配、形状失配、非正sigma及非有限预测。"
+          "保留原归一化与 sigma 数值断言。",
+          "混合磁通与 Thomson 请求缺任一通道时拒绝；单位冲突与空值拒绝。",
+          "固定维数 trial 与真实前向反演组合。"
         ],
-        "evidence_ceiling": "直接测试支持有限数组归约及所列失败，不验证测点对齐、协方差前提、物理预测或专家认可。",
+        "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
         "known_limitations": [
-          "存在其他可用信号时，未匹配Thomson通道和未知观测键静默忽略。",
-          "无协方差、稳健损失或自由度归一化。",
-          "公开分发许可与SciRel专家认可待决定。"
+          "unit 为声明匹配，不自动转换单位，也不验证仪器校准。",
+          "chi2 只表示该对角权重下的代数平方和，不能单独解释为统计显著性。"
         ]
+      },
+      "example": {
+        "description": "磁通残差排在垂直压强残差之前；单位由两侧显式绑定。",
+        "expected": "固定顺序向量为 [1,2]，平方和为 5；缺少 p_perp 预测必须失败。"
       }
     },
     {
       "asset_id": "scirel.inference.anisotropic-trial-evaluation",
-      "source_sha256": "099125c129430081fba138cf5789348c3a54973c5a901bb8baf36637a40b40cc",
-      "summary": "将一个参数映射依次送入调用者的平衡、诊断和残差入口；嵌套求值失败时记录固定罚值。",
-      "definition": "复制solver_config并以本次params覆盖其params，调用平衡一次；将平衡、r_grid/z_grid作为R/Z与observations交给诊断，再调用residual_reducer(predicted=...,observations=...)。保留残差与chi2并读取converged/failure_reason；嵌套异常返回residuals=[1e12]、chi2=1e24、equilibrium=None。",
-      "model": "科学正演由调用者提供，SciRel负责单次试验连接及固定异常惩罚。",
+      "source_sha256": "2da168873e634bba9da1e802bf973804013181d2a84796e1568ae67ea898b1b0",
+      "summary": "以预先确定的残差维数评估一次前向平衡试探，区分有效、数值失败和不收敛；合同错误直接报告。",
+      "definition": "在科学调用前由标准观测布局取得 N，或由自定义端口显式给定 residual_size。深复制调用输入，执行一次 equilibrium_solver；未收敛时立即返回 N 维正罚值，不执行诊断。收敛时执行诊断与 reducer，并检查残差形状/有限性和 chi2=r·r。ArithmeticError/RuntimeError 记录为数值失败；ValueError/TypeError/KeyError 等合同错误传播。",
+      "model": "调用者前向模型、诊断与残差端口的受验证组合，不内置压强闭合",
+      "boundary": "失败罚值是优化接口值，不是可接受的物理观测或可行性证明。参数范围由外层优化器与物理端口共同约束。",
       "assumptions": [
-        "平衡入口接收单个映射，并返回含converged与failure_reason的映射。",
-        "诊断入口接收单映射，残差入口接受predicted/observations关键字；这些接口承载正演的科学意义。"
+        "三个端口具有明确且相容的物理单位、网格和返回协议。",
+        "equilibrium.converged 必为布尔值；成功态不能同时给出 failure_reason。",
+        "自定义布局的 residual_size 由调用者在第一次试探前声明，不能按成功/失败改变。"
       ],
-      "boundary": "不检查参数边界，由外层优化器负责；异常罚值不证明物理不可行。",
       "inputs": [
         {
           "name": "params",
-          "description": "复制进求解载荷及返回记录的本次参数。",
-          "constraints": "须支持dict(params)；不在此检查科学范围。",
-          "dtype": "可转dict的映射"
+          "description": "本次完整参数映射；深复制后交给前向端口。",
+          "constraints": "参数科学范围由前向关系及外层边界约束。",
+          "dtype": "映射"
         },
         {
           "name": "observations",
-          "description": "原样传给诊断与残差入口的请求和测量值。",
-          "constraints": "须被两入口接受，此算子不检查结构。",
-          "dtype": "调用者定义映射"
+          "description": "诊断请求、观测值与不确定度。",
+          "constraints": "未给 residual_size 时必须为已知非空标准布局；N 是所有请求 values 的总元素数。",
+          "dtype": "映射"
         },
         {
           "name": "solver_config",
-          "description": "固定平衡配置，含诊断所用r_grid/z_grid。",
-          "constraints": "须支持dict和两键；复制载荷中的params被本次参数覆盖。",
-          "dtype": "可转dict的映射"
+          "description": "固定前向配置，必须含 r_grid/z_grid；其中 params 在副本中替换。",
+          "constraints": "输入深复制；不修改调用方嵌套映射或数组。",
+          "dtype": "映射"
         },
         {
           "name": "equilibrium_solver",
-          "description": "调用者的平衡正演。",
-          "constraints": "成功结果须含converged/failure_reason；通过调用而非预检查验证可调用性。",
-          "dtype": "Python可调用对象"
+          "description": "单参数映射入口的前向科学求解器。",
+          "constraints": "返回布尔 converged；False 立即短路诊断并记录原因。",
+          "dtype": "可调用对象"
         },
         {
           "name": "diagnostic_evaluator",
-          "description": "调用者的合成诊断。",
-          "constraints": "即使平衡converged=False仍接收该结果，科学有效性由调用者负责。",
-          "dtype": "Python可调用对象"
+          "description": "只在前向收敛后调用的诊断端口。",
+          "constraints": "必须提供所有请求的预测，必要时附单位。",
+          "dtype": "可调用对象"
         },
         {
           "name": "residual_reducer",
-          "description": "归一化残差关系。",
-          "constraints": "须返回可转浮点residual_vector及chi2；通常为SciRel观测残差算子。",
-          "dtype": "Python可调用对象"
+          "description": "输出 residual_vector 与 chi2 的归一化关系。",
+          "constraints": "向量必须为 (N,) 且有限；chi2 有限非负，与内积的 rtol=1e-12、atol=0 一致。",
+          "dtype": "可调用对象"
+        },
+        {
+          "name": "residual_size",
+          "description": "自定义观测端口的预声明维数；标准布局通常自动取得。",
+          "constraints": "拒绝布尔、零和负值；本次调用维数不可变化。",
+          "dtype": "整数或 None"
+        },
+        {
+          "name": "failure_penalty",
+          "description": "数值失败或前向不收敛时每个残差分量的正罚值。",
+          "constraints": "默认 1e12；有限正数且 N*penalty² 必须可表示。",
+          "dtype": "float"
         }
       ],
       "outputs": [
         {
           "name": "params",
-          "description": "提交参数的副本。",
-          "constraints": "在嵌套求值或异常处理之后复制。",
-          "dtype": "字典（dict）"
+          "description": "提交参数的深副本。",
+          "constraints": "不会被端口对副本的写入改变。",
+          "dtype": "dict"
         },
         {
           "name": "chi2",
-          "description": "残差入口提供的平方和或异常罚值。",
-          "constraints": "捕获异常为1e24，成功值不重算。",
-          "dtype": "Python浮点数（float）"
+          "description": "成功向量的重新计算内积；失败时 N*penalty²。",
+          "constraints": "有限非负，不将失败 chi2 当作有效物理拟合。",
+          "dtype": "float"
         },
         {
           "name": "residuals",
-          "description": "残差向量或单元素罚值。",
-          "constraints": "捕获异常为[1e12]。",
-          "dtype": "float64 NumPy数组"
+          "description": "成功残差或同维罚值向量。",
+          "constraints": "每条成功/失败路径均保持 N。",
+          "dtype": "float64 数组"
         },
         {
           "name": "equilibrium",
-          "description": "成功时的平衡结果，捕获异常时为None。",
-          "constraints": "无异常时即使不收敛也保留。",
-          "dtype": "调用者映射或None"
+          "description": "已取得的前向状态；数值异常前未取得时为 None。",
+          "constraints": "失败记录可能保留未收敛状态，仅供诊断，不是合格解。",
+          "dtype": "映射或 None"
         },
         {
           "name": "failure_reason",
-          "description": "不收敛原因、异常文本或收敛时None。",
-          "constraints": "不收敛平衡若提供None则保留，不自动编造原因。",
-          "dtype": "字符串或None"
+          "description": "明确的前向不收敛或数值异常原因；有效时为 None。",
+          "constraints": "未收敛但无原因时补充通用说明。",
+          "dtype": "字符串或 None"
+        },
+        {
+          "name": "valid",
+          "description": "前向与残差合同全部满足。",
+          "constraints": "只有 True 才可供优化器进行有效最优排序。",
+          "dtype": "bool"
+        },
+        {
+          "name": "status",
+          "description": "试探类别。",
+          "constraints": "valid、forward_nonconvergence 或 numerical_failure。",
+          "dtype": "str"
+        },
+        {
+          "name": "failed_port",
+          "description": "失败发生的端口。",
+          "constraints": "equilibrium_solver、diagnostic_evaluator、residual_reducer；有效时 None。",
+          "dtype": "字符串或 None"
+        },
+        {
+          "name": "exception_type",
+          "description": "数值异常的实际类名。",
+          "constraints": "无异常的不收敛记录为 None。",
+          "dtype": "字符串或 None"
         }
       ],
       "applicability": {
         "preconditions": [
-          "三个入口的载荷和科学单位兼容。",
-          "配置含R/Z诊断网格，平衡结果含声明状态字段。"
+          "在第一次调用前明确 N、各端口合同和有限正罚值。"
         ],
         "supported": [
-          "依次完成单次正演、合成诊断和残差归约。",
-          "把嵌套异常转成固定单元素残差罚值。"
+          "深复制输入，收敛后才诊断，成功→失败→成功维数恒定。",
+          "数值失败与前向不收敛的带状态记录；残差内积一致性。"
         ],
         "excluded": [
-          "不内置平衡求解器、仪器模型、参数边界门禁或优化循环。",
-          "不能仅靠罚值区分数值失败与科学不可接受状态。"
+          "将编程或合同异常隐藏为物理不可行。",
+          "以内置罚值证明模型有效或恢复未提供的物理闭合。"
         ]
       },
       "failure_semantics": {
-        "invalid_input": "不做前置schema校验。配置复制或嵌套调用/读值错误被捕获惩罚；params不能复制时可能在构造返回记录、处理器外仍抛错。",
-        "runtime_failure": "捕获的嵌套异常产生完整罚值记录；构造记录的严重错误或进程失败可传播。",
-        "nonconvergence": "converged=False仍进入诊断和残差，最后报告调用者原因；若该路径抛错则改为罚值。",
-        "partial_results": "捕获异常后不返回嵌套部分状态，equilibrium=None。"
-      },
-      "example": {
-        "description": "用注入的正演和诊断产生2的归一化残差，不需真实平衡求解器。",
-        "expected": "成功试验residual=[2]、chi2=4并保留平衡映射。"
+        "invalid_input": "静态输入、端口、维数和罚值不合法时抛 ValueError；嵌套 ValueError/TypeError/KeyError 传播。",
+        "runtime_failure": "嵌套 ArithmeticError（含 FloatingPointError）或 RuntimeError 返回同 N 的 numerical_failure，保留失败端口和异常类。进程级异常不捕获。",
+        "nonconvergence": "前向 False 直接返回 forward_nonconvergence；绝不执行该状态的诊断。",
+        "partial_results": "保留实际已有前向状态供调查，但 valid=False；不丢失维数、不参与有效 best 排序。"
       },
       "verification": {
         "scope": [
-          "小规模注入试验的平衡/诊断/残差接口连接。",
-          "嵌套异常转成[1e12]及1e24。"
+          "成功/数值失败/再次成功的固定维数与端口记录。",
+          "非收敛短路、错误残差形状/NaN/chi2 拒绝、调用方深层非修改。",
+          "独立解析及曲场前向反演消费者。"
         ],
-        "evidence_ceiling": "直接回归只建立所选接口连接与惩罚，不验证正演物理、全部错误输入、优化器行为或专家认可。",
+        "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
         "known_limitations": [
-          "宽泛异常捕获只保留消息，隐藏异常类型。",
-          "未收敛平衡仍会先送入诊断再读取状态。",
-          "公开分发许可与SciRel专家认可待决定。"
+          "RuntimeError 的科学含义由调用者端口负责；错误状态不能替代原异常调查。",
+          "单次 trial 不判断参数可辨识性或最优性。"
         ]
+      },
+      "example": {
+        "description": "两个观测的前向求解未收敛时，诊断不会调用，返回两个罚值。",
+        "expected": "N=2 不变，chi2=2e24，状态明确不收敛；没有诊断调用。"
       }
     },
     {
@@ -6442,317 +6487,438 @@
     },
     {
       "asset_id": "scirel.inference.anisotropic-parameter-optimization",
-      "source_sha256": "390765d22d1d7bbcd6f8bb1303eae3e8552cf49b434d5441d15d466babadfb99",
-      "summary": "可先用拉丁超立方选择起点，再经调用者的试验入口执行SciPy最小二乘或最小化，保留最佳试验与优化状态。",
-      "definition": "按bounds或fit_keys顺序提取x0和上下界；请求LHS时按列表求值各样本，取最低chi2为SciPy起点。least_squares用残差向量，minimize用其平方范数。记录每试验，严格更低chi2才更新最佳；SciPy选择/执行异常后记录消息并对起点额外求值一次。",
-      "model": "围绕调用者各向异性平衡试验关系的有界参数搜索。",
+      "source_sha256": "24ceade7bb4f39c243975b200a5a14fdf5a04243ba3ac9f4dd2748962a8aa735",
+      "summary": "在有限合法边界与总科学调用预算内作局部拟合，失败试探不可成为最优，返回实际终点的重新验证状态。",
+      "definition": "全部静态控制先验证。可选 LHS 的完整设计先核边界与数量，再按顺序评估，只取有效样本作起点。least_squares 使用残差，minimize 使用 L-BFGS-B 与平方和；无效 trial 对优化器提供 N 维罚值，但永不参与 best_valid_trial。预算计入 LHS、数值差分与终点调用，预留两次终点/有效 fallback 验证。正常返回的优化器 x 必须重新调用前向验证；如终点无效，仅可返回重新验证的历史有效候选，且 converged=False。",
+      "model": "有界局部数值优化，不包含平衡方程、全球搜索或统计可辨识性证明",
+      "boundary": "所有 bounds 均须有限严格递增，初值在边界内。错误方法、错误 LHS 或非法控制直接拒绝，不补做越界 fallback。",
       "assumptions": [
-        "trial_evaluator(params=...)返回chi2、residuals、equilibrium和failure_reason，残差须适合所选SciPy算法。",
-        "调用者选择科学有意义的参数和范围；数值成功不等于物理反演有效。"
+        "trial 返回固定 N 维有限残差、相符 chi2、前向状态及失败原因。",
+        "有效 trial 必须有真实 converged=True 前向状态，无 failure_reason，且 valid 不为 False。",
+        "罚值只用于数值控制，不能作为物理解或可辨识性信息。"
       ],
-      "boundary": "边界交给SciPy；本入口不独立证明有限递增边界，也不裁剪回退起点；LHS有自己的边界校验。",
       "inputs": [
         {
           "name": "initial_params",
-          "description": "完整初始参数，未拟合键保留。",
-          "constraints": "含全部选定键，拟合值须被SciPy方法与边界接受。",
-          "dtype": "拟合值可转浮点的类dict映射"
+          "description": "完整初值；非拟合参数原样深复制。",
+          "constraints": "所有拟合值有限且位于对应边界内。",
+          "dtype": "映射"
         },
         {
           "name": "bounds",
-          "description": "拟合参数边界及默认键顺序。",
-          "constraints": "选中键须存在，二元组被SciPy接受；不独立校验有限递增。",
-          "dtype": "端点可转浮点的映射"
+          "description": "参数上下界及默认顺序。",
+          "constraints": "所有提供区间均有限且 low<high。",
+          "dtype": "有限实数对映射"
         },
         {
           "name": "method",
-          "description": "优化方法选择。",
-          "constraints": "least_squares或minimize；其他值进入捕获异常的回退。",
-          "dtype": "字符串"
+          "description": "局部优化方法。",
+          "constraints": "仅 least_squares 或 minimize；后者明确采用 L-BFGS-B。",
+          "dtype": "str"
         },
         {
           "name": "trial_evaluator",
-          "description": "每参数组的残差与平衡求值入口。",
-          "constraints": "返回规定四键；SciPy try块之前发生的错误可传播。",
-          "dtype": "Python可调用对象"
+          "description": "单次物理评估端口。",
+          "constraints": "必须提供 residuals、chi2、equilibrium、failure_reason；valid 如存在必须为布尔。",
+          "dtype": "可调用对象"
         },
         {
           "name": "fit_keys",
-          "description": "可选拟合参数有序子集。",
-          "constraints": "省略时选择所有bounds键，不另查唯一/非空。",
-          "dtype": "键可迭代对象或None"
+          "description": "拟合参数有序子集。",
+          "constraints": "非空且不重复，必须同时存在于 initial_params 与 bounds；默认 bounds 键。",
+          "dtype": "字符串序列或 None"
         },
         {
           "name": "lhs_sampler",
-          "description": "可选LHS起点采样入口。",
-          "constraints": "n_initial_samples非空时必需，各样本应含拟合键。",
-          "dtype": "Python可调用对象或None"
+          "description": "可选 Latin-hypercube 设计端口。",
+          "constraints": "启用 n_initial_samples 时必须可调用；全部样本须恰含拟合键、有限且在边界内。",
+          "dtype": "可调用对象或 None"
         },
         {
           "name": "n_initial_samples",
-          "description": "传给LHS的样本数，经int转换。",
-          "constraints": "非空触发SciPy前LHS；正值由采样器校验，空样本列表在回退前抛错。",
-          "dtype": "可转int值或None"
+          "description": "优化前 LHS 样本数。",
+          "constraints": "1 至 max_evaluations-3，拒绝布尔及非整数；None 时不调用 LHS。",
+          "dtype": "整数或 None"
         },
         {
           "name": "seed",
-          "description": "仅传给LHS的种子。",
-          "constraints": "不启用LHS时无作用。",
-          "dtype": "采样器兼容种子或None"
+          "description": "传给 LHS 的随机种子。",
+          "constraints": "未启用 LHS 时无效；相同已验证采样器及种子产生相同设计。",
+          "dtype": "采样器支持的种子或 None"
+        },
+        {
+          "name": "residual_size",
+          "description": "预声明残差维数。",
+          "constraints": "未提供时由第一次 trial 的非空一维向量取得，此后不变；图入口总是先由观测计算。",
+          "dtype": "正整数或 None"
+        },
+        {
+          "name": "failure_penalty",
+          "description": "无效 trial 对优化器提供的每分量罚值。",
+          "constraints": "有限正数且 N*penalty² 有限；默认 1e12。",
+          "dtype": "float"
+        },
+        {
+          "name": "max_evaluations",
+          "description": "所有实际科学 trial 调用的共同上限。",
+          "constraints": "至少 3；包含 LHS、差分及新终点验证；不能与 SciPy nfev 混同。",
+          "dtype": "整数"
         }
       ],
       "outputs": [
         {
           "name": "best_parameters",
-          "description": "记录中chi2严格最低的完整参数。",
-          "constraints": "初始为initial_params，直到试验改善无穷初值；LHS和优化试验共同竞争。",
-          "dtype": "字典（dict）"
+          "description": "实际重新验证的优化器终点；失败时可为重新验证的历史有效候选。",
+          "constraints": "无有效候选则 None。正常终点与 optimizer_summary.parameters 一致；不声称始终是所有日志最小值。",
+          "dtype": "dict 或 None"
         },
         {
           "name": "chi2",
-          "description": "记录的最低chi2。",
-          "constraints": "依赖试验入口给有限值，不另行核验。",
-          "dtype": "Python浮点数（float）"
+          "description": "所返回状态的归一化平方和；无有效解时为 N*penalty²。",
+          "constraints": "有限非负；失败 penalty 必须配合状态解读。",
+          "dtype": "float"
         },
         {
           "name": "residual_vector",
-          "description": "最佳试验残差。",
-          "constraints": "由其residuals转数组；错误试验合同可导致转换错或非有限值。",
-          "dtype": "NumPy浮点数组"
+          "description": "所返回同一 trial 的固定维数残差。",
+          "constraints": "参数、状态与残差同属最后验证的试探；无有效解为罚值。",
+          "dtype": "float64 数组"
         },
         {
           "name": "converged",
-          "description": "SciPy成功且最佳平衡存在并收敛时为真。",
-          "constraints": "不检查残差阈值或单独物理有效性。",
-          "dtype": "布尔值（bool）"
+          "description": "优化器成功且其实际终点的最新前向评估有效。",
+          "constraints": "fallback、耗尽预算或终点无效时 False；不表示残差小、全局最优或可辨识。",
+          "dtype": "bool"
+        },
+        {
+          "name": "forward_converged",
+          "description": "当前返回的状态已实际通过前向与 trial 验证。",
+          "constraints": "可在优化器未收敛时 True，表示可用部分结果。",
+          "dtype": "bool"
+        },
+        {
+          "name": "optimizer_converged",
+          "description": "SciPy success 原始布尔投影。",
+          "constraints": "常量失败罚值也可导致优化器停止，不能单独当作物理成功。",
+          "dtype": "bool"
         },
         {
           "name": "equilibrium",
-          "description": "最佳试验平衡。",
-          "constraints": "无试验改善初记录则None；最低chi2平衡仍可能不收敛。",
-          "dtype": "调用者结果或None"
+          "description": "与 best_parameters 及 residual_vector 同次验证的前向状态。",
+          "constraints": "无有效返回候选时 None。",
+          "dtype": "映射或 None"
         },
         {
           "name": "evaluation_log",
-          "description": "各试验参数、chi2、原因和来源的有序日志。",
-          "constraints": "LHS在优化之前，source为latin_hypercube或optimizer。",
-          "dtype": "dict列表"
+          "description": "所有实际评估的参数、chi2、valid、failure_reason 与 source。",
+          "constraints": "source 为 latin_hypercube、optimizer、terminal、best_valid_recheck。",
+          "dtype": "记录列表"
         },
         {
           "name": "failure_reason",
-          "description": "SciPy选择/执行捕获的异常文本。",
-          "constraints": "未捕获异常时None，即使converged=False也可能无原因。",
-          "dtype": "字符串或None"
+          "description": "预算、数值故障、终点失败或优化停止原因。",
+          "constraints": "仅同时成功时为 None；合同错误抛出。",
+          "dtype": "字符串或 None"
         },
         {
           "name": "optimizer_summary",
-          "description": "SciPy方法、success、status、message与nfev摘要。",
-          "constraints": "捕获异常时None，不返回完整SciPy结果对象。",
-          "dtype": "dict或None"
+          "description": "方法、success、status、message、nfev 与实际 result.x 的 parameters。",
+          "constraints": "SciPy nfev 不等于全部科学调用次数；预算中断时可能为 None。",
+          "dtype": "dict 或 None"
+        },
+        {
+          "name": "best_valid_trial",
+          "description": "所有历史有效试探中最低 chi2 的完整记录。",
+          "constraints": "仅作观察记录；与返回终点分开，不给其套用另一点的收敛状态。",
+          "dtype": "dict 或 None"
+        },
+        {
+          "name": "scientific_evaluations",
+          "description": "实际 trial 调用总数。",
+          "constraints": "不超过 max_evaluations；含数值差分与终点验证。",
+          "dtype": "int"
+        },
+        {
+          "name": "max_evaluations",
+          "description": "本次已验证的科学调用上限。",
+          "constraints": "与输入一致。",
+          "dtype": "int"
+        },
+        {
+          "name": "valid_trial_count",
+          "description": "评估日志中有效 trial 数量。",
+          "constraints": "失败试探不计入。",
+          "dtype": "int"
+        },
+        {
+          "name": "residual_size",
+          "description": "本次固定残差维数。",
+          "constraints": "所有向量维数相同。",
+          "dtype": "int"
+        },
+        {
+          "name": "identifiability",
+          "description": "通用可辨识性状态。",
+          "constraints": "固定为 not_established；局部停止不等于可辨识性证明。",
+          "dtype": "str"
         }
       ],
       "applicability": {
         "preconditions": [
-          "试验入口提供长度一致残差，参数边界有意义。",
-          "请求LHS时注入采样器至少返回一个有效样本。"
+          "参数域、有限边界、trial 物理意义和残差合同明确。"
         ],
         "supported": [
-          "有界least_squares/minimize，可选采样起点与完整求值日志。",
-          "方法选择或SciPy执行异常时按来源兼容行为做回退试验。"
+          "局部 least_squares/L-BFGS-B、可选确定性 LHS、失败 trial 隔离、终点绑定与有限预算。"
         ],
         "excluded": [
-          "不保证全局最优、收敛、协方差或调用者模型物理正确。",
-          "不独立验证边界、拟合键唯一性或全部试验返回结构。"
+          "全局最优、置信区间、多模态探索或通用参数可辨识性证明。",
+          "将失败零残差或旧最优态包装成当前优化器收敛。"
         ]
       },
       "failure_semantics": {
-        "invalid_input": "缺键、畸形边界、不可转换值、缺LHS入口、空/错误采样输出或LHS试验错误可在try块前抛出；未知method在块内捕获，回退成功则返回失败原因。",
-        "runtime_failure": "SciPy选择/执行异常后记录文本并evaluate(x0)一次；回退异常向上传播；不回滚已记录试验。",
-        "nonconvergence": "SciPy失败、无结果或最佳平衡缺失/不收敛时converged=False；并非每种情况都生成原因。",
-        "partial_results": "捕获的SciPy错误返回最佳试验与回退日志，不是部分SciPy结果；准备/回退内错误无映射。"
-      },
-      "example": {
-        "description": "拟合一个参数，同时保留额外固定参数。",
-        "expected": "最小二乘找到x≈3，fixed=7保持，最佳试验收敛。"
+        "invalid_input": "方法、边界、初值、键、样本或预算不合法时在科学调用前抛 ValueError；trial 合同错误传播。",
+        "runtime_failure": "带显式 residual_size 的自定义 trial 数值异常记录为固定维失败，并消耗实际调用预算；未建立 N 时传播异常，不伪造维数。优化器自身数值异常和预算停止单独报告；合同 ValueError/TypeError/KeyError 不吞掉。",
+        "nonconvergence": "优化停止和前向有效性分开返回；fallback 从不称 converged。",
+        "partial_results": "best_valid_trial 保存历史有效最小值；best_parameters 只来自新的终点或 fallback 验证；全失败时两者均 None。"
       },
       "verification": {
         "scope": [
-          "一维最小二乘恢复与未拟合键保留。",
-          "LHS优先日志顺序及最低chi2起点选择。",
-          "未知方法回退记录试验而不宣称收敛。"
+          "原有效标量恢复、LHS 起点与残差数值断言保留。",
+          "非法控制零科学调用、失败零 chi2 不可 best、固定维数、预算/终点状态同一性。",
+          "真实 Picard 的双参数解析恢复与独立曲场离散参考恢复。"
         ],
-        "evidence_ceiling": "简单合成残差测试仅建立所选SciPy/回退路径，不证明全局最优、任意入口稳健性或参数科学适用性。",
+        "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
         "known_limitations": [
-          "边界及LHS记录大部分交给SciPy/采样器，部分畸形输入在回退前失败。",
-          "最佳chi2和优化成功可对应不同试验；converged还检查最佳平衡。",
-          "公开分发许可与SciRel专家认可待决定。"
+          "常量罚值附近可能停滞；有限 LHS 和局部优化不保证找出可行点。",
+          "没有自动协方差、Fisher 秩或置信区间报告；需要额外科学设计。",
+          "完整试探状态保存在 best_valid_trial，内存开销随前向状态而变。"
         ]
+      },
+      "example": {
+        "description": "仅说明优化控制的标量例子；物理闭环见 direct-anisotropic-inversion。",
+        "expected": "恢复 x≈3，保留 fixed=7，终点实际前向有效；非法方法直接抛错。"
       }
     },
     {
       "asset_id": "scirel.inference.direct-anisotropic-inversion",
-      "source_sha256": "e5c7a7625dab5b645ac45755cb700d87eecb808b1f0ef27328aafb22168544ed",
-      "summary": "把调用者的平衡与合成诊断连接到SciRel单次残差试验及有界优化器，可选LHS初始化。",
-      "definition": "复制初始参数、边界和求解配置，要求两个调用者入口及方法字符串；绑定观测残差与单次试验到参数优化器。可选LHS选择起点，每试验依次求平衡、诊断、匹配残差，返回后补充缺失的不收敛原因。",
-      "model": "科学正演由调用者提供，SciRel组织直接数值反演和归一化残差。",
+      "source_sha256": "5914b7c397675b5e47d578c07b22fa2bf298f9091b0000f8250c2982593b838d",
+      "summary": "将真实各向异性前向求解、显式单位诊断和有界优化连接为单一调用入口，持续保持固定观测维数与有效终点。",
+      "definition": "先按标准观测冻结 N，再将 trial、严格残差和有界优化器组合。前向 solver_config 深复制并加入 params；未收敛先短路，失败 trial 不参与有效最优。可选 LHS 与总预算在优化器统一执行，最终参数、残差和状态绑定同一新评估。当前验证同时包含解析制造非零 Green 反馈和独立 Biot–Savart/张量散度参考的曲场恢复。",
+      "model": "调用者指定物理闭合的直接反演组合，复用已资格化前向关系，不另造各向异性平衡方程",
+      "boundary": "前向端口仍负责物理状态、压强闭合、边界与收敛；图负责单位相容的观测连接、固定残差协议和合法参数控制。",
       "assumptions": [
-        "调用者平衡、诊断与观测组成兼容科学正演。",
-        "用于自由边界各向异性Picard的配置应含网格、真空场/磁通、Green响应及Picard控制；本封装只校验dict。",
-        "诊断值、sigma和参数单位互相一致；SciRel不自动换算。"
+        "equilibrium_solver、diagnostic_evaluator 的物理合同与观测相容。",
+        "绑定当前 Picard 时显式说明 psi 单位 Wb/rad，再按磁通观测约定转换为 Wb；不默认转换任意 psi。",
+        "罚值不是物理解；优化器停止、前向固定点、残差拟合与可辨识性分别判断。"
       ],
-      "boundary": "不指定N6边界或闭合；网格、真空/Green、收敛及物理范围由调用者求解器负责；拟合边界交优化器，不独立验证。",
       "inputs": [
         {
           "name": "initial_params",
-          "description": "完整初始剖面参数。",
-          "constraints": "Python dict，拟合键可转浮点，科学意义由嵌套求解器定义。",
-          "dtype": "Python字典（dict）"
+          "description": "完整初值；非拟合参数原样深复制。",
+          "constraints": "所有拟合值有限且位于对应边界内。",
+          "dtype": "映射"
         },
         {
           "name": "bounds",
-          "description": "拟合参数区间及默认键顺序。",
-          "constraints": "选定键存在；LHS与有意义拟合需有限递增区间，本封装不检查。",
-          "dtype": "端点可转浮点的Python dict"
-        },
-        {
-          "name": "observations",
-          "description": "给正演和残差的请求与观测。",
-          "constraints": "非罚值试验至少一识别匹配信号；调用者使用的测点按[R,Z]。",
-          "dtype": "Python字典（dict）"
-        },
-        {
-          "name": "solver_config",
-          "description": "各试验共用平衡配置，不含变化params。",
-          "constraints": "成功试验需r_grid/z_grid，其余由求解器合同规定；本封装仅校验dict，不换单位。",
-          "dtype": "Python字典（dict）"
-        },
-        {
-          "name": "equilibrium_solver",
-          "description": "每次试验的平衡入口。",
-          "constraints": "应返回converged/failure_reason及诊断所需场；不收敛且缺原因时封装补充。",
-          "dtype": "Python可调用对象"
-        },
-        {
-          "name": "diagnostic_evaluator",
-          "description": "接收平衡、R、Z及观测的诊断入口。",
-          "constraints": "须给识别匹配预测；不内置equilibrium-synthesis-diagnostics图。",
-          "dtype": "Python可调用对象"
+          "description": "参数上下界及默认顺序。",
+          "constraints": "所有提供区间均有限且 low<high。",
+          "dtype": "有限实数对映射"
         },
         {
           "name": "method",
-          "description": "参数优化方法。",
-          "constraints": "仅least_squares/minimize调用对应SciPy；其他字符串触发回退并报告失败。",
-          "dtype": "Python字符串（str）"
+          "description": "局部优化方法。",
+          "constraints": "仅 least_squares 或 minimize；后者明确采用 L-BFGS-B。",
+          "dtype": "str"
+        },
+        {
+          "name": "observations",
+          "description": "标准 flux_loops 与/或 thomson 多通道观测，进入优化前验证并确定 N。",
+          "constraints": "values 非空有限、sigma 正；所有请求通道必须保留。使用合成诊断时包含 points、quantity/unit 及 profile 单位。",
+          "dtype": "dict"
+        },
+        {
+          "name": "solver_config",
+          "description": "前向固定参数及 r_grid/z_grid。",
+          "constraints": "需满足实际前向合同，不隐含安装原来源环境。",
+          "dtype": "dict"
+        },
+        {
+          "name": "equilibrium_solver",
+          "description": "实际物理前向端口。",
+          "constraints": "必须返回布尔 converged；若未收敛且未填原因，补通用原因；失败后不执行诊断。",
+          "dtype": "可调用对象"
+        },
+        {
+          "name": "diagnostic_evaluator",
+          "description": "收敛平衡的诊断端口。",
+          "constraints": "不能漏请求通道；显式 unit 必须附匹配预测 units；不在图内假设 Thomson 仪器。",
+          "dtype": "可调用对象"
         },
         {
           "name": "fit_keys",
-          "description": "有序拟合参数子集。",
-          "constraints": "省略用bounds插入顺序；键须同时在initial_params与bounds中。",
-          "dtype": "键可迭代对象或None"
+          "description": "拟合参数有序子集。",
+          "constraints": "非空且不重复，必须同时存在于 initial_params 与 bounds；默认 bounds 键。",
+          "dtype": "字符串序列或 None"
         },
         {
           "name": "n_initial_samples",
-          "description": "可选LHS初始试验数。",
-          "constraints": "非空加载SciRel LHS，经优化器转换后需正整数。",
-          "dtype": "可转int值或None"
+          "description": "优化前 LHS 样本数。",
+          "constraints": "1 至 max_evaluations-3，拒绝布尔及非整数；None 时不调用 LHS。",
+          "dtype": "整数或 None"
         },
         {
           "name": "seed",
-          "description": "仅供LHS的NumPy种子。",
-          "constraints": "不使用LHS时无作用。",
-          "dtype": "NumPy兼容种子或None"
+          "description": "传给 LHS 的随机种子。",
+          "constraints": "未启用 LHS 时无效；相同已验证采样器及种子产生相同设计。",
+          "dtype": "采样器支持的种子或 None"
+        },
+        {
+          "name": "failure_penalty",
+          "description": "无效 trial 对优化器提供的每分量罚值。",
+          "constraints": "有限正数且 N*penalty² 有限；默认 1e12。",
+          "dtype": "float"
+        },
+        {
+          "name": "max_evaluations",
+          "description": "所有实际科学 trial 调用的共同上限。",
+          "constraints": "至少 3；包含 LHS、差分及新终点验证；不能与 SciPy nfev 混同。",
+          "dtype": "整数"
         }
       ],
       "outputs": [
         {
           "name": "best_parameters",
-          "description": "最低记录chi2的完整参数。",
-          "constraints": "可来自LHS或SciPy试验。",
-          "dtype": "字典（dict）"
+          "description": "实际重新验证的优化器终点；失败时可为重新验证的历史有效候选。",
+          "constraints": "无有效候选则 None。正常终点与 optimizer_summary.parameters 一致；不声称始终是所有日志最小值。",
+          "dtype": "dict 或 None"
         },
         {
           "name": "chi2",
-          "description": "最佳归一化平方和或罚值。",
-          "constraints": "嵌套异常该试验为1e24；图不设置chi2阈值。",
-          "dtype": "Python浮点数（float）"
+          "description": "所返回状态的归一化平方和；无有效解时为 N*penalty²。",
+          "constraints": "有限非负；失败 penalty 必须配合状态解读。",
+          "dtype": "float"
         },
         {
           "name": "residual_vector",
-          "description": "最佳试验有序残差。",
-          "constraints": "罚值试验为单元素[1e12]。",
-          "dtype": "NumPy浮点数组"
+          "description": "所返回同一 trial 的固定维数残差。",
+          "constraints": "参数、状态与残差同属最后验证的试探；无有效解为罚值。",
+          "dtype": "float64 数组"
         },
         {
           "name": "converged",
-          "description": "优化器成功且最佳平衡收敛的联合标记。",
-          "constraints": "不表示残差小或科学有效。",
-          "dtype": "布尔值（bool）"
+          "description": "优化器成功且其实际终点的最新前向评估有效。",
+          "constraints": "fallback、耗尽预算或终点无效时 False；不表示残差小、全局最优或可辨识。",
+          "dtype": "bool"
+        },
+        {
+          "name": "forward_converged",
+          "description": "当前返回的状态已实际通过前向与 trial 验证。",
+          "constraints": "可在优化器未收敛时 True，表示可用部分结果。",
+          "dtype": "bool"
+        },
+        {
+          "name": "optimizer_converged",
+          "description": "SciPy success 原始布尔投影。",
+          "constraints": "常量失败罚值也可导致优化器停止，不能单独当作物理成功。",
+          "dtype": "bool"
         },
         {
           "name": "equilibrium",
-          "description": "最佳平衡；仅罚值时None。",
-          "constraints": "优化结果为假时可能不收敛。",
-          "dtype": "dict或None"
+          "description": "与 best_parameters 及 residual_vector 同次验证的前向状态。",
+          "constraints": "无有效返回候选时 None。",
+          "dtype": "映射或 None"
         },
         {
           "name": "evaluation_log",
-          "description": "LHS在前、优化在后的试验摘要。",
-          "constraints": "各项记录params、chi2、failure_reason和source。",
-          "dtype": "dict列表"
+          "description": "所有实际评估的参数、chi2、valid、failure_reason 与 source。",
+          "constraints": "source 为 latin_hypercube、optimizer、terminal、best_valid_recheck。",
+          "dtype": "记录列表"
         },
         {
           "name": "failure_reason",
-          "description": "优化异常或封装补充的不收敛原因。",
-          "constraints": "converged=False且无原因时，从平衡或parameter optimizer did not converge补充。",
-          "dtype": "字符串或None"
+          "description": "预算、数值故障、终点失败或优化停止原因。",
+          "constraints": "仅同时成功时为 None；合同错误抛出。",
+          "dtype": "字符串或 None"
         },
         {
           "name": "optimizer_summary",
-          "description": "可序列化SciPy摘要。",
-          "constraints": "含method/success/status/message/nfev；回退后None，无完整结果对象。",
-          "dtype": "dict或None"
+          "description": "方法、success、status、message、nfev 与实际 result.x 的 parameters。",
+          "constraints": "SciPy nfev 不等于全部科学调用次数；预算中断时可能为 None。",
+          "dtype": "dict 或 None"
+        },
+        {
+          "name": "best_valid_trial",
+          "description": "所有历史有效试探中最低 chi2 的完整记录。",
+          "constraints": "仅作观察记录；与返回终点分开，不给其套用另一点的收敛状态。",
+          "dtype": "dict 或 None"
+        },
+        {
+          "name": "scientific_evaluations",
+          "description": "实际 trial 调用总数。",
+          "constraints": "不超过 max_evaluations；含数值差分与终点验证。",
+          "dtype": "int"
+        },
+        {
+          "name": "max_evaluations",
+          "description": "本次已验证的科学调用上限。",
+          "constraints": "与输入一致。",
+          "dtype": "int"
+        },
+        {
+          "name": "valid_trial_count",
+          "description": "评估日志中有效 trial 数量。",
+          "constraints": "失败试探不计入。",
+          "dtype": "int"
+        },
+        {
+          "name": "residual_size",
+          "description": "本次固定残差维数。",
+          "constraints": "所有向量维数相同。",
+          "dtype": "int"
+        },
+        {
+          "name": "identifiability",
+          "description": "通用可辨识性状态。",
+          "constraints": "固定为 not_established；局部停止不等于可辨识性证明。",
+          "dtype": "str"
         }
       ],
       "applicability": {
         "preconditions": [
-          "平衡、诊断与对齐观测科学兼容。",
-          "拟合参数及边界对模型有意义并被所选SciPy算法接受。"
+          "声明相容的前向关系、压强闭合、观测位置/单位、参数边界和固定预算。"
         ],
         "supported": [
-          "针对匹配flux/Thomson式观测的单阶段有界拟合，可选LHS。",
-          "调用者N6式平衡和N9式诊断，显式记录失败与罚值。"
+          "真实各向异性 Picard→单位明确点诊断→固定维残差→有界优化的组合。",
+          "非零 Green 反馈的两参数解析制造案例，及独立离散张量/真实环 Green 的曲场案例。"
         ],
         "excluded": [
-          "不内置平衡求解器、压力闭合、合成诊断或仪器物理。",
-          "不保证全局最优、物理正确、不确定性推断或成功优化的残差足够小。",
-          "不自动选来源模型或独立验证配置的物理场。"
+          "任意实验装置的完备重建、未知闭合选择、仪器校准或自动参数可辨识性。",
+          "以零 Green 或单个 lambda 输出代替本组合的物理资格。"
         ]
       },
       "failure_semantics": {
-        "invalid_input": "所需映射非dict、入口缺失/不可调用、method缺失/非字符串时ValueError；拟合键/边界错误来自优化/LHS；试验内观测失配成为罚值。",
-        "runtime_failure": "嵌套异常产生[1e12]和1e24；优化器捕获SciPy错误并回退一次，准备/回退错误传播；没有隐藏求解器重试。",
-        "nonconvergence": "SciPy或最佳平衡不收敛则返回False及最佳记录，封装补齐缺失原因。",
-        "partial_results": "捕获的试验/优化失败返回最佳或罚值记录及日志；未捕获准备/回退错误不返回图映射。"
-      },
-      "example": {
-        "description": "注入简单正演和诊断拟合压力式标量，只演示接口连接，不证明物理平衡。",
-        "expected": "合成模型恢复p0≈4，残差小，优化与最佳平衡收敛标记为真。"
+        "invalid_input": "无效观测布局、端口、方法、边界或预算先拒绝；科学合同错误传播，不重试错误初值。",
+        "runtime_failure": "数值异常由 trial 状态表示；优化预算和运行故障由优化器单独报告。",
+        "nonconvergence": "converged 同时要求优化器成功且其新终点评估有效，另给 optimizer_converged 与 forward_converged。",
+        "partial_results": "允许返回新验证的部分有效候选及日志，不将其算作完成拟合；全失败返回 None 候选。"
       },
       "verification": {
         "scope": [
-          "显式平衡/诊断接口与公共依赖解析。",
-          "零Green源夹具的单参数恢复、简单公共例子及非零Green的各向同性压力极限平衡组合，显式转换完整环磁通。",
-          "可选LHS确定性、非法method/边界及嵌套异常罚值。",
-          "缺入口/方法及平衡不收敛原因处理。"
+          "6 残差的解析制造双参数恢复，实际限迭代失败 trial 不得变成 best。",
+          "9 观测的独立 Biot–Savart 环积分、独立圆柱张量散度和 root 离散解，恢复 gradient=4800、anisotropy=1100，且各向异性实际改变电流。",
+          "精选安装包的无来源/无开发 checkout、断网、plain venv 用户调用。"
         ],
-        "evidence_ceiling": "图与叶测试支持所选合成拟合、接口绑定、各向同性压力极限下非零Green组合及显式2π磁通诊断和失败路径；不认证物理各向异性平衡、真实诊断标定、全局最优或专家认可。",
+        "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
         "known_limitations": [
-          "非零Green组合使用各向同性压力极限和注入圆环磁通采样器，不是已标定诊断或一般各向异性平衡。",
-          "历史flux_loops键返回ψ点样本，不自动乘2π；Wb观测遇Wb/rad平衡时需兼容诊断入口。",
-          "结果依赖调用者平衡和诊断，不是内置N6/N9物理。",
-          "优化迭代位于SciPy算子内部，不是TaskGraph反馈边或用户提供的图级迭代上限。",
-          "公开分发许可与SciRel专家认可待决定。"
+          "独立曲场参考验证当前有限网格的离散方程，不是连续极限误差证明；Green 的同点零自作用约定保留，非有限线径自场。",
+          "制造模型只在所列参数范围内可辨识；通用输出仍为 not_established。",
+          "优化停止不等于满足实验残差阈值，用户必须根据观测噪声及问题本身判读。",
+          "许可与人工科学认可继续独立待决。"
         ]
+      },
+      "example": {
+        "description": "真实各向异性 Picard 在显式 rank-one 非零 Green 制造模型上恢复径向压强梯度与各向异性比；观测来自独立解析公式。该 Green 是测试响应，不是具体装置校准。",
+        "expected": "恢复 gradient≈1.7 Pa/m²、ratio≈1.6；6 个残差、非零磁通反馈、实际失败 trial 与有效最优状态。对应结果与调用预算由实际执行记录给出，不主张任意装置适用性。"
       }
     },
     {

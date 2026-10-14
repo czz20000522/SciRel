@@ -1,0 +1,45 @@
+{
+  "schema": "scirel.scientific-correction-provenance.v1",
+  "action": "scirel-anisotropic-inference-physical-closure-20261014-v1",
+  "base_commit": "1bf17f50a0b98e28aad8e6c1c587d1d3268a62df",
+  "implementation_version": "0.2.0.dev12+inference.physical",
+  "status": "AUTHOR_CANDIDATE_PENDING_ROOT_INDEPENDENT_RECEPTION",
+  "changed_assets": [
+    "scirel.diagnostics.equilibrium-synthesis-diagnostics",
+    "scirel.diagnostics.observation-residuals",
+    "scirel.inference.anisotropic-trial-evaluation",
+    "scirel.inference.anisotropic-parameter-optimization",
+    "scirel.inference.direct-anisotropic-inversion"
+  ],
+  "source_boundary": "Derived from the five exact base-commit implementations. Qualified anisotropic forward, force balance, poloidal field recovery, dense Green, bilinear sampling and LHS are reused unchanged. No claim of entire source-project completion is made by this five-asset correction.",
+  "corrections": [
+    "Explicit raw_psi versus magnetic_flux with source/observed units; only declared Wb/rad to Wb uses 2*pi. Profiles are requested point samples, not a fabricated Thomson instrument.",
+    "Every requested residual channel retains its exact shape and fixed order; missing predictions, mismatched units and nonfinite residuals reject.",
+    "Forward nonconvergence and numerical exceptions become fixed-dimensional finite invalid trials; contract exceptions propagate and invalid trials cannot be best.",
+    "Methods, finite bounds, initial values, sample designs and budget validate before science. Total calls include LHS, numerical differentiation and fresh terminal/fallback checking.",
+    "Actual optimizer terminal state is freshly verified; best valid historical trial is separately reported. Fixed budget, optimizer success, forward convergence and identifiability are distinct."
+  ],
+  "author_validation": {
+    "predecessor_expected_red": "13 scientific/contract failures retained before changes; one additional intermediate regression exposed a numerical callback exception not counted as a scientific call.",
+    "affected_tests": 120,
+    "analytic_manufactured_case": "Qualified anisotropic Picard + declared nonzero rank-one Green; independent quadratic field solution generates six flux/pressure observations. Recovered gradient 1.7000000000010205 and ratio 1.5999999999999683; a deliberately underiterated real trial remains invalid.",
+    "independent_discrete_case": "Independent angular Biot-Savart quadrature, cylindrical tensor divergence and nonlinear root solution generate nine curved-field observations. Qualified forward recovers gradient 4800.000000021167 and anisotropy 1099.999999993896; anisotropy changes physical J_phi.",
+    "installed_user_runtime": "No source checkout, network or captured answers; plain venv installs only exact scirel, NumPy and SciPy runtime distributions, plus pip as installer. Both physics cases and five document examples execute.",
+    "selected_wheel_sha256": "04aa06f71693228225fa85b0ac2b23339a3ce607d86abc112eb971896da0e1f8"
+  },
+  "limits": [
+    "The rank-one Green is a declared manufactured response, not a calibrated device geometry.",
+    "The independent curved-field oracle verifies the stated finite-grid discrete equations; it is not a continuum/grid-convergence certificate. Coincident filament self terms retain the qualified zero-self convention.",
+    "Generic parameter identifiability, global optimality, noise calibration and experimental instrument response are not established. Optimizer success alone does not establish a scientifically acceptable fit.",
+    "Caller-supplied physical closures, gauge/reference choices and pressure/field units remain part of the explicit scientific model. Raw psi is not universally magnetic flux.",
+    "Historical wrong fallback/nonconvergence expectations are preserved as predecessor evidence and replaced by correct assertions; no valid numerical tolerance was widened."
+  ],
+  "runtime_dependencies": ["numpy==2.5.4", "scipy==1.18.1"],
+  "source_execution_dependencies": "No original-source installation is needed for this correction; retained base source and contract evidence were used read-only.",
+  "development_dependencies": "Python build backend, pytest, static document validation and independent oracle code belong to development/verification, not additional wheel requirements.",
+  "license_notices": ["licenses/Pleiades-MIT.txt", "licenses/Pleiades-Anisotropy-NOTICE.txt", "licenses/SciRel-Inference-Closure-NOTICE.txt"],
+  "root_independent_acceptance": false,
+  "human_scientific_approval": false,
+  "redistribution_permission": "not granted by this author correction",
+  "release_approval": false
+}

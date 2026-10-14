@@ -1,0 +1,26 @@
+{
+  "schema": "scirel.bounded-scientific-integration.v1",
+  "action_id": "scirel-cumulative-remap-inference-integration-20261014-v1",
+  "base": "a161c50ea4a49118889b30c763364a2d00c10757",
+  "accepted_composite": "provenance/validation/inference-root-composite-20261014.json",
+  "source_commit": "6585aec9adc6f2e1e33c22d395be3b5eb72d04f3",
+  "changed_assets": [
+    "scirel.diagnostics.equilibrium-synthesis-diagnostics",
+    "scirel.diagnostics.observation-residuals",
+    "scirel.inference.anisotropic-parameter-optimization",
+    "scirel.inference.anisotropic-trial-evaluation",
+    "scirel.inference.direct-anisotropic-inversion"
+  ],
+  "changed_implementations": [
+    "src/scirel/diagnostics/equilibrium_synthesis_diagnostics.py",
+    "src/scirel/inference/anisotropic_trial_evaluation.py",
+    "src/scirel/inference/anisotropic_parameter_optimization.py",
+    "src/scirel/inference/direct_anisotropic_inversion.py",
+    "src/scirel/diagnostics/observation_residuals.py"
+  ],
+  "merge_policy": "Exact twenty standalone paths; only five reader records and two mapping records merged, all other contributions retained. Cumulative r6 files and documentation additionally bind actual integrated source.",
+  "qualification": "Rootaccepted finite physical/algorithmic cases and explicit contracts; arbitrary model validity, global identifiability, continuum convergence, human scientific approval and public release not inferred.",
+  "human_approval": false,
+  "public_release": false,
+  "whole_source_project_complete": false
+}

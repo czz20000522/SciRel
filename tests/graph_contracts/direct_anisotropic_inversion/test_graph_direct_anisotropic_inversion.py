@@ -60,7 +60,8 @@ def _inputs(true_p0=4.0):
 
     def equilibrium_solver(payload):
         pressure_closure = partial(pressure_closure_module.run_graph, asset_loader=_asset_loader)
-        return module.run_graph({**payload, "pressure_closure": pressure_closure}, asset_loader=_asset_loader)
+        result = module.run_graph({**payload, "pressure_closure": pressure_closure}, asset_loader=_asset_loader)
+        return {**result, "psi_unit":"Wb/rad", "profile_units":{"p_perp":"Pa", "p_parallel":"Pa"}}
 
     equilibrium = equilibrium_solver({**solver_config, "params": _base_params(true_p0)})
     point = np.array([[0.5, 0.0]])
@@ -70,13 +71,13 @@ def _inputs(true_p0=4.0):
     diagnostic_module = __import__("importlib").util.module_from_spec(observation_graph_spec)
     observation_graph_spec.loader.exec_module(diagnostic_module)
     observed = diagnostic_module.run_graph(
-        {"equilibrium": equilibrium, "R": solver_config["r_grid"], "Z": solver_config["z_grid"], "observations": {"thomson": {"points": point}}},
+        {"equilibrium": equilibrium, "R": solver_config["r_grid"], "Z": solver_config["z_grid"], "observations": {"thomson": {"points": point, "p_perp":{"unit":"Pa"}}}},
         asset_loader=_asset_loader,
     )
     return {
         "initial_params": _base_params(1.0),
         "bounds": {"p0": (0.1, 10.0)},
-        "observations": {"thomson": {"points": point, "p_perp": {"values": observed["thomson"]["p_perp"], "sigma": [0.1]}}},
+        "observations": {"thomson": {"points": point, "p_perp": {"values": observed["thomson"]["p_perp"], "sigma": [0.1], "unit":"Pa"}}},
         "solver_config": solver_config,
         "equilibrium_solver": equilibrium_solver,
         "diagnostic_evaluator": partial(diagnostic_module.run_graph, asset_loader=_asset_loader),
@@ -120,8 +121,8 @@ def test_recovers_synthetic_p0_with_zero_green_matrix():
 def test_invalid_method_records_failure_and_lhs_requires_finite_increasing_bounds():
     invalid_method = _inputs()
     invalid_method["method"] = "not_a_method"
-    result = graph.run_graph(invalid_method, operator_loader=_operator_loader)
-    assert result["failure_reason"] is not None
+    with pytest.raises(ValueError, match="method must be"):
+        graph.run_graph(invalid_method, operator_loader=_operator_loader)
     invalid_lhs = _inputs()
     invalid_lhs["bounds"] = {"p0": (1.0, 1.0)}
     invalid_lhs["n_initial_samples"] = 2
@@ -133,10 +134,8 @@ def test_invalid_method_records_failure_and_lhs_requires_finite_increasing_bound
 def test_failed_port_evaluation_uses_source_penalty():
     inputs = _inputs()
     inputs["solver_config"] = {"r_grid": np.zeros((2, 2)), "z_grid": np.zeros((2, 2))}
-    result = graph.run_graph(inputs, operator_loader=_operator_loader)
-    np.testing.assert_allclose(result["residual_vector"], [1.0e12])
-    assert result["chi2"] == pytest.approx(1.0e24)
-    assert result["equilibrium"] is None
+    with pytest.raises((ValueError, KeyError)):
+        graph.run_graph(inputs, operator_loader=_operator_loader)
 
 
 def test_requires_explicit_cross_node_ports():

@@ -1,0 +1,17 @@
+SciRel cylindrical distribution remap: internal technical evaluation only.
+
+The remapping interface and cell-overlap construction descend from the saved
+KN1DPy interp_fvrvxx implementation, historically anchored at
+KN1DPy/interp_fvrvxx.py and consumed by KN1DPy/kn1d.py. The saved implementation
+SHA-256 is c93f491369b36e237c35c10528a82af9f33de2db730f9a3a8054dace6dca5a43.
+SciRel reuses its cylindrical velocity quadrature and replaces the defective
+AN/BN correction with a nonnegative, three-moment relative-entropy projection.
+The corrected branch deliberately differs from historical source arithmetic.
+
+Original source attribution, frozen failure evidence, prior notices and the
+per-asset scientific contract remain in the SciRel development provenance.
+This notice does not grant missing upstream rights, restore withdrawn KN1DPy
+D1 qualification, qualify a full source project, or authorize public release.
+Original-source redistribution licensing and human scientific endorsement
+remain pending separate decisions. This selected wheel is a bounded internal
+candidate for independent technical acceptance, not a public distribution.

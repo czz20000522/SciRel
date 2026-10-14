@@ -9,6 +9,7 @@ from scirel.inference.anisotropic_trial_evaluation import evaluate_anisotropic_t
 def test_anisotropic_trial_uses_caller_owned_ports_and_penalizes_failures():
     config = {"r_grid": np.zeros((1, 1)), "z_grid": np.zeros((1, 1))}
     result = evaluate_anisotropic_trial(
+        residual_size=1,
         params={"p0": 2.0},
         observations={"x": 1},
         solver_config=config,
@@ -20,10 +21,11 @@ def test_anisotropic_trial_uses_caller_owned_ports_and_penalizes_failures():
     assert result["failure_reason"] is None
 
     failed = evaluate_anisotropic_trial(
+        residual_size=1,
         params={},
         observations={},
         solver_config=config,
-        equilibrium_solver=lambda _: (_ for _ in ()).throw(ValueError("bad port")),
+        equilibrium_solver=lambda _: (_ for _ in ()).throw(FloatingPointError("bad numerical port")),
         diagnostic_evaluator=lambda _: None,
         residual_reducer=lambda **_: None,
     )

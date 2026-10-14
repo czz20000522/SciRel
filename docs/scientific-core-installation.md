@@ -1,9 +1,9 @@
 # 当前科学包与中文手册
 
-当前累积技术选择为 `0.2.0.dev11+scientific.core`，对应
-`provenance/selections/scientific-core-20261014-r5.json` 与
-`provenance/selections/scientific-core-documents-20261014-r5.json`。
-它用同一安装包提供 234 份精确合同；科学 API 按领域组织，函数和复合任务入口均可从中文 API 目录检索。
+当前累积技术选择为 `0.2.0.dev12+scientific.core`，对应
+`provenance/selections/scientific-core-20261014-r6.json` 与
+`provenance/selections/scientific-core-documents-20261014-r6.json`。
+它用同一安装包提供 239 份精确合同；科学 API 按领域组织，函数和复合任务入口均可从中文 API 目录检索。
 正式合同的原实现版本和历史证据保留，不能将它们批量改写成新包版本来制造新科学资格。
 
 ## 安装已接收的确切包
@@ -11,7 +11,7 @@
 根接收记录会给出确切 wheel 的 SHA-256；先核对摘要，再在独立环境安装该文件：
 
 ```bash
-python -m pip install 'scirel-0.2.0.dev11+scientific.core-py3-none-any.whl'
+python -m pip install 'scirel-0.2.0.dev12+scientific.core-py3-none-any.whl'
 ```
 
 Python 使用 3.14（本次验证 3.14.7）。本选择实际声明 NumPy 2.5.4、SciPy 1.18.1、Matplotlib 3.11.2、netCDF4 1.7.4、mpmath 1.4.1。
@@ -33,6 +33,10 @@ Python wheel 不会替用户安装这个系统运行时，缺少时该类入口�
 本次增加 6 个已独立核验入口：表格压力、逐点火蛇裕度、单步 Picard 更新、完整压力反馈、可重建压力状态和固定十六丝磁环几何。完整压力求解复用同一闭合感知迭代，磁镜及火蛇裕度保留危险相消后的有限残量；不新增 Python 运行依赖。
 
 同时纳入经过独立核验的冷等离子体介电张量。最终笛卡尔投影可恢复大分量相消中的小响应，精确共振及不可表示算术仍按合同拒绝；它不包含温等离子体或动力学修正，也不增加 Python 运行依赖。
+
+新增非负三矩守恒的柱坐标分布重映射：默认分支保持密度、轴向动量和速度平方能量，并区分有限网格不可行与数值迭代耗尽。空间插值作用于广延矩；不以负值截断或放松目标制造守恒结果。该数学关系不构成完整中性输运来源项目的资格。
+
+新增各向异性参数推断的诊断采样、单次试探、有界优化与复合反演入口，并修正已有观测残差的固定维数及单位检查。前向收敛、优化停止、拟合质量和可辨识性分别记录；制造模型与有限网格的恢复证据不外推为任意物理闭合或实验装置资格。
 
 ## 按问题查找入口
 
@@ -58,14 +62,14 @@ print(p_grid)
 
 ## 维护相同的可查询内容
 
-手册目录入口是 `tools/docs/handbooks/scientific-core-r5.json`，中文阅读层是
-`tools/docs/zh/selections/scientific-core-r5.json`。每份阅读层以正式文档 SHA-256 绑定，不从函数名猜补参数或适用域。
-构建新快照时，先按 `scientific-core-documents-20261014-r5.json` 的清单复制并逐字核对正式合同，再运行：
+手册目录入口是 `tools/docs/handbooks/scientific-core-r6.json`，中文阅读层是
+`tools/docs/zh/selections/scientific-core-r6.json`。每份阅读层以正式文档 SHA-256 绑定，不从函数名猜补参数或适用域。
+构建新快照时，先按 `scientific-core-documents-20261014-r6.json` 的清单复制并逐字核对正式合同，再运行：
 
 ```bash
 python scripts/scirel_docs.py build --documents /path/to/exact-documents \
-  --outline tools/docs/handbooks/scientific-core-r5.json \
-  --translations tools/docs/zh/selections/scientific-core-r5.json \
+  --outline tools/docs/handbooks/scientific-core-r6.json \
+  --translations tools/docs/zh/selections/scientific-core-r6.json \
   --output /path/to/new-snapshot
 ```
 
