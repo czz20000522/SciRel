@@ -524,9 +524,9 @@
     {
       "asset_id": "scirel.geometry.material-support-classification",
       "formal_document": "catalog/examples/scirel.geometry.material-support-classification.json",
-      "document_sha256": "4c51d2fb9569ac61a5f359d67fa67b101afa7d6896215f98249b30c3c31ffb9f",
+      "document_sha256": "400c79b64cd57a0ab94e4c90ebfd99aa10f78918ea0ef21a49f0eec8d5ccc3df",
       "implementation": "src/scirel/geometry/material_support.py",
-      "implementation_sha256": "8aebf91aef6c8d6dfedf94646bb6cb305d75d1e2456afb079bcc3281a2946b4b",
+      "implementation_sha256": "b3571df67d9406f9c2856faae4d6ed4f5f7a2ee0256fc0d2b0c24b2de40d8497",
       "public_api": {
         "module": "scirel.geometry.material_support",
         "symbol": "classify_material_support",
@@ -556,7 +556,8 @@
       "new_work": "Documentation successor only: positive minimum-radius column may add eligible axis-proxy cells. Earlier broad exclusion contradicted implementation and existing independent tests; no numerical code changed.",
       "source_wide_completion": false,
       "human_approval": false,
-      "release_approval": false
+      "release_approval": false,
+      "docstring_successor": "Cumulative dev9 corrects the top-level description to match the unchanged covered/innermost-radius predicate. Numerical AST unchanged; reused evidence and historical limitations retained as original evidence, not a statement of current documentation."
     },
     {
       "asset_id": "scirel.geometry.planar-wavevector-projection",

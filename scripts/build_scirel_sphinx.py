@@ -255,6 +255,17 @@ def render_site(root, docs, book, translations, chapter, *, figure_files):
         home = title('SciRel 中文文档')
         home += 'SciRel 是面向科学计算的 Python 关系库。按要解决的物理问题，选择单个科学函数，或使用组合多个关系的复合求解入口。\n\n'
         home += '.. grid:: 1 2 2 2\n   :gutter: 3\n\n'
+        if not any(t.get('tutorial_id') == 'kinetic-initial-value' for c in book['chapters'] for t in c['topics']):
+            (source/'tutorials/kinetic-initial-value.rst').unlink(missing_ok=True)
+        else:
+            proof = json.loads((root/'provenance/validation/kinetic-tutorial-20261014.json').read_bytes())
+            bound_paths = dict(proof['source_files'], **proof['document_files'])
+            bound_paths['tools/docs/sphinx/tutorials/kinetic-initial-value.rst'] = proof['tutorial_rst_sha256']
+            if not proof['results']['all_checks_passed'] or proof['environment']['exit_code'] != 0:
+                raise ValueError('kinetic tutorial has no successful execution')
+            for relative, digest in bound_paths.items():
+                if hashlib.sha256((root/relative).read_bytes()).hexdigest() != digest:
+                    raise ValueError('kinetic tutorial execution binding changed: ' + relative)
         for label, target, description in [('用户指南','user-guide/index','从科学概念与输入约定入手，阅读领域导读和完整计算案例。'),('API 参考','reference/index','按科学领域查询调用签名、参数、返回值、失败行为、适用范围及示例。'),('开始使用','getting-started','了解精确安装包、单位约定，以及如何选择并验证一个科学关系。'),('Agent 查询','agent','按主题或精确资产标识读取与页面绑定的正式合同及中文说明。')]:
             home += '   .. grid-item-card:: ' + label + '\n      :link: ' + target + '\n      :link-type: doc\n\n      ' + description + '\n\n'
         home += '当前为开发文档。各函数保留自己的实现版本；请按 API 页的适用范围和具体安装包使用。\n\n'
@@ -262,7 +273,7 @@ def render_site(root, docs, book, translations, chapter, *, figure_files):
         write('index', home)
         write('getting-started', (root/'tools/docs/sphinx/getting-started.rst').read_text())
         write('agent', (root/'tools/docs/sphinx/agent.rst').read_text())
-        write('user-guide/index', title('用户指南') + '用户指南解释科学问题、模型选择与组合方式。函数的完整参数、单位和失败行为见 API 参考。\n\n' + toctree([c['id'] for c in book['chapters']]) + title('完整计算案例','-') + toctree(['/tutorials/magnetostatics']))
+        write('user-guide/index', title('用户指南') + '用户指南解释科学问题、模型选择与组合方式。函数的完整参数、单位和失败行为见 API 参考。\n\n' + toctree([c['id'] for c in book['chapters']]) + title('完整计算案例','-') + toctree(['/tutorials/magnetostatics'] + (['/tutorials/kinetic-initial-value'] if any(t.get('tutorial_id') == 'kinetic-initial-value' for c in book['chapters'] for t in c['topics']) else [])))
         write('reference/index', title('API 参考') + '按科学领域查阅函数与复合入口。选择左侧领域，在正文中按问题浏览函数及用途，点击函数名查看参数、返回值、适用范围与示例。\n\n' + toctree([c['id'] for c in book['chapters']], maxdepth=1))
         for c in book['chapters']:
             write('user-guide/'+c['id'], title(c['title']) + c['introduction'] + '\n\n' + toctree(['topics/'+t['id'] for t in c['topics']]))
@@ -283,7 +294,9 @@ def render_site(root, docs, book, translations, chapter, *, figure_files):
                     z = translations[d['asset_id']]
                     intro += '**' + plain(d['title']['zh']) + '**\n\n' + plain(z['verification']['evidence_ceiling']) + '\n\n' + bullets(z['verification']['known_limitations'])
                 if topic.get('tutorial_id'):
-                    intro += title('计算案例','-') + doclink('轴对称线圈磁场：代码、实际结果与解释','/tutorials/magnetostatics') + '\n'
+                    tutorial_id = topic['tutorial_id']
+                    tutorial_title = {'magnetostatics': '轴对称线圈磁场：代码、实际结果与解释', 'kinetic-initial-value': '静电根与线性初值演化：实际结果及解释'}[tutorial_id]
+                    intro += title('计算案例','-') + doclink(tutorial_title, '/tutorials/' + tutorial_id) + '\n'
                 write('user-guide/topics/'+topic['id'], intro)
                 ref += title(topic['title'], '-') + topic['introduction'] + '\n\n'
                 ref += function_table(records, translations)

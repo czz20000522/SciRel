@@ -1,0 +1,131 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "aliases": [],
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave",
+    "gpdf"
+  ],
+  "kind": "operator",
+  "version": {
+    "implementation_version": "0.1.0.dev9",
+    "dependencies": []
+  },
+  "provenance": {
+    "source_kinds": [
+      "independent equation implementation",
+      "frozen private numerical data"
+    ],
+    "lineage_summary": "GPDF frozen D0/D1 variant contracts retained; independent Python rational algorithm with explicit numerical corrections. Dev9 successor of exact document SHA256 ee0d984e3ed4852af703810b460819bc02881901d1210eb15cf83b60be3779cd; unchanged contracts are reused, changed numerical methods and failure closure follow GPDF-R1/R2/R3.",
+    "license_status": "Private development only; source numerical data redistribution grant NOT_ESTABLISHED; NumPy and SciPy notices retained.",
+    "public_references": [
+      "Weideman (1994), Computation of the Complex Error Function, doi:10.1137/0731077",
+      "Xie (2013), Generalized Plasma Dispersion Function, arXiv:1305.6476"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for nonfinite/empty phase points, invalid integer order or unsupported pole count.",
+    "nonconvergence": "Fixed approximation has no iterative convergence claim.",
+    "partial_results": "No partial result after a failed call.",
+    "runtime_failure": "FloatingPointError if continued result exceeds finite float64 range."
+  },
+  "verification": {
+    "scope": [
+      "Default and explicit order, scalar/matrix shapes, reflection, normalization, positive imaginary axis overflow regression.",
+      "80-digit mpmath equation grid and 70-digit independent Gaussian Cauchy integrals."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_gpdf_faddeeva_variants.py",
+      "tests/operator_contracts/test_gpdf_faddeeva_independent.py"
+    ],
+    "evidence_ceiling": "Validated finite grid and identities, not a uniform error certificate across the complex plane.",
+    "known_limitations": [
+      "Lower-plane exponential may exceed float64.",
+      "Fixed truncation error depends on phase point and order."
+    ]
+  },
+  "asset_id": "scirel.kinetic.evaluate-faddeeva-gpdf",
+  "title": {
+    "zh": "Faddeeva 32 阶变体",
+    "en": "evaluate faddeeva gpdf"
+  },
+  "summary": "Faddeeva 32 阶变体；保留独立默认值、截断及失败合同。",
+  "identity": {
+    "model": "One-dimensional Maxwellian plasma response",
+    "relation": "w(z)=exp(-z^2) erfc(-i z)",
+    "definition": "Weideman rational FFT expansion with erfcx on imaginary axis.",
+    "direction": "z,order -> w,order",
+    "coordinates": "Complex normalized phase velocity",
+    "geometry": "One-dimensional velocity space",
+    "boundary": "Real axis is accepted; exponential continuation overflow raises.",
+    "assumptions": [
+      "Dimensionless normalized Maxwellian argument."
+    ]
+  },
+  "applicability": {
+    "supported": [
+      "Any positive integer order.",
+      "Finite nonempty scalar or array input; shape preserved."
+    ],
+    "preconditions": [
+      "All phase values and computed results fit complex128."
+    ],
+    "excluded": [
+      "A guaranteed global error bound.",
+      "An arbitrary distribution response."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "z",
+      "description": "Dimensionless complex phase points.",
+      "dtype": "complex numeric",
+      "shape": "scalar or nonempty array",
+      "units": "dimensionless",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "order",
+      "description": "Rational truncation or pole count. None selects order 32.",
+      "dtype": "integer or None",
+      "shape": "scalar",
+      "units": "count",
+      "required": false,
+      "default": null,
+      "constraints": "Any positive integer order. Boolean rejected."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "w",
+      "description": "Complex response.",
+      "dtype": "complex array",
+      "shape": "same as z",
+      "units": "dimensionless",
+      "required": true,
+      "constraints": "Finite complex128."
+    },
+    {
+      "name": "order",
+      "description": "Effective truncation or pole count.",
+      "dtype": "integer",
+      "shape": "scalar",
+      "units": "count",
+      "required": true,
+      "constraints": "Any positive integer order."
+    }
+  ],
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.faddeeva_variants",
+      "symbol": "evaluate_faddeeva_gpdf",
+      "signature": "evaluate_faddeeva_gpdf(z, *, order=None)"
+    }
+  },
+  "example": {
+    "description": "Evaluate a finite upper-plane response.",
+    "code": "from scirel.kinetic import evaluate_faddeeva_gpdf\nimport numpy as np\nr=evaluate_faddeeva_gpdf(0.2+0.7j)\nassert np.isfinite(r[\"w\"])",
+    "expected": "Finite complex response with the retained effective order."
+  }
+}

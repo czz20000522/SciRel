@@ -147,7 +147,7 @@
       "modules": {
         "scirel.geometry.axisymmetric_equilibrium_grid_support": "468292de4d8f80c43182ea0ed276f48a9a2d99a8ab9652542f0bc745647d2bd6",
         "scirel.geometry.axisymmetric_grid_mapping": "7efafc12724b2f7c3c4f52b9328f23d85a6111ab94f0084bef4e616bfbed9992",
-        "scirel.geometry.material_support": "8aebf91aef6c8d6dfedf94646bb6cb305d75d1e2456afb079bcc3281a2946b4b"
+        "scirel.geometry.material_support": "b3571df67d9406f9c2856faae4d6ed4f5f7a2ee0256fc0d2b0c24b2de40d8497"
       },
       "review_basis": "Wrapper removes only the two injectable implementation callables then passes inputs to run_graph. run_graph requires exactly the seven documented scientific inputs via _REQUIRED_INPUTS, maps the caller equilibrium and solver axes, derives cylindrical geometry, and applies caller separatrix/PML/PEC metadata. It does not solve equilibrium or reconstruct material physics. Runtime missing ports are rejected; extra scientific input mapping entries are ignored as documented by the unchanged implementation."
     },
@@ -1040,6 +1040,80 @@
         "scirel.equilibrium.pressure_flux_state": "694d082c26d367c609287f6fde23e0af18fed4f886fdb204d4aa4543884ad211"
       },
       "review_basis": "Port identity only, not scientific qualification: run_graph requires grid,pressure callable,vacuum psi,Green,tol/maxiter/relax and optional plasma_mask None. Existing profile and Picard leaf consumers bound; convergence/physical gaps remain separately queued."
+    },
+    {
+      "asset_id": "scirel.kinetic.generalized-root-scans",
+      "callable": "scirel.kinetic.generalized_dispersion.scan_gpdf_roots",
+      "ports": [
+        {
+          "name": "kind",
+          "required": true
+        },
+        {
+          "name": "k_values",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "initial_guess",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "residual_tolerance",
+          "required": false,
+          "default": 1e-09
+        },
+        {
+          "name": "max_evaluations",
+          "required": false,
+          "default": 300
+        },
+        {
+          "name": "ion_temperature",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "ion_mass",
+          "required": false,
+          "default": 1836.0
+        },
+        {
+          "name": "beam_fraction",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "beam_temperature",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "beam_drift",
+          "required": false,
+          "default": 5.0
+        },
+        {
+          "name": "selector",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "expression",
+          "required": false,
+          "default": "exp(-v.^2)/sqrt(pi)"
+        },
+        {
+          "name": "integration_mesh",
+          "required": false,
+          "default": null
+        }
+      ],
+      "modules": {
+        "scirel.kinetic.generalized_dispersion": "69e6b81895f5b8b3bbe71cd46da8605743577e2b07e4de48b4e28a5dd7c099b3"
+      },
+      "review_basis": "The entry validates kind, k_values, initial_guess, residual_tolerance and max_evaluations. The nested residual uses selector/expression for the Maxwellian fast path; otherwise it forwards parameters to evaluate_gpdf_residual in this same bound module, whose eight keyword defaults define the remaining scientific ports. Residual kind routes applicable ion/beam/distribution parameters; the fast path ignores unused extra parameters as in the unchanged implementation. This binding verifies the declared scientific contract, not a claim that every runtime branch rejects arbitrary kwargs."
     }
   ]
 }

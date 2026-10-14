@@ -1,0 +1,39 @@
+{
+  "schema": "scirel.executed-tutorial.v1",
+  "tutorial": "kinetic-initial-value",
+  "wheel_sha256": "ff2bc189e74736a704a66301ea4159c9d0e15851e5bf56e75cf9c65558c52e79",
+  "example_sha256": "d650f9c89f187867b388c38b640635f7bd05f21eeaff172691a303fe2802b72d",
+  "results": {
+    "all_checks_passed": true,
+    "root_count": 19,
+    "maximum_dielectric_residual": 1.0383276944398355e-12,
+    "velocity_nodes": 2049,
+    "field_samples": 2001,
+    "last_field_real": -0.0,
+    "last_field_imag": -0.3031281278141937,
+    "recurrence_time": 2144.660584850632,
+    "diagnostic_status": "available"
+  },
+  "results_sha256": "40910fb28fec7f0b2e1d15d74d5e47799ab9daee078925c095be9707c3b8b0da",
+  "source_files": {
+    "src/scirel/kinetic/generalized_dispersion.py": "69e6b81895f5b8b3bbe71cd46da8605743577e2b07e4de48b4e28a5dd7c099b3",
+    "src/scirel/kinetic/vlasov_poisson.py": "a94a5247c72b5fcf206b6dcfee294e4a68abc57866264fc776834174f3a221b8"
+  },
+  "document_files": {
+    "catalog/gpdf-core/generalized-root-scans.json": "56b33ab6fbb721b68e9acb301a2ab242cc8c0f54a2f0ab368f759936c25619b8",
+    "catalog/gpdf-core/vp-landau.json": "067f796f32fcc507643094a05078ad0a0643b516654d322e1ad436953f8628c8"
+  },
+  "tutorial_rst_sha256": "db3e04e94685bf906ff7489c8a651222f4b047ba1dde1735dfba7be8b975b627",
+  "environment": {
+    "python": "3.14.7",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "image": "sha256:38382f431271e9dcee8b56113c23be9c232c37dd246e9e3da5fd02b47a3e5ed8",
+    "container": "ae7e152755535cfe91b9cae25d702ee357d8f41e09396c85b4fa2de55c0d20bf",
+    "network": "none",
+    "source_or_saved_answers": false,
+    "exit_code": 0
+  },
+  "human_approval": false,
+  "release_approval": false
+}

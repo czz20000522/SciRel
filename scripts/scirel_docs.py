@@ -61,7 +61,7 @@ def handbook_document(asset_ids, outline=None):
         for topic in chapter['topics']:
             if not topic['assets']:
                 raise ValueError('empty handbook topic')
-            if topic.get('tutorial_id') not in (None, 'magnetostatics'):
+            if topic.get('tutorial_id') not in (None, 'magnetostatics', 'kinetic-initial-value'):
                 raise ValueError('handbook tutorial has no execution-backed renderer')
             placements.extend(topic['assets'])
     if len(placements) != len(set(placements)):

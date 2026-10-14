@@ -7255,7 +7255,7 @@
     },
     {
       "asset_id": "scirel.geometry.material-support-classification",
-      "source_sha256": "4c51d2fb9569ac61a5f359d67fa67b101afa7d6896215f98249b30c3c31ffb9f",
+      "source_sha256": "400c79b64cd57a0ab94e4c90ebfd99aa10f78918ea0ef21a49f0eec8d5ccc3df",
       "summary": "由已采样极向磁通、圆柱坐标、分界磁通及所选侧、PML厚度和PEC掩码分类冷等离子体材料支撑点。",
       "definition": "先在covered范围选择分界磁通指定侧，并加入极向半长度内最小网格半径段；随后排除求解盒六面PML边框和PEC，结果必须非空。",
       "model": "采样磁通上的纯几何材料分类，不求等离子体模型、场或重构磁面。",

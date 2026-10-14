@@ -689,6 +689,13 @@ def _validate_runtime_inputs(
                    if parameter.default is inspect.Parameter.empty and name not in documented_names}
         if missing:
             _fail(document["asset_id"], f"required scientific inputs are undocumented: {sorted(missing)}")
+    elif document.get("kind") == "task_graph" and accepts_keywords:
+        if function is None:
+            _fail(document["asset_id"], "TaskGraph keywords require their actual callable binding")
+        bound_signature = _explicit_mapping_signature(document, function)
+        if bound_signature is None:
+            _fail(document["asset_id"], "TaskGraph keywords require an explicit scientific port binding")
+        signature = bound_signature
     accepts_keywords = any(
         parameter.kind is inspect.Parameter.VAR_KEYWORD
         for parameter in signature.parameters.values()

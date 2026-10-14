@@ -191,3 +191,39 @@ def test_existing_composed_graph_ports_remain_exact(asset_id,tmp_path,monkeypatc
     changed=tmp_path/'changed.py';changed.write_bytes(Path(module.__file__).read_bytes()+b'\n# changed binding\n')
     monkeypatch.setattr(module,'__file__',str(changed))
     with pytest.raises(ValueError,match='source binding differs'):check(d,f)
+
+
+@pytest.mark.parametrize('change', [None, 'extra', 'missing', 'renamed', 'required', 'default', 'source'])
+def test_generalized_scan_keyword_ports_are_bound(change, tmp_path, monkeypatch):
+    import importlib, json
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[1]
+    d = json.loads((root / 'catalog/gpdf-core/generalized-root-scans.json').read_text())
+    module = importlib.import_module(d['public_api']['python']['module'])
+    f = getattr(module, d['public_api']['python']['symbol'])
+    if change is None:
+        check(d, f)
+        result = f('langmuir', k_values=[0.1])
+        assert result['omega'].shape == (1,)
+        assert result['dielectric_residual'][0] < 1e-9
+        return
+    if change == 'extra': d['inputs'].append({'name': 'extra', 'required': True})
+    elif change == 'missing': d['inputs'].pop()
+    elif change == 'renamed': d['inputs'][-1]['name'] = 'different_mesh'
+    elif change == 'required': d['inputs'][-1]['required'] = True
+    elif change == 'default': d['inputs'][-1]['default'] = 5
+    else:
+        changed = tmp_path / 'changed.py'
+        changed.write_bytes(Path(module.__file__).read_bytes() + b'\n# changed source binding\n')
+        monkeypatch.setattr(module, '__file__', str(changed))
+    with pytest.raises(ValueError, match='source binding differs' if change == 'source' else 'ports/defaults differ'):
+        check(d, f)
+
+
+def keyword_graph(density, **parameters):
+    return relation(density, **parameters)
+
+
+def test_unbound_taskgraph_keywords_fail_closed():
+    with pytest.raises(ValueError, match='explicit scientific port binding'):
+        check(contract(), keyword_graph)

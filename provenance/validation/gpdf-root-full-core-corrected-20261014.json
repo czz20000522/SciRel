@@ -1,0 +1,36 @@
+{
+  "action_id": "gpdf-corrected-independent-reception-20261014-v1",
+  "at_utc": "2026-10-14T05:41:18.349565+00:00",
+  "decision": "ACCEPTED_GPDF_FULL_RETAINED_CORE_D2_D3_CORRECTED_COMPOSITE",
+  "candidate_commit": "b4c4aac3418acc25e8e0bbff6d558c2e18a6c8fe",
+  "candidate_tree": "3506b1edee64b7c992d0e75fd86b728e68718622",
+  "wheel_sha256": "d3238bcc8e49b7b971c3fbc2622ac2a35652c6d166aa96a30d20340b6b1d80b3",
+  "reviewer_manifest_sha256": "4a1b02b088189f55111490f202d0f54c018ea1dd2cb4bd998fd383213b977ad0",
+  "reviewer_members": 14,
+  "reviewer_bytes": 185294,
+  "independent_checks": 91,
+  "author_fullcore_D3_reception": "130roots +4VP2049x2000 +23examples; actualterminal reread; unchanged priorindependent wholecore reused",
+  "root_verified_scientific_modules": 7,
+  "public_apis": 23,
+  "Chinese_readers": 23,
+  "producer_native_terminal": "completed01a138bf-7c69-7022-893d-bceb372e3734",
+  "closed": [
+    "R1",
+    "R1-HILBERT",
+    "R2",
+    "R3"
+  ],
+  "original_rejection_preserved": true,
+  "technical_limitations": [
+    "Bounded numerical and scenario qualification within retained declared scientific contracts; not universal complex-plane/global error proof or root uniqueness.",
+    "Piecewise lower-half-plane response is the defined real-contour transform; no analytic continuation invented across discontinuities.",
+    "Custom expressions require real integrable density, vanishing end values and caller-resolved feature mesh.",
+    "Vlasov-Poisson velocity window, recurrence and diagnostic availability limits remain; no silent full-grid reduction.",
+    "Linux arm64/Python3.14.7/NumPy2.5.4/SciPy1.18.1 are actual qualified runtime; longdouble range on other platforms is unverified.",
+    "J-pole table redistribution grant and final human scientific endorsement remain separate states; absence of approval does not replace this completed AI technical judgment."
+  ],
+  "canonical_integration": "PRIVATE_227_SUCCESSOR_ALREADY_RUNNING",
+  "weekly_count_unchanged_until_integrated": 2,
+  "human_scientific_endorsement": false,
+  "public_release": false
+}

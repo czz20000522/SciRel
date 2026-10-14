@@ -227,4 +227,4 @@ SciRel 源码或公共基线变更会 fail closed 到全套测试。`focused` �
 
 ## 当前累积科学包
 
-安装与查询入口见[当前科学包与中文手册](docs/scientific-core-installation.md)。当前维护选择为 `0.2.0.dev8+scientific.core`，覆盖 208 份领域合同；具体接收以根验收的提交、wheel SHA-256 与平台条件为准。安装环境不要求来源 checkout、Git 或 PowerShell；部分随包数值入口实际需要 Octave，详见运行边界。
+安装与查询入口见[当前科学包与中文手册](docs/scientific-core-installation.md)。当前维护选择为 `0.2.0.dev9+scientific.core`，覆盖 227 份领域合同；具体接收以根验收的提交、wheel SHA-256 与平台条件为准。安装环境不要求来源 checkout、Git 或 PowerShell；部分随包数值入口实际需要 Octave，详见运行边界。

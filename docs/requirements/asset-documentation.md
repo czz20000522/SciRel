@@ -118,7 +118,7 @@ A document is eligible for catalog projection only when:
 7. declared direct tests exist and remain part of affected-test selection; and
 8. the catalog release version equals every document's `implementation_version`, and its manifest binds the complete record and index partitions by digest.
 
-复合入口的 `inputs` 或 `**kwargs` 包装签名本身不能证明科学端口合同。校验透明转发时须读取实际被调函数；复杂路由须审阅实现中的端口、必需项、默认值及失败行为，并以当前实现摘要绑定显式端口记录，不能按项目名或函数名放行。负例必须证明端口新增、删除、重命名、必需性或默认值改变，以及实现摘要漂移都会被拒绝。这些绑定仅属于开发校验元数据，不进入科学 wheel，也不替代复合计算的科学验证；发现缺口时保留原失败，再验证后继修复。
+复合入口的 `inputs` 或 `**kwargs` 包装签名本身不能证明科学端口合同。校验透明转发时须读取实际被调函数；复杂路由须审阅实现中的端口、必需项、默认值及失败行为，并以当前实现摘要绑定显式端口记录，不能按项目名或函数名放行。负例必须证明端口新增、删除、重命名、必需性或默认值改变，以及实现摘要漂移都会被拒绝。即使入口同时显式列出部分参数和 `**parameters`，其余透传端口也必须受同一绑定检查；不能因 Python 接受任意关键字就跳过科学端口的必需性、默认值和实现身份。这些绑定仅属于开发校验元数据，不进入科学 wheel，也不替代复合计算的科学验证；发现缺口时保留原失败，再验证后继修复。
 
 There is one current canonical document per public `asset_id`. Git and immutable catalog releases retain history; maintainers do not create parallel snapshot documents or require repeated confirmation merely because source bytes changed. `implementation_version` states which SciRel implementation the current contract describes. A scientific contract change is handled through normal compatibility, review and release history rather than a document-local hash.
 

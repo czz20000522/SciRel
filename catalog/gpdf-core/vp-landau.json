@@ -1,0 +1,548 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.vp-landau",
+  "kind": "task_graph",
+  "title": {
+    "en": "Vlasov–Poisson initial-value composition",
+    "zh": "Vlasov–Poisson 初值组合"
+  },
+  "summary": "Initialize Poisson-closed df,E; run nt ordered RK4 steps; compute full field magnitude envelope and peak diagnostic.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave",
+    "vlasov-poisson"
+  ],
+  "aliases": [
+    "solve_vlasov_poisson"
+  ],
+  "identity": {
+    "relation": "Initialize Poisson-closed df,E; run nt ordered RK4 steps; compute full field magnitude envelope and peak diagnostic.",
+    "direction": "Inputs to solve_vlasov_poisson -> result",
+    "definition": "Initialize Poisson-closed df,E; run nt ordered RK4 steps; compute full field magnitude envelope and peak diagnostic.",
+    "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+    "geometry": "One velocity coordinate and one spatial Fourier mode.",
+    "coordinates": "Dimensionless plasma-frequency and Debye-length normalization.",
+    "boundary": "Finite velocity window; endpoint-inclusive full-weight rectangle quadrature. Fn4 weak derivative deposits cutoff deltas; selected smooth variant omits them.",
+    "assumptions": [
+      "Linear perturbations and homogeneous equilibrium.",
+      "Velocity-window truncation and recurrence are separate from temporal integration error."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "Fn",
+      "description": "Distribution family: 1 Maxwellian, 2 kappa, 3 triangular, 4 cutoff slowing-down.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "One of 1,2,3,4.",
+      "default": 2
+    },
+    {
+      "name": "kappa",
+      "description": "Kappa shape, used only by Fn=2.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": false,
+      "constraints": "For Fn=2 finite >1/2.",
+      "default": 1.0
+    },
+    {
+      "name": "nv",
+      "description": "Number of equal velocity intervals.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "Integer >=2, boolean rejected.",
+      "default": 2048
+    },
+    {
+      "name": "dt",
+      "description": "Time step in inverse plasma frequency.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": false,
+      "constraints": "Positive finite.",
+      "default": 0.01
+    },
+    {
+      "name": "nt",
+      "description": "Exact number of ordered time steps.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "Nonnegative integer, boolean rejected.",
+      "default": 2000
+    },
+    {
+      "name": "k",
+      "description": "Spatial Fourier wavenumber in inverse Debye length.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": false,
+      "constraints": "Positive finite.",
+      "default": 0.15
+    },
+    {
+      "name": "vmax",
+      "description": "Symmetric velocity window extent.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": false,
+      "constraints": "Positive finite.",
+      "default": 20.0
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "Mapping state (complete VP state), envelope, diagnostic, diagnostic_status. For nt=0 envelope and diagnostic are None; inadequate peaks give diagnostic=None and reason while retaining evolution.",
+      "units": "dimensionless",
+      "shape": "As described in output mapping or tuple.",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "Finite result except documented log-zero -inf and absent theory/diagnostics."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Aligned finite arrays and stated scalar controls; velocity grid resolves distribution and evolution."
+    ],
+    "supported": [
+      "Initialize Poisson-closed df,E; run nt ordered RK4 steps; compute full field magnitude envelope and peak diagnostic."
+    ],
+    "excluded": [
+      "Nonlinear Vlasov evolution, mobile-ion dynamics, multidimensional modes.",
+      "Certified continuum accuracy or post-recurrence validity."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for explicitly checked shape, finiteness, scalar domain or Poisson inconsistency; unsupported Python types may propagate TypeError.",
+    "runtime_failure": "FloatingPointError for nonrepresentable distribution derivative, Poisson field, Vlasov RHS or RK4 state; other arithmetic/type failures propagate.",
+    "nonconvergence": "Finite prescribed integration only; no convergence iteration. Peak diagnostic raises ValueError below two isolated maxima; composed solver reports unavailable diagnostic.",
+    "partial_results": "No partial integration after numerical failure; composed solver retains valid evolution when only peak diagnostic is unavailable."
+  },
+  "provenance": {
+    "lineage_summary": "Independent equation-based Python implementation; selected scenarios/defaults bound to frozen GPDF D1 vp_* operators. See docs/evaluations/gpdf-vp-core.md for source hashes and D2 deltas. Dev9 successor of exact document SHA256 82827029d70a926bc4111b5c4abfefac4c47cc7154fda2573c2c4187cae05826; unchanged contracts are reused, changed numerical methods and failure closure follow GPDF-R1/R2/R3.",
+    "source_kinds": [
+      "independent equation derivation",
+      "read-only frozen D1 scientific scenario controls",
+      "independent analytic and numerical reference tests"
+    ],
+    "public_references": [
+      "https://arxiv.org/abs/1211.5984",
+      "https://arxiv.org/abs/1305.6476"
+    ],
+    "license_status": "Independently authored SciRel implementation; project redistribution decision remains separate."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.vlasov_poisson",
+      "symbol": "solve_vlasov_poisson",
+      "signature": "solve_vlasov_poisson(Fn=2, kappa=1.0, nv=2048, dt=0.01, nt=2000, *, k=0.15, vmax=20.0)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev9",
+    "dependencies": [
+      {
+        "asset_id": "scirel.kinetic.vp-init"
+      },
+      {
+        "asset_id": "scirel.kinetic.vp-evolve"
+      },
+      {
+        "asset_id": "scirel.kinetic.vp-envelope"
+      },
+      {
+        "asset_id": "scirel.kinetic.vp-diagnostic"
+      }
+    ]
+  },
+  "example": {
+    "code": "from scirel.kinetic.vlasov_poisson import solve_vlasov_poisson\nr=solve_vlasov_poisson(nv=32,nt=5)\nassert r[\"state\"][\"dEt\"].shape == (6,)",
+    "description": "Vlasov–Poisson 初值组合的最小调用。",
+    "expected": "The stated shape or numerical assertion passes."
+  },
+  "verification": {
+    "scope": [
+      "Discrete Poisson constraint and off-diagonal rank-one feedback.",
+      "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
+      "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_gpdf_vlasov_poisson.py"
+    ],
+    "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
+    "known_limitations": [
+      "Finite-window rectangle rule and sampling recurrence TR=2pi/(k*dv).",
+      "Fn4 truncated density retains original coefficient and is not renormalized after cutoff.",
+      "Peak diagnostic assumes standing oscillation; rotating complex exponential has no amplitude peaks."
+    ]
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "initialize",
+        "kind": "operator",
+        "description": "initialize stage of the initial-value composition.",
+        "inputs": [
+          "Fn",
+          "kappa",
+          "nv",
+          "dt",
+          "nt",
+          "k",
+          "vmax"
+        ],
+        "outputs": [
+          "state"
+        ],
+        "asset_id": "scirel.kinetic.vp-init"
+      },
+      {
+        "id": "evolve",
+        "kind": "operator",
+        "description": "evolve stage of the initial-value composition.",
+        "inputs": [
+          "state"
+        ],
+        "outputs": [
+          "state"
+        ],
+        "asset_id": "scirel.kinetic.vp-evolve"
+      },
+      {
+        "id": "envelope",
+        "kind": "operator",
+        "description": "envelope stage of the initial-value composition.",
+        "inputs": [
+          "dEt",
+          "tt",
+          "wr",
+          "wi"
+        ],
+        "outputs": [
+          "result"
+        ],
+        "asset_id": "scirel.kinetic.vp-envelope"
+      },
+      {
+        "id": "diagnostic",
+        "kind": "operator",
+        "description": "diagnostic stage of the initial-value composition.",
+        "inputs": [
+          "dEt",
+          "tt"
+        ],
+        "outputs": [
+          "result"
+        ],
+        "asset_id": "scirel.kinetic.vp-diagnostic"
+      },
+      {
+        "id": "collect",
+        "kind": "controlled_glue",
+        "description": "collect stage of the initial-value composition.",
+        "inputs": [
+          "state",
+          "envelope",
+          "diagnostic"
+        ],
+        "outputs": [
+          "result"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": {
+          "node": "$input",
+          "port": "Fn"
+        },
+        "to": {
+          "node": "initialize",
+          "port": "Fn"
+        },
+        "description": "Fn to Fn",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "kappa"
+        },
+        "to": {
+          "node": "initialize",
+          "port": "kappa"
+        },
+        "description": "kappa to kappa",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "nv"
+        },
+        "to": {
+          "node": "initialize",
+          "port": "nv"
+        },
+        "description": "nv to nv",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "dt"
+        },
+        "to": {
+          "node": "initialize",
+          "port": "dt"
+        },
+        "description": "dt to dt",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "nt"
+        },
+        "to": {
+          "node": "initialize",
+          "port": "nt"
+        },
+        "description": "nt to nt",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "k"
+        },
+        "to": {
+          "node": "initialize",
+          "port": "k"
+        },
+        "description": "k to k",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "vmax"
+        },
+        "to": {
+          "node": "initialize",
+          "port": "vmax"
+        },
+        "description": "vmax to vmax",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "initialize",
+          "port": "state"
+        },
+        "to": {
+          "node": "evolve",
+          "port": "state"
+        },
+        "description": "state to state",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "evolve",
+          "port": "state"
+        },
+        "to": {
+          "node": "envelope",
+          "port": "dEt"
+        },
+        "description": "state to dEt",
+        "condition": "nt>0.",
+        "transform": "Select state[dEt].",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "evolve",
+          "port": "state"
+        },
+        "to": {
+          "node": "envelope",
+          "port": "tt"
+        },
+        "description": "state to tt",
+        "condition": "nt>0.",
+        "transform": "Select state[tt].",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "evolve",
+          "port": "state"
+        },
+        "to": {
+          "node": "envelope",
+          "port": "wr"
+        },
+        "description": "state to wr",
+        "condition": "nt>0.",
+        "transform": "Select state[wr].",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "evolve",
+          "port": "state"
+        },
+        "to": {
+          "node": "envelope",
+          "port": "wi"
+        },
+        "description": "state to wi",
+        "condition": "nt>0.",
+        "transform": "Select state[wi].",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "evolve",
+          "port": "state"
+        },
+        "to": {
+          "node": "diagnostic",
+          "port": "dEt"
+        },
+        "description": "state to dEt",
+        "condition": "nt>0.",
+        "transform": "Select state[dEt].",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "evolve",
+          "port": "state"
+        },
+        "to": {
+          "node": "diagnostic",
+          "port": "tt"
+        },
+        "description": "state to tt",
+        "condition": "nt>0.",
+        "transform": "Select state[tt].",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "evolve",
+          "port": "state"
+        },
+        "to": {
+          "node": "collect",
+          "port": "state"
+        },
+        "description": "state to state",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "envelope",
+          "port": "result"
+        },
+        "to": {
+          "node": "collect",
+          "port": "envelope"
+        },
+        "description": "result to envelope",
+        "condition": "nt>0.",
+        "transform": "Use None for nt=0.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "diagnostic",
+          "port": "result"
+        },
+        "to": {
+          "node": "collect",
+          "port": "diagnostic"
+        },
+        "description": "result to diagnostic",
+        "condition": "nt>0 with sufficient peaks.",
+        "transform": "Catch insufficient-peak ValueError; preserve reason and None.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "collect",
+          "port": "result"
+        },
+        "to": {
+          "node": "$output",
+          "port": "result"
+        },
+        "description": "result to result",
+        "condition": "Always.",
+        "transform": "Pack state,envelope,diagnostic,diagnostic_status.",
+        "kind": "data",
+        "required": true
+      }
+    ],
+    "execution": {
+      "mode": "Finite initial-value composition with nested finite numerical feedback.",
+      "ordering": "Initialize then exactly nt ordered RK4 steps; envelope and diagnostic consume completed history; collect results.",
+      "branches": [
+        "nt=0 skips envelope and diagnostic.",
+        "Insufficient peaks retain completed evolution and report diagnostic unavailable."
+      ],
+      "state_ownership": "Local copied state; evolve owns its nt-step df/E feedback. Each RK4 stage closes Poisson before the next stage. Bound nt is explicit, no convergence loop.",
+      "failure_propagation": "Initialization or evolution failure propagates. Unavailable peak diagnostic converts to a reason.",
+      "feedback": []
+    }
+  }
+}

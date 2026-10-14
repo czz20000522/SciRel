@@ -1,0 +1,346 @@
+{
+  "schema": "scirel.gpdf-full-core-crosswalk.v1",
+  "frozen_D0_commit": "4b7974235039b4746ec0fedecb5d8d5da64c8f2f",
+  "accepted_D1_commit": "6dc8c1c0d22b9fca0920b0496671cab2cad4f2a5",
+  "registered_predecessor": "GPDF_D1_qualified_20261010",
+  "prior_source_commit": "0782bc040418504cbbe0b952fdce3914b2f72b42",
+  "qualified_selected4_candidate": "c1ce0103b8d74bea3a3273d11f97238ca7075e72",
+  "canonical_input": "a928f4854eae0182bfc437174d4579a06e88b8af",
+  "D1_scientific_operators_and_graphs": [
+    {
+      "D1_path": "operators/faddeeva_gpdf/gpdf_faddeeva.m",
+      "D1_sha256": "1f685df24e70b0999405cca85954c9f9c183c4e11a4b9dfc737bf27b0a111fa5",
+      "SciRel_capabilities": [
+        "evaluate_faddeeva_gpdf"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/faddeeva_dr/dr_faddeeva.m",
+      "D1_sha256": "f6468ea78d30ca81874e588c15d368f9d252a8e49d7822cb58f09e4880f36613",
+      "SciRel_capabilities": [
+        "evaluate_faddeeva_dr"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/zfun/gpdf_zfun.m",
+      "D1_sha256": "0e14023e739fe12c9261d2db1fc99ea4a4800d135d079a4cde7747bb2678f566",
+      "SciRel_capabilities": [
+        "evaluate_maxwellian_fft"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/zfunJpole/gpdf_zfunJpole.m",
+      "D1_sha256": "7d06418f453b6a2ac0d6ba805df9c62a3d33af91b21dd00968695ad4cd5c08dc",
+      "SciRel_capabilities": [
+        "evaluate_maxwellian_jpole"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/zetaph/gpdf_zetaph.m",
+      "D1_sha256": "3192ae39c74f518d3be89fa202f843f35483f8cb99fda10f5f6df02cf81bfc58",
+      "SciRel_capabilities": [
+        "evaluate_generalized_dispersion"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/gpdf_calFp.m",
+      "D1_sha256": "693bac40ca4049d633566a17c14b44145b72d5e6af9c5143ceb963fdab9dd642",
+      "SciRel_capabilities": [
+        "DensityExpression"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/gpdf_calZ.m",
+      "D1_sha256": "c639b1846a135eb152dc8de36d99c2643819fe10855966022656b4da82c662f4",
+      "SciRel_capabilities": [
+        "evaluate_generalized_hilbert"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/gpdf_hilb.m",
+      "D1_sha256": "1cc057538daa705f1d922057b81df82a0bd365b38e9ceca4ebc695504c7329a0",
+      "SciRel_capabilities": [
+        "evaluate_generalized_hilbert"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/gpdf_zdelta.m",
+      "D1_sha256": "ebf0fa81daa5c3b7ab527c5a65d6b32c166981f1197e4c42099fb3ba337e227b",
+      "SciRel_capabilities": [
+        "evaluate_generalized_dispersion(selector=1)"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/gpdf_api.m",
+      "D1_sha256": "254def13785e2585f6562a9079258c9182ee5a4fe1fbcc5e393c4e1327984b87",
+      "SciRel_capabilities": [
+        "evaluate_generalized_dispersion"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/gpdf_residual.m",
+      "D1_sha256": "d21f983c665dee9e6b230e5ce1a654eacaa67ab2081398aeaded139618a99a75",
+      "SciRel_capabilities": [
+        "evaluate_gpdf_residual"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/gpdf_small_k.m",
+      "D1_sha256": "42d798ce497118f06e6b4568f972d87ea9deb8e75d43aae40e62f674683d6bff",
+      "SciRel_capabilities": [
+        "evaluate_gpdf_small_k"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/gpdf_scan_init.m",
+      "D1_sha256": "04da9f50b5b487caa13b473fe40c8b354cfe47410a3929c8ebf14c981d8829ad",
+      "SciRel_capabilities": [
+        "scan_gpdf_roots"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/gpdf_root_guess.m",
+      "D1_sha256": "6fbd614fb4e4e7fb9edfd64f845c29065d9ba32f6d97097c85c9f3480a3b4845",
+      "SciRel_capabilities": [
+        "scan_gpdf_roots"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/gpdf_root_frequency.m",
+      "D1_sha256": "3e9465663724649289883473e9761a012c33744fb5727a9b5acca9b9b63e9f36",
+      "SciRel_capabilities": [
+        "scan_gpdf_roots"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/gpdf_legacy_fsolve.m",
+      "D1_sha256": "385c20e07d268c86cfa9aa0fa9e01f48ecf533a42d1233da6e86829ac3bace9f",
+      "SciRel_capabilities": [
+        "scan_gpdf_roots"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/vp_init.m",
+      "D1_sha256": "388a6c8c466bf9d09a8a957a2e587709095adc6792a6872a683a7df8c634d0f5",
+      "SciRel_capabilities": [
+        "vp_init"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/vp_distribution.m",
+      "D1_sha256": "e080e76a166f5668a58da6c8991cc065099637d31803bf5be33c4130dd7af3a1",
+      "SciRel_capabilities": [
+        "vp_distribution"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/vp_field.m",
+      "D1_sha256": "dae7ea2815e9f73025152f8e0b65ce5646bd59d9c17ab5a4e7bc9358052a6a4a",
+      "SciRel_capabilities": [
+        "vp_field"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/vp_rhs.m",
+      "D1_sha256": "7361c7e600e8ad10f87933e165e84cab126eed12cdfac117be33d2f5df315d66",
+      "SciRel_capabilities": [
+        "vp_rhs"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/vp_rk4_step.m",
+      "D1_sha256": "6a0c2e617c173f9cce2423c8383193b8c41a1aa876dc6d56b30b67733ecff4d0",
+      "SciRel_capabilities": [
+        "vp_rk4_step"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/vp_evolve.m",
+      "D1_sha256": "80bcf926f66d5bafdbf2f6f780b85c19f761390a7192e06ba5171033d223c72c",
+      "SciRel_capabilities": [
+        "vp_evolve"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/vp_envelope.m",
+      "D1_sha256": "149bedbe8dcd914820f33d1ca484e1d14feeece726d9059e0569659fe45651eb",
+      "SciRel_capabilities": [
+        "vp_envelope"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "operators/vp_diagnostic.m",
+      "D1_sha256": "7b08c92bddfa8c3681d81c10ca5eeb90d3e356fbe38a29fdba49b0b6910847ed",
+      "SciRel_capabilities": [
+        "vp_diagnostic"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "task_graphs/root_scans/gpdf_root_scan.m",
+      "D1_sha256": "3ff826efba41e0af6de8e1df3a8c8628a9c6e187a5f08bd67e5335e4786473fc",
+      "SciRel_capabilities": [
+        "scan_gpdf_roots"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    },
+    {
+      "D1_path": "task_graphs/vp_landau/vp_graph.m",
+      "D1_sha256": "e8882c2d80da115cc9f70ed473b7fc04e3cec4197c25c61fb1353bd84ed4f739",
+      "SciRel_capabilities": [
+        "solve_vlasov_poisson"
+      ],
+      "disposition": "retained independent mathematical implementation with explicit D2 behavioral deltas"
+    }
+  ],
+  "upstream13_scientific_files": [
+    {
+      "upstream_path": "dr/es1d_beam.m",
+      "sha256": "61966c2aa47cbe96f86c6ba7098574213d49d19a06e1ddfce65b7bd4d6b3e7b5",
+      "SciRel_capabilities": [
+        "evaluate_gpdf_residual",
+        "scan_gpdf_roots(kind=beam)"
+      ],
+      "disposition": "core retained; plot/file side effects excluded"
+    },
+    {
+      "upstream_path": "dr/es1d_iaw.m",
+      "sha256": "3bcabb0ef3959bfb767c69b6038981015d4876432555c6eae2c08190f24d12dc",
+      "SciRel_capabilities": [
+        "evaluate_gpdf_residual",
+        "scan_gpdf_roots(kind=iaw)"
+      ],
+      "disposition": "core retained; drawing excluded"
+    },
+    {
+      "upstream_path": "dr/faddeeva.m",
+      "sha256": "8e3cb25f47dd15562641ab9ff15b3ebe28ed6becb6ccf89802d19b5158a21807",
+      "SciRel_capabilities": [
+        "evaluate_faddeeva_dr"
+      ],
+      "disposition": "default16 variant retained"
+    },
+    {
+      "upstream_path": "dr/langmuir.m",
+      "sha256": "8c66fcbdfd05a586925c04ec0751f807c74cea169969136094dbcddef55f0e71",
+      "SciRel_capabilities": [
+        "evaluate_gpdf_residual",
+        "scan_gpdf_roots(kind=langmuir)",
+        "evaluate_gpdf_small_k"
+      ],
+      "disposition": "core retained; drawing excluded"
+    },
+    {
+      "upstream_path": "gpdf_code/faddeeva.m",
+      "sha256": "d7cfb99e2af5d215ba830bffca698cbfc3f0ba7b92ae07a2d752eda504c61f6d",
+      "SciRel_capabilities": [
+        "evaluate_faddeeva_gpdf"
+      ],
+      "disposition": "default32 variant retained"
+    },
+    {
+      "upstream_path": "gpdf_code/rootfinding.m",
+      "sha256": "fdfcfc58f5e298b98e2ebde3e6c908478690c8b8fb59d186df9d6b3cae2a7707",
+      "SciRel_capabilities": [
+        "scan_gpdf_roots(kind=generalized)"
+      ],
+      "disposition": "scientific sequential scan retained; drawing excluded"
+    },
+    {
+      "upstream_path": "gpdf_code/test_1d.m",
+      "sha256": "32d3faa2dff49b716abcaf8312870561e1e5a22d79d00a9a485129860eaf8db8",
+      "SciRel_capabilities": [
+        "evaluate_generalized_dispersion",
+        "evaluate_faddeeva_gpdf"
+      ],
+      "disposition": "full numerical grids retained in installed independent driver; drawing excluded"
+    },
+    {
+      "upstream_path": "gpdf_code/test_2d.m",
+      "sha256": "4e0d29ce4ab2a19c8a2b818d46c0f6c309197c551f536df03846ae16120dfae8",
+      "SciRel_capabilities": [
+        "evaluate_generalized_dispersion",
+        "evaluate_faddeeva_gpdf"
+      ],
+      "disposition": "full numerical grids retained in installed independent driver; drawing excluded"
+    },
+    {
+      "upstream_path": "gpdf_code/vp_landau_sim.m",
+      "sha256": "5dfa0bfb87e3cf56ac2e1c94eecc31ca7a1aaa09ddc1920d68664596f6bbced1",
+      "SciRel_capabilities": [
+        "solve_vlasov_poisson"
+      ],
+      "disposition": "all four distribution branches full default evolution and diagnostics; graphics excluded"
+    },
+    {
+      "upstream_path": "gpdf_code/zetaph.m",
+      "sha256": "c3c1aaed7ec68c59f7270df7e9f549bb3c1ffaab8520466be1fa1f3ab9c75a4b",
+      "SciRel_capabilities": [
+        "evaluate_generalized_dispersion",
+        "evaluate_generalized_hilbert",
+        "DensityExpression"
+      ],
+      "disposition": "seven active selector branches and analytic expression family retained; unsafe eval and undefined piecewise complex comparisons replaced explicit contracts"
+    },
+    {
+      "upstream_path": "maxwellian/tstZ.m",
+      "sha256": "fce01c5612a582a4d69e614b22bb23f2718c19deba69cc924713432c66bf6c2a",
+      "SciRel_capabilities": [
+        "evaluate_maxwellian_fft",
+        "evaluate_maxwellian_jpole"
+      ],
+      "disposition": "validation assembly retained numerics; drawing excluded"
+    },
+    {
+      "upstream_path": "maxwellian/zfun.m",
+      "sha256": "01f7d60111770f90a90dea428dc134cf91cff1a9255675973723ba5cea72ab9f",
+      "SciRel_capabilities": [
+        "evaluate_maxwellian_fft"
+      ],
+      "disposition": "default32 FFT retained"
+    },
+    {
+      "upstream_path": "maxwellian/zfunJpole.m",
+      "sha256": "e0e0a055d75d9804b79dd47c33011203151e0732709f89d3282ed0ae2bd2f258",
+      "SciRel_capabilities": [
+        "evaluate_maxwellian_jpole"
+      ],
+      "disposition": "all four exact numerical tables retained; matrix loop repaired"
+    }
+  ],
+  "noncore_exclusions": [
+    "Interactive figures, clear/clc/close/pause and native script side-effect parity.",
+    "README/PDF/PNG/url reference material retained by frozen D0 evidence, not executable scientific API.",
+    "Arbitrary MATLAB code evaluation and unsupported invalid truncation outcomes are replaced explicit input validation; arbitrary symbolic expression universe not claimed."
+  ],
+  "scientific_domain_changes": [
+    "D2 corrects documented source numerical/normalization/Poisson/diagnostic defects; not literal D1 failure parity.",
+    "Piecewise distributions use original real-contour response below axis; do not imply undefined analytic Landau extension."
+  ],
+  "independent_driver": "scripts/gpdf/installed_probe.py",
+  "human_approval": false,
+  "redistribution_approval": false
+}

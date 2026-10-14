@@ -85,3 +85,8 @@ __all__.append('reduce_qh2_total_conservation_diagnostic')
 __all__.append('reduce_terminal_molecular_ion_state')
 __all__.append('evaluate_h_saha_equilibrium_population')
 __all__.extend(['evaluate_cauchy_transform', 'evaluate_maxwellian_electrostatic', 'solve_maxwellian_electrostatic_mode'])
+
+from .faddeeva_variants import evaluate_faddeeva_dr, evaluate_faddeeva_gpdf, evaluate_maxwellian_fft, evaluate_maxwellian_jpole
+from .generalized_dispersion import DensityExpression, evaluate_generalized_dispersion, evaluate_generalized_hilbert, evaluate_gpdf_residual, evaluate_gpdf_small_k, scan_gpdf_roots
+from .vlasov_poisson import solve_vlasov_poisson, vp_diagnostic, vp_distribution, vp_envelope, vp_evolve, vp_field, vp_init, vp_rhs, vp_rk4_step
+__all__.extend(['DensityExpression', 'evaluate_faddeeva_dr', 'evaluate_faddeeva_gpdf', 'evaluate_generalized_dispersion', 'evaluate_generalized_hilbert', 'evaluate_gpdf_residual', 'evaluate_gpdf_small_k', 'evaluate_maxwellian_fft', 'evaluate_maxwellian_jpole', 'scan_gpdf_roots', 'solve_vlasov_poisson', 'vp_diagnostic', 'vp_distribution', 'vp_envelope', 'vp_evolve', 'vp_field', 'vp_init', 'vp_rhs', 'vp_rk4_step'])

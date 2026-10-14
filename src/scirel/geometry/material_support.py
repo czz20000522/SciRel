@@ -12,8 +12,9 @@ cold-plasma material support:
 ``axis_segment`` term marks the innermost radius present on the grid, restricted
 to the poloidal half length around the midplane; it coincides with the magnetic
 axis only when the grid actually contains r = 0, and the retained relation
-intersects it with ``covered`` as well, so it can only add points when the
-equilibrium map's radial axis begins at the grid's minimum radius.
+intersects it with ``covered`` as well. It can add any eligible innermost-grid
+points within that coverage and poloidal interval, including a positive minimum
+grid radius; the equilibrium radial axis need not start at that same radius.
 
 The PML frame is excluded on all six faces of the solver box.  ``pml_cells`` is
 required to be a positive integer: the retained implementation expressed the
