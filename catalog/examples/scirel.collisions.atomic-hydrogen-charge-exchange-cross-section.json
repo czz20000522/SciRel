@@ -90,13 +90,14 @@
     "partial_results": "Never returned; a rejected call produces no cross section."
   },
   "provenance": {
-    "lineage_summary": "Development integration from the saved KN1DPy sigma_cx_h0 slice, package 原子氢电荷交换截面, source anchor KN1DPy/sigma/sigma_cx_h0.py:7-32 with the shared polynomial evaluation KN1DPy/poly.py:3-10 (saved implementation file SHA-256 af55e393c0e7510a0c1734eabc2a635374c1dfe2ec8dcc3ae87386772a80b099). The saved extraction ledger records the targeted extraction as ACCEPT_OPERATOR with package-level tests of both branches' clipping, positivity, shape and rejection behavior. Two documented repairs relative to the saved implementation, whose own document declares both contracts: negative energies are rejected instead of being silently clipped into the fit domain, and the freeman selector must be a scalar instead of being reduced by np.any over arrays. The branch arithmetic is preserved bit for bit on the declared domain. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "lineage_summary": "Development integration from the saved KN1DPy sigma_cx_h0 slice, package 原子氢电荷交换截面, source anchor KN1DPy/sigma/sigma_cx_h0.py:7-32 with the shared polynomial evaluation KN1DPy/poly.py:3-10 (saved implementation file SHA-256 af55e393c0e7510a0c1734eabc2a635374c1dfe2ec8dcc3ae87386772a80b099). The saved extraction ledger records the targeted extraction as ACCEPT_OPERATOR with package-level tests of both branches' clipping, positivity, shape and rejection behavior. Two documented repairs relative to the saved implementation, whose own document declares both contracts: negative energies are rejected instead of being silently clipped into the fit domain, and the freeman selector must be a scalar instead of being reduced by np.any over arrays. The branch arithmetic is preserved bit for bit on the declared domain. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval. Successor implementation review separately verified primary sigma_cx_h0.pro and all public branches; original source-parity provenance is not restored.",
     "source_kinds": [
       "saved L1 operator document and implementation",
       "saved extraction ledger evidence",
       "independent reevaluation of the saved formulas",
       "environment-gated historical replay test",
-      "scientific regression tests"
+      "scientific regression tests",
+      "primary KN1D sigma_cx_h0.pro fit definition and independent installed evaluation"
     ],
     "public_references": [],
     "license_status": "pending-human-decision"
@@ -131,7 +132,7 @@
       "tests/operator_contracts/test_collision_cross_section_input_types.py",
       "tests/operator_contracts/test_atomic_hydrogen_charge_exchange_cross_section_l1.py"
     ],
-    "evidence_ceiling": "The maintained tests establish both fits against in-file independent evaluations, the clipping, the full input and failure contracts including the two documented repairs, and the composition with the retained Maxwellian rate average. The environment-gated replay establishes exact agreement with the saved KN1DPy implementation on the compared grid only. No test establishes either fit against an external physical cross-section reference: the saved package records that residual as validation_oracle_gap. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "evidence_ceiling": "Independent implementation verification against the primary KN1D sigma_cx_h0.pro fit definition now covers every branch, clipping boundary and SI conversion. A source-free NumPy-only installation passed scalar independent evaluation across 56 energies per branch; all 62 existing fit/input tests passed with their original assertions and tolerances. This qualifies the stated empirical expression, not new experimental accuracy. The historical whole KN1DPy D1 withdrawal and original lack of external experimental cross-section validation remain; human endorsement and redistribution permission remain separate.",
     "known_limitations": [
       "The integrated input check rejects complex, boolean and numeric-string energies before float conversion; the saved arm could coerce them. Valid real-input fit arithmetic is unchanged.",
       "Neither branch is validated against an external atomic-physics reference; the saved package's own validation gap carries over unchanged.",

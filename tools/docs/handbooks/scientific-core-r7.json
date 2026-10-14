@@ -1,7 +1,7 @@
 {
   "schema": "scirel.handbook.v1",
   "title": "SciRel 科学计算手册",
-  "introduction": "按科学领域与要解决的问题查找计算入口。本版连接 244 份精确科学合同：基础关系以函数提供，状态与多步计算以具有显式端口和停止条件的组合入口提供。每页保留单位、默认值、失败规则和证据边界；安装包的许可与平台条件另见安装说明。本文档覆盖已选定的内部技术包，不将局部关系的可用性扩张为整个来源项目的资格。",
+  "introduction": "按科学领域与要解决的问题查找计算入口。本版连接 250 份精确科学合同：基础关系以函数提供，状态与多步计算以具有显式端口和停止条件的组合入口提供。每页保留单位、默认值、失败规则和证据边界；安装包的许可与平台条件另见安装说明。本文档覆盖已选定的内部技术包，不将局部关系的可用性扩张为整个来源项目的资格。",
   "chapters": [
     {
       "id": "coordinates-and-meshes",
@@ -809,6 +809,19 @@
             "scirel.kinetic.shifted-maxwellian-seed",
             "scirel.kinetic.incoming-boundary-flux-normalization",
             "scirel.kinetic.spatial-source-shape-normalization"
+          ]
+        },
+        {
+          "id": "neutral-empirical-cross-sections",
+          "title": "选择电荷交换、动量传递和黏性截面",
+          "introduction": "按粒子种类与实验室系碰撞能量选择经验拟合，区分电荷交换、动量传递和黏性。每个分支保留声明的能区及端点裁剪；分子自黏性沿用动量传递近似，不能据此声称新的实验有效性。",
+          "assets": [
+            "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
+            "scirel.collisions.atomic-hydrogen-elastic-cross-section",
+            "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
+            "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
+            "scirel.collisions.molecular-hydrogen-elastic-cross-section",
+            "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section"
           ]
         },
         {

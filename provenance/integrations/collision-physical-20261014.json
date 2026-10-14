@@ -70,5 +70,10 @@
   "scientific_scope": "Moment-matched BGK, finite velocity/angular grids, inherited H/D/empirical fits and molecular viscosity approximation; no new whole KN1D D3, experimental validity or permission.",
   "human_approval": false,
   "public_release": false,
-  "whole_source_project_complete": false
+  "whole_source_project_complete": false,
+  "dependency_document_closure": {
+    "original244_failure": "Required fit documents omitted despite wheel dependency closure",
+    "successor": "Six primary-backed public fit documents added after independent root9-branch/62-test verification;250public",
+    "root_fit": "provenance/validation/collision-fit-root-20261014.json"
+  }
 }

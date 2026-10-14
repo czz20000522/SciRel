@@ -73,9 +73,19 @@
       "sha256": "a74b30a504aaa605ebba425b3c55b210a3a699d6be92d930b7d857b3ce8b568a"
     },
     {
+      "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
+      "path": "catalog/examples/scirel.collisions.atomic-hydrogen-charge-exchange-cross-section.json",
+      "sha256": "6f2dcc3d87095632fa14dfb9768a8cce8b278f16e65180e70cce2f6db20de632"
+    },
+    {
       "asset_id": "scirel.collisions.atomic-hydrogen-collision-matrices",
       "path": "catalog/examples/scirel.collisions.atomic-hydrogen-collision-matrices.json",
       "sha256": "d44aee0c5ecf9e69e70753cfb6e847ef3a33fb08be559311808a3d0314d98a4a"
+    },
+    {
+      "asset_id": "scirel.collisions.atomic-hydrogen-elastic-cross-section",
+      "path": "catalog/examples/scirel.collisions.atomic-hydrogen-elastic-cross-section.json",
+      "sha256": "0f4682bfe36b54ec5743b9946499084ce7db0225db395d9c7d24e4ac98610e84"
     },
     {
       "asset_id": "scirel.collisions.atomic-hydrogen-omega-frequencies",
@@ -83,14 +93,29 @@
       "sha256": "977e910203710f509f15a5b322ff1b33fb243d09c31aa6e49fb6706e7a1f109f"
     },
     {
+      "asset_id": "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
+      "path": "catalog/examples/scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section.json",
+      "sha256": "5caf1453180a060b9511082045bbbbfa4892fe13e9928c9d31661ff5f4400a90"
+    },
+    {
       "asset_id": "scirel.collisions.maxwellian-relative-speed-rate-average",
       "path": "catalog/examples/scirel.collisions.maxwellian-relative-speed-rate-average.json",
       "sha256": "2507f415de5dcc65a7ca2c9343e73f19b532afc85b1b0c8789f9f02233b37599"
     },
     {
+      "asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
+      "path": "catalog/examples/scirel.collisions.molecular-hydrogen-charge-exchange-cross-section.json",
+      "sha256": "2c2a54236eead4b7c60c40ac8671396b5d4c198a36ab7158798b71723eabb516"
+    },
+    {
       "asset_id": "scirel.collisions.molecular-hydrogen-collision-matrices",
       "path": "catalog/examples/scirel.collisions.molecular-hydrogen-collision-matrices.json",
       "sha256": "14ef7b2d8ec2991bdc4b30bd2776405c86e49f6ec56ac87469bcad3fbbec4ded"
+    },
+    {
+      "asset_id": "scirel.collisions.molecular-hydrogen-elastic-cross-section",
+      "path": "catalog/examples/scirel.collisions.molecular-hydrogen-elastic-cross-section.json",
+      "sha256": "b8baf9fdf7e161e244cd0b88c4e28019b62124f4ade452bff91aee7b69428d40"
     },
     {
       "asset_id": "scirel.collisions.molecular-hydrogen-omega-frequencies",
@@ -106,6 +131,11 @@
       "asset_id": "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
       "path": "catalog/examples/scirel.collisions.proton-atomic-hydrogen-elastic-cross-section.json",
       "sha256": "6c6df0a9000f89cd60047e1a47e8e9cb7181fc9a8af515dcad20ef7962bbdf8b"
+    },
+    {
+      "asset_id": "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section",
+      "path": "catalog/examples/scirel.collisions.proton-molecular-hydrogen-elastic-cross-section.json",
+      "sha256": "b5bdf7a6b6d37e37e1b82cabd755d1d1b8b79fb2430dd2fe9cd8978197c1a4bf"
     },
     {
       "asset_id": "scirel.collisions.relativistic-maxwellian-bessel-closure",
