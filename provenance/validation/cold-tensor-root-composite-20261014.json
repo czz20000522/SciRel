@@ -1,0 +1,59 @@
+{
+  "action_id": "scirel-cold-tensor-cancellation-repair-20261014-v1",
+  "result": "ACCEPTED_CORRECTED_COLD_TENSOR_COMPOSITE",
+  "at_utc": "2026-10-14T07:04:47.997972+00:00",
+  "source": {
+    "commit": "459ac42a841705c0c56f4834fd3dc48d12f6a1f4",
+    "tree": "0d68d839b75f8af042fccd4fb7c83223a7847c31",
+    "branch": "codex/cold-tensor-cancellation-20261014",
+    "base_commit": "3b1643644f03e237664e3ffea2a83559b2d88e0e",
+    "canonical_base_commit": "64d43f430fc828e71e45226f0c0b8e7f5f4ff621",
+    "changed_paths": [
+      "catalog/examples/scirel.dielectric.cold-plasma-tensor.json",
+      "provenance/integrations/cold-tensor-cancellation-20261014.json",
+      "provenance/selections/cold-tensor-cancellation-20261014.json",
+      "src/scirel/dielectric/cold_plasma_tensor.py",
+      "tests/operator_contracts/test_cold_plasma_tensor_cancellation.py",
+      "tools/docs/zh/zh_physics.json"
+    ],
+    "composite_paths": [
+      "catalog/examples/scirel.dielectric.cold-plasma-tensor.json",
+      "licenses/SCIREL-COLD-TENSOR-NOTICE.txt",
+      "provenance/integrations/cold-tensor-assembly-20261014.json",
+      "provenance/integrations/cold-tensor-cancellation-20261014.json",
+      "provenance/selections/cold-tensor-assembly-20261014.json",
+      "provenance/selections/cold-tensor-cancellation-20261014.json",
+      "src/scirel/dielectric/cold_plasma_tensor.py",
+      "tests/operator_contracts/test_cold_plasma_tensor_assembly.py",
+      "tests/operator_contracts/test_cold_plasma_tensor_cancellation.py",
+      "tools/docs/zh/zh_physics.json"
+    ],
+    "source_sha256": "c244f60d81c4e4e260ec6916b90f96184fdc9c3350f1b68481d255cff1dd592e",
+    "clean_worktree": true
+  },
+  "wheel": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/cold-tensor-cancellation/build-frozen/wheel/scirel-0.2.0.dev10+cold.cancellation-py3-none-any.whl",
+    "filename": "scirel-0.2.0.dev10+cold.cancellation-py3-none-any.whl",
+    "sha256": "f05498592327ec997ffca0eb5c787a91b7a14fc417d812cc6bd2031035285b8f",
+    "bytes": 15434
+  },
+  "manifest_sha256": "330a5c61b7d5bc29dea4b0b9b28794e57c50b7fcba938b7644b50d0d1e1811ca",
+  "physical_files": 136,
+  "physical_bytes": 32981763,
+  "root_independent_checks": 71,
+  "root_probe": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/cold-tensor-root-v3",
+  "root_container": "d1292cdd23c15f48721eb90e9fc428c2b4483870223f5443443767332aa366df",
+  "root_container_exit": 0,
+  "author_source_and_installed_tests_each": 260,
+  "author_plain_user_calls": 29,
+  "all17author_containers_ended_noOOM": true,
+  "algebra_review": "Separate exact rational parallel/perpendicular projection; a+b/sqrt(q) rationalization uses exact a²q-b² and well-conditioned denominator. Caller decimal context isolated. Original Stix guards and model applicability retained.",
+  "role_ended": true,
+  "current_identity_reservation": 0,
+  "human_approval": false,
+  "release_approval": false,
+  "integration_pending": true,
+  "original_failure_preserved": true,
+  "source_receipt_sha256": "c3e05a1dc50b2790992c9143f63b404ab44263f8f748f24dd8e8899ab3c69889",
+  "role": "Root technical scientific cold tensor acceptance, not cumulative-wheel or public-release approval"
+}

@@ -163,14 +163,37 @@ resonance; the guard here is therefore not a reproduction of the retained
 dielectric route but an explicit extension of the sibling conductivity route's
 contract.
 
+Final tensor assembly
+---------------------
+The final projection does not form ``P-S`` and add it back to ``S``: that
+sequence can both overflow and erase a small, finite parallel response.
+The parallel weights are exact ratios ``B_i*B_j / sum(B_k**2)`` over the
+supplied binary64 field. Perpendicular diagonal weights use the other two
+squared components directly, and off-diagonal weights negate the parallel
+weight. The Hall term uses the same field norm. Each real/imaginary entry has
+the form ``a + b/sqrt(q)`` with exact rational ``a,b,q``. Opposite-sign terms
+are rationalized as ``(a*a*q-b*b)/(sqrt(q)*(a*sqrt(q)-b))``: the numerator is
+exact and the denominator adds same-sign terms. Only the well-conditioned
+square root/divisions use 80-digit Decimal arithmetic, followed by one
+binary64 rounding. A genuinely unrepresentable final component rejects the
+whole call with ``ColdPlasmaOverflowError``.
+
+The Stix coefficients and their conservative representability guards remain
+binary64 and unchanged. Final projection does not recover information already
+lost in those coefficients, and a rounded Cartesian matrix can remain
+ill-conditioned for a later consumer extracting a much smaller eigenresponse.
+This standard-library assembly is not an all-input high-precision plasma
+solver. Artificial extreme species establish arithmetic behavior, not physical
+applicability of the cold model.
+
 Evidence ceiling
 ----------------
 Establishes the tensor identity, its exact agreement with the retained sibling
 conductivity route's closed form under the stated sign convention, the stated
 sign convention, the sufficient Hermiticity condition and its counterexample,
 the exact resonance rejection contract, and that every accepted call returns a
-finite tensor -- the last by rejecting a finite input whose intermediate
-arithmetic is not representable rather than by asserting a bound.  It also
+finite tensor -- the last by the upstream representability checks, stable
+final projection across overflow and finite cancellation, and a final finite gate.  It also
 establishes that a non-zero field cannot present as an exactly zero cyclotron
 term on either route: neither a field whose magnitude the norm rounds to zero
 nor a cyclotron term that underflows from finite non-zero ``q``, ``|B|`` and
@@ -193,6 +216,8 @@ saved bundle grants no licence: ``license_status`` is ``pending-human-decision``
 from __future__ import annotations
 
 import math
+from fractions import Fraction
+from decimal import Context, Decimal, localcontext
 
 import numpy as np
 
@@ -225,7 +250,7 @@ class ColdPlasmaResonanceError(ValueError):
 
 
 class ColdPlasmaOverflowError(ValueError):
-    """A finite input whose intermediate arithmetic is not representable.
+    """A finite input whose guarded arithmetic or final tensor is not representable.
 
     Distinct from :class:`ColdPlasmaResonanceError` because the cause is
     different and so is the remedy: the resonance is a physical singularity the
@@ -340,6 +365,10 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
     ``magnetic_flux_density_t`` is a finite array whose last axis is the field
     vector, so any leading shape is accepted.  The returned array has that shape
     plus two trailing tensor axes, and is finite on every accepted call.
+    Final projection avoids both overflowing and finite cancellation-prone
+    P-S assembly. Exact rational projectors and cancellation-safe 80-digit
+    algebraic evaluation round each final real/imaginary part to binary64;
+    genuinely unrepresentable final components reject the whole call.
 
     The returned tensor is **exactly Hermitian at any field strength** whenever
     every species has ``collision_rate_s_inv == 0``.  That is a sufficient
@@ -393,8 +422,11 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
         at any field point.  A near-resonant but non-zero denominator is not
         rejected, and a non-contributing species never rejects.
     ColdPlasmaOverflowError
-        If the input contract is satisfied but an intermediate of the Stix
-        arithmetic cannot be represented.  The numerator ``n q^2`` is rejected
+        If the input contract is satisfied but a guarded intermediate of the
+        Stix arithmetic or a final tensor component cannot be represented.
+        Final assembly uses exact rational field projectors and a stable
+        algebraic evaluation of the Hall term with the same field norm; only
+        an unrepresentable final component is rejected on that route.  The numerator ``n q^2`` is rejected
         when it is not finite.  The divisor ``eps0 * m`` is rejected when it is
         not a representable non-zero double, which is the subnormal-mass route.
         The plasma contribution ``n q^2 / (eps0 m)`` is rejected when it is not
@@ -453,8 +485,6 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
     # comparison against zero.
     field_is_nonzero = np.any(field != 0.0, axis=-1)
     field_magnitude_collapsed = field_is_nonzero & (np.asarray(magnitude) == 0.0)
-    direction = np.zeros_like(field)
-    np.divide(field, magnitude[..., None], out=direction, where=magnitude[..., None] != 0.0)
 
     shape = magnitude.shape
     stix_s = np.ones(shape, dtype=complex)
@@ -622,7 +652,7 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
         stix_s -= plasma_frequency_squared * shifted / (omega * denominator)
         stix_d += cyclotron * plasma_frequency_squared / (omega * denominator)
         stix_p -= plasma_frequency_squared / (omega * shifted)
-        # The final statement about the *result*: it requires the three
+        # The scalar-stage statement about the *result*: it requires the three
         # accumulated Stix scalars to be finite, and it is kept because a later
         # change to the guards above must not be able to make the tensor
         # non-finite silently.  It is not a substitute for the guards -- it
@@ -640,17 +670,72 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
     stix_s = np.where(magnitude == 0.0, stix_p, stix_s)
     stix_d = np.where(magnitude == 0.0, 0.0 + 0.0j, stix_d)
 
-    identity = np.eye(3, dtype=complex)
-    outer = direction[..., :, None] * direction[..., None, :]
-    cross = np.zeros(field.shape[:-1] + (3, 3), dtype=complex)
-    cross[..., 0, 1] = -direction[..., 2]
-    cross[..., 0, 2] = direction[..., 1]
-    cross[..., 1, 0] = direction[..., 2]
-    cross[..., 1, 2] = -direction[..., 0]
-    cross[..., 2, 0] = -direction[..., 1]
-    cross[..., 2, 1] = direction[..., 0]
-    return (
-        stix_s[..., None, None] * identity
-        + (stix_p - stix_s)[..., None, None] * outer
-        + 1j * stix_d[..., None, None] * cross
-    )
+    # Assemble each final entry without first forming P-S, without subtracting
+    # a rounded projector from one, and without rounding products before their
+    # sum. Even a finite P-S can erase the small parallel response when added
+    # back to S. The two projectors use exact ratios of the supplied binary64
+    # Cartesian field components; their diagonals partition unity exactly.
+    # Only the final projection is evaluated at higher precision. The Stix
+    # scalars retain the upstream binary64 arithmetic and its guards. The Hall
+    # term shares the exact field norm with the symmetric projectors.
+    tensor = np.empty(shape + (3, 3), dtype=complex)
+    for prefix in np.ndindex(shape):
+        s, d, p = (complex(value[prefix]) for value in (stix_s, stix_d, stix_p))
+        if s == p and d == 0:
+            # Includes true zero fields and every explicitly inert-species
+            # case; their response does not require a magnetic direction.
+            tensor[prefix] = 0.0
+            for i in range(3):
+                tensor[prefix + (i, i)] = p
+            continue
+        components = [Fraction(float(field[prefix + (i,)])) for i in range(3)]
+        squares = [component * component for component in components]
+        norm_squared = sum(squares)
+        cross = ((0, -components[2], components[1]),
+                 (components[2], 0, -components[0]),
+                 (-components[1], components[0], 0))
+        sr, si, dr, di, pr, pi = map(
+            Fraction, (s.real, s.imag, d.real, d.imag, p.real, p.imag))
+        with localcontext(Context(prec=80)):
+            def decimal(value):
+                return Decimal(value.numerator) / Decimal(value.denominator)
+
+            norm = decimal(norm_squared).sqrt()
+
+            def final_component(symmetric, hall_numerator):
+                # Each real/imaginary component is a + b/sqrt(q), with a, b,
+                # q exact rationals. For opposite signs, rationalize its sum:
+                # (a*a*q-b*b) / (sqrt(q)*(a*sqrt(q)-b)). The numerator stays
+                # exact and the denominator adds same-sign quantities, so even
+                # near-exact symmetric/Hall cancellation is not lost before
+                # rounding. Decimal evaluates only well-conditioned divisions
+                # and the square root, far beyond binary64 precision.
+                if not hall_numerator:
+                    return float(symmetric)
+                a, b = symmetric, hall_numerator
+                if a * b < 0:
+                    numerator = a * a * norm_squared - b * b
+                    if not numerator:
+                        return 0.0
+                    value = decimal(numerator) / (norm * (decimal(a) * norm - decimal(b)))
+                else:
+                    value = decimal(a) + decimal(b) / norm
+                return float(value)
+
+            for i in range(3):
+                for j in range(3):
+                    parallel = components[i] * components[j] / norm_squared
+                    perpendicular = (sum(squares[k] for k in range(3) if k != i)
+                                     / norm_squared if i == j else -parallel)
+                    try:
+                        real = final_component(sr * perpendicular + pr * parallel,
+                                               -di * cross[i][j])
+                        imag = final_component(si * perpendicular + pi * parallel,
+                                               dr * cross[i][j])
+                        tensor[prefix + (i, j)] = complex(real, imag)
+                    except OverflowError as error:
+                        raise ColdPlasmaOverflowError(
+                            f"{OVERFLOW_MESSAGE} (final tensor assembly)") from error
+    if not _is_finite(tensor):
+        raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (final tensor assembly)")
+    return tensor

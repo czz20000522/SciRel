@@ -1,0 +1,11 @@
+SciRel cold-plasma tensor numerical assembly successor
+
+This private technical development selection contains the SciRel maintained
+local cold-plasma tensor and a repair of final floating-point projector assembly.
+Its historical scientific document retains license_status=pending-human-decision.
+This notice records provenance and grants no new license or public redistribution
+permission for historical inputs. Independent technical verification and the
+SciRel-authored correction do not resolve any missing source-rights evidence.
+Public redistribution requires a separate evidence-based rights determination.
+The sole external runtime dependency is NumPy; its own wheel carries its license
+and third-party notices. Python standard-library fractions adds no package.
