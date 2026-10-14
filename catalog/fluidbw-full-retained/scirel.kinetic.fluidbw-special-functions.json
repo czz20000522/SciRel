@@ -1,0 +1,140 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.fluidbw-special-functions",
+  "kind": "operator",
+  "title": {
+    "en": "Corrected fluidBW special responses",
+    "zh": "修正的 fluidBW 特殊函数响应"
+  },
+  "summary": "Evaluate the complete Gamma, Z and full R response contracts; four historical R method names share the corrected harmonic evaluator.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-waves",
+    "fluidbw"
+  ],
+  "aliases": [
+    "evaluate_fluidbw_special"
+  ],
+  "identity": {
+    "relation": "scaled Bessel Gamma, plasma Z and R response",
+    "direction": "forward",
+    "definition": "RC=[R,d(bR)/db;Y dR/dY,Y d/dY(d(bR)/db)]. R=2Y/b sum_n>=1 n² Gamma_n/(Y²−n²); true poles fail.",
+    "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+    "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+    "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
+    "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+    "assumptions": [
+      "No flow or temperature anisotropy.",
+      "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
+      "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "method",
+      "description": "Scientific method selector.",
+      "units": "dimensionless",
+      "shape": "string",
+      "dtype": "string",
+      "required": true,
+      "constraints": "Gamman, Gammapn, zfun, RTAY, RASY, RINT or RYLA."
+    },
+    {
+      "name": "x",
+      "description": "Integer Bessel order, Z argument or R argument Y.",
+      "units": "dimensionless",
+      "shape": "array for Gamma/Z; scalar for R",
+      "dtype": "real/complex",
+      "required": true,
+      "constraints": "Integer real Gamma order; finite other arguments."
+    },
+    {
+      "name": "parameter",
+      "description": "Bessel b or R b; unused for Z.",
+      "units": "dimensionless",
+      "shape": "array for Gamma; scalar for R; None for Z",
+      "dtype": "real/complex or None",
+      "required": false,
+      "constraints": "Required for Gamma/R; finite.",
+      "default": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "value",
+      "description": "Gamma/Gamma derivative or Z array, or full R response matrix.",
+      "units": "dimensionless",
+      "shape": "broadcast input shape or 2x2",
+      "dtype": "complex numeric array",
+      "required": true,
+      "constraints": "Finite or explicit precision/pole failure."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Pinned Linux amd64 GNU Octave7.3.0 runtime; OPENBLAS_NUM_THREADS=OMP_NUM_THREADS=1.",
+      "NumPy2.5.3 and SciPy1.18.1 Python3.12 scientific development runtime.",
+      "Finite integer harmonic orders for Gamma; parameter is required for Gamma and R, ignored for Z."
+    ],
+    "supported": [
+      "Gamma_n=e^-b I_n(b) and its neighbor-identity derivative for integer n; finite scalar/array b.",
+      "Z(z) Weideman64, with erfcx on the imaginary axis; explicit overflow failure.",
+      "Full scalar R response for complex Y,b with tail and floating cancellation checks, bounded at 65536 terms; b=0 and Y=0 analytic limits."
+    ],
+    "excluded": [
+      "No execution or fidelity claim for original Taylor/asymptotic/integral selector.",
+      "No certified entire-complex-plane precision claim."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
+    "runtime_failure": "RuntimeError for unsupported/missing native runtime or abnormal native exit; subprocess timeout is explicit.",
+    "nonconvergence": "No nonlinear search candidate semantics in this API. Precision/tail failures are explicit ValueError; EM eigen residual and insufficient-selection failures are explicit ValueError where applicable.",
+    "partial_results": "Errors return no result; no failed or partial execution is presented as a successful output."
+  },
+  "provenance": {
+    "lineage_summary": "fluidBW upstream79829170 → retained D0 7fd667f4 → faithful D1 1a6704a7 → corrected D2. Source issues, intended divergences and scientific derivations are explained in the corrected full retained increment review narrative.",
+    "source_kinds": [
+      "MATLAB implementation",
+      "source case definitions",
+      "derived scientific and numerical correction"
+    ],
+    "public_references": [
+      "H. S. Xie, Phys. Plasmas 32, 082110 (2025).",
+      "docs/evaluations/2026-10-13-fluidbw-full-retained-d2.md"
+    ],
+    "license_status": "NOT_ESTABLISHED. WHAMP/Faddeeva permissions unresolved. Private technical development only; no scientific human or release approval."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.fluidbw",
+      "symbol": "evaluate_fluidbw_special",
+      "signature": "evaluate_fluidbw_special(method, x, parameter=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev20261013",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Corrected fluidBW special responses minimal execution",
+    "code": "from scirel.kinetic.fluidbw import evaluate_fluidbw_special\nvalue=evaluate_fluidbw_special('RTAY',2,0)\n",
+    "expected": "Finite RC with first row 2/3 and second row −10/9."
+  },
+  "verification": {
+    "scope": [
+      "Gamma_n=e^-b I_n(b) and its neighbor-identity derivative for integer n; finite scalar/array b.",
+      "Z(z) Weideman64, with erfcx on the imaginary axis; explicit overflow failure.",
+      "Full scalar R response for complex Y,b with tail and floating cancellation checks, bounded at 65536 terms; b=0 and Y=0 analytic limits."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_fluidbw_full_d2.py"
+    ],
+    "evidence_ceiling": "Bounded analytic, independent constitutive, root and state tests in the pinned runtime support the declared numerical model. Neither an all-input-universe accuracy proof nor expert scientific approval.",
+    "known_limitations": [
+      "Source permissions remain NOT_ESTABLISHED; no public release.",
+      "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
+      "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual."
+    ]
+  }
+}

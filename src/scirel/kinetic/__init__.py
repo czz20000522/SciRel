@@ -59,6 +59,9 @@ from .terminal_conservation_diagnostic import reduce_qh2_total_conservation_diag
 from .terminal_ion_state_reduction import reduce_terminal_molecular_ion_state
 from .grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
 from .frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure
+from .fluidbw import (evaluate_fluidbw_special, derive_fluidbw_case,
+                      evaluate_fluidbw_dispersion, solve_fluidbw_bonk,
+                      assemble_fluidbw_em, solve_fluidbw_em, render_fluidbw_materials)
 
 __all__ = ['assemble_frank_egedal_pressure', 'evaluate_frank_egedal_radial_envelope', 'project_frank_egedal_source_modes', 'evaluate_frank_egedal_hot_ion_moments', 'evaluate_mirror_invariant_distribution', 'assemble_mirror_total_pressure', 'evaluate_mirror_constrained_moments', 'solve_loss_cone_spectrum', 'evaluate_plasma_dispersion', 'evaluate_bessel_gamma', 'evaluate_kinetic_dispersion_sum', 'derive_species_equilibrium_scales', 'compute_thermal_speed_m_s', 'reduce_generation_density', 'solve_grid_mirror_kinetic_closure', 'solve_frank_egedal_pressure_closure']
 __all__.extend(['evaluate_plasma_dispersion_weideman', 'evaluate_fluidbw_kinetic_dispersion_sum'])
@@ -91,4 +94,7 @@ __all__.extend(['initialize_pdrf_plasma', 'assemble_pdrf_matrix', 'solve_pdrf_sp
 from .faddeeva_variants import evaluate_faddeeva_dr, evaluate_faddeeva_gpdf, evaluate_maxwellian_fft, evaluate_maxwellian_jpole
 from .generalized_dispersion import DensityExpression, evaluate_generalized_dispersion, evaluate_generalized_hilbert, evaluate_gpdf_residual, evaluate_gpdf_small_k, scan_gpdf_roots
 from .vlasov_poisson import solve_vlasov_poisson, vp_diagnostic, vp_distribution, vp_envelope, vp_evolve, vp_field, vp_init, vp_rhs, vp_rk4_step
-__all__.extend(['DensityExpression', 'evaluate_faddeeva_dr', 'evaluate_faddeeva_gpdf', 'evaluate_generalized_dispersion', 'evaluate_generalized_hilbert', 'evaluate_gpdf_residual', 'evaluate_gpdf_small_k', 'evaluate_maxwellian_fft', 'evaluate_maxwellian_jpole', 'scan_gpdf_roots', 'solve_vlasov_poisson', 'vp_diagnostic', 'vp_distribution', 'vp_envelope', 'vp_evolve', 'vp_field', 'vp_init', 'vp_rhs', 'vp_rk4_step'])
+__all__.extend(['DensityExpression', 'evaluate_faddeeva_dr', 'evaluate_faddeeva_gpdf', 'evaluate_generalized_dispersion', 'evaluate_generalized_hilbert', 'evaluate_gpdf_residual', 'evaluate_maxwellian_fft', 'evaluate_maxwellian_jpole', 'scan_gpdf_roots', 'solve_vlasov_poisson', 'vp_diagnostic', 'vp_distribution', 'vp_envelope', 'vp_evolve', 'vp_field', 'vp_init', 'vp_rhs', 'vp_rk4_step'])
+
+from .fluidbw import (evaluate_fluidbw_special, derive_fluidbw_case, evaluate_fluidbw_dispersion, solve_fluidbw_bonk, assemble_fluidbw_em, solve_fluidbw_em, render_fluidbw_materials)
+__all__.extend(['evaluate_fluidbw_special', 'derive_fluidbw_case', 'evaluate_fluidbw_dispersion', 'solve_fluidbw_bonk', 'assemble_fluidbw_em', 'solve_fluidbw_em', 'render_fluidbw_materials'])

@@ -1,0 +1,126 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.fluidbw-case-state",
+  "kind": "operator",
+  "title": {
+    "en": "fluidBW complete SI case state",
+    "zh": "fluidBW 完整 SI 案例状态"
+  },
+  "summary": "Derive the complete source BONK or EM species, normalization and material state.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-waves",
+    "fluidbw"
+  ],
+  "aliases": [
+    "derive_fluidbw_case"
+  ],
+  "identity": {
+    "relation": "source case listed-species scales and normalization",
+    "direction": "forward",
+    "definition": "vthermal=sqrt(2 kB T/m), signed rho=sqrt(kB T/m)/Omega, wn=min abs(Omega), kn=1/max abs(rho); source eV conversion retained.",
+    "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+    "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+    "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
+    "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+    "assumptions": [
+      "No flow or temperature anisotropy.",
+      "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
+      "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "family",
+      "description": "Source case family.",
+      "units": "dimensionless",
+      "shape": "string",
+      "dtype": "string",
+      "required": true,
+      "constraints": "bonk or em."
+    },
+    {
+      "name": "jcase",
+      "description": "Source case selector.",
+      "units": "dimensionless",
+      "shape": "scalar or None",
+      "dtype": "integer or None",
+      "required": false,
+      "constraints": "BONK1/2/3; EM1/2; None selects BONK1 or EM2.",
+      "default": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "Complete species scales and source material metadata; EM sets kz=0.1kn.",
+      "units": "mixed SI and dimensionless as described",
+      "shape": "mapping of MATLAB-shape arrays",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Pinned Linux amd64 GNU Octave7.3.0 runtime; OPENBLAS_NUM_THREADS=OMP_NUM_THREADS=1.",
+      "NumPy2.5.3 and SciPy1.18.1 Python3.12 scientific development runtime."
+    ],
+    "supported": [
+      "BONK cases1/2/3 and EM cases1/2; complete fixed source constants/state."
+    ],
+    "excluded": [
+      "No arbitrary species model construction through case controls.",
+      "Global charge-neutral or self-consistent background equilibrium proof for electron-only case2."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
+    "runtime_failure": "RuntimeError for unsupported/missing native runtime or abnormal native exit; subprocess timeout is explicit.",
+    "nonconvergence": "No nonlinear search candidate semantics in this API. Precision/tail failures are explicit ValueError; EM eigen residual and insufficient-selection failures are explicit ValueError where applicable.",
+    "partial_results": "Errors return no result; no failed or partial execution is presented as a successful output."
+  },
+  "provenance": {
+    "lineage_summary": "fluidBW upstream79829170 → retained D0 7fd667f4 → faithful D1 1a6704a7 → corrected D2. Source issues, intended divergences and scientific derivations are explained in the corrected full retained increment review narrative.",
+    "source_kinds": [
+      "MATLAB implementation",
+      "source case definitions",
+      "derived scientific and numerical correction"
+    ],
+    "public_references": [
+      "H. S. Xie, Phys. Plasmas 32, 082110 (2025).",
+      "docs/evaluations/2026-10-13-fluidbw-full-retained-d2.md"
+    ],
+    "license_status": "NOT_ESTABLISHED. WHAMP/Faddeeva permissions unresolved. Private technical development only; no scientific human or release approval."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.fluidbw",
+      "symbol": "derive_fluidbw_case",
+      "signature": "derive_fluidbw_case(family, jcase=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev20261013",
+    "dependencies": []
+  },
+  "example": {
+    "description": "fluidBW complete SI case state minimal execution",
+    "code": "from scirel.kinetic.fluidbw import derive_fluidbw_case\ns=derive_fluidbw_case('bonk',3)\n",
+    "expected": "Three species with signed gyrofrequency, finite positive normalization scales."
+  },
+  "verification": {
+    "scope": [
+      "BONK cases1/2/3 and EM cases1/2; complete fixed source constants/state."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_fluidbw_full_d2.py"
+    ],
+    "evidence_ceiling": "Bounded analytic, independent constitutive, root and state tests in the pinned runtime support the declared numerical model. Neither an all-input-universe accuracy proof nor expert scientific approval.",
+    "known_limitations": [
+      "Source permissions remain NOT_ESTABLISHED; no public release.",
+      "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
+      "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual."
+    ]
+  }
+}

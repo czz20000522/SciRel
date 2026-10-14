@@ -1,0 +1,328 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.fluidbw-bonk-search",
+  "kind": "task_graph",
+  "title": {
+    "en": "Corrected BONK bounded root search",
+    "zh": "修正的 BONK 有界根搜索"
+  },
+  "summary": "Compose complete BONK cases and ordered root searches with explicit verified-root and terminal-state diagnostics.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-waves",
+    "fluidbw"
+  ],
+  "aliases": [
+    "solve_fluidbw_bonk"
+  ],
+  "identity": {
+    "relation": "BONK wavevector root search",
+    "direction": "inverse: angular frequency to candidate wavevector",
+    "definition": "Fixed bounded dimensionless real/imaginary search at every angular frequency; root_valid requires independent determinant and normwise Maxwell null residual gates.",
+    "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+    "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+    "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
+    "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+    "assumptions": [
+      "No flow or temperature anisotropy.",
+      "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
+      "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "jcase",
+      "description": "Source-defined case number.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "Exactly BONK case1,2 or3.",
+      "default": 1
+    },
+    {
+      "name": "omegas",
+      "description": "Angular frequency axis; None selects the source frequency ladder.",
+      "units": "rad/s",
+      "shape": "nonempty vector or None",
+      "dtype": "real array or None",
+      "required": false,
+      "constraints": "Finite real nonzero elements; input order retained.",
+      "default": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "nf[m^-1], ordered xx[rad/s], root_valid, dual residuals, raw solver flags, iterations/evaluations, all attempts and complete source material state.",
+      "units": "mixed SI and dimensionless as described",
+      "shape": "mapping of MATLAB-shape arrays",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Pinned Linux amd64 GNU Octave7.3.0 runtime; OPENBLAS_NUM_THREADS=OMP_NUM_THREADS=1.",
+      "NumPy2.5.3 and SciPy1.18.1 Python3.12 scientific development runtime."
+    ],
+    "supported": [
+      "Three complete cases and source default77-frequency axis; arbitrary valid finite supplied axes.",
+      "Original solver tolerances; explicit bounded attempts and root verification."
+    ],
+    "excluded": [
+      "No branch tracking, complete physical-mode enumeration or unconditional convergence."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
+    "runtime_failure": "RuntimeError for unsupported/missing native runtime or abnormal native exit; subprocess timeout is explicit.",
+    "nonconvergence": "Bounded scientific precision/search failures are explicit. BONK returns every attempt and an unverified row when no verified root is found; a raw solver flag alone is not a scientific root.",
+    "partial_results": "Operator errors return no result. A completed BONK axis may contain unverified candidates with root_valid false. No hidden partial output is represented as a complete result."
+  },
+  "provenance": {
+    "lineage_summary": "fluidBW upstream79829170 → retained D0 7fd667f4 → faithful D1 1a6704a7 → corrected D2. Source issues, intended divergences and scientific derivations are explained in the corrected full retained increment review narrative.",
+    "source_kinds": [
+      "MATLAB implementation",
+      "source case definitions",
+      "derived scientific and numerical correction"
+    ],
+    "public_references": [
+      "H. S. Xie, Phys. Plasmas 32, 082110 (2025).",
+      "docs/evaluations/2026-10-13-fluidbw-full-retained-d2.md"
+    ],
+    "license_status": "NOT_ESTABLISHED. WHAMP/Faddeeva permissions unresolved. Private technical development only; no scientific human or release approval."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.fluidbw",
+      "symbol": "solve_fluidbw_bonk",
+      "signature": "solve_fluidbw_bonk(jcase=1, omegas=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev20261013",
+    "dependencies": [
+      {
+        "asset_id": "scirel.kinetic.fluidbw-case-state"
+      },
+      {
+        "asset_id": "scirel.kinetic.fluidbw-dispersion-response"
+      }
+    ]
+  },
+  "example": {
+    "description": "Corrected BONK bounded root search minimal execution",
+    "code": "from scirel.kinetic.fluidbw import derive_fluidbw_case,solve_fluidbw_bonk\ns=derive_fluidbw_case('bonk',2)\nr=solve_fluidbw_bonk(2,[.63*s['wn'].item()])\n",
+    "expected": "Known predecessor nonroot repaired; verified candidate near +0.09834448108i kn."
+  },
+  "verification": {
+    "scope": [
+      "Three complete cases and source default77-frequency axis; arbitrary valid finite supplied axes.",
+      "Original solver tolerances; explicit bounded attempts and root verification."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_fluidbw_full_d2.py"
+    ],
+    "evidence_ceiling": "Bounded analytic, independent constitutive, root and state tests in the pinned runtime support the declared numerical model. Neither an all-input-universe accuracy proof nor expert scientific approval.",
+    "known_limitations": [
+      "Source permissions remain NOT_ESTABLISHED; no public release.",
+      "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
+      "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual."
+    ]
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "case",
+        "kind": "operator",
+        "description": "Complete BONK SI state.",
+        "inputs": [
+          "jcase"
+        ],
+        "outputs": [
+          "state"
+        ],
+        "asset_id": "scirel.kinetic.fluidbw-case-state"
+      },
+      {
+        "id": "search",
+        "kind": "controlled_glue",
+        "description": "Independent per-frequency real/imaginary dimensionless fsolve and dual physical root gate.",
+        "inputs": [
+          "state",
+          "omegas",
+          "iteration_state",
+          "response"
+        ],
+        "outputs": [
+          "result",
+          "iteration_state",
+          "kx",
+          "response_state"
+        ]
+      },
+      {
+        "id": "response",
+        "kind": "operator",
+        "description": "Corrected native fDR relation evaluated by the solver callback.",
+        "inputs": [
+          "kx",
+          "state"
+        ],
+        "outputs": [
+          "response"
+        ],
+        "asset_id": "scirel.kinetic.fluidbw-dispersion-response"
+      }
+    ],
+    "edges": [
+      {
+        "from": {
+          "node": "$input",
+          "port": "jcase"
+        },
+        "to": {
+          "node": "case",
+          "port": "jcase"
+        },
+        "description": "Explicit source BONK case.",
+        "condition": "always within valid controls",
+        "transform": "explicit scientific port mapping; no unit conversion unless declared",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "omegas"
+        },
+        "to": {
+          "node": "search",
+          "port": "omegas"
+        },
+        "description": "Axis input or source ladder.",
+        "condition": "always within valid controls",
+        "transform": "explicit scientific port mapping; no unit conversion unless declared",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "case",
+          "port": "state"
+        },
+        "to": {
+          "node": "search",
+          "port": "state"
+        },
+        "description": "Complete SI source state.",
+        "condition": "always within valid controls",
+        "transform": "explicit scientific port mapping; no unit conversion unless declared",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "search",
+          "port": "response_state"
+        },
+        "to": {
+          "node": "response",
+          "port": "state"
+        },
+        "description": "Solver-owned case state with w=xx[jx] set for the current frequency; no metadata overwrite.",
+        "condition": "always within valid controls",
+        "transform": "explicit scientific port mapping; no unit conversion unless declared",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "search",
+          "port": "kx"
+        },
+        "to": {
+          "node": "response",
+          "port": "kx"
+        },
+        "description": "Convert dimensionless q to kx=q kn.",
+        "condition": "always within valid controls",
+        "transform": "explicit scientific port mapping; no unit conversion unless declared",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "response",
+          "port": "response"
+        },
+        "to": {
+          "node": "search",
+          "port": "response"
+        },
+        "description": "Current determinant response to bounded solver update.",
+        "condition": "always within valid controls",
+        "transform": "explicit scientific port mapping; no unit conversion unless declared",
+        "kind": "feedback",
+        "required": true,
+        "feedback_id": "bonk_search"
+      },
+      {
+        "from": {
+          "node": "search",
+          "port": "iteration_state"
+        },
+        "to": {
+          "node": "search",
+          "port": "iteration_state"
+        },
+        "description": "Local bounded solver and attempt state.",
+        "condition": "always within valid controls",
+        "transform": "explicit scientific port mapping; no unit conversion unless declared",
+        "kind": "feedback",
+        "required": true,
+        "feedback_id": "bonk_search"
+      },
+      {
+        "from": {
+          "node": "search",
+          "port": "result"
+        },
+        "to": {
+          "node": "$output",
+          "port": "result"
+        },
+        "description": "Complete collected numerical and source material state.",
+        "condition": "always within valid controls",
+        "transform": "explicit scientific port mapping; no unit conversion unless declared",
+        "kind": "data",
+        "required": true
+      }
+    ],
+    "execution": {
+      "mode": "DAG with declared bounded numerical feedback inside each independent frequency search",
+      "ordering": "derive case, visit axis in source order, try fixed seeds in order, update local fsolve state, verify D, stop at first verified root, collect terminal fields",
+      "branches": [
+        "jcase1/2/3",
+        "five fixed seed attempts, early stop on dual root verification",
+        "unsolved rows remain explicit candidates with root_valid false"
+      ],
+      "state_ownership": "one subprocess owns globals; per-attempt q, residual, trust-region state and diagnostics; no caller global state or frequency continuation",
+      "failure_propagation": "invalid inputs/precision errors throw; bounded solver termination retained with candidate verification",
+      "feedback": [
+        {
+          "id": "bonk_search",
+          "state": "q real/imaginary coordinates and fsolve trust region; local candidate/attempt diagnostics",
+          "initialization": "per omega fixed seeds0.6,0.6+0.1i,0.6−0.1i,1,2 in q=kx/kn",
+          "update_order": "evaluate real/imag determinant using fixed attempt reference, fsolve step, retain raw status, independently verify dimensionless D",
+          "continue_when": "fsolve has budget and has not terminated; after an unverified attempt advance to next fixed seed",
+          "stop_when": "both normalized determinant and sigma_min(D)/max(1,sigma_max(D))<=1e-8, or all five attempts terminate",
+          "iteration_bound": "five attempts per omega; each MaxIter400,MaxFunEvals100; TolFun/TolX1e-16",
+          "nonconvergence": "return all attempts and best candidate with root_valid false; no invented root"
+        }
+      ]
+    }
+  }
+}

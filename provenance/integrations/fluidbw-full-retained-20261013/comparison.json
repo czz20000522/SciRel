@@ -1,0 +1,256 @@
+{
+  "schema": "scirel.fluidbw-full-retained-integration.v1",
+  "canonical_commit": "96591a4d88da368ec098fb7efb8519e7c4442dce",
+  "D1_commit": "1a6704a7ef81128333eb5dd4f34df16707f959ed",
+  "D0_commit": "7fd667f499463591d4a8e2ea4246e27b7a0011fa",
+  "comparisons": [
+    {
+      "existing_path": "src/scirel/kinetic/species_equilibrium_scales.py",
+      "existing_sha256": "463a39a997fa64a56038b22920dad52eb64a4b58d6ac624c81e8761510480de8",
+      "public_symbol": "derive_species_equilibrium_scales",
+      "decision": "Same SI base constants, thermal/gyro normalization. Generic arbitrary species ports do not include fixed BONK1/2/3 or EM1/2 complete source state/material controls. Retain complete case-state API; no change to generic API.",
+      "comparison_dimensions": [
+        "relation and convention",
+        "SI versus Hz/angular-frequency units",
+        "domain and approximation",
+        "defaults",
+        "state ownership",
+        "failure semantics",
+        "source lineage"
+      ]
+    },
+    {
+      "existing_path": "src/scirel/kinetic/bessel_gamma.py",
+      "existing_sha256": "6a86d7c6553fbd14fa4e44b66a0269aad449592495f6786e94ba2057a5bb529c",
+      "public_symbol": "evaluate_bessel_gamma",
+      "decision": "Same scaled integer-harmonic Bessel relation. Python broadcasting/return mapping and validation differ from Octave-shaped selector outputs; mathematical overlap absorbed into scientific explanation, native reusable dependency retained to preserve packaged graph execution.",
+      "comparison_dimensions": [
+        "relation and convention",
+        "SI versus Hz/angular-frequency units",
+        "domain and approximation",
+        "defaults",
+        "state ownership",
+        "failure semantics",
+        "source lineage"
+      ]
+    },
+    {
+      "existing_path": "src/scirel/kinetic/plasma_dispersion.py",
+      "existing_sha256": "8db12eedf6ccbd056ae72d171500eaeb369baf6831913dbe2a849584dd330546",
+      "public_symbol": "evaluate_plasma_dispersion",
+      "decision": "Analytic SciPy wofz model overlaps Z but differs from Weideman64/source numeric rounding and failure behavior. Retain explicit native numerical method with erfcx imaginary-axis repair, not duplicate exact-precision claim.",
+      "comparison_dimensions": [
+        "relation and convention",
+        "SI versus Hz/angular-frequency units",
+        "domain and approximation",
+        "defaults",
+        "state ownership",
+        "failure semantics",
+        "source lineage"
+      ]
+    },
+    {
+      "existing_path": "src/scirel/kinetic/plasma_dispersion_weideman.py",
+      "existing_sha256": "331a5b172aa432a5ef855c8c7ad939c608dc189ed181e39df88f7fd27a5859b8",
+      "public_symbol": "evaluate_plasma_dispersion_weideman",
+      "decision": "Old numerical variant shares Weideman lineage; corrected overflow behavior and runtime/state contract differ. Physically absent from selected wheel.",
+      "comparison_dimensions": [
+        "relation and convention",
+        "SI versus Hz/angular-frequency units",
+        "domain and approximation",
+        "defaults",
+        "state ownership",
+        "failure semantics",
+        "source lineage"
+      ]
+    },
+    {
+      "existing_path": "src/scirel/kinetic/kinetic_dispersion_sum_fluidbw.py",
+      "existing_sha256": "352bef52b9cc2f9bc6a2dfb9982f57f15ef0380d6e658c2f785bd4fbd2040b33",
+      "public_symbol": "evaluate_fluidbw_kinetic_dispersion_sum",
+      "decision": "Old f[Hz], arbitrary SI species ports, positive tiny-kz clamp and finite closure behavior differ from explicit w[rad/s] signed/zero-kz corrected successor. Known wrong scope not inherited or packaged.",
+      "comparison_dimensions": [
+        "relation and convention",
+        "SI versus Hz/angular-frequency units",
+        "domain and approximation",
+        "defaults",
+        "state ownership",
+        "failure semantics",
+        "source lineage"
+      ]
+    },
+    {
+      "existing_path": "src/scirel/kinetic/kinetic_dispersion_sum_n.py",
+      "existing_sha256": "772d77c8782004165066199cb8d214ab1032f15a58358140f0c7cd514223de34",
+      "public_symbol": "evaluate_kinetic_dispersion_sum",
+      "decision": "Existing analytic finite sum requires its own domains and scalar real wavepoint contract; does not absorb signed/zero-kz complex-kx three-method/state response.",
+      "comparison_dimensions": [
+        "relation and convention",
+        "SI versus Hz/angular-frequency units",
+        "domain and approximation",
+        "defaults",
+        "state ownership",
+        "failure semantics",
+        "source lineage"
+      ]
+    },
+    {
+      "existing_path": "src/scirel/kinetic/ronnmark_r_function.py",
+      "existing_sha256": "b9d449bc3b113526ef5bc93b5f8a251c7566d24e5504b619d514c49fcbc8328b",
+      "public_symbol": "evaluate_ronnmark_r",
+      "decision": "Old four source algorithms preserve finite branch arithmetic/terminal accumulation and complex comparison behavior. New full RC harmonic relation explicitly replaces those algorithms; old callable physically absent from selected wheel.",
+      "comparison_dimensions": [
+        "relation and convention",
+        "SI versus Hz/angular-frequency units",
+        "domain and approximation",
+        "defaults",
+        "state ownership",
+        "failure semantics",
+        "source lineage"
+      ]
+    },
+    {
+      "existing_path": "src/scirel/kinetic/kinetic_dispersion_ronnmark.py",
+      "existing_sha256": "c5679752eecc00222631020d10699beecb588b13489c4f9b0247d9c4dd282f16",
+      "public_symbol": "evaluate_kinetic_dispersion_ronnmark",
+      "decision": "Old source method J8 response uses old R and its own species/frequency ports. New response uses corrected R and signed causal reflection with explicit state ownership. Not scientific equivalence.",
+      "comparison_dimensions": [
+        "relation and convention",
+        "SI versus Hz/angular-frequency units",
+        "domain and approximation",
+        "defaults",
+        "state ownership",
+        "failure semantics",
+        "source lineage"
+      ]
+    },
+    {
+      "existing_path": "src/scirel/kinetic/dielectric_tensor_diagnostic.py",
+      "existing_sha256": "7c9b2ffbb129c2a35ed330a18b5b4a04b89635ba53155af501bbfb692453e8eb",
+      "public_symbol": "evaluate_kinetic_dielectric_tensor",
+      "decision": "Old direct fDtensor Hz ports, finite15 sums, nonzero-wavevector assumptions and source closures differ. New corrected method includes coherent thermal invariant and analytic removable boundaries.",
+      "comparison_dimensions": [
+        "relation and convention",
+        "SI versus Hz/angular-frequency units",
+        "domain and approximation",
+        "defaults",
+        "state ownership",
+        "failure semantics",
+        "source lineage"
+      ]
+    },
+    {
+      "existing_path": "src/scirel/kinetic/z_pole_coefficients.py",
+      "existing_sha256": "1f892313570593e5fb6e70381a5f03e8577efe4d50069a2617caac0cd1c32a92",
+      "public_symbol": "get_z_pole_coefficients",
+      "decision": "J8/12 literal table lineage overlaps; returned native complete cn_raw/corrected table state, table controls and shapes differ. Source J coefficients retained without reordering.",
+      "comparison_dimensions": [
+        "relation and convention",
+        "SI versus Hz/angular-frequency units",
+        "domain and approximation",
+        "defaults",
+        "state ownership",
+        "failure semantics",
+        "source lineage"
+      ]
+    },
+    {
+      "existing_path": "src/scirel/kinetic/gamma_lpole_coefficients.py",
+      "existing_sha256": "7298136db03c215e9fcf326f16f3c9049e00f5871f2a0f69c3b1f0f96c87da57",
+      "public_symbol": "get_gamma_lpole_coefficients",
+      "decision": "Raw L table lineage retained; new explicit constrained n>=1 inverse-moment repair changes science within measured decimal coefficient errors. Original tables saved separately.",
+      "comparison_dimensions": [
+        "relation and convention",
+        "SI versus Hz/angular-frequency units",
+        "domain and approximation",
+        "defaults",
+        "state ownership",
+        "failure semantics",
+        "source lineage"
+      ]
+    },
+    {
+      "existing_path": "src/scirel/kinetic/fluid_dispersion_matrix.py",
+      "existing_sha256": "a1c3767e12e9e4535627bd2a492d78db5e87a2d4a0ad6ae185b0ed562dea4332",
+      "public_symbol": "assemble_fluid_dispersion_matrix",
+      "decision": "Old proper-pole matrix omits yy/yz conductivity polynomials and uses raw tables. New four-entry restoration, all-component normalized table and signed-kz reflection are material scientific differences; old executable is absent from wheel.",
+      "comparison_dimensions": [
+        "relation and convention",
+        "SI versus Hz/angular-frequency units",
+        "domain and approximation",
+        "defaults",
+        "state ownership",
+        "failure semantics",
+        "source lineage"
+      ]
+    },
+    {
+      "existing_path": "src/scirel/kinetic/fluid_wavevector_eigensolve.py",
+      "existing_sha256": "82ff2eef7526fdfaa95bc78d130fc4a792514449dcff30a408c15d0aae569a72",
+      "public_symbol": "solve_fluid_wavevector_eigenproblem",
+      "decision": "Same source heuristic5 selection; corrected successor accounts all finite spectrum and independent physical scaling, with explicit insufficient-candidate failure. No all-kinetic-mode inference.",
+      "comparison_dimensions": [
+        "relation and convention",
+        "SI versus Hz/angular-frequency units",
+        "domain and approximation",
+        "defaults",
+        "state ownership",
+        "failure semantics",
+        "source lineage"
+      ]
+    },
+    {
+      "existing_path": "src/scirel/kinetic/kinetic_wavevector_roots.py",
+      "existing_sha256": "e8f7132cb69c00167e4337dcd047cbc0d0da8e3fbfb1ff8eb23563abedd0382f",
+      "public_symbol": "solve_kinetic_wavevector_roots",
+      "decision": "Source single dimensionful fixed seed/raw status differs from bounded dimensionless real2D attempts with dual independent physical verification. Before failure repaired, not relabelled.",
+      "comparison_dimensions": [
+        "relation and convention",
+        "SI versus Hz/angular-frequency units",
+        "domain and approximation",
+        "defaults",
+        "state ownership",
+        "failure semantics",
+        "source lineage"
+      ]
+    },
+    {
+      "existing_path": "src/scirel/kinetic/fluid_wavevector_scan.py",
+      "existing_sha256": "343cb5d147dab3ddd0f601b3e07ae98ea929cb104c64b273ec02658b590853ee",
+      "public_symbol": "scan_fluid_wavevectors",
+      "decision": "Older generic species/control graph and dependencies differ from complete retained source2case/J/N graph, original-order eig, corrected matrix and material metadata.",
+      "comparison_dimensions": [
+        "relation and convention",
+        "SI versus Hz/angular-frequency units",
+        "domain and approximation",
+        "defaults",
+        "state ownership",
+        "failure semantics",
+        "source lineage"
+      ]
+    },
+    {
+      "existing_path": "src/scirel/kinetic/kinetic_wavevector_scan.py",
+      "existing_sha256": "ff68165a535bc21770508b9ca6c34cfbbaa5116073f64055d4d0ec8df35fdf1d",
+      "public_symbol": "scan_kinetic_wavevectors",
+      "decision": "Older generic axis/seed/species graph differs from source3case fixed bounded seed schedule and diagnostics/material state. Independent graph identity retained.",
+      "comparison_dimensions": [
+        "relation and convention",
+        "SI versus Hz/angular-frequency units",
+        "domain and approximation",
+        "defaults",
+        "state ownership",
+        "failure semantics",
+        "source lineage"
+      ]
+    }
+  ],
+  "development_change": "seven corrected kinetic domain APIs and necessary packaged native implementation; canonical other contributors retained; no tree replacement",
+  "selected_runtime_boundary": "Only corrected family and its native components. Other legacy development APIs are physically absent from wheel, not hidden by warnings/catalog.",
+  "source_permission": "NOT_ESTABLISHED; WHAMP/Faddeeva limitations and notices retained",
+  "approval": {
+    "scientific_human": false,
+    "release": false
+  },
+  "baseline_test_debt": "Failclosed full suite exposes60 failed/error test IDs all reproduced at exact clean canonical baseline; not introduced by this increment."
+}
