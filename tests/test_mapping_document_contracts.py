@@ -101,7 +101,7 @@ def test_exact_complex_binding_rejects_changed_port_and_default(asset_id):
     api=d['public_api']['python'];f=getattr(importlib.import_module(api['module']),api['symbol'])
     check(d,f)
     for field,value in [('name','unbound_port'),('required',True),('default','wrong')]:
-        bad=copy.deepcopy(d);bad['inputs'][1][field]=value
+        bad=copy.deepcopy(d);bad['inputs'][1][field]=not bad['inputs'][1]['required'] if field=='required' else value
         with pytest.raises(ValueError,match='ports/defaults differ'):
             check(bad,f)
 
