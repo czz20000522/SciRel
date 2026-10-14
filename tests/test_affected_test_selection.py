@@ -7,6 +7,8 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 SELECTOR = ROOT / "scripts" / "select_affected_tests.py"
+# runpy fixtures need the same sibling-module search path as the CLI process.
+sys.path.insert(0, str(ROOT / "scripts"))
 
 
 def select(*paths):
