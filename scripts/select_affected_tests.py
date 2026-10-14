@@ -16,11 +16,6 @@ from validate_asset_documents import resolve_test_reference
 ROOT = Path(__file__).resolve().parents[1]
 LEDGER = ROOT / "provenance" / "admitted-assets.json"
 CATALOG = ROOT / "catalog" / "examples"
-# A bounded D2 family can be indexed without mutating the historical pilot.
-# Keep this explicit rather than recursively globbing every future worktree.
-PLEIADES_MAINTAINED_CATALOG = ROOT / "catalog" / "pleiades-maintained"
-TORAX_LEAF_CATALOG = ROOT / "catalog" / "torax-algebra-grid"
-TORAX_BOOTSTRAP_FVM_CATALOG = ROOT / "catalog" / "torax-bootstrap-fvm"
 SCHEMA = "scirel.affected-tests.v1"
 
 DIRECT_TEST_OVERRIDES = {
@@ -241,10 +236,6 @@ def _load_catalog_assets() -> list[Asset]:
         return []
     assets = []
     catalog_paths = list(CATALOG.glob("*.json"))
-    if CATALOG == ROOT / "catalog" / "examples":
-        catalog_paths.extend(PLEIADES_MAINTAINED_CATALOG.glob("*.json"))
-        catalog_paths.extend(TORAX_LEAF_CATALOG.glob("*.json"))
-        catalog_paths.extend(TORAX_BOOTSTRAP_FVM_CATALOG.glob("*.json"))
     for path in sorted(catalog_paths):
         document = json.loads(path.read_text(encoding="utf-8"))
         python_api = document["public_api"]["python"]
@@ -442,7 +433,7 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
             path_tests.add("tests/test_outbound_evaluation_manifests.py")
             reason = "evaluation_manifest_contract"
         elif path.startswith("contracts/") or path.startswith(
-            ("catalog/examples/", "catalog/pleiades-maintained/", "catalog/torax-algebra-grid/", "catalog/torax-bootstrap-fvm/")
+            ("catalog/examples/",)
         ):
             path_tests.add("tests/test_asset_documentation.py")
             reason = "asset_document_contract"

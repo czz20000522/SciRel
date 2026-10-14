@@ -1,0 +1,530 @@
+{
+  "schema": "scirel.handbook.v1",
+  "title": "SciRel 科学计算手册",
+  "introduction": "从要解决的科学问题出发，按学科查找单个科学关系与复合求解入口。各主题提供学习导读和正式函数参考；已有完整案例展示实际调用、结果与解释。每项能力的版本、输入单位、适用范围、失败行为与验证限制以链接的正式文档为准。手册收录不代表同一安装包包含全部能力，也不代表相关物理问题已经得到普遍验证。",
+  "chapters": [
+    {
+      "id": "electromagnetism",
+      "title": "电磁学：磁场与线圈",
+      "discipline": [
+        "物理学",
+        "电磁学"
+      ],
+      "introduction": "从轴对称电流源的几何表示出发，计算磁通与极向磁场，再处理电流叠加、等离子体响应矩阵和理想导体边界。这里的电流丝模型不解析导体内部自场；使用磁通连接其他求解器时，须核对归一化、参考值和坐标顺序。",
+      "topics": [
+        {
+          "id": "coil-discretization",
+          "title": "将线圈截面表示为电流丝",
+          "introduction": "矩形截面可离散为有序圆电流丝；永磁环入口给出固定表面电流丝及相反权重。几何离散本身不计算磁场，也不确定材料磁化强度。",
+          "assets": [
+            "scirel.field.rectangular-coil-filaments",
+            "scirel.field.permanent-ring-filaments"
+          ]
+        },
+        {
+          "id": "coil-vacuum-fields",
+          "title": "从单个圆环到线圈组的真空磁场",
+          "introduction": "先求单位电流响应，再按驱动电流叠加；需要矩形线圈组时使用已有复合入口。完整案例从圆环轴线磁场讲起，继续比较线圈对与截面离散。直接 Green 磁通与径向积分磁通具有各自约定，不能仅因输出都名为磁通就互换。",
+          "tutorial_id": "magnetostatics",
+          "assets": [
+            "scirel.field.circular-filament-green",
+            "scirel.field.current-green-superposition",
+            "scirel.field.dense-axisymmetric-green",
+            "scirel.field.multi-coil-vacuum-field",
+            "scirel.field.filament-vacuum-field",
+            "scirel.electromagnetism.circular-filament-green"
+          ]
+        },
+        {
+          "id": "elliptic-filament-response",
+          "title": "用椭圆积分构造圆环响应",
+          "introduction": "几何模数、完全椭圆积分近似与给定积分值的场响应构成另一组明确入口。它们保留特定正则化和奇异点处理；与上一主题的直接响应比较时，应分别核对模数定义、近似范围和失败行为。",
+          "assets": [
+            "scirel.field.coil-green-geometry",
+            "scirel.field.complete-elliptic-integrals-approx",
+            "scirel.field.filament-coil-green-field"
+          ]
+        },
+        {
+          "id": "current-and-conductor-response",
+          "title": "构造等离子体电流与导体边界响应",
+          "introduction": "实际坐标矩阵保持目标行、源列和源权重；一般矩阵支持不规则坐标，镜像专用入口仍要求均匀对称 Z 网格。电流和单元面积权重由调用者明确施加；导体边界的截断 SVD 不保证任意系统残差为零。",
+          "assets": [
+            "scirel.field.mirror-plasma-green",
+            "scirel.field.ideal-conductor-boundary",
+            "scirel.electromagnetism.loop-flux-matrix",
+            "scirel.electromagnetism.green-response-matrices"
+          ]
+        },
+        {
+          "id": "flux-to-poloidal-field",
+          "title": "由磁通恢复极向场与场强",
+          "introduction": "在柱坐标网格上由磁通导数得到径向、轴向磁场，再计算幅值与参考量。先核对磁通的 Wb/rad 约定、轴线处理及边界差分；场强入口的数值下限不表示物理磁场非零。",
+          "assets": [
+            "scirel.field.poloidal-field-from-flux",
+            "scirel.field.poloidal-field-magnitude"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "plasma-equilibrium",
+      "title": "等离子体平衡与约束",
+      "discipline": [
+        "物理学",
+        "等离子体物理",
+        "磁流体平衡"
+      ],
+      "introduction": "本章连接压强关系、电流响应与有界平衡迭代，并区分给定状态、闭合关系、迭代残差和物理相容性。复合入口仍依赖调用者明确真空场、Green 矩阵、物种和边界；返回有限结果或迭代收敛不自动证明模型适用。",
+      "topics": [
+        {
+          "id": "isotropic-pressure-equilibrium",
+          "title": "由各向同性压强剖面迭代磁通",
+          "introduction": "从精确中平面压强样本建立压强—磁通状态，查看一次电流反馈更新，再使用有上限的复合迭代。该组入口要求特定均匀网格、精确零压强边界及磁通样本条件；不收敛时的末态含义见函数参考。",
+          "assets": [
+            "scirel.equilibrium.pressure-flux-state",
+            "scirel.equilibrium.isotropic-picard-step",
+            "scirel.equilibrium.isotropic-pressure-flux"
+          ]
+        },
+        {
+          "id": "gyrotropic-pressure-force",
+          "title": "从各向异性压强计算力与环向电流",
+          "introduction": "对给定极向场与平行、垂直压强计算柱坐标压强张量散度及电流投影，再分解各向同性与各向异性贡献。环向投影不能替代完整平行力平衡；轴线与弱场约定须随结果一起理解。",
+          "assets": [
+            "scirel.equilibrium.anisotropic-force-balance",
+            "scirel.equilibrium.anisotropic-toroidal-current"
+          ]
+        },
+        {
+          "id": "anisotropic-equilibrium-feedback",
+          "title": "组合各向异性电流、磁通与边界反馈",
+          "introduction": "分别查看电流松弛、磁通松弛和相对状态残差，再进入固定响应或带导体修正的 Picard 复合入口。单步状态变化与未松弛固定点残差各有含义；终态压强、场与相容性需要按各图合同重新核验。",
+          "assets": [
+            "scirel.equilibrium.anisotropic-picard-feedback",
+            "scirel.equilibrium.axisymmetric-picard-update",
+            "scirel.diagnostics.picard-flux-residual",
+            "scirel.equilibrium.axisymmetric-anisotropic-picard",
+            "scirel.equilibrium.free-boundary-anisotropic-picard",
+            "scirel.equilibrium.compute-equilibrium"
+          ]
+        },
+        {
+          "id": "prescribed-pressure-closures",
+          "title": "用表格压强律组装双流体状态",
+          "introduction": "表格入口在给定磁场和磁通上插值压强；双流体入口整理总压强、物种分量、密度与电势。独立拟合分量可能留下残余应力，严格物种和模式另有检查；这些状态组装不自行求解平衡。",
+          "assets": [
+            "scirel.closures.tabulated-pressure",
+            "scirel.closures.hall-two-fluid-pressure"
+          ]
+        },
+        {
+          "id": "mirror-electrostatic-closures",
+          "title": "求解镜约束中的准中性与双极电势",
+          "introduction": "先区分参考电子密度、给定电势下的玻尔兹曼响应与真正的电势求根。镜端损失通量平衡和局部准中性是不同条件；复合入口连接镜约束矩、电子响应、端点与网格状态，但不独立重建磁场或全局平衡。",
+          "assets": [
+            "scirel.closures.quasineutral-reference-density",
+            "scirel.closures.boltzmann-quasineutrality",
+            "scirel.closures.quasineutral-potential",
+            "scirel.closures.mirror-ambipolar-potential",
+            "scirel.kinetic.mirror-total-pressure",
+            "scirel.closures.mirror-quasineutral-closure",
+            "scirel.kinetic.grid-mirror-kinetic-closure"
+          ]
+        },
+        {
+          "id": "reference-population-pressure",
+          "title": "由参考粒子群构造各向异性压强",
+          "introduction": "给定径向包络和参考粒子群矩，组装平行、垂直压强以及可选密度状态。Frank–Egedal 复合入口采用文档中明确的有限模态非负参考群体；它不是普遍成立的精确动理学解。分布与角模态入口见分布函数一章。",
+          "assets": [
+            "scirel.kinetic.frank-egedal-radial-envelope",
+            "scirel.kinetic.frank-egedal-pressure-state",
+            "scirel.kinetic.frank-egedal-pressure-closure"
+          ]
+        },
+        {
+          "id": "reduced-hall-equilibrium",
+          "title": "将约化 Hall 漂移接入平衡迭代",
+          "introduction": "先计算约化 Hall 电流、漂移及可选惯性修正，再与磁通反馈组合；动理学镜复合入口进一步连接网格镜端闭合。各层有自己的状态、停止条件与诊断；嵌套求解成功不证明任意物种参数或闭合彼此兼容。",
+          "assets": [
+            "scirel.closures.reduced-hall-drift",
+            "scirel.equilibrium.reduced-hall-anisotropic-picard",
+            "scirel.equilibrium.kinetic-mirror-hall-equilibrium"
+          ]
+        },
+        {
+          "id": "local-pressure-compatibility",
+          "title": "检查平行压强相容性与局域稳定性指标",
+          "introduction": "逐点火蛇裕度、固定磁通压强导数诊断与平行压强残差回答不同问题。需要导数的入口必须明确固定磁通条件；这些局域指标不提供全局稳定性、增长率或一般 Hall 流动稳定性的判决。",
+          "assets": [
+            "scirel.diagnostics.pointwise-firehose-margin",
+            "scirel.diagnostics.firehose-mirror-margins",
+            "scirel.diagnostics.parallel-pressure-residual"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "plasma-waves",
+      "title": "等离子体波动与介电响应",
+      "discipline": [
+        "物理学",
+        "等离子体物理",
+        "波动与不稳定性"
+      ],
+      "introduction": "从物种尺度与波矢约定出发，计算冷等离子体或有限谐波动理学响应，再求流体本征分支与复波数根。解析特殊函数、固定极点近似和不同近零波数策略保留为各自入口；求得数值根不自动赋予模式身份。",
+      "topics": [
+        {
+          "id": "wave-equilibrium-scales",
+          "title": "准备物种尺度与平面波矢",
+          "introduction": "由物种密度、温度、质量、电荷和磁场计算热速度、频率与长度尺度，并明确平面波矢的幅值或分量。尺度归一化与符号约定由合同固定；几何投影本身不求色散关系。",
+          "assets": [
+            "scirel.kinetic.species-equilibrium-scales",
+            "scirel.geometry.planar-wavevector-projection"
+          ]
+        },
+        {
+          "id": "cold-dielectric-response",
+          "title": "计算局部冷等离子体介电张量",
+          "introduction": "用频率、磁场和物种列表计算给定笛卡尔基底中的局部冷响应。零磁场、碰撞和共振分支有明确处理；有限温度、有限拉莫尔半径与动理学效应需要其他模型。",
+          "assets": [
+            "scirel.dielectric.cold-plasma-tensor"
+          ]
+        },
+        {
+          "id": "dispersion-response-functions",
+          "title": "选择色散特殊函数与极点表示",
+          "introduction": "查看解析等离子体色散函数、固定阶 Weideman 近似、贝塞尔谐波项、Ronnmark 响应及固定极点表。方法的参数域、截断和分支不同，不应在要求精确复现某一方法时静默替换。",
+          "assets": [
+            "scirel.kinetic.plasma-dispersion-function",
+            "scirel.kinetic.plasma-dispersion-weideman",
+            "scirel.kinetic.bessel-gamma",
+            "scirel.kinetic.ronnmark-r-function",
+            "scirel.kinetic.z-pole-coefficients",
+            "scirel.kinetic.gamma-lpole-coefficients"
+          ]
+        },
+        {
+          "id": "kinetic-dispersion-tensors",
+          "title": "组装动理学介电张量与色散行列式",
+          "introduction": "对均匀磁化 Maxwellian 物种组装张量或比较两个色散计算路径。各入口对复波数、零波数、近零替换和谐波数的支持不同；有限和计算不包含自动截断收敛验证。",
+          "assets": [
+            "scirel.kinetic.kinetic-dispersion-sum",
+            "scirel.kinetic.kinetic-dispersion-sum-fluidbw",
+            "scirel.kinetic.kinetic-dispersion-ronnmark",
+            "scirel.kinetic.dielectric-tensor-diagnostic",
+            "scirel.kinetic.kinetic-dispersion-relation"
+          ]
+        },
+        {
+          "id": "fluid-wavevector-branches",
+          "title": "求解流体垂直波数分支",
+          "introduction": "先组装 L/J 极点矩阵，再求复本征值并按给定规则选择分支；扫描入口把平衡尺度、频率序列和分支选择连接起来。极点表有有限阶数范围，选择规则不能替代物理模式识别。",
+          "assets": [
+            "scirel.kinetic.fluid-dispersion-matrix",
+            "scirel.kinetic.fluid-wavevector-eigensolve",
+            "scirel.kinetic.fluid-wavevector-scan"
+          ]
+        },
+        {
+          "id": "kinetic-wavevector-roots",
+          "title": "求解与扫描复动理学波数根",
+          "introduction": "从固定初值求 Ronnmark 行列式的复垂直波数根，并在频率序列上重复求解。符号、残差与退出标志保留；多个根和未收敛结果需要调用者显式判断。",
+          "assets": [
+            "scirel.kinetic.kinetic-wavevector-roots",
+            "scirel.kinetic.kinetic-wavevector-scan"
+          ]
+        },
+        {
+          "id": "pdrf-multifluid-dispersion",
+          "title": "构造多流体时间色散与扫描任务图",
+          "introduction": "先由物种和单位建立有效多流体等离子体状态，再构造局部 Maxwell 时间矩阵与条件化本征谱，最后按有界网格执行扫描。相对论惯性、碰撞、各向异性镜修正、残差门禁和扫描顺序均属于冻结合同；扫描成功不替代外部物理验证。",
+          "assets": [
+            "scirel.kinetic.pdrf-plasma-state",
+            "scirel.kinetic.pdrf-temporal-matrix",
+            "scirel.kinetic.pdrf-temporal-spectrum",
+            "scirel.kinetic.pdrf-dispersion-scan"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "atomic-collisions",
+      "title": "原子碰撞与反应",
+      "discipline": [
+        "物理学",
+        "原子与分子物理",
+        "碰撞过程"
+      ],
+      "introduction": "按物种与反应通道查找截面、速率系数和碰撞矩阵，再连接分布函数的碰撞频率归约。拟合的有效能区、端点裁剪、数组形状和外部参考证据各不相同；保留原公式的比较证据不等于独立原子物理验证。",
+      "topics": [
+        {
+          "id": "hydrogen-charge-exchange-cross-sections",
+          "title": "计算氢原子与分子的电荷交换截面",
+          "introduction": "根据碰撞能量计算 H 与 H⁺ 或 H₂ 与 H₂⁺ 的电荷交换截面。选择原子分支的不同拟合时，须核对各自能区与端点规则；截面还不是速率或碰撞频率。",
+          "assets": [
+            "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
+            "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section"
+          ]
+        },
+        {
+          "id": "hydrogen-elastic-cross-sections",
+          "title": "计算氢物种之间的弹性截面",
+          "introduction": "按 H、H₂、H⁺ 的碰撞配对选择动量转移或已有黏性分支。不同入口保留不同输出维数和分段行为，包括原子氢—质子关系在特定能点的约定；不能将这些关系统一成无差别的截面函数。",
+          "assets": [
+            "scirel.collisions.atomic-hydrogen-elastic-cross-section",
+            "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
+            "scirel.collisions.molecular-hydrogen-elastic-cross-section",
+            "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
+            "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section"
+          ]
+        },
+        {
+          "id": "reaction-rates-and-populations",
+          "title": "由温度与能量求反应速率和能级人口",
+          "introduction": "查找电荷交换、电离、辐射复合的给定拟合，或计算指定假设下的 Saha 能级人口。各关系的温度单位、物种配对、密度假设和数值域分别保留；这些叶子入口不构成完整碰撞辐射模型。",
+          "assets": [
+            "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
+            "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient",
+            "scirel.collisions.janev-electron-impact-ionization-rate",
+            "scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient",
+            "scirel.kinetic.hydrogen-saha-equilibrium-population"
+          ]
+        },
+        {
+          "id": "velocity-averaged-rates",
+          "title": "在 Maxwellian 速度网格上平均截面",
+          "introduction": "给定截面函数、圆柱速度网格及体积权重，计算定向单能粒子与离散 Maxwellian 靶群体的速率平均。碰撞能量采用文档规定的粒子质量约定，网格尾部是否充分解析需要另外检查。",
+          "assets": [
+            "scirel.collisions.maxwellian-relative-speed-rate-average"
+          ]
+        },
+        {
+          "id": "collision-matrices-and-frequencies",
+          "title": "从碰撞矩阵与分布得到频率通道",
+          "introduction": "依次查看原子、分子碰撞矩阵，分布收缩得到的 Alpha 场，以及弹性 Omega 与频率通道归约。速度轴、Fortran 展平顺序和有符号中间量属于合同；这些入口不管理完整输运迭代或缓存状态。",
+          "assets": [
+            "scirel.collisions.atomic-hydrogen-collision-matrices",
+            "scirel.collisions.molecular-hydrogen-collision-matrices",
+            "scirel.kinetic.atomic-alpha-contraction",
+            "scirel.kinetic.molecular-alpha-contraction",
+            "scirel.collisions.atomic-hydrogen-omega-frequencies",
+            "scirel.collisions.molecular-hydrogen-omega-frequencies",
+            "scirel.kinetic.elastic-frequency-channels"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kinetic-transport",
+      "title": "分布函数与中性粒子输运",
+      "discipline": [
+        "物理学",
+        "动理学理论",
+        "粒子输运"
+      ],
+      "introduction": "从速度尺度、离散分布与积分矩出发，连接镜约束参考群体及一维空间中性输运的源、传播和代际状态。每项关系有明确的轴顺序与状态边界；叶子齐备或某次迭代停止，仍不能替代完整应用的独立验证。",
+      "topics": [
+        {
+          "id": "velocity-and-momentum-scales",
+          "title": "区分速度、热速度比与归一化动量",
+          "introduction": "热速度有速度单位，热电子动量入口返回无量纲热速度比，而网格归一化动量还需要一个有单位的速度尺度。将无量纲比直接作为速度输入会重复除以光速；组合前须核对各自单位。",
+          "assets": [
+            "scirel.kinetic.thermal-speed-scale",
+            "scirel.collisions.thermal-electron-momentum",
+            "scirel.collisions.normalized-momentum"
+          ]
+        },
+        {
+          "id": "velocity-mesh-and-measure",
+          "title": "建立圆柱速度网格与积分测度",
+          "introduction": "根据温度与指定能量生成速度网格，再由明确的轴节点构造环形径向测度、单元体积与差分系数。网格生成和积分权重是不同步骤；使用其他单元面约定时不能直接沿用这些权重。",
+          "assets": [
+            "scirel.kinetic.adaptive-neutral-velocity-mesh",
+            "scirel.kinetic.cylindrical-velocity-quadrature"
+          ]
+        },
+        {
+          "id": "maxwellian-distributions-and-moments",
+          "title": "构造 Maxwellian 初值并归约分布矩",
+          "introduction": "离散平移 Maxwellian 初值、轴对称分布矩及相对论背景所需的缩放 Bessel 量是不同关系。初值入口不包含后续矩补偿，特殊函数闭合也不自行建立物理分布；按具体问题选择相应参考。",
+          "assets": [
+            "scirel.kinetic.shifted-maxwellian-seed",
+            "scirel.kinetic.axisymmetric-neutral-moments",
+            "scirel.collisions.relativistic-maxwellian-bessel-closure"
+          ]
+        },
+        {
+          "id": "mirror-distributions-and-loss-cones",
+          "title": "描述磁镜粒子群与损失锥",
+          "introduction": "分别查看不变量双温分布及其速度矩，或构造规则角模态、点源投影和给定参考群体的热离子矩。损失锥占据、可达轨道与归一化条件须明确；计算分布或矩并不同时求解电势、碰撞演化和磁场。",
+          "assets": [
+            "scirel.kinetic.mirror-invariant-distribution",
+            "scirel.kinetic.mirror-constrained-moments",
+            "scirel.kinetic.loss-cone-spectrum",
+            "scirel.kinetic.frank-egedal-source-projection",
+            "scirel.kinetic.frank-egedal-hot-ion-moments"
+          ]
+        },
+        {
+          "id": "neutral-sources-and-boundaries",
+          "title": "准备入射边界与散射源",
+          "introduction": "归一化空间源和入射半空间通量，构造简化电荷交换与弹性重生源，再归约原子或分子的源通道。归一化所用测度、正负速度分支及各入口的有符号值策略必须与下游传播一致。",
+          "assets": [
+            "scirel.kinetic.spatial-source-shape-normalization",
+            "scirel.kinetic.incoming-boundary-flux-normalization",
+            "scirel.kinetic.simple-charge-exchange-source",
+            "scirel.kinetic.elastic-regeneration-aggregation",
+            "scirel.kinetic.atomic-scattered-sources-reduction",
+            "scirel.kinetic.molecular-scattered-sources-reduction"
+          ]
+        },
+        {
+          "id": "neutral-spatial-propagation",
+          "title": "组装中性损失与双向空间传播",
+          "introduction": "从总损失频率和源项构造空间推进系数，再传播首飞或散射代际；另有显式 Boltzmann 右端组装入口。该组关系采用规定的一维空间离散，不隐含高阶修正或完整非线性求解器。",
+          "assets": [
+            "scirel.kinetic.neutral-total-collision-frequency",
+            "scirel.kinetic.neutral-upwind-transport-coefficients",
+            "scirel.kinetic.neutral-generation-propagation",
+            "scirel.kinetic.neutral-boltzmann-rhs"
+          ]
+        },
+        {
+          "id": "neutral-iteration-state",
+          "title": "累计代际并判断迭代是否继续",
+          "introduction": "先由代际分布归约密度、累计完整状态，再分别计算代际、种子重入与顶层外循环的密度变化判据。三个停止关系的阈值与分母不同，不能把它们当作通用物理守恒或误差证明。",
+          "assets": [
+            "scirel.kinetic.generation-density-reduction",
+            "scirel.kinetic.generation-accumulation-update",
+            "scirel.kinetic.neutral-generation-stopping",
+            "scirel.kinetic.outer-seed-convergence",
+            "scirel.kinetic.kn1d-outer-convergence"
+          ]
+        },
+        {
+          "id": "species-mesh-transfer",
+          "title": "在物种网格之间传递剖面与分布",
+          "introduction": "标量空间插值和相空间分布传递具有不同边界与修正约定。分布入口的可选矩修正不保证非负结果；标量入口对区间外节点置零，不能理解为一般外推。",
+          "assets": [
+            "scirel.kinetic.cross-mesh-scalar-interpolation",
+            "scirel.kinetic.cross-mesh-distribution-interpolation"
+          ]
+        },
+        {
+          "id": "terminal-neutral-state",
+          "title": "由终态分布计算通量、温度与能量诊断",
+          "introduction": "对调用者选定的终态分布计算分子通量、流速、压强、温度和热通量，并结合给定反应率或碰撞右端得到离子状态与能量转移。最后的相邻单元能量诊断不等于完整输运守恒证明。",
+          "assets": [
+            "scirel.kinetic.terminal-flux-velocity-reduction",
+            "scirel.kinetic.terminal-pressure-temperature-reduction",
+            "scirel.kinetic.terminal-heat-flux-reduction",
+            "scirel.kinetic.terminal-ion-state-reduction",
+            "scirel.kinetic.terminal-energy-transfer-reduction",
+            "scirel.kinetic.terminal-conservation-diagnostic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fusion-and-heating",
+      "title": "聚变反应与能量沉积",
+      "discipline": [
+        "物理学",
+        "核聚变与等离子体加热"
+      ],
+      "introduction": "本章区分反应产物的运动学能量、给定模型的加热分配与已知吸收功率的归一化记账。它们回答不同层次的问题，尚不能自动组合成完整反应率、粒子轨迹或能量输运模型。",
+      "topics": [
+        {
+          "id": "dd-neutron-kinematics",
+          "title": "计算 DD 中子的实验室系能量",
+          "introduction": "由两个氘核速度与探测方向计算非相对论双体反应的中子能量。该入口不计算角分布权重、聚变反应率或中子后续输运。",
+          "assets": [
+            "scirel.fusion.dd-neutron-lab-energy"
+          ]
+        },
+        {
+          "id": "heating-and-absorption-partitions",
+          "title": "计算快离子加热与物种吸收分配",
+          "introduction": "快离子入口评估规定的局部加热近似；吸收占比入口将已给定的四物种功率账本换算为百分比。后者不计算吸收物理，前者也不提供一般组分与碰撞条件下的实验标定。",
+          "assets": [
+            "scirel.plasma.fast-ion-heating",
+            "scirel.diagnostics.species-absorption-fraction"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "diagnostics-and-inference",
+      "title": "诊断建模与参数反演",
+      "discipline": [
+        "物理学",
+        "计算物理",
+        "逆问题"
+      ],
+      "introduction": "从给定平衡状态生成指定观测点上的预测，再将残差交给有界参数搜索。这里的采样、残差、试探与优化各自公开；仪器响应、模型选择和物理可接受性仍须由实际问题明确。",
+      "topics": [
+        {
+          "id": "synthetic-observations",
+          "title": "采样平衡状态并比较观测",
+          "introduction": "在指定 R-Z 位置采样磁通与剖面，再按给定观测标准差归约预测误差。磁通采样不会自动乘入完整回路的几何因子，也不包含线积分、相关误差或测量仪器模型。",
+          "assets": [
+            "scirel.diagnostics.equilibrium-synthesis-diagnostics",
+            "scirel.diagnostics.observation-residuals"
+          ]
+        },
+        {
+          "id": "bounded-parameter-inversion",
+          "title": "从单次模型试探到有界参数反演",
+          "introduction": "先定义平衡与诊断调用，再查看单次试探、可选拉丁超立方初值和有界优化的组合入口。异常惩罚只是数值处理，优化器成功也不保证小残差、全局最优或物理正确性。",
+          "assets": [
+            "scirel.inference.anisotropic-trial-evaluation",
+            "scirel.inference.latin-hypercube-sampling",
+            "scirel.inference.anisotropic-parameter-optimization",
+            "scirel.inference.direct-anisotropic-inversion"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "numerical-geometry",
+      "title": "数值几何与场采样",
+      "discipline": [
+        "数学",
+        "数值分析",
+        "科学计算"
+      ],
+      "introduction": "对已有场数据进行网格插值、路径积分、磁通剖面查询与材料区域分类。几何处理不会补齐未知物理；域外拒绝、夹取、零填充与无效值标记是不同策略，应在组合前显式核对。",
+      "topics": [
+        {
+          "id": "rectilinear-field-interpolation",
+          "title": "在直角网格上查询实值与复值场",
+          "introduction": "二维实值场使用闭合网格域内的双线性采样；三维复值场入口采用三线性插值并返回有效性掩码。二者的域外行为不同，不提供曲线坐标或非结构网格重建。",
+          "assets": [
+            "scirel.geometry.bilinear-grid-sampling",
+            "scirel.geometry.complex-rectilinear-interpolation"
+          ]
+        },
+        {
+          "id": "flux-profiles-and-path-averages",
+          "title": "查询磁通剖面与沿路径加权平均",
+          "introduction": "一维磁通剖面入口整理样本并做线性插值；路径入口沿给定 R-Z 折线计算逆磁场测度与加权平均。路径是否闭合、是否构成完整磁通面，均不是这两个入口自动确定的。",
+          "assets": [
+            "scirel.geometry.flux-surface-profile",
+            "scirel.geometry.flux-surface-inverse-field-average"
+          ]
+        },
+        {
+          "id": "equilibrium-grid-and-material-support",
+          "title": "将轴对称平衡映射到求解网格",
+          "introduction": "先把轴对称磁场与磁通插值到笛卡尔网格，再依据给定分界磁通、PML 和 PEC 条件分类材料支撑；复合入口保持这一顺序。域外查询被夹到映射边界并报告，不表示边界外物理场已知。",
+          "assets": [
+            "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
+            "scirel.geometry.material-support-classification",
+            "scirel.geometry.axisymmetric-equilibrium-grid-support"
+          ]
+        }
+      ]
+    }
+  ]
+}

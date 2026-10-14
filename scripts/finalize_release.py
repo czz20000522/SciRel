@@ -557,14 +557,7 @@ def finalize_reviewed_release(
     release_modules = {
         document["public_api"]["python"]["module"] for document in documents.values()
     }
-    source_documents = load_document_set(
-        source_root / "catalog/examples",
-        additional_directories=tuple(
-            source_root / "catalog" / family
-            for family in ("pleiades-maintained", "torax-algebra-grid", "torax-bootstrap-fvm")
-            if (source_root / "catalog" / family).is_dir()
-        ),
-    )
+    source_documents = load_document_set(source_root / "catalog/examples")
     for source_document in source_documents:
         if (
             source_document["public_api"]["python"]["module"] in release_modules

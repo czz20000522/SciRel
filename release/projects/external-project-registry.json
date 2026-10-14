@@ -3,8 +3,24 @@
   "external_root": "/e/SciRel-lab/projects",
   "manifest_name": "decomposition/FINAL/FINAL.json",
   "projects": [
-    "ascot5", "bo", "boray", "cql3d", "fluidbw",
-    "gpdf", "jorek", "pdrf", "pleiades", "torax"
+    "ascot5",
+    "bo",
+    "boray",
+    "cql3d",
+    "fluidbw",
+    "gpdf",
+    "jorek",
+    "pdrf",
+    "pleiades",
+    "torax"
   ],
-  "policy": "The external registry is the source of project FINAL artifacts; SciRel stores only intake summaries and digests."
+  "policy": "The external registry is the source of project FINAL artifacts; SciRel stores only intake summaries and digests.",
+  "archive_root": "/e/SciRel-lab/projects/_scirel-repository-archive-20261015/catalog",
+  "archived_repository_catalogs": [
+    "gpdf-core",
+    "fluidbw-full-retained",
+    "pdrk-mac-pilot",
+    "pleiades-maintained"
+  ],
+  "intake_rule": "Only a project decomposition/FINAL/FINAL.json plus its declared bundle is eligible for SciRel intake; source/CURRENT and decomposition/INBOX or WORK are external evidence."
 }

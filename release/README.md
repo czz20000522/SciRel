@@ -15,3 +15,8 @@ SciRel has three separate records:
 Only the final project manifest is an intake surface. Intermediate candidates,
 source checkouts, run directories, and local build scratch are not release
 inputs.
+
+The repository catalog families removed during this boundary change were archived
+with SHA-256 verification at
+`/e/SciRel-lab/projects/_scirel-repository-archive-20261015/catalog/`. The
+archive is historical evidence, not a SciRel intake path.

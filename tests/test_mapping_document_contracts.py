@@ -90,47 +90,6 @@ def test_signature_without_actual_adapter_is_not_evidence():
     with pytest.raises(ValueError, match='actual callable binding'):
         _validate_runtime_inputs(contract(), inspect.signature(graph))
 
-@pytest.mark.parametrize('asset_id',[
-    'scirel.kinetic.pdrk-fluid-scan',
-    'scirel.kinetic.pdrk-rational-reassemble-original-program'])
-def test_exact_complex_binding_rejects_changed_port_and_default(asset_id):
-    import json,importlib,copy
-    from pathlib import Path
-    root=Path(__file__).resolve().parents[1]
-    d=json.loads((root/'catalog/pdrk-mac-pilot'/f'{asset_id}.json').read_text())
-    api=d['public_api']['python'];f=getattr(importlib.import_module(api['module']),api['symbol'])
-    check(d,f)
-    for field,value in [('name','unbound_port'),('required',True),('default','wrong')]:
-        bad=copy.deepcopy(d);bad['inputs'][1][field]=not bad['inputs'][1]['required'] if field=='required' else value
-        with pytest.raises(ValueError,match='ports/defaults differ'):
-            check(bad,f)
-
-@pytest.mark.parametrize('change',['extra','missing','renamed','required','default'])
-def test_complex_mapping_all_contract_drift_fails(change):
-    import json,importlib
-    from pathlib import Path
-    root=Path(__file__).resolve().parents[1]
-    d=json.loads((root/'catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-fluid-scan.json').read_text())
-    f=importlib.import_module(d['public_api']['python']['module']).scan_fluid_corrected
-    if change=='extra':d['inputs'].append({'name':'extra','required':True})
-    elif change=='missing':d['inputs'].pop(0)
-    elif change=='renamed':d['inputs'][0]['name']='different_state'
-    elif change=='required':d['inputs'][0]['required']=False
-    else:d['inputs'][1]['default']=3
-    with pytest.raises(ValueError,match='ports/defaults differ'):check(d,f)
-
-
-def test_complex_mapping_module_drift_fails(tmp_path,monkeypatch):
-    import json,importlib
-    from pathlib import Path
-    root=Path(__file__).resolve().parents[1]
-    d=json.loads((root/'catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-fluid-scan.json').read_text())
-    module=importlib.import_module(d['public_api']['python']['module'])
-    changed=tmp_path/'changed.py';changed.write_bytes(Path(module.__file__).read_bytes()+b'\n# changed binding\n')
-    monkeypatch.setattr(module,'__file__',str(changed))
-    with pytest.raises(ValueError,match='source binding differs'):check(d,module.scan_fluid_corrected)
-
-
 @pytest.mark.parametrize('change',[None,'extra','missing','renamed','required','default','source'])
 def test_equilibrium_grid_mapping_binding_rejects_contract_or_source_drift(change,tmp_path,monkeypatch):
     import json, importlib
@@ -177,8 +136,8 @@ def test_existing_composed_graph_ports_remain_exact(asset_id,tmp_path,monkeypatc
     import json,importlib,copy
     from pathlib import Path
     root=Path(__file__).resolve().parents[1]
-    row=next(r for r in json.loads((root/'provenance/selections/scientific-core-documents-20261014-r2.json').read_text())['records'] if r['asset_id']==asset_id)
-    d=json.loads((root/row['path']).read_text());api=d['public_api']['python']
+    d=next(json.loads(path.read_text()) for path in (root/'catalog/examples').glob('*.json') if json.loads(path.read_text()).get('asset_id') == asset_id)
+    api=d['public_api']['python']
     module=importlib.import_module(api['module']);f=getattr(module,api['symbol']);check(d,f)
     for mutation in ('extra','missing','renamed','required','default'):
         bad=copy.deepcopy(d)
@@ -192,32 +151,6 @@ def test_existing_composed_graph_ports_remain_exact(asset_id,tmp_path,monkeypatc
     monkeypatch.setattr(module,'__file__',str(changed))
     with pytest.raises(ValueError,match='source binding differs'):check(d,f)
 
-
-@pytest.mark.parametrize('change', [None, 'extra', 'missing', 'renamed', 'required', 'default', 'source'])
-def test_generalized_scan_keyword_ports_are_bound(change, tmp_path, monkeypatch):
-    import importlib, json
-    from pathlib import Path
-    root = Path(__file__).resolve().parents[1]
-    d = json.loads((root / 'catalog/gpdf-core/generalized-root-scans.json').read_text())
-    module = importlib.import_module(d['public_api']['python']['module'])
-    f = getattr(module, d['public_api']['python']['symbol'])
-    if change is None:
-        check(d, f)
-        result = f('langmuir', k_values=[0.1])
-        assert result['omega'].shape == (1,)
-        assert result['dielectric_residual'][0] < 1e-9
-        return
-    if change == 'extra': d['inputs'].append({'name': 'extra', 'required': True})
-    elif change == 'missing': d['inputs'].pop()
-    elif change == 'renamed': d['inputs'][-1]['name'] = 'different_mesh'
-    elif change == 'required': d['inputs'][-1]['required'] = True
-    elif change == 'default': d['inputs'][-1]['default'] = 5
-    else:
-        changed = tmp_path / 'changed.py'
-        changed.write_bytes(Path(module.__file__).read_bytes() + b'\n# changed source binding\n')
-        monkeypatch.setattr(module, '__file__', str(changed))
-    with pytest.raises(ValueError, match='source binding differs' if change == 'source' else 'ports/defaults differ'):
-        check(d, f)
 
 
 def keyword_graph(density, **parameters):

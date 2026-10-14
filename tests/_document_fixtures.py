@@ -1,16 +1,13 @@
-"""Dependency-closed copies for development tests, never canonical documents.
+"""The current SciRel document closure used by development tests.
 
-The historical examples are a bounded fixture, not a self-contained catalog:
-their maintained field implementations now use three canonical Green assets.
-Resolve only declared dependencies from the explicit maintained family. This
-does not widen the validator or project scientific fields from implementation.
+The closure is canonicalized under ``catalog/examples``. External project
+source catalogs and D0-D3 work are not test inputs for the SciRel package.
 """
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = ROOT / "catalog/examples"
-MAINTAINED = ROOT / "catalog/pleiades-maintained"
 EXAMPLE_CLOSURE_COUNT = 141
 
 
@@ -19,27 +16,6 @@ def example_document_sources():
     for path in EXAMPLES.glob("*.json"):
         document = json.loads(path.read_bytes())
         sources[document["asset_id"]] = path
-    assert len(sources) == 137
-    dependencies = {}
-    for path in MAINTAINED.glob("*.json"):
-        document = json.loads(path.read_bytes())
-        asset = document["asset_id"]
-        assert asset not in dependencies
-        dependencies[asset] = path
-    pending = list(sources)
-    while pending:
-        document = json.loads(sources[pending.pop()].read_bytes())
-        for dependency in document["version"]["dependencies"]:
-            asset = dependency["asset_id"]
-            if asset not in sources:
-                sources[asset] = dependencies[asset]
-                pending.append(asset)
-    assert set(sources) - {json.loads(p.read_bytes())["asset_id"] for p in EXAMPLES.glob("*.json")} == {
-        "scirel.electromagnetism.circular-filament-green",
-        "scirel.electromagnetism.loop-flux-matrix",
-        "scirel.electromagnetism.green-response-matrices",
-        "scirel.equilibrium.compute-equilibrium",
-    }
     assert len(sources) == EXAMPLE_CLOSURE_COUNT
     return sources
 

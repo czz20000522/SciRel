@@ -1,0 +1,141 @@
+{
+  "schema": "scirel.reader-translation.v1",
+  "language": "zh-CN",
+  "records": [
+    {
+      "asset_id": "scirel.equilibrium.compute-equilibrium",
+      "source_sha256": "3fdd43d8e39d27820a49629cc94213bbb1e2b9938ea1fbb87e18fa639d1b3050",
+      "summary": "在给定真空磁通和 Green 矩阵下执行有界轴对称压力电流反馈，并返回显式终态。",
+      "definition": "压力闭合为 j_phi=R dP/dpsi；每轮按给定松弛系数更新电流、磁通、压力拟合和两个残差，只有两个残差同时满足 tol 才报告 converged。",
+      "model": "基于给定压力—半径函数、真空磁通和 Green 矩阵的来源约束反馈实现。",
+      "boundary": "压力边界是沿物理半径向外遍历时的第一个精确零点；下降存储坐标先按物理半径排序，输出仍保持调用者顺序。",
+      "assumptions": [
+        "Finite real arrays",
+        "Green matrix shape is (R.size,R.size)",
+        "Pressure-only closure; no toroidal F F-prime term, prescribed current profile or independent continuum force-balance certification.",
+        "relax is in [0,1) because relax=1 freezes zero initial currents"
+      ],
+      "inputs": [
+        {
+          "name": "R",
+          "description": "Radial grid",
+          "constraints": "Column-consistent, uniformly spaced, at least 2x2",
+          "dtype": "finite real"
+        },
+        {
+          "name": "Z",
+          "description": "Vertical grid",
+          "constraints": "Row-consistent, uniformly spaced, contains >=3 exact zero midplane points",
+          "dtype": "finite real"
+        },
+        {
+          "name": "Pfunc",
+          "description": "Pressure versus radius callable",
+          "constraints": "Must provide an exact zero pressure edge",
+          "dtype": "finite real outputs on midplane"
+        },
+        {
+          "name": "psi_vac",
+          "description": "Vacuum flux",
+          "constraints": "Midplane flux strictly increasing through pressure edge",
+          "dtype": "finite real"
+        },
+        {
+          "name": "g_psi",
+          "description": "Supplied Green matrix",
+          "constraints": "Finite",
+          "dtype": "finite real"
+        },
+        {
+          "name": "tol",
+          "description": "Threshold for both normalized flux-update and current-closure residuals",
+          "constraints": "positive finite",
+          "dtype": "float"
+        },
+        {
+          "name": "maxiter",
+          "description": "Maximum feedback updates",
+          "constraints": "nonnegative nonboolean integer",
+          "dtype": "int"
+        },
+        {
+          "name": "relax",
+          "description": "Weight on old current",
+          "constraints": "finite in [0,1)",
+          "dtype": "float"
+        },
+        {
+          "name": "plas_clip",
+          "description": "Optional plasma-current exclusion mask",
+          "constraints": "same grid shape and boolean",
+          "dtype": "bool array or None"
+        },
+        {
+          "name": "plotit",
+          "description": "GUI plotting selector",
+          "constraints": "True is unsupported",
+          "dtype": "bool"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "EquilibriumResult",
+          "description": "Flux, plasma currents, final pressure fit, status, iteration count, original update residual, closure_residual and reason; immutable residual_history and closure_residual_history tuples for completed paired residual evaluations",
+          "constraints": "status is converged, maxiter or nonfinite; history length may be less than attempted iterations when an update fails before residual evaluation",
+          "dtype": "dataclass"
+        }
+      ],
+      "applicability": {
+        "preconditions": [
+          "All finite real rectangular uniformly spaced inputs",
+          "Exact zero pressure edge"
+        ],
+        "supported": [
+          "Bounded update feedback with optional boolean plasma mask",
+          "Explicit terminal state for convergence, iteration cap and nonfinite update",
+          "Convergence cannot be triggered by a stationary flux when relaxed current still violates the pressure closure.",
+          "Coherent descending R/Z storage preserves the physical radial pressure traversal and caller-ordered outputs."
+        ],
+        "excluded": [
+          "Physical equilibrium correctness",
+          "Force-balance residual",
+          "Nonuniform/curvilinear grids",
+          "plotit=True",
+          "relax=1",
+          "Nonfinite Green matrices"
+        ]
+      },
+      "failure_semantics": {
+        "invalid_input": "ValueError before iteration for shape, dtype, grid, parameter, mask or contract violations.",
+        "runtime_failure": "nonfinite status for nonfinite derivative/current/Green/fit/residual; no nonfinite pressure derivative is silently replaced by zero.",
+        "nonconvergence": "maxiter status with last local state and residual; maxiter=0 has residual +inf.",
+        "partial_results": "nonfinite is explicitly not accepted; failed Green arithmetic retains the preceding finite flux/current pair. Histories contain only completed paired residual evaluations."
+      },
+      "example": {
+        "description": "在 2×5 网格上运行一个有界制造反馈案例。",
+        "expected": "返回显式终态；status 表示数值终止状态，不等同于物理平衡。"
+      },
+      "verification": {
+        "scope": [
+          "Manufactured update/residual and terminal status fixtures",
+          "Input boundary rejection regressions",
+          "Inherited equilibrium proposal tests",
+          "Analytic current closure and near-unit-relaxation false-convergence regression.",
+          "Ascending/descending paired nonzero-G pressure feedback and independent derivative/current closure."
+        ],
+        "tests": [
+          "tests/pleiades/equilibrium/test_equilibrium_proposals.py",
+          "tests/pleiades/equilibrium/test_equilibrium_boundaries.py",
+          "tests/pleiades/equilibrium/test_equilibrium_governing_residual.py",
+          "tests/pleiades/equilibrium/test_descending_pressure_equilibrium.py",
+          "tests/operator_contracts/test_legacy_six_absorption.py"
+        ],
+        "evidence_ceiling": "Bounded numerical contract only; no scientific approval.",
+        "known_limitations": [
+          "No arbitrary pressure/Green physical closure validation",
+          "No independent continuum force-balance residual; supplied G controls the discrete model."
+        ]
+      }
+    }
+  ]
+}

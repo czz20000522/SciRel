@@ -6,7 +6,10 @@
     {
       "id": "electromagnetism",
       "title": "电磁学：磁场与线圈",
-      "discipline": ["物理学", "电磁学"],
+      "discipline": [
+        "物理学",
+        "电磁学"
+      ],
       "introduction": "从轴对称电流源的几何表示出发，计算磁通与极向磁场，再处理电流叠加、等离子体响应矩阵和理想导体边界。这里的电流丝模型不解析导体内部自场；使用磁通连接其他求解器时，须核对归一化、参考值和坐标顺序。",
       "topics": [
         {
@@ -67,7 +70,11 @@
     {
       "id": "plasma-equilibrium",
       "title": "等离子体平衡与约束",
-      "discipline": ["物理学", "等离子体物理", "磁流体平衡"],
+      "discipline": [
+        "物理学",
+        "等离子体物理",
+        "磁流体平衡"
+      ],
       "introduction": "本章连接压强关系、电流响应与有界平衡迭代，并区分给定状态、闭合关系、迭代残差和物理相容性。复合入口仍依赖调用者明确真空场、Green 矩阵、物种和边界；返回有限结果或迭代收敛不自动证明模型适用。",
       "topics": [
         {
@@ -98,7 +105,8 @@
             "scirel.equilibrium.axisymmetric-picard-update",
             "scirel.diagnostics.picard-flux-residual",
             "scirel.equilibrium.axisymmetric-anisotropic-picard",
-            "scirel.equilibrium.free-boundary-anisotropic-picard"
+            "scirel.equilibrium.free-boundary-anisotropic-picard",
+            "scirel.equilibrium.compute-equilibrium"
           ]
         },
         {
@@ -159,7 +167,11 @@
     {
       "id": "plasma-waves",
       "title": "等离子体波动与介电响应",
-      "discipline": ["物理学", "等离子体物理", "波动与不稳定性"],
+      "discipline": [
+        "物理学",
+        "等离子体物理",
+        "波动与不稳定性"
+      ],
       "introduction": "从物种尺度与波矢约定出发，计算冷等离子体或有限谐波动理学响应，再求流体本征分支与复波数根。解析特殊函数、固定极点近似和不同近零波数策略保留为各自入口；求得数值根不自动赋予模式身份。",
       "topics": [
         {
@@ -175,7 +187,9 @@
           "id": "cold-dielectric-response",
           "title": "计算局部冷等离子体介电张量",
           "introduction": "用频率、磁场和物种列表计算给定笛卡尔基底中的局部冷响应。零磁场、碰撞和共振分支有明确处理；有限温度、有限拉莫尔半径与动理学效应需要其他模型。",
-          "assets": ["scirel.dielectric.cold-plasma-tensor"]
+          "assets": [
+            "scirel.dielectric.cold-plasma-tensor"
+          ]
         },
         {
           "id": "dispersion-response-functions",
@@ -220,13 +234,28 @@
             "scirel.kinetic.kinetic-wavevector-roots",
             "scirel.kinetic.kinetic-wavevector-scan"
           ]
+        },
+        {
+          "id": "pdrf-multifluid-dispersion",
+          "title": "构造多流体时间色散与扫描任务图",
+          "introduction": "先由物种和单位建立有效多流体等离子体状态，再构造局部 Maxwell 时间矩阵与条件化本征谱，最后按有界网格执行扫描。相对论惯性、碰撞、各向异性镜修正、残差门禁和扫描顺序均属于冻结合同；扫描成功不替代外部物理验证。",
+          "assets": [
+            "scirel.kinetic.pdrf-plasma-state",
+            "scirel.kinetic.pdrf-temporal-matrix",
+            "scirel.kinetic.pdrf-temporal-spectrum",
+            "scirel.kinetic.pdrf-dispersion-scan"
+          ]
         }
       ]
     },
     {
       "id": "atomic-collisions",
       "title": "原子碰撞与反应",
-      "discipline": ["物理学", "原子与分子物理", "碰撞过程"],
+      "discipline": [
+        "物理学",
+        "原子与分子物理",
+        "碰撞过程"
+      ],
       "introduction": "按物种与反应通道查找截面、速率系数和碰撞矩阵，再连接分布函数的碰撞频率归约。拟合的有效能区、端点裁剪、数组形状和外部参考证据各不相同；保留原公式的比较证据不等于独立原子物理验证。",
       "topics": [
         {
@@ -266,7 +295,9 @@
           "id": "velocity-averaged-rates",
           "title": "在 Maxwellian 速度网格上平均截面",
           "introduction": "给定截面函数、圆柱速度网格及体积权重，计算定向单能粒子与离散 Maxwellian 靶群体的速率平均。碰撞能量采用文档规定的粒子质量约定，网格尾部是否充分解析需要另外检查。",
-          "assets": ["scirel.collisions.maxwellian-relative-speed-rate-average"]
+          "assets": [
+            "scirel.collisions.maxwellian-relative-speed-rate-average"
+          ]
         },
         {
           "id": "collision-matrices-and-frequencies",
@@ -287,7 +318,11 @@
     {
       "id": "kinetic-transport",
       "title": "分布函数与中性粒子输运",
-      "discipline": ["物理学", "动理学理论", "粒子输运"],
+      "discipline": [
+        "物理学",
+        "动理学理论",
+        "粒子输运"
+      ],
       "introduction": "从速度尺度、离散分布与积分矩出发，连接镜约束参考群体及一维空间中性输运的源、传播和代际状态。每项关系有明确的轴顺序与状态边界；叶子齐备或某次迭代停止，仍不能替代完整应用的独立验证。",
       "topics": [
         {
@@ -394,14 +429,19 @@
     {
       "id": "fusion-and-heating",
       "title": "聚变反应与能量沉积",
-      "discipline": ["物理学", "核聚变与等离子体加热"],
+      "discipline": [
+        "物理学",
+        "核聚变与等离子体加热"
+      ],
       "introduction": "本章区分反应产物的运动学能量、给定模型的加热分配与已知吸收功率的归一化记账。它们回答不同层次的问题，尚不能自动组合成完整反应率、粒子轨迹或能量输运模型。",
       "topics": [
         {
           "id": "dd-neutron-kinematics",
           "title": "计算 DD 中子的实验室系能量",
           "introduction": "由两个氘核速度与探测方向计算非相对论双体反应的中子能量。该入口不计算角分布权重、聚变反应率或中子后续输运。",
-          "assets": ["scirel.fusion.dd-neutron-lab-energy"]
+          "assets": [
+            "scirel.fusion.dd-neutron-lab-energy"
+          ]
         },
         {
           "id": "heating-and-absorption-partitions",
@@ -417,7 +457,11 @@
     {
       "id": "diagnostics-and-inference",
       "title": "诊断建模与参数反演",
-      "discipline": ["物理学", "计算物理", "逆问题"],
+      "discipline": [
+        "物理学",
+        "计算物理",
+        "逆问题"
+      ],
       "introduction": "从给定平衡状态生成指定观测点上的预测，再将残差交给有界参数搜索。这里的采样、残差、试探与优化各自公开；仪器响应、模型选择和物理可接受性仍须由实际问题明确。",
       "topics": [
         {
@@ -445,7 +489,11 @@
     {
       "id": "numerical-geometry",
       "title": "数值几何与场采样",
-      "discipline": ["数学", "数值分析", "科学计算"],
+      "discipline": [
+        "数学",
+        "数值分析",
+        "科学计算"
+      ],
       "introduction": "对已有场数据进行网格插值、路径积分、磁通剖面查询与材料区域分类。几何处理不会补齐未知物理；域外拒绝、夹取、零填充与无效值标记是不同策略，应在组合前显式核对。",
       "topics": [
         {

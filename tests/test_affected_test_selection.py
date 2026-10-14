@@ -42,10 +42,11 @@ def test_bilinear_sampler_change_selects_equilibrium_diagnostics_graph():
     result = select("src/scirel/geometry/bilinear_grid_sampling.py")
 
     assert result["full_suite_required"] is False
-    assert {
+    assert set(result["test_paths"]) == {
+        "tests/operator_contracts/test_anisotropic_inference_independent.py",
         "tests/operator_contracts/test_bilinear_grid_sampling.py",
-        "tests/graph_contracts/equilibrium_synthesis_diagnostics/test_graph_equilibrium_synthesis_diagnostics.py",
-    } <= set(result["test_paths"])
+        "tests/operator_contracts/test_inference_physical_closure.py",
+    }
 
 
 def test_anisotropic_feedback_change_selects_free_boundary_graph():
@@ -319,7 +320,7 @@ def test_shared_composition_change_selects_every_task_graph():
         asset for asset in namespace["_load_assets"]()
         if asset.kind == "task_graph" and asset.public_callable in result["affected_assets"]
     ]
-    assert len(graph_assets) >= 11
+    assert len(graph_assets) >= 10
     assert {path for asset in graph_assets for path in asset.direct_tests} <= set(result["test_paths"])
     assert "tests/test_library_composition.py" in result["test_paths"]
     assert "tests/test_incremental_admissions.py" in result["test_paths"]
@@ -821,25 +822,20 @@ def test_documented_ideal_conductor_boundary_keeps_free_boundary_graph():
     } <= set(result["test_paths"])
 
 
-def test_current_asset_index_unions_legacy_samples_and_exact_documents():
+def test_current_asset_index_uses_canonical_documents():
     namespace = runpy.run_path(str(SELECTOR))
     assets = namespace["_load_assets"]()
 
-    # The original pilot stays exactly 132; the bounded TORAX family is a
-    # separately named bounded sets, not an expansion of that fixture.
     direct_documents = [json.loads(path.read_text()) for path in (ROOT / "catalog/examples").glob("*.json")]
     fast_ion = [doc for doc in direct_documents if doc["asset_id"] == "scirel.plasma.fast-ion-heating"]
     assert len(fast_ion) == 1
     assert fast_ion[0]["public_api"]["python"]["symbol"] == "fast_ion_fractional_heating"
-    assert len([doc for doc in direct_documents if doc["asset_id"] != "scirel.plasma.fast-ion-heating"]) == 132
-    assert len(list((ROOT / "catalog/torax-algebra-grid").glob("*.json"))) == 8
-    assert len(list((ROOT / "catalog/torax-bootstrap-fvm").glob("*.json"))) == 7
-    maintained_count = len(list((ROOT / "catalog/pleiades-maintained").glob("*.json")))
-    assert len(assets) == 148 + maintained_count
-    assert len({asset.public_callable for asset in assets}) == 148 + maintained_count
+    assert len([doc for doc in direct_documents if doc["asset_id"] != "scirel.plasma.fast-ion-heating"]) == 140
+    assert len(assets) == 141
+    assert len({asset.public_callable for asset in assets}) == 141
 
 
-def test_shared_corrected_green_keeps_maintained_and_legacy_consumers():
+def test_shared_corrected_green_keeps_current_consumers():
     result = select("src/scirel/electromagnetism/greens.py")
     assert result["full_suite_required"] is False
     assert {
@@ -852,8 +848,8 @@ def test_shared_corrected_green_keeps_maintained_and_legacy_consumers():
     } <= set(result["test_paths"])
 
 
-def test_maintained_green_document_is_classified_as_an_exact_contract():
-    result = select("catalog/pleiades-maintained/green-response-matrices.json")
+def test_canonical_green_document_is_classified_as_an_exact_contract():
+    result = select("catalog/examples/scirel.electromagnetism.green-response-matrices.json")
     assert result["full_suite_required"] is False
     assert result["test_paths"] == ["tests/test_asset_documentation.py"]
 
@@ -881,15 +877,6 @@ def test_catalog_asset_keeps_every_declared_direct_test(tmp_path):
     assert assets[0].direct_tests == declared_tests
 
 
-def test_catalog_asset_keeps_pytest_node_ids_without_treating_them_as_filenames(tmp_path):
-    document = json.loads((ROOT / "catalog/pleiades-maintained/fieldline.fieldline.json").read_text())
-    references = tuple(document["verification"]["tests"])
-    assert any("::" in reference for reference in references)
-    (tmp_path / "asset.json").write_text(json.dumps(document))
-    namespace = runpy.run_path(str(SELECTOR))
-    namespace["_load_catalog_assets"].__globals__["CATALOG"] = tmp_path
-    assert namespace["_load_catalog_assets"]()[0].direct_tests == references
-
 
 def test_documented_task_graph_selects_only_its_own_direct_test():
     result = select("src/scirel/geometry/axisymmetric_equilibrium_grid_support.py")
@@ -913,9 +900,10 @@ def test_documented_diagnostics_operator_selects_its_own_direct_test():
         "scirel.diagnostics.species_absorption_fraction."
         "compute_species_absorption_fraction"
     ]
-    assert result["test_paths"] == [
+    assert set(result["test_paths"]) == {
+        "tests/operator_contracts/test_legacy_admission_regressions.py",
         "tests/operator_contracts/test_species_absorption_fraction.py",
-    ]
+    }
 
 
 def test_documented_asset_without_a_test_mapping_still_fails_closed():
@@ -927,28 +915,13 @@ def test_documented_asset_without_a_test_mapping_still_fails_closed():
     assert "without an asset/test mapping" in result["full_suite_reasons"][0]
 
 
-def test_separate_torax_leaf_documents_select_exact_assets_and_bootstrap_consumer():
+def test_external_project_source_without_canonical_document_fails_closed():
     result = select(
         "src/scirel/geometry/face_to_cell.py",
         "src/scirel/physics/dilution.py",
         "src/scirel/physics/coulomb_logs.py",
     )
-    assert result["full_suite_required"] is False
-    assert result["test_paths"] == ["tests/operator_contracts/test_torax_algebra_grid.py", "tests/test_bootstrap.py"]
-    assert set(result["affected_assets"]) == {
-        "scirel.geometry.face_to_cell.face_to_cell",
-        "scirel.neoclassical.bootstrap.calculate_bootstrap_current",
-        "scirel.neoclassical.bootstrap.calculate_sauter_coefficients",
-        "scirel.neoclassical.bootstrap.calculate_redl_coefficients",
-        "scirel.physics.dilution.calculate_main_ion_dilution_factor",
-        "scirel.physics.coulomb_logs.calculate_log_lambda_ee",
-        "scirel.physics.coulomb_logs.calculate_log_lambda_ei",
-        "scirel.physics.coulomb_logs.calculate_log_lambda_ii",
-    }
-
-
-def test_separate_torax_exact_document_change_checks_document_contract():
-    result = select("catalog/torax-algebra-grid/physics.coulomb-ee.json")
-    assert result["full_suite_required"] is False
-    assert result["test_paths"] == ["tests/test_asset_documentation.py"]
-    assert result["reasons"][0]["classification"] == "asset_document_contract"
+    assert result["full_suite_required"] is True
+    assert result["test_paths"] == ["tests"]
+    assert result["affected_assets"] == []
+    assert len(result["full_suite_reasons"]) == 3
