@@ -1,7 +1,7 @@
 {
   "schema": "scirel.executed-tutorial.v1",
   "tutorial": "kinetic-initial-value",
-  "wheel_sha256": "ff2bc189e74736a704a66301ea4159c9d0e15851e5bf56e75cf9c65558c52e79",
+  "wheel_sha256": "7156f4e9a3c050c52b93db645918e4129edcfd4ca89437c6fd03b072f6f30945",
   "example_sha256": "d650f9c89f187867b388c38b640635f7bd05f21eeaff172691a303fe2802b72d",
   "results": {
     "all_checks_passed": true,
@@ -23,16 +23,21 @@
     "catalog/gpdf-core/generalized-root-scans.json": "56b33ab6fbb721b68e9acb301a2ab242cc8c0f54a2f0ab368f759936c25619b8",
     "catalog/gpdf-core/vp-landau.json": "067f796f32fcc507643094a05078ad0a0643b516654d322e1ad436953f8628c8"
   },
-  "tutorial_rst_sha256": "db3e04e94685bf906ff7489c8a651222f4b047ba1dde1735dfba7be8b975b627",
+  "tutorial_rst_sha256": "2e6e7ed5f1a7412020b6d57f2d0dc8ee6f594fe2df93a3502686212d9651e0d8",
   "environment": {
     "python": "3.14.7",
     "numpy": "2.5.4",
     "scipy": "1.18.1",
     "image": "sha256:38382f431271e9dcee8b56113c23be9c232c37dd246e9e3da5fd02b47a3e5ed8",
-    "container": "ae7e152755535cfe91b9cae25d702ee357d8f41e09396c85b4fa2de55c0d20bf",
+    "container": "e2adc6fc26c5b2eeb57be5af3b07ae037cd2e717b4165edefa884f3d3c6be84e",
     "network": "none",
     "source_or_saved_answers": false,
-    "exit_code": 0
+    "exit_code": 0,
+    "system_site_packages": false,
+    "runtime_wheelhouse_manifest_sha256": "2b5b2a0077a4f04c9f2e8f0eb1b627688022a30b4c1906408173a439aea8450e",
+    "task_path": "/tmp/user/bin",
+    "development_modules": "pytest/sympy/sphinx/scirel_workflow/scirel_plugin absent",
+    "developer_tools": "git/pwsh/powershell/pytest/sphinx-build absent from task PATH"
   },
   "human_approval": false,
   "release_approval": false
