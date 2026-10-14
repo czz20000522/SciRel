@@ -18,6 +18,33 @@ Bundled validators and schema namespaces are optional versioned serialization im
 contract when selected, or an equivalent project protocol carrying the same scientific information. Their filenames
 or schema prefix do not require a library of that name. A structural pass never substitutes for scientific evidence.
 
+## Dependency consumers
+
+Keep three dependency sets distinct in existing environment/handoff records: source execution for retained
+source entrypoints and required comparisons; delivered-package execution for the actual implementation and its
+transitive/native/data closure; and development for builds, tests, independent reference calculations, documentation
+and delivery tools. Bind each requirement to its consumer and purpose. A common version policy selects versions
+for shared maintained libraries, not the union of all three sets. An original-source comparison may require its
+own historical version; preserve that binding rather than silently upgrading the reference.
+
+Readable source and initial indexing do not require the full upstream environment. Determine the authorized D0
+retained/excluded scope, then prepare dependencies incrementally for the source tasks actually needed. A dependency
+exclusive to an excluded branch need not be installed. Installation difficulty never justifies dropping a core
+capability, and missing necessary source execution remains an evidence gap. Do not derive package requirements
+from an upstream requirements file, a development environment export or every tool present in an image.
+
+Select by actual call paths, not tool names: a native engine used only for source comparison stays on the source
+side, but an installed callable that invokes it needs a declared, independently verified runtime dependency.
+Optional drawing may be excluded; contour/geometry computation consumed by a solver is still core and must be
+preserved or replaced with validated scientific behavior before removing its dependency.
+
+Keep source, installed-package and development checks separate. An absent version-control, shell or documentation
+tool is a failure of the affected development check, not a numerical failure or a new package prerequisite.
+Required engineering gates still need repair. Reuse unaffected scientific evidence; do not rerun costly science
+solely because a development tool was missing. Installed runtime closure requires a target process that cannot
+borrow source/development dependencies; any separate test driver and oracle dependencies remain explicit.
+Changing dependency metadata alone does not establish closure. Preserve frozen versions and qualify a successor.
+
 ## D0 responsibility
 
 D0 owns authorized source preparation in an editable branch/copy of read-only official upstream. It may remove
@@ -39,6 +66,12 @@ defects for D2 instead of repairing them or opening independent physics/calibrat
 extraction, packaging and comparison errors within D1. This boundary governs every specialist and linked
 reference loaded by D1; scientific-correction and independent-science instructions apply to a later explicitly
 scoped correctness task.
+
+The comparison boundary is the retained scientific capability: scientific inputs, observables, meaningful
+discrete fields, state, defaults and valid failure semantics. It does not demand drawing/UI/shell parity, identical
+implementation or exception wording, or bitwise floating-point equality. Preserve declared precision-aware gates
+and all core data, geometry, boundaries and convergence behavior. A source-shaped delivery preserves traceability;
+file/function counts are navigation aids, not the definition of full physical capability.
 
 Prefer lifting or wrapping actual source logic over deriving a new algorithm. A Python callable may use
 attributable packaged Python, C/C++, Fortran, local binaries or declared native dependencies. `source-free`

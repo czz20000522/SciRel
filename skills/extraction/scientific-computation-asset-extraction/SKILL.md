@@ -34,10 +34,14 @@ An explicitly agreed bounded pilot/partial intake is an exception, not whole-pro
 
 ## Project owner autonomy
 
-Select an independent container or equivalent isolation boundary from the actual project and platform contract,
-prepare its dependencies, then start D0 with read-only upstream and an editable workcopy, or D1 with frozen read-only D0, an owned
+Select an independent container or equivalent isolation boundary from the actual project and platform contract.
+Start D0 from readable upstream and an editable workcopy; prepare source-execution dependencies incrementally
+after identifying retained entrypoints and necessary comparisons, not by installing the entire upstream environment.
+For D1, use the prepared subset with frozen read-only D0, an owned
 persistent output location, applicable skills and the project objective. Retain the environment definition and
 launch command; verify actual dependency access, read-only upstream, phase-specific source writes and output persistence before claiming readiness.
+Keep source, delivered-package and development requirements separate under
+[dependency consumers](references/stage_boundary_contract.md#dependency-consumers); readiness names its actual consumer.
 Use the selected runtime contract. If the user changes the isolation requirement, checkpoint active work and resume in the required runtime; preserve prior evidence and validate only the platform-affected behavior.
 
 The D1 project owner runs the scientific queue below autonomously, including local repair and resumable checkpoints.

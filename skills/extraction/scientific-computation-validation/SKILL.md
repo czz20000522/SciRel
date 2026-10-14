@@ -61,6 +61,20 @@ not independent scientific evidence.
 
 ## Workflow
 
+### Execution dependencies and validation effort
+
+Separate source-runtime comparisons, installed-package scientific tasks and development checks using
+[dependency consumers](../scientific-computation-asset-extraction/references/stage_boundary_contract.md#dependency-consumers).
+Bind missing dependencies to the check that needs them: an absent development shell or documentation renderer is
+not a numerical algorithm failure. Missing a solver actually called by the package is a runtime-closure gap.
+Repair the affected environment/check without rerunning unchanged science; do not ignore a required delivery gate.
+Independent reference and test-driver libraries must not silently supply dependencies to the target runtime.
+
+Cover every retained core capability, then allocate deeper computation by scientific risk: difficult algorithms,
+conditioning, coupled state/iteration and boundary sensitivity, plus simple shared units/signs/normalizations with
+large consequences. Source drawing or UI parity does not establish physical equivalence. Keep required geometry,
+data, state, failure and convergence checks, independent oracles and existing valid tolerances.
+
 ### Select D1 source-fidelity validation
 
 For D1, use `source_fidelity` and validate questions 1, 4 and 5 against the bound source behavior.

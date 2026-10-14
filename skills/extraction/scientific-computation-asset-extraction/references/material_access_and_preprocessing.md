@@ -26,6 +26,12 @@ editable; official upstream and the later D1 input are read-only. Preserve a rep
 for the selected project container/isolation contract. Needed tools must be reconstructible, not only installed
 in a disposable container's writable layer. Reuse prepared dependencies and bounded probes across workers.
 
+Apply [dependency consumers](stage_boundary_contract.md#dependency-consumers) before installing source tools:
+index readable source first, then derive the needed source-runtime subset from retained branches and planned
+comparisons. Preserve reasons for omitted upstream-only requirements. Do not prepare the full source environment
+as an indexing prerequisite or copy it into the delivered runtime; record a missing necessary dependency as a gap,
+not a reason to remove science. Build/test/reference and documentation tools belong to their development tasks.
+
 Order preparation as initial indexing, source cleanup, maintenance of stable changes, then final D0 freeze.
 First build or reuse a complete initial AOCI view of the selected source at the actual work root, following its
 current Guide. Keep that source binding stable while the first build runs. Record non-blocking cleanup findings

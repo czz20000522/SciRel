@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-14T02:09:44Z",
+  "updated_at": "2026-10-14T02:52:56Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -47,9 +47,9 @@
     },
     "AGENTS.md": {
       "role": "index",
-      "sha256": "3c16e79fc32b52dbc3f3c3a09d450e892ae4c040c393f8902a13aec24a0b5f0f",
-      "size": 23153,
-      "normalized_sha256": "3c16e79fc32b52dbc3f3c3a09d450e892ae4c040c393f8902a13aec24a0b5f0f"
+      "sha256": "7b5fad9e2df65a26166674190cdd1dbf5674b1fc7b312dc1d8adc6a6b0fcfff3",
+      "size": 23591,
+      "normalized_sha256": "7b5fad9e2df65a26166674190cdd1dbf5674b1fc7b312dc1d8adc6a6b0fcfff3"
     },
     "CONTRIBUTING.md": {
       "role": "index",
@@ -59,15 +59,15 @@
     },
     "README.md": {
       "role": "index",
-      "sha256": "81472161d481d1303da26bff8a5a4656f0c2812c97b100a4d53b75c5bb38fbca",
-      "size": 19789,
-      "normalized_sha256": "81472161d481d1303da26bff8a5a4656f0c2812c97b100a4d53b75c5bb38fbca"
+      "sha256": "498fc459989acd4fd52f415612e6e1d63ebefa1febf3958648b78e4bf52d6482",
+      "size": 20133,
+      "normalized_sha256": "498fc459989acd4fd52f415612e6e1d63ebefa1febf3958648b78e4bf52d6482"
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "ee8c10d3c0ebb13f395d88be9f940aaae93ecaf2289263a1c387dfc0f4f241cd",
-      "size": 434714,
-      "normalized_sha256": "ee8c10d3c0ebb13f395d88be9f940aaae93ecaf2289263a1c387dfc0f4f241cd"
+      "sha256": "f67b494c398db4934394b38579ce7508522ec88a11c25525f3593d7427210e6c",
+      "size": 434736,
+      "normalized_sha256": "f67b494c398db4934394b38579ce7508522ec88a11c25525f3593d7427210e6c"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -1823,9 +1823,9 @@
     },
     "docs/design/project-and-distribution.md": {
       "role": "index",
-      "sha256": "11f60ff9f4b9db972a416f7ba065b22c37001b1dd61deed364ffe2ad765afc8f",
-      "size": 7998,
-      "normalized_sha256": "11f60ff9f4b9db972a416f7ba065b22c37001b1dd61deed364ffe2ad765afc8f"
+      "sha256": "3355b723d1a237bad56b391b952de22fc9c40b47a69bbe26cac580a391f0a3f1",
+      "size": 11631,
+      "normalized_sha256": "3355b723d1a237bad56b391b952de22fc9c40b47a69bbe26cac580a391f0a3f1"
     },
     "docs/design/scientific-request-workflow.md": {
       "role": "index",
@@ -1835,9 +1835,9 @@
     },
     "docs/design/scientific-runtime-baseline.md": {
       "role": "index",
-      "sha256": "e7a8e44caf3bffbac32aab89ce95d1d444251443852cd0b05adedf4ebf68c237",
-      "size": 3221,
-      "normalized_sha256": "e7a8e44caf3bffbac32aab89ce95d1d444251443852cd0b05adedf4ebf68c237"
+      "sha256": "8d20236944baf5f1206e4afc616d308c17584897051801bb663b8851cb216254",
+      "size": 4384,
+      "normalized_sha256": "8d20236944baf5f1206e4afc616d308c17584897051801bb663b8851cb216254"
     },
     "docs/design/scirel-workflow.md": {
       "role": "index",
@@ -1847,9 +1847,9 @@
     },
     "docs/development-process.md": {
       "role": "index",
-      "sha256": "6ddbae070c5fc573074120a0e97aa8da3fd61c1958ac3905245a7da21a11402d",
-      "size": 32376,
-      "normalized_sha256": "6ddbae070c5fc573074120a0e97aa8da3fd61c1958ac3905245a7da21a11402d"
+      "sha256": "b9036a8959ef30eaabc82a87ed914aa75229ffe756c108290705d57435cf0ac7",
+      "size": 33097,
+      "normalized_sha256": "b9036a8959ef30eaabc82a87ed914aa75229ffe756c108290705d57435cf0ac7"
     },
     "docs/domains/README.md": {
       "role": "index",
@@ -3737,9 +3737,9 @@
     },
     "docs/requirements/scirel-workflow.md": {
       "role": "index",
-      "sha256": "6f6321bc57a5bc6e3f383df8f7b2c73743d0763130e9f4fd3a66d718db349c71",
-      "size": 26472,
-      "normalized_sha256": "6f6321bc57a5bc6e3f383df8f7b2c73743d0763130e9f4fd3a66d718db349c71"
+      "sha256": "08780c3c3f459225ee168856ea57fc0c1f4f3bc69158cf7fb30ce2a7ac67a6cd",
+      "size": 27546,
+      "normalized_sha256": "08780c3c3f459225ee168856ea57fc0c1f4f3bc69158cf7fb30ce2a7ac67a6cd"
     },
     "docs/requirements/thin-mcp-adapter.md": {
       "role": "index",
@@ -4289,9 +4289,9 @@
     },
     "skills/extraction/scientific-computation-asset-extraction/SKILL.md": {
       "role": "index",
-      "sha256": "6718ac6a59752bee2805b09f18a966bb2bc268a6c48e2d0b60d464c0f0d4ccd3",
-      "size": 13243,
-      "normalized_sha256": "6718ac6a59752bee2805b09f18a966bb2bc268a6c48e2d0b60d464c0f0d4ccd3"
+      "sha256": "672c6bd917647d915287ea93424aecc1418170e795d564625d7ba003a79c5b88",
+      "size": 13602,
+      "normalized_sha256": "672c6bd917647d915287ea93424aecc1418170e795d564625d7ba003a79c5b88"
     },
     "skills/extraction/scientific-computation-asset-extraction/agents/openai.yaml": {
       "role": "index",
@@ -4307,9 +4307,9 @@
     },
     "skills/extraction/scientific-computation-asset-extraction/assets/artifact_template_pack/docker/PROJECT_NAME/asset_runtime.md": {
       "role": "index",
-      "sha256": "83fe2e9045f36363a29f7737bef9d796e4e7c6ef60326776df568b2395efdcb8",
-      "size": 433,
-      "normalized_sha256": "83fe2e9045f36363a29f7737bef9d796e4e7c6ef60326776df568b2395efdcb8"
+      "sha256": "31fd374c2972c3c5ece338b2deab88fe71570d3d88ca25a7e920cddeb3f399dd",
+      "size": 1560,
+      "normalized_sha256": "31fd374c2972c3c5ece338b2deab88fe71570d3d88ca25a7e920cddeb3f399dd"
     },
     "skills/extraction/scientific-computation-asset-extraction/assets/artifact_template_pack/extraction_ledger.md": {
       "role": "index",
@@ -4439,9 +4439,9 @@
     },
     "skills/extraction/scientific-computation-asset-extraction/references/material_access_and_preprocessing.md": {
       "role": "index",
-      "sha256": "8782b314f66838434df8887762ec1eb9aae00f829528e4585270fe2c11c81619",
-      "size": 19938,
-      "normalized_sha256": "8782b314f66838434df8887762ec1eb9aae00f829528e4585270fe2c11c81619"
+      "sha256": "9e8961ca5495552f03b163679d47e938cdc73c81a9f6a126b19b528b4233187b",
+      "size": 20498,
+      "normalized_sha256": "9e8961ca5495552f03b163679d47e938cdc73c81a9f6a126b19b528b4233187b"
     },
     "skills/extraction/scientific-computation-asset-extraction/references/operator_reference_cases/C语言格林矩阵电流投影/operator.md": {
       "role": "index",
@@ -4619,9 +4619,9 @@
     },
     "skills/extraction/scientific-computation-asset-extraction/references/stage_boundary_contract.md": {
       "role": "index",
-      "sha256": "94bb844789bb92f7494ec607cef409e6fd095bcc13f89dc96cfa041486215515",
-      "size": 16632,
-      "normalized_sha256": "94bb844789bb92f7494ec607cef409e6fd095bcc13f89dc96cfa041486215515"
+      "sha256": "5d1ff29df2ef060853211aa1591fa34863969ba317737fa6ea0720b25ced95a1",
+      "size": 19491,
+      "normalized_sha256": "5d1ff29df2ef060853211aa1591fa34863969ba317737fa6ea0720b25ced95a1"
     },
     "skills/extraction/scientific-computation-asset-extraction/references/workflow_optimization.md": {
       "role": "index",
@@ -4709,9 +4709,9 @@
     },
     "skills/extraction/scientific-computation-validation/SKILL.md": {
       "role": "index",
-      "sha256": "e66acfae19d61032529ea8a4bbfd56efb791269319bcfbb5434c3e33aca34bda",
-      "size": 11173,
-      "normalized_sha256": "e66acfae19d61032529ea8a4bbfd56efb791269319bcfbb5434c3e33aca34bda"
+      "sha256": "6b6195693eccaaf448da6bb1ad9b59568022208aec9c909c90981e9fab780de6",
+      "size": 12336,
+      "normalized_sha256": "6b6195693eccaaf448da6bb1ad9b59568022208aec9c909c90981e9fab780de6"
     },
     "skills/extraction/scientific-computation-validation/agents/openai.yaml": {
       "role": "index",
@@ -4877,9 +4877,9 @@
     },
     "skills/integration/scirel-integration/SKILL.md": {
       "role": "index",
-      "sha256": "0d822246aee40938e8a956eee3a217f82256eb446e93fd1f9055a4e97f9b3020",
-      "size": 9325,
-      "normalized_sha256": "0d822246aee40938e8a956eee3a217f82256eb446e93fd1f9055a4e97f9b3020"
+      "sha256": "afce61fe2034ed511583e8783d7a9b57dc689e4777ff1bb1eb7bb08d1ccf6a8d",
+      "size": 10137,
+      "normalized_sha256": "afce61fe2034ed511583e8783d7a9b57dc689e4777ff1bb1eb7bb08d1ccf6a8d"
     },
     "skills/integration/scirel-integration/agents/openai.yaml": {
       "role": "index",

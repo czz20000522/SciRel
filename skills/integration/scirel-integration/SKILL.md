@@ -83,6 +83,14 @@ claims; warnings, private naming and catalog omission do not exclude executable 
 research candidates outside the accepted runtime. Claim restrictions must be meaningful and visible in the API
 contract/docstrings, not selected merely to remove a failed fixture.
 
+Apply the stage contract's [dependency consumers](../../extraction/scientific-computation-asset-extraction/references/stage_boundary_contract.md#dependency-consumers):
+source-execution requirements and project build/test/reference/documentation tools are not package requirements.
+Derive the distribution's Python/native/data closure from actual retained call paths; a source-only dependency
+need not follow a rewritten implementation, while an invoked native engine remains a real runtime requirement.
+Use the receiving version baseline for necessary maintained dependencies, not its entire installed tool set.
+Verify installed core tasks without borrowing source/development dependencies before claiming a lean successor;
+preserve the original wheel and its qualification rather than editing frozen metadata.
+
 ## Handoff
 
 Before treating unchanged baseline failures as outside the increment, classify their actual causes and runtime

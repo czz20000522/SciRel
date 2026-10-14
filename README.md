@@ -102,6 +102,10 @@ CodeFusion 联调先选定索引中的确切 `entry_id`，再按该条目的状�
 用 `uv sync --locked --extra test` 建立独立开发环境。历史能力也逐项迁入这一基线；
 版本固定与科学验收分别记录，见[科学运行依赖基线](docs/design/scientific-runtime-baseline.md)。
 
+来源运行依赖按 D0 保留入口和必要源码对照选择；科学 wheel 只安装实际运行闭包；
+构建、测试、文档与 Git/PowerShell 等工具留在 SciRel 开发环境。统一版本不表示三类环境安装相同清单，
+见[三类依赖边界](docs/design/project-and-distribution.md#三类依赖与独立环境)。
+
 ## 维护者 API 示例
 
 ```python
