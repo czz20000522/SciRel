@@ -1,0 +1,152 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.pdrk-parallel-em-plot",
+  "kind": "operator",
+  "title": {
+    "en": "Parallel EM figure composition",
+    "zh": "平行电磁图像组合"
+  },
+  "summary": "Append accepted continuation curves to an explicit native predecessor figure while retaining source styles and legend behavior.",
+  "taxonomy": [
+    "kinetic",
+    "pdrk",
+    "examples"
+  ],
+  "aliases": [],
+  "identity": {
+    "relation": "Accepted kinetic continuation to a composed native figure",
+    "direction": "artifact composition",
+    "definition": "Render k*cwp and Re/Im(omega)/wcs1 onto an explicit predecessor figure; pm=-1 retains the source six-label legend composition.",
+    "model": "Visualization of an already accepted parallel kinetic continuation; no dispersion solve.",
+    "geometry": "Parallel signed-k Cartesian frequency plot.",
+    "coordinates": "Normalized k*cwp and omega/wcs1.",
+    "boundary": "Explicit predecessor figure or fresh axes.",
+    "assumptions": [
+      "cwp and wcs1 are supplied physical normalization scales.",
+      "A retained source legend does not prove arbitrary predecessor curve identities."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "graph",
+      "description": "Accepted continuation with k and omega.",
+      "units": "k m^-1; omega rad/s",
+      "shape": "matching (K,) arrays",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "No root is recomputed."
+    },
+    {
+      "name": "state",
+      "description": "Explicit physical plot normalization.",
+      "units": "cwp m; wcs1 rad/s",
+      "shape": "mapping with scalar cwp,wcs1",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "Caller supplies compatible finite nonzero normalization scales."
+    },
+    {
+      "name": "predecessor_plot",
+      "description": "Explicit predecessor native figure and its scientific provenance.",
+      "units": "not applicable",
+      "shape": "NativeResult or mapping containing figure_native bytes, or null",
+      "dtype": "NativeResult | mapping | None",
+      "required": false,
+      "constraints": "figure_native is uint8 and preserved as bytes. None creates fresh axes; caller must establish compatible physical coordinates and curve lineage.",
+      "default": null
+    },
+    {
+      "name": "pm",
+      "description": "Circular-polarization sign about the fixed positive z basis.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": false,
+      "constraints": "Exactly +1 or -1. This is not helicity defined along k and is not swapped when k changes sign.",
+      "default": 1
+    },
+    {
+      "name": "transport",
+      "description": "Optional explicit native executor; None uses the packaged resource closure.",
+      "units": "not applicable",
+      "shape": "object or null",
+      "dtype": "NativeTransport or None",
+      "required": false,
+      "constraints": "Requires a compatible external Octave runtime. No original checkout or network is consulted.",
+      "default": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "NativeResult containing native FIG and PNG bytes plus decoded line, axes and legend state; receipt is execution metadata rather than a scientific quantity.",
+      "units": "line coordinates follow the plot model; artifact bytes unitless",
+      "shape": "state: figure_native/figure_png byte vectors; line_x/line_y vectors; line_offsets/line_axes/line_width; line_markers; axes_limits; legend_labels",
+      "dtype": "NativeResult with typed numeric state",
+      "required": true,
+      "constraints": "Line offsets retain the native 1-based convention. All predecessor and appended curves remain represented; the legend is source composition, not independent branch classification."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite inputs satisfying the declared units and shapes."
+    ],
+    "supported": [
+      "Fresh native figures and explicit sequential predecessor composition, pm=+1/-1."
+    ],
+    "excluded": [
+      "Inferred predecessor curve physics or an inferred six-branch identity."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError or a missing required mapping key rejects invalid inputs.",
+    "runtime_failure": "Dependency, numerical-library, or native-runtime errors propagate; no silent alternate provider.",
+    "nonconvergence": "No iterative solve is performed.",
+    "partial_results": "No partial result is returned on failure."
+  },
+  "provenance": {
+    "lineage_summary": "Unchanged attributed PDRK EM1D plotting suffix, invoked through a derived explicit-state adapter.",
+    "source_kinds": [
+      "upstream-scientific-source",
+      "derived-implementation",
+      "independent-scientific-validation"
+    ],
+    "public_references": [
+      "https://github.com/hsxie/pdrk"
+    ],
+    "license_status": "pending-human-decision: source attribution is retained; redistribution permission and human scientific endorsement are unresolved."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.pdrk.plotting",
+      "symbol": "em1d_plot",
+      "signature": "em1d_plot(graph, state, predecessor_plot=None, *, pm=1, transport=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8+pdrkpilot1",
+    "dependencies": [
+      {
+        "asset_id": "scirel.kinetic.pdrk-parallel-em-continuation"
+      }
+    ]
+  },
+  "example": {
+    "description": "Render an explicit already accepted vacuum branch.",
+    "code": "import numpy as np\nfrom scirel.kinetic.pdrk.plotting import em1d_plot\nr = em1d_plot(dict(k=np.array([0.2, 0.3]), omega=np.array([0.2+0j, 0.3+0j])), dict(cwp=1.0, wcs1=1.0))\nassert r.state[\"figure_native\"].size > 0",
+    "expected": "A native figure with explicit normalized real and imaginary frequency curves."
+  },
+  "verification": {
+    "scope": [
+      "Native artifact data, axes, styles and sequential predecessor lineage."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_pdrk_examples_support.py"
+    ],
+    "evidence_ceiling": "Bounded derived scientific qualification exists. Integrated public signatures, executable examples, and final installed-candidate acceptance require separate verification.",
+    "known_limitations": [
+      "Octave graphics and native figure compatibility are runtime requirements.",
+      "Human visual acceptance is separate from typed plot-data/style qualification."
+    ]
+  }
+}

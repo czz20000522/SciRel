@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import ast
 import importlib
+import hashlib
 import inspect
 import json
 import math
@@ -13,6 +14,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import textwrap
 from typing import Any, Iterable
 
 
@@ -590,7 +592,7 @@ def validate_runtime(
             document["asset_id"],
             f"runtime signature differs: expected {python_api['signature']}, got {actual_signature}",
         )
-    _validate_runtime_inputs(document, signature)
+    _validate_runtime_inputs(document, signature, function=function)
     for test_path in document["verification"]["tests"]:
         try:
             resolve_test_reference(test_path, source_root)
@@ -598,9 +600,95 @@ def validate_runtime(
             _fail(document["asset_id"], str(error))
 
 
+def _explicit_mapping_signature(document: dict[str, Any], function: Any) -> inspect.Signature | None:
+    """Use a reviewed complex mapping only while every bound module is unchanged."""
+    path = Path(__file__).with_name("mapping_interface_bindings.json")
+    if not path.is_file():
+        return None
+    binding = next((row for row in json.loads(path.read_text())["records"]
+                    if row["asset_id"] == document["asset_id"]), None)
+    if binding is None:
+        return None
+    if binding["callable"] != f"{function.__module__}.{function.__name__}":
+        _fail(document["asset_id"], "complex mapping callable binding differs")
+    for name, expected in binding["modules"].items():
+        module = importlib.import_module(name)
+        if hashlib.sha256(Path(module.__file__).read_bytes()).hexdigest() != expected:
+            _fail(document["asset_id"], f"complex mapping source binding differs: {name}")
+    actual = [{key: port[key] for key in ("name", "required", "default") if key in port}
+              for port in document["inputs"]]
+    if actual != binding["ports"]:
+        _fail(document["asset_id"], "complex mapping scientific ports/defaults differ")
+    return inspect.Signature([inspect.Parameter(port["name"], inspect.Parameter.KEYWORD_ONLY,
+            default=inspect.Parameter.empty if port["required"] else port["default"])
+            for port in binding["ports"]])
+
+
+def _mapping_delegate(document: dict[str, Any], function: Any) -> Any:
+    """Resolve a transparent ``return relation(**inputs)`` adapter without calling it.
+
+    An opaque mapping signature cannot establish scientific port identity. Only
+    the actual installed adapter's simple forwarding body is accepted here;
+    general workflow implementations need their own explicit binding contract.
+    """
+    try:
+        tree = ast.parse(textwrap.dedent(inspect.getsource(function)))
+        definition = tree.body[0]
+        body = definition.body
+        if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) and isinstance(body[0].value.value, str):
+            body = body[1:]
+        if len(body) != 1 or not isinstance(body[0], ast.Return):
+            raise ValueError("not a transparent return")
+        call = body[0].value
+        if (not isinstance(call, ast.Call) or call.args or len(call.keywords) != 1
+                or call.keywords[0].arg is not None
+                or not isinstance(call.keywords[0].value, ast.Name)
+                or call.keywords[0].value.id != "inputs"):
+            raise ValueError("not an exact **inputs forwarding call")
+        reference = call.func
+        attributes = []
+        while isinstance(reference, ast.Attribute):
+            attributes.append(reference.attr)
+            reference = reference.value
+        if not isinstance(reference, ast.Name):
+            raise ValueError("delegate is not a static name")
+        delegate = function.__globals__[reference.id]
+        for attribute in reversed(attributes):
+            # Resolve module namespaces, never execute arbitrary descriptors.
+            if not inspect.ismodule(delegate):
+                raise ValueError("delegate traversal is not a module namespace")
+            delegate = vars(delegate)[attribute]
+        if not callable(delegate) or delegate is function:
+            raise ValueError("delegate is unavailable or recursive")
+        return delegate
+    except (OSError, TypeError, AttributeError, KeyError, SyntaxError, ValueError, IndexError) as error:
+        _fail(document["asset_id"], f"TaskGraph mapping lacks a verifiable scientific delegate: {error}")
+
+
 def _validate_runtime_inputs(
-    document: dict[str, Any], signature: inspect.Signature
+    document: dict[str, Any], signature: inspect.Signature, *, function: Any = None
 ) -> None:
+    mapping = signature.parameters.get("inputs")
+    accepts_keywords = any(parameter.kind is inspect.Parameter.VAR_KEYWORD
+                           for parameter in signature.parameters.values())
+    if document.get("kind") == "task_graph" and mapping is not None and not accepts_keywords:
+        if (len(signature.parameters) != 1
+                or mapping.default is not inspect.Parameter.empty
+                or mapping.kind not in (inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                                        inspect.Parameter.KEYWORD_ONLY)):
+            _fail(document["asset_id"], "TaskGraph inputs mapping must be its one required callable parameter")
+        if function is None:
+            _fail(document["asset_id"], "TaskGraph mapping requires its actual callable binding")
+        bound_signature = _explicit_mapping_signature(document, function)
+        signature = bound_signature if bound_signature is not None else inspect.signature(_mapping_delegate(document, function))
+        if any(p.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+               for p in signature.parameters.values()):
+            _fail(document["asset_id"], "TaskGraph scientific delegate must expose explicit ports")
+        documented_names = {port["name"] for port in document["inputs"]}
+        missing = {name for name, parameter in signature.parameters.items()
+                   if parameter.default is inspect.Parameter.empty and name not in documented_names}
+        if missing:
+            _fail(document["asset_id"], f"required scientific inputs are undocumented: {sorted(missing)}")
     accepts_keywords = any(
         parameter.kind is inspect.Parameter.VAR_KEYWORD
         for parameter in signature.parameters.values()

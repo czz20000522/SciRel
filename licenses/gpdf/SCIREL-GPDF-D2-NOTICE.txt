@@ -1,0 +1,12 @@
+SciRel selected kinetic development candidate
+
+This candidate contains independently authored Python evaluation of the Cauchy
+kernel and normalized Maxwellian dielectric, and the existing SciRel wrapper
+of scipy.special.wofz. Its implementation lineage is bound in the D2 evidence.
+No GPDF MATLAB, FFT/rational expansion, J-pole coefficients, symbolic source
+expressions, or source-derived repairs are included. The upstream GPDF source
+redistribution grant remains NOT_ESTABLISHED.
+
+NumPy and SciPy are external runtime dependencies, not embedded in this wheel.
+Their installed distribution license texts are included. SciRel has not declared
+a public distribution license; this notice does not grant public redistribution.

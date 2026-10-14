@@ -1,4 +1,4 @@
-"""Build a selected Pleiades scientific wheel from exact source and license bindings.
+"""Build a selected scientific wheel from exact source and license bindings.
 
 A selection identifies bytes and exports; it does not grant scientific, human or
 release approval. No checkout, workflow package or discovery catalog is bundled.
@@ -41,11 +41,15 @@ def main():
     # Validate every binding before creating the isolated staging tree.
     files = [bound_source(args.source_root, row) for row in profile['files']]
     licenses = [bound_source(args.source_root, row) for row in profile['licenses']]
-    if len({str(p) for p, _ in files + licenses}) != len(files) + len(licenses):
+    data_files = [bound_source(args.source_root, row) for row in profile.get('data_files', [])]
+    if len({str(p) for p, _ in files + licenses + data_files}) != len(files) + len(licenses) + len(data_files):
         raise ValueError('duplicate selected path')
     for relative, _ in files:
         if relative.parts[:2] != ('src', 'scirel') or relative.suffix != '.py' or relative.name == '__init__.py':
             raise ValueError(f'not an explicit scientific implementation: {relative}')
+    for relative, _ in data_files:
+        if relative.parts[:2] != ('src', 'scirel') or relative.suffix not in ('.m', '.in', '.json'):
+            raise ValueError(f'not an explicit scientific runtime resource: {relative}')
     for relative, _ in licenses:
         if relative.parts[0] != 'licenses':
             raise ValueError(f'not a license/notice path: {relative}')
@@ -56,7 +60,7 @@ def main():
             raise ValueError(f'invalid initializer: {name}')
     args.output.mkdir(parents=True, exist_ok=False)
     stage = args.output / 'source'
-    for relative, data in files + licenses:
+    for relative, data in files + licenses + data_files:
         target = stage.joinpath(*relative.parts); target.parent.mkdir(parents=True, exist_ok=True); target.write_bytes(data)
     for name, content in initializers.items():
         target = stage / name; target.parent.mkdir(parents=True, exist_ok=True); target.write_text(content, encoding='utf-8')
@@ -65,10 +69,12 @@ def main():
     project = '\n'.join([
         '[build-system]', 'requires = '+q(build_requirements()), 'build-backend = "setuptools.build_meta"',
         '[project]', 'name = "scirel"', 'version = '+q(profile['version']),
-        'description = "SciRel selected Pleiades scientific development distribution"',
+        'description = '+q(profile.get('description', 'SciRel selected Pleiades scientific development distribution')),
         'requires-python = '+q(python_requirement()), 'dependencies = '+q(dependencies),
-        'license-files = ["licenses/*"]', '[tool.setuptools.packages.find]',
+        'license-files = '+q([str(path) for path, _ in licenses]), '[tool.setuptools.packages.find]',
         'where = ["src"]', 'include = ["scirel", "scirel.*"]', ''])
+    if data_files:
+        project += '\n[tool.setuptools.package-data]\n'+q('scirel')+' = '+q([str(path.relative_to('src/scirel')) for path, _ in data_files])+'\n'
     (stage / 'pyproject.toml').write_text(project)
     wheels = (args.output / 'wheel').resolve(); wheels.mkdir()
     env = dict(os.environ, SOURCE_DATE_EPOCH='315532800', PYTHONDONTWRITEBYTECODE='1')
@@ -78,7 +84,8 @@ def main():
     wheel = next(wheels.glob('*.whl'))
     result = {'scientific_runtime_baseline':baseline_receipt(), 'profile_sha256':hashlib.sha256(args.profile.read_bytes()).hexdigest(),
               'wheel':str(wheel), 'sha256':hashlib.sha256(wheel.read_bytes()).hexdigest(),
-              'bytes':wheel.stat().st_size, 'implementation_count':len(files),
+              'bytes':wheel.stat().st_size, 'implementation_count':len(files), 'runtime_resource_count':len(data_files),
+              'native_runtime':profile.get('native_runtime'),
               'human_approval':False, 'release_approval':False}
     (args.output/'BUILD_RECEIPT.json').write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps(result))

@@ -1,0 +1,115 @@
+{
+  "schema": "scirel.mapping-interface-bindings.v1",
+  "records": [
+    {
+      "asset_id": "scirel.kinetic.pdrk-fluid-scan",
+      "callable": "scirel.kinetic.pdrk.multifluid.scan_fluid_corrected",
+      "ports": [
+        {
+          "name": "state",
+          "required": true
+        },
+        {
+          "name": "method",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "state_scales",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "relativistic",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "grid_controls",
+          "required": false,
+          "default": {}
+        }
+      ],
+      "modules": {
+        "scirel.kinetic.pdrk.multifluid": "30552fd1ab4b1f0e5fb2cad0ac86f7a73609cfef88c547d834a4eb2c400a2fa3",
+        "scirel.kinetic.pdrk._fluid_parallel": "527338144200e1f3d7b742fc72a790edc9b81b790e8627340fb8b800f3caa2bc"
+      },
+      "review_basis": "The adapter copies inputs, pops grid_controls with {}, forwards outer ports and unpacked grid to _fluid_parallel.scan_fluid_corrected. Grid entries are documented nested scientific controls, not additional top-level document ports. Duplicate/unrecognized keywords preserve Python TypeError."
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-reassemble-original-program",
+      "callable": "scirel.kinetic.pdrk.workflows.reassemble_rational_program",
+      "ports": [
+        {
+          "name": "model",
+          "required": true
+        },
+        {
+          "name": "output_dir",
+          "required": true
+        },
+        {
+          "name": "points",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "deck",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "J",
+          "required": false,
+          "default": {
+            "es1d": 8,
+            "es3d": 8,
+            "em": 8,
+            "generator": 12
+          }
+        },
+        {
+          "name": "opt",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "N",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "B0",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "sp",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "wg0",
+          "required": false,
+          "default": 1.5
+        },
+        {
+          "name": "I",
+          "required": false,
+          "default": 16
+        },
+        {
+          "name": "precision",
+          "required": false,
+          "default": 80
+        }
+      ],
+      "modules": {
+        "scirel.kinetic.pdrk.workflows": "c0bc4a50d4085b13b6e92f3b2964eb11261b9893119bfec5fb5655cbabea4b9a",
+        "scirel.kinetic.pdrk.rational": "e150f1fe3ba6634ef706a3c8fd5b923dd4daa845364b738c18872fb88e0ecc79",
+        "scirel.kinetic.pdrk._presentation": "a90daf8243c310e8d8bbc9c3cbf95ca7a8292af0279540a49c32637413bd4ed8"
+      },
+      "review_basis": "Transparent wrapper delegates to rational.reassemble_original_program, which routes generator controls to jpole_generator(J=12,I=16,precision=80), otherwise ordered_spectrum(J=8,opt=None,N=None,B0=None,points=None,sp=0,wg0=1.5). model/output_dir required; I/precision apply only generator, other model-specific controls retain documented failures. The J dictionary is a documented per-model default, not a Python parameter default."
+    }
+  ]
+}

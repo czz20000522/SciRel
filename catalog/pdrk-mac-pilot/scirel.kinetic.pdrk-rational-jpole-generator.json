@@ -1,0 +1,1198 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.pdrk-rational-jpole-generator",
+  "kind": "task_graph",
+  "title": {
+    "en": "Padé diagnostic composition",
+    "zh": "帕德诊断组合"
+  },
+  "summary": "Compose high-precision coefficients, historical diagnostic coordinates and rational evaluation.",
+  "taxonomy": [
+    "kinetic",
+    "plasma",
+    "plasma-dispersion-function"
+  ],
+  "aliases": [
+    "legacy.jpole_generator"
+  ],
+  "identity": {
+    "relation": "Padé diagnostic composition",
+    "direction": "Declared inputs to named scientific outputs.",
+    "definition": "Coefficient construction precedes ndgrid evaluation; approximation applicability is separate from construction and plotting.",
+    "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
+    "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+    "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
+    "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+    "assumptions": [
+      "Model-specific deck conventions are explicit.",
+      "A numerical spectrum is not automatically a physically certified mode."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "J",
+      "description": "Number of simple rational poles in the constructed Padé approximation.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "IntegerJ>=1; approximation domain separately checked. No fixed-table family restriction applies to coefficient construction.",
+      "default": 12
+    },
+    {
+      "name": "I",
+      "description": "Number of Taylor matching equations; K=2J-I inverse-power equations.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "Integer0<=I<=2J. Meaningful accuracy must be independently checked for selected J/I and z domain.",
+      "default": 16
+    },
+    {
+      "name": "precision",
+      "description": "Decimal coefficient/root construction precision; numeric result ports remain complex128.",
+      "units": "decimal digits",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "Integer>=32; repeated/unresolved roots fail explicitly. Higher precision alone does not certify finite-J approximation accuracy.",
+      "default": 80
+    }
+  ],
+  "outputs": [
+    {
+      "name": "J",
+      "description": "Number of simple poles.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "I",
+      "description": "Taylor matching equation count.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "K",
+      "description": "Inverse-power matching equation count, 2*J-I.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "precision_digits",
+      "description": "Decimal precision used for coefficient and root construction.",
+      "units": "decimal digits",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "bzj",
+      "description": "Simple-pole residues in the refined pole order.",
+      "units": "dimensionless",
+      "shape": "(J,)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "czj",
+      "description": "Refined simple poles, binary64 view.",
+      "units": "dimensionless",
+      "shape": "(J,)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "p",
+      "description": "Numerator coefficients in descending polynomial order.",
+      "units": "dimensionless",
+      "shape": "(J,)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "q",
+      "description": "Denominator coefficients in descending polynomial order.",
+      "units": "dimensionless",
+      "shape": "(J+1,)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "pq",
+      "description": "Solved two-sided coefficient vector before descending-order rearrangement.",
+      "units": "dimensionless",
+      "shape": "(2*J,)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "Mpq",
+      "description": "Two-sided matching linear system matrix.",
+      "units": "dimensionless",
+      "shape": "(2*J,2*J)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "B",
+      "description": "Matching system right-hand side.",
+      "units": "dimensionless",
+      "shape": "(2*J,)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "moments",
+      "description": "Binary64 sums sum(b), sum(b*c), sum(b*c*c).",
+      "units": "dimensionless",
+      "shape": "(3,)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "high_precision_linear_residual",
+      "description": "Normalized matching-system residual retained as a decimal string.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "str",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "high_precision_root_residual",
+      "description": "Normalized polynomial residual for each refined pole. Strings retain construction precision independently of binary64 numeric ports.",
+      "units": "dimensionless",
+      "shape": "length J",
+      "dtype": "list[str]",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "high_precision_poles",
+      "description": "Complex refined poles at declared decimal precision. Strings retain construction precision independently of binary64 numeric ports.",
+      "units": "dimensionless",
+      "shape": "length J",
+      "dtype": "list[str]",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "high_precision_residues",
+      "description": "Complex simple-pole residues at declared decimal precision. Strings retain construction precision independently of binary64 numeric ports.",
+      "units": "dimensionless",
+      "shape": "length J",
+      "dtype": "list[str]",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "precision_claim",
+      "description": "Construction precision and separate approximation-applicability limit.",
+      "units": "not applicable",
+      "shape": "scalar",
+      "dtype": "str",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "x",
+      "description": "Real coordinate varying along the first ndgrid axis.",
+      "units": "dimensionless",
+      "shape": "(101,101)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "y",
+      "description": "Imaginary coordinate varying along the second ndgrid axis.",
+      "units": "dimensionless",
+      "shape": "(101,101)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "z",
+      "description": "Complex diagnostic coordinate x+1i*y.",
+      "units": "dimensionless",
+      "shape": "(101,101)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "ZJ",
+      "description": "sum_j bzj[j]/(z-czj[j]) evaluated on the historical diagnostic grid.",
+      "units": "dimensionless",
+      "shape": "(101,101)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Constituent inputs finite and representable in declared numeric ports."
+    ],
+    "supported": [
+      "Constituent generator domains and resolved simple poles."
+    ],
+    "excluded": [
+      "A colored diagnostic grid is not an independent Z accuracy test."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError unless integer J>=1, integer 0<=I<=2J and integer precision>=32; no fixed-table family restriction. Rational evaluation at an exact grid pole raises ZeroDivisionError.",
+    "runtime_failure": "NativeExecutionError retains its NativeReceipt for unavailable, failed or timed-out owned-scratch execution; no checkout/network fallback. Coefficient construction and evaluation are Python-only.",
+    "nonconvergence": "Linear-solve errors propagate. ArithmeticError for unresolved/repeated/collapsed roots, failed polynomial/linear residual or the bounded 100-step Newton refinement; FloatingPointError for unrepresentable binary64 poles/residues. Nonfinite evaluated ZJ raises FloatingPointError.",
+    "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
+  },
+  "provenance": {
+    "lineage_summary": "PDRK upstream, frozen 2018-fixed legacy D0, faithfully packaged D1, then explicit D2 finite-Harris scaling, signed-wavevector causality, exact-axis Maxwell and high-precision J12 corrections. Original source aliases and plots remain attributable evidence.",
+    "source_kinds": [
+      "MATLAB/Octave source",
+      "Independent velocity-integral/analytic relations",
+      "High-precision numerical derivation"
+    ],
+    "public_references": [
+      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology18 (2016).",
+      "PDRK source documentation and2018 correction notes."
+    ],
+    "license_status": "Original-source redistribution license remains unverified; this scientific record does not grant permission."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.pdrk.workflows",
+      "symbol": "regenerate_jpole",
+      "signature": "regenerate_jpole(inputs)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8+pdrkpilot1",
+    "dependencies": [
+      {
+        "asset_id": "scirel.kinetic.pdrk-rational-jpole-coefficients"
+      },
+      {
+        "asset_id": "scirel.kinetic.pdrk-rational-jpole-grid-coordinates"
+      },
+      {
+        "asset_id": "scirel.kinetic.pdrk-rational-jpole-evaluate"
+      }
+    ]
+  },
+  "example": {
+    "description": "A bounded J4/I4 construction and retained diagnostic grid.",
+    "code": "from scirel.kinetic.pdrk.workflows import regenerate_jpole\nr = regenerate_jpole({'J': 4, 'I': 4, 'precision': 80})\nassert r['ZJ'].shape == (101, 101)",
+    "expected": "Four refined simple poles, full ndgrid orientation, rational values and separate high-precision construction evidence."
+  },
+  "verification": {
+    "scope": [
+      "Source-absent installed own scientific package; exact package/resource closure.",
+      "All12 APIs, independent canonical and separate held-out response, axis and signed-wavevector gates.",
+      "Full perpendicular ES3D N10/J8 original50-point default with independent weak-coefficient and Decimal offset checks.",
+      "Flattened scientific input ports documented independently of the thin wrapper(inputs) calling convention."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_pdrk_rational.py"
+    ],
+    "evidence_ceiling": "Bounded actual Octave8.4/Python3.14 scientific qualification of the frozen derived component. Public integration/D3 and human admission remain separate; no universal approximation or rigorous interval claim.",
+    "known_limitations": [
+      "Original license unverified; MATLAB execution NOT_RUN.",
+      "Finite-J/finite-N physics must be qualified for a new requested regime.",
+      "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
+      "Human scientific and plot approval pending."
+    ]
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "coefficients",
+        "kind": "operator",
+        "description": "Construct complete two-sided Padé coefficients, refined poles/residues and diagnostics.",
+        "inputs": [
+          "J",
+          "I",
+          "precision"
+        ],
+        "outputs": [
+          "J",
+          "I",
+          "K",
+          "precision_digits",
+          "bzj",
+          "czj",
+          "p",
+          "q",
+          "pq",
+          "Mpq",
+          "B",
+          "moments",
+          "high_precision_linear_residual",
+          "high_precision_root_residual",
+          "high_precision_poles",
+          "high_precision_residues",
+          "precision_claim"
+        ],
+        "asset_id": "scirel.kinetic.pdrk-rational-jpole-coefficients"
+      },
+      {
+        "id": "grid",
+        "kind": "operator",
+        "description": "Obtain the fixed historical diagnostic ndgrid.",
+        "inputs": [],
+        "outputs": [
+          "state",
+          "receipt"
+        ],
+        "asset_id": "scirel.kinetic.pdrk-rational-jpole-grid-coordinates"
+      },
+      {
+        "id": "grid_projection",
+        "kind": "controlled_glue",
+        "description": "Extract actual grid.state x,y,z; preserve row/column orientation.",
+        "inputs": [
+          "state"
+        ],
+        "outputs": [
+          "x",
+          "y",
+          "z"
+        ]
+      },
+      {
+        "id": "evaluate",
+        "kind": "operator",
+        "description": "Evaluate the constructed poles on the actual grid.",
+        "inputs": [
+          "bzj",
+          "czj",
+          "z"
+        ],
+        "outputs": [
+          "ZJ"
+        ],
+        "asset_id": "scirel.kinetic.pdrk-rational-jpole-evaluate"
+      },
+      {
+        "id": "compose",
+        "kind": "controlled_glue",
+        "description": "Merge all seventeen construction fields with x,y,z and evaluated ZJ; grid receipt is not returned by this graph.",
+        "inputs": [
+          "J",
+          "I",
+          "K",
+          "precision_digits",
+          "bzj",
+          "czj",
+          "p",
+          "q",
+          "pq",
+          "Mpq",
+          "B",
+          "moments",
+          "high_precision_linear_residual",
+          "high_precision_root_residual",
+          "high_precision_poles",
+          "high_precision_residues",
+          "precision_claim",
+          "x",
+          "y",
+          "z",
+          "ZJ"
+        ],
+        "outputs": [
+          "J",
+          "I",
+          "K",
+          "precision_digits",
+          "bzj",
+          "czj",
+          "p",
+          "q",
+          "pq",
+          "Mpq",
+          "B",
+          "moments",
+          "high_precision_linear_residual",
+          "high_precision_root_residual",
+          "high_precision_poles",
+          "high_precision_residues",
+          "precision_claim",
+          "x",
+          "y",
+          "z",
+          "ZJ"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": {
+          "node": "$input",
+          "port": "J"
+        },
+        "to": {
+          "node": "coefficients",
+          "port": "J"
+        },
+        "description": "Pass the declared construction control.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "I"
+        },
+        "to": {
+          "node": "coefficients",
+          "port": "I"
+        },
+        "description": "Pass the declared construction control.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "precision"
+        },
+        "to": {
+          "node": "coefficients",
+          "port": "precision"
+        },
+        "description": "Pass the declared construction control.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "grid",
+          "port": "state"
+        },
+        "to": {
+          "node": "grid_projection",
+          "port": "state"
+        },
+        "description": "Project the returned diagnostic grid state.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "bzj"
+        },
+        "to": {
+          "node": "evaluate",
+          "port": "bzj"
+        },
+        "description": "Supply actual constructed bzj to rational evaluation.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "czj"
+        },
+        "to": {
+          "node": "evaluate",
+          "port": "czj"
+        },
+        "description": "Supply actual constructed czj to rational evaluation.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "grid_projection",
+          "port": "z"
+        },
+        "to": {
+          "node": "evaluate",
+          "port": "z"
+        },
+        "description": "Supply actual complex ndgrid to rational evaluation.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "J"
+        },
+        "to": {
+          "node": "compose",
+          "port": "J"
+        },
+        "description": "Preserve complete coefficient construction field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "I"
+        },
+        "to": {
+          "node": "compose",
+          "port": "I"
+        },
+        "description": "Preserve complete coefficient construction field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "K"
+        },
+        "to": {
+          "node": "compose",
+          "port": "K"
+        },
+        "description": "Preserve complete coefficient construction field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "precision_digits"
+        },
+        "to": {
+          "node": "compose",
+          "port": "precision_digits"
+        },
+        "description": "Preserve complete coefficient construction field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "bzj"
+        },
+        "to": {
+          "node": "compose",
+          "port": "bzj"
+        },
+        "description": "Preserve complete coefficient construction field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "czj"
+        },
+        "to": {
+          "node": "compose",
+          "port": "czj"
+        },
+        "description": "Preserve complete coefficient construction field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "p"
+        },
+        "to": {
+          "node": "compose",
+          "port": "p"
+        },
+        "description": "Preserve complete coefficient construction field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "q"
+        },
+        "to": {
+          "node": "compose",
+          "port": "q"
+        },
+        "description": "Preserve complete coefficient construction field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "pq"
+        },
+        "to": {
+          "node": "compose",
+          "port": "pq"
+        },
+        "description": "Preserve complete coefficient construction field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "Mpq"
+        },
+        "to": {
+          "node": "compose",
+          "port": "Mpq"
+        },
+        "description": "Preserve complete coefficient construction field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "B"
+        },
+        "to": {
+          "node": "compose",
+          "port": "B"
+        },
+        "description": "Preserve complete coefficient construction field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "moments"
+        },
+        "to": {
+          "node": "compose",
+          "port": "moments"
+        },
+        "description": "Preserve complete coefficient construction field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "high_precision_linear_residual"
+        },
+        "to": {
+          "node": "compose",
+          "port": "high_precision_linear_residual"
+        },
+        "description": "Preserve complete coefficient construction field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "high_precision_root_residual"
+        },
+        "to": {
+          "node": "compose",
+          "port": "high_precision_root_residual"
+        },
+        "description": "Preserve complete coefficient construction field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "high_precision_poles"
+        },
+        "to": {
+          "node": "compose",
+          "port": "high_precision_poles"
+        },
+        "description": "Preserve complete coefficient construction field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "high_precision_residues"
+        },
+        "to": {
+          "node": "compose",
+          "port": "high_precision_residues"
+        },
+        "description": "Preserve complete coefficient construction field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "coefficients",
+          "port": "precision_claim"
+        },
+        "to": {
+          "node": "compose",
+          "port": "precision_claim"
+        },
+        "description": "Preserve complete coefficient construction field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "grid_projection",
+          "port": "x"
+        },
+        "to": {
+          "node": "compose",
+          "port": "x"
+        },
+        "description": "Preserve complete diagnostic grid field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "grid_projection",
+          "port": "y"
+        },
+        "to": {
+          "node": "compose",
+          "port": "y"
+        },
+        "description": "Preserve complete diagnostic grid field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "grid_projection",
+          "port": "z"
+        },
+        "to": {
+          "node": "compose",
+          "port": "z"
+        },
+        "description": "Preserve complete diagnostic grid field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "evaluate",
+          "port": "ZJ"
+        },
+        "to": {
+          "node": "compose",
+          "port": "ZJ"
+        },
+        "description": "Return evaluated rational field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "J"
+        },
+        "to": {
+          "node": "$output",
+          "port": "J"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "I"
+        },
+        "to": {
+          "node": "$output",
+          "port": "I"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "K"
+        },
+        "to": {
+          "node": "$output",
+          "port": "K"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "precision_digits"
+        },
+        "to": {
+          "node": "$output",
+          "port": "precision_digits"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "bzj"
+        },
+        "to": {
+          "node": "$output",
+          "port": "bzj"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "czj"
+        },
+        "to": {
+          "node": "$output",
+          "port": "czj"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "p"
+        },
+        "to": {
+          "node": "$output",
+          "port": "p"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "q"
+        },
+        "to": {
+          "node": "$output",
+          "port": "q"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "pq"
+        },
+        "to": {
+          "node": "$output",
+          "port": "pq"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "Mpq"
+        },
+        "to": {
+          "node": "$output",
+          "port": "Mpq"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "B"
+        },
+        "to": {
+          "node": "$output",
+          "port": "B"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "moments"
+        },
+        "to": {
+          "node": "$output",
+          "port": "moments"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "high_precision_linear_residual"
+        },
+        "to": {
+          "node": "$output",
+          "port": "high_precision_linear_residual"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "high_precision_root_residual"
+        },
+        "to": {
+          "node": "$output",
+          "port": "high_precision_root_residual"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "high_precision_poles"
+        },
+        "to": {
+          "node": "$output",
+          "port": "high_precision_poles"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "high_precision_residues"
+        },
+        "to": {
+          "node": "$output",
+          "port": "high_precision_residues"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "precision_claim"
+        },
+        "to": {
+          "node": "$output",
+          "port": "precision_claim"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "x"
+        },
+        "to": {
+          "node": "$output",
+          "port": "x"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "y"
+        },
+        "to": {
+          "node": "$output",
+          "port": "y"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "z"
+        },
+        "to": {
+          "node": "$output",
+          "port": "z"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "compose",
+          "port": "ZJ"
+        },
+        "to": {
+          "node": "$output",
+          "port": "ZJ"
+        },
+        "description": "Return actual completed generator field.",
+        "condition": "Successful upstream completion.",
+        "transform": "Identity named-field projection; units unchanged.",
+        "kind": "data",
+        "required": true
+      }
+    ],
+    "execution": {
+      "mode": "Explicit Python scientific composition; ordinary data edges form a DAG and any iteration is separately bounded.",
+      "ordering": "Construct coefficients, obtain grid, evaluate with actual bzj/czj and grid.z, then merge the complete returned fields.",
+      "branches": [
+        "No feedback; fixed diagnostic grid is not an approximation-validity domain."
+      ],
+      "state_ownership": "Invocation owns scratch, point index, carried guess and completed results; caller mappings are not mutated.",
+      "failure_propagation": "First constituent failure propagates without a successful graph result.",
+      "feedback": []
+    }
+  }
+}

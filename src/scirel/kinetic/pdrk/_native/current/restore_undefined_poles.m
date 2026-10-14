@@ -1,0 +1,2 @@
+% Restore source undefined-state projection before source matrix use.
+if exist('undefined_pole_fields','var') && ~isempty(undefined_pole_fields);source_undefined_poles=jsondecode(undefined_pole_fields);for source_undefined_pole=source_undefined_poles(:)';if any(strcmp(source_undefined_pole{1},{'bzj','czj'}));clear(source_undefined_pole{1});else;error('SciRel:InvalidUndefinedPort','invalid source pole state');end;end;end;

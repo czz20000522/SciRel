@@ -6,7 +6,7 @@
     "en": "Thermal electron normalized momentum",
     "zh": "热电子归一化动量"
   },
-  "summary": "Evaluate the thermal-electron normalized momentum p_Te = sqrt(2*T/mc^2) as an explicit definition: both inputs are energies in the same unit, so the result is dimensionless, a speed in units of c rather than a velocity in cm/s. This is the leaf the Coulomb-log chain consumes, and it is published on its own: it is not a velocity and must not be passed as the vnorm of the grid-to-momentum map, because that map already divides by clight and doing so divides by c twice. The relation is a definition, so the returned value is asserted equal to its closed form in double precision rather than to a tolerance. A finite input whose closed form is not representable in double precision is rejected rather than returned as a non-finite value.",
+  "summary": "计算非相对论热电子归一化动量 p_Te=sqrt(2T/mc²)。它是无量纲速度比 v/c，不是 cm/s 速度，不能直接作为 normalized-momentum 的 vnorm。 V6 区分中间溢出与最终不可表示性，避免可表示结果被错误拒绝或因中间下溢丢失。",
   "taxonomy": [
     "collisions",
     "momentum-scales",
@@ -21,18 +21,16 @@
   "identity": {
     "relation": "the thermal-electron normalized momentum p_Te as a function of the electron temperature and the electron rest energy",
     "direction": "temperature_kev, restmkev -> p_Te",
-    "definition": "Returns sqrt(2.0 * temperature_kev / restmkev) in double precision. Both inputs are energies in keV, so the quotient is a pure ratio of speeds and the returned number is dimensionless: it is v/c, not v.",
-    "model": "exact closed form of the non-relativistic thermal speed ratio; no fit, no approximation, no iteration",
+    "definition": "返回 sqrt(2×temperature_kev/restmkev) 的无量纲非相对论热速度比。常规区保留原 binary64 求值顺序；中间值溢出或变为次正规数时，按输入浮点数的精确值使用 100 位 Decimal 计算并最终舍入到 binary64。",
+    "model": "独立闭式定义，不是拟合；常规 binary64 运算与危险中间量的高精度求值后继，不包含单位自动转换。",
     "geometry": "not applicable; a scalar algebraic evaluation",
     "coordinates": "not applicable",
-    "boundary": "as temperature_kev approaches zero from above, p_Te approaches zero; p_Te grows without bound as restmkev approaches zero from above, which the positive-rest-energy guard prevents for a physical electron. The growth is bounded by representability rather than by a magnitude threshold: at temperature_kev = 1.0e308 the product 2.0 * temperature_kev overflows before the division, so the closed form is not representable and the call is rejected rather than returning positive infinity.",
+    "boundary": "正温度/静能的比值可能在开平方前下溢，后备求值保留可表示的正根；只有最终值超出 binary64 范围时拒绝。",
     "assumptions": [
-      "Both arguments are energies in keV, so the ratio is dimensionless and no unit conversion is performed by this relation.",
-      "The result is the non-relativistic thermal speed ratio sqrt(2T/mc^2); no relativistic correction is applied and none is claimed.",
-      "The returned quantity is a scale for the normalized momentum used by the Coulomb-log chain, not a distribution, a mean speed or a temperature.",
-      "The relation is a definition, so the caller is not asked to trust a fitted constant: the value is exactly the closed form above, and the tests assert it bit for bit.",
-      "The two leaves of this unit are independent assets. This one produces a dimensionless speed ratio; the grid-to-momentum map consumes a velocity. V3 documented and tested a direct composition between them, and that claim does not hold: it divides by c twice. V4 removes the claim from both assets and replaces it with a measurement of the factor.",
-      "The relation is evaluated in double precision, and the input domain is not bounded above. A finite positive pair whose closed form is not representable -- in practice one where 2.0 * temperature_kev overflows -- is outside the evaluated domain and is rejected rather than approximated or returned as an infinity."
+      "两输入为同单位能量；所给 keV 数值不会被转换。非相对论关系不提供相对论修正。",
+      "两个叶入口独立。热速度比不能直接作为 vnorm；直接组合 divides by c twice，调用者需要先显式乘以光速换回速度。",
+      "常规区保留原浮点操作顺序，不承诺危险极值处与错误的旧操作逐位一致。",
+      "先检查形状与有限输入；可转换非实数值的既有 float() 行为保持，不新增物理含义。"
     ]
   },
   "inputs": [
@@ -63,7 +61,7 @@
       "shape": "scalar",
       "dtype": "float",
       "required": true,
-      "constraints": "Exactly sqrt(2.0 * temperature_kev / restmkev) in double precision, returned as a Python float. Strictly positive and finite on every accepted call: a finite input pair whose closed form is not representable is rejected rather than returned as positive infinity. It is not a velocity in cm/s and is not a valid vnorm for the grid-to-momentum map."
+      "constraints": "Python float，最终有限且为正；不是 cm/s 速度。不能将中间浮点溢出误判为最终闭式不可表示。"
     }
   ],
   "applicability": {
@@ -72,10 +70,9 @@
       "Both arguments are energies in the same unit, so the result is dimensionless."
     ],
     "supported": [
-      "Evaluating the definition exactly, at any positive finite temperature and rest energy, without a fitted constant.",
-      "Returning a dimensionless speed ratio the caller may convert to a velocity by multiplying by its own speed of light.",
-      "Distinguishing a malformed argument from a well-formed one by parameter name, including for a non-scalar container.",
-      "Rejecting a finite input pair whose closed form is not representable in double precision, by a check on the computed result rather than by a bound on the inputs."
+      "常规输入保留原科学关系及双精度运算顺序。",
+      "危险中间量使用精确输入 float 的 Decimal 后备求值；不缩小输入域、不放宽验证容差。",
+      "按参数名拒绝不合形状或不满足有限/符号合同的输入；最终溢出拒绝，不返回部分结果。"
     ],
     "excluded": [
       "Composition with scirel.collisions.normalized-momentum. V3 listed it as supported; the two leaves are dimensionally incompatible and the direct composition divides by c twice, so it is removed rather than described.",
@@ -83,17 +80,17 @@
       "Any statement of the electron rest energy, of the speed of light, or of any other physical constant; every constant is the caller's.",
       "Any unit conversion, including the conversion of the returned ratio to a velocity.",
       "The four Coulomb-log mappings the retained route also exposes: they are different relations and are not published with these two leaves.",
-      "Input pairs whose closed form overflows double precision. temperature_kev = 1.0e308 with restmkev = 511.0 is the pinned witness: both inputs satisfy the stated domain, 2.0 * temperature_kev overflows, and the call raises rather than returning positive infinity."
+      "最终结果超出 binary64 可表示范围时拒绝；中间结果溢出本身不在排除范围。"
     ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError when temperature_kev or restmkev is not scalar-shaped, with a message naming the parameter, or when either is not finite and strictly positive, with the retained route's message. Both checks are the retained route's numeric guard plus an explicit shape check; the conversion and the domain checks themselves are unchanged.",
-    "runtime_failure": "Raises ValueError when the closed form is not representable in double precision for a finite input pair that satisfies the stated domain. The computed result is checked for finiteness after the arithmetic, and a non-finite value is reported with a message naming the quantity rather than returned. The pinned witness is temperature_kev = 1.0e308 with restmkev = 511.0, where 2.0 * temperature_kev overflows to infinity before the division; the V4 candidate returned positive infinity for it and the retained route still does. This is a representability check and not a magnitude cutoff: no threshold is introduced, the input domain is not narrowed, and a large but representable pair is evaluated and returned exactly as before. There is no backend, no iteration and no branch.",
+    "runtime_failure": "仅在后备计算后最终值仍非有限时引发 ValueError。中间乘积/商溢出、下溢或次正规精度损失触发高精度后备，不直接拒绝输入。",
     "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
     "partial_results": "Never returned; a rejected call produces no value."
   },
   "provenance": {
-    "lineage_summary": "SciRel-owned formalisation of the retained CQL3D L1 route 库仑对数能量因子, which the bundle anchors on cfpgamma.f. The retained route exposes six mappings behind a string dispatcher scientific_operator(operation, **kwargs); this asset publishes the thermal-electron normalized momentum leaf alone. It is derived from the V3 review unit V3-CQL3D-MOMENTUM, which published this leaf and the grid-to-momentum map together and documented and tested a direct composition between them, and from the V2 review unit V2-CQL3D-COULOMB-ALGEBRA, which additionally kept all six mappings in one module named coulomb_log_scales. V4 published the two momentum leaves under the name momentum_scales, held the other four mappings out because they are a different relation, did not reproduce the dispatcher, checked that a scalar input is scalar-shaped before converting it, and removed the composition claim from this document and from the grid-to-momentum document because the composition is dimensionally invalid. V5 adds the representability check on the computed result, so that the finite-output contract the document advertises is true: the V4 candidate returned positive infinity for the finite pair temperature_kev = 1.0e308, restmkev = 511.0. The arithmetic of the leaf itself is unchanged from the retained route, bit for bit, on every input that is representable. The retained bundle cites no reference for the relation and states no licence.",
+    "lineage_summary": "SciRel-owned formalisation of the retained CQL3D L1 route 库仑对数能量因子, which the bundle anchors on cfpgamma.f. The retained route exposes six mappings behind a string dispatcher scientific_operator(operation, **kwargs); this asset publishes the thermal-electron normalized momentum leaf alone. It is derived from the V3 review unit V3-CQL3D-MOMENTUM, which published this leaf and the grid-to-momentum map together and documented and tested a direct composition between them, and from the V2 review unit V2-CQL3D-COULOMB-ALGEBRA, which additionally kept all six mappings in one module named coulomb_log_scales. V4 published the two momentum leaves under the name momentum_scales, held the other four mappings out because they are a different relation, did not reproduce the dispatcher, checked that a scalar input is scalar-shaped before converting it, and removed the composition claim from this document and from the grid-to-momentum document because the composition is dimensionally invalid. V5 adds the representability check on the computed result, so that the finite-output contract the document advertises is true: the V4 candidate returned positive infinity for the finite pair temperature_kev = 1.0e308, restmkev = 511.0. The arithmetic of the leaf itself is unchanged from the retained route, bit for bit, on every input that is representable. The retained bundle cites no reference for the relation and states no licence. V6 is a new scientific correction: seven pre-fix counterexamples distinguish intermediate overflow/underflow from final representability. Ordinary evaluation is unchanged; original V5 bytes and false rejection assertion are retained in the correction evidence. No new source parity or redistribution permission is inferred.",
     "source_kinds": [
       "reviewed scientific implementation",
       "reviewed source-free L1 extraction bundle",
@@ -111,45 +108,32 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev7+scientific.core",
     "dependencies": []
   },
   "example": {
-    "description": "Evaluate the definition, confirm it is exactly the closed form, confirm the result is a dimensionless ratio below one rather than a velocity, confirm that the retained route returns the same value, confirm that a non-scalar container is rejected by parameter name, and confirm that a finite pair whose closed form overflows is rejected rather than returned as an infinity.",
-    "code": "import numpy as np\nfrom scirel.collisions import thermal_electron_momentum\n\np_te = thermal_electron_momentum(temperature_kev=250.0, restmkev=511.0)\nassert type(p_te) is float\nassert p_te == 0.9891782353111633\nassert p_te == float(np.sqrt(2.0 * 250.0 / 511.0))\nassert 0.0 < p_te < 1.0\nassert p_te == thermal_electron_momentum(\n    temperature_kev=np.float64(250.0), restmkev=np.array(511.0)\n)\nfor container in ([250.0], (250.0,), np.array([250.0]), np.array([[250.0]])):\n    try:\n        thermal_electron_momentum(temperature_kev=container, restmkev=511.0)\n    except ValueError as error:\n        assert str(error) == 'temperature_kev must be a scalar'\n    else:\n        raise AssertionError('a non-scalar container must be rejected')\ntry:\n    thermal_electron_momentum(temperature_kev=0.0, restmkev=511.0)\nexcept ValueError as error:\n    assert 'finite and positive' in str(error)\nelse:\n    raise AssertionError('a non-positive temperature must be rejected')\n# A finite pair whose closed form overflows: 2.0 * 1.0e308 is infinity.\nlarge = thermal_electron_momentum(temperature_kev=1.0e307, restmkev=511.0)\nassert np.isfinite(large)\ntry:\n    thermal_electron_momentum(temperature_kev=1.0e308, restmkev=511.0)\nexcept ValueError as error:\n    assert 'not representable' in str(error)\nelse:\n    raise AssertionError('an unrepresentable closed form must be rejected')",
-    "expected": "p_te for 250 keV and 511 keV is exactly 0.9891782353111633, the double-precision value of sqrt(2*250/511), a dimensionless ratio strictly between zero and one; a NumPy scalar and a 0-dimensional array are accepted as scalars and give the same value; a list, a tuple, a one-element array and a two-dimensional array are each rejected with a ValueError naming temperature_kev; a non-positive temperature raises the retained route's message; and temperature_kev = 1.0e308 with restmkev = 511.0 raises rather than returning positive infinity, while temperature_kev = 1.0e307 is still accepted and finite. The example asserts no velocity and no composition: the returned number is a speed ratio in units of c, and converting it to cm/s is the caller's step."
+    "description": "同时演示保留普通关系与修正中间量极值后的最终结果。",
+    "code": "from scirel.collisions import thermal_electron_momentum\nimport math\np = thermal_electron_momentum(temperature_kev=250., restmkev=511.)\nassert p == 0.9891782353111633\nlarge = thermal_electron_momentum(temperature_kev=1e308, restmkev=511.)\nassert math.isfinite(large) and large > 1e152\ntiny = thermal_electron_momentum(temperature_kev=1e-300, restmkev=1e300)\nassert tiny > 0\nprint(p, large, tiny)",
+    "expected": "普通值 0.9891782353111633；危险大值约 6.256112470898544e152，微小值约 1.414213562373095e-300，均有限。"
   },
   "verification": {
     "scope": [
-      "How this evidence is organised. The frozen V5 review established every claim below by comparing this asset against external arms -- the retained source route and the frozen V2 and V3 candidates -- which live outside this repository and are reachable only in the review environment. The maintained tests in this repository replay none of those comparisons and depend on no source checkout, no candidate directory and no L1 payload. They protect the claims that are self-contained: the public relation's own runtime behaviour, its input and failure contracts, and its regression values. Where a claim rests on an external comparison it is recorded here as the frozen review's finding and is marked as not replayed by the maintained tests.",
-      "How this evidence is organised (2/2). The maintained suite is tests/operator_contracts/test_momentum_scales.py, and it is self-contained: it imports nothing outside SciRel, NumPy and pytest, and it re-derives every expected value from a closed form rather than reading it from another arm.",
-      "That the leaf returns exactly sqrt(2.0 * temperature_kev / restmkev) in double precision. Protected by the maintained tests bit for bit over temperatures spanning six orders of magnitude and rest energies spanning 27 orders of magnitude, including a value that is not an electron rest energy.",
-      "That the arithmetic is unchanged from the retained route. Frozen review finding: the retained route returns the same bits for every one of those inputs, and the frozen V2 and V3 candidates do too. Not replayed, because those arms are unreachable from here. Recorded because it is what makes this a change of claims and contract rather than of arithmetic.",
-      "That the result is a dimensionless ratio strictly between zero and one for a thermal electron at 250 keV, and that the ratio is not a velocity: the dimensionally consistent thermal speed is this number times the caller's speed of light, a step this asset does not take. Protected by the maintained tests, which assert the closed form and the ratio's O(1) magnitude against the O(1e10) cm/s speed it stands for.",
-      "That the direct composition the V3 candidate documented is dimensionally invalid and by exactly what factor. Frozen review finding: the composed profile is smaller than the dimensionally consistent dimensionless grid momentum by clight = 2.99792458e10 at every nonzero grid point, with no error and no warning, and the frozen V3 candidate reproduces the same profile, so the removal is of the claim rather than of any arithmetic. The frozen arm is not replayed. Protected by the maintained tests as the arithmetic that makes the claim impossible: this leaf is a ratio in units of c, and the map divides by clight exactly once, so using one as the other divides by c twice.",
-      "That neither leaf imports, calls or re-exports the other, that the module publishes no composed helper, and that the two signatures share no parameter name, so no composition is implied by the module's surface. Protected by the maintained tests directly.",
-      "That the composition claim is absent from this document and from the grid-to-momentum document, and that both state the dimensional reason instead. Protected by the maintained tests, which read both documents and assert the claim's absence and the reason's presence.",
-      "The input contract: a non-scalar container is rejected by parameter name, deterministically, for every scalar parameter of both leaves; a 0-dimensional array, a NumPy scalar and a Python integer are accepted. Frozen review finding: the retained route rejects the container through float() with a message that names the parameter nowhere, and accepts the scalar-shaped values with the same result. The retained arm is not replayed; the protected half is that the rejection is deterministic and names the argument.",
-      "That the conversion and the numeric domain checks are the retained route's, unchanged: the same messages for a non-positive or non-finite argument, and the same behaviour for a value float() can convert, which this revision neither endorses nor forbids. Protected by the maintained tests, which assert each message literally against the public callable.",
-      "That the four other mappings of the retained route are absent from the module. Protected by the maintained tests, which assert the module exposes none of them. Frozen review finding: they remain callable through the retained dispatcher, so the hold-out is a scope decision rather than a claim that the route lacks them. Not replayed.",
-      "That the dispatcher is not reproduced, and that the module and its package publish exactly the two leaves. Protected by the maintained tests directly.",
-      "That the signature is keyword-only with no default for either argument. Protected by the maintained tests directly.",
-      "That the finite-output contract holds: temperature_kev = 1.0e308 with restmkev = 511.0 is rejected. Frozen review finding: the V4 candidate and the retained route both returned positive infinity for it. Not replayed. Protected here: the rejection is a ValueError from the public callable naming the quantity that was not finite, and it is a representability check rather than a magnitude cutoff, measured by temperature_kev = 1.0e307 and 1.0e300 being accepted and returning the closed form exactly."
+      "保持普通区原数值断言、有效容差、输入形状和错误消息；常规结果逐位不变。",
+      "修复前 13 个新增极值检查有 7 个实际失败；它们包含有限大值误拒绝、中间下溢归零和符号保持。",
+      "200 位 Decimal 独立求值及真实非有限终值拒绝检验覆盖新行为；原热输入 1e308/511 的拒绝断言被实证纠正，原件保留。",
+      "旧来源/V2—V5 的历史外部比较不在本次重放；本次只重新绑定两个定义及其独立科学合同。"
     ],
     "tests": [
-      "tests/operator_contracts/test_momentum_scales.py"
+      "tests/operator_contracts/test_momentum_scales.py",
+      "tests/operator_contracts/test_momentum_intermediate_extremes.py"
     ],
-    "evidence_ceiling": "Establishes, on the frozen review's external comparison, the bit-identity of the arithmetic with the retained route and with both frozen predecessors on every representable input, and the dimensional invalidity of the composition the V3 candidate claimed with the factor measured as clight. Establishes, on the maintained self-contained tests, the leaf as the exact closed form p_Te = sqrt(2T/mc^2), its dimensionless character, the input contract including the explicit shape rejection, and the rejection of a finite input pair whose closed form is not representable. The maintained tests depend on no source checkout, candidate directory or L1 payload. This asset does not establish that this is the right thermal scale for any collision model, does not establish the units or the values of the caller-supplied temperature, rest energy or speed of light, does not perform or endorse any unit conversion, and does not decide whether a value that float() can convert but that is not a real number should be accepted, which is left exactly as the retained route has it.",
+    "evidence_ceiling": "有限独立极值与普通闭式测试支持两个定义及其形状/表示性合同；不证明任意碰撞模型、调用者常数/单位、相对论适用性或完整来源项目。危险区采用 100 位 Decimal，输出仍为 binary64，不宣称任意精度结果。",
     "known_limitations": [
-      "The representability check rejects a finite input whose closed form overflows, but it does not bound the input domain: any pair whose arithmetic stays inside double precision is accepted, including temperatures at which the non-relativistic ratio is no longer small. The applicable regime remains a physical statement and is not enforced.",
-      "The check is on the computed result, so it rejects a call rather than reporting which operand overflowed. The message names the quantity that was not finite, not the arithmetic step that failed.",
-      "The leaf is non-relativistic. It is the ratio sqrt(2T/mc^2) and carries no relativistic correction, so at temperatures where that ratio is not small the number is a definition rather than a physical speed.",
-      "The returned value is dimensionless and cannot be used as a velocity without an explicit conversion by the caller. The V3 candidate's composition, which omitted that conversion, produced a profile smaller by a factor of clight; that route is no longer documented here.",
-      "The retained route's choice of this scale, and the four other mappings that accompany it, are taken as given; the bundle cites no reference for any of them.",
-      "The hold-out of the other four mappings means this document does not describe the whole of the retained route, only the momentum leaves of it.",
-      "The explicit shape check rejects a container that the retained route also rejects, but through a different exception type and message; a caller migrating from the retained route sees a ValueError where it previously saw a TypeError.",
-      "Public distribution licensing remains pending a human decision.",
-      "The frozen V5 review's comparisons against the retained route and the frozen V2 and V3 candidates are not replayable from this repository: those arms live outside it, and the maintained tests neither reach them nor depend on them. The claims they established are recorded in this document's verification scope and marked as not replayed; a reviewer who needs to re-check them must return to the frozen review environment. The maintained tests protect the self-contained subset, and no public test requires an external checkout."
+      "没有单位自动检查或换算；热速比直接作为速度会重复除以光速。",
+      "物理适用域仍由调用者确认，非相对论比例在极高温下只是定义而非相对论速度。",
+      "最终 binary64 舍入和极小网格结果下溢为零保持浮点意义，不表示物理量精确为零。",
+      "许可原件未给出来源整体再分发许可；当前仅内部授权技术整合，非人工科学认可或公开发行。",
+      "旧外部比较并未重放，也不由本次安装测试替代。"
     ]
   }
 }

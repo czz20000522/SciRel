@@ -1,0 +1,809 @@
+{
+  "schema": "scirel.selected-scientific-wheel.v1",
+  "version": "0.2.0.dev7+scientific.core",
+  "description": "SciRel cumulative qualified scientific development library",
+  "files": [
+    {
+      "path": "src/scirel/_composition.py",
+      "sha256": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77"
+    },
+    {
+      "path": "src/scirel/_validation.py",
+      "sha256": "08d251465f9e03ea5e9e26066dd08fa5bbc70ec7deed2b6009dc2719345b94ee"
+    },
+    {
+      "path": "src/scirel/analysis.py",
+      "sha256": "90e92b598dcf962515a459225631563e051cb637e6ef1d2356e77a031cc5be89"
+    },
+    {
+      "path": "src/scirel/basis.py",
+      "sha256": "d2a68e4f635f41f5a23544c426ce43902074193203652820da00dd830a3a55d3"
+    },
+    {
+      "path": "src/scirel/closures/boltzmann_quasineutrality.py",
+      "sha256": "b2473dcc9046165487b70f431f8cebe0c2b1fb390bf981dc3265a16c70eff076"
+    },
+    {
+      "path": "src/scirel/closures/hall_two_fluid_pressure.py",
+      "sha256": "e689a9589a7a6d5b0438898f465b7f3b0985e6b128652a628768e2780b0a431f"
+    },
+    {
+      "path": "src/scirel/closures/mirror_ambipolar_potential.py",
+      "sha256": "0dc7567f12745a6fb881c06b40e5b6b9bddc104b3b598b9f1547e57f101c9a1d"
+    },
+    {
+      "path": "src/scirel/closures/mirror_quasineutral_closure.py",
+      "sha256": "5929dedc28d550041ed52f65b1ef9f7cb140cf66cc24bb54ea2f9b37da69d38a"
+    },
+    {
+      "path": "src/scirel/closures/quasineutral_potential.py",
+      "sha256": "d2edaf3ff564ecbd3498c541e66813087f6bbedc49ab9bb25cc55a2c892175fc"
+    },
+    {
+      "path": "src/scirel/closures/quasineutral_reference_density.py",
+      "sha256": "12e37f757c4db444f9a1d965191a2eecd6c8ad640dc366c41b55d78433c7ef60"
+    },
+    {
+      "path": "src/scirel/closures/reduced_hall_drift.py",
+      "sha256": "1be7bc7c3d7233f436ef46299065cd1befce98fcdf3824191abaaa0f6b816d68"
+    },
+    {
+      "path": "src/scirel/configurations/brb.py",
+      "sha256": "c032976ae1abf17f41ae1a8bdfae78bfb03974f3f69301fd41e422c5d33d0766"
+    },
+    {
+      "path": "src/scirel/configurations/wham.py",
+      "sha256": "7dd92e8c0591d03830ce028988e8701e395c2c0af23c810cbd6e6fef0f2772c8"
+    },
+    {
+      "path": "src/scirel/diagnostics/_fixed_flux_derivative.py",
+      "sha256": "a13754ccce4c2952b3ba52f4041a7f9f9cda0564c33a66c132565facf8b57662"
+    },
+    {
+      "path": "src/scirel/diagnostics/firehose_mirror_margins.py",
+      "sha256": "7e5f5cd6ac450f0f7ab9bee7561f7e9064f39a08555f31b3e376664d97b328a7"
+    },
+    {
+      "path": "src/scirel/diagnostics/parallel_pressure_residual.py",
+      "sha256": "4cc79aa510152f74ee01cd091fb73655e0f8d1708810471a3d1771ef3f195cfb"
+    },
+    {
+      "path": "src/scirel/diagnostics/picard_flux_residual.py",
+      "sha256": "e6ff451623be3aa6b92028eea930f4bc91edfc364a47015bd82307b4c4e5c82e"
+    },
+    {
+      "path": "src/scirel/electromagnetism/distributed.py",
+      "sha256": "76d4a1d7bf83d3ba57e9573c19415f333ac0ec8c51e695f64ad27b3bf69fcd5a"
+    },
+    {
+      "path": "src/scirel/electromagnetism/greens.py",
+      "sha256": "0a2425308022b01d9c394bb1c9d390562272b20a093f33f1ccfb717e0cb5fb42"
+    },
+    {
+      "path": "src/scirel/electromagnetism/sources.py",
+      "sha256": "03ae733e7cd91d7d3673145314e4b4afa6beeea733b3cd2de6eb9abc6cb1d15f"
+    },
+    {
+      "path": "src/scirel/equilibrium/_anisotropic_numerics.py",
+      "sha256": "e221c6a3899154be9f64e8a6b6db6a0dcf18fbcaad1139faf8c71e28a35b56fc"
+    },
+    {
+      "path": "src/scirel/equilibrium/anisotropic_force_balance.py",
+      "sha256": "7d69bc1167bf504cc918e4561bc8077a9bfaa621feb792e9071a3ae529922c33"
+    },
+    {
+      "path": "src/scirel/equilibrium/anisotropic_picard_feedback.py",
+      "sha256": "b1ed71e00a804fa74f6eece032fce3d193bb1b1b25dd72f5548d5cf2b7c4219b"
+    },
+    {
+      "path": "src/scirel/equilibrium/anisotropic_toroidal_current.py",
+      "sha256": "a283134c06bc41f7fbce2303512c10831161b44314830fe7188905e30281da76"
+    },
+    {
+      "path": "src/scirel/equilibrium/axisymmetric_anisotropic_picard.py",
+      "sha256": "e6e86bde5085d55b513db1cb8dab35dcefb0fd9ba31516a2ee1997a06569eb6f"
+    },
+    {
+      "path": "src/scirel/equilibrium/axisymmetric_picard_update.py",
+      "sha256": "2cc4d7a4dec6d4b5c05dcefff05f7a3b89cadbc4063d13d61134534161a957f5"
+    },
+    {
+      "path": "src/scirel/equilibrium/free_boundary_anisotropic_picard.py",
+      "sha256": "fb7e1c8e12136fcaf5f8c4fa6dcc4b3ec78a3dacfba41b02e205b5236fad59c7"
+    },
+    {
+      "path": "src/scirel/equilibrium/kinetic_mirror_hall_equilibrium.py",
+      "sha256": "af2fb303fb562f735180a030a6ad21f24bbf491c493b39ba0fcf4951c39c3753"
+    },
+    {
+      "path": "src/scirel/equilibrium/pleiades_feedback.py",
+      "sha256": "404d333f7d8ca533d5eb5e8956e6ce3737a7b4e6426b18e93b3460d394e043e6"
+    },
+    {
+      "path": "src/scirel/equilibrium/reduced_hall_anisotropic_picard.py",
+      "sha256": "076820bbfee11501cbdacace2f94fd4b525dd58cb1aef347a1cf4c837a2cc808"
+    },
+    {
+      "path": "src/scirel/equilibrium_api.py",
+      "sha256": "6f3afbf6c46cc003b1748cb3e502efc47fcdd2e738dae8891d0eefcf885a8b91"
+    },
+    {
+      "path": "src/scirel/field/ideal_conductor_boundary.py",
+      "sha256": "980478014b184580351244dbb7e53911ef4c867e513986aac624fab26ef9fa37"
+    },
+    {
+      "path": "src/scirel/field/poloidal_field_from_flux.py",
+      "sha256": "6243b6810dff9021afd2a1f504d5ca72ab566be38469f8e9f64f63718206bc86"
+    },
+    {
+      "path": "src/scirel/field/poloidal_field_magnitude.py",
+      "sha256": "ff631596e0ceeb52925c7e19ebc560f677cf2fa50c0edebd45f69190380c9e3c"
+    },
+    {
+      "path": "src/scirel/fieldline.py",
+      "sha256": "7e525f9fe770fbb2410b333b6657db104139fd86665688d63dde6b6217e2338c"
+    },
+    {
+      "path": "src/scirel/geometry/flux_surface_profile.py",
+      "sha256": "d36f3c36e773a00cab5f38114f2a53cb763e2c254b8864683bb61e697cede26f"
+    },
+    {
+      "path": "src/scirel/geometry/mesh.py",
+      "sha256": "afdf85f30984536ceb48aec31fcf7be1df7f91fad6b28ee4a7cc1e1b78a6cbe6"
+    },
+    {
+      "path": "src/scirel/geometry/transforms.py",
+      "sha256": "21dda6b50e03ca791d6d5c19c108273e0466df6fa97a813c225b577bc145ada8"
+    },
+    {
+      "path": "src/scirel/io/eqdsk.py",
+      "sha256": "b9582dc2d43ce991ad6cf84490167abe5b6d061aac4818a366925f75522b68a2"
+    },
+    {
+      "path": "src/scirel/kinetic/_loss_cone_modes.py",
+      "sha256": "f3c29af29553358e6577cc5e65ec50e525f417e379b8de60886dd95c1719bad0"
+    },
+    {
+      "path": "src/scirel/kinetic/_mirror_numerics.py",
+      "sha256": "3dc16125682f870dc1c274bab7f365fade058a8ed71ae796c3f012979d04a197"
+    },
+    {
+      "path": "src/scirel/kinetic/frank_egedal_hot_ion_moments.py",
+      "sha256": "c26ba5c56d8f7749adf584f0daf78b8f09b295cc40f1ce70f60e09d5c10b2104"
+    },
+    {
+      "path": "src/scirel/kinetic/frank_egedal_pressure_closure.py",
+      "sha256": "3bcbd5ebe9d8e8522b3d5dafd4724f4bb2a2e1e4c6a12aafa3112cef282030fd"
+    },
+    {
+      "path": "src/scirel/kinetic/frank_egedal_pressure_state.py",
+      "sha256": "0b082d23c12387a57429ff88969ab199b1d2da03f246b4032e9b2aa2c206b5ba"
+    },
+    {
+      "path": "src/scirel/kinetic/frank_egedal_radial_envelope.py",
+      "sha256": "20680282fc2808fdbb5debd2e3a1bd86a0d84dfec00f2b1d01b9306c9db23223"
+    },
+    {
+      "path": "src/scirel/kinetic/frank_egedal_source_projection.py",
+      "sha256": "f4a6b6991de76944bdd8d6fa9bd72ac4a84c7dad6e1b0150a24f81d9114d3aee"
+    },
+    {
+      "path": "src/scirel/kinetic/grid_mirror_kinetic_closure.py",
+      "sha256": "2796512eed9915a45cde442d636d63bec5843819e90d3130a2056b76573e956e"
+    },
+    {
+      "path": "src/scirel/kinetic/loss_cone_spectrum.py",
+      "sha256": "8625cd7c2828e479d271ba5ad393994b94f799cbfd6e386262e41a8718e7bdda"
+    },
+    {
+      "path": "src/scirel/kinetic/mirror_constrained_moments.py",
+      "sha256": "bb1c76e2f3deccb12a10f817ec9f01031e554f4e22f613a2cf0a8da4eaa3a473"
+    },
+    {
+      "path": "src/scirel/kinetic/mirror_invariant_distribution.py",
+      "sha256": "5a8c12eb2e6090b73ba048abf8f8723ac478bdf4d585e5a14cd70328284c753f"
+    },
+    {
+      "path": "src/scirel/kinetic/mirror_total_pressure.py",
+      "sha256": "30ac97757ebe0552eee722a72b5917c75d6c55e05290b58ce3b08584f211fdbc"
+    },
+    {
+      "path": "src/scirel/numerics.py",
+      "sha256": "476dfbca8184f1aafb1355a17099135289569319487a2e821e3f2fe52a019417"
+    },
+    {
+      "path": "src/scirel/plotting.py",
+      "sha256": "cff9005f5660e70a0647f338850bd9ce16026c89ca16509844ac1df36479c763"
+    },
+    {
+      "path": "src/scirel/sampling.py",
+      "sha256": "aeed550a0e7c02e052679a0b33197d8cb74a6da4d4d3fb5bdb24299589501d15"
+    },
+    {
+      "path": "src/scirel/field/circular_filament_green.py",
+      "sha256": "7fd4e56e7caa7e03e99a50fa4e9de30c380087fb8fd9a5bfe482497908385987"
+    },
+    {
+      "path": "src/scirel/field/dense_axisymmetric_green.py",
+      "sha256": "b42ee9db75f7bec6a5315fb9861975298c609515a89097fabe88872648379450"
+    },
+    {
+      "path": "src/scirel/field/mirror_plasma_green.py",
+      "sha256": "5b3f20f893db6124422e0c36e13c203942ffad8ba37f0ae86b0f4e5b3979bc97"
+    },
+    {
+      "path": "src/scirel/field/filament_vacuum_field.py",
+      "sha256": "93c428fdc1a850601cb3de1240609ef807cc8d14e51d526605aa51d97fa5f98f"
+    },
+    {
+      "path": "src/scirel/field/current_green_superposition.py",
+      "sha256": "ef48b26b1e552fa11d54509d280ce16df4542517a833ea99e0b9a060941adf1e"
+    },
+    {
+      "path": "src/scirel/field/multi_coil_vacuum_field.py",
+      "sha256": "bfc04c817742d7bc935c88bc9f92c78036083d793ef9db94d794d2bbecb73acc"
+    },
+    {
+      "path": "src/scirel/field/rectangular_coil_filaments.py",
+      "sha256": "1615ade92a272170d0799eab6779917e2c236ce698056a4f7efeb71c080c2ecb"
+    },
+    {
+      "path": "src/scirel/geometry/face_to_cell.py",
+      "sha256": "e98a0ccf1287e5a3f3dde1482433189ddb9fad950fb87beca197badf3090f50e"
+    },
+    {
+      "path": "src/scirel/physics/dilution.py",
+      "sha256": "1e93995477ac361f57a2ea105cca05b899c0f85796bb6809dad87bd83d63a7d8"
+    },
+    {
+      "path": "src/scirel/physics/coulomb_logs.py",
+      "sha256": "08621ee098140efc88c2ccb11fd530eb6d84f52b82933dcdeab3b4308d9c19bc"
+    },
+    {
+      "path": "src/scirel/plasma/fast_ion_heating.py",
+      "sha256": "da378cf492c79715a224aa39578091c7792740abbdca5396d81b7c5250dd5348"
+    },
+    {
+      "path": "src/scirel/source/gaussian.py",
+      "sha256": "4213dedba09a7609687f41c4d4df6967b913cc333160d38d6798157bd1cfb155"
+    },
+    {
+      "path": "src/scirel/source/exponential.py",
+      "sha256": "dab2379e100b7c2096ae08a2561bb977e57e23a09403991642e39d72945647d8"
+    },
+    {
+      "path": "src/scirel/source/_common.py",
+      "sha256": "c98052093126abdf0fcc1bb788c70301779713ea09bee60c4cc4014e8e9c2e0b"
+    },
+    {
+      "path": "src/scirel/physics/thermal_energy.py",
+      "sha256": "dcba6153f1d3fe76f1bb098a61a377f910344c61b056a37d8a4bdda5ffa5a06c"
+    },
+    {
+      "path": "src/scirel/neoclassical/bootstrap.py",
+      "sha256": "a78dc65d8b58037e9ed9c41ca29883f139ea8a720a777f83a6402ce92d4c40c4"
+    },
+    {
+      "path": "src/scirel/fvm/cell_variable.py",
+      "sha256": "7ecf2de60e79500d1b8b65c1782952a1e346c7073ea185318edb2f5688e0e8f3"
+    },
+    {
+      "path": "src/scirel/fvm/convection.py",
+      "sha256": "a4a16d78a0d7c30a76bafa3ece554a0f7e9f17e2118dabf90fea60147ed9d03e"
+    },
+    {
+      "path": "src/scirel/fvm/diffusion.py",
+      "sha256": "1a50c5b312fd67c5a93ad17eb4067c1e925a60bf1c8fc0f769367c45278af21b"
+    },
+    {
+      "path": "src/scirel/fvm/implicit.py",
+      "sha256": "320c3b424e279ee0680a2d6979e1ba541aed4e90e2cf94b60a8832fbbfa60e8a"
+    },
+    {
+      "path": "src/scirel/kinetic/cauchy_transform.py",
+      "sha256": "205c4821d63b904389e6532ca37b0772d19ac45ffd7dcf54874b21fdc3c65b9d"
+    },
+    {
+      "path": "src/scirel/kinetic/maxwellian_electrostatic.py",
+      "sha256": "6d3bb9a6e915c56f70a4776fc7386a1631ab5f82d0590e8bed233eecc34df985"
+    },
+    {
+      "path": "src/scirel/kinetic/plasma_dispersion.py",
+      "sha256": "8db12eedf6ccbd056ae72d171500eaeb369baf6831913dbe2a849584dd330546"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_example_native.py",
+      "sha256": "f073852ec16b23c560145dc94b93f1e0d1b00c8dcae3d987ccaaf5805674a4c3"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_example_support.py",
+      "sha256": "448def0d25a72a532e072c6c05df564fc4dc99276a32feefedce6f7d841f10f8"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_fluid_parallel.py",
+      "sha256": "527338144200e1f3d7b742fc72a790edc9b81b790e8627340fb8b800f3caa2bc"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_harris_descriptor.py",
+      "sha256": "a93858fefd9c9ab7f7e045f774ac128dd33bd4ca0ac650a3bcfc000e232f6137"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_harris_perpendicular.py",
+      "sha256": "b0801adf12a08dd933b42a633c44d8773078797d89204665e458e5e68ffe28bf"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_pade.py",
+      "sha256": "ed3b1ed7f7ba1f7823f8255e85bdba482053cff2fc06ad91ec607b0312fea76e"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_perpendicular_em.py",
+      "sha256": "deed683c1683abbd7b711694f509b6ed61c9ef634460e7f01a18921fcfed141f"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_presentation.py",
+      "sha256": "a90daf8243c310e8d8bbc9c3cbf95ca7a8292af0279540a49c32637413bd4ed8"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_rational_frequency.py",
+      "sha256": "8bf28fcef98b118dbeb23ffd27db58fa8a22879c9d8f1a7ecebea0819302a8f0"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_transport.py",
+      "sha256": "4df9f72686a39c2bf763b734724d83f811ebf007e17a799b90c0ef920d1a0ba3"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_workflow_impl.py",
+      "sha256": "546244d593184894ead6bd31896d2fd205af062c5513d60e6cc70a4ba7440015"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/magnetized.py",
+      "sha256": "e02e06c7f40b7349eab9d4e2445eea9c53b09d89dc6876b7d0770425d6e53129"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/multifluid.py",
+      "sha256": "30552fd1ab4b1f0e5fb2cad0ac86f7a73609cfef88c547d834a4eb2c400a2fa3"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/parallel.py",
+      "sha256": "a3070d3a5d2f5b655254374a3e23de3eed79a8d063b1100549d17f9183372163"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/plotting.py",
+      "sha256": "21883aa5a7ae2ec20c146c4f91133702b37f40cedf4a18f410fa9bd32fab6a59"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/rational.py",
+      "sha256": "e150f1fe3ba6634ef706a3c8fd5b923dd4daa845364b738c18872fb88e0ecc79"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/reference.py",
+      "sha256": "a85fadacee58c2703d14d58c05056bc967372ba9e05739df5592bee69af0ea63"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/special.py",
+      "sha256": "98a420ade54810f255bf241f7fc882bd0bbbae8f01d073a4c80a88be7b0b24c2"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/workflows.py",
+      "sha256": "c0bc4a50d4085b13b6e92f3b2964eb11261b9893119bfec5fb5655cbabea4b9a"
+    },
+    {
+      "path": "src/scirel/collisions/momentum_scales.py",
+      "sha256": "153f78f41953552edf9a71d20759d5d3a00a032678669bc63c1caf9d2d949457"
+    }
+  ],
+  "initializers": {
+    "src/scirel/__init__.py": "\"\"\"SciRel scientific library: qualified cumulative development selection.\"\"\"\n__version__ = \"0.2.0.dev7+scientific.core\"\n__all__ = []\n",
+    "src/scirel/configurations/__init__.py": "\"\"\"Source-supported configuration geometry models.\"\"\"\nfrom .brb import BRB, TREXCoil\nfrom .wham import WHAM\n\n__all__ = [\"BRB\", \"TREXCoil\", \"WHAM\"]\n",
+    "src/scirel/electromagnetism/__init__.py": "\"\"\"Axisymmetric circular-filament electromagnetism.\"\"\"\nfrom .greens import compute_greens, get_gpsi, green_response_matrices\nfrom .distributed import get_deltapsi\nfrom .sources import CurrentFilamentSet, ArbitraryPoints, RectangularCoil, MagnetRing, Device\n__all__=['compute_greens','get_gpsi','green_response_matrices','get_deltapsi','CurrentFilamentSet','ArbitraryPoints','RectangularCoil','MagnetRing','Device']\n",
+    "src/scirel/geometry/__init__.py": "\"\"\"Geometry objects used by the electromagnetic filament API.\"\"\"\nfrom .mesh import Mesh, PointsMesh, RChord, ZChord, SphericalRChord, ThetaChord, RectMesh\nfrom .transforms import rotate\n__all__ = ['Mesh','PointsMesh','RChord','ZChord','SphericalRChord','ThetaChord','RectMesh','rotate']\nfrom .flux_surface_profile import evaluate_flux_surface_profile\n__all__ += ['evaluate_flux_surface_profile']\nfrom .face_to_cell import face_to_cell\n__all__ += [\"face_to_cell\"]\n",
+    "src/scirel/io/__init__.py": "\"\"\"Pleiades extended-dialect scientific exchange helpers.\"\"\"\n\nfrom .eqdsk import (\n    DIALECT,\n    EQDSK,\n    EQDSKFormatError,\n    read_eqdsk,\n    read_pleiades_eqdsk,\n    write_eqdsk_fromdict,\n    write_pleiades_eqdsk,\n    write_pleiades_eqdsk_legacy_raw,\n    write_pressure_equilibrium_eqdsk,\n    write_eqdsk,\n)\n\n__all__ = [\n    \"DIALECT\",\n    \"EQDSK\",\n    \"EQDSKFormatError\",\n    \"read_eqdsk\",\n    \"read_pleiades_eqdsk\",\n    \"write_eqdsk_fromdict\",\n    \"write_pleiades_eqdsk\",\n    \"write_pleiades_eqdsk_legacy_raw\",\n    \"write_pressure_equilibrium_eqdsk\",\n    \"write_eqdsk\",\n]\n",
+    "src/scirel/equilibrium/__init__.py": "\"\"\"Bounded supplied-G pressure-only discrete feedback; no physical equilibrium certification.\"\"\"\nfrom .pleiades_feedback import EquilibriumResult, compute_equilibrium\n__all__ = [\"EquilibriumResult\", \"compute_equilibrium\"]\nfrom .anisotropic_force_balance import compute_anisotropic_force_balance\nfrom .anisotropic_picard_feedback import update_anisotropic_picard_flux\nfrom .anisotropic_toroidal_current import compute_anisotropic_toroidal_current\nfrom .axisymmetric_anisotropic_picard import solve_axisymmetric_anisotropic_picard\nfrom .axisymmetric_picard_update import update_axisymmetric_picard_flux\nfrom .free_boundary_anisotropic_picard import solve_free_boundary_anisotropic_picard\nfrom .kinetic_mirror_hall_equilibrium import solve_kinetic_mirror_hall_equilibrium\nfrom .reduced_hall_anisotropic_picard import solve_reduced_hall_anisotropic_picard\n__all__ += ['compute_anisotropic_force_balance', 'compute_anisotropic_toroidal_current', 'solve_axisymmetric_anisotropic_picard', 'solve_free_boundary_anisotropic_picard', 'solve_kinetic_mirror_hall_equilibrium', 'solve_reduced_hall_anisotropic_picard', 'update_anisotropic_picard_flux', 'update_axisymmetric_picard_flux']\n",
+    "src/scirel/diagnostics/__init__.py": "\"\"\"Selected scientific relations in this domain.\"\"\"\n__all__ = []\nfrom .firehose_mirror_margins import compute_firehose_mirror_margins\nfrom .parallel_pressure_residual import compute_parallel_pressure_residual\nfrom .picard_flux_residual import compute_picard_flux_residual\n__all__ += ['compute_firehose_mirror_margins', 'compute_parallel_pressure_residual', 'compute_picard_flux_residual']\n",
+    "src/scirel/field/__init__.py": "\"\"\"Selected scientific relations in this domain.\"\"\"\n__all__ = []\nfrom .ideal_conductor_boundary import correct_ideal_conductor_boundary_flux\nfrom .poloidal_field_from_flux import poloidal_field_from_flux\nfrom .poloidal_field_magnitude import compute_poloidal_field_magnitude\n__all__ += ['compute_poloidal_field_magnitude', 'correct_ideal_conductor_boundary_flux', 'poloidal_field_from_flux']\nfrom .circular_filament_green import circular_filament_green_response\n__all__ += [\"circular_filament_green_response\"]\nfrom .dense_axisymmetric_green import dense_axisymmetric_green_response\n__all__ += [\"dense_axisymmetric_green_response\"]\nfrom .mirror_plasma_green import build_mirror_plasma_flux_green\n__all__ += [\"build_mirror_plasma_flux_green\"]\nfrom .filament_vacuum_field import integrate_filament_vacuum_field\n__all__ += [\"integrate_filament_vacuum_field\"]\nfrom .current_green_superposition import superpose_current_green_field\n__all__ += [\"superpose_current_green_field\"]\nfrom .multi_coil_vacuum_field import solve_multi_coil_vacuum_field\n__all__ += [\"solve_multi_coil_vacuum_field\"]\nfrom .rectangular_coil_filaments import discretize_rectangular_coil\n__all__ += [\"discretize_rectangular_coil\"]\n",
+    "src/scirel/closures/__init__.py": "\"\"\"Selected scientific relations in this domain.\"\"\"\n__all__ = []\nfrom .boltzmann_quasineutrality import compute_boltzmann_electron_state\nfrom .hall_two_fluid_pressure import close_hall_two_fluid_pressure\nfrom .mirror_ambipolar_potential import solve_mirror_ambipolar_potential\nfrom .mirror_quasineutral_closure import solve_mirror_quasineutral_closure\nfrom .quasineutral_potential import solve_quasineutral_potential\nfrom .quasineutral_reference_density import compute_reference_electron_density\nfrom .reduced_hall_drift import close_reduced_hall_drift\n__all__ += ['close_hall_two_fluid_pressure', 'close_reduced_hall_drift', 'compute_boltzmann_electron_state', 'compute_reference_electron_density', 'solve_mirror_ambipolar_potential', 'solve_mirror_quasineutral_closure', 'solve_quasineutral_potential']\n",
+    "src/scirel/kinetic/__init__.py": "\"\"\"Selected scientific relations in this domain.\"\"\"\n__all__ = []\nfrom .frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments\nfrom .frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure\nfrom .frank_egedal_pressure_state import assemble_frank_egedal_pressure\nfrom .frank_egedal_radial_envelope import evaluate_frank_egedal_radial_envelope\nfrom .frank_egedal_source_projection import project_frank_egedal_source_modes\nfrom .grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure\nfrom .loss_cone_spectrum import solve_loss_cone_spectrum\nfrom .mirror_constrained_moments import evaluate_mirror_constrained_moments\nfrom .mirror_invariant_distribution import evaluate_mirror_invariant_distribution\nfrom .mirror_total_pressure import assemble_mirror_total_pressure\n__all__ += ['assemble_frank_egedal_pressure', 'assemble_mirror_total_pressure', 'evaluate_frank_egedal_hot_ion_moments', 'evaluate_frank_egedal_radial_envelope', 'evaluate_mirror_constrained_moments', 'evaluate_mirror_invariant_distribution', 'project_frank_egedal_source_modes', 'solve_frank_egedal_pressure_closure', 'solve_grid_mirror_kinetic_closure', 'solve_loss_cone_spectrum']\nfrom .cauchy_transform import evaluate_cauchy_transform\nfrom .maxwellian_electrostatic import evaluate_maxwellian_electrostatic, solve_maxwellian_electrostatic_mode\nfrom .plasma_dispersion import evaluate_plasma_dispersion\n__all__ += [\"evaluate_cauchy_transform\", \"evaluate_maxwellian_electrostatic\", \"solve_maxwellian_electrostatic_mode\", \"evaluate_plasma_dispersion\"]\n",
+    "src/scirel/physics/__init__.py": "\"\"\"Algebraic plasma-physics relations with explicit NumPy contracts.\"\"\"\n\nfrom .dilution import calculate_main_ion_dilution_factor\nfrom .thermal_energy import calculate_stored_thermal_energy\nfrom .coulomb_logs import (\n    calculate_log_lambda_ee,\n    calculate_log_lambda_ei,\n    calculate_log_lambda_ii,\n)\n\n__all__ = [\n    \"calculate_stored_thermal_energy\",\n    \"calculate_main_ion_dilution_factor\",\n    \"calculate_log_lambda_ee\",\n    \"calculate_log_lambda_ei\",\n    \"calculate_log_lambda_ii\",\n]\n",
+    "src/scirel/plasma/__init__.py": "\"\"\"Plasma heating relations integrated from the TORAX D1 delivery.\"\"\"\nfrom .fast_ion_heating import fast_ion_fractional_heating\n\n__all__ = [\"fast_ion_fractional_heating\"]\n",
+    "src/scirel/source/__init__.py": "\"\"\"Normalized one-dimensional TORAX source profiles.\"\"\"\nfrom .gaussian import gaussian_profile\nfrom .exponential import exponential_profile\n\n__all__ = [\"gaussian_profile\", \"exponential_profile\"]\n",
+    "src/scirel/fvm/__init__.py": "\"\"\"Finite-volume cell, flux, and single-channel theta-step operators.\"\"\"\n\nfrom .cell_variable import CellVariable\nfrom .convection import make_convection_terms\nfrom .diffusion import TriDiagonal, make_diffusion_terms\nfrom .implicit import theta_step\n\n__all__ = [\"CellVariable\", \"TriDiagonal\", \"make_diffusion_terms\", \"make_convection_terms\", \"theta_step\"]\n",
+    "src/scirel/neoclassical/__init__.py": "\"\"\"Bounded neoclassical bootstrap-current relations from TORAX.\"\"\"\n\nfrom .bootstrap import (\n    calculate_redl_coefficients,\n    calculate_sauter_coefficients,\n    calculate_bootstrap_current,\n)\n\n__all__ = [\n    \"calculate_redl_coefficients\",\n    \"calculate_sauter_coefficients\",\n    \"calculate_bootstrap_current\",\n]\n",
+    "src/scirel/kinetic/pdrk/__init__.py": "\"\"\"Magnetized kinetic, parallel beam and multifluid dispersion capabilities.\n\nLocal technical development; scientific limits live in each callable contract.\nNative numerical/support calls require Octave; ordinary Python calls are isolated.\n\"\"\"\n",
+    "src/scirel/collisions/__init__.py": "\"\"\"Selected scientific collision-scale definitions.\"\"\"\nfrom .momentum_scales import normalized_momentum, thermal_electron_momentum\n__all__ = [\"normalized_momentum\", \"thermal_electron_momentum\"]\n"
+  },
+  "dependencies": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "matplotlib==3.11.2",
+    "netCDF4==1.7.4",
+    "mpmath==1.4.1"
+  ],
+  "licenses": [
+    {
+      "path": "licenses/Pleiades-MIT.txt",
+      "sha256": "d8b954c37e9aaf97e35624236dfe6a04eb7cc7fb031da055ab57781a61f53e0a"
+    },
+    {
+      "path": "licenses/Pleiades-Anisotropy-NOTICE.txt",
+      "sha256": "fd89ba537415955a8047c28a69fc337f40b26c87418b4baa9c1831e70db3e0b0"
+    },
+    {
+      "path": "licenses/torax/LICENSE",
+      "sha256": "3d5036bd786413156dbb51df0f3aa7bb67d5973e474a592572edb8a10fc892cc"
+    },
+    {
+      "path": "licenses/torax/NOTICE",
+      "sha256": "f826da63a7d2017715d2fa73651c5b04a2ebda84c7f1786473d85703c20ebed9"
+    },
+    {
+      "path": "licenses/gpdf/NUMPY-LICENSE.txt",
+      "sha256": "4860083caa0de2ac3292ca98bd074bd8f45d8b32624e37b1e70a240bff61e488"
+    },
+    {
+      "path": "licenses/gpdf/SCIPY-LICENSE.txt",
+      "sha256": "17e7db9ffa4913121fa2df484633a362456a482da736c99db4711a98473770ea"
+    },
+    {
+      "path": "licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt",
+      "sha256": "46d2041953cc4dd751781c5053d4a85026cda3cd48c39c99d65be0791f669b2c"
+    },
+    {
+      "path": "licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt",
+      "sha256": "7b44182df58b79e3297d6f038c62f2c242696e5f141ad2e9797424e915825ac8"
+    },
+    {
+      "path": "licenses/pdrk/NOTICE",
+      "sha256": "c50e81e939755c717b437841830081699bbef59da775fe020c83cb7f00c95bfa"
+    },
+    {
+      "path": "licenses/SCIREL-MOMENTUM-NOTICE.txt",
+      "sha256": "b5695fcf485aec7c3710538a0c96349b9a1f54e52d52178417259745b4d86d62"
+    }
+  ],
+  "human_approval": false,
+  "release_approval": false,
+  "scope": "162 exact public documents: Pleiades 94, TORAX 16, GPDF 4, PDRK 46 additional (shared plasma-dispersion-function absorbed), and 2 independently qualified normalized-momentum definitions. Internal technical package; no public release or human endorsement.",
+  "qualification_predecessors": {
+    "Pleiades": "provenance/validation/pleiades-root-full-core-20261014.json",
+    "TORAX": "provenance/integrations/torax-bootstrap-fvm-receiver-20261012.json",
+    "GPDF": "provenance/integrations/gpdf-numerical-receiver-20261012.json",
+    "PDRK": "provenance/validation/pdrk-root-full-core-20261014.json"
+  },
+  "data_files": [
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/input/pdrk.in",
+      "sha256": "1d2850e831e7f06020d12ca097fb75c4b0ab07d4d23f8778e9389807e5ddd02a"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/input/pdrk_setup.m",
+      "sha256": "071c8ac8a84e2b04543b03679a2e046431737bee32d2b14d578948d77cfd617a"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/input/pdrk_wpdat.m",
+      "sha256": "d9d240a8958cc438527773b37da9a8ae197f4057841680af57f3431f03090955"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/modules/pdrk_eigensolve.m",
+      "sha256": "b49d23936c2efff5a1925044f8593249d982e5b7ca94a37997a8f9c9ede8951b"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/modules/pdrk_em3d_matrix.m",
+      "sha256": "6c9df7dd00a45131f8f0cf7a332c6eb22da13c86bfd3843309329e59480e6a6b"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/modules/pdrk_es3d_matrix.m",
+      "sha256": "527901c7ff130a3b0c0a08580abeec1efb834fd5bf1e37e8f3466cce1db1d7d3"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/modules/pdrk_initialize.m",
+      "sha256": "f7de06dbf13fe467fb00fd04f94327ec8ed0501bec2bd8b74822d58a0fb80d18"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/modules/pdrk_kernel.m",
+      "sha256": "56bf3a7d9a99252995d05f1150bd39826367a7906d708a9882c0e97347084c25"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/modules/pdrk_normalize_field_mode.m",
+      "sha256": "a18c81eb76011cca7a69ac7d7fb47a167808efd47b451c6b746f0726dbf6b25c"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/modules/pdrk_output.m",
+      "sha256": "a1a96b7c981aeec78c428f191b60ad131cd2bbe0845d39c127b9bcfaa3d5d9f6"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/modules/pdrk_perpendicular_matrix.m",
+      "sha256": "65e061f19c7568c8004106bd3ec8678020751b6c892c59da161d27143fdb93cb"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/modules/pdrk_plot_all.m",
+      "sha256": "fcda857fff753840e0f9f76e10f383777853f5c8586496deb6a13848780f993c"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/modules/pdrk_plot_select.m",
+      "sha256": "dfc523c1075a9cc1c469c4c73ecb1b8d664010885602d54e4e7a4ecf03965395"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/modules/pdrk_polarization.m",
+      "sha256": "f6b5ca25ef0c906c94d9fb9f7c21df2922d5347e271761566e3dd36d446f9076"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/modules/pdrk_poles.m",
+      "sha256": "cef6fbfc9e80440cce71e268944a7d7e6615911fd3a772f10ab58098031d7518"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/modules/pdrk_select_compute.m",
+      "sha256": "ac300d78c1777f48f368439740d942a433118738ab0b1f6edda73b1612e142d0"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/modules/pdrk_select_render.m",
+      "sha256": "818b89f94901f8c27712c58fbc06f83d309aabc81a424a3221cc1d0ed4b96f8a"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/modules/pdrk_zero_wavevector_matrix.m",
+      "sha256": "8350a54940c80913c04665698b91862e973c2346a942fe6a22863de7caf832ea"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/code/pdrk_main.m",
+      "sha256": "0a156167762b14d8bfdebcaf355d0e25ef4283636db755038221901f997cf3c1"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/coordinates.m",
+      "sha256": "2c11cd8f6bf27717ef6708e9cf9288cef39e798e52cf282bf9cf048987e41490"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/eigensolve.m",
+      "sha256": "8a5802c319387b25cc1b27962e9183ccf42b4682848f1318d8510441a314e133"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/em_matrix.m",
+      "sha256": "8fffca9bea7a492141d19c1570c12fadf4feb624e33b80a034547ed7b662a9f5"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/es_matrix.m",
+      "sha256": "8c643c42750fbe168025c8eb3485481780b45bb8a40c78e778f407fb4da92f9e"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/fixtures/beammode/pdrk.in",
+      "sha256": "b08ce4b5c723ddbb75954512114cc24eb17699ffa2bb676318e4984ce6a6faaa"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/fixtures/beammode/pdrk_setup.m",
+      "sha256": "762c022bdbb8e4e3395d2824d3e3012fdc7aecc31e5929cdfda3037965ba756c"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/fixtures/beammode/pdrk_wpdat.m",
+      "sha256": "78c1b319059eb5b5b7303f51e196546de876a0baf637d36fec43001a0b3fe0f1"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/fixtures/coldplasma/pdrk.in",
+      "sha256": "73d97d2bdd437f3287b1791089e450cb660b6d714885274e3d2ff0874e3e70d4"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/fixtures/coldplasma/pdrk_setup.m",
+      "sha256": "15bbeb0bde5de281d06ea838c87a75b60382a4620a7408b0f8161b2805636e9f"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/fixtures/coldplasma/pdrk_wpdat.m",
+      "sha256": "8655eb71b3df5d22c3494548e99e3201fd28e8fdc453a5cf1a379d2775dd45ce"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/fixtures/dispersionsurface/pdrk.in",
+      "sha256": "bafbfd8900d0ba1e8cbf11f6b9909d3baf35543062739b0820d4dc772bc87e05"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/fixtures/dispersionsurface/pdrk_setup.m",
+      "sha256": "da4f9d824c0d47886e37b7c4bc4831dd7cfd28cf115427c5f669a66b41410e4f"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/fixtures/dispersionsurface/pdrk_wpdat.m",
+      "sha256": "5d9fcade8fd2fcc4b621a00108763ef7370891c7ba2f0080dab1927d78d23c15"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/fixtures/es1d_beam/pdrk.in",
+      "sha256": "53bbe50b1c4f65f8267c9dd8bc4d9e2d45626bf5bed54b5b1695af5fc4c79046"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/fixtures/es1d_beam/pdrk_setup.m",
+      "sha256": "7ee30706333323b5457c6ce0e10d3fde7b2e24dcc3458b87f9f397ead5e26526"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/fixtures/es1d_beam/pdrk_wpdat.m",
+      "sha256": "8c56c7087579802d2ad1114daa02e46543dde461ed0d8a3589ed2a84088362b6"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/fixtures/es3d_losscone/pdrk.in",
+      "sha256": "cfb536dd112ac32cc982fdaa7442fef9705f0d279ceea8c68cec63490c9e9e32"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/fixtures/es3d_losscone/pdrk_setup.m",
+      "sha256": "c0e7d4ab24bc4bf2bc01e56d5e3df43b1756c822af1dd89b6dd2af7a270e06d6"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/fixtures/es3d_losscone/pdrk_wpdat.m",
+      "sha256": "c1172d6a5b0788a315ac1f23377ad8edc0702a0dfb9a4c1be90a204310e8ef11"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/fixtures/loss_cone_mirror/pdrk.in",
+      "sha256": "1d2850e831e7f06020d12ca097fb75c4b0ab07d4d23f8778e9389807e5ddd02a"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/fixtures/loss_cone_mirror/pdrk_setup.m",
+      "sha256": "37ebd69a52c4460da67bf43d1388307f4e04c0c13f92d134d27c90d8fae6d36b"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/fixtures/loss_cone_mirror/pdrk_wpdat.m",
+      "sha256": "d9d240a8958cc438527773b37da9a8ae197f4057841680af57f3431f03090955"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/initialize.m",
+      "sha256": "dcc77879550a342f51c8fb648bba3906a3a067f51c49a1c0831dbc99eb97f282"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/interpolate.m",
+      "sha256": "ee198e19ed3ab771eae3773adc6f198411ae47edf7508adcfca639b7152a42da"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/normalize_fields.m",
+      "sha256": "3aec6898686e42efbeb21b3c6c8665e6409589a2e19446f56ae49791b06b9b40"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/output.m",
+      "sha256": "eec3a3b29428b926c117a4a52718e50144808d2132b9d4ff71f07eb900cc2858"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/partition.m",
+      "sha256": "d247eac8775d15cf118c08bfa15b4f8872fe75dfb6fbcf6ffc57c617eafe96f7"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/polarization.m",
+      "sha256": "c8de545149112f3ef8313e64ca858c750f4f5ea5a7cab10eb1669e281876ce7d"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/poles.m",
+      "sha256": "95933bf9974a9d75254d2bc389e61a533d925a27fb83aef3706146a75423a139"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/program.m",
+      "sha256": "071942d15bed83d73d2fa93458e8eed4fecda719b94220da06ae0a8af9288c67"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/render_all.m",
+      "sha256": "e6a21b7366c1dc57bc151bc7293f2c1a85882572cb49fff740c171f852dad7b7"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/render_select.m",
+      "sha256": "1d036f9c835f7d350d9677b522b2584bbf021e17049b6fa0511d3a65f93a4c1d"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/restore_undefined_poles.m",
+      "sha256": "410d42b9393eb6f9bca2ebd40597acf2faa97abf3077cd54df577e43531a8f55"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/scan.m",
+      "sha256": "1730cfe36327aa2c0d5bc231407c358c56d38a2fc9e0cb8080eb6e85398f4d4a"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/select.m",
+      "sha256": "225e1990d2d7411bf05f59826cd61b074b008e471354e8dfc983076bc1cf159c"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/current/select_preset.m",
+      "sha256": "1eb32d61e160d3dd891138e9f173476ec6cb305930afc5756b4978ab156eee80"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/examples/capture_plot.m",
+      "sha256": "cd3d79d4dd6ce95c4dcd14a837547ae25f645f901256f6fe977fd63e09dbc1c4"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/examples/em1d_plot.m",
+      "sha256": "056c9955dc07da0d2430909d3d48819aecab7186dd913734bf92cf3fc6d1694d"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/examples/em1d_plot_body.m",
+      "sha256": "1e7c82ba3776e2abab0267de9241ad47d319fd250b63102abe93d0952853bc42"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/examples/fluid_plot_scan.m",
+      "sha256": "02e8d63c578526282223435ded3150f1721718b7bee9715d0b612bd846eca3fb"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/examples/pdrf_SI.in",
+      "sha256": "2a2aa3910c7882234b57b2890ac076a3ae7885853420cb0d245a0541ae972410"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/examples/whamp_dat.m",
+      "sha256": "7de91af9794c2c87edecc0cc047502a5f3160fc08200c429a21ba2d9c77f1be1"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/examples/whamp_data.m",
+      "sha256": "f354cc1aac72d501634f60d0ca50921bb0c290225c47bf90b0a9164fbee85c4d"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/examples/whamp_overlay.m",
+      "sha256": "11d1ab29e587e0fb82b9a27ad87ef87463bae32ccdc2daa2751179bb685652dd"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/finiteN/action.m",
+      "sha256": "8b869b9ac76d559d8e0b041006e93ad922d82bf4f16974ad84236ec408e89302"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/finiteN/faddeeva_stable_variant.m",
+      "sha256": "b5266a41cd03039d95d1ab73fb710265437bc6f8ac4726e21c7b9f134273631a"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/legacy/default_coordinates.m",
+      "sha256": "cfe6827f185286044b003d6902e84b76175defab78565a9173c85a2177ffdd64"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/legacy/em_equilibrium.m",
+      "sha256": "b2025fd53355e87ba9a63bb5a043ac831985870ac54d6dd676c772568d83d4f6"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/legacy/em_matrix.m",
+      "sha256": "a4451acdc478599dacbac0da2ebf2383717df7fba45cb578e52b18a72ef5e3e7"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/legacy/em_poles.m",
+      "sha256": "dde4b63cb2ce77292b0bcb97f93b54490193b4a0fda8a4e3ce036ac060807e64"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/legacy/es1d_equilibrium.m",
+      "sha256": "8fbe94564f0d3705d72f306920c6c7c81739489d47acf844bd735e9f1e853aa3"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/legacy/es1d_matrix.m",
+      "sha256": "2aff270f0e0714b2a4f4ba87274e0fda6b6fbd6c30b4c1b6166159eaeb67a75f"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/legacy/es1d_poles.m",
+      "sha256": "992abd4e966708f41fb1744097d66bb25949b6f306ef5204e821400988b439b5"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/legacy/es3d_equilibrium.m",
+      "sha256": "011627c5afa991532b4ad45ebd569eaf9cddf20576fa9f1e95dd0fb6fa3c3612"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/legacy/es3d_matrix.m",
+      "sha256": "6259b6ee6f9c71e6ff6b3cb4e3fbfe642beb20c1608d629a7b2fd2962a097dac"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/legacy/es3d_poles.m",
+      "sha256": "cd4e602f170695fdc0026cc27bd3a8ede0a8d76f505d0ac7e106dac7cb1de42e"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/legacy/jpole12-regenerated.json",
+      "sha256": "6aa74958c1a3370c0f422b809fd8802ec6b55e8af8a05af4566851ab4cc61093"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/legacy/jpole_coordinates.m",
+      "sha256": "5ea1670e639621f42bf8c94fcd741cefa9f14f885939e2bef5690f13de2c2baf"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/legacy/pdrk_em3d.in",
+      "sha256": "408968a6df21e2a936a151e21bc18d7440657e43a542bf1c87e674e9c809819a"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/legacy/pdrk_es1d.in",
+      "sha256": "cff80f84e10931a5e3c29faece38764b6ea737b4a768a330f662fb8dc5bbd4b5"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/legacy/pdrk_es3d.in",
+      "sha256": "a46dc68494f9e4e1473dd8b931896c230d3838807cbb7b0a74b16800e86581dd"
+    },
+    {
+      "path": "src/scirel/kinetic/pdrk/_native/scirel_prepare_plot.m",
+      "sha256": "49c118cafacb7c1dc4c1c7315bed4a605f3770f8e4f01cc3a0082dcb53ab528b"
+    }
+  ],
+  "native_runtime": {
+    "executable": "octave",
+    "qualified_version": "8.4.0",
+    "qualified_platform": "linux/arm64",
+    "required_by": "scirel.kinetic.pdrk native numerical/support entry points; bundled sources are runtime payload, not an external source checkout",
+    "pip_installs_runtime": false
+  },
+  "integration_predecessors": {
+    "pdrk_root_reception": "provenance/validation/pdrk-root-full-core-20261014.json",
+    "momentum_scales": "catalog/examples/scirel.collisions.normalized-momentum.json and scirel.collisions.thermal-electron-momentum.json; independent V5 closed-form/contract evidence, runtime renewed on exact cumulative wheel"
+  }
+}

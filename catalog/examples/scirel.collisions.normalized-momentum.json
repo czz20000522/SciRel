@@ -6,7 +6,7 @@
     "en": "Normalized momentum on a grid",
     "zh": "网格归一化动量"
   },
-  "summary": "Evaluate the grid-to-momentum map p_n = x * vnorm / clight as an explicit definition: a signed grid scaled by a velocity and divided by the speed of light, with vnorm and clight in the same velocity unit. Both scalars must be velocities, so the dimensionless thermal speed ratio p_Te = sqrt(2T/mc^2) must not be passed as vnorm: this map already divides by clight, and doing so divides by c twice. The relation is a definition, so the returned profile is asserted equal to its closed form in double precision rather than to a tolerance. A finite grid and finite scalars whose product is not representable in double precision are rejected rather than returned as a non-finite profile.",
+  "summary": "将带符号无量纲网格映射为 p_n=x vnorm/clight；vnorm 与 clight 必须是同单位速度，不能将无量纲热速比直接传入。 V6 区分中间溢出与最终不可表示性，避免可表示结果被错误拒绝或因中间下溢丢失。",
   "taxonomy": [
     "collisions",
     "momentum-scales",
@@ -21,18 +21,16 @@
   "identity": {
     "relation": "the normalized momentum profile p_n on a grid, from the grid, a velocity scale and the speed of light",
     "direction": "x, vnorm, clight -> p_n",
-    "definition": "Returns x * vnorm / clight elementwise in double precision. vnorm and clight are velocities in a common unit, so the quotient is dimensionless and the map is a scaling of the grid rather than a unit conversion: this asset performs no conversion and assumes both velocities are already in the same unit.",
-    "model": "exact closed form of a linear grid scaling; no fit, no approximation, no iteration",
+    "definition": "逐元素返回无量纲 p_n=x×vnorm/clight；vnorm 与 clight 必须为相同单位的速度。常规区保留原 binary64 求值顺序；中间值溢出或变为次正规数时，按输入浮点数的精确值使用 100 位 Decimal 计算并最终舍入到 binary64。",
+    "model": "独立闭式定义，不是拟合；常规 binary64 运算与危险中间量的高精度求值后继，不包含单位自动转换。",
     "geometry": "not applicable; an elementwise scaling of a one-dimensional grid",
     "coordinates": "not applicable; the grid is a caller-supplied dimensionless coordinate, not a spatial coordinate",
-    "boundary": "a zero velocity scale maps the whole grid to exactly zero; the map is odd in the grid, so a signed grid produces a signed profile. The magnitude is bounded by representability rather than by a magnitude threshold: a finite grid entry and a finite velocity scale whose product overflows produce a non-finite profile, which is rejected rather than returned.",
+    "boundary": "零速度尺度得到有符号零，映射对 x 为奇函数；中间乘积溢出不导致误拒绝。最终极小值按 binary64 舍入可成为有符号零，最终溢出仍拒绝。",
     "assumptions": [
-      "vnorm and clight are velocities in the same unit. The relation checks that both are positive-finite and nonnegative respectively, but it cannot check that they share a unit, and it does not convert between units.",
-      "The grid x is a signed dimensionless coordinate. A negative momentum is a valid output of this map; it is the downstream electron-ion leaf, not this one, that requires nonnegative momentum.",
-      "A zero velocity scale is accepted and produces an exactly zero profile, which is the retained route's allowance and is kept rather than tightened.",
-      "The relation is a definition, so the caller is not asked to trust a fitted constant: the profile is exactly the closed form above, and the tests assert it bit for bit.",
-      "The two leaves of this unit are independent assets. This map consumes a velocity; the thermal-electron leaf produces a dimensionless speed ratio. V3 documented and tested a direct composition between them, and that claim does not hold: it divides by c twice, making the composed profile smaller than the dimensionally consistent value by exactly clight. V4 removes the claim from both assets and replaces it with a measurement of the factor.",
-      "The map is evaluated in double precision and the input domain is not bounded above. A finite grid and finite scalars whose product is not representable -- in practice one where x * vnorm overflows -- is outside the evaluated domain and is rejected rather than returned as an infinity."
+      "x 为有符号无量纲一维网格；vnorm≥0、clight>0，且速度单位相同。实现不能自动核查单位。",
+      "两个叶入口独立。热速度比不能直接作为 vnorm；直接组合 divides by c twice，调用者需要先显式乘以光速换回速度。",
+      "常规区保留原浮点操作顺序，不承诺危险极值处与错误的旧操作逐位一致。",
+      "先检查形状与有限输入；可转换非实数值的既有 float() 行为保持，不新增物理含义。"
     ]
   },
   "inputs": [
@@ -72,7 +70,7 @@
       "shape": "array",
       "dtype": "float",
       "required": true,
-      "constraints": "Exactly x * vnorm / clight in double precision, elementwise, as a numpy float64 array of the grid's shape. A negative grid entry yields a negative momentum. Every accepted call returns a finite array: a finite grid and finite scalars whose product is not representable are rejected rather than returned as an infinity."
+      "constraints": "与 x 同形状的 float64 数组；保留符号且最终有限，极小真值可按浮点规则舍入为零。不能将中间浮点溢出误判为最终闭式不可表示。"
     }
   ],
   "applicability": {
@@ -81,11 +79,9 @@
       "vnorm and clight are already expressed in the same velocity unit."
     ],
     "supported": [
-      "Scaling a signed grid by a velocity and the speed of light, exactly, at any finite grid and any nonnegative velocity scale.",
-      "A zero velocity scale, which maps the whole grid to exactly zero.",
-      "A signed grid, since the nonnegativity requirement belongs to the downstream electron-ion leaf rather than to this map.",
-      "Distinguishing a malformed argument from a well-formed one by parameter name, including for a non-scalar container.",
-      "Rejecting a finite grid and finite scalars whose product is not representable in double precision, by a check on the computed profile rather than by a bound on the inputs."
+      "常规输入保留原科学关系及双精度运算顺序。",
+      "危险中间量使用精确输入 float 的 Decimal 后备求值；不缩小输入域、不放宽验证容差。",
+      "按参数名拒绝不合形状或不满足有限/符号合同的输入；最终溢出拒绝，不返回部分结果。"
     ],
     "excluded": [
       "Composition with scirel.collisions.thermal-electron-momentum. V3 listed it as supported; the two leaves are dimensionally incompatible and the direct composition divides by c twice, so it is removed rather than described. A caller that wants the dimensionless grid momentum x * p_Te must convert the ratio to a velocity first, for example vnorm = p_Te * clight, and that conversion is the caller's step.",
@@ -93,17 +89,17 @@
       "Any statement of the speed of light or of any other physical constant; every constant is the caller's.",
       "Any requirement that the momentum be nonnegative, which belongs to the electron-ion leaf.",
       "The four Coulomb-log mappings the retained route also exposes: they are different relations and are not published with these two leaves.",
-      "Grids and velocity scales whose product overflows double precision. x = [1.0e308] with vnorm = 1.0e308 is the pinned witness: every input satisfies the stated domain, the product overflows, and the call raises rather than returning an infinite profile."
+      "最终结果超出 binary64 可表示范围时拒绝；中间结果溢出本身不在排除范围。"
     ]
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError when x is not a finite one-dimensional array, when vnorm or clight is not scalar-shaped, with a message naming the parameter, or when vnorm is negative or non-finite or clight is non-positive or non-finite, with the retained route's message. The shape check is the only addition; the conversion and the domain checks themselves are unchanged.",
-    "runtime_failure": "Raises ValueError when the profile is not representable in double precision for a finite grid and finite scalars that satisfy the stated domain. The computed profile is checked for finiteness after the arithmetic, and a non-finite entry is reported with a message naming the quantity rather than returned. The pinned witness is x = [1.0e308] with vnorm = 1.0e308, where the product overflows to infinity before the division; the V4 candidate returned an infinite profile for it and the retained route still does. This is a representability check and not a magnitude cutoff: no threshold is introduced, the input domain is not narrowed, and a large but representable grid is scaled and returned exactly as before. There is no backend, no iteration and no branch.",
+    "runtime_failure": "仅在后备计算后最终值仍非有限时引发 ValueError。中间乘积/商溢出、下溢或次正规精度损失触发高精度后备，不直接拒绝输入。",
     "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
     "partial_results": "Never returned; a rejected call produces no profile."
   },
   "provenance": {
-    "lineage_summary": "SciRel-owned formalisation of the retained CQL3D L1 route 库仑对数能量因子, which the bundle anchors on cfpgamma.f. The retained route exposes six mappings behind a string dispatcher scientific_operator(operation, **kwargs); this asset publishes the grid-to-momentum map alone. It is derived from the V3 review unit V3-CQL3D-MOMENTUM, which published this map and the thermal-electron leaf together and documented and tested a direct composition between them, and from the V2 review unit V2-CQL3D-COULOMB-ALGEBRA, which additionally kept all six mappings in one module named coulomb_log_scales. V4 publishes the two momentum leaves under the name momentum_scales, holds the other four mappings out because they are a different relation, does not reproduce the dispatcher, checks that a scalar input is scalar-shaped before converting it, and removes the composition claim from this document and from the thermal-electron document because the composition is dimensionally invalid. V5 adds the representability check on the computed profile, so that the finite-output contract the document advertises is true: the V4 candidate returned an infinite profile for the finite grid x = [1.0e308] with vnorm = 1.0e308. The arithmetic of the map itself is unchanged from the retained route, bit for bit, on every input that is representable. The retained bundle cites no reference for the relation and states no licence.",
+    "lineage_summary": "SciRel-owned formalisation of the retained CQL3D L1 route 库仑对数能量因子, which the bundle anchors on cfpgamma.f. The retained route exposes six mappings behind a string dispatcher scientific_operator(operation, **kwargs); this asset publishes the grid-to-momentum map alone. It is derived from the V3 review unit V3-CQL3D-MOMENTUM, which published this map and the thermal-electron leaf together and documented and tested a direct composition between them, and from the V2 review unit V2-CQL3D-COULOMB-ALGEBRA, which additionally kept all six mappings in one module named coulomb_log_scales. V4 publishes the two momentum leaves under the name momentum_scales, holds the other four mappings out because they are a different relation, does not reproduce the dispatcher, checks that a scalar input is scalar-shaped before converting it, and removes the composition claim from this document and from the thermal-electron document because the composition is dimensionally invalid. V5 adds the representability check on the computed profile, so that the finite-output contract the document advertises is true: the V4 candidate returned an infinite profile for the finite grid x = [1.0e308] with vnorm = 1.0e308. The arithmetic of the map itself is unchanged from the retained route, bit for bit, on every input that is representable. The retained bundle cites no reference for the relation and states no licence. V6 is a new scientific correction: seven pre-fix counterexamples distinguish intermediate overflow/underflow from final representability. Ordinary evaluation is unchanged; original V5 bytes and false rejection assertion are retained in the correction evidence. No new source parity or redistribution permission is inferred.",
     "source_kinds": [
       "reviewed scientific implementation",
       "reviewed source-free L1 extraction bundle",
@@ -121,46 +117,32 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.2.0.dev7+scientific.core",
     "dependencies": []
   },
   "example": {
-    "description": "Evaluate the map on a signed grid, confirm it is exactly the closed form elementwise, confirm a zero velocity scale maps the grid to exactly zero, confirm the input array is not modified, confirm that a non-scalar container is rejected by parameter name, and confirm that a finite grid and finite scalars whose product overflows are rejected rather than returned as an infinite profile.",
-    "code": "import numpy as np\nfrom scirel.collisions import normalized_momentum\n\nclight = 2.99792458e10\ngrid = np.array([-2.0, -0.5, 0.0, 0.5, 2.0, 7.25])\nprofile = normalized_momentum(x=grid, vnorm=1.0e8, clight=clight)\nassert profile.dtype == np.float64\nassert np.array_equal(profile, grid * 1.0e8 / clight)\nassert profile[0] < 0.0 < profile[-1]\nzero = normalized_momentum(x=grid, vnorm=0.0, clight=clight)\nassert np.array_equal(zero, np.zeros_like(grid))\nkept = grid.copy()\nnormalized_momentum(x=kept, vnorm=3.0, clight=clight)\nassert np.array_equal(kept, grid)\nfor container in ([1.0e8], (1.0e8,), np.array([1.0e8]), np.array([[1.0e8]])):\n    try:\n        normalized_momentum(x=grid, vnorm=container, clight=clight)\n    except ValueError as error:\n        assert str(error) == 'vnorm must be a scalar'\n    else:\n        raise AssertionError('a non-scalar container must be rejected')\ntry:\n    normalized_momentum(x=grid, vnorm=1.0e8, clight=0.0)\nexcept ValueError as error:\n    assert 'clight must be positive' in str(error)\nelse:\n    raise AssertionError('a non-positive speed of light must be rejected')\n# A finite grid and finite scalars whose product overflows: 1.0e308 * 1.0e308 is infinity.\nlarge = normalized_momentum(x=np.array([1.0e307]), vnorm=1.0, clight=clight)\nassert np.isfinite(large).all()\ntry:\n    normalized_momentum(x=np.array([1.0e308]), vnorm=1.0e308, clight=clight)\nexcept ValueError as error:\n    assert 'not representable' in str(error)\nelse:\n    raise AssertionError('an unrepresentable profile must be rejected')",
-    "expected": "The profile is exactly grid * 1.0e8 / 2.99792458e10 as a float64 array, signed like the grid, so a negative grid entry yields a negative momentum; a zero velocity scale yields exactly zero everywhere; the input array is unchanged; a list, a tuple, a one-element array and a two-dimensional array are each rejected with a ValueError naming vnorm; a non-positive clight raises the retained route's message; and x = [1.0e308] with vnorm = 1.0e308 raises rather than returning an infinite profile, while x = [1.0e307] with vnorm = 1.0 is still accepted and finite. The example passes a velocity as vnorm, which is what the map requires: a dimensionless speed ratio such as sqrt(2T/mc^2) is not a velocity, and passing one here would divide by c twice."
+    "description": "同时演示保留普通关系与修正中间量极值后的最终结果。",
+    "code": "from scirel.collisions import normalized_momentum\nimport numpy as np\np = normalized_momentum(x=[-1e308,0.,1e308],vnorm=1e308,clight=1e308)\nassert np.array_equal(p,[-1e308,0.,1e308])\nsmall = normalized_momentum(x=[1e-300],vnorm=1e-100,clight=1e-200)\nassert small[0] > 0\nprint(p,small)",
+    "expected": "得到 [-1e308,0,1e308] 与约 [1.0000000000000001e-200]；中间乘积上/下溢不丢失最终可表示结果。"
   },
   "verification": {
     "scope": [
-      "How this evidence is organised. The frozen V5 review established every claim below by comparing this asset against external arms -- the retained source route and the frozen V2 and V3 candidates -- which live outside this repository and are reachable only in the review environment. The maintained tests in this repository replay none of those comparisons and depend on no source checkout, no candidate directory and no L1 payload. They protect the claims that are self-contained: the public relation's own runtime behaviour, its input and failure contracts, and its regression values. Where a claim rests on an external comparison it is recorded here as the frozen review's finding and is marked as not replayed by the maintained tests.",
-      "How this evidence is organised (2/2). The maintained suite is tests/operator_contracts/test_momentum_scales.py, and it is self-contained: it imports nothing outside SciRel, NumPy and pytest, and it re-derives every expected value from a closed form rather than reading it from another arm.",
-      "That the map returns exactly x * vnorm / clight elementwise in double precision, asserted bit for bit over several velocity scales and speeds of light, and that the returned array is float64 with the grid's shape. Protected by the maintained tests directly.",
-      "That the arithmetic is unchanged from the retained route. Frozen review finding: the retained route returns the same bits for every one of those inputs, and the frozen V2 and V3 candidates do too. Not replayed, because those arms are unreachable from here. Recorded because it is what makes this a change of claims and contract rather than of arithmetic.",
-      "That the direct composition the V3 candidate documented is dimensionally invalid and by exactly what factor. Frozen review finding: feeding the dimensionless thermal ratio p_Te = sqrt(2T/mc^2) as vnorm makes the profile smaller than the dimensionally consistent dimensionless grid momentum x * p_Te by clight = 2.99792458e10 at every nonzero grid point, with no error and no warning, and the frozen V3 candidate reproduces the same profile. The frozen arm is not replayed. Protected by the maintained tests as the arithmetic that makes the claim impossible: the map divides by clight exactly once and is linear in vnorm with slope x / clight, so a caller that passes a ratio rather than a velocity is divided by c twice.",
-      "That the dimensionally valid route is available and explicit: vnorm = p_Te * clight makes the map return exactly x * p_Te, and that conversion is performed in the test body rather than by the asset, which publishes no conversion helper. Protected by the maintained tests directly.",
-      "That neither leaf imports, calls or re-exports the other, that the module publishes no composed helper, and that the two signatures share no parameter name, so no composition is implied by the module's surface. Protected by the maintained tests directly.",
-      "That the composition claim is absent from this document and from the thermal-electron document, and that both state the dimensional reason instead. Protected by the maintained tests, which read both documents and assert the claim's absence and the reason's presence.",
-      "The input contract: a non-scalar container is rejected by parameter name, deterministically, for vnorm and clight; a 0-dimensional array, a NumPy scalar and a Python integer are accepted. Frozen review finding: the retained route rejects the container through float() with a message that names the parameter nowhere, and accepts the scalar-shaped values with the same result. The retained arm is not replayed; the protected half is that the rejection is deterministic and names the argument.",
-      "The retained allowances, kept rather than tightened: a zero velocity scale gives an exactly zero profile, a signed grid gives a signed profile, and the input array is not modified in place. Protected by the maintained tests directly against the public callable.",
-      "That the conversion and the numeric domain checks are the retained route's, unchanged: the same messages for a non-array grid, a negative or non-finite vnorm and a non-positive or non-finite clight, and the same behaviour for a value float() can convert, which this revision neither endorses nor forbids. Protected by the maintained tests, which assert each message literally against the public callable.",
-      "That the four other mappings of the retained route are absent from the module. Protected by the maintained tests, which assert the module exposes none of them. Frozen review finding: they remain callable through the retained dispatcher, so the hold-out is a scope decision rather than a claim that the route lacks them. Not replayed.",
-      "That the dispatcher is not reproduced, and that the module and its package publish exactly the two leaves. Protected by the maintained tests directly.",
-      "That the signature is keyword-only with no default for any of the three arguments. Protected by the maintained tests directly.",
-      "That the finite-output contract holds: x = [1.0e308] with vnorm = 1.0e308 is rejected. Frozen review finding: the V4 candidate and the retained route both returned an infinite profile for it. Not replayed. Protected here: the rejection is a ValueError from the public callable naming the quantity that was not finite, and it is a representability check rather than a magnitude cutoff, measured by a large but representable grid being scaled to exactly the closed form."
+      "保持普通区原数值断言、有效容差、输入形状和错误消息；常规结果逐位不变。",
+      "修复前 13 个新增极值检查有 7 个实际失败；它们包含有限大值误拒绝、中间下溢归零和符号保持。",
+      "200 位 Decimal 独立求值及真实非有限终值拒绝检验覆盖新行为；原热输入 1e308/511 的拒绝断言被实证纠正，原件保留。",
+      "旧来源/V2—V5 的历史外部比较不在本次重放；本次只重新绑定两个定义及其独立科学合同。"
     ],
     "tests": [
-      "tests/operator_contracts/test_momentum_scales.py"
+      "tests/operator_contracts/test_momentum_scales.py",
+      "tests/operator_contracts/test_momentum_intermediate_extremes.py"
     ],
-    "evidence_ceiling": "Establishes, on the frozen review's external comparison, the bit-identity of the arithmetic with the retained route and with both frozen predecessors on every representable input, and the dimensional invalidity of the composition the V3 candidate claimed with the factor measured as clight. Establishes, on the maintained self-contained tests, the map as the exact closed form p_n = x * vnorm / clight, its retained allowances, the input contract including the explicit shape rejection, and the rejection of a finite grid and finite scalars whose product is not representable. The maintained tests depend on no source checkout, candidate directory or L1 payload. This asset does not establish that the grid, the velocity scale or the speed of light are the right ones for any collision model, does not establish that vnorm and clight share a unit, does not perform or endorse any unit conversion, and does not decide whether a value that float() can convert but that is not a real number should be accepted, which is left exactly as the retained route has it.",
+    "evidence_ceiling": "有限独立极值与普通闭式测试支持两个定义及其形状/表示性合同；不证明任意碰撞模型、调用者常数/单位、相对论适用性或完整来源项目。危险区采用 100 位 Decimal，输出仍为 binary64，不宣称任意精度结果。",
     "known_limitations": [
-      "The representability check rejects a finite grid and finite scalars whose product overflows, but it does not bound the input domain: any inputs whose arithmetic stays inside double precision are accepted, including a velocity scale far above the speed of light. The physical applicability remains the caller's precondition and is not enforced.",
-      "The check is on the computed profile, so it rejects a call rather than reporting which factor overflowed. The message names the quantity that was not finite, not the arithmetic step that failed.",
-      "The map cannot verify that vnorm and clight share a unit. If they do not, the returned profile is wrong by the ratio of the two units and nothing reports it; the dimensional check the V3 candidate lacked is therefore a documented precondition here rather than a runtime check.",
-      "The map produces signed momentum and is not a physical momentum distribution. The nonnegativity requirement belongs to the downstream electron-ion leaf.",
-      "The retained route's choice of this map, and the four other mappings that accompany it, are taken as given; the bundle cites no reference for any of them.",
-      "The hold-out of the other four mappings means this document does not describe the whole of the retained route, only the momentum leaves of it.",
-      "The explicit shape check rejects a container that the retained route also rejects, but through a different exception type and message; a caller migrating from the retained route sees a ValueError where it previously saw a TypeError.",
-      "Public distribution licensing remains pending a human decision.",
-      "The frozen V5 review's comparisons against the retained route and the frozen V2 and V3 candidates are not replayable from this repository: those arms live outside it, and the maintained tests neither reach them nor depend on them. The claims they established are recorded in this document's verification scope and marked as not replayed; a reviewer who needs to re-check them must return to the frozen review environment. The maintained tests protect the self-contained subset, and no public test requires an external checkout."
+      "没有单位自动检查或换算；热速比直接作为速度会重复除以光速。",
+      "物理适用域仍由调用者确认，非相对论比例在极高温下只是定义而非相对论速度。",
+      "最终 binary64 舍入和极小网格结果下溢为零保持浮点意义，不表示物理量精确为零。",
+      "许可原件未给出来源整体再分发许可；当前仅内部授权技术整合，非人工科学认可或公开发行。",
+      "旧外部比较并未重放，也不由本次安装测试替代。"
     ]
   }
 }

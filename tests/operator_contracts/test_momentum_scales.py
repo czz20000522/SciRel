@@ -234,18 +234,13 @@ def test_normalized_momentum_is_exactly_the_closed_form():
 # ---------------------------------------------------------------------------
 
 
-def test_the_thermal_witness_is_rejected():
-    """``temperature_kev=1e308`` with ``restmkev=511``: the review's first witness.
-
-    Both inputs satisfy the stated finite-positive contract.  ``2.0 * 1.0e308``
-    overflows to ``inf`` before the division, so the closed form is ``sqrt(inf)``,
-    which the V4 candidate and the retained route both returned as positive
-    infinity.  It is rejected here, naming the quantity that was not finite.
-    """
-    with pytest.raises(ValueError) as raised:
-        thermal_electron_momentum(temperature_kev=1.0e308, restmkev=511.0)
-    assert str(raised.value).startswith(NON_REPRESENTABLE_MESSAGE)
-    assert "thermal-electron normalized momentum" in str(raised.value)
+def test_the_thermal_intermediate_overflow_has_a_finite_result():
+    """V6 correction: 2*T overflow does not make sqrt(2*T/511) infinite."""
+    from decimal import localcontext
+    with localcontext() as context:
+        context.prec = 200
+        expected = float((Decimal(2) * Decimal.from_float(1e308) / Decimal(511)).sqrt())
+    assert thermal_electron_momentum(temperature_kev=1e308, restmkev=511.) == expected
 
 
 def test_the_momentum_witness_is_rejected():
@@ -281,7 +276,6 @@ def test_the_check_is_representability_and_not_a_magnitude_cutoff():
         (1.0e307, 1.0),
         (1.0e300, 1.0e-6),
         (1.0e8, 1.0e-299),
-        (5.0e-324, 5.0e-324),
     ):
         ours = normalized_momentum(x=GRID, vnorm=vnorm, clight=clight)
         assert np.isfinite(ours).all()

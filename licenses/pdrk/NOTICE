@@ -1,0 +1,11 @@
+Faddeeva FFT implementation
+The bundled scirel/kinetic/pdrk/_native/finiteN/faddeeva_stable_variant.m derives from faddeeva.m by Takeshi Ikuma, copyright (c) 2009. The original file is byte-identical to the version 1.2.0 archive published as MathWorks File Exchange submission 22207. Its full two-condition BSD-style license, including disclaimer, accompanies this distribution as licenses/Faddeeva-Ikuma-BSD-2-Clause.txt. Preserve that exact license in source and binary distribution materials.
+Official source: https://www.mathworks.com/matlabcentral/fileexchange/22207-faddeeva-function-fft-based
+Original archive: https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/22207/versions/3/download/zip
+Original file SHA256: 8e3cb25f47dd15562641ab9ff15b3ebe28ed6becb6ccf89802d19b5158a21807
+Changes in the SciRel named finite-N variant include an erfcx evaluation on the imaginary axis and finite-output guards; these are disclosed scientific changes, not an attribution to the original author. The related Weideman algorithm citation is scientific attribution and does not replace the implementation license.
+
+Other PDRK material
+PDRK-derived current/legacy/example code and decks trace to https://github.com/hsxie/pdrk commit 21c08f215ef143aeafdde4c746e393d8a1feaef7. Attribution and a public repository are not a general redistribution grant. The current private research pilot does not claim unrestricted licensing or human endorsement. The embedded WHAMP comparison table is not a bundled WHAMP solver; its generation and redistribution authority remain to be documented.
+
+Private technical cumulative distribution. Inclusion does not grant rights in other portions or authorize public redistribution.

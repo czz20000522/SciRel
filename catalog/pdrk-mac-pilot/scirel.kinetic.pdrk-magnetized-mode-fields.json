@@ -1,0 +1,165 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.pdrk-magnetized-mode-fields",
+  "kind": "operator",
+  "title": {
+    "en": "Near-mode electromagnetic fields",
+    "zh": "近目标电磁模态场"
+  },
+  "summary": "Compute one near-target EM eigenpair and shared unit-Hermitian electric normalization with physical field-state diagnostics.",
+  "taxonomy": [
+    "kinetic",
+    "magnetized-plasma",
+    "pdrk"
+  ],
+  "aliases": [
+    "PDRK near-mode field reconstruction"
+  ],
+  "identity": {
+    "relation": "Near-target electromagnetic eigenpair and field gauge",
+    "direction": "EM M,frequency_guess -> V,D,E,B,UE,UB",
+    "definition": "Request one sparse EM eigenpair of M at the stored-kernel target (frequency_guess/wcs1)*wcs1+1e-8i rad/s. Extract last6components; normalize the Hermitian E norm, apply a common scale/phase to B and choose the largest represented E component real nonnegative (first exact tie). UE=epsilon0|E|^2/2 and UB=|B|^2/(2mu0). d=diag(D) owns the newly computed frequency.",
+    "model": "Uniform magnetized, nonrelativistic charged Gaussian species with optional gyrotropic loss-cone mixture; B0 along signed z and k=(kx,0,kz).",
+    "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
+    "coordinates": "SI angular frequency rad/s and wave number m^-1; normalized source scan/selection quantities are labeled explicitly.",
+    "boundary": "Uniform/local plane-wave response; no spatial boundary-value problem or nonlinear saturation.",
+    "assumptions": [
+      "Linear small-amplitude response.",
+      "Caller retains the explicit truncation, state provenance and normalization."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "state",
+      "description": "NativeResult or its state mapping produced by the named predecessor. Scalar numeric fields are usually1x1 native arrays; row/column singleton dimensions are retained. Scientific numeric transport is float64/complex128; inactive fields are empty arrays, never fabricated zeros.",
+      "units": "mixed; physical dimensions recorded by state fields",
+      "shape": "mapping or NativeResult",
+      "dtype": "state carrier",
+      "required": true,
+      "constraints": "Must contain the complete compatible predecessor state; handcrafted inconsistent fields are outside the qualified composition."
+    },
+    {
+      "name": "frequency_guess",
+      "description": "Dimensional finite complex scalar near-target frequency.",
+      "units": "rad s^-1",
+      "shape": "scalar",
+      "dtype": "real/complex numeric",
+      "required": true,
+      "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "dEB",
+      "description": "Normalized Ex,Ey,Ez,Bx,By,Bz.",
+      "units": "E relative to unit amplitude1V/m; B T in that convention",
+      "shape": "(6,1)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+    },
+    {
+      "name": "V",
+      "description": "Actual full-state eigenvector from the native sparse solver.",
+      "units": "mixed physical state components",
+      "shape": "(NN,1)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+    },
+    {
+      "name": "D",
+      "description": "Actual eigenvalue, also exposed in d and omega.",
+      "units": "rad s^-1",
+      "shape": "(1,1)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+    },
+    {
+      "name": "UE",
+      "description": "Electric energy density under the chosen unit electric amplitude.",
+      "units": "J m^-3",
+      "shape": "(1,1)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+    },
+    {
+      "name": "UB",
+      "description": "Magnetic energy density under the same amplitude convention.",
+      "units": "J m^-3",
+      "shape": "(1,1)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "EM matrix state with M,NN,iem=1,wcs1,epsilon0,mu0; finite scalar complex frequency_guess."
+    ],
+    "supported": [
+      "One sparse EM eigenpair, with sp1,nw1,iout2,icalp1 controlled internally; actual normalization shared by the polarization graph."
+    ],
+    "excluded": [
+      "Zero-electric modes under this amplitude convention.",
+      "A unique physical branch or a complete eigenbasis."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
+    "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError with retained result and receipt when its caught scientific terminal fails.",
+    "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
+    "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
+  },
+  "provenance": {
+    "lineage_summary": "Derived from Hua-sheng Xie PDRK current implementation through fixed preprocessing and source-fidelity preservation, followed by explicit scientific corrections to field gauge, eigenpair state, signed-kz causality, perpendicular moments and J12 table precision.",
+    "source_kinds": [
+      "upstream scientific implementation",
+      "supplied loss-cone derivation",
+      "independent velocity-integral and analytic qualification"
+    ],
+    "public_references": [
+      "https://github.com/hsxie/pdrk",
+      "https://github.com/hsxie/pdrk/blob/master/doc/pdrk_loss_cone_doc_181027.pdf"
+    ],
+    "license_status": "Explicit upstream redistribution grant remains unresolved; local technical validation is not human publication approval."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.pdrk.magnetized",
+      "symbol": "reconstruct_point_fields",
+      "signature": "reconstruct_point_fields(state, *, frequency_guess)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8+pdrkpilot1",
+    "dependencies": [
+      {
+        "asset_id": "scirel.kinetic.pdrk-electromagnetic-eigenmatrix"
+      }
+    ]
+  },
+  "example": {
+    "description": "Small wheel-only example using packaged native resources and raw Octave; no source checkout or network.",
+    "code": "import numpy as np\nfrom scirel.kinetic.pdrk import magnetized as m, workflows as w\ndeck=np.array([[1,1,1e6,100,100,1,1,0],[-1,1,1e6,100,100,1,1,0.]])\ncontrols=dict(B0=1e-7,N=1,J=4,sp=0,iem=1,iout=2,ipa=3,ipb=3,iloga=0,ilogb=0,pa1=.2,pa2=.4,dpa=.1)\neq=m.initialize_equilibrium(deck,controls=controls,par=[.2,0,.2,0,0,0])\npoint=m.electromagnetic_matrix(eq,kx=0.,kz=.2/float(eq.state['cwp'].item()))\ns=m.eigensolve(point)\nvalues=np.asarray(s.state['d']).ravel()\nr=m.reconstruct_point_fields(point,frequency_guess=values[np.argmax(values.real)])\nassert abs(np.sum(abs(r.state['dEB'].ravel()[:3])**2)-1)<1e-12\n",
+    "expected": "Assertions succeed for a compatible installation with Octave. This demonstrates the declared operation, not global scientific or visual acceptance."
+  },
+  "verification": {
+    "scope": [
+      "Shared production normalizer independently tested for zero Ex, phase transformations, SI energy and domain failures.",
+      "Actual point facade is checked against M V=V D and the normalized Maxwell/Faraday row; final public-wheel execution remains required.",
+      "Point eigenpair normwise backward gate ||M V - V D||_F / (||M||_F ||V||_F + ||V D||_F) <= 1e-9; the independent physical Maxwell/Faraday row uses ||k cross E - omega B||_2/(||k||_2 ||E||_2 + |omega| ||B||_2) <= 1e-7 for nonzero k. These are residual checks, not forward-error or mode-uniqueness guarantees."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_pdrk_graphs.py"
+    ],
+    "evidence_ceiling": "Bounded scientific qualification; final exact public signature and canonical example validation are required before catalog exposure.",
+    "known_limitations": [
+      "Local technical development; human scientific endorsement and publication clearance remain pending.",
+      "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
+      "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance."
+    ]
+  }
+}
