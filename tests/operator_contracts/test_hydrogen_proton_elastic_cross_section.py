@@ -3,15 +3,12 @@
 The saved KN1DPy leaf (source anchor ``KN1DPy/sigma/sigma_el_p_h.py:1-42``,
 caller ``KN1DPy/kinetic_h.py:996-1016``) fits the H+-on-H elastic
 momentum-transfer cross section with a distinct logarithmic polynomial below
-and above 10 eV, clipped to ``[0.001, 1.01e5] eV``.  The source's exact
-breakpoint behavior is retained: a clipped energy of exactly 10 eV stays zero
-because neither strict branch includes the breakpoint, and the saved formal
-implementation preserves the source ``np.array([E])`` wrapper as one extra
-leading singleton output axis.  Both quirks are asserted here as the declared
-contract.  One documented repair relative to the saved implementation is
-exercised: negative energies are rejected (the saved document declares
-nonnegative energies but its implementation silently clipped them to the lower
-endpoint).
+and above 10 eV, clipped to ``[0.001, 1.01e5] eV``. The Python source
+incorrectly omitted the exact breakpoint. The corrected contract follows the
+primary IDL low-energy branch at exactly 10 eV. The original leading singleton
+output axis from ``np.array([E])`` remains unchanged. Negative energies are
+rejected instead of silently clipped; all other fit coefficients and clipping
+endpoints retain their original numerical assertions.
 """
 from __future__ import annotations
 
@@ -30,7 +27,7 @@ HIGH_ENERGY_COEFFICIENTS = np.array([-3.231141e1, -1.386002e-1], dtype=float)
 def independent_piecewise(energy):
     clipped = np.clip(energy, 0.001, 1.01e5)
     result = np.zeros_like(clipped, dtype=float)
-    low = clipped < 10.0
+    low = clipped <= 10.0
     high = clipped > 10.0
     if np.any(low):
         result[low] = np.exp(
@@ -50,10 +47,11 @@ def test_piecewise_branches_match_independent_evaluation():
     assert actual.shape == (1, energy.size)
 
 
-def test_breakpoint_stays_exactly_zero():
-    """Declared source quirk: neither strict branch includes the 10 eV point."""
+def test_breakpoint_uses_primary_idl_low_energy_branch():
+    """The original IDL low branch includes the 10 eV breakpoint."""
     result = evaluate_hydrogen_proton_elastic_cross_section(np.array([9.999, 10.0, 10.001]))
-    assert result[0][1] == 0.0
+    np.testing.assert_allclose(result[0][1], independent_piecewise(np.array([10.0]))[0], rtol=1e-15, atol=0)
+    assert result[0][1] > 0
     assert result[0][0] > 0.0 and result[0][2] > 0.0
 
 

@@ -1,0 +1,192 @@
+{
+  "schema": "scirel.root-scientific-reception.v1",
+  "action_id": "scirel-collision-core-physical-continuation-20261014-v1",
+  "at_utc": "2026-10-14T08:18:14.270503+00:00",
+  "status": "QUALIFIED_EXACT_COLLISION_CANDIDATE_PENDING_CUMULATIVE_INTEGRATION",
+  "owner": "/root/pdrk_chinese",
+  "role_ended": true,
+  "starts_consumed": 1,
+  "report": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/collision-core-continuation/REPORT.json",
+    "bytes": 18582,
+    "sha256": "a62d08c127113f8044c1a663e194fef63a9ae0c64f6dcc38210d03798fe2dcf6"
+  },
+  "handoff": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/collision-core-continuation/HANDOFF.json",
+    "bytes": 2086,
+    "sha256": "0c46a72c314fed0c7dd2769bebd54f62396f8a3287b7847fd5d3f257a128bca4"
+  },
+  "manifest": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/collision-core-continuation/MANIFEST.json",
+    "bytes": 35478,
+    "sha256": "bb21f780d561646e799de8e29878ba00926ef5a2419f2dcdb6c175eab1a7b874"
+  },
+  "candidate_commit": "5f394581be529da8df7fff19226ef9df791e3f4f",
+  "candidate_tree": "e113fa88ad93af83d7ca4d0d903594e429cdd206",
+  "wheel": {
+    "wheel": "build-dev13/wheel/scirel-0.2.0.dev13+collision.physical-py3-none-any.whl",
+    "sha256": "585ac0e13e8961a09396fe491b4a0967fa62c74a08309d3539c0ac4702aaf567",
+    "bytes": 30075,
+    "requires_dist": [
+      "numpy==2.5.4"
+    ],
+    "requires_python": "<3.15,>=3.14",
+    "source_binding": [
+      {
+        "path": "src/scirel/collisions/_elastic_moments.py",
+        "sha256": "1eb7dea98b85287e58f54b6453b31f0ba374ab32fee31c9bee0b15f3ac9a0fb9",
+        "wheel_member": "scirel/collisions/_elastic_moments.py",
+        "equal": true
+      },
+      {
+        "path": "src/scirel/collisions/_energy_input.py",
+        "sha256": "e05b2c8d76304bceb03582d1f91b23e451ef3abfd83f2f66b8074ab7e0a181f8",
+        "wheel_member": "scirel/collisions/_energy_input.py",
+        "equal": true
+      },
+      {
+        "path": "src/scirel/collisions/atomic_hydrogen_charge_exchange_cross_section.py",
+        "sha256": "b0962749a6ba11939e04476af7c6299d8fd1f387e5aceae0ecd2dd48667a2920",
+        "wheel_member": "scirel/collisions/atomic_hydrogen_charge_exchange_cross_section.py",
+        "equal": true
+      },
+      {
+        "path": "src/scirel/collisions/atomic_hydrogen_collision_matrices.py",
+        "sha256": "a0983f07361f1fdb27f716d0f122a3a089639b172a22a2532a16ad4bd5226978",
+        "wheel_member": "scirel/collisions/atomic_hydrogen_collision_matrices.py",
+        "equal": true
+      },
+      {
+        "path": "src/scirel/collisions/atomic_hydrogen_elastic_cross_section.py",
+        "sha256": "a05cb58775749a7bf6efac935cae04767e1cc521ac804e84af485bb1e16acdd2",
+        "wheel_member": "scirel/collisions/atomic_hydrogen_elastic_cross_section.py",
+        "equal": true
+      },
+      {
+        "path": "src/scirel/collisions/atomic_hydrogen_omega_frequencies.py",
+        "sha256": "0226de86a5ca357ee57b43a1da025c0dca41dd6fab0e14f0c2ff9a651b7699d6",
+        "wheel_member": "scirel/collisions/atomic_hydrogen_omega_frequencies.py",
+        "equal": true
+      },
+      {
+        "path": "src/scirel/collisions/hydrogen2_hydrogen2_elastic_cross_section.py",
+        "sha256": "6d18286c1fef1bd07fd077fdc4eff99d0de2ca6489cbbc2f098c5b49665e7997",
+        "wheel_member": "scirel/collisions/hydrogen2_hydrogen2_elastic_cross_section.py",
+        "equal": true
+      },
+      {
+        "path": "src/scirel/collisions/hydrogen2_proton_elastic_cross_section.py",
+        "sha256": "b9bcaaa792a0cac75df79d2f08c100812de1ad71316aa4baaffe30bac90b653c",
+        "wheel_member": "scirel/collisions/hydrogen2_proton_elastic_cross_section.py",
+        "equal": true
+      },
+      {
+        "path": "src/scirel/collisions/hydrogen_h2_elastic_cross_section.py",
+        "sha256": "7a63614fb59b527a55bee680faa5efb9e3cdd71ea8adbb622c88bfac3ef9f619",
+        "wheel_member": "scirel/collisions/hydrogen_h2_elastic_cross_section.py",
+        "equal": true
+      },
+      {
+        "path": "src/scirel/collisions/hydrogen_proton_elastic_cross_section.py",
+        "sha256": "dc9101e55c12535c0c4da5467f19f6ccd7a03b920966104b69bd55ca93d711b4",
+        "wheel_member": "scirel/collisions/hydrogen_proton_elastic_cross_section.py",
+        "equal": true
+      },
+      {
+        "path": "src/scirel/collisions/molecular_hydrogen_charge_exchange_cross_section.py",
+        "sha256": "8f49a1a9b91d6cce7fb9fcb5e5529780a2a3d10e1b400618118f5ac4137005d1",
+        "wheel_member": "scirel/collisions/molecular_hydrogen_charge_exchange_cross_section.py",
+        "equal": true
+      },
+      {
+        "path": "src/scirel/collisions/molecular_hydrogen_collision_matrices.py",
+        "sha256": "347d265fdacdec0fbdc363ea1ece19705117e26e5420b71d6e7d42af56855426",
+        "wheel_member": "scirel/collisions/molecular_hydrogen_collision_matrices.py",
+        "equal": true
+      },
+      {
+        "path": "src/scirel/collisions/molecular_hydrogen_omega_frequencies.py",
+        "sha256": "eb5edfd079eb73e56cee952183a3354d0fc22e53e7c2f40161a9f5055aad3cba",
+        "wheel_member": "scirel/collisions/molecular_hydrogen_omega_frequencies.py",
+        "equal": true
+      }
+    ],
+    "initializers": "exact profile bytes checked",
+    "members": [
+      "scirel/__init__.py",
+      "scirel/collisions/__init__.py",
+      "scirel/collisions/_elastic_moments.py",
+      "scirel/collisions/_energy_input.py",
+      "scirel/collisions/atomic_hydrogen_charge_exchange_cross_section.py",
+      "scirel/collisions/atomic_hydrogen_collision_matrices.py",
+      "scirel/collisions/atomic_hydrogen_elastic_cross_section.py",
+      "scirel/collisions/atomic_hydrogen_omega_frequencies.py",
+      "scirel/collisions/hydrogen2_hydrogen2_elastic_cross_section.py",
+      "scirel/collisions/hydrogen2_proton_elastic_cross_section.py",
+      "scirel/collisions/hydrogen_h2_elastic_cross_section.py",
+      "scirel/collisions/hydrogen_proton_elastic_cross_section.py",
+      "scirel/collisions/molecular_hydrogen_charge_exchange_cross_section.py",
+      "scirel/collisions/molecular_hydrogen_collision_matrices.py",
+      "scirel/collisions/molecular_hydrogen_omega_frequencies.py",
+      "scirel-0.2.0.dev13+collision.physical.dist-info/licenses/licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt",
+      "scirel-0.2.0.dev13+collision.physical.dist-info/METADATA",
+      "scirel-0.2.0.dev13+collision.physical.dist-info/WHEEL",
+      "scirel-0.2.0.dev13+collision.physical.dist-info/top_level.txt",
+      "scirel-0.2.0.dev13+collision.physical.dist-info/RECORD"
+    ],
+    "runtime_resources": [],
+    "human_approval": false,
+    "redistribution_approval": false
+  },
+  "physical": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/collision-root/PHYSICAL_VERIFICATION.json",
+    "bytes": 207,
+    "sha256": "56c78d213f15e00389adfe0e39c4dd560d2cf77ac2a7199a112bcde2de8b107d"
+  },
+  "static": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/collision-root/STATIC_VERIFICATION.json",
+    "bytes": 299,
+    "sha256": "27dc9c81ce33db13d2907a66ac5347cb6461afedfe4dd883f198991331a3802a"
+  },
+  "author_terminal": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/collision-root/AUTHOR_CONTAINER_READBACK.json",
+    "bytes": 9399,
+    "sha256": "ecd7037c0d5176355b3f35cc9082b7aa5bad7e27379dbe3995148486afe44121"
+  },
+  "root_terminal": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/collision-root/ROOT_CONTAINER_READBACK.json",
+    "bytes": 8574,
+    "sha256": "4b1ccf9ffcfedf17e9262d4b2591855f85fe73ad1e8e919520bbca94f5ce5d9c"
+  },
+  "root_installed": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/collision-root/results/ROOT_INDEPENDENT.json",
+    "bytes": 920,
+    "sha256": "aea3743d6b4651908a167821bdc8fee32d38b0e2542099a788460fbfe994d4fa"
+  },
+  "author_source_tests": 133,
+  "scientific_review": "Root inspected all six changed collision implementations and exact primary fit/KN1D moment derivation. Independently generated scalar piecewise-fit 128-point Gauss angular integrals for all16 H/D atomic/molecular channels; high-order production midpoint agreement, weighted anti/symmetry, actual two-cell distributions and collisional moments, units, common boost, target invariants, undefined quotient propagation, mass-weighted pair force exchange passed in plainvenv. Exact10eV primary branch independently verified. No new physical empirical validity or full KN1D equivalence asserted.",
+  "graph_review": "Shared helper is physically cell-local; four public kernels/moments plus required existing10eV fit fix. Source dependencies not runtime requirements. Existing sound numerical tolerances retained; original defective behavior assertions have explicit primary-backed successor physical contract, no compatibility fallback. Notice-only unclassified selector fallback is attribution text, not unknown source; exact seven numerical and two documentation files exercised. Original developer-environment and probe failures retained.",
+  "Chinese_changed_assets": [
+    "scirel.collisions.atomic-hydrogen-collision-matrices",
+    "scirel.collisions.atomic-hydrogen-omega-frequencies",
+    "scirel.collisions.molecular-hydrogen-collision-matrices",
+    "scirel.collisions.molecular-hydrogen-omega-frequencies",
+    "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section"
+  ],
+  "other_Chinese_records_unchanged": 67,
+  "limitations": [
+    "Moment-matched BGK surrogate is not the full Boltzmann collision operator.",
+    "Qualified isotope interpretation is H/D with common isotope across species; other positive mu values remain algebraically accepted without added physical qualification.",
+    "Molecular self kernel uses the source momentum-transfer fit as a viscosity approximation.",
+    "Default n_theta=5 retained; high-order/adaptive checks and configurable n_theta expose angular discretization rather than pretending five nodes are exact.",
+    "Finite-grid Maxwell self-stress residual is measured and convergence demonstrated, not forced to zero.",
+    "No background distribution is supplied to omega APIs; caller must keep Alpha and background bulk flow physically consistent.",
+    "Fit range clipping retained and documented; no new validity claim outside empirical fit range.",
+    "All rates/moments must be representable; overflow rejects instead of returning fake finite values."
+  ],
+  "canonical_integrated": false,
+  "whole_source_project_complete": false,
+  "human_approval": false,
+  "public_release": false,
+  "next_action": "Integrate exact21-path delta against current239 canonical; selectively merge five reader records, build cumulative243 and source-free affected checks before adoption."
+}

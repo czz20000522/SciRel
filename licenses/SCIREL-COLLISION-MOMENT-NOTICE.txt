@@ -1,0 +1,24 @@
+SciRel collision moment continuation — internal scientific evaluation candidate.
+
+The physical definitions and fitted cross sections are attributed to B. LaBombard,
+KN1D: A 1-D Space, 2-D Velocity, Kinetic Transport Algorithm for Atomic and
+Molecular Hydrogen in an Ionizing Plasma, MIT Plasma Science and Fusion Center;
+sections 2.1.2.6, 2.2.3 and the original IDL sigma/kinetic routines are retained as
+bound development references. The saved KN1DPy extraction is a separate historic
+translation whose original source qualification was withdrawn; that withdrawal
+and earlier failures remain preserved.
+
+This successor repairs the H+-H 10 eV translation hole and local moment-state,
+zero-denominator and positivity-clipping errors. It declares normalized and
+physical units separately, retains signed kernels, and documents the inherited
+BGK approximation, isotope scaling and molecular viscosity surrogate. Scientific
+verification is bounded by the exact asset contracts and independent evidence;
+no whole KN1D project replacement is claimed.
+
+The primary report's statement of community availability is not treated as an
+explicit redistribution license. Original source/fit license adjudication and
+human/public-release decisions remain separate. This notice grants no new public
+redistribution permission. NumPy is the sole external scientific runtime
+requirement; its own distribution retains its license and notices. Development
+quadrature, test/build tools, provenance archives and source checkouts are not
+runtime requirements and are not included in this scientific wheel.
