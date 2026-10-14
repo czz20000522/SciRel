@@ -1,0 +1,203 @@
+{
+  "schema": "scirel.root-composite-qualification.v1",
+  "project": "Pleiades",
+  "date": "2026-10-14",
+  "decision": "ACCEPTED_FULL_CORE_COMPOSITE_D3_TECHNICAL",
+  "accepted_D2": "accepted.Pleiades_D2_full_core_mac_composite_20261013",
+  "accepted_D3": "Pleiades_D3_full_core_composite_20261014",
+  "candidate_commit": "173ba928dec1afe98f2546ce02307a1569f60eec",
+  "scientific_source_commit": "61e4309e74a8b3d046361b41dad566c211483ef4",
+  "wheel_sha256": "98e6909f558280b33f9f72b36174a27f58fc6e61ecdddd3ffc7f6a060e29791f",
+  "wheel_version": "0.2.0.dev6+pleiades.fullcore.mac",
+  "core_groups": 107,
+  "core_definitions": 243,
+  "core_materials": 95,
+  "numeric_results": [
+    {
+      "case": "BRB",
+      "shape": [
+        201,
+        201
+      ],
+      "iterations": 9,
+      "owner_update_residual": 1.062071511080982e-11,
+      "owner_closure_residual": 8.749647678043821e-14,
+      "registered_independent_closure": 8.65673546758764e-14,
+      "receiver_not_a_knot_closure": 8.656576081583524e-14,
+      "receiver_pressure_relative_l2": 2.5379938525387044e-16,
+      "receiver_terminal_green_residual": 4.681578487372407e-17,
+      "receiver_weighted_average": 0.09761884088747123,
+      "receiver_flux_average_relative_error": 2.843260108734928e-16,
+      "Green_spot_relative_errors": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "spot_plasma_flux_nonzero": true,
+      "Jphi_exact_area_relation": true,
+      "saved_weights_exact_nodal_ds_over_B": true,
+      "receiver_hypot_relative_delta": 1.7388694209189783e-16,
+      "EQDSK_independent_parse": true,
+      "all_original_thresholds_pass": true,
+      "artifacts_bound": true
+    },
+    {
+      "case": "WHAM",
+      "shape": [
+        201,
+        76
+      ],
+      "iterations": 7,
+      "owner_update_residual": 8.560001755777231e-12,
+      "owner_closure_residual": 1.8840661421753926e-13,
+      "registered_independent_closure": 1.882576621230142e-13,
+      "receiver_not_a_knot_closure": 1.8826006411249483e-13,
+      "receiver_pressure_relative_l2": 2.4008042184468986e-16,
+      "receiver_terminal_green_residual": 4.8972890311153194e-17,
+      "receiver_weighted_average": 0.048114473839441625,
+      "receiver_flux_average_relative_error": 1.442163521742412e-16,
+      "Green_spot_relative_errors": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "spot_plasma_flux_nonzero": true,
+      "Jphi_exact_area_relation": true,
+      "saved_weights_exact_nodal_ds_over_B": true,
+      "receiver_hypot_relative_delta": 3.384977621163115e-16,
+      "EQDSK_independent_parse": true,
+      "all_original_thresholds_pass": true,
+      "artifacts_bound": true
+    }
+  ],
+  "limits": [
+    "Technical qualification of exact declared discrete scientific contracts and named applications, not human scientific endorsement or public release.",
+    "No continuum force balance, arbitrary topology/mesh accuracy, experimental device constants or material-model certification.",
+    "Actual fieldline tangency remains a caller precondition. Four historical fixed-interpolant line-refinement monotonicity failures stay recorded; no universal monotone refinement claim.",
+    "BRB source plural LTRX assignment is reproduced as a no-op; actual default 1 A per filament and 130 ampere-turns remain stated. WHAM out-of-grid nearest query is clamped to the original nearest node, not an invented normalization.",
+    "EQDSK Pleiades dialect uses the documented psi=R*Aphi Wb/rad axis; P and Jphi remain separate derived arrays. No EFIT/COCOS or arbitrary 2D pressure/current exchange claim.",
+    "Noncore plotting/formatting and original nonfunctioning or commented APIs are excluded with inherited evidence; functioning geometry, data reading, state evolution and convergence control remain covered.",
+    "Composite runtime coverage uses Home Linux amd64 for six full-size jobs and Mac Linux aarch64 for five light jobs; not all tasks were rerun on both architectures.",
+    "np.matrix deprecations and netCDF4 ABI warning retained from accepted D2; successful bounded numerical cases do not establish blanket ABI compatibility."
+  ],
+  "independent_report_sha256": "f129516d18e3fde0df9f7ff9631e87d0413e7da45576e1d6ade17820351d4b01",
+  "independent_manifest_sha256": "aa878a8556738558fcbc3ae0e0270c80d187da203bf49acb0f54a04fb8e41cef",
+  "home_delivery_manifest_sha256": "a780acb26bab5a3f8f60c82d13ef2749500885df220bc6574b9fcd2366acc0b9",
+  "five_light_D3_root_reception_sha256": "1a8c818d3c0852b43c50a4b3b00a54b4f6be20308485f0849eece263515bf4a3",
+  "source_free_full_core_technical": true,
+  "D3_root_independent": true,
+  "human_approval": false,
+  "public_release": false,
+  "retained_exclusions": [
+    {
+      "group": "private_broken_mp",
+      "disposition": "original_nonfunctioning",
+      "reason": "Original shared-memory experiment failed ctypes/inconsistent arguments; D0 explicit rejection does not remove working public field capability."
+    },
+    {
+      "group": "filament_repr",
+      "disposition": "noncore_support",
+      "reason": "Formatted repr is presentation, not required physics or source-free scientific data."
+    },
+    {
+      "group": "filament_patch",
+      "disposition": "noncore_support",
+      "reason": "Patch and current-marker rendering do not affect positions,weights or fields."
+    },
+    {
+      "group": "filament_simplify",
+      "disposition": "original_nonfunctioning",
+      "reason": "Original computes candidate centroid/current then raises NotImplementedError; no successful single-coil reduction existed."
+    },
+    {
+      "group": "filament_clone",
+      "disposition": "original_nonfunctioning",
+      "reason": "Original clone immediately raises NotImplementedError, no missing implemented cloning physics."
+    },
+    {
+      "group": "arbitrary_patch",
+      "disposition": "noncore_support",
+      "reason": "Original patch returns None."
+    },
+    {
+      "group": "rect_coil_patch",
+      "disposition": "noncore_support",
+      "reason": "Corner expansion and PathPatch were plotting only; core point geometry retained."
+    },
+    {
+      "group": "magnet_patch",
+      "disposition": "noncore_support",
+      "reason": "Corner points/PathPatch are rendering-only."
+    },
+    {
+      "group": "device_plotting",
+      "disposition": "noncore_support",
+      "reason": "Patch collection and current/flux/modB figure creation may be omitted; numerical ψ,BR,BZ preserved separately."
+    },
+    {
+      "group": "trex_plotting",
+      "disposition": "noncore_support",
+      "reason": "Expanded bounds and PathPatch do not enter field computation."
+    },
+    {
+      "group": "brb_unimplemented_electrodes",
+      "disposition": "original_nonfunctioning",
+      "reason": "Original cathode and anode APIs immediately raised NotImplementedError; no executable electrode physics removed."
+    },
+    {
+      "group": "brb_sweep",
+      "disposition": "noncore_support",
+      "reason": "Original appends Matplotlib Wedge to transient patches list; never changes source current geometry or fields."
+    },
+    {
+      "group": "quartic",
+      "disposition": "original_nonfunctioning",
+      "reason": "Original never constructed z/C quartic coefficients and failed AttributeError; D0 makes rejection immediate."
+    },
+    {
+      "group": "diagnostic_inverse",
+      "disposition": "original_nonfunctioning",
+      "reason": "Undefined n and wrong inverse dimensions in original; no successful inverse removed. Any new inverse requires separate mathematical contract."
+    },
+    {
+      "group": "diagnostic_field_fit",
+      "disposition": "original_nonfunctioning",
+      "reason": "Original BR/BZ diagnostic routines refer undefined get_greens/loc and unresolved source-location map; not functioning original physics."
+    },
+    {
+      "group": "plotting_helpers",
+      "disposition": "noncore_support",
+      "reason": "Affine scale/mirror/transpose patch operations are presentation, not core physics; permitted exclusion."
+    },
+    {
+      "group": "concave_hull",
+      "disposition": "original_nonfunctioning",
+      "reason": "Original only drew triangulation edges, returned no hull and used obsolete Delaunay.vertices; not successful physical geometry extraction."
+    },
+    {
+      "group": "stability_history",
+      "disposition": "noncore_support",
+      "reason": "Entire stability.py is comment-only, not a functioning stability solver removed by decomposition."
+    },
+    {
+      "group": "broken_mirror",
+      "disposition": "original_nonfunctioning",
+      "reason": "Original assumes missing grid/API and undefined psi variables, immediately rejected D0; cannot claim exact equivalent of an unimplemented source solver."
+    },
+    {
+      "group": "historical_F",
+      "disposition": "noncore_support",
+      "reason": "get_F/get_F_v2 are fully commented research text depending on unavailable datahelpers; no executable source stability capability."
+    },
+    {
+      "group": "historical_line",
+      "disposition": "noncore_support",
+      "reason": "Commented older reorder/average/difference implementations, current executable functions handled separately."
+    },
+    {
+      "group": "historical_large_green",
+      "disposition": "noncore_support",
+      "reason": "write_large_greens fully commented HDF5 writer, not an executable required matrix storage capability."
+    }
+  ]
+}
