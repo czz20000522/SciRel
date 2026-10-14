@@ -72,6 +72,15 @@ def test_selected_wheel_binds_baseline_and_preserves_exact_science(tmp_path):
                "initializers": {"src/scirel/__init__.py": "__all__ = ['field']\n", "src/scirel/field/__init__.py": "from .circular_filament_on_axis import field\n"}}
     profile_path = tmp_path / "selection.json"
     profile_path.write_text(json.dumps(profile))
+    # A carried initializer must never report a different release identity.
+    profile["initializers"]["src/scirel/__init__.py"] += "__version__ = '0.0.0.dev0+stale'\n"
+    profile_path.write_text(json.dumps(profile))
+    rejected = tmp_path / "rejected"
+    bad = subprocess.run([sys.executable, str(ROOT / "scripts/build_pleiades_selected.py"), str(profile_path), str(rejected), "--source-root", str(fixture)], capture_output=True, text=True)
+    assert bad.returncode != 0 and not rejected.exists()
+    assert "initializer version" in bad.stderr
+    profile["initializers"]["src/scirel/__init__.py"] = "__all__ = ['field']\n__version__ = " + repr(profile["version"]) + "\n"
+    profile_path.write_text(json.dumps(profile))
     output = tmp_path / "build"
     result = subprocess.run([sys.executable, str(ROOT / "scripts/build_pleiades_selected.py"), str(profile_path), str(output), "--source-root", str(fixture)], capture_output=True, text=True)
     assert result.returncode == 0, result.stdout + result.stderr

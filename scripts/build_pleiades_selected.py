@@ -5,6 +5,7 @@ release approval. No checkout, workflow package or discovery catalog is bundled.
 """
 from __future__ import annotations
 import argparse
+import ast
 import hashlib
 import json
 import os
@@ -58,6 +59,17 @@ def main():
         relative = PurePosixPath(name)
         if relative.is_absolute() or '..' in relative.parts or relative.parts[:2] != ('src', 'scirel') or relative.name != '__init__.py':
             raise ValueError(f'invalid initializer: {name}')
+    root_initializer = initializers.get('src/scirel/__init__.py', '')
+    for statement in ast.parse(root_initializer).body:
+        targets = (statement.targets if isinstance(statement, ast.Assign) else
+                   [statement.target] if isinstance(statement, ast.AnnAssign) else [])
+        if any(isinstance(target, ast.Name) and target.id == '__version__' for target in targets):
+            try:
+                declared_version = ast.literal_eval(statement.value)
+            except (ValueError, TypeError) as error:
+                raise ValueError('initializer version must be a literal matching the selection') from error
+            if declared_version != profile['version']:
+                raise ValueError('initializer version differs from selection metadata')
     args.output.mkdir(parents=True, exist_ok=False)
     stage = args.output / 'source'
     for relative, data in files + licenses + data_files:
