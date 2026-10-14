@@ -24,7 +24,7 @@
     "coordinates": "dimensionless m = k^2 in [0, 1]",
     "boundary": "Finite inputs in [0,1]; K(1) is a divergent integral represented by +Inf, while E(1)=1. The downstream filament field rejects coincident geometry.",
     "assumptions": [
-      "The approximation is the source's own special-function implementation, kept for GSEQ provenance parity; it is not the most accurate K/E evaluation available.",
+      "The interior approximation preserves the source polynomial-log arithmetic for traceability; corrected endpoint limits deliberately differ from the historical whole-array guard. It is not the most accurate K/E evaluation available.",
       "No external physics reference is bound: accuracy is quantified against scipy's ellipk/ellipe as sampled evidence."
     ]
   },
@@ -77,7 +77,7 @@
     "partial_results": "Never returned."
   },
   "provenance": {
-    "lineage_summary": "Development integration from the saved GSEQ operator package and its original MATLAB fun_ellipEK apx==1 source anchor. The SciRel callable follows the MATLAB whole-array guard. The saved L1 Python operator instead substitutes K=+Inf and E=1 element-wise for m=1, including mixed arrays; its package tests do not establish equivalence at that boundary. The saved package supports bounded historical comparison only; no qualified D1 provenance or expert approval is claimed.",
+    "lineage_summary": "Development integration from the saved GSEQ operator package and its original MATLAB fun_ellipEK apx==1 source anchor. The earlier SciRel implementation followed the MATLAB whole-array guard, producing a finite K sentinel for all-endpoint arrays and E=NaN for mixed arrays at m=1. The current D2 successor preserves the interior polynomial-log arithmetic but replaces that guard with elementwise mathematical limits K(1)=+Inf and E(1)=1. The saved L1 Python operator also used elementwise endpoint substitution; its package tests alone did not establish boundary equivalence. The current correction is supported separately by analytic endpoint identities, mixed-array regressions and sampled SciPy comparison. The saved package remains bounded historical comparison only; no qualified D1 provenance or expert approval is claimed.",
     "source_kinds": [
       "saved L1 operator document and implementation",
       "scientific regression tests",
@@ -112,7 +112,7 @@
       "tests/operator_contracts/test_filament_coil_green_gseq.py",
       "tests/operator_contracts/test_legacy_admission_regressions.py"
     ],
-    "evidence_ceiling": "Maintained tests establish exact interior polynomial-log arithmetic and unchanged sampled relative bounds 1e-8 for K and 2e-8 for E against SciPy on 200001 points. Analytic endpoint identities K(1)=+Inf and E(1)=1 hold independently of neighboring array elements, and the physical field consumer still rejects coincident geometry. This is not all-input source parity or a continuous approximation-error bound.",
+    "evidence_ceiling": "Maintained tests establish exact interior polynomial-log arithmetic and unchanged sampled relative bounds 1e-8 for K and 2e-8 for E against SciPy on 200001 points. Analytic endpoint identities K(1)=+Inf and E(1)=1 hold independently of neighboring array elements, and the physical field consumer still rejects coincident geometry. The current endpoint correction supersedes the earlier SciRel whole-array guard; historical source and L1 package observations remain separate evidence. This is not all-input source parity or a continuous approximation-error bound.",
     "known_limitations": [
       "The saved GSEQ bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
       "The approximation is less accurate than library special functions (~1e-8 relative sampled); consumers needing higher accuracy should use the baseline scipy-elliptic filament relation instead.",
