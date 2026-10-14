@@ -13,6 +13,13 @@ legacy ``Work`` buffer does. The four fits are bound to SciRel cross-section
 operators, while the theta quadrature remains local. Bounded negative cells
 in the elastic families are intrinsic (signed
 ``vr2_vx2`` / ``vx_vx`` factors) and are reproduced as-is, never clamped.
+
+Physical energy convention: the input to each fit is the equivalent hydrogen
+projectile laboratory energy with a stationary target. For H/D momentum
+transfer KN1D section 2.1.2.6 maps E_D to E_D/2; for viscosity it maps E_D to
+E_D. Thus mixed/CX factors are Tnorm/mu and self viscosity is Tnorm.
+Default five-angle midpoint integration is approximate. n_theta enables an
+explicit angular convergence study; fit fidelity is not universal accuracy.
 """
 from __future__ import annotations
 
@@ -39,21 +46,22 @@ COS_THETA = np.cos(THETA)
 # --------------------------------------------------------------------------- #
 # Double-velocity-space predecessor geometry (source kinetic_h.py:888-927).    #
 # --------------------------------------------------------------------------- #
-def _build_predecessor_state(vr, vx, Vr2pidVr, dVx):
+def _build_predecessor_state(vr, vx, Vr2pidVr, dVx, n_theta=5):
     """Return (v_v2, v_v, vr2_vx2, vx_vx, Vr2pidVrdVx) on the source shape layout.
 
     Shapes: ``v_v2, v_v, vr2_vx2`` are ``(nvr,nvx,nvr,nvx,ntheta)``;
     ``vx_vx`` and ``Vr2pidVrdVx`` are ``(nvr,nvx,nvr,nvx)``.
     """
+    cos_theta = np.cos(np.pi * (np.arange(n_theta) + 0.5) / n_theta)
     nvr = vr.size
     nvx = vx.size
-    v_v2 = np.zeros((nvr, nvx, nvr, nvx, NTHETA))
-    vr2_vx2 = np.zeros((nvr, nvx, nvr, nvx, NTHETA))
-    for m in range(NTHETA):
+    v_v2 = np.zeros((nvr, nvx, nvr, nvx, n_theta))
+    vr2_vx2 = np.zeros((nvr, nvx, nvr, nvx, n_theta))
+    for m in range(n_theta):
         for l in range(nvx):
             for k in range(nvr):
                 for i in range(nvr):
-                    v_starter = vr[i] ** 2 + vr[k] ** 2 - 2 * vr[i] * vr[k] * COS_THETA[m]
+                    v_starter = vr[i] ** 2 + vr[k] ** 2 - 2 * vr[i] * vr[k] * cos_theta[m]
                     v_v2[i, :, k, l, m] = v_starter + (vx[:] - vx[l]) ** 2
                     vr2_vx2[i, :, k, l, m] = v_starter - 2 * (vx[:] - vx[l]) ** 2
     v_v = np.sqrt(v_v2)
@@ -74,18 +82,22 @@ def _build_predecessor_state(vr, vx, Vr2pidVr, dVx):
 # --------------------------------------------------------------------------- #
 # Public operator.                                                             #
 # --------------------------------------------------------------------------- #
-def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu=1.0):
+def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu=1.0, *, n_theta=5):
     """Assemble the atomic four-family SIG collision matrices.
 
     Parameters
     ----------
     vr : (nvr,) array, strictly increasing, positive, ``v/vth``.
-    vx : (nvx,) array, strictly increasing and crossing zero, ``v/vth``.
+    vx : (nvx,) array, strictly increasing; arbitrary common axial boost allowed, ``v/vth``.
     Vr2pidVr : (nvr,) array, cylindrical radial integration weight (source
         ``make_dvr_dvx`` output).
     dVx : (nvx,) array, axial cell widths (source ``make_dvr_dvx`` output).
     Tnorm : float, normalization energy (eV); ``Vth = sqrt(2*Q*Tnorm/(mu*H_MASS))``.
     mu : float, normalized mass of the colliding species (default 1.0 = H).
+
+    n_theta : int, keyword-only
+        Positive midpoint azimuth count; default 5 retains the KN1D rule.
+        Increase and verify convergence for the caller's velocity grid.
 
     Returns
     -------
@@ -116,7 +128,6 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
         or not np.all(np.isfinite(Vr2pidVr)) or not np.all(np.isfinite(dVx))
         or np.any(vr <= 0.0) or not np.all(np.diff(vr) > 0.0)
         or not np.all(np.diff(vx) > 0.0)
-        or not np.any(vx > 0.0) or not np.any(vx < 0.0)
         or np.any(Vr2pidVr < 0.0) or np.any(dVx <= 0.0)
         or temperature.ndim != 0 or mass.ndim != 0
         or temperature.dtype.kind not in "iuf" or mass.dtype.kind not in "iuf"
@@ -124,6 +135,9 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
         or not np.isfinite(mass) or float(mass) <= 0.0
     ):
         raise ValueError("invalid velocity-space carrier for SIG assembly")
+    if isinstance(n_theta, (bool, np.bool_)) or not isinstance(n_theta, (int, np.integer)) or n_theta < 1:
+        raise ValueError("n_theta must be a positive integer")
+    angular_weights = np.ones(n_theta) / n_theta
     Tnorm = float(temperature)
     mu = float(mass)
 
@@ -140,7 +154,7 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
     if not np.isfinite(Vth2) or Vth2 <= 0.0:
         raise ValueError("thermal normalization is not representable")
 
-    v_v2, v_v, vr2_vx2, vx_vx, Vr2pidVrdVx = _build_predecessor_state(vr, vx, Vr2pidVr, dVx)
+    v_v2, v_v, vr2_vx2, vx_vx, Vr2pidVrdVx = _build_predecessor_state(vr, vx, Vr2pidVr, dVx, n_theta)
 
     # Energy factor shared by SIG_CX / SIG_H_H2 / SIG_H_P (0.5*H_MASS*Vth2/Q).
     # SIG_H_H uses the mu-scaled factor 0.5*H_MASS*mu*Vth2/Q (source kinetic_h.py:957).
@@ -150,38 +164,38 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
     sig = {}
 
     # SIG_CX (source kinetic_h.py:939-945)
-    _sig = np.zeros((nsig * nsig, NTHETA))
+    _sig = np.zeros((nsig * nsig, n_theta))
     _sig[:] = (v_v * evaluate_atomic_hydrogen_charge_exchange_cross_section(v_v2 * ecx)).reshape(_sig.shape, order="F")
     sig_cx = np.zeros((nsig, nsig))
     sig_cx[:] = (
-        Vr2pidVrdVx * ((_sig @ D_THETA).reshape(Vr2pidVrdVx.shape, order="F"))
+        Vr2pidVrdVx * ((_sig @ angular_weights).reshape(Vr2pidVrdVx.shape, order="F"))
     ).reshape(sig_cx.shape, order="F")
     sig["SIG_CX"] = sig_cx
 
     # SIG_H_H (source kinetic_h.py:956-965)
-    _sig = np.zeros((nsig * nsig, NTHETA))
+    _sig = np.zeros((nsig * nsig, n_theta))
     _sig[:] = (vr2_vx2 * v_v * evaluate_atomic_hydrogen_elastic_cross_section(v_v2 * ehh, viscosity=True) / 8).reshape(_sig.shape, order="F")
     sig_hh = np.zeros((nsig, nsig))
     sig_hh[:] = (
-        Vr2pidVrdVx * ((_sig @ D_THETA).reshape(Vr2pidVrdVx.shape, order="F"))
+        Vr2pidVrdVx * ((_sig @ angular_weights).reshape(Vr2pidVrdVx.shape, order="F"))
     ).reshape(sig_hh.shape, order="F")
     sig["SIG_H_H"] = sig_hh
 
     # SIG_H_H2 (source kinetic_h.py:979-988)
-    _sig = np.zeros((nsig * nsig, NTHETA))
+    _sig = np.zeros((nsig * nsig, n_theta))
     _sig[:] = (v_v * evaluate_hydrogen_h2_elastic_cross_section(v_v2 * ecx)[0]).reshape(_sig.shape, order="F")
     sig_hh2 = np.zeros((nsig, nsig))
     sig_hh2[:] = (
-        Vr2pidVrdVx * vx_vx * ((_sig @ D_THETA).reshape(Vr2pidVrdVx.shape, order="F"))
+        Vr2pidVrdVx * vx_vx * ((_sig @ angular_weights).reshape(Vr2pidVrdVx.shape, order="F"))
     ).reshape(sig_hh2.shape, order="F")
     sig["SIG_H_H2"] = sig_hh2
 
     # SIG_H_P (source kinetic_h.py:1004-1011)
-    _sig = np.zeros((nsig * nsig, NTHETA))
+    _sig = np.zeros((nsig * nsig, n_theta))
     _sig[:] = (v_v * evaluate_hydrogen_proton_elastic_cross_section(v_v2 * ecx)[0]).reshape(_sig.shape, order="F")
     sig_hp = np.zeros((nsig, nsig))
     sig_hp[:] = (
-        Vr2pidVrdVx * vx_vx * ((_sig @ D_THETA).reshape(Vr2pidVrdVx.shape, order="F"))
+        Vr2pidVrdVx * vx_vx * ((_sig @ angular_weights).reshape(Vr2pidVrdVx.shape, order="F"))
     ).reshape(sig_hp.shape, order="F")
     sig["SIG_H_P"] = sig_hp
 

@@ -1,228 +1,81 @@
-"""Source-free atomic elastic-frequency aggregation (Omega family).
+"""Cell-local atomic hydrogen elastic moments and explicitly qualified rates.
 
-Reproduces the Omega_* elastic-collision aggregation of KN1DPy ``kinetic_h.py``
-(moment block, kinetic_h.py:1116-1188):
+The mixed-channel SIG matrices include target quadrature and signed axial
+relative speed; the self kernel includes the signed stress projector / 8.
+Alpha and Omega use normalized velocities and have units m^-1. nu = Vth*Omega
+is s^-1. Negative ratios are retained with negative_no_bgk_closure status:
+the moment is defined but a nonnegative BGK relaxation cannot represent it.
 
-- ``VxH[k]``       : H x-flow velocity,      ``Vth * sum(Vr2pidVr * (fH[:,:,k] @ (vx*dVx))) / nH[k]``
-- ``Omega_H_P[k]`` : H-H+ elastic,           ``sum(Vr2pidVr * ((Alpha_H_P[:,:,k]*fH[:,:,k]) @ dVx)) / (nH[k]*DeltaVx)``
-- ``Omega_H_H2[k]``: H-H2 elastic,           ``sum(Vr2pidVr * ((Alpha_H_H2[:,:,k]*fH[:,:,k]) @ dVx)) / (nH[k]*DeltaVx)``
-- ``Omega_H_H[k]`` : H-H  elastic,           ``sum(Vr2pidVr * ((Alpha_H_H*fH[:,:,k]) @ dVx)) / (nH[k]*Wpp)``
-- ``Omega_EL``     : ``Omega_H_P + Omega_H_H2 + Omega_H_H``
-- ``Wperp_paraH``  : perpendicular 2nd moment feeding ``Wpp`` (dual-branch, see below)
-
-The ``DeltaVx`` clamp is ``MagDeltaVx = max(|DeltaVx|, DeltaVx_tol)`` then
-``DeltaVx = sign(DeltaVx)*MagDeltaVx`` with the legacy symbolic ``sign``
-(``int(x>0)-int(x<0)``).  Omega_H_P uses ``vxi``, Omega_H_H2 uses ``vxH2``.
-``Wpp = sign(Wpp)*max(|Wpp|, Wpp_tol)``.  All three Omega families are then
-clamped ``max(Omega_*, 0)`` — source semantics preserved, outputs are
-non-negative by construction.
-
-``Wperp_paraH`` dual branch (kinetic_h.py:1159-1167): when
-``np.sum(MH_H_sum) <= 0`` the vr2 projection is integrated directly
-``vr2_2vx_ran2[i,:] = vr[i]**2 - 2*(vx - VxH[k]/Vth)**2``;  otherwise
-``-sum(Vr2pidVr*((vr2_2vx2_2D*(MH_H_sum[:,:,k]-fH[:,:,k])) @ dVx))/nH[k]``.
-Both branches are reproduced verbatim.
-
-Omega_H_H inline re-contraction: inside the H_H_EL block the source recomputes
-``Alpha_H_H`` from ``SIG_H_H @ F(fH[:,:,k])`` with the branch-time ``fH``
-(kinetic_h.py:1174-1175), identical to the N334 contraction.  The operator
-repeats the Fortran-order flatten/restore exactly.
+A central state uses the central perpendicular-minus-parallel second moment.
+A target state uses the difference to a supplied number/flow/energy-conserving target,
+independently in each spatial cell. There is no global accumulator sentinel.
+At a zero denominator the rate is NaN with defined=False, while finite
+collision moments are returned. No floor, positivity clipping or equilibrium
+linearization is inferred. The original KN1D model is a moment-matched BGK
+approximation; finite-grid quadrature does not guarantee exact Maxwell balance.
 """
-from __future__ import annotations
+from ._elastic_moments import reduce_elastic_moments
 
-import numpy as np
-
-__all__ = ["assemble_atomic_hydrogen_omega_frequencies"]
-
-
-def _sign_symbolic(x):
-    """Legacy KN1DPy ``sign`` (kinetic_h.py util): 1 positive, -1 negative, 0 zero."""
-    return int(x > 0) - int(x < 0)
+__all__ = ['assemble_atomic_hydrogen_omega_frequencies']
 
 
 def assemble_atomic_hydrogen_omega_frequencies(
-    fH,
-    nH,
-    Alpha_H_P,
-    Alpha_H_H2,
-    SIG_H_H,
-    Vr2pidVr,
-    dVx,
-    vr,
-    vx,
-    Vth,
-    vxi,
-    vxH2,
-    MH_H_sum,
-    vr2_2vx2_2D,
-    DeltaVx_tol=0.01,
-    Wpp_tol=0.001,
-    H_P_EL=True,
-    H_H2_EL=True,
-    H_H_EL=True,
+    fH, nH, Alpha_H_P, Alpha_H_H2, SIG_H_H,
+    Vr2pidVr, dVx, vr, vx, Vth, vxi, vxH2, *,
+    moment_state='central', target_distribution=None,
+    H_P_EL=True, H_H2_EL=True, H_H_EL=True,
 ):
-    """Assemble the atomic H elastic-frequencies Omega family.
+    """Reduce physical nonnegative velocity distributions on a common grid.
 
     Parameters
     ----------
-    fH : (nvr, nvx, nx) array, atomic neutral H velocity distribution at branch time.
-    nH : (nx,) array, atomic H density per cell.
-    Alpha_H_P : (nvr, nvx, nx) array, H-H+ elastic Alpha frequencies (N334 output).
-    Alpha_H_H2 : (nvr, nvx, nx) array, H-H2 elastic Alpha frequencies (N334 output).
-    SIG_H_H : (N, N) array, H-H elastic collision matrix (N4-1 output).
-    Vr2pidVr : (nvr,) array, cylindrical radial velocity-space weights.
-    dVx : (nvx,) array, vx mesh spacing.
-    vr : (nvr,) array, radial-vr mesh.
-    vx : (nvx,) array, vx mesh.
-    Vth : float, H thermal speed (m/s).
-    vxi : (nx,) array, ion flow velocity at each cell (m/s).
-    vxH2 : (nx,) array, molecular H2 flow velocity (m/s).
-    MH_H_sum : (nvr, nvx, nx) array, accumulated H-H elastic moment at branch time.
-    vr2_2vx2_2D : (nvr, nvx) array, vr^2 - 2*vx^2 projection kernel.
-    DeltaVx_tol : float, floor for |DeltaVx|/Vth (default source value 0.01).
-    Wpp_tol : float, floor for |Wpp| (default source value 0.001).
-    H_P_EL, H_H2_EL, H_H_EL : bool, enable flags.
+    fH : ndarray, shape (nvr, nvx, nx)
+        Density per dimensionless cylindrical velocity volume, m^-3.
+    nH : ndarray, shape (nx,)
+        Positive number density, m^-3; equals the weighted integral of f to
+        64 binary64 eps relative summation roundoff (not a physical floor).
+    Alpha_H_P, Alpha_H_H2 : ndarray, shape (nvr, nvx, nx)
+        Signed mixed momentum Alpha fields, m^-1, from physical backgrounds
+        on the same velocity normalization; partner flows must match them.
+    SIG_H_H : ndarray, shape (N, N)
+        Self stress matrix, m^2, column-weighted, Fortran velocity ordering.
+    Vr2pidVr, dVx : ndarray
+        Positive dimensionless cylindrical radial and axial quadrature weights.
+    vr, vx : ndarray
+        Increasing dimensionless nodes; vr positive, vx need not cross zero.
+    Vth : float
+        Shared positive velocity normalization, m/s.
+    vxi, vxH2 : ndarray, shape (nx,)
+        Background bulk velocities in m/s, consistent with supplied Alpha.
+    moment_state : str or ndarray, shape (nx,)
+        'central' (default) or 'target', chosen explicitly per cell.
+    target_distribution : ndarray or None
+        Required for target cells. Nonnegative aligned distribution conserving
+        density, bulk flow and kinetic energy; its stress is subtracted from f's central stress.
+    H_P_EL, H_H2_EL, H_H_EL : bool
+        Enabled channels. Disabled channels have exactly zero rate/moment and
+        status 'disabled'; enabled undefined channels remain distinguishable.
 
     Returns
     -------
-    dict with ``VxH``, ``Omega_H_P``, ``Omega_H_H2``, ``Omega_H_H``,
-    ``Omega_EL``, ``Wperp_paraH``, each ``(nx,)``.
+    dict
+        VxH in m/s; Wperp_paraH and central_stress dimensionless second moments.
+        For each channel: Omega (m^-1), nu (s^-1), moment (m^-1 with normalized
+        velocity powers), moment_rate (mixed m/s^2, self m^2/s^3), defined mask
+        and status. Omega_EL/nu_EL propagate any enabled undefined NaN; their
+        defined_EL mask is the conjunction. Ratios do not identify a unique
+        linear response at 0/0 without a specified perturbation family.
+
+    Raises
+    ------
+    ValueError
+        Invalid shapes, nonphysical density/distribution/weights, inconsistent
+        target invariants, nonboolean flags or unrepresentable finite results.
     """
-    fH = np.asarray(fH, dtype=float)
-    nH = np.asarray(nH, dtype=float)
-    Alpha_H_P = np.asarray(Alpha_H_P, dtype=float)
-    Alpha_H_H2 = np.asarray(Alpha_H_H2, dtype=float)
-    SIG_H_H = np.asarray(SIG_H_H, dtype=float)
-    Vr2pidVr = np.asarray(Vr2pidVr, dtype=float)
-    dVx = np.asarray(dVx, dtype=float)
-    vr = np.asarray(vr, dtype=float)
-    vx = np.asarray(vx, dtype=float)
-    vxi = np.asarray(vxi, dtype=float)
-    vxH2 = np.asarray(vxH2, dtype=float)
-    MH_H_sum = np.asarray(MH_H_sum, dtype=float)
-    vr2_2vx2_2D = np.asarray(vr2_2vx2_2D, dtype=float)
-
-    if fH.ndim != 3 or any(size == 0 for size in fH.shape):
-        raise ValueError("invalid fH: expected nonempty 3-D (nvr, nvx, nx) carrier")
-    nvr, nvx, nx = fH.shape
-    if SIG_H_H.ndim != 2 or SIG_H_H.shape[0] != SIG_H_H.shape[1]:
-        raise ValueError("invalid SIG_H_H: expected 2-D square matrix")
-    nsig = SIG_H_H.shape[0]
-    if nsig != nvr * nvx:
-        raise ValueError("invalid SIG_H_H dimension for velocity-space carrier")
-    if nH.ndim != 1 or nH.size != nx:
-        raise ValueError("invalid nH: expected (nx,) H density")
-    if vxi.shape != (nx,) or vxH2.shape != (nx,):
-        raise ValueError("invalid vxi/vxH2: expected (nx,) velocities")
-    for name, arr in (("Alpha_H_P", Alpha_H_P), ("Alpha_H_H2", Alpha_H_H2),
-                      ("MH_H_sum", MH_H_sum)):
-        if arr.ndim != 3 or arr.shape != (nvr, nvx, nx):
-            raise ValueError(f"invalid {name}: expected (nvr, nvx, nx)")
-    for name, arr, size in (("Vr2pidVr", Vr2pidVr, nvr), ("dVx", dVx, nvx),
-                            ("vr", vr, nvr), ("vx", vx, nvx)):
-        if arr.ndim != 1 or arr.size != size:
-            raise ValueError(f"invalid {name}: expected 1-D axis of length {size}")
-    if vr2_2vx2_2D.ndim != 2 or vr2_2vx2_2D.shape != (nvr, nvx):
-        raise ValueError("invalid vr2_2vx2_2D: expected (nvr, nvx) kernel")
-    for name, arr in (("fH", fH), ("nH", nH), ("Alpha_H_P", Alpha_H_P),
-                      ("Alpha_H_H2", Alpha_H_H2), ("SIG_H_H", SIG_H_H),
-                      ("Vr2pidVr", Vr2pidVr), ("dVx", dVx), ("vr", vr),
-                      ("vx", vx), ("vxi", vxi), ("vxH2", vxH2),
-                      ("MH_H_sum", MH_H_sum), ("vr2_2vx2_2D", vr2_2vx2_2D)):
-        if not np.all(np.isfinite(arr)):
-            raise ValueError(f"{name} contains a non-finite value")
-    for name, value in (("Vth", Vth), ("DeltaVx_tol", DeltaVx_tol), ("Wpp_tol", Wpp_tol)):
-        scalar = np.asarray(value)
-        if scalar.ndim != 0 or scalar.dtype.kind not in "iuf" or not np.isfinite(scalar) or float(scalar) <= 0.0:
-            raise ValueError(f"{name} must be a finite positive real scalar")
-    Vth = float(Vth)
-    DeltaVx_tol = float(DeltaVx_tol)
-    Wpp_tol = float(Wpp_tol)
-    if np.any(nH <= 0.0) and (H_P_EL or H_H2_EL or H_H_EL):
-        # source gates the whole Omega block on np.argwhere(nH <= 0).size <= 0
-        raise ValueError("nH must be positive where elastic frequencies are assembled")
-
-    VxH = np.zeros(nx)
-    Omega_H_P = np.zeros(nx)
-    Omega_H_H2 = np.zeros(nx)
-    Omega_H_H = np.zeros(nx)
-    Wperp_paraH = np.zeros(nx)
-    vr2_2vx_ran2 = np.zeros((nvr, nvx))
-
-    if H_P_EL or H_H2_EL or H_H_EL:
-        for k in range(nx):
-            VxH[k] = Vth * np.sum(Vr2pidVr * (fH[:, :, k] @ (vx * dVx))) / nH[k]
-
-    if H_P_EL:
-        for k in range(nx):
-            DeltaVx = (VxH[k] - vxi[k]) / Vth
-            MagDeltaVx = np.maximum(abs(DeltaVx), DeltaVx_tol)
-            DeltaVx = _sign_symbolic(DeltaVx) * MagDeltaVx
-            if not np.isfinite(DeltaVx) or DeltaVx == 0.0:
-                raise ValueError("zero velocity difference in Omega_H_P")
-            Omega_H_P[k] = np.sum(
-                Vr2pidVr * ((Alpha_H_P[:, :, k] * fH[:, :, k]) @ dVx)
-            ) / (nH[k] * DeltaVx)
-        Omega_H_P = np.maximum(Omega_H_P, 0)
-
-    if H_H2_EL:
-        for k in range(nx):
-            DeltaVx = (VxH[k] - vxH2[k]) / Vth
-            MagDeltaVx = np.maximum(abs(DeltaVx), DeltaVx_tol)
-            DeltaVx = _sign_symbolic(DeltaVx) * MagDeltaVx
-            if not np.isfinite(DeltaVx) or DeltaVx == 0.0:
-                raise ValueError("zero velocity difference in Omega_H_H2")
-            Omega_H_H2[k] = np.sum(
-                Vr2pidVr * ((Alpha_H_H2[:, :, k] * fH[:, :, k]) @ dVx)
-            ) / (nH[k] * DeltaVx)
-        Omega_H_H2 = np.maximum(Omega_H_H2, 0)
-
-    if H_H_EL:
-        if np.sum(MH_H_sum) <= 0:
-            # vr2 projection branch (direct)
-            for k in range(nx):
-                VxHk = Vth * np.sum(Vr2pidVr * (fH[:, :, k] @ (vx * dVx))) / nH[k]
-                for i in range(nvr):
-                    vr2_2vx_ran2[i, :] = vr[i] ** 2 - 2 * ((vx - (VxHk / Vth)) ** 2)
-                Wperp_paraH[k] = np.sum(
-                    Vr2pidVr * ((vr2_2vx_ran2 * fH[:, :, k]) @ dVx)
-                ) / nH[k]
-        else:
-            # accumulated elastic-moment branch
-            for k in range(nx):
-                M_fH = MH_H_sum[:, :, k] - fH[:, :, k]
-                Wperp_paraH[k] = -np.sum(
-                    Vr2pidVr * ((vr2_2vx2_2D * M_fH) @ dVx)
-                ) / nH[k]
-        for k in range(nx):
-            Work = fH[:, :, k].reshape((nsig,), order="F")
-            # The source writes into its preallocated C-order Alpha buffer;
-            # retain that carrier layout before the weighted reduction.
-            Alpha_H_H = np.array(
-                (SIG_H_H @ Work).reshape((nvr, nvx), order="F"),
-                order="C",
-                copy=True,
-            )
-            Wpp = Wperp_paraH[k]
-            MagWpp = np.maximum(np.abs(Wpp), Wpp_tol)
-            Wpp = _sign_symbolic(Wpp) * MagWpp
-            if not np.isfinite(Wpp) or Wpp == 0.0:
-                raise ValueError("zero perpendicular moment in Omega_H_H")
-            Omega_H_H[k] = np.sum(
-                Vr2pidVr * ((Alpha_H_H * Work.reshape((nvr, nvx), order="F")) @ dVx)
-            ) / (nH[k] * Wpp)
-        Omega_H_H = np.maximum(Omega_H_H, 0)
-
-    Omega_EL = Omega_H_P + Omega_H_H2 + Omega_H_H
-
-    result = {
-        "VxH": VxH,
-        "Omega_H_P": Omega_H_P,
-        "Omega_H_H2": Omega_H_H2,
-        "Omega_H_H": Omega_H_H,
-        "Omega_EL": Omega_EL,
-        "Wperp_paraH": Wperp_paraH,
-    }
-    if any(not np.all(np.isfinite(value)) for value in result.values()):
-        raise ValueError("Omega assembly produced a non-finite result")
-    return result
+    return reduce_elastic_moments(
+        fH, nH, Alpha_H_P, Alpha_H_H2, SIG_H_H,
+        Vr2pidVr, dVx, vr, vx, Vth, vxi, vxH2,
+        moment_state=moment_state, target_distribution=target_distribution,
+        enabled=(H_P_EL, H_H2_EL, H_H_EL), names=('H_P', 'H_H2', 'H_H'),
+        flow_name='VxH', stress_name='Wperp_paraH', mass_fractions=(0.5, 2/3),
+    )

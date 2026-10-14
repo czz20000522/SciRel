@@ -191,9 +191,9 @@ def test_invalid_carrier_fails_closed():
     with pytest.raises(ValueError):
         assemble_molecular_hydrogen_collision_matrices(np.array([0.5, 1.0]), np.array([-1.0, 1.0]),
                                                        np.array([1.0, 2.0]), np.array([2.0, 2.0]), -1.0)
-    # Non-increasing vx (must be strictly increasing, symmetric about zero).
+    # Non-increasing vx; crossing zero is not a physical requirement.
     with pytest.raises(ValueError):
-        assemble_molecular_hydrogen_collision_matrices(np.array([0.5, 1.0]), np.array([1.0, 2.0]),
+        assemble_molecular_hydrogen_collision_matrices(np.array([0.5, 1.0]), np.array([1.0, 1.0]),
                                                        np.array([1.0, 2.0]), np.array([2.0, 2.0]), 1.0)
     # Non-positive dVx.
     with pytest.raises(ValueError):

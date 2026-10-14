@@ -1,41 +1,13 @@
-"""H+-on-H elastic momentum-transfer cross-section fit.
+"""H+-on-H elastic momentum-transfer fit in m^2.
 
-One leaf recovered from the saved KN1DPy ``sigma_el_p_h`` slice (source anchor
-``KN1DPy/sigma/sigma_el_p_h.py:1-42``, caller ``KN1DPy/kinetic_h.py:996-1016``),
-integrated as :func:`evaluate_hydrogen_proton_elastic_cross_section`:
-
-the H+-on-H elastic momentum-transfer cross section in ``m^2`` as a function
-of the collision energy in eV -- a distinct logarithmic polynomial below and
-above the 10 eV breakpoint, both scaled by ``1e-4``, evaluated on the
-source-clipped domain ``[0.001, 1.01e5]`` eV.
-
-**Two declared source behaviors are kept exactly.**  First, the breakpoint:
-the source selects branches with strict inequalities, so a clipped energy of
-exactly 10 eV stays exactly zero -- neither branch includes the breakpoint.
-Second, the output shape: the source wraps its input as ``np.array([E])``, so
-the saved formal implementation returns one extra leading singleton axis
-compared with the input (a one-dimensional input of shape ``(n,)`` yields
-``(1, n)``).  The saved document's boilerplate instead declares the output
-shaped like the input; this module keeps the implementation's documented
-behavior and declares it explicitly, and the discrepancy is recorded as an
-expert-review question rather than silently resolved in either direction.
-
-**Input-contract repairs relative to the saved implementation.**  The saved
-document declares the energy nonnegative, but its implementation silently
-clipped negative energies to the lower endpoint; this module rejects them.
-Non-real energies, including numeric strings and boolean cells, are also
-rejected before float conversion.  The arithmetic is preserved on finite
-nonnegative real inputs.
-
-Evidence ceiling: this module establishes the piecewise fit against an
-independent evaluation of the same formulas, the breakpoint zero, the leading
-axis, the endpoint clipping, the input and failure contracts, these repairs, and
--- in the environment-gated replay test -- exact agreement with the saved
-KN1DPy implementation on the declared domain.  The saved bundle's strict D1
-qualification has been withdrawn; that replay is historical development
-evidence, not qualified-L1 provenance.  No test establishes the fit against an
-external physical cross-section reference: the saved package records that
-residual as ``validation_oracle_gap``.
+The input is projectile proton laboratory energy in eV with target H at rest.
+The KN1D IDL primary sigma_el_p_h.pro uses E <= 10 eV for the low-energy
+polynomial and E > 10 eV for the high-energy polynomial. This repairs the
+Python translation's zero at exactly 10 eV; the original failure is preserved
+in the scientific-correction receipt. The two empirical fits are not forced
+continuous. Endpoint clipping [0.001, 1.01e5] eV and the leading singleton
+output axis remain explicit. Fit fidelity does not establish accuracy outside
+the cited experimental/model range or grant redistribution approval.
 """
 from __future__ import annotations
 
@@ -69,9 +41,8 @@ def evaluate_hydrogen_proton_elastic_cross_section(energy_ev):
     numpy.ndarray
         Cross sections in ``m^2`` with one extra leading singleton axis
         compared with the input (the saved source's ``np.array([E])``
-        wrapper convention).  A clipped energy of exactly 10 eV is exactly
-        zero, the source's strict-branch breakpoint behavior; all other
-        accepted values are strictly positive and finite.
+        wrapper convention). Exactly 10 eV uses the low polynomial; accepted
+        values are positive and finite. The empirical breakpoint may jump.
 
     Raises
     ------
@@ -81,7 +52,7 @@ def evaluate_hydrogen_proton_elastic_cross_section(energy_ev):
     energy = finite_nonnegative_energy(energy_ev)
     clipped = np.clip(energy, 0.001, 1.01e5)
     result = np.zeros_like(clipped, dtype=float)
-    low = clipped < 10.0
+    low = clipped <= 10.0
     high = clipped > 10.0
     if np.any(low):
         result[low] = np.exp(

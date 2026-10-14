@@ -1,0 +1,74 @@
+{
+  "schema": "scirel.root-scientific-reception.v1",
+  "at_utc": "2026-10-14T08:35:24.479907+00:00",
+  "status": "QUALIFIED_SIX_EMPIRICAL_FIT_IMPLEMENTATIONS_AND_DOCUMENT_CLOSURE",
+  "assets": [
+    "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
+    "scirel.collisions.atomic-hydrogen-elastic-cross-section",
+    "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
+    "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
+    "scirel.collisions.molecular-hydrogen-elastic-cross-section",
+    "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section"
+  ],
+  "source_commit": "5f394581be529da8df7fff19226ef9df791e3f4f",
+  "wheel_sha256": "585ac0e13e8961a09396fe491b4a0967fa62c74a08309d3539c0ac4702aaf567",
+  "root_installed": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/collision-fit-root/results/ROOT_FIT_INDEPENDENT.json",
+    "bytes": 1449,
+    "sha256": "1dd1643a3c2d033b5b0f8f03215ba4f8701bc560a0853a755240a9d8dcec2eb4"
+  },
+  "root_terminal": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/collision-fit-root/ROOT_CONTAINER_READBACK.json",
+    "bytes": 8603,
+    "sha256": "228bbd566d4e952bb0d1df3054498ef3d801c3ce6b65e5da48ec9aa25e963abd"
+  },
+  "existing_tests": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/package-union-collision/containers/scirel-union-collision-fit-source-20261014.log",
+    "bytes": 108,
+    "sha256": "980c33ca0562f3eb4864bd4378c7a98a362c9bc4c970bde8058f0eb709bcfd85"
+  },
+  "unchanged_original_tests": 62,
+  "branches": 9,
+  "energy_points_each": 56,
+  "formal_document_preimages": {
+    "catalog/examples/scirel.collisions.atomic-hydrogen-charge-exchange-cross-section.json": {
+      "path": "/Users/tomczz/.codex/worktrees/cumulative-collision/SciReL/catalog/examples/scirel.collisions.atomic-hydrogen-charge-exchange-cross-section.json",
+      "bytes": 13325,
+      "sha256": "c756b2122de8a569f703eda42f865942c83963f22109cccfee46cae23d4251a5"
+    },
+    "catalog/examples/scirel.collisions.atomic-hydrogen-elastic-cross-section.json": {
+      "path": "/Users/tomczz/.codex/worktrees/cumulative-collision/SciReL/catalog/examples/scirel.collisions.atomic-hydrogen-elastic-cross-section.json",
+      "bytes": 12199,
+      "sha256": "8c6d98f1f7d27b88b964782253e67c1e3e8971edfa644cda85d449ee6578e870"
+    },
+    "catalog/examples/scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section.json": {
+      "path": "/Users/tomczz/.codex/worktrees/cumulative-collision/SciReL/catalog/examples/scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section.json",
+      "bytes": 10563,
+      "sha256": "dd099cee226fdb5f6c4bf682c225a1955882ae29d79133f88689170de7ef3586"
+    },
+    "catalog/examples/scirel.collisions.molecular-hydrogen-charge-exchange-cross-section.json": {
+      "path": "/Users/tomczz/.codex/worktrees/cumulative-collision/SciReL/catalog/examples/scirel.collisions.molecular-hydrogen-charge-exchange-cross-section.json",
+      "bytes": 11627,
+      "sha256": "1a871b5c1bbd3f94fc33529371d426b5b144939555e7e57edc85eb87669ad247"
+    },
+    "catalog/examples/scirel.collisions.molecular-hydrogen-elastic-cross-section.json": {
+      "path": "/Users/tomczz/.codex/worktrees/cumulative-collision/SciReL/catalog/examples/scirel.collisions.molecular-hydrogen-elastic-cross-section.json",
+      "bytes": 11330,
+      "sha256": "426ffc5a00d3c7ee394c39905215ddc9d2ff572e85e72238f201ab550a70ed6b"
+    },
+    "catalog/examples/scirel.collisions.proton-molecular-hydrogen-elastic-cross-section.json": {
+      "path": "/Users/tomczz/.codex/worktrees/cumulative-collision/SciReL/catalog/examples/scirel.collisions.proton-molecular-hydrogen-elastic-cross-section.json",
+      "bytes": 9427,
+      "sha256": "ae288b1488057ba64ce4bb3e441f852c3d28c555e02de30dc60aa79756f2ab5f"
+    }
+  },
+  "primary": {
+    "path": "/Users/tomczz/Projects/SciReL/.runtime/mac-three-projects-20261014/collision-core-continuation/PRIMARY_BINDING.json",
+    "bytes": 2050,
+    "sha256": "76277899d6d6c120ed4b74df509addf2212b7163036141c5cd4f2beff106436c"
+  },
+  "whole_project_D1_restored": false,
+  "experimental_validation": false,
+  "human_approval": false,
+  "public_release": false
+}

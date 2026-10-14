@@ -75,7 +75,7 @@ def _sigma_h_hh(e):
 def _sigma_p_h(e):
     e = np.minimum(np.maximum(e, 0.001), 1.01e5)
     result = np.zeros(np.shape(e), dtype=float)
-    result = np.where(e < 10.0, np.exp(_poly(np.log(e), _H_P_LOW_COEFFICIENTS)) * 1.0e-4, result)
+    result = np.where(e <= 10.0, np.exp(_poly(np.log(e), _H_P_LOW_COEFFICIENTS)) * 1.0e-4, result)
     result = np.where(e > 10.0, np.exp(_poly(np.log(e), _H_P_HIGH_COEFFICIENTS)) * 1.0e-4, result)
     return result
 
@@ -188,9 +188,9 @@ def test_invalid_carrier_fails_closed():
     with pytest.raises(ValueError):
         assemble_atomic_hydrogen_collision_matrices(np.array([0.5, 1.0]), np.array([-1.0, 1.0]),
                                                     np.array([1.0, 2.0]), np.array([2.0, 2.0]), -1.0)
-    # Non-increasing vx (must be strictly increasing, symmetric about zero).
+    # Non-increasing vx; crossing zero is not a physical requirement.
     with pytest.raises(ValueError):
-        assemble_atomic_hydrogen_collision_matrices(np.array([0.5, 1.0]), np.array([1.0, 2.0]),
+        assemble_atomic_hydrogen_collision_matrices(np.array([0.5, 1.0]), np.array([1.0, 1.0]),
                                                     np.array([1.0, 2.0]), np.array([2.0, 2.0]), 1.0)
     # Non-positive dVx.
     with pytest.raises(ValueError):

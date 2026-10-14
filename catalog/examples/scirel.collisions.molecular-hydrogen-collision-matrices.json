@@ -2,77 +2,270 @@
   "schema": "scirel.asset-document.v1",
   "asset_id": "scirel.collisions.molecular-hydrogen-collision-matrices",
   "kind": "operator",
-  "title": {"en": "Molecular hydrogen four-family collision matrices", "zh": "分子氢四族碰撞矩阵组装"},
-  "summary": "Assemble the saved KN1DPy molecular SIG_CX, SIG_H2_H, SIG_H2_P and SIG_H2_H2 matrices from a normalized cylindrical velocity carrier. Five theta nodes and Fortran-order flattening are retained. Molecular CX uses the saved full H_MASS*Vth2/Q energy factor, unlike the atomic half factor; cross sections bind to SciRel leaves.",
-  "taxonomy": ["collisions", "collision-matrix", "molecular-hydrogen", "velocity-space"],
-  "aliases": ["molecular SIG assembly", "assemble_molecular_hydrogen_collision_matrices"],
+  "title": {
+    "en": "Molecular hydrogen four-family collision matrices",
+    "zh": "分子氢四族碰撞矩阵组装"
+  },
+  "summary": "在圆柱归一化速度网格上组装电荷交换、两路动量传递和自碰撞应力矩阵。明确 H/D 实验室能量缩放；保留带符号弹性矩阵，支持显式增加角节点以检查收敛。",
+  "taxonomy": [
+    "collisions",
+    "collision-matrix",
+    "molecular-hydrogen",
+    "velocity-space"
+  ],
+  "aliases": [
+    "molecular SIG assembly",
+    "assemble_molecular_hydrogen_collision_matrices"
+  ],
   "identity": {
     "relation": "molecular H2 four-family normalized collision-kernel matrix assembly",
     "direction": "normalized cylindrical velocity axes, cell weights, normalization energy and mass ratio -> four SIG matrices and predecessor geometry",
-    "definition": "For each pair (vr_i,vx_j), (vr_k,vx_l), five midpoint theta nodes form relative-speed squared v_v2 and signed vr2_vx2. Each family multiplies the corresponding SciRel cross section at its source energy factor by v_v, averages over theta, weights by Vr2pidVr_k*dVx_l and reshapes to (nvr*nvx,nvr*nvx) in Fortran order (row i+nvr*j, column k+nvr*l). SIG_CX uses H_MASS*Vth2/Q, with neither 0.5 nor mu; SIG_H2_H and SIG_H2_P use 0.5*H_MASS*Vth2/Q and an additional signed vx_j-vx_l weight; SIG_H2_H2 uses H_MASS*mu*Vth2/Q, the viscosity fallback fit and signed vr2_vx2/8. Vth2=(sqrt(2*Q*Tnorm/(mu*H_MASS)))^2.",
-    "model": "saved KN1DPy four-family molecular velocity-space quadrature, with SciRel cross-section operators as exact dependencies",
-    "geometry": "cylindrical velocity space with radial speed vr, axial velocity vx and five-point azimuthal theta quadrature",
+    "definition": "令 g²=vr_i²+vr_k²−2vr_i vr_k cosθ+(vx_j−vx_l)²，θ_m=π(m+1/2)/n_theta。矩阵列权重为 Vr2pidVr_k*dVx_l，Fortran 排序 row=i+nvr*j、col=k+nvr*l。CX 核为 <g σ_CX>，混合动量核为 (vx_j−vx_l)<g σ_mt>，自碰撞应力核为 <(g_perp²−2g_x²)g σ_vis>/8。Vth²=2Q*Tnorm/(mu*H_MASS)。分子 CX 拟合能量为 g²*2Tnorm/mu，H2-H 与 H2-P 为 g²*Tnorm/mu，自黏性为 g²*2Tnorm。",
+    "model": "KN1D 的轴对称速度积分核；动量传递截面与黏性截面采用不同同位素缩放。",
+    "geometry": "圆柱速度空间，均匀中点方位角平均，默认 5 点，n_theta 可显式增加。",
     "coordinates": "vr and vx are dimensionless v/Vth; source and target velocity pairs flatten in Fortran order",
-    "boundary": "vr is positive and strictly increasing; vx is strictly increasing with both signs; radial weights are nonnegative, axial widths are positive, Tnorm and mu are positive real scalars; signed elastic cells are retained",
+    "boundary": "正且递增 vr、递增 vx、非负径向权重和正轴向权重、正有限 Tnorm/mu；不要求 vx 跨零。n_theta 为正整数；输出保留弹性核的负值。",
     "assumptions": [
-      "The molecular SIG_CX energy factor is the saved full H_MASS*Vth2/Q, distinct from the atomic half factor; the physical reason remains an expert question.",
-      "The H-H2 cross-section leaf returns a leading singleton axis; assembly removes only that declared wrapper axis.",
-      "The saved H2-H2 viscosity selector uses the same fitted coefficients as its default branch; the saved constants H_MASS=1.6726231e-27 kg and Q=1.602177e-19 C are retained."
+      "常数 H_MASS=1.6726231e-27 kg、Q=1.602177e-19 C；Vth=sqrt(2Q*Tnorm/(mu*H_MASS))，全部节点用 v/Vth。",
+      "拟合自变量是相应弹丸在静止靶参考系中的实验室能量，并非一律使用质心能量。KN1D §2.1.2.6 的动量传递按 E_D/2 映射氢拟合，黏性按 E_D 映射；本次验证 H(mu=1) 与 D(mu=2)，其他正 mu 仅代数扩展，无新增物理资格。",
+      "分子 CX 的弹丸质量为 2H_MASS；混合 H-H2/P-H2 拟合始终使用 H 弹丸质量，交换测试粒子与背景不改变相对速度对应截面。",
+      "分子自黏性使用动量传递拟合作为近似替代；没有新的分子黏性实验测量依据。",
+      "默认五角规则是数值近似；调用方需独立检查角和速度网格收敛。"
     ]
   },
   "inputs": [
-    {"name": "vr", "description": "Radial normalized speed nodes.", "units": "v/Vth", "shape": "[nvr]", "dtype": "real numeric array-like", "required": true, "constraints": "Nonempty, finite, positive and strictly increasing."},
-    {"name": "vx", "description": "Axial normalized velocity nodes.", "units": "v/Vth", "shape": "[nvx]", "dtype": "real numeric array-like", "required": true, "constraints": "Nonempty, finite, strictly increasing, containing at least one negative and one positive node; exact symmetry is not required."},
-    {"name": "Vr2pidVr", "description": "Source-side radial cylindrical integration weights.", "units": "dimensionless normalized radial-area measure", "shape": "[nvr]", "dtype": "real numeric array-like", "required": true, "constraints": "Finite, nonnegative and aligned with vr."},
-    {"name": "dVx", "description": "Source-side axial cell widths.", "units": "dimensionless normalized axial-speed increment", "shape": "[nvx]", "dtype": "real numeric array-like", "required": true, "constraints": "Finite, positive and aligned with vx."},
-    {"name": "Tnorm", "description": "Energy setting the thermal normalization.", "units": "eV", "shape": "scalar", "dtype": "real numeric scalar", "required": true, "constraints": "Finite and strictly positive; arrays, booleans and numeric strings are rejected."},
-    {"name": "mu", "description": "Mass in multiples of the saved hydrogen mass.", "units": "multiples of 1.6726231e-27 kg", "shape": "scalar", "dtype": "real numeric scalar", "required": false, "default": 1.0, "constraints": "Finite and strictly positive; arrays, booleans and numeric strings are rejected."}
+    {
+      "name": "vr",
+      "description": "径向归一化速度节点。",
+      "units": "v/Vth",
+      "shape": "[nvr]",
+      "dtype": "实数数组",
+      "required": true,
+      "constraints": "非空、有限、正、严格递增。"
+    },
+    {
+      "name": "vx",
+      "description": "轴向归一化速度节点。",
+      "units": "v/Vth",
+      "shape": "[nvx]",
+      "dtype": "实数数组",
+      "required": true,
+      "constraints": "非空、有限、严格递增；可整体平移，不要求跨零。"
+    },
+    {
+      "name": "Vr2pidVr",
+      "description": "圆柱径向速度积分权重。",
+      "units": "dimensionless normalized radial-area measure",
+      "shape": "[nvr]",
+      "dtype": "实数数组",
+      "required": true,
+      "constraints": "有限、非负，与 vr 对齐。"
+    },
+    {
+      "name": "dVx",
+      "description": "轴向速度积分权重。",
+      "units": "dimensionless normalized axial-speed increment",
+      "shape": "[nvx]",
+      "dtype": "实数数组",
+      "required": true,
+      "constraints": "有限、正，与 vx 对齐。"
+    },
+    {
+      "name": "Tnorm",
+      "description": "定义热速度的归一化能量。",
+      "units": "eV",
+      "shape": "scalar",
+      "dtype": "实数标量",
+      "required": true,
+      "constraints": "有限正实数标量，拒绝数组、布尔和字符串。"
+    },
+    {
+      "name": "mu",
+      "description": "同位素质量比，氢为 1、氘为 2。",
+      "units": "multiples of 1.6726231e-27 kg",
+      "shape": "scalar",
+      "dtype": "实数标量",
+      "required": false,
+      "default": 1.0,
+      "constraints": "有限正实数标量；物理核对限 H=1、D=2。"
+    },
+    {
+      "name": "n_theta",
+      "description": "方位角中点节点数；用于显式收敛检查。",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "整数",
+      "required": false,
+      "constraints": "正整数，拒绝布尔；默认 5。",
+      "default": 5
+    }
   ],
   "outputs": [
-    {"name": "SIG_CX", "description": "H2/H2+ charge-exchange kernel using the full molecular energy factor.", "units": "m^2 in normalized kernel convention", "shape": "[nvr*nvx,nvr*nvx]", "dtype": "float64 array", "required": true, "constraints": "Finite and nonnegative."},
-    {"name": "SIG_H2_H", "description": "H2-H elastic kernel with signed axial-difference weight.", "units": "m^2 in normalized kernel convention", "shape": "[nvr*nvx,nvr*nvx]", "dtype": "float64 array", "required": true, "constraints": "Finite; negative cells are retained."},
-    {"name": "SIG_H2_P", "description": "H2-H+ elastic kernel with signed axial-difference weight.", "units": "m^2 in normalized kernel convention", "shape": "[nvr*nvx,nvr*nvx]", "dtype": "float64 array", "required": true, "constraints": "Finite; negative cells are retained."},
-    {"name": "SIG_H2_H2", "description": "H2-H2 viscosity kernel with signed vr2_vx2 and /8.", "units": "m^2 in normalized kernel convention", "shape": "[nvr*nvx,nvr*nvx]", "dtype": "float64 array", "required": true, "constraints": "Finite; negative cells are retained."},
-    {"name": "v_v2", "description": "Squared normalized relative speed at each theta node.", "units": "(v/Vth)^2", "shape": "[nvr,nvx,nvr,nvx,5]", "dtype": "float64 array", "required": true, "constraints": "Predecessor geometry returned for parity inspection."},
-    {"name": "v_v", "description": "Normalized relative speed at each theta node.", "units": "v/Vth", "shape": "[nvr,nvx,nvr,nvx,5]", "dtype": "float64 array", "required": true, "constraints": "Square root of v_v2."},
-    {"name": "vr2_vx2", "description": "Signed radial-minus-axial collision factor.", "units": "(v/Vth)^2", "shape": "[nvr,nvx,nvr,nvx,5]", "dtype": "float64 array", "required": true, "constraints": "May be negative."},
-    {"name": "vx_vx", "description": "Axial velocity difference vx_j-vx_l.", "units": "v/Vth", "shape": "[nvr,nvx,nvr,nvx]", "dtype": "float64 array", "required": true, "constraints": "Signed and zero values are retained."},
-    {"name": "Vr2pidVrdVx", "description": "Broadcast source velocity-space weight.", "units": "dimensionless normalized volume measure", "shape": "[nvr,nvx,nvr,nvx]", "dtype": "float64 array", "required": true, "constraints": "Nonnegative."},
-    {"name": "Vth2", "description": "Squared thermal normalization speed.", "units": "m^2/s^2", "shape": "[1]", "dtype": "float64 array", "required": true, "constraints": "Finite and positive on accepted calls."}
+    {
+      "name": "SIG_CX",
+      "description": "非负电荷交换核。",
+      "units": "m^2 in normalized kernel convention",
+      "shape": "[nvr*nvx,nvr*nvx]",
+      "dtype": "float64 数组",
+      "required": true,
+      "constraints": "有限且非负。"
+    },
+    {
+      "name": "SIG_H2_H",
+      "description": "带符号混合粒子动量传递核。",
+      "units": "m^2 in normalized kernel convention",
+      "shape": "[nvr*nvx,nvr*nvx]",
+      "dtype": "float64 数组",
+      "required": true,
+      "constraints": "有限，保留正、负及零值。"
+    },
+    {
+      "name": "SIG_H2_P",
+      "description": "带符号混合粒子动量传递核。",
+      "units": "m^2 in normalized kernel convention",
+      "shape": "[nvr*nvx,nvr*nvx]",
+      "dtype": "float64 数组",
+      "required": true,
+      "constraints": "有限，保留正、负及零值。"
+    },
+    {
+      "name": "SIG_H2_H2",
+      "description": "带符号自碰撞应力核，包含黏性截面和 1/8。",
+      "units": "m^2 in normalized kernel convention",
+      "shape": "[nvr*nvx,nvr*nvx]",
+      "dtype": "float64 数组",
+      "required": true,
+      "constraints": "有限，保留正、负及零值。"
+    },
+    {
+      "name": "v_v2",
+      "description": "各角节点的归一化相对速度平方。",
+      "units": "(v/Vth)^2",
+      "shape": "[nvr,nvx,nvr,nvx,n_theta]",
+      "dtype": "float64 数组",
+      "required": true,
+      "constraints": "有限且非负。"
+    },
+    {
+      "name": "v_v",
+      "description": "归一化相对速度。",
+      "units": "v/Vth",
+      "shape": "[nvr,nvx,nvr,nvx,n_theta]",
+      "dtype": "float64 数组",
+      "required": true,
+      "constraints": "有限且非负。"
+    },
+    {
+      "name": "vr2_vx2",
+      "description": "相对径向平方减两倍轴向平方。",
+      "units": "(v/Vth)^2",
+      "shape": "[nvr,nvx,nvr,nvx,n_theta]",
+      "dtype": "float64 数组",
+      "required": true,
+      "constraints": "有限，保留正、负及零值。"
+    },
+    {
+      "name": "vx_vx",
+      "description": "带符号轴向速度差。",
+      "units": "v/Vth",
+      "shape": "[nvr,nvx,nvr,nvx]",
+      "dtype": "float64 数组",
+      "required": true,
+      "constraints": "有限，保留正、负及零值。"
+    },
+    {
+      "name": "Vr2pidVrdVx",
+      "description": "广播后的目标列速度积分权重。",
+      "units": "dimensionless normalized volume measure",
+      "shape": "[nvr,nvx,nvr,nvx]",
+      "dtype": "float64 数组",
+      "required": true,
+      "constraints": "有限且非负。"
+    },
+    {
+      "name": "Vth2",
+      "description": "热速度标度的平方。",
+      "units": "m^2/s^2",
+      "shape": "[1]",
+      "dtype": "float64 数组",
+      "required": true,
+      "constraints": "有限且正。"
+    }
   ],
   "applicability": {
-    "preconditions": ["The caller supplies the source velocity carrier and accepts its five-node theta and Fortran-index conventions.", "The four bound SciRel cross-section fits and their declared clipping and branch behavior apply."],
-    "supported": ["Stateless assembly of the molecular H2 four-family SIG matrices on finite normalized cylindrical velocity grids."],
-    "excluded": ["Do_SIG gating, cache lifecycle, SIG_D2 and other families, Alpha/Omega contraction, source iteration and external physical validation."]
+    "preconditions": [
+      "各通道采用声明的实验室能量、同位素缩放、截面拟合与端点截断。",
+      "调用方按用途检查有限角/速度积分精度；数组以 Fortran 顺序展开。"
+    ],
+    "supported": [
+      "H/D 四通道矩阵组装、共同轴向速度平移、带权交换对称或反对称。"
+    ],
+    "excluded": [
+      "完整输运方程求解、原项目缓存生命周期、其他物种或未经验证的同位素推广。",
+      "从有限节点数推断任意分布的精度或新的实验截面资格。"
+    ]
   },
   "failure_semantics": {
-    "invalid_input": "Raises ValueError for non-real, non-finite, misaligned or out-of-domain carriers, including non-increasing vr/vx and non-scalar Tnorm/mu.",
-    "runtime_failure": "Raises ValueError if thermal normalization is not representable, an assembled family is non-finite, or a bound cross-section rejects an energy; no matrix is returned on failure.",
-    "nonconvergence": "Not applicable; finite five-node quadrature has no iteration.",
-    "partial_results": "Never returned."
+    "invalid_input": "非实数、非有限、形状不匹配、轴不递增、非法权重/归一化或 n_theta 时抛 ValueError。",
+    "runtime_failure": "热速度、截面或矩阵不可表示为有限值时抛 ValueError；内存不足也不返回部分矩阵。",
+    "nonconvergence": "有限中点求积，无自适应迭代；收敛由调用者检查。",
+    "partial_results": "不返回部分结果。"
   },
   "provenance": {
-    "lineage_summary": "Development integration from saved KN1DPy 分子氢碰撞矩阵组装, source anchor kinetic_h2.py:1036-1125; saved implementation SHA-256 34358f11e3ee91fa6768c8cf89d22eb1a2edbe2707f9e58d0b91472bf1b50d06. Embedded source fits were replaced with four maintained SciRel leaves. Strictly increasing vr and scalar real normalization inputs are enforced as documented repairs. The saved bundle is in re-review and KN1DPy's strict D1 qualification is withdrawn; this is bounded historical development comparison, not qualified-L1 provenance or expert approval.",
-    "source_kinds": ["saved L1 operator document and implementation", "independent broadcast-geometry oracle", "SHA-gated historical replay", "scientific regression tests"],
+    "lineage_summary": "Development integration from saved KN1DPy 分子氢碰撞矩阵组装, source anchor kinetic_h2.py:1036-1125; saved implementation SHA-256 34358f11e3ee91fa6768c8cf89d22eb1a2edbe2707f9e58d0b91472bf1b50d06. Embedded source fits were replaced with four maintained SciRel leaves. Strictly increasing vr and scalar real normalization inputs are enforced as documented repairs. The saved bundle is in re-review and KN1DPy's strict D1 qualification is withdrawn; this is bounded historical development comparison, not qualified-L1 provenance or expert approval. 后继以原始 KN1D 报告 §2.1.2.6、§2.2.3 与各 IDL fit 的 projectile-energy 定义核对能量因素及带符号矩；保留原冻结、失败和严格 D1 撤回记录，不追溯扩大资格。",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent broadcast-geometry oracle",
+      "SHA-gated historical replay",
+      "scientific regression tests"
+    ],
     "public_references": [],
     "license_status": "pending-human-decision"
   },
-  "public_api": {"python": {"module": "scirel.collisions.molecular_hydrogen_collision_matrices", "symbol": "assemble_molecular_hydrogen_collision_matrices", "signature": "assemble_molecular_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu=1.0)"}},
-  "version": {"implementation_version": "0.1.0.dev5", "dependencies": [
-    {"asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section"},
-    {"asset_id": "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section"},
-    {"asset_id": "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section"},
-    {"asset_id": "scirel.collisions.molecular-hydrogen-elastic-cross-section"}
-  ]},
+  "public_api": {
+    "python": {
+      "module": "scirel.collisions.molecular_hydrogen_collision_matrices",
+      "symbol": "assemble_molecular_hydrogen_collision_matrices",
+      "signature": "assemble_molecular_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu=1.0, *, n_theta=5)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.2.0.dev13+collision.physical",
+    "dependencies": [
+      {
+        "asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section"
+      },
+      {
+        "asset_id": "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section"
+      },
+      {
+        "asset_id": "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section"
+      },
+      {
+        "asset_id": "scirel.collisions.molecular-hydrogen-elastic-cross-section"
+      }
+    ]
+  },
   "example": {
-    "description": "Build a two-by-two velocity carrier and inspect matrix order and the source weight axis.",
+    "description": "构建两乘两速度网格，检查带符号矩阵及默认五点角几何。",
     "code": "import numpy as np\nfrom scirel.collisions import assemble_molecular_hydrogen_collision_matrices\nr = assemble_molecular_hydrogen_collision_matrices(\n    vr=np.array([0.5, 1.0]), vx=np.array([-1.0, 1.0]),\n    Vr2pidVr=np.array([1.0, 2.0]), dVx=np.array([2.0, 2.0]), Tnorm=1.0,\n)\nassert r['SIG_CX'].shape == (4, 4)\nassert r['v_v2'].shape == (2, 2, 2, 2, 5)\nassert np.isfinite(r['SIG_H2_H2']).all()\nassert (r['SIG_H2_H2'] < 0).any()\nassert r['Vth2'].shape == (1,)",
-    "expected": "Four finite 4-by-4 SIG matrices, retained signed elastic cells, five-node predecessor geometry and a one-element thermal-speed-square result."
+    "expected": "四个有限的 4×4 矩阵；CX 非负，弹性矩保留负值；返回五角几何与热速度平方。"
   },
   "verification": {
-    "scope": ["All four matrices agree with an independent broadcast-geometry and fit oracle to relative tolerance 1e-12 on canonical and holdout grids.", "Fortran flattening, theta geometry, signed elastic cells, nonnegative CX and the full molecular CX energy factor are retained.", "Input repairs are covered by failing-before-fix regressions; SHA-pinned historical replay compares finite cases to relative tolerance 1e-12."],
-    "tests": ["tests/operator_contracts/test_molecular_hydrogen_collision_matrices.py", "tests/operator_contracts/test_collision_matrices_l1.py"],
-    "evidence_ceiling": "Direct tests establish source-formula agreement, shapes, signs and failure semantics on tested carriers. Optional SHA-gated replay establishes bounded agreement with the saved implementation on two grids, not a qualified source freeze or external atomic-physics oracle.",
-    "known_limitations": ["The source bundle's strict D1 qualification is withdrawn; historical replay cannot be upgraded to qualified-L1 provenance without new source review.", "The full molecular CX energy factor differs from atomic CX; its physical interpretation and the negative elastic cells need expert review.", "Public distribution licensing and expert approval remain pending."]
+    "scope": [
+      "保留既有独立几何和拟合对照及原数值容差。",
+      "H/D 四通道 4096 角中点结果与独立 SciPy 自适应积分比较；检查带权交换关系和共同 boost。",
+      "真实归一化分布生成矩和 Alpha，验证 H↔H2 动量交换、Maxwell 平衡动量与弱漂移。"
+    ],
+    "tests": [
+      "tests/operator_contracts/test_molecular_hydrogen_collision_matrices.py",
+      "tests/operator_contracts/test_collision_physical_closure.py"
+    ],
+    "evidence_ceiling": "支持声明的 KN1D 积分核与已测离散输入的一致性，不是所有能区的实验截面验证或完整来源项目 D3；作者结果仍待根独立接收。",
+    "known_limitations": [
+      "拟合端点裁剪和分子黏性替代属于继承模型近似。",
+      "默认五角没有普适精度保证；高阶验证不替代用户网格收敛。",
+      "人类科学认可和再分发许可单独决定；原严格 D1 撤回与历史缺口不被抹去。"
+    ]
   }
 }
