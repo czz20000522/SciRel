@@ -85,6 +85,13 @@ contract/docstrings, not selected merely to remove a failed fixture.
 
 ## Handoff
 
+Before treating unchanged baseline failures as outside the increment, classify their actual causes and runtime
+reachability. Missing test tools require a corrected validation environment and unchanged-assertion rerun;
+scientific/test-contract conflicts require evidence-based investigation, not a no-new-failures waiver. Bind any
+unaffected-claim decision to the selected wheel, exports and transitive dependencies. Assign unresolved baseline
+work an owner and next action; it remains open even when an unrelated qualified increment can proceed. Use the
+receiving project's admission policy for this distinction, not the age or author of a failure.
+
 Deliver development SHA, complete dispositions, scientific changes, affected tests, actual distribution/discovery records,
 supported scope and gaps. Submit focused commits for integration. D3 may consume the development version.
 Stage owners and handoff times are independent; no live D1 Agent or same-night full chain is required.

@@ -19,6 +19,13 @@ its own complete pipeline. Project intake grouping does not turn human decisions
 - Application interpretation or repeatability: [scientific-project-implementation](../../usage/scientific-project-implementation/SKILL.md).
 - Upload/decision mechanics: [review handoff](../scientific-asset-normalization/references/human-review-handoff.md).
 
+Separate unfinished Agent work from final human decisions before freezing this handoff. A generic pending-human
+label must not hide unresolved failure triage, feasible correction or missing independent evidence. For rights
+questions, first inspect attributable license terms against the exact shipped code/data/dependencies and intended
+use; provide an evidence-backed recommendation, unmet conditions and the precise decision or permission still
+needed. Agent analysis cannot create a rights-holder grant. Refer scope-specific blockers to the integration owner;
+do not convert a publication restriction into a blanket stop on otherwise authorized technical work.
+
 Do not repeat valid stage work just to make this handoff look independent.
 For a confirmed source defect, first require the D2 correction and applicable validation to be complete;
 a defect list is not the normal final-review deliverable. Use the existing

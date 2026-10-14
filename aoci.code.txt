@@ -183,7 +183,7 @@ handbook-authoring.md[SU7T]: F:规定领域手册、中文合同投影、用途�
 ===/Users/tomczz/Projects/SciReL/docs/design/===
 aoci-index-maintenance.md[SC7T]: F:规定按任务与工作树使用AOCI及稳定变更的增量维护 | R:code:AGENTS.md,code:docs/development-process.md | A:首建与纠错路由、增删改重命名、Scope与Budget终态 | S:首建不默认二次全量重审或多代理；局部任务不强制Overview；AOCI增量不等于catalog增量，BaseRef不含未提交改动
 catalog-and-adapters.md[SB7S]: F:设计不可变科学catalog构建及跨平台薄适配器职责 | R:code:scripts/build_catalog.py,code:src/scirel_adapter/mcp.py | A:七类发现解析生成调用的中性操作 | S:execute-examples仅运行仓库自有代码不可接收未信任文档；章节旧pilot计数是历史切片非当前覆盖
-development-trust-versions.md[SB7S]: F:规定未合入产物、内部待审包及可信发行的准入与人工注意力边界 | R:code:scripts/release_index.py,code:scripts/finalize_release.py | A:支持范围准入、D2修复责任、多轮AI复核和确切人类决定 | S:隔离不等可修复任务完成；开发标签不豁免正确性，低注意力仍需明确决定
+development-trust-versions.md[SB7S]: F:规定科学开发包准入、AI先行分流及人工最终认可与发行边界 | R:code:scripts/release_index.py,code:skills/integration/scirel-review-preparation/SKILL.md | A:科学修正、遗留失败责任、许可证据建议和确切版本决定 | S:同基线失败不等闭环；待人审不能替代可做修正，许可分析不产生授权
 l1-inventory.md[SB6S]: F:说明保存L1结构探针输入输出、依赖检查与历史压力快照 | R:code:scripts/build_l1_inventory.py,code:src/scirel_workflow/l1_inventory.py | A:L1Inventory参考探针协议 | S:不同日期根目录计数不可相加作当前盘点；结构零gap不证明科学覆盖或D1资格
 project-and-distribution.md[SB7T]: F:划分科学开发项目、独立科学包及隔离整合发行工作树 | R:code:pyproject.toml,code:docs/design/development-trust-versions.md | A:运行材料闭包、确切构建身份、来源与版本边界 | S:普通包发现收集全部科学模块不执行准入；实验错误不因开发标签入包，历史快照保留但不获新资格
 scientific-request-workflow.md[SB7S]: F:设计问题规范化、能力选择、运行计划、证据及结果解释 | R:code:skills/usage/scirel-solving/SKILL.md | A:四类逻辑产物与四层科学计划预检 | S:观察峰值零点不能升格共振吸收机制；grid-support映射不得冒充平衡求解
@@ -766,13 +766,13 @@ refinement-output-contract.md[SW6T]: F:规定规范化开发候选的逐输入�
 relation-page-contract.md[SW7T]: F:规定稳定保留资产唯一exact科学文档的事实恢复、验证与catalog投影 | R:code:docs/requirements/asset-documentation.md | A:scirel.asset-document.v1、运行签名和例子、依赖闭包 | S:不从名称输出猜科学字段；未完整文档不得上catalog，冻结后科学更改须后继及受影响重验证
 
 ===/Users/tomczz/Projects/SciReL/skills/integration/scirel-integration/===
-SKILL.md[SW7T]: F:统筹D2科学诊断修复去重、开发分发和完整核心能力后继 | R:code:skills/integration/scientific-asset-correctness/SKILL.md,code:skills/extraction/scientific-computation-asset-extraction/references/stage_boundary_contract.md | A:实现验证审查路由、单写者整合、预备接收及D3交付 | S:可修缺陷须修正验证，不靠隔离缩域结案；全链授权下新冻结优先接续，不预收活动字节或留常驻审查者；局部成功不替换完整目标
+SKILL.md[SW7S]: F:统筹D2科学修正去重、遗留失败分流及完整项目接续 | R:code:skills/integration/scientific-asset-correctness/SKILL.md,code:docs/design/development-trust-versions.md | A:独立验证审查、实际wheel依赖准入、单写整合与D3交付 | S:隔离不等修复；新冻结优先接收，范围外失败仍有责任方而非豁免
 
 ===/Users/tomczz/Projects/SciReL/skills/integration/scirel-integration/agents/===
 openai.yaml[FW6T]: F:配置保存L1交付与接收库比较整合的D2技能入口提示 | R:code:skills/integration/scirel-integration/SKILL.md | A:interface,allow_implicit_invocation=true | S:提示要求验证开发包而非把整合视为发行批准
 
 ===/Users/tomczz/Projects/SciReL/skills/integration/scirel-review-preparation/===
-SKILL.md[SW7T]: F:冻结稳定科学增量并以修正后实现与证据准备人工最终审查 | R:code:skills/extraction/scientific-relation-implementation/references/scientific-correction.md | A:修正前后披露、证据复用、分级注意力及确切批准版本 | S:缺陷列表不是修复交付；只有调查后仍不确定才例外暂缓，批准子集不提升整个包
+SKILL.md[SW7T]: F:准备稳定科学增量的人审冻结，先关闭可完成的AI调查和修正 | R:code:skills/extraction/scientific-relation-implementation/references/scientific-correction.md,code:docs/design/development-trust-versions.md | A:修正前后证据、许可建议、精确人工问题与版本冻结 | S:待人审不能掩盖未完调查；许可判断不授予权利，批准子集不提升整个包
 
 ===/Users/tomczz/Projects/SciReL/skills/integration/scirel-review-preparation/agents/===
 openai.yaml[FW6T]: F:配置稳定累积科学更改最终审查准备技能的显示信息 | R:code:skills/integration/scirel-review-preparation/SKILL.md | A:interface.default_prompt | S:仅冻结保留更改与已有证据供最终审查
