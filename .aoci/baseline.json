@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-14T12:27:29Z",
+  "updated_at": "2026-10-14T14:34:01Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -65,9 +65,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "6bf1b8000b0b3503b69587ed02e65dedc8f2d1092c24dff9202e01d098c15a2d",
-      "size": 553148,
-      "normalized_sha256": "6bf1b8000b0b3503b69587ed02e65dedc8f2d1092c24dff9202e01d098c15a2d"
+      "sha256": "bd5ed69b91fabd67231ab3d6774fcf374326c4a9e3ba8943a376bd82cf9c3ebe",
+      "size": 556589,
+      "normalized_sha256": "bd5ed69b91fabd67231ab3d6774fcf374326c4a9e3ba8943a376bd82cf9c3ebe"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -782,6 +782,30 @@
       "sha256": "4912f08d0647313804104976ca0d8fd5fc23ff2965556173c84e143a2347d49f",
       "size": 7022,
       "normalized_sha256": "4912f08d0647313804104976ca0d8fd5fc23ff2965556173c84e143a2347d49f"
+    },
+    "catalog/examples/scirel.kinetic.pdrf-dispersion-scan.json": {
+      "role": "index",
+      "sha256": "c86a8b1bdd6589f7eaf1ac6e6d9c756412ac9602fcdf28b6862d478bc1706d43",
+      "size": 47457,
+      "normalized_sha256": "c86a8b1bdd6589f7eaf1ac6e6d9c756412ac9602fcdf28b6862d478bc1706d43"
+    },
+    "catalog/examples/scirel.kinetic.pdrf-plasma-state.json": {
+      "role": "index",
+      "sha256": "ccbe9a1d60d900a7bb5f8927b17b58c448c668bdb019341d2a55d73b3edc934b",
+      "size": 19324,
+      "normalized_sha256": "ccbe9a1d60d900a7bb5f8927b17b58c448c668bdb019341d2a55d73b3edc934b"
+    },
+    "catalog/examples/scirel.kinetic.pdrf-temporal-matrix.json": {
+      "role": "index",
+      "sha256": "ddf14ca9cc698a0b0e6f10a5b5c959608685ac24e53de16187c7e33dfe30a6b6",
+      "size": 10478,
+      "normalized_sha256": "ddf14ca9cc698a0b0e6f10a5b5c959608685ac24e53de16187c7e33dfe30a6b6"
+    },
+    "catalog/examples/scirel.kinetic.pdrf-temporal-spectrum.json": {
+      "role": "index",
+      "sha256": "bf7ce20ee305c8e526e8d97ba308a21afdaafe957801d9bec9d19881f4067fb7",
+      "size": 10752,
+      "normalized_sha256": "bf7ce20ee305c8e526e8d97ba308a21afdaafe957801d9bec9d19881f4067fb7"
     },
     "catalog/examples/scirel.kinetic.plasma-dispersion-function.json": {
       "role": "index",
@@ -2787,6 +2811,12 @@
       "size": 2477,
       "normalized_sha256": "91fff8ba023f9ac28760cd4ca0ba267e63a00ff588c926e2132512d63426a25b"
     },
+    "docs/evaluations/2026-10-13-pdrf-d2.md": {
+      "role": "index",
+      "sha256": "074dfa46298ade3c54104b7e40b2c626d8dd2bdf968cbc4933587011a333cc90",
+      "size": 3042,
+      "normalized_sha256": "074dfa46298ade3c54104b7e40b2c626d8dd2bdf968cbc4933587011a333cc90"
+    },
     "docs/evaluations/d1-extraction-workflow-optimization-pleiades-20260921.md": {
       "role": "index",
       "sha256": "ec3d8f00a79722a84ca78074c8a30043f31f665f123507aded0a853f7a055098",
@@ -4503,6 +4533,24 @@
       "size": 10544,
       "normalized_sha256": "a64493e4b46fc3727f4e80307abde7230c87d670ac282a80ad8e6b68c84f4a01"
     },
+    "provenance/pdrf-d2/CANDIDATE_EVIDENCE.json": {
+      "role": "index",
+      "sha256": "019bf62fa330ad865f0fe2f0b6c77207edb467650ab0490a5f95edddc6184d40",
+      "size": 2714,
+      "normalized_sha256": "019bf62fa330ad865f0fe2f0b6c77207edb467650ab0490a5f95edddc6184d40"
+    },
+    "provenance/pdrf-d2/DELIVERY_PLAN.json": {
+      "role": "index",
+      "sha256": "1d45bf868217098a59dce04c0b722697c09141deb8babf48df93cc7d0b429d5e",
+      "size": 856,
+      "normalized_sha256": "1d45bf868217098a59dce04c0b722697c09141deb8babf48df93cc7d0b429d5e"
+    },
+    "provenance/pdrf-d2/DISPOSITIONS.json": {
+      "role": "index",
+      "sha256": "10f55890a4bba8fb90ac38158ff6904e0d3ce0710444047d2762d401282bb60c",
+      "size": 17723,
+      "normalized_sha256": "10f55890a4bba8fb90ac38158ff6904e0d3ce0710444047d2762d401282bb60c"
+    },
     "provenance/pleiades-import.json": {
       "role": "index",
       "sha256": "6dfddf633e3b9654ccd248eb8b5198b8229ea17e66d15493478dead4bdf5bb85",
@@ -4583,9 +4631,9 @@
     },
     "provenance/release-index.dev.json": {
       "role": "index",
-      "sha256": "92d4fc4af702cf772871f2e024dac29f6d148d892d9f950846466485a8b37779",
-      "size": 39403,
-      "normalized_sha256": "92d4fc4af702cf772871f2e024dac29f6d148d892d9f950846466485a8b37779"
+      "sha256": "a79d26722ff343ade2f4b916eed8fc197f9698829567020603474ed92c0dd38f",
+      "size": 41082,
+      "normalized_sha256": "a79d26722ff343ade2f4b916eed8fc197f9698829567020603474ed92c0dd38f"
     },
     "provenance/review-host-export-acceptance-20260929.json": {
       "role": "index",
@@ -4928,6 +4976,12 @@
       "sha256": "ca9511fb7b4b9cea47b4f5e4b3923aee8998bf1a40ade3fcbac4d724d06d5a7c",
       "size": 3536,
       "normalized_sha256": "ca9511fb7b4b9cea47b4f5e4b3923aee8998bf1a40ade3fcbac4d724d06d5a7c"
+    },
+    "scripts/build_pdrf_candidate.py": {
+      "role": "index",
+      "sha256": "649fa243a5a5f9f0c5945f99db88c9b4ee48b330f756c25c3f9966505b91125e",
+      "size": 4447,
+      "normalized_sha256": "649fa243a5a5f9f0c5945f99db88c9b4ee48b330f756c25c3f9966505b91125e"
     },
     "scripts/build_pleiades_selected.py": {
       "role": "index",
@@ -6419,9 +6473,9 @@
     },
     "src/scirel/kinetic/__init__.py": {
       "role": "index",
-      "sha256": "f089bb451f2d4821db26b0c30b2bf0f06dc1ec79edf20fe475bcd7caad39139a",
-      "size": 8206,
-      "normalized_sha256": "f089bb451f2d4821db26b0c30b2bf0f06dc1ec79edf20fe475bcd7caad39139a"
+      "sha256": "0a94a7c76229cb25ba1d6d5cba943f891b9dfd36d573f02841f7ce9293b96ca7",
+      "size": 8434,
+      "normalized_sha256": "0a94a7c76229cb25ba1d6d5cba943f891b9dfd36d573f02841f7ce9293b96ca7"
     },
     "src/scirel/kinetic/_gpdf_pole_data.py": {
       "role": "index",
@@ -6722,6 +6776,12 @@
       "sha256": "c71901b1bd325fc0917746f1a12216a0a19eb437eb1a9267b7e2780b95c89708",
       "size": 2591,
       "normalized_sha256": "c71901b1bd325fc0917746f1a12216a0a19eb437eb1a9267b7e2780b95c89708"
+    },
+    "src/scirel/kinetic/pdrf.py": {
+      "role": "index",
+      "sha256": "f56e3dddd5a35d831559f5148a419945ba446601c92bb91a3997dfc975e09baa",
+      "size": 28012,
+      "normalized_sha256": "f56e3dddd5a35d831559f5148a419945ba446601c92bb91a3997dfc975e09baa"
     },
     "src/scirel/kinetic/pdrk/__init__.py": {
       "role": "index",
@@ -7607,9 +7667,9 @@
     },
     "tests/_document_fixtures.py": {
       "role": "index",
-      "sha256": "b13d320dd9342b6c1939b0bbe9129255b51650490b64c1d320a29530f2e32d10",
-      "size": 1932,
-      "normalized_sha256": "b13d320dd9342b6c1939b0bbe9129255b51650490b64c1d320a29530f2e32d10"
+      "sha256": "acc0eeaa82f28c482e9f85ed22087018fb14fc7f2dbd4654e1a6c569c63eeea1",
+      "size": 1982,
+      "normalized_sha256": "acc0eeaa82f28c482e9f85ed22087018fb14fc7f2dbd4654e1a6c569c63eeea1"
     },
     "tests/_pdrk_axis_oracle.py": {
       "role": "index",
@@ -8511,6 +8571,12 @@
       "size": 2909,
       "normalized_sha256": "9e670a33fcd9639884eb12c6d122d8df2d903b07fbef374823129795ce874117"
     },
+    "tests/operator_contracts/test_pdrf_d2.py": {
+      "role": "index",
+      "sha256": "c81bf8134e604b0dbd30784866dcd2e7203b4a791ad82f083b4117ded2a56969",
+      "size": 4572,
+      "normalized_sha256": "c81bf8134e604b0dbd30784866dcd2e7203b4a791ad82f083b4117ded2a56969"
+    },
     "tests/operator_contracts/test_pdrk_accuracy_controls.py": {
       "role": "index",
       "sha256": "0733a0bd7c97f7fb8aef77fadff6f47284fdd8e7c9489b28b4c61a20685b5330",
@@ -8975,9 +9041,9 @@
     },
     "tests/test_asset_documentation.py": {
       "role": "index",
-      "sha256": "efd7c069025fb743d3182f3f0717bd918277871000da516a7642bb2bbe0fb09e",
-      "size": 15543,
-      "normalized_sha256": "efd7c069025fb743d3182f3f0717bd918277871000da516a7642bb2bbe0fb09e"
+      "sha256": "0d372ad7a687abee665dba8587b0f6edd16483ce2924ed5f9b6d4afc7250f63e",
+      "size": 15939,
+      "normalized_sha256": "0d372ad7a687abee665dba8587b0f6edd16483ce2924ed5f9b6d4afc7250f63e"
     },
     "tests/test_bootstrap.py": {
       "role": "index",
