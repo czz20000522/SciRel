@@ -1,0 +1,10 @@
+{
+  "schema": "scirel.external-project-registry-reference.v1",
+  "external_root": "/e/SciRel-lab/projects",
+  "manifest_name": "decomposition/FINAL/FINAL.json",
+  "projects": [
+    "ascot5", "bo", "boray", "cql3d", "fluidbw",
+    "gpdf", "jorek", "pdrf", "pleiades", "torax"
+  ],
+  "policy": "The external registry is the source of project FINAL artifacts; SciRel stores only intake summaries and digests."
+}
