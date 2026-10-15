@@ -38,9 +38,9 @@ def _validated_bundle(bundle_path: Path) -> tuple[dict[str, object], dict[str, b
         if manifest.get("schema") != BUNDLE_SCHEMA:
             raise ValueError("unsupported extraction skill bundle schema")
         if manifest.get("skill_names") != list(SKILL_NAMES):
-            raise ValueError("bundle does not contain the exact five extraction skills")
+            raise ValueError("bundle does not contain the exact SciRel decomposition skills")
         if manifest.get("entrypoints") != [f"{name}/SKILL.md" for name in SKILL_NAMES]:
-            raise ValueError("bundle entrypoints do not match the five extraction skills")
+            raise ValueError("bundle entrypoints do not match the SciRel decomposition skills")
         records = manifest.get("files")
         if not isinstance(records, list) or not records:
             raise ValueError("bundle manifest has no files")
@@ -58,7 +58,7 @@ def _validated_bundle(bundle_path: Path) -> tuple[dict[str, object], dict[str, b
             if path.is_absolute() or ".." in path.parts or len(path.parts) < 2:
                 raise ValueError(f"unsafe bundle file path: {name}")
             if path.parts[0] not in SKILL_NAMES:
-                raise ValueError(f"file is outside the five extraction skills: {name}")
+                raise ValueError(f"file is outside the SciRel decomposition skills: {name}")
             if name in record_names:
                 raise ValueError(f"bundle manifest repeats a file path: {name}")
             record_names.add(name)
@@ -229,7 +229,7 @@ def install_bundle(bundle_path: Path, target_root: Path, *, dry_run: bool = Fals
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Install a verified SciRel extraction skill bundle.")
+    parser = argparse.ArgumentParser(description="Install a verified SciRel D0-D3 decomposition skill bundle.")
     parser.add_argument("--bundle", type=Path, required=True)
     parser.add_argument("--target-skill-root", type=Path, required=True)
     parser.add_argument("--dry-run", action="store_true")

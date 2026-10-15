@@ -8,14 +8,16 @@ import zipfile
 from pathlib import Path, PurePosixPath
 
 
-BUNDLE_SCHEMA = "scirel.extraction-skill-bundle.v1"
-MANIFEST_PATH = "scirel-extraction-skill-bundle.json"
+BUNDLE_SCHEMA = "scirel.decomposition-skill-bundle"
+MANIFEST_PATH = "scirel-decomposition-skill-bundle.json"
 SKILL_NAMES = (
     "scientific-computation-asset-extraction",
     "scientific-computation-validation",
     "scientific-operator-review",
     "scientific-relation-implementation",
     "scientific-runtime-dataset-construction",
+    "scientific-d2-decomposition",
+    "scientific-d3-decomposition",
 )
 _IGNORED_NAMES = {"__pycache__"}
 _IGNORED_SUFFIXES = {".pyc", ".pyo"}
@@ -99,7 +101,7 @@ def build_bundle(source_root: Path, output_path: Path) -> dict[str, object]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Build the authoritative five-skill SciRel extraction bundle.")
+    parser = argparse.ArgumentParser(description="Build the authoritative D0-D3 SciRel decomposition bundle.")
     parser.add_argument(
         "--source-root",
         type=Path,

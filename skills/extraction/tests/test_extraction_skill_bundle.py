@@ -37,7 +37,7 @@ def _source_tree(root: Path) -> Path:
     return source
 
 
-def test_bundle_is_deterministic_and_contains_exact_five_skills(tmp_path: Path) -> None:
+def test_bundle_is_deterministic_and_contains_exact_decomposition_skills(tmp_path: Path) -> None:
     source = _source_tree(tmp_path)
     first = tmp_path / "first.zip"
     second = tmp_path / "second.zip"

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Scientific D2 Decomposition"
+  short_description: "Turn D1 material into independent claim and gap packets"
+  default_prompt: "Use $scientific-d2-decomposition on this exact D1 handoff; emit claim-scoped raw material and gaps without modifying or merging the development library."
+policy:
+  allow_implicit_invocation: false

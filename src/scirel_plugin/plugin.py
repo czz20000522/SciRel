@@ -122,12 +122,12 @@ class SciRelPlugin:
                 PluginSkillEntrypoint(
                     name="scirel-integration",
                     artifact_ref=skill_bundle_ref,
-                    path="skills/integration/scirel-integration/SKILL.md",
+                    path="skills/development/integration/scirel-integration/SKILL.md",
                 ),
                 PluginSkillEntrypoint(
                     name="scirel-solving",
                     artifact_ref=skill_bundle_ref,
-                    path="skills/usage/scirel-solving/SKILL.md",
+                    path="skills/development/usage/scirel-solving/SKILL.md",
                 ),
             ),
             connectors=(

@@ -17,7 +17,7 @@ ASSET_DOCUMENT = json.loads(
         encoding="utf-8"
     )
 )
-SKILL = ROOT / "skills/integration/scirel-integration/SKILL.md"
+SKILL = ROOT / "skills/development/integration/scirel-integration/SKILL.md"
 
 
 def _material(value: dict) -> dict:

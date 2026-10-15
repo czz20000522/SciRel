@@ -136,9 +136,9 @@ assert result["B"][0, 0] == 5.0
 - `docs/requirements/scientific-request-workflow.md` 与 `docs/design/scientific-request-workflow.md`：从用户需求到 SciRel 计算结果和审计解释的出库流程。
 - `docs/design/l1-inventory.md`：可选 L1 结构探针的边界和历史压测样本。
 - `docs/requirements/codefusion-plugin.md` 与 `docs/integration/codefusion-plugin-contract.md`：CodeFusion 中性 Agent 与专家审核插件边界。
-- `docs/integration/extraction-skill-bundle-deployment.md`：五个 D1 extraction skills 的确定性 bundle 构建与运行副本部署流程。
-- `skills/integration/scirel-integration/`：模型理解保存的 L1、对照当前 SciRel、判定复用/重复/变体/组合并形成专家可审查变更的方法。
-- `skills/usage/scirel-solving/`：模型规范化用户科学请求、匹配发布能力、规划执行并给出证据有界解释的方法。
+- `docs/integration/extraction-skill-bundle-deployment.md`：独立 D0-D3 decomposition skills 的确定性 bundle 构建与运行副本部署流程。
+- `skills/development/integration/scirel-integration/`：模型理解保存的 L1、对照当前 SciRel、判定复用/重复/变体/组合并形成专家可审查变更的方法。
+- `skills/development/usage/scirel-solving/`：模型规范化用户科学请求、匹配发布能力、规划执行并给出证据有界解释的方法。
 
 项目文档入口见 [`docs/README.md`](docs/README.md)，贡献与兼容要求见
 [`CONTRIBUTING.md`](CONTRIBUTING.md)。

@@ -12,6 +12,7 @@ SciRel 将已有科研代码整理为可复用的科学算子与任务图，供 
 - [架构与科学资产合同](architecture.md)：Operator、可复用 TaskGraph 与本次运行实例的区别，以及科学实现和编排的边界。
 - [科学请求工作流](requirements/scientific-request-workflow.md)：需求规范化、能力匹配、动态组合、执行和结果解释。
 - [开发流程](development-process.md)：来源拆解、库整合与用户应用如何交接，怎样扩充和验证能力。
+- [独立 D0-D3 拆解 skill 包](../skills/extraction/README.md)：可交给单独 Agent 并行执行，产出合并所需的有界原材料。
 
 以下文档按工作入口组织。需求描述目标，设计描述实现边界，测试和运行证据决定当前能声称什么。
 单次 L1 批次、harness 参数和临时进度不提升为长期合同。
@@ -30,13 +31,14 @@ SciRel 将已有科研代码整理为可复用的科学算子与任务图，供 
 
 - [领域需求](requirements/scirel-workflow.md)与[Workflow 设计](design/scirel-workflow.md)：开发整合、无变化记账、最终冻结审核和 release 的所有权与状态。
 - [开发、待审与可信版本](design/development-trust-versions.md)：新政策的目标语义及现有需求、设计和 skill 的最小调整切片；尚非已交付的 workflow。
-- [SciRel 整合 skill](../skills/integration/scirel-integration/SKILL.md)与[外部 Agent 整合方法](integration/external-harness-workflow.md)：模型比较 L1、冻结基线和未发布候选，产出文档、代码、测试；脚本不替代语义判断。
+- [SciRel 整合 skill](../skills/development/integration/scirel-integration/SKILL.md)与[外部 Agent 整合方法](integration/external-harness-workflow.md)：模型比较 L1、冻结基线和未发布候选，产出文档、代码、测试；脚本不替代语义判断。
+- [SciRel 开发 skill 包](../skills/development/README.md)：消费拆解包，负责修正、合并、项目交付和最终审核准备；与拆解包独立分发。
 - [L1 inventory 参考探针](design/l1-inventory.md)：可选结构检查及不同时间、目录的压测快照；它不是整合协议，也不证明科学覆盖。
 - [L1 wire smoke](../scripts/run_l1_wire_smoke.py)：确定性 body/fixture 检查，不是实际项目的科学整合或专家批准。
 
 ## 发行与使用
 
-- [科学请求需求](requirements/scientific-request-workflow.md)、[设计](design/scientific-request-workflow.md)和[求解 skill](../skills/usage/scirel-solving/SKILL.md)：用户需求到能力匹配、组合、执行与证据有界解释。
+- [科学请求需求](requirements/scientific-request-workflow.md)、[设计](design/scientific-request-workflow.md)和[求解 skill](../skills/development/usage/scirel-solving/SKILL.md)：用户需求到能力匹配、组合、执行与证据有界解释。
 - [薄 MCP 适配需求](requirements/thin-mcp-adapter.md)及[CodeFusion 消费合同](integration/codefusion-consumer-contract.md)：适配器只消费已发布的 catalog/wheel，不定义新的科学身份。
 - [CodeFusion 宿主插件需求](requirements/codefusion-plugin.md)、[插件合同](integration/codefusion-plugin-contract.md)及[中性 Agent 验收](integration/codefusion-runner-acceptance.md)：宿主提供执行、artifact、身份和审核 UI；SciRel 拥有领域结论。
 

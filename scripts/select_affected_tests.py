@@ -47,16 +47,16 @@ ENGINEERING_TESTS = {
     "docs/requirements/scientific-request-workflow.md": (
         "tests/test_scientific_request_workflow_docs.py",
     ),
-    "skills/usage/scirel-solving/SKILL.md": (
+    "skills/development/usage/scirel-solving/SKILL.md": (
         "tests/test_scientific_request_workflow_docs.py",
     ),
-    "skills/usage/scirel-solving/references/thin-adapter-run.md": (
+    "skills/development/usage/scirel-solving/references/thin-adapter-run.md": (
         "tests/test_scientific_request_workflow_docs.py",
     ),
-    "skills/usage/scientific-asset-navigation/SKILL.md": (
+    "skills/development/usage/scientific-asset-navigation/SKILL.md": (
         "tests/test_scientific_request_workflow_docs.py",
     ),
-    "skills/usage/scientific-project-implementation/SKILL.md": (
+    "skills/development/usage/scientific-project-implementation/SKILL.md": (
         "tests/test_scientific_request_workflow_docs.py",
     ),
     "examples/user_acceptance.py": ("tests/test_user_acceptance.py",),

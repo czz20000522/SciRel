@@ -414,7 +414,7 @@ def test_user_acceptance_change_selects_current_tasks():
 
 
 def test_scirel_solving_skill_change_selects_workflow_method_contract():
-    result = select("skills/usage/scirel-solving/SKILL.md")
+    result = select("skills/development/usage/scirel-solving/SKILL.md")
 
     assert result["full_suite_required"] is False
     assert result["test_paths"] == ["tests/test_scientific_request_workflow_docs.py"]

@@ -2,7 +2,7 @@
 
 Codex、Claude Code、CodeFusion 等 harness 承载模型；SciRel 方法与科学结论不由宿主拥有。
 阶段职责和验证边界见 [开发流程](../development-process.md)，D2 入口为
-[scirel-integration](../../skills/integration/scirel-integration/SKILL.md)。按入口路由加载专业方法，不全量加载 skill。
+[scirel-integration](../../skills/development/integration/scirel-integration/SKILL.md)。按入口路由加载专业方法，不全量加载 skill。
 
 ## 输入与执行
 

@@ -53,7 +53,7 @@ def test_design_separates_computed_observations_from_physical_mechanisms():
 
 
 def test_solving_skill_blocks_unresolved_vacuum_flux_to_equilibrium_coupling():
-    body = _read("skills/usage/scirel-solving/SKILL.md")
+    body = _read("skills/development/usage/scirel-solving/SKILL.md")
 
     assert "psi_vac" in body
     assert "vacuum" in body
@@ -94,10 +94,10 @@ def test_workflow_document_changes_select_their_doc_contract_test():
 
 def test_outbound_method_changes_select_their_contract_test():
     method_paths = (
-        "skills/usage/scirel-solving/SKILL.md",
-        "skills/usage/scirel-solving/references/thin-adapter-run.md",
-        "skills/usage/scientific-asset-navigation/SKILL.md",
-        "skills/usage/scientific-project-implementation/SKILL.md",
+        "skills/development/usage/scirel-solving/SKILL.md",
+        "skills/development/usage/scirel-solving/references/thin-adapter-run.md",
+        "skills/development/usage/scientific-asset-navigation/SKILL.md",
+        "skills/development/usage/scientific-project-implementation/SKILL.md",
     )
     for path in method_paths:
         completed = subprocess.run(

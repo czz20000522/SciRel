@@ -10,6 +10,9 @@
 
 整个流程的黑盒边界固定为**来源码及按保留科学范围选取的必要依赖输入 → 可安装、可调用的 SciRel 包产出**。
 内部阶段分别负责 D0 来源整理、D1 对冻结 D0 的行为保真、D2 科学判断与库整合、D3 实际应用验证。
+其中 `skills/extraction/` 是可单独交给外部 Agent 的 D0-D3 拆解包，输出合并所需的原材料；
+`skills/development/` 是独立的开发包，负责消费这些材料、修改/合并/验收和项目交付。两套包可以重复合同，
+但 skill 正文不互相引用。
 上游→D0 的变化与 D0→库的变化分别可追溯；阶段转换不把旧证据绑定到新版本。
 
 ## 阶段职责与入口
@@ -18,9 +21,11 @@
 | --- | --- | --- | --- |
 | D0 来源预处理 | 在可编辑分支/副本整理完整项目，记录上游差异与保留范围，完成 AOCI/CodeGraph 预处理并交付固定 D0 | [来源预处理入口](../skills/extraction/scientific-computation-asset-extraction/references/material_access_and_preprocessing.md#d0-source-preparation) | 不修改官方来源，不宣称科学正确性，不逐项申请已授权的整理批准 |
 | D1 来源拆解 | 冻结 D0 全范围现有功能覆盖、Operator/有序 TaskGraph、忠实实现或原实现封装、源码行为对照、疑似错误及复现依据 | [来源拆解](../skills/extraction/scientific-computation-asset-extraction/SKILL.md) | 不重做 D0 裁决，不要求科学正确性证明，不修正 D0 科学行为，不做跨项目去重或正式文档 |
-| D2 科学判断与库整合 | 消费 D1 错误记录，科学/数值验证、必要修正及来源差异，基线比较、去重、组装和开发包 | [库整合](../skills/integration/scirel-integration/SKILL.md) | 不重做仍有效的源对照，不回写 D1，不给吸收项生成重复文档或审核项 |
-| D3 用户应用 | 真实需求、追加输入、坏数据、恢复、独立复跑及科学解释 | [用户项目](../skills/usage/scientific-project-implementation/SKILL.md) | 不重复拆源，不用单个案例证明整个库 |
-| 最终审核与发行准备 | 汇集稳定代码、唯一正式科学文档、累积差异和证据，交最终拍板 | [最终待审准备](../skills/integration/scirel-review-preparation/SKILL.md) | 不把人工作为日常开发调度器，不把开发验证当批准 |
+| D2 拆解观察 | 从 exact D1 交付拆出独立科学 claim、修正候选、oracle 需求和证据缺口，形成开发原材料 | [D2 拆解](../skills/extraction/scientific-d2-decomposition/SKILL.md) | 不修正候选，不合并开发库，不替人审或发行 |
+| D3 拆解观察 | 在 exact D2 候选上采集有界用户应用、坏输入、恢复与重复性观察，形成开发原材料 | [D3 拆解](../skills/extraction/scientific-d3-decomposition/SKILL.md) | 不写用户项目，不批准资产，不宣称库或发行完成 |
+| D2 科学判断与库整合 | 消费 D1 错误记录，科学/数值验证、必要修正及来源差异，基线比较、去重、组装和开发包 | [库整合](../skills/development/integration/scirel-integration/SKILL.md) | 不重做仍有效的源对照，不回写 D1，不给吸收项生成重复文档或审核项 |
+| D3 用户应用 | 真实需求、追加输入、坏数据、恢复、独立复跑及科学解释 | [用户项目](../skills/development/usage/scientific-project-implementation/SKILL.md) | 不重复拆源，不用单个案例证明整个库 |
+| 最终审核与发行准备 | 汇集稳定代码、唯一正式科学文档、累积差异和证据，交最终拍板 | [最终待审准备](../skills/development/integration/scirel-review-preparation/SKILL.md) | 不把人工作为日常开发调度器，不把开发验证当批准 |
 
 统筹 skill 只维护目标、条件路由、交接和停止条件；专业方法按需加载。
 默认先尽量完成一个来源项目的 D1，再统一交付 D2；不按单个算子/TaskGraph 启动整条流水线。
@@ -146,7 +151,7 @@ D1 不重新裁决 D0 的剔除/修正，不为通过验收继续缩小 D0 范�
 D0 预处理不免除 D2 的科学正确性职责；本阶段在派生候选中处理问题，不重开已固定的 D0 范围裁决。
 科学和数值正确性验证在本阶段按保留能力的主张开展；来源对照通过不自动关闭这些门槛。
 修正先保留失败回归，说明相对来源的有意差异，再验证改变的合同和受影响依赖。
-确认错误后，D2 owner 必须启动已有[科学修正流程](../skills/extraction/scientific-relation-implementation/references/scientific-correction.md)：
+确认错误后，D2 owner 必须启动已有[科学修正流程](../skills/development/integration/scirel-integration/references/scientific-correction.md)：
 恢复原行为和错误依据，使用科学实现 skill 完成派生修正，再做独立科学/数值验证与只读复核。
 已授权 D2 范围内的修复不逐项等待人工批准。隔离用于保护包，不能把“发现并剔除问题”当作修复任务完成，
 也不能以缩小范围替代本可完成的修正。临时环境/资源故障记录为修复待续；只有必要调查后仍无法理解行为、
