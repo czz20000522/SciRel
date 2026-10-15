@@ -1,0 +1,146 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.electromagnetism.distributed-current-flux",
+  "kind": "operator",
+  "title": {
+    "en": "Regular distributed-current flux",
+    "zh": "规则分布电流磁通"
+  },
+  "summary": "Sum additive toroidal-current layers on a uniform source grid and interpolate the discrete flux response to cylindrical targets.",
+  "taxonomy": [
+    "electromagnetism",
+    "axisymmetric-fields",
+    "distributed-current"
+  ],
+  "aliases": [
+    "get_deltapsi"
+  ],
+  "identity": {
+    "relation": "Discrete circular-filament current contraction followed by piecewise-linear interpolation",
+    "direction": "netCDF current grid and target coordinates to flux contribution",
+    "definition": "psi=R A_phi; source-node current equals density times uniform full cell area; coincident self-node contribution is zero",
+    "model": "Vacuum circular-filament response with a compatibility zero-self quadrature policy",
+    "geometry": "Uniform rectangular source grid over target coordinate extrema",
+    "coordinates": "Cylindrical radius R and height Z in metres; trailing source axes are Z,R",
+    "boundary": "No extrapolation beyond source-grid convex hull; no finite-wire self-field",
+    "assumptions": [
+      "Current density is supplied in A/cm^2",
+      "One optional leading axis is summed as additive current layers, without a temporal interpretation",
+      "Full node-cell area includes endpoint nodes",
+      "Zero-radius source cells contribute zero"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "data",
+      "description": "Dataset with curr_diamcurv_phi and nzeqadim,nreqadim dimensions.",
+      "units": "A/cm^2",
+      "shape": "current (nz,nr) or (layers,nz,nr)",
+      "dtype": "netCDF dataset protocol with finite unmasked float64 currents",
+      "required": true,
+      "constraints": "At least two source nodes per axis; trailing named dimensions are nzeqadim,nreqadim. If present, units must equal A/cm^2."
+    },
+    {
+      "name": "Req",
+      "description": "Target cylindrical radii.",
+      "units": "m",
+      "shape": "2-D array matching Zeq",
+      "dtype": "finite real array",
+      "required": true,
+      "constraints": "Nonnegative radii and positive radial span."
+    },
+    {
+      "name": "Zeq",
+      "description": "Target cylindrical heights.",
+      "units": "m",
+      "shape": "2-D array matching Req",
+      "dtype": "finite real array",
+      "required": true,
+      "constraints": "Positive height span."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "deltapsi",
+      "description": "Current-induced discrete flux contribution.",
+      "units": "Wb/rad",
+      "shape": "same as Req",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite, with no dataset or target mutation."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Declared dataset units and axes match the current protocol",
+      "Finite target geometry with positive spans"
+    ],
+    "supported": [
+      "Signed unequal additive layers on rectangular grids",
+      "Transposed target arrays",
+      "Zero self-cell compatibility discretization",
+      "Nodal preservation within float64 axis-construction roundoff"
+    ],
+    "excluded": [
+      "Irregular reflected source-grid implementation",
+      "Finite-wire self-inductance",
+      "Continuum accuracy or mesh convergence",
+      "Interpretation of additive layers as a time evolution",
+      "Extreme-scale qualification"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for absent named fields, malformed dimensions, masked/nonfinite currents, incompatible declared units or invalid target geometry.",
+    "runtime_failure": "FloatingPointError for unrepresentable kernel, contraction or interpolation outputs; netCDF IO failures propagate.",
+    "nonconvergence": "Not applicable to this direct discrete response.",
+    "partial_results": "No partial flux is returned on failure."
+  },
+  "provenance": {
+    "lineage_summary": "Derived from retained Pleiades distributed-current helper. SI conversion, additive layer contraction and full cell-area convention are preserved; off-self responses use the separate circular-filament successor, with explicit input and self-node policies.",
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "independent azimuthal integral oracle"
+    ],
+    "public_references": [
+      "NASA-20010038494, equation (1), psi=R A_phi"
+    ],
+    "license_status": "Source and license evidence retained for review; public release permission remains pending."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.electromagnetism.distributed",
+      "symbol": "get_deltapsi",
+      "signature": "get_deltapsi(data, Req, Zeq)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": [
+      {
+        "asset_id": "scirel.electromagnetism.circular-filament-green"
+      }
+    ]
+  },
+  "example": {
+    "description": "Compute zero flux from a zero-current dataset protocol.",
+    "code": "from types import SimpleNamespace\nimport numpy as np\nfrom scirel.electromagnetism import get_deltapsi\nclass Variable:\n    dimensions = ('nzeqadim', 'nreqadim')\n    units = 'A/cm^2'\n    def __getitem__(self, key):\n        return np.zeros((2, 2))[key]\ndata = SimpleNamespace(dimensions={name: SimpleNamespace(size=2) for name in ('nzeqadim', 'nreqadim')}, variables={'curr_diamcurv_phi': Variable()})\nR, Z = np.meshgrid([0.4, 0.8], [-0.2, 0.2])\nassert np.array_equal(get_deltapsi(data, R, Z), np.zeros((2, 2)))",
+    "expected": "A zero float64 flux array of shape (2,2)."
+  },
+  "verification": {
+    "scope": [
+      "Signed rectangular unequal-layer quadrature comparison at rtol=1e-12 and atol=1e-18",
+      "Layer sum, sign, transpose, nonmutation and boundary failures",
+      "Exact self-node policy",
+      "真实netCDF4输入，独立生成两层A/cm²电流、转置命名维度及单位拒绝；真实离散磁通消费以独立角积分比较，不用预存答案。"
+    ],
+    "tests": [
+      "tests/pleiades/equilibrium/test_distributed_current.py"
+    ],
+    "evidence_ceiling": "Author validation of named discrete fixtures and declared failure boundaries, without scientific or human approval.",
+    "known_limitations": [
+      "Zero self-node response is a discretization, not a finite self-field.",
+      "No continuum or extreme-scale accuracy claim.",
+      "The legacy irregular matrix defect is repaired in a separate actual-coordinate matrix; this API retains its uniform source-grid model."
+    ]
+  }
+}

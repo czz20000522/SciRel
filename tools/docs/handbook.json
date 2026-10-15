@@ -64,6 +64,35 @@
             "scirel.field.poloidal-field-from-flux",
             "scirel.field.poloidal-field-magnitude"
           ]
+        },
+        {
+          "id": "source-construction-and-lifecycle",
+          "title": "构造线圈、磁环和可变源集合",
+          "introduction": "任意源点、矩形线圈和磁环提供明确几何；Device 将子源按注册次序组合。参数、坐标、权重、电流和目标网格变化影响后续响应；缓存不能替代当前源状态。 固定十六电流丝入口复用磁环几何，返回位置与相反权重，不等同于求解磁化强度。",
+          "assets": [
+            "scirel.electromagnetism.arbitrary-points",
+            "scirel.electromagnetism.rectangular-coil",
+            "scirel.electromagnetism.magnet-ring",
+            "scirel.electromagnetism.device"
+          ]
+        },
+        {
+          "id": "retained-device-configurations",
+          "title": "使用 TREX、BRB 与 WHAM 来源几何",
+          "introduction": "这些构造器保留来源的电流丝排列及常数，不提供实验装置标定。WHAM 默认共同电流为 1 A；BRB 中意图电流必须显式区分每丝电流和总安匝，不能从无效旧属性赋值猜测。",
+          "assets": [
+            "scirel.electromagnetism.trex-coil",
+            "scirel.electromagnetism.brb",
+            "scirel.electromagnetism.wham"
+          ]
+        },
+        {
+          "id": "distributed-current-data",
+          "title": "消费规则分布电流数据",
+          "introduction": "从真实 netCDF 协议读取 A/cm² 环向电流层，转换 SI 电流后按均匀源网格离散收缩及插值。可叠加层没有时间演化含义，零自单元响应不证明连续体收敛。",
+          "assets": [
+            "scirel.electromagnetism.distributed-current-flux"
+          ]
         }
       ]
     },
@@ -244,6 +273,156 @@
             "scirel.kinetic.pdrf-temporal-matrix",
             "scirel.kinetic.pdrf-temporal-spectrum",
             "scirel.kinetic.pdrf-dispersion-scan"
+          ]
+        },
+        {
+          "id": "analytic-response",
+          "title": "解析色散函数与积分响应",
+          "introduction": "解析延拓、因果处方和数值积分的支持域分别记录；种子求解并不枚举全部根。",
+          "assets": [
+            "scirel.kinetic.gpdf-cauchy-transform",
+            "scirel.kinetic.maxwellian-electrostatic-mode",
+            "scirel.kinetic.maxwellian-electrostatic-solver",
+            "scirel.kinetic.pdrk-faddeeva-finite-order"
+          ]
+        },
+        {
+          "id": "complex-special-function-evaluators",
+          "title": "复误差函数与 Maxwell 分布响应",
+          "introduction": "针对复平面选择定义积分、FFT或有限阶极点近似。有限阶极点有自己的适用域和误差；最终缩放结果无法表示时整次拒绝，不用有限的中间值掩盖溢出。",
+          "assets": [
+            "scirel.kinetic.evaluate-faddeeva-dr",
+            "scirel.kinetic.evaluate-faddeeva-gpdf",
+            "scirel.kinetic.evaluate-maxwellian-fft",
+            "scirel.kinetic.evaluate-maxwellian-jpole"
+          ]
+        },
+        {
+          "id": "arbitrary-distribution-response",
+          "title": "一般速度分布与因果响应",
+          "introduction": "先明确分布、归一化和复变量的上下半平面，再计算 Landau 延拓的 Cauchy 变换及导数。表达式使用受限语法，积分网格是必要的数值控制；分布拐角与端点仍有各自奇异边界。",
+          "assets": [
+            "scirel.kinetic.generalized-expression-differentiation",
+            "scirel.kinetic.generalized-hilbert",
+            "scirel.kinetic.generalized-dispersion"
+          ]
+        },
+        {
+          "id": "electrostatic-roots-and-asymptotics",
+          "title": "静电波残差、连续根与小波数近似",
+          "introduction": "以显式初猜和波数次序追踪一条根分支。复残差转为两个实分量并逐点检查求解器终态与残差，失败拒绝整个扫描；结果不是全部根或唯一性证明。小波数渐近式须与完整残差区分。",
+          "assets": [
+            "scirel.kinetic.generalized-residual",
+            "scirel.kinetic.generalized-root-scans",
+            "scirel.kinetic.generalized-small-k"
+          ],
+          "tutorial_id": "kinetic-initial-value"
+        },
+        {
+          "id": "collisionless-initial-value",
+          "title": "线性 Vlasov–Poisson 初值问题",
+          "introduction": "由速度分布及其导数建立离散扰动状态，以 Poisson 约束得到电场并用显式 RK4 演化。状态携带网格、时间步和历史；包络与阻尼诊断依赖可用峰值，有限速度盒和离散回归时间限制长期解释。",
+          "assets": [
+            "scirel.kinetic.vp-distribution",
+            "scirel.kinetic.vp-init",
+            "scirel.kinetic.vp-field",
+            "scirel.kinetic.vp-rhs",
+            "scirel.kinetic.vp-rk4-step",
+            "scirel.kinetic.vp-evolve",
+            "scirel.kinetic.vp-envelope",
+            "scirel.kinetic.vp-diagnostic",
+            "scirel.kinetic.vp-landau"
+          ],
+          "tutorial_id": "kinetic-initial-value"
+        },
+        {
+          "id": "magnetized-species",
+          "title": "磁化组分与扫描坐标",
+          "introduction": "物种表与控制参数定义量纲、质量与场；损失锥分解和有符号波矢不应被隐式变换。",
+          "assets": [
+            "scirel.kinetic.pdrk-species-equilibrium",
+            "scirel.kinetic.pdrk-wavevector-coordinates",
+            "scirel.kinetic.pdrk-loss-cone-partition"
+          ]
+        },
+        {
+          "id": "magnetized-spectrum",
+          "title": "电磁、静电本征关系与频谱",
+          "introduction": "在给定谐波和极点阶数下组装矩阵、求频率并排序；有序扫描与完整流程入口共享显式科学端口。",
+          "assets": [
+            "scirel.kinetic.pdrk-electromagnetic-eigenmatrix",
+            "scirel.kinetic.pdrk-electrostatic-eigenmatrix",
+            "scirel.kinetic.pdrk-frequency-eigensolve",
+            "scirel.kinetic.pdrk-spectral-scan-workflow",
+            "scirel.kinetic.pdrk-dispersion-workflow"
+          ]
+        },
+        {
+          "id": "causal-parallel",
+          "title": "平行传播的因果残差与根延续",
+          "introduction": "因果色散残差用于给定分布和偏振；根延续保留种子、步进和失败状态。",
+          "assets": [
+            "scirel.kinetic.pdrk-parallel-em-residual",
+            "scirel.kinetic.pdrk-parallel-em-continuation"
+          ]
+        },
+        {
+          "id": "mode-fields",
+          "title": "模态选择、极化与电磁场",
+          "introduction": "明确选根规则，再重新求解和归一化模态场；增长率排序本身不能证明跨点同一物理分支。",
+          "assets": [
+            "scirel.kinetic.pdrk-magnetized-mode-fields",
+            "scirel.kinetic.pdrk-polarization-workflow",
+            "scirel.kinetic.pdrk-selected-fields-workflow",
+            "scirel.kinetic.pdrk-seed-mode-selection",
+            "scirel.kinetic.pdrk-selected-dispersion-interpolation",
+            "scirel.kinetic.pdrk-preset-mode-selection"
+          ]
+        },
+        {
+          "id": "rational-construction",
+          "title": "有理近似、极点与 Padé 构造",
+          "introduction": "固定极点表与高精度生成是不同入口；系数、诊断网格和残差共同约束有限阶近似。",
+          "assets": [
+            "scirel.kinetic.pdrk-rational-z-poles",
+            "scirel.kinetic.pdrk-rational-pole-table",
+            "scirel.kinetic.pdrk-rational-jpole-coefficients",
+            "scirel.kinetic.pdrk-rational-jpole-evaluate",
+            "scirel.kinetic.pdrk-rational-jpole-grid-coordinates",
+            "scirel.kinetic.pdrk-rational-jpole-generator"
+          ]
+        },
+        {
+          "id": "rational-frequency",
+          "title": "有理动理学频率与有序扫描",
+          "introduction": "从声明物种表恢复平衡尺度，构造模型专用矩阵，再执行带明确根/极点分类的有序频谱。",
+          "assets": [
+            "scirel.kinetic.pdrk-rational-default-deck",
+            "scirel.kinetic.pdrk-rational-equilibrium",
+            "scirel.kinetic.pdrk-rational-em-coordinates",
+            "scirel.kinetic.pdrk-rational-point-matrix",
+            "scirel.kinetic.pdrk-rational-solve-matrix",
+            "scirel.kinetic.pdrk-rational-ordered-spectrum"
+          ]
+        },
+        {
+          "id": "fluid-equilibrium",
+          "title": "物种输入、流体状态与阻尼约定",
+          "introduction": "读取双组分输入或显式传入物种状态；零磁场各向异性必须有物理定义，不能任意补方向。",
+          "assets": [
+            "scirel.kinetic.pdrk-fluid-deck",
+            "scirel.kinetic.pdrk-fluid-equilibrium",
+            "scirel.kinetic.pdrk-fluid-relative-rate-equilibrium"
+          ]
+        },
+        {
+          "id": "fluid-pencils",
+          "title": "广义本征频率与物理扫描",
+          "introduction": "构造非恒等惯性矩阵的频率束，检查实际广义残差与分支，不以标准特征值替代广义问题。",
+          "assets": [
+            "scirel.kinetic.pdrk-fluid-frequency-pencil",
+            "scirel.kinetic.pdrk-fluid-frequency-solve",
+            "scirel.kinetic.pdrk-fluid-scan"
           ]
         }
       ]
@@ -522,6 +701,169 @@
             "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
             "scirel.geometry.material-support-classification",
             "scirel.geometry.axisymmetric-equilibrium-grid-support"
+          ]
+        },
+        {
+          "id": "point-and-grid-constructors",
+          "title": "构造目标点集和矩形网格",
+          "introduction": "PointsMesh 保留成对坐标，RectMesh 由独立边界和节点数生成规则网格；参数设值须保留有效状态。构造坐标不意味着已经计算物理磁场。",
+          "assets": [
+            "scirel.geometry.points-mesh",
+            "scirel.geometry.rect-mesh"
+          ]
+        },
+        {
+          "id": "chord-geometry",
+          "title": "沿径向、轴向和极角定义采样弦",
+          "introduction": "径向弦和轴向弦分别固定另一柱坐标；球半径弦和极角弦从球坐标映射到 R、Z。输入极角使用度，生成柱半径仍须非负。",
+          "assets": [
+            "scirel.geometry.r-chord",
+            "scirel.geometry.z-chord",
+            "scirel.geometry.spherical-r-chord",
+            "scirel.geometry.theta-chord"
+          ]
+        },
+        {
+          "id": "planar-coordinate-transformations",
+          "title": "旋转几何并投影子午面矢量",
+          "introduction": "平面旋转采用顺时针为正的行向量约定；极坐标变换同时处理位置与正交矢量分量。极角原点和半径域受限，不据此推断磁轴极限或三维物理旋转。",
+          "assets": [
+            "scirel.geometry.rotate",
+            "scirel.sampling.meridional-polar-forward",
+            "scirel.sampling.meridional-polar-inverse"
+          ]
+        },
+        {
+          "id": "parametric-fieldline-objects",
+          "title": "从轮廓分段建立场线和边界",
+          "introduction": "FieldLine 与 HelperFieldLine 保留不同构造和返回合同；集合工厂按等值线级别保留各分段。边界参数样条用于有限搜索，交点存在、唯一或拓扑完备均不能由构造自动推断。",
+          "assets": [
+            "scirel.fieldline.fieldline",
+            "scirel.fieldline.helper-fieldline",
+            "scirel.fieldline.fieldline-set",
+            "scirel.fieldline.contour-points",
+            "scirel.fieldline.helper-contour-points",
+            "scirel.fieldline.boundary"
+          ]
+        },
+        {
+          "id": "path-order-and-integrals",
+          "title": "选择路径、累计距离并计算磁场加权归约",
+          "introduction": "按精确等值线级别选择分段，明确方向和端点后累计相邻距离。逆磁场线积分与 Q 的加权平均由给定路径定义，不自动认证完整磁通面；开放路径不能按闭合环邻接处理。",
+          "assets": [
+            "scirel.sampling.select-fieldline",
+            "scirel.sampling.parse-segment",
+            "scirel.sampling.path-distance",
+            "scirel.sampling.weighted-line-integral"
+          ]
+        },
+        {
+          "id": "grid-and-point-sampling",
+          "title": "选择最近点、散点或矩形样条采样",
+          "introduction": "逐轴最近点和展平平面最近点具有不同平局规则；散点线性插值、散点到规则网格和矩形双三次样条也有各自支持域。最近域外节点并不代表域外物理场已知。",
+          "assets": [
+            "scirel.sampling.rectangular-nearest",
+            "scirel.sampling.point-nearest",
+            "scirel.sampling.scattered-linear",
+            "scirel.sampling.rectangular-spline",
+            "scirel.sampling.regular-grid"
+          ]
+        },
+        {
+          "id": "scalar-profiles-and-reflection",
+          "title": "整理磁通剖面和标量半平面反射",
+          "introduction": "磁通剖面排序去重后线性插值，域外使用明确端值；半平面反射复制偶标量而不重复零列。该反射不是矢量奇偶性或任意几何场的自动规则。",
+          "assets": [
+            "scirel.sampling.scalar-reflection"
+          ]
+        },
+        {
+          "id": "nonuniform-and-arclength-derivatives",
+          "title": "区分坐标内点差分与实际弧长导数",
+          "introduction": "非均匀坐标入口以局部二次式求内点导数；弧长入口按实际相邻弦长并使用单侧端点公式。下降坐标应按对应合同反转输入和输出，不额外改变物理导数符号。",
+          "assets": [
+            "scirel.numerics.nonuniform-derivatives",
+            "scirel.sampling.nonuniform-first-derivative",
+            "scirel.fieldline.arclength-derivative"
+          ]
+        },
+        {
+          "id": "polynomial-and-spline-bases",
+          "title": "构造设计矩阵和明确边界的样条",
+          "introduction": "多项式系数及设计矩阵按升幂排列，SVD 拟合有明确截断；样条工厂连接自然、双端及单端钳制关系。柱坐标 Robin 方程和零原点限制不能仅凭名称解释为普遍物理闭合。",
+          "assets": [
+            "scirel.sampling.polynomial-fit",
+            "scirel.basis.build-basis",
+            "scirel.basis.basis-matrix",
+            "scirel.basis.natural-cubic-spline",
+            "scirel.basis.clamped-cubic-spline",
+            "scirel.basis.first-clamped-cubic-spline",
+            "scirel.basis.second-clamped-cubic-spline"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scientific-data-and-display",
+      "title": "科学数据交换与绘图辅助",
+      "discipline": [
+        "科学计算",
+        "科学数据与可视化"
+      ],
+      "introduction": "将计算状态与外部文本交换，并单独提供有限绘图片变换。Pleiades 扩展 EQDSK 有明确字段、单位和方言约定，不表示 EFIT／COCOS／GENRAY 兼容；绘图辅助属于非核心支持，不替代物理计算。",
+      "topics": [
+        {
+          "id": "eqdsk-mapping-and-text",
+          "title": "读写扩展 EQDSK 映射",
+          "introduction": "读取、写入及可变映射对象保留同一扩展方言的字段次序、尺寸和失败状态；写前校验与读失败保留旧映射必须分别核对。",
+          "assets": [
+            "scirel.io.read-pleiades-eqdsk",
+            "scirel.io.write-pleiades-eqdsk",
+            "scirel.io.eqdsk-class"
+          ]
+        },
+        {
+          "id": "equilibrium-state-export",
+          "title": "从实际磁通与压力终态导出交换文件",
+          "introduction": "旧 raw 入口从网格、磁通和电流恢复轮廓写出约定；压力后继只接受真实收敛状态并写入明确压力剖面。文件不存二维 Jφ／P，也不重建未知 F 或 q。",
+          "assets": [
+            "scirel.io.write-pleiades-eqdsk-legacy-raw",
+            "scirel.io.pressure-equilibrium-eqdsk"
+          ]
+        },
+        {
+          "id": "noncore-patch-transformations",
+          "title": "按既有约定变换绘图片",
+          "introduction": "镜像浅复制图形片并反射数据变换；缩放和转置各有原位修改及返回约定。此组仅处理展示对象，不计算磁场或建立材料物理。",
+          "assets": [
+            "scirel.plotting.mirror-patches",
+            "scirel.plotting.scale-patches",
+            "scirel.plotting.transpose-patches"
+          ]
+        },
+        {
+          "id": "wave-output-data",
+          "title": "频谱与选定模态的数据产物",
+          "introduction": "从实际计算状态写出可消费数据；文件存在不代表物理分支正确。",
+          "assets": [
+            "scirel.kinetic.pdrk-spectrum-artifacts",
+            "scirel.kinetic.pdrk-selection-artifacts",
+            "scirel.kinetic.pdrk-selected-mode-artifacts"
+          ]
+        },
+        {
+          "id": "noncore-wave-presentation",
+          "title": "波谱绘图与预设呈现",
+          "introduction": "绘图和存储场景是可选非核心辅助；WHAMP 存储表单列出处与未决再分发条件，不作为独立科学答案。",
+          "assets": [
+            "scirel.kinetic.pdrk-fluid-plot",
+            "scirel.kinetic.pdrk-parallel-em-plot",
+            "scirel.kinetic.pdrk-whamp-reference",
+            "scirel.kinetic.pdrk-whamp-overlay",
+            "scirel.kinetic.pdrk-rendered-output-workflow",
+            "scirel.kinetic.pdrk-preset-output-workflow",
+            "scirel.kinetic.pdrk-stored-program-workflow",
+            "scirel.kinetic.pdrk-rational-reassemble-original-program"
           ]
         }
       ]

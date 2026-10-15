@@ -1,0 +1,136 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.sampling.parse-segment",
+  "kind": "operator",
+  "title": {
+    "en": "Contour segment orientation and endpoints",
+    "zh": "等值线段方向与端点"
+  },
+  "summary": "Roll to nearest start, orient by signed polygon test, and retain selected terminal vertex",
+  "taxonomy": [
+    "analysis",
+    "sampling"
+  ],
+  "aliases": [
+    "parse_segment"
+  ],
+  "identity": {
+    "relation": "Contour segment orientation and endpoints",
+    "direction": "Declared inputs to Ordered selected vertices",
+    "definition": "Roll to nearest start, orient by signed polygon test, and retain selected terminal vertex",
+    "model": "Source contour parsing with corrected inclusive endpoint",
+    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "coordinates": "Planar coordinates in length units",
+    "boundary": "Default retains all vertices; explicit nearest end inclusive",
+    "assumptions": [
+      "Finite planar segment with meaningful polygon orientation"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "flpoints",
+      "description": "Ordered planar path vertices",
+      "units": "length units",
+      "shape": "(N,2)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite supplied ordering"
+    },
+    {
+      "name": "start_coord",
+      "description": "Nearest selected starting coordinate",
+      "units": "length units",
+      "shape": "(2,) or None",
+      "dtype": "float64",
+      "required": false,
+      "constraints": "Exact nearest-vertex selection",
+      "default": null
+    },
+    {
+      "name": "end_coord",
+      "description": "Nearest terminal coordinate included in output",
+      "units": "length units",
+      "shape": "(2,) or None",
+      "dtype": "float64",
+      "required": false,
+      "constraints": "Terminal vertex retained; no interpolated crossing",
+      "default": null
+    },
+    {
+      "name": "clockwise",
+      "description": "Desired signed polygon orientation",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": false,
+      "constraints": "Signed shoelace-like source test",
+      "default": true
+    }
+  ],
+  "outputs": [
+    {
+      "name": "segment",
+      "description": "Ordered selected vertices",
+      "units": "length units",
+      "shape": "(M,2)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "No synthetic or omitted default endpoint"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite planar segment with meaningful polygon orientation"
+    ],
+    "supported": [
+      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+    ],
+    "excluded": [
+      "Open-curve closure, repeated endpoints and topology policies are not generalized"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
+    "runtime_failure": "Underlying numerical or interpolation exceptions propagate.",
+    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
+    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object."
+  },
+  "provenance": {
+    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "independent analytic or numerical oracle"
+    ],
+    "public_references": [],
+    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.sampling",
+      "symbol": "parse_segment",
+      "signature": "parse_segment(flpoints, start_coord=None, end_coord=None, clockwise=True)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Bounded executable example for Contour segment orientation and endpoints",
+    "code": "import numpy as np\nfrom scirel.geometry.sampling import parse_segment\np=np.array([[0.,0.],[0.,1.],[1.,1.],[1.,0.]])\nassert np.array_equal(parse_segment(p),p)",
+    "expected": "Declared result shape and bounded numerical behavior are asserted."
+  },
+  "verification": {
+    "scope": [
+      "Only the explicitly stated finite input domain and direct-test fixtures"
+    ],
+    "tests": [
+      "tests/pleiades/equilibrium/test_analysis_families.py",
+      "tests/pleiades/equilibrium/test_analysis_corrections.py"
+    ],
+    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "known_limitations": [
+      "Open-curve closure, repeated endpoints and topology policies are not generalized"
+    ]
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.basis.build-basis",
+  "kind": "operator",
+  "title": {
+    "en": "Basis evaluator factory",
+    "zh": "基函数求值器构造"
+  },
+  "summary": "Construct a list of ascending-power polynomial or retained cubic-spline evaluators",
+  "taxonomy": [
+    "analysis",
+    "basis"
+  ],
+  "aliases": [
+    "build_basis"
+  ],
+  "identity": {
+    "relation": "Basis evaluator factory",
+    "direction": "Declared inputs to List of independent basis evaluators",
+    "definition": "Construct a list of ascending-power polynomial or retained cubic-spline evaluators",
+    "model": "Source basis-map selection with poly_deg=3 or n_knots=5 defaults",
+    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "coordinates": "Generic coordinate and ordinate units",
+    "boundary": "Spline selectors inherit their precise endpoint rules",
+    "assumptions": [
+      "Finite constructor samples and boundary-specific assumptions",
+      "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
+      "Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "basis",
+      "description": "Basis selector",
+      "units": "dimensionless",
+      "shape": "string",
+      "dtype": "str",
+      "required": false,
+      "constraints": "poly or retained cubic-spline selector; lowercased",
+      "default": "poly"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "basis_fns",
+      "description": "List of independent basis evaluators",
+      "units": "caller units",
+      "shape": "list(K)",
+      "dtype": "list",
+      "required": true,
+      "constraints": "Polynomial or spline callables"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite constructor samples and boundary-specific assumptions",
+      "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
+      "Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match"
+    ],
+    "supported": [
+      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+    ],
+    "excluded": [
+      "Quartic and special-function factory selections are rejected; no invented implementations",
+      "Physical special-spline closures and unsupported knot domains remain unresolved"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
+    "runtime_failure": "Underlying numerical or interpolation exceptions propagate.",
+    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
+    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object."
+  },
+  "provenance": {
+    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "independent analytic or numerical oracle"
+    ],
+    "public_references": [],
+    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.basis",
+      "symbol": "build_basis",
+      "signature": "build_basis(basis='poly', **kwargs)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Bounded executable example for Basis evaluator factory",
+    "code": "import numpy as np\nfrom scirel.geometry.basis import build_basis\nf=build_basis()\nassert len(f)==3\nassert np.allclose([g(.5) for g in f],[1,.5,.25])",
+    "expected": "Declared result shape and bounded numerical behavior are asserted."
+  },
+  "verification": {
+    "scope": [
+      "Only the explicitly stated finite input domain and direct-test fixtures"
+    ],
+    "tests": [
+      "tests/pleiades/equilibrium/test_analysis_families.py"
+    ],
+    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "known_limitations": [
+      "Quartic and special-function factory selections are rejected; no invented implementations",
+      "Physical special-spline closures and unsupported knot domains remain unresolved"
+    ]
+  }
+}

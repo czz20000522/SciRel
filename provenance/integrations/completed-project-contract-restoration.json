@@ -1,0 +1,3389 @@
+{
+  "schema": "scirel.contract-restoration.v1",
+  "received_baseline": "3301290",
+  "restored_records": 119,
+  "maintained_records": 260,
+  "policy": "Derived maintained documents; frozen input bytes and scientific evidence are unchanged. Reader text is reused only where translatable scientific fields remain identical.",
+  "records": [
+    {
+      "asset_id": "scirel.kinetic.neutral-generation-stopping",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.neutral-generation-stopping.json",
+        "sha256": "e805a16bd7b2cb2e88f076be17ad4578bb212ae43589798be3dd714fea3c4db1"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.neutral-generation-stopping.json",
+        "sha256": "4d15fc79374398a9a72f3e2a53b58864939ae1ea31085dc193848fcc6569afe6"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.janev-electron-impact-ionization-rate",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.janev-electron-impact-ionization-rate.json",
+        "sha256": "5464f39adf46db2b79a5f0dc85d9511dd53a17911eee0a62e2e06a12ddfd45e5"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.janev-electron-impact-ionization-rate.json",
+        "sha256": "a0ce91f67013e160666ff4ad732644b14386c1b028af0592d468918446cd172b"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
+      "received_document": {
+        "path": "catalog/examples/scirel.geometry.axisymmetric-equilibrium-grid-mapping.json",
+        "sha256": "eb435dfb253ff41e8e58bc9131487cfa9431e0b397424f124bec5b18f783aac1"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.geometry.axisymmetric-equilibrium-grid-mapping.json",
+        "sha256": "63e7038145508b225c5df3b3116cddfaeb3d7db79b9bdaf0686dad1cbf2a0f5a"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.geometry.complex-rectilinear-interpolation",
+      "received_document": {
+        "path": "catalog/examples/scirel.geometry.complex-rectilinear-interpolation.json",
+        "sha256": "ec17ae63c7781cc9dbb35b7ac3a039d4db6c9e12dc0f92bca794ed899c6518e0"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.geometry.complex-rectilinear-interpolation.json",
+        "sha256": "993908717f9a9091e6a68546c37a2aa812a0f06c27c9507491f9821d857a881c"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.cross-mesh-scalar-interpolation",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.cross-mesh-scalar-interpolation.json",
+        "sha256": "35ecfe25b6734d88f2a8e049cfecc20e5bf9055423dd1ca20d62ff732e37169c"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.cross-mesh-scalar-interpolation.json",
+        "sha256": "03cd1b7683077fe7672a70939fbf74deab1e41b6053c6631c455778aa87e4122"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.shifted-maxwellian-seed",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.shifted-maxwellian-seed.json",
+        "sha256": "527a1943e7c752d170e328190e2fb35ff8344b04a51ea298170dbacf2467ea62"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.shifted-maxwellian-seed.json",
+        "sha256": "97115abaf050003f738ff13596996723eec7304771e03893d916df95f75435b0"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrf-temporal-matrix",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrf-temporal-matrix.json",
+        "sha256": "ddf14ca9cc698a0b0e6f10a5b5c959608685ac24e53de16187c7e33dfe30a6b6"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrf-temporal-matrix.json",
+        "sha256": "23779ef35192c375936fc5f291bf154993d61780061dd9bf3c25fab903d02aac"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.neutral-boltzmann-rhs",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.neutral-boltzmann-rhs.json",
+        "sha256": "ab90c9a0f7025aab0f4555a1f33c0811fcd4a5a21f5c32c91af6b0f13c7ec726"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.neutral-boltzmann-rhs.json",
+        "sha256": "db346d7149ebb89ec515877853cc9f4f6ef7fb823718d7b2dba20fa1df11fa7f"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.equilibrium.free-boundary-anisotropic-picard",
+      "received_document": {
+        "path": "catalog/examples/scirel.equilibrium.free-boundary-anisotropic-picard.json",
+        "sha256": "001d33e5063ee283777908692c6fb7c960f9a3ceced71efba745591677c7037e"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.equilibrium.free-boundary-anisotropic-picard.json",
+        "sha256": "8c82c577a05a441fc55b8d806b2f7c7f456a85b3b2f6d45af35deef504a148fa"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.diagnostics.parallel-pressure-residual",
+      "received_document": {
+        "path": "catalog/examples/scirel.diagnostics.parallel-pressure-residual.json",
+        "sha256": "867f57cae020008e903d2f20ca1e89cb88ca41b97129b906b3c661d303b04fc7"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.diagnostics.parallel-pressure-residual.json",
+        "sha256": "bb0e13b418283156301c3c34645abeafff9694057871b2ca36866198c7acf5fd"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.elastic-regeneration-aggregation",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.elastic-regeneration-aggregation.json",
+        "sha256": "e65c72fe99b083806ecf355406a1a76adef3098306a763391f6d03a68963bc32"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.elastic-regeneration-aggregation.json",
+        "sha256": "1e4491abad097aa33c1b3b0ab1702cfb53c03d6771e6c0c297557703015b1f67"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.atomic-hydrogen-omega-frequencies",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.atomic-hydrogen-omega-frequencies.json",
+        "sha256": "977e910203710f509f15a5b322ff1b33fb243d09c31aa6e49fb6706e7a1f109f"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.atomic-hydrogen-omega-frequencies.json",
+        "sha256": "3c492c5a7ec01e277f2089c5902f131223ab14797dc6429dd2af9f3d330400a5"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.molecular-alpha-contraction",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.molecular-alpha-contraction.json",
+        "sha256": "d77415c5f95196f14438a74a7b1e1cbe5f0f646d4bf65ad47363a24772986576"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.molecular-alpha-contraction.json",
+        "sha256": "748082ab89ba986544fb642ef848b69397a9a859950ad98699a2d84fcab85220"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.fluid-wavevector-eigensolve",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.fluid-wavevector-eigensolve.json",
+        "sha256": "da6f7c61da9744ec330940c6aac6b5123976ab0fe1ec72a197a010a0c512ed93"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.fluid-wavevector-eigensolve.json",
+        "sha256": "9ab2667b4736c9b6e91a2c8d6b4cd81311788ecd58d039d9fc7d7c52e4323c9f"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.field.rectangular-coil-filaments",
+      "received_document": {
+        "path": "catalog/examples/scirel.field.rectangular-coil-filaments.json",
+        "sha256": "86b62ce950853683ffc4cd39c1ef68efdb5a650823c990d8a2aeda00db14e1f8"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.field.rectangular-coil-filaments.json",
+        "sha256": "804bad30fbf5f44b59538769ff7f612dfb040c14703c741c88663bf959585727"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.electromagnetism.green-response-matrices",
+      "received_document": {
+        "path": "catalog/examples/scirel.electromagnetism.green-response-matrices.json",
+        "sha256": "4aae3f38a60271fe4e5e19b05e25d032bb84fbeb5f1a55b459aec7f5377638f3"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.electromagnetism.green-response-matrices.json",
+        "sha256": "54d826ab4ec8ec2dde995c6c3693215421501b4082919f2e26837e992ef06e97"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.kinetic-dispersion-sum",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.kinetic-dispersion-sum.json",
+        "sha256": "59c6f425de4c51a302b873dfd49913f5837dd192b8948a41174e98ca81be5fe8"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.kinetic-dispersion-sum.json",
+        "sha256": "a462d3aabd1cd9bd387e1aa8c4b09a634fd2b6d6ad1b4e700f0b2d3eaa6cb804"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.field.ideal-conductor-boundary",
+      "received_document": {
+        "path": "catalog/examples/scirel.field.ideal-conductor-boundary.json",
+        "sha256": "1af64d940ead70c6ec7838a3b67ec757720fda4f7790c383840979603bfe56a8"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.field.ideal-conductor-boundary.json",
+        "sha256": "05ceac1c1412b82b46effa20e10067dfb0668074b3bb84363066f73238673ddd"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.atomic-hydrogen-elastic-cross-section",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.atomic-hydrogen-elastic-cross-section.json",
+        "sha256": "0f4682bfe36b54ec5743b9946499084ce7db0225db395d9c7d24e4ac98610e84"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.atomic-hydrogen-elastic-cross-section.json",
+        "sha256": "d7940e7bd16be5ed3204184028b89ea20f2b2a9e5070e390ab68754ef2d928cc"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.field.circular-filament-green",
+      "received_document": {
+        "path": "catalog/examples/scirel.field.circular-filament-green.json",
+        "sha256": "11d97b3243f364c638b26eae058d7256fc0d89a82075cdb5f3b316f93b4e12ba"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.field.circular-filament-green.json",
+        "sha256": "6fec893b8542b7e6ea9eba38847c4ca1393878bf060ce4a68947533c6cb9ad16"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.kn1d-outer-convergence",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.kn1d-outer-convergence.json",
+        "sha256": "91efd8ea8c408cea70e237880052c32285da32f2a1e383a9720dd3f7ddf27024"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.kn1d-outer-convergence.json",
+        "sha256": "e077b1deca5639efcc7c26ef0728cf81807bd5b947b3ff05e69b0c4a2c6c3cb1"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.fluid-wavevector-scan",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.fluid-wavevector-scan.json",
+        "sha256": "31e123fada236a8f1b6580a19f6a4ac249dc86cfc937a599e06985e1c539efb2"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.fluid-wavevector-scan.json",
+        "sha256": "0c77e3a9bc0985df2785493c9295ef79012158385885c8bc2b3869152585f36d"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.inference.direct-anisotropic-inversion",
+      "received_document": {
+        "path": "catalog/examples/scirel.inference.direct-anisotropic-inversion.json",
+        "sha256": "5914b7c397675b5e47d578c07b22fa2bf298f9091b0000f8250c2982593b838d"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.inference.direct-anisotropic-inversion.json",
+        "sha256": "5683e573539e290126d3c4b1ac607ccae336eda8f10a5e44ea4cde03ab30c69f"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.plasma-dispersion-weideman",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.plasma-dispersion-weideman.json",
+        "sha256": "92697b970ffcffaba2dbde67f428a9386985654c67e89544181fb8648d1a387e"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.plasma-dispersion-weideman.json",
+        "sha256": "a31726d0fa9f650c4a98a663828ad94dfd8f9320355e7f36e545e8a610841215"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.fluid-dispersion-matrix",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.fluid-dispersion-matrix.json",
+        "sha256": "9c4230954f8905dfec7cf6379098358df21407bf643ef4d5db3308bd16ea660f"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.fluid-dispersion-matrix.json",
+        "sha256": "062f1c4d680d5d458109f09dc6a6d8261acd73a6d31cac1fe6e91d6695c348df"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.adaptive-neutral-velocity-mesh",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.adaptive-neutral-velocity-mesh.json",
+        "sha256": "7590d112821f0797974504470d28e925bcebc1c910c07992ac6784639fbf42bd"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.adaptive-neutral-velocity-mesh.json",
+        "sha256": "09c0d319382cfd6ad02bdc25818cc3bc5abb49d0d40310b80e5146b9645aeaeb"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section.json",
+        "sha256": "5caf1453180a060b9511082045bbbbfa4892fe13e9928c9d31661ff5f4400a90"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section.json",
+        "sha256": "a0a098ce9c7044f1fd8a734b12f7709596a02478eecc6dafcdd9b7e292c7d32b"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.dielectric.cold-plasma-tensor",
+      "received_document": {
+        "path": "catalog/examples/scirel.dielectric.cold-plasma-tensor.json",
+        "sha256": "8e34d2fab2ed6314487135e0f8e7947e9d67c004ae7f6510e6302eb82441f66d"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.dielectric.cold-plasma-tensor.json",
+        "sha256": "6710baed181f796a071294c646595bba7e419928d1c0ebe789d10ce716c10052"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.equilibrium.anisotropic-picard-feedback",
+      "received_document": {
+        "path": "catalog/examples/scirel.equilibrium.anisotropic-picard-feedback.json",
+        "sha256": "2e87807bf8b5c120ba91b88b87a776235fe4181142b12c494ac52afa2cd740ea"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.equilibrium.anisotropic-picard-feedback.json",
+        "sha256": "22f41b5b765ba97d989e4fa050fb2b2bceec79713b211301e7f630452637daf4"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.outer-seed-convergence",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.outer-seed-convergence.json",
+        "sha256": "4912f08d0647313804104976ca0d8fd5fc23ff2965556173c84e143a2347d49f"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.outer-seed-convergence.json",
+        "sha256": "13eedd6d115ca83679a076896ba7b84ca76a2b395dbe50cc366aedcb77abc2cf"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.atomic-hydrogen-charge-exchange-cross-section.json",
+        "sha256": "6f2dcc3d87095632fa14dfb9768a8cce8b278f16e65180e70cce2f6db20de632"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.atomic-hydrogen-charge-exchange-cross-section.json",
+        "sha256": "49679f3c08cf91d11f679789015fc51b02f43139e891389bbae4d43349eafd55"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.closures.reduced-hall-drift",
+      "received_document": {
+        "path": "catalog/examples/scirel.closures.reduced-hall-drift.json",
+        "sha256": "658dc0646049ffa0e28220e3225c1a08c1d27be1b1bdd097dc0d920ffaafef43"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.closures.reduced-hall-drift.json",
+        "sha256": "1f50628365cdfeeed834aabe67969fbcecc333ba9c42e29c2aed0c54d4876124"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-support",
+      "received_document": {
+        "path": "catalog/examples/scirel.geometry.axisymmetric-equilibrium-grid-support.json",
+        "sha256": "82648dca5e7e64284033414b0593b5fc87cf2b04d4e49cfdda80c7858c4ddaf8"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.geometry.axisymmetric-equilibrium-grid-support.json",
+        "sha256": "ea20d6743fa072d385b47ba746b85fe15950f5cd74aed7e9ad71a802fba2e76e"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.incoming-boundary-flux-normalization",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.incoming-boundary-flux-normalization.json",
+        "sha256": "16cf61995ed1dcbc44658cf9dc609d1738bff91724e1822bbc935213ee097021"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.incoming-boundary-flux-normalization.json",
+        "sha256": "01c8640fa7892d4a37e6eee6b8a73a33295f2285eeda750a9fd073e74984a3ee"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.molecular-hydrogen-collision-matrices",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.molecular-hydrogen-collision-matrices.json",
+        "sha256": "14ef7b2d8ec2991bdc4b30bd2776405c86e49f6ec56ac87469bcad3fbbec4ded"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.molecular-hydrogen-collision-matrices.json",
+        "sha256": "0d60906384f9de53757d05d5ad01f6685393931f395c4bb07ca63e7064628d1e"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.thermal-electron-momentum",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.thermal-electron-momentum.json",
+        "sha256": "97f660dc25709d99d76f0597daa233282dc71fc209738e7408d7156d6ea1a8c5"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.thermal-electron-momentum.json",
+        "sha256": "44deda668619880431b7cd21598a323f49a3836d9cb5411d7f5b63d88ac3102a"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.hydrogen-saha-equilibrium-population",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.hydrogen-saha-equilibrium-population.json",
+        "sha256": "7b3bc18f586c14cf3c079ddf7afde122471560cbc2dbe81eee1601548788e15e"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.hydrogen-saha-equilibrium-population.json",
+        "sha256": "9806ced00b2a1f1539aad60adfe838ff962b5ebf314fb6481376ee59c433865b"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.molecular-scattered-sources-reduction",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.molecular-scattered-sources-reduction.json",
+        "sha256": "6e5e9ba834cbbf692eba87f845eacc14cd6953bd8bfa0cced440f93217db1061"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.molecular-scattered-sources-reduction.json",
+        "sha256": "a7901845f97ac2daf9956010a9d35b67cae256cb7bfc16d49f24d2d8262abca3"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.equilibrium.pressure-flux-state",
+      "received_document": {
+        "path": "catalog/examples/scirel.equilibrium.pressure-flux-state.json",
+        "sha256": "9d78dcd8578fbf4c8110d59b52d7198f9efc2b4c1622c04aa77c1a9e80637445"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.equilibrium.pressure-flux-state.json",
+        "sha256": "ab1ea2508bb34463dc0d15920b105823a52bf157ad3fa55a57fe591ce15e673f"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.relativistic-maxwellian-bessel-closure",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.relativistic-maxwellian-bessel-closure.json",
+        "sha256": "b7377006270fb0b52c5e19863ce95e5ffd8243a7870c743222260443e684668c"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.relativistic-maxwellian-bessel-closure.json",
+        "sha256": "a560fc6c8768c0599f1d9db2608173d5d4e52da141ad9ba01d3775332a61f830"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.diagnostics.picard-flux-residual",
+      "received_document": {
+        "path": "catalog/examples/scirel.diagnostics.picard-flux-residual.json",
+        "sha256": "d9e75180c9e3cef9fe5014c9c84265161e589cce999c983b332d487704fba8ef"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.diagnostics.picard-flux-residual.json",
+        "sha256": "26353324431954a9b34c22b3af99ef83fdf9e8c388c1efb93c7ef371dec4866b"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.plasma-dispersion-function",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.plasma-dispersion-function.json",
+        "sha256": "a3784ec04ea81ba1d9453c2f5c63ec9b1cadd34536ab10bff14ac589ee552e0d"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.plasma-dispersion-function.json",
+        "sha256": "69a34bcf4ec291184885c0d60a8642ff5ceebecabfe53c680874cf0edc175a59"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.diagnostics.pointwise-firehose-margin",
+      "received_document": {
+        "path": "catalog/examples/scirel.diagnostics.pointwise-firehose-margin.json",
+        "sha256": "9f7933dbf95ac74f0db3df36b2352e72a5b2073f7a5e38abd761c5b1f06397e0"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.diagnostics.pointwise-firehose-margin.json",
+        "sha256": "e9c30920fcbc0aacbd69f392944bef45bb60aaa3eb86c3f1e32a42db5cd3a5fa"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.ronnmark-r-function",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.ronnmark-r-function.json",
+        "sha256": "307b721205c9cfcdd4ebc9c0442384c870aa7b4862552fd03bac9591b2556060"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.ronnmark-r-function.json",
+        "sha256": "6e49fb99e74b27a52ac2b623b1ec36ffab3ac765e0bbf079ef77e679078d74de"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.closures.mirror-quasineutral-closure",
+      "received_document": {
+        "path": "catalog/examples/scirel.closures.mirror-quasineutral-closure.json",
+        "sha256": "cd5a89187376cecef027c66a2a5b390f636be014aeb6601dd8e62db7466ab725"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.closures.mirror-quasineutral-closure.json",
+        "sha256": "d0ab1d7ed91edd926b01f19746663db98d3029a9a78d783a7463d2733503458b"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.neutral-generation-propagation",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.neutral-generation-propagation.json",
+        "sha256": "8b3a45221b3a9c0eaeda31cf965e54e7de10d0b1f6b337162f7c1d6a582b92a1"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.neutral-generation-propagation.json",
+        "sha256": "f6849c559480f60e88357c4c8055ef1199d66b75a4e2311e38b6d9a837798de8"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.field.coil-green-geometry",
+      "received_document": {
+        "path": "catalog/examples/scirel.field.coil-green-geometry.json",
+        "sha256": "04371fdd3753af323450073b0ba98eb37849079029d56739321ad1632a486ced"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.field.coil-green-geometry.json",
+        "sha256": "decb29aa548493d702a0abe054d492fa4ab5fe17ff6f645eb94ae4ca526fdaed"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.dielectric-tensor-diagnostic",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.dielectric-tensor-diagnostic.json",
+        "sha256": "48396debbe105afa31eb03ee51de321c377ce62d532d7e67e1740e3c1efb8f73"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.dielectric-tensor-diagnostic.json",
+        "sha256": "ba4abba7431c94b734705fa532bd7244a5b31ff24fbc44013fb75154b89ce2c2"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.terminal-ion-state-reduction",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.terminal-ion-state-reduction.json",
+        "sha256": "2533a15223ecec9c0abe3d8d502a0426414fcc29346bc7714fbd3f3bcd4149d6"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.terminal-ion-state-reduction.json",
+        "sha256": "8d6d52fed4965ba718500b7fcaa867fd656d805aef7b50f16dfdca48d3d7a032"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.field.poloidal-field-from-flux",
+      "received_document": {
+        "path": "catalog/examples/scirel.field.poloidal-field-from-flux.json",
+        "sha256": "c90eed1280b80a750cfe23950648e0ccc1297886338eff6ce7e5a255609eace3"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.field.poloidal-field-from-flux.json",
+        "sha256": "7d87c2a69d8d4fea831727777ada0cdaeaa30953db4d7bd9a016e802a41bb177"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.elastic-frequency-channels",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.elastic-frequency-channels.json",
+        "sha256": "5bc11238411b216f4fbcce5f01b0e1d66ae191fcdbcd31031f34b6923eeaba50"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.elastic-frequency-channels.json",
+        "sha256": "ce9b4ec6d51c378e4ad8cbcbd11e386c67b63704b82b6910edc0996359d8dd8b"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.terminal-pressure-temperature-reduction",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.terminal-pressure-temperature-reduction.json",
+        "sha256": "27b0e199c2eaba5423913b8d1ddcc1622d5432d0c02652ff995719a0a9d216b8"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.terminal-pressure-temperature-reduction.json",
+        "sha256": "e911e07741dc50038b1255bf6f17f5c74377942f0df5d7c429e5ef2278d62aac"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.frank-egedal-hot-ion-moments",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.frank-egedal-hot-ion-moments.json",
+        "sha256": "cdce8058cafb66d99e4b79adc225f28dee5d3c898be75cd2d99d8fc98e642e94"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.frank-egedal-hot-ion-moments.json",
+        "sha256": "827e838d764316145fa072cda5575e54d7300d9338787c8d3f3c124f60aafa29"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.terminal-flux-velocity-reduction",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.terminal-flux-velocity-reduction.json",
+        "sha256": "dcb1bca80a6cdd0cab96ba6a01586871f9e4b677343b8e19d90e51dce4e7381a"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.terminal-flux-velocity-reduction.json",
+        "sha256": "eb53a0a73ed65fd1d80ec7acbe2308d9d748f6560935181dca0cbc973bbbfdce"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.closures.quasineutral-potential",
+      "received_document": {
+        "path": "catalog/examples/scirel.closures.quasineutral-potential.json",
+        "sha256": "686c1a28ea1502c36ca31b0b71dea207114cd1e356b02f159a30a8f86bb24194"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.closures.quasineutral-potential.json",
+        "sha256": "747ea62dbcf0847f0966bd704284e262f57092b5357f8eb63c3b7f37f75f8730"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.neutral-total-collision-frequency",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.neutral-total-collision-frequency.json",
+        "sha256": "0bf5ae6a3c092ee33925fb19cde74a57a89fc2dad20060d3937d5f5d425792c4"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.neutral-total-collision-frequency.json",
+        "sha256": "83d54c65ed7447c8723af4e227f1f391338de5b6d4037a36ee1fa074036b080b"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.frank-egedal-radial-envelope",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.frank-egedal-radial-envelope.json",
+        "sha256": "c73a45ef8e1109b5208c9fb7a9907f68a9a47b3eadfef4cdb31e6cf38568dccb"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.frank-egedal-radial-envelope.json",
+        "sha256": "6420cf742c789f4e4dec52565bd88ad144c3582d495eeeb6ff0b62c175729af1"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.molecular-hydrogen-omega-frequencies",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.molecular-hydrogen-omega-frequencies.json",
+        "sha256": "5dd4d1b023b5b29bbc1edd0a571bee7de62edcc68010ef6f8fc471570ab3598c"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.molecular-hydrogen-omega-frequencies.json",
+        "sha256": "6622a2e6e119e06d4488b6fdcbc16a4d280fe9fba6dffa4195b9a8ca803559c0"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.kinetic-wavevector-roots",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.kinetic-wavevector-roots.json",
+        "sha256": "0ed8df948ef7b1fc28985b7af27a1b167d231c978cf4f6a46a441ca8be896939"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.kinetic-wavevector-roots.json",
+        "sha256": "1935a95d72346aa3f7e50ff20bd806049707eb79daecfa8a2b92c7a2b7d4f4fd"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.field.poloidal-field-magnitude",
+      "received_document": {
+        "path": "catalog/examples/scirel.field.poloidal-field-magnitude.json",
+        "sha256": "aea13bba7a21aaf25aebeae2651ca9dc9bcababc761660dd00ce5ae1f64a3941"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.field.poloidal-field-magnitude.json",
+        "sha256": "d4a96920b93b0caf81711c241b53dbfa24c0e3a646095f37841a471df9d03824"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.diagnostics.equilibrium-synthesis-diagnostics",
+      "received_document": {
+        "path": "catalog/examples/scirel.diagnostics.equilibrium-synthesis-diagnostics.json",
+        "sha256": "010c70827b5871a8d577200286dc9d003c55bda9c09240570399e8155f6471e6"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.diagnostics.equilibrium-synthesis-diagnostics.json",
+        "sha256": "c3aae8e776a78e5f19dc53252709fbaa775f9d623e94136f7b97dfd23e15a26a"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.geometry.bilinear-grid-sampling",
+      "received_document": {
+        "path": "catalog/examples/scirel.geometry.bilinear-grid-sampling.json",
+        "sha256": "3ecf81cf2bc179c8b5aeb1c4cfd31f66cc58f2daeb4aad7cd197ad034e84bc0a"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.geometry.bilinear-grid-sampling.json",
+        "sha256": "4ede692b92027d8fc4322477c1ac80a749681b8e7bdeab78724b43aa68cc8cc1"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
+      "received_document": {
+        "path": "catalog/examples/scirel.equilibrium.kinetic-mirror-hall-equilibrium.json",
+        "sha256": "4dd7218e0d981d017791b7ab7e7beaf2a6359d809fb8b45d0cc3078a1b8d61e8"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.equilibrium.kinetic-mirror-hall-equilibrium.json",
+        "sha256": "64a64ae98117e1934e6062bc56196edca2c491a0ff27a3cc533072031491bd3d"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.closures.quasineutral-reference-density",
+      "received_document": {
+        "path": "catalog/examples/scirel.closures.quasineutral-reference-density.json",
+        "sha256": "5d2eb9bc1597651d1466e396310db016c9940102047998c89e8efd857febed0c"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.closures.quasineutral-reference-density.json",
+        "sha256": "1a0c07c76f69e94823c21b882d8f318e8c738785f828128cc645bb6369b31e68"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.field.filament-coil-green-field",
+      "received_document": {
+        "path": "catalog/examples/scirel.field.filament-coil-green-field.json",
+        "sha256": "5cb3026d55bf413a3b5c1ea804ca8775eecedaccf5e9d9faea9cd56ea2a84bf0"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.field.filament-coil-green-field.json",
+        "sha256": "c065794406145fc0a3704cb22a712c1461d4acb7ed34c0725643d96978e9e2a2"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.equilibrium.isotropic-pressure-flux",
+      "received_document": {
+        "path": "catalog/examples/scirel.equilibrium.isotropic-pressure-flux.json",
+        "sha256": "0ab8f4b102c6fab15b633624be197c784862ef2f8dcde031a4d31991abce8536"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.equilibrium.isotropic-pressure-flux.json",
+        "sha256": "b3c06a18819c72a8b3eb614de4118c5f6a2ad6e664d74b1dbc46696b25283f6f"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.frank-egedal-pressure-state",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.frank-egedal-pressure-state.json",
+        "sha256": "bd9cfbf00d77954151c47a62b2669d62ecca11abbddd5103a999dee3ac874985"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.frank-egedal-pressure-state.json",
+        "sha256": "4c0158e0be936c3fe157cdac39264832d2f9abb9c16665bd260e5a1bf5622468"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.diagnostics.observation-residuals",
+      "received_document": {
+        "path": "catalog/examples/scirel.diagnostics.observation-residuals.json",
+        "sha256": "32f3a76802ba7a7bb26b4b4bd418cb6790399e0d1f0e20f8a578322096b58d36"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.diagnostics.observation-residuals.json",
+        "sha256": "12aa790d1de6bb392711845f100ba0e077bd37be7b9c1f559073085e8c441e71"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.gamma-lpole-coefficients",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.gamma-lpole-coefficients.json",
+        "sha256": "7ac510ed2c1da322b55963adaf878b4449c0071b02423d86a53edb184569b4ad"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.gamma-lpole-coefficients.json",
+        "sha256": "0102a3b0d83c176452fe50769f4d4ab03c76ae8adac7c994248dd8359ef6f977"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.proton-atomic-hydrogen-elastic-cross-section.json",
+        "sha256": "6c6df0a9000f89cd60047e1a47e8e9cb7181fc9a8af515dcad20ef7962bbdf8b"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.proton-atomic-hydrogen-elastic-cross-section.json",
+        "sha256": "bbee8eba1288f50715ab4bbf2f8d26bd8da7088dba542081a03b50e34ec2382b"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.thermal-speed-scale",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.thermal-speed-scale.json",
+        "sha256": "a40686c62fc9262601743d34d41cb8d79e60a2cd227c9366d0900c66f637bd28"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.thermal-speed-scale.json",
+        "sha256": "fe2703355f3b4d64405c22b55cecd2ed6a93aca4fd300c8b8ded27d732bfd563"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.geometry.material-support-classification",
+      "received_document": {
+        "path": "catalog/examples/scirel.geometry.material-support-classification.json",
+        "sha256": "400c79b64cd57a0ab94e4c90ebfd99aa10f78918ea0ef21a49f0eec8d5ccc3df"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.geometry.material-support-classification.json",
+        "sha256": "e67a85887dc897370fc86c6d4b73f93519556f2f9448b5dd7fd964f8af1850f5"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.maxwellian-relative-speed-rate-average",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.maxwellian-relative-speed-rate-average.json",
+        "sha256": "2507f415de5dcc65a7ca2c9343e73f19b532afc85b1b0c8789f9f02233b37599"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.maxwellian-relative-speed-rate-average.json",
+        "sha256": "77bb3080e1e87c0ff40cbb7478ea4d02abd1c49c079a7e94a423393620147e09"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.electromagnetism.loop-flux-matrix",
+      "received_document": {
+        "path": "catalog/examples/scirel.electromagnetism.loop-flux-matrix.json",
+        "sha256": "8197f6bd83ec8ab6b7546b168b12ccf56cfac57cd691c0f3504124123c058e91"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.electromagnetism.loop-flux-matrix.json",
+        "sha256": "cfa90a8009e11733cac0ac69469936399bcd2b0596714194e8c5a29dc8ae2407"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient.json",
+        "sha256": "cd99ad8cac4e3dadbd31afccbce3b0996e65710a026e6f729eae50694bbc637f"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient.json",
+        "sha256": "7147c2a3c21c5ba8070655b1640a1f610e2f93ba37ce21fbe345bc7e16bb5f9b"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.closures.hall-two-fluid-pressure",
+      "received_document": {
+        "path": "catalog/examples/scirel.closures.hall-two-fluid-pressure.json",
+        "sha256": "2fee2b8eebc03aa8f0af001e26716f705756d30618ff520b8dcb62af8157fa99"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.closures.hall-two-fluid-pressure.json",
+        "sha256": "e6305bfa0589c45e488810856ce273455d56b812d7c4d9571f222da2f3af5016"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.electromagnetism.circular-filament-green",
+      "received_document": {
+        "path": "catalog/examples/scirel.electromagnetism.circular-filament-green.json",
+        "sha256": "f57fed1943386c8a02726ce3fac36d52a92d8c385d1de119b02c553a9cb169c0"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.electromagnetism.circular-filament-green.json",
+        "sha256": "f58f0c455a0e70eb2a1bc5a5cf7dfaad163dff9ce4bdecff96611104bdbcf7c1"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.proton-molecular-hydrogen-elastic-cross-section.json",
+        "sha256": "b5bdf7a6b6d37e37e1b82cabd755d1d1b8b79fb2430dd2fe9cd8978197c1a4bf"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.proton-molecular-hydrogen-elastic-cross-section.json",
+        "sha256": "d03ef7137b47930319ff11be7bf245d918ddf2157a4a884c58181b34b72e66fb"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.equilibrium.compute-equilibrium",
+      "received_document": {
+        "path": "catalog/examples/scirel.equilibrium.compute-equilibrium.json",
+        "sha256": "3fdd43d8e39d27820a49629cc94213bbb1e2b9938ea1fbb87e18fa639d1b3050"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.equilibrium.compute-equilibrium.json",
+        "sha256": "84047df11835dd532f59c7e09d805e774c773f6e3507812cc304d7e9c3101c3a"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.spatial-source-shape-normalization",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.spatial-source-shape-normalization.json",
+        "sha256": "cf70cf9a4da0563ea18c739a4d04a17b084cdd5f5e1969879f8bedf391a4ae90"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.spatial-source-shape-normalization.json",
+        "sha256": "0ce6c73bf0ec81318b23c4abc166cc400985c24b260782212129766635355ffe"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.equilibrium.anisotropic-force-balance",
+      "received_document": {
+        "path": "catalog/examples/scirel.equilibrium.anisotropic-force-balance.json",
+        "sha256": "118d65f5271ea5e890a2eb5773700997503a83f75a29b73caef897effd1fa979"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.equilibrium.anisotropic-force-balance.json",
+        "sha256": "b70cfe48e6228ab64bc41475fe611075ade7f6b32eadc38d317be26ebefaf30d"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.atomic-hydrogen-collision-matrices",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.atomic-hydrogen-collision-matrices.json",
+        "sha256": "d44aee0c5ecf9e69e70753cfb6e847ef3a33fb08be559311808a3d0314d98a4a"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.atomic-hydrogen-collision-matrices.json",
+        "sha256": "5ceb703d3832d38cd024ef0b71321f871b746f4afb991b92d1c4d106e9a28075"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.kinetic-dispersion-sum-fluidbw",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.kinetic-dispersion-sum-fluidbw.json",
+        "sha256": "2c472453dfa737a98845c50f7d50c95067ca90033afa7395bdc21f76e4aea47a"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.kinetic-dispersion-sum-fluidbw.json",
+        "sha256": "2acada6980029e4f441e011a48968201d37f62dcc2136873b61bb43c8efad4bf"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrf-dispersion-scan",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrf-dispersion-scan.json",
+        "sha256": "c86a8b1bdd6589f7eaf1ac6e6d9c756412ac9602fcdf28b6862d478bc1706d43"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrf-dispersion-scan.json",
+        "sha256": "aa12257d77174c17ff6db81808cc4bfa00dd9351bd4c54108a0aa8f8b6a5b88d"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.terminal-energy-transfer-reduction",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.terminal-energy-transfer-reduction.json",
+        "sha256": "0e8b447e101ee158ead0d743aed45a0bcf9c770a2c8ce2b3a3fe6367b9a832fc"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.terminal-energy-transfer-reduction.json",
+        "sha256": "d16ffce27b1644da63b6e57867909bfdf2e64176d7aa2b7f78fd3bf6affecd8c"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.grid-mirror-kinetic-closure.json",
+        "sha256": "4bfbefbbf382085d5b2c925180702da22e57db06b71b6c7196904c8c112409d6"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.grid-mirror-kinetic-closure.json",
+        "sha256": "05ab4108337d29a903b95b7bcd16868bc93e3200e632ddfc71433bf56c289423"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.closures.boltzmann-quasineutrality",
+      "received_document": {
+        "path": "catalog/examples/scirel.closures.boltzmann-quasineutrality.json",
+        "sha256": "baf7a9f8ae1dbe9f4655c893d3c20202ee9a7be126c7a9e3b6a21d0b2640bab1"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.closures.boltzmann-quasineutrality.json",
+        "sha256": "dcc176aafc6a2f13c5e1d9758a84d519e570e582cbe85cbb8e498a6afd045404"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrf-temporal-spectrum",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrf-temporal-spectrum.json",
+        "sha256": "bf7ce20ee305c8e526e8d97ba308a21afdaafe957801d9bec9d19881f4067fb7"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrf-temporal-spectrum.json",
+        "sha256": "13575a3b878a4e9c3fb8c83a0118b728db203a47db837761d26ff21972539e54"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
+      "received_document": {
+        "path": "catalog/examples/scirel.equilibrium.reduced-hall-anisotropic-picard.json",
+        "sha256": "7bc89a216d0a215bf5334aedb8157c7029b59ef084597a15574381cd6060388a"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.equilibrium.reduced-hall-anisotropic-picard.json",
+        "sha256": "066533268fc2f3fdbc2e615daae161b50f70c64d67c94d92e8c5fcec66096d6f"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrf-plasma-state",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrf-plasma-state.json",
+        "sha256": "ccbe9a1d60d900a7bb5f8927b17b58c448c668bdb019341d2a55d73b3edc934b"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrf-plasma-state.json",
+        "sha256": "b48d802de7726a854e95c56b71c83448ba7476572b64349acd83f10e58bf4c5e"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.field.dense-axisymmetric-green",
+      "received_document": {
+        "path": "catalog/examples/scirel.field.dense-axisymmetric-green.json",
+        "sha256": "b07480cda36c7edbba60571d6eecab0561d0fda99c5be22b21f8992dfd5c0719"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.field.dense-axisymmetric-green.json",
+        "sha256": "62ef8a73d19191eccd420394d4f50926ed4ed34392d6fe9c1de87099e9300a58"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.molecular-hydrogen-elastic-cross-section",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.molecular-hydrogen-elastic-cross-section.json",
+        "sha256": "b8baf9fdf7e161e244cd0b88c4e28019b62124f4ade452bff91aee7b69428d40"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.molecular-hydrogen-elastic-cross-section.json",
+        "sha256": "d4c2e7ee9d696b8d0d42161ca50a4de821ad924fc516a73821530e8daac17bf8"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.geometry.flux-surface-inverse-field-average",
+      "received_document": {
+        "path": "catalog/examples/scirel.geometry.flux-surface-inverse-field-average.json",
+        "sha256": "11e9bb2ed9231c56efd637b7598430c6897879c9d8572ffe9838f23e9735b0f0"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.geometry.flux-surface-inverse-field-average.json",
+        "sha256": "2c9d8fb14df49ff9c77354c207c2e859f424f0dc76112c4161830d7f842b5ffa"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.molecular-hydrogen-charge-exchange-cross-section.json",
+        "sha256": "2c2a54236eead4b7c60c40ac8671396b5d4c198a36ab7158798b71723eabb516"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.molecular-hydrogen-charge-exchange-cross-section.json",
+        "sha256": "d535e7fd56ed27defaea3e4333fa919292c7502a4692bc90b712bc2df1d8fb76"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.field.mirror-plasma-green",
+      "received_document": {
+        "path": "catalog/examples/scirel.field.mirror-plasma-green.json",
+        "sha256": "23838437e92bd196e4e0ad4ddf625b9a1f30d8a82981919ff44de85f55bea418"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.field.mirror-plasma-green.json",
+        "sha256": "f3131f971a97746a9c5d4a82c07d3694fa29b4e95424ece3b4df9d85a5d4db53"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.equilibrium.isotropic-picard-step",
+      "received_document": {
+        "path": "catalog/examples/scirel.equilibrium.isotropic-picard-step.json",
+        "sha256": "777485051a1bbc2b99b86d30afc0a97d6086a3f22ecedeafe8d428b413b027f8"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.equilibrium.isotropic-picard-step.json",
+        "sha256": "207c73c1f162846d39f00753e41bf26d18d7874ad4c16e2d37fe0a68804c7ee1"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.kinetic-wavevector-scan",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.kinetic-wavevector-scan.json",
+        "sha256": "464a259349c9cf31a649c1e29e8e3c4403d1bb50b113b33edb84373b2ecb56ed"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.kinetic-wavevector-scan.json",
+        "sha256": "1421b9d27fba3d3d64f40e391fee2fa002fc4c10ae63cb2713530ccbb72956de"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.axisymmetric-neutral-moments",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.axisymmetric-neutral-moments.json",
+        "sha256": "97988779a4e7b79e55bd975160e844792c2f16e20c9c414e022aa61b3cd6be30"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.axisymmetric-neutral-moments.json",
+        "sha256": "8bdb385be2b6e1a970e39df72830537e1814268ededb5cfea976f02f19012762"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.plasma.fast-ion-heating",
+      "received_document": {
+        "path": "catalog/examples/scirel.plasma.fast-ion-heating.json",
+        "sha256": "be9b4c5456f0fd8d022b676ca7114998ba1f22553e18cd78e48937043d93ebb8"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.plasma.fast-ion-heating.json",
+        "sha256": "7ea8663d4f8756d942faecde563666677239b506a39ce1f2a15b8811332cd90d"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.mirror-total-pressure",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.mirror-total-pressure.json",
+        "sha256": "e3dce8641bca5853d80d447114af5f97bf7b4b1ff5fcea6c2f1de5055a69ff05"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.mirror-total-pressure.json",
+        "sha256": "cb38c766bfa3d31ce563b62b5aab09d0a11e49f88395504d00cdeb15bc451791"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.cross-mesh-distribution-interpolation",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.cross-mesh-distribution-interpolation.json",
+        "sha256": "f815591f0e8d00cce325b5dea1175557f821cdbe6af40052f4a1815f5578fdae"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.cross-mesh-distribution-interpolation.json",
+        "sha256": "8e540aaa260c697285b50404f2e7780657f1abb99d975a7b2db8709eda0dab10"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.closures.tabulated-pressure",
+      "received_document": {
+        "path": "catalog/examples/scirel.closures.tabulated-pressure.json",
+        "sha256": "a74b30a504aaa605ebba425b3c55b210a3a699d6be92d930b7d857b3ce8b568a"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.closures.tabulated-pressure.json",
+        "sha256": "4fc2583fb6554017b08314b6e931c7255e94cf9e043a486b668c8a9d73432fd3"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.mirror-invariant-distribution",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.mirror-invariant-distribution.json",
+        "sha256": "6878e96044a3f2607a096b042e4dafa4a68ba52c748f23f5c7e90f4776400664"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.mirror-invariant-distribution.json",
+        "sha256": "96b8d5836da9e454b5cd1438b8c87986c39374e596a1344b17c5cc2588318a36"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.bessel-gamma",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.bessel-gamma.json",
+        "sha256": "bc73ba2192e9b345df17245b339ba44f15f2023fdc00a55216bbc1a5815f938c"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.bessel-gamma.json",
+        "sha256": "09fb8a0b0e3f52a11dc2dbb7d0f166c9f4a2a1db51f11654e2326e31a78ba9c9"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.kinetic-dispersion-ronnmark",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.kinetic-dispersion-ronnmark.json",
+        "sha256": "6291e64e15ab916a95c08d668dd30c7bd11aefd2870e3ab1012a04c91fad21a7"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.kinetic-dispersion-ronnmark.json",
+        "sha256": "833ff9dfcca0c5d33fdc96dc698d2f160e5bdc1fb662b302a68f2d81233c9086"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.loss-cone-spectrum",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.loss-cone-spectrum.json",
+        "sha256": "409535a97496ad6db66ec5abbe2c104f710a45d053bbbec4dbc5c3c16c27c088"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.loss-cone-spectrum.json",
+        "sha256": "cfb90173e6aa718a15d4e7569c0fb0b3eaa94b6f7c6b69e57cdae8a235d8bebc"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.diagnostics.firehose-mirror-margins",
+      "received_document": {
+        "path": "catalog/examples/scirel.diagnostics.firehose-mirror-margins.json",
+        "sha256": "81f2865194d475cd2e9a4760c378a69e7706246bf59308e5dff9bdfe908ee308"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.diagnostics.firehose-mirror-margins.json",
+        "sha256": "3d91f4de47b742abb9d733048023115dfbd98527a0a8f64ab81eb0dbfbcafb83"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient.json",
+        "sha256": "1b3fa979f78e71316645c3dc9576b0327e8836e4e0c5a1fd5d9ca7c753711888"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient.json",
+        "sha256": "1e5d766f52719c5c2c903564459b26c7f89819a6c3e893958e8d6e69564811f2"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.field.filament-vacuum-field",
+      "received_document": {
+        "path": "catalog/examples/scirel.field.filament-vacuum-field.json",
+        "sha256": "2657e723ed9c6d9cb9f4b47e102a8480250a31d28fe067291ec96ee332ac1ba5"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.field.filament-vacuum-field.json",
+        "sha256": "65a6a047ec656eabd97fed9e4143949f8d3b3dda8bc96c271c9c2ea0e971812a"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.fusion.dd-neutron-lab-energy",
+      "received_document": {
+        "path": "catalog/examples/scirel.fusion.dd-neutron-lab-energy.json",
+        "sha256": "aad6aecf6cdc81a6f0edc9a82e6c8898b5b1ed89a5abb6c8ade77cb52624b730"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.fusion.dd-neutron-lab-energy.json",
+        "sha256": "530ebebe2feba8e31ac09bdaebf421b819070b053093daab3a55f3738a3d2b61"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.terminal-heat-flux-reduction",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.terminal-heat-flux-reduction.json",
+        "sha256": "a60593c168642610ed06fe0d3667a3a6ac148c8e7fbf44dee552ac5edff460dc"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.terminal-heat-flux-reduction.json",
+        "sha256": "be161a616c95e8a74f4497f10d6c589835287dc387a7764c514d3f2424c40fd2"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.inference.anisotropic-trial-evaluation",
+      "received_document": {
+        "path": "catalog/examples/scirel.inference.anisotropic-trial-evaluation.json",
+        "sha256": "2da168873e634bba9da1e802bf973804013181d2a84796e1568ae67ea898b1b0"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.inference.anisotropic-trial-evaluation.json",
+        "sha256": "2d74ead680b00780f1dd5b437ba176b24a8df4742eadd478caa7e358c5259ffe"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.equilibrium.anisotropic-toroidal-current",
+      "received_document": {
+        "path": "catalog/examples/scirel.equilibrium.anisotropic-toroidal-current.json",
+        "sha256": "654610f44765b6b1da41b2311f4f7d62ff66bb1b37ea20fd7fdfe15a280cade3"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.equilibrium.anisotropic-toroidal-current.json",
+        "sha256": "00d79c3b9b46de043c3fa5250687a1a8514540725d307640e983e582fad9d772"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.terminal-conservation-diagnostic",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.terminal-conservation-diagnostic.json",
+        "sha256": "721e8bec727434c2dd000383049aba4909f423f4a8e96f00d8d798a191a6a8f8"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.terminal-conservation-diagnostic.json",
+        "sha256": "26dd3b87c9159b746ba84777adf769fcdd4c5c9d360a4da4aab32e082013b87c"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.closures.mirror-ambipolar-potential",
+      "received_document": {
+        "path": "catalog/examples/scirel.closures.mirror-ambipolar-potential.json",
+        "sha256": "d0a8eb8f1d7ec96651214b8f87575bcf0ac9da41f67316f86306b2dca1509089"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.closures.mirror-ambipolar-potential.json",
+        "sha256": "4fcdb821ccab7f40f05916e40c80d3770811cb7118aef0d439da7e554e1aa80f"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.field.permanent-ring-filaments",
+      "received_document": {
+        "path": "catalog/examples/scirel.field.permanent-ring-filaments.json",
+        "sha256": "4d56c6ca7d403895247b1b1d4307a222ee3ca8062d6d83118a938156e651084b"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.field.permanent-ring-filaments.json",
+        "sha256": "9103207757f59bf0b6cce21e137a8036739c91524e2bc5b817cde0c655342f88"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.generation-accumulation-update",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.generation-accumulation-update.json",
+        "sha256": "05c3a16a0873ff72e4342f3a231f01142f397f9f5dfab42817943ac88278bdfe"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.generation-accumulation-update.json",
+        "sha256": "97fcd39845a40d9b5c0b08f715949d1e5d337023fd9dd4bfebf3a6ff6ad32a58"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.atomic-scattered-sources-reduction",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.atomic-scattered-sources-reduction.json",
+        "sha256": "a740b0ddd00bd31eb57e4decafbae4d816eb202da1c5cbfe6eaa97868a11efa2"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.atomic-scattered-sources-reduction.json",
+        "sha256": "862ef366db9551d23e998f18500f6c403a6d9653f00e7efbca5a0df474cfeb5c"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.frank-egedal-source-projection",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.frank-egedal-source-projection.json",
+        "sha256": "5ef5ae053ca3bba9419dec5228b9825c89b413a30de44e831963942eccdab3d4"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.frank-egedal-source-projection.json",
+        "sha256": "8c62409886c3717618610b45bee31a05fd9e0b9b4850edfbc3c59e19056ebcd6"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.geometry.planar-wavevector-projection",
+      "received_document": {
+        "path": "catalog/examples/scirel.geometry.planar-wavevector-projection.json",
+        "sha256": "6d2b397120be0b14ebf820a91e55cfca0cbecddda2e37818d567c3ac50c29705"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.geometry.planar-wavevector-projection.json",
+        "sha256": "75cb2d2de65eb6ca0c301e9789f0f00fdeb09edec38bba7fb2fe2c876894e5c5"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.field.complete-elliptic-integrals-approx",
+      "received_document": {
+        "path": "catalog/examples/scirel.field.complete-elliptic-integrals-approx.json",
+        "sha256": "d24a297d643176af5555ce8ef6bbaee0fed5960111af1f0c00b198d0f0b182af"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.field.complete-elliptic-integrals-approx.json",
+        "sha256": "704d17965c06016a90515775365740f049e658527e8daabddf8a74414372c62b"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.z-pole-coefficients",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.z-pole-coefficients.json",
+        "sha256": "15b52a3ba70c3dea011410ccae47035b17180a3b49600fddbf8428b9e9fc3893"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.z-pole-coefficients.json",
+        "sha256": "90597e5a9f77bad165deee31c2f5c07d3fab71e25ee82bb2a49fd39677d1b1e9"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.generation-density-reduction",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.generation-density-reduction.json",
+        "sha256": "00ecaa48f0cee4fbde4a463a20c1b3a0c9fcd0907c73f2617c399ae703c33aa1"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.generation-density-reduction.json",
+        "sha256": "f05c1e03450787ff8c2c80b7ebf76f87622e6111188b7daba373c487f305d225"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.frank-egedal-pressure-closure",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.frank-egedal-pressure-closure.json",
+        "sha256": "48e779730ec350b000621c93d2b239c09fab4b289fc4e5a9b10d0933bf0b696f"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.frank-egedal-pressure-closure.json",
+        "sha256": "58ea80107d4a6e8016d7cf7f73441b99faf765139779014622e5aa1ddedc8041"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.equilibrium.axisymmetric-anisotropic-picard",
+      "received_document": {
+        "path": "catalog/examples/scirel.equilibrium.axisymmetric-anisotropic-picard.json",
+        "sha256": "70297966710ed715f19dbea3f7a4220c4708483170c9206bb2f1a54a4c7251cc"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.equilibrium.axisymmetric-anisotropic-picard.json",
+        "sha256": "c5122f0d06efaf90864bf2682ec2a8aae0c4115e7159392c6ba3b0e6fcc00ee6"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.kinetic-dispersion-relation",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.kinetic-dispersion-relation.json",
+        "sha256": "735a5a05f7c58de2dda0a6056ccf60874af2a13176cfdb2e3c3c9e0fe2837984"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.kinetic-dispersion-relation.json",
+        "sha256": "7ccf333eb98e1a6b86b03ebc53c451dba52272f1c8e438803590a30758919943"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.diagnostics.species-absorption-fraction",
+      "received_document": {
+        "path": "catalog/examples/scirel.diagnostics.species-absorption-fraction.json",
+        "sha256": "3c7c7a2a4de3218c13e95119d2a1c581fc6413e4c293abd9fec2eff336c6d25c"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.diagnostics.species-absorption-fraction.json",
+        "sha256": "6bc24c76f91e2f92e597e8060bebe34579f2d09a9d300a7fe961a9c4c68d4fee"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.species-equilibrium-scales",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.species-equilibrium-scales.json",
+        "sha256": "03ded1cf7e9fcd455b6474bb1eb7c51325dbcd5ee66ba8069ba7b886b8605145"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.species-equilibrium-scales.json",
+        "sha256": "5f13ee8dd6f63c0f85b24241198273a68537c13f70fe32ee1c12af6c28b2c1f2"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.normalized-momentum",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.normalized-momentum.json",
+        "sha256": "dae0f3885cde7b3ca0704c7f1965c7be20e17b57a514da2bdb48637c34e1c42a"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.normalized-momentum.json",
+        "sha256": "4f1e977f16b39f6820bace2d191596139bc7bc55544e333c5be2a0b2dd6dc737"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.cylindrical-velocity-quadrature",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.cylindrical-velocity-quadrature.json",
+        "sha256": "a9ef487e8fc3f2d5f76eea1bf4c183473a04c02120b842c0526c961ad8bd2f12"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.cylindrical-velocity-quadrature.json",
+        "sha256": "360bd9971a9daf5983fab00ce1e5a930cbe48e8063acc14c736efaad48eacac8"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.neutral-upwind-transport-coefficients",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.neutral-upwind-transport-coefficients.json",
+        "sha256": "0c01f9dc6ff84f268a213136233421562b31849db22c6abfacd27cd86ab10300"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.neutral-upwind-transport-coefficients.json",
+        "sha256": "75d804f65fabdb2a7e94291c7e39d5c4892c0c7935f1f95467417b382c4ff75f"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.inference.latin-hypercube-sampling",
+      "received_document": {
+        "path": "catalog/examples/scirel.inference.latin-hypercube-sampling.json",
+        "sha256": "91511a267b2aad8352ebfd37219d6744735807bac21db9d518b359c3949a7bfb"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.inference.latin-hypercube-sampling.json",
+        "sha256": "04df1478c9300d6548cc632aaaaf7ee9953e7249933c7d3567374d8717f43be2"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.geometry.flux-surface-profile",
+      "received_document": {
+        "path": "catalog/examples/scirel.geometry.flux-surface-profile.json",
+        "sha256": "8b7d9eb0c14a22b379f850434cf0e41328f4b634f9fa85ef358afcfc62555e79"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.geometry.flux-surface-profile.json",
+        "sha256": "614819355d358f118c4bed188722327e3cb45a7e5aebc902909c06e0fc75348d"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.equilibrium.axisymmetric-picard-update",
+      "received_document": {
+        "path": "catalog/examples/scirel.equilibrium.axisymmetric-picard-update.json",
+        "sha256": "4a81a8d83e218a7a944648625ebc150f8ff7c05f7e1b4df8c969acb434507814"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.equilibrium.axisymmetric-picard-update.json",
+        "sha256": "dc0bec1d2b9f1574e3a20aede26048324c88311a86ec34f496e408774125dff2"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.atomic-alpha-contraction",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.atomic-alpha-contraction.json",
+        "sha256": "275b95030f31b6ea9e38d2e1fcd06a16499f29e759f963176dc4ab324cf82598"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.atomic-alpha-contraction.json",
+        "sha256": "f08a306b7ab872b80a465f89c1980bb25502f79060d71c61fc20e30c5c7df817"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.mirror-constrained-moments",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.mirror-constrained-moments.json",
+        "sha256": "63f3b8126c39e3f569e178df868c98e31be7f2827f82913d409bcea5efc64e4d"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.mirror-constrained-moments.json",
+        "sha256": "412afe8b01cd466c5c4a79a434dcd0fcf0cd94a0e0e140e89bb6e874dce7222a"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.inference.anisotropic-parameter-optimization",
+      "received_document": {
+        "path": "catalog/examples/scirel.inference.anisotropic-parameter-optimization.json",
+        "sha256": "24ceade7bb4f39c243975b200a5a14fdf5a04243ba3ac9f4dd2748962a8aa735"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.inference.anisotropic-parameter-optimization.json",
+        "sha256": "dfa8f5aa29aa7d01606dac99c988a366db29fdf8e8ba33f232260a50f35382c5"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.field.current-green-superposition",
+      "received_document": {
+        "path": "catalog/examples/scirel.field.current-green-superposition.json",
+        "sha256": "d5d0a7c2f5cc3fdf1522dc91658ada206a6736fd689f29f51ce557deb55c5ca5"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.field.current-green-superposition.json",
+        "sha256": "ed2aa439095b6107659727378e8e2f9a47fc4ad27a69cedab7cc4a6315517926"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.simple-charge-exchange-source",
+      "received_document": {
+        "path": "catalog/examples/scirel.kinetic.simple-charge-exchange-source.json",
+        "sha256": "31d9c7710891a22d588b709d9c64d8a2fc576ad1bf6ca25cd87d153da40d7955"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.simple-charge-exchange-source.json",
+        "sha256": "01daa3ee24d3f0b65d5db23ca8f288decee8885bd88e600e2339b297637d4f84"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient",
+      "received_document": {
+        "path": "catalog/examples/scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient.json",
+        "sha256": "68d30cda6baa6d1446a20c3c06b969c183332dc4c3ae85d0a6ee7455a0bf237d"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient.json",
+        "sha256": "ed1c9eadd7242adf78d1fc2bca375dddcd31a7f55b64f4b04d8e0a5c04dab46f"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.field.multi-coil-vacuum-field",
+      "received_document": {
+        "path": "catalog/examples/scirel.field.multi-coil-vacuum-field.json",
+        "sha256": "d91a2d6344fcc5826e0538a339d3106924cfc4cd4802fe9d97de09e440dbf45e"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.field.multi-coil-vacuum-field.json",
+        "sha256": "c6c4faf5f9d1b00404fe2bc62418d62d1cb1862423024c4063340068390d6ce4"
+      },
+      "change": "implementation version binding only",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.basis.basis-matrix",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/basis.basis-matrix.json",
+        "sha256": "c01b8583fdf1eb692b7c0790e92c7a3d9100e00bc675b69ac7d78769f4799c62"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.basis.basis-matrix.json",
+        "sha256": "aa12e2ac56b2b587736ff5eb0d8ccba350a16be8084d898df659e5e84a131f6f"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.basis.build-basis",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/basis.build-basis.json",
+        "sha256": "6ea048a43488afc369013f33bcf4371c2fac3c191315d42aced066c282befd11"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.basis.build-basis.json",
+        "sha256": "e09dc4255bc21548aa16cabb8d0636289537b26c035e918f28437a8d56e52e2a"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.basis.clamped-cubic-spline",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/basis.clamped-cubic-spline.json",
+        "sha256": "5d19537023e10f9234d495eec74e630d5beabb1274b7df9b2e9fa92cddbf4937"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.basis.clamped-cubic-spline.json",
+        "sha256": "f61e13be4ac83d819e73a12a986c603294c225b4a1e0d047266d736a30d8b47a"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.basis.first-clamped-cubic-spline",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/basis.first-clamped-cubic-spline.json",
+        "sha256": "e81488a5910b3e3b3d299ad8320dc0e8cb36497ae46e6067959b4d8e2f9c4c19"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.basis.first-clamped-cubic-spline.json",
+        "sha256": "d081a975d51cf859307087b09e1c66597f3518091945b8c36204fef3513775fe"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.basis.natural-cubic-spline",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/basis.natural-cubic-spline.json",
+        "sha256": "375220cf8970efa5a560fead6f1cea8db557dc5a7448833b82083f9ee237dbdb"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.basis.natural-cubic-spline.json",
+        "sha256": "2867413c1d8e9a8faed8ab8a42b40d4e9bdc522e82a60ff39a8f040ea4f169dd"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.basis.second-clamped-cubic-spline",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/basis.second-clamped-cubic-spline.json",
+        "sha256": "0584731223ead53d3b16b4ae94a0e4acfb1f3a09ceed1f2c8c8e58687cf2457a"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.basis.second-clamped-cubic-spline.json",
+        "sha256": "1b5d498a49caafbbd59f0f4c8115e2a1acea7d3623b9beba9aa661639f381ad4"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.electromagnetism.arbitrary-points",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/scirel.electromagnetism.arbitrary-points.json",
+        "sha256": "eda022dcfbdc6f80dcf98533b8b6687aa78320a5d3ff3edc5f1fffa89677c6d1"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.electromagnetism.arbitrary-points.json",
+        "sha256": "b670ccd37fe7c125fcae1fa35bf5e4d158bd39b4d3b589a403d4f2acf78b1aa3"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.electromagnetism.brb",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/scirel.electromagnetism.brb.json",
+        "sha256": "c641f6ed0b0cdbe2326a00bc1c7ca284b0beb16c5d7e2df237e76437f72c44a6"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.electromagnetism.brb.json",
+        "sha256": "7fe41ce584adb55bf82855a999fd65d476297a4309c31ebbccb66e1327f549e0"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.electromagnetism.device",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/scirel.electromagnetism.device.json",
+        "sha256": "e5b8b475b58c4056ff48890e2f82d38fd5fde0b3c66b21f45e73208b43e2c43a"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.electromagnetism.device.json",
+        "sha256": "665e11abcfb63c1d4d8e224954c6ef0b6221d8a8bf6a1470afa95a8570e8e43e"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.electromagnetism.distributed-current-flux",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/distributed-current-flux.json",
+        "sha256": "f1c81b623ec58e72295b1823d8f937598d23dca881fd40cd06a42b90a0d4ef74"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.electromagnetism.distributed-current-flux.json",
+        "sha256": "bf340df975519e86033e68d032844351368bd24dd330b8b20632be3fed05c50c"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.electromagnetism.magnet-ring",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/scirel.electromagnetism.magnet-ring.json",
+        "sha256": "b7f37a8c661cf1601601aca6dfb3de57cd97c61ca36b6ba12ee0b3698d6b2cb6"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.electromagnetism.magnet-ring.json",
+        "sha256": "509349d4dab96c5b59ac24bcb7aa9c6faf905bd27239609dac79acd847f611a5"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.electromagnetism.rectangular-coil",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/scirel.electromagnetism.rectangular-coil.json",
+        "sha256": "48731b1ce3b5f6791079507551b7d6b8ec132f187fe5be5b841986ebb258ddc1"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.electromagnetism.rectangular-coil.json",
+        "sha256": "562086e623e50bc4a79f7190b057eb6584dbb85da1704d33040df980c5464735"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.electromagnetism.trex-coil",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/scirel.electromagnetism.trex-coil.json",
+        "sha256": "88319b804f4e45d4bb23b950644b3f79c098c518c8310431e6e5f593e924ddb8"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.electromagnetism.trex-coil.json",
+        "sha256": "5e60d62fd3446a8bc48705f53db68dcb6cb3ca4759b38f8b837e792af0b88555"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.electromagnetism.wham",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/scirel.electromagnetism.wham.json",
+        "sha256": "735260f8d0fe2ae9705fcea1ab1d6d3847ff7f24f73bed624276950822006631"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.electromagnetism.wham.json",
+        "sha256": "3b877d3a0f366c4820e9f1e174b442268dca3695466d618c7ef55940b9f03238"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.fieldline.arclength-derivative",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/fieldline.arclength-derivative.json",
+        "sha256": "b621f1f8c7a1184545911343e718712b457dbf86c25ae025a1cfa3c69a7396d5"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.fieldline.arclength-derivative.json",
+        "sha256": "a73e8856342e4ab3eda4c7162877c4e3324c8ad7a4569522bb0e0957f67b30c5"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.fieldline.boundary",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/fieldline.boundary.json",
+        "sha256": "c8c42837b7cb71e4b72adf5d59f93681c9a7de745512629998691994af76b17f"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.fieldline.boundary.json",
+        "sha256": "5ad31981e03336b67c97bf51d14fea4aa236c64c3149f6ed04d3be3c48bad116"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.fieldline.contour-points",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/fieldline.contour-points.json",
+        "sha256": "ea712f4a30a25d6a7dbca47ff09d5cf8c401b5645ff9e0a7d36b62688c41f0b1"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.fieldline.contour-points.json",
+        "sha256": "08aacff2d96652fb90465d9b8ead9f68d134a4580c1e74b099fbec800c86621a"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.fieldline.fieldline",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/fieldline.fieldline.json",
+        "sha256": "023aabf644957d299390342a6acce154d03efe326f1cae96096761fe2421ffa6"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.fieldline.fieldline.json",
+        "sha256": "a4f5b0d5773536aec81960461fd360313b366f769cfdf13a3ff6c137a7ed0423"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.fieldline.fieldline-set",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/fieldline.fieldline-set.json",
+        "sha256": "b9c5fa6db6b4e55523aa3810e2a4e1df95168bb8e0933298596f08085c03b8fe"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.fieldline.fieldline-set.json",
+        "sha256": "b37bab96b4c398c05fda7e3458cf9456025bd8ba30d1471e4049ad9b2a847cd0"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.fieldline.helper-contour-points",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/fieldline.helper-contour-points.json",
+        "sha256": "33457ad8c3f919df5f5ab025ece8a14a67d938862c6b76bcbdd9485fe5854b92"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.fieldline.helper-contour-points.json",
+        "sha256": "87b0a986f2697fbc6bfb1406e947caf3f29da4b42fe054365ebb40f860e738f6"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.fieldline.helper-fieldline",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/fieldline.helper-fieldline.json",
+        "sha256": "b2f33dc1a19e106a9f819b6c695d213125072a8dfd529438c384e159da0ae4b5"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.fieldline.helper-fieldline.json",
+        "sha256": "7abeb1936c98541d6918ffaeee1e942384a94abea86bcfcded307cc794b9fb77"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.geometry.points-mesh",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/scirel.geometry.points-mesh.json",
+        "sha256": "61768c4f4f7d1306cfc3816901b83373dbdfa72d25dcd526938be0389ad9c423"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.geometry.points-mesh.json",
+        "sha256": "9c12e652301b19b89fed341c56c21844939866846332ae6884a61fd9bd27eff4"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.geometry.r-chord",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/scirel.geometry.r-chord.json",
+        "sha256": "976bada596acb2890967174093bc57c2ab17a93fa1bf913ba279aa388455a7a2"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.geometry.r-chord.json",
+        "sha256": "48292fe30e88fab6485cf45d046ee79bdc353e4044ded66eb376eeb4869b140c"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.geometry.rect-mesh",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/scirel.geometry.rect-mesh.json",
+        "sha256": "9e465a3befa26e93906bcb3f78db097aec21d968bc59c1078b77cd909e621c2d"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.geometry.rect-mesh.json",
+        "sha256": "d2f6c8d9bd1e458c2d06573fb21ddc71c689e29d3bdd52eb8f9bd22d9b41a1fa"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.geometry.rotate",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/scirel.geometry.rotate.json",
+        "sha256": "af1a71c4cfd2710bc0a2ba28ebfcbe0b7b2802d1a28696c5f44a8b0d6178a9a7"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.geometry.rotate.json",
+        "sha256": "003c92a37089780e3bbf3c28b9e690541ea9069127b81f678e5d02e4b312d880"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.geometry.spherical-r-chord",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/scirel.geometry.spherical-r-chord.json",
+        "sha256": "6f4fbad28291fa45a31b0b110298779aae3a58a32a1c3356bd9f571fc136aed3"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.geometry.spherical-r-chord.json",
+        "sha256": "f16e183576226d59dcd2ded7b2e15044380370337564d57ac3469953f366b839"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.geometry.theta-chord",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/scirel.geometry.theta-chord.json",
+        "sha256": "ce4615b3ab471b6c8c9b5cbdfc3a7147067646d5ca7efc2794fc03bcc0091a74"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.geometry.theta-chord.json",
+        "sha256": "c03366ef8b8af0b44d9a402453d61b847b3a59d96445ece337a171891036778e"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.geometry.z-chord",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/scirel.geometry.z-chord.json",
+        "sha256": "5144666acaf45d52882c5267f159f7353a1e4064ee6ccf2272cc5e0a77d094f8"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.geometry.z-chord.json",
+        "sha256": "74216dccaa29b3b25e5afb087ab3e983f1a1c2abcc82c8b78c485ac00672c1aa"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.io.eqdsk-class",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/eqdsk-class.json",
+        "sha256": "b1d5be369d09645f845515d265e221a1eb739d053199455bc6a89ea1583c94a7"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.io.eqdsk-class.json",
+        "sha256": "7bb623b81d83d88de6ee3c09662036b05f9b39da4ad838a753dd839ac99a8408"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.io.pressure-equilibrium-eqdsk",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/pressure-equilibrium-eqdsk.json",
+        "sha256": "9c5d3cac6caec9a20433c47b2375f5b20360818f298502c4de312b86fce4c66d"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.io.pressure-equilibrium-eqdsk.json",
+        "sha256": "6034532cf384a0f077e2d3cc8e58ea345aa4bd83bce98127c50df67c50e062d9"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.io.read-pleiades-eqdsk",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/read-eqdsk.json",
+        "sha256": "1dd2e16080acdc56eaf06df4480bc9ea5904ba6be4bf293504f6b56f2bce650e"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.io.read-pleiades-eqdsk.json",
+        "sha256": "26f6ca4460f94271eb6aefdfc28a60966092f441b15719f780d951cefc3de13c"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.io.write-pleiades-eqdsk",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/write-eqdsk.json",
+        "sha256": "f7755adc2d44f325105a21b128c54c8ce070c6f4ad18dd70cfa715f1db4021a3"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.io.write-pleiades-eqdsk.json",
+        "sha256": "0ab19565e638e8b41c170d784e8f1f088dc12891db0f83961a6477dd4e00b1af"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.io.write-pleiades-eqdsk-legacy-raw",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/write-eqdsk-legacy-raw.json",
+        "sha256": "ba78481ec364f4db2f53a075c9bfafcf6a2c948a10e4eb551141c3a61ffc0b95"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.io.write-pleiades-eqdsk-legacy-raw.json",
+        "sha256": "4703d2c2e0b5331a3a4e11c4effeff4718167699f7ae856f10627e9d1f9dd55e"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.evaluate-faddeeva-dr",
+      "received_document": {
+        "path": "catalog/gpdf-core/evaluate_faddeeva_dr.json",
+        "sha256": "94e3f805231506b52bafa2b86595f1aa66c474c6421a9a217ccd9173a177e23b"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.evaluate-faddeeva-dr.json",
+        "sha256": "63cdba725cdd31d5d610157cb115d59e262985a06c5ec1ed3a07da683408b9b8"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.evaluate-faddeeva-gpdf",
+      "received_document": {
+        "path": "catalog/gpdf-core/evaluate_faddeeva_gpdf.json",
+        "sha256": "4ca170ea0e0c6575a3f9fb967dbc3c09cea8f108eec4d5653c04835742d2ca1d"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.evaluate-faddeeva-gpdf.json",
+        "sha256": "e60fb7637e4f11e2b01bc269fd00e99cd3cfc06928a90ee64c66671b441d90a5"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.evaluate-maxwellian-fft",
+      "received_document": {
+        "path": "catalog/gpdf-core/evaluate_maxwellian_fft.json",
+        "sha256": "e63e0d39cead2939984c41b42664f6ba80dea84742810010319cffed54bbe36a"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.evaluate-maxwellian-fft.json",
+        "sha256": "1d404a3ce630cc43b97159ebf1efc4d2882d7f5be687b040acf44ae7f249c5ec"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.evaluate-maxwellian-jpole",
+      "received_document": {
+        "path": "catalog/gpdf-core/evaluate_maxwellian_jpole.json",
+        "sha256": "e3270befe20fef8c75ba092e154edc571fda35b2a6bcc74a63af98edebb3a9ec"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.evaluate-maxwellian-jpole.json",
+        "sha256": "d63b670a8623b5774ff561322108db9e776552a7e73609c86fdfb638e152d178"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.generalized-dispersion",
+      "received_document": {
+        "path": "catalog/gpdf-core/generalized-dispersion.json",
+        "sha256": "ed0bf4099e3cc85a96cb529a5f012e005f5f993d88c58c09abc40b014c129148"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.generalized-dispersion.json",
+        "sha256": "d6febd995c63abaabe56fb8752c0df927d559ffa0b05727660dfdc7f4dbb56ec"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.generalized-expression-differentiation",
+      "received_document": {
+        "path": "catalog/gpdf-core/generalized-expression-differentiation.json",
+        "sha256": "677d372c5b0132d4e04b8f4f2e783354742aada46751ae896063dead25cc8cf3"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.generalized-expression-differentiation.json",
+        "sha256": "7ea78a5ee7b108622405684275d0002d68d7fe092b4bb05d23cdd359634b6dcb"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.generalized-hilbert",
+      "received_document": {
+        "path": "catalog/gpdf-core/generalized-hilbert.json",
+        "sha256": "9db85c90f50c3198ebded9b3392e954c20cba247a3bf969cbb19a6c7b4e91ef8"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.generalized-hilbert.json",
+        "sha256": "d40792b56756ec21139f8e505a565d7e4efde16aaa1f9edf4eab74a47980f3a2"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.generalized-residual",
+      "received_document": {
+        "path": "catalog/gpdf-core/generalized-residual.json",
+        "sha256": "8580a42faa4f8f1ef226a5e3a076e6d73d84b1a48de44019d2b3035db084b108"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.generalized-residual.json",
+        "sha256": "17ce463ccd3c16650230159212882f97bd6d915320e8166275dfbb806cb5c814"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.generalized-root-scans",
+      "received_document": {
+        "path": "catalog/gpdf-core/generalized-root-scans.json",
+        "sha256": "56b33ab6fbb721b68e9acb301a2ab242cc8c0f54a2f0ab368f759936c25619b8"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.generalized-root-scans.json",
+        "sha256": "a17c2c99cebc9054678d31c87018df76673b1aeeb92764b4000f67244e6a768c"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.generalized-small-k",
+      "received_document": {
+        "path": "catalog/gpdf-core/generalized-small-k.json",
+        "sha256": "41960d510cbeafd9f71e413ad5748861da290362ca59edb7eaabcaa17eb9cd0d"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.generalized-small-k.json",
+        "sha256": "1ce58a7639f54c5b208bf15fc88c5d2a5e08226bd48c497f47cc7b97582e5f01"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.gpdf-cauchy-transform",
+      "received_document": {
+        "path": "catalog/gpdf-d2/scirel.kinetic.gpdf-cauchy-transform.json",
+        "sha256": "5c567e71bf6f0dff965428ba9ae252f478b5dbceb7db666d1f9978635654e952"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.gpdf-cauchy-transform.json",
+        "sha256": "7e9c8f89bfccd0f84fa3277a97044fc645803c07c528441d7a996c77d09321dd"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.maxwellian-electrostatic-mode",
+      "received_document": {
+        "path": "catalog/gpdf-d2/scirel.kinetic.maxwellian-electrostatic-mode.json",
+        "sha256": "61244e71c2623067b5ac40403904fadb1e5a6e00357a1feb2ff53cd348658084"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.maxwellian-electrostatic-mode.json",
+        "sha256": "3ff9a082dbc7b70bd49e1d405a19874da439712d77d24bdcc750556cf7fc1e1a"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.maxwellian-electrostatic-solver",
+      "received_document": {
+        "path": "catalog/gpdf-d2/scirel.kinetic.maxwellian-electrostatic-solver.json",
+        "sha256": "ec2a01e4772e3b1602fb5e179458c915b7b5ee10635dba09d8c3e71eab9a256b"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.maxwellian-electrostatic-solver.json",
+        "sha256": "c320f24a9548e3d5e26e082bd89a602d150905aac16ab0a49a1935431d955692"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-dispersion-workflow",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-dispersion-workflow.json",
+        "sha256": "3757e128a328fa217a8f6762aa1373967106019647d0cb42be66097110957ed8"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-dispersion-workflow.json",
+        "sha256": "d3a5d58868765dc3622ba90482a8d3670411d7a9b3396a4ea53e172bb7bd7f4f"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-electromagnetic-eigenmatrix",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-electromagnetic-eigenmatrix.json",
+        "sha256": "f2e941e9a0dc66b4b4fcc71f3ab8b2815abc1110cbb8d7bdebe19ba858c57332"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-electromagnetic-eigenmatrix.json",
+        "sha256": "76644b25695fee3dda5bca5b1de9245dd98f3d4f18fd1151dcab25e22d1d4b7f"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-electrostatic-eigenmatrix",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-electrostatic-eigenmatrix.json",
+        "sha256": "067be08c127ef3adf2ad14151a1fda78ae4c9d7c2472245996f4326ce9903ac4"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-electrostatic-eigenmatrix.json",
+        "sha256": "e5fbe46aa62be957ea6e2fcd30299f35023221b577dc3c498732b7a40b13ba66"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-faddeeva-finite-order",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-faddeeva-finite-order.json",
+        "sha256": "4ad6b22ab1d36aa1d09cfffce80a857e24073dc8884bb89dd95454f8cbf4dada"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-faddeeva-finite-order.json",
+        "sha256": "43f74a60247fae77c15a292c4421a05953d453843ed8b24378da560399ab5e10"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-fluid-deck",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-fluid-deck.json",
+        "sha256": "f297ea4c72db330b6dbc6748784113347c8d99eb78cf0fd9d1c18144998e0514"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-fluid-deck.json",
+        "sha256": "b3d6e7f373c44e6256929fc8762d12b9f974a240940abfdede14005ed02566b3"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-fluid-equilibrium",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-fluid-equilibrium.json",
+        "sha256": "d879d4b52e85ef99938410ffddbf0a2aae97918f34edefc6a828455f728545bb"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-fluid-equilibrium.json",
+        "sha256": "c1e57628dd48fe4ce94e1fc6fd04d8965c1c5fccf2611edea458cc24bf5bf323"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-fluid-frequency-pencil",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-fluid-frequency-pencil.json",
+        "sha256": "254f6a7fa600d616642a3dd116578a29740974bb9d7b3078be3e245803f16835"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-fluid-frequency-pencil.json",
+        "sha256": "0a506ba36582970c51c98c9dc40394df1912f0a71bc292864f25be2aa18eb4bd"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-fluid-frequency-solve",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-fluid-frequency-solve.json",
+        "sha256": "33f0a236311ff6105c96115dede8956ba34df2d8c8a4d163eb988543e71adeb2"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-fluid-frequency-solve.json",
+        "sha256": "0cca605e03cbda8684bf287aebaacfafefd4e8635207e277415a7b4fac35c940"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-fluid-plot",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-fluid-plot.json",
+        "sha256": "a73ed3ba1c33127a663dd63fc1a09d1af89491940ecadba89cd43084e6f0b7e4"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-fluid-plot.json",
+        "sha256": "c98576f4f92d927b348e88761ef1ea59b539e0c8e52fe5a4b3a074729c5541d9"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-fluid-relative-rate-equilibrium",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-fluid-relative-rate-equilibrium.json",
+        "sha256": "1ad3b1b49ecbe88394780a6053bfbcf274b86e880c3c611b618f3afb5f4191f0"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-fluid-relative-rate-equilibrium.json",
+        "sha256": "0d46362d6ff12e56e00d4d4afcb42466b59c49e4c675e9edc6241f58a3a26f54"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-fluid-scan",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-fluid-scan.json",
+        "sha256": "e1973358031517fa23a0ed01e7e610fb6a48e741124cdc1a0a68dbab58747c29"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-fluid-scan.json",
+        "sha256": "3b1bc5516f5ddf09535f85c66a4d1e6aab24c1fd2b7b5ab31595bc9d8d7acf4e"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-frequency-eigensolve",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-frequency-eigensolve.json",
+        "sha256": "7d2c5f6bcded5d689fe9692c97c4db3f1e7c3f3c11043bf5940efdaa2d3e70fb"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-frequency-eigensolve.json",
+        "sha256": "6d5fda9c936c4c8d8705f78de05645187a93fad0bc58d5428bad26bb5fb8c5b7"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-loss-cone-partition",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-loss-cone-partition.json",
+        "sha256": "ada5bbb129cd029eb4cd27dc3ba90c554e566abe93b04accae8f628b0aac643a"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-loss-cone-partition.json",
+        "sha256": "c609c5e150ae0acafea0bbaa06f4d06691c264288b893ab0889f02c036bb509a"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-magnetized-mode-fields",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-magnetized-mode-fields.json",
+        "sha256": "c9f2b3e645e3eee65a6dea3d5c086d2a0cd0af209067b593ea3b7a53b5867368"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-magnetized-mode-fields.json",
+        "sha256": "14d95cdbb1bb60b9602f5f984e7e6308443e6aea306154de4983a6db49365cbf"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-parallel-em-continuation",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-parallel-em-continuation.json",
+        "sha256": "0f3e6568b2aa9d5808334110859fff594a974b47a7f460215d28c97a9eb4e02e"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-parallel-em-continuation.json",
+        "sha256": "0180b311bb484f2af9620bde4a2dec27e0816214df28da39647365bf57ffcf9f"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-parallel-em-plot",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-parallel-em-plot.json",
+        "sha256": "a7c14bb6ca2cf9943531fac17d29fc20d0f3548acc70ffb5732669bdbc379bcf"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-parallel-em-plot.json",
+        "sha256": "893fa913a9eb708bd7ade54f62b6b12877e9484fcc9788176eeb57ed74158c49"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-parallel-em-residual",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-parallel-em-residual.json",
+        "sha256": "afaf3b0929da64f877e0d10bf5e680490998c6f8596dcf83d409e417a1ed459e"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-parallel-em-residual.json",
+        "sha256": "3945a7d52abc5bed9a5787f30b3cc6787ff31274d9e70fdf13022d8d33d18588"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-polarization-workflow",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-polarization-workflow.json",
+        "sha256": "d305bec19df8e18f59179906510b22515423ce35776b69173fcb900f058f9537"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-polarization-workflow.json",
+        "sha256": "45fa095f1422ec2ba94731e49aae9ef888c01b53ab5da17d6071f99f7f6504f2"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-preset-mode-selection",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-preset-mode-selection.json",
+        "sha256": "063d86652a2ad9365196120e7522b26c8d0637a18cd28e75a999fc53e979f72a"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-preset-mode-selection.json",
+        "sha256": "3638fdabac5fbd8e3d9b9c46ea39b38723c7f6b0f0adb80137c1fb5892cc2f08"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-preset-output-workflow",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-preset-output-workflow.json",
+        "sha256": "bf0196dc01aaa813eae26700d3954bfa5ab3ca98c1b5b763354ab040adb2405b"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-preset-output-workflow.json",
+        "sha256": "7f9f35847ac56c219a4c223b096a327b1a2896cea8b2a563781e912d29e7b73a"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-default-deck",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-rational-default-deck.json",
+        "sha256": "ee6341bc06ced3d414c184b496254470d795c87eb6db54a59accdd857fe565ca"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-rational-default-deck.json",
+        "sha256": "a64192f85c35eb81d3d696176583b4d0aeb1b9fac42c9f38a98cc84b76e14efc"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-em-coordinates",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-rational-em-coordinates.json",
+        "sha256": "593ec58169df6bb96b977a3f35cea984d94818b6162d5326dc4b5db1183e9a22"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-rational-em-coordinates.json",
+        "sha256": "787dbf211f9ea87c1d627b7f17f44e317c416e10cd1471cb2ee3bf7df8e5124b"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-equilibrium",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-rational-equilibrium.json",
+        "sha256": "03a375046ef2c37f1442c361360deff9f3e3545e0947a36efce7d6a8b9dc10d8"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-rational-equilibrium.json",
+        "sha256": "8ba6f80a4620739e7f628e4a2e847446a88a40da66a51df34d6bc467f5cd9f54"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-jpole-coefficients",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-rational-jpole-coefficients.json",
+        "sha256": "dd25d8c6be3973388bb633729cc3f41685ef2730c715db09c2667e4f903c4e23"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-rational-jpole-coefficients.json",
+        "sha256": "8d9e019b625a66853912eb701d3f041bb215fcb0d2b7bb03ec7f435e8969c577"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-jpole-evaluate",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-rational-jpole-evaluate.json",
+        "sha256": "e6e97fcf70ae80df77e2381bf237671e98ab0da2677b361d8051b38a3855d318"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-rational-jpole-evaluate.json",
+        "sha256": "9af917e2a53f1cfd5d4aa12fcacfba9c0e429886cba5cc92db0a3a63d6d4edec"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-jpole-generator",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-rational-jpole-generator.json",
+        "sha256": "89d9b2f08b0d072edbc68e7510c96a05772d889e775383eebb0ca19a50d861d4"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-rational-jpole-generator.json",
+        "sha256": "32e2303e1f02bede5ebde0ea151faf40cfd79f9d322840550bf319113875b71f"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-jpole-grid-coordinates",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-rational-jpole-grid-coordinates.json",
+        "sha256": "d95e87fbf5cb2dbd274c7ca039555b150d3b6fe4ca3a62e89c8d49c779adde26"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-rational-jpole-grid-coordinates.json",
+        "sha256": "802079f392d56d1bbc77859ec9f1c7fef455a725fc44bea338eb1813e9cb3810"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-ordered-spectrum",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-rational-ordered-spectrum.json",
+        "sha256": "818c6b9f5164f34c43b0dacfa5b27a6f303094935f787f32f181473da6a8ac63"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-rational-ordered-spectrum.json",
+        "sha256": "a41d07e1435a6ccfab17acfba05d0994f4d7544245e506cb7761d96384d6d53b"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-point-matrix",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-rational-point-matrix.json",
+        "sha256": "d7e7affa66dde7d54f2e96f3e984d7f8d6095d535bdbc1c1eef397a385378f30"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-rational-point-matrix.json",
+        "sha256": "ae30e03724dff152d34f1afbf0e3c1ffa6709a409c377f8bac7bb72ae2e373be"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-pole-table",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-rational-pole-table.json",
+        "sha256": "82bf6612cfa8b5fdb37075292fa3711f91fd2e8cc6c370ef632d648a33882325"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-rational-pole-table.json",
+        "sha256": "47ba5e0448026470c4703756c8cb09fa202fb8c611dedbbf3d4aac1fba62c435"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-reassemble-original-program",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-rational-reassemble-original-program.json",
+        "sha256": "ebca55b617fcc882ff88344b7cb3c68aa34106be76acf4f31791e9b23dcaa293"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-rational-reassemble-original-program.json",
+        "sha256": "fbd61e8751eb445b1ee3f2f4c0d2002ef3f6785b7543b3776b76d60ff0d66e3c"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-solve-matrix",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-rational-solve-matrix.json",
+        "sha256": "1cdd116f849237e202260e64d50a1e5d9df77a75d16b73eeb66d70fb9bcca60b"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-rational-solve-matrix.json",
+        "sha256": "c012752393a1f9c9021126893c6bf25c03e52b6d7c326ddb080c606dbbe7c8f7"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-z-poles",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-rational-z-poles.json",
+        "sha256": "6588c1c69220d7c2ccf45c07cd442ffa977c22da7a28fd63d79dbe1b5d6627fd"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-rational-z-poles.json",
+        "sha256": "b2ff8545753a752470826dd3ba1d36073a1f3619abdc9ecf15555f5545eb1446"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rendered-output-workflow",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-rendered-output-workflow.json",
+        "sha256": "1b24e916be87f38d6e5845a259adf89660ee6f5e97357996151fd416b343f874"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-rendered-output-workflow.json",
+        "sha256": "88e47c3156ad08b8928e7989e46db66e8d766a63820d4b39b1a9b370eebb712e"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-seed-mode-selection",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-seed-mode-selection.json",
+        "sha256": "5a613f47810d64df255cfbef108525f80387e10129236e9df20a0ab638b539ba"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-seed-mode-selection.json",
+        "sha256": "a20445d7e5b6f34a70da702d81115ac5bd73ec824dbe88a955626fd05a7a4333"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-selected-dispersion-interpolation",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-selected-dispersion-interpolation.json",
+        "sha256": "45f48ae560b032a48186bf8ce8d6d157517e7cd904066ed4cf85e4af7b530470"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-selected-dispersion-interpolation.json",
+        "sha256": "dde6aebe312d8581b80a2bc1783999ec7a20eac06a65f681ca99c4aa4e1b7baf"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-selected-fields-workflow",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-selected-fields-workflow.json",
+        "sha256": "8843c03df0385689900be8e6e2e0e42e6bed5feddfc36323ae952eb9ba7820e6"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-selected-fields-workflow.json",
+        "sha256": "8f2ca650d9282fca4b6901ecb9ea6860112c36189795642340fc1dec4547acd9"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-selected-mode-artifacts",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-selected-mode-artifacts.json",
+        "sha256": "0ab77fdee25211a3f836b907141c515d64a120732cfc91aa7ea335213c46ebe2"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-selected-mode-artifacts.json",
+        "sha256": "5bab56ea84acfbcedbff810cbcee48a09dd8620ace0679e73c2a0ee08b229f6f"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-selection-artifacts",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-selection-artifacts.json",
+        "sha256": "3f7b5b986eed857b05be5174e0c15894e9624e58e1370d877d96effa94744c7c"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-selection-artifacts.json",
+        "sha256": "fabad30c2d00ac3b2ea4e4ec3f3aab74f78125e7ea7161347c7e8feee0aeb5fa"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-species-equilibrium",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-species-equilibrium.json",
+        "sha256": "076485d76a187f1afd4d76abd24cb35079b11d442fd7222db848dff9941b2370"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-species-equilibrium.json",
+        "sha256": "1899f2f1d1a1b51ef5adcd6ecba8573320dec9a50311c991f79e7232a87261b4"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-spectral-scan-workflow",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-spectral-scan-workflow.json",
+        "sha256": "453b112f48b93fd6172d4e8bd47671c664709f30c4c9f746bc87a7de9cbbc702"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-spectral-scan-workflow.json",
+        "sha256": "d446e1ce73d96c2d36668925ea92ea2d9899a32b8a3fea217f479731503fa4d0"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-spectrum-artifacts",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-spectrum-artifacts.json",
+        "sha256": "bdf665c7d210d5edce58870fd5da3f5e51264c630ca277f70aaa77f393492350"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-spectrum-artifacts.json",
+        "sha256": "54bb19e98b9e0f48fb7047bc627c368dbb70bcc34abc99daca059e392a1fb163"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-stored-program-workflow",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-stored-program-workflow.json",
+        "sha256": "af6cf65152b69e1b2dbb83c40c8729caa5cab1bd17eb6d8ee0be6189fcf1d75d"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-stored-program-workflow.json",
+        "sha256": "868c5f791f529d18744596c3acb13be997026f55b83e07ba821c021dfea0d921"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-wavevector-coordinates",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-wavevector-coordinates.json",
+        "sha256": "fce3a60aa4d51f3ceb568f09c0c2b9525db7a621744951325223a29b42881e7e"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-wavevector-coordinates.json",
+        "sha256": "0faf2b67492e5e9e0e12d50a4ac4c422a0358ab3253cde26ef6bcba673988501"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-whamp-overlay",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-whamp-overlay.json",
+        "sha256": "e1cd4b255af98c9d921e2fc6dcfa5491af603994f3b166b8847c644433580854"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-whamp-overlay.json",
+        "sha256": "9c34712fd2a25dbc8aefc3ae534b98f4b428fc0ed7b08392806962dec9906f18"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-whamp-reference",
+      "received_document": {
+        "path": "catalog/pdrk-mac-pilot/scirel.kinetic.pdrk-whamp-reference.json",
+        "sha256": "eae9404afd75e8fa9b6f225241b535f9af7e32ca9eed73009223a54cf8cf0e1a"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.pdrk-whamp-reference.json",
+        "sha256": "df8c516329aa9293502cb2e2f1ab04366f9d0687b7af844c12199edb18e9a1a3"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-diagnostic",
+      "received_document": {
+        "path": "catalog/gpdf-core/vp-diagnostic.json",
+        "sha256": "635e2df2d4e4bbf2bad652ca156d26531b518ff4988f240c8d368a5bfc92a847"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.vp-diagnostic.json",
+        "sha256": "e234727dcbd53b51fe63aa9362f6660167c6c6f51bc459a25bd20eb4d8a5e3cc"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-distribution",
+      "received_document": {
+        "path": "catalog/gpdf-core/vp-distribution.json",
+        "sha256": "340b88b667cf64c97553f39f8a27647f3bc2239691b243c3bc1d4e930ef10a48"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.vp-distribution.json",
+        "sha256": "e332727fcb2f952688f492378a45c0f4b1f029671c43cf82e686e38f006e0fa4"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-envelope",
+      "received_document": {
+        "path": "catalog/gpdf-core/vp-envelope.json",
+        "sha256": "bffd6c6ab6ed4e19231561385bd87c652aa2245d56ab404af68118572035ec03"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.vp-envelope.json",
+        "sha256": "d3394c56924c666a6e969aefd1a966075bf466190b39a1ddeaba638f44ea04d4"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-evolve",
+      "received_document": {
+        "path": "catalog/gpdf-core/vp-evolve.json",
+        "sha256": "fbd718620eb651fd16152472cce87f7af55fd6815a6ca7e226819fa2f9cb7671"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.vp-evolve.json",
+        "sha256": "50e879ed57981ecb1b82bb1c322736f325b0bcf1a2ec48cffa8895ff6b4da5c1"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-field",
+      "received_document": {
+        "path": "catalog/gpdf-core/vp-field.json",
+        "sha256": "63520a7c0e142c8d0f14b2780833a04d62b9bb44993b570e4520c5f9dbb17b40"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.vp-field.json",
+        "sha256": "34a37d23622611bdc308e97ed678060dc81b890c0d0703966ab81c9df5d98fc9"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-init",
+      "received_document": {
+        "path": "catalog/gpdf-core/vp-init.json",
+        "sha256": "1297aa432e71982afba62f57e11fe017a3bebf12c9d899f9d8478657247fb2fc"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.vp-init.json",
+        "sha256": "f7e7e002d641e907f443538265ea049674261c18bc58efa578d6392aee9cd531"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-landau",
+      "received_document": {
+        "path": "catalog/gpdf-core/vp-landau.json",
+        "sha256": "067f796f32fcc507643094a05078ad0a0643b516654d322e1ad436953f8628c8"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.vp-landau.json",
+        "sha256": "5ab84e19bced9079ae55567b851073413d738505dc0575b74d6eb55415d883a3"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-rhs",
+      "received_document": {
+        "path": "catalog/gpdf-core/vp-rhs.json",
+        "sha256": "892aec84972d18df41c4ae54f57dd89f9e4df143cbc215559764d7099127cff5"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.vp-rhs.json",
+        "sha256": "bd7db93453c7f90c339b84c285d1bc7de8e31bf4a8261cfe00c286784b567480"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-rk4-step",
+      "received_document": {
+        "path": "catalog/gpdf-core/vp-rk4-step.json",
+        "sha256": "502dd63848bdcf8d23dabf87fdf8dadd39d16ac3bb9e91057bd72c58a0599a8a"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.kinetic.vp-rk4-step.json",
+        "sha256": "b05eab10dbaba4fb766619099136c2119f8ceebdaf3216dc6c24199059009261"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.numerics.nonuniform-derivatives",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/numerics.nonuniform-derivatives.json",
+        "sha256": "f06f2e6b25c85727b793f33814cb0c16eba6ef8fc2cef628e0ece7794ea0c822"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.numerics.nonuniform-derivatives.json",
+        "sha256": "7329d672e3701a9798641f1b42898a5bcd9f3bd78dafccd76657b2359f288414"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.plotting.mirror-patches",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/plotting.mirror-patches.json",
+        "sha256": "b845021b7b10c54c02db663f1c6a764ce421b49e3698fdb774d94fa40e7b73d0"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.plotting.mirror-patches.json",
+        "sha256": "cf0b1eaae7bc1203b37215f299130355403e1cecda599b6578d0c7e649ba14f6"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.plotting.scale-patches",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/plotting.scale-patches.json",
+        "sha256": "19eea75be512592106fcea23a754f11f89e8d608ac617deaf1affb31c7c4a97b"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.plotting.scale-patches.json",
+        "sha256": "0eee4cf2966e76487563a3f41ba5c53685ee7c76337de852ab30cc0acfc351e7"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.plotting.transpose-patches",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/plotting.transpose-patches.json",
+        "sha256": "eb08dd710c7d1528982aee5b1a6e8b0f66ff6307db68cdda4e84c0bb846ee621"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.plotting.transpose-patches.json",
+        "sha256": "8cba3d5209998a6bf8590aa44750e31c02695f1adc4b63c11d7582d604c92292"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.sampling.meridional-polar-forward",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/sampling.meridional-polar-forward.json",
+        "sha256": "b224a82a8df489c7b0430c0ff0d2788dd83b5f557fd2ef5ce53aea1b0a69dcea"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.sampling.meridional-polar-forward.json",
+        "sha256": "4b50740f0a316be53a4267eafa93df78ba010c39517538a75540ff65450da442"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.sampling.meridional-polar-inverse",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/sampling.meridional-polar-inverse.json",
+        "sha256": "daf1379b8b33967480dc4eabad170e3ee8604a2a6b6d6c9fe73d66da838f0dd9"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.sampling.meridional-polar-inverse.json",
+        "sha256": "fd74ff044d46659cac597f96fc582025411d7ad6b03dfcab4586e4396aef392f"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.sampling.nonuniform-first-derivative",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/sampling.nonuniform-first-derivative.json",
+        "sha256": "2089645ebfdbaa3cebf8cf2a75c734eda2b7eb873636ea4c2318d42a823822e8"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.sampling.nonuniform-first-derivative.json",
+        "sha256": "55bb0312e4c62da2865958349af1bfc3c827608bc3917a3ce669b950be844736"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.sampling.parse-segment",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/sampling.parse-segment.json",
+        "sha256": "1c3ce816d7e9f0ce068a2cfad825f11c09b2cbc942e1b8d9a201a04ffe3bec86"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.sampling.parse-segment.json",
+        "sha256": "7d5edd7b9497e97ca48704cb95d98e206023167f4a41a84d5402b8c8f8884dc1"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.sampling.path-distance",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/sampling.path-distance.json",
+        "sha256": "39a03f2eb13e2c7e8d55d8676200350fa9cfdf8a7d8cc1961d56be641a00c39e"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.sampling.path-distance.json",
+        "sha256": "a992a14aa5c6154bc08ae57716c83c9793af9671466a160bfdf0276572868fb6"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.sampling.point-nearest",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/sampling.point-nearest.json",
+        "sha256": "69087cf1e37db14de37cc19e7ac89ae059783d724da52c75cea6c202ed1a5f05"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.sampling.point-nearest.json",
+        "sha256": "bab13f276534d1470395415d6c20959b8f9d4f8f3274cedd63383addba45a511"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.sampling.polynomial-fit",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/sampling.polynomial-fit.json",
+        "sha256": "4c9adfa45bb0cd65f9f580af14c99f592e763bc1b3f13a80ce6cbf2d025a3cc1"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.sampling.polynomial-fit.json",
+        "sha256": "fcbe3c963ed2eec4a122b2b80f801fca32eb3e42d6031096adbc8fb1a1bf11e0"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.sampling.rectangular-nearest",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/sampling.rectangular-nearest.json",
+        "sha256": "e60bb53f81ce6b2d27211843a4b8bfbf3a830df0770c6c5aa59a75bee0cc8350"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.sampling.rectangular-nearest.json",
+        "sha256": "0cdf65ef97f6a63f99fcc566e1dc065103174d5e00763c13ab9e5d0a977f1b94"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.sampling.rectangular-spline",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/sampling.rectangular-spline.json",
+        "sha256": "5a04611e984455a031b3e8fbddb161b4a8873b27c2d71cd20d7ea07599faf739"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.sampling.rectangular-spline.json",
+        "sha256": "d5e1a33bcb734f8529bbefe4f44a91d3506097bea3488de4537f0a60a3e89146"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.sampling.regular-grid",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/sampling.regular-grid.json",
+        "sha256": "335be5d0ba0c485a4b866039747fc979945cc6cc15ad2989958b800906f8708f"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.sampling.regular-grid.json",
+        "sha256": "b9975efb799f9de1214c72a858efb8cb99540f386a9f2a65feec8e52df04f7db"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.sampling.scalar-reflection",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/sampling.scalar-reflection.json",
+        "sha256": "57786a3a28b5c30473f202b8dc06235f8c815208fd2565875b96c66d5c37612d"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.sampling.scalar-reflection.json",
+        "sha256": "db69717f53ac55250c695527c6468ac4ff2cdaae78a56538ab477affe65a986f"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.sampling.scattered-linear",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/sampling.scattered-linear.json",
+        "sha256": "637b2cdcee8c54774952f9a9e3e9526b8d0e1561454806a5537b2263d3d5aff7"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.sampling.scattered-linear.json",
+        "sha256": "1b3a62c1a0cf4035c153076f5118ff93997f87b7cba8aae038876adc2b3c4eb5"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.sampling.select-fieldline",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/sampling.select-fieldline.json",
+        "sha256": "e29b506bdb0c104680562a4be06bbd66e2c2444c95e3866276baf00118ce833b"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.sampling.select-fieldline.json",
+        "sha256": "58ea7e20263abaf3130b41feda3c33ff7b67530e1c69f490954b059a7eae6e3f"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    },
+    {
+      "asset_id": "scirel.sampling.weighted-line-integral",
+      "received_document": {
+        "path": "catalog/pleiades-maintained/sampling.weighted-line-integral.json",
+        "sha256": "4d837120990a983aa33bfa98af131ab1d39b08cee04a00cceb1648fb60a9c1fd"
+      },
+      "maintained_document": {
+        "path": "catalog/examples/scirel.sampling.weighted-line-integral.json",
+        "sha256": "f4bcc4cfb4bbb55cc57fe85237186291cea912582b304d65df65bed1f4a6fb1f"
+      },
+      "change": "restore reviewed contract; normalize domain imports and implementation binding",
+      "scientific_fields_unchanged": true
+    }
+  ]
+}

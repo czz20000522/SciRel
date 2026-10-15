@@ -2,10 +2,20 @@
   "schema": "scirel.asset-document.v1",
   "asset_id": "scirel.kinetic.terminal-flux-velocity-reduction",
   "kind": "operator",
-  "title": {"en": "Terminal molecular axial flux and velocity", "zh": "终态分子轴向通量与流速归约"},
+  "title": {
+    "en": "Terminal molecular axial flux and velocity",
+    "zh": "终态分子轴向通量与流速归约"
+  },
   "summary": "Reduce a terminal H2 distribution to axial flux and mean velocity using an explicitly supplied thermal speed and radial/axial quadrature. This narrow variant accepts zero-weight cells with positive integrated density and does not compute higher moments.",
-  "taxonomy": ["kinetic", "neutral-transport", "terminal-diagnostics", "velocity-space"],
-  "aliases": ["reduce_terminal_molecular_flux_velocity"],
+  "taxonomy": [
+    "kinetic",
+    "neutral-transport",
+    "terminal-diagnostics",
+    "velocity-space"
+  ],
+  "aliases": [
+    "reduce_terminal_molecular_flux_velocity"
+  ],
   "identity": {
     "relation": "terminal H2 axial flux and mean-velocity reduction",
     "direction": "terminal (vr,vx,x) distribution, normalized axial nodes, explicit thermal speed and quadrature -> two x profiles",
@@ -21,21 +31,132 @@
     ]
   },
   "inputs": [
-    {"name":"vx","description":"Normalized axial velocity nodes; zero-valued nodes are valid.","units":"v/Vth","shape":"[nvx]","dtype":"real numeric array-like","required":true,"constraints":"Finite and one-dimensional with at least one node; no monotonicity or nonzero-node gate is imposed."},
-    {"name":"thermal_speed_m_s","description":"Caller-supplied H2 thermal speed used by the axial-flux integral.","units":"m/s","shape":"scalar","dtype":"real numeric scalar","required":true,"constraints":"Finite and strictly positive; boolean and numeric-string coercions are rejected."},
-    {"name":"terminal_distribution","description":"Terminal H2 velocity distribution by spatial cell.","units":"source-normalized distribution; no implicit conversion","shape":"[nvr,nvx,nx]","dtype":"real numeric array-like","required":true,"constraints":"Finite, nonnegative and nonempty with exactly three axes."},
-    {"name":"cylindrical_weight","description":"Radial cylindrical integration measure.","units":"source-normalized radial-area measure","shape":"[nvr]","dtype":"real numeric array-like","required":true,"constraints":"Finite, nonnegative and one-dimensional; zero cells are allowed if every integrated density stays positive."},
-    {"name":"dvx","description":"Normalized axial cell widths.","units":"normalized axial-speed increment","shape":"[nvx]","dtype":"real numeric array-like","required":true,"constraints":"Finite, nonnegative and one-dimensional; zero cells are allowed if every integrated density stays positive."}
+    {
+      "name": "vx",
+      "description": "Normalized axial velocity nodes; zero-valued nodes are valid.",
+      "units": "v/Vth",
+      "shape": "[nvx]",
+      "dtype": "real numeric array-like",
+      "required": true,
+      "constraints": "Finite and one-dimensional with at least one node; no monotonicity or nonzero-node gate is imposed."
+    },
+    {
+      "name": "thermal_speed_m_s",
+      "description": "Caller-supplied H2 thermal speed used by the axial-flux integral.",
+      "units": "m/s",
+      "shape": "scalar",
+      "dtype": "real numeric scalar",
+      "required": true,
+      "constraints": "Finite and strictly positive; boolean and numeric-string coercions are rejected."
+    },
+    {
+      "name": "terminal_distribution",
+      "description": "Terminal H2 velocity distribution by spatial cell.",
+      "units": "source-normalized distribution; no implicit conversion",
+      "shape": "[nvr,nvx,nx]",
+      "dtype": "real numeric array-like",
+      "required": true,
+      "constraints": "Finite, nonnegative and nonempty with exactly three axes."
+    },
+    {
+      "name": "cylindrical_weight",
+      "description": "Radial cylindrical integration measure.",
+      "units": "source-normalized radial-area measure",
+      "shape": "[nvr]",
+      "dtype": "real numeric array-like",
+      "required": true,
+      "constraints": "Finite, nonnegative and one-dimensional; zero cells are allowed if every integrated density stays positive."
+    },
+    {
+      "name": "dvx",
+      "description": "Normalized axial cell widths.",
+      "units": "normalized axial-speed increment",
+      "shape": "[nvx]",
+      "dtype": "real numeric array-like",
+      "required": true,
+      "constraints": "Finite, nonnegative and one-dimensional; zero cells are allowed if every integrated density stays positive."
+    }
   ],
   "outputs": [
-    {"name":"flux_profile_m2_s","description":"Signed terminal H2 axial particle-flux profile.","units":"source-discrete distribution measure times m/s","shape":"[nx]","dtype":"float64 array","required":true,"constraints":"Finite; signed values follow the signed axial nodes."},
-    {"name":"mean_velocity_profile_m_s","description":"Terminal H2 mean axial flow velocity.","units":"m/s","shape":"[nx]","dtype":"float64 array","required":true,"constraints":"Finite; equals flux divided by positive integrated density."}
+    {
+      "name": "flux_profile_m2_s",
+      "description": "Signed terminal H2 axial particle-flux profile.",
+      "units": "source-discrete distribution measure times m/s",
+      "shape": "[nx]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite; signed values follow the signed axial nodes."
+    },
+    {
+      "name": "mean_velocity_profile_m_s",
+      "description": "Terminal H2 mean axial flow velocity.",
+      "units": "m/s",
+      "shape": "[nx]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite; equals flux divided by positive integrated density."
+    }
   ],
-  "applicability": {"preconditions":["The caller supplies a terminal H2 distribution aligned to the explicit velocity quadrature.","Every spatial slice has strictly positive integrated density."],"supported":["Stateless axial flux and velocity reduction on finite cylindrical terminal carriers, including some zero quadrature cells."],"excluded":["Higher pressure/stress/heat moments, generation-state selection, wall-source feedback and external physical validation."]},
-  "failure_semantics": {"invalid_input":"Raises ValueError for non-real numeric or non-finite inputs, malformed axes, negative distribution/weights/widths, nonpositive thermal speed or a nonpositive integrated density.","runtime_failure":"Raises ValueError if density, flux or mean velocity becomes non-finite; no partial mapping is returned.","nonconvergence":"Not applicable; no iteration.","partial_results":"Never returned."},
-  "provenance": {"lineage_summary":"Development variant compared with saved KN1DPy 终态分子通量与轴向速度归约, kinetic_h2.py:1616-1618 and 1622-1624. Saved implementation SHA-256 73dfe7df71e537f35c69d9ac7470303501fb933c43eced6772e915498f873ea9. The source bundle's strict D1 qualification is withdrawn. Finite real arithmetic retains source order; non-real coercions are a documented maintained repair. The saved operator document's generic no-zero-node and spatial-spacing statements do not describe this callable.","source_kinds":["saved L1 operator document and implementation","independent cell-reduction oracle","existing nine-moment overlap comparison","SHA-gated historical replay"],"public_references":[],"license_status":"pending-human-decision"},
-  "public_api": {"python":{"module":"scirel.kinetic.terminal_flux_velocity_reduction","symbol":"reduce_terminal_molecular_flux_velocity","signature":"reduce_terminal_molecular_flux_velocity(vx, thermal_speed_m_s, terminal_distribution, cylindrical_weight, dvx)"}},
-  "version": {"implementation_version":"0.1.0.dev5","dependencies":[]},
-  "example": {"description":"Reduce one terminal H2 cell with a zero axial node and a zero-width cell.","code":"import numpy as np\nfrom scirel.kinetic import reduce_terminal_molecular_flux_velocity\nvx = np.array([-1., 0., 2.])\nf = np.ones((2, 3, 1))\nr = reduce_terminal_molecular_flux_velocity(vx, 5000., f, np.array([1., 2.]), np.array([0.5, 0., 0.25]))\nassert set(r) == {'flux_profile_m2_s', 'mean_velocity_profile_m_s'}\nassert r['flux_profile_m2_s'].shape == (1,)\nassert all(np.isfinite(value).all() for value in r.values())","expected":"Two finite one-cell profiles; zero velocity nodes and zero-width cells are accepted when integrated density remains positive."},
-  "verification": {"scope":["Independent per-cell reduction checks both outputs on a nonuniform signed carrier.","Positive-weight overlap agrees with the existing nine-moment relation; zero-weight acceptance distinguishes their contracts.","Three SHA-gated historical cases cover exact finite replay and the saved boolean-coercion divergence."],"tests":["tests/operator_contracts/test_terminal_molecular_flux_velocity.py","tests/operator_contracts/test_terminal_molecular_flux_velocity_l1.py"],"evidence_ceiling":"Direct and optional saved comparisons establish the stated finite discrete relation and boundary differences on tested carriers. They do not establish the upstream terminal distribution, physical normalization, whole-source D1 qualification or expert approval.","known_limitations":["The source's strict D1 qualification is withdrawn; historical parity is only bounded development evidence.","The physical normalization of the supplied distribution and source flux label requires expert review.","Public distribution licensing remains pending."]}
+  "applicability": {
+    "preconditions": [
+      "The caller supplies a terminal H2 distribution aligned to the explicit velocity quadrature.",
+      "Every spatial slice has strictly positive integrated density."
+    ],
+    "supported": [
+      "Stateless axial flux and velocity reduction on finite cylindrical terminal carriers, including some zero quadrature cells."
+    ],
+    "excluded": [
+      "Higher pressure/stress/heat moments, generation-state selection, wall-source feedback and external physical validation."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for non-real numeric or non-finite inputs, malformed axes, negative distribution/weights/widths, nonpositive thermal speed or a nonpositive integrated density.",
+    "runtime_failure": "Raises ValueError if density, flux or mean velocity becomes non-finite; no partial mapping is returned.",
+    "nonconvergence": "Not applicable; no iteration.",
+    "partial_results": "Never returned."
+  },
+  "provenance": {
+    "lineage_summary": "Development variant compared with saved KN1DPy 终态分子通量与轴向速度归约, kinetic_h2.py:1616-1618 and 1622-1624. Saved implementation SHA-256 73dfe7df71e537f35c69d9ac7470303501fb933c43eced6772e915498f873ea9. The source bundle's strict D1 qualification is withdrawn. Finite real arithmetic retains source order; non-real coercions are a documented maintained repair. The saved operator document's generic no-zero-node and spatial-spacing statements do not describe this callable.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "independent cell-reduction oracle",
+      "existing nine-moment overlap comparison",
+      "SHA-gated historical replay"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.terminal_flux_velocity_reduction",
+      "symbol": "reduce_terminal_molecular_flux_velocity",
+      "signature": "reduce_terminal_molecular_flux_velocity(vx, thermal_speed_m_s, terminal_distribution, cylindrical_weight, dvx)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Reduce one terminal H2 cell with a zero axial node and a zero-width cell.",
+    "code": "import numpy as np\nfrom scirel.kinetic import reduce_terminal_molecular_flux_velocity\nvx = np.array([-1., 0., 2.])\nf = np.ones((2, 3, 1))\nr = reduce_terminal_molecular_flux_velocity(vx, 5000., f, np.array([1., 2.]), np.array([0.5, 0., 0.25]))\nassert set(r) == {'flux_profile_m2_s', 'mean_velocity_profile_m_s'}\nassert r['flux_profile_m2_s'].shape == (1,)\nassert all(np.isfinite(value).all() for value in r.values())",
+    "expected": "Two finite one-cell profiles; zero velocity nodes and zero-width cells are accepted when integrated density remains positive."
+  },
+  "verification": {
+    "scope": [
+      "Independent per-cell reduction checks both outputs on a nonuniform signed carrier.",
+      "Positive-weight overlap agrees with the existing nine-moment relation; zero-weight acceptance distinguishes their contracts.",
+      "Three SHA-gated historical cases cover exact finite replay and the saved boolean-coercion divergence."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_terminal_molecular_flux_velocity.py",
+      "tests/operator_contracts/test_terminal_molecular_flux_velocity_l1.py"
+    ],
+    "evidence_ceiling": "Direct and optional saved comparisons establish the stated finite discrete relation and boundary differences on tested carriers. They do not establish the upstream terminal distribution, physical normalization, whole-source D1 qualification or expert approval.",
+    "known_limitations": [
+      "The source's strict D1 qualification is withdrawn; historical parity is only bounded development evidence.",
+      "The physical normalization of the supplied distribution and source flux label requires expert review.",
+      "Public distribution licensing remains pending."
+    ]
+  }
 }

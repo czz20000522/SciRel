@@ -1,0 +1,12 @@
+{
+  "schema": "scirel.documentation-release.v1",
+  "documentation_version": "scientific-core-r16",
+  "status": "development_candidate",
+  "source_documents": "provenance/selections/scientific-core-documents-20261015-r9.json",
+  "handbook": "tools/docs/handbooks/scientific-core-r16.json",
+  "compatible_wheel": "0.1.0.dev8",
+  "catalog_root": "catalog/examples",
+  "snapshot_sha256": "eab0caea54074d30a97d124512452a841cac766f123cf9bea006308d198e3e72",
+  "integration_record": "provenance/validation/completed-project-installed-closeout.json",
+  "notes": "Restores 119 maintained scientific contracts and their reviewed Chinese reader text; all 260 records use current domain API paths and have one primary handbook placement. Tutorials ran against the actual installed cumulative wheel. Continues scientific-core-r15 consumer and agent workflow guidance; frozen predecessors remain unchanged."
+}

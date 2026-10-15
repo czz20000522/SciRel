@@ -1,6 +1,8 @@
 """Verify the actual developer wheel keeps project tools outside the science package."""
 
 from pathlib import Path
+import hashlib
+import json
 import shutil
 import subprocess
 import sys
@@ -14,6 +16,7 @@ def test_built_scientific_wheel_excludes_project_tool_packages(tmp_path):
     source = tmp_path / "source"
     source.mkdir()
     shutil.copy2(ROOT / "pyproject.toml", source / "pyproject.toml")
+    shutil.copytree(ROOT / "licenses", source / "licenses")
     shutil.copytree(
         ROOT / "src", source / "src",
         ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.egg-info"),
@@ -34,6 +37,17 @@ def test_built_scientific_wheel_excludes_project_tool_packages(tmp_path):
     assert len(artifacts) == 1
     with ZipFile(artifacts[0]) as archive:
         files = set(archive.namelist())
+        accepted = json.loads((ROOT / 'provenance/selections/scientific-core-20261014-r7.json').read_text())
+        for resource in accepted['data_files']:
+            name = resource['path'].removeprefix('src/')
+            assert name in files, f'accepted runtime resource missing: {name}'
+            assert hashlib.sha256(archive.read(name)).hexdigest() == resource['sha256']
+        for notice in ('licenses/Pleiades-MIT.txt',
+                       'licenses/gpdf/full-core/SCIREL-GPDF-CORE-NOTICE.txt',
+                       'licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt'):
+            packaged = [n for n in files if n.endswith('.dist-info/licenses/' + notice)]
+            assert len(packaged) == 1, f'distribution notice missing: {notice}'
+            assert archive.read(packaged[0]) == (ROOT / notice).read_bytes()
     assert "scirel/__init__.py" in files
     assert all(
         path.startswith("scirel/") or path.split("/", 1)[0].endswith(".dist-info")

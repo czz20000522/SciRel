@@ -1,0 +1,123 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "kind": "operator",
+  "provenance": {
+    "lineage_summary": "Derived from the retained Pleiades D0 geometry/current source and stabilized SciRel D2 successor behavior.",
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "bounded D2 regression evidence"
+    ],
+    "public_references": [],
+    "license_status": "Source lineage and MIT license evidence are retained; human release approval remains pending."
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": []
+  },
+  "verification": {
+    "scope": [
+      "Bounded rigid-geometry and coordinate invariants",
+      "Ordered current projection and source lifecycle",
+      "Full retained BRB/WHAM configuration composition at finite targets"
+    ],
+    "tests": [
+      "tests/pleiades/geometry/test_native_geometry_qualification.py",
+      "tests/pleiades/geometry/test_native_lifecycle.py"
+    ],
+    "evidence_ceiling": "Named geometry, lifecycle and configuration cases only; no arbitrary-input scientific correctness or release claim.",
+    "known_limitations": [
+      "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
+      "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
+      "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
+      "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
+      "All scientific, human and release approvals remain false."
+    ]
+  },
+  "asset_id": "scirel.geometry.points-mesh",
+  "title": {
+    "en": "Points mesh",
+    "zh": "点集网格"
+  },
+  "summary": "Finite unstructured cylindrical points.",
+  "taxonomy": [
+    "geometry",
+    "coordinates"
+  ],
+  "aliases": [
+    "PointsMesh"
+  ],
+  "identity": {
+    "relation": "Point coordinate relation",
+    "direction": "points to R,Z arrays",
+    "definition": "Each paired rpts,zpts value defines one point",
+    "model": "Unstructured finite point set",
+    "geometry": "Unstructured finite point set",
+    "coordinates": "Cylindrical R-Z",
+    "boundary": "R must be nonnegative",
+    "assumptions": [
+      "Finite paired coordinates"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "rpts",
+      "description": "Radial coordinates",
+      "units": "m",
+      "shape": "N",
+      "dtype": "Finite float64",
+      "required": true,
+      "constraints": "Equal shape to zpts; R >= 0"
+    },
+    {
+      "name": "zpts",
+      "description": "Axial coordinates",
+      "units": "m",
+      "shape": "N",
+      "dtype": "Finite float64",
+      "required": true,
+      "constraints": "Equal shape to rpts"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "mesh",
+      "description": "Constructed PointsMesh object. Available properties/methods: R: Radial coordinates [m], N; Z: Axial coordinates [m], N",
+      "units": "Object; property units as described",
+      "shape": "one object",
+      "dtype": "PointsMesh",
+      "required": true,
+      "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Inputs satisfy the documented finite cylindrical coordinate and shape contract"
+    ],
+    "supported": [
+      "Scalar and vector point inputs",
+      "theta away from origin"
+    ],
+    "excluded": [
+      "Negative radius",
+      "Mismatched shapes"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Constructor or geometry setters raise ValueError for invalid supported inputs; unavailable source additions raise NotImplementedError. Source field methods reject a missing target mesh, nonfinite currents and active-filament coincidence.",
+    "runtime_failure": "Field evaluation propagates FloatingPointError on nonrepresentable kernel results. Failed parameterized geometry setters preserve the preceding valid state.",
+    "nonconvergence": "Not applicable; direct geometry construction, transforms and static response.",
+    "partial_results": "No partial object is returned by a failed constructor. Atomic parameterized geometry setters preserve valid previous state."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry",
+      "symbol": "PointsMesh",
+      "signature": "PointsMesh(rpts: 'Iterable[float]', zpts: 'Iterable[float]')"
+    }
+  },
+  "example": {
+    "description": "Construct one point",
+    "code": "from scirel.geometry import PointsMesh\nm=PointsMesh([0.2],[0.3])\nassert m.R[0] == 0.2",
+    "expected": "One finite point array is returned."
+  }
+}

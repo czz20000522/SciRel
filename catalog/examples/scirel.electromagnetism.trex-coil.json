@@ -1,0 +1,155 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "kind": "operator",
+  "provenance": {
+    "lineage_summary": "Derived from the retained Pleiades D0 geometry/current source and stabilized SciRel D2 successor behavior.",
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "bounded D2 regression evidence"
+    ],
+    "public_references": [],
+    "license_status": "Source lineage and MIT license evidence are retained; human release approval remains pending."
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": [
+      {
+        "asset_id": "scirel.electromagnetism.arbitrary-points"
+      }
+    ]
+  },
+  "verification": {
+    "scope": [
+      "Bounded rigid-geometry and coordinate invariants",
+      "Ordered current projection and source lifecycle",
+      "Full retained BRB/WHAM configuration composition at finite targets"
+    ],
+    "tests": [
+      "tests/pleiades/geometry/test_native_geometry_qualification.py",
+      "tests/pleiades/geometry/test_native_lifecycle.py"
+    ],
+    "evidence_ceiling": "Named geometry, lifecycle and configuration cases only; no arbitrary-input scientific correctness or release claim.",
+    "known_limitations": [
+      "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
+      "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
+      "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
+      "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
+      "All scientific, human and release approvals remain false."
+    ]
+  },
+  "asset_id": "scirel.electromagnetism.trex-coil",
+  "title": {
+    "en": "TREXCoil filament geometry",
+    "zh": "TREX 圆丝线圈"
+  },
+  "summary": "88 filaments: five radial columns of 16 axial points and an outer column of eight axial midpoints; source area convention 88*(0.0134166 m)^2.",
+  "taxonomy": [
+    "electromagnetism",
+    "sources",
+    "configurations"
+  ],
+  "aliases": [
+    "TREXCoil"
+  ],
+  "identity": {
+    "relation": "Parameterized source geometry and weighted circular-filament composition",
+    "direction": "constructor parameters to source/device object",
+    "definition": "88 filaments: five radial columns of 16 axial points and an outer column of eight axial midpoints; source area convention 88*(0.0134166 m)^2.",
+    "model": "Source-defined TREX filament geometry",
+    "geometry": "Axisymmetric circular filaments representing the retained source geometry",
+    "coordinates": "Cylindrical R,Z in metres; rotation degrees clockwise in the R,Z plane",
+    "boundary": "No experimental device calibration or material constitutive law is established.",
+    "assumptions": [
+      "Source geometry constants and their source conventions are retained",
+      "Vacuum ideal circular-filament response; finite-wire and permeability physics excluded"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "z0",
+      "description": "Axial reference plane",
+      "units": "m",
+      "shape": "scalar",
+      "dtype": "finite float64",
+      "required": false,
+      "constraints": "Finite",
+      "default": 1.1
+    },
+    {
+      "name": "current",
+      "description": "Common current passed through **kwargs",
+      "units": "A",
+      "shape": "scalar",
+      "dtype": "finite float64",
+      "required": false,
+      "constraints": "Finite scalar",
+      "default": 1.0
+    },
+    {
+      "name": "weights",
+      "description": "Signed weights passed through **kwargs",
+      "units": "dimensionless",
+      "shape": "(88,)",
+      "dtype": "finite float64",
+      "required": false,
+      "constraints": "Match 88 filaments",
+      "default": null
+    },
+    {
+      "name": "mesh",
+      "description": "Target mesh passed through **kwargs",
+      "units": "m",
+      "shape": "Mesh or compatible array",
+      "dtype": "Mesh/finite float64",
+      "required": false,
+      "constraints": "Finite nonnegative target radius",
+      "default": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "source",
+      "description": "Constructed TREXCoil object with source geometry, common currents, weights and optional target mesh. Fields are evaluated by its methods.",
+      "units": "geometry m; current A; weights dimensionless",
+      "shape": "one object",
+      "dtype": "TREXCoil",
+      "required": true,
+      "constraints": "Bounded source geometry and field-response methods"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite geometry inputs where parameters are exposed"
+    ],
+    "supported": [
+      "Retained source geometry constants",
+      "Ordered current-set composition",
+      "Finite source fields at nonsingular targets"
+    ],
+    "excluded": [
+      "Experimental apparatus calibration",
+      "Electrode additions",
+      "Persistent sweep",
+      "PCX comments-only source",
+      "Nonlinear magnetization, finite wire or permeability models"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Constructor or geometry setters raise ValueError for invalid supported inputs; unavailable source additions raise NotImplementedError. Source field methods reject a missing target mesh, nonfinite currents and active-filament coincidence.",
+    "runtime_failure": "Field evaluation propagates FloatingPointError on nonrepresentable kernel results. Failed parameterized geometry setters preserve the preceding valid state.",
+    "nonconvergence": "Not applicable; direct geometry construction, transforms and static response.",
+    "partial_results": "No partial object is returned by a failed constructor. Atomic parameterized geometry setters preserve valid previous state."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.configurations",
+      "symbol": "TREXCoil",
+      "signature": "TREXCoil(z0=1.1, **kwargs)"
+    }
+  },
+  "example": {
+    "description": "Construct the bounded source geometry.",
+    "code": "from scirel.configurations import TREXCoil\nc=TREXCoil(z0=.7)\nassert c.npts == 88\nc.translate([0.,.2])\nassert abs(c.z0-.9)<1e-15",
+    "expected": "The exact source geometry count is returned."
+  }
+}

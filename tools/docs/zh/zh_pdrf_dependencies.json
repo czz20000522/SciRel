@@ -3,8 +3,125 @@
   "language": "zh-CN",
   "records": [
     {
+      "asset_id": "scirel.kinetic.pdrf-temporal-matrix",
+      "source_sha256": "23779ef35192c375936fc5f291bf154993d61780061dd9bf3c25fab903d02aac",
+      "summary": "多流体时间色散矩阵：Assemble the independently corrected local fluid/Maxwell generator and relativistic inertia.。",
+      "definition": "For k=(kx,0,kz), eps=(epsx,epsy,0): dn_dot=-i(k.v0)dn-n0*(i*k+eps).dv. Momentum A_v*d(v)_dot=-i(k.v0)A_v*dv+(q/m)*(dv cross B0+v0 cross dB+dE)-i*diag(csp2,csp2,csz2)*k*dn/n0+diag(csp2,csp2,csz2)*eps*dn/(gamma*n0)+collision. With D=(Psz-Psp)/B0/rho, add [-i*kz*D*dBx,-i*kz*D*dBy,-2*D*((i*kx+epsx)*dBx+epsy*dBy)] when B0!=0. Maxwell dE_dot=i*c2*(k cross dB)-sum(q*(n0*dv+v0*dn))/epsilon0; dB_dot=-i*(k cross dE). A_v=gamma_rel*I+gamma_rel^3*v0*v0^T/c2 if rel=1. The extra density and magnetic-coefficient gradient terms correct omitted derivatives of the source pressure acceleration. Positive self forcing is replaced by dissipative friction. No Lorentz overwrite correction is claimed: the original Lorentz and anisotropy entries use different columns.",
+      "model": "Algebraic anisotropic multi-fluid closure with empirical longitudinal magnetic-pressure factor two",
+      "boundary": "B0=0 sets director-response terms to zero and retains explicit fixed-z pressure; rel=1 excludes luminal/superluminal drift",
+      "assumptions": [
+        "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
+        "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
+        "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
+        "Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim."
+      ],
+      "inputs": [
+        {
+          "name": "state",
+          "description": "多流体时间色散矩阵 的输入端口 state。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输入 合同与边界。",
+          "dtype": "dict"
+        },
+        {
+          "name": "kx",
+          "description": "多流体时间色散矩阵 的输入端口 kx。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输入 合同与边界。",
+          "dtype": "finite complex scalar"
+        },
+        {
+          "name": "kz",
+          "description": "多流体时间色散矩阵 的输入端口 kz。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输入 合同与边界。",
+          "dtype": "finite complex scalar"
+        },
+        {
+          "name": "rel",
+          "description": "多流体时间色散矩阵 的输入端口 rel。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输入 合同与边界。",
+          "dtype": "int"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "M",
+          "description": "多流体时间色散矩阵 的输出端口 M。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输出 合同与边界。",
+          "dtype": "complex128"
+        },
+        {
+          "name": "A",
+          "description": "多流体时间色散矩阵 的输出端口 A。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输出 合同与边界。",
+          "dtype": "complex128"
+        },
+        {
+          "name": "state",
+          "description": "多流体时间色散矩阵 的输出端口 state。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输出 合同与边界。",
+          "dtype": "dict"
+        },
+        {
+          "name": "scales",
+          "description": "多流体时间色散矩阵 的输出端口 scales。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输出 合同与边界。",
+          "dtype": "float64"
+        },
+        {
+          "name": "kx",
+          "description": "多流体时间色散矩阵 的输出端口 kx。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输出 合同与边界。",
+          "dtype": "complex"
+        },
+        {
+          "name": "kz",
+          "description": "多流体时间色散矩阵 的输出端口 kz。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输出 合同与边界。",
+          "dtype": "complex"
+        }
+      ],
+      "applicability": {
+        "preconditions": [
+          "按正式合同：State primary data and configuration satisfy the fresh-state contract; derived fields are recomputed.",
+          "按正式合同：Finite complex kx/kz; rel is 0 or 1, with strictly subluminal drift for rel=1. Units must be consistent with state."
+        ],
+        "supported": [
+          "按正式合同：Corrected local fluid/Maxwell generator, relativistic tangent inertia, algebraic anisotropic pressure response and physical similarity scales. No eigenspectrum, scans or plots are calculated."
+        ],
+        "excluded": [
+          "按正式合同：Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
+          "按正式合同：Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
+          "按正式合同：The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
+          "按正式合同：Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim."
+        ]
+      },
+      "failure_semantics": {
+        "invalid_input": "ValueError for invalid state, wave numbers, rel selector, luminal/superluminal rel=1 drift or unrepresentable matrix/scales. State validation failures propagate.",
+        "runtime_failure": "Native numerical conversion or assembly failures propagate.",
+        "nonconvergence": "No iteration or eigensolver.",
+        "partial_results": "No mapping returned after failure; no file side effects."
+      },
+      "example": {
+        "description": "Default matrix shape.",
+        "expected": "A finite 14 by 14 temporal generator."
+      },
+      "verification": {
+        "scope": [
+          "按冻结证据范围核验：Independent vector action of continuity, pressure including density/magnetic-coefficient gradients, Lorentz, collision and Maxwell blocks.",
+          "按冻结证据范围核验：Finite-difference relativistic tangent, normalized/SI similarity, complex k, zero field and primary-state reconstruction."
+        ],
+        "evidence_ceiling": "Evidence supports this effective local algebraic model and its stated numerical contract in the tested Linux-amd64 Python runtime. D1 fidelity does not establish physical truth. Independent exact-revision validation and before/after observations are separately bound in the development delivery. No universal continuous-input, experimental, MATLAB, cross-platform or human approval claim.",
+        "known_limitations": [
+          "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
+          "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
+          "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
+          "Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim.",
+          "Only local authorized D2 evaluation; source and paper redistribution NOT_ESTABLISHED, no public distribution permission or human/release approval."
+        ]
+      }
+    },
+    {
       "asset_id": "scirel.kinetic.pdrf-dispersion-scan",
-      "source_sha256": "c86a8b1bdd6589f7eaf1ac6e6d9c756412ac9602fcdf28b6862d478bc1706d43",
+      "source_sha256": "aa12257d77174c17ff6db81808cc4bfa00dd9351bd4c54108a0aa8f8b6a5b88d",
       "summary": "多流体色散扫描：Run the full retained source scan family through corrected operators with explicit state and limits.。",
       "definition": "Initialize once; for each source-selected k point assemble the corrected matrix and compute the conditioned eigenspectrum; collect every sorted mode and retain the last-point M,A,w1,w2,state. Methods2/3/4 retain defaults101/196 magnitude points,51 angles,50x75 Cartesian mesh and row-major kz then kx order. Single branch handles0/1 and unknown nonnegative selectors. Then produce a two-panel PNG in Agg for2/3/4; other selectors retain zero axes. Optional SI positional return is (M,A,w1,w2,kk,ww1,ww2,betasz,vA,csz2,c2,rhos0,wcs,qs,ms,wps,B0) prefix, all defined.",
       "model": "Composition of fresh state, corrected local multi-fluid matrix and conditioned spectrum; source scan grids retained",
@@ -330,8 +447,152 @@
       }
     },
     {
+      "asset_id": "scirel.kinetic.pdrf-temporal-spectrum",
+      "source_sha256": "13575a3b878a4e9c3fb8c83a0118b728db203a47db837761d26ff21972539e54",
+      "summary": "多流体时间色散谱：Solve and independently sort temporal modes with coherent arity and real precision refinement.。",
+      "definition": "lambda*A*X=M*X; omega=i*lambda. Apply positive diagonal physical and radix-two similarity transforms to both matrices. Initial double eig is followed, when component residual>1e-12, by actual 50-decimal mpmath inversion and eig in a private cloned context. Reject final global or active component residual>1e-10. Convert to complex128 and normalize vectors without overflowing their unscaled magnitudes. Sorting is stable and independent by real/imaginary frequency.",
+      "model": "Dense linear generalized eigenproblem, with backward-error controlled arithmetic refinement",
+      "boundary": "Nonfinite matrices/solutions, singular inertia or excessive residuals fail; repeated modes have arbitrary basis",
+      "assumptions": [
+        "SciPy double arithmetic plus mpmath1.3.0 core for genuine precision fallback.",
+        "Accuracy is limited by conditioning and rounded input coefficients; high precision is not a universal forward-error proof.",
+        "The retained four/six output vpa order split is intentionally removed; post-eig symbolic conversion provided no additional precision."
+      ],
+      "inputs": [
+        {
+          "name": "M",
+          "description": "多流体时间色散谱 的输入端口 M。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输入 合同与边界。",
+          "dtype": "complex array-like"
+        },
+        {
+          "name": "A",
+          "description": "多流体时间色散谱 的输入端口 A。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输入 合同与边界。",
+          "dtype": "complex array-like"
+        },
+        {
+          "name": "vectors",
+          "description": "多流体时间色散谱 的输入端口 vectors。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输入 合同与边界。",
+          "dtype": "bool"
+        },
+        {
+          "name": "oldmethod",
+          "description": "多流体时间色散谱 的输入端口 oldmethod。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输入 合同与边界。",
+          "dtype": "int"
+        },
+        {
+          "name": "scales",
+          "description": "多流体时间色散谱 的输入端口 scales。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输入 合同与边界。",
+          "dtype": "real array-like or None"
+        },
+        {
+          "name": "output_count",
+          "description": "多流体时间色散谱 的输入端口 output_count。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输入 合同与边界。",
+          "dtype": "int or None"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "w1",
+          "description": "多流体时间色散谱 的输出端口 w1。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输出 合同与边界。",
+          "dtype": "complex128"
+        },
+        {
+          "name": "w2",
+          "description": "多流体时间色散谱 的输出端口 w2。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输出 合同与边界。",
+          "dtype": "complex128"
+        },
+        {
+          "name": "X1",
+          "description": "多流体时间色散谱 的输出端口 X1。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输出 合同与边界。",
+          "dtype": "complex128"
+        },
+        {
+          "name": "X2",
+          "description": "多流体时间色散谱 的输出端口 X2。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输出 合同与边界。",
+          "dtype": "complex128"
+        },
+        {
+          "name": "residual1",
+          "description": "多流体时间色散谱 的输出端口 residual1。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输出 合同与边界。",
+          "dtype": "float64"
+        },
+        {
+          "name": "residual2",
+          "description": "多流体时间色散谱 的输出端口 residual2。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输出 合同与边界。",
+          "dtype": "float64"
+        },
+        {
+          "name": "component_residual",
+          "description": "多流体时间色散谱 的输出端口 component_residual。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输出 合同与边界。",
+          "dtype": "float64"
+        },
+        {
+          "name": "precision",
+          "description": "多流体时间色散谱 的输出端口 precision。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输出 合同与边界。",
+          "dtype": "string"
+        },
+        {
+          "name": "oldmethod",
+          "description": "多流体时间色散谱 的输出端口 oldmethod。",
+          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输出 合同与边界。",
+          "dtype": "int"
+        }
+      ],
+      "applicability": {
+        "preconditions": [
+          "按正式合同：Finite nonempty same-shaped square M and A; A nonsingular; positive finite optional similarity scales.",
+          "按正式合同：oldmethod in {1,2}; vectors boolean; output_count None or integer0..6. Matrix units and physical meaning are caller responsibility."
+        ],
+        "supported": [
+          "按正式合同：Dense generalized temporal eigenproblem with coherent values/vectors, stable independent real/imaginary sorts and backward-residual-controlled arithmetic."
+        ],
+        "excluded": [
+          "按正式合同：No species initialization, unit conversion, physical sign/relativity validation, scan scheduling, plotting or mode tracking.",
+          "按正式合同：No universal forward eigenvalue accuracy, unique degenerate polarizations or recovery of precision lost in input coefficients.",
+          "按正式合同：Only local authorized D2 evaluation; redistribution rights remain NOT_ESTABLISHED."
+        ]
+      },
+      "failure_semantics": {
+        "invalid_input": "ValueError for invalid M/A shape, nonfinite matrix/scales, selectors or singular inertia where detected.",
+        "runtime_failure": "NumPy/SciPy/mpmath failures propagate; ArithmeticError rejects nonfinite modes, zero vectors or excessive final residuals.",
+        "nonconvergence": "Underlying eigensolver failure propagates; no physical iteration or fabricated result.",
+        "partial_results": "No spectrum mapping or positional result returned after failure; no file or plotting side effects."
+      },
+      "example": {
+        "description": "Analytic diagonal eigenspectrum.",
+        "expected": "Frequencies 1 and -2, with matching eigenvectors."
+      },
+      "verification": {
+        "scope": [
+          "按冻结证据范围核验：Independent analytic cold/warm temporal limits and low-frequency SI modes using separately constructed matrices.",
+          "按冻结证据范围核验：Corresponding vector residuals, numerical method/arity coherence, stable sorting, finite matrices and precision refinement on rounded inputs."
+        ],
+        "evidence_ceiling": "Evidence supports this effective local algebraic model and its stated numerical contract in the tested Linux-amd64 Python runtime. D1 fidelity does not establish physical truth. Independent exact-revision validation and before/after observations are separately bound in the development delivery. No universal continuous-input, experimental, MATLAB, cross-platform or human approval claim.",
+        "known_limitations": [
+          "Backward residual bounds do not certify universal forward accuracy; rounded input matrices limit available information.",
+          "No branch tracking or unique phase/degenerate basis.",
+          "No source/physical species model is inferred from arbitrary matrix inputs.",
+          "Local authorized D2 only; source/paper redistribution NOT_ESTABLISHED."
+        ]
+      }
+    },
+    {
       "asset_id": "scirel.kinetic.pdrf-plasma-state",
-      "source_sha256": "ccbe9a1d60d900a7bb5f8927b17b58c448c668bdb019341d2a55d73b3edc934b",
+      "source_sha256": "b48d802de7726a854e95c56b71c83448ba7476572b64349acd83f10e58bf4c5e",
       "summary": "多流体等离子体状态：Derive a fresh state, diagnostics and dissipative reciprocal collision matrix.。",
       "definition": "rho=m*n; Q=sum(q*n); J=sum(q*n*v); P_parallel/perpendicular=rho*cs^2/gamma; omega_c=q*B0/m; omega_p=sqrt(n*q^2/(epsilon0*m)). Pair friction: acceleration_i=sum_j rate_ij*(dv_j-dv_i)-drag_i*dv_i, rho_i rate_ij=rho_j rate_ji.",
       "model": "Effective local multi-fluid algebraic thermal state with externally supported background",
@@ -641,267 +902,6 @@
           "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
           "Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim.",
           "Only local authorized D2 evaluation; source and paper redistribution NOT_ESTABLISHED, no public distribution permission or human/release approval."
-        ]
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.pdrf-temporal-matrix",
-      "source_sha256": "ddf14ca9cc698a0b0e6f10a5b5c959608685ac24e53de16187c7e33dfe30a6b6",
-      "summary": "多流体时间色散矩阵：Assemble the independently corrected local fluid/Maxwell generator and relativistic inertia.。",
-      "definition": "For k=(kx,0,kz), eps=(epsx,epsy,0): dn_dot=-i(k.v0)dn-n0*(i*k+eps).dv. Momentum A_v*d(v)_dot=-i(k.v0)A_v*dv+(q/m)*(dv cross B0+v0 cross dB+dE)-i*diag(csp2,csp2,csz2)*k*dn/n0+diag(csp2,csp2,csz2)*eps*dn/(gamma*n0)+collision. With D=(Psz-Psp)/B0/rho, add [-i*kz*D*dBx,-i*kz*D*dBy,-2*D*((i*kx+epsx)*dBx+epsy*dBy)] when B0!=0. Maxwell dE_dot=i*c2*(k cross dB)-sum(q*(n0*dv+v0*dn))/epsilon0; dB_dot=-i*(k cross dE). A_v=gamma_rel*I+gamma_rel^3*v0*v0^T/c2 if rel=1. The extra density and magnetic-coefficient gradient terms correct omitted derivatives of the source pressure acceleration. Positive self forcing is replaced by dissipative friction. No Lorentz overwrite correction is claimed: the original Lorentz and anisotropy entries use different columns.",
-      "model": "Algebraic anisotropic multi-fluid closure with empirical longitudinal magnetic-pressure factor two",
-      "boundary": "B0=0 sets director-response terms to zero and retains explicit fixed-z pressure; rel=1 excludes luminal/superluminal drift",
-      "assumptions": [
-        "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
-        "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
-        "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
-        "Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim."
-      ],
-      "inputs": [
-        {
-          "name": "state",
-          "description": "多流体时间色散矩阵 的输入端口 state。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输入 合同与边界。",
-          "dtype": "dict"
-        },
-        {
-          "name": "kx",
-          "description": "多流体时间色散矩阵 的输入端口 kx。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输入 合同与边界。",
-          "dtype": "finite complex scalar"
-        },
-        {
-          "name": "kz",
-          "description": "多流体时间色散矩阵 的输入端口 kz。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输入 合同与边界。",
-          "dtype": "finite complex scalar"
-        },
-        {
-          "name": "rel",
-          "description": "多流体时间色散矩阵 的输入端口 rel。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输入 合同与边界。",
-          "dtype": "int"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "M",
-          "description": "多流体时间色散矩阵 的输出端口 M。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输出 合同与边界。",
-          "dtype": "complex128"
-        },
-        {
-          "name": "A",
-          "description": "多流体时间色散矩阵 的输出端口 A。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输出 合同与边界。",
-          "dtype": "complex128"
-        },
-        {
-          "name": "state",
-          "description": "多流体时间色散矩阵 的输出端口 state。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输出 合同与边界。",
-          "dtype": "dict"
-        },
-        {
-          "name": "scales",
-          "description": "多流体时间色散矩阵 的输出端口 scales。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输出 合同与边界。",
-          "dtype": "float64"
-        },
-        {
-          "name": "kx",
-          "description": "多流体时间色散矩阵 的输出端口 kx。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输出 合同与边界。",
-          "dtype": "complex"
-        },
-        {
-          "name": "kz",
-          "description": "多流体时间色散矩阵 的输出端口 kz。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-matrix 的正式 输出 合同与边界。",
-          "dtype": "complex"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "按正式合同：State primary data and configuration satisfy the fresh-state contract; derived fields are recomputed.",
-          "按正式合同：Finite complex kx/kz; rel is 0 or 1, with strictly subluminal drift for rel=1. Units must be consistent with state."
-        ],
-        "supported": [
-          "按正式合同：Corrected local fluid/Maxwell generator, relativistic tangent inertia, algebraic anisotropic pressure response and physical similarity scales. No eigenspectrum, scans or plots are calculated."
-        ],
-        "excluded": [
-          "按正式合同：Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
-          "按正式合同：Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
-          "按正式合同：The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
-          "按正式合同：Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim."
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "ValueError for invalid state, wave numbers, rel selector, luminal/superluminal rel=1 drift or unrepresentable matrix/scales. State validation failures propagate.",
-        "runtime_failure": "Native numerical conversion or assembly failures propagate.",
-        "nonconvergence": "No iteration or eigensolver.",
-        "partial_results": "No mapping returned after failure; no file side effects."
-      },
-      "example": {
-        "description": "Default matrix shape.",
-        "expected": "A finite 14 by 14 temporal generator."
-      },
-      "verification": {
-        "scope": [
-          "按冻结证据范围核验：Independent vector action of continuity, pressure including density/magnetic-coefficient gradients, Lorentz, collision and Maxwell blocks.",
-          "按冻结证据范围核验：Finite-difference relativistic tangent, normalized/SI similarity, complex k, zero field and primary-state reconstruction."
-        ],
-        "evidence_ceiling": "Evidence supports this effective local algebraic model and its stated numerical contract in the tested Linux-amd64 Python runtime. D1 fidelity does not establish physical truth. Independent exact-revision validation and before/after observations are separately bound in the development delivery. No universal continuous-input, experimental, MATLAB, cross-platform or human approval claim.",
-        "known_limitations": [
-          "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
-          "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
-          "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
-          "Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim.",
-          "Only local authorized D2 evaluation; source and paper redistribution NOT_ESTABLISHED, no public distribution permission or human/release approval."
-        ]
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.pdrf-temporal-spectrum",
-      "source_sha256": "bf7ce20ee305c8e526e8d97ba308a21afdaafe957801d9bec9d19881f4067fb7",
-      "summary": "多流体时间色散谱：Solve and independently sort temporal modes with coherent arity and real precision refinement.。",
-      "definition": "lambda*A*X=M*X; omega=i*lambda. Apply positive diagonal physical and radix-two similarity transforms to both matrices. Initial double eig is followed, when component residual>1e-12, by actual 50-decimal mpmath inversion and eig in a private cloned context. Reject final global or active component residual>1e-10. Convert to complex128 and normalize vectors without overflowing their unscaled magnitudes. Sorting is stable and independent by real/imaginary frequency.",
-      "model": "Dense linear generalized eigenproblem, with backward-error controlled arithmetic refinement",
-      "boundary": "Nonfinite matrices/solutions, singular inertia or excessive residuals fail; repeated modes have arbitrary basis",
-      "assumptions": [
-        "SciPy double arithmetic plus mpmath1.3.0 core for genuine precision fallback.",
-        "Accuracy is limited by conditioning and rounded input coefficients; high precision is not a universal forward-error proof.",
-        "The retained four/six output vpa order split is intentionally removed; post-eig symbolic conversion provided no additional precision."
-      ],
-      "inputs": [
-        {
-          "name": "M",
-          "description": "多流体时间色散谱 的输入端口 M。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输入 合同与边界。",
-          "dtype": "complex array-like"
-        },
-        {
-          "name": "A",
-          "description": "多流体时间色散谱 的输入端口 A。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输入 合同与边界。",
-          "dtype": "complex array-like"
-        },
-        {
-          "name": "vectors",
-          "description": "多流体时间色散谱 的输入端口 vectors。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输入 合同与边界。",
-          "dtype": "bool"
-        },
-        {
-          "name": "oldmethod",
-          "description": "多流体时间色散谱 的输入端口 oldmethod。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输入 合同与边界。",
-          "dtype": "int"
-        },
-        {
-          "name": "scales",
-          "description": "多流体时间色散谱 的输入端口 scales。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输入 合同与边界。",
-          "dtype": "real array-like or None"
-        },
-        {
-          "name": "output_count",
-          "description": "多流体时间色散谱 的输入端口 output_count。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输入 合同与边界。",
-          "dtype": "int or None"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "w1",
-          "description": "多流体时间色散谱 的输出端口 w1。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输出 合同与边界。",
-          "dtype": "complex128"
-        },
-        {
-          "name": "w2",
-          "description": "多流体时间色散谱 的输出端口 w2。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输出 合同与边界。",
-          "dtype": "complex128"
-        },
-        {
-          "name": "X1",
-          "description": "多流体时间色散谱 的输出端口 X1。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输出 合同与边界。",
-          "dtype": "complex128"
-        },
-        {
-          "name": "X2",
-          "description": "多流体时间色散谱 的输出端口 X2。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输出 合同与边界。",
-          "dtype": "complex128"
-        },
-        {
-          "name": "residual1",
-          "description": "多流体时间色散谱 的输出端口 residual1。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输出 合同与边界。",
-          "dtype": "float64"
-        },
-        {
-          "name": "residual2",
-          "description": "多流体时间色散谱 的输出端口 residual2。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输出 合同与边界。",
-          "dtype": "float64"
-        },
-        {
-          "name": "component_residual",
-          "description": "多流体时间色散谱 的输出端口 component_residual。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输出 合同与边界。",
-          "dtype": "float64"
-        },
-        {
-          "name": "precision",
-          "description": "多流体时间色散谱 的输出端口 precision。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输出 合同与边界。",
-          "dtype": "string"
-        },
-        {
-          "name": "oldmethod",
-          "description": "多流体时间色散谱 的输出端口 oldmethod。",
-          "constraints": "遵循 scirel.kinetic.pdrf-temporal-spectrum 的正式 输出 合同与边界。",
-          "dtype": "int"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "按正式合同：Finite nonempty same-shaped square M and A; A nonsingular; positive finite optional similarity scales.",
-          "按正式合同：oldmethod in {1,2}; vectors boolean; output_count None or integer0..6. Matrix units and physical meaning are caller responsibility."
-        ],
-        "supported": [
-          "按正式合同：Dense generalized temporal eigenproblem with coherent values/vectors, stable independent real/imaginary sorts and backward-residual-controlled arithmetic."
-        ],
-        "excluded": [
-          "按正式合同：No species initialization, unit conversion, physical sign/relativity validation, scan scheduling, plotting or mode tracking.",
-          "按正式合同：No universal forward eigenvalue accuracy, unique degenerate polarizations or recovery of precision lost in input coefficients.",
-          "按正式合同：Only local authorized D2 evaluation; redistribution rights remain NOT_ESTABLISHED."
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "ValueError for invalid M/A shape, nonfinite matrix/scales, selectors or singular inertia where detected.",
-        "runtime_failure": "NumPy/SciPy/mpmath failures propagate; ArithmeticError rejects nonfinite modes, zero vectors or excessive final residuals.",
-        "nonconvergence": "Underlying eigensolver failure propagates; no physical iteration or fabricated result.",
-        "partial_results": "No spectrum mapping or positional result returned after failure; no file or plotting side effects."
-      },
-      "example": {
-        "description": "Analytic diagonal eigenspectrum.",
-        "expected": "Frequencies 1 and -2, with matching eigenvectors."
-      },
-      "verification": {
-        "scope": [
-          "按冻结证据范围核验：Independent analytic cold/warm temporal limits and low-frequency SI modes using separately constructed matrices.",
-          "按冻结证据范围核验：Corresponding vector residuals, numerical method/arity coherence, stable sorting, finite matrices and precision refinement on rounded inputs."
-        ],
-        "evidence_ceiling": "Evidence supports this effective local algebraic model and its stated numerical contract in the tested Linux-amd64 Python runtime. D1 fidelity does not establish physical truth. Independent exact-revision validation and before/after observations are separately bound in the development delivery. No universal continuous-input, experimental, MATLAB, cross-platform or human approval claim.",
-        "known_limitations": [
-          "Backward residual bounds do not certify universal forward accuracy; rounded input matrices limit available information.",
-          "No branch tracking or unique phase/degenerate basis.",
-          "No source/physical species model is inferred from arbitrary matrix inputs.",
-          "Local authorized D2 only; source/paper redistribution NOT_ESTABLISHED."
         ]
       }
     }

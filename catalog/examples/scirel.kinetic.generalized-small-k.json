@@ -1,0 +1,119 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.generalized-small-k",
+  "kind": "operator",
+  "aliases": [],
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave",
+    "gpdf"
+  ],
+  "title": {
+    "zh": "Langmuir 小波数渐近频率",
+    "en": "Evaluate source Langmuir frequency and damping asymptotics."
+  },
+  "summary": "Evaluate source Langmuir frequency and damping asymptotics.",
+  "identity": {
+    "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
+    "relation": "omega_r=1+1.5k²; omega_i=-sqrt(pi/8) exp(-1/(2k²)-1.5)/k³",
+    "definition": "Logarithmic evaluation of the damping amplitude avoids the upstream 0/0 form when k³ underflows. Exact k=0 is rejected.",
+    "direction": "Declared inputs to declared scientific outputs",
+    "geometry": "One-dimensional velocity space",
+    "coordinates": "Dimensionless real velocity and complex phase or frequency",
+    "boundary": "Infinite real velocity contour with stated continuation or finite support.",
+    "assumptions": [
+      "Maxwellian normalized thermal standard deviation and plasma frequency equal one.",
+      "Asymptotic use requires k much smaller than one."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "k",
+      "description": "Inverse Debye-length normalized small wavenumber.",
+      "dtype": "positive real",
+      "shape": "scalar or nonempty array",
+      "required": true,
+      "constraints": "Finite and representable.",
+      "units": "dimensionless"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "omega_real",
+      "description": "Leading Bohm-Gross real frequency.",
+      "dtype": "real array",
+      "shape": "same as k",
+      "required": true,
+      "constraints": "Finite and representable.",
+      "units": "dimensionless"
+    },
+    {
+      "name": "omega_imag",
+      "description": "Leading small-k Landau damping.",
+      "dtype": "real array",
+      "shape": "same as k",
+      "required": true,
+      "constraints": "Finite and representable.",
+      "units": "dimensionless"
+    }
+  ],
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.generalized_dispersion",
+      "symbol": "evaluate_gpdf_small_k",
+      "signature": "evaluate_gpdf_small_k(k)"
+    }
+  },
+  "applicability": {
+    "supported": [
+      "Positive small wavenumbers, including exponentially underflowed damping returned as zero."
+    ],
+    "excluded": [
+      "Exact finite-k roots or a controlled global asymptotic remainder."
+    ],
+    "preconditions": [
+      "Maxwellian normalized thermal standard deviation and plasma frequency equal one.",
+      "Asymptotic use requires k much smaller than one."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for invalid, nonfinite or singular declared inputs.",
+    "runtime_failure": "Callback arithmetic failures propagate; nonrepresentable transform raises ValueError.",
+    "nonconvergence": "RuntimeError for Cauchy, real-axis or principal-value quadrature nonconvergence, or root nonconvergence.",
+    "partial_results": "No partial scientific result is returned after failure."
+  },
+  "provenance": {
+    "source_kinds": [
+      "GPDF frozen D1 scientific capability",
+      "independent equation derivation",
+      "SciRel implementation"
+    ],
+    "lineage_summary": "Reimplements the defining scientific relations exposed by frozen GPDF D1; D2 corrections and failure history are documented in gpdf-generalized-core evaluation. Dev9 successor of exact document SHA256 6b4131e5ef5775f33ee89d24081fdf64d516a1565aa6709555f334c170efc9c2; unchanged contracts are reused, changed numerical methods and failure closure follow GPDF-R1/R2/R3.",
+    "license_status": "Independent equation implementation uses NumPy and SciPy; their licenses are carried with the selected distribution.",
+    "public_references": [
+      "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "tests/operator_contracts/test_gpdf_generalized.py"
+    ],
+    "scope": [
+      "Positive small wavenumbers, including exponentially underflowed damping returned as zero."
+    ],
+    "known_limitations": [
+      "Finite outputs at large k do not imply asymptotic validity.",
+      "Damping smaller than floating representation underflows to zero."
+    ],
+    "evidence_ceiling": "Independent defining integrals, analytic residues, distributional jumps, all four complete default scans and 50-digit independent root equations are source-level numerical evidence. Actual installed-wheel evidence is recorded separately in the frozen delivery receipts."
+  },
+  "example": {
+    "description": "Langmuir 小波数渐近频率的可执行例子",
+    "code": "from scirel.kinetic.generalized_dispersion import evaluate_gpdf_small_k\nr=evaluate_gpdf_small_k(.1)\nassert abs(r['omega_real']-1.015)<1e-14\nassert r['omega_imag']<0",
+    "expected": "Assertions verify the stated output property."
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": []
+  }
+}

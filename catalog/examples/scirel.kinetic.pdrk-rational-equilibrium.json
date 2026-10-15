@@ -1,0 +1,146 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.pdrk-rational-equilibrium",
+  "kind": "operator",
+  "title": {
+    "en": "Species equilibrium scales",
+    "zh": "物种平衡尺度"
+  },
+  "summary": "Convert the declared legacy species deck into thermal, Debye, plasma and signed gyro scales; preserve explicit ES and EM unit conventions.",
+  "taxonomy": [
+    "kinetic",
+    "plasma",
+    "frequency-dispersion"
+  ],
+  "aliases": [
+    "legacy.equilibrium"
+  ],
+  "identity": {
+    "relation": "Species equilibrium scales",
+    "direction": "Declared inputs to named scientific outputs.",
+    "definition": "ES1D normalized scales: vts=sqrt(2T/m), lambdaDs=sqrt(T/(n q²)), kDs=1/lambdaDs, wps=sqrt(n q²/m). ES3D uses Tparallel in those scales, Omega=B0*q/m, and rho=sqrt(Tperp/m)/abs(Omega); B0 is a signed normalized input with default1, not a tesla label. EM constants are exactly qe=1.6022e-19 C, me=9.1094e-31 kg, c=2.9979e8 m/s, epsilon0=8.8542e-12 F/m and kB=1.3807e-23 J/K; c2=c² and mu0=1/(c² epsilon0). EM q=deck_q*qe, m=deck_m*me, Tz/p[K]=deck_Tz/p[eV]*qe/kB, vd=deck_vd*c. Then vtz=sqrt(2 kB Tz/m), lambdaD=sqrt(epsilon0 kB Tz/(n q²)), wp=sqrt(n q²/(m epsilon0)), signed Omega=B0*q/m and signed rho=sqrt(kB Tp/m)/Omega. Source normalizers explicitly use wci=abs(Omega_second), wpi=sqrt(n_first*q_second²/(m_second*epsilon0)), cwp=c/wpi, mu0 above; these are not silently replaced by another species reference. Outputs also include beta_z/p=2mu0*n*kB*Tz/p/B0², vA=B0/sqrt(mu0 sum m*n), cS=sqrt(2min(kB*Tz)/max(m)), vAwp=vA/wci. This normalized ES/SI EM parsing is distinct from current PDRK eight-column m/mp loss-cone initialization and maintained fluid wavevector-at-fixed-frequency relations.",
+    "model": "ES1D or ES3D normalized Gaussian species, or EM SI drifting bi-Maxwellian species using the exact listed legacy constants; no loss-cone branch implied.",
+    "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+    "coordinates": "ES density/charge/mass/temperature and B0 are source-normalized inputs with the explicit algebra above; no unstated physical reference is inferred. EM B0 in tesla and signed drift in units of c; mass in electron masses.",
+    "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+    "assumptions": [
+      "Model-specific deck conventions are explicit.",
+      "A numerical spectrum is not automatically a physically certified mode."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "model",
+      "description": "Select es1d, es3d or em frequency relation.",
+      "units": "not applicable",
+      "shape": "scalar",
+      "dtype": "str",
+      "required": true,
+      "constraints": "Explicit model selection; no implicit conversion between ES and EM deck conventions."
+    },
+    {
+      "name": "deck",
+      "description": "Explicit species table; use default_deck(model) to obtain the packaged table. ES1D columns q,m,n,T,vd. ES3D q,m,n,Tparallel,Tperp,vd. EM q/e,m/me,n,Tparallel,Tperp,vd/c.",
+      "units": "ES dimensionless normalized quantities; EM n in m^-3, T in eV, mass in electron masses.",
+      "shape": "Sx5 for es1d; Sx6 for es3d/em",
+      "dtype": "real array",
+      "required": true,
+      "constraints": "Nonzero charge; positive mass,density,temperatures; EM S>=2 for declared second-species normalizers. Finite after float64 narrowing. None is rejected by this direct operator; only ordered_spectrum owns automatic default-deck selection."
+    },
+    {
+      "name": "B0",
+      "description": "Signed background field along z; None selects ES3D1 or EM100e-9. ES1D has no field.",
+      "units": "ES3D normalized B; EM tesla.",
+      "shape": "scalar",
+      "dtype": "real or None",
+      "required": false,
+      "constraints": "Relevant magnetized field finite and nonzero; no inferred unmagnetized substitute. ES3D Omega_s=B0*q_s/m_s.",
+      "default": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "state",
+      "description": "Named source scales: ES1D S,qs,ms,ns0,Ts,vs0,vts,lambdaDs,kDs,wps; ES3D uses Tzs,Tps,vtzs and adds signed wcs plus absolute rhocs. EM additionally retains original deck quantities, wps2,lmdT,betasz,betasp,vA,cS,wci,wpi,cwp,vAwp,c2,epsilon0,mu0,kB. Native species arrays keep their source row shapes.",
+      "units": "Model-dependent ES dimensionless or EM SI.",
+      "shape": "mapping",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "Native arrays preserve source row shapes; use named fields rather than inferred positional scales."
+    },
+    {
+      "name": "receipt",
+      "description": "Frozen NativeReceipt for an executed native relation; execution provenance is separate from scientific validity.",
+      "units": "not applicable",
+      "shape": "NativeReceipt object",
+      "dtype": "NativeReceipt",
+      "required": true,
+      "constraints": "Execution provenance does not certify scientific validity by itself."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Constituent inputs finite and representable in declared numeric ports."
+    ],
+    "supported": [
+      "Positive bi-Maxwellian species; parallel drift.",
+      "Signed magnetized field for ES3D/EM."
+    ],
+    "excluded": [
+      "Zero B magnetized normalization requires a separate unmagnetized relation."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for invalid model/deck, nonphysical charge/mass/density/temperature, magnetized B0=0 or unrepresentable float64 input.",
+    "runtime_failure": "NativeExecutionError retains its NativeReceipt for unavailable, failed or timed-out owned-scratch execution; no checkout/network fallback.",
+    "nonconvergence": "FloatingPointError if derived equilibrium scales are nonfinite; no root solver is used.",
+    "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
+  },
+  "provenance": {
+    "lineage_summary": "PDRK upstream, frozen 2018-fixed legacy D0, faithfully packaged D1, then explicit D2 finite-Harris scaling, signed-wavevector causality, exact-axis Maxwell and high-precision J12 corrections. Original source aliases and plots remain attributable evidence.",
+    "source_kinds": [
+      "MATLAB/Octave source",
+      "Independent velocity-integral/analytic relations",
+      "High-precision numerical derivation"
+    ],
+    "public_references": [
+      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology18 (2016).",
+      "PDRK source documentation and2018 correction notes."
+    ],
+    "license_status": "Original-source redistribution license remains unverified; this scientific record does not grant permission."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.pdrk.rational",
+      "symbol": "equilibrium",
+      "signature": "equilibrium(model, deck, *, B0=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Explicit SI EM convention, not the current m/mp deck.",
+    "code": "from scirel.kinetic.pdrk.rational import equilibrium\nr = equilibrium('em', [[-1, 1, 1e6, 100, 100, 0], [1, 1836, 1e6, 100, 100, 0]], B0=1e-7)\nassert r['state']['S'].item() == 2",
+    "expected": "Two species; source c2,epsilon0,mu0,kB and second-species reference scales returned explicitly."
+  },
+  "verification": {
+    "scope": [
+      "Source-absent installed own scientific package; exact package/resource closure.",
+      "All12 APIs, independent canonical and separate held-out response, axis and signed-wavevector gates.",
+      "Full perpendicular ES3D N10/J8 original50-point default with independent weak-coefficient and Decimal offset checks.",
+      "Flattened scientific input ports documented independently of the thin wrapper(inputs) calling convention."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_pdrk_rational.py"
+    ],
+    "evidence_ceiling": "Bounded actual Octave8.4/Python3.14 scientific qualification of the frozen derived component. Public integration/D3 and human admission remain separate; no universal approximation or rigorous interval claim.",
+    "known_limitations": [
+      "Original license unverified; MATLAB execution NOT_RUN.",
+      "Finite-J/finite-N physics must be qualified for a new requested regime.",
+      "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
+      "Human scientific and plot approval pending."
+    ]
+  }
+}

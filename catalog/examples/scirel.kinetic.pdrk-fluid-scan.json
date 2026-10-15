@@ -1,0 +1,430 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.pdrk-fluid-scan",
+  "kind": "task_graph",
+  "title": {
+    "en": "Certified physical multifluid scan",
+    "zh": "物理多流体频谱扫描"
+  },
+  "summary": "Run the four literal fluid scan families with independent point solves, explicit state and canonical axis order. Default method 2 contains 101 physical points; method 4 contains 3750.",
+  "taxonomy": [
+    "kinetic",
+    "pdrk",
+    "examples"
+  ],
+  "aliases": [],
+  "identity": {
+    "relation": "Finite fluid wavevector-grid controls to full frequency spectra",
+    "direction": "bounded independent point scan",
+    "definition": "Construct the literal method-specific physical grid, map kx=k*sin(theta), kz=k*cos(theta) where applicable, solve each point independently and collect its certified spectrum in canonical axis order.",
+    "model": "Linear multi-species warm-fluid electromagnetic model with optional relativistic inertia.",
+    "geometry": "k=(kx,0,kz), B0 along z.",
+    "coordinates": "Cartesian fields; species density and velocity blocks followed by E and B.",
+    "boundary": "Local Fourier modes exp(i k.r-i omega t).",
+    "assumptions": [
+      "The rotating-pressure Bx contribution uses the direct divergence of the declared pressure tensor.",
+      "Relativistic inertia gamma I+gamma^3 vv^T/c^2 excludes the nonrelativistic collision generator.",
+      "Fluid constants profile: c2=(2.9979e8 m/s)^2, epsilon0=8.854e-12 F/m, mu0=1/(c2*epsilon0), gamma default5/3. Charge and mass are explicit SI deck inputs; packaged defaults use q=+/-1.602e-19 C, me=9.109e-31 kg and mp=1.673e-27 kg. Sound speeds are direct inputs; no kB or temperature-to-speed conversion is performed. This is distinct from current kinetic initialization epsilon0=8.8542e-12 F/m."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "state",
+      "description": "Explicit equilibrium mapping; no global state is read. Fluid fields are produced by fluid_equilibrium_si or fluid_equilibrium_relative_rates.",
+      "units": "field-specific SI",
+      "shape": "mapping with S species",
+      "dtype": "mapping[str, numeric array or scalar]",
+      "required": true,
+      "constraints": "Required fluid fields q,m,n,v,csz2,csp2,epsnx,epsny,rho,B0,gamma,c2,epsilon0,mu0,Pz,Pp,Delta,pressure_frame,velocity_collision; retain nullable beta fields for rendering."
+    },
+    {
+      "name": "method",
+      "description": "Source scan family selector.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": false,
+      "constraints": "One of 1,2,3,4.",
+      "default": 2
+    },
+    {
+      "name": "state_scales",
+      "description": "Positive diagonal state-coordinate scales used only for numerical conditioning.",
+      "units": "field-specific SI",
+      "shape": "(4*S+6,) or null",
+      "dtype": "float64 array or None",
+      "required": false,
+      "constraints": "Finite positive entries. None selects physical density/velocity/electric/magnetic scales; eigenvectors return in original coordinates.",
+      "default": null
+    },
+    {
+      "name": "relativistic",
+      "description": "Use the derivative of relativistic momentum in each species velocity block.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": false,
+      "constraints": "If true, all species speeds must be below c and velocity_collision must vanish.",
+      "default": false
+    },
+    {
+      "name": "grid_controls",
+      "description": "Explicit mapping of grid keyword controls.",
+      "units": "scan_k/scan_kx/scan_kz/wave_number m^-1; scan_theta/angle rad",
+      "shape": "mapping of scalars and vectors",
+      "dtype": "dict",
+      "required": false,
+      "constraints": "Keys scan_k,scan_theta,scan_kx,scan_kz,angle,wave_number only. Defaults: method1 k=0.1,theta=pi/3; method2 k=arange(101)*1e-5,theta=pi/3; method3 k=2,theta=arange(51)*pi/100; method4 kx=.01+.04*arange(75),kz=.01+.04*arange(50). Explicit controls retain source endpoint and axis mapping.",
+      "default": {}
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "Physical scan mapping with kx,kz,axis_names,axis_values,w1,w2 and point solution records.",
+      "units": "kx,kz m^-1; theta rad; omega rad/s",
+      "shape": "kx,kz:(na,nb); w1,w2:(na,nb,d); points:length na*nb",
+      "dtype": "dict[str, numeric arrays or structured metadata]",
+      "required": true,
+      "constraints": "C-order point records include index and full original-unit solution. Canonical axis_names are (single,single) for method1, (k,theta) for methods2/3 and (kx,kz) for method4; method2 has singleton theta and method3 singleton k."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite inputs satisfying the declared units and shapes."
+    ],
+    "supported": [
+      "Methods 1 through 4; default grids and explicitly bounded grids.",
+      "Explicit state scaling and collision-free relativistic point solves."
+    ],
+    "excluded": [
+      "Implicit root-to-root branch tracking across scan points."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError or a missing required mapping key rejects invalid inputs.",
+    "runtime_failure": "Dependency, numerical-library, or native-runtime errors propagate; no silent alternate provider.",
+    "nonconvergence": "Any point solver failure aborts the graph; no complete successful scan is returned.",
+    "partial_results": "Completed point data are local until the complete scan succeeds."
+  },
+  "provenance": {
+    "lineage_summary": "Derived from the PDRK cold-plasma/PDRF example, with explicit D2 scientific corrections and state ownership.",
+    "source_kinds": [
+      "upstream-scientific-source",
+      "derived-implementation",
+      "independent-scientific-validation"
+    ],
+    "public_references": [
+      "https://doi.org/10.1016/j.cpc.2013.10.012"
+    ],
+    "license_status": "pending-human-decision: source attribution is retained; redistribution permission and human scientific endorsement are unresolved."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.pdrk.multifluid",
+      "symbol": "scan_fluid_corrected",
+      "signature": "scan_fluid_corrected(inputs)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": [
+      {
+        "asset_id": "scirel.kinetic.pdrk-fluid-frequency-solve"
+      }
+    ]
+  },
+  "example": {
+    "description": "Solve a small explicit method-2 grid.",
+    "code": "from scirel.kinetic.pdrk.multifluid import fluid_equilibrium_si, scan_fluid_corrected\nr = scan_fluid_corrected(dict(state=fluid_equilibrium_si(), method=2, grid_controls=dict(scan_k=[1e-5, 2e-5])))\nassert r[\"w1\"].shape == (2, 1, 14)",
+    "expected": "Two independently certified full-spectrum points with canonical (k,singleton,root) axes."
+  },
+  "verification": {
+    "scope": [
+      "Default-grid and endpoint mapping; actual physical SI point and small methods 1/3/4 graphs.",
+      "Per-point original-pencil residuals and holdout scans."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_pdrk_multifluid.py"
+    ],
+    "evidence_ceiling": "Bounded derived scientific qualification exists. Integrated public signatures, executable examples, and final installed-candidate acceptance require separate verification.",
+    "known_limitations": [
+      "Descending frequency sorts are per point and do not identify a continuous physical branch.",
+      "Default method 4 is finite but substantially larger than bounded qualification grids."
+    ]
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "grid",
+        "kind": "controlled_glue",
+        "description": "Literal method1..4 axes and k*sin(theta),k*cos(theta) mapping; method4 canonical kx-first mesh.",
+        "inputs": [
+          "grid_controls",
+          "method"
+        ],
+        "outputs": [
+          "plan"
+        ]
+      },
+      {
+        "id": "collection",
+        "kind": "controlled_glue",
+        "description": "Finite C-order traversal; independent point input bundling and append-only solution collection.",
+        "inputs": [
+          "state",
+          "state_scales",
+          "relativistic",
+          "plan",
+          "solution"
+        ],
+        "outputs": [
+          "result",
+          "state",
+          "kx",
+          "kz",
+          "relativistic",
+          "state_scales"
+        ]
+      },
+      {
+        "id": "solve",
+        "kind": "operator",
+        "description": "Certified full original-unit fluid pencil solve for one point.",
+        "inputs": [
+          "state",
+          "kx",
+          "kz",
+          "relativistic",
+          "state_scales"
+        ],
+        "outputs": [
+          "solution"
+        ],
+        "asset_id": "scirel.kinetic.pdrk-fluid-frequency-solve"
+      }
+    ],
+    "edges": [
+      {
+        "from": {
+          "node": "$input",
+          "port": "grid_controls"
+        },
+        "to": {
+          "node": "grid",
+          "port": "grid_controls"
+        },
+        "description": "Explicit physical grid controls.",
+        "condition": "Always.",
+        "transform": "Identity; no unit conversion.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "method"
+        },
+        "to": {
+          "node": "grid",
+          "port": "method"
+        },
+        "description": "Literal scan family.",
+        "condition": "Always.",
+        "transform": "Identity; no unit conversion.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "state"
+        },
+        "to": {
+          "node": "collection",
+          "port": "state"
+        },
+        "description": "Unchanged point-solver physical control.",
+        "condition": "Always.",
+        "transform": "Identity; no unit conversion.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "state_scales"
+        },
+        "to": {
+          "node": "collection",
+          "port": "state_scales"
+        },
+        "description": "Unchanged point-solver physical control.",
+        "condition": "Always.",
+        "transform": "Identity; no unit conversion.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "relativistic"
+        },
+        "to": {
+          "node": "collection",
+          "port": "relativistic"
+        },
+        "description": "Unchanged point-solver physical control.",
+        "condition": "Always.",
+        "transform": "Identity; no unit conversion.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "grid",
+          "port": "plan"
+        },
+        "to": {
+          "node": "collection",
+          "port": "plan"
+        },
+        "description": "Finite axes and canonical coordinate mesh.",
+        "condition": "Always.",
+        "transform": "Identity; no unit conversion.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "solve",
+          "port": "solution"
+        },
+        "to": {
+          "node": "collection",
+          "port": "solution"
+        },
+        "description": "Append a certified point and advance the finite traversal.",
+        "condition": "Always.",
+        "transform": "Identity; no unit conversion.",
+        "kind": "feedback",
+        "required": true,
+        "feedback_id": "point-collection"
+      },
+      {
+        "from": {
+          "node": "collection",
+          "port": "result"
+        },
+        "to": {
+          "node": "$output",
+          "port": "result"
+        },
+        "description": "Return completed canonical scan arrays and point records.",
+        "condition": "Always.",
+        "transform": "Identity; no unit conversion.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "collection",
+          "port": "state"
+        },
+        "to": {
+          "node": "solve",
+          "port": "state"
+        },
+        "description": "Unchanged independent point state supplied to the certified solver.",
+        "condition": "Always.",
+        "transform": "Identity; no unit conversion.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "collection",
+          "port": "kx"
+        },
+        "to": {
+          "node": "solve",
+          "port": "kx"
+        },
+        "description": "Unchanged independent point kx supplied to the certified solver.",
+        "condition": "Always.",
+        "transform": "Identity; no unit conversion.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "collection",
+          "port": "kz"
+        },
+        "to": {
+          "node": "solve",
+          "port": "kz"
+        },
+        "description": "Unchanged independent point kz supplied to the certified solver.",
+        "condition": "Always.",
+        "transform": "Identity; no unit conversion.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "collection",
+          "port": "relativistic"
+        },
+        "to": {
+          "node": "solve",
+          "port": "relativistic"
+        },
+        "description": "Unchanged independent point relativistic supplied to the certified solver.",
+        "condition": "Always.",
+        "transform": "Identity; no unit conversion.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "collection",
+          "port": "state_scales"
+        },
+        "to": {
+          "node": "solve",
+          "port": "state_scales"
+        },
+        "description": "Unchanged independent point state_scales supplied to the certified solver.",
+        "condition": "Always.",
+        "transform": "Identity; no unit conversion.",
+        "kind": "data",
+        "required": true
+      }
+    ],
+    "execution": {
+      "mode": "Bounded sequential traversal of independent spectral points; no cross-point root seed.",
+      "ordering": "Construct finite axes, traverse np.ndindex in C order, solve each point, append and finally return.",
+      "branches": [
+        "Method1: one k at fixed angle.",
+        "Method2: k vector at fixed angle.",
+        "Method3: theta vector at fixed k.",
+        "Method4: kx/kz Cartesian mesh."
+      ],
+      "state_ownership": "Call-local point index and append-only collection; physical state is explicit, with no global kinetic variables.",
+      "failure_propagation": "Any assembly, solve or residual-certification failure aborts the complete scan.",
+      "feedback": [
+        {
+          "id": "point-collection",
+          "state": "Finite grid index and accumulated certified point records, not a physical root seed.",
+          "initialization": "Empty collection and the first canonical grid index.",
+          "update_order": "Prepare independent point, solve and certify, append, advance index.",
+          "continue_when": "The point succeeded and an unprocessed grid coordinate remains.",
+          "stop_when": "All na*nb points are collected or any point fails.",
+          "iteration_bound": "na*nb point attempts; defaults method1=1, method2=101, method3=51, method4=3750.",
+          "nonconvergence": "The failed point aborts; no successful partial scan is returned."
+        }
+      ]
+    }
+  }
+}

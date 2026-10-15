@@ -258,7 +258,7 @@ def render_site(root, docs, book, translations, chapter, *, figure_files):
         if not any(t.get('tutorial_id') == 'kinetic-initial-value' for c in book['chapters'] for t in c['topics']):
             (source/'tutorials/kinetic-initial-value.rst').unlink(missing_ok=True)
         else:
-            proof = json.loads((root/'provenance/validation/kinetic-tutorial-20261014.json').read_bytes())
+            proof = json.loads((root/'provenance/validation/kinetic-tutorial-current-wheel-20261015.json').read_bytes())
             bound_paths = dict(proof['source_files'], **proof['document_files'])
             bound_paths['tools/docs/sphinx/tutorials/kinetic-initial-value.rst'] = proof['tutorial_rst_sha256']
             if not proof['results']['all_checks_passed'] or proof['environment']['exit_code'] != 0:

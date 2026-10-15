@@ -1,0 +1,136 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "kind": "operator",
+  "provenance": {
+    "lineage_summary": "Derived from the retained Pleiades D0 geometry/current source and stabilized SciRel D2 successor behavior.",
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "bounded D2 regression evidence"
+    ],
+    "public_references": [],
+    "license_status": "Source lineage and MIT license evidence are retained; human release approval remains pending."
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": []
+  },
+  "verification": {
+    "scope": [
+      "Bounded rigid-geometry and coordinate invariants",
+      "Ordered current projection and source lifecycle",
+      "Full retained BRB/WHAM configuration composition at finite targets"
+    ],
+    "tests": [
+      "tests/pleiades/geometry/test_native_geometry_qualification.py",
+      "tests/pleiades/geometry/test_native_lifecycle.py"
+    ],
+    "evidence_ceiling": "Named geometry, lifecycle and configuration cases only; no arbitrary-input scientific correctness or release claim.",
+    "known_limitations": [
+      "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
+      "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
+      "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
+      "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
+      "All scientific, human and release approvals remain false."
+    ]
+  },
+  "asset_id": "scirel.geometry.rotate",
+  "title": {
+    "en": "Planar cylindrical rotation",
+    "zh": "柱面平面旋转"
+  },
+  "summary": "Rotate row-vectors in the cylindrical R,Z plane.",
+  "taxonomy": [
+    "geometry",
+    "coordinates",
+    "transform"
+  ],
+  "aliases": [
+    "rotate"
+  ],
+  "identity": {
+    "relation": "Rigid planar rotation relation",
+    "direction": "points and angle to rotated points",
+    "definition": "Clockwise-positive row-vector rotation in degrees",
+    "model": "Two-dimensional R,Z plane",
+    "geometry": "Two-dimensional R,Z plane",
+    "coordinates": "Cylindrical R,Z",
+    "boundary": "Finite 2-vector pivot and points",
+    "assumptions": [
+      "Finite final axis length 2"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "pts",
+      "description": "Point rows",
+      "units": "m",
+      "shape": "(...,2)",
+      "dtype": "Finite float64",
+      "required": true,
+      "constraints": "Final dimension length 2"
+    },
+    {
+      "name": "angle",
+      "description": "Rotation angle",
+      "units": "degree",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite degrees"
+    },
+    {
+      "name": "pivot",
+      "description": "Rotation pivot",
+      "units": "m",
+      "shape": "(2,)",
+      "dtype": "Finite float64",
+      "required": false,
+      "constraints": "Finite R,Z pivot",
+      "default": [
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "name": "rotated",
+      "description": "Rotated points",
+      "units": "m",
+      "shape": "(...,2)",
+      "dtype": "Finite float64",
+      "required": true,
+      "constraints": "Input shape preserved"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Inputs satisfy the documented finite cylindrical coordinate and shape contract"
+    ],
+    "supported": [
+      "Rigid rotation and inverse/metric invariants"
+    ],
+    "excluded": [
+      "3-D physical rotation",
+      "Nonfinite points"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for malformed point/pivot dimensions or invalid angle conversion; finite inputs are a precondition, not complete runtime validation of all entries.",
+    "runtime_failure": "Propagates numerical/conversion exceptions; nonfinite point entries are outside the supported domain.",
+    "nonconvergence": "Not applicable; direct geometry construction, transforms and static response.",
+    "partial_results": "No partial object is returned by a failed constructor. Atomic parameterized geometry setters preserve valid previous state."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.transforms",
+      "symbol": "rotate",
+      "signature": "rotate(pts, angle, pivot=(0.0, 0.0))"
+    }
+  },
+  "example": {
+    "description": "Rotate one point",
+    "code": "from scirel.geometry import rotate\nout=rotate([[1.,0.]],90.)\nassert out.shape == (1,2)",
+    "expected": "Shape-preserving rotated array."
+  }
+}

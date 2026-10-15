@@ -1,0 +1,145 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fieldline.helper-fieldline",
+  "kind": "operator",
+  "title": {
+    "en": "HelperFieldLine geometry and diagnostics",
+    "zh": "辅助场线几何与诊断"
+  },
+  "summary": "Parametric contour geometry, selectable physical-component interpolation and tangent-oriented field curvature with a common local geometry metric",
+  "taxonomy": [
+    "analysis",
+    "fieldline"
+  ],
+  "aliases": [
+    "HelperFieldLine"
+  ],
+  "identity": {
+    "relation": "HelperFieldLine geometry and diagnostics",
+    "direction": "Declared inputs to Object exposing verts,tck,u and arclength/field diagnostics",
+    "definition": "For a genuine smooth magnetic field line p(t), kappa = sign(p'(t) dot bhat) b'(t) / |p'(t)|. Sample physical BR,BZ before normalization. Derivatives of geometry and bhat use the same local polynomial weights, avoiding the chord-metric curvature bias. Public d_ds remains the separate three-point derivative on actual polygonal arclength.",
+    "model": "Distinct source variant: retains unfiltered Q and fixed constructor sampling; interpolate_onto, get_gradpsi and get_kappa_n honor the supplied method. For cubic finite complete real rectilinear arrays with at least four points per axis, use an interpolating tensor-product cubic spline with explicit support bounds and exact supplied-node values; descending axes are reversed coherently. Other cubic support uses Clough-Tocher with gradient-estimation tol=1e-12; linear/nearest use their declared griddata methods. Curvature uses up to five local points (quartic), or available quadratic/cubic stencils for N=3/4; field magnitude uses hypot. Open paths retain supplied order.",
+    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "coordinates": "Planar R,Z in coherent length units; contour psi is a label",
+    "boundary": "Closed periodic spline; supplied-order open paths; finite fitted-parameter crossings only.",
+    "assumptions": [
+      "Finite contour vertices sufficient for SciPy splprep",
+      "Public d_ds requires N>=3 and distinct adjacent vertices",
+      "Curvature requires an actual smooth magnetic field line, finite nonzero interpolated B and nonzero tangent projection; projection alone does not certify field-line tangency",
+      "Cubic tensor-grid fast path requires finite real separable complete arrays, strictly monotone axes and at least four nodes per axis; otherwise the declared scattered path applies",
+      "Queries used for field diagnostics lie inside finite interpolation support; no field extrapolation is qualified"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "psi",
+      "description": "Contour level label",
+      "units": "caller flux-label units",
+      "shape": "scalar",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Not a reconstructed flux field"
+    },
+    {
+      "name": "verts",
+      "description": "Contour vertices",
+      "units": "length units",
+      "shape": "(M,2)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite with sufficient distinct points"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "line",
+      "description": "Object exposing verts,tck,u and arclength/field diagnostics",
+      "units": "length; gradient caller flux per length; curvature inverse length",
+      "shape": "Python object; curvature tuple of two (N,) arrays",
+      "dtype": "Python object",
+      "required": true,
+      "constraints": "get_ds returns first segment length, not a uniform-step guarantee"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite contour vertices sufficient for SciPy splprep",
+      "Public d_ds requires N>=3 and distinct adjacent vertices",
+      "Curvature requires an actual smooth magnetic field line, finite nonzero interpolated B and nonzero tangent projection; projection alone does not certify field-line tangency",
+      "Cubic tensor-grid fast path requires finite real separable complete arrays, strictly monotone axes and at least four nodes per axis; otherwise the declared scattered path applies",
+      "Queries used for field diagnostics lie inside finite interpolation support; no field extrapolation is qualified"
+    ],
+    "supported": [
+      "Named analytic, manufactured, invariant or reference fixtures in the direct tests",
+      "Independent installed ARM named fixtures retain the original 13x9 affine-gradient inputs and 4e-9 absolute gate. Recorded maximum errors are 1.3323e-15 or less across the two variants. The original circle uses 401 points and spatial grids 40/80/160 on the unchanged domain: field-curvature vector errors are 1.1787063e-5, 1.3972100e-6 and 1.6021077e-7, passing both >3.4 refinement ratios and final <.004 gates. These are named-fixture observations, not universal convergence rates.",
+      "Independent installed ARM held-out ellipse on 71x83 unequal-spacing grids and 257 line points, including coherent descending coordinates, B reversal and vertex reversal, has maximum component error 1.329318e-7 or less in recorded cases. Boundary cases reject outside support, duplicate vertices, nonfinite fields and actual field nulls. Field-scale tests at signed 1e-180 and 1e180, with a translated geometry, pass unchanged finite-fixture criteria; no arbitrary-dynamic-range guarantee follows."
+    ],
+    "excluded": [
+      "Intersection is bounded to fitted parameter intervals and rejects no-crossing/multiple-root cases; tangency/completeness remains unqualified",
+      "Arbitrary contour topology, magnetic-axis limit and physical stability are unqualified",
+      "Polar projection is supplied separately with explicit theta and origin failure; no topology or magnetic-axis claim is inferred.",
+      "No universal absolute interpolation-error bound, arbitrary-grid curvature rate or certification that an arbitrary supplied path is a field line."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for nonfinite/null interpolated B, fewer than three curvature vertices, duplicate adjacent vertices or zero/nonfinite geometric speed or tangent projection. Out-of-support cubic interpolation returns NaN, then field curvature rejects it; raw interpolation itself does not promise a ValueError. The two classes retain distinct finite-Q filtering. Other SciPy constructor/interpolation errors propagate.",
+    "runtime_failure": "Underlying numerical or interpolation exceptions propagate.",
+    "nonconvergence": "Bounded multistart distance solve accepts a crossing only when separation is within geometry-scaled tolerance; no found crossing or multiple found crossings raises ValueError. Finite search does not certify all spline roots or tangencies.",
+    "partial_results": "apply_boundary commits both parameter bounds only after both solves succeed; a failed update leaves existing bounds unchanged."
+  },
+  "provenance": {
+    "lineage_summary": "Selectively recovered from the exact earlier D2 source, derived from frozen Pleiades analysis/helpers.py. Earlier coarse-grid error 0.00691073 exceeded the original 2.5e-3 gate. D2 repair samples physical B before normalization, retains tangent-oriented arclength derivative and distinct class return/API contracts, removes open-path cyclic jumps and rejects numerical noncrossings. Original failures are preserved as evidence, not exported legacy behavior. Mac successor preserves the frozen earlier implementation and failures as predecessor evidence. It fixes the ignored Helper method selector, resolves complete cubic grids by tensor interpolation and scattered cubic gradient estimation at tol=1e-12, and replaces the field-curvature chord-metric derivative with common local polynomial geometry/direction derivatives. These are implementation corrections, not a new default method, tolerance relaxation or smaller-domain substitute. Public polygonal d_ds and variant-specific return shapes remain unchanged.",
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "independent analytic or numerical oracle"
+    ],
+    "public_references": [],
+    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.fieldline",
+      "symbol": "HelperFieldLine",
+      "signature": "HelperFieldLine(psi, verts)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": [
+      {
+        "asset_id": "scirel.fieldline.arclength-derivative"
+      }
+    ]
+  },
+  "example": {
+    "description": "Bounded executable example for HelperFieldLine geometry and diagnostics",
+    "code": "import numpy as np\nfrom scirel.geometry.fieldline import HelperFieldLine\nline=HelperFieldLine(.2,np.array([[.2,0.],[.6,0.],[1.,0.]]))\nassert line.verts.shape==(1000,2)",
+    "expected": "Declared result shape and bounded numerical behavior are asserted."
+  },
+  "verification": {
+    "scope": [
+      "Only the explicitly stated finite input domain and named direct/independent installed fixtures",
+      "Independent installed ARM named fixtures retain the original 13x9 affine-gradient inputs and 4e-9 absolute gate. Recorded maximum errors are 1.3323e-15 or less across the two variants. The original circle uses 401 points and spatial grids 40/80/160 on the unchanged domain: field-curvature vector errors are 1.1787063e-5, 1.3972100e-6 and 1.6021077e-7, passing both >3.4 refinement ratios and final <.004 gates. These are named-fixture observations, not universal convergence rates.",
+      "Independent installed ARM held-out ellipse on 71x83 unequal-spacing grids and 257 line points, including coherent descending coordinates, B reversal and vertex reversal, has maximum component error 1.329318e-7 or less in recorded cases. Boundary cases reject outside support, duplicate vertices, nonfinite fields and actual field nulls. Field-scale tests at signed 1e-180 and 1e180, with a translated geometry, pass unchanged finite-fixture criteria; no arbitrary-dynamic-range guarantee follows."
+    ],
+    "tests": [
+      "tests/pleiades/equilibrium/test_analysis_families.py",
+      "tests/pleiades/equilibrium/test_analysis_corrections.py",
+      "tests/pleiades/equilibrium/test_curvature_consumer.py",
+      "tests/pleiades/equilibrium/test_fieldline_geometry_repair.py",
+      "tests/pleiades/equilibrium/test_fieldline_t7_precision.py::test_t7_default_cubic_affine_gradient",
+      "tests/pleiades/equilibrium/test_fieldline_t7_precision.py::test_t7_field_curvature_spatial_refinement",
+      "tests/pleiades/equilibrium/test_fieldline_t7_precision.py::test_curvature_constant_field_scale_does_not_create_a_null",
+      "tests/pleiades/equilibrium/test_fieldline_t7_precision.py::test_helper_gradient_honors_linear_method"
+    ],
+    "evidence_ceiling": "Independent source-free ARM named-fixture technical evidence for the recorded Mac successor candidate. It does not establish whole-project D2 or D3 completion, arbitrary-input correctness, experimental validation, human endorsement or release. Historical fixed-interpolant refinement failures remain separate qualified observations.",
+    "known_limitations": [
+      "Intersection is bounded to fitted parameter intervals and rejects no-crossing/multiple-root cases; tangency/completeness remains unqualified",
+      "Arbitrary contour topology, magnetic-axis limit and physical stability are unqualified",
+      "Polar projection is supplied separately with explicit theta and origin failure; magnetic-axis limit remains unqualified.",
+      "HelperFieldLine has field-based curvature only; flux-gradient curvature belongs to the separate FieldLine variant. The explicit method selector is honored by interpolation and gradient/curvature consumers.",
+      "Refining path samples on a fixed interpolated field need not monotonically improve physical curvature error; the four historical fixed-interpolant refinement failures remain preserved and are not the spatial-grid refinement gate.",
+      "Local quartic field-curvature derivatives assume a sufficiently smooth genuine field line. Public d_ds retains its polygonal three-point contract; neither implies a universal curvature-error bound."
+    ]
+  }
+}

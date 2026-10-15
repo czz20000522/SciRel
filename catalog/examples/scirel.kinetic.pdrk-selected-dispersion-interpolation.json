@@ -1,0 +1,144 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.pdrk-selected-dispersion-interpolation",
+  "kind": "operator",
+  "title": {
+    "en": "Selected-dispersion interpolation",
+    "zh": "选定色散曲线插值"
+  },
+  "summary": "Evaluate the ES1D example interpolation on explicitly scaled selected coordinates and frequencies.",
+  "taxonomy": [
+    "kinetic",
+    "magnetized-plasma",
+    "pdrk"
+  ],
+  "aliases": [
+    "PDRK interpolate_selected_dispersion"
+  ],
+  "identity": {
+    "relation": "Selected-dispersion interpolation",
+    "direction": "pas,wws,rex,rez,coordinate -> winterp",
+    "definition": "winterp=interp1(rex*pas,rez*wws[:,0,0],coordinate) using native interp1 defaults. This is linear interpolation of already selected data, not a dispersion solve. Out-of-range NaN is preserved.",
+    "model": "Uniform magnetized, nonrelativistic charged Gaussian species with optional gyrotropic loss-cone mixture; B0 along signed z and k=(kx,0,kz).",
+    "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
+    "coordinates": "SI angular frequency rad/s and wave number m^-1; normalized source scan/selection quantities are labeled explicitly.",
+    "boundary": "Uniform/local plane-wave response; no spatial boundary-value problem or nonlinear saturation.",
+    "assumptions": [
+      "Linear small-amplitude response.",
+      "Caller retains the explicit truncation, state provenance and normalization."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "state",
+      "description": "NativeResult or its state mapping produced by the named predecessor. Scalar numeric fields are usually1x1 native arrays; row/column singleton dimensions are retained. Scientific numeric transport is float64/complex128; inactive fields are empty arrays, never fabricated zeros.",
+      "units": "mixed; physical dimensions recorded by state fields",
+      "shape": "mapping or NativeResult",
+      "dtype": "state carrier",
+      "required": true,
+      "constraints": "Must contain the complete compatible predecessor state; handcrafted inconsistent fields are outside the qualified composition."
+    },
+    {
+      "name": "coordinate",
+      "description": "Interpolation coordinate on explicitly scaled rex*pas axis.",
+      "units": "same as rex*pas",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": false,
+      "constraints": "Source interp1 behavior; out-of-range values produce NaN rather than fabricated extrapolation.",
+      "default": 0.2
+    },
+    {
+      "name": "rex",
+      "description": "Explicit abscissa scale override.",
+      "units": "caller-declared axis scale",
+      "shape": "scalar",
+      "dtype": "real numeric or None",
+      "required": false,
+      "constraints": "None consumes state.rex; units follow the selected example convention.",
+      "default": null
+    },
+    {
+      "name": "rez",
+      "description": "Explicit selected-frequency scale override.",
+      "units": "caller-declared frequency scale",
+      "shape": "scalar",
+      "dtype": "real numeric or None",
+      "required": false,
+      "constraints": "None consumes state.rez; no automatic conversion to SI is inferred.",
+      "default": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "winterp",
+      "description": "Interpolated scaled selected frequency.",
+      "units": "same as rez*wws",
+      "shape": "native scalar shape",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Monotone interpolation abscissa and compatible selected first-surface data."
+    ],
+    "supported": [
+      "Monotone interpolation abscissa and compatible selected first-surface data."
+    ],
+    "excluded": [
+      "Global nonlinear plasma evolution and a guarantee of unique physical mode identification."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
+    "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError with retained result and receipt when its caught scientific terminal fails.",
+    "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
+    "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
+  },
+  "provenance": {
+    "lineage_summary": "Derived from Hua-sheng Xie PDRK current implementation through fixed preprocessing and source-fidelity preservation, followed by explicit scientific corrections to field gauge, eigenpair state, signed-kz causality, perpendicular moments and J12 table precision.",
+    "source_kinds": [
+      "upstream scientific implementation",
+      "supplied loss-cone derivation",
+      "independent velocity-integral and analytic qualification"
+    ],
+    "public_references": [
+      "https://github.com/hsxie/pdrk",
+      "https://github.com/hsxie/pdrk/blob/master/doc/pdrk_loss_cone_doc_181027.pdf"
+    ],
+    "license_status": "Explicit upstream redistribution grant remains unresolved; local technical validation is not human publication approval."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.pdrk.magnetized",
+      "symbol": "interpolate_selected_dispersion",
+      "signature": "interpolate_selected_dispersion(state, *, coordinate=0.2, rex=None, rez=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Small wheel-only example using packaged native resources and raw Octave; no source checkout or network.",
+    "code": "import numpy as np\nfrom scirel.kinetic.pdrk import magnetized as m, workflows as w\nst={'pas':np.array([.1,.2,.3]),'wws':np.array([1.,2.,3.]).reshape(3,1,1),'rex':1.,'rez':1.}\nr=m.interpolate_selected_dispersion(st,coordinate=.2)\nassert np.allclose(r.state['winterp'],2.)\n",
+    "expected": "Assertions succeed for a compatible installation with Octave. This demonstrates the declared operation, not global scientific or visual acceptance."
+  },
+  "verification": {
+    "scope": [
+      "Native interp1 behavior retains source-fidelity evidence, including out-of-range NaN.",
+      "Canonical example checks a manufactured exact interpolation value; no plasma dispersion root accuracy follows."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_pdrk_magnetized.py"
+    ],
+    "evidence_ceiling": "Bounded scientific qualification; final exact public signature and canonical example validation are required before catalog exposure.",
+    "known_limitations": [
+      "Local technical development; human scientific endorsement and publication clearance remain pending.",
+      "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
+      "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance."
+    ]
+  }
+}

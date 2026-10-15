@@ -1,0 +1,171 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.pdrk-fluid-plot",
+  "kind": "operator",
+  "title": {
+    "en": "Multifluid scan rendering",
+    "zh": "多流体扫描绘图"
+  },
+  "summary": "Render the declared fluid scan axes using explicit SI or method-2 normalization, without kinetic globals or invented zero-field beta.",
+  "taxonomy": [
+    "kinetic",
+    "pdrk",
+    "examples"
+  ],
+  "aliases": [],
+  "identity": {
+    "relation": "Certified fluid scan to native plot artifacts",
+    "direction": "artifact rendering",
+    "definition": "Method2 plots k*length_scale and omega/frequency_scale; omitted scales retain SI. Method3 uses theta in radians; method4 transposes canonical (kx,kz,root) state into the source surface orientation.",
+    "model": "Visualization of full local fluid spectra.",
+    "geometry": "1D curves or 2D wavevector surfaces.",
+    "coordinates": "SI k and omega by default; only method2 admits paired normalization scales.",
+    "boundary": "No additional solve or branch matching.",
+    "assumptions": [
+      "Undefined B=0 beta remains absent in annotations, never an invented zero.",
+      "Fluid constants profile: c2=(2.9979e8 m/s)^2, epsilon0=8.854e-12 F/m, mu0=1/(c2*epsilon0), gamma default5/3. Charge and mass are explicit SI deck inputs; packaged defaults use q=+/-1.602e-19 C, me=9.109e-31 kg and mp=1.673e-27 kg. Sound speeds are direct inputs; no kB or temperature-to-speed conversion is performed. This is distinct from current kinetic initialization epsilon0=8.8542e-12 F/m."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "graph",
+      "description": "Complete scan result with w1,w2,axis_values,kx,kz.",
+      "units": "k m^-1; omega rad/s; theta rad",
+      "shape": "scan result mapping",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "Axes must match the declared method."
+    },
+    {
+      "name": "state",
+      "description": "Explicit equilibrium mapping; no global state is read. Fluid fields are produced by fluid_equilibrium_si or fluid_equilibrium_relative_rates.",
+      "units": "field-specific SI",
+      "shape": "mapping with S species",
+      "dtype": "mapping[str, numeric array or scalar]",
+      "required": true,
+      "constraints": "Required fluid fields q,m,n,v,csz2,csp2,epsnx,epsny,rho,B0,gamma,c2,epsilon0,mu0,Pz,Pp,Delta,pressure_frame,velocity_collision; retain nullable beta fields for rendering."
+    },
+    {
+      "name": "method",
+      "description": "Renderer family matching the scan.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": false,
+      "constraints": "One of 1..4.",
+      "default": 2
+    },
+    {
+      "name": "length_scale_m",
+      "description": "Method-2 wavevector normalization length.",
+      "units": "m",
+      "shape": "scalar or null",
+      "dtype": "float64 or None",
+      "required": false,
+      "constraints": "Finite positive and supplied together with frequency_scale_rad_s; otherwise both omitted.",
+      "default": null
+    },
+    {
+      "name": "frequency_scale_rad_s",
+      "description": "Method-2 frequency normalization scale.",
+      "units": "rad/s",
+      "shape": "scalar or null",
+      "dtype": "float64 or None",
+      "required": false,
+      "constraints": "Finite positive; normalization for other methods is rejected.",
+      "default": null
+    },
+    {
+      "name": "capture_png",
+      "description": "Return a PNG byte vector as well as plot-object counts.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": false,
+      "constraints": "False leaves the renderer PNG capture disabled.",
+      "default": true
+    },
+    {
+      "name": "transport",
+      "description": "Optional explicit native executor; None uses the packaged resource closure.",
+      "units": "not applicable",
+      "shape": "object or null",
+      "dtype": "NativeTransport or None",
+      "required": false,
+      "constraints": "Requires a compatible external Octave runtime. No original checkout or network is consulted.",
+      "default": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "NativeResult state has plot_line_count,plot_surface_count and png_bytes; receipt is separate execution metadata.",
+      "units": "counts dimensionless; PNG bytes unitless",
+      "shape": "counts native scalar arrays; png_bytes vector",
+      "dtype": "NativeResult",
+      "required": true,
+      "constraints": "This renderer returns PNG and object counts, not a reusable native FIG."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite inputs satisfying the declared units and shapes."
+    ],
+    "supported": [
+      "Source methods1..4, with explicit canonical-axis to native mapping.",
+      "Paired positive normalization for method2 only."
+    ],
+    "excluded": []
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError or a missing required mapping key rejects invalid inputs.",
+    "runtime_failure": "Dependency, numerical-library, or native-runtime errors propagate; no silent alternate provider.",
+    "nonconvergence": "No iterative solve is performed.",
+    "partial_results": "No partial result is returned on failure."
+  },
+  "provenance": {
+    "lineage_summary": "Derived from the PDRK cold-plasma/PDRF example, with explicit D2 scientific corrections and state ownership.",
+    "source_kinds": [
+      "upstream-scientific-source",
+      "derived-implementation",
+      "independent-scientific-validation"
+    ],
+    "public_references": [
+      "https://doi.org/10.1016/j.cpc.2013.10.012"
+    ],
+    "license_status": "pending-human-decision: source attribution is retained; redistribution permission and human scientific endorsement are unresolved."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.pdrk.plotting",
+      "symbol": "fluid_plot_scan",
+      "signature": "fluid_plot_scan(graph, state, *, method=2, length_scale_m=None, frequency_scale_rad_s=None, capture_png=True, transport=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": [
+      {
+        "asset_id": "scirel.kinetic.pdrk-fluid-scan"
+      }
+    ]
+  },
+  "example": {
+    "description": "Render a two-point physical scan.",
+    "code": "from scirel.kinetic.pdrk.multifluid import fluid_equilibrium_si, scan_fluid_corrected\nfrom scirel.kinetic.pdrk.plotting import fluid_plot_scan\ns = fluid_equilibrium_si()\ng = scan_fluid_corrected(dict(state=s, grid_controls=dict(scan_k=[1e-5, 2e-5])))\nr = fluid_plot_scan(g, s)\nassert r.state[\"png_bytes\"].size > 0",
+    "expected": "PNG bytes and native line/surface counts for the explicit physical scan."
+  },
+  "verification": {
+    "scope": [
+      "Actual small method1/3/4 renderers, zero-field undefined-beta preservation and coordinate mapping."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_pdrk_examples_support.py"
+    ],
+    "evidence_ceiling": "Bounded derived scientific qualification exists. Integrated public signatures, executable examples, and final installed-candidate acceptance require separate verification.",
+    "known_limitations": [
+      "Sorted roots are not tracked physical branches.",
+      "The support renderer requires external Octave graphics."
+    ]
+  }
+}

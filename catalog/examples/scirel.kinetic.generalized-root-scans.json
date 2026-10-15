@@ -1,0 +1,725 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.generalized-root-scans",
+  "kind": "task_graph",
+  "aliases": [],
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave",
+    "gpdf"
+  ],
+  "title": {
+    "zh": "四类 GPDF 连续根扫描",
+    "en": "Run all four original seeded electrostatic root scans."
+  },
+  "summary": "Run all four original seeded electrostatic root scans.",
+  "identity": {
+    "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
+    "relation": "Solve D(x,k)=0; omega=sqrt(2)*k*x",
+    "definition": "Original grids: Langmuir .1:.1:1 then2:1:10 with fixed phase1-.1i; IAW1.1:-.05:.05 with phase.04-.02i; beam.4:-.005:.05 with phase(1-.01i)*sqrt(2)*.4; generalized.1:.1:1 then1.5:.5:5 with frequency1.5-.001i. IAW/beam continue previous phase; generalized continues previous frequency. k is closed over instead of passed as the invalid fourth fsolve argument. Solvers use D/k², or qualified Maxwellian epsilon directly, and require solver success, residual tolerance, and function-evaluation budget.",
+    "direction": "Declared inputs to declared scientific outputs",
+    "geometry": "One-dimensional velocity space",
+    "coordinates": "Dimensionless real velocity and complex phase or frequency",
+    "boundary": "Infinite real velocity contour with stated continuation or finite support.",
+    "assumptions": [
+      "Each seeded root must converge within its budget and dielectric residual tolerance.",
+      "k_values preserve continuation order; initial_guess units depend on family exactly as declared."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "kind",
+      "description": "langmuir, iaw, beam or generalized.",
+      "dtype": "str",
+      "shape": "scalar",
+      "required": true,
+      "constraints": "Finite and representable.",
+      "units": "dimensionless"
+    },
+    {
+      "name": "k_values",
+      "description": "Optional ordered positive scan grid; None selects the original family grid.",
+      "dtype": "real vector",
+      "shape": "nonempty one-dimensional",
+      "required": false,
+      "constraints": "Finite and representable.",
+      "units": "dimensionless",
+      "default": null
+    },
+    {
+      "name": "initial_guess",
+      "description": "Optional complex seed: phase x except generalized uses frequency omega. None selects original family seed.",
+      "dtype": "complex scalar",
+      "shape": "scalar",
+      "required": false,
+      "constraints": "Finite and representable.",
+      "units": "dimensionless",
+      "default": null
+    },
+    {
+      "name": "residual_tolerance",
+      "description": "Absolute dielectric residual gate.",
+      "dtype": "positive real",
+      "shape": "scalar",
+      "required": false,
+      "constraints": "Finite and representable.",
+      "units": "dimensionless",
+      "default": 1e-09
+    },
+    {
+      "name": "max_evaluations",
+      "description": "Per-point MINPACK function-evaluation limit.",
+      "dtype": "positive integer",
+      "shape": "scalar",
+      "required": false,
+      "constraints": "Finite and representable.",
+      "units": "dimensionless",
+      "default": 300
+    },
+    {
+      "name": "ion_temperature",
+      "description": "Ti/Te.",
+      "dtype": "positive real",
+      "shape": "scalar",
+      "required": false,
+      "constraints": "Finite and representable.",
+      "units": "dimensionless",
+      "default": 1.0
+    },
+    {
+      "name": "ion_mass",
+      "description": "mi/me.",
+      "dtype": "positive real",
+      "shape": "scalar",
+      "required": false,
+      "constraints": "Finite and representable.",
+      "units": "dimensionless",
+      "default": 1836.0
+    },
+    {
+      "name": "beam_fraction",
+      "description": "Beam density divided by total density.",
+      "dtype": "real",
+      "shape": "scalar",
+      "required": false,
+      "constraints": "0<=beam_fraction<=1.",
+      "units": "dimensionless",
+      "default": 0.1
+    },
+    {
+      "name": "beam_temperature",
+      "description": "Tb/Te.",
+      "dtype": "positive real",
+      "shape": "scalar",
+      "required": false,
+      "constraints": "Finite and representable.",
+      "units": "dimensionless",
+      "default": 1.0
+    },
+    {
+      "name": "beam_drift",
+      "description": "Beam drift divided by beam thermal speed.",
+      "dtype": "real",
+      "shape": "scalar",
+      "required": false,
+      "constraints": "Finite and representable.",
+      "units": "dimensionless",
+      "default": 5.0
+    },
+    {
+      "name": "selector",
+      "description": "Generalized distribution selector.",
+      "dtype": "integer",
+      "shape": "scalar",
+      "required": false,
+      "constraints": "0 through 6.",
+      "units": "dimensionless",
+      "default": 0
+    },
+    {
+      "name": "expression",
+      "description": "Analytic density in v using finite real constants, pi, arithmetic and exp/log/sqrt/sin/cos/sinh/cosh/tanh; MATLAB point operators accepted.",
+      "dtype": "str",
+      "shape": "scalar",
+      "required": false,
+      "constraints": "Real integrable density with decaying derivative; no arbitrary code, comparisons, attributes or indexing.",
+      "units": "dimensionless",
+      "default": "exp(-v.^2)/sqrt(pi)"
+    },
+    {
+      "name": "integration_mesh",
+      "description": "Feature-resolving finite increasing velocity mesh; infinite tails are also integrated.",
+      "dtype": "real vector",
+      "shape": "one-dimensional at least two points",
+      "required": false,
+      "constraints": "All material features resolved; no unresolved tail features.",
+      "units": "dimensionless",
+      "default": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "k",
+      "description": "Scan grid preserving requested order.",
+      "dtype": "real vector",
+      "shape": "number of points",
+      "required": true,
+      "constraints": "Finite and representable.",
+      "units": "dimensionless"
+    },
+    {
+      "name": "omega",
+      "description": "Qualified roots normalized by plasma frequency.",
+      "dtype": "complex vector",
+      "shape": "number of points",
+      "required": true,
+      "constraints": "Finite and representable.",
+      "units": "dimensionless"
+    },
+    {
+      "name": "dielectric_residual",
+      "description": "Norm of real/imaginary dielectric residual.",
+      "dtype": "nonnegative real vector",
+      "shape": "number of points",
+      "required": true,
+      "constraints": "Finite and representable.",
+      "units": "dimensionless"
+    },
+    {
+      "name": "evaluations",
+      "description": "MINPACK function evaluations at each point.",
+      "dtype": "integer vector",
+      "shape": "number of points",
+      "required": true,
+      "constraints": "Finite and representable.",
+      "units": "count"
+    }
+  ],
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.generalized_dispersion",
+      "symbol": "scan_gpdf_roots",
+      "signature": "scan_gpdf_roots(kind, *, k_values=None, initial_guess=None, residual_tolerance=1e-09, max_evaluations=300, **parameters)"
+    }
+  },
+  "applicability": {
+    "supported": [
+      "All four original complete grids: Langmuir19, IAW22, beam71, generalized18 points.",
+      "Caller-selected grids and explicit seeds for branch selection.",
+      "Dielectric residual validation after explicit two-real-component MINPACK solves."
+    ],
+    "excluded": [
+      "Root uniqueness, exhaustive spectrum, or automatic most unstable/least damped branch selection."
+    ],
+    "preconditions": [
+      "Each seeded root must converge within its budget and dielectric residual tolerance.",
+      "k_values preserve continuation order; initial_guess units depend on family exactly as declared."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for invalid, nonfinite or singular declared inputs.",
+    "runtime_failure": "Callback arithmetic failures propagate; nonrepresentable transform raises ValueError.",
+    "nonconvergence": "RuntimeError for Cauchy, real-axis or principal-value quadrature nonconvergence, or root nonconvergence.",
+    "partial_results": "No partial scientific result is returned after failure."
+  },
+  "provenance": {
+    "source_kinds": [
+      "GPDF frozen D1 scientific capability",
+      "independent equation derivation",
+      "SciRel implementation"
+    ],
+    "lineage_summary": "Reimplements the defining scientific relations exposed by frozen GPDF D1; D2 corrections and failure history are documented in gpdf-generalized-core evaluation. Dev9 successor of exact document SHA256 ecf9f46b670f1ba0103e8b248c2c79ff6f973e87a77dbfd7dde6933ad0ccc0b8; unchanged contracts are reused, changed numerical methods and failure closure follow GPDF-R1/R2/R3.",
+    "license_status": "Independent equation implementation uses NumPy and SciPy; their licenses are carried with the selected distribution.",
+    "public_references": [
+      "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "tests/operator_contracts/test_gpdf_generalized.py"
+    ],
+    "scope": [
+      "All four original complete grids: Langmuir19, IAW22, beam71, generalized18 points.",
+      "Caller-selected grids and explicit seeds for branch selection.",
+      "Dielectric residual validation after explicit two-real-component MINPACK solves."
+    ],
+    "known_limitations": [
+      "Original default beam seed follows a damped high-frequency branch; an explicit frequency-informed phase seed can find an unstable branch.",
+      "The original default beam seed fails on the custom short grid [.3,.295]; this failure is preserved.",
+      "Generic non-Maxwellian quadrature roots are not interval-certified; no estimated quadrature error is included in their acceptance gate."
+    ],
+    "evidence_ceiling": "Independent defining integrals, analytic residues, distributional jumps, all four complete default scans and 50-digit independent root equations are source-level numerical evidence. Actual installed-wheel evidence is recorded separately in the frozen delivery receipts."
+  },
+  "example": {
+    "description": "四类 GPDF 连续根扫描的可执行例子",
+    "code": "import numpy as np\nfrom scirel.kinetic.generalized_dispersion import scan_gpdf_roots\nr=scan_gpdf_roots('beam',k_values=[.3,.295],initial_guess=(1-.01j)/(np.sqrt(2)*.4))\nassert np.max(r['dielectric_residual'])<1e-9\nassert r['omega'][0].imag>0",
+    "expected": "Assertions verify the stated output property."
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": [
+      {
+        "asset_id": "scirel.kinetic.generalized-residual"
+      }
+    ]
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "prepare",
+        "kind": "controlled_glue",
+        "description": "Resolve original or caller grid, finite budgets, seed units and residual keyword arguments.",
+        "inputs": [
+          "kind",
+          "k_values",
+          "initial_guess",
+          "residual_tolerance",
+          "max_evaluations",
+          "ion_temperature",
+          "ion_mass",
+          "beam_fraction",
+          "beam_temperature",
+          "beam_drift",
+          "selector",
+          "expression",
+          "integration_mesh"
+        ],
+        "outputs": [
+          "controls",
+          "k",
+          "x",
+          "parameters"
+        ]
+      },
+      {
+        "id": "residual",
+        "kind": "operator",
+        "asset_id": "scirel.kinetic.generalized-residual",
+        "description": "Evaluate the selected physical residual D; the solver adapter divides by k² or uses qualified Maxwellian epsilon directly.",
+        "inputs": [
+          "x",
+          "k",
+          "parameters"
+        ],
+        "outputs": [
+          "D"
+        ]
+      },
+      {
+        "id": "solver",
+        "kind": "controlled_glue",
+        "description": "Bind k and selected scientific residual into scipy.optimize.root, adapt complex phase to two real components, enforce convergence and residual gate, collect output and continue declared seed state. No new physical equation is introduced.",
+        "inputs": [
+          "controls",
+          "D",
+          "seed"
+        ],
+        "outputs": [
+          "k",
+          "omega",
+          "dielectric_residual",
+          "evaluations",
+          "trial_x",
+          "next_seed"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": {
+          "node": "$input",
+          "port": "kind"
+        },
+        "to": {
+          "node": "prepare",
+          "port": "kind"
+        },
+        "description": "Consume declared scan control.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "k_values"
+        },
+        "to": {
+          "node": "prepare",
+          "port": "k_values"
+        },
+        "description": "Consume declared scan control.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "initial_guess"
+        },
+        "to": {
+          "node": "prepare",
+          "port": "initial_guess"
+        },
+        "description": "Consume declared scan control.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "residual_tolerance"
+        },
+        "to": {
+          "node": "prepare",
+          "port": "residual_tolerance"
+        },
+        "description": "Consume declared scan control.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "max_evaluations"
+        },
+        "to": {
+          "node": "prepare",
+          "port": "max_evaluations"
+        },
+        "description": "Consume declared scan control.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "ion_temperature"
+        },
+        "to": {
+          "node": "prepare",
+          "port": "ion_temperature"
+        },
+        "description": "Consume declared scan control.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "ion_mass"
+        },
+        "to": {
+          "node": "prepare",
+          "port": "ion_mass"
+        },
+        "description": "Consume declared scan control.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "beam_fraction"
+        },
+        "to": {
+          "node": "prepare",
+          "port": "beam_fraction"
+        },
+        "description": "Consume declared scan control.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "beam_temperature"
+        },
+        "to": {
+          "node": "prepare",
+          "port": "beam_temperature"
+        },
+        "description": "Consume declared scan control.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "beam_drift"
+        },
+        "to": {
+          "node": "prepare",
+          "port": "beam_drift"
+        },
+        "description": "Consume declared scan control.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "selector"
+        },
+        "to": {
+          "node": "prepare",
+          "port": "selector"
+        },
+        "description": "Consume declared scan control.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "expression"
+        },
+        "to": {
+          "node": "prepare",
+          "port": "expression"
+        },
+        "description": "Consume declared scan control.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "integration_mesh"
+        },
+        "to": {
+          "node": "prepare",
+          "port": "integration_mesh"
+        },
+        "description": "Consume declared scan control.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "prepare",
+          "port": "controls"
+        },
+        "to": {
+          "node": "solver",
+          "port": "controls"
+        },
+        "description": "Pass finite scan/solver budgets and initialization.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "prepare",
+          "port": "x"
+        },
+        "to": {
+          "node": "solver",
+          "port": "seed"
+        },
+        "description": "Initialize family-specific seed.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "prepare",
+          "port": "k"
+        },
+        "to": {
+          "node": "residual",
+          "port": "k"
+        },
+        "description": "Bind active grid wavenumber.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "prepare",
+          "port": "parameters"
+        },
+        "to": {
+          "node": "residual",
+          "port": "parameters"
+        },
+        "description": "Bind physical family and parameters.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "solver",
+          "port": "trial_x"
+        },
+        "to": {
+          "node": "residual",
+          "port": "x"
+        },
+        "description": "Evaluate trial phase during numerical root iteration.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "feedback",
+        "required": true,
+        "feedback_id": "root-iteration"
+      },
+      {
+        "from": {
+          "node": "residual",
+          "port": "D"
+        },
+        "to": {
+          "node": "solver",
+          "port": "D"
+        },
+        "description": "Return scientific residual to the MINPACK adapter.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "solver",
+          "port": "next_seed"
+        },
+        "to": {
+          "node": "solver",
+          "port": "seed"
+        },
+        "description": "Update phase or frequency state after an accepted root.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "feedback",
+        "required": true,
+        "feedback_id": "scan-continuation"
+      },
+      {
+        "from": {
+          "node": "solver",
+          "port": "k"
+        },
+        "to": {
+          "node": "$output",
+          "port": "k"
+        },
+        "description": "Return accepted scan result.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "solver",
+          "port": "omega"
+        },
+        "to": {
+          "node": "$output",
+          "port": "omega"
+        },
+        "description": "Return accepted scan result.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "solver",
+          "port": "dielectric_residual"
+        },
+        "to": {
+          "node": "$output",
+          "port": "dielectric_residual"
+        },
+        "description": "Return accepted scan result.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "solver",
+          "port": "evaluations"
+        },
+        "to": {
+          "node": "$output",
+          "port": "evaluations"
+        },
+        "description": "Return accepted scan result.",
+        "condition": "During ordered seeded scan.",
+        "transform": "Preserve declared normalization and parameter values.",
+        "kind": "data",
+        "required": true
+      }
+    ],
+    "execution": {
+      "mode": "Finite ordered seeded scans with explicit nested numerical root iteration.",
+      "ordering": "For each k in the declared order: initialize phase, evaluate root trials, qualify solved root, normalize frequency, update continuation state, advance k.",
+      "branches": [
+        "Langmuir retains initial phase at each k.",
+        "IAW and beam carry accepted phase.",
+        "Generalized carries accepted frequency and divides by sqrt(2)*k before the next solve."
+      ],
+      "state_ownership": "Each call owns its seed, finite grid cursor and output arrays; caller arrays are not mutated.",
+      "failure_propagation": "Any nonconverged/unrepresentable root rejects the call without partial output.",
+      "feedback": [
+        {
+          "id": "root-iteration",
+          "state": "Two real components of trial complex phase and MINPACK internal state.",
+          "initialization": "Family-normalized initial_guess or preceding accepted continuation seed.",
+          "update_order": "SciPy MINPACK requests trial phase; physical residual returns D; adapter gives two real dielectric residual components.",
+          "continue_when": "MINPACK requests a new trial and its function-evaluation budget remains.",
+          "stop_when": "Solver success is reported and post-solve dielectric residual passes residual_tolerance, or failure/budget terminates.",
+          "iteration_bound": "max_evaluations per grid point (default300), with actual nfev verified.",
+          "nonconvergence": "Raise RuntimeError; do not return an unqualified root."
+        },
+        {
+          "id": "scan-continuation",
+          "state": "Grid cursor, accepted phase/frequency seed and finite result arrays.",
+          "initialization": "Original family grid/seed or explicit caller values.",
+          "update_order": "Accept root, append omega/residual/evaluations, update declared seed, then advance cursor.",
+          "continue_when": "More declared k_values remain.",
+          "stop_when": "All finite grid points accepted or any point fails.",
+          "iteration_bound": "Exactly len(k_values), or19/22/71/18 original family points.",
+          "nonconvergence": "Propagate failing root; no partial scientific result."
+        }
+      ]
+    }
+  }
+}

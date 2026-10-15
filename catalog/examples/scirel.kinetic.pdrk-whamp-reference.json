@@ -1,0 +1,108 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.pdrk-whamp-reference",
+  "kind": "operator",
+  "title": {
+    "en": "Attributed WHAMP stored table",
+    "zh": "有出处的 WHAMP 存储表"
+  },
+  "summary": "Expose the literal WHAMP reference table as typed package data, retaining the source metadata limits.",
+  "taxonomy": [
+    "kinetic",
+    "pdrk",
+    "examples"
+  ],
+  "aliases": [],
+  "identity": {
+    "relation": "Attributed WHAMP stored table to typed reference data",
+    "direction": "data read",
+    "definition": "Return the exact 40-row four-column source whpdat and its kxwhp,kzwhp,wrwhp,wiwhp columns.",
+    "model": "Stored external-solver reference observations; not an executable WHAMP solver.",
+    "geometry": "The source kx column is the literal constant 0.5.",
+    "coordinates": "Column units and complete run normalization are not stated in the source.",
+    "boundary": "No interpolation, fit or physical setup reconstruction.",
+    "assumptions": [
+      "Missing source physical metadata remains unknown."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "transport",
+      "description": "Optional explicit native executor; None uses the packaged resource closure.",
+      "units": "not applicable",
+      "shape": "object or null",
+      "dtype": "NativeTransport or None",
+      "required": false,
+      "constraints": "Requires a compatible external Octave runtime. No original checkout or network is consulted.",
+      "default": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "NativeResult state whpdat plus kxwhp,kzwhp,wrwhp,wiwhp literal column arrays.",
+      "units": "source units unspecified",
+      "shape": "whpdat:(40,4); native column vectors length40",
+      "dtype": "NativeResult with float64 state",
+      "required": true,
+      "constraints": "No units, equilibrium or solver version are inferred; receipt is execution metadata."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite inputs satisfying the declared units and shapes."
+    ],
+    "supported": [
+      "Exact stored table and columns."
+    ],
+    "excluded": [
+      "A new WHAMP solve, calibration oracle, or inferred physical units/equilibrium."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError or a missing required mapping key rejects invalid inputs.",
+    "runtime_failure": "Dependency, numerical-library, or native-runtime errors propagate; no silent alternate provider.",
+    "nonconvergence": "No iterative solve is performed.",
+    "partial_results": "No partial result is returned on failure."
+  },
+  "provenance": {
+    "lineage_summary": "PDRK loss_cone_mirror whamp_dat stored table; data retained with attribution and without inventing missing physical metadata.",
+    "source_kinds": [
+      "upstream-scientific-source",
+      "derived-implementation",
+      "independent-scientific-validation"
+    ],
+    "public_references": [
+      "https://github.com/hsxie/pdrk"
+    ],
+    "license_status": "pending-human-decision: source attribution is retained; redistribution permission and human scientific endorsement are unresolved."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.pdrk.reference",
+      "symbol": "whamp_reference",
+      "signature": "whamp_reference(*, transport=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Read the stored table without assigning unstated units.",
+    "code": "from scirel.kinetic.pdrk.reference import whamp_reference\nr = whamp_reference()\nassert r.state[\"whpdat\"].shape == (40, 4)",
+    "expected": "The exact attributed 40 by 4 source table."
+  },
+  "verification": {
+    "scope": [
+      "Literal table identity and typed column mapping."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_pdrk_examples_support.py"
+    ],
+    "evidence_ceiling": "Bounded derived scientific qualification exists. Integrated public signatures, executable examples, and final installed-candidate acceptance require separate verification.",
+    "known_limitations": [
+      "Source units, complete equilibrium and run metadata are unspecified."
+    ]
+  }
+}

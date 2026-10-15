@@ -1,0 +1,123 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "kind": "operator",
+  "provenance": {
+    "lineage_summary": "Derived from the retained Pleiades D0 geometry/current source and stabilized SciRel D2 successor behavior.",
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "bounded D2 regression evidence"
+    ],
+    "public_references": [],
+    "license_status": "Source lineage and MIT license evidence are retained; human release approval remains pending."
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": []
+  },
+  "verification": {
+    "scope": [
+      "Bounded rigid-geometry and coordinate invariants",
+      "Ordered current projection and source lifecycle",
+      "Full retained BRB/WHAM configuration composition at finite targets"
+    ],
+    "tests": [
+      "tests/pleiades/geometry/test_native_geometry_qualification.py",
+      "tests/pleiades/geometry/test_native_lifecycle.py"
+    ],
+    "evidence_ceiling": "Named geometry, lifecycle and configuration cases only; no arbitrary-input scientific correctness or release claim.",
+    "known_limitations": [
+      "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
+      "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
+      "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
+      "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
+      "All scientific, human and release approvals remain false."
+    ]
+  },
+  "asset_id": "scirel.geometry.spherical-r-chord",
+  "title": {
+    "en": "Spherical radial chord",
+    "zh": "球坐标径向弦"
+  },
+  "summary": "Points varying spherical radius at a fixed degree angle.",
+  "taxonomy": [
+    "geometry",
+    "coordinates"
+  ],
+  "aliases": [
+    "SphericalRChord"
+  ],
+  "identity": {
+    "relation": "Spherical radial coordinate relation",
+    "direction": "rpts,theta0 to cylindrical R,Z",
+    "definition": "R=r sin(theta), Z=r cos(theta)",
+    "model": "Spherical-to-cylindrical coordinate map",
+    "geometry": "Spherical-to-cylindrical coordinate map",
+    "coordinates": "Cylindrical storage derived from spherical inputs",
+    "boundary": "Angles are degrees",
+    "assumptions": [
+      "Finite radii"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "rpts",
+      "description": "Spherical radius",
+      "units": "m",
+      "shape": "N",
+      "dtype": "Finite float64",
+      "required": true,
+      "constraints": "Nonnegative radius"
+    },
+    {
+      "name": "theta0",
+      "description": "Fixed polar angle",
+      "units": "degree",
+      "shape": "scalar",
+      "dtype": "Finite float64",
+      "required": false,
+      "constraints": "Finite degrees",
+      "default": 0.0
+    }
+  ],
+  "outputs": [
+    {
+      "name": "mesh",
+      "description": "Constructed SphericalRChord object. Available properties/methods: R: Cylindrical radius [m], N; Z: Axial coordinate [m], N",
+      "units": "Object; property units as described",
+      "shape": "one object",
+      "dtype": "SphericalRChord",
+      "required": true,
+      "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Inputs satisfy the documented finite cylindrical coordinate and shape contract",
+      "Generated cylindrical R must be nonnegative; use nonnegative spherical radii and degree angles in the usual 0..180 polar domain."
+    ],
+    "supported": [
+      "Finite spherical radial chord"
+    ],
+    "excluded": [
+      "Negative radius"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Constructor or geometry setters raise ValueError for invalid supported inputs; unavailable source additions raise NotImplementedError. Source field methods reject a missing target mesh, nonfinite currents and active-filament coincidence.",
+    "runtime_failure": "Field evaluation propagates FloatingPointError on nonrepresentable kernel results. Failed parameterized geometry setters preserve the preceding valid state.",
+    "nonconvergence": "Not applicable; direct geometry construction, transforms and static response.",
+    "partial_results": "No partial object is returned by a failed constructor. Atomic parameterized geometry setters preserve valid previous state."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry",
+      "symbol": "SphericalRChord",
+      "signature": "SphericalRChord(rpts: 'Iterable[float]', theta0: 'float' = 0.0)"
+    }
+  },
+  "example": {
+    "description": "Construct a 90-degree radial chord",
+    "code": "from scirel.geometry import SphericalRChord\nm=SphericalRChord([1.0],90.)\nassert abs(m.Z[0]) < 1e-15",
+    "expected": "Cylindrical coordinates are generated with degree angle."
+  }
+}

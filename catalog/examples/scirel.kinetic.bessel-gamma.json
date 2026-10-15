@@ -2,10 +2,20 @@
   "schema": "scirel.asset-document.v1",
   "asset_id": "scirel.kinetic.bessel-gamma",
   "kind": "operator",
-  "title": {"en": "Exponentially scaled Bessel-Gamma terms", "zh": "指数缩放贝塞尔伽马项"},
+  "title": {
+    "en": "Exponentially scaled Bessel-Gamma terms",
+    "zh": "指数缩放贝塞尔伽马项"
+  },
   "summary": "Evaluate the dimensionless modified-Bessel harmonic term Gamma_n(x) and its neighbor-combination derivative with broadcast integer order and real or complex argument.",
-  "taxonomy": ["kinetic", "plasma-wave", "special-function"],
-  "aliases": ["Gamma_n Bessel term", "fluidBW Gamman and Gammapn"],
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave",
+    "special-function"
+  ],
+  "aliases": [
+    "Gamma_n Bessel term",
+    "fluidBW Gamman and Gammapn"
+  ],
   "identity": {
     "relation": "Integer cyclotron harmonic order and dimensionless argument to Bessel-Gamma term and derivative",
     "direction": "(n, x) -> Gamma_n(x), Gamma_prime_n(x)",
@@ -21,29 +31,41 @@
   },
   "inputs": [
     {
-      "name": "n", "description": "Integer Bessel order; broadcasts against x.",
-      "units": "dimensionless integer", "shape": "scalar or nonempty array, broadcastable with x",
-      "dtype": "real numeric with exactly integral values", "required": true,
+      "name": "n",
+      "description": "Integer Bessel order; broadcasts against x.",
+      "units": "dimensionless integer",
+      "shape": "scalar or nonempty array, broadcastable with x",
+      "dtype": "real numeric with exactly integral values",
+      "required": true,
       "constraints": "Finite, not boolean or complex, exactly integral after float64 conversion, and absolute value no greater than 2^53."
     },
     {
-      "name": "x", "description": "Dimensionless Bessel argument; broadcasts against n.",
-      "units": "dimensionless", "shape": "scalar or nonempty array, broadcastable with n",
-      "dtype": "real or complex numeric", "required": true,
+      "name": "x",
+      "description": "Dimensionless Bessel argument; broadcasts against n.",
+      "units": "dimensionless",
+      "shape": "scalar or nonempty array, broadcastable with n",
+      "dtype": "real or complex numeric",
+      "required": true,
       "constraints": "Finite after complex128 conversion; boolean, string and empty inputs are rejected."
     }
   ],
   "outputs": [
     {
-      "name": "Gamma_n", "description": "Exponentially weighted modified-Bessel term.",
-      "units": "dimensionless", "shape": "broadcast shape of n and x; scalar inputs yield a zero-dimensional array",
-      "dtype": "complex128", "required": true,
+      "name": "Gamma_n",
+      "description": "Exponentially weighted modified-Bessel term.",
+      "units": "dimensionless",
+      "shape": "broadcast shape of n and x; scalar inputs yield a zero-dimensional array",
+      "dtype": "complex128",
+      "required": true,
       "constraints": "Finite and representable for accepted inputs."
     },
     {
-      "name": "Gamma_prime_n", "description": "Neighbor-combination derivative of Gamma_n with respect to x.",
-      "units": "dimensionless", "shape": "broadcast shape of n and x; scalar inputs yield a zero-dimensional array",
-      "dtype": "complex128", "required": true,
+      "name": "Gamma_prime_n",
+      "description": "Neighbor-combination derivative of Gamma_n with respect to x.",
+      "units": "dimensionless",
+      "shape": "broadcast shape of n and x; scalar inputs yield a zero-dimensional array",
+      "dtype": "complex128",
+      "required": true,
       "constraints": "Finite and representable for accepted inputs."
     }
   ],
@@ -85,7 +107,10 @@
       "signature": "evaluate_bessel_gamma(n, x)"
     }
   },
-  "version": {"implementation_version": "0.1.0.dev5", "dependencies": []},
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": []
+  },
   "example": {
     "description": "Evaluate the zero-order term and derivative at the origin.",
     "code": "from scirel.kinetic import evaluate_bessel_gamma\nr = evaluate_bessel_gamma(0, 0.0)\nassert r['Gamma_n'] == 1 and r['Gamma_prime_n'] == -1",
@@ -97,7 +122,9 @@
       "Read-only comparison with the saved fluidBW 98-point real-argument oracle and digest-bound implementation.",
       "Invalid-order, invalid-argument and unrepresentable-output rejection."
     ],
-    "tests": ["tests/operator_contracts/test_bessel_gamma.py"],
+    "tests": [
+      "tests/operator_contracts/test_bessel_gamma.py"
+    ],
     "evidence_ceiling": "Direct SciRel tests establish listed identities and failure behavior. The read-only archived-source comparison covers only a finite 98-point real-argument grid with stated absolute and relative tolerances. The independently reviewed r43 handoff supports read-only D2 intake for its declared source scope; neither layer establishes arbitrary complex-plane SciRel parity, a physical choice of x or expert approval.",
     "known_limitations": [
       "Floating-point underflow or a nonrepresentable result can bound extreme inputs; the callable raises rather than returning nonfinite outputs.",

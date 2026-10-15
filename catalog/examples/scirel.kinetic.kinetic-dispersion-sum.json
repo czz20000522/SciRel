@@ -262,7 +262,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev5",
+    "implementation_version": "0.1.0.dev8",
     "dependencies": [
       {
         "asset_id": "scirel.kinetic.bessel-gamma"
@@ -283,7 +283,9 @@
       "Tensor antisymmetries, Maxwell curl-term assembly, finite input restrictions, strictly positive derived plasma-frequency square and strict lmx validation.",
       "Analytic SciRel Z and scaled Bessel-Gamma dependencies are exercised through the public callable."
     ],
-    "tests": ["tests/operator_contracts/test_kinetic_dispersion_sum_n.py"],
+    "tests": [
+      "tests/operator_contracts/test_kinetic_dispersion_sum_n.py"
+    ],
     "evidence_ceiling": "SciRel direct tests compare listed saved fluidBW source-oracle points at bounded tolerance, check local tensor identities and pin an underflow rejection. Read-only digest-bound archived-source comparisons cover three finite points only. They do not prove all-point parity with fluidBW's Weideman approximation, harmonic convergence, root accuracy, physical model choice, qualified D1 or expert approval.",
     "known_limitations": [
       "The x-z-plane real-wavepoint contract excludes perpendicular/parallel zero-wavevector limits and complex root-search inputs.",

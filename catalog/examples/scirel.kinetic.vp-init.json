@@ -1,0 +1,177 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.vp-init",
+  "kind": "operator",
+  "title": {
+    "en": "Poisson-consistent initialization",
+    "zh": "Poisson 一致初始化"
+  },
+  "summary": "v=linspace(-vmax,vmax,nv+1); df=.1 exp(-v^2); E=i dv sum(df)/k.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave",
+    "vlasov-poisson"
+  ],
+  "aliases": [
+    "vp_init"
+  ],
+  "identity": {
+    "relation": "v=linspace(-vmax,vmax,nv+1); df=.1 exp(-v^2); E=i dv sum(df)/k.",
+    "direction": "Inputs to vp_init -> result",
+    "definition": "v=linspace(-vmax,vmax,nv+1); df=.1 exp(-v^2); E=i dv sum(df)/k.",
+    "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+    "geometry": "One velocity coordinate and one spatial Fourier mode.",
+    "coordinates": "Dimensionless plasma-frequency and Debye-length normalization.",
+    "boundary": "Finite velocity window; endpoint-inclusive full-weight rectangle quadrature. Fn4 weak derivative deposits cutoff deltas; selected smooth variant omits them.",
+    "assumptions": [
+      "Linear perturbations and homogeneous equilibrium.",
+      "Velocity-window truncation and recurrence are separate from temporal integration error."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "Fn",
+      "description": "Distribution family: 1 Maxwellian, 2 kappa, 3 triangular, 4 cutoff slowing-down.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "One of 1,2,3,4.",
+      "default": 2
+    },
+    {
+      "name": "kappa",
+      "description": "Kappa shape, used only by Fn=2.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": false,
+      "constraints": "For Fn=2 finite >1/2.",
+      "default": 1.0
+    },
+    {
+      "name": "nv",
+      "description": "Number of equal velocity intervals.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "Integer >=2, boolean rejected.",
+      "default": 2048
+    },
+    {
+      "name": "dt",
+      "description": "Time step in inverse plasma frequency.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": false,
+      "constraints": "Positive finite.",
+      "default": 0.01
+    },
+    {
+      "name": "nt",
+      "description": "Exact number of ordered time steps.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "Nonnegative integer, boolean rejected.",
+      "default": 2000
+    },
+    {
+      "name": "k",
+      "description": "Spatial Fourier wavenumber in inverse Debye length.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": false,
+      "constraints": "Positive finite.",
+      "default": 0.15
+    },
+    {
+      "name": "vmax",
+      "description": "Symmetric velocity window extent.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": false,
+      "constraints": "Positive finite.",
+      "default": 20.0
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "State mapping: Fn,kappa,nv,dt,nt,k,vmax,vmin,dv,TR; vv,df,df0dv [nv+1]; scalar dE; dEt,tt [nt+1]; wr,wi are kappa=1 theory or None. Fields and arrays are independently owned.",
+      "units": "dimensionless",
+      "shape": "As described in output mapping or tuple.",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "Finite result except documented log-zero -inf and absent theory/diagnostics."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Aligned finite arrays and stated scalar controls; velocity grid resolves distribution and evolution."
+    ],
+    "supported": [
+      "v=linspace(-vmax,vmax,nv+1); df=.1 exp(-v^2); E=i dv sum(df)/k."
+    ],
+    "excluded": [
+      "Nonlinear Vlasov evolution, mobile-ion dynamics, multidimensional modes.",
+      "Certified continuum accuracy or post-recurrence validity."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for explicitly checked shape, finiteness, scalar domain or Poisson inconsistency; unsupported Python types may propagate TypeError.",
+    "runtime_failure": "FloatingPointError for nonrepresentable distribution derivative, Poisson field, Vlasov RHS or RK4 state; other arithmetic/type failures propagate.",
+    "nonconvergence": "Finite prescribed integration only; no convergence iteration. Peak diagnostic raises ValueError below two isolated maxima; composed solver reports unavailable diagnostic.",
+    "partial_results": "No partial integration after numerical failure; composed solver retains valid evolution when only peak diagnostic is unavailable."
+  },
+  "provenance": {
+    "lineage_summary": "Independent equation-based Python implementation; selected scenarios/defaults bound to frozen GPDF D1 vp_* operators. See docs/evaluations/gpdf-vp-core.md for source hashes and D2 deltas. Dev9 successor of exact document SHA256 9d1eab8f98045c1e9aa919390e343ee93f484d6e0b2a9b54a53f54e87c9a3079; unchanged contracts are reused, changed numerical methods and failure closure follow GPDF-R1/R2/R3.",
+    "source_kinds": [
+      "independent equation derivation",
+      "read-only frozen D1 scientific scenario controls",
+      "independent analytic and numerical reference tests"
+    ],
+    "public_references": [
+      "https://arxiv.org/abs/1211.5984",
+      "https://arxiv.org/abs/1305.6476"
+    ],
+    "license_status": "Independently authored SciRel implementation; project redistribution decision remains separate."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.vlasov_poisson",
+      "symbol": "vp_init",
+      "signature": "vp_init(Fn=2, kappa=1.0, nv=2048, dt=0.01, nt=2000, *, k=0.15, vmax=20.0)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": []
+  },
+  "example": {
+    "code": "from scirel.kinetic.vlasov_poisson import vp_init\ns=vp_init(nv=32,nt=5)\nassert s[\"df\"].shape == (33,)",
+    "description": "Poisson 一致初始化的最小调用。",
+    "expected": "The stated shape or numerical assertion passes."
+  },
+  "verification": {
+    "scope": [
+      "Discrete Poisson constraint and off-diagonal rank-one feedback.",
+      "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
+      "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_gpdf_vlasov_poisson.py"
+    ],
+    "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
+    "known_limitations": [
+      "Finite-window rectangle rule and sampling recurrence TR=2pi/(k*dv).",
+      "Fn4 truncated density retains original coefficient and is not renormalized after cutoff.",
+      "Peak diagnostic assumes standing oscillation; rotating complex exponential has no amplitude peaks."
+    ]
+  }
+}

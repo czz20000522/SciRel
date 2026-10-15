@@ -1,0 +1,126 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.sampling.scalar-reflection",
+  "kind": "operator",
+  "title": {
+    "en": "Scalar half-plane reflection",
+    "zh": "标量半平面反射"
+  },
+  "summary": "Reflect R across zero and duplicate Z and even scalar quantities without duplicate zero column",
+  "taxonomy": [
+    "analysis",
+    "sampling"
+  ],
+  "aliases": [
+    "reflect_and_hstack"
+  ],
+  "identity": {
+    "relation": "Scalar half-plane reflection",
+    "direction": "Declared inputs to Tuple reflected Rho,Z and scalar fields",
+    "definition": "Reflect R across zero and duplicate Z and even scalar quantities without duplicate zero column",
+    "model": "Source hstack convention with named quantities alternative",
+    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "coordinates": "Rho,Z planar grids with radial column order",
+    "boundary": "First radial column zero; remaining columns reflected in reverse order",
+    "assumptions": [
+      "Matching finite Rho,Z and scalar field shapes",
+      "First radial column is zero; supplied fields are even under radial reflection"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "Rho",
+      "description": "Nonnegative radial grid",
+      "units": "length units",
+      "shape": "(Nz,Nr)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Radial first column zero"
+    },
+    {
+      "name": "Z",
+      "description": "Axial grid",
+      "units": "length units",
+      "shape": "same as Rho",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Matching"
+    },
+    {
+      "name": "quantities",
+      "description": "Named scalar/even fields; alternative to positional fields",
+      "units": "field units",
+      "shape": "list of grids or None",
+      "dtype": "list or None",
+      "required": false,
+      "constraints": "Do not combine with positional fields",
+      "default": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "reflected",
+      "description": "Tuple reflected Rho,Z and scalar fields",
+      "units": "coordinate and field units",
+      "shape": "(Nz,2*Nr-1) each",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Zero column represented once"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Matching finite Rho,Z and scalar field shapes",
+      "First radial column is zero; supplied fields are even under radial reflection"
+    ],
+    "supported": [
+      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+    ],
+    "excluded": [
+      "No vector-component parity or signed-radius physical field interpretation"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
+    "runtime_failure": "Underlying numerical or interpolation exceptions propagate.",
+    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
+    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object."
+  },
+  "provenance": {
+    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "independent analytic or numerical oracle"
+    ],
+    "public_references": [],
+    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.sampling",
+      "symbol": "reflect_and_hstack",
+      "signature": "reflect_and_hstack(Rho, Z, *args, quantities=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Bounded executable example for Scalar half-plane reflection",
+    "code": "import numpy as np\nfrom scirel.geometry.sampling import reflect_and_hstack\nr,z=np.meshgrid([0.,.5,1.],[-.2,.2])\na=reflect_and_hstack(r,z,quantities=[r*r])\nassert a[0].shape==(2,5)",
+    "expected": "Declared result shape and bounded numerical behavior are asserted."
+  },
+  "verification": {
+    "scope": [
+      "Only the explicitly stated finite input domain and direct-test fixtures"
+    ],
+    "tests": [
+      "tests/pleiades/equilibrium/test_analysis_families.py"
+    ],
+    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "known_limitations": [
+      "No vector-component parity or signed-radius physical field interpretation"
+    ]
+  }
+}

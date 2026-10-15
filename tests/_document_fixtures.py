@@ -8,7 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = ROOT / "catalog/examples"
-EXAMPLE_CLOSURE_COUNT = 141
+EXAMPLE_CLOSURE_COUNT = 260
 
 
 def example_document_sources():

@@ -1,0 +1,213 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "kind": "operator",
+  "provenance": {
+    "lineage_summary": "Derived from the retained Pleiades D0 geometry/current source and stabilized SciRel D2 successor behavior.",
+    "source_kinds": [
+      "D0-derived scientific implementation",
+      "bounded D2 regression evidence"
+    ],
+    "public_references": [],
+    "license_status": "Source lineage and MIT license evidence are retained; human release approval remains pending."
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev8",
+    "dependencies": [
+      {
+        "asset_id": "scirel.electromagnetism.circular-filament-green"
+      },
+      {
+        "asset_id": "scirel.geometry.rotate"
+      }
+    ]
+  },
+  "verification": {
+    "scope": [
+      "Bounded rigid-geometry and coordinate invariants",
+      "Ordered current projection and source lifecycle",
+      "Full retained BRB/WHAM configuration composition at finite targets"
+    ],
+    "tests": [
+      "tests/pleiades/geometry/test_native_geometry_qualification.py",
+      "tests/pleiades/geometry/test_native_lifecycle.py"
+    ],
+    "evidence_ceiling": "Named geometry, lifecycle and configuration cases only; no arbitrary-input scientific correctness or release claim.",
+    "known_limitations": [
+      "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
+      "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
+      "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
+      "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
+      "All scientific, human and release approvals remain false."
+    ]
+  },
+  "asset_id": "scirel.electromagnetism.rectangular-coil",
+  "title": {
+    "en": "Rectangular filament coil",
+    "zh": "矩形圆丝线圈"
+  },
+  "summary": "Parameterized rectangular array of circular filaments.",
+  "taxonomy": [
+    "electromagnetism",
+    "sources",
+    "geometry"
+  ],
+  "aliases": [
+    "RectangularCoil"
+  ],
+  "identity": {
+    "relation": "Rectangular coil relation",
+    "direction": "geometry parameters to filament centers",
+    "definition": "Uniform rectangular point sampling with signed weights",
+    "model": "Axisymmetric circular filament array",
+    "geometry": "Axisymmetric circular filament array",
+    "coordinates": "Cylindrical R,Z; angle degrees",
+    "boundary": "R >= 0 and positive dimensions/counts",
+    "assumptions": [
+      "Finite geometry parameters"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "r0",
+      "description": "Center radius",
+      "units": "m",
+      "shape": "scalar",
+      "dtype": "Finite float64",
+      "required": false,
+      "constraints": "R >= 0",
+      "default": 1.0
+    },
+    {
+      "name": "z0",
+      "description": "Center height",
+      "units": "m",
+      "shape": "scalar",
+      "dtype": "Finite float64",
+      "required": false,
+      "constraints": "Finite",
+      "default": 0.0
+    },
+    {
+      "name": "nr",
+      "description": "Radial count",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": false,
+      "constraints": "Positive integer",
+      "default": 1
+    },
+    {
+      "name": "nz",
+      "description": "Axial count",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": false,
+      "constraints": "Positive integer",
+      "default": 1
+    },
+    {
+      "name": "dr",
+      "description": "Radial spacing",
+      "units": "m",
+      "shape": "scalar",
+      "dtype": "Finite float64",
+      "required": false,
+      "constraints": "Positive",
+      "default": 0.1
+    },
+    {
+      "name": "dz",
+      "description": "Axial spacing",
+      "units": "m",
+      "shape": "scalar",
+      "dtype": "Finite float64",
+      "required": false,
+      "constraints": "Positive",
+      "default": 0.1
+    },
+    {
+      "name": "angle",
+      "description": "Rotation angle",
+      "units": "degree",
+      "shape": "scalar",
+      "dtype": "Finite float64",
+      "required": false,
+      "constraints": "Finite",
+      "default": 0.0
+    },
+    {
+      "name": "current",
+      "description": "Common current",
+      "units": "A",
+      "shape": "scalar",
+      "dtype": "Finite float64",
+      "required": false,
+      "constraints": "Finite scalar",
+      "default": 1.0
+    },
+    {
+      "name": "weights",
+      "description": "Signed weights",
+      "units": "dimensionless",
+      "shape": "(nr*nz,)",
+      "dtype": "Finite float64",
+      "required": false,
+      "constraints": "Finite vector matching npts",
+      "default": null
+    },
+    {
+      "name": "mesh",
+      "description": "Target mesh",
+      "units": "m",
+      "shape": "mesh-dependent",
+      "dtype": "Finite float64",
+      "required": false,
+      "constraints": "Mesh accepted by conversion",
+      "default": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "source",
+      "description": "Constructed RectangularCoil object. Available properties/methods: rz_pts: Filament centers [m], (nr*nz,2); area: Conductor area proxy [m2], scalar",
+      "units": "Object; property units as described",
+      "shape": "one object",
+      "dtype": "RectangularCoil",
+      "required": true,
+      "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Inputs satisfy the documented finite cylindrical coordinate and shape contract"
+    ],
+    "supported": [
+      "Geometry setters, rigid transforms, field evaluation"
+    ],
+    "excluded": [
+      "Negative radius",
+      "Nonpositive dimensions",
+      "Persistent sweep"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Constructor or geometry setters raise ValueError for invalid supported inputs; unavailable source additions raise NotImplementedError. Source field methods reject a missing target mesh, nonfinite currents and active-filament coincidence.",
+    "runtime_failure": "Field evaluation propagates FloatingPointError on nonrepresentable kernel results. Failed parameterized geometry setters preserve the preceding valid state.",
+    "nonconvergence": "Not applicable; direct geometry construction, transforms and static response.",
+    "partial_results": "No partial object is returned by a failed constructor. Atomic parameterized geometry setters preserve valid previous state."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.electromagnetism.sources",
+      "symbol": "RectangularCoil",
+      "signature": "RectangularCoil(r0=1.0, z0=0.0, nr=1, nz=1, dr=0.1, dz=0.1, angle=0.0, **kwargs)"
+    }
+  },
+  "example": {
+    "description": "Construct a 2-point coil",
+    "code": "from scirel.electromagnetism import RectangularCoil\nc=RectangularCoil(nr=2)\nassert c.npts == 2",
+    "expected": "Generated filament centers and area proxy are available."
+  }
+}
