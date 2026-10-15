@@ -1,0 +1,82 @@
+{
+  "schema": "scirel.consumer-material-validation.v1",
+  "status": "PASS",
+  "wheel": {
+    "path": "runtime/wheel/scirel-0.1.0.dev8-py3-none-any.whl",
+    "version": "0.1.0.dev8",
+    "sha256": "979cad47a6a8546cf8d62adf70dcae6f92148210c8bd3e7acb00f6ce16429f78"
+  },
+  "documentation_version": "scientific-core-r18",
+  "document_snapshot_sha256": "feebe06d12af6df5ce534e4d76e99241704974e9c98d9f12f8ce92c705cc31fd",
+  "runtime_image": {
+    "path": "runtime/images/python314-linux-amd64.tar",
+    "image_id": "sha256:82bc3c539b8813ada9d68c63b40158fa002f7f33de9bf3312a3dfdc0620dff56",
+    "archive_sha256": "69b6381aa99932f098208386be588a09bb1fc2c8fc6310b2f711e05e217cde26"
+  },
+  "runtime": {
+    "module_origin": "/work/env/lib/python3.14/site-packages/scirel/__init__.py",
+    "python": "3.14.7 (main, Sep 19 2026, 01:04:59) [GCC 12.2.0]",
+    "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.36",
+    "source_checkout_mounted": false,
+    "mode": "initial",
+    "versions": {
+      "scirel": "0.1.0.dev8",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "matplotlib": "3.11.2",
+      "netCDF4": "1.7.4",
+      "mpmath": "1.4.1"
+    }
+  },
+  "reference_application": {
+    "result": "PASS",
+    "installation": "offline fresh venv, pip check PASS",
+    "initial_field_rows": 6161,
+    "followup_field_rows": 6161,
+    "axis_rows_each": 101,
+    "independent_component_checks": 48,
+    "reference": "direct angular Biot-Savart quadrature",
+    "delivery_replay": "PASS in each fresh application process",
+    "Host_Agent_and_restart_acceptance": "NOT_RUN"
+  },
+  "consumer_scope": "ordinary public Python API, three portable runtime methods, complete bound public documentation; no adapter, source checkout or development skills",
+  "release_scope": "Technical internal delivery only; contract-specific rights, human scientific recognition and release states unchanged.",
+  "host_acceptance": "NOT_RUN",
+  "evidence": {
+    "owner-checks/COMMAND.json": "f64d74cf242e50cdbd950b274603dbc2e11fb538776222ea6102243c769844c0",
+    "owner-checks/EXIT.json": "302c5fcf0227d427ee240abdbd2a948557ea7ab09699f9c3bdeb0f98b67375ce",
+    "owner-checks/check_science.py": "a57a90d0d865786b82126e69ec9fe89e0800657b6d487a0c164dffeca70c4f58",
+    "owner-checks/documentation-release.json": "044228c0bc4ce3853636f595cdc0d57791c4fadd2adbf3e0f110409a6bc13f56",
+    "owner-checks/fluidbw-amd64-installed.json": "c6a0bdbf4f27a70c72b996ed1895719e71799ff250ca52da8b16a500e9f542f2",
+    "owner-checks/home-reference/SCIENCE.json": "ce340c6770d3cd5c82b0eb1e9410c8c99cd103f9e63ebd3ed146e2c3be817c5b",
+    "owner-checks/home-reference/call-contract.json": "278e1c12dad72532bdac5441eb54bde9c561289b5c2974a40e495fe5769498f9",
+    "owner-checks/home-reference/followup/axis.csv": "a49a74780b3e8472aebbb9a5107c0930febe6a0dc6cd79a778b797f0b69c5ca8",
+    "owner-checks/home-reference/followup/checked/ANSWER.md": "d686641b5b06164bea6c0aa7dad195edc377390ed8e43802ea091153710c2f34",
+    "owner-checks/home-reference/followup/checked/REPORT.md": "ba5fd20803e44457e45b4967dea9d885e161e36ff0ef7e4e09396f77303aa43f",
+    "owner-checks/home-reference/followup/checked/checks.json": "5898f1ac9235015a967ccba2f7f714bc42cead71686baa13e122a25ab98e7d41",
+    "owner-checks/home-reference/followup/checked/figure-1.png": "33535f4c8655213510b6dcab560b4aafa2a9ca378adbe934703e2e9c43a059ee",
+    "owner-checks/home-reference/followup/comparison.csv": "9a65c548aef21359e269f1e6b3a32897ec5785eea9258481a43f5490fc41fe5a",
+    "owner-checks/home-reference/followup/field.csv": "f7db109d82b3f7fa9cf18dc59d1fbc74e8d80b234ff86feb1fbd973fbed1b61d",
+    "owner-checks/home-reference/followup/input.json": "76eb1b3f6099ad3c568f6142d5cac55753e5745096029d918ccb2bd9e23ee6af",
+    "owner-checks/home-reference/followup/result-spec.json": "4a454256fa4df92209ef5fb1b55bc3a96970b5c6e0d64b2f5221b2483ff58ea4",
+    "owner-checks/home-reference/followup/runtime.json": "e3fe1e2489291aeaac940a02d0eb12d15c161cbf4f6faf97be7cad9c20344be6",
+    "owner-checks/home-reference/followup.log": "bfda4e6428df82853e63472eaa384ee09e6050f45e8f305dd288804ffb01bc80",
+    "owner-checks/home-reference/initial/axis.csv": "642a057d22dcd93bb07a77179a1f12cb9d23caf7aef8f2f1d39c8a1295dc5f3b",
+    "owner-checks/home-reference/initial/checked/ANSWER.md": "41efec4070e78844e4aff238c934d5503ee0e665ab630c7f5a5e6425bacb4acb",
+    "owner-checks/home-reference/initial/checked/REPORT.md": "b3d125b3121d972f531ff2ec6a03f0e1ff0d4ff2d61e6f5fecf015e3a68761d4",
+    "owner-checks/home-reference/initial/checked/checks.json": "258b2cea7794e970e07023354779eb047d4ca10d89f65cbad84ed7cfcb1fe49b",
+    "owner-checks/home-reference/initial/checked/figure-1.png": "486b316d32ca1ec08b7516715a7438a44e948c110f9cd25b9f43214a12df847a",
+    "owner-checks/home-reference/initial/field.csv": "d67335607f59acf487a3321f7fc1b8bd5043150c650f227cbab60fee68d49c7f",
+    "owner-checks/home-reference/initial/input.json": "a5b7af10f39021fc6ec4d7803faccfd48cb2f68efd9664d2288b74c11625be30",
+    "owner-checks/home-reference/initial/result-spec.json": "ccfb89f8dc3e46f10ddee34124c98e629eedf6a51f5c406183c7a338788edace",
+    "owner-checks/home-reference/initial/runtime.json": "9c004fac03c0484c6948d7d9f8c052b73e801870668388438717e0cdcc7e74ea",
+    "owner-checks/home-reference/initial.log": "89c9c5b5fccf8214a8e150b8e786d6963599e13136aa8ccbfa5c91200dbfecf0",
+    "owner-checks/home-reference/install.log": "1bc217cd8307cdaccad8a940af7f1c01a3a2eca561dde609a3a132a90513929a",
+    "owner-checks/home-reference/pip-check.log": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+    "owner-checks/home-reference/query.json": "a3b95f2a2afc7090756ac7208519cef7be1b0527386b09e2679c9569ffbe7445",
+    "owner-checks/home-reference/science.log": "fa4535e2f69923d021bc435e60b4be834283f16ca81fb855f5ebd75011db3faa",
+    "owner-checks/reference_application.py": "a84e4a950a819ab1d0635c830d1a6217b8499cf85e181c48a310efc0c75db043",
+    "owner-checks/run-home.sh": "b6caa4cc091a6a4b9db9d92a1f4ab9eff3e2430567af70c145824420a107b0c0",
+    "owner-checks/skill-source-bindings.json": "da609b9615e57505fab69cb3c6a0391f268abf115aedc3ddf38a4d37fb2ab314"
+  }
+}

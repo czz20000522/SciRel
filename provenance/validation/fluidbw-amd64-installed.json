@@ -1,0 +1,185 @@
+{
+  "schema": "scirel.installed-validation.v1",
+  "scope": "fluidBW seven restored contracts and thirteen unchanged full D2 regression tests",
+  "status": "PASS",
+  "wheel": {
+    "path": "dist/scirel-0.1.0.dev8-py3-none-any.whl",
+    "version": "0.1.0.dev8",
+    "sha256": "979cad47a6a8546cf8d62adf70dcae6f92148210c8bd3e7acb00f6ce16429f78"
+  },
+  "host": "Home",
+  "platform": "Linux amd64",
+  "runtime": {
+    "records": [
+      {
+        "asset_id": "scirel.kinetic.fluidbw-bonk-search",
+        "signature": "PASS",
+        "example": "PASS"
+      },
+      {
+        "asset_id": "scirel.kinetic.fluidbw-case-state",
+        "signature": "PASS",
+        "example": "PASS"
+      },
+      {
+        "asset_id": "scirel.kinetic.fluidbw-dispersion-response",
+        "signature": "PASS",
+        "example": "PASS"
+      },
+      {
+        "asset_id": "scirel.kinetic.fluidbw-em-matrix",
+        "signature": "PASS",
+        "example": "PASS"
+      },
+      {
+        "asset_id": "scirel.kinetic.fluidbw-em-spectrum",
+        "signature": "PASS",
+        "example": "PASS"
+      },
+      {
+        "asset_id": "scirel.kinetic.fluidbw-materials",
+        "signature": "PASS",
+        "example": "PASS"
+      },
+      {
+        "asset_id": "scirel.kinetic.fluidbw-special-functions",
+        "signature": "PASS",
+        "example": "PASS"
+      }
+    ],
+    "source_checkout_mounted": false,
+    "module_origin": "/work/env/lib/python3.14/site-packages/scirel/__init__.py",
+    "python": "3.14.7 (main, Sep 19 2026, 01:04:59) [GCC 12.2.0]",
+    "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.36",
+    "versions": {
+      "scirel": "0.1.0.dev8",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "matplotlib": "3.11.2",
+      "netCDF4": "1.7.4",
+      "mpmath": "1.4.1"
+    },
+    "octave": "GNU Octave, version 7.3.0"
+  },
+  "container_image": "sha256:82c07562f5217250593cea9c86938cc741dfa89b61dca98753cc7ef056c62e19",
+  "python_runtime_image": "sha256:82bc3c539b8813ada9d68c63b40158fa002f7f33de9bf3312a3dfdc0620dff56",
+  "python_runtime_archive_sha256": "4fc1672aec9fd7aa9d69895acbb1a44a0f1f0fe7c4aef575885cf8d805a972fe",
+  "network": "none",
+  "source_checkout_mounted": false,
+  "source_free_environment": "Fresh Python 3.14 venv. Only wheel, offline dependency wheels, exact contracts, scientific test driver and validation tooling mounted; no scientific source implementation or upstream checkout.",
+  "threads": {
+    "OPENBLAS_NUM_THREADS": 1,
+    "OMP_NUM_THREADS": 1
+  },
+  "pip_check": "PASS",
+  "test_summary": {
+    "tests": 13,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "tests": [
+    {
+      "name": "test_large_imaginary_z_and_all_r_removable_boundaries",
+      "classname": "test_fluidbw_full_d2",
+      "result": "PASS"
+    },
+    {
+      "name": "test_zero_wavenumbers_are_finite_signed_reflection_and_state_isolation",
+      "classname": "test_fluidbw_full_d2",
+      "result": "PASS"
+    },
+    {
+      "name": "test_finite_rational_matrix_restores_dropped_polynomial_response",
+      "classname": "test_fluidbw_full_d2",
+      "result": "PASS"
+    },
+    {
+      "name": "test_status_and_complete_finite_spectrum_are_explicit",
+      "classname": "test_fluidbw_full_d2",
+      "result": "PASS"
+    },
+    {
+      "name": "test_undefined_tables_fail_closed[4-0]",
+      "classname": "test_fluidbw_full_d2",
+      "result": "PASS"
+    },
+    {
+      "name": "test_undefined_tables_fail_closed[8--1]",
+      "classname": "test_fluidbw_full_d2",
+      "result": "PASS"
+    },
+    {
+      "name": "test_undefined_tables_fail_closed[8-8]",
+      "classname": "test_fluidbw_full_d2",
+      "result": "PASS"
+    },
+    {
+      "name": "test_undefined_tables_fail_closed[12-1.5]",
+      "classname": "test_fluidbw_full_d2",
+      "result": "PASS"
+    },
+    {
+      "name": "test_explicit_controls_cannot_be_overridden_by_state_fields",
+      "classname": "test_fluidbw_full_d2",
+      "result": "PASS"
+    },
+    {
+      "name": "test_physical_state_and_zero_weight_harmonic_boundary",
+      "classname": "test_fluidbw_full_d2",
+      "result": "PASS"
+    },
+    {
+      "name": "test_material_roundtrip_preserves_long_diagnostic_fields_and_explicit_layout",
+      "classname": "test_fluidbw_full_d2",
+      "result": "PASS"
+    },
+    {
+      "name": "test_multifrequency_em_preserves_each_nested_diagnostic_array",
+      "classname": "test_fluidbw_full_d2",
+      "result": "PASS"
+    },
+    {
+      "name": "test_gamma_order_and_argument_broadcast_contract",
+      "classname": "test_fluidbw_full_d2",
+      "result": "PASS"
+    }
+  ],
+  "transferred_input_files_verified": 325,
+  "inputs_manifest_sha256": "cd795e9e7d859511e45f5eefc12faf8ff19a458fa10a435b189cd73ef1e634ce",
+  "evidence": {
+    "COMMAND.json": "f504fae757f052d479f7d8bac8ad28cf1c8fbb3fef44be1d502ec53395cf5b11",
+    "EXIT.json": "302c5fcf0227d427ee240abdbd2a948557ea7ab09699f9c3bdeb0f98b67375ce",
+    "HOME-RUNTIME.json": "220bc23e6815dd72b58252fb2e20afdb39ed171bc914d0e92259337872f148fb",
+    "results/contracts.json": "c11064eecd373cc4e10d013445ac4b1702b6af462f15ddee01eaf7a357ba99c8",
+    "results/contracts.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "results/install.log": "f6ea8f5dae42385caf48b025c8d6e79db8ee2456c43ec8a8709363bfcd9e52bf",
+    "results/pip-check.log": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+    "results/tests.log": "633938c440c864e2b24b8ddec655066e309c682955a3a81a07900d909e489b89",
+    "results/tests.xml": "eedbbe57141ea5da7e0fc89443b6cd292cf37d3c6c5b22f6d8522c01ec1d5312",
+    "all-contracts/COMMAND.json": "649e8f2c30dadab77fa4779a76c08492da7bd9feae8d689748011715aa5fc0f7",
+    "all-contracts/EXIT.json": "302c5fcf0227d427ee240abdbd2a948557ea7ab09699f9c3bdeb0f98b67375ce",
+    "all-contracts/results/all-contracts.json": "a72dca07e31802ab65a467fb494e9dd1daeca2db64434f98dbf55ce5f2260a4a",
+    "all-contracts/results/all-contracts.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "all-contracts/results/install.log": "f6ea8f5dae42385caf48b025c8d6e79db8ee2456c43ec8a8709363bfcd9e52bf",
+    "all-contracts/results/pip-check.log": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09"
+  },
+  "retained_evidence": ".runtime/fluidbw-closeout",
+  "limits": [
+    "Technical installed-package validation only; no public-release or human scientific approval.",
+    "The thirteen original numerical assertions/tolerances were unchanged.",
+    "The seven contract examples add execution coverage; they do not imply all-input or all-mode correctness."
+  ],
+  "cumulative_contract_check": {
+    "asset_count": 267,
+    "runtime_checked": true,
+    "examples_executed": true,
+    "runtime_origin": "installed",
+    "result": "PASS",
+    "command_evidence": "all-contracts/COMMAND.json"
+  },
+  "local_development_checks": {
+    "documentation": "65 passed; one whole-set runtime example test cannot run on Mac because fluidBW explicitly requires Linux amd64. Full 267 installed examples separately passed on Home without changing that test.",
+    "release": "50 passed initially; five environment failures (missing pip/pwsh) passed unchanged after supplying existing development tools; one explicitly opt-in release smoke test was not run."
+  }
+}

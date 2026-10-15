@@ -1,0 +1,12 @@
+{
+  "schema": "scirel.documentation-release.v1",
+  "documentation_version": "scientific-core-r18",
+  "status": "development_candidate",
+  "source_documents": "provenance/selections/scientific-core-documents-20261015-r10.json",
+  "handbook": "tools/docs/handbooks/scientific-core-r18.json",
+  "compatible_wheel": "0.1.0.dev8",
+  "catalog_root": "catalog/examples",
+  "snapshot_sha256": "feebe06d12af6df5ce534e4d76e99241704974e9c98d9f12f8ce92c705cc31fd",
+  "integration_record": "provenance/validation/fluidbw-amd64-installed.json",
+  "notes": "Restores seven already-installed fluidBW contracts and bound Chinese reader prose; the cumulative handbook now has 267 documents (235 operators, 32 task graphs). Thirteen unchanged full D2 regression tests and all seven added contract examples passed against the actual installed cumulative wheel on Home Linux amd64. Scientific wheel unchanged. Continues the independent runtime navigation and checked-delivery method updates from scientific-core-r17; prior release records remain immutable."
+}

@@ -1,0 +1,66 @@
+{
+  "schema": "scirel.contract-restoration.v1",
+  "project_id": "fluidbw",
+  "final_manifest_sha256": "fe6b88f23e5a7fde72461476bef7b59d632b14d5afa4ce61e6da7f6a9491a1a6",
+  "files_manifest_sha256": "60827c75ea9e85a007f05a5cb190ba37bb1dfbacdbc4b4c32980c96f4828afe2",
+  "restored_records": 7,
+  "runtime_validation": "provenance/validation/fluidbw-amd64-installed.json",
+  "records": [
+    {
+      "asset_id": "scirel.kinetic.fluidbw-case-state",
+      "received_path": "d2/discovery/catalog/records/27/scirel.kinetic.fluidbw-case-state.json",
+      "received_sha256": "70334ebaaea61dbb4e0cb1d84c3823bc3809bf25b20039e66d27c0078f5e13ae",
+      "maintained_path": "catalog/examples/scirel.kinetic.fluidbw-case-state.json",
+      "maintained_sha256": "6ddd175eabce50f20ae3c13942ca0c9959255ad04fb8b52ee07a213a94606660",
+      "change": "Only installation version/runtime binding; scientific behavior, examples, failures and source rights unchanged."
+    },
+    {
+      "asset_id": "scirel.kinetic.fluidbw-em-matrix",
+      "received_path": "d2/discovery/catalog/records/34/scirel.kinetic.fluidbw-em-matrix.json",
+      "received_sha256": "a5157cf12de575364225351b0ac9a5046988afb9b1a0e218a8a464035de0928c",
+      "maintained_path": "catalog/examples/scirel.kinetic.fluidbw-em-matrix.json",
+      "maintained_sha256": "906ee17c5b45bc859542ccb3712f2906e95affe55bb0495b7e7907a5c9690403",
+      "change": "Only installation version/runtime binding; scientific behavior, examples, failures and source rights unchanged."
+    },
+    {
+      "asset_id": "scirel.kinetic.fluidbw-materials",
+      "received_path": "d2/discovery/catalog/records/3d/scirel.kinetic.fluidbw-materials.json",
+      "received_sha256": "4168345f9e7128f7c214688a9fb8d79c66ba6bb4041891b02b4a8625ade481a3",
+      "maintained_path": "catalog/examples/scirel.kinetic.fluidbw-materials.json",
+      "maintained_sha256": "3396a9ab5fac07e040fc31f470982104f17e6406020f73f9262319564275e492",
+      "change": "Only installation version/runtime binding; scientific behavior, examples, failures and source rights unchanged."
+    },
+    {
+      "asset_id": "scirel.kinetic.fluidbw-bonk-search",
+      "received_path": "d2/discovery/catalog/records/c9/scirel.kinetic.fluidbw-bonk-search.json",
+      "received_sha256": "81a551fa310bc3720ffa016b9189ffa532e363d683d06d7479b8a0e2ce9ba676",
+      "maintained_path": "catalog/examples/scirel.kinetic.fluidbw-bonk-search.json",
+      "maintained_sha256": "40472985193225b901f58fac802dc8794b93aead8c73e234f50ea56a1e1a0342",
+      "change": "Only installation version/runtime binding; scientific behavior, examples, failures and source rights unchanged."
+    },
+    {
+      "asset_id": "scirel.kinetic.fluidbw-dispersion-response",
+      "received_path": "d2/discovery/catalog/records/e2/scirel.kinetic.fluidbw-dispersion-response.json",
+      "received_sha256": "79c1d385ff4880e531bec6c46d36bf25583223037b9251e0cbd61e69a8e12328",
+      "maintained_path": "catalog/examples/scirel.kinetic.fluidbw-dispersion-response.json",
+      "maintained_sha256": "2fd9f74089af8e28ddcebe7fd19ca3f6d47fae9d8214afe0e73201eb2fb48144",
+      "change": "Only installation version/runtime binding; scientific behavior, examples, failures and source rights unchanged."
+    },
+    {
+      "asset_id": "scirel.kinetic.fluidbw-special-functions",
+      "received_path": "d2/discovery/catalog/records/e4/scirel.kinetic.fluidbw-special-functions.json",
+      "received_sha256": "cd85d357379bab39c142744f41b36a26367a0680f39a10c7aa1c0d93c30b2564",
+      "maintained_path": "catalog/examples/scirel.kinetic.fluidbw-special-functions.json",
+      "maintained_sha256": "d481ac3198759285108999b0412c503a5bf400dbc11ca1c34dbcdc2ad0eaf62f",
+      "change": "Only installation version/runtime binding; scientific behavior, examples, failures and source rights unchanged."
+    },
+    {
+      "asset_id": "scirel.kinetic.fluidbw-em-spectrum",
+      "received_path": "d2/discovery/catalog/records/e5/scirel.kinetic.fluidbw-em-spectrum.json",
+      "received_sha256": "94191ff63c42a0492766719d4bfe8db07465e6e00618ebd0ea1df7c44d9f2310",
+      "maintained_path": "catalog/examples/scirel.kinetic.fluidbw-em-spectrum.json",
+      "maintained_sha256": "b6ea3b93fccf13567b430fdd1d51690f39e73e78f94f5bfd80dd0090173ac2d5",
+      "change": "Only installation version/runtime binding; scientific behavior, examples, failures and source rights unchanged."
+    }
+  ]
+}

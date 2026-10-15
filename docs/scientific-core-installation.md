@@ -1,8 +1,7 @@
 # 当前科学包与中文手册
 
-当前累积技术选择对应
-`provenance/selections/scientific-core-documents-20261015-r8.json`。
-它用同一安装包提供 141 份精确合同；科学 API 按领域组织，函数和复合任务入口均可从中文 API 目录检索。
+当前文档选择由 `release/docs/CURRENT.json` 指向正式记录；该记录给出匹配 wheel、精确文档清单与手册目录。
+科学 API 按领域组织，函数和复合任务入口均可从中文 API 目录检索。
 正式合同的原实现版本和历史证据保留，不能将它们批量改写成新包版本来制造新科学资格。
 
 ## 安装已接收的确切包
@@ -13,11 +12,13 @@
 python -m pip install <selected-scirel-wheel>
 ```
 
-Python 使用 3.14（本次验证 3.14.7）。本选择实际声明 NumPy 2.5.4、SciPy 1.18.1、Matplotlib 3.11.2、netCDF4 1.7.4、mpmath 1.4.1。
+Python 及依赖的确切约束以 wheel 元数据和对应安装收据为准；可复用交付应附带运行依赖锁和文件摘要。
 这些是本选择实现的运行依赖；无需安装 Git、PowerShell、pytest、原来源 checkout 或 SciRel 开发工具。
 `mpmath` 用于运行期高精度有理系数构造，不只是测试参考工具。
 
-磁化色散的随包原语言计算入口还需要 Octave 8.4.0。本次技术证据绑定 Linux ARM64；
+磁化色散的随包原语言入口还需要相应系统运行时：PDRK 的既有安装证据使用 Linux ARM64 的 Octave 8.4.0；
+fluidBW 的完整算例、特殊函数、响应、矩阵、搜索、谱和材料入口使用 Linux amd64 的 Octave 7.3.0，固定单线程。
+两类入口的运行条件分别核对，不能把一个平台的证据当作另一个平台的通过。
 Python wheel 不会替用户安装这个系统运行时，缺少时该类入口按合同报错，不静默替换数值实现。
 只调用纯 Python 的磁场、平衡、有限体积、色散函数等入口时无需先安装 Octave。
 带可选绘图的入口及其依赖不代表绘图已成为项目核心物理验收要求。
@@ -63,12 +64,12 @@ print(p_grid)
 
 ## 维护相同的可查询内容
 
-手册目录入口是 `tools/docs/handbooks/scientific-core-r8.json`，中文阅读层按选定正式文档集合提供。每份阅读层以正式文档 SHA-256 绑定，不从函数名猜补参数或适用域。
-构建新快照时，先按 `scientific-core-documents-20261015-r8.json` 的清单复制并逐字核对正式合同，再运行：
+手册目录入口及正式文档选择从当前文档发布记录读取，中文阅读层按同一集合提供。每份阅读层以正式文档 SHA-256 绑定，不从函数名猜补参数或适用域。
+构建新快照时，先按所选清单复制并逐字核对正式合同，再运行：
 
 ```bash
 python scripts/scirel_docs.py build --documents /path/to/exact-documents \
-  --outline tools/docs/handbooks/scientific-core-r8.json \
+  --outline <selected-handbook.json> \
   --translations <selected-reader-bundle.json> \
   --output /path/to/new-snapshot
 ```

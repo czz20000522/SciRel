@@ -1,0 +1,1340 @@
+{
+  "schema": "scirel.selected-document-set.v1",
+  "records": [
+    {
+      "asset_id": "scirel.kinetic.neutral-generation-stopping",
+      "path": "catalog/examples/scirel.kinetic.neutral-generation-stopping.json",
+      "sha256": "4d15fc79374398a9a72f3e2a53b58864939ae1ea31085dc193848fcc6569afe6"
+    },
+    {
+      "asset_id": "scirel.collisions.janev-electron-impact-ionization-rate",
+      "path": "catalog/examples/scirel.collisions.janev-electron-impact-ionization-rate.json",
+      "sha256": "a0ce91f67013e160666ff4ad732644b14386c1b028af0592d468918446cd172b"
+    },
+    {
+      "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
+      "path": "catalog/examples/scirel.geometry.axisymmetric-equilibrium-grid-mapping.json",
+      "sha256": "63e7038145508b225c5df3b3116cddfaeb3d7db79b9bdaf0686dad1cbf2a0f5a"
+    },
+    {
+      "asset_id": "scirel.geometry.complex-rectilinear-interpolation",
+      "path": "catalog/examples/scirel.geometry.complex-rectilinear-interpolation.json",
+      "sha256": "993908717f9a9091e6a68546c37a2aa812a0f06c27c9507491f9821d857a881c"
+    },
+    {
+      "asset_id": "scirel.kinetic.cross-mesh-scalar-interpolation",
+      "path": "catalog/examples/scirel.kinetic.cross-mesh-scalar-interpolation.json",
+      "sha256": "03cd1b7683077fe7672a70939fbf74deab1e41b6053c6631c455778aa87e4122"
+    },
+    {
+      "asset_id": "scirel.kinetic.shifted-maxwellian-seed",
+      "path": "catalog/examples/scirel.kinetic.shifted-maxwellian-seed.json",
+      "sha256": "97115abaf050003f738ff13596996723eec7304771e03893d916df95f75435b0"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrf-temporal-matrix",
+      "path": "catalog/examples/scirel.kinetic.pdrf-temporal-matrix.json",
+      "sha256": "23779ef35192c375936fc5f291bf154993d61780061dd9bf3c25fab903d02aac"
+    },
+    {
+      "asset_id": "scirel.kinetic.neutral-boltzmann-rhs",
+      "path": "catalog/examples/scirel.kinetic.neutral-boltzmann-rhs.json",
+      "sha256": "db346d7149ebb89ec515877853cc9f4f6ef7fb823718d7b2dba20fa1df11fa7f"
+    },
+    {
+      "asset_id": "scirel.equilibrium.free-boundary-anisotropic-picard",
+      "path": "catalog/examples/scirel.equilibrium.free-boundary-anisotropic-picard.json",
+      "sha256": "8c82c577a05a441fc55b8d806b2f7c7f456a85b3b2f6d45af35deef504a148fa"
+    },
+    {
+      "asset_id": "scirel.diagnostics.parallel-pressure-residual",
+      "path": "catalog/examples/scirel.diagnostics.parallel-pressure-residual.json",
+      "sha256": "bb0e13b418283156301c3c34645abeafff9694057871b2ca36866198c7acf5fd"
+    },
+    {
+      "asset_id": "scirel.kinetic.elastic-regeneration-aggregation",
+      "path": "catalog/examples/scirel.kinetic.elastic-regeneration-aggregation.json",
+      "sha256": "1e4491abad097aa33c1b3b0ab1702cfb53c03d6771e6c0c297557703015b1f67"
+    },
+    {
+      "asset_id": "scirel.collisions.atomic-hydrogen-omega-frequencies",
+      "path": "catalog/examples/scirel.collisions.atomic-hydrogen-omega-frequencies.json",
+      "sha256": "3c492c5a7ec01e277f2089c5902f131223ab14797dc6429dd2af9f3d330400a5"
+    },
+    {
+      "asset_id": "scirel.kinetic.molecular-alpha-contraction",
+      "path": "catalog/examples/scirel.kinetic.molecular-alpha-contraction.json",
+      "sha256": "748082ab89ba986544fb642ef848b69397a9a859950ad98699a2d84fcab85220"
+    },
+    {
+      "asset_id": "scirel.kinetic.fluid-wavevector-eigensolve",
+      "path": "catalog/examples/scirel.kinetic.fluid-wavevector-eigensolve.json",
+      "sha256": "9ab2667b4736c9b6e91a2c8d6b4cd81311788ecd58d039d9fc7d7c52e4323c9f"
+    },
+    {
+      "asset_id": "scirel.field.rectangular-coil-filaments",
+      "path": "catalog/examples/scirel.field.rectangular-coil-filaments.json",
+      "sha256": "804bad30fbf5f44b59538769ff7f612dfb040c14703c741c88663bf959585727"
+    },
+    {
+      "asset_id": "scirel.electromagnetism.green-response-matrices",
+      "path": "catalog/examples/scirel.electromagnetism.green-response-matrices.json",
+      "sha256": "54d826ab4ec8ec2dde995c6c3693215421501b4082919f2e26837e992ef06e97"
+    },
+    {
+      "asset_id": "scirel.kinetic.kinetic-dispersion-sum",
+      "path": "catalog/examples/scirel.kinetic.kinetic-dispersion-sum.json",
+      "sha256": "a462d3aabd1cd9bd387e1aa8c4b09a634fd2b6d6ad1b4e700f0b2d3eaa6cb804"
+    },
+    {
+      "asset_id": "scirel.field.ideal-conductor-boundary",
+      "path": "catalog/examples/scirel.field.ideal-conductor-boundary.json",
+      "sha256": "05ceac1c1412b82b46effa20e10067dfb0668074b3bb84363066f73238673ddd"
+    },
+    {
+      "asset_id": "scirel.collisions.atomic-hydrogen-elastic-cross-section",
+      "path": "catalog/examples/scirel.collisions.atomic-hydrogen-elastic-cross-section.json",
+      "sha256": "d7940e7bd16be5ed3204184028b89ea20f2b2a9e5070e390ab68754ef2d928cc"
+    },
+    {
+      "asset_id": "scirel.field.circular-filament-green",
+      "path": "catalog/examples/scirel.field.circular-filament-green.json",
+      "sha256": "6fec893b8542b7e6ea9eba38847c4ca1393878bf060ce4a68947533c6cb9ad16"
+    },
+    {
+      "asset_id": "scirel.kinetic.kn1d-outer-convergence",
+      "path": "catalog/examples/scirel.kinetic.kn1d-outer-convergence.json",
+      "sha256": "e077b1deca5639efcc7c26ef0728cf81807bd5b947b3ff05e69b0c4a2c6c3cb1"
+    },
+    {
+      "asset_id": "scirel.kinetic.fluid-wavevector-scan",
+      "path": "catalog/examples/scirel.kinetic.fluid-wavevector-scan.json",
+      "sha256": "0c77e3a9bc0985df2785493c9295ef79012158385885c8bc2b3869152585f36d"
+    },
+    {
+      "asset_id": "scirel.inference.direct-anisotropic-inversion",
+      "path": "catalog/examples/scirel.inference.direct-anisotropic-inversion.json",
+      "sha256": "5683e573539e290126d3c4b1ac607ccae336eda8f10a5e44ea4cde03ab30c69f"
+    },
+    {
+      "asset_id": "scirel.kinetic.plasma-dispersion-weideman",
+      "path": "catalog/examples/scirel.kinetic.plasma-dispersion-weideman.json",
+      "sha256": "a31726d0fa9f650c4a98a663828ad94dfd8f9320355e7f36e545e8a610841215"
+    },
+    {
+      "asset_id": "scirel.kinetic.fluid-dispersion-matrix",
+      "path": "catalog/examples/scirel.kinetic.fluid-dispersion-matrix.json",
+      "sha256": "062f1c4d680d5d458109f09dc6a6d8261acd73a6d31cac1fe6e91d6695c348df"
+    },
+    {
+      "asset_id": "scirel.kinetic.adaptive-neutral-velocity-mesh",
+      "path": "catalog/examples/scirel.kinetic.adaptive-neutral-velocity-mesh.json",
+      "sha256": "09c0d319382cfd6ad02bdc25818cc3bc5abb49d0d40310b80e5146b9645aeaeb"
+    },
+    {
+      "asset_id": "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
+      "path": "catalog/examples/scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section.json",
+      "sha256": "a0a098ce9c7044f1fd8a734b12f7709596a02478eecc6dafcdd9b7e292c7d32b"
+    },
+    {
+      "asset_id": "scirel.dielectric.cold-plasma-tensor",
+      "path": "catalog/examples/scirel.dielectric.cold-plasma-tensor.json",
+      "sha256": "6710baed181f796a071294c646595bba7e419928d1c0ebe789d10ce716c10052"
+    },
+    {
+      "asset_id": "scirel.equilibrium.anisotropic-picard-feedback",
+      "path": "catalog/examples/scirel.equilibrium.anisotropic-picard-feedback.json",
+      "sha256": "22f41b5b765ba97d989e4fa050fb2b2bceec79713b211301e7f630452637daf4"
+    },
+    {
+      "asset_id": "scirel.kinetic.outer-seed-convergence",
+      "path": "catalog/examples/scirel.kinetic.outer-seed-convergence.json",
+      "sha256": "13eedd6d115ca83679a076896ba7b84ca76a2b395dbe50cc366aedcb77abc2cf"
+    },
+    {
+      "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
+      "path": "catalog/examples/scirel.collisions.atomic-hydrogen-charge-exchange-cross-section.json",
+      "sha256": "49679f3c08cf91d11f679789015fc51b02f43139e891389bbae4d43349eafd55"
+    },
+    {
+      "asset_id": "scirel.closures.reduced-hall-drift",
+      "path": "catalog/examples/scirel.closures.reduced-hall-drift.json",
+      "sha256": "1f50628365cdfeeed834aabe67969fbcecc333ba9c42e29c2aed0c54d4876124"
+    },
+    {
+      "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-support",
+      "path": "catalog/examples/scirel.geometry.axisymmetric-equilibrium-grid-support.json",
+      "sha256": "ea20d6743fa072d385b47ba746b85fe15950f5cd74aed7e9ad71a802fba2e76e"
+    },
+    {
+      "asset_id": "scirel.kinetic.incoming-boundary-flux-normalization",
+      "path": "catalog/examples/scirel.kinetic.incoming-boundary-flux-normalization.json",
+      "sha256": "01c8640fa7892d4a37e6eee6b8a73a33295f2285eeda750a9fd073e74984a3ee"
+    },
+    {
+      "asset_id": "scirel.collisions.molecular-hydrogen-collision-matrices",
+      "path": "catalog/examples/scirel.collisions.molecular-hydrogen-collision-matrices.json",
+      "sha256": "0d60906384f9de53757d05d5ad01f6685393931f395c4bb07ca63e7064628d1e"
+    },
+    {
+      "asset_id": "scirel.collisions.thermal-electron-momentum",
+      "path": "catalog/examples/scirel.collisions.thermal-electron-momentum.json",
+      "sha256": "44deda668619880431b7cd21598a323f49a3836d9cb5411d7f5b63d88ac3102a"
+    },
+    {
+      "asset_id": "scirel.kinetic.hydrogen-saha-equilibrium-population",
+      "path": "catalog/examples/scirel.kinetic.hydrogen-saha-equilibrium-population.json",
+      "sha256": "9806ced00b2a1f1539aad60adfe838ff962b5ebf314fb6481376ee59c433865b"
+    },
+    {
+      "asset_id": "scirel.kinetic.molecular-scattered-sources-reduction",
+      "path": "catalog/examples/scirel.kinetic.molecular-scattered-sources-reduction.json",
+      "sha256": "a7901845f97ac2daf9956010a9d35b67cae256cb7bfc16d49f24d2d8262abca3"
+    },
+    {
+      "asset_id": "scirel.equilibrium.pressure-flux-state",
+      "path": "catalog/examples/scirel.equilibrium.pressure-flux-state.json",
+      "sha256": "ab1ea2508bb34463dc0d15920b105823a52bf157ad3fa55a57fe591ce15e673f"
+    },
+    {
+      "asset_id": "scirel.collisions.relativistic-maxwellian-bessel-closure",
+      "path": "catalog/examples/scirel.collisions.relativistic-maxwellian-bessel-closure.json",
+      "sha256": "a560fc6c8768c0599f1d9db2608173d5d4e52da141ad9ba01d3775332a61f830"
+    },
+    {
+      "asset_id": "scirel.diagnostics.picard-flux-residual",
+      "path": "catalog/examples/scirel.diagnostics.picard-flux-residual.json",
+      "sha256": "26353324431954a9b34c22b3af99ef83fdf9e8c388c1efb93c7ef371dec4866b"
+    },
+    {
+      "asset_id": "scirel.kinetic.plasma-dispersion-function",
+      "path": "catalog/examples/scirel.kinetic.plasma-dispersion-function.json",
+      "sha256": "69a34bcf4ec291184885c0d60a8642ff5ceebecabfe53c680874cf0edc175a59"
+    },
+    {
+      "asset_id": "scirel.diagnostics.pointwise-firehose-margin",
+      "path": "catalog/examples/scirel.diagnostics.pointwise-firehose-margin.json",
+      "sha256": "e9c30920fcbc0aacbd69f392944bef45bb60aaa3eb86c3f1e32a42db5cd3a5fa"
+    },
+    {
+      "asset_id": "scirel.kinetic.ronnmark-r-function",
+      "path": "catalog/examples/scirel.kinetic.ronnmark-r-function.json",
+      "sha256": "6e49fb99e74b27a52ac2b623b1ec36ffab3ac765e0bbf079ef77e679078d74de"
+    },
+    {
+      "asset_id": "scirel.closures.mirror-quasineutral-closure",
+      "path": "catalog/examples/scirel.closures.mirror-quasineutral-closure.json",
+      "sha256": "d0ab1d7ed91edd926b01f19746663db98d3029a9a78d783a7463d2733503458b"
+    },
+    {
+      "asset_id": "scirel.kinetic.neutral-generation-propagation",
+      "path": "catalog/examples/scirel.kinetic.neutral-generation-propagation.json",
+      "sha256": "f6849c559480f60e88357c4c8055ef1199d66b75a4e2311e38b6d9a837798de8"
+    },
+    {
+      "asset_id": "scirel.field.coil-green-geometry",
+      "path": "catalog/examples/scirel.field.coil-green-geometry.json",
+      "sha256": "decb29aa548493d702a0abe054d492fa4ab5fe17ff6f645eb94ae4ca526fdaed"
+    },
+    {
+      "asset_id": "scirel.kinetic.dielectric-tensor-diagnostic",
+      "path": "catalog/examples/scirel.kinetic.dielectric-tensor-diagnostic.json",
+      "sha256": "ba4abba7431c94b734705fa532bd7244a5b31ff24fbc44013fb75154b89ce2c2"
+    },
+    {
+      "asset_id": "scirel.kinetic.terminal-ion-state-reduction",
+      "path": "catalog/examples/scirel.kinetic.terminal-ion-state-reduction.json",
+      "sha256": "8d6d52fed4965ba718500b7fcaa867fd656d805aef7b50f16dfdca48d3d7a032"
+    },
+    {
+      "asset_id": "scirel.field.poloidal-field-from-flux",
+      "path": "catalog/examples/scirel.field.poloidal-field-from-flux.json",
+      "sha256": "7d87c2a69d8d4fea831727777ada0cdaeaa30953db4d7bd9a016e802a41bb177"
+    },
+    {
+      "asset_id": "scirel.kinetic.elastic-frequency-channels",
+      "path": "catalog/examples/scirel.kinetic.elastic-frequency-channels.json",
+      "sha256": "ce9b4ec6d51c378e4ad8cbcbd11e386c67b63704b82b6910edc0996359d8dd8b"
+    },
+    {
+      "asset_id": "scirel.kinetic.terminal-pressure-temperature-reduction",
+      "path": "catalog/examples/scirel.kinetic.terminal-pressure-temperature-reduction.json",
+      "sha256": "e911e07741dc50038b1255bf6f17f5c74377942f0df5d7c429e5ef2278d62aac"
+    },
+    {
+      "asset_id": "scirel.kinetic.frank-egedal-hot-ion-moments",
+      "path": "catalog/examples/scirel.kinetic.frank-egedal-hot-ion-moments.json",
+      "sha256": "827e838d764316145fa072cda5575e54d7300d9338787c8d3f3c124f60aafa29"
+    },
+    {
+      "asset_id": "scirel.kinetic.terminal-flux-velocity-reduction",
+      "path": "catalog/examples/scirel.kinetic.terminal-flux-velocity-reduction.json",
+      "sha256": "eb53a0a73ed65fd1d80ec7acbe2308d9d748f6560935181dca0cbc973bbbfdce"
+    },
+    {
+      "asset_id": "scirel.closures.quasineutral-potential",
+      "path": "catalog/examples/scirel.closures.quasineutral-potential.json",
+      "sha256": "747ea62dbcf0847f0966bd704284e262f57092b5357f8eb63c3b7f37f75f8730"
+    },
+    {
+      "asset_id": "scirel.kinetic.neutral-total-collision-frequency",
+      "path": "catalog/examples/scirel.kinetic.neutral-total-collision-frequency.json",
+      "sha256": "83d54c65ed7447c8723af4e227f1f391338de5b6d4037a36ee1fa074036b080b"
+    },
+    {
+      "asset_id": "scirel.kinetic.frank-egedal-radial-envelope",
+      "path": "catalog/examples/scirel.kinetic.frank-egedal-radial-envelope.json",
+      "sha256": "6420cf742c789f4e4dec52565bd88ad144c3582d495eeeb6ff0b62c175729af1"
+    },
+    {
+      "asset_id": "scirel.collisions.molecular-hydrogen-omega-frequencies",
+      "path": "catalog/examples/scirel.collisions.molecular-hydrogen-omega-frequencies.json",
+      "sha256": "6622a2e6e119e06d4488b6fdcbc16a4d280fe9fba6dffa4195b9a8ca803559c0"
+    },
+    {
+      "asset_id": "scirel.kinetic.kinetic-wavevector-roots",
+      "path": "catalog/examples/scirel.kinetic.kinetic-wavevector-roots.json",
+      "sha256": "1935a95d72346aa3f7e50ff20bd806049707eb79daecfa8a2b92c7a2b7d4f4fd"
+    },
+    {
+      "asset_id": "scirel.field.poloidal-field-magnitude",
+      "path": "catalog/examples/scirel.field.poloidal-field-magnitude.json",
+      "sha256": "d4a96920b93b0caf81711c241b53dbfa24c0e3a646095f37841a471df9d03824"
+    },
+    {
+      "asset_id": "scirel.diagnostics.equilibrium-synthesis-diagnostics",
+      "path": "catalog/examples/scirel.diagnostics.equilibrium-synthesis-diagnostics.json",
+      "sha256": "c3aae8e776a78e5f19dc53252709fbaa775f9d623e94136f7b97dfd23e15a26a"
+    },
+    {
+      "asset_id": "scirel.geometry.bilinear-grid-sampling",
+      "path": "catalog/examples/scirel.geometry.bilinear-grid-sampling.json",
+      "sha256": "4ede692b92027d8fc4322477c1ac80a749681b8e7bdeab78724b43aa68cc8cc1"
+    },
+    {
+      "asset_id": "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
+      "path": "catalog/examples/scirel.equilibrium.kinetic-mirror-hall-equilibrium.json",
+      "sha256": "64a64ae98117e1934e6062bc56196edca2c491a0ff27a3cc533072031491bd3d"
+    },
+    {
+      "asset_id": "scirel.closures.quasineutral-reference-density",
+      "path": "catalog/examples/scirel.closures.quasineutral-reference-density.json",
+      "sha256": "1a0c07c76f69e94823c21b882d8f318e8c738785f828128cc645bb6369b31e68"
+    },
+    {
+      "asset_id": "scirel.field.filament-coil-green-field",
+      "path": "catalog/examples/scirel.field.filament-coil-green-field.json",
+      "sha256": "c065794406145fc0a3704cb22a712c1461d4acb7ed34c0725643d96978e9e2a2"
+    },
+    {
+      "asset_id": "scirel.equilibrium.isotropic-pressure-flux",
+      "path": "catalog/examples/scirel.equilibrium.isotropic-pressure-flux.json",
+      "sha256": "b3c06a18819c72a8b3eb614de4118c5f6a2ad6e664d74b1dbc46696b25283f6f"
+    },
+    {
+      "asset_id": "scirel.kinetic.frank-egedal-pressure-state",
+      "path": "catalog/examples/scirel.kinetic.frank-egedal-pressure-state.json",
+      "sha256": "4c0158e0be936c3fe157cdac39264832d2f9abb9c16665bd260e5a1bf5622468"
+    },
+    {
+      "asset_id": "scirel.diagnostics.observation-residuals",
+      "path": "catalog/examples/scirel.diagnostics.observation-residuals.json",
+      "sha256": "12aa790d1de6bb392711845f100ba0e077bd37be7b9c1f559073085e8c441e71"
+    },
+    {
+      "asset_id": "scirel.kinetic.gamma-lpole-coefficients",
+      "path": "catalog/examples/scirel.kinetic.gamma-lpole-coefficients.json",
+      "sha256": "0102a3b0d83c176452fe50769f4d4ab03c76ae8adac7c994248dd8359ef6f977"
+    },
+    {
+      "asset_id": "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
+      "path": "catalog/examples/scirel.collisions.proton-atomic-hydrogen-elastic-cross-section.json",
+      "sha256": "bbee8eba1288f50715ab4bbf2f8d26bd8da7088dba542081a03b50e34ec2382b"
+    },
+    {
+      "asset_id": "scirel.kinetic.thermal-speed-scale",
+      "path": "catalog/examples/scirel.kinetic.thermal-speed-scale.json",
+      "sha256": "fe2703355f3b4d64405c22b55cecd2ed6a93aca4fd300c8b8ded27d732bfd563"
+    },
+    {
+      "asset_id": "scirel.geometry.material-support-classification",
+      "path": "catalog/examples/scirel.geometry.material-support-classification.json",
+      "sha256": "e67a85887dc897370fc86c6d4b73f93519556f2f9448b5dd7fd964f8af1850f5"
+    },
+    {
+      "asset_id": "scirel.collisions.maxwellian-relative-speed-rate-average",
+      "path": "catalog/examples/scirel.collisions.maxwellian-relative-speed-rate-average.json",
+      "sha256": "77bb3080e1e87c0ff40cbb7478ea4d02abd1c49c079a7e94a423393620147e09"
+    },
+    {
+      "asset_id": "scirel.electromagnetism.loop-flux-matrix",
+      "path": "catalog/examples/scirel.electromagnetism.loop-flux-matrix.json",
+      "sha256": "cfa90a8009e11733cac0ac69469936399bcd2b0596714194e8c5a29dc8ae2407"
+    },
+    {
+      "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
+      "path": "catalog/examples/scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient.json",
+      "sha256": "7147c2a3c21c5ba8070655b1640a1f610e2f93ba37ce21fbe345bc7e16bb5f9b"
+    },
+    {
+      "asset_id": "scirel.closures.hall-two-fluid-pressure",
+      "path": "catalog/examples/scirel.closures.hall-two-fluid-pressure.json",
+      "sha256": "e6305bfa0589c45e488810856ce273455d56b812d7c4d9571f222da2f3af5016"
+    },
+    {
+      "asset_id": "scirel.electromagnetism.circular-filament-green",
+      "path": "catalog/examples/scirel.electromagnetism.circular-filament-green.json",
+      "sha256": "f58f0c455a0e70eb2a1bc5a5cf7dfaad163dff9ce4bdecff96611104bdbcf7c1"
+    },
+    {
+      "asset_id": "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section",
+      "path": "catalog/examples/scirel.collisions.proton-molecular-hydrogen-elastic-cross-section.json",
+      "sha256": "d03ef7137b47930319ff11be7bf245d918ddf2157a4a884c58181b34b72e66fb"
+    },
+    {
+      "asset_id": "scirel.equilibrium.compute-equilibrium",
+      "path": "catalog/examples/scirel.equilibrium.compute-equilibrium.json",
+      "sha256": "84047df11835dd532f59c7e09d805e774c773f6e3507812cc304d7e9c3101c3a"
+    },
+    {
+      "asset_id": "scirel.kinetic.spatial-source-shape-normalization",
+      "path": "catalog/examples/scirel.kinetic.spatial-source-shape-normalization.json",
+      "sha256": "0ce6c73bf0ec81318b23c4abc166cc400985c24b260782212129766635355ffe"
+    },
+    {
+      "asset_id": "scirel.equilibrium.anisotropic-force-balance",
+      "path": "catalog/examples/scirel.equilibrium.anisotropic-force-balance.json",
+      "sha256": "b70cfe48e6228ab64bc41475fe611075ade7f6b32eadc38d317be26ebefaf30d"
+    },
+    {
+      "asset_id": "scirel.collisions.atomic-hydrogen-collision-matrices",
+      "path": "catalog/examples/scirel.collisions.atomic-hydrogen-collision-matrices.json",
+      "sha256": "5ceb703d3832d38cd024ef0b71321f871b746f4afb991b92d1c4d106e9a28075"
+    },
+    {
+      "asset_id": "scirel.kinetic.kinetic-dispersion-sum-fluidbw",
+      "path": "catalog/examples/scirel.kinetic.kinetic-dispersion-sum-fluidbw.json",
+      "sha256": "2acada6980029e4f441e011a48968201d37f62dcc2136873b61bb43c8efad4bf"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrf-dispersion-scan",
+      "path": "catalog/examples/scirel.kinetic.pdrf-dispersion-scan.json",
+      "sha256": "aa12257d77174c17ff6db81808cc4bfa00dd9351bd4c54108a0aa8f8b6a5b88d"
+    },
+    {
+      "asset_id": "scirel.kinetic.terminal-energy-transfer-reduction",
+      "path": "catalog/examples/scirel.kinetic.terminal-energy-transfer-reduction.json",
+      "sha256": "d16ffce27b1644da63b6e57867909bfdf2e64176d7aa2b7f78fd3bf6affecd8c"
+    },
+    {
+      "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure",
+      "path": "catalog/examples/scirel.kinetic.grid-mirror-kinetic-closure.json",
+      "sha256": "05ab4108337d29a903b95b7bcd16868bc93e3200e632ddfc71433bf56c289423"
+    },
+    {
+      "asset_id": "scirel.closures.boltzmann-quasineutrality",
+      "path": "catalog/examples/scirel.closures.boltzmann-quasineutrality.json",
+      "sha256": "dcc176aafc6a2f13c5e1d9758a84d519e570e582cbe85cbb8e498a6afd045404"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrf-temporal-spectrum",
+      "path": "catalog/examples/scirel.kinetic.pdrf-temporal-spectrum.json",
+      "sha256": "13575a3b878a4e9c3fb8c83a0118b728db203a47db837761d26ff21972539e54"
+    },
+    {
+      "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
+      "path": "catalog/examples/scirel.equilibrium.reduced-hall-anisotropic-picard.json",
+      "sha256": "066533268fc2f3fdbc2e615daae161b50f70c64d67c94d92e8c5fcec66096d6f"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrf-plasma-state",
+      "path": "catalog/examples/scirel.kinetic.pdrf-plasma-state.json",
+      "sha256": "b48d802de7726a854e95c56b71c83448ba7476572b64349acd83f10e58bf4c5e"
+    },
+    {
+      "asset_id": "scirel.field.dense-axisymmetric-green",
+      "path": "catalog/examples/scirel.field.dense-axisymmetric-green.json",
+      "sha256": "62ef8a73d19191eccd420394d4f50926ed4ed34392d6fe9c1de87099e9300a58"
+    },
+    {
+      "asset_id": "scirel.collisions.molecular-hydrogen-elastic-cross-section",
+      "path": "catalog/examples/scirel.collisions.molecular-hydrogen-elastic-cross-section.json",
+      "sha256": "d4c2e7ee9d696b8d0d42161ca50a4de821ad924fc516a73821530e8daac17bf8"
+    },
+    {
+      "asset_id": "scirel.geometry.flux-surface-inverse-field-average",
+      "path": "catalog/examples/scirel.geometry.flux-surface-inverse-field-average.json",
+      "sha256": "2c9d8fb14df49ff9c77354c207c2e859f424f0dc76112c4161830d7f842b5ffa"
+    },
+    {
+      "asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
+      "path": "catalog/examples/scirel.collisions.molecular-hydrogen-charge-exchange-cross-section.json",
+      "sha256": "d535e7fd56ed27defaea3e4333fa919292c7502a4692bc90b712bc2df1d8fb76"
+    },
+    {
+      "asset_id": "scirel.field.mirror-plasma-green",
+      "path": "catalog/examples/scirel.field.mirror-plasma-green.json",
+      "sha256": "f3131f971a97746a9c5d4a82c07d3694fa29b4e95424ece3b4df9d85a5d4db53"
+    },
+    {
+      "asset_id": "scirel.equilibrium.isotropic-picard-step",
+      "path": "catalog/examples/scirel.equilibrium.isotropic-picard-step.json",
+      "sha256": "207c73c1f162846d39f00753e41bf26d18d7874ad4c16e2d37fe0a68804c7ee1"
+    },
+    {
+      "asset_id": "scirel.kinetic.kinetic-wavevector-scan",
+      "path": "catalog/examples/scirel.kinetic.kinetic-wavevector-scan.json",
+      "sha256": "1421b9d27fba3d3d64f40e391fee2fa002fc4c10ae63cb2713530ccbb72956de"
+    },
+    {
+      "asset_id": "scirel.kinetic.axisymmetric-neutral-moments",
+      "path": "catalog/examples/scirel.kinetic.axisymmetric-neutral-moments.json",
+      "sha256": "8bdb385be2b6e1a970e39df72830537e1814268ededb5cfea976f02f19012762"
+    },
+    {
+      "asset_id": "scirel.plasma.fast-ion-heating",
+      "path": "catalog/examples/scirel.plasma.fast-ion-heating.json",
+      "sha256": "7ea8663d4f8756d942faecde563666677239b506a39ce1f2a15b8811332cd90d"
+    },
+    {
+      "asset_id": "scirel.kinetic.mirror-total-pressure",
+      "path": "catalog/examples/scirel.kinetic.mirror-total-pressure.json",
+      "sha256": "cb38c766bfa3d31ce563b62b5aab09d0a11e49f88395504d00cdeb15bc451791"
+    },
+    {
+      "asset_id": "scirel.kinetic.cross-mesh-distribution-interpolation",
+      "path": "catalog/examples/scirel.kinetic.cross-mesh-distribution-interpolation.json",
+      "sha256": "8e540aaa260c697285b50404f2e7780657f1abb99d975a7b2db8709eda0dab10"
+    },
+    {
+      "asset_id": "scirel.closures.tabulated-pressure",
+      "path": "catalog/examples/scirel.closures.tabulated-pressure.json",
+      "sha256": "4fc2583fb6554017b08314b6e931c7255e94cf9e043a486b668c8a9d73432fd3"
+    },
+    {
+      "asset_id": "scirel.kinetic.mirror-invariant-distribution",
+      "path": "catalog/examples/scirel.kinetic.mirror-invariant-distribution.json",
+      "sha256": "96b8d5836da9e454b5cd1438b8c87986c39374e596a1344b17c5cc2588318a36"
+    },
+    {
+      "asset_id": "scirel.kinetic.bessel-gamma",
+      "path": "catalog/examples/scirel.kinetic.bessel-gamma.json",
+      "sha256": "09fb8a0b0e3f52a11dc2dbb7d0f166c9f4a2a1db51f11654e2326e31a78ba9c9"
+    },
+    {
+      "asset_id": "scirel.kinetic.kinetic-dispersion-ronnmark",
+      "path": "catalog/examples/scirel.kinetic.kinetic-dispersion-ronnmark.json",
+      "sha256": "833ff9dfcca0c5d33fdc96dc698d2f160e5bdc1fb662b302a68f2d81233c9086"
+    },
+    {
+      "asset_id": "scirel.kinetic.loss-cone-spectrum",
+      "path": "catalog/examples/scirel.kinetic.loss-cone-spectrum.json",
+      "sha256": "cfb90173e6aa718a15d4e7569c0fb0b3eaa94b6f7c6b69e57cdae8a235d8bebc"
+    },
+    {
+      "asset_id": "scirel.diagnostics.firehose-mirror-margins",
+      "path": "catalog/examples/scirel.diagnostics.firehose-mirror-margins.json",
+      "sha256": "3d91f4de47b742abb9d733048023115dfbd98527a0a8f64ab81eb0dbfbcafb83"
+    },
+    {
+      "asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient",
+      "path": "catalog/examples/scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient.json",
+      "sha256": "1e5d766f52719c5c2c903564459b26c7f89819a6c3e893958e8d6e69564811f2"
+    },
+    {
+      "asset_id": "scirel.field.filament-vacuum-field",
+      "path": "catalog/examples/scirel.field.filament-vacuum-field.json",
+      "sha256": "65a6a047ec656eabd97fed9e4143949f8d3b3dda8bc96c271c9c2ea0e971812a"
+    },
+    {
+      "asset_id": "scirel.fusion.dd-neutron-lab-energy",
+      "path": "catalog/examples/scirel.fusion.dd-neutron-lab-energy.json",
+      "sha256": "530ebebe2feba8e31ac09bdaebf421b819070b053093daab3a55f3738a3d2b61"
+    },
+    {
+      "asset_id": "scirel.kinetic.terminal-heat-flux-reduction",
+      "path": "catalog/examples/scirel.kinetic.terminal-heat-flux-reduction.json",
+      "sha256": "be161a616c95e8a74f4497f10d6c589835287dc387a7764c514d3f2424c40fd2"
+    },
+    {
+      "asset_id": "scirel.inference.anisotropic-trial-evaluation",
+      "path": "catalog/examples/scirel.inference.anisotropic-trial-evaluation.json",
+      "sha256": "2d74ead680b00780f1dd5b437ba176b24a8df4742eadd478caa7e358c5259ffe"
+    },
+    {
+      "asset_id": "scirel.equilibrium.anisotropic-toroidal-current",
+      "path": "catalog/examples/scirel.equilibrium.anisotropic-toroidal-current.json",
+      "sha256": "00d79c3b9b46de043c3fa5250687a1a8514540725d307640e983e582fad9d772"
+    },
+    {
+      "asset_id": "scirel.kinetic.terminal-conservation-diagnostic",
+      "path": "catalog/examples/scirel.kinetic.terminal-conservation-diagnostic.json",
+      "sha256": "26dd3b87c9159b746ba84777adf769fcdd4c5c9d360a4da4aab32e082013b87c"
+    },
+    {
+      "asset_id": "scirel.closures.mirror-ambipolar-potential",
+      "path": "catalog/examples/scirel.closures.mirror-ambipolar-potential.json",
+      "sha256": "4fcdb821ccab7f40f05916e40c80d3770811cb7118aef0d439da7e554e1aa80f"
+    },
+    {
+      "asset_id": "scirel.field.permanent-ring-filaments",
+      "path": "catalog/examples/scirel.field.permanent-ring-filaments.json",
+      "sha256": "9103207757f59bf0b6cce21e137a8036739c91524e2bc5b817cde0c655342f88"
+    },
+    {
+      "asset_id": "scirel.kinetic.generation-accumulation-update",
+      "path": "catalog/examples/scirel.kinetic.generation-accumulation-update.json",
+      "sha256": "97fcd39845a40d9b5c0b08f715949d1e5d337023fd9dd4bfebf3a6ff6ad32a58"
+    },
+    {
+      "asset_id": "scirel.kinetic.atomic-scattered-sources-reduction",
+      "path": "catalog/examples/scirel.kinetic.atomic-scattered-sources-reduction.json",
+      "sha256": "862ef366db9551d23e998f18500f6c403a6d9653f00e7efbca5a0df474cfeb5c"
+    },
+    {
+      "asset_id": "scirel.kinetic.frank-egedal-source-projection",
+      "path": "catalog/examples/scirel.kinetic.frank-egedal-source-projection.json",
+      "sha256": "8c62409886c3717618610b45bee31a05fd9e0b9b4850edfbc3c59e19056ebcd6"
+    },
+    {
+      "asset_id": "scirel.geometry.planar-wavevector-projection",
+      "path": "catalog/examples/scirel.geometry.planar-wavevector-projection.json",
+      "sha256": "75cb2d2de65eb6ca0c301e9789f0f00fdeb09edec38bba7fb2fe2c876894e5c5"
+    },
+    {
+      "asset_id": "scirel.field.complete-elliptic-integrals-approx",
+      "path": "catalog/examples/scirel.field.complete-elliptic-integrals-approx.json",
+      "sha256": "704d17965c06016a90515775365740f049e658527e8daabddf8a74414372c62b"
+    },
+    {
+      "asset_id": "scirel.kinetic.z-pole-coefficients",
+      "path": "catalog/examples/scirel.kinetic.z-pole-coefficients.json",
+      "sha256": "90597e5a9f77bad165deee31c2f5c07d3fab71e25ee82bb2a49fd39677d1b1e9"
+    },
+    {
+      "asset_id": "scirel.kinetic.generation-density-reduction",
+      "path": "catalog/examples/scirel.kinetic.generation-density-reduction.json",
+      "sha256": "f05c1e03450787ff8c2c80b7ebf76f87622e6111188b7daba373c487f305d225"
+    },
+    {
+      "asset_id": "scirel.kinetic.frank-egedal-pressure-closure",
+      "path": "catalog/examples/scirel.kinetic.frank-egedal-pressure-closure.json",
+      "sha256": "58ea80107d4a6e8016d7cf7f73441b99faf765139779014622e5aa1ddedc8041"
+    },
+    {
+      "asset_id": "scirel.equilibrium.axisymmetric-anisotropic-picard",
+      "path": "catalog/examples/scirel.equilibrium.axisymmetric-anisotropic-picard.json",
+      "sha256": "c5122f0d06efaf90864bf2682ec2a8aae0c4115e7159392c6ba3b0e6fcc00ee6"
+    },
+    {
+      "asset_id": "scirel.kinetic.kinetic-dispersion-relation",
+      "path": "catalog/examples/scirel.kinetic.kinetic-dispersion-relation.json",
+      "sha256": "7ccf333eb98e1a6b86b03ebc53c451dba52272f1c8e438803590a30758919943"
+    },
+    {
+      "asset_id": "scirel.diagnostics.species-absorption-fraction",
+      "path": "catalog/examples/scirel.diagnostics.species-absorption-fraction.json",
+      "sha256": "6bc24c76f91e2f92e597e8060bebe34579f2d09a9d300a7fe961a9c4c68d4fee"
+    },
+    {
+      "asset_id": "scirel.kinetic.species-equilibrium-scales",
+      "path": "catalog/examples/scirel.kinetic.species-equilibrium-scales.json",
+      "sha256": "5f13ee8dd6f63c0f85b24241198273a68537c13f70fe32ee1c12af6c28b2c1f2"
+    },
+    {
+      "asset_id": "scirel.collisions.normalized-momentum",
+      "path": "catalog/examples/scirel.collisions.normalized-momentum.json",
+      "sha256": "4f1e977f16b39f6820bace2d191596139bc7bc55544e333c5be2a0b2dd6dc737"
+    },
+    {
+      "asset_id": "scirel.kinetic.cylindrical-velocity-quadrature",
+      "path": "catalog/examples/scirel.kinetic.cylindrical-velocity-quadrature.json",
+      "sha256": "360bd9971a9daf5983fab00ce1e5a930cbe48e8063acc14c736efaad48eacac8"
+    },
+    {
+      "asset_id": "scirel.kinetic.neutral-upwind-transport-coefficients",
+      "path": "catalog/examples/scirel.kinetic.neutral-upwind-transport-coefficients.json",
+      "sha256": "75d804f65fabdb2a7e94291c7e39d5c4892c0c7935f1f95467417b382c4ff75f"
+    },
+    {
+      "asset_id": "scirel.inference.latin-hypercube-sampling",
+      "path": "catalog/examples/scirel.inference.latin-hypercube-sampling.json",
+      "sha256": "04df1478c9300d6548cc632aaaaf7ee9953e7249933c7d3567374d8717f43be2"
+    },
+    {
+      "asset_id": "scirel.geometry.flux-surface-profile",
+      "path": "catalog/examples/scirel.geometry.flux-surface-profile.json",
+      "sha256": "614819355d358f118c4bed188722327e3cb45a7e5aebc902909c06e0fc75348d"
+    },
+    {
+      "asset_id": "scirel.equilibrium.axisymmetric-picard-update",
+      "path": "catalog/examples/scirel.equilibrium.axisymmetric-picard-update.json",
+      "sha256": "dc0bec1d2b9f1574e3a20aede26048324c88311a86ec34f496e408774125dff2"
+    },
+    {
+      "asset_id": "scirel.kinetic.atomic-alpha-contraction",
+      "path": "catalog/examples/scirel.kinetic.atomic-alpha-contraction.json",
+      "sha256": "f08a306b7ab872b80a465f89c1980bb25502f79060d71c61fc20e30c5c7df817"
+    },
+    {
+      "asset_id": "scirel.kinetic.mirror-constrained-moments",
+      "path": "catalog/examples/scirel.kinetic.mirror-constrained-moments.json",
+      "sha256": "412afe8b01cd466c5c4a79a434dcd0fcf0cd94a0e0e140e89bb6e874dce7222a"
+    },
+    {
+      "asset_id": "scirel.inference.anisotropic-parameter-optimization",
+      "path": "catalog/examples/scirel.inference.anisotropic-parameter-optimization.json",
+      "sha256": "dfa8f5aa29aa7d01606dac99c988a366db29fdf8e8ba33f232260a50f35382c5"
+    },
+    {
+      "asset_id": "scirel.field.current-green-superposition",
+      "path": "catalog/examples/scirel.field.current-green-superposition.json",
+      "sha256": "ed2aa439095b6107659727378e8e2f9a47fc4ad27a69cedab7cc4a6315517926"
+    },
+    {
+      "asset_id": "scirel.kinetic.simple-charge-exchange-source",
+      "path": "catalog/examples/scirel.kinetic.simple-charge-exchange-source.json",
+      "sha256": "01daa3ee24d3f0b65d5db23ca8f288decee8885bd88e600e2339b297637d4f84"
+    },
+    {
+      "asset_id": "scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient",
+      "path": "catalog/examples/scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient.json",
+      "sha256": "ed1c9eadd7242adf78d1fc2bca375dddcd31a7f55b64f4b04d8e0a5c04dab46f"
+    },
+    {
+      "asset_id": "scirel.field.multi-coil-vacuum-field",
+      "path": "catalog/examples/scirel.field.multi-coil-vacuum-field.json",
+      "sha256": "c6c4faf5f9d1b00404fe2bc62418d62d1cb1862423024c4063340068390d6ce4"
+    },
+    {
+      "asset_id": "scirel.basis.basis-matrix",
+      "path": "catalog/examples/scirel.basis.basis-matrix.json",
+      "sha256": "aa12e2ac56b2b587736ff5eb0d8ccba350a16be8084d898df659e5e84a131f6f"
+    },
+    {
+      "asset_id": "scirel.basis.build-basis",
+      "path": "catalog/examples/scirel.basis.build-basis.json",
+      "sha256": "e09dc4255bc21548aa16cabb8d0636289537b26c035e918f28437a8d56e52e2a"
+    },
+    {
+      "asset_id": "scirel.basis.clamped-cubic-spline",
+      "path": "catalog/examples/scirel.basis.clamped-cubic-spline.json",
+      "sha256": "f61e13be4ac83d819e73a12a986c603294c225b4a1e0d047266d736a30d8b47a"
+    },
+    {
+      "asset_id": "scirel.basis.first-clamped-cubic-spline",
+      "path": "catalog/examples/scirel.basis.first-clamped-cubic-spline.json",
+      "sha256": "d081a975d51cf859307087b09e1c66597f3518091945b8c36204fef3513775fe"
+    },
+    {
+      "asset_id": "scirel.basis.natural-cubic-spline",
+      "path": "catalog/examples/scirel.basis.natural-cubic-spline.json",
+      "sha256": "2867413c1d8e9a8faed8ab8a42b40d4e9bdc522e82a60ff39a8f040ea4f169dd"
+    },
+    {
+      "asset_id": "scirel.basis.second-clamped-cubic-spline",
+      "path": "catalog/examples/scirel.basis.second-clamped-cubic-spline.json",
+      "sha256": "1b5d498a49caafbbd59f0f4c8115e2a1acea7d3623b9beba9aa661639f381ad4"
+    },
+    {
+      "asset_id": "scirel.electromagnetism.arbitrary-points",
+      "path": "catalog/examples/scirel.electromagnetism.arbitrary-points.json",
+      "sha256": "b670ccd37fe7c125fcae1fa35bf5e4d158bd39b4d3b589a403d4f2acf78b1aa3"
+    },
+    {
+      "asset_id": "scirel.electromagnetism.brb",
+      "path": "catalog/examples/scirel.electromagnetism.brb.json",
+      "sha256": "7fe41ce584adb55bf82855a999fd65d476297a4309c31ebbccb66e1327f549e0"
+    },
+    {
+      "asset_id": "scirel.electromagnetism.device",
+      "path": "catalog/examples/scirel.electromagnetism.device.json",
+      "sha256": "665e11abcfb63c1d4d8e224954c6ef0b6221d8a8bf6a1470afa95a8570e8e43e"
+    },
+    {
+      "asset_id": "scirel.electromagnetism.distributed-current-flux",
+      "path": "catalog/examples/scirel.electromagnetism.distributed-current-flux.json",
+      "sha256": "bf340df975519e86033e68d032844351368bd24dd330b8b20632be3fed05c50c"
+    },
+    {
+      "asset_id": "scirel.electromagnetism.magnet-ring",
+      "path": "catalog/examples/scirel.electromagnetism.magnet-ring.json",
+      "sha256": "509349d4dab96c5b59ac24bcb7aa9c6faf905bd27239609dac79acd847f611a5"
+    },
+    {
+      "asset_id": "scirel.electromagnetism.rectangular-coil",
+      "path": "catalog/examples/scirel.electromagnetism.rectangular-coil.json",
+      "sha256": "562086e623e50bc4a79f7190b057eb6584dbb85da1704d33040df980c5464735"
+    },
+    {
+      "asset_id": "scirel.electromagnetism.trex-coil",
+      "path": "catalog/examples/scirel.electromagnetism.trex-coil.json",
+      "sha256": "5e60d62fd3446a8bc48705f53db68dcb6cb3ca4759b38f8b837e792af0b88555"
+    },
+    {
+      "asset_id": "scirel.electromagnetism.wham",
+      "path": "catalog/examples/scirel.electromagnetism.wham.json",
+      "sha256": "3b877d3a0f366c4820e9f1e174b442268dca3695466d618c7ef55940b9f03238"
+    },
+    {
+      "asset_id": "scirel.fieldline.arclength-derivative",
+      "path": "catalog/examples/scirel.fieldline.arclength-derivative.json",
+      "sha256": "a73e8856342e4ab3eda4c7162877c4e3324c8ad7a4569522bb0e0957f67b30c5"
+    },
+    {
+      "asset_id": "scirel.fieldline.boundary",
+      "path": "catalog/examples/scirel.fieldline.boundary.json",
+      "sha256": "5ad31981e03336b67c97bf51d14fea4aa236c64c3149f6ed04d3be3c48bad116"
+    },
+    {
+      "asset_id": "scirel.fieldline.contour-points",
+      "path": "catalog/examples/scirel.fieldline.contour-points.json",
+      "sha256": "08aacff2d96652fb90465d9b8ead9f68d134a4580c1e74b099fbec800c86621a"
+    },
+    {
+      "asset_id": "scirel.fieldline.fieldline",
+      "path": "catalog/examples/scirel.fieldline.fieldline.json",
+      "sha256": "a4f5b0d5773536aec81960461fd360313b366f769cfdf13a3ff6c137a7ed0423"
+    },
+    {
+      "asset_id": "scirel.fieldline.fieldline-set",
+      "path": "catalog/examples/scirel.fieldline.fieldline-set.json",
+      "sha256": "b37bab96b4c398c05fda7e3458cf9456025bd8ba30d1471e4049ad9b2a847cd0"
+    },
+    {
+      "asset_id": "scirel.fieldline.helper-contour-points",
+      "path": "catalog/examples/scirel.fieldline.helper-contour-points.json",
+      "sha256": "87b0a986f2697fbc6bfb1406e947caf3f29da4b42fe054365ebb40f860e738f6"
+    },
+    {
+      "asset_id": "scirel.fieldline.helper-fieldline",
+      "path": "catalog/examples/scirel.fieldline.helper-fieldline.json",
+      "sha256": "7abeb1936c98541d6918ffaeee1e942384a94abea86bcfcded307cc794b9fb77"
+    },
+    {
+      "asset_id": "scirel.geometry.points-mesh",
+      "path": "catalog/examples/scirel.geometry.points-mesh.json",
+      "sha256": "9c12e652301b19b89fed341c56c21844939866846332ae6884a61fd9bd27eff4"
+    },
+    {
+      "asset_id": "scirel.geometry.r-chord",
+      "path": "catalog/examples/scirel.geometry.r-chord.json",
+      "sha256": "48292fe30e88fab6485cf45d046ee79bdc353e4044ded66eb376eeb4869b140c"
+    },
+    {
+      "asset_id": "scirel.geometry.rect-mesh",
+      "path": "catalog/examples/scirel.geometry.rect-mesh.json",
+      "sha256": "d2f6c8d9bd1e458c2d06573fb21ddc71c689e29d3bdd52eb8f9bd22d9b41a1fa"
+    },
+    {
+      "asset_id": "scirel.geometry.rotate",
+      "path": "catalog/examples/scirel.geometry.rotate.json",
+      "sha256": "003c92a37089780e3bbf3c28b9e690541ea9069127b81f678e5d02e4b312d880"
+    },
+    {
+      "asset_id": "scirel.geometry.spherical-r-chord",
+      "path": "catalog/examples/scirel.geometry.spherical-r-chord.json",
+      "sha256": "f16e183576226d59dcd2ded7b2e15044380370337564d57ac3469953f366b839"
+    },
+    {
+      "asset_id": "scirel.geometry.theta-chord",
+      "path": "catalog/examples/scirel.geometry.theta-chord.json",
+      "sha256": "c03366ef8b8af0b44d9a402453d61b847b3a59d96445ece337a171891036778e"
+    },
+    {
+      "asset_id": "scirel.geometry.z-chord",
+      "path": "catalog/examples/scirel.geometry.z-chord.json",
+      "sha256": "74216dccaa29b3b25e5afb087ab3e983f1a1c2abcc82c8b78c485ac00672c1aa"
+    },
+    {
+      "asset_id": "scirel.io.eqdsk-class",
+      "path": "catalog/examples/scirel.io.eqdsk-class.json",
+      "sha256": "7bb623b81d83d88de6ee3c09662036b05f9b39da4ad838a753dd839ac99a8408"
+    },
+    {
+      "asset_id": "scirel.io.pressure-equilibrium-eqdsk",
+      "path": "catalog/examples/scirel.io.pressure-equilibrium-eqdsk.json",
+      "sha256": "6034532cf384a0f077e2d3cc8e58ea345aa4bd83bce98127c50df67c50e062d9"
+    },
+    {
+      "asset_id": "scirel.io.read-pleiades-eqdsk",
+      "path": "catalog/examples/scirel.io.read-pleiades-eqdsk.json",
+      "sha256": "26f6ca4460f94271eb6aefdfc28a60966092f441b15719f780d951cefc3de13c"
+    },
+    {
+      "asset_id": "scirel.io.write-pleiades-eqdsk",
+      "path": "catalog/examples/scirel.io.write-pleiades-eqdsk.json",
+      "sha256": "0ab19565e638e8b41c170d784e8f1f088dc12891db0f83961a6477dd4e00b1af"
+    },
+    {
+      "asset_id": "scirel.io.write-pleiades-eqdsk-legacy-raw",
+      "path": "catalog/examples/scirel.io.write-pleiades-eqdsk-legacy-raw.json",
+      "sha256": "4703d2c2e0b5331a3a4e11c4effeff4718167699f7ae856f10627e9d1f9dd55e"
+    },
+    {
+      "asset_id": "scirel.kinetic.evaluate-faddeeva-dr",
+      "path": "catalog/examples/scirel.kinetic.evaluate-faddeeva-dr.json",
+      "sha256": "63cdba725cdd31d5d610157cb115d59e262985a06c5ec1ed3a07da683408b9b8"
+    },
+    {
+      "asset_id": "scirel.kinetic.evaluate-faddeeva-gpdf",
+      "path": "catalog/examples/scirel.kinetic.evaluate-faddeeva-gpdf.json",
+      "sha256": "e60fb7637e4f11e2b01bc269fd00e99cd3cfc06928a90ee64c66671b441d90a5"
+    },
+    {
+      "asset_id": "scirel.kinetic.evaluate-maxwellian-fft",
+      "path": "catalog/examples/scirel.kinetic.evaluate-maxwellian-fft.json",
+      "sha256": "1d404a3ce630cc43b97159ebf1efc4d2882d7f5be687b040acf44ae7f249c5ec"
+    },
+    {
+      "asset_id": "scirel.kinetic.evaluate-maxwellian-jpole",
+      "path": "catalog/examples/scirel.kinetic.evaluate-maxwellian-jpole.json",
+      "sha256": "d63b670a8623b5774ff561322108db9e776552a7e73609c86fdfb638e152d178"
+    },
+    {
+      "asset_id": "scirel.kinetic.generalized-dispersion",
+      "path": "catalog/examples/scirel.kinetic.generalized-dispersion.json",
+      "sha256": "d6febd995c63abaabe56fb8752c0df927d559ffa0b05727660dfdc7f4dbb56ec"
+    },
+    {
+      "asset_id": "scirel.kinetic.generalized-expression-differentiation",
+      "path": "catalog/examples/scirel.kinetic.generalized-expression-differentiation.json",
+      "sha256": "7ea78a5ee7b108622405684275d0002d68d7fe092b4bb05d23cdd359634b6dcb"
+    },
+    {
+      "asset_id": "scirel.kinetic.generalized-hilbert",
+      "path": "catalog/examples/scirel.kinetic.generalized-hilbert.json",
+      "sha256": "d40792b56756ec21139f8e505a565d7e4efde16aaa1f9edf4eab74a47980f3a2"
+    },
+    {
+      "asset_id": "scirel.kinetic.generalized-residual",
+      "path": "catalog/examples/scirel.kinetic.generalized-residual.json",
+      "sha256": "17ce463ccd3c16650230159212882f97bd6d915320e8166275dfbb806cb5c814"
+    },
+    {
+      "asset_id": "scirel.kinetic.generalized-root-scans",
+      "path": "catalog/examples/scirel.kinetic.generalized-root-scans.json",
+      "sha256": "a17c2c99cebc9054678d31c87018df76673b1aeeb92764b4000f67244e6a768c"
+    },
+    {
+      "asset_id": "scirel.kinetic.generalized-small-k",
+      "path": "catalog/examples/scirel.kinetic.generalized-small-k.json",
+      "sha256": "1ce58a7639f54c5b208bf15fc88c5d2a5e08226bd48c497f47cc7b97582e5f01"
+    },
+    {
+      "asset_id": "scirel.kinetic.gpdf-cauchy-transform",
+      "path": "catalog/examples/scirel.kinetic.gpdf-cauchy-transform.json",
+      "sha256": "7e9c8f89bfccd0f84fa3277a97044fc645803c07c528441d7a996c77d09321dd"
+    },
+    {
+      "asset_id": "scirel.kinetic.maxwellian-electrostatic-mode",
+      "path": "catalog/examples/scirel.kinetic.maxwellian-electrostatic-mode.json",
+      "sha256": "3ff9a082dbc7b70bd49e1d405a19874da439712d77d24bdcc750556cf7fc1e1a"
+    },
+    {
+      "asset_id": "scirel.kinetic.maxwellian-electrostatic-solver",
+      "path": "catalog/examples/scirel.kinetic.maxwellian-electrostatic-solver.json",
+      "sha256": "c320f24a9548e3d5e26e082bd89a602d150905aac16ab0a49a1935431d955692"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-dispersion-workflow",
+      "path": "catalog/examples/scirel.kinetic.pdrk-dispersion-workflow.json",
+      "sha256": "d3a5d58868765dc3622ba90482a8d3670411d7a9b3396a4ea53e172bb7bd7f4f"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-electromagnetic-eigenmatrix",
+      "path": "catalog/examples/scirel.kinetic.pdrk-electromagnetic-eigenmatrix.json",
+      "sha256": "76644b25695fee3dda5bca5b1de9245dd98f3d4f18fd1151dcab25e22d1d4b7f"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-electrostatic-eigenmatrix",
+      "path": "catalog/examples/scirel.kinetic.pdrk-electrostatic-eigenmatrix.json",
+      "sha256": "e5fbe46aa62be957ea6e2fcd30299f35023221b577dc3c498732b7a40b13ba66"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-faddeeva-finite-order",
+      "path": "catalog/examples/scirel.kinetic.pdrk-faddeeva-finite-order.json",
+      "sha256": "43f74a60247fae77c15a292c4421a05953d453843ed8b24378da560399ab5e10"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-fluid-deck",
+      "path": "catalog/examples/scirel.kinetic.pdrk-fluid-deck.json",
+      "sha256": "b3d6e7f373c44e6256929fc8762d12b9f974a240940abfdede14005ed02566b3"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-fluid-equilibrium",
+      "path": "catalog/examples/scirel.kinetic.pdrk-fluid-equilibrium.json",
+      "sha256": "c1e57628dd48fe4ce94e1fc6fd04d8965c1c5fccf2611edea458cc24bf5bf323"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-fluid-frequency-pencil",
+      "path": "catalog/examples/scirel.kinetic.pdrk-fluid-frequency-pencil.json",
+      "sha256": "0a506ba36582970c51c98c9dc40394df1912f0a71bc292864f25be2aa18eb4bd"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-fluid-frequency-solve",
+      "path": "catalog/examples/scirel.kinetic.pdrk-fluid-frequency-solve.json",
+      "sha256": "0cca605e03cbda8684bf287aebaacfafefd4e8635207e277415a7b4fac35c940"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-fluid-plot",
+      "path": "catalog/examples/scirel.kinetic.pdrk-fluid-plot.json",
+      "sha256": "c98576f4f92d927b348e88761ef1ea59b539e0c8e52fe5a4b3a074729c5541d9"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-fluid-relative-rate-equilibrium",
+      "path": "catalog/examples/scirel.kinetic.pdrk-fluid-relative-rate-equilibrium.json",
+      "sha256": "0d46362d6ff12e56e00d4d4afcb42466b59c49e4c675e9edc6241f58a3a26f54"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-fluid-scan",
+      "path": "catalog/examples/scirel.kinetic.pdrk-fluid-scan.json",
+      "sha256": "3b1bc5516f5ddf09535f85c66a4d1e6aab24c1fd2b7b5ab31595bc9d8d7acf4e"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-frequency-eigensolve",
+      "path": "catalog/examples/scirel.kinetic.pdrk-frequency-eigensolve.json",
+      "sha256": "6d5fda9c936c4c8d8705f78de05645187a93fad0bc58d5428bad26bb5fb8c5b7"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-loss-cone-partition",
+      "path": "catalog/examples/scirel.kinetic.pdrk-loss-cone-partition.json",
+      "sha256": "c609c5e150ae0acafea0bbaa06f4d06691c264288b893ab0889f02c036bb509a"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-magnetized-mode-fields",
+      "path": "catalog/examples/scirel.kinetic.pdrk-magnetized-mode-fields.json",
+      "sha256": "14d95cdbb1bb60b9602f5f984e7e6308443e6aea306154de4983a6db49365cbf"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-parallel-em-continuation",
+      "path": "catalog/examples/scirel.kinetic.pdrk-parallel-em-continuation.json",
+      "sha256": "0180b311bb484f2af9620bde4a2dec27e0816214df28da39647365bf57ffcf9f"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-parallel-em-plot",
+      "path": "catalog/examples/scirel.kinetic.pdrk-parallel-em-plot.json",
+      "sha256": "893fa913a9eb708bd7ade54f62b6b12877e9484fcc9788176eeb57ed74158c49"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-parallel-em-residual",
+      "path": "catalog/examples/scirel.kinetic.pdrk-parallel-em-residual.json",
+      "sha256": "3945a7d52abc5bed9a5787f30b3cc6787ff31274d9e70fdf13022d8d33d18588"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-polarization-workflow",
+      "path": "catalog/examples/scirel.kinetic.pdrk-polarization-workflow.json",
+      "sha256": "45fa095f1422ec2ba94731e49aae9ef888c01b53ab5da17d6071f99f7f6504f2"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-preset-mode-selection",
+      "path": "catalog/examples/scirel.kinetic.pdrk-preset-mode-selection.json",
+      "sha256": "3638fdabac5fbd8e3d9b9c46ea39b38723c7f6b0f0adb80137c1fb5892cc2f08"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-preset-output-workflow",
+      "path": "catalog/examples/scirel.kinetic.pdrk-preset-output-workflow.json",
+      "sha256": "7f9f35847ac56c219a4c223b096a327b1a2896cea8b2a563781e912d29e7b73a"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-default-deck",
+      "path": "catalog/examples/scirel.kinetic.pdrk-rational-default-deck.json",
+      "sha256": "a64192f85c35eb81d3d696176583b4d0aeb1b9fac42c9f38a98cc84b76e14efc"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-em-coordinates",
+      "path": "catalog/examples/scirel.kinetic.pdrk-rational-em-coordinates.json",
+      "sha256": "787dbf211f9ea87c1d627b7f17f44e317c416e10cd1471cb2ee3bf7df8e5124b"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-equilibrium",
+      "path": "catalog/examples/scirel.kinetic.pdrk-rational-equilibrium.json",
+      "sha256": "8ba6f80a4620739e7f628e4a2e847446a88a40da66a51df34d6bc467f5cd9f54"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-jpole-coefficients",
+      "path": "catalog/examples/scirel.kinetic.pdrk-rational-jpole-coefficients.json",
+      "sha256": "8d9e019b625a66853912eb701d3f041bb215fcb0d2b7bb03ec7f435e8969c577"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-jpole-evaluate",
+      "path": "catalog/examples/scirel.kinetic.pdrk-rational-jpole-evaluate.json",
+      "sha256": "9af917e2a53f1cfd5d4aa12fcacfba9c0e429886cba5cc92db0a3a63d6d4edec"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-jpole-generator",
+      "path": "catalog/examples/scirel.kinetic.pdrk-rational-jpole-generator.json",
+      "sha256": "32e2303e1f02bede5ebde0ea151faf40cfd79f9d322840550bf319113875b71f"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-jpole-grid-coordinates",
+      "path": "catalog/examples/scirel.kinetic.pdrk-rational-jpole-grid-coordinates.json",
+      "sha256": "802079f392d56d1bbc77859ec9f1c7fef455a725fc44bea338eb1813e9cb3810"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-ordered-spectrum",
+      "path": "catalog/examples/scirel.kinetic.pdrk-rational-ordered-spectrum.json",
+      "sha256": "a41d07e1435a6ccfab17acfba05d0994f4d7544245e506cb7761d96384d6d53b"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-point-matrix",
+      "path": "catalog/examples/scirel.kinetic.pdrk-rational-point-matrix.json",
+      "sha256": "ae30e03724dff152d34f1afbf0e3c1ffa6709a409c377f8bac7bb72ae2e373be"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-pole-table",
+      "path": "catalog/examples/scirel.kinetic.pdrk-rational-pole-table.json",
+      "sha256": "47ba5e0448026470c4703756c8cb09fa202fb8c611dedbbf3d4aac1fba62c435"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-reassemble-original-program",
+      "path": "catalog/examples/scirel.kinetic.pdrk-rational-reassemble-original-program.json",
+      "sha256": "fbd61e8751eb445b1ee3f2f4c0d2002ef3f6785b7543b3776b76d60ff0d66e3c"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-solve-matrix",
+      "path": "catalog/examples/scirel.kinetic.pdrk-rational-solve-matrix.json",
+      "sha256": "c012752393a1f9c9021126893c6bf25c03e52b6d7c326ddb080c606dbbe7c8f7"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rational-z-poles",
+      "path": "catalog/examples/scirel.kinetic.pdrk-rational-z-poles.json",
+      "sha256": "b2ff8545753a752470826dd3ba1d36073a1f3619abdc9ecf15555f5545eb1446"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-rendered-output-workflow",
+      "path": "catalog/examples/scirel.kinetic.pdrk-rendered-output-workflow.json",
+      "sha256": "88e47c3156ad08b8928e7989e46db66e8d766a63820d4b39b1a9b370eebb712e"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-seed-mode-selection",
+      "path": "catalog/examples/scirel.kinetic.pdrk-seed-mode-selection.json",
+      "sha256": "a20445d7e5b6f34a70da702d81115ac5bd73ec824dbe88a955626fd05a7a4333"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-selected-dispersion-interpolation",
+      "path": "catalog/examples/scirel.kinetic.pdrk-selected-dispersion-interpolation.json",
+      "sha256": "dde6aebe312d8581b80a2bc1783999ec7a20eac06a65f681ca99c4aa4e1b7baf"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-selected-fields-workflow",
+      "path": "catalog/examples/scirel.kinetic.pdrk-selected-fields-workflow.json",
+      "sha256": "8f2ca650d9282fca4b6901ecb9ea6860112c36189795642340fc1dec4547acd9"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-selected-mode-artifacts",
+      "path": "catalog/examples/scirel.kinetic.pdrk-selected-mode-artifacts.json",
+      "sha256": "5bab56ea84acfbcedbff810cbcee48a09dd8620ace0679e73c2a0ee08b229f6f"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-selection-artifacts",
+      "path": "catalog/examples/scirel.kinetic.pdrk-selection-artifacts.json",
+      "sha256": "fabad30c2d00ac3b2ea4e4ec3f3aab74f78125e7ea7161347c7e8feee0aeb5fa"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-species-equilibrium",
+      "path": "catalog/examples/scirel.kinetic.pdrk-species-equilibrium.json",
+      "sha256": "1899f2f1d1a1b51ef5adcd6ecba8573320dec9a50311c991f79e7232a87261b4"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-spectral-scan-workflow",
+      "path": "catalog/examples/scirel.kinetic.pdrk-spectral-scan-workflow.json",
+      "sha256": "d446e1ce73d96c2d36668925ea92ea2d9899a32b8a3fea217f479731503fa4d0"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-spectrum-artifacts",
+      "path": "catalog/examples/scirel.kinetic.pdrk-spectrum-artifacts.json",
+      "sha256": "54bb19e98b9e0f48fb7047bc627c368dbb70bcc34abc99daca059e392a1fb163"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-stored-program-workflow",
+      "path": "catalog/examples/scirel.kinetic.pdrk-stored-program-workflow.json",
+      "sha256": "868c5f791f529d18744596c3acb13be997026f55b83e07ba821c021dfea0d921"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-wavevector-coordinates",
+      "path": "catalog/examples/scirel.kinetic.pdrk-wavevector-coordinates.json",
+      "sha256": "0faf2b67492e5e9e0e12d50a4ac4c422a0358ab3253cde26ef6bcba673988501"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-whamp-overlay",
+      "path": "catalog/examples/scirel.kinetic.pdrk-whamp-overlay.json",
+      "sha256": "9c34712fd2a25dbc8aefc3ae534b98f4b428fc0ed7b08392806962dec9906f18"
+    },
+    {
+      "asset_id": "scirel.kinetic.pdrk-whamp-reference",
+      "path": "catalog/examples/scirel.kinetic.pdrk-whamp-reference.json",
+      "sha256": "df8c516329aa9293502cb2e2f1ab04366f9d0687b7af844c12199edb18e9a1a3"
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-diagnostic",
+      "path": "catalog/examples/scirel.kinetic.vp-diagnostic.json",
+      "sha256": "e234727dcbd53b51fe63aa9362f6660167c6c6f51bc459a25bd20eb4d8a5e3cc"
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-distribution",
+      "path": "catalog/examples/scirel.kinetic.vp-distribution.json",
+      "sha256": "e332727fcb2f952688f492378a45c0f4b1f029671c43cf82e686e38f006e0fa4"
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-envelope",
+      "path": "catalog/examples/scirel.kinetic.vp-envelope.json",
+      "sha256": "d3394c56924c666a6e969aefd1a966075bf466190b39a1ddeaba638f44ea04d4"
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-evolve",
+      "path": "catalog/examples/scirel.kinetic.vp-evolve.json",
+      "sha256": "50e879ed57981ecb1b82bb1c322736f325b0bcf1a2ec48cffa8895ff6b4da5c1"
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-field",
+      "path": "catalog/examples/scirel.kinetic.vp-field.json",
+      "sha256": "34a37d23622611bdc308e97ed678060dc81b890c0d0703966ab81c9df5d98fc9"
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-init",
+      "path": "catalog/examples/scirel.kinetic.vp-init.json",
+      "sha256": "f7e7e002d641e907f443538265ea049674261c18bc58efa578d6392aee9cd531"
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-landau",
+      "path": "catalog/examples/scirel.kinetic.vp-landau.json",
+      "sha256": "5ab84e19bced9079ae55567b851073413d738505dc0575b74d6eb55415d883a3"
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-rhs",
+      "path": "catalog/examples/scirel.kinetic.vp-rhs.json",
+      "sha256": "bd7db93453c7f90c339b84c285d1bc7de8e31bf4a8261cfe00c286784b567480"
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-rk4-step",
+      "path": "catalog/examples/scirel.kinetic.vp-rk4-step.json",
+      "sha256": "b05eab10dbaba4fb766619099136c2119f8ceebdaf3216dc6c24199059009261"
+    },
+    {
+      "asset_id": "scirel.numerics.nonuniform-derivatives",
+      "path": "catalog/examples/scirel.numerics.nonuniform-derivatives.json",
+      "sha256": "7329d672e3701a9798641f1b42898a5bcd9f3bd78dafccd76657b2359f288414"
+    },
+    {
+      "asset_id": "scirel.plotting.mirror-patches",
+      "path": "catalog/examples/scirel.plotting.mirror-patches.json",
+      "sha256": "cf0b1eaae7bc1203b37215f299130355403e1cecda599b6578d0c7e649ba14f6"
+    },
+    {
+      "asset_id": "scirel.plotting.scale-patches",
+      "path": "catalog/examples/scirel.plotting.scale-patches.json",
+      "sha256": "0eee4cf2966e76487563a3f41ba5c53685ee7c76337de852ab30cc0acfc351e7"
+    },
+    {
+      "asset_id": "scirel.plotting.transpose-patches",
+      "path": "catalog/examples/scirel.plotting.transpose-patches.json",
+      "sha256": "8cba3d5209998a6bf8590aa44750e31c02695f1adc4b63c11d7582d604c92292"
+    },
+    {
+      "asset_id": "scirel.sampling.meridional-polar-forward",
+      "path": "catalog/examples/scirel.sampling.meridional-polar-forward.json",
+      "sha256": "4b50740f0a316be53a4267eafa93df78ba010c39517538a75540ff65450da442"
+    },
+    {
+      "asset_id": "scirel.sampling.meridional-polar-inverse",
+      "path": "catalog/examples/scirel.sampling.meridional-polar-inverse.json",
+      "sha256": "fd74ff044d46659cac597f96fc582025411d7ad6b03dfcab4586e4396aef392f"
+    },
+    {
+      "asset_id": "scirel.sampling.nonuniform-first-derivative",
+      "path": "catalog/examples/scirel.sampling.nonuniform-first-derivative.json",
+      "sha256": "55bb0312e4c62da2865958349af1bfc3c827608bc3917a3ce669b950be844736"
+    },
+    {
+      "asset_id": "scirel.sampling.parse-segment",
+      "path": "catalog/examples/scirel.sampling.parse-segment.json",
+      "sha256": "7d5edd7b9497e97ca48704cb95d98e206023167f4a41a84d5402b8c8f8884dc1"
+    },
+    {
+      "asset_id": "scirel.sampling.path-distance",
+      "path": "catalog/examples/scirel.sampling.path-distance.json",
+      "sha256": "a992a14aa5c6154bc08ae57716c83c9793af9671466a160bfdf0276572868fb6"
+    },
+    {
+      "asset_id": "scirel.sampling.point-nearest",
+      "path": "catalog/examples/scirel.sampling.point-nearest.json",
+      "sha256": "bab13f276534d1470395415d6c20959b8f9d4f8f3274cedd63383addba45a511"
+    },
+    {
+      "asset_id": "scirel.sampling.polynomial-fit",
+      "path": "catalog/examples/scirel.sampling.polynomial-fit.json",
+      "sha256": "fcbe3c963ed2eec4a122b2b80f801fca32eb3e42d6031096adbc8fb1a1bf11e0"
+    },
+    {
+      "asset_id": "scirel.sampling.rectangular-nearest",
+      "path": "catalog/examples/scirel.sampling.rectangular-nearest.json",
+      "sha256": "0cdf65ef97f6a63f99fcc566e1dc065103174d5e00763c13ab9e5d0a977f1b94"
+    },
+    {
+      "asset_id": "scirel.sampling.rectangular-spline",
+      "path": "catalog/examples/scirel.sampling.rectangular-spline.json",
+      "sha256": "d5e1a33bcb734f8529bbefe4f44a91d3506097bea3488de4537f0a60a3e89146"
+    },
+    {
+      "asset_id": "scirel.sampling.regular-grid",
+      "path": "catalog/examples/scirel.sampling.regular-grid.json",
+      "sha256": "b9975efb799f9de1214c72a858efb8cb99540f386a9f2a65feec8e52df04f7db"
+    },
+    {
+      "asset_id": "scirel.sampling.scalar-reflection",
+      "path": "catalog/examples/scirel.sampling.scalar-reflection.json",
+      "sha256": "db69717f53ac55250c695527c6468ac4ff2cdaae78a56538ab477affe65a986f"
+    },
+    {
+      "asset_id": "scirel.sampling.scattered-linear",
+      "path": "catalog/examples/scirel.sampling.scattered-linear.json",
+      "sha256": "1b3a62c1a0cf4035c153076f5118ff93997f87b7cba8aae038876adc2b3c4eb5"
+    },
+    {
+      "asset_id": "scirel.sampling.select-fieldline",
+      "path": "catalog/examples/scirel.sampling.select-fieldline.json",
+      "sha256": "58ea7e20263abaf3130b41feda3c33ff7b67530e1c69f490954b059a7eae6e3f"
+    },
+    {
+      "asset_id": "scirel.sampling.weighted-line-integral",
+      "path": "catalog/examples/scirel.sampling.weighted-line-integral.json",
+      "sha256": "f4bcc4cfb4bbb55cc57fe85237186291cea912582b304d65df65bed1f4a6fb1f"
+    },
+    {
+      "asset_id": "scirel.kinetic.fluidbw-case-state",
+      "path": "catalog/examples/scirel.kinetic.fluidbw-case-state.json",
+      "sha256": "6ddd175eabce50f20ae3c13942ca0c9959255ad04fb8b52ee07a213a94606660"
+    },
+    {
+      "asset_id": "scirel.kinetic.fluidbw-special-functions",
+      "path": "catalog/examples/scirel.kinetic.fluidbw-special-functions.json",
+      "sha256": "d481ac3198759285108999b0412c503a5bf400dbc11ca1c34dbcdc2ad0eaf62f"
+    },
+    {
+      "asset_id": "scirel.kinetic.fluidbw-dispersion-response",
+      "path": "catalog/examples/scirel.kinetic.fluidbw-dispersion-response.json",
+      "sha256": "2fd9f74089af8e28ddcebe7fd19ca3f6d47fae9d8214afe0e73201eb2fb48144"
+    },
+    {
+      "asset_id": "scirel.kinetic.fluidbw-em-matrix",
+      "path": "catalog/examples/scirel.kinetic.fluidbw-em-matrix.json",
+      "sha256": "906ee17c5b45bc859542ccb3712f2906e95affe55bb0495b7e7907a5c9690403"
+    },
+    {
+      "asset_id": "scirel.kinetic.fluidbw-bonk-search",
+      "path": "catalog/examples/scirel.kinetic.fluidbw-bonk-search.json",
+      "sha256": "40472985193225b901f58fac802dc8794b93aead8c73e234f50ea56a1e1a0342"
+    },
+    {
+      "asset_id": "scirel.kinetic.fluidbw-em-spectrum",
+      "path": "catalog/examples/scirel.kinetic.fluidbw-em-spectrum.json",
+      "sha256": "b6ea3b93fccf13567b430fdd1d51690f39e73e78f94f5bfd80dd0090173ac2d5"
+    },
+    {
+      "asset_id": "scirel.kinetic.fluidbw-materials",
+      "path": "catalog/examples/scirel.kinetic.fluidbw-materials.json",
+      "sha256": "3396a9ab5fac07e040fc31f470982104f17e6406020f73f9262319564275e492"
+    }
+  ]
+}
