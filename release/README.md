@@ -21,4 +21,4 @@ with SHA-256 verification at
 `/e/SciRel-lab/projects/_scirel-repository-archive-20261015/catalog/`. The
 archive is historical evidence, not a SciRel intake path.
 
-The ignored local `build/` handoff and source-inventory scratch was also archived with checksums under `/e/SciRel-lab/projects/_scirel-repository-archive-20261015/build-final/` and removed locally. `.runtime/` remains evidence-bearing; it is not a wheel intake.
+The ignored local `build/` handoff and source-inventory scratch was also archived with checksums under `/e/SciRel-lab/projects/_scirel-repository-archive-20261015/build-dev7/` and removed locally. `.runtime/` remains evidence-bearing; it is not a wheel intake.
