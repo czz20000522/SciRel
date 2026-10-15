@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from scirel.fieldline import FieldLine,HelperFieldLine,Boundary
+from scirel.geometry.fieldline import FieldLine,HelperFieldLine,Boundary
 
 @pytest.mark.parametrize('klass',[FieldLine,HelperFieldLine])
 def test_intersection_transverse_endpoint_and_nonintersection(klass):
@@ -39,7 +39,7 @@ def test_boundary_state_recovery_and_multiple_crossing_failure(klass):
 
 def test_distinct_constructor_and_curvature_return_contracts():
     from types import SimpleNamespace
-    from scirel.fieldline import FieldLineSet,contour_points,helper_contour_points
+    from scirel.geometry.fieldline import FieldLineSet,contour_points,helper_contour_points
     p=np.column_stack((np.linspace(1,2,7),np.linspace(-.4,.6,7)))
     contour=SimpleNamespace(levels=[.7],allsegs=[[p]])
     assert FieldLineSet(contour,npts=73).flset[.7][0].verts.shape==(73,2)

@@ -6,7 +6,7 @@ import importlib
 import numpy as np
 
 def load(name):
-    module_name = {"equilibrium": "scirel.equilibrium", "fieldline": "scirel.fieldline", "numerics": "scirel.numerics"}[name]
+    module_name = {"equilibrium": "scirel.equilibrium", "fieldline": "scirel.geometry.fieldline", "numerics": "scirel.geometry.numerics"}[name]
     return importlib.import_module(module_name)
 
 

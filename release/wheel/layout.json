@@ -1,19 +1,38 @@
 {
   "schema": "scirel.wheel-layout.v1",
-  "wheel_version": "0.1.0.dev6",
   "source_layout": "src/scirel",
   "domain_packages": [
-    "closures", "collisions", "configurations", "diagnostics", "dielectric",
-    "electromagnetism", "equilibrium", "field", "fusion", "fvm", "geometry",
-    "inference", "io", "kinetic", "neoclassical", "physics", "plasma", "source"
+    "closures",
+    "collisions",
+    "configurations",
+    "diagnostics",
+    "dielectric",
+    "electromagnetism",
+    "equilibrium",
+    "field",
+    "fusion",
+    "fvm",
+    "geometry",
+    "inference",
+    "io",
+    "kinetic",
+    "neoclassical",
+    "physics",
+    "plasma",
+    "source"
   ],
   "organized_general_primitives": {
-    "geometry": ["analysis", "basis", "fieldline", "numerics", "plotting", "sampling"],
-    "equilibrium": ["api"]
+    "geometry": [
+      "analysis",
+      "basis",
+      "fieldline",
+      "numerics",
+      "plotting",
+      "sampling"
+    ],
+    "equilibrium": [
+      "api"
+    ]
   },
-  "compatibility_modules": [
-    "scirel.analysis", "scirel.basis", "scirel.fieldline", "scirel.numerics",
-    "scirel.plotting", "scirel.sampling", "scirel.equilibrium_api"
-  ],
-  "policy": "Scientific implementations live in domain packages; top-level compatibility modules contain re-exports only. Development tools, tests, provenance and external decomposition assets remain outside the wheel."
+  "policy": "Scientific implementations live in domain packages. Top-level legacy module paths are intentionally absent; callers must use the owning domain package. Development tools, tests, provenance and external decomposition assets remain outside the wheel."
 }

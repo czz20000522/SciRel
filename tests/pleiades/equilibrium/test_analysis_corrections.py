@@ -25,9 +25,9 @@ if SOURCE:
     fl = load_file('source_fltools', ROOT/'pleiades/analysis/fltools.py')
     helpers = load_file('source_helpers', ROOT/'pleiades/analysis/helpers.py')
 else:
-    from scirel import basis
-    from scirel import fieldline as fl
-    from scirel import sampling as helpers
+    from scirel.geometry import basis
+    from scirel.geometry import fieldline as fl
+    from scirel.geometry import sampling as helpers
 
 
 def test_clamped_unequal_knots_reproduces_cubic():

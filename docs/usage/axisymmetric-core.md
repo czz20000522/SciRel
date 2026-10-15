@@ -80,7 +80,7 @@ BRB 的单个 dense 矩阵占 13,057,926,408 字节，实际进程峰值约 13.8
 
 两个终态文件读回后都真正构造了 401 点场线。按 `ds/B` 加权，常数平均均为 1；非恒定 R² 平均为 BRB 的 0.09761884 m² 和 WHAM 的 0.04811447 m²。独立验证重新计算压力、电流、文本字段、路径权重及平均，不把写出的答案当成计算依据。
 
-`scirel.fieldline` 的 `FieldLine`、`HelperFieldLine`、`FieldLineSet` 和 `Boundary` 提供路径顺序、弧长、采样、曲率、沿线导数、磁通梯度和边界截取。开放路径的邻接不能按闭合环滚动。两种场线入口都遵从显式指定的 `method`，默认仍为 `cubic`。完整、有限的实数矩形网格在每轴至少四点时使用三次张量样条；下降坐标与数据同步反转。散点或不完整网格的三次插值使用梯度估计容差为 `1e-12` 的 Clough–Tocher 方法；主入口过滤非有限 Q，Helper 保留原有不筛除 Q 的行为。物理磁场分量先采样再归一化，查询不在支持域内时不外推场诊断。
+`scirel.geometry.fieldline` 的 `FieldLine`、`HelperFieldLine`、`FieldLineSet` 和 `Boundary` 提供路径顺序、弧长、采样、曲率、沿线导数、磁通梯度和边界截取。开放路径的邻接不能按闭合环滚动。两种场线入口都遵从显式指定的 `method`，默认仍为 `cubic`。完整、有限的实数矩形网格在每轴至少四点时使用三次张量样条；下降坐标与数据同步反转。散点或不完整网格的三次插值使用梯度估计容差为 `1e-12` 的 Clough–Tocher 方法；主入口过滤非有限 Q，Helper 保留原有不筛除 Q 的行为。物理磁场分量先采样再归一化，查询不在支持域内时不外推场诊断。
 
 场曲率在同一个局部参数下求几何位置和单位磁场方向的导数，按 $\boldsymbol{\kappa}=\mathrm{sign}(\mathbf p'\cdot\hat{\mathbf b})\hat{\mathbf b}'/|\mathbf p'|$ 组合。五点使用局部四次多项式，三／四点路径分别使用可用的二／三次公式；该关系要求实际光滑磁场线，非零切向投影本身不能证明路径与磁场相切。公开 `d_ds` 仍采用实际折线弧长上的三点差分。Helper 的曲率返回两个分量数组，主入口返回 `(N,2)`，只有主入口提供磁通梯度曲率 `get_kappa_n_2`。
 
@@ -90,13 +90,13 @@ BRB 的单个 dense 矩阵占 13,057,926,408 字节，实际进程峰值约 13.8
 
 ## 基函数和采样
 
-`scirel.basis` 提供多项式、自然/双端钳制/单端钳制和源限定的第二钳制样条，以及 `BasisMatrix` 组合。边界条件不是可互换的名字；第二钳制的原柱坐标 Robin 关系限定于其零原点值域。先核对 exact document 中的边界、外插和导数选择规则，再用于物理拟合。
+`scirel.geometry.basis` 提供多项式、自然/双端钳制/单端钳制和源限定的第二钳制样条，以及 `BasisMatrix` 组合。边界条件不是可互换的名字；第二钳制的原柱坐标 Robin 关系限定于其零原点值域。先核对 exact document 中的边界、外插和导数选择规则，再用于物理拟合。
 
-`scirel.sampling` 提供矩形最近点、平面最近点、散点与样条插值、极坐标变换、反射、路径采样和通量平均。最近点的平局规则由各入口定义，域外最近点不是域外场解。`scirel.numerics.diff_12_central` 的原始入口要求严格递增坐标。处理下降坐标时同时反转坐标和数据，调用后反转内点导数顺序；导数相对于物理坐标，不额外改变符号。
+`scirel.geometry.sampling` 提供矩形最近点、平面最近点、散点与样条插值、极坐标变换、反射、路径采样和通量平均。最近点的平局规则由各入口定义，域外最近点不是域外场解。`scirel.geometry.numerics.diff_12_central` 的原始入口要求严格递增坐标。处理下降坐标时同时反转坐标和数据，调用后反转内点导数顺序；导数相对于物理坐标，不额外改变符号。
 
 ```python
 import numpy as np
-from scirel.numerics import diff_12_central
+from scirel.geometry.numerics import diff_12_central
 
 x = np.array([1.7, 1.2, .9, .1, -.4, -.8])
 y = 2*x*x - 3*x + 4

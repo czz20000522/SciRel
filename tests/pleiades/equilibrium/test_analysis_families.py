@@ -3,8 +3,8 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 from scipy.interpolate import CubicSpline as ReferenceSpline
-from scirel import basis, fieldline, sampling, plotting
-from scirel.numerics import diff_12_central, NumericalContractError
+from scirel.geometry import basis, fieldline, sampling, plotting
+from scirel.geometry.numerics import diff_12_central, NumericalContractError
 from matplotlib.patches import Rectangle
 import os
 if os.environ.get('ANALYSIS_SOURCE') == '1':

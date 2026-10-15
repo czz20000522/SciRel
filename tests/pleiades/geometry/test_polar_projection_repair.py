@@ -1,7 +1,7 @@
 """Independent meridional vector projection and roundtrip gates."""
 import numpy as np
 import pytest
-from scirel import sampling as m
+from scirel.geometry import sampling as m
 
 def test_polar_position_and_vector_independent_projection():
     rho=np.array([.2,.7,1.4,2.1,0.]);z=np.array([.7,-.3,0.,1.2,-.8])

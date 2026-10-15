@@ -1,7 +1,7 @@
 """Retained primitive selection preserves the bounded Boundary oracle."""
 import numpy as np
-from scirel.fieldline import Boundary, d_ds_arclength
-import scirel.fieldline as fieldline
+from scirel.geometry.fieldline import Boundary, d_ds_arclength
+import scirel.geometry.fieldline as fieldline
 
 
 def test_boundary_source_interpolation_with_repaired_class_exports():

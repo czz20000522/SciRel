@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scirel"
-version = "0.1.0.dev6"
+version = "0.1.0.dev7"
 description = "Scientific Relations Library"
 requires-python = ">=3.14,<3.15"
 dependencies = ["numpy==2.5.4", "scipy==1.18.1", "matplotlib==3.11.2", "netCDF4==1.7.4", "mpmath==1.4.1"]

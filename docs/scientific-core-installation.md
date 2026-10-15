@@ -43,7 +43,7 @@ Python wheel 不会替用户安装这个系统运行时，缺少时该类入口�
 ## 按问题查找入口
 
 - 坐标、网格、线圈和磁场响应：`scirel.geometry`、`scirel.field`、`scirel.electromagnetism`。
-- 压力闭合、平衡反馈与场线诊断：`scirel.closures`、`scirel.equilibrium`、`scirel.fieldline`。
+- 压力闭合、平衡反馈与场线诊断：`scirel.closures`、`scirel.equilibrium`、`scirel.geometry.fieldline`。
 - 守恒输运与源项：`scirel.fvm`、`scirel.source`。
 - 碰撞尺度、自举电流、动理学和多流体波：对应领域参考页列出函数和复合入口；不按来源项目分章。
 

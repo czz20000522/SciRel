@@ -8,7 +8,7 @@ failed observations remain evidence.160-grid cases retain the same tolerance.
 """
 import numpy as np
 import pytest
-from scirel.fieldline import FieldLine, HelperFieldLine
+from scirel.geometry.fieldline import FieldLine, HelperFieldLine
 
 @pytest.mark.parametrize('grid_n',[80,160])
 @pytest.mark.parametrize('klass',[FieldLine,HelperFieldLine])

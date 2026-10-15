@@ -4,7 +4,7 @@ The pre-adapter source failures are retained in keyword-ports-before.stdout.
 """
 import numpy as np
 import pytest
-from scirel import sampling
+from scirel.geometry import sampling
 
 def test_regular_grid_named_values_match_legacy_positional_fields():
     x,y=np.meshgrid(np.linspace(0,1,4),np.linspace(0,1,4))

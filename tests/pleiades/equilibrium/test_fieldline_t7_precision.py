@@ -5,7 +5,7 @@ D2 successor: same domains, 40/80/160 spatial grids, 401 line vertices,
 """
 import numpy as np
 import pytest
-from scirel.fieldline import FieldLine, HelperFieldLine
+from scirel.geometry.fieldline import FieldLine, HelperFieldLine
 
 
 @pytest.mark.parametrize("klass", [FieldLine, HelperFieldLine])
