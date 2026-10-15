@@ -94,7 +94,7 @@ class SciRelPlugin:
         skill_bundle_ref = "cf://artifact/scirel-skill-bundle-example-20260920"
         return PluginReleaseSnapshot(
             plugin_release_ref=(
-                "plugin-release://scirel/0.1.0.dev5/example-20260920"
+                "plugin-release://scirel/example-20260920"
             ),
             artifacts=(
                 ArtifactReference(
@@ -145,7 +145,7 @@ class SciRelPlugin:
             ),
             runtime_dependency_refs=(
                 "runtime-dependency://python-distribution/scirel/"
-                "0.1.0.dev5/example-20260920",
+                "example-20260920",
             ),
         )
 

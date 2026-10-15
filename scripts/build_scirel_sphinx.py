@@ -20,7 +20,7 @@ import xml.etree.ElementTree as ET
 def load_translations(root, documents, docs, translation_paths=None):
     """Load one exact reader set; an explicit selection keeps all binding gates.
 
-    The default repository handbook still consumes all top-level reader bundles.
+    The default repository handbook still consumes all repository reader bundles.
     A selected scientific distribution can supply its own complete reader set
     without inheriting unrelated documents from another development selection.
     """

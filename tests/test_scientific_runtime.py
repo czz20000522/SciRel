@@ -37,11 +37,20 @@ def test_conflicting_or_unqualified_dependency_is_not_silently_replaced(dependen
 def test_reviewed_project_only_changes_selected_version(tmp_path):
     project = (ROOT / "pyproject.toml").read_text()
     (tmp_path / "pyproject.toml").write_text(project)
-    selected = {"a": {"version": {"implementation_version": "0.2.0.dev4+bound"}}}
+    current_version = next(
+        line.split('"', 2)[1]
+        for line in project.splitlines()
+        if line.startswith("version = ")
+    )
+    selected_version = "0.2.0+bound"
+    selected = {"a": {"version": {"implementation_version": selected_version}}}
     result = _project_for_release(tmp_path, selected)
-    assert result == project.replace('version = "0.1.0.dev5"', 'version = "0.2.0.dev4+bound"')
+    assert result == project.replace(
+        f'version = "{current_version}"',
+        f'version = "{selected_version}"',
+    )
     assert (tmp_path / "pyproject.toml").read_text() == project
-    selected["b"] = {"version": {"implementation_version": "0.1.0.dev5"}}
+    selected["b"] = {"version": {"implementation_version": "0.0.0"}}
     with pytest.raises(ValueError, match="share one implementation_version"):
         _project_for_release(tmp_path, selected)
 
@@ -65,7 +74,7 @@ def test_selected_wheel_binds_baseline_and_preserves_exact_science(tmp_path):
     license_file = fixture / "licenses/TEST.txt"
     license_file.parent.mkdir()
     license_file.write_text("Synthetic build fixture only.\n")
-    profile = {"schema": "scirel.selected-scientific-wheel.v1", "version": "0.0.0.dev0+runtimefixture",
+    profile = {"schema": "scirel.selected-scientific-wheel.v1", "version": "0.0.0+runtimefixture",
                "dependencies": ["numpy>=1.24", "scipy>=1.10"],
                "files": [{"path": source, "sha256": hashlib.sha256(body).hexdigest()}],
                "licenses": [{"path": "licenses/TEST.txt", "sha256": hashlib.sha256(license_file.read_bytes()).hexdigest()}],
@@ -73,7 +82,7 @@ def test_selected_wheel_binds_baseline_and_preserves_exact_science(tmp_path):
     profile_path = tmp_path / "selection.json"
     profile_path.write_text(json.dumps(profile))
     # A carried initializer must never report a different release identity.
-    profile["initializers"]["src/scirel/__init__.py"] += "__version__ = '0.0.0.dev0+stale'\n"
+    profile["initializers"]["src/scirel/__init__.py"] += "__version__ = '0.0.0+stale'\n"
     profile_path.write_text(json.dumps(profile))
     rejected = tmp_path / "rejected"
     bad = subprocess.run([sys.executable, str(ROOT / "scripts/build_pleiades_selected.py"), str(profile_path), str(rejected), "--source-root", str(fixture)], capture_output=True, text=True)

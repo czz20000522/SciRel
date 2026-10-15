@@ -30,7 +30,7 @@ from validate_asset_documents import (  # noqa: E402
 from _document_fixtures import (EXAMPLE_CLOSURE_COUNT, copy_example_closure, example_document_sources)
 
 
-CATALOG_TEST_VERSION = "0.0.0.dev0+catalogtest"
+CATALOG_TEST_VERSION = "0.0.0+catalogtest"
 
 
 def test_pytest_reference_resolves_file_and_preserves_collection_responsibility(tmp_path):

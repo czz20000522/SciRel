@@ -117,7 +117,7 @@ def test_records_emit_the_matching_dev_schema_names():
         candidate.candidate_id,
         candidate.package_digest,
         draft.draft_digest,
-        "0.1.0.dev5",
+        "0.0.0",
     )
     candidate_contract = load_contract("candidate-package-dev.schema.json")
 
@@ -232,7 +232,7 @@ def test_release_and_review_records_cover_contract_required_fields():
         "candidate-required",
         "sha256:" + "a" * 64,
         "sha256:" + "b" * 64,
-        "0.1.0.dev5",
+        "0.0.0",
     ).to_dict()
     review = ReviewDecision("draft-required", "approved", "expert").to_dict()
 

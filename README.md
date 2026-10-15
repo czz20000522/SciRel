@@ -67,7 +67,7 @@ CodeFusion 可以预装科学包或通过可选插件接入，但 SciRel 不属�
 平台维护者在受控 Python runtime 镜像准备阶段预装经过验证的 wheel；运行任务时直接调用现有能力，
 不临时下载或让用户配置依赖。独立源码项目服务于库维护和版本管理，不改变这一用户体验边界。
 
-当前 `0.1.0.dev5` 为开发期候选，而非公开发行。保存的 L1 产物是新 workflow 的重跑输入；
+当前仍处于开发期，尚未形成公开发行。保存的 L1 产物是新 workflow 的重跑输入；
 旧的 `provenance/admitted-assets.json` 仅作为历史开发样本和来源证据，不再定义新的准入流程。
 当前未发布候选以 `provenance/release-index.dev.json` 为统一入口。冻结、出库、验收和
 CodeFusion 联调先选定索引中的确切 `entry_id`，再按该条目的状态、来源绑定、工件摘要与证据引用
@@ -227,4 +227,4 @@ SciRel 源码或公共基线变更会 fail closed 到全套测试。`focused` �
 
 ## 当前累积科学包
 
-安装与查询入口见[当前科学包与中文手册](docs/scientific-core-installation.md)。当前维护选择为 `0.2.0.dev14+scientific.core`，覆盖 250 份领域合同；具体接收以根验收的提交、wheel SHA-256 与平台条件为准。安装环境不要求来源 checkout、Git 或 PowerShell；部分随包数值入口实际需要 Octave，详见运行边界。
+安装与查询入口见[当前科学包与中文手册](docs/scientific-core-installation.md)。当前维护选择及覆盖范围以发行记录、根验收提交、wheel SHA-256 与平台条件为准。安装环境不要求来源 checkout、Git 或 PowerShell；部分随包数值入口实际需要 Octave，详见运行边界。

@@ -256,7 +256,7 @@ def test_development_snapshot_appends_exact_artifacts_without_approval(tmp_path,
     monkeypatch.setattr(release_index, "ROOT", tmp_path)
     catalog = tmp_path / "catalog" / "release.json"
     catalog.parent.mkdir()
-    catalog_body = {"schema": "scirel.catalog-release.v1", "release_version": "0.1.0.dev5"}
+    catalog_body = {"schema": "scirel.catalog-release.v1", "release_version": "0.0.0"}
     catalog_body["root_digest"] = release_index.digest(release_index.canonical_json(catalog_body))
     catalog.write_text(json.dumps(catalog_body), encoding="utf-8")
     wheel = tmp_path / "wheel.whl"
@@ -267,7 +267,7 @@ def test_development_snapshot_appends_exact_artifacts_without_approval(tmp_path,
     destination.write_text('{"status":"pending_unapproved"}', encoding="utf-8")
 
     result = release_index.register_development_snapshot(
-        snapshot_id="r43-dev5", catalog_release=catalog, wheel=wheel,
+        snapshot_id="r43-development", catalog_release=catalog, wheel=wheel,
         evidence_paths=[evidence], destination_paths=[destination],
         git_revision="a" * 40, source_qualification="bounded_d1",
         output_path=tmp_path / "index.json",
@@ -579,7 +579,7 @@ def test_host_evidence_binds_current_candidate_and_development(tmp_path, monkeyp
     catalog_body = {"schema": "scirel.catalog-release.v1"}
     catalog_body["root_digest"] = release_index.digest(release_index.canonical_json(catalog_body))
     catalog.write_text(json.dumps(catalog_body), encoding="utf-8")
-    wheel = tmp_path / "scirel-0.1.0.dev5-py3-none-any.whl"
+    wheel = tmp_path / "scirel-0.0.0-py3-none-any.whl"
     wheel.write_bytes(b"development wheel")
     development_path = tmp_path / "development.json"
     development_index = release_index.register_development_snapshot(
@@ -607,9 +607,9 @@ def test_host_evidence_binds_current_candidate_and_development(tmp_path, monkeyp
         "codefusion_host": {
             "source_revision": "c" * 40,
             "acceptance_digest": "sha256:" + "d" * 64,
-            "backend_version": "0.1.0.dev5",
+            "backend_version": "0.0.0",
             "release_ref": (
-                "plugin-release://scirel/0.1.0.dev5/source-" + "a" * 40
+                "plugin-release://scirel/source-" + "a" * 40
                 + "/wheel-" + development["wheel"]["digest"][7:]
                 + "/catalog-" + snapshot_digest[7:]
             ),
@@ -673,7 +673,7 @@ def test_project_case_evidence_binds_exact_development_artifacts(tmp_path, monke
     catalog_body = {"schema": "scirel.catalog-release.v1"}
     catalog_body["root_digest"] = release_index.digest(release_index.canonical_json(catalog_body))
     catalog.write_text(json.dumps(catalog_body), encoding="utf-8")
-    wheel = tmp_path / "scirel-0.1.0.dev5-py3-none-any.whl"
+    wheel = tmp_path / "scirel-0.0.0-py3-none-any.whl"
     wheel.write_bytes(b"c69 development wheel")
     development_path = tmp_path / "development.json"
     development_index = release_index.register_development_snapshot(

@@ -3,7 +3,7 @@
 
 这里求解两个相关而不同的问题：先在给定平衡分布下追踪静电色散关系的一条根分支，再从给定扰动出发推进一个线性 Vlasov–Poisson 初值问题。频域根与时域初值响应不能直接混同；初值响应一般包含多种模态及连续谱效应。
 
-本例使用 ``scirel-0.2.0.dev9+scientific.core``，Linux ARM64、Python 3.14.7、NumPy 2.5.4 与 SciPy 1.18.1。以下计算不读取原来源项目、预存答案或网络，也不需要 MATLAB、Octave 或绘图。
+本例使用选定的 SciRel 运行环境。以下计算不读取原来源项目、预存答案或网络，也不需要 MATLAB、Octave 或绘图。
 
 沿波数追踪静电根
 ----------------------------
@@ -69,8 +69,3 @@
 需要控制中间状态时，从 :doc:`../reference/generated/scirel.kinetic.vp-init` 创建状态，使用 :doc:`../reference/generated/scirel.kinetic.vp-rk4-step` 或 :doc:`../reference/generated/scirel.kinetic.vp-evolve` 推进，再读取 :doc:`../reference/generated/scirel.kinetic.vp-diagnostic`。直接使用 :doc:`../reference/generated/scirel.kinetic.vp-landau` 可以得到相同科学步骤的单一调用入口。
 
 此功能组适用于一维、单个空间 Fourier 模、固定离子背景的线性扰动；不包含非线性相空间演化、多空间维度或移动离子动力学。有限速度盒、矩形求积、分布拐角及截止项各有明确限制。通用分布的低半平面响应应按其解析延拓或实轴积分合同选择，不能把所有非光滑分布都当作 Gaussian 解析函数。
-
-复现绑定
-----------------------------
-
-本例实际安装 wheel 的 SHA-256 为 ``7156f4e9a3c050c52b93db645918e4129edcfd4ca89437c6fd03b072f6f30945``。代码、执行输出与运行条件由开发侧的 ``provenance/validation/kinetic-tutorial-20261014.json`` 绑定；文档构建只渲染这些已运行结果，不在构建时重新计算科学答案。技术接收、最终人工科学认可与再分发许可分别记录。

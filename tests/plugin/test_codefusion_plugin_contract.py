@@ -47,7 +47,7 @@ from scirel_workflow import (
 )
 
 
-PLUGIN_RELEASE_REF = "plugin-release://scirel/0.1.0.dev5/example-20260920"
+PLUGIN_RELEASE_REF = "plugin-release://scirel/example-20260920"
 
 
 def candidate() -> CandidatePackage:
@@ -1627,7 +1627,7 @@ def test_reviewer_registration_declares_required_host_capabilities():
 
 def test_runtime_registration_uses_the_admitted_release_snapshot():
     release = PluginReleaseSnapshot(
-        plugin_release_ref="plugin-release://scirel/0.1.0.dev5/admitted",
+        plugin_release_ref="plugin-release://scirel/admitted",
         artifacts=(),
         skill_entrypoints=(),
         connectors=(),
@@ -2021,7 +2021,7 @@ def test_plugin_release_is_an_artifact_operation():
             "candidate_id": "candidate-run-plugin",
             "candidate_digest": "sha256:" + "0" * 64,
             "draft_digest": "sha256:" + "1" * 64,
-            "release_version": "0.1.0.dev5",
+            "release_version": "0.0.0",
         }
     )
 
@@ -2053,7 +2053,7 @@ def test_release_events_bind_manifest_and_use_bounded_failure_codes():
         candidate_id="candidate-event",
         candidate_digest="sha256:" + "0" * 64,
         draft_digest="sha256:" + "1" * 64,
-        release_version="0.1.0.dev5",
+        release_version="0.0.0",
     )
     artifact = plugin.release(release)
 

@@ -24,7 +24,7 @@ def _catalog(root: Path) -> None:
     release = {
         "schema": "scirel.catalog-release.v1",
         "catalog_id": "test",
-        "release_version": "0.1.0.dev5",
+        "release_version": "0.0.0",
         "coverage": {"status": "complete", "included_asset_count": 1, "declared_total_asset_count": 1},
         "progressive_disclosure": ["routes", "summaries", "exact_records"],
         "partitions": [{"path": "routes/all.jsonl", "bytes": len(partition), "sha256": _digest(partition)}],

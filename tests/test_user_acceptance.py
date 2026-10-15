@@ -102,12 +102,12 @@ def test_verify_installation_rejects_installed_package_that_differs_from_wheel(
     (package_root / "__init__.py").write_text(
         "# tampered installed package\n", encoding="utf-8"
     )
-    wheel = tmp_path / "scirel-0.1.0.dev5-py3-none-any.whl"
+    wheel = tmp_path / "scirel-0.0.0-py3-none-any.whl"
     with zipfile.ZipFile(wheel, "w") as archive:
         archive.writestr("scirel/__init__.py", "# wheel package\n")
 
     class FakeDistribution:
-        version = "0.1.0.dev5"
+        version = "0.0.0"
 
         def locate_file(self, member):
             if member == "scirel":
@@ -137,10 +137,10 @@ def test_verify_installation_rejects_editable_distribution(tmp_path, monkeypatch
     package_root.mkdir(parents=True)
     package_file = package_root / "__init__.py"
     package_file.write_text("# installed package\n", encoding="utf-8")
-    wheel = tmp_path / "scirel-0.1.0.dev5-py3-none-any.whl"
+    wheel = tmp_path / "scirel-0.0.0-py3-none-any.whl"
 
     class FakeDistribution:
-        version = "0.1.0.dev5"
+        version = "0.0.0"
 
         def locate_file(self, member):
             if member == "scirel":

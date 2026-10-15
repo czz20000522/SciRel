@@ -88,5 +88,5 @@
       "purpose": "组合离散、响应与叠加，计算线圈组磁场"
     }
   ],
-  "run": "在包含上述 API 的 SciRel 环境中运行：python example.py results.json。本后继实际使用隔离安装的 wheel 0.2.0.dev5+pleiades.fullcore、Python 3.14.7、NumPy 2.5.4、SciPy 1.18.1 与 Matplotlib 3.11.2，无源码和网络；精确执行及 wheel 摘要随章节保存，不是对任意已安装版本的保证。"
+  "run": "在包含上述 API 的 SciRel 环境中运行：python example.py results.json。本后继使用隔离运行环境，无源码和网络；不是对任意已安装版本的保证。"
 }

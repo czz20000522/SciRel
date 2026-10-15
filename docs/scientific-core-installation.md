@@ -1,9 +1,8 @@
 # 当前科学包与中文手册
 
-当前累积技术选择为 `0.2.0.dev14+scientific.core`，对应
-`provenance/selections/scientific-core-20261014-r7.json` 与
-`provenance/selections/scientific-core-documents-20261014-r7.json`。
-它用同一安装包提供 250 份精确合同；科学 API 按领域组织，函数和复合任务入口均可从中文 API 目录检索。
+当前累积技术选择对应
+`provenance/selections/scientific-core-documents-20261015-r8.json`。
+它用同一安装包提供 141 份精确合同；科学 API 按领域组织，函数和复合任务入口均可从中文 API 目录检索。
 正式合同的原实现版本和历史证据保留，不能将它们批量改写成新包版本来制造新科学资格。
 
 ## 安装已接收的确切包
@@ -11,7 +10,7 @@
 根接收记录会给出确切 wheel 的 SHA-256；先核对摘要，再在独立环境安装该文件：
 
 ```bash
-python -m pip install 'scirel-0.2.0.dev14+scientific.core-py3-none-any.whl'
+python -m pip install <selected-scirel-wheel>
 ```
 
 Python 使用 3.14（本次验证 3.14.7）。本选择实际声明 NumPy 2.5.4、SciPy 1.18.1、Matplotlib 3.11.2、netCDF4 1.7.4、mpmath 1.4.1。
@@ -64,14 +63,13 @@ print(p_grid)
 
 ## 维护相同的可查询内容
 
-手册目录入口是 `tools/docs/handbooks/scientific-core-r7.json`，中文阅读层是
-`tools/docs/zh/selections/scientific-core-r7.json`。每份阅读层以正式文档 SHA-256 绑定，不从函数名猜补参数或适用域。
-构建新快照时，先按 `scientific-core-documents-20261014-r7.json` 的清单复制并逐字核对正式合同，再运行：
+手册目录入口是 `tools/docs/handbooks/scientific-core-r8.json`，中文阅读层按选定正式文档集合提供。每份阅读层以正式文档 SHA-256 绑定，不从函数名猜补参数或适用域。
+构建新快照时，先按 `scientific-core-documents-20261015-r8.json` 的清单复制并逐字核对正式合同，再运行：
 
 ```bash
 python scripts/scirel_docs.py build --documents /path/to/exact-documents \
-  --outline tools/docs/handbooks/scientific-core-r7.json \
-  --translations tools/docs/zh/selections/scientific-core-r7.json \
+  --outline tools/docs/handbooks/scientific-core-r8.json \
+  --translations <selected-reader-bundle.json> \
   --output /path/to/new-snapshot
 ```
 

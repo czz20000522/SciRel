@@ -418,7 +418,7 @@ def test_installed_version_must_match_the_canonical_document(catalog):
     root, digest = catalog
     adapter = ThinMcpAdapter(root, expected_root_digest=digest)
 
-    with mock.patch("scirel_adapter.mcp.metadata.version", return_value="0.1.0.dev4"):
+    with mock.patch("scirel_adapter.mcp.metadata.version", return_value="0.0.0"):
         with pytest.raises(ThinMcpAdapterError, match="SciRel version differs") as failure:
             adapter.resolve_callable("scirel.field.current-green-superposition")
     assert failure.value.code == "callable_mismatch"
