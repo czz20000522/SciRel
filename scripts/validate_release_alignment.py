@@ -175,7 +175,14 @@ def _validate_platform_receipts(
             raise ValueError(f"platform receipt has an invalid schema: {row['platform']}")
         if receipt.get("status") != "PASS" and schema == "scirel.installed-wheel-validation.v1":
             raise ValueError(f"platform receipt is not PASS: {row['platform']}")
-        if expected_source_revision is not None and receipt_source_revision is not None:
+        if expected_source_revision is not None:
+            if (
+                not isinstance(receipt_source_revision, str)
+                or len(receipt_source_revision) != 40
+            ):
+                raise ValueError(
+                    f"platform receipt lacks source revision: {row['platform']}"
+                )
             if receipt_source_revision != expected_source_revision:
                 raise ValueError(f"platform receipt source revision differs: {row['platform']}")
         package = bound.get("package")
