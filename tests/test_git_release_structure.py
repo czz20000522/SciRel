@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 import tomllib
 import json
+import re
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,6 +23,13 @@ def test_git_release_structure_has_one_version_source() -> None:
 def test_historical_release_data_is_not_parallel_wheel_or_doc_copies() -> None:
     assert not list((ROOT / "release/wheel/versions").glob("*"))
     assert not list((ROOT / "release/docs/versions").glob("*"))
+    versioned_release_files = [
+        path
+        for line in ("wheel", "docs")
+        for path in (ROOT / "release" / line).rglob("*")
+        if path.is_file() and re.search(r"\d+\.\d+\.\d+", path.name)
+    ]
+    assert versioned_release_files == []
     tracked = subprocess.check_output(
         ["git", "ls-files", "*.whl", "dist", "build"],
         cwd=ROOT,

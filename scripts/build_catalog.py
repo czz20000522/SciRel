@@ -64,6 +64,29 @@ def _validate_source_revision(source_revision: str) -> str:
     return source_revision
 
 
+def _source_head(source_root: Path) -> str | None:
+    """Return the checkout HEAD when ``source_root`` is a Git worktree.
+
+    Synthetic catalog fixtures are intentionally allowed to use a temporary
+    source directory without Git metadata.  A real checkout, however, must
+    bind its catalog to the exact commit that supplied the source files.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=source_root,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    revision = result.stdout.strip()
+    if _GIT_REVISION.fullmatch(revision) is None:
+        raise ValueError("source_root Git HEAD is not an exact 40-character SHA")
+    return revision
+
+
 def build_catalog(
     documents_dir: Path,
     output_dir: Path,
@@ -103,6 +126,12 @@ def build_catalog(
             )
     if source_revision is not None:
         source_revision = _validate_source_revision(source_revision)
+        if source_root is not None:
+            source_head = _source_head(source_root)
+            if source_head is not None and source_revision != source_head:
+                raise ValueError(
+                    "catalog source_revision differs from source_root Git HEAD"
+                )
 
     output_dir.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(

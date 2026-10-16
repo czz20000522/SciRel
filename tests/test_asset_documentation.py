@@ -313,3 +313,43 @@ def test_catalog_source_root_rejects_a_version_not_owned_by_pyproject(
             source_root=source_root,
             source_revision="a" * 40,
         )
+
+
+def test_catalog_source_root_rejects_a_revision_not_at_git_head(
+    tmp_path, release_examples
+):
+    import subprocess
+
+    source_root = tmp_path / "source"
+    source_root.mkdir()
+    (source_root / "pyproject.toml").write_text(
+        f"[project]\nversion = \"{CATALOG_TEST_VERSION}\"\n",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "init", "-q"], cwd=source_root, check=True)
+    subprocess.run(["git", "add", "pyproject.toml"], cwd=source_root, check=True)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            "user.name=SciRel test",
+            "-c",
+            "user.email=scirel-test@example.invalid",
+            "commit",
+            "-qm",
+            "initial source",
+        ],
+        cwd=source_root,
+        check=True,
+    )
+    with pytest.raises(ValueError, match="source_revision differs from source_root Git HEAD"):
+        build_catalog(
+            release_examples,
+            tmp_path / "catalog",
+            catalog_id="scirel-bound-catalog",
+            release_version=CATALOG_TEST_VERSION,
+            coverage_status="partial",
+            declared_total=EXAMPLE_CLOSURE_COUNT + 1,
+            source_root=source_root,
+            source_revision="a" * 40,
+        )
