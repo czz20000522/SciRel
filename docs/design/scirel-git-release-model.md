@@ -70,7 +70,7 @@ development dependency groups；源码仓库中的 `doc/source/release/` 只保�
 | `pyproject.toml` 的单一 `project.version` | `pyproject.toml` 是唯一人工版本源，`release/CURRENT.json` 只做当前候选的派生绑定 | 不把 wheel 文件或完整文档快照提交回源码树 |
 | `doc/source/release/<version>-notes.*` | `docs/release/<version>-notes.md` 只保留短摘要，正文/API/合同继续在当前 `docs/` 与 `catalog/` | 不复制整套手册来表示历史版本；Git commit/tag 提供历史恢复 |
 | `dependency-groups` 与 optional runtime extras | `[dependency-groups]` 管理 build/test，`[project.optional-dependencies]` 管理用户主动选择的能力 | SciRel 仍按实际 scientific closure 选择依赖，不照搬 SciPy 的编译依赖 |
-| 发布工具显式构建某个 Git ref | 构建和验收记录确切 `source_revision`，wheel/rendered docs 作为该提交的生成物 | 当前不引入 SciPy 的 Meson/Cython/native build system |
+| 源码仓库中的构建与 wheel 配置（`pyproject.toml`、`tools/building/`、`tools/wheels/`、CI workflow） | SciRel 也把构建入口和边界保留在源码仓库；`scripts/build_scirel_from_ref.py` 与 `scripts/build_scirel_docs_from_ref.py` 先归档确切 Git ref，再把生成物写到仓库外 | SciRel 当前是纯 Python wheel，不复制 SciPy 的 Meson/Cython/native 构建链 |
 | 小型顶层 namespace 与惰性 domain imports | `scirel` 根包只暴露版本和领域入口，领域 API 按 `__all__`/惰性 facade 整理 | 现有领域导出仍需按公共 API 审查逐步收敛，不能把未验证名称写进合同 |
 
 因此，`0.1.0.dev8` 和后续 `0.1.0.dev9` 的身份由 Git 提交、tag（若有）和短
@@ -78,12 +78,19 @@ development dependency groups；源码仓库中的 `doc/source/release/` 只保�
 文档副本。`release/CURRENT.json` 可以随着当前候选更新，但它不产生新的版本线，也不
 替代 `pyproject.toml`、Git 或当前文档树。
 
-SciPy 还把发布自动化放在独立的最小 release 仓库：workflow 通过
-`SOURCE_REF_TO_BUILD` 指定要构建的 branch、tag 或 commit，checkout 该 ref 后在平台矩阵中
-生成并上传产物。SciRel 当前先把同一边界收敛在本仓库的两个 ref-bound 脚本中，避免在纯
-Python wheel 阶段再复制一个只装构建脚本的仓库；如果以后引入 `.so`、`.pyd` 或其他平台
-二进制扩展，再将这些脚本迁移到独立的最小 release automation 仓库。迁移时仍只传入
-SciRel 的确切 Git ref，不能复制源码、handbook 或历史 wheel。
+SciPy 当前仓库把构建边界分布在 `pyproject.toml`、`tools/building/`、
+`tools/wheels/` 和 `.github/workflows/wheels.yml`；wheel workflow 通过 checkout 当前
+提交并在平台矩阵中运行 `cibuildwheel`，同时以 `scipy-release` 仓库作为流程对齐参考。
+SciPy 的 `tools/building/gitversion.py` 在构建时从 `pyproject.toml` 读取版本，并为开发
+版本生成带 Git revision 的安装时版本模块；源码树不保存一份按版本复制的 `version.py`。
+
+SciRel 采用其中的单一版本源、短 release notes 和源码仓库内构建配置，但针对当前纯 Python
+wheel 增加了更严格的 ref-bound 适配：`scripts/build_scirel_from_ref.py` 与
+`scripts/build_scirel_docs_from_ref.py` 先归档确切 Git ref，再把 wheel、文档快照和 manifest
+写到仓库外。这样既保留 SciPy 式的源码结构，也能让每份外部产物回溯到唯一提交，而不会把
+源码、handbook 或历史 wheel 复制回工作树。若以后引入 `.so`、`.pyd` 或其他平台二进制扩展，
+再单独评估是否需要 `cibuildwheel`/release automation；不能因为参考项目使用这些工具就提前
+把它们加入 SciRel 的运行依赖。
 
 SciPy 的版本工具还把 Git revision 暴露给安装后的运行时，便于把开发版本追溯到提交。SciRel
 当前先把 revision 固定在 wheel、文档和平台 receipt 的外部 manifest 中；在不改变公共科学
@@ -112,6 +119,7 @@ API 的后续版本中，可以增加只读的 `scirel.version.git_revision`，�
 候选；正式构建和回写 `release/CURRENT.json` 时必须提供构建 ref，避免旧 wheel 摘要在
 新提交上继续通过结构校验。
 
-SciPy 的 release tooling 还把“要构建哪个源码版本”显式表示为 Git ref；SciRel
-采用同一事实边界：构建脚本必须从确切提交读取源码和 `pyproject.toml`，再在外部输出
-wheel、文档快照和平台回执。生成物不能反向成为另一份源码或文档事实。
+SciPy 的构建和版本工具都从当前 checkout 的 Git 内容产生发行信息；SciRel
+采用同一事实边界，并额外要求构建脚本显式接收确切 Git ref，从该提交读取源码和
+`pyproject.toml`，再在外部输出 wheel、文档快照和平台回执。生成物不能反向成为另一份
+源码或文档事实。
