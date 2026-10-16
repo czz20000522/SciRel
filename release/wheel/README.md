@@ -32,7 +32,7 @@ silently become another versioned source asset. For a POSIX shell:
 ```sh
 ref=<40-character-source-revision>
 tmp_wheels=$(mktemp -d)
-python scripts/build_scirel_from_ref.py --ref "$ref" --output-dir "$tmp_wheels"
+python scripts/build_scirel_from_ref.py --ref "$ref" --python 3.14 --output-dir "$tmp_wheels"
 ```
 
 Git-archive extraction gives the source files one stable timestamp; setting the
