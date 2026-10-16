@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-16T18:58:01Z",
+  "updated_at": "2026-10-16T19:21:45Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -65,9 +65,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "2d2fe85deb6ed1b0d98f204912db2f2d70a3c04178471153b2267a1fb8b80d4f",
-      "size": 570965,
-      "normalized_sha256": "2d2fe85deb6ed1b0d98f204912db2f2d70a3c04178471153b2267a1fb8b80d4f"
+      "sha256": "118183f7e91c2a556cf1c23aa193989127bdf2f5d489ce0862a73f3f23f37592",
+      "size": 572125,
+      "normalized_sha256": "118183f7e91c2a556cf1c23aa193989127bdf2f5d489ce0862a73f3f23f37592"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -3077,9 +3077,9 @@
     },
     "docs/design/scirel-git-release-model.md": {
       "role": "index",
-      "sha256": "b5d9aaf59a2d8d018ddf5b443e54ad011f31aa516bb9683fee8b8a5d2bf88e5f",
-      "size": 6628,
-      "normalized_sha256": "b5d9aaf59a2d8d018ddf5b443e54ad011f31aa516bb9683fee8b8a5d2bf88e5f"
+      "sha256": "35fdeb3adf28d7382437b89fbc957a2b33340eb50bbbf65e42b43f57fb17f06e",
+      "size": 8189,
+      "normalized_sha256": "35fdeb3adf28d7382437b89fbc957a2b33340eb50bbbf65e42b43f57fb17f06e"
     },
     "docs/design/scirel-positioning.md": {
       "role": "index",
@@ -5051,9 +5051,9 @@
     },
     "docs/release/0.1.0.dev9-notes.md": {
       "role": "index",
-      "sha256": "b9fb1ef49b758244ed1ab961ac575f79c353f56446bc9951f3bca31fbf32fbd7",
-      "size": 969,
-      "normalized_sha256": "b9fb1ef49b758244ed1ab961ac575f79c353f56446bc9951f3bca31fbf32fbd7"
+      "sha256": "857802de46381ea41f25e41351fc0eb9f850f5e01da154d77821086ba176cb3c",
+      "size": 1299,
+      "normalized_sha256": "857802de46381ea41f25e41351fc0eb9f850f5e01da154d77821086ba176cb3c"
     },
     "docs/requirements/asset-documentation.md": {
       "role": "index",
@@ -6189,6 +6189,12 @@
       "size": 49420,
       "normalized_sha256": "3fcc0361dc586c0b0af77449de1e43490bbb2ff935df7c8398aa1fe8464a5ea1"
     },
+    "scripts/requalify_document_selection.py": {
+      "role": "index",
+      "sha256": "1258fb95227f918c140439b19eb26b4bcf27239a5063e923c2700c2b5e039de8",
+      "size": 11012,
+      "normalized_sha256": "1258fb95227f918c140439b19eb26b4bcf27239a5063e923c2700c2b5e039de8"
+    },
     "scripts/run_l1_wire_smoke.py": {
       "role": "index",
       "sha256": "3d64d4630721ea54121b45350b06dba7fbf2a876fa3fdf5355f750031c64dad2",
@@ -6251,9 +6257,9 @@
     },
     "scripts/validate_release_alignment.py": {
       "role": "index",
-      "sha256": "1363f3e35753fc60108769f7a17e987e58e6fd3534b350643d330887afdcd073",
-      "size": 13679,
-      "normalized_sha256": "1363f3e35753fc60108769f7a17e987e58e6fd3534b350643d330887afdcd073"
+      "sha256": "9597069ab7ddab5a6fb47be861d213d2f5c030febfdce8ed6d1f572216e4a696",
+      "size": 14242,
+      "normalized_sha256": "9597069ab7ddab5a6fb47be861d213d2f5c030febfdce8ed6d1f572216e4a696"
     },
     "scripts/verify_outbound_evaluation_manifests.py": {
       "role": "index",
@@ -10821,6 +10827,12 @@
       "size": 2525,
       "normalized_sha256": "ab1f715582adf79743b811d4bc1b6651a4be113e4f11fd33b17b0002101d9a96"
     },
+    "tests/test_document_requalification.py": {
+      "role": "index",
+      "sha256": "fd2c9ea2f81671963ab26010e327756d32ee015d2fa36a7d428b1efb71423a68",
+      "size": 2146,
+      "normalized_sha256": "fd2c9ea2f81671963ab26010e327756d32ee015d2fa36a7d428b1efb71423a68"
+    },
     "tests/test_fvm.py": {
       "role": "index",
       "sha256": "eb317d751e1e5df0c06e84be950dfd73eb93173dc4961767e376b6b74fe25651",
@@ -10889,9 +10901,9 @@
     },
     "tests/test_release_alignment.py": {
       "role": "index",
-      "sha256": "6afe652807a8971cd14eec31319bc72636812c1e5adbb99eda5e5c8f373d5a69",
-      "size": 3506,
-      "normalized_sha256": "6afe652807a8971cd14eec31319bc72636812c1e5adbb99eda5e5c8f373d5a69"
+      "sha256": "0a3fa3f9e44d492cf2c17c8fbc213628a6c968eeedd01007371e49cf37c5d2db",
+      "size": 3714,
+      "normalized_sha256": "0a3fa3f9e44d492cf2c17c8fbc213628a6c968eeedd01007371e49cf37c5d2db"
     },
     "tests/test_release_environment.py": {
       "role": "index",
