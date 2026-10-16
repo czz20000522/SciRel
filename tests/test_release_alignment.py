@@ -21,7 +21,7 @@ def test_current_release_alignment_is_exact() -> None:
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     assert result["wheel_version"] == project["project"]["version"]
     assert result["documentation_selection"] == "scientific-core-r18"
-    assert result["source_revision"] == "e078e67f24c1cfdc3d6fc7c219810a15572ed4ca"
+    assert result["source_revision"] == "7feb451b45da541bc4f2ced0c8dc0369bc8f5e66"
     assert result["capability_counts"] == {
         "operators": 230,
         "task_graphs": 30,
