@@ -3,14 +3,14 @@
   "package": "scirel",
   "version": "0.1.0.dev9",
   "status": "development_candidate",
-  "source_revision": null,
-  "source_revision_status": "candidate_unbound",
+  "source_revision": "4748967522e16092e113a34eed2196e1102ba052",
+  "source_revision_status": "bound",
   "wheel": {
     "version": "0.1.0.dev9",
     "status": "development_candidate",
     "artifact": {
       "path": "dist/scirel-0.1.0.dev9-py3-none-any.whl",
-      "sha256": "468c4dc137d0e03fc2003903c58573d3f2a8d0cd3775f17991154a690a4f9f26",
+      "sha256": "180f186369ba6a101c7154b6f1141634742d854acfcde7b9d0ad56762b6f18a5",
       "bytes": 651281
     },
     "selected_capabilities": {
@@ -47,5 +47,5 @@
       "0.1.0.dev8"
     ]
   },
-  "next_action": "Bind source_revision to the committed dev9 source and rebuild the wheel from that exact Git commit."
+  "next_action": "Keep this development candidate untagged until the remaining platform and scientific release gates are explicitly closed."
 }
