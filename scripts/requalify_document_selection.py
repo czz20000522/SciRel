@@ -391,7 +391,10 @@ def main() -> int:
     parser.add_argument(
         "--proof-manifest",
         type=Path,
-        help="explicit proof for changed public modules; required to override a module-change block",
+        help=(
+            "explicit proof for changed public modules; required to override "
+            "a module-change block"
+        ),
     )
     parser.add_argument("--apply", action="store_true")
     parser.add_argument(
