@@ -139,7 +139,9 @@ def _validate_compat_pointer(root: Path, path: Path, *, line: str) -> None:
         raise ValueError(f"{line} CURRENT canonical target is invalid")
 
 
-def _validate_platform_receipts(root: Path, wheel: dict[str, Any]) -> None:
+def _validate_platform_receipts(
+    root: Path, wheel: dict[str, Any], *, expected_source_revision: str | None = None
+) -> None:
     receipts = wheel.get("platform_receipts")
     if not isinstance(receipts, list) or not receipts:
         raise ValueError("wheel platform_receipts must be a non-empty list")
@@ -150,14 +152,36 @@ def _validate_platform_receipts(root: Path, wheel: dict[str, Any]) -> None:
         if _sha256(receipt_path) != row["sha256"]:
             raise ValueError(f"platform receipt digest differs: {row['platform']}")
         receipt = _read_json(receipt_path)
-        if receipt.get("schema") != "scirel.installed-wheel-validation.v1":
+        schema = receipt.get("schema")
+        if schema == "scirel.installed-wheel-validation.v1":
+            bound = receipt
+            receipt_source_revision = receipt.get("source_revision")
+        elif schema == "scirel.dev9-linux-acceptance.v1":
+            # The platform runner wraps the installed-wheel validator with
+            # reproducible-build and source-archive evidence.  Keep the inner
+            # validator as the runtime contract while checking the outer source
+            # binding and status here.
+            if receipt.get("status") != "PASS":
+                raise ValueError(f"platform receipt is not PASS: {row['platform']}")
+            source = receipt.get("source")
+            validation = receipt.get("validation")
+            if not isinstance(source, dict) or not isinstance(validation, dict):
+                raise ValueError(f"platform receipt lacks wrapped validation: {row['platform']}")
+            receipt_source_revision = source.get("revision")
+            if validation.get("schema") != "scirel.installed-wheel-validation.v1":
+                raise ValueError(f"platform receipt inner schema is invalid: {row['platform']}")
+            bound = validation
+        else:
             raise ValueError(f"platform receipt has an invalid schema: {row['platform']}")
-        if receipt.get("status") != "PASS":
+        if receipt.get("status") != "PASS" and schema == "scirel.installed-wheel-validation.v1":
             raise ValueError(f"platform receipt is not PASS: {row['platform']}")
-        package = receipt.get("package")
+        if expected_source_revision is not None and receipt_source_revision is not None:
+            if receipt_source_revision != expected_source_revision:
+                raise ValueError(f"platform receipt source revision differs: {row['platform']}")
+        package = bound.get("package")
         if not isinstance(package, dict) or package.get("version") != wheel["version"]:
             raise ValueError(f"platform receipt package version differs: {row['platform']}")
-        receipt_artifact = receipt.get("artifact")
+        receipt_artifact = bound.get("artifact")
         expected_artifact = wheel.get("artifact")
         if (
             not isinstance(receipt_artifact, dict)
@@ -165,7 +189,7 @@ def _validate_platform_receipts(root: Path, wheel: dict[str, Any]) -> None:
             or receipt_artifact.get("bytes") != expected_artifact.get("bytes")
         ):
             raise ValueError(f"platform receipt wheel artifact differs: {row['platform']}")
-        runtime = receipt.get("runtime")
+        runtime = bound.get("runtime")
         if not isinstance(runtime, dict) or runtime.get("expected_platform") != row["platform"]:
             raise ValueError(f"platform receipt target differs: {row['platform']}")
 
@@ -243,7 +267,7 @@ def validate_alignment(
             raise ValueError("wheel artifact digest differs from release CURRENT")
         if artifact_path.stat().st_size != artifact.get("bytes"):
             raise ValueError("wheel artifact byte size differs from release CURRENT")
-    _validate_platform_receipts(root, wheel)
+    _validate_platform_receipts(root, wheel, expected_source_revision=source_revision)
     _validate_platform_matrix(
         root,
         version=version,

@@ -10,7 +10,10 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from validate_release_alignment import validate_alignment  # noqa: E402
+from validate_release_alignment import (
+    _validate_platform_receipts,
+    validate_alignment,
+)  # noqa: E402
 
 
 def test_current_release_alignment_is_exact() -> None:
@@ -123,3 +126,46 @@ def test_alignment_rejects_a_built_catalog_from_a_different_source_revision(
     current_path.write_text(json.dumps(current), encoding="utf-8")
     with pytest.raises(ValueError, match="documentation catalog source_revision"):
         validate_alignment(tmp_path)
+
+
+def test_alignment_accepts_wrapped_platform_receipt_and_checks_source_revision(
+    tmp_path: Path,
+) -> None:
+    import hashlib
+
+    source_revision = "a" * 40
+    artifact_sha = "b" * 64
+    inner = {
+        "schema": "scirel.installed-wheel-validation.v1",
+        "status": "PASS",
+        "package": {"version": "0.1.0.dev9"},
+        "artifact": {"sha256": artifact_sha, "bytes": 123},
+        "runtime": {"expected_platform": "linux-x86_64-cp314"},
+    }
+    receipt = {
+        "schema": "scirel.dev9-linux-acceptance.v1",
+        "status": "PASS",
+        "source": {"revision": source_revision},
+        "validation": inner,
+    }
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+    wheel = {
+        "version": "0.1.0.dev9",
+        "artifact": {"sha256": artifact_sha, "bytes": 123},
+        "platform_receipts": [
+            {
+                "platform": "linux-x86_64-cp314",
+                "path": "receipt.json",
+                "sha256": hashlib.sha256(receipt_path.read_bytes()).hexdigest(),
+            }
+        ],
+    }
+
+    _validate_platform_receipts(
+        tmp_path, wheel, expected_source_revision=source_revision
+    )
+    with pytest.raises(ValueError, match="source revision differs"):
+        _validate_platform_receipts(
+            tmp_path, wheel, expected_source_revision="c" * 40
+        )
