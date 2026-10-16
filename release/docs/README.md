@@ -20,8 +20,10 @@ the snapshot plus `build-manifest.json` outside the checkout. A dirty checkout
 or a snapshot built from the current directory without an explicit ref is not a
 candidate document artifact. For a release candidate, pass the
 project-relative selected-document-set manifest as well; the helper verifies
-each record digest and materializes the exact set only in its temporary build
-directory:
+each record digest, filters the archived Chinese reader bundles to the same
+asset set, and materializes the exact set only in its temporary build directory.
+Use an absolute interpreter path when selecting a virtual environment so the
+archived build retains that environment's documentation dependencies:
 
 ```sh
 python scripts/build_scirel_docs_from_ref.py \

@@ -63,7 +63,7 @@ def test_ref_bound_build_helper_is_documented_and_keeps_artifacts_external() -> 
 
 
 def test_document_selection_materializes_only_digest_bound_records(tmp_path: Path) -> None:
-    from build_scirel_docs_from_ref import _materialize_selection
+    from build_scirel_docs_from_ref import _materialize_selection, _materialize_translations
 
     source = tmp_path / "source"
     document = source / "catalog/examples/scirel.test.example.json"
@@ -92,3 +92,31 @@ def test_document_selection_materializes_only_digest_bound_records(tmp_path: Pat
 
     assert result["asset_count"] == 1
     assert (tmp_path / "staging/selected-documents/scirel.test.example.json").read_bytes() == document.read_bytes()
+
+
+def test_document_selection_filters_reader_bundle_to_exact_assets(tmp_path: Path) -> None:
+    from build_scirel_docs_from_ref import _materialize_translations
+
+    source = tmp_path / "source"
+    reader_root = source / "tools/docs/zh"
+    reader_root.mkdir(parents=True)
+    reader_root.joinpath("domain.json").write_text(
+        json.dumps(
+            {
+                "schema": "scirel.reader-translation.v1",
+                "language": "zh-CN",
+                "records": [
+                    {"asset_id": "scirel.selected"},
+                    {"asset_id": "scirel.unselected"},
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "staging").mkdir()
+
+    result = _materialize_translations(source, {"scirel.selected"}, tmp_path / "staging")
+
+    bundle = json.loads((tmp_path / "staging/selected-reader-bundle.json").read_text(encoding="utf-8"))
+    assert result["asset_count"] == 1
+    assert [record["asset_id"] for record in bundle["records"]] == ["scirel.selected"]

@@ -148,6 +148,77 @@ def _materialize_selection(source: Path, selection: str, staging: Path) -> dict[
         "path": selection,
         "sha256": _sha256(selection_path),
         "asset_count": len(records),
+        # Kept only for the in-process reader projection; it is removed from
+        # the external manifest so that the selection file remains the single
+        # asset-list source of truth.
+        "_asset_ids": sorted(seen_ids),
+    }
+
+
+def _materialize_translations(
+    source: Path, asset_ids: set[str], staging: Path
+) -> dict[str, object]:
+    """Create one exact reader bundle for a selected document closure.
+
+    The repository keeps reader translations in domain bundles.  A release
+    selection may be a strict subset of that repository set, so pass the
+    archived builder a temporary filtered bundle instead of allowing unrelated
+    reader records to widen the selected closure.
+    """
+
+    translation_root = (source / "tools/docs/zh").resolve()
+    if not translation_root.is_relative_to(source.resolve()) or not translation_root.is_dir():
+        raise ValueError("archived source has no reader translation directory")
+    records: dict[str, dict[str, object]] = {}
+    for path in sorted(translation_root.glob("*.json")):
+        try:
+            bundle = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise ValueError(f"reader translation is not readable JSON: {path}") from error
+        if (
+            not isinstance(bundle, dict)
+            or bundle.get("schema") != "scirel.reader-translation.v1"
+            or bundle.get("language") != "zh-CN"
+        ):
+            raise ValueError(f"reader translation has an unsupported schema: {path}")
+        bundle_records = bundle.get("records")
+        if not isinstance(bundle_records, list):
+            raise ValueError(f"reader translation records must be a list: {path}")
+        for record in bundle_records:
+            if (
+                not isinstance(record, dict)
+                or not isinstance(record.get("asset_id"), str)
+                or not record["asset_id"]
+            ):
+                raise ValueError(f"reader translation record has no asset_id: {path}")
+            asset_id = record["asset_id"]
+            if asset_id in records:
+                raise ValueError(f"reader translation repeats asset_id: {asset_id}")
+            records[asset_id] = record
+    missing = asset_ids - set(records)
+    if missing:
+        raise ValueError("reader translations do not cover selected documents: " + str(sorted(missing)))
+
+    selected_records = [records[asset_id] for asset_id in sorted(asset_ids)]
+    target = staging / "selected-reader-bundle.json"
+    target.write_text(
+        json.dumps(
+            {
+                "schema": "scirel.reader-translation.v1",
+                "language": "zh-CN",
+                "records": selected_records,
+            },
+            ensure_ascii=False,
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return {
+        "path": "tools/docs/zh/*.json",
+        "sha256": _sha256(target),
+        "asset_count": len(selected_records),
     }
 
 
@@ -165,8 +236,14 @@ def build_from_ref(
     revision = resolve_revision(ref)
     epoch = commit_epoch(revision)
     runner = python or sys.executable
-    runner_path = shutil.which(runner) if os.path.sep not in runner else runner
-    if not runner_path:
+    if os.path.sep not in runner:
+        runner_path = shutil.which(runner)
+    else:
+        # Keep virtual-environment symlinks intact.  ``Path.resolve()`` would
+        # collapse ``.venv/bin/python`` to the base interpreter and lose the
+        # environment's documentation dependencies.
+        runner_path = os.path.abspath(os.path.expanduser(runner))
+    if not runner_path or not Path(runner_path).is_file():
         raise FileNotFoundError(f"documentation Python executable not found: {runner}")
 
     try:
@@ -180,9 +257,13 @@ def build_from_ref(
             name, version = _project_metadata(source)
             source_root = source.resolve()
             selection_info = None
+            translation_info = None
             if selection is not None:
                 selection_info = _materialize_selection(source_root, selection, staging)
                 document_root = staging / "selected-documents"
+                translation_info = _materialize_translations(
+                    source_root, set(selection_info.pop("_asset_ids")), staging
+                )
             else:
                 document_root = (source_root / documents).resolve()
             if not document_root.is_relative_to(source_root) or not document_root.is_dir():
@@ -213,6 +294,8 @@ def build_from_ref(
                 command.extend(["--source-revision", revision])
             else:
                 _legacy_git_adapter(staging, revision, environment)
+            if translation_info is not None:
+                command.extend(["--translations", str(staging / "selected-reader-bundle.json")])
             build_result = subprocess.run(
                 command,
                 cwd=source,
@@ -257,6 +340,7 @@ def build_from_ref(
             "bytes": snapshot_bytes,
         },
         "selection": selection_info,
+        "translations": translation_info,
         "builder": {
             "command": "python scripts/scirel_docs.py build",
             "source": "git archive",
