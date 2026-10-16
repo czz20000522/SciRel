@@ -109,6 +109,16 @@ def test_self_cell_zero_policy_not_finite_self_field(consumer, tmp_path):
     np.testing.assert_allclose(got, reference(R, Z, single), rtol=1e-12, atol=1e-18)
 
 
+def test_axis_sources_and_zero_weights_keep_discrete_omission_policy(consumer, tmp_path):
+    R, Z = np.meshgrid([0.0, 0.5, 1.0, 1.5], [-0.6, 0.1, 0.8])
+    values = np.zeros((3, 4))
+    values[:, 0] = [4.0, -2.0, 1.0]
+    values[1, 2] = 3.0
+    with dataset(tmp_path/'axis-source.nc', values) as data:
+        got = consumer(data, R, Z)
+    np.testing.assert_allclose(got, reference(R, Z, values), rtol=1e-12, atol=1e-18)
+
+
 @pytest.mark.parametrize('kind', ['one-cell', 'collapsed-r', 'collapsed-z', 'nonfinite-target', 'negative-radius'])
 def test_invalid_geometry_has_explicit_value_error(consumer, tmp_path, kind):
     values = np.ones((3, 4))

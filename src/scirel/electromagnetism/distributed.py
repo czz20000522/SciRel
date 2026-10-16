@@ -12,7 +12,7 @@ from __future__ import annotations
 import numpy as np
 from scipy.interpolate import LinearNDInterpolator
 
-from .greens import compute_greens
+from .greens import _weighted_psi
 
 
 def get_deltapsi(data, Req, Zeq):
@@ -56,12 +56,11 @@ def get_deltapsi(data, Req, Zeq):
     points = np.column_stack((rr.ravel(), zz.ravel()))
     with np.errstate(over='raise', invalid='raise'):
         amperes = current.ravel() * 1e4 * (r[1]-r[0]) * (z[1]-z[0])
-        flux = np.zeros(len(points))
-        for index, ((a, h), weight) in enumerate(zip(points, amperes)):
-            if a == 0 or weight == 0:
-                continue
-            off_self = np.arange(len(points)) != index
-            flux[off_self] += compute_greens(np.array([[a, h, weight]]), points[off_self])[0]
+        flux = _weighted_psi(
+            np.column_stack((points, amperes)),
+            points,
+            zero_self=True,
+        )
     if not np.all(np.isfinite(flux)):
         raise FloatingPointError('distributed flux is not finite')
     targets = np.column_stack((R.ravel(), Z.ravel()))

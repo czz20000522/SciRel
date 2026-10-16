@@ -88,6 +88,71 @@ def compute_greens(rzw, rz_pts):
     return tuple(out)
 
 
+def _weighted_psi(rzw, rz_pts, *, zero_self=False, max_pairs=1_000_000):
+    """Return the weighted ``psi`` sum for many sources in bounded blocks.
+
+    This private path is used by regular-grid consumers that need only the
+    flux component.  It keeps the same formula partition and exact zero-self
+    compatibility rule as :func:`compute_greens`, but broadcasts a bounded
+    source block over all targets instead of making one Python call per
+    source.  ``max_pairs`` bounds the temporary ``(source, target)`` arrays so
+    a large target grid does not turn the optimization into an allocation
+    spike.
+    """
+    sources = _array(rzw, 3, 'rzw')
+    points = _array(rz_pts, 2, 'rz_pts')
+    result = np.zeros(len(points))
+    if not len(sources) or not len(points):
+        return result
+
+    active = sources[(sources[:, 0] > 0.0) & (sources[:, 2] != 0.0)]
+    if not len(active):
+        return result
+    block_size = max(1, min(len(active), int(max_pairs) // max(1, len(points))))
+    r = points[:, 0][None, :]
+    z = points[:, 1][None, :]
+
+    with np.errstate(over='raise', divide='raise', invalid='raise'):
+        for start in range(0, len(active), block_size):
+            block = active[start:start + block_size]
+            a = block[:, 0, None]
+            z0 = block[:, 1, None]
+            h = z - z0
+            if zero_self:
+                self_mask = (r == a) & (z == z0)
+                # Avoid evaluating the singular expression; the compatibility
+                # value is assigned back to zero after the regular formula.
+                h = np.where(self_mask, 1.0, h)
+            d = np.hypot(r + a, h)
+            q = (np.hypot(r - a, h) / d) ** 2
+            m = 4 * (r / d) * (a / d)
+            small = m < 0.5
+            psi = np.zeros_like(m)
+            a_full = np.broadcast_to(a, m.shape)
+            r_full = np.broadcast_to(r, m.shape)
+            if np.any(small):
+                ds = d[small]
+                rs = r_full[small]
+                ms = m[small]
+                H = hyp2f1(1.5, 1.5, 3.0, ms)
+                c = np.pi * 1e-7 * (a_full[small] / ds) ** 2 / ds
+                psi[small] = c * rs**2 * H
+            large = ~small
+            if np.any(large):
+                dl = d[large]
+                ql = q[large]
+                ml = m[large]
+                K, E = ellipkm1(ql), ellipe(1 - ql)
+                psi[large] = 1e-7 * dl * ((2 - ml) * K - 2 * E)
+            if zero_self:
+                psi[self_mask] = 0.0
+            result += np.add.reduce(block[:, 2, None] * psi, axis=0)
+
+    if not np.all(np.isfinite(result)):
+        raise FloatingPointError('weighted Green psi output is not representable as finite float64')
+    return result
+
+
 def get_gpsi(R, Z):
     """Return the actual-coordinate discrete loop flux matrix (target, source).
 
