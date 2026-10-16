@@ -13,6 +13,8 @@ not the outward normal derivative. This NumPy public variant is unbatched.
 from dataclasses import dataclass
 import numpy as np
 
+__all__ = ["CellVariable"]
+
 
 def finite_array(value, name, shape=None):
     if np.ma.isMaskedArray(value) and np.any(np.ma.getmaskarray(value)):

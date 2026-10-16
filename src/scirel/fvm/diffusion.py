@@ -4,6 +4,8 @@
 import numpy as np
 from .cell_variable import CellVariable, finite_array, checked
 
+__all__ = ["TriDiagonal", "make_diffusion_terms"]
+
 
 class TriDiagonal:
     def __init__(self, diagonal, above, below):

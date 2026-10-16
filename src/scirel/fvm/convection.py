@@ -5,6 +5,8 @@ import numpy as np
 from .cell_variable import CellVariable, finite_array, checked
 from .diffusion import TriDiagonal
 
+__all__ = ["make_convection_terms"]
+
 
 def _alpha(p):
     # Algebraic source branches, using 1-1/p avoids inf/inf for p=+inf.

@@ -7,6 +7,8 @@ from .cell_variable import CellVariable, checked, finite_array, finite_scalar
 from .diffusion import TriDiagonal, make_diffusion_terms
 from .convection import make_convection_terms
 
+__all__ = ["theta_step"]
+
 
 def _operator(var,d,v,source,dm,nm):
     n=len(var.value); diagonal=np.zeros(n); above=np.zeros(n-1); below=np.zeros(n-1); b=np.zeros(n)
