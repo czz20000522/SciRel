@@ -28,20 +28,34 @@ def sample_rectilinear_field(r_grid, z_grid, quantity, points):
         raise ValueError('quantity must be finite and have the same shape as R and Z')
     if points.ndim != 2 or points.shape[1] != 2 or (not np.all(np.isfinite(points))):
         raise ValueError('points must be a finite array with shape (n_points, 2)')
-    output = np.empty(points.shape[0], dtype=float)
-    for index, (r_value, z_value) in enumerate(points):
-        if r_value < r_axis[0] or r_value > r_axis[-1] or z_value < z_axis[0] or (z_value > z_axis[-1]):
-            raise ValueError('diagnostic point lies outside the R-Z grid')
-        r_index = int(np.clip(np.searchsorted(r_axis, r_value) - 1, 0, r_axis.size - 2))
-        z_index = int(np.clip(np.searchsorted(z_axis, z_value) - 1, 0, z_axis.size - 2))
-        r0, r1 = (r_axis[r_index], r_axis[r_index + 1])
-        z0, z1 = (z_axis[z_index], z_axis[z_index + 1])
-        r_fraction = 0.0 if r1 == r0 else (r_value - r0) / (r1 - r0)
-        z_fraction = 0.0 if z1 == z0 else (z_value - z0) / (z1 - z0)
-        q00 = quantity[z_index, r_index]
-        q10 = quantity[z_index, r_index + 1]
-        q01 = quantity[z_index + 1, r_index]
-        q11 = quantity[z_index + 1, r_index + 1]
-        output[index] = (1.0 - r_fraction) * (1.0 - z_fraction) * q00 + r_fraction * (1.0 - z_fraction) * q10 + (1.0 - r_fraction) * z_fraction * q01 + r_fraction * z_fraction * q11
+    r_values = points[:, 0]
+    z_values = points[:, 1]
+    if (
+        np.any(r_values < r_axis[0])
+        or np.any(r_values > r_axis[-1])
+        or np.any(z_values < z_axis[0])
+        or np.any(z_values > z_axis[-1])
+    ):
+        raise ValueError('diagnostic point lies outside the R-Z grid')
+
+    # Resolve every enclosing cell and gather only its four corners in one
+    # vectorized pass.  This preserves the original [z, r] quantity layout and
+    # endpoint convention while removing the per-point Python loop.
+    r_index = np.clip(np.searchsorted(r_axis, r_values) - 1, 0, r_axis.size - 2)
+    z_index = np.clip(np.searchsorted(z_axis, z_values) - 1, 0, z_axis.size - 2)
+    r0 = r_axis[r_index]
+    z0 = z_axis[z_index]
+    r_fraction = (r_values - r0) / (r_axis[r_index + 1] - r0)
+    z_fraction = (z_values - z0) / (z_axis[z_index + 1] - z0)
+    q00 = quantity[z_index, r_index]
+    q10 = quantity[z_index, r_index + 1]
+    q01 = quantity[z_index + 1, r_index]
+    q11 = quantity[z_index + 1, r_index + 1]
+    output = (
+        (1.0 - r_fraction) * (1.0 - z_fraction) * q00
+        + r_fraction * (1.0 - z_fraction) * q10
+        + (1.0 - r_fraction) * z_fraction * q01
+        + r_fraction * z_fraction * q11
+    )
     return {'samples': output}
 __all__ = ['sample_rectilinear_field']

@@ -45,3 +45,34 @@ def test_reviewed_relation_example():
     result = sample_rectilinear_field(R, Z, quantity, points)
     np.testing.assert_allclose(result["samples"], points[:, 0] * points[:, 1])
     assert result["samples"].shape == (2,)
+
+
+def test_nonseparable_field_matches_independent_four_corner_oracle():
+    r_axis = np.array([0.0, 0.4, 1.7, 3.0])
+    z_axis = np.array([-2.0, -0.5, 0.25, 1.0])
+    r_grid, z_grid = np.meshgrid(r_axis, z_axis)
+    quantity = np.array(
+        [
+            [0.2, -1.0, 2.5, 0.7],
+            [1.4, 3.1, -0.2, 4.0],
+            [-2.0, 0.4, 1.6, -3.2],
+            [5.0, -0.8, 2.2, 1.1],
+        ]
+    )
+    points = np.array([[0.2, -1.25], [1.1, 0.1], [2.6, 0.8], [3.0, 1.0]])
+
+    expected = []
+    for r_value, z_value in points:
+        ri = int(np.clip(np.searchsorted(r_axis, r_value) - 1, 0, r_axis.size - 2))
+        zi = int(np.clip(np.searchsorted(z_axis, z_value) - 1, 0, z_axis.size - 2))
+        rf = (r_value - r_axis[ri]) / (r_axis[ri + 1] - r_axis[ri])
+        zf = (z_value - z_axis[zi]) / (z_axis[zi + 1] - z_axis[zi])
+        expected.append(
+            (1.0 - rf) * (1.0 - zf) * quantity[zi, ri]
+            + rf * (1.0 - zf) * quantity[zi, ri + 1]
+            + (1.0 - rf) * zf * quantity[zi + 1, ri]
+            + rf * zf * quantity[zi + 1, ri + 1]
+        )
+
+    result = scientific_operator(r_grid, z_grid, quantity, points)
+    np.testing.assert_allclose(result["samples"], expected, rtol=0.0, atol=1e-14)
