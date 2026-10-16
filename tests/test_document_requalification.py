@@ -23,7 +23,7 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def test_dev8_selection_reports_changed_plotting_contracts_without_editing() -> None:
+def test_dev8_selection_reports_changed_public_contracts_without_editing() -> None:
     before = {
         path: path.read_bytes()
         for path in (ROOT / "catalog/examples").glob("*.json")
@@ -37,11 +37,16 @@ def test_dev8_selection_reports_changed_plotting_contracts_without_editing() -> 
     )
 
     assert result["selected_count"] == 260
-    assert result["eligible_count"] == 257
-    assert result["blocked_count"] == 3
+    assert result["eligible_count"] == 252
+    assert result["blocked_count"] == 8
     assert {
         item["asset_id"] for item in result["blocked"]
     } == {
+        "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
+        "scirel.geometry.bilinear-grid-sampling",
+        "scirel.electromagnetism.circular-filament-green",
+        "scirel.electromagnetism.distributed-current-flux",
+        "scirel.electromagnetism.loop-flux-matrix",
         "scirel.plotting.mirror-patches",
         "scirel.plotting.scale-patches",
         "scirel.plotting.transpose-patches",
@@ -122,17 +127,27 @@ def test_explicit_proof_requalifies_a_changed_public_module(tmp_path: Path) -> N
         old_version="0.1.0.dev8",
         new_version="0.1.0.dev9",
         proof_manifest=manifest_path,
+        require_complete=False,
     )
 
     assert result["selected_count"] == 260
-    assert result["eligible_count"] == 260
-    assert result["blocked_count"] == 0
+    assert result["eligible_count"] == 255
+    assert result["blocked_count"] == 5
     assert {
         item["asset_id"] for item in result["eligible"]
     } >= {
         "scirel.plotting.mirror-patches",
         "scirel.plotting.scale-patches",
         "scirel.plotting.transpose-patches",
+    }
+    assert {
+        item["asset_id"] for item in result["blocked"]
+    } == {
+        "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
+        "scirel.geometry.bilinear-grid-sampling",
+        "scirel.electromagnetism.circular-filament-green",
+        "scirel.electromagnetism.distributed-current-flux",
+        "scirel.electromagnetism.loop-flux-matrix",
     }
     assert result["proof_manifest_sha256"] == _sha256(manifest_path)
 
