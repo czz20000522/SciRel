@@ -20,9 +20,11 @@ decomposition assets, and development tooling are outside the wheel intake.
 
 ## Reproducing the bound wheel
 
-Build from the exact `source_revision` recorded in [`../CURRENT.json`](../CURRENT.json)
-and set `SOURCE_DATE_EPOCH` to that commit's Unix timestamp before running
-`uv build --wheel`. The fixed epoch makes the ZIP timestamps deterministic;
-without it, identical source bytes can produce different wheel digests. After
-building, compare the wheel byte count and SHA-256 with the canonical tuple and
-run the platform receipt against that exact file.
+Build from the exact `source_revision` recorded in [`../CURRENT.json`](../CURRENT.json),
+never from a dirty checkout. The reproducible procedure mirrors SciPy's ref-bound
+release tooling: archive that Git ref into a clean temporary directory, then run
+`uv build --wheel` there with `SOURCE_DATE_EPOCH` set to the ref's commit time.
+Git-archive extraction gives the source files one stable timestamp; setting the
+epoch alone in a working tree is insufficient because build backends may preserve
+file mtimes. After building, compare the wheel byte count and SHA-256 with the
+canonical tuple and run the platform receipt against that exact file.
