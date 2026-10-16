@@ -136,12 +136,19 @@ def build_from_ref(
                 command.extend(["--source-revision", revision])
             else:
                 _legacy_git_adapter(staging, revision, environment)
-            subprocess.run(
+            build_result = subprocess.run(
                 command,
-                check=True,
                 cwd=source,
                 env=environment,
+                capture_output=True,
+                text=True,
             )
+            if build_result.returncode:
+                if build_result.stdout:
+                    sys.stderr.write(build_result.stdout)
+                if build_result.stderr:
+                    sys.stderr.write(build_result.stderr)
+                build_result.check_returncode()
             manifest = json.loads((snapshot / "manifest.json").read_text(encoding="utf-8"))
             manifest_source = manifest.get("source_revision", manifest.get("source_commit"))
             if manifest_source != revision or manifest.get("source_dirty") is not False:

@@ -148,12 +148,19 @@ def build_from_ref(
             if python is not None:
                 command.extend(["--python", python])
             command.append(str(source))
-            subprocess.run(
+            build_result = subprocess.run(
                 command,
-                check=True,
                 cwd=source,
                 env=environment,
+                capture_output=True,
+                text=True,
             )
+            if build_result.returncode:
+                if build_result.stdout:
+                    sys.stderr.write(build_result.stdout)
+                if build_result.stderr:
+                    sys.stderr.write(build_result.stderr)
+                build_result.check_returncode()
             wheels = sorted(wheel_dir.glob("*.whl"))
             if len(wheels) != 1:
                 raise ValueError(f"expected exactly one wheel, found {len(wheels)}")
