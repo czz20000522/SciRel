@@ -1,9 +1,9 @@
 # SciRel wheel version line
 
-The authoritative version is the `project.version` field in `pyproject.toml` at the Git commit being built. The canonical current receipt is [`../CURRENT.json`](../CURRENT.json); this directory is a compatibility surface and a location for frozen historical evidence only. Do not create a new sibling record for every development candidate. Git history and tags identify prior versions, while the generated wheel remains outside the source-of-truth path.
+The authoritative version is the `project.version` field in `pyproject.toml` at the Git commit being built. The canonical current receipt is [`../CURRENT.json`](../CURRENT.json); this directory is a compatibility surface only. Do not create a per-version wheel record. Git history, tags, and short release notes identify prior versions, while the generated wheel remains outside the source-of-truth path.
 
 
-The canonical tuple contains the one wheel currently carried by this checkout.
+The canonical tuple contains the one wheel currently bound by this checkout.
 Its artifact record contains the exact SHA-256, byte size, source revision and
 selected capability closure. Older wheel files are not a required working-tree
 asset: Git history is the version history, and a prior wheel must be restored

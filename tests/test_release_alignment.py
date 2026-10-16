@@ -33,6 +33,12 @@ def test_legacy_current_files_are_thin_compatibility_pointers() -> None:
         assert pointer["deprecated"] is True
 
 
+def test_version_history_is_kept_in_git_and_short_release_notes() -> None:
+    assert not list((ROOT / "release/wheel/versions").glob("*.json"))
+    assert not list((ROOT / "release/docs/versions").glob("*.json"))
+    assert (ROOT / "docs/release/0.1.0.dev8-notes.md").is_file()
+
+
 def test_alignment_rejects_a_document_added_outside_the_wheel(tmp_path: Path) -> None:
     for relative in ("release", "catalog", "provenance", "tools"):
         source = ROOT / relative

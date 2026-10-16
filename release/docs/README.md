@@ -1,6 +1,6 @@
 # SciRel documentation version line
 
-Documentation is generated from the same Git commit as the candidate wheel. The current checkout and its exact documents are the source of truth; Git history and tags carry prior wording and API snapshots. The canonical current binding is [`../CURRENT.json`](../CURRENT.json). Do not copy a complete documentation tree into a new per-version directory just to record a candidate.
+Documentation is generated from the same Git commit as the candidate wheel. The current checkout and its exact documents are the source of truth; Git history, tags, and short release notes carry prior wording and API history. The canonical current binding is [`../CURRENT.json`](../CURRENT.json). Do not copy a complete documentation tree or add a per-version documentation record just to record a candidate.
 
 
 Documentation evidence is maintained separately from wheel evidence so wording,

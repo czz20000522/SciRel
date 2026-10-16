@@ -2,8 +2,8 @@
 
 ``release/CURRENT.json`` is the one mutable coordination record for the
 checkout.  The old wheel and documentation ``CURRENT.json`` files are kept as
-thin compatibility pointers; frozen records under their ``versions/``
-directories are historical evidence and are not rewritten.
+thin compatibility pointers; prior versions live in Git history and short
+release notes rather than parallel metadata directories.
 """
 
 from __future__ import annotations

@@ -21,9 +21,9 @@ The tuple binds:
 - the current document selection and handbook digest; and
 - each platform receipt used by the bounded compatibility claim.
 
-The historical records under `release/wheel/versions/` and
-`release/docs/versions/` are frozen evidence from earlier candidates. Do not
-add a sibling JSON file for a new development version.
+Historical candidate identities are preserved by Git commits, tags, and the
+short release notes under `docs/release/`. Do not add a per-version wheel JSON
+or a complete documentation snapshot to this tree.
 
 The project still has three *evidence lines*:
 

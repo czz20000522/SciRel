@@ -1,6 +1,6 @@
 # SciRel wheel 跨平台打包策略
 
-版本和文档的 Git 单一来源规则见 [scirel-git-release-model.md](scirel-git-release-model.md)。旧 dev8 记录只作为冻结历史保留；工作树当前后继候选为 dev9，不新增平行版本目录。
+版本和文档的 Git 单一来源规则见 [scirel-git-release-model.md](scirel-git-release-model.md)。dev8 的历史身份由 Git、短发行说明和相关 provenance 摘要保留；工作树当前后继候选为 dev9，不新增平行版本目录。
 
 本文把 SciRel 的产品目标落到可执行的打包和验收边界上。SciRel 应像标准科学库一样能够通过
 `pip install scirel` 安装并被 Agent 复用；科学正确性由 SciRel 的 Operator 和 TaskGraph 负责，
@@ -87,8 +87,8 @@ fluidBW 当前在运行时明确要求 Linux amd64 和 GNU Octave 7.3.0；PDRK �
 在不改变科学源码的阶段，继续构建一个 `py3-none-any` SciRel wheel。构建输入必须绑定确切
 Git 提交、包版本、`pyproject.toml`、`uv.lock` 摘要、选定文档和许可证；wheel 记录同时保存
 artifact SHA-256、字节数、直接依赖、Python 线和外部 runtime 要求。冻结 `0.1.0.dev8` 的
-wheel 摘要已经与 `release/wheel/versions/0.1.0.dev8.json` 一致，但该记录只代表历史开发候选，
-不授予公开发行或全平台资格。
+wheel 摘要曾绑定 `0.1.0.dev8` 的历史提交；该历史身份由 Git 和
+[`docs/release/0.1.0.dev8-notes.md`](../release/0.1.0.dev8-notes.md) 保留，不授予公开发行或全平台资格。
 
 `uv.lock` 用于开发环境和可复现解析：
 

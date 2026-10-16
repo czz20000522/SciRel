@@ -10,7 +10,7 @@ SciRel 采用与 SciPy 同类的单一来源模型：源代码、`pyproject.toml
 - tag 只指向已经构建并验收的提交。后续开发从 tag 之后的新提交继续，版本号按下一开发序列递进。
 - 历史版本通过 Git tag、commit 和外部归档恢复。不要新增 `release/wheel/versions/<version>.json` 或 `release/docs/versions/<version>.json` 作为平行复制品。
 
-当前 `0.1.0.dev8` 的记录和摘要属于冻结历史证据，保持原样；工作树已进入 `0.1.0.dev9` 后继候选，后继证据必须绑定新的 commit 和新的 wheel 摘要。
+`0.1.0.dev8` 的历史身份由 Git 历史和短发行说明保留；工作树已进入 `0.1.0.dev9` 后继候选，后继证据必须绑定新的 commit 和新的 wheel 摘要。
 
 ## 文档与源码绑定
 
@@ -43,7 +43,7 @@ SciPy 的仓库把核心运行依赖、可选运行依赖和测试/开发依赖�
 1. 核心依赖收敛为 NumPy、SciPy、mpmath；Matplotlib 和 netCDF4 进入可选/测试闭包；
 2. `uv.lock` 与 `pyproject.toml` 同步到 `0.1.0.dev9`；
 3. 从安装包验证脚本生成 core、`plot` extra 和测试闭包的独立 receipt；
-4. 现有每版本 release JSON 只作为冻结历史保留，不再扩展新的平行版本目录；
+4. 旧的每版本 release JSON 不属于工作树活动资产；历史身份从 Git 历史和短发行说明恢复，不再扩展平行版本目录；
 5. 发行指针收敛为一个当前 Git 绑定的 `release/CURRENT.json` tuple，旧 dev8 记录不改写。
 
 这套模型保留完整历史证据，同时让“当前版本是什么、由哪个提交生成、文档和 wheel 是否同源”都能从 Git 和一个当前 receipt 直接回答。
