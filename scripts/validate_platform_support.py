@@ -6,6 +6,7 @@ import argparse
 import json
 from pathlib import Path
 from typing import Any
+import tomllib
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,6 +27,14 @@ def validate_matrix(root: Path = ROOT) -> dict[str, Any]:
         raise ValueError("unsupported platform matrix schema")
     if not matrix.get("package_version") or not matrix.get("runtime_binding"):
         raise ValueError("platform matrix must bind package version and runtime")
+    project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+    current = _read(root / "release/CURRENT.json")
+    project_version = project.get("project", {}).get("version")
+    if matrix["package_version"] != project_version or matrix["package_version"] != current.get("version"):
+        raise ValueError("platform matrix package_version differs from project/current release")
+    binding = matrix["runtime_binding"]
+    if not isinstance(binding, dict) or binding.get("release_tuple") != "release/CURRENT.json":
+        raise ValueError("platform matrix runtime_binding.release_tuple is invalid")
 
     platforms = matrix.get("platforms")
     if not isinstance(platforms, list) or not platforms:

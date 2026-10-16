@@ -5,6 +5,7 @@ No source MATLAB, source checkout, workflow tools or evidence are packaged.
 """
 from pathlib import Path
 import argparse,json,shutil,subprocess,sys,hashlib
+import tomllib
 from scientific_runtime import baseline_receipt,build_requirements,pin_dependencies,python_requirement
 
 MODULES={
@@ -16,7 +17,9 @@ MODULES={
  'vlasov_poisson':[],
  '_gpdf_pole_data':[],
 }
-VERSION='0.1.0.dev9'
+VERSION = tomllib.loads(
+    (Path(__file__).resolve().parents[1] / "pyproject.toml").read_text(encoding="utf-8")
+)["project"]["version"]
 
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('output',type=Path);p.add_argument('--notices',type=Path,required=True);args=p.parse_args()

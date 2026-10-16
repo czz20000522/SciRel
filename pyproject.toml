@@ -13,7 +13,15 @@ license-files = ["licenses/**/*"]
 [project.optional-dependencies]
 plot = ["matplotlib==3.11.2"]
 netcdf = ["netCDF4==1.7.4"]
-test = ["pytest==9.1.1", "setuptools==84.0.0", "wheel==0.48.0", "matplotlib==3.11.2", "netCDF4==1.7.4"]
+
+[dependency-groups]
+build = ["setuptools==84.0.0", "wheel==0.48.0"]
+test = [
+    { include-group = "build" },
+    "pytest==9.1.1",
+    "matplotlib==3.11.2",
+    "netCDF4==1.7.4",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

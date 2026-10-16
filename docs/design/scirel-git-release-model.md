@@ -14,7 +14,7 @@ SciRel 采用与 SciPy 同类的单一来源模型：源代码、`pyproject.toml
 
 ## 文档与源码绑定
 
-文档正文、API 参考、领域导航和发行说明与源码同仓库维护。文档构建读取当前 checkout 的 API 和 exact document，不从历史版本目录复制一份“当前文档”。每个公开能力的合同、失败语义和验证边界仍由 exact document 表达；文档快照的版本身份由 Git commit 和构建 receipt 给出。发行历史只保留短小的 `docs/release/<version>-notes.md`（或等价的索引条目），不复制完整手册或 API 树。
+文档正文、API 参考、领域导航和发行说明与源码同仓库维护。文档构建读取当前 checkout 的 API 和 exact document，不从历史版本目录复制一份“当前文档”。每个公开能力的合同、失败语义和验证边界仍由 exact document 表达；当前文档选择用 `selection_id`、Git commit 和构建 receipt 标识，不把它伪装成第二个包版本。发行历史只保留短小的 `docs/release/<version>-notes.md`（或等价的索引条目），不复制完整手册或 API 树。
 
 同一 source revision 产生：
 
@@ -32,7 +32,7 @@ SciPy 的仓库把核心运行依赖、可选运行依赖和测试/开发依赖�
 
 - `[project].dependencies` 只放无 extra 即可运行的核心科学闭包；
 - `[project.optional-dependencies]` 放用户主动选择的能力，例如 `plot` 和暂定的 `netcdf`；
-- `[dependency-groups]`（若后续工具链稳定）放测试、文档、构建和开发环境，不进入 wheel 的 `Requires-Dist`。
+- `[dependency-groups]` 放测试、构建和开发环境，不进入 wheel 的 `Requires-Dist`；当前 `test` 组通过 `build` 组复用构建工具。
 
 `uv.lock` 是该 Git 提交的开发解析锁，不是第二份发行元数据。发布和 clean-venv 验收仍需记录目标平台实际解析到的 wheel 与摘要。
 
@@ -41,7 +41,7 @@ SciPy 的仓库把核心运行依赖、可选运行依赖和测试/开发依赖�
 本轮先执行不改变科学 API 的迁移：
 
 1. 核心依赖收敛为 NumPy、SciPy、mpmath；Matplotlib 和 netCDF4 进入可选/测试闭包；
-2. `uv.lock` 与 `pyproject.toml` 同步到 `0.1.0.dev9`；
+2. `uv.lock` 与 `pyproject.toml` 同步到 `0.1.0.dev9`；运行 extra 只保留用户主动选择的能力，测试/构建依赖使用 `dependency-groups`；
 3. 从安装包验证脚本生成 core、`plot` extra 和测试闭包的独立 receipt；
 4. 旧的每版本 release JSON 不属于工作树活动资产；历史身份从 Git 历史和短发行说明恢复，不再扩展平行版本目录；
 5. 发行指针收敛为一个当前 Git 绑定的 `release/CURRENT.json` tuple，旧 dev8 记录不改写。

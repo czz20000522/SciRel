@@ -1,4 +1,9 @@
 {
+  "artifact": {
+    "bytes": 651281,
+    "path": "scirel-0.1.0.dev9-py3-none-any.whl",
+    "sha256": "8dfc17828b3b83381edd592d2dd8d113e11f4117d8b8c5f444d3cb7719aa3751"
+  },
   "cross_domain_task": {
     "expected_value": 1.5,
     "outputs": {
@@ -27,7 +32,7 @@
       "import_candidates": [
         "numpy"
       ],
-      "imported_from": "/tmp/scirel-venv/lib/python3.14/site-packages/numpy/__init__.py",
+      "imported_from": "/tmp/scirel-dev9-linux-x86_64-cp314/lib/python3.14/site-packages/numpy/__init__.py",
       "imported_module": "numpy",
       "installed_version": "2.5.4",
       "name": "numpy",
@@ -38,7 +43,7 @@
       "import_candidates": [
         "scipy"
       ],
-      "imported_from": "/tmp/scirel-venv/lib/python3.14/site-packages/scipy/__init__.py",
+      "imported_from": "/tmp/scirel-dev9-linux-x86_64-cp314/lib/python3.14/site-packages/scipy/__init__.py",
       "imported_module": "scipy",
       "installed_version": "1.18.1",
       "name": "scipy",
@@ -49,7 +54,7 @@
       "import_candidates": [
         "mpmath"
       ],
-      "imported_from": "/tmp/scirel-venv/lib/python3.14/site-packages/mpmath/__init__.py",
+      "imported_from": "/tmp/scirel-dev9-linux-x86_64-cp314/lib/python3.14/site-packages/mpmath/__init__.py",
       "imported_module": "mpmath",
       "installed_version": "1.4.1",
       "name": "mpmath",
@@ -60,8 +65,8 @@
   "errors": [],
   "package": {
     "in_source_tree": false,
-    "metadata_path": "/tmp/scirel-venv/lib/python3.14/site-packages/scirel-0.1.0.dev9.dist-info",
-    "module_file": "/tmp/scirel-venv/lib/python3.14/site-packages/scirel/__init__.py",
+    "metadata_path": "/tmp/scirel-dev9-linux-x86_64-cp314/lib/python3.14/site-packages/scirel-0.1.0.dev9.dist-info",
+    "module_file": "/tmp/scirel-dev9-linux-x86_64-cp314/lib/python3.14/site-packages/scirel/__init__.py",
     "requires_python": "<3.15,>=3.14",
     "status": "PASS",
     "version": "0.1.0.dev9",
@@ -75,15 +80,15 @@
   },
   "runtime": {
     "architecture": "x86_64",
-    "base_prefix": "/usr/local",
-    "executable": "/usr/local/bin/python3.14",
+    "base_prefix": "/usr",
+    "executable": "/usr/bin/python3.14",
     "expected_platform": "linux-x86_64-cp314",
     "implementation": "CPython",
     "os": "linux",
     "platform": "linux-x86_64",
-    "prefix": "/tmp/scirel-venv",
+    "prefix": "/tmp/scirel-dev9-linux-x86_64-cp314",
     "python_abi": "cpython-314",
-    "version": "3.14.7",
+    "version": "3.14.4",
     "version_line": "3.14"
   },
   "schema": "scirel.installed-wheel-validation.v1",

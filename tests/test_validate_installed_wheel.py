@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import sys
 from pathlib import Path
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+CURRENT = json.loads((ROOT / "release/CURRENT.json").read_text(encoding="utf-8"))
+CURRENT_VERSION = CURRENT["version"]
 sys.path.insert(0, str(ROOT))
 
 from scripts import validate_installed_wheel as validator  # noqa: E402
@@ -55,3 +59,30 @@ def test_validation_receipt_preserves_failed_check(monkeypatch: pytest.MonkeyPat
     assert receipt["status"] == "FAIL"
     assert receipt["pip_check"]["status"] == "FAIL"
     assert "pip check failed with exit code 1" in receipt["errors"]
+
+
+def test_validation_receipt_binds_the_installed_wheel_bytes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    wheel = tmp_path / f"scirel-{CURRENT_VERSION}-py3-none-any.whl"
+    wheel.write_bytes(b"wheel-bytes")
+    monkeypatch.setattr(validator, "_runtime_identity", lambda expected_platform, expected_python: ({}, []))
+    monkeypatch.setattr(
+        validator,
+        "_check_distribution",
+        lambda: ({"status": "PASS", "version": CURRENT_VERSION}, [], object()),
+    )
+    monkeypatch.setattr(validator, "_check_dependencies", lambda: [{"name": "numpy", "status": "PASS"}])
+    monkeypatch.setattr(validator, "_run_pip_check", lambda: ({"status": "PASS"}, []))
+    monkeypatch.setattr(validator, "_run_simple_operator", lambda: ({"status": "PASS"}, []))
+    monkeypatch.setattr(validator, "_run_cross_domain_task", lambda: ({"status": "PASS"}, []))
+
+    receipt = validator.validate_installed_wheel(
+        expected_platform="linux-x86_64-cp314", wheel_path=wheel
+    )
+
+    assert receipt["artifact"] == {
+        "path": wheel.name,
+        "sha256": hashlib.sha256(b"wheel-bytes").hexdigest(),
+        "bytes": len(b"wheel-bytes"),
+    }

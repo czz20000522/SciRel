@@ -23,12 +23,12 @@
       {
         "platform": "linux-x86_64-cp314",
         "path": "provenance/validation/scirel-dev9-linux-acceptance-20261017.json",
-        "sha256": "376d3a7e1e3559a6de501bbd89c984259ed000e6d8f95cc210b7598ed9a7c090"
+        "sha256": "b499a217c65ecd47c9cd13775702a3f31a9ea2dae1f6a17d0175897f79e983fd"
       }
     ]
   },
   "documentation": {
-    "version": "scientific-core-r18",
+    "selection_id": "scientific-core-r18",
     "status": "development_candidate",
     "source_documents": "provenance/selections/scientific-core-documents-20261015-r9.json",
     "handbook": "tools/docs/handbooks/scientific-core-r18.json",
@@ -43,7 +43,7 @@
       "task_graphs": 30,
       "document_closure": 260
     },
-    "asset_baseline_versions": [
+    "asset_implementation_baselines": [
       "0.1.0.dev8"
     ]
   },

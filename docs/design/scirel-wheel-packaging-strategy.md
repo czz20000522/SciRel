@@ -43,7 +43,7 @@ Linux x86_64 和 Linux aarch64 为 `PARTIAL`，Windows amd64、macOS arm64 和 m
 | Core Python | NumPy、SciPy、mpmath | 被 universal core 的实现直接或传递调用，并在声明平台有可安装闭包 | 无 checkout、无来源项目、无网络的 clean venv 中完成 import、简单任务、跨域任务和结果检查 |
 | Optional Python | Matplotlib、netCDF4 | 只由明确的绘图或 NetCDF 能力使用，并且不阻断 core import | 安装对应 extra 后运行该能力的 API smoke、科学回归和失败行为；未安装 extra 时 core 仍可导入 |
 | Native capability | GNU Octave 及随包 `.m` 资源 | 外部程序版本、平台和调用合同均有独立证明 | 在 capability matrix 声明的 OS/架构/Octave 版本中执行；不计入 universal core 的跨平台结论 |
-| Development | pytest、setuptools、wheel、文档工具、Git、PowerShell、独立参考库 | 仅构建、测试、文档、来源对照或发布流程需要 | 只在项目开发环境验收，不写入用户运行闭包 |
+| Development | pytest、setuptools、wheel、文档工具、Git、PowerShell、独立参考库 | 仅构建、测试、文档、来源对照或发布流程需要 | 只在项目开发环境验收，不写入用户运行闭包；测试/构建包由 `pyproject.toml` 的 `dependency-groups` 管理 |
 
 这张表是目标拆分，改变 `Requires-Dist` 前必须先冻结受影响 API、导入路径、测试分母和失败证据。
 历史 wheel 与冻结记录不能通过事后删依赖来取得新资格；依赖精简应生成后继版本并重新构建、
@@ -59,7 +59,7 @@ NumPy 和 SciPy 是当前大量数值 Operator 的直接运行依赖，mpmath �
 ### Optional Python
 
 当前源码中没有 `netCDF4` 的 `src/scirel` 导入，搜索结果只在测试中使用它。因此可以把
-netCDF4 作为候选 `netcdf` extra，并在 `test` extra 中保留测试所需版本；正式修改前仍须运行
+netCDF4 作为候选 `netcdf` extra，并在 `test` dependency group 中保留测试所需版本；正式修改前仍须运行
 全量源码导入扫描、公共 API smoke 和涉及 NetCDF 的测试，确认没有动态导入或文档合同遗漏。
 
 Matplotlib 出现在绘图模块和 PDRF/PDRK presentation 路径中，部分模块按函数调用时才导入。

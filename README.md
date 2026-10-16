@@ -103,7 +103,7 @@ CodeFusion 联调先选定索引中的确切 `entry_id`，再按该条目的状�
 ## 统一科学运行环境
 
 当前维护基线为 Python 3.14.7、NumPy 2.5.4、SciPy 1.18.1、Matplotlib 3.11.2，
-用 `uv sync --locked --extra test` 建立独立开发环境。历史能力也逐项迁入这一基线；
+用 `uv sync --locked --group test` 建立独立开发环境。历史能力也逐项迁入这一基线；
 版本固定与科学验收分别记录，见[科学运行依赖基线](docs/design/scientific-runtime-baseline.md)。
 
 来源运行依赖按 D0 保留入口和必要源码对照选择；科学 wheel 只安装实际运行闭包；

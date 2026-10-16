@@ -24,11 +24,10 @@ def _runtime_dependency_pins():
     policy = baseline()["project"]
     declared = list(policy["dependencies"])
     optional = policy.get("optional-dependencies", {})
-    # The test extra is a development closure, not a scientific runtime
-    # baseline.  Named capability extras remain eligible for selected builds.
-    for extra_name, requirements in optional.items():
-        if extra_name == "test":
-            continue
+    # Only named capability extras are part of a scientific runtime baseline.
+    # Test/build dependencies live in ``[dependency-groups]`` and therefore do
+    # not appear in this runtime closure.
+    for requirements in optional.values():
         declared.extend(requirements)
     return {
         canonicalize_name(Requirement(text).name): Requirement(text)
@@ -73,6 +72,5 @@ def baseline_receipt():
             "optional_dependencies": {
                 key: value
                 for key, value in policy.get("optional-dependencies", {}).items()
-                if key != "test"
             },
             "build_requires": build_requirements()}

@@ -13,6 +13,7 @@ import hashlib
 import json
 from pathlib import Path
 from typing import Any
+import tomllib
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,6 +24,18 @@ def _read_json(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(f"expected JSON object: {path}")
     return value
+
+
+def _project_version(root: Path) -> str:
+    path = root / "pyproject.toml"
+    try:
+        metadata = tomllib.loads(path.read_text(encoding="utf-8"))
+        version = metadata["project"]["version"]
+    except (OSError, KeyError, TypeError, tomllib.TOMLDecodeError) as error:
+        raise ValueError("pyproject.toml does not declare a readable project version") from error
+    if not isinstance(version, str) or not version:
+        raise ValueError("pyproject.toml project.version must be a non-empty string")
+    return version
 
 
 def _sha256(path: Path) -> str:
@@ -112,9 +125,42 @@ def _validate_platform_receipts(root: Path, wheel: dict[str, Any]) -> None:
         package = receipt.get("package")
         if not isinstance(package, dict) or package.get("version") != wheel["version"]:
             raise ValueError(f"platform receipt package version differs: {row['platform']}")
+        receipt_artifact = receipt.get("artifact")
+        expected_artifact = wheel.get("artifact")
+        if (
+            not isinstance(receipt_artifact, dict)
+            or receipt_artifact.get("sha256") != expected_artifact.get("sha256")
+            or receipt_artifact.get("bytes") != expected_artifact.get("bytes")
+        ):
+            raise ValueError(f"platform receipt wheel artifact differs: {row['platform']}")
         runtime = receipt.get("runtime")
         if not isinstance(runtime, dict) or runtime.get("expected_platform") != row["platform"]:
             raise ValueError(f"platform receipt target differs: {row['platform']}")
+
+
+def _validate_platform_matrix(root: Path, *, version: str, receipt_paths: set[str]) -> None:
+    matrix = _read_json(root / "release/platform-support-matrix.json")
+    if matrix.get("schema") != "scirel.platform-support-matrix.v1":
+        raise ValueError("platform support matrix has an invalid schema")
+    if matrix.get("package") != "scirel":
+        raise ValueError("platform support matrix names an unexpected package")
+    if matrix.get("package_version") != version:
+        raise ValueError("platform support matrix version differs from current release")
+    binding = matrix.get("runtime_binding")
+    if not isinstance(binding, dict) or binding.get("release_tuple") != "release/CURRENT.json":
+        raise ValueError("platform support matrix is not bound to release/CURRENT.json")
+    if binding.get("dependency_lock") != "uv.lock" or not (root / "uv.lock").is_file():
+        raise ValueError("platform support matrix dependency lock is invalid")
+    rows = matrix.get("platforms")
+    if not isinstance(rows, list):
+        raise ValueError("platform support matrix platforms must be a list")
+    evidence_paths: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict) or not isinstance(row.get("evidence"), list):
+            raise ValueError("platform support matrix contains an invalid evidence row")
+        evidence_paths.update(value for value in row["evidence"] if isinstance(value, str))
+    if not receipt_paths <= evidence_paths:
+        raise ValueError("current platform receipt is missing from the support matrix")
 
 
 def validate_alignment(root: Path = ROOT) -> dict[str, Any]:
@@ -127,6 +173,8 @@ def validate_alignment(root: Path = ROOT) -> dict[str, Any]:
     version = current.get("version")
     if not isinstance(version, str) or not version:
         raise ValueError("release CURRENT version must be a non-empty string")
+    if _project_version(root) != version:
+        raise ValueError("release CURRENT version differs from pyproject.toml project.version")
     source_revision = current.get("source_revision")
     if source_revision is not None and (not isinstance(source_revision, str) or not source_revision):
         raise ValueError("source_revision must be null or a non-empty string")
@@ -158,6 +206,11 @@ def validate_alignment(root: Path = ROOT) -> dict[str, Any]:
         if artifact_path.stat().st_size != artifact.get("bytes"):
             raise ValueError("wheel artifact byte size differs from release CURRENT")
     _validate_platform_receipts(root, wheel)
+    _validate_platform_matrix(
+        root,
+        version=version,
+        receipt_paths={row["path"] for row in wheel["platform_receipts"]},
+    )
 
     _validate_compat_pointer(root, root / "release/wheel/CURRENT.json", line="wheel")
     _validate_compat_pointer(root, root / "release/docs/CURRENT.json", line="documentation")
@@ -178,7 +231,7 @@ def validate_alignment(root: Path = ROOT) -> dict[str, Any]:
         else:
             raise ValueError(f"unsupported document kind: {kind}")
         implementation_version = document.get("version", {}).get("implementation_version")
-        baseline_versions = docs.get("asset_baseline_versions")
+        baseline_versions = docs.get("asset_implementation_baselines")
         if (
             not isinstance(baseline_versions, list)
             or not baseline_versions
@@ -186,7 +239,7 @@ def validate_alignment(root: Path = ROOT) -> dict[str, Any]:
         ):
             raise ValueError(
                 f"document {document.get('asset_id')} targets {implementation_version}, "
-                "which is outside documentation asset_baseline_versions"
+                "which is outside documentation asset_implementation_baselines"
             )
     counts["document_closure"] = len(selected)
     expected = wheel.get("selected_capabilities")
@@ -205,7 +258,7 @@ def validate_alignment(root: Path = ROOT) -> dict[str, Any]:
 
     return {
         "wheel_version": version,
-        "documentation_version": docs["version"],
+        "documentation_selection": docs["selection_id"],
         "source_revision": source_revision,
         "capability_counts": counts,
         "selection_sha256": selection_digest,

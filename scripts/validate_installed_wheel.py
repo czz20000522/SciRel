@@ -11,16 +11,20 @@ Typical Linux amd64 acceptance invocation::
 
     python -I scripts/validate_installed_wheel.py \
         --expected-platform linux-x86_64-cp314 \
+    --wheel dist/scirel-<project.version>-py3-none-any.whl \
         --output installed-wheel-validation.json
 
-The script does not build wheels, modify release records, or update the
-platform matrix.  It is safe to run against a historical wheel while a later
-candidate is being prepared.
+The optional ``--wheel`` argument records the exact artifact digest and byte
+size, so the receipt can be bound to the release tuple. The script does not
+build wheels, modify release records, or update the platform matrix. It is
+safe to run against a historical wheel while a later candidate is being
+prepared.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib
 import importlib.metadata as metadata
 import json
@@ -248,6 +252,17 @@ def _check_distribution() -> tuple[dict[str, Any], list[str], Any | None]:
     return details, errors, module
 
 
+def _wheel_artifact(path: Path) -> tuple[dict[str, Any], list[str]]:
+    """Return a stable identity for the exact wheel used for installation."""
+
+    artifact: dict[str, Any] = {"path": path.name}
+    if not path.is_file():
+        return artifact, [f"wheel artifact does not exist: {path}"]
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    artifact.update({"sha256": digest, "bytes": path.stat().st_size})
+    return artifact, []
+
+
 def _run_pip_check() -> tuple[dict[str, Any], list[str]]:
     try:
         result = subprocess.run(
@@ -396,11 +411,13 @@ def validate_installed_wheel(
     *,
     expected_platform: str | None = None,
     expected_python: str = DEFAULT_EXPECTED_PYTHON,
+    wheel_path: Path | None = None,
 ) -> dict[str, Any]:
     runtime, errors = _runtime_identity(expected_platform, expected_python)
     receipt: dict[str, Any] = {
         "schema": SCHEMA,
         "status": "FAIL",
+        "artifact": {},
         "runtime": runtime,
         "package": {},
         "dependencies": [],
@@ -412,6 +429,10 @@ def validate_installed_wheel(
     package, package_errors, _ = _check_distribution()
     receipt["package"] = package
     receipt["errors"].extend(package_errors)
+    if wheel_path is not None:
+        artifact, artifact_errors = _wheel_artifact(wheel_path.resolve())
+        receipt["artifact"] = artifact
+        receipt["errors"].extend(artifact_errors)
     try:
         receipt["dependencies"] = _check_dependencies()
     except Exception as exc:
@@ -445,12 +466,18 @@ def main() -> int:
         default=DEFAULT_EXPECTED_PYTHON,
         help=f"expected CPython major.minor line (default: {DEFAULT_EXPECTED_PYTHON})",
     )
+    parser.add_argument(
+        "--wheel",
+        type=Path,
+        help="exact wheel file installed into the clean environment; records its SHA-256 and size",
+    )
     parser.add_argument("--output", type=Path, help="write the JSON receipt to this path")
     args = parser.parse_args()
     try:
         receipt = validate_installed_wheel(
             expected_platform=args.expected_platform,
             expected_python=args.expected_python,
+            wheel_path=args.wheel,
         )
     except Exception as exc:  # keep command failures machine-readable
         receipt = {

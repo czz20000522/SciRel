@@ -2,9 +2,13 @@
 from pathlib import Path
 import subprocess
 import sys
+import tomllib
 
 
 ROOT = Path(__file__).resolve().parents[1]
+PROJECT_VERSION = tomllib.loads(
+    (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+)["project"]["version"]
 
 
 def test_root_import_and_discovery_need_no_scientific_dependencies():
@@ -15,7 +19,7 @@ sys.path.insert(0, sys.argv[1])
 import scirel
 assert set(scirel.__all__) <= set(dir(scirel))
 assert not hasattr(scirel, "not_a_scientific_api")
-assert scirel.__version__ == "0.1.0.dev9"
+assert scirel.__version__ == sys.argv[2]
 assert not any(n.startswith("scirel.") for n in sys.modules)
 assert not any(n in sys.modules for n in ("numpy", "scipy", "matplotlib"))
 # Domain discovery itself is dependency-light; the scientific child
@@ -23,7 +27,7 @@ assert not any(n in sys.modules for n in ("numpy", "scipy", "matplotlib"))
 scirel.field
 assert "scirel.field" in sys.modules
 assert not any(n in sys.modules for n in ("numpy", "scipy", "matplotlib"))
-''', str(ROOT / 'src')], capture_output=True, text=True,
+''', str(ROOT / 'src'), PROJECT_VERSION], capture_output=True, text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
 

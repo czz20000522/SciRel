@@ -10,7 +10,7 @@ Python 的小版本线由 `pyproject.toml` 限定，开发解释器补丁版由 
 
 ## 安装与构建
 
-`uv sync --locked --extra test` 用于 SciRel checkout 的独立开发环境，不是来源预处理或用户安装的通用命令。
+`uv sync --locked --group test` 用于 SciRel checkout 的独立开发环境，不是来源预处理或用户安装的通用命令。
 来源环境按 D0 保留入口和实际对照需要，从上游依赖中选择必要子集；为复现来源行为确需不同版本时，
 在来源环境中固定并记录差异，不强制升级后把行为变化算作 SciRel 误差，也不把旧依赖带入新 wheel。
 科学计算使用对应项目的独立容器；
