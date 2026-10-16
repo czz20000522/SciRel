@@ -38,7 +38,7 @@ def test_conflicting_or_unqualified_dependency_is_not_silently_replaced(dependen
         pin_dependencies([dependency])
 
 
-def test_reviewed_project_only_changes_selected_version(tmp_path):
+def test_reviewed_project_keeps_pyproject_as_the_version_source(tmp_path):
     project = (ROOT / "pyproject.toml").read_text()
     (tmp_path / "pyproject.toml").write_text(project)
     current_version = next(
@@ -46,24 +46,29 @@ def test_reviewed_project_only_changes_selected_version(tmp_path):
         for line in project.splitlines()
         if line.startswith("version = ")
     )
-    selected_version = "0.2.0+bound"
-    selected = {"a": {"version": {"implementation_version": selected_version}}}
+    selected = {"a": {"version": {"implementation_version": current_version}}}
     result = _project_for_release(tmp_path, selected)
-    assert result == project.replace(
-        f'version = "{current_version}"',
-        f'version = "{selected_version}"',
-    )
+    assert result == project
     assert (tmp_path / "pyproject.toml").read_text() == project
     selected["b"] = {"version": {"implementation_version": "0.0.0"}}
     with pytest.raises(ValueError, match="share one implementation_version"):
         _project_for_release(tmp_path, selected)
 
 
+def test_reviewed_project_rejects_document_version_drift(tmp_path):
+    project = (ROOT / "pyproject.toml").read_text()
+    (tmp_path / "pyproject.toml").write_text(project)
+    selected = {"a": {"version": {"implementation_version": "0.2.0+historical"}}}
+    with pytest.raises(ValueError, match="match pyproject.toml project.version"):
+        _project_for_release(tmp_path, selected)
+    assert (tmp_path / "pyproject.toml").read_text() == project
+
+
 def test_reviewed_historical_runtime_requires_explicit_requalification(tmp_path):
     project = (ROOT / "pyproject.toml").read_text().replace("numpy==2.5.4", "numpy>=1.24")
     (tmp_path / "pyproject.toml").write_text(project)
     with pytest.raises(ValueError, match="maintained scientific runtime"):
-        _project_for_release(tmp_path, {"a": {"version": {"implementation_version": "0.2.0"}}})
+        _project_for_release(tmp_path, {"a": {"version": {"implementation_version": "0.1.0.dev9"}}})
 
 
 def test_selected_wheel_binds_baseline_and_preserves_exact_science(tmp_path):

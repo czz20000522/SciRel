@@ -28,28 +28,40 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def _project_for_release(source_root: Path, documents: dict) -> str:
-    """Bind package metadata to the exact, version-consistent review selection."""
-    versions = {document["version"]["implementation_version"] for document in documents.values()}
-    if len(versions) != 1:
-        raise ValueError("reviewed documents must share one implementation_version")
-    version = versions.pop()
-    if not re.fullmatch(r"[0-9A-Za-z.+!-]+", version):
-        raise ValueError("reviewed implementation_version is not a simple package version")
+    """Validate the source checkout as the sole release-version authority.
+
+    Reviewed documents are inputs to a release, not a second version source.
+    A historical document set must be explicitly requalified before it can be
+    staged for a newer package version; this function never rewrites
+    ``pyproject.toml`` from document metadata.
+    """
     project = (source_root / "pyproject.toml").read_text(encoding="utf-8")
     metadata = tomllib.loads(project)
+    version = metadata.get("project", {}).get("version")
+    if not isinstance(version, str) or not re.fullmatch(r"[0-9A-Za-z.+!-]+", version):
+        raise ValueError("pyproject.toml must declare one simple project version")
+    document_versions = {
+        document["version"]["implementation_version"]
+        for document in documents.values()
+    }
+    if len(document_versions) != 1:
+        raise ValueError("reviewed documents must share one implementation_version")
+    if document_versions != {version}:
+        raise ValueError(
+            "reviewed documents must match pyproject.toml project.version; "
+            "requalify historical documents before staging"
+        )
     requirements = metadata["project"]["dependencies"]
-    if (requirements != pin_dependencies(requirements)
-            or metadata["project"]["requires-python"] != python_requirement()
-            or metadata["build-system"]["requires"] != build_requirements()):
-        raise ValueError("source project must use the maintained scientific runtime baseline; requalify historical inputs")
-    section = re.search(r"(?ms)^\[project\][ \t]*\n(?P<body>.*?)(?=^\[|\Z)", project)
-    if section is None:
-        raise ValueError("pyproject.toml has no project section")
-    body, count = re.subn(r'(?m)^version\s*=\s*"[^"\n]+"[ \t]*$',
-                          'version = ' + json.dumps(version), section["body"])
-    if count != 1:
-        raise ValueError("pyproject.toml must declare one literal project version")
-    return project[:section.start("body")] + body + project[section.end("body"):]
+    if (
+        requirements != pin_dependencies(requirements)
+        or metadata["project"]["requires-python"] != python_requirement()
+        or metadata["build-system"]["requires"] != build_requirements()
+    ):
+        raise ValueError(
+            "source project must use the maintained scientific runtime baseline; "
+            "requalify historical inputs"
+        )
+    return project
 
 
 def prepare_reviewed_distribution(
