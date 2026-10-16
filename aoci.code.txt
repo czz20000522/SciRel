@@ -327,7 +327,7 @@ scirel-workflow.md[SB7S]: F:设计领域候选检查、模型交接、逐项审�
 scientific-runtime-baseline.md[SC7T]: F:规定现代科学依赖统一版本、三类用途子集及历史交付后继验证 | R:code:pyproject.toml,code:scripts/scientific_runtime.py | A:来源对照、科学安装、开发工具基线与迁移规则 | S:mpmath因Padé运行构造纳入所需子集；Octave为外部系统依赖，版本统一不合并三类清单，历史资格不自动迁移
 scirel-positioning.md[SB8T]: F:固定SciRel标准科学库定位、Agent编排边界和跨平台发行硬合同 | R:code:README.md,code:docs/design/project-and-distribution.md,code:docs/requirements/scirel-workflow.md,code:release/platform-support-matrix.json,code:release/CURRENT.json | A:pip安装；能力发现；正确性门禁；平台矩阵 | S:函数成功、静态文档或单平台通过不能扩大为完整科学或跨平台资格；native运行时单列
 scirel-wheel-packaging-strategy.md[SB8S]: F:规定SciRel科学wheel的安装边界、依赖分层、外部native能力与逐平台验收策略 | R:code:docs/design/scirel-positioning.md,code:docs/design/project-and-distribution.md,code:pyproject.toml,code:uv.lock,code:release/CURRENT.json,code:release/platform-support-matrix.json | A:py3-none-any边界；core/optional/native/development依赖；clean-venv回执；Git历史恢复 | S:wheel标签只描述SciRel自身字节，不证明传递依赖或Octave跨平台可用；dev8历史身份由Git、短说明和provenance摘要恢复；PARTIAL/NOT_RUN不得扩大兼容性声明
-scirel-git-release-model.md[SV7T]: F:规定源码版本、wheel、文档和回执的Git单一来源发行模型 | R:code:pyproject.toml,code:release/CURRENT.json,code:docs/release.md | A:开发候选与tag构建绑定；单一当前tuple；历史commit与短发行说明 | S:不新增per-version源码、wheel元数据或完整文档复制；未绑定commit的工作树不得宣称候选已绑定
+scirel-git-release-model.md[SV7T]: F:规定源码版本、wheel、文档和回执的Git单一来源发行模型 | R:code:pyproject.toml,code:release/CURRENT.json,code:docs/release.md | A:开发候选与tag构建绑定；单一当前候选回执；历史commit与短发行说明 | S:版本源只有pyproject.toml；不新增per-version源码、wheel元数据或完整文档复制；生成物不反向成为源码事实
 
 ===/Users/tomczz/Projects/SciReL/docs/domains/===
 README.md[SB6T]: F:导航专家科学问题域、开发样例和跨领域概念接线 | R:code:docs/domains/magnetic-field.md,code:docs/domains/quasineutrality.md | A:未整理、经核查缺口及范围有限的区分 | S:领域页非第二合同，历史pilot计数不定义当前覆盖；概念接线表不提供callable
@@ -1163,6 +1163,7 @@ test_scientific_delivery.py[TQ7S]: F:回归保存数据、报告、图轴、作�
 test_release_alignment.py[TQ5T]: F:回归当前发行闭包精确计数、Git单一当前指针和历史记录清理规则 | R:code:scripts/validate_release_alignment.py,code:release/CURRENT.json,code:release/wheel/CURRENT.json,code:release/docs/CURRENT.json,code:docs/release/0.1.0.dev8-notes.md | A:当前对齐测试；临时副本变异；无per-version metadata断言；pytest | S:测试保留230/30/260基线并要求文档闭包、wheel和canonical tuple双向一致；历史由Git与短说明承担
 test_platform_support.py[TQ6T]: F:回归平台矩阵的状态、证据缺失拒绝及项目根导入路径 | R:code:scripts/validate_platform_support.py,code:release/platform-support-matrix.json | A:pytest；根路径注入；临时矩阵复制；状态与证据负例 | S:矩阵结构通过不证明平台科学parity、依赖闭包或人工发行批准
 test_validate_installed_wheel.py[TQ6T]: F:回归已安装wheel验证器的环境检查、依赖检查、公共运行和失败回执 | R:code:scripts/validate_installed_wheel.py | A:pytest；临时输出；目标平台不符；源码树拒绝；receipt字段断言 | S:测试必须保留非零失败和精确错误；不能把本地checkout或平台标签当作安装包验收
+test_git_release_structure.py[TQ5T]: F:回归Git单一版本源、短发行说明和无重复wheel/文档目录 | R:code:pyproject.toml,code:release/CURRENT.json,code:docs/release | A:发行结构回归与当前候选身份一致性检查 | S:仅检查仓库布局和元数据绑定，不证明科学正确性或平台验收
 
 ===/Users/tomczz/Projects/SciReL/tests/fixtures/l1/===
 cycle-rework.json[TW4T]: F:提供两任务图互相依赖且dependency_closure失败的L1重做分支fixture | R:code:tests/test_l1_wire_smoke.py | A:scirel.l1-inventory.dev | S:-
@@ -1897,7 +1898,7 @@ fb_z_stable.m[DD6S]: F:提供 fluidBW fb_z_stable 原生数值实现，供 Pytho
 zfun.m[DD6S]: F:提供 fluidBW zfun 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 原生执行组件 | S:保留随包原生实现；源权限未建立
 
 ===/Users/tomczz/Projects/SciReL/release/===
-README.md[SV7T]: F:规定SciRel当前release tuple、外部FINAL、wheel与文档证据边界及Git历史恢复策略 | R:code:release/CURRENT.json,code:release/wheel/README.md,code:release/docs/README.md,code:release/projects/README.md,code:docs/release.md | A:当前发行面；外部资产边界；短发行说明与Git历史 | S:新候选不复制per-version源码、wheel元数据或完整文档；当前身份只由canonical tuple给出
+README.md[SV7T]: F:规定SciRel当前候选回执、外部FINAL、wheel与文档证据边界及Git历史恢复策略 | R:code:release/CURRENT.json,code:release/wheel/README.md,code:release/docs/README.md,code:release/projects/README.md,code:docs/release.md | A:当前候选协调面；外部资产边界；短发行说明与Git历史 | S:CURRENT是派生协调元数据，不是版本源；新候选不复制per-version源码、wheel元数据、完整文档或catalog快照
 platform-support-matrix.json[FV7T]: F:固定各平台与native capability的状态、证据路径和有界兼容性声明 | R:code:release/CURRENT.json,code:provenance/validation/scirel-dev9-linux-acceptance-20261017.json,code:uv.lock,code:scripts/validate_platform_support.py | A:平台身份、状态词、外部runtime和证据关联 | S:只有PASS行贡献有界兼容性；PARTIAL/NOT_RUN/FAIL/BLOCKED保持显式且不授予发行批准
 CURRENT.json[FV8T]: F:绑定当前SciRel版本、构建source revision、wheel摘要、文档闭包和平台回执 | R:code:pyproject.toml,code:release/platform-support-matrix.json,code:provenance/validation/scirel-dev9-linux-acceptance-20261017.json,code:provenance/selections/scientific-core-documents-20261015-r9.json,code:tools/docs/handbooks/scientific-core-r18.json | A:唯一当前release tuple与候选状态协调面 | S:source_revision指向实际构建提交；wheel摘要来自固定SOURCE_DATE_EPOCH；development_candidate不等于tag、人工批准或全平台通过
 

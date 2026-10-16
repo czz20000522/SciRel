@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-16T18:15:33Z",
+  "updated_at": "2026-10-16T18:35:05Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -65,9 +65,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "97b713f4a8208978b97772c824b0ff923d316e3de451d2a0fb158ff532e0578d",
-      "size": 570242,
-      "normalized_sha256": "97b713f4a8208978b97772c824b0ff923d316e3de451d2a0fb158ff532e0578d"
+      "sha256": "305418ce947368e1cb8ee9ba7e8bad8856b04d43be7cc81e8a01c0b59934004f",
+      "size": 570619,
+      "normalized_sha256": "305418ce947368e1cb8ee9ba7e8bad8856b04d43be7cc81e8a01c0b59934004f"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -3077,9 +3077,9 @@
     },
     "docs/design/scirel-git-release-model.md": {
       "role": "index",
-      "sha256": "3ca29762342062e5dd622cea96bda0f509887306748e2ec99c97d0476d14814d",
-      "size": 5221,
-      "normalized_sha256": "3ca29762342062e5dd622cea96bda0f509887306748e2ec99c97d0476d14814d"
+      "sha256": "b5d9aaf59a2d8d018ddf5b443e54ad011f31aa516bb9683fee8b8a5d2bf88e5f",
+      "size": 6628,
+      "normalized_sha256": "b5d9aaf59a2d8d018ddf5b443e54ad011f31aa516bb9683fee8b8a5d2bf88e5f"
     },
     "docs/design/scirel-positioning.md": {
       "role": "index",
@@ -5861,9 +5861,9 @@
     },
     "release/README.md": {
       "role": "index",
-      "sha256": "09592e3cc7d38288ff7894b33813033cd859b71492d84c620e554a215d6b7904",
-      "size": 3410,
-      "normalized_sha256": "09592e3cc7d38288ff7894b33813033cd859b71492d84c620e554a215d6b7904"
+      "sha256": "a158fefd3af31518c18fbd3d9d30ff34e2d16d19074dc92b4666e20b5c591d1d",
+      "size": 3672,
+      "normalized_sha256": "a158fefd3af31518c18fbd3d9d30ff34e2d16d19074dc92b4666e20b5c591d1d"
     },
     "release/docs/CURRENT.json": {
       "role": "index",
@@ -10826,6 +10826,12 @@
       "sha256": "eb317d751e1e5df0c06e84be950dfd73eb93173dc4961767e376b6b74fe25651",
       "size": 7895,
       "normalized_sha256": "eb317d751e1e5df0c06e84be950dfd73eb93173dc4961767e376b6b74fe25651"
+    },
+    "tests/test_git_release_structure.py": {
+      "role": "index",
+      "sha256": "bf047686de7adfa27ce61f55a06fcc6039e8eb2f1ce9ec708c2708275fb66151",
+      "size": 1253,
+      "normalized_sha256": "bf047686de7adfa27ce61f55a06fcc6039e8eb2f1ce9ec708c2708275fb66151"
     },
     "tests/test_incremental_admissions.py": {
       "role": "index",
