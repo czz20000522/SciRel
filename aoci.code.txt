@@ -753,7 +753,7 @@ mapping_interface_bindings.json[FC9L]: F:绑定复杂mapping入口的科学端�
 build_gpdf_core.py[XV7T]: F:从七个明确科学模块和许可构建GPDF最小离线wheel并记录摘要 | R:code:licenses/gpdf/full-core/SCIREL-GPDF-CORE-NOTICE.txt | A:源码导出白名单、dev9生成初始化器、NumPy及SciPy运行依赖 | S:输出已存在拒绝，构建不联网不安装依赖；AST只读既定导出名，不授科学或再分发资格
 build_pdrf_candidate.py[XV6M]: F:构建PDRF精确候选wheel和验证目录 | R:code:src/scirel/kinetic/pdrf.py,code:provenance/pdrf-d2/DELIVERY_PLAN.json | A:构建PDRF精确候选wheel和验证目录 | S:构建脚本绑定候选版本和证据路径；构建成功不授予科学或公开发行资格
 validate_release_alignment.py[OV7M]: F:校验当前wheel与文档选择的版本、摘要、手册覆盖和算子任务图闭包 | R:code:release/CURRENT.json,code:release/wheel/CURRENT.json,code:release/docs/CURRENT.json,code:provenance/selections/scientific-core-documents-20261015-r9.json,code:tools/docs/handbooks/scientific-core-r18.json | A:JSON读取；仓库内路径约束；选择与手册摘要校验；平台receipt校验；双向绑定检查；CLI输出 | S:路径越界、字节摘要、资产ID、kind、实现版本、计数或任一方向绑定不一致时失败关闭
-validate_platform_support.py[OV7T]: F:校验平台与能力矩阵结构、状态词、证据路径和声明关联 | R:code:release/platform-support-matrix.json,code:tests/test_platform_support.py | A:JSON读取；状态集合；唯一ID；证据存在性；PASS理由；CLI诊断 | S:结构校验不证明平台科学parity、依赖闭包或人工发行批准
+validate_platform_support.py[OV7S]: F:校验平台与能力矩阵结构、状态词、证据路径和声明关联 | R:code:release/platform-support-matrix.json,code:tests/test_platform_support.py | A:JSON读取；状态集合；唯一ID；证据存在性；PASS理由；CLI诊断 | S:结构校验不证明平台科学parity、依赖闭包或人工发行批准
 validate_installed_wheel.py[XQ8L]: F:在隔离环境验证已安装SciRel wheel的运行时身份、依赖、公共导入和代表性任务 | R:code:tests/test_validate_installed_wheel.py,code:release/CURRENT.json,code:release/platform-support-matrix.json | A:CPython与平台检查；Requires-Dist导入；pip check；源码树排除；Operator与跨域TaskGraph；结构化receipt | S:目标解释器、平台或依赖任一不符即非零并保留错误；源码checkout不能冒充已安装wheel；不修改发行记录
 
 ===/Users/tomczz/Projects/SciReL/skills/extraction/scientific-computation-asset-extraction/===
@@ -1150,7 +1150,7 @@ test_thermal_cancellation.py[TB7T]: F:锁定储热有符号相消和中间上下
 test_bootstrap.py[TQ7T]: F:回归自举系数有限极限、实际电流约定及严格输入边界 | R:code:src/scirel/neoclassical/bootstrap.py,code:src/scirel/geometry/face_to_cell.py | A:大碰撞率alpha极限;Redl L34;常规源式比较;总磁通符号与轴零;指数抵消;极端中点与布尔拒绝 | S:微俘获分数与大碰撞率的组合防止修成对数抵消；这些回归不单独建立经验拟合的物理适用性
 test_fvm.py[TQ8S]: F:验证有限体积守恒、制造解阶数、theta因果、Neumann不等宽重构及三对角带状求解回归 | R:code:src/scirel/fvm/cell_variable.py,code:src/scirel/fvm/convection.py,code:src/scirel/fvm/diffusion.py,code:src/scirel/fvm/implicit.py | A:边界非零通量守恒；上风极限；均匀扩散二阶；对流一阶；奇异失败；五网格多项式与掩码回归；禁止theta路径隐式构造dense矩阵 | S:原不等末宽0.74对0.8反例与等宽通过例均保留；Neumann含N2，Dirichlet端点割线和面值线性外推仍按旧定义；大网格回归只约束带状路径，不外推任意网格稳定性
 test_scirel_docs.py[TU7M]: F:验证中文绑定、领域导航、同源查询和明确后继章节选择 | R:code:scripts/scirel_docs.py,code:scripts/build_scirel_sphinx.py | A:136闭包；不可覆盖快照；漂移拒绝；公式和参考链接；显式中文集；摘要路径 | S:旧章节fixture从绑定提交取字节；新选择仍拒漏项重复漂移，静态测试不代替科学运行或视觉验收
-test_lazy_namespace.py[TB7T]: F:验证根、field与kinetic命名空间的惰性发现、兼容身份和可选绘图边界 | R:code:src/scirel/__init__.py,code:src/scirel/field/__init__.py,code:src/scirel/kinetic/__init__.py,code:src/scirel/geometry/plotting.py | A:隔离解释器；根与领域__all__；from-import身份；缺Matplotlib边界 | S:必须在新解释器中运行以避免导入顺序污染；根导入不得预加载科学依赖；惰性断言保持完整公开集合
+test_lazy_namespace.py[TB7S]: F:验证根、field与kinetic命名空间的惰性发现、兼容身份和可选绘图边界 | R:code:src/scirel/__init__.py,code:src/scirel/field/__init__.py,code:src/scirel/kinetic/__init__.py,code:src/scirel/geometry/plotting.py | A:隔离解释器；根与领域__all__；from-import身份；缺Matplotlib边界 | S:必须在新解释器中运行以避免导入顺序污染；根导入不得预加载科学依赖；惰性断言保持完整公开集合
 test_scientific_runtime.py[TV6S]: F:验证维护的科学依赖基线、旧选择重资格和选定wheel的实际元数据 | R:code:scripts/scientific_runtime.py,code:scripts/build_pleiades_selected.py,code:pyproject.toml | A:固定pins；冲突拒绝；小构建；初始化器版本漂移；wheel元数据断言 | S:合成许可仅为夹具；不能继承未请求依赖；版本一致不是科学通过
 _document_fixtures.py[TQ6T]: F:为开发测试复制当前267份规范合同闭包 | R:code:tests/test_asset_documentation.py | A:example_document_sources与copy_example_closure | S:完整分母显式固定；外部来源catalog及D0至D3工作不作为包测试输入。
 _pdrk_axis_oracle.py[TQ8T]: F:以普通Bessel速度积分给出精确垂直与平行轴的独立介电张量参考 | R:code:tests/_pdrk_oracle.py | A:perpendicular/parallel；Laguerre及Hermite阶数可显式精化 | S:不调用候选矩阵装配或scaled-I系数；垂直式含1/kx不能套总零波矢，平行只需n=-1,0,1，积分域承接独立物种合同
@@ -1162,7 +1162,7 @@ test_scirel_navigation_query.py[TU6S]: F:验证渐进查询保真、失效关闭
 test_scientific_delivery.py[TQ7S]: F:回归保存数据、报告、图轴、作用域与最终答复的一致性 | R:code:skills/development/usage/scirel-solving/scripts/delivery.py | A:覆盖缺失；伪引文；数据漂移；比较失败；输出篡改；隔离CLI | S:通用测量样例不含基准答案；重放通过不证明科学模型成立或Agent遵守
 test_release_alignment.py[TQ5T]: F:回归当前发行闭包精确计数、Git单一当前指针和历史记录清理规则 | R:code:scripts/validate_release_alignment.py,code:release/CURRENT.json,code:release/wheel/CURRENT.json,code:release/docs/CURRENT.json,code:docs/release/0.1.0.dev8-notes.md | A:当前对齐测试；临时副本变异；无per-version metadata断言；pytest | S:测试保留230/30/260基线并要求文档闭包、wheel和canonical tuple双向一致；历史由Git与短说明承担
 test_platform_support.py[TQ6T]: F:回归平台矩阵的状态、证据缺失拒绝及项目根导入路径 | R:code:scripts/validate_platform_support.py,code:release/platform-support-matrix.json | A:pytest；根路径注入；临时矩阵复制；状态与证据负例 | S:矩阵结构通过不证明平台科学parity、依赖闭包或人工发行批准
-test_validate_installed_wheel.py[TQ6S]: F:回归已安装wheel验证器的环境检查、依赖检查、公共运行和失败回执 | R:code:scripts/validate_installed_wheel.py | A:pytest；临时输出；目标平台不符；源码树拒绝；receipt字段断言 | S:测试必须保留非零失败和精确错误；不能把本地checkout或平台标签当作安装包验收
+test_validate_installed_wheel.py[TQ6T]: F:回归已安装wheel验证器的环境检查、依赖检查、公共运行和失败回执 | R:code:scripts/validate_installed_wheel.py | A:pytest；临时输出；目标平台不符；源码树拒绝；receipt字段断言 | S:测试必须保留非零失败和精确错误；不能把本地checkout或平台标签当作安装包验收
 
 ===/Users/tomczz/Projects/SciReL/tests/fixtures/l1/===
 cycle-rework.json[TW4T]: F:提供两任务图互相依赖且dependency_closure失败的L1重做分支fixture | R:code:tests/test_l1_wire_smoke.py | A:scirel.l1-inventory.dev | S:-
