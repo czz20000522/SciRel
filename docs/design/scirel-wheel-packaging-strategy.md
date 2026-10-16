@@ -1,18 +1,18 @@
 # SciRel wheel 跨平台打包策略
 
-版本和文档的 Git 单一来源规则见 [scirel-git-release-model.md](scirel-git-release-model.md)。dev8 的历史身份由 Git、短发行说明和相关 provenance 摘要保留；工作树当前后继候选为 dev9，不新增平行版本目录。
+版本和文档的 Git 单一来源规则见 [scirel-git-release-model.md](scirel-git-release-model.md)。历史候选由 Git、短发行说明和相关 provenance 摘要保留；当前候选只由仓库根目录的 `release/CURRENT.json` 协调，不新增平行版本目录。
 
 本文把 SciRel 的产品目标落到可执行的打包和验收边界上。SciRel 应像标准科学库一样能够通过
 `pip install scirel` 安装并被 Agent 复用；科学正确性由 SciRel 的 Operator 和 TaskGraph 负责，
 Agent 只组合已声明合同并编写胶水代码。安装成功、某个平台的函数返回，或一次教程通过，都不能
 替代逐能力、逐平台的科学验收。
 
-## 冻结 dev8 发行事实
+## Wheel 标签与平台边界
 
-冻结的 `0.1.0.dev8` wheel 是 `scirel-0.1.0.dev8-py3-none-any.whl`。它的 `WHEEL` 元数据为
-`Root-Is-Purelib: true`、`Tag: py3-none-any`，包含 Python 实现和随包的 `.m` 资源，没有
-`.so`、`.pyd`、`.dll` 或 `.dylib`。因此 SciRel 自身没有按操作系统或 CPU 编译的扩展，
-同一 wheel 字节可以被不同平台的 Python 安装器选择。
+当前纯 Python 构建的 `WHEEL` 元数据应为 `Root-Is-Purelib: true` 和 `Tag: py3-none-any`，
+其中只包含 Python 实现和随包声明的运行资源，不包含 `.so`、`.pyd`、`.dll` 或 `.dylib`。
+这表示 SciRel 自身没有按操作系统或 CPU 编译的扩展，同一构建产物可以被不同平台的 Python
+安装器选择；它不替代传递依赖和外部运行时的逐平台验收。
 
 `py3-none-any` 的含义仅限于 wheel 自身：
 
@@ -22,12 +22,13 @@ Agent 只组合已声明合同并编写胶水代码。安装成功、某个平�
 - `any` 表示 wheel 内没有平台专属扩展；它不证明 NumPy、SciPy、Matplotlib、netCDF4、
   Octave 或其他传递依赖在每个系统都有可安装的 wheel，也不证明随包的 native `.m` 能力可运行。
 
-冻结 dev8 的直接运行依赖曾包含 NumPy 2.5.4、SciPy 1.18.1、Matplotlib 3.11.2、
-netCDF4 1.7.4 和 mpmath 1.4.1。后继 dev9 将核心闭包收敛为 NumPy 2.5.4、SciPy 1.18.1
-和 mpmath 1.4.1，Matplotlib 与 netCDF4 通过可选或测试闭包进入。`uv.lock` 是项目开发和重建解析的锁文件，
-不是 pip 用户端的跨平台证明；每个平台仍须用实际解析结果和 clean venv 验收。
+核心依赖、可选依赖和开发依赖分别由 `pyproject.toml` 的对应字段声明。`uv.lock` 是项目开发和
+重建解析的锁文件，不是 pip 用户端的跨平台证明；每个平台仍须用实际解析结果和 clean venv 验收。
 
-当前工作树的后继候选版本由 `pyproject.toml` 的 `project.version` 唯一给出，为 `0.1.0.dev9`。构建产物、文档和平台回执必须来自同一 Git 提交；在候选完成验收前，不创建新的历史版本复制目录。
+当前 checkout 的候选版本只由 `pyproject.toml` 的 `project.version` 给出。构建产物、文档和平台
+回执必须来自同一 Git 提交；在候选完成验收前，不创建新的历史版本复制目录。若开发 HEAD 已经
+超出 `release/CURRENT.json` 的 `source_revision`，它仍属于后续开发，不能用旧版本号重新构建并
+覆盖旧候选；应先提交后继变更，再提升版本或明确新的候选绑定。
 
 当前开发验收的唯一已绑定环境是 **Linux x86_64（amd64）+ CPython 3.14**。现有平台矩阵中
 Linux x86_64 和 Linux aarch64 为 `PARTIAL`，Windows amd64、macOS arm64 和 macOS x86_64
@@ -86,9 +87,9 @@ fluidBW 当前在运行时明确要求 Linux amd64 和 GNU Octave 7.3.0；PDRK �
 
 在不改变科学源码的阶段，继续构建一个 `py3-none-any` SciRel wheel。构建输入必须绑定确切
 Git 提交、包版本、`pyproject.toml`、`uv.lock` 摘要、选定文档和许可证；wheel 记录同时保存
-artifact SHA-256、字节数、直接依赖、Python 线和外部 runtime 要求。冻结 `0.1.0.dev8` 的
-wheel 摘要曾绑定 `0.1.0.dev8` 的历史提交；该历史身份由 Git 和
-[`docs/release/0.1.0.dev8-notes.md`](../release/0.1.0.dev8-notes.md) 保留，不授予公开发行或全平台资格。
+artifact SHA-256、字节数、直接依赖、Python 线和外部 runtime 要求。历史 wheel 的具体身份由
+对应 Git 提交、短 release note 和外部构建 manifest 恢复；设计文档不重复复制文件名、摘要或
+动态版本字段。
 
 `py3-none-any` 描述的是 wheel 中没有平台专属 Python ABI 扩展，不保证不同操作系统、构建
 前端或文件权限环境生成的 ZIP 字节完全相同。`scripts/build_scirel_from_ref.py` 从确切 Git

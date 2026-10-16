@@ -26,6 +26,13 @@ The tuple binds:
 - the current document selection and handbook digest; and
 - each platform receipt used by the bounded compatibility claim.
 
+`CURRENT.json` may continue to point at an earlier exact commit while the checkout
+contains later development commits. Those commits are post-candidate work; they do
+not change the bound wheel or documentation. Before moving the candidate forward,
+commit the complete follow-up change, rebuild the wheel and documentation from that
+new ref, and update the tuple and receipts together. Never rebuild an older version
+number from a newer checkout and overwrite its external artifacts.
+
 `release/CURRENT.json` stores only logical `manifest_ref` keys for generated
 wheel and documentation artifacts. They are resolved against an external
 artifact root during release validation; no `build/releases/` path or generated

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-16T23:11:32Z",
+  "updated_at": "2026-10-16T23:30:40Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -65,9 +65,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "19d0eb2b61115d0901a23facdff472270a1be16d89557234afb2916f13557f73",
-      "size": 568788,
-      "normalized_sha256": "19d0eb2b61115d0901a23facdff472270a1be16d89557234afb2916f13557f73"
+      "sha256": "fcc2feedbe03f676a5c513a667c40615d31e69e08f127afe1dbb9cb000cc698e",
+      "size": 568892,
+      "normalized_sha256": "fcc2feedbe03f676a5c513a667c40615d31e69e08f127afe1dbb9cb000cc698e"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -3083,9 +3083,9 @@
     },
     "docs/design/scirel-git-release-model.md": {
       "role": "index",
-      "sha256": "85087d3fa575cc925721e26bd20f3708804f46384cbfd72395bff4812531a361",
-      "size": 10857,
-      "normalized_sha256": "85087d3fa575cc925721e26bd20f3708804f46384cbfd72395bff4812531a361"
+      "sha256": "5f845bcf9300e47785296c0e7e9ba597d7a2a06f170e6fa6fed43bca68262d73",
+      "size": 10881,
+      "normalized_sha256": "5f845bcf9300e47785296c0e7e9ba597d7a2a06f170e6fa6fed43bca68262d73"
     },
     "docs/design/scirel-positioning.md": {
       "role": "index",
@@ -3095,9 +3095,9 @@
     },
     "docs/design/scirel-wheel-packaging-strategy.md": {
       "role": "index",
-      "sha256": "c200c319bbaeb0488bd2d6ac8718d7d48fecb94951913081c41afa20b665082c",
-      "size": 12245,
-      "normalized_sha256": "c200c319bbaeb0488bd2d6ac8718d7d48fecb94951913081c41afa20b665082c"
+      "sha256": "2a426fad70f6c470321358e5347bd87a3cf510780cf2d0bac44528f049cf806f",
+      "size": 12286,
+      "normalized_sha256": "2a426fad70f6c470321358e5347bd87a3cf510780cf2d0bac44528f049cf806f"
     },
     "docs/design/scirel-workflow.md": {
       "role": "index",
@@ -5933,9 +5933,9 @@
     },
     "release/README.md": {
       "role": "index",
-      "sha256": "cdb6267379d432c809b317d5d2212c0c396ea7ad4ea033645370e02ece6b3f3a",
-      "size": 4321,
-      "normalized_sha256": "cdb6267379d432c809b317d5d2212c0c396ea7ad4ea033645370e02ece6b3f3a"
+      "sha256": "ff7f358c08b65d1c1db6b64028078dff3a0c5a0e14caaf8fb867daef4dc5b756",
+      "size": 4805,
+      "normalized_sha256": "ff7f358c08b65d1c1db6b64028078dff3a0c5a0e14caaf8fb867daef4dc5b756"
     },
     "release/docs/CURRENT.json": {
       "role": "index",
@@ -7685,15 +7685,15 @@
     },
     "src/scirel/electromagnetism/distributed.py": {
       "role": "index",
-      "sha256": "76d4a1d7bf83d3ba57e9573c19415f333ac0ec8c51e695f64ad27b3bf69fcd5a",
-      "size": 4668,
-      "normalized_sha256": "76d4a1d7bf83d3ba57e9573c19415f333ac0ec8c51e695f64ad27b3bf69fcd5a"
+      "sha256": "861984c087eca892c0fa13143a55c153b08327a40540f9df90c9f0df391f3996",
+      "size": 4482,
+      "normalized_sha256": "861984c087eca892c0fa13143a55c153b08327a40540f9df90c9f0df391f3996"
     },
     "src/scirel/electromagnetism/greens.py": {
       "role": "index",
-      "sha256": "0a2425308022b01d9c394bb1c9d390562272b20a093f33f1ccfb717e0cb5fb42",
-      "size": 8690,
-      "normalized_sha256": "0a2425308022b01d9c394bb1c9d390562272b20a093f33f1ccfb717e0cb5fb42"
+      "sha256": "fabfcb515fb64982d97493911badda290b7e08c89c645238edda2bccb1e970b0",
+      "size": 11410,
+      "normalized_sha256": "fabfcb515fb64982d97493911badda290b7e08c89c645238edda2bccb1e970b0"
     },
     "src/scirel/electromagnetism/sources.py": {
       "role": "index",
@@ -10727,9 +10727,9 @@
     },
     "tests/pleiades/equilibrium/test_distributed_current.py": {
       "role": "index",
-      "sha256": "6aeb5ccaed4a074d422950cfc1107bce27a7231a90403de98dfb1f25128ccc44",
-      "size": 5501,
-      "normalized_sha256": "6aeb5ccaed4a074d422950cfc1107bce27a7231a90403de98dfb1f25128ccc44"
+      "sha256": "79f5154b7765b0052496abe78a6193db32bad8a3248059718b3418a1e1a23bac",
+      "size": 5926,
+      "normalized_sha256": "79f5154b7765b0052496abe78a6193db32bad8a3248059718b3418a1e1a23bac"
     },
     "tests/pleiades/equilibrium/test_equilibrium_boundaries.py": {
       "role": "index",
@@ -10925,9 +10925,9 @@
     },
     "tests/test_git_release_structure.py": {
       "role": "index",
-      "sha256": "6d997fd9ebb484dfe71965e6a59d9d5843d4ce0e1bbe7c27a73833766ca4b8cf",
-      "size": 8385,
-      "normalized_sha256": "6d997fd9ebb484dfe71965e6a59d9d5843d4ce0e1bbe7c27a73833766ca4b8cf"
+      "sha256": "16e5e440ae1c848064ade7f9a1aa5181a257308e6464a2943b43948ac5d7a3bf",
+      "size": 8884,
+      "normalized_sha256": "16e5e440ae1c848064ade7f9a1aa5181a257308e6464a2943b43948ac5d7a3bf"
     },
     "tests/test_incremental_admissions.py": {
       "role": "index",

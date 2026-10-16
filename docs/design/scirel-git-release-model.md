@@ -10,7 +10,8 @@ SciRel 采用与 SciPy 同类的单一来源模型：源代码、`pyproject.toml
 - tag 只指向已经构建并验收的提交。后续开发从 tag 之后的新提交继续，版本号按下一开发序列递进。
 - 历史版本通过 Git tag、commit 和外部归档恢复。不要新增 `release/wheel/versions/<version>.json` 或 `release/docs/versions/<version>.json` 作为平行复制品。
 
-`0.1.0.dev8` 的历史身份由 Git 历史和短发行说明保留；工作树已进入 `0.1.0.dev9` 后继候选，后继证据必须绑定新的 commit 和新的 wheel 摘要。
+历史候选的身份由 Git 历史和短发行说明保留；开发 HEAD 超出当前候选绑定时，后继证据必须绑定
+新的 commit 和新的 wheel 摘要，不能复用旧候选的版本或 artifact 身份。
 
 ## 文档与源码绑定
 
@@ -47,13 +48,13 @@ SciPy 的仓库把核心运行依赖、可选运行依赖和测试/开发依赖�
 
 ## 当前迁移边界
 
-本轮先执行不改变科学 API 的迁移：
+当前迁移边界按候选逐步推进：
 
 1. 核心依赖收敛为 NumPy、SciPy、mpmath；Matplotlib 和 netCDF4 进入可选/测试闭包；
-2. `uv.lock` 与 `pyproject.toml` 同步到 `0.1.0.dev9`；运行 extra 只保留用户主动选择的能力，测试/构建依赖使用 `dependency-groups`；
+2. 每次修改依赖时，在同一 Git 提交中同步 `uv.lock` 与 `pyproject.toml`；运行 extra 只保留用户主动选择的能力，测试/构建依赖使用 `dependency-groups`；
 3. 从安装包验证脚本生成 core、`plot` extra 和测试闭包的独立 receipt；
 4. 旧的每版本 release JSON 不属于工作树活动资产；历史身份从 Git 历史和短发行说明恢复，不再扩展平行版本目录；
-5. 发行指针收敛为一个当前 Git 绑定的 `release/CURRENT.json` tuple，旧 dev8 记录不改写。
+5. 发行指针收敛为一个当前 Git 绑定的 `release/CURRENT.json` tuple，历史记录不改写。
 
 这套模型保留完整历史证据，同时让“当前版本是什么、由哪个提交生成、文档和 wheel 是否同源”都能从 Git 和一个当前 receipt 直接回答。
 
@@ -73,10 +74,9 @@ development dependency groups；源码仓库中的 `doc/source/release/` 只保�
 | 源码仓库中的构建与 wheel 配置（`pyproject.toml`、`tools/building/`、`tools/wheels/`、CI workflow） | SciRel 也把构建入口和边界保留在源码仓库；`scripts/build_scirel_from_ref.py` 与 `scripts/build_scirel_docs_from_ref.py` 先归档确切 Git ref，再把生成物写到仓库外 | SciRel 当前是纯 Python wheel，不复制 SciPy 的 Meson/Cython/native 构建链 |
 | 小型顶层 namespace 与惰性 domain imports | `scirel` 根包只暴露版本和领域入口，领域 API 按 `__all__`/惰性 facade 整理 | 现有领域导出仍需按公共 API 审查逐步收敛，不能把未验证名称写进合同 |
 
-因此，`0.1.0.dev8` 和后续 `0.1.0.dev9` 的身份由 Git 提交、tag（若有）和短
-发行说明恢复；不会新增 `release/wheel/versions/`、`release/docs/versions/` 或完整
-文档副本。`release/CURRENT.json` 可以随着当前候选更新，但它不产生新的版本线，也不
-替代 `pyproject.toml`、Git 或当前文档树。
+因此，每个候选的身份由其 Git 提交、tag（若有）和短发行说明恢复；不会新增
+`release/wheel/versions/`、`release/docs/versions/` 或完整文档副本。`release/CURRENT.json`
+可以随着当前候选更新，但它不产生新的版本线，也不替代 `pyproject.toml`、Git 或当前文档树。
 
 SciPy 当前仓库把构建边界分布在 `pyproject.toml`、`tools/building/`、
 `tools/wheels/` 和 `.github/workflows/wheels.yml`；wheel workflow 通过 checkout 当前
@@ -111,8 +111,8 @@ API 的后续版本中，可以增加只读的 `scirel.version.git_revision`，�
    `--allow-partial` 只能用于 dry-run，不能缩小能力分母。旧 selection 和 Git 历史保持不变。
 
 因此，版本迁移产生的是 Git diff、selection receipt 和外部 catalog 构建物，不是第二套
-文档树。当前 dev9 候选以 `895bc40` 作为 dev8 源基线时，三个 plotting 合同因
-`geometry/plotting.py` 已变化而保持阻塞；它们不能被静默批量改写。
+文档树。若基线与当前源码的公共合同发生变化，requalification 必须保留阻塞项并等待
+针对性修正；不能静默批量改写旧文档。
 
 发行验收可用 `scripts/validate_release_alignment.py --expected-source-revision <commit>`
 把当前协调记录锁到确切 Git commit。未提供该参数时，工具仍允许审查历史或外部归档中的

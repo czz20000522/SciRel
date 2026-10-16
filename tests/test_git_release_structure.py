@@ -173,6 +173,18 @@ def test_release_notes_do_not_duplicate_dynamic_artifact_identity() -> None:
     assert current["wheel"]["artifact"]["sha256"] not in current_note
 
 
+def test_release_design_docs_do_not_copy_candidate_versions() -> None:
+    version_literal = re.compile(r"\b\d+\.\d+\.\d+\.dev\d+\b")
+    wheel_filename = re.compile(r"\bscirel-[^`\s]+\.whl\b")
+    for path in (
+        ROOT / "docs/design/scirel-git-release-model.md",
+        ROOT / "docs/design/scirel-wheel-packaging-strategy.md",
+    ):
+        text = path.read_text(encoding="utf-8")
+        assert not version_literal.search(text), path
+        assert not wheel_filename.search(text), path
+
+
 def test_scipy_style_git_release_model_is_explicit() -> None:
     design = (ROOT / "docs/design/scirel-git-release-model.md").read_text(encoding="utf-8")
     required_phrases = (
