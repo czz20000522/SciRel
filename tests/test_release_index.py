@@ -1339,7 +1339,11 @@ def test_first_reviewed_distribution_builds_only_the_selected_asset(tmp_path, mo
     monkeypatch.setattr(
         preparation,
         "_project_for_release",
-        lambda source_root, documents: (ROOT / "pyproject.toml").read_text(encoding="utf-8"),
+        lambda source_root, documents: (
+            (ROOT / "pyproject.toml")
+            .read_text(encoding="utf-8")
+            .replace('version = "0.1.0.dev9"', 'version = "0.1.0.dev8"')
+        ),
     )
 
     artifacts, _, _, _, _ = _reviewed_release_inputs(tmp_path)
@@ -1484,7 +1488,11 @@ def test_first_reviewed_distribution_includes_bound_private_support(tmp_path, mo
     monkeypatch.setattr(
         preparation,
         "_project_for_release",
-        lambda source_root, documents: (ROOT / "pyproject.toml").read_text(encoding="utf-8"),
+        lambda source_root, documents: (
+            (ROOT / "pyproject.toml")
+            .read_text(encoding="utf-8")
+            .replace('version = "0.1.0.dev9"', 'version = "0.1.0.dev8"')
+        ),
     )
 
     support = ("src/scirel/_validation.py", "src/scirel/kinetic/_mirror_numerics.py")
