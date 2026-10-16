@@ -11,6 +11,10 @@ SciRel wheel code and standardized asset documents are the core. The catalog is 
 `--execute-examples` executes repository-owned example code for release verification. It is not an evaluator for untrusted uploaded documents; an adapter handling untrusted input must parse values against the exact contract and use its own sandbox rather than passing arbitrary example code to this command.
 
 Production snapshots also record the exact Git `source_revision`. When a source checkout is supplied, `scripts/build_catalog.py` requires an explicit revision and checks that the checkout's `pyproject.toml` owns `release_version`; synthetic test fixtures may omit this binding.
+For a real Git checkout, the supplied revision must also equal that checkout's
+`HEAD`; this prevents a catalog generated from current source bytes from being
+labelled with an unrelated but well-formed commit SHA. Synthetic fixtures that
+have no Git metadata remain available for isolated contract tests.
 
 The snapshot contains:
 
