@@ -387,6 +387,26 @@ def _validate_wheel_import_closure(wheel_members: dict[str, bytes], source_root:
                     source = source_root / "src" / Path(*candidate.split("."))
                     if source.with_suffix(".py").is_file() or (source / "__init__.py").is_file():
                         check(candidate, name)
+            elif isinstance(node, (ast.Assign, ast.AnnAssign)):
+                # Lazy package facades keep their import targets in a mapping
+                # rather than an ImportFrom node. Treat those targets as real
+                # internal dependencies so a filtered wheel cannot retain a
+                # public export whose implementation was omitted.
+                targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+                if not any(isinstance(target, ast.Name) and target.id == "_LAZY_EXPORTS"
+                           for target in targets):
+                    continue
+                value = node.value
+                if not isinstance(value, ast.Dict):
+                    continue
+                for entry in value.values:
+                    if not isinstance(entry, ast.Tuple) or not entry.elts:
+                        continue
+                    module_node = entry.elts[0]
+                    if not isinstance(module_node, ast.Constant) or not isinstance(module_node.value, str):
+                        continue
+                    imported = resolve_name("." + module_node.value, package)
+                    check(imported, name)
 
 
 def _reviewed_initializers(

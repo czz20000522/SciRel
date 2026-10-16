@@ -1236,9 +1236,16 @@ def test_first_reviewed_distribution_rejects_incomplete_composition_dependencies
     ],
 )
 def test_first_reviewed_distribution_rejects_undeclared_internal_import(
-    tmp_path, document_name, missing_module
+    tmp_path, document_name, missing_module, monkeypatch
 ):
     from prepare_reviewed_distribution import prepare_reviewed_distribution
+    import prepare_reviewed_distribution as preparation
+
+    monkeypatch.setattr(
+        preparation,
+        "_project_for_release",
+        lambda source_root, documents: (ROOT / "pyproject.toml").read_text(encoding="utf-8"),
+    )
 
     artifacts, _, _, _, _ = _reviewed_release_inputs(
         tmp_path, document_name=document_name, omit_dependencies=True
@@ -1327,7 +1334,13 @@ def test_reviewed_finalization_rejects_catalog_from_a_different_git_revision(
 def test_first_reviewed_distribution_builds_only_the_selected_asset(tmp_path, monkeypatch):
     import finalize_release
     from build_catalog import build_catalog
+    import prepare_reviewed_distribution as preparation
     from prepare_reviewed_distribution import prepare_reviewed_distribution
+    monkeypatch.setattr(
+        preparation,
+        "_project_for_release",
+        lambda source_root, documents: (ROOT / "pyproject.toml").read_text(encoding="utf-8"),
+    )
 
     artifacts, _, _, _, _ = _reviewed_release_inputs(tmp_path)
     staging = tmp_path / "reviewed-source"
@@ -1433,8 +1446,16 @@ def test_reviewed_distribution_selection_records_the_source_revision(tmp_path, m
     ((), "scirel._validation"),
     (("src/scirel/_validation.py",), "scirel.kinetic._mirror_numerics"),
 ])
-def test_first_reviewed_distribution_requires_bound_private_support(tmp_path, support_files, missing_module):
+def test_first_reviewed_distribution_requires_bound_private_support(
+    tmp_path, support_files, missing_module, monkeypatch
+):
+    import prepare_reviewed_distribution as preparation
     from prepare_reviewed_distribution import prepare_reviewed_distribution
+    monkeypatch.setattr(
+        preparation,
+        "_project_for_release",
+        lambda source_root, documents: (ROOT / "pyproject.toml").read_text(encoding="utf-8"),
+    )
 
     artifacts, _, _, _, _ = _reviewed_release_inputs(
         tmp_path,
@@ -1458,7 +1479,13 @@ def test_first_reviewed_distribution_requires_bound_private_support(tmp_path, su
 def test_first_reviewed_distribution_includes_bound_private_support(tmp_path, monkeypatch):
     import finalize_release
     from build_catalog import build_catalog
+    import prepare_reviewed_distribution as preparation
     from prepare_reviewed_distribution import prepare_reviewed_distribution
+    monkeypatch.setattr(
+        preparation,
+        "_project_for_release",
+        lambda source_root, documents: (ROOT / "pyproject.toml").read_text(encoding="utf-8"),
+    )
 
     support = ("src/scirel/_validation.py", "src/scirel/kinetic/_mirror_numerics.py")
     artifacts, _, _, _, projection = _reviewed_release_inputs(
