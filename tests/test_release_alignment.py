@@ -20,7 +20,7 @@ def test_current_release_alignment_is_exact() -> None:
     result = validate_alignment(ROOT)
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     assert result["wheel_version"] == project["project"]["version"]
-    assert result["documentation_selection"] == "scientific-core-r18"
+    assert result["documentation_selection"] == "scientific-core-current"
     assert result["source_revision"] == "7feb451b45da541bc4f2ced0c8dc0369bc8f5e66"
     assert result["capability_counts"] == {
         "operators": 230,
@@ -73,6 +73,8 @@ def test_version_history_is_kept_in_git_and_short_release_notes() -> None:
     assert not list((ROOT / "release/wheel/versions").glob("*.json"))
     assert not list((ROOT / "release/docs/versions").glob("*.json"))
     assert (ROOT / "docs/release/0.1.0.dev8-notes.md").is_file()
+    assert not list((ROOT / "tools/docs/handbooks").glob("*.json"))
+    assert json.loads((ROOT / "release/CURRENT.json").read_text())["documentation"]["handbook"] == "tools/docs/handbook.json"
 
 
 def test_alignment_rejects_a_document_added_outside_the_wheel(tmp_path: Path) -> None:

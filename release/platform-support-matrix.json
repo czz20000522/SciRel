@@ -20,7 +20,7 @@
       "python": "CPython 3.14",
       "status": "PARTIAL",
       "evidence": [
-        "provenance/validation/scirel-dev9-linux-acceptance-20261017.json",
+        "provenance/validation/scirel-dev9-linux-acceptance-20261018.json",
         "release/CURRENT.json"
       ],
       "scope": "dev9 clean consumer install and representative core task receipt; complete core plus PDRK native closure is not established"
@@ -31,7 +31,9 @@
       "architecture": "aarch64",
       "python": "CPython 3.14",
       "status": "PARTIAL",
-      "evidence": ["provenance/validation/completed-project-installed-closeout.json"],
+      "evidence": [
+        "provenance/validation/completed-project-installed-closeout.json"
+      ],
       "scope": "selected core and PDRK native subset; fluidBW is outside this platform evidence"
     },
     {
@@ -66,20 +68,30 @@
     {
       "id": "universal-python-core",
       "status": "PARTIAL",
-      "platforms": ["linux-x86_64-cp314", "linux-aarch64-cp314", "windows-amd64-cp314", "macos-arm64-cp314", "macos-x86_64-cp314"],
+      "platforms": [
+        "linux-x86_64-cp314",
+        "linux-aarch64-cp314",
+        "windows-amd64-cp314",
+        "macos-arm64-cp314",
+        "macos-x86_64-cp314"
+      ],
       "reason": "representative and selected core evidence exists, but a complete per-platform capability matrix is not yet complete"
     },
     {
       "id": "fluidbw-native-octave",
       "status": "PASS",
-      "platforms": ["linux-x86_64-cp314"],
+      "platforms": [
+        "linux-x86_64-cp314"
+      ],
       "runtime": "GNU Octave 7.3.0",
       "reason": "separate Linux amd64 evidence; excluded from universal-python-core"
     },
     {
       "id": "pdrk-native-octave",
       "status": "PARTIAL",
-      "platforms": ["linux-aarch64-cp314"],
+      "platforms": [
+        "linux-aarch64-cp314"
+      ],
       "runtime": "GNU Octave 8.4.0",
       "reason": "ARM64 evidence exists; Linux amd64, Windows and macOS are NOT_RUN"
     }

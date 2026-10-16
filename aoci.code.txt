@@ -1652,17 +1652,6 @@ fluidbw-amd64-installed.json[TV7S]: F:固定Home amd64实际wheel的13项回归�
 pdrf-d3-amd64-installed.json[TV7S]: F:固定当前SciRel wheel在Home amd64执行PDRF D3的安装、40项观察、独立读回与重复性 | R:code:catalog/examples/scirel.kinetic.pdrf-dispersion-scan.json,code:tests/operator_contracts/test_pdrf_d2.py | A:wheel、4份合同、运行时、原始与派生验证器及结果摘要 | S:使用无源码、断网实际安装；修正验证器保留原Mac失败观察，D3技术证据不提升科学或发行状态。
 scirel-dev9-linux-acceptance-20261017.json[OQ6S]: F:保存dev9安装wheel在Linux amd64 CPython3.14隔离环境的运行验收回执 | R:code:release/CURRENT.json,code:scripts/validate_installed_wheel.py,code:pyproject.toml | A:记录运行身份、依赖导入、pip check、简单算子与跨域TaskGraph结果 | S:PASS只覆盖回执执行的代表性范围；不替代全能力分母、平台parity或人工发行批准
 
-===/Users/tomczz/Projects/SciReL/tools/docs/handbooks/===
-scientific-core-r2.json[SB7L]: F:按十二科学领域和六十二主题编排208项内部技术包合同的中文手册导航与边界导读 | R:code:provenance/selections/scientific-core-documents-20261014-r2.json,code:tools/docs/zh/selections/scientific-core-r2.json,code:scripts/scirel_docs.py | A:handbook.v1；问题导读、分主题资产引用；坐标/磁场/平衡/动理学/波动/中性输运等 | S:主题区分物理收敛与迭代停止、DAG与状态反馈及不同离散模型；总述仍误写162待后继修正；导航覆盖不授予整来源项目资格
-scientific-core-r3.json[SU7L]: F:按12个科学领域章节编排227项关系及66个主题的中文导航 | R:code:tools/docs/zh/selections/scientific-core-r3.json,code:tools/docs/sphinx/tutorials/kinetic-initial-value.rst | A:问题导向章节、函数和复合任务入口、动理学实跑教程 | S:新增19项动理学入口接续既有208；章节文字不改exact合同，分段下半平面仍按实轮廓而非自动Landau延拓
-scientific-core-r4.json[SU7L]: F:将六项吸收能力纳入233项关系的12章67主题导航 | R:code:tools/docs/handbooks/scientific-core-r3.json,code:tools/docs/zh/selections/scientific-core-r4.json | A:压力表和可重建状态主题、单点裕度、永磁环与唯一平衡反馈入口 | S:保留已有227章节内容并按物理问题归类；压力更新与末态闭合双门禁仍取正式合同，不把单步有限当完整平衡
-scientific-core-r5.json[SU7L]: F:组织234项关系的12章68主题手册并增加局部冷张量响应 | R:code:tools/docs/handbooks/scientific-core-r4.json,code:tools/docs/zh/selections/scientific-core-r5.json | A:按领域目录定位函数、组合任务与中文案例 | S:新增冷响应只承接最终投影相消修正；未改Stix保守门禁和近共振上游精度限制仍适用，手册可查不授发行资格
-scientific-core-r6.json[SS8L]: F:按科学领域组织239份累计合同的安装与中文查找手册，保留单位、默认、失败和证据边界 | R:code:provenance/selections/scientific-core-20261014-r6.json,code:docs/scientific-core-installation.md | A:12章领域主题与入口资产索引 | S:r6是旧累计手册，不冒充r7/250或新科学批准；许可、来源资格与公开发行另行裁决
-scientific-core-r7.json[SS8L]: F:按科学领域组织250份累计合同的安装与中文查找手册，连接基础关系及显式停止条件的组合入口 | R:code:provenance/selections/scientific-core-20261014-r7.json,code:docs/scientific-core-installation.md | A:12章领域主题及250项入口资产、单位默认失败和证据边界 | S:r7是当前技术选择和文档闭包，不等于整来源项目完成、人工科学批准或再分发许可
-scientific-core-r8.json[SU6L]: F:保存八领域四十一主题和141规范文档的独立手册快照 | R:code:release/docs/versions/scientific-core-r8.json,code:scripts/scirel_docs.py | A:领域树；主题导读；资产与教程归属 | S:文档快照独立于wheel，学习组织不改变精确合同
-scientific-core-r16.json[SU6L]: F:固定本批九领域七十一主题的260项手册目录 | R:code:release/docs/versions/scientific-core-r16.json,code:provenance/selections/scientific-core-documents-20261015-r9.json | A:scirel.handbook.v1章节及唯一主题归属 | S:只保存导读与精确ID，不复制签名、单位或科学资格形成另一份合同。
-scientific-core-r18.json[SU6L]: F:按九个科学领域和七十一个主题组织当前 260 项 wheel-bound 文档 | R:code:release/docs/versions/scientific-core-r18.json,code:provenance/selections/scientific-core-documents-20261015-r9.json | A:章节主题；唯一资产归属；渐进查询目录 | S:手册资产集合必须与选择集完全一致，未随 dev8 wheel 发行的七个 fluidBW 条目不再放入当前主题
-
 ===/Users/tomczz/Projects/SciReL/tools/docs/magnetostatics-20261013/===
 chapter.json[SU6T]: F:组织单环、同反向线圈对、矩形线圈与加密检查的磁静力学教程 | R:code:tools/docs/magnetostatics-20261013/example.py,code:tools/docs/magnetostatics-20261013/results.json | A:问题；方法；MathML；代码；结果解释 | S:观测避导线；离散零不是自场；局部8到16加密不证明全域误差界
 example.py[TB6T]: F:实际调用安装科学包生成单环、线圈对和矩形组的数值案例 | R:code:src/scirel/field/multi_coil_vacuum_field.py | A:轴上解析；对称；反向电流；总安匝保持；加密；结果JSON | S:权重和为一使加密不增加电流；小节顺序共享变量，任何断言失败不能写all_checks_passed

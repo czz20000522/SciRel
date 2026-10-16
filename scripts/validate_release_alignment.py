@@ -201,6 +201,59 @@ def _validate_platform_receipts(
             raise ValueError(f"platform receipt target differs: {row['platform']}")
 
 
+def _validate_document_integration(
+    root: Path,
+    docs: dict[str, Any],
+    *,
+    version: str,
+    source_revision: str | None,
+    wheel: dict[str, Any],
+    selection_digest: str,
+    handbook_digest: str,
+) -> None:
+    record_value = docs.get("integration_record")
+    record_path = _repo_path(root, record_value, field="integration_record")
+    record = _read_json(record_path)
+    if record.get("status") != "PASS":
+        raise ValueError("documentation integration record is not PASS")
+    if record.get("project_version") != version:
+        raise ValueError("documentation integration record version differs")
+    if source_revision is not None and record.get("source_revision") != source_revision:
+        raise ValueError("documentation integration source revision differs")
+
+    record_wheel = record.get("wheel")
+    artifact = wheel.get("artifact")
+    if (
+        not isinstance(record_wheel, dict)
+        or record_wheel.get("sha256") != artifact.get("sha256")
+        or record_wheel.get("bytes") != artifact.get("bytes")
+    ):
+        raise ValueError("documentation integration wheel artifact differs")
+
+    record_selection = record.get("selection")
+    if (
+        not isinstance(record_selection, dict)
+        or record_selection.get("path") != docs.get("source_documents")
+        or record_selection.get("sha256") != selection_digest
+    ):
+        raise ValueError("documentation integration selection differs")
+    record_handbook = record.get("handbook")
+    if (
+        not isinstance(record_handbook, dict)
+        or record_handbook.get("path") != docs.get("handbook")
+        or record_handbook.get("sha256") != handbook_digest
+    ):
+        raise ValueError("documentation integration handbook differs")
+    if record_handbook.get("scope", "exact") != docs.get("handbook_scope", "exact"):
+        raise ValueError("documentation integration handbook scope differs")
+    snapshot = record.get("snapshot")
+    if (
+        not isinstance(snapshot, dict)
+        or snapshot.get("sha256") != docs.get("snapshot_sha256")
+    ):
+        raise ValueError("documentation integration snapshot differs")
+
+
 def _validate_platform_matrix(root: Path, *, version: str, receipt_paths: set[str]) -> None:
     matrix = _read_json(root / "release/platform-support-matrix.json")
     if matrix.get("schema") != "scirel.platform-support-matrix.v1":
@@ -288,8 +341,15 @@ def validate_alignment(
     _validate_catalog_source_revision(root, docs, source_revision)
     handbook_assets, handbook_digest = _handbook_assets(root, docs)
     selected_ids = set(selected)
-    if handbook_assets != selected_ids:
-        raise ValueError("handbook coverage differs from selected document closure")
+    handbook_scope = docs.get("handbook_scope", "exact")
+    if handbook_scope == "repository":
+        if not selected_ids <= handbook_assets:
+            raise ValueError("repository handbook does not cover selected document closure")
+    elif handbook_scope == "exact":
+        if handbook_assets != selected_ids:
+            raise ValueError("handbook coverage differs from selected document closure")
+    else:
+        raise ValueError("documentation handbook_scope is invalid")
 
     counts = {"operators": 0, "task_graphs": 0}
     for document in selected.values():
@@ -325,6 +385,15 @@ def validate_alignment(
     snapshot_sha256 = docs.get("snapshot_sha256")
     if not isinstance(snapshot_sha256, str) or len(snapshot_sha256) != 64:
         raise ValueError("release CURRENT documentation snapshot_sha256 is invalid")
+    _validate_document_integration(
+        root,
+        docs,
+        version=version,
+        source_revision=source_revision,
+        wheel=wheel,
+        selection_digest=selection_digest,
+        handbook_digest=handbook_digest,
+    )
 
     return {
         "wheel_version": version,

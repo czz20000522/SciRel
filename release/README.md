@@ -13,9 +13,11 @@ It is derived coordination metadata for the checkout; it is not a second version
 source. `pyproject.toml` and the Git commit/tag remain authoritative for package
 identity and history.
 The wheel and documentation subdirectories retain compatibility pointers for
-older consumers, but they must not introduce another version identity. Git
-history and tags carry the version history; generated wheels and rendered
-documents remain external artifacts.
+older consumers, but they must not introduce another version identity. The
+repository has one handbook source at `tools/docs/handbook.json`; selected
+release views are generated outside the checkout. Git history and tags carry
+the version history; generated wheels and rendered documents remain external
+artifacts.
 
 The tuple binds:
 

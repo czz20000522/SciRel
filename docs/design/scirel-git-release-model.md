@@ -14,7 +14,7 @@ SciRel 采用与 SciPy 同类的单一来源模型：源代码、`pyproject.toml
 
 ## 文档与源码绑定
 
-文档正文、API 参考、领域导航和发行说明与源码同仓库维护。文档构建读取当前 checkout 的 API 和 exact document，不从历史版本目录复制一份“当前文档”。每个公开能力的合同、失败语义和验证边界仍由 exact document 表达；当前文档选择用 `selection_id`、Git commit 和构建 receipt 标识，不把它伪装成第二个包版本。发行历史只保留短小的 `docs/release/<version>-notes.md`（或等价的索引条目），不复制完整手册或 API 树。
+文档正文、API 参考、领域导航和发行说明与源码同仓库维护。文档构建读取当前 checkout 的 API 和 exact document，不从历史版本目录复制一份“当前文档”。`tools/docs/handbook.json` 是唯一手册源；当发行选择只覆盖其中一部分资产时，构建器在内存中裁剪导航，不提交第二份按版本命名的 handbook。每个公开能力的合同、失败语义和验证边界仍由 exact document 表达；当前文档选择用 `selection_id`、Git commit 和构建 receipt 标识，不把它伪装成第二个包版本。发行历史只保留短小的 `docs/release/<version>-notes.md`（或等价的索引条目），不复制完整手册或 API 树。
 
 同一 source revision 产生：
 

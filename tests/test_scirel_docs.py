@@ -217,7 +217,7 @@ def test_handbook_invalid_navigation_fails_closed(tmp_path, monkeypatch):
         if mode == 'duplicate_id': topics[0]['id'] = book['chapters'][0]['id']
         target.write_text(json.dumps(book))
         with pytest.raises(ValueError):
-            scirel_docs.handbook_document(ids)
+            scirel_docs.handbook_document(ids, target)
 
 
 def test_chinese_reader_http_cli_and_exact_source(snapshot):

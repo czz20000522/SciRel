@@ -56,11 +56,47 @@ def project_version(root=ROOT):
 
 
 def handbook_document(asset_ids, outline=None):
-    """Validate model-authored navigation without inventing scientific contracts."""
-    book = json.loads((outline or ROOT / 'tools/docs/handbook.json').read_bytes())
+    """Return the canonical navigation projected onto one exact document set.
+
+    ``tools/docs/handbook.json`` is the only handbook source kept in the
+    checkout.  A release or development snapshot may contain a strict subset
+    of its assets (for example, when a platform-specific family is not in the
+    selected wheel); the builder filters that subset in memory instead of
+    requiring another versioned handbook file.  An explicitly supplied
+    outline remains strict so tests and specialized callers can validate an
+    exact, independently authored navigation document.
+    """
+    requested = set(asset_ids)
+    source = outline or ROOT / 'tools/docs/handbook.json'
+    book = json.loads(Path(source).read_bytes())
     if book.get('schema') != 'scirel.handbook.v1':
         raise ValueError('invalid handbook schema')
     seen, placements = set(), []
+    canonical_assets = {
+        asset
+        for chapter in book['chapters']
+        for topic in chapter['topics']
+        for asset in topic['assets']
+    }
+    # The canonical handbook may contain a superset of one release's selected
+    # documents, so validate its members against the repository catalog before
+    # projecting a release subset.  Isolated callers/tests may provide only an
+    # outline, in which case the requested set is the available contract.
+    if outline is None:
+        catalog = ROOT / 'catalog/examples'
+        if catalog.is_dir():
+            available_assets = {path.stem for path in catalog.glob('*.json')}
+        else:
+            available_assets = requested
+        unknown_canonical = canonical_assets - available_assets
+        if unknown_canonical:
+            raise ValueError('handbook contains unknown assets: ' +
+                             str(sorted(unknown_canonical)))
+    unknown_requested = requested - canonical_assets
+    if unknown_requested:
+        raise ValueError('documents are outside canonical handbook: ' +
+                         str(sorted(unknown_requested)))
+    projected_chapters = []
     for chapter in book['chapters']:
         for node in [chapter, *chapter['topics']]:
             if not re.fullmatch(r'[a-z][a-z0-9-]*', node['id']) or node['id'] in seen:
@@ -70,18 +106,37 @@ def handbook_document(asset_ids, outline=None):
                 raise ValueError('handbook nodes need a title and introduction')
         if not chapter['discipline'] or not chapter['topics']:
             raise ValueError('empty handbook chapter')
+        projected_topics = []
         for topic in chapter['topics']:
             if not topic['assets']:
                 raise ValueError('empty handbook topic')
             if topic.get('tutorial_id') not in (None, 'magnetostatics', 'kinetic-initial-value'):
                 raise ValueError('handbook tutorial has no execution-backed renderer')
-            placements.extend(topic['assets'])
+            topic_assets = list(topic['assets'])
+            if outline is None:
+                topic_assets = [asset for asset in topic_assets if asset in requested]
+            if not topic_assets:
+                continue
+            projected = dict(topic)
+            projected['assets'] = topic_assets
+            # A tutorial is only valid when its complete topic remains in the
+            # selected closure; otherwise it would advertise an incomplete
+            # executable chapter.
+            if outline is None and topic_assets != list(topic['assets']):
+                projected.pop('tutorial_id', None)
+            projected_topics.append(projected)
+            placements.extend(topic_assets)
+        if projected_topics:
+            projected_chapter = dict(chapter)
+            projected_chapter['topics'] = projected_topics
+            projected_chapters.append(projected_chapter)
     if len(placements) != len(set(placements)):
         raise ValueError('duplicate handbook asset placement')
-    if set(placements) != set(asset_ids):
+    if set(placements) != requested:
         raise ValueError('handbook coverage differs from exact documents: missing=' +
-                         str(sorted(set(asset_ids) - set(placements))) + '; unknown=' +
-                         str(sorted(set(placements) - set(asset_ids))))
+                         str(sorted(requested - set(placements))) + '; unknown=' +
+                         str(sorted(set(placements) - requested)))
+    book['chapters'] = projected_chapters
     return book
 
 

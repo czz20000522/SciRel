@@ -36,6 +36,8 @@ def test_historical_release_data_is_not_parallel_wheel_or_doc_copies() -> None:
         text=True,
     )
     assert tracked.strip() == ""
+    assert not list((ROOT / "tools/docs/handbooks").glob("*.json"))
+    assert (ROOT / "tools/docs/handbook.json").is_file()
 
 
 def test_current_release_receipt_is_not_the_version_source() -> None:

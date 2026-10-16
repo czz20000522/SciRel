@@ -64,10 +64,12 @@ python3 scripts/scirel_docs.py query --snapshot .runtime/docs-snapshot-001 --rea
 
 该工具与页面属于开发层，不加入科学 wheel。新增项目达到正式文档冻结条件后，在同一次整合中更新 exact document、中文阅读说明与目录，重新生成手册，并验证搜索与原文一致。
 
-选定科学发行内容时，可为同一份 exact documents 显式提供完整中文读者集合和目录，例如：
+选定科学发行内容时，可为同一份 exact documents 显式提供完整中文读者集合。构建器从唯一的
+`tools/docs/handbook.json` 源目录按输入文档集合生成内存中的导航投影，不再维护按版本复制的
+`tools/docs/handbooks/` 文件，例如：
 
 ```sh
-python3 scripts/scirel_docs.py build --documents <所选正式文档目录> --output <新快照目录> --outline tools/docs/handbooks/scientific-core-r8.json --translations <selected-reader-bundle.json>
+python3 scripts/scirel_docs.py build --documents <所选正式文档目录> --output <新快照目录> --translations <selected-reader-bundle.json>
 ```
 
 `--translations` 可重复传入多个 bundle；提供后只读取这些 bundle，仍严格校验完整资产集合、原文摘要、端口顺序及全部条款。省略时继续使用默认 `tools/docs/zh/*.json` 集合。选定内容的中文 bundle 与目录独立保存，不把其他候选记录混入同一选择。文档构建不执行科学计算；安装应用和正式认可仍分别验证。

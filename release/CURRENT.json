@@ -3,14 +3,14 @@
   "package": "scirel",
   "version": "0.1.0.dev9",
   "status": "development_candidate",
-  "source_revision": "e078e67f24c1cfdc3d6fc7c219810a15572ed4ca",
+  "source_revision": "7feb451b45da541bc4f2ced0c8dc0369bc8f5e66",
   "source_revision_status": "bound",
   "wheel": {
     "version": "0.1.0.dev9",
     "status": "development_candidate",
     "artifact": {
       "path": "dist/scirel-0.1.0.dev9-py3-none-any.whl",
-      "sha256": "15ebca118bf469be0306fa30aa37ce1fa0a63b0752d34c553c017fa1f320f870",
+      "sha256": "34ac7cf21658412671c5290a41b2eed7662b8847444b04e809786f5b4535e8f2",
       "bytes": 651230
     },
     "selected_capabilities": {
@@ -22,30 +22,32 @@
     "platform_receipts": [
       {
         "platform": "linux-x86_64-cp314",
-        "path": "provenance/validation/scirel-dev9-linux-acceptance-20261017.json",
-        "sha256": "1c2c6251bf3fe0e111ac6575b1f763da913d7ef27662d5131ca385366d827e57"
+        "path": "provenance/validation/scirel-dev9-linux-acceptance-20261018.json",
+        "sha256": "1b15120f8cd2776dc36f01e9dda5f6f656ade36393d1b36149ee46ba299b6aba"
       }
     ]
   },
   "documentation": {
-    "selection_id": "scientific-core-r18",
+    "selection_id": "scientific-core-current",
     "status": "development_candidate",
-    "source_documents": "provenance/selections/scientific-core-documents-20261015-r9.json",
-    "handbook": "tools/docs/handbooks/scientific-core-r18.json",
+    "source_documents": "provenance/selections/scientific-core-documents-20261017-dev9.json",
+    "handbook": "tools/docs/handbook.json",
     "compatible_wheel": "0.1.0.dev9",
     "catalog_root": "catalog/examples",
-    "snapshot_sha256": "88d708ae3620cbbb375522fa2f856da812e5eeb4fc4aec605e1703efbbd8009e",
-    "integration_record": "provenance/validation/completed-project-installed-closeout.json",
-    "selection_sha256": "c8ef90938786578dfcbdb887ac703f808d50937c48807089ce6f4f64c65553e1",
-    "handbook_sha256": "a91248734c2f2992331d866f9676c0e536588d0312bfe10266310a9de20c4284",
+    "snapshot_sha256": "ba1d29122e0baf82f5a01e522944f044b08093d95728a07174b61d2998640a31",
+    "integration_record": "provenance/validation/scirel-dev9-document-integration-20261018.json",
+    "selection_sha256": "ef3e6371dfdc8700bc49edaf4193ce1bbee3b21417313d08b20f7f9c5c95836e",
+    "handbook_sha256": "7aea04ee827699038d4be7a34bf2d579c875614867334657dae9de1e050bd9fc",
     "capability_counts": {
       "operators": 230,
       "task_graphs": 30,
       "document_closure": 260
     },
     "asset_implementation_baselines": [
-      "0.1.0.dev8"
-    ]
+      "0.1.0.dev8",
+      "0.1.0.dev9"
+    ],
+    "handbook_scope": "repository"
   },
   "next_action": "Keep this development candidate untagged until the remaining platform and scientific release gates are explicitly closed."
 }
