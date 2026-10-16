@@ -216,7 +216,7 @@ def _materialize_translations(
         encoding="utf-8",
     )
     return {
-        "path": "tools/docs/zh/*.json",
+        "source": "tools/docs/zh/*.json",
         "sha256": _sha256(target),
         "asset_count": len(selected_records),
     }
@@ -295,6 +295,10 @@ def build_from_ref(
             else:
                 _legacy_git_adapter(staging, revision, environment)
             if translation_info is not None:
+                if "--translations" not in docs_script.read_text(encoding="utf-8"):
+                    raise ValueError(
+                        "selected-document build requires an archived docs builder with --translations"
+                    )
                 command.extend(["--translations", str(staging / "selected-reader-bundle.json")])
             build_result = subprocess.run(
                 command,
