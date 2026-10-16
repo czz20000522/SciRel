@@ -163,7 +163,9 @@ def _validate_platform_matrix(root: Path, *, version: str, receipt_paths: set[st
         raise ValueError("current platform receipt is missing from the support matrix")
 
 
-def validate_alignment(root: Path = ROOT) -> dict[str, Any]:
+def validate_alignment(
+    root: Path = ROOT, *, expected_source_revision: str | None = None
+) -> dict[str, Any]:
     canonical_path = root / "release/CURRENT.json"
     current = _read_json(canonical_path)
     if current.get("schema") != "scirel.release-current.v1":
@@ -178,6 +180,10 @@ def validate_alignment(root: Path = ROOT) -> dict[str, Any]:
     source_revision = current.get("source_revision")
     if source_revision is not None and (not isinstance(source_revision, str) or not source_revision):
         raise ValueError("source_revision must be null or a non-empty string")
+    if expected_source_revision is not None and source_revision != expected_source_revision:
+        raise ValueError(
+            "release CURRENT source_revision differs from the expected Git revision"
+        )
 
     wheel = current.get("wheel")
     docs = current.get("documentation")
@@ -269,8 +275,20 @@ def validate_alignment(root: Path = ROOT) -> dict[str, Any]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=ROOT)
+    parser.add_argument(
+        "--expected-source-revision",
+        help="require CURRENT.source_revision to match this exact Git commit",
+    )
     args = parser.parse_args()
-    print(json.dumps(validate_alignment(args.root.resolve()), ensure_ascii=False, sort_keys=True))
+    print(
+        json.dumps(
+            validate_alignment(
+                args.root.resolve(), expected_source_revision=args.expected_source_revision
+            ),
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+    )
 
 
 if __name__ == "__main__":

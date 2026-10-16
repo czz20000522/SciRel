@@ -52,6 +52,11 @@ def test_alignment_rejects_a_pyproject_version_drift(tmp_path: Path) -> None:
         validate_alignment(tmp_path)
 
 
+def test_alignment_can_require_an_exact_git_source_revision() -> None:
+    with pytest.raises(ValueError, match="expected Git revision"):
+        validate_alignment(ROOT, expected_source_revision="0" * 40)
+
+
 def test_legacy_current_files_are_thin_compatibility_pointers() -> None:
     for line in ("wheel", "docs"):
         path = ROOT / "release" / line / "CURRENT.json"

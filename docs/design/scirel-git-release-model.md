@@ -69,6 +69,28 @@ development dependency groups；源码仓库中的 `doc/source/release/` 只保�
 文档副本。`release/CURRENT.json` 可以随着当前候选更新，但它不产生新的版本线，也不
 替代 `pyproject.toml`、Git 或当前文档树。
 
+### 文档重新资格化
+
+文档中的 `version.implementation_version` 是运行时兼容性约束，不是第二个版本源。
+后继候选不能把旧文档目录复制一份再改版本；使用
+`scripts/requalify_document_selection.py` 从旧版本的确切 Git ref 对当前选择逐条核对：
+
+1. 当前文档必须仍由旧 selection 的摘要绑定，且只允许实现版本字段变化；
+2. 文档声明的公共模块必须在基线 ref 与当前 checkout 中逐字节一致；
+3. 任一合同或公共模块发生变化，都输出阻塞项并停止完整 requalification；
+4. 只有完成针对性科学测试且没有任何阻塞项后，才可以用 `--apply` 在同一
+   `catalog/examples` 文件上更新版本字段，并生成新的完整 selection/receipt；
+   `--allow-partial` 只能用于 dry-run，不能缩小能力分母。旧 selection 和 Git 历史保持不变。
+
+因此，版本迁移产生的是 Git diff、selection receipt 和外部 catalog 构建物，不是第二套
+文档树。当前 dev9 候选以 `895bc40` 作为 dev8 源基线时，三个 plotting 合同因
+`geometry/plotting.py` 已变化而保持阻塞；它们不能被静默批量改写。
+
+发行验收可用 `scripts/validate_release_alignment.py --expected-source-revision <commit>`
+把当前协调记录锁到确切 Git commit。未提供该参数时，工具仍允许审查历史或外部归档中的
+候选；正式构建和回写 `release/CURRENT.json` 时必须提供构建 ref，避免旧 wheel 摘要在
+新提交上继续通过结构校验。
+
 SciPy 的 release tooling 还把“要构建哪个源码版本”显式表示为 Git ref；SciRel
 采用同一事实边界：构建脚本必须从确切提交读取源码和 `pyproject.toml`，再在外部输出
 wheel、文档快照和平台回执。生成物不能反向成为另一份源码或文档事实。
