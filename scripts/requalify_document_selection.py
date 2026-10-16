@@ -1,11 +1,12 @@
 """Requalify one Git-owned asset selection for a successor package version.
 
 The asset documents remain in their canonical ``catalog/examples`` tree.  This
-tool only changes ``version.implementation_version`` after proving that the
-selected document and its public implementation are unchanged from a baseline
-Git ref.  Changed implementations are reported as blocked and stop a complete
+tool compares the current documents with the historical bytes at a baseline Git
+ref, so a successor release never needs a copied ``dev8`` document tree.
+Changed implementations are reported as blocked and stop a complete
 requalification by default; callers must test those assets separately before
-running an applying pass.
+running an applying pass.  Applying is idempotent when the current documents
+already carry the successor implementation version.
 """
 
 from __future__ import annotations
