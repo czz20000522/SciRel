@@ -1,0 +1,52 @@
+{
+  "catalog": {
+    "declared_total_asset_count": 267,
+    "external_path": "build/releases/scirel-0.1.0.dev9-9733bfc/catalog",
+    "included_asset_count": 260,
+    "root_digest": "sha256:0c866bbd7a9039fb5b8902be8ce76ceac58c5408ac3f6a94f396e8724cca616e",
+    "zip_bytes": 1193438,
+    "zip_path": "build/releases/scirel-0.1.0.dev9-9733bfc/scirel-0.1.0.dev9-catalog.zip",
+    "zip_sha256": "b70eec518d5f2dd492e4bae054d40001352700344ddcaf78a6397fb6bcf2f302"
+  },
+  "evidence": {
+    "docs_build_manifest": "build/releases/scirel-0.1.0.dev9-9733bfc/docs-build-manifest.json",
+    "linux_acceptance": "provenance/validation/scirel-dev9-linux-acceptance-20261017-9733bfc.json",
+    "linux_acceptance_sha256": "a64d4f209029ce26d5a86773bed7ae57521b0332f87e0aefda1b8f61b5f64924",
+    "wheel_build_manifest": "build/releases/scirel-0.1.0.dev9-9733bfc/wheel-build-manifest.json"
+  },
+  "handbook": {
+    "asset_count": 267,
+    "path": "tools/docs/handbook.json",
+    "scope": "repository",
+    "selected_asset_count": 260,
+    "sha256": "7aea04ee827699038d4be7a34bf2d579c875614867334657dae9de1e050bd9fc"
+  },
+  "limitations": [
+    "External wheel, documentation snapshot and catalog are generated artifacts under an ignored build root; Git source, selection and handbook remain canonical.",
+    "The Linux receipt establishes clean consumer installation for the bound wheel and representative core scope; it does not establish complete scientific capability closure.",
+    "This metadata receipt does not constitute scientific expert approval, redistribution approval, or public release approval."
+  ],
+  "project_version": "0.1.0.dev9",
+  "schema": "scirel.dev9-document-integration.v1",
+  "selection": {
+    "asset_count": 260,
+    "operators": 230,
+    "path": "provenance/selections/scientific-core-documents-20261017-dev9.json",
+    "sha256": "ef3e6371dfdc8700bc49edaf4193ce1bbee3b21417313d08b20f7f9c5c95836e",
+    "task_graphs": 30
+  },
+  "snapshot": {
+    "asset_count": 260,
+    "bytes": 27735067,
+    "external_path": "build/releases/scirel-0.1.0.dev9-9733bfc/docs-snapshot",
+    "sha256": "0c24b2f412b1e7a2f1fc98877869d4c277e80bfd310250b664d1630658576665",
+    "source_dirty": false
+  },
+  "source_revision": "9733bfc6e9f91a8526f5c72843b9203aa8ebbf04",
+  "status": "PASS",
+  "wheel": {
+    "bytes": 651570,
+    "path": "build/releases/scirel-0.1.0.dev9-9733bfc/scirel-0.1.0.dev9-py3-none-any.whl",
+    "sha256": "175c9dc0edd62511bd25e8eba0f89566a7bfe2bf9d258050d2cf959537ff284b"
+  }
+}
