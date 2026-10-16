@@ -1168,6 +1168,7 @@ test_platform_support.py[TQ6T]: F:回归平台矩阵的状态、证据缺失拒�
 test_validate_installed_wheel.py[TQ6T]: F:回归已安装wheel验证器的环境检查、依赖检查、公共运行和失败回执 | R:code:scripts/validate_installed_wheel.py | A:pytest；临时输出；目标平台不符；源码树拒绝；receipt字段断言 | S:测试必须保留非零失败和精确错误；不能把本地checkout或平台标签当作安装包验收
 test_git_release_structure.py[TQ5T]: F:回归Git单一版本源、无按版本复制、ref-bound构建和外部产物边界，并阻止设计文档复制候选身份 | R:code:pyproject.toml,code:release/CURRENT.json,code:docs/release,code:scripts/build_scirel_docs_from_ref.py,code:docs/design/scirel-git-release-model.md,code:tools/docs/chapter-selection.json | A:阻止仓内wheel、HTML、版本目录、重复handbook和设计文档中的具体开发版本与wheel文件名回流；检查v2 logical refs、SciPy结构对标锚点和短说明动态字段边界 | S:结构测试只证明仓库边界与元数据形状，不替代wheel安装、科学正确性或平台闭包
 test_document_requalification.py[TQ5T]: F:验证历史selection重资格化的公共模块漂移、proof作用域和禁止缩小分母 | R:code:scripts/requalify_document_selection.py,code:catalog/examples,code:provenance/selections/scientific-core-documents-20261015-r9.json | A:覆盖260项选择中252项可复用与8项阻塞、显式plotting proof仅解除3项、完整模式失败和apply禁止缩小分母 | S:当前基线895bc40下公共模块变化必须fail closed；partial proof不得冒充完整requalification，catalog文件不应被dry-run修改
+test_module_exports.py[TQ6T]: F:锁定有限体积模块的显式__all__集合与公共导出可发现性 | R:code:src/scirel/fvm/cell_variable.py,code:src/scirel/fvm/convection.py,code:src/scirel/fvm/diffusion.py,code:src/scirel/fvm/implicit.py,code:tests/test_fvm.py | A:模块级__all__;导出名称精确匹配；根包导入保持可用；公共导出回归 | S:测试只验证发现边界和既有导入，不放宽数值断言、不改变算子实现，也不把未验证名称加入公共合同。
 
 ===/Users/tomczz/Projects/SciReL/tests/fixtures/l1/===
 cycle-rework.json[TW4T]: F:提供两任务图互相依赖且dependency_closure失败的L1重做分支fixture | R:code:tests/test_l1_wire_smoke.py | A:scirel.l1-inventory.dev | S:-
@@ -1575,10 +1576,10 @@ gaussian.py[KB6T]: F:以稳定平方差生成按单元体积归一化的高斯�
 
 ===/Users/tomczz/Projects/SciReL/src/scirel/fvm/===
 __init__.py[EB6T]: F:公开有限体积变量、三对角容器、通量组装与theta步进接口 | R:code:src/scirel/fvm/cell_variable.py,code:src/scirel/fvm/diffusion.py,code:src/scirel/fvm/convection.py,code:src/scirel/fvm/implicit.py | A:CellVariable;TriDiagonal;make_diffusion_terms;make_convection_terms;theta_step | S:接口使用显式单通道网格和边界数据，不导入TORAX或JAX运行环境
-cell_variable.py[KB8S]: F:保存只读单元点值与显式面网格并重构面值、面梯度和单元梯度 | R:code:src/scirel/fvm/diffusion.py,code:src/scirel/fvm/convection.py,code:src/scirel/fvm/implicit.py,code:tests/test_fvm.py | A:N至少2;边界值梯度互斥;float64有限验证;内部三点与末端导数约束;显式两点掩码;非有限结果失败 | S:两端Neumann均指正坐标导数；末内部二次式使用真实右导数和两单元点值。face_value仍线性，grad为面值差除宽；内部二次精确不保证任意畸变网格全局二阶
-convection.py[KB8T]: F:用Peclet幂律权重直接组装负对流通量散度的三对角算子及边界强迫 | R:code:src/scirel/fvm/cell_variable.py,code:src/scirel/fvm/diffusion.py,code:src/scirel/fvm/implicit.py,code:tests/test_fvm.py | A:TriDiagonal与b；对角、上对角和下对角装配；有符号扩散幅值下限；正负上风极限；Dirichlet三模式；Neumann两模式；有限结果检查 | S:正无穷Peclet用1−1/p避免inf/inf；1e-20下限依赖输入单位；宽度加权守恒针对所选数值边界通量，ghost面值未必等于Dirichlet输入
-diffusion.py[KB7T]: F:直接组装共享两点扩散通量的三对角算子和边界强迫，并提供稠密、带状与向量乘法表示 | R:code:src/scirel/fvm/cell_variable.py,code:src/scirel/fvm/implicit.py,code:tests/test_fvm.py | A:TriDiagonal；to_dense；to_banded；matvec；中心间距导通系数；Dirichlet半单元；Neumann显式导数；非有限结果失败 | S:不调用face_grad三点重构；有符号D保留代数，物理扩散需非负；theta路径保留三对角表示，只有显式to_dense才分配n×n矩阵；面积和体积度量由调用者负责
-implicit.py[KB8T]: F:组合旧新扩散、对流、源与边界数据进行单通道线性theta步并以三对角带状系统求解 | R:code:src/scirel/fvm/cell_variable.py,code:src/scirel/fvm/diffusion.py,code:src/scirel/fvm/convection.py,code:tests/test_fvm.py | A:同网格校验；正dt；theta范围0至1默认1；缺项为零；TriDiagonal组合；solve_banded；返回带新边界的变量 | S:旧新算子按各自时间权重组装，不做非线性迭代或瞬态系数推断；theta=0直接计算显式结果；奇异带状系统传播LinAlgError，无裁剪或回退
+cell_variable.py[KB8S]: F:保存只读单元点值与显式面网格并重构面值、面梯度和单元梯度 | R:code:src/scirel/fvm/diffusion.py,code:src/scirel/fvm/convection.py,code:src/scirel/fvm/implicit.py,code:tests/test_fvm.py,code:tests/test_module_exports.py | A:N至少2;边界值梯度互斥;float64有限验证;内部三点与末端导数约束;显式两点掩码;非有限结果失败;模块只导出CellVariable | S:两端Neumann均指正坐标导数；末内部二次式使用真实右导数和两单元点值。face_value仍线性，grad为面值差除宽；内部二次精确不保证任意畸变网格全局二阶。__all__是稳定发现边界，不等于科学准入。
+convection.py[KB8T]: F:用Peclet幂律权重直接组装负对流通量散度的三对角算子及边界强迫 | R:code:src/scirel/fvm/cell_variable.py,code:src/scirel/fvm/diffusion.py,code:src/scirel/fvm/implicit.py,code:tests/test_fvm.py,code:tests/test_module_exports.py | A:TriDiagonal与b；对角、上对角和下对角装配；有符号扩散幅值下限；正负上风极限；Dirichlet三模式；Neumann两模式；有限结果检查；模块只导出make_convection_terms | S:正无穷Peclet用1−1/p避免inf/inf；1e-20下限依赖输入单位；宽度加权守恒针对所选数值边界通量，ghost面值未必等于Dirichlet输入。__all__只约束公共发现，不扩展数值能力。
+diffusion.py[KB7T]: F:直接组装共享两点扩散通量的三对角算子和边界强迫，并提供稠密、带状与向量乘法表示 | R:code:src/scirel/fvm/cell_variable.py,code:src/scirel/fvm/convection.py,code:src/scirel/fvm/implicit.py,code:tests/test_fvm.py,code:tests/test_module_exports.py | A:TriDiagonal；to_dense；to_banded；matvec；中心间距导通系数；Dirichlet半单元；Neumann显式导数；非有限结果失败；模块导出TriDiagonal与make_diffusion_terms | S:不调用face_grad三点重构；有符号D保留代数，物理扩散需非负；theta保留三对角，to_dense才分配n×n；面积和体积由调用者负责。
+implicit.py[KB8T]: F:组合旧新扩散、对流、源与边界数据进行单通道线性theta步并以三对角带状系统求解 | R:code:src/scirel/fvm/cell_variable.py,code:src/scirel/fvm/diffusion.py,code:src/scirel/fvm/convection.py,code:tests/test_fvm.py,code:tests/test_module_exports.py | A:同网格校验；正dt；theta范围0至1默认1；缺项为零；TriDiagonal组合；solve_banded；返回带新边界的变量；模块只导出theta_step | S:旧新算子按各自时间权重组装，不做非线性迭代或瞬态系数推断；theta=0直接计算显式结果；奇异带状系统传播LinAlgError，无裁剪或回退。__all__不改变求解路径或失败语义。
 
 ===/Users/tomczz/Projects/SciReL/src/scirel/neoclassical/===
 __init__.py[EB6T]: F:导出两个独立自举拟合模型及共享电流组装接口 | R:code:src/scirel/neoclassical/bootstrap.py | A:calculate_redl_coefficients;calculate_sauter_coefficients;calculate_bootstrap_current | S:导出不补充几何或碰撞率推断；Sauter与Redl科学模型保持分别调用
@@ -1835,13 +1836,6 @@ DISPOSITIONS.json[OR7M]: F:记录PDRF全部源边界、问题、失败和材料�
 ===/Users/tomczz/Projects/SciReL/provenance/integrations/fluidbw-full-retained-20261013/===
 comparison.json[SD7S]: F:记录 fluidBW 与现有 SciRel 能力的逐维比较和吸收裁决 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:该记录保留来源比较和未决边界，不构成人工批准
 full-scope-dispositions.json[SD7S]: F:记录 fluidBW 全部源材料的 D2 去向与保留范围 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:该记录保留来源比较和未决边界，不构成人工批准
-
-===/Users/tomczz/Projects/SciReL/src/scirel.egg-info/===
-PKG-INFO[FV3T]: F:保存当前SciRel wheel的构建元数据、Python范围和Requires-Dist投影 | R:code:pyproject.toml,code:src/scirel.egg-info/requires.txt | A:包身份；版本；核心依赖；optional/test extra元数据 | S:由构建生成且不能作为科学准入、平台兼容或发行批准证据
-SOURCES.txt[FV3M]: F:保存setuptools生成的科学源码与随包数据文件清单 | R:code:pyproject.toml,code:release/wheel/layout.json | A:setuptools文件发现；领域模块；随包native数据与分发元数据 | S:仅表示构建输入，不是科学准入、完整性或跨平台证明；由Git构建生成，不手工扩展
-dependency_links.txt[FV3T]: F:记录当前 SciRel wheel 的构建元数据 | R:code:pyproject.toml | A:fluidBW D2 技术整合 | S:该文件由构建元数据生成，必须与当前pyproject和wheel保持一致
-requires.txt[FV3T]: F:记录当前SciRel wheel的核心依赖与optional/test extra构建投影 | R:code:pyproject.toml,code:src/scirel.egg-info/PKG-INFO | A:Requires-Dist；extra分组；构建元数据同步 | S:由构建生成；必须与pyproject和wheel元数据一致；不替代平台解析或科学验证
-top_level.txt[FV3T]: F:记录当前 SciRel wheel 的构建元数据 | R:code:pyproject.toml | A:fluidBW D2 技术整合 | S:该文件由构建元数据生成，必须与当前pyproject和wheel保持一致
 
 ===/Users/tomczz/Projects/SciReL/src/scirel/kinetic/_fluidbw_native/===
 Gamman.m[DD6S]: F:提供 fluidBW Gamman 原生数值实现，供 Python 适配器调用 | R:code:src/scirel/kinetic/fluidbw.py | A:fluidBW D2 技术整合 | S:保留原生MATLAB/Octave文件作为随包执行组件；源权限未建立
