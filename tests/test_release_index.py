@@ -32,6 +32,7 @@ def _pending_item(
     document_name="scirel.field.rectangular-coil-filaments.json",
     support_files=(),
     omit_dependencies=False,
+    implementation_version=None,
 ):
     document = json.loads(
         (ROOT / "catalog/examples" / document_name).read_text(
@@ -40,6 +41,8 @@ def _pending_item(
     )
     if omit_dependencies:
         document["version"]["dependencies"] = []
+    if implementation_version is not None:
+        document["version"]["implementation_version"] = implementation_version
     evidence = []
     if release_ready:
         document["provenance"]["license_status"] = "approved-for-public-release"
@@ -1119,6 +1122,7 @@ def _reviewed_release_inputs(
     support_files=(),
     build_release_catalog=True,
     omit_dependencies=False,
+    implementation_version=None,
 ):
     from build_catalog import build_catalog
     from release_index import register_candidate
@@ -1133,6 +1137,7 @@ def _reviewed_release_inputs(
             release_ready=True, document_name=document_name,
             support_files=support_files,
             omit_dependencies=omit_dependencies,
+            implementation_version=implementation_version,
         )
         pending_body = json.dumps(item, ensure_ascii=False, sort_keys=True).encode("utf-8")
     pending_revision = "sha256:" + hashlib.sha256(pending_body).hexdigest()
@@ -1346,7 +1351,9 @@ def test_first_reviewed_distribution_builds_only_the_selected_asset(tmp_path, mo
         ),
     )
 
-    artifacts, _, _, _, _ = _reviewed_release_inputs(tmp_path)
+    artifacts, _, _, _, _ = _reviewed_release_inputs(
+        tmp_path, implementation_version="0.1.0.dev8"
+    )
     staging = tmp_path / "reviewed-source"
     result = prepare_reviewed_distribution(
         release_index=tmp_path / "index.json",
@@ -1500,6 +1507,7 @@ def test_first_reviewed_distribution_includes_bound_private_support(tmp_path, mo
         tmp_path,
         document_name="scirel.closures.mirror-ambipolar-potential.json",
         support_files=support,
+        implementation_version="0.1.0.dev8",
     )
     staging = tmp_path / "reviewed-source"
     result = prepare_reviewed_distribution(
