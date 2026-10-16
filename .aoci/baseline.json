@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-16T21:56:24Z",
+  "updated_at": "2026-10-16T22:05:26Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -65,9 +65,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "8cd0b7c3e2e7f9123e162fbff5bf85091b07bf25edc2649498ca393b5e1dcc89",
-      "size": 575004,
-      "normalized_sha256": "8cd0b7c3e2e7f9123e162fbff5bf85091b07bf25edc2649498ca393b5e1dcc89"
+      "sha256": "c566c094a9a48f86788c6e06a9b827cb0cd2917efb2722c13fd2b09219540a27",
+      "size": 575946,
+      "normalized_sha256": "c566c094a9a48f86788c6e06a9b827cb0cd2917efb2722c13fd2b09219540a27"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -3059,9 +3059,9 @@
     },
     "docs/design/project-and-distribution.md": {
       "role": "index",
-      "sha256": "f7e757c5b576cda1cb5f86eda81b7d3fdf36833e67030d0380bd4d258fbfc50e",
-      "size": 14437,
-      "normalized_sha256": "f7e757c5b576cda1cb5f86eda81b7d3fdf36833e67030d0380bd4d258fbfc50e"
+      "sha256": "5d8c4b872b781af989ae48e014257a0b5a4ecdf1bd1f3e0b4f4ad41b8969b330",
+      "size": 14861,
+      "normalized_sha256": "5d8c4b872b781af989ae48e014257a0b5a4ecdf1bd1f3e0b4f4ad41b8969b330"
     },
     "docs/design/scientific-request-workflow.md": {
       "role": "index",
@@ -3074,6 +3074,12 @@
       "sha256": "00ff53514d54a0936cff24f638702f458ae7de32c21b41d0bd17253d2fdd0aad",
       "size": 4943,
       "normalized_sha256": "00ff53514d54a0936cff24f638702f458ae7de32c21b41d0bd17253d2fdd0aad"
+    },
+    "docs/design/scipy-release-model.md": {
+      "role": "index",
+      "sha256": "3d8fd4999d3c08fca51ac7e1fe3cde376e26a11c42e91340b55ca1e83f86306b",
+      "size": 5118,
+      "normalized_sha256": "3d8fd4999d3c08fca51ac7e1fe3cde376e26a11c42e91340b55ca1e83f86306b"
     },
     "docs/design/scirel-git-release-model.md": {
       "role": "index",
@@ -10919,9 +10925,9 @@
     },
     "tests/test_git_release_structure.py": {
       "role": "index",
-      "sha256": "fb3af2d958f6ee94ce51229cad79004e90db68ad24136f03a58bddffbd056564",
-      "size": 6209,
-      "normalized_sha256": "fb3af2d958f6ee94ce51229cad79004e90db68ad24136f03a58bddffbd056564"
+      "sha256": "9aad5ee69708c98e30ccda446280f6428bc8dc1a0a7a6fe99b54c515ca81879b",
+      "size": 7223,
+      "normalized_sha256": "9aad5ee69708c98e30ccda446280f6428bc8dc1a0a7a6fe99b54c515ca81879b"
     },
     "tests/test_incremental_admissions.py": {
       "role": "index",
