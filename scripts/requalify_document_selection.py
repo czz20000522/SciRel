@@ -231,18 +231,22 @@ def requalify_selection(
         if not document_path.is_relative_to(root) or not document_path.is_file():
             raise ValueError(f"selected document path is invalid: {relative}")
         current_bytes = document_path.read_bytes()
-        if _sha256(current_bytes) != row["sha256"]:
-            raise ValueError(f"selection digest differs from current document: {asset_id}")
         current = json.loads(current_bytes)
         if not isinstance(current, dict) or current.get("asset_id") != asset_id:
             raise ValueError(f"document asset ID differs from selection: {asset_id}")
         current_version = current.get("version", {}).get("implementation_version")
-        if current_version != old_version:
+        if current_version not in {old_version, new_version}:
             raise ValueError(
-                f"document {asset_id} has version {current_version!r}, expected {old_version!r}"
+                f"document {asset_id} has version {current_version!r}, expected "
+                f"{old_version!r} or {new_version!r}"
             )
 
+        # The selection is historical evidence.  Validate its digest against the
+        # baseline Git blob rather than the current path, which intentionally
+        # contains the successor document after a version migration.
         baseline_bytes = _git_file(root, resolved_ref, relative)
+        if _sha256(baseline_bytes) != row["sha256"]:
+            raise ValueError(f"selection digest differs from baseline document: {asset_id}")
         baseline = json.loads(baseline_bytes)
         if not isinstance(baseline, dict) or baseline.get("asset_id") != asset_id:
             raise ValueError(f"baseline document asset ID differs: {asset_id}")
@@ -308,6 +312,15 @@ def requalify_selection(
             text = path.read_text(encoding="utf-8")
             old_field = f'"implementation_version": "{old_version}"'
             new_field = f'"implementation_version": "{new_version}"'
+            if old_field not in text:
+                # A prior applying pass may already have migrated this document.
+                # Keep the operation idempotent and still include it in the new
+                # selection's digest.
+                if text.count(new_field) == 1:
+                    continue
+                raise ValueError(
+                    f"cannot safely update implementation_version in {item['path']}"
+                )
             if text.count(old_field) != 1:
                 raise ValueError(
                     f"cannot safely update implementation_version in {item['path']}"
