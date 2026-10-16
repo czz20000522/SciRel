@@ -23,6 +23,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 RECEIPT_SCHEMA = "scirel.document-requalification.v1"
 SELECTION_SCHEMA = "scirel.selected-document-set.v1"
+PROOF_SCHEMA = "scirel.document-requalification-proof.v1"
 
 
 def _canonical(value: Any) -> bytes:
@@ -88,6 +89,92 @@ def _selection_rows(selection_path: Path) -> list[dict[str, Any]]:
     return rows
 
 
+def _proof_manifest(
+    proof_path: Path,
+    *,
+    root: Path,
+    current_revision: str,
+    baseline_revision: str,
+) -> tuple[dict[str, dict[str, Any]], str]:
+    """Load and verify explicit evidence for changed public modules.
+
+    A proof manifest is deliberately separate from the requalification receipt.
+    It is a small, Git-reviewable declaration that ties each changed module to
+    the exact source revision, test files, and PASS receipts that justified
+    requalification.  The hashes are checked against the current checkout so a
+    stale manifest cannot silently authorize an apply.
+    """
+    proof_path = proof_path.resolve()
+    payload = _read_json(proof_path)
+    if payload.get("schema") != PROOF_SCHEMA:
+        raise ValueError("proof manifest has an invalid schema")
+    if payload.get("source_revision") != current_revision:
+        raise ValueError("proof manifest source_revision differs from current Git revision")
+    if payload.get("baseline_revision") != baseline_revision:
+        raise ValueError("proof manifest baseline_revision differs from requalification baseline")
+    rows = payload.get("proofs")
+    if not isinstance(rows, list) or not rows:
+        raise ValueError("proof manifest proofs must be a non-empty array")
+
+    verified: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            raise ValueError("proof manifest contains a non-object proof")
+        if set(row) != {"asset_ids", "module", "module_sha256", "test_paths", "receipt_paths"}:
+            raise ValueError("proof manifest contains an invalid proof shape")
+        asset_ids = row["asset_ids"]
+        if (
+            not isinstance(asset_ids, list)
+            or not asset_ids
+            or any(not isinstance(asset_id, str) or not asset_id for asset_id in asset_ids)
+            or len(asset_ids) != len(set(asset_ids))
+        ):
+            raise ValueError("proof manifest asset_ids must be a non-empty unique array")
+        module = row["module"]
+        if not isinstance(module, str) or not module or Path(module).is_absolute():
+            raise ValueError("proof manifest module must be a relative path")
+        module_path = (root / module).resolve()
+        if not module_path.is_relative_to(root) or not module_path.is_file():
+            raise ValueError(f"proof manifest module is not a repository file: {module}")
+        module_digest = row["module_sha256"]
+        if not isinstance(module_digest, str) or _sha256(module_path.read_bytes()) != module_digest:
+            raise ValueError(f"proof manifest module digest differs: {module}")
+
+        for field in ("test_paths", "receipt_paths"):
+            paths = row[field]
+            if not isinstance(paths, list) or not paths:
+                raise ValueError(f"proof manifest {field} must be a non-empty array")
+            seen_paths: set[str] = set()
+            for item in paths:
+                if not isinstance(item, dict) or set(item) != {"path", "sha256"}:
+                    raise ValueError(f"proof manifest {field} contains an invalid entry")
+                relative = item["path"]
+                digest = item["sha256"]
+                if (
+                    not isinstance(relative, str)
+                    or not relative
+                    or Path(relative).is_absolute()
+                    or relative in seen_paths
+                ):
+                    raise ValueError(f"proof manifest {field} contains an invalid path")
+                seen_paths.add(relative)
+                path = (root / relative).resolve()
+                if not path.is_relative_to(root) or not path.is_file():
+                    raise ValueError(f"proof manifest path is not a repository file: {relative}")
+                if not isinstance(digest, str) or _sha256(path.read_bytes()) != digest:
+                    raise ValueError(f"proof manifest digest differs: {relative}")
+                if field == "receipt_paths":
+                    receipt = _read_json(path)
+                    if receipt.get("status") != "PASS":
+                        raise ValueError(f"proof receipt is not PASS: {relative}")
+
+        for asset_id in asset_ids:
+            if asset_id in verified:
+                raise ValueError(f"proof manifest repeats asset: {asset_id}")
+            verified[asset_id] = row
+    return verified, _sha256(proof_path.read_bytes())
+
+
 def requalify_selection(
     *,
     selection_path: Path,
@@ -99,6 +186,7 @@ def requalify_selection(
     output_receipt: Path | None = None,
     apply: bool = False,
     require_complete: bool = True,
+    proof_manifest: Path | None = None,
 ) -> dict[str, Any]:
     if old_version == new_version:
         raise ValueError("old_version and new_version must differ")
@@ -108,6 +196,16 @@ def requalify_selection(
         raise ValueError("selection must be inside the repository")
     rows = _selection_rows(selection_path)
     resolved_ref = _resolve_ref(root, baseline_ref)
+    current_revision = _resolve_ref(root, "HEAD")
+    proofs: dict[str, dict[str, Any]] = {}
+    proof_digest: str | None = None
+    if proof_manifest is not None:
+        proofs, proof_digest = _proof_manifest(
+            proof_manifest,
+            root=root,
+            current_revision=current_revision,
+            baseline_revision=resolved_ref,
+        )
 
     eligible: list[dict[str, str]] = []
     blocked: list[dict[str, str]] = []
@@ -165,6 +263,15 @@ def requalify_selection(
             "module": module_relative,
         }
         if reasons:
+            proof = proofs.get(asset_id)
+            if proof is not None and reasons == ["public_module_changed"]:
+                if proof["module"] != module_relative:
+                    raise ValueError(
+                        f"proof module differs for {asset_id}: {proof['module']}"
+                    )
+                item["proof_module"] = module_relative
+                eligible.append(item)
+                continue
             blocked.append({**item, "reasons": ",".join(reasons)})
         else:
             eligible.append(item)
@@ -236,6 +343,15 @@ def requalify_selection(
         "blocked": blocked,
         "changed_paths": changed_paths,
         "output_selection": selection_out,
+        "proof_manifest": (
+            str(Path(proof_manifest).resolve().relative_to(root))
+            if proof_manifest is not None
+            and Path(proof_manifest).resolve().is_relative_to(root)
+            else str(Path(proof_manifest).resolve())
+            if proof_manifest is not None
+            else None
+        ),
+        "proof_manifest_sha256": proof_digest,
     }
     if output_receipt is not None:
         output_receipt = output_receipt.resolve()
@@ -257,6 +373,11 @@ def main() -> int:
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--output-selection", type=Path)
     parser.add_argument("--output-receipt", type=Path)
+    parser.add_argument(
+        "--proof-manifest",
+        type=Path,
+        help="explicit proof for changed public modules; required to override a module-change block",
+    )
     parser.add_argument("--apply", action="store_true")
     parser.add_argument(
         "--allow-partial",
@@ -275,6 +396,7 @@ def main() -> int:
             output_receipt=args.output_receipt,
             apply=args.apply,
             require_complete=not args.allow_partial,
+            proof_manifest=args.proof_manifest,
         )
     except (OSError, TypeError, ValueError, json.JSONDecodeError) as error:
         print(f"document requalification failed: {error}", file=sys.stderr)
