@@ -3,15 +3,15 @@
   "package": "scirel",
   "version": "0.1.0.dev9",
   "status": "development_candidate",
-  "source_revision": "7feb451b45da541bc4f2ced0c8dc0369bc8f5e66",
+  "source_revision": "aab08678fab91ca60e47979ad4e3e0efa2880952",
   "source_revision_status": "bound",
   "wheel": {
     "version": "0.1.0.dev9",
     "status": "development_candidate",
     "artifact": {
-      "path": "dist/scirel-0.1.0.dev9-py3-none-any.whl",
-      "sha256": "34ac7cf21658412671c5290a41b2eed7662b8847444b04e809786f5b4535e8f2",
-      "bytes": 651230
+      "path": "build/releases/scirel-0.1.0.dev9-aab0867/scirel-0.1.0.dev9-py3-none-any.whl",
+      "sha256": "59f9ceaafe4f90ddd504587b6ad977757bae3526541592561c7ea632cbbe7747",
+      "bytes": 651570
     },
     "selected_capabilities": {
       "operators": 230,
@@ -22,8 +22,8 @@
     "platform_receipts": [
       {
         "platform": "linux-x86_64-cp314",
-        "path": "provenance/validation/scirel-dev9-linux-acceptance-20261018.json",
-        "sha256": "1b15120f8cd2776dc36f01e9dda5f6f656ade36393d1b36149ee46ba299b6aba"
+        "path": "provenance/validation/scirel-dev9-linux-acceptance-20261017-aab0867.json",
+        "sha256": "e1d7c3ec1642fdeb3be9e85f77bda1b307b9912a37b5c2b31b55256dacc1e794"
       }
     ]
   },
@@ -34,8 +34,8 @@
     "handbook": "tools/docs/handbook.json",
     "compatible_wheel": "0.1.0.dev9",
     "catalog_root": "catalog/examples",
-    "snapshot_sha256": "ba1d29122e0baf82f5a01e522944f044b08093d95728a07174b61d2998640a31",
-    "integration_record": "provenance/validation/scirel-dev9-document-integration-20261018.json",
+    "snapshot_sha256": "1229df566c2935514b86693a040ef02673307ed8a594ad9029e59363a5729580",
+    "integration_record": "provenance/validation/scirel-dev9-document-integration-20261017-aab0867.json",
     "selection_sha256": "ef3e6371dfdc8700bc49edaf4193ce1bbee3b21417313d08b20f7f9c5c95836e",
     "handbook_sha256": "7aea04ee827699038d4be7a34bf2d579c875614867334657dae9de1e050bd9fc",
     "capability_counts": {

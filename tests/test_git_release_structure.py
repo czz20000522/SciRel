@@ -120,3 +120,26 @@ def test_document_selection_filters_reader_bundle_to_exact_assets(tmp_path: Path
     bundle = json.loads((tmp_path / "staging/selected-reader-bundle.json").read_text(encoding="utf-8"))
     assert result["asset_count"] == 1
     assert [record["asset_id"] for record in bundle["records"]] == ["scirel.selected"]
+
+
+def test_current_document_selection_matches_project_version() -> None:
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    expected = project["project"]["version"]
+    selection = json.loads(
+        (ROOT / "provenance/selections/scientific-core-documents-20261017-dev9.json")
+        .read_text(encoding="utf-8")
+    )
+    for record in selection["records"]:
+        document = json.loads((ROOT / record["path"]).read_text(encoding="utf-8"))
+        assert document["version"]["implementation_version"] == expected
+
+
+def test_ref_bound_document_builder_requires_selection(tmp_path: Path) -> None:
+    from build_scirel_docs_from_ref import build_from_ref
+
+    try:
+        build_from_ref("HEAD", tmp_path / "selection-required")
+    except ValueError as error:
+        assert "requires --selection" in str(error)
+    else:
+        raise AssertionError("unbound ref documentation build unexpectedly succeeded")

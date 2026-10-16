@@ -1,0 +1,226 @@
+{
+  "build": {
+    "bound_candidate": {
+      "bytes": 651570,
+      "sha256": "59f9ceaafe4f90ddd504587b6ad977757bae3526541592561c7ea632cbbe7747"
+    },
+    "byte_identical": true,
+    "first_build": {
+      "bytes": 651570,
+      "sha256": "b171f6a07b7be12083d1761b7a932bd6cae997405aebea8c5271d9720f64c80e"
+    },
+    "matches_bound_candidate": true,
+    "second_build": {
+      "bytes": 651570,
+      "sha256": "b171f6a07b7be12083d1761b7a932bd6cae997405aebea8c5271d9720f64c80e"
+    },
+    "source_date_epoch": 1792185640,
+    "wheel": "scirel-0.1.0.dev9-py3-none-any.whl"
+  },
+  "execution": {
+    "commands": [
+      "git archive --format=tar --mtime=@1792185640 aab08678fab91ca60e47979ad4e3e0efa2880952",
+      "scp source archive and bound wheel to sub2api",
+      "docker run --rm --pull=missing --platform linux/amd64 python:3.14-slim bash -s",
+      "python -m pip install --disable-pip-version-check --no-cache-dir setuptools==84.0.0 wheel==0.48.0",
+      "python -m pip wheel --no-deps --no-build-isolation --wheel-dir wheel-a source",
+      "python -m pip wheel --no-deps --no-build-isolation --wheel-dir wheel-b source",
+      "python -m venv venv",
+      "venv/bin/python -m pip install --disable-pip-version-check --no-cache-dir numpy==2.5.4 scipy==1.18.1 mpmath==1.4.1",
+      "venv/bin/python -m pip install --disable-pip-version-check --no-index --no-deps bound wheel",
+      "venv/bin/python -I source/scripts/validate_installed_wheel.py --expected-platform linux-x86_64-cp314 --wheel bound wheel --output validation.json"
+    ],
+    "container": {
+      "engine": "Docker",
+      "image": "python:3.14-slim",
+      "image_id": "sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "platform": "linux/amd64"
+    },
+    "dependency_installation": {
+      "network_resolution": true,
+      "offline_wheelhouse_acceptance": false,
+      "wheel_install": "local bound wheel with --no-index --no-deps"
+    },
+    "host": "sub2api"
+  },
+  "limitations": [
+    "Runtime dependency wheels were resolved from the network during clean-venv setup.",
+    "The two remote pip/setuptools builds are byte-identical to each other but have a different digest from the uv-built bound candidate; acceptance installs the exact bound candidate whose digest is recorded above.",
+    "This receipt establishes Linux amd64 CPython 3.14 installed-wheel acceptance for the bound wheel and representative core scope, not complete scientific capability closure.",
+    "This technical receipt does not constitute scientific expert approval, redistribution approval, or public release approval."
+  ],
+  "schema": "scirel.dev9-linux-acceptance.v1",
+  "source": {
+    "archive": {
+      "bytes": 27002880,
+      "format": "tar",
+      "mtime_epoch": 1792185640,
+      "sha256": "78640a0d5fff321f5aa16a9a4ba5da9ce22997376950ff11bbd11bf85862780c"
+    },
+    "commit_epoch": 1792185640,
+    "commit_time_utc": "2026-10-16T21:20:40Z",
+    "revision": "aab08678fab91ca60e47979ad4e3e0efa2880952"
+  },
+  "status": "PASS",
+  "validation": {
+    "artifact": {
+      "bytes": 651570,
+      "path": "scirel-0.1.0.dev9-py3-none-any.whl",
+      "sha256": "59f9ceaafe4f90ddd504587b6ad977757bae3526541592561c7ea632cbbe7747"
+    },
+    "cross_domain_task": {
+      "expected_value": 1.5,
+      "outputs": {
+        "flux_loops": {
+          "dtype": "float64",
+          "expected_shape": [
+            1
+          ],
+          "finite": true,
+          "max": 1.5,
+          "min": 1.5,
+          "shape": [
+            1
+          ],
+          "shape_match": true
+        }
+      },
+      "status": "PASS",
+      "units": {
+        "flux_loops": "Wb/rad"
+      },
+      "value": 1.5
+    },
+    "dependencies": [
+      {
+        "import_candidates": [
+          "numpy"
+        ],
+        "imported_from": "/tmp/scirel-dev9-linux-aab0867/venv/lib/python3.14/site-packages/numpy/__init__.py",
+        "imported_module": "numpy",
+        "installed_version": "2.5.4",
+        "name": "numpy",
+        "requirement": "numpy==2.5.4",
+        "status": "PASS"
+      },
+      {
+        "import_candidates": [
+          "scipy"
+        ],
+        "imported_from": "/tmp/scirel-dev9-linux-aab0867/venv/lib/python3.14/site-packages/scipy/__init__.py",
+        "imported_module": "scipy",
+        "installed_version": "1.18.1",
+        "name": "scipy",
+        "requirement": "scipy==1.18.1",
+        "status": "PASS"
+      },
+      {
+        "import_candidates": [
+          "mpmath"
+        ],
+        "imported_from": "/tmp/scirel-dev9-linux-aab0867/venv/lib/python3.14/site-packages/mpmath/__init__.py",
+        "imported_module": "mpmath",
+        "installed_version": "1.4.1",
+        "name": "mpmath",
+        "requirement": "mpmath==1.4.1",
+        "status": "PASS"
+      }
+    ],
+    "errors": [],
+    "package": {
+      "in_source_tree": false,
+      "metadata_path": "/tmp/scirel-dev9-linux-aab0867/venv/lib/python3.14/site-packages/scirel-0.1.0.dev9.dist-info",
+      "module_file": "/tmp/scirel-dev9-linux-aab0867/venv/lib/python3.14/site-packages/scirel/__init__.py",
+      "requires_python": "<3.15,>=3.14",
+      "status": "PASS",
+      "version": "0.1.0.dev9",
+      "within_sys_prefix": true
+    },
+    "pip_check": {
+      "returncode": 0,
+      "status": "PASS",
+      "stderr": "",
+      "stdout": "No broken requirements found."
+    },
+    "runtime": {
+      "architecture": "x86_64",
+      "base_prefix": "/usr/local",
+      "executable": "/usr/local/bin/python3.14",
+      "expected_platform": "linux-x86_64-cp314",
+      "implementation": "CPython",
+      "os": "linux",
+      "platform": "linux-x86_64",
+      "prefix": "/tmp/scirel-dev9-linux-aab0867/venv",
+      "python_abi": "cpython-314",
+      "version": "3.14.8",
+      "version_line": "3.14"
+    },
+    "schema": "scirel.installed-wheel-validation.v1",
+    "simple_operator": {
+      "filaments": {
+        "dtype": "float64",
+        "expected_shape": [
+          1,
+          3
+        ],
+        "finite": true,
+        "max": 1.0,
+        "min": 0.0,
+        "shape": [
+          1,
+          3
+        ],
+        "shape_match": true
+      },
+      "outputs": {
+        "b_r_vac": {
+          "dtype": "float64",
+          "expected_shape": [
+            2,
+            2
+          ],
+          "finite": true,
+          "max": 0.00016387123614653912,
+          "min": -0.00016387123614653912,
+          "shape": [
+            2,
+            2
+          ],
+          "shape_match": true
+        },
+        "b_z_vac": {
+          "dtype": "float64",
+          "expected_shape": [
+            2,
+            2
+          ],
+          "finite": true,
+          "max": 0.0006035865100375208,
+          "min": -0.00010474203168983597,
+          "shape": [
+            2,
+            2
+          ],
+          "shape_match": true
+        },
+        "psi_vac": {
+          "dtype": "float64",
+          "expected_shape": [
+            2,
+            2
+          ],
+          "finite": true,
+          "max": 0.000226828371854452,
+          "min": 7.237352441360569e-05,
+          "shape": [
+            2,
+            2
+          ],
+          "shape_match": true
+        }
+      },
+      "status": "PASS"
+    },
+    "status": "PASS"
+  }
+}

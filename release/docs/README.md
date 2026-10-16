@@ -16,12 +16,11 @@ keeping duplicate copies of the same document set.
 Build a snapshot from an exact source ref with
 `scripts/build_scirel_docs_from_ref.py`. It archives the ref, invokes the
 archived `scripts/scirel_docs.py` with the explicit source revision, and writes
-the snapshot plus `build-manifest.json` outside the checkout. A dirty checkout
-or a snapshot built from the current directory without an explicit ref is not a
-candidate document artifact. For a release candidate, pass the
-project-relative selected-document-set manifest as well; the helper verifies
-each record digest, filters the archived Chinese reader bundles to the same
-asset set, and materializes the exact set only in its temporary build directory.
+the snapshot plus `build-manifest.json` outside the checkout. A dirty checkout,
+an unbound snapshot, or a candidate invocation without `--selection` is
+rejected. The helper verifies each selected record digest and implementation
+version, filters the archived Chinese reader bundles to the same asset set,
+and materializes the exact set only in its temporary build directory.
 Use an absolute interpreter path when selecting a virtual environment so the
 archived build retains that environment's documentation dependencies:
 

@@ -92,7 +92,13 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _materialize_selection(source: Path, selection: str, staging: Path) -> dict[str, object]:
+def _materialize_selection(
+    source: Path,
+    selection: str,
+    staging: Path,
+    *,
+    expected_version: str | None = None,
+) -> dict[str, object]:
     """Materialize one exact selected-document-set without adding a source copy."""
 
     selection_path = (source / selection).resolve()
@@ -142,6 +148,18 @@ def _materialize_selection(source: Path, selection: str, staging: Path) -> dict[
             raise ValueError(f"selection document is not readable JSON: {relative_path}") from error
         if not isinstance(document, dict) or document.get("asset_id") != asset_id:
             raise ValueError(f"selection asset_id differs from document: {relative_path}")
+        if expected_version is not None:
+            implementation_version = (
+                document.get("version", {}).get("implementation_version")
+                if isinstance(document.get("version"), dict)
+                else None
+            )
+            if implementation_version != expected_version:
+                raise ValueError(
+                    "selected document implementation_version differs from archived "
+                    f"project version: {relative_path} ({implementation_version!r} != "
+                    f"{expected_version!r})"
+                )
         (selected / f"{asset_id}.json").write_bytes(document_path.read_bytes())
 
     return {
@@ -232,6 +250,11 @@ def build_from_ref(
 ) -> dict[str, object]:
     """Build and return a stable manifest for one exact Git commit."""
 
+    if selection is None:
+        raise ValueError(
+            "ref-bound candidate documentation requires --selection; use "
+            "scripts/scirel_docs.py directly for an unbound development snapshot"
+        )
     output_dir = _new_external_directory(output_dir)
     revision = resolve_revision(ref)
     epoch = commit_epoch(revision)
@@ -258,19 +281,18 @@ def build_from_ref(
             source_root = source.resolve()
             selection_info = None
             translation_info = None
-            if selection is not None:
-                selection_info = _materialize_selection(source_root, selection, staging)
-                document_root = staging / "selected-documents"
-                translation_info = _materialize_translations(
-                    source_root, set(selection_info.pop("_asset_ids")), staging
-                )
-            else:
-                document_root = (source_root / documents).resolve()
-            if not document_root.is_relative_to(source_root) or not document_root.is_dir():
-                if selection is None:
-                    raise ValueError(f"documents path is outside archived source: {documents}")
-                if not document_root.is_dir():
-                    raise ValueError("materialized selection directory is missing")
+            selection_info = _materialize_selection(
+                source_root,
+                selection,
+                staging,
+                expected_version=version,
+            )
+            document_root = staging / "selected-documents"
+            translation_info = _materialize_translations(
+                source_root, set(selection_info.pop("_asset_ids")), staging
+            )
+            if not document_root.is_dir():
+                raise ValueError("materialized selection directory is missing")
             snapshot = output_dir / "snapshot"
             environment = dict(os.environ)
             environment.update(
@@ -376,6 +398,7 @@ def main() -> None:
     parser.add_argument("--documents", default="catalog/examples")
     parser.add_argument(
         "--selection",
+        required=True,
         help="project-relative selected-document-set JSON inside the archived ref",
     )
     parser.add_argument("--python", help="Python executable for the documentation builder")
