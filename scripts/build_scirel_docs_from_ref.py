@@ -13,6 +13,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import stat
 import shutil
 import subprocess
 import sys
@@ -37,6 +38,49 @@ def _new_external_directory(path: Path) -> Path:
     else:
         path.mkdir(parents=True)
     return path
+
+
+def _legacy_git_adapter(staging: Path, revision: str, environment: dict[str, str]) -> None:
+    """Bind old archived doc builders that query Git directly.
+
+    Early SciRel documentation builders did not accept an explicit source
+    revision and only queried ``git rev-parse HEAD`` and
+    ``git status --porcelain``.  An archive intentionally has no ``.git``
+    directory, so provide a deliberately narrow command shim for those two
+    queries.  Any other Git command fails closed instead of exposing the
+    current checkout to the archived build.
+    """
+
+    shim_dir = staging / "git-shim"
+    shim_dir.mkdir()
+    if os.name == "nt":
+        shim = shim_dir / "git.cmd"
+        shim.write_text(
+            "@echo off\r\n"
+            'if "%~1"=="rev-parse" if "%~2"=="HEAD" (echo %SCIREL_REF% & exit /b 0)\r\n'
+            'if "%~1"=="status" if "%~2"=="--porcelain" exit /b 0\r\n'
+            "echo unsupported Git query >&2\r\n"
+            "exit /b 127\r\n",
+            encoding="utf-8",
+        )
+    else:
+        shim = shim_dir / "git"
+        shim.write_text(
+            "#!/bin/sh\n"
+            'if [ "$1" = "rev-parse" ] && [ "$2" = "HEAD" ]; then\n'
+            '  printf "%s\\n" "$SCIREL_REF"\n'
+            "  exit 0\n"
+            "fi\n"
+            'if [ "$1" = "status" ] && [ "$2" = "--porcelain" ]; then\n'
+            "  exit 0\n"
+            "fi\n"
+            "echo 'unsupported Git query' >&2\n"
+            "exit 127\n",
+            encoding="utf-8",
+        )
+        shim.chmod(shim.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    environment["SCIREL_REF"] = revision
+    environment["PATH"] = str(shim_dir) + os.pathsep + environment.get("PATH", "")
 
 
 def build_from_ref(
@@ -78,26 +122,32 @@ def build_from_ref(
                     "PYTHONDONTWRITEBYTECODE": "1",
                 }
             )
+            docs_script = source / "scripts/scirel_docs.py"
+            command = [
+                runner_path,
+                str(docs_script),
+                "build",
+                "--documents",
+                str(document_root),
+                "--output",
+                str(snapshot),
+            ]
+            if "--source-revision" in docs_script.read_text(encoding="utf-8"):
+                command.extend(["--source-revision", revision])
+            else:
+                _legacy_git_adapter(staging, revision, environment)
             subprocess.run(
-                [
-                    runner_path,
-                    str(source / "scripts/scirel_docs.py"),
-                    "build",
-                    "--documents",
-                    str(document_root),
-                    "--output",
-                    str(snapshot),
-                    "--source-revision",
-                    revision,
-                ],
+                command,
                 check=True,
                 cwd=source,
                 env=environment,
             )
             manifest = json.loads((snapshot / "manifest.json").read_text(encoding="utf-8"))
-            if manifest.get("source_revision") != revision or manifest.get("source_dirty") is not False:
+            manifest_source = manifest.get("source_revision", manifest.get("source_commit"))
+            if manifest_source != revision or manifest.get("source_dirty") is not False:
                 raise ValueError("documentation snapshot is not cleanly bound to the requested ref")
-            if manifest.get("project_version") != version:
+            manifest_version = manifest.get("project_version", version)
+            if manifest_version != version:
                 raise ValueError("documentation snapshot version differs from archived project")
             snapshot_digest = manifest.get("snapshot_sha256")
             if not isinstance(snapshot_digest, str) or len(snapshot_digest) != 64:
