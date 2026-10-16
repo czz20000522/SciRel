@@ -18,4 +18,14 @@ Build a snapshot from an exact source ref with
 archived `scripts/scirel_docs.py` with the explicit source revision, and writes
 the snapshot plus `build-manifest.json` outside the checkout. A dirty checkout
 or a snapshot built from the current directory without an explicit ref is not a
-candidate document artifact.
+candidate document artifact. For a release candidate, pass the
+project-relative selected-document-set manifest as well; the helper verifies
+each record digest and materializes the exact set only in its temporary build
+directory:
+
+```sh
+python scripts/build_scirel_docs_from_ref.py \
+  --ref "$ref" \
+  --selection provenance/selections/scientific-core-documents-20261017-dev9.json \
+  --output-dir "$tmp_docs"
+```

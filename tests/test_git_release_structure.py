@@ -5,6 +5,10 @@ from pathlib import Path
 import tomllib
 import json
 import re
+import hashlib
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -56,3 +60,35 @@ def test_ref_bound_build_helper_is_documented_and_keeps_artifacts_external() -> 
     assert "build_scirel_from_ref.py" in readme
     assert "git archive" in docs_helper.read_text(encoding="utf-8")
     assert "build_scirel_docs_from_ref.py" in (ROOT / "release/docs/README.md").read_text(encoding="utf-8")
+
+
+def test_document_selection_materializes_only_digest_bound_records(tmp_path: Path) -> None:
+    from build_scirel_docs_from_ref import _materialize_selection
+
+    source = tmp_path / "source"
+    document = source / "catalog/examples/scirel.test.example.json"
+    document.parent.mkdir(parents=True)
+    document.write_text('{"asset_id":"scirel.test.example"}\n', encoding="utf-8")
+    selection = source / "provenance/selections/current.json"
+    selection.parent.mkdir(parents=True)
+    digest = hashlib.sha256(document.read_bytes()).hexdigest()
+    selection.write_text(
+        json.dumps(
+            {
+                "schema": "scirel.selected-document-set.v1",
+                "records": [
+                    {
+                        "asset_id": "scirel.test.example",
+                        "path": "catalog/examples/scirel.test.example.json",
+                        "sha256": digest,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = _materialize_selection(source, "provenance/selections/current.json", tmp_path / "staging")
+
+    assert result["asset_count"] == 1
+    assert (tmp_path / "staging/selected-documents/scirel.test.example.json").read_bytes() == document.read_bytes()

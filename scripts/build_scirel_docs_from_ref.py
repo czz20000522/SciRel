@@ -9,6 +9,7 @@ notes.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -83,11 +84,79 @@ def _legacy_git_adapter(staging: Path, revision: str, environment: dict[str, str
     environment["PATH"] = str(shim_dir) + os.pathsep + environment.get("PATH", "")
 
 
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _materialize_selection(source: Path, selection: str, staging: Path) -> dict[str, object]:
+    """Materialize one exact selected-document-set without adding a source copy."""
+
+    selection_path = (source / selection).resolve()
+    if not selection_path.is_relative_to(source.resolve()) or not selection_path.is_file():
+        raise ValueError(f"selection path is outside archived source or missing: {selection}")
+    try:
+        value = json.loads(selection_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError(f"selection is not readable JSON: {selection}") from error
+    if not isinstance(value, dict) or value.get("schema") != "scirel.selected-document-set.v1":
+        raise ValueError("selection has an unsupported schema")
+    records = value.get("records")
+    if not isinstance(records, list) or not records:
+        raise ValueError("selection must contain a non-empty records list")
+
+    selected = staging / "selected-documents"
+    selected.mkdir(parents=True)
+    seen_ids: set[str] = set()
+    for index, record in enumerate(records):
+        if not isinstance(record, dict) or set(record) != {"asset_id", "path", "sha256"}:
+            raise ValueError(f"selection record {index} has an invalid shape")
+        asset_id = record["asset_id"]
+        relative_path = record["path"]
+        expected_digest = record["sha256"]
+        if (
+            not isinstance(asset_id, str)
+            or not isinstance(relative_path, str)
+            or not isinstance(expected_digest, str)
+            or len(expected_digest) != 64
+            or any(character not in "0123456789abcdef" for character in expected_digest)
+        ):
+            raise ValueError(f"selection record {index} has invalid identity or digest")
+        if Path(asset_id).name != asset_id or "/" in asset_id or "\\" in asset_id:
+            raise ValueError(f"selection record {index} has an unsafe asset_id")
+        if asset_id in seen_ids:
+            raise ValueError(f"selection repeats asset_id: {asset_id}")
+        seen_ids.add(asset_id)
+        document_path = (source / relative_path).resolve()
+        if not document_path.is_relative_to(source.resolve()) or not document_path.is_file():
+            raise ValueError(f"selection document path is outside archived source: {relative_path}")
+        actual_digest = _sha256(document_path)
+        if actual_digest != expected_digest:
+            raise ValueError(f"selection document digest differs: {relative_path}")
+        try:
+            document = json.loads(document_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise ValueError(f"selection document is not readable JSON: {relative_path}") from error
+        if not isinstance(document, dict) or document.get("asset_id") != asset_id:
+            raise ValueError(f"selection asset_id differs from document: {relative_path}")
+        (selected / f"{asset_id}.json").write_bytes(document_path.read_bytes())
+
+    return {
+        "path": selection,
+        "sha256": _sha256(selection_path),
+        "asset_count": len(records),
+    }
+
+
 def build_from_ref(
     ref: str,
     output_dir: Path,
     *,
     documents: str = "catalog/examples",
+    selection: str | None = None,
     python: str | None = None,
 ) -> dict[str, object]:
     """Build and return a stable manifest for one exact Git commit."""
@@ -110,9 +179,17 @@ def build_from_ref(
             source = _archive_ref(revision, epoch, staging)
             name, version = _project_metadata(source)
             source_root = source.resolve()
-            document_root = (source_root / documents).resolve()
+            selection_info = None
+            if selection is not None:
+                selection_info = _materialize_selection(source_root, selection, staging)
+                document_root = staging / "selected-documents"
+            else:
+                document_root = (source_root / documents).resolve()
             if not document_root.is_relative_to(source_root) or not document_root.is_dir():
-                raise ValueError(f"documents path is outside archived source: {documents}")
+                if selection is None:
+                    raise ValueError(f"documents path is outside archived source: {documents}")
+                if not document_root.is_dir():
+                    raise ValueError("materialized selection directory is missing")
             snapshot = output_dir / "snapshot"
             environment = dict(os.environ)
             environment.update(
@@ -179,6 +256,7 @@ def build_from_ref(
             "sha256": snapshot_digest,
             "bytes": snapshot_bytes,
         },
+        "selection": selection_info,
         "builder": {
             "command": "python scripts/scirel_docs.py build",
             "source": "git archive",
@@ -208,12 +286,17 @@ def main() -> None:
         help="new directory outside the repository for the snapshot and manifest",
     )
     parser.add_argument("--documents", default="catalog/examples")
+    parser.add_argument(
+        "--selection",
+        help="project-relative selected-document-set JSON inside the archived ref",
+    )
     parser.add_argument("--python", help="Python executable for the documentation builder")
     args = parser.parse_args()
     result = build_from_ref(
         args.ref,
         args.output_dir,
         documents=args.documents,
+        selection=args.selection,
         python=args.python,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
