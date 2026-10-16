@@ -1,24 +1,62 @@
 # SciRel release boundaries
 
-SciRel has three separate records:
+The source checkout follows a Git single-source release model. `pyproject.toml`,
+scientific source, exact documents, API documentation, release notes, and the
+platform receipt for a candidate are bound to one commit. A wheel or rendered
+document is a generated artifact of that commit, not a second versioned source
+copy. Git history and signed tags carry version history; new candidates must
+not add parallel per-version copies of the same source or documentation.
+
+
+SciRel has one canonical current release tuple in [`CURRENT.json`](CURRENT.json).
+The wheel and documentation subdirectories retain compatibility pointers for
+older consumers, but they must not introduce another version identity. Git
+history and tags carry the version history; generated wheels and rendered
+documents remain external artifacts.
+
+The tuple binds:
+
+- the exact source revision and package version;
+- the current wheel artifact digest and dependency closure;
+- the current document selection and handbook digest; and
+- each platform receipt used by the bounded compatibility claim.
+
+The historical records under `release/wheel/versions/` and
+`release/docs/versions/` are frozen evidence from earlier candidates. Do not
+add a sibling JSON file for a new development version.
+
+The project still has three *evidence lines*:
 
 1. External project FINAL artifacts live on the Home E drive under
    `/e/SciRel-lab/projects/<project>/decomposition/FINAL/`. Source snapshots and
    D0-D3 work remain outside this repository.
-2. The wheel line records cumulative SciRel runtime versions and exact wheel
-   digests. A wheel record names the selected capabilities and the external
-   project FINAL manifests consumed by that integration.
-3. The documentation line records handbook/catalog versions independently. A
-   documentation record may advance without rebuilding the wheel, but it must
-   state the compatible SciRel API/wheel baseline.
+2. The wheel line records the current cumulative SciRel runtime and exact wheel
+   digest. A wheel record names the selected capabilities and the external
+   project FINAL manifests consumed by that integration; Git history carries
+   prior wheel versions instead of retaining every wheel in the working tree.
+3. The documentation line records the current handbook/catalog selection. A
+   documentation record may advance without rebuilding the wheel, but the
+   current selection must remain exactly bound to the current wheel closure.
+
+The current maintainer reconciliation of delivered scope, integrated code,
+packaged runtime and documentation is in [project intake reconciliation](projects/README.md).
 
 Only the final project manifest is an intake surface. Intermediate candidates,
 source checkouts, run directories, and local build scratch are not release
 inputs.
 
-The repository catalog families removed during this boundary change were archived
-with SHA-256 verification at
-`/e/SciRel-lab/projects/_scirel-repository-archive-20261015/catalog/`. The
-archive is historical evidence, not a SciRel intake path.
+External project descriptors and directory indexes contain identity and paths,
+not progress or SciRel merge/release flags. FINAL describes the external
+decomposition result; SciRel records its own integration and release decisions.
+Completed workers retain one current FINAL and the source. Delete obsolete
+progress copies and redundant work after checking that the required scientific
+evidence and license material are included in FINAL. A frozen receipt is evidence
+for its original candidate, not a current task or a reason to repeat an integration.
 
-The ignored local `build/` handoff and source-inventory scratch was also archived with checksums under `/e/SciRel-lab/projects/_scirel-repository-archive-20261015/build-dev7/` and removed locally. `.runtime/` remains evidence-bearing; it is not a wheel intake.
+Necessary documents and scientific evidence from superseded catalogs and workspaces
+belong in the corresponding project's FINAL. Delete obsolete catalog copies,
+build scratch and temporary migration archives after verifying that coverage;
+they are not a separate permanent asset line.
+
+Local `.runtime/` is a development workspace that may hold evidence for current
+work. It is not a wheel intake or a permanent substitute for external FINAL.

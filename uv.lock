@@ -383,18 +383,24 @@ wheels = [
 
 [[package]]
 name = "scirel"
-version = "0.1.0.dev5"
+version = "0.1.0.dev9"
 source = { editable = "." }
 dependencies = [
-    { name = "matplotlib" },
     { name = "mpmath" },
-    { name = "netcdf4" },
     { name = "numpy" },
     { name = "scipy" },
 ]
 
 [package.optional-dependencies]
+netcdf = [
+    { name = "netcdf4" },
+]
+plot = [
+    { name = "matplotlib" },
+]
 test = [
+    { name = "matplotlib" },
+    { name = "netcdf4" },
     { name = "pytest" },
     { name = "setuptools" },
     { name = "wheel" },
@@ -402,16 +408,18 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "matplotlib", specifier = "==3.11.2" },
+    { name = "matplotlib", marker = "extra == 'plot'", specifier = "==3.11.2" },
+    { name = "matplotlib", marker = "extra == 'test'", specifier = "==3.11.2" },
     { name = "mpmath", specifier = "==1.4.1" },
-    { name = "netcdf4", specifier = "==1.7.4" },
+    { name = "netcdf4", marker = "extra == 'netcdf'", specifier = "==1.7.4" },
+    { name = "netcdf4", marker = "extra == 'test'", specifier = "==1.7.4" },
     { name = "numpy", specifier = "==2.5.4" },
     { name = "pytest", marker = "extra == 'test'", specifier = "==9.1.1" },
     { name = "scipy", specifier = "==1.18.1" },
     { name = "setuptools", marker = "extra == 'test'", specifier = "==84.0.0" },
     { name = "wheel", marker = "extra == 'test'", specifier = "==0.48.0" },
 ]
-provides-extras = ["test"]
+provides-extras = ["plot", "netcdf", "test"]
 
 [[package]]
 name = "setuptools"

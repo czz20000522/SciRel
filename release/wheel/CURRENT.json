@@ -1,7 +1,8 @@
 {
-  "schema": "scirel.wheel-current.v1",
-  "current_record": "versions/0.1.0.dev8.json",
-  "wheel_version": "0.1.0.dev8",
-  "status": "development_candidate",
-  "next_action": "Normalize publication version through the release process; retain scientific and redistribution boundaries."
+  "schema": "scirel.release-compat-pointer.v1",
+  "canonical": "../CURRENT.json",
+  "line": "wheel",
+  "status": "compatibility_pointer",
+  "deprecated": true,
+  "note": "The canonical current release tuple is release/CURRENT.json; frozen dev8 records remain under versions/."
 }

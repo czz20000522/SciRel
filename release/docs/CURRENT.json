@@ -1,7 +1,8 @@
 {
-  "schema": "scirel.documentation-current.v1",
-  "current_record": "versions/scientific-core-r18.json",
-  "documentation_version": "scientific-core-r18",
-  "compatible_wheel": "0.1.0.dev8",
-  "status": "development_candidate"
+  "schema": "scirel.release-compat-pointer.v1",
+  "canonical": "../CURRENT.json",
+  "line": "documentation",
+  "status": "compatibility_pointer",
+  "deprecated": true,
+  "note": "The canonical current release tuple is release/CURRENT.json; frozen dev8 records remain under versions/."
 }

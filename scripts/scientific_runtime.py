@@ -20,9 +20,24 @@ def baseline():
         return tomllib.load(stream)
 
 
+def _runtime_dependency_pins():
+    policy = baseline()["project"]
+    declared = list(policy["dependencies"])
+    optional = policy.get("optional-dependencies", {})
+    # The test extra is a development closure, not a scientific runtime
+    # baseline.  Named capability extras remain eligible for selected builds.
+    for extra_name, requirements in optional.items():
+        if extra_name == "test":
+            continue
+        declared.extend(requirements)
+    return {
+        canonicalize_name(Requirement(text).name): Requirement(text)
+        for text in declared
+    }
+
+
 def pin_dependencies(dependencies):
-    pins = {canonicalize_name(Requirement(text).name): Requirement(text)
-            for text in baseline()["project"]["dependencies"]}
+    pins = _runtime_dependency_pins()
     selected = []
     for text in dependencies:
         requested = Requirement(text)
@@ -55,4 +70,9 @@ def baseline_receipt():
             "pyproject_sha256": hashlib.sha256(BASELINE_PATH.read_bytes()).hexdigest(),
             "python": python_requirement(),
             "dependencies": policy["project"]["dependencies"],
+            "optional_dependencies": {
+                key: value
+                for key, value in policy.get("optional-dependencies", {}).items()
+                if key != "test"
+            },
             "build_requires": build_requirements()}

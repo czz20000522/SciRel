@@ -11,22 +11,10 @@
     "gpdf",
     "jorek",
     "pdrf",
+    "pdrk",
     "pleiades",
     "torax"
   ],
   "policy": "The external registry is the source of project FINAL artifacts; SciRel stores only intake summaries and digests.",
-  "archive_root": "/e/SciRel-lab/projects/_scirel-repository-archive-20261015/catalog",
-  "archived_repository_catalogs": [
-    "gpdf-core",
-    "fluidbw-full-retained",
-    "pdrk-mac-pilot",
-    "pleiades-maintained",
-    "gpdf-d2",
-    "torax-algebra-grid",
-    "torax-bootstrap-fvm",
-    "build",
-    "build-final",
-    "build-dev7"
-  ],
-  "intake_rule": "Only a project decomposition/FINAL/FINAL.json plus its declared bundle is eligible for SciRel intake; source/CURRENT and decomposition/INBOX or WORK are external evidence."
+  "intake_rule": "Only a project decomposition/FINAL/FINAL.json plus its declared payload is eligible for SciRel intake; source/CURRENT and decomposition/INBOX or WORK are external evidence. Historical run status is not a current integration status."
 }

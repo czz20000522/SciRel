@@ -1,11 +1,18 @@
 # SciRel wheel version line
 
-Each JSON file under `versions/` is an append-only record for one cumulative
-SciRel wheel build. `CURRENT.json` is the current pointer and may be replaced
-when a newer wheel is accepted. The artifact record contains its exact
-SHA-256, byte size, source revision and selected capability closure.
+The authoritative version is the `project.version` field in `pyproject.toml` at the Git commit being built. The canonical current receipt is [`../CURRENT.json`](../CURRENT.json); this directory is a compatibility surface and a location for frozen historical evidence only. Do not create a new sibling record for every development candidate. Git history and tags identify prior versions, while the generated wheel remains outside the source-of-truth path.
 
-The package layout is described by [`layout.json`](layout.json). Scientific
+
+The canonical tuple contains the one wheel currently carried by this checkout.
+Its artifact record contains the exact SHA-256, byte size, source revision and
+selected capability closure. Older wheel files are not a required working-tree
+asset: Git history is the version history, and a prior wheel must be restored
+from its recorded digest or external evidence when it is needed for an audit.
+Do not copy every historical wheel into the repository.
+
+The package layout is described by [`layout.json`](layout.json). The current
+wheel pointer also binds the compatible documentation record and exact
+operator/task-graph/document counts. Scientific
 implementations are organized by domain package, and the wheel exposes those
 domain paths directly. Legacy top-level module paths are intentionally absent;
 callers must import from the owning domain package. Tests, provenance,

@@ -1,0 +1,51 @@
+{
+  "schema": "scirel.release-current.v1",
+  "package": "scirel",
+  "version": "0.1.0.dev9",
+  "status": "development_candidate",
+  "source_revision": null,
+  "source_revision_status": "candidate_unbound",
+  "wheel": {
+    "version": "0.1.0.dev9",
+    "status": "development_candidate",
+    "artifact": {
+      "path": "dist/scirel-0.1.0.dev9-py3-none-any.whl",
+      "sha256": "468c4dc137d0e03fc2003903c58573d3f2a8d0cd3775f17991154a690a4f9f26",
+      "bytes": 651281
+    },
+    "selected_capabilities": {
+      "operators": 230,
+      "task_graphs": 30,
+      "document_closure": 260
+    },
+    "package_layout": "release/wheel/layout.json",
+    "platform_receipts": [
+      {
+        "platform": "linux-x86_64-cp314",
+        "path": "provenance/validation/scirel-dev9-linux-acceptance-20261017.json",
+        "sha256": "376d3a7e1e3559a6de501bbd89c984259ed000e6d8f95cc210b7598ed9a7c090"
+      }
+    ]
+  },
+  "documentation": {
+    "version": "scientific-core-r18",
+    "status": "development_candidate",
+    "source_documents": "provenance/selections/scientific-core-documents-20261015-r9.json",
+    "handbook": "tools/docs/handbooks/scientific-core-r18.json",
+    "compatible_wheel": "0.1.0.dev9",
+    "catalog_root": "catalog/examples",
+    "snapshot_sha256": "88d708ae3620cbbb375522fa2f856da812e5eeb4fc4aec605e1703efbbd8009e",
+    "integration_record": "provenance/validation/completed-project-installed-closeout.json",
+    "selection_sha256": "c8ef90938786578dfcbdb887ac703f808d50937c48807089ce6f4f64c65553e1",
+    "handbook_sha256": "a91248734c2f2992331d866f9676c0e536588d0312bfe10266310a9de20c4284",
+    "capability_counts": {
+      "operators": 230,
+      "task_graphs": 30,
+      "document_closure": 260
+    },
+    "asset_baseline_versions": [
+      "0.1.0.dev8"
+    ]
+  },
+  "next_action": "Bind source_revision to the committed dev9 source and rebuild the wheel from that exact Git commit."
+}

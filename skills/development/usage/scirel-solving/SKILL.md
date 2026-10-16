@@ -1,52 +1,68 @@
 ---
 name: scirel-solving
-description: Normalize a scientific request, select and execute applicable authorized capabilities, check the result, and explain evidence and limits for the declared scope.
+description: Fulfil a user's scientific request through clarification, internal SciRel discovery and execution, then checked results; ask about unclear scientific intent instead of inventing defaults.
 ---
 
-# Scientific request solving
+# From a user's request to a checked result
 
-Read [the shared operating contract](../../references/scirel-development-core.md).
-This is the D3 orchestration entrypoint: it produces a normalized problem, solution plan, execution evidence and
-result explanation. It cannot approve assets, publish TaskGraphs or replace a selected relation with another model.
-Normal runtimes expose released assets. An explicitly isolated development evaluation may bind an exact unapproved
-wheel and matching catalog; label every result as development evidence and do not re-prove release approval per request.
+The user describes a goal, answers necessary clarification and receives useful results. Keep catalog routing, API selection and development bookkeeping internal unless asked. SciRel supplies methods, scientific capabilities and domain contracts, not authority. The host (CodeFusion, Codex, Claude Code or another harness) owns authorization, sandboxing, observability, logs, cancellation and recovery. Do not implement those platform systems here or treat a skill as permission.
 
-## Normalize before discovery
+## 1. Understand and clarify
 
-State the requested quantity and relation direction, unknowns, model/geometry, coordinates/units/normalization,
-initial and boundary conditions, closures/profiles, inputs, outputs, tolerances, stopping conditions and delivery
-form as far as they affect this case. Distinguish user facts, file facts, exact-document defaults and proposals;
-retain file references. If a later request adds a relation or observable, re-normalize and re-run discovery; an early
-shortlist cannot prove the new relation absent.
+Identify the intended result and the supplied physical facts. Reuse information already given. When model, units, boundary conditions, data meaning or success criteria are unclear, ask concise questions in the user's vocabulary **before** dependent computation. Group related questions and explain their effect when useful. Do not resolve unclear user intent using the nearest API's defaults or your preferred model. Do not ask the user to choose internal function names or technical machinery they need not know.
 
-Use [asset navigation](../scientific-asset-navigation/SKILL.md) against the bound catalog, then build a per-request
-plan from visible Operators/TaskGraphs. Validate every node/edge's actual ports, units, shape, axes, coordinates,
-state, order, branch and failure propagation. Ordinary dependencies are a DAG; iteration declares state, order,
-stop condition, bound and nonconvergence outcome. Use [project implementation](../scientific-project-implementation/SKILL.md)
-for persistent files and [computation validation](../../scientific-computation-validation/SKILL.md) when an
-independent claim is requested. For an explicitly selected adapter-mediated run, read [the thin adapter example](references/thin-adapter-run.md)
-and use the declared adapter operations; it is not a universal envelope.
+If the facts are sufficient, proceed. Implementation details that cannot change the scientific meaning need no extra interview. When the host provides a question tool, use it; otherwise ask in the conversation and wait for the answer. If the user cannot supply a necessary fact, state what remains unresolved and what bounded result is still possible. Do not invent an answer.
 
-## Material boundary checks
+## 2. Find and plan internally
 
-When connecting a vacuum-field output such as `psi_vac` to an equilibrium or material support consumer, matching
-names, shapes and even `Wb/rad` units are only port checks. Verify the same flux definition, reference and boundary
-conditions, closure, and additional physical inputs across the exact documents for that edge. A vacuum field alone
-does not supply a separatrix, density support, plasma response or heating. If the bound catalog does not establish
-the connection, deliver the bounded vacuum result, identify the unresolved science owner decision, and do not infer
-a `2*pi` conversion or missing physics in glue. Reassess the edge when the catalog version changes.
+Before writing scientific computation, query SciRel. For a recognizable scientific term, start with one bounded search rather than browsing all directories:
 
-Do not hide interpolation, closure, discretization, geometry reconstruction or scientific unit conversion in glue.
-A capability gap remains a gap. Keep computed observations separate from physical mechanism explanations: a pattern,
-zero crossing or finite response needs its own relation/check before calling it resonance, absorption or causation.
+```sh
+python3 <this-skill>/../scientific-asset-navigation/scripts/query.py search --q "<scientific term>" --limit 3
+python3 <this-skill>/../scientific-asset-navigation/scripts/query.py show <selected-asset-id>
+```
 
-## Execute and explain
+Substitute this skill's actual directory. Read the selected call contract completely; do not crop it with `head` or arbitrary slices, which can hide output and diagnostic meanings. Read [navigation guidance](../scientific-asset-navigation/SKILL.md) for unfamiliar domains, ambiguous/empty results or capability gaps. Stop discovery once a contract covers the request; do not load neighboring contracts without a concrete unresolved question. Existing applicable APIs or compatible compositions must be reused. Only an established capability gap permits new implementation of that missing part, kept separate and independently validated; it does not inherit SciRel's evidence. Environment failures and failed checks are not capability gaps. File I/O and serialization need no scientific lookup.
 
-Execute only after the plan is valid, using the exact selected asset/runtime; do not silently retry with another
-model, convention, tolerance or provider. Check dimensions, domains, boundaries, conservation/residuals,
-convergence, limits and failure semantics that discriminate this request. Read written artifacts independently and
-rerun the ordinary user entrypoint when repeatability is claimed.
+Known IDs can go directly to their contract; reuse already-read material from the same snapshot. Choose the smallest public entry that covers the requested result. Use an existing TaskGraph when it supplies the needed composition; a simple Operator need not acquire an unnecessary grid or workflow. Check actual units, axes, inputs, model assumptions, boundaries and failure propagation. Iteration needs an update order, stopping rule and bound. New interpolation, closure, discretization or scientific conversion cannot be hidden in glue.
 
-Return the four linked products with exact identities, assumptions, selected capabilities, port map, checks actually
-run, `passed/failed/blocked/NOT_RUN/inapplicable` counts, evidence-plane references, claim ceiling and capability
-or human gaps. A successful call is not physical correctness; a local check cannot expand an asset's evidence ceiling.
+## 3. Execute and check
+
+Use the supplied installed runtime directly; inspect or repair installation only on an actual import/runtime failure. Do not silently change the scientific model, units, inputs or tolerances to make a run succeed. Check the requested output against applicable diagnostics or a discriminating reference/limit. Read [result checks](references/result-checks.md) when choosing or interpreting those checks is uncertain. Reuse host execution records; SciRel does not create an audit platform or recover host sessions.
+
+## 3a. Leave a compact process trace for an external consumer
+
+When the result is being shown to another team or platform, keep a short `PROCESS.md` beside the
+run. It is a reasoning and reproducibility trace, not a second scientific report. Record the
+user's observable goal and supplied facts, the normalized requirements (units, axes, coverage and
+acceptance), the bounded query and the exact asset IDs selected, then the graph nodes, edge
+adaptations and execution command. Finish with the actual output files, checks and replay status,
+unresolved limits, and host-level steps that were not exercised. A name match or a successful
+import is not a selection or an execution witness.
+
+For a request that continues an existing source tree, preserve the source baseline and input
+files, inspect its tests and public interfaces first, and state which part SciRel covers. Reuse
+the installed public API for that part; modify the source only for the remaining request, record
+the diff and inherited input identity, and run both the source regression tests and the SciRel
+runtime check. The handoff must contain the patch and test results, not only a proposed solution.
+Do not expose decomposition or library-development methods to a consumer task.
+
+## 4. Check and render the delivery
+
+For saved numerical tables, use the executable [delivery tool](references/delivery-tool.md). Read that short interface once, write the result specification, then run:
+
+```sh
+python3 <this-skill>/scripts/delivery.py build result-spec.json --out checked
+python3 <this-skill>/scripts/delivery.py verify result-spec.json --out checked --answer checked/ANSWER.md
+```
+
+The tool reads the saved CSVs, computes bounded statements and checks, retains actual coordinate coverage, and creates the report, exact answer and optional plots. Set expected coverage from the request. Quote supplied conditions from their actual text; do not add inferred facts. Use this path instead of hand-writing numbers, validation claims or plot labels. A solver's terminal diagnostic must retain its actual scope. Independent physics validation still needs a scientific reference; a file comparison cannot establish it.
+
+The verify response includes `answer_text` with file links. Use it unchanged as the final response, or deliver the generated report file. When a draft is available, verify that actual draft with `--answer`; checking ANSWER.md does not approve other prose. Any changed output requires successful replay; failed checks stay failed. Do not append optional theory or a second explanation. Unsupported inference requires an applicable scientific method, not free prose inside a verified report. The tool checks bounded data-to-statement consistency; it does not certify the user's translation, arbitrary scientific reasoning or future host messages. SciRel supplies this computation and its limits, while the host retains delivery authority.
+
+## Only when needed
+
+- Persistent multi-file application: [project implementation](../scientific-project-implementation/SKILL.md).
+- Independent scientific validation or library qualification: [development validation](../../scientific-computation-validation/SKILL.md).
+- Explicit adapter-mediated runtime: [thin adapter operations](references/thin-adapter-run.md).
+- Vacuum field feeding equilibrium/material support: [coupling check](references/material-coupling.md).

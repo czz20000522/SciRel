@@ -21,6 +21,16 @@ python3 -m venv .runtime/docs-venv
 
 ## Agent 渐进查询
 
+使用交付包的 Agent 应从 `scirel-solving` 进入。便携查询工具位于
+`skills/development/usage/scientific-asset-navigation/scripts/query.py`，只需 Python 标准库，
+无需构建工具、源码或科学包导入。交付目录内自动定位 `delivery/docs/manual`；开发 checkout 用
+`--snapshot <快照路径>` 显式指定。先 `routes`，再 `routes --chapter <id>`、
+`search --topic <id> --limit 5`，最后 `show <asset-id>`。默认返回原合同的完整公共章节（端口、适用范围、失败、示例、验证与图执行规则），
+`--view graph` 展开节点/边，`--view full` 返回完整原文及溯源；省略部分明确列出。已知 ID 可直达；
+全库 `search --q <词>` 用于跨主题召回，命中不等于科学适用，零命中不证明不存在。
+工具只向模型返回当前层，不输出全文搜索字段。读取的索引、目录和单份合同均按快照摘要校验；
+它不作全站 HTML 完整性审计。下列开发者 HTTP/CLI 入口继续用于手册维护和浏览。
+
 HTML 与 HTTP、CLI 使用同一个内容快照。网页采用 Sphinx 的分词与全文排序；HTTP/CLI 共用有界字面 AND 查询，两者排序不保证相同。中文网页搜索在构建时依赖 jieba 分词，缺少依赖会拒绝构建。Agent 无需加载所有完整文档，也不导入或执行科学函数。
 
 ```sh

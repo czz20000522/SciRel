@@ -424,20 +424,6 @@
             "scirel.kinetic.pdrk-fluid-frequency-solve",
             "scirel.kinetic.pdrk-fluid-scan"
           ]
-        },
-        {
-          "id": "magnetized-spatial-dispersion",
-          "title": "各向同性磁化等离子体的空间色散",
-          "introduction": "从明确的组分状态和 SI 归一化出发，构造 Maxwell 响应、执行有界波矢搜索，或计算有限有理模型的完整矩阵谱。候选根须独立核验；有限谱和启发式候选不等于全部物理模态。原语言运行时与近似阶数分别限定计算范围。",
-          "assets": [
-            "scirel.kinetic.fluidbw-case-state",
-            "scirel.kinetic.fluidbw-special-functions",
-            "scirel.kinetic.fluidbw-dispersion-response",
-            "scirel.kinetic.fluidbw-em-matrix",
-            "scirel.kinetic.fluidbw-bonk-search",
-            "scirel.kinetic.fluidbw-em-spectrum",
-            "scirel.kinetic.fluidbw-materials"
-          ]
         }
       ]
     },

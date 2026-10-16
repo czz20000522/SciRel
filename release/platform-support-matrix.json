@@ -1,0 +1,87 @@
+{
+  "schema": "scirel.platform-support-matrix.v1",
+  "package": "scirel",
+  "package_version": "0.1.0.dev9",
+  "claim_status": "development-candidate",
+  "compatibility_claim": "Only PASS rows contribute to a bounded compatibility claim; this matrix does not grant release approval.",
+  "runtime_binding": {
+    "python": "CPython 3.14",
+    "primary_platform": "linux-x86_64",
+    "dependency_lock": "uv.lock",
+    "release_tuple": "release/CURRENT.json"
+  },
+  "product_goal": "pip-installable standard scientific library across supported operating systems",
+  "status_policy": "Only PASS contributes to a compatibility claim; NOT_RUN, PARTIAL, FAIL and BLOCKED remain explicit.",
+  "platforms": [
+    {
+      "id": "linux-x86_64-cp314",
+      "os": "linux",
+      "architecture": "x86_64",
+      "python": "CPython 3.14",
+      "status": "PARTIAL",
+      "evidence": [
+        "provenance/validation/scirel-dev9-linux-acceptance-20261017.json",
+        "release/CURRENT.json"
+      ],
+      "scope": "dev9 clean consumer install and representative core task receipt; complete core plus PDRK native closure is not established"
+    },
+    {
+      "id": "linux-aarch64-cp314",
+      "os": "linux",
+      "architecture": "aarch64",
+      "python": "CPython 3.14",
+      "status": "PARTIAL",
+      "evidence": ["provenance/validation/completed-project-installed-closeout.json"],
+      "scope": "selected core and PDRK native subset; fluidBW is outside this platform evidence"
+    },
+    {
+      "id": "windows-amd64-cp314",
+      "os": "windows",
+      "architecture": "amd64",
+      "python": "CPython 3.14",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "scope": "target platform; no compatibility claim"
+    },
+    {
+      "id": "macos-arm64-cp314",
+      "os": "macos",
+      "architecture": "arm64",
+      "python": "CPython 3.14",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "scope": "target platform; no compatibility claim"
+    },
+    {
+      "id": "macos-x86_64-cp314",
+      "os": "macos",
+      "architecture": "x86_64",
+      "python": "CPython 3.14",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "scope": "target platform; no compatibility claim"
+    }
+  ],
+  "capabilities": [
+    {
+      "id": "universal-python-core",
+      "status": "PARTIAL",
+      "platforms": ["linux-x86_64-cp314", "linux-aarch64-cp314", "windows-amd64-cp314", "macos-arm64-cp314", "macos-x86_64-cp314"],
+      "reason": "representative and selected core evidence exists, but a complete per-platform capability matrix is not yet complete"
+    },
+    {
+      "id": "fluidbw-native-octave",
+      "status": "PASS",
+      "platforms": ["linux-x86_64-cp314"],
+      "runtime": "GNU Octave 7.3.0",
+      "reason": "separate Linux amd64 evidence; excluded from universal-python-core"
+    },
+    {
+      "id": "pdrk-native-octave",
+      "status": "PARTIAL",
+      "platforms": ["linux-aarch64-cp314"],
+      "runtime": "GNU Octave 8.4.0",
+      "reason": "ARM64 evidence exists; Linux amd64, Windows and macOS are NOT_RUN"
+    }
+  ]
+}

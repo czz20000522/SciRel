@@ -2,11 +2,26 @@
   "schema": "scirel.documentation-release.v1",
   "documentation_version": "scientific-core-r18",
   "status": "development_candidate",
-  "source_documents": "provenance/selections/scientific-core-documents-20261015-r10.json",
+  "source_documents": "provenance/selections/scientific-core-documents-20261015-r9.json",
   "handbook": "tools/docs/handbooks/scientific-core-r18.json",
   "compatible_wheel": "0.1.0.dev8",
   "catalog_root": "catalog/examples",
-  "snapshot_sha256": "feebe06d12af6df5ce534e4d76e99241704974e9c98d9f12f8ce92c705cc31fd",
-  "integration_record": "provenance/validation/fluidbw-amd64-installed.json",
-  "notes": "Restores seven already-installed fluidBW contracts and bound Chinese reader prose; the cumulative handbook now has 267 documents (235 operators, 32 task graphs). Thirteen unchanged full D2 regression tests and all seven added contract examples passed against the actual installed cumulative wheel on Home Linux amd64. Scientific wheel unchanged. Continues the independent runtime navigation and checked-delivery method updates from scientific-core-r17; prior release records remain immutable."
+  "snapshot_sha256": "88d708ae3620cbbb375522fa2f856da812e5eeb4fc4aec605e1703efbbd8009e",
+  "integration_record": "provenance/validation/completed-project-installed-closeout.json",
+  "capability_counts": {
+    "operators": 230,
+    "task_graphs": 30,
+    "document_closure": 260
+  },
+  "wheel_binding": {
+    "wheel_version": "0.1.0.dev8",
+    "wheel_record": "release/wheel/versions/0.1.0.dev8.json",
+    "wheel_sha256": "979cad47a6a8546cf8d62adf70dcae6f92148210c8bd3e7acb00f6ce16429f78",
+    "capability_counts": {
+      "operators": 230,
+      "task_graphs": 30,
+      "document_closure": 260
+    }
+  },
+  "notes": "The current documentation selection is exactly the 230-operator, 30-task-graph, 260-document closure bound to the installed 0.1.0.dev8 wheel. The seven fluidBW contracts remain preserved in their source and validation records but are not presented as part of this wheel-bound documentation closure. The checked-delivery and runtime navigation updates from scientific-core-r17 remain included; this working-tree correction is tracked through Git history."
 }

@@ -41,22 +41,23 @@ def make_convection_terms(v_face,d_face,var,dirichlet_mode='ghost',neumann_mode=
         ratio=spacing*v/dd; ratio[[0,-1]]/=2
         la=_alpha(-ratio[:-1]); ra=_alpha(ratio[1:])
         diag=(la*v[:-1]-ra*v[1:])/w
-        mat=np.diag(diag)+np.diag(-(1-ra[:-1])*v[1:-1]/w[:-1],1)+np.diag((1-la[1:])*v[1:-1]/w[1:],-1)
+        above=-(1-ra[:-1])*v[1:-1]/w[:-1]
+        below=(1-la[1:])*v[1:-1]/w[1:]
         b=np.zeros(n)
         if var.left_face_constraint is not None:
             z=var.left_face_constraint
-            if dirichlet_mode=='ghost': mat[0,0]=(v[0]*(2*la[0]-1)-v[1]*ra[0])/w[0]; b[0]=2*v[0]*(1-la[0])*z/w[0]
-            elif dirichlet_mode=='direct': mat[0,0]=-v[1]*ra[0]/w[0]; b[0]=v[0]*z/w[0]
+            if dirichlet_mode=='ghost': diag[0]=(v[0]*(2*la[0]-1)-v[1]*ra[0])/w[0]; b[0]=2*v[0]*(1-la[0])*z/w[0]
+            elif dirichlet_mode=='direct': diag[0]=-v[1]*ra[0]/w[0]; b[0]=v[0]*z/w[0]
             else: b[0]=v[0]*(1-la[0])*z/w[0]
         else:
-            mat[0,0]=(v[0]-ra[0]*v[1])/w[0]; b[0]=-v[0]*(1-la[0])*var.left_face_grad_constraint
+            diag[0]=(v[0]-ra[0]*v[1])/w[0]; b[0]=-v[0]*(1-la[0])*var.left_face_grad_constraint
             if neumann_mode=='semi-implicit': b[0]/=2
         if var.right_face_constraint is not None:
             z=var.right_face_constraint
-            if dirichlet_mode=='ghost': mat[-1,-1]=(v[-2]*la[-1]+v[-1]*(1-2*ra[-1]))/w[-1]; b[-1]=-2*v[-1]*(1-ra[-1])*z/w[-1]
-            elif dirichlet_mode=='direct': mat[-1,-1]=v[-2]*la[-1]/w[-1]; b[-1]=-v[-1]*z/w[-1]
+            if dirichlet_mode=='ghost': diag[-1]=(v[-2]*la[-1]+v[-1]*(1-2*ra[-1]))/w[-1]; b[-1]=-2*v[-1]*(1-ra[-1])*z/w[-1]
+            elif dirichlet_mode=='direct': diag[-1]=v[-2]*la[-1]/w[-1]; b[-1]=-v[-1]*z/w[-1]
             else: b[-1]=-v[-1]*(1-ra[-1])*z/w[-1]
         else:
-            mat[-1,-1]=-(v[-1]-v[-2]*la[-1])/w[-1]; b[-1]=-v[-1]*(1-ra[-1])*var.right_face_grad_constraint
+            diag[-1]=-(v[-1]-v[-2]*la[-1])/w[-1]; b[-1]=-v[-1]*(1-ra[-1])*var.right_face_grad_constraint
             if neumann_mode=='semi-implicit': b[-1]/=2
-    return TriDiagonal(checked(np.diag(mat)),checked(np.diag(mat,1)),checked(np.diag(mat,-1))),checked(b)
+    return TriDiagonal(checked(diag),checked(above),checked(below)),checked(b)

@@ -5,6 +5,7 @@ SciRel 是独立维护的 Python 科学关系库。它将已有科研代码中�
 自定义程序。科学能力以 Python 包交付，可由 CodeFusion、Codex、Claude Code 或其他 Agent 平台使用。
 
 SciRel 开发项目负责生产和维护这个库；用户的核心交付是确切版本的 `scirel` 包及声明的运行依赖。
+`pip install scirel` 后直接调用公共领域 API 是一等消费路径，平台预装只是一种启动优化。
 skill、来源工件、审核状态、测试、构建工具和平台适配属于项目开发/集成层，不是科学函数的运行依赖。
 按版本提供必要使用文档；Agent catalog 是同一科学合同的发现投影。项目、包与多版本工作树的边界见
 [开发项目与科学包交付](docs/design/project-and-distribution.md)。
@@ -13,6 +14,8 @@ skill、来源工件、审核状态、测试、构建工具和平台适配属于
 
 [HTML 科学关系手册与 Agent 查询](docs/searchable-documentation.md)使用同一份正式资产文档，
 按学科与求解问题提供目录树、导读、实际运行案例、中文/API 搜索及只读 HTTP/CLI 接口。
+Agent 编写科学计算前必须先查 SciRel 并复用适用的公共 API 或组合；用便携查询工具逐层读取领域、
+主题、候选摘要与调用合同。只有明确能力缺口才补写缺失部分，且新科学代码不继承 SciRel 的验证保证。
 每条记录保留自身开发版本与证据边界；新增与变更资产同步遵循[手册维护规范](docs/handbook-authoring.md)。
 
 ## 为什么拆解与组装
@@ -62,7 +65,8 @@ Agent 可先集成验证开发版；人类在稳定累积增量处拍板，不�
 
 SciRel 以 `scirel` wheel 交付科学库；插件、skill 和 catalog 按平台需要单独部署与绑定版本。
 CodeFusion 可以预装科学包或通过可选插件接入，但 SciRel 不属于 CodeFusion kernel。
-包名与安装方式属于平台实现细节。
+包名与安装方式属于平台实现细节，但不能替代标准 pip 安装路径；宿主与 Agent 必须复用同一个 wheel、
+catalog 和 exact contract。
 普通用户在工作台描述需求并获得计算结果、图表或文件，无需安装包、输入 import 或知道 SciRel 名称。
 平台维护者在受控 Python runtime 镜像准备阶段预装经过验证的 wheel；运行任务时直接调用现有能力，
 不临时下载或让用户配置依赖。独立源码项目服务于库维护和版本管理，不改变这一用户体验边界。

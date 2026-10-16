@@ -38,6 +38,12 @@ EXTERNAL_TOOLING_TESTS = {
 }
 
 ENGINEERING_TESTS = {
+    "scripts/validate_installed_wheel.py": ("tests/test_validate_installed_wheel.py",),
+    "skills/development/usage/scirel-solving/scripts/delivery.py": ("tests/test_scientific_delivery.py",),
+    "skills/development/usage/scirel-solving/references/delivery-tool.md": ("tests/test_scientific_delivery.py",),
+    "skills/development/usage/scientific-asset-navigation/scripts/query.py": ("tests/test_scirel_navigation_query.py",),
+    "skills/development/usage/scirel-solving/references/material-coupling.md": ("tests/test_scientific_request_workflow_docs.py",),
+    "skills/development/usage/scirel-solving/references/result-checks.md": ("tests/test_scientific_request_workflow_docs.py",),
     "docs/integration/codefusion-consumer-contract.md": (
         "tests/test_codefusion_consumer_contract.py",
     ),

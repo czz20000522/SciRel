@@ -1,100 +1,215 @@
-from .frank_egedal_pressure_state import assemble_frank_egedal_pressure
-from .frank_egedal_radial_envelope import evaluate_frank_egedal_radial_envelope
-from .frank_egedal_source_projection import project_frank_egedal_source_modes
-from .frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
-from .mirror_invariant_distribution import evaluate_mirror_invariant_distribution
-from .mirror_total_pressure import assemble_mirror_total_pressure
-from .mirror_constrained_moments import evaluate_mirror_constrained_moments
-from .loss_cone_spectrum import solve_loss_cone_spectrum
-from .plasma_dispersion import evaluate_plasma_dispersion
-from .cauchy_transform import evaluate_cauchy_transform
-from .maxwellian_electrostatic import evaluate_maxwellian_electrostatic, solve_maxwellian_electrostatic_mode
-from .bessel_gamma import evaluate_bessel_gamma
-from .kinetic_dispersion_sum_n import evaluate_kinetic_dispersion_sum
-from .kinetic_dispersion_sum_fluidbw import evaluate_fluidbw_kinetic_dispersion_sum
-from .plasma_dispersion_weideman import evaluate_plasma_dispersion_weideman
-from .z_pole_coefficients import get_z_pole_coefficients
-from .gamma_lpole_coefficients import get_gamma_lpole_coefficients
-from .fluid_dispersion_matrix import assemble_fluid_dispersion_matrix
-from .fluid_wavevector_eigensolve import solve_fluid_wavevector_eigenproblem
-from .ronnmark_r_function import evaluate_ronnmark_r
-from .kinetic_dispersion_ronnmark import evaluate_kinetic_dispersion_ronnmark
-from .dielectric_tensor_diagnostic import evaluate_kinetic_dielectric_tensor
-from .kinetic_wavevector_roots import solve_kinetic_wavevector_roots
-from .fluid_wavevector_scan import scan_fluid_wavevectors
-from .kinetic_dispersion_relation import evaluate_kinetic_dispersion_relation
-from .kinetic_wavevector_scan import scan_kinetic_wavevectors
-from .species_equilibrium_scales import derive_species_equilibrium_scales
-from .thermal_speed_scale import compute_thermal_speed_m_s
-from .hydrogen_saha_equilibrium_population import evaluate_h_saha_equilibrium_population
-from .generation_density_reduction import reduce_generation_density
-from .incoming_boundary_flux_normalization import normalize_incoming_neutral_boundary
-from .spatial_source_shape_normalization import normalize_spatial_source_shape
-from .cylindrical_velocity_quadrature import make_cylindrical_velocity_quadrature
-from .shifted_maxwellian_seed import build_shifted_maxwellian_seed
-from .axisymmetric_neutral_moments import reduce_axisymmetric_neutral_moments
-from .adaptive_neutral_velocity_mesh import create_adaptive_neutral_velocity_mesh
-from .cross_mesh_scalar_interpolation import interpolate_scalar_across_mesh
-from .cross_mesh_distribution_interpolation import interp_distribution_across_mesh
-from .upwind_transport_coefficients import assemble_neutral_upwind_transport_coefficients
-from .neutral_generation_propagation import propagate_neutral_generation
-from .neutral_boltzmann_rhs import assemble_neutral_boltzmann_rhs
-from .neutral_generation_stopping import evaluate_neutral_generation_stopping
-from .generation_accumulation_update import update_neutral_generation_accumulation
-from .outer_seed_convergence import evaluate_neutral_outer_seed_convergence
-from .kn1d_outer_convergence import evaluate_kn1d_outer_convergence
-from .elastic_frequency_channels import sum_elastic_frequency_channels
-from .neutral_total_collision_frequency import assemble_neutral_total_collision_frequency
-from .atomic_scattered_sources_reduction import reduce_atomic_scattered_sources
-from .molecular_scattered_sources_reduction import reduce_molecular_scattered_sources
-from .elastic_regeneration_aggregation import aggregate_elastic_regeneration_source
-from .simple_charge_exchange_source import assemble_simple_charge_exchange_source
-from .atomic_alpha_contraction import contract_atomic_hydrogen_alpha_frequencies
-from .molecular_alpha_contraction import contract_molecular_hydrogen_alpha_frequencies
-from .terminal_flux_velocity_reduction import reduce_terminal_molecular_flux_velocity
-from .terminal_pressure_temperature_reduction import reduce_terminal_molecular_pressure_temperature
-from .terminal_heat_flux_reduction import reduce_terminal_molecular_heat_flux
-from .terminal_energy_transfer_reduction import reduce_terminal_molecular_energy_transfer
-from .terminal_conservation_diagnostic import reduce_qh2_total_conservation_diagnostic
-from .terminal_ion_state_reduction import reduce_terminal_molecular_ion_state
-from .grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
-from .frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure
-from .fluidbw import (evaluate_fluidbw_special, derive_fluidbw_case,
-                      evaluate_fluidbw_dispersion, solve_fluidbw_bonk,
-                      assemble_fluidbw_em, solve_fluidbw_em, render_fluidbw_materials)
+"""Kinetic-domain public API with lazy scientific operator exports."""
 
-__all__ = ['assemble_frank_egedal_pressure', 'evaluate_frank_egedal_radial_envelope', 'project_frank_egedal_source_modes', 'evaluate_frank_egedal_hot_ion_moments', 'evaluate_mirror_invariant_distribution', 'assemble_mirror_total_pressure', 'evaluate_mirror_constrained_moments', 'solve_loss_cone_spectrum', 'evaluate_plasma_dispersion', 'evaluate_bessel_gamma', 'evaluate_kinetic_dispersion_sum', 'derive_species_equilibrium_scales', 'compute_thermal_speed_m_s', 'reduce_generation_density', 'solve_grid_mirror_kinetic_closure', 'solve_frank_egedal_pressure_closure']
-__all__.extend(['evaluate_plasma_dispersion_weideman', 'evaluate_fluidbw_kinetic_dispersion_sum'])
-__all__.extend(['get_z_pole_coefficients', 'get_gamma_lpole_coefficients', 'assemble_fluid_dispersion_matrix', 'solve_fluid_wavevector_eigenproblem'])
-__all__.extend(['evaluate_ronnmark_r', 'evaluate_kinetic_dispersion_ronnmark', 'evaluate_kinetic_dielectric_tensor', 'solve_kinetic_wavevector_roots'])
-__all__.extend(['scan_fluid_wavevectors', 'evaluate_kinetic_dispersion_relation', 'scan_kinetic_wavevectors'])
-__all__.extend(['normalize_incoming_neutral_boundary', 'normalize_spatial_source_shape'])
-__all__.append('make_cylindrical_velocity_quadrature')
-__all__.append('build_shifted_maxwellian_seed')
-__all__.append('reduce_axisymmetric_neutral_moments')
-__all__.append('create_adaptive_neutral_velocity_mesh')
-__all__.append('interpolate_scalar_across_mesh')
-__all__.append('interp_distribution_across_mesh')
-__all__.extend(['assemble_neutral_upwind_transport_coefficients', 'propagate_neutral_generation', 'assemble_neutral_boltzmann_rhs'])
-__all__.extend(['evaluate_neutral_generation_stopping', 'update_neutral_generation_accumulation', 'evaluate_neutral_outer_seed_convergence', 'evaluate_kn1d_outer_convergence'])
-__all__.extend(['sum_elastic_frequency_channels', 'assemble_neutral_total_collision_frequency'])
-__all__.extend(['reduce_atomic_scattered_sources', 'reduce_molecular_scattered_sources', 'aggregate_elastic_regeneration_source', 'assemble_simple_charge_exchange_source'])
-__all__.extend(['contract_atomic_hydrogen_alpha_frequencies', 'contract_molecular_hydrogen_alpha_frequencies'])
-__all__.append('reduce_terminal_molecular_flux_velocity')
-__all__.append('reduce_terminal_molecular_pressure_temperature')
-__all__.append('reduce_terminal_molecular_heat_flux')
-__all__.append('reduce_terminal_molecular_energy_transfer')
-__all__.append('reduce_qh2_total_conservation_diagnostic')
-__all__.append('reduce_terminal_molecular_ion_state')
-__all__.append('evaluate_h_saha_equilibrium_population')
-__all__.extend(['evaluate_cauchy_transform', 'evaluate_maxwellian_electrostatic', 'solve_maxwellian_electrostatic_mode'])
-from .pdrf import initialize_pdrf_plasma, assemble_pdrf_matrix, solve_pdrf_spectrum, evaluate_pdrf_dispersion
-__all__.extend(['initialize_pdrf_plasma', 'assemble_pdrf_matrix', 'solve_pdrf_spectrum', 'evaluate_pdrf_dispersion'])
+from importlib import import_module as _import_module
 
-from .faddeeva_variants import evaluate_faddeeva_dr, evaluate_faddeeva_gpdf, evaluate_maxwellian_fft, evaluate_maxwellian_jpole
-from .generalized_dispersion import DensityExpression, evaluate_generalized_dispersion, evaluate_generalized_hilbert, evaluate_gpdf_residual, evaluate_gpdf_small_k, scan_gpdf_roots
-from .vlasov_poisson import solve_vlasov_poisson, vp_diagnostic, vp_distribution, vp_envelope, vp_evolve, vp_field, vp_init, vp_rhs, vp_rk4_step
-__all__.extend(['DensityExpression', 'evaluate_faddeeva_dr', 'evaluate_faddeeva_gpdf', 'evaluate_generalized_dispersion', 'evaluate_generalized_hilbert', 'evaluate_gpdf_residual', 'evaluate_maxwellian_fft', 'evaluate_maxwellian_jpole', 'scan_gpdf_roots', 'solve_vlasov_poisson', 'vp_diagnostic', 'vp_distribution', 'vp_envelope', 'vp_evolve', 'vp_field', 'vp_init', 'vp_rhs', 'vp_rk4_step'])
+# Keep this list as the stable kinetic-domain public contract.
+__all__ = ['assemble_frank_egedal_pressure',
+ 'evaluate_frank_egedal_radial_envelope',
+ 'project_frank_egedal_source_modes',
+ 'evaluate_frank_egedal_hot_ion_moments',
+ 'evaluate_mirror_invariant_distribution',
+ 'assemble_mirror_total_pressure',
+ 'evaluate_mirror_constrained_moments',
+ 'solve_loss_cone_spectrum',
+ 'evaluate_plasma_dispersion',
+ 'evaluate_bessel_gamma',
+ 'evaluate_kinetic_dispersion_sum',
+ 'derive_species_equilibrium_scales',
+ 'compute_thermal_speed_m_s',
+ 'reduce_generation_density',
+ 'solve_grid_mirror_kinetic_closure',
+ 'solve_frank_egedal_pressure_closure',
+ 'evaluate_plasma_dispersion_weideman',
+ 'evaluate_fluidbw_kinetic_dispersion_sum',
+ 'get_z_pole_coefficients',
+ 'get_gamma_lpole_coefficients',
+ 'assemble_fluid_dispersion_matrix',
+ 'solve_fluid_wavevector_eigenproblem',
+ 'evaluate_ronnmark_r',
+ 'evaluate_kinetic_dispersion_ronnmark',
+ 'evaluate_kinetic_dielectric_tensor',
+ 'solve_kinetic_wavevector_roots',
+ 'scan_fluid_wavevectors',
+ 'evaluate_kinetic_dispersion_relation',
+ 'scan_kinetic_wavevectors',
+ 'normalize_incoming_neutral_boundary',
+ 'normalize_spatial_source_shape',
+ 'make_cylindrical_velocity_quadrature',
+ 'build_shifted_maxwellian_seed',
+ 'reduce_axisymmetric_neutral_moments',
+ 'create_adaptive_neutral_velocity_mesh',
+ 'interpolate_scalar_across_mesh',
+ 'interp_distribution_across_mesh',
+ 'assemble_neutral_upwind_transport_coefficients',
+ 'propagate_neutral_generation',
+ 'assemble_neutral_boltzmann_rhs',
+ 'evaluate_neutral_generation_stopping',
+ 'update_neutral_generation_accumulation',
+ 'evaluate_neutral_outer_seed_convergence',
+ 'evaluate_kn1d_outer_convergence',
+ 'sum_elastic_frequency_channels',
+ 'assemble_neutral_total_collision_frequency',
+ 'reduce_atomic_scattered_sources',
+ 'reduce_molecular_scattered_sources',
+ 'aggregate_elastic_regeneration_source',
+ 'assemble_simple_charge_exchange_source',
+ 'contract_atomic_hydrogen_alpha_frequencies',
+ 'contract_molecular_hydrogen_alpha_frequencies',
+ 'reduce_terminal_molecular_flux_velocity',
+ 'reduce_terminal_molecular_pressure_temperature',
+ 'reduce_terminal_molecular_heat_flux',
+ 'reduce_terminal_molecular_energy_transfer',
+ 'reduce_qh2_total_conservation_diagnostic',
+ 'reduce_terminal_molecular_ion_state',
+ 'evaluate_h_saha_equilibrium_population',
+ 'evaluate_cauchy_transform',
+ 'evaluate_maxwellian_electrostatic',
+ 'solve_maxwellian_electrostatic_mode',
+ 'initialize_pdrf_plasma',
+ 'assemble_pdrf_matrix',
+ 'solve_pdrf_spectrum',
+ 'evaluate_pdrf_dispersion',
+ 'DensityExpression',
+ 'evaluate_faddeeva_dr',
+ 'evaluate_faddeeva_gpdf',
+ 'evaluate_generalized_dispersion',
+ 'evaluate_generalized_hilbert',
+ 'evaluate_gpdf_residual',
+ 'evaluate_maxwellian_fft',
+ 'evaluate_maxwellian_jpole',
+ 'scan_gpdf_roots',
+ 'solve_vlasov_poisson',
+ 'vp_diagnostic',
+ 'vp_distribution',
+ 'vp_envelope',
+ 'vp_evolve',
+ 'vp_field',
+ 'vp_init',
+ 'vp_rhs',
+ 'vp_rk4_step',
+ 'evaluate_fluidbw_special',
+ 'derive_fluidbw_case',
+ 'evaluate_fluidbw_dispersion',
+ 'solve_fluidbw_bonk',
+ 'assemble_fluidbw_em',
+ 'solve_fluidbw_em',
+ 'render_fluidbw_materials']
 
-from .fluidbw import (evaluate_fluidbw_special, derive_fluidbw_case, evaluate_fluidbw_dispersion, solve_fluidbw_bonk, assemble_fluidbw_em, solve_fluidbw_em, render_fluidbw_materials)
-__all__.extend(['evaluate_fluidbw_special', 'derive_fluidbw_case', 'evaluate_fluidbw_dispersion', 'solve_fluidbw_bonk', 'assemble_fluidbw_em', 'solve_fluidbw_em', 'render_fluidbw_materials'])
+# Historical direct access retained for compatibility without broadening ``__all__``.
+_COMPAT_EXPORTS = ("evaluate_gpdf_small_k",)
+
+_LAZY_EXPORTS = {'assemble_frank_egedal_pressure': ('frank_egedal_pressure_state', 'assemble_frank_egedal_pressure'),
+ 'evaluate_frank_egedal_radial_envelope': ('frank_egedal_radial_envelope', 'evaluate_frank_egedal_radial_envelope'),
+ 'project_frank_egedal_source_modes': ('frank_egedal_source_projection', 'project_frank_egedal_source_modes'),
+ 'evaluate_frank_egedal_hot_ion_moments': ('frank_egedal_hot_ion_moments', 'evaluate_frank_egedal_hot_ion_moments'),
+ 'evaluate_mirror_invariant_distribution': ('mirror_invariant_distribution', 'evaluate_mirror_invariant_distribution'),
+ 'assemble_mirror_total_pressure': ('mirror_total_pressure', 'assemble_mirror_total_pressure'),
+ 'evaluate_mirror_constrained_moments': ('mirror_constrained_moments', 'evaluate_mirror_constrained_moments'),
+ 'solve_loss_cone_spectrum': ('loss_cone_spectrum', 'solve_loss_cone_spectrum'),
+ 'evaluate_plasma_dispersion': ('plasma_dispersion', 'evaluate_plasma_dispersion'),
+ 'evaluate_bessel_gamma': ('bessel_gamma', 'evaluate_bessel_gamma'),
+ 'evaluate_kinetic_dispersion_sum': ('kinetic_dispersion_sum_n', 'evaluate_kinetic_dispersion_sum'),
+ 'derive_species_equilibrium_scales': ('species_equilibrium_scales', 'derive_species_equilibrium_scales'),
+ 'compute_thermal_speed_m_s': ('thermal_speed_scale', 'compute_thermal_speed_m_s'),
+ 'reduce_generation_density': ('generation_density_reduction', 'reduce_generation_density'),
+ 'solve_grid_mirror_kinetic_closure': ('grid_mirror_kinetic_closure', 'solve_grid_mirror_kinetic_closure'),
+ 'solve_frank_egedal_pressure_closure': ('frank_egedal_pressure_closure', 'solve_frank_egedal_pressure_closure'),
+ 'evaluate_plasma_dispersion_weideman': ('plasma_dispersion_weideman', 'evaluate_plasma_dispersion_weideman'),
+ 'evaluate_fluidbw_kinetic_dispersion_sum': ('kinetic_dispersion_sum_fluidbw',
+                                             'evaluate_fluidbw_kinetic_dispersion_sum'),
+ 'get_z_pole_coefficients': ('z_pole_coefficients', 'get_z_pole_coefficients'),
+ 'get_gamma_lpole_coefficients': ('gamma_lpole_coefficients', 'get_gamma_lpole_coefficients'),
+ 'assemble_fluid_dispersion_matrix': ('fluid_dispersion_matrix', 'assemble_fluid_dispersion_matrix'),
+ 'solve_fluid_wavevector_eigenproblem': ('fluid_wavevector_eigensolve', 'solve_fluid_wavevector_eigenproblem'),
+ 'evaluate_ronnmark_r': ('ronnmark_r_function', 'evaluate_ronnmark_r'),
+ 'evaluate_kinetic_dispersion_ronnmark': ('kinetic_dispersion_ronnmark', 'evaluate_kinetic_dispersion_ronnmark'),
+ 'evaluate_kinetic_dielectric_tensor': ('dielectric_tensor_diagnostic', 'evaluate_kinetic_dielectric_tensor'),
+ 'solve_kinetic_wavevector_roots': ('kinetic_wavevector_roots', 'solve_kinetic_wavevector_roots'),
+ 'scan_fluid_wavevectors': ('fluid_wavevector_scan', 'scan_fluid_wavevectors'),
+ 'evaluate_kinetic_dispersion_relation': ('kinetic_dispersion_relation', 'evaluate_kinetic_dispersion_relation'),
+ 'scan_kinetic_wavevectors': ('kinetic_wavevector_scan', 'scan_kinetic_wavevectors'),
+ 'normalize_incoming_neutral_boundary': ('incoming_boundary_flux_normalization', 'normalize_incoming_neutral_boundary'),
+ 'normalize_spatial_source_shape': ('spatial_source_shape_normalization', 'normalize_spatial_source_shape'),
+ 'make_cylindrical_velocity_quadrature': ('cylindrical_velocity_quadrature', 'make_cylindrical_velocity_quadrature'),
+ 'build_shifted_maxwellian_seed': ('shifted_maxwellian_seed', 'build_shifted_maxwellian_seed'),
+ 'reduce_axisymmetric_neutral_moments': ('axisymmetric_neutral_moments', 'reduce_axisymmetric_neutral_moments'),
+ 'create_adaptive_neutral_velocity_mesh': ('adaptive_neutral_velocity_mesh', 'create_adaptive_neutral_velocity_mesh'),
+ 'interpolate_scalar_across_mesh': ('cross_mesh_scalar_interpolation', 'interpolate_scalar_across_mesh'),
+ 'interp_distribution_across_mesh': ('cross_mesh_distribution_interpolation', 'interp_distribution_across_mesh'),
+ 'assemble_neutral_upwind_transport_coefficients': ('upwind_transport_coefficients',
+                                                    'assemble_neutral_upwind_transport_coefficients'),
+ 'propagate_neutral_generation': ('neutral_generation_propagation', 'propagate_neutral_generation'),
+ 'assemble_neutral_boltzmann_rhs': ('neutral_boltzmann_rhs', 'assemble_neutral_boltzmann_rhs'),
+ 'evaluate_neutral_generation_stopping': ('neutral_generation_stopping', 'evaluate_neutral_generation_stopping'),
+ 'update_neutral_generation_accumulation': ('generation_accumulation_update', 'update_neutral_generation_accumulation'),
+ 'evaluate_neutral_outer_seed_convergence': ('outer_seed_convergence', 'evaluate_neutral_outer_seed_convergence'),
+ 'evaluate_kn1d_outer_convergence': ('kn1d_outer_convergence', 'evaluate_kn1d_outer_convergence'),
+ 'sum_elastic_frequency_channels': ('elastic_frequency_channels', 'sum_elastic_frequency_channels'),
+ 'assemble_neutral_total_collision_frequency': ('neutral_total_collision_frequency',
+                                                'assemble_neutral_total_collision_frequency'),
+ 'reduce_atomic_scattered_sources': ('atomic_scattered_sources_reduction', 'reduce_atomic_scattered_sources'),
+ 'reduce_molecular_scattered_sources': ('molecular_scattered_sources_reduction', 'reduce_molecular_scattered_sources'),
+ 'aggregate_elastic_regeneration_source': ('elastic_regeneration_aggregation', 'aggregate_elastic_regeneration_source'),
+ 'assemble_simple_charge_exchange_source': ('simple_charge_exchange_source', 'assemble_simple_charge_exchange_source'),
+ 'contract_atomic_hydrogen_alpha_frequencies': ('atomic_alpha_contraction',
+                                                'contract_atomic_hydrogen_alpha_frequencies'),
+ 'contract_molecular_hydrogen_alpha_frequencies': ('molecular_alpha_contraction',
+                                                   'contract_molecular_hydrogen_alpha_frequencies'),
+ 'reduce_terminal_molecular_flux_velocity': ('terminal_flux_velocity_reduction',
+                                             'reduce_terminal_molecular_flux_velocity'),
+ 'reduce_terminal_molecular_pressure_temperature': ('terminal_pressure_temperature_reduction',
+                                                    'reduce_terminal_molecular_pressure_temperature'),
+ 'reduce_terminal_molecular_heat_flux': ('terminal_heat_flux_reduction', 'reduce_terminal_molecular_heat_flux'),
+ 'reduce_terminal_molecular_energy_transfer': ('terminal_energy_transfer_reduction',
+                                               'reduce_terminal_molecular_energy_transfer'),
+ 'reduce_qh2_total_conservation_diagnostic': ('terminal_conservation_diagnostic',
+                                              'reduce_qh2_total_conservation_diagnostic'),
+ 'reduce_terminal_molecular_ion_state': ('terminal_ion_state_reduction', 'reduce_terminal_molecular_ion_state'),
+ 'evaluate_h_saha_equilibrium_population': ('hydrogen_saha_equilibrium_population',
+                                            'evaluate_h_saha_equilibrium_population'),
+ 'evaluate_cauchy_transform': ('cauchy_transform', 'evaluate_cauchy_transform'),
+ 'evaluate_maxwellian_electrostatic': ('maxwellian_electrostatic', 'evaluate_maxwellian_electrostatic'),
+ 'solve_maxwellian_electrostatic_mode': ('maxwellian_electrostatic', 'solve_maxwellian_electrostatic_mode'),
+ 'initialize_pdrf_plasma': ('pdrf', 'initialize_pdrf_plasma'),
+ 'assemble_pdrf_matrix': ('pdrf', 'assemble_pdrf_matrix'),
+ 'solve_pdrf_spectrum': ('pdrf', 'solve_pdrf_spectrum'),
+ 'evaluate_pdrf_dispersion': ('pdrf', 'evaluate_pdrf_dispersion'),
+ 'DensityExpression': ('generalized_dispersion', 'DensityExpression'),
+ 'evaluate_faddeeva_dr': ('faddeeva_variants', 'evaluate_faddeeva_dr'),
+ 'evaluate_faddeeva_gpdf': ('faddeeva_variants', 'evaluate_faddeeva_gpdf'),
+ 'evaluate_generalized_dispersion': ('generalized_dispersion', 'evaluate_generalized_dispersion'),
+ 'evaluate_generalized_hilbert': ('generalized_dispersion', 'evaluate_generalized_hilbert'),
+ 'evaluate_gpdf_residual': ('generalized_dispersion', 'evaluate_gpdf_residual'),
+ 'evaluate_maxwellian_fft': ('faddeeva_variants', 'evaluate_maxwellian_fft'),
+ 'evaluate_maxwellian_jpole': ('faddeeva_variants', 'evaluate_maxwellian_jpole'),
+ 'scan_gpdf_roots': ('generalized_dispersion', 'scan_gpdf_roots'),
+ 'solve_vlasov_poisson': ('vlasov_poisson', 'solve_vlasov_poisson'),
+ 'vp_diagnostic': ('vlasov_poisson', 'vp_diagnostic'),
+ 'vp_distribution': ('vlasov_poisson', 'vp_distribution'),
+ 'vp_envelope': ('vlasov_poisson', 'vp_envelope'),
+ 'vp_evolve': ('vlasov_poisson', 'vp_evolve'),
+ 'vp_field': ('vlasov_poisson', 'vp_field'),
+ 'vp_init': ('vlasov_poisson', 'vp_init'),
+ 'vp_rhs': ('vlasov_poisson', 'vp_rhs'),
+ 'vp_rk4_step': ('vlasov_poisson', 'vp_rk4_step'),
+ 'evaluate_fluidbw_special': ('fluidbw', 'evaluate_fluidbw_special'),
+ 'derive_fluidbw_case': ('fluidbw', 'derive_fluidbw_case'),
+ 'evaluate_fluidbw_dispersion': ('fluidbw', 'evaluate_fluidbw_dispersion'),
+ 'solve_fluidbw_bonk': ('fluidbw', 'solve_fluidbw_bonk'),
+ 'assemble_fluidbw_em': ('fluidbw', 'assemble_fluidbw_em'),
+ 'solve_fluidbw_em': ('fluidbw', 'solve_fluidbw_em'),
+ 'render_fluidbw_materials': ('fluidbw', 'render_fluidbw_materials'),
+ 'evaluate_gpdf_small_k': ('generalized_dispersion', 'evaluate_gpdf_small_k')}
+
+def __getattr__(name):
+    try:
+        module_name, attribute_name = _LAZY_EXPORTS[name]
+    except KeyError as error:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from error
+    module = _import_module(f".{module_name}", __name__)
+    value = getattr(module, attribute_name)
+    globals()[name] = value
+    return value
+
+def __dir__():
+    return sorted(set(globals()) | set(__all__) | set(_COMPAT_EXPORTS))

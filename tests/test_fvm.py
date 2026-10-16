@@ -2,7 +2,7 @@ import pathlib,sys
 sys.path.insert(0,str(pathlib.Path(__file__).parents[1]))
 import numpy as np
 import pytest
-from scirel.fvm import CellVariable,make_diffusion_terms,make_convection_terms,theta_step
+from scirel.fvm import CellVariable,TriDiagonal,make_diffusion_terms,make_convection_terms,theta_step
 
 def test_invalid_grid_rejected():
     with pytest.raises(ValueError): CellVariable([1],[0,1])
@@ -90,6 +90,15 @@ def test_theta_singular_system_failure_and_linear_ode():
     # Signed anti-diffusion at dt=.5 makes I-dt*C singular.
     with pytest.raises(np.linalg.LinAlgError):
         theta_step(v,v,.5,d_new=-np.ones(3))
+
+
+def test_tridiagonal_theta_step_does_not_materialize_dense_operator(monkeypatch):
+    old=CellVariable(np.ones(2000),np.linspace(0.,1.,2001),left_face_grad_constraint=0,right_face_grad_constraint=0)
+    def fail_to_dense(self):
+        raise AssertionError('theta_step unexpectedly materialized a dense matrix')
+    monkeypatch.setattr(TriDiagonal,'to_dense',fail_to_dense)
+    new=theta_step(old,old,.01,d_new=np.ones(2001),theta=1.)
+    np.testing.assert_allclose(new.value,old.value)
 
 def test_fvm_malformed_and_nonfinite_inputs_fail():
     with pytest.raises(ValueError): CellVariable([1.,np.nan],[0.,1.,2.])

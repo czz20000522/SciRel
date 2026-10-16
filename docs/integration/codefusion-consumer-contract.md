@@ -11,6 +11,12 @@ SciRel owns scientific assets, catalog records, documentation, skills, review se
 owns sessions, identity, permissions, generic artifacts, execution, audit storage, UI containers, and delivery. It
 does not need SciRel-specific database tables or scientific state in its kernel.
 
+The user-facing flow is express the need, clarify missing facts, and receive checked results.
+SciRel supplies domain methods and truth-bearing contracts, never execution authority.
+Internal process observability and recovery are harness responsibilities, whether implemented
+through host plugins, events or logs. SciRel must remain deliverable to any compatible Agent
+environment and does not implement a tracing UI, audit store or session recovery service.
+
 The host selects one fixed plugin registration for each run. The development example is
 [`contracts/examples/scirel-plugin-registration.dev.json`](../../contracts/examples/scirel-plugin-registration.dev.json).
 Its neutral `release` object carries an opaque plugin release ref, ArtifactReferences for the skill bundle and catalog,

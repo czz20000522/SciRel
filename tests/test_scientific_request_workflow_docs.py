@@ -52,8 +52,20 @@ def test_design_separates_computed_observations_from_physical_mechanisms():
     assert "额外关系或检查" in section
 
 
+def test_scirel_positioning_makes_correctness_and_platform_claims_explicit():
+    body = _read("docs/design/scirel-positioning.md")
+
+    assert "pip install scirel" in body
+    assert "Agent 是编排者，不是科学内核作者" in body
+    assert "每项公开能力都绑定 exact contract" in body
+    assert "Linux amd64 + CPython 3.14" in body
+    assert "NOT_RUN" in body
+    assert "py3-none-any" in body
+    assert "不能证明" in body
+
+
 def test_solving_skill_blocks_unresolved_vacuum_flux_to_equilibrium_coupling():
-    body = _read("skills/development/usage/scirel-solving/SKILL.md")
+    body = _read("skills/development/usage/scirel-solving/references/material-coupling.md")
 
     assert "psi_vac" in body
     assert "vacuum" in body

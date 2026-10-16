@@ -4,23 +4,23 @@
 from dataclasses import replace
 import numpy as np
 from .cell_variable import CellVariable, checked, finite_array, finite_scalar
-from .diffusion import make_diffusion_terms
+from .diffusion import TriDiagonal, make_diffusion_terms
 from .convection import make_convection_terms
 
 
 def _operator(var,d,v,source,dm,nm):
-    n=len(var.value); m=np.zeros((n,n)); b=np.zeros(n)
+    n=len(var.value); diagonal=np.zeros(n); above=np.zeros(n-1); below=np.zeros(n-1); b=np.zeros(n)
     if d is not None:
-        md,bd=make_diffusion_terms(d,var); m+=md.to_dense();b+=bd
+        md,bd=make_diffusion_terms(d,var); diagonal+=md.diagonal; above+=md.above; below+=md.below; b+=bd
     if v is not None:
         if d is None: d=np.zeros(n+1)
-        mc,bc=make_convection_terms(v,d,var,dm,nm);m+=mc.to_dense();b+=bc
+        mc,bc=make_convection_terms(v,d,var,dm,nm); diagonal+=mc.diagonal; above+=mc.above; below+=mc.below; b+=bc
     if source is not None:
         s=finite_array(source,'source',(n,))
         if s.shape!=(n,): raise ValueError('source must have one value per cell')
         if not np.isfinite(s).all(): raise ValueError('source must be finite')
         b+=s
-    return checked(m),checked(b)
+    return TriDiagonal(checked(diagonal),checked(above),checked(below)),checked(b)
 
 
 def theta_step(var_old, var_new, dt, *, d_old=None, d_new=None, v_old=None, v_new=None, source_old=None, source_new=None, theta=1.0, dirichlet_mode='ghost', neumann_mode='ghost'):
@@ -40,8 +40,15 @@ def theta_step(var_old, var_new, dt, *, d_old=None, d_new=None, v_old=None, v_ne
     if var_old.value.shape!=var_new.value.shape or not np.array_equal(var_old.face_centers,var_new.face_centers): raise ValueError('old/new grids must match')
     co,bo=_operator(var_old,d_old,v_old,source_old,dirichlet_mode,neumann_mode)
     cn,bn=_operator(var_new,d_new,v_new,source_new,dirichlet_mode,neumann_mode)
-    lhs=np.eye(len(var_old.value))-dt*theta*cn
-    rhs=(np.eye(len(var_old.value))+dt*(1-theta)*co)@var_old.value + dt*((1-theta)*bo+theta*bn)
-    return replace(var_new,value=checked(np.linalg.solve(lhs,rhs)))
+    rhs=var_old.value + dt*((1-theta)*co.matvec(var_old.value) + (1-theta)*bo + theta*bn)
+    if theta == 0.0:
+        return replace(var_new,value=checked(rhs))
+    lhs=TriDiagonal(
+        1.0-dt*theta*cn.diagonal,
+        -dt*theta*cn.above,
+        -dt*theta*cn.below,
+    )
+    from scipy.linalg import solve_banded
+    return replace(var_new,value=checked(solve_banded((1,1),lhs.to_banded(),rhs)))
 
 

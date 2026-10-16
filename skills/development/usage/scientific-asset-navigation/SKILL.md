@@ -1,35 +1,40 @@
 ---
 name: scientific-asset-navigation
-description: Find, compare, shortlist, adapt or compose existing scientific assets for an already normalized requirement using one bound catalog snapshot.
+description: Route a normalized scientific request through SciRel topic cards, candidate summaries and exact contracts; distinguish reusable capabilities from genuine gaps.
 ---
 
-# Scientific asset navigation
+# Progressive SciRel discovery
 
-Read [the shared operating contract](../../references/scirel-development-core.md).
-This D3-facing skill returns a bounded, auditable shortlist. It does not define the requirement, implement or
-validate new science, curate/admit/publish assets or make human decisions.
+Search the documents bound to the installed wheel. A lookup is mandatory before writing a new scientific kernel, but reading all documents is not. Existing applicable capability must be reused. Names and search hits only route attention; exact contracts determine applicability.
 
-## Discovery boundary
+## One path, with shortcuts
 
-Bind the current harness connector/mounted catalog snapshot, release identity and runtime. The bound catalog is the
-sole discovery and applicability surface for this run. Do not search exports, source trees, tests, provenance,
-historical admission records or wheel-private manifests for undocumented capabilities. An importable callable
-without an exact catalog record is unavailable; a catalog/runtime mismatch is an environment gap.
+Use the bundled standard-library [query tool](scripts/query.py); it never imports scientific modules. It finds `docs/manual` beside the bundled `skills` directory, independent of the delivery root's name or current working directory. Else supply `--snapshot PATH` before the command. Substitute this skill's actual directory for `<skill>`:
 
-## Progressive route
+CLI responses are complete compact JSON records. Do not trim a selected call contract with line/character slices; diagnostic meanings and coverage may occur after the signature. If the host truncates a response, retrieve the missing relevant sections before interpreting results.
 
-1. Read the normalized requirement: relation/direction, model, geometry, coordinates, units, axes, boundaries,
-   inputs/outputs, failure semantics and evidence ceiling. Search summary/index records first.
-2. Return a small shortlist with exact IDs/versions, contract match, mismatches, applicability, evidence ceiling and
-   inspected scope. Read full documents only for serious candidates and scientific near misses. Partial pagination is
-   an inspected-scope gap, not proof of release-wide absence.
-3. For each selected candidate, run preflight against actual adapter/catalog operations and declared ports. Do not
-   invoke rejected near misses or guess connector envelopes. If the selected task requires an adapter, use its actual
-   `catalog.discover -> asset.read(detail=document) -> callable.invoke` path and retain compact operation receipts.
-4. Compose only compatible ports. Check units, shapes, axes, coordinates, normalization, state/order, branches and
-   failure propagation. Iteration needs explicit state, stop/convergence condition and bound.
-5. Hand the selected plan to project implementation or validation. A per-request run instance is not a catalog asset.
+```sh
+python3 <skill>/scripts/query.py routes
+python3 <skill>/scripts/query.py routes --chapter <chapter-id>
+python3 <skill>/scripts/query.py search --topic <topic-id> --limit 5
+python3 <skill>/scripts/query.py show <asset-id>
+# Only when inspecting graph wiring or provenance:
+python3 <skill>/scripts/query.py show <asset-id> --view graph
+python3 <skill>/scripts/query.py show <asset-id> --view full
+```
 
-A missing capability is a release capability gap only when the complete bound catalog is known and inspected. Never
-replace an incompatible asset with a weaker model. Load [navigation audit](references/navigation-search-audit.md) only
-when a search/audit receipt is requested.
+- **Known ID/API or topic:** go directly to `show` or filtered `search --q`; skip already known levels. Whitespace keywords use literal AND; use scientific synonyms and Chinese/English terms when needed.
+- **Recognizable scientific term:** one bounded keyword search can precede chapter browsing. Choose the smallest compatible entry; stop after its contract resolves the request. TaskGraph-first ordering is a retrieval order, not a reason to choose a larger workflow. Only widen the search for an explicit mismatch, ambiguity or missing coverage.
+- **Unknown domain:** read chapter cards, then relevant topic cards. Search returns five short cards by default, TaskGraphs first. Follow `next_offset` when needed; graph ordering does not imply compatibility. Widen topics or remove `--kind` before declaring a gap.
+- **Shortlist:** `show` copies exact public sections, including every port, applicability, failure, example and verification clause plus graph execution rules. Graph wiring and provenance are explicitly deferred, never silently summarized. Load exact contracts only for serious candidates and near misses. Check direction, model, domains, input/output units, axes, boundaries, defaults and failures. A suitable graph's public contract is enough to call it; read node contracts when inspecting an unresolved edge, composing a new graph or diagnosing a mismatch.
+- **Reuse:** keep the chosen IDs, snapshot identity and mismatch reasons in the current task. Re-read only after a request/identity change or new uncertainty. Do not print `index.json`, scrape HTML, recursively cat contracts, import a registry or load the tool source just to query it.
+
+An existing connector may supply the same layers; use its actual operations. Do not load adapter guidance for an ordinary Python call. Missing/corrupt documents, mismatched runtime or unavailable tools mean **environment/metadata gap**, not permission to invent science.
+
+## Before declaring capability absent
+
+Review the relevant topic summaries without keyword filtering, plausible synonyms/neighboring topics and possible compositions. Read scientific near misses to determine why they cannot satisfy the request. A zero-hit query or an unvisited page cannot establish absence. State the inspected snapshot/scope and remaining uncertainty; never infer release-wide absence from a partial collection.
+
+If no suitable existing relation or composition covers a specific subproblem within that established scope, state the gap and implement only that missing part when required by the task. Label it new/unvalidated science, keep it separate from SciRel-backed results, and validate it independently. Do not silently weaken a model or rewrite an existing kernel. Unresolved applicability needs scientific input, not a guessed substitute.
+
+Normally a short selection/gap note is sufficient. Read [navigation audit](references/navigation-search-audit.md) only when a formal search receipt is requested. This skill selects capabilities; it does not approve assets or prove the user's problem was translated correctly.
