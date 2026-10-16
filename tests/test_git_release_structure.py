@@ -153,3 +153,34 @@ def test_current_release_note_does_not_duplicate_stale_artifact_identity() -> No
     assert current["wheel"]["artifact"]["sha256"] not in notes
     assert "7feb451b45da541bc4f2ced0c8dc0369bc8f5e66" not in notes
     assert "34ac7cf21658412671c5290a41b2eed7662b8847444b04e809786f5b4535e8f2" not in notes
+
+
+def test_scipy_style_git_release_model_is_explicit() -> None:
+    design = (ROOT / "docs/design/scipy-release-model.md").read_text(encoding="utf-8")
+    required_phrases = (
+        "pyproject.toml",
+        "短 release note",
+        "仓库外",
+        "release/CURRENT.json",
+        "release/wheel/versions/*",
+        "release/docs/versions/*",
+        "SOURCE_REF_TO_BUILD",
+    )
+    for phrase in required_phrases:
+        assert phrase in design
+    assert not list((ROOT / "release/wheel/versions").glob("*"))
+    assert not list((ROOT / "release/docs/versions").glob("*"))
+    tracked_artifacts = subprocess.check_output(
+        ["git", "ls-files", "*.whl"],
+        cwd=ROOT,
+        text=True,
+        shell=False,
+    )
+    assert tracked_artifacts.strip() == ""
+    tracked_html = subprocess.check_output(
+        ["git", "ls-files", "*.html"],
+        cwd=ROOT,
+        text=True,
+        shell=False,
+    ).splitlines()
+    assert all(path.startswith("tools/docs/") for path in tracked_html)

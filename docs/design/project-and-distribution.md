@@ -128,6 +128,11 @@ wheel 或本地组件。只补齐实际缺少的运行闭包；不扫描全部�
 
 ## 分支、worktree 与多版本构建
 
+发行目录遵循 [SciPy 式 Git 发行模型](scipy-release-model.md)：源码、测试和文档在一个
+Git 历史中连续演进；每个版本只保留短 release note，wheel、catalog 和渲染文档从确切
+ref 在仓库外生成。`release/CURRENT.json` 是当前候选的协调回执，不是第二个版本源；
+它不能替代 Git commit/tag，也不能成为按版本复制完整源码或文档的理由。
+
 一个 Git 仓库维护连续历史；不同工作路线采用隔离 worktree，而非复制并永久维护多套 SciRel 项目。
 
 | 工作路线 | 基线与写入范围 | 产出 |
