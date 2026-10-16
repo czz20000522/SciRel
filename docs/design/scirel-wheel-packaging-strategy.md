@@ -90,6 +90,12 @@ artifact SHA-256、字节数、直接依赖、Python 线和外部 runtime 要求
 wheel 摘要曾绑定 `0.1.0.dev8` 的历史提交；该历史身份由 Git 和
 [`docs/release/0.1.0.dev8-notes.md`](../release/0.1.0.dev8-notes.md) 保留，不授予公开发行或全平台资格。
 
+`py3-none-any` 描述的是 wheel 中没有平台专属 Python ABI 扩展，不保证不同操作系统、构建
+前端或文件权限环境生成的 ZIP 字节完全相同。`scripts/build_scirel_from_ref.py` 从确切 Git
+提交归档构建，并固定 `SOURCE_DATE_EPOCH`、`PYTHONHASHSEED=0` 与 POSIX `umask 022`；manifest
+同时记录构建前端、Python 选择器和宿主身份。发行摘要只绑定实际目标平台生成并验收的 wheel，
+Windows/macOS 后续各自生成和验收自己的 artifact，不复用 Linux 的摘要或回执。
+
 `uv.lock` 用于开发环境和可复现解析：
 
 1. 修改 `pyproject.toml` 后在同一 checkout 执行 `uv lock`。

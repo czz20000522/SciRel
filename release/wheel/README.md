@@ -24,20 +24,21 @@ Build from the exact `source_revision` recorded in [`../CURRENT.json`](../CURREN
 never from a dirty checkout. The reproducible procedure mirrors SciPy's ref-bound
 release tooling: archive that Git ref into a clean temporary directory, then run
 `uv build --wheel` there with `SOURCE_DATE_EPOCH` set to the ref's commit time.
-For a POSIX shell, the essential sequence is:
+The repository includes `scripts/build_scirel_from_ref.py`, which performs this
+archive-and-build sequence and writes a stable `build-manifest.json` beside the
+wheel. Its output directory must be outside the checkout so a build cannot
+silently become another versioned source asset. For a POSIX shell:
 
 ```sh
 ref=<40-character-source-revision>
-epoch=$(git show -s --format=%ct "$ref")
-tmp_root=$(mktemp -d)
-tmp_source="$tmp_root/source"
-tmp_wheels="$tmp_root/wheels"
-mkdir -p "$tmp_source" "$tmp_wheels"
-git archive --format=tar --mtime="@$epoch" "$ref" | tar -x -C "$tmp_source"
-(cd "$tmp_source" && SOURCE_DATE_EPOCH="$epoch" uv build --wheel --out-dir "$tmp_wheels")
+tmp_wheels=$(mktemp -d)
+python scripts/build_scirel_from_ref.py --ref "$ref" --output-dir "$tmp_wheels"
 ```
 
 Git-archive extraction gives the source files one stable timestamp; setting the
 epoch alone in a working tree is insufficient because build backends may preserve
-file mtimes. After building, compare the wheel byte count and SHA-256 with the
-canonical tuple and run the platform receipt against that exact file.
+file mtimes. The helper records the full source revision, project version, wheel
+byte count and SHA-256 in its manifest, and fixes `PYTHONHASHSEED=0` alongside
+`SOURCE_DATE_EPOCH` and POSIX `umask 022`. Compare those values with the canonical
+tuple and run the platform receipt against that exact file before updating
+`release/CURRENT.json`.

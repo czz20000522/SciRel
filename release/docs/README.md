@@ -12,3 +12,10 @@ change that is carried forward requires a new Git-bound candidate and refreshed
 receipt; the wheel bytes may remain identical, but the source revision and
 document selection must be explicit. Git history records revisions instead of
 keeping duplicate copies of the same document set.
+
+Build a snapshot from an exact source ref with
+`scripts/build_scirel_docs_from_ref.py`. It archives the ref, invokes the
+archived `scripts/scirel_docs.py` with the explicit source revision, and writes
+the snapshot plus `build-manifest.json` outside the checkout. A dirty checkout
+or a snapshot built from the current directory without an explicit ref is not a
+candidate document artifact.

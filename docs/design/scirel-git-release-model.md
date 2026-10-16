@@ -24,6 +24,11 @@ SciRel 采用与 SciPy 同类的单一来源模型：源代码、`pyproject.toml
 4. 当前发行 tuple 与平台矩阵；
 5. 可复核的测试和安装回执。
 
+wheel 和文档快照分别由 `scripts/build_scirel_from_ref.py` 与
+`scripts/build_scirel_docs_from_ref.py` 从同一个确切 Git ref 归档构建；两者的
+生成物和 manifest 位于 checkout 外。文档构建器在归档源码中接收显式
+`source_revision`/`source_dirty=false`，不通过当前工作树或不存在的 `.git` 推断来源。
+
 构建 catalog 时必须把这个 source revision 写入 `release.json`；当构建器绑定
 source checkout 时，`release_version` 只能来自该 checkout 的 `pyproject.toml`。
 synthetic fixture 可以省略 Git 绑定，但不能冒充生产发行 catalog。

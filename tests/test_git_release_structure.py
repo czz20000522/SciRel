@@ -44,3 +44,15 @@ def test_current_release_receipt_is_not_the_version_source() -> None:
     text = (ROOT / "release/README.md").read_text(encoding="utf-8")
     assert "not a second version" in text
     assert "pyproject.toml" in text
+
+
+def test_ref_bound_build_helper_is_documented_and_keeps_artifacts_external() -> None:
+    helper = ROOT / "scripts/build_scirel_from_ref.py"
+    docs_helper = ROOT / "scripts/build_scirel_docs_from_ref.py"
+    text = helper.read_text(encoding="utf-8")
+    readme = (ROOT / "release/wheel/README.md").read_text(encoding="utf-8")
+    assert "git archive" in text
+    assert "output-dir must be outside" in text
+    assert "build_scirel_from_ref.py" in readme
+    assert "git archive" in docs_helper.read_text(encoding="utf-8")
+    assert "build_scirel_docs_from_ref.py" in (ROOT / "release/docs/README.md").read_text(encoding="utf-8")
