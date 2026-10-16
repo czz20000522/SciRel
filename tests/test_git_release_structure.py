@@ -156,14 +156,14 @@ def test_current_release_note_does_not_duplicate_stale_artifact_identity() -> No
 
 
 def test_scipy_style_git_release_model_is_explicit() -> None:
-    design = (ROOT / "docs/design/scipy-release-model.md").read_text(encoding="utf-8")
+    design = (ROOT / "docs/design/scirel-git-release-model.md").read_text(encoding="utf-8")
     required_phrases = (
         "pyproject.toml",
-        "短 release note",
-        "仓库外",
+        "短小的",
+        "外部输出",
         "release/CURRENT.json",
-        "release/wheel/versions/*",
-        "release/docs/versions/*",
+        "release/wheel/versions/",
+        "release/docs/versions/",
         "SOURCE_REF_TO_BUILD",
     )
     for phrase in required_phrases:
