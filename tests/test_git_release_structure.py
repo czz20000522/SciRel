@@ -18,9 +18,13 @@ def test_git_release_structure_has_one_version_source() -> None:
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     version = project["project"]["version"]
     current = json.loads((ROOT / "release/CURRENT.json").read_text(encoding="utf-8"))
+    assert current["schema"] == "scirel.release-current.v2"
     assert current["version"] == version
     assert current["wheel"]["version"] == version
     assert current["documentation"]["compatible_wheel"] == version
+    assert "path" not in current["wheel"]["artifact"]
+    assert current["wheel"]["artifact"]["manifest_ref"].endswith("/wheel/build-manifest.json")
+    assert current["documentation"]["artifact"]["manifest_ref"].endswith("/docs/build-manifest.json")
     assert (ROOT / f"docs/release/{version}-notes.md").is_file()
 
 
@@ -40,6 +44,7 @@ def test_historical_release_data_is_not_parallel_wheel_or_doc_copies() -> None:
         text=True,
     )
     assert tracked.strip() == ""
+    assert "build/releases" not in (ROOT / "release/CURRENT.json").read_text(encoding="utf-8")
     assert not list((ROOT / "tools/docs/handbooks").glob("*.json"))
     assert (ROOT / "tools/docs/handbook.json").is_file()
 

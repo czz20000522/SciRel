@@ -1,5 +1,5 @@
 {
-  "schema": "scirel.release-current.v1",
+  "schema": "scirel.release-current.v2",
   "package": "scirel",
   "version": "0.1.0.dev9",
   "status": "development_candidate",
@@ -9,7 +9,9 @@
     "version": "0.1.0.dev9",
     "status": "development_candidate",
     "artifact": {
-      "path": "build/releases/scirel-0.1.0.dev9-9733bfc/scirel-0.1.0.dev9-py3-none-any.whl",
+      "manifest_ref": "scirel/0.1.0.dev9/9733bfc6e9f91a8526f5c72843b9203aa8ebbf04/wheel/build-manifest.json",
+      "manifest_sha256": "55fc4f77eafb3b61e50e439ef76044857face3f7bd2d61a23d96d113b020d51f",
+      "filename": "scirel-0.1.0.dev9-py3-none-any.whl",
       "sha256": "175c9dc0edd62511bd25e8eba0f89566a7bfe2bf9d258050d2cf959537ff284b",
       "bytes": 651570
     },
@@ -47,7 +49,14 @@
       "0.1.0.dev8",
       "0.1.0.dev9"
     ],
-    "handbook_scope": "repository"
+    "handbook_scope": "repository",
+    "artifact": {
+      "manifest_ref": "scirel/0.1.0.dev9/9733bfc6e9f91a8526f5c72843b9203aa8ebbf04/docs/build-manifest.json",
+      "manifest_sha256": "08db6067f491a6963784305f02555128f67b44ad3607b320ead05d9f2b321e71",
+      "snapshot_ref": "snapshot",
+      "snapshot_sha256": "0c24b2f412b1e7a2f1fc98877869d4c277e80bfd310250b664d1630658576665",
+      "snapshot_bytes": 27735067
+    }
   },
   "next_action": "Keep this development candidate untagged until the remaining platform and scientific release gates are explicitly closed."
 }

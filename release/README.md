@@ -22,9 +22,17 @@ artifacts.
 The tuple binds:
 
 - the exact source revision and package version;
-- the current wheel artifact digest and dependency closure;
+- the current wheel artifact manifest reference, digest and dependency closure;
 - the current document selection and handbook digest; and
 - each platform receipt used by the bounded compatibility claim.
+
+`release/CURRENT.json` stores only logical `manifest_ref` keys for generated
+wheel and documentation artifacts. They are resolved against an external
+artifact root during release validation; no `build/releases/` path or generated
+wheel is part of the Git checkout. Run
+`scripts/validate_release_alignment.py --artifact-root <root>` for byte-level
+verification. Without that option, the validator reports the external bytes as
+unchecked while still validating the reference shape and inline digests.
 
 Historical candidate identities are preserved by Git commits, tags, and the
 short release notes under `docs/release/`. Do not add a per-version wheel JSON,

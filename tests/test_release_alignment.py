@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from validate_release_alignment import (
+    _validate_external_artifacts,
     _validate_platform_receipts,
     validate_alignment,
 )  # noqa: E402
@@ -27,6 +28,112 @@ def test_current_release_alignment_is_exact() -> None:
         "task_graphs": 30,
         "document_closure": 260,
     }
+    assert result["external_artifacts"] == "external_artifact_unchecked"
+
+
+def test_external_artifact_manifest_and_snapshot_are_verified(tmp_path: Path) -> None:
+    import hashlib
+
+    revision = "a" * 40
+    version = "0.1.0.dev9"
+    artifact_root = tmp_path / "artifacts"
+    wheel_dir = artifact_root / "scirel" / version / revision / "wheel"
+    docs_dir = artifact_root / "scirel" / version / revision / "docs"
+    wheel_dir.mkdir(parents=True)
+    docs_dir.mkdir(parents=True)
+    wheel_bytes = b"test wheel bytes"
+    wheel_path = wheel_dir / "scirel-0.1.0.dev9-py3-none-any.whl"
+    wheel_path.write_bytes(wheel_bytes)
+    wheel_manifest = {
+        "schema": "scirel.git-build.v1",
+        "source": {"revision": revision},
+        "project": {"name": "scirel", "version": version},
+        "wheel": {
+            "filename": wheel_path.name,
+            "sha256": hashlib.sha256(wheel_bytes).hexdigest(),
+            "bytes": len(wheel_bytes),
+        },
+    }
+    wheel_manifest_path = wheel_dir / "build-manifest.json"
+    wheel_manifest_path.write_text(json.dumps(wheel_manifest, sort_keys=True), encoding="utf-8")
+
+    snapshot_dir = docs_dir / "snapshot"
+    snapshot_dir.mkdir()
+    content = b"snapshot content"
+    (snapshot_dir / "index.html").write_bytes(content)
+    unsigned = {
+        "schema": "scirel.documentation-snapshot.v1",
+        "source_revision": revision,
+        "project_version": version,
+        "files": {
+            "index.html": {
+                "sha256": hashlib.sha256(content).hexdigest(),
+                "bytes": len(content),
+            }
+        },
+    }
+    encoded_unsigned = (json.dumps(unsigned, ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode()
+    snapshot_digest = hashlib.sha256(encoded_unsigned).hexdigest()
+    snapshot_manifest = dict(unsigned, snapshot_sha256=snapshot_digest)
+    snapshot_manifest_path = snapshot_dir / "manifest.json"
+    snapshot_manifest_path.write_text(
+        json.dumps(snapshot_manifest, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    snapshot_bytes = snapshot_manifest_path.stat().st_size + len(content)
+    docs_manifest = {
+        "schema": "scirel.git-docs-build.v1",
+        "source": {"revision": revision},
+        "project": {"name": "scirel", "version": version},
+        "selection": {"sha256": "c" * 64},
+        "snapshot": {"path": "snapshot", "sha256": snapshot_digest, "bytes": snapshot_bytes},
+    }
+    docs_manifest_path = docs_dir / "build-manifest.json"
+    docs_manifest_path.write_text(json.dumps(docs_manifest, sort_keys=True), encoding="utf-8")
+
+    wheel_artifact = {
+        "manifest_ref": f"scirel/{version}/{revision}/wheel/build-manifest.json",
+        "manifest_sha256": hashlib.sha256(wheel_manifest_path.read_bytes()).hexdigest(),
+        "filename": wheel_path.name,
+        "sha256": wheel_manifest["wheel"]["sha256"],
+        "bytes": len(wheel_bytes),
+    }
+    docs_artifact = {
+        "manifest_ref": f"scirel/{version}/{revision}/docs/build-manifest.json",
+        "manifest_sha256": hashlib.sha256(docs_manifest_path.read_bytes()).hexdigest(),
+        "snapshot_ref": "snapshot",
+        "snapshot_sha256": snapshot_digest,
+        "snapshot_bytes": snapshot_bytes,
+    }
+    current = {
+        "wheel": {"artifact": wheel_artifact},
+        "documentation": {"artifact": docs_artifact, "snapshot_sha256": snapshot_digest, "selection_sha256": "c" * 64},
+    }
+    assert _validate_external_artifacts(
+        ROOT,
+        current,
+        version=version,
+        source_revision=revision,
+        artifact_root=artifact_root,
+    ) == "external_artifact_verified"
+    (snapshot_dir / "index.html").write_bytes(b"tampered")
+    with pytest.raises(ValueError, match="snapshot file differs"):
+        _validate_external_artifacts(
+            ROOT,
+            current,
+            version=version,
+            source_revision=revision,
+            artifact_root=artifact_root,
+        )
+
+
+def test_external_artifact_reference_rejects_path_traversal() -> None:
+    current = {
+        "wheel": {"artifact": {"manifest_ref": "../wheel.json", "manifest_sha256": "a" * 64, "filename": "a.whl", "sha256": "b" * 64, "bytes": 1}},
+        "documentation": {"artifact": {"manifest_ref": "docs.json", "manifest_sha256": "c" * 64, "snapshot_ref": "snapshot", "snapshot_sha256": "d" * 64, "snapshot_bytes": 1}},
+    }
+    with pytest.raises(ValueError, match="unsafe artifact reference"):
+        _validate_external_artifacts(ROOT, current, version="0.1.0.dev9", source_revision=None, artifact_root=None)
 
 
 def test_current_release_version_is_the_pyproject_version() -> None:

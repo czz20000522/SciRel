@@ -12,6 +12,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+from pathlib import PurePosixPath
 import re
 from typing import Any
 import tomllib
@@ -52,6 +53,225 @@ def _repo_path(root: Path, value: str, *, field: str) -> Path:
     if not path.is_file():
         raise ValueError(f"{field} does not name a file: {value}")
     return path
+
+
+def _external_ref(value: object, *, field: str) -> PurePosixPath:
+    """Validate a logical POSIX key used below an external artifact root."""
+
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{field} must be a non-empty logical artifact reference")
+    if "\\" in value or value.startswith("/"):
+        raise ValueError(f"{field} must be a relative POSIX artifact reference")
+    path = PurePosixPath(value)
+    if path.is_absolute() or not path.parts or any(part in {"", ".", ".."} for part in path.parts):
+        raise ValueError(f"{field} contains an unsafe artifact reference: {value}")
+    return path
+
+
+def _external_artifact_path(root: Path, value: object, *, field: str) -> Path:
+    logical = _external_ref(value, field=field)
+    root = root.expanduser().resolve()
+    path = (root / Path(*logical.parts)).resolve()
+    if not path.is_relative_to(root):
+        raise ValueError(f"{field} escapes the external artifact root")
+    return path
+
+
+def _validate_external_manifest_digest(path: Path, expected: object, *, field: str) -> dict[str, Any]:
+    if not path.is_file():
+        raise ValueError(f"{field} does not name an external manifest: {path}")
+    if not isinstance(expected, str) or re.fullmatch(r"[0-9a-f]{64}", expected) is None:
+        raise ValueError(f"{field} has an invalid manifest_sha256")
+    if _sha256(path) != expected:
+        raise ValueError(f"{field} manifest digest differs")
+    manifest = _read_json(path)
+    return manifest
+
+
+def _validate_external_artifacts(
+    root: Path,
+    current: dict[str, Any],
+    *,
+    version: str,
+    source_revision: str | None,
+    artifact_root: Path | None,
+) -> str:
+    """Validate external wheel/docs manifests when an artifact root is supplied.
+
+    The repository deliberately cannot prove external bytes without a storage
+    root.  In that mode this function still validates the logical reference
+    shape and returns ``external_artifact_unchecked``; release gates must pass
+    ``--artifact-root`` to obtain byte-level proof.
+    """
+
+    wheel = current["wheel"]
+    docs = current["documentation"]
+    wheel_artifact = wheel.get("artifact")
+    docs_artifact = docs.get("artifact")
+    if not isinstance(wheel_artifact, dict) or not isinstance(docs_artifact, dict):
+        raise ValueError("release CURRENT v2 requires wheel and documentation artifact objects")
+
+    wheel_manifest_ref = _external_ref(
+        wheel_artifact.get("manifest_ref"), field="wheel artifact manifest_ref"
+    )
+    docs_manifest_ref = _external_ref(
+        docs_artifact.get("manifest_ref"), field="documentation artifact manifest_ref"
+    )
+    filename_ref = _external_ref(
+        wheel_artifact.get("filename"), field="wheel artifact filename"
+    )
+    if len(filename_ref.parts) != 1:
+        raise ValueError("wheel artifact filename must be a single file name")
+    _external_ref(
+        docs_artifact.get("snapshot_ref"), field="documentation artifact snapshot_ref"
+    )
+    for field, value in (
+        ("wheel artifact manifest_sha256", wheel_artifact.get("manifest_sha256")),
+        ("documentation artifact manifest_sha256", docs_artifact.get("manifest_sha256")),
+        ("wheel artifact sha256", wheel_artifact.get("sha256")),
+        ("documentation artifact snapshot_sha256", docs_artifact.get("snapshot_sha256")),
+    ):
+        if not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{64}", value) is None:
+            raise ValueError(f"{field} is invalid")
+    for field, value in (
+        ("wheel artifact bytes", wheel_artifact.get("bytes")),
+        ("documentation artifact snapshot_bytes", docs_artifact.get("snapshot_bytes")),
+    ):
+        if not isinstance(value, int) or value < 0:
+            raise ValueError(f"{field} is invalid")
+
+    if artifact_root is None:
+        return "external_artifact_unchecked"
+
+    wheel_manifest_path = _external_artifact_path(
+        artifact_root, wheel_manifest_ref.as_posix(), field="wheel artifact manifest_ref"
+    )
+    docs_manifest_path = _external_artifact_path(
+        artifact_root, docs_manifest_ref.as_posix(), field="documentation artifact manifest_ref"
+    )
+    wheel_manifest = _validate_external_manifest_digest(
+        wheel_manifest_path,
+        wheel_artifact.get("manifest_sha256"),
+        field="wheel artifact",
+    )
+    docs_manifest = _validate_external_manifest_digest(
+        docs_manifest_path,
+        docs_artifact.get("manifest_sha256"),
+        field="documentation artifact",
+    )
+
+    if wheel_manifest.get("schema") != "scirel.git-build.v1":
+        raise ValueError("external wheel manifest has an invalid schema")
+    if docs_manifest.get("schema") != "scirel.git-docs-build.v1":
+        raise ValueError("external documentation manifest has an invalid schema")
+    for label, manifest in (("wheel", wheel_manifest), ("documentation", docs_manifest)):
+        source = manifest.get("source")
+        project = manifest.get("project")
+        if not isinstance(source, dict) or not isinstance(project, dict):
+            raise ValueError(f"external {label} manifest lacks source/project binding")
+        if project.get("name") != "scirel" or project.get("version") != version:
+            raise ValueError(f"external {label} manifest project differs from release CURRENT")
+        if source_revision is not None and source.get("revision") != source_revision:
+            raise ValueError(f"external {label} manifest source revision differs")
+
+    wheel_info = wheel_manifest.get("wheel")
+    if not isinstance(wheel_info, dict):
+        raise ValueError("external wheel manifest lacks wheel metadata")
+    if {
+        "filename": wheel_info.get("filename"),
+        "sha256": wheel_info.get("sha256"),
+        "bytes": wheel_info.get("bytes"),
+    } != {
+        "filename": wheel_artifact["filename"],
+        "sha256": wheel_artifact["sha256"],
+        "bytes": wheel_artifact["bytes"],
+    }:
+        raise ValueError("external wheel manifest artifact differs from release CURRENT")
+    wheel_path = wheel_manifest_path.parent / filename_ref.name
+    if not wheel_path.is_file() or wheel_path.is_symlink():
+        raise ValueError("external wheel filename does not resolve beside its manifest")
+    if _sha256(wheel_path) != wheel_artifact["sha256"] or wheel_path.stat().st_size != wheel_artifact["bytes"]:
+        raise ValueError("external wheel bytes differ from release CURRENT")
+
+    snapshot_info = docs_manifest.get("snapshot")
+    selection_info = docs_manifest.get("selection")
+    if not isinstance(snapshot_info, dict) or not isinstance(selection_info, dict):
+        raise ValueError("external documentation manifest lacks snapshot/selection metadata")
+    if {
+        "sha256": snapshot_info.get("sha256"),
+        "bytes": snapshot_info.get("bytes"),
+    } != {
+        "sha256": docs_artifact["snapshot_sha256"],
+        "bytes": docs_artifact["snapshot_bytes"],
+    }:
+        raise ValueError("external documentation snapshot differs from release CURRENT")
+    if docs.get("snapshot_sha256") != snapshot_info.get("sha256"):
+        raise ValueError("documentation snapshot_sha256 differs from external manifest")
+    if selection_info.get("sha256") != docs.get("selection_sha256"):
+        raise ValueError("external documentation selection differs from release CURRENT")
+    snapshot_ref = _external_ref(
+        docs_artifact["snapshot_ref"], field="documentation artifact snapshot_ref"
+    )
+    manifest_snapshot_ref = _external_ref(
+        snapshot_info.get("path"), field="external documentation snapshot.path"
+    )
+    if snapshot_ref != manifest_snapshot_ref:
+        raise ValueError("documentation snapshot_ref differs from external manifest")
+    snapshot_path = _external_artifact_path(
+        docs_manifest_path.parent,
+        manifest_snapshot_ref.as_posix(),
+        field="external documentation snapshot.path",
+    )
+    if not snapshot_path.is_dir() or snapshot_path.is_symlink():
+        raise ValueError("external documentation snapshot path is not a directory")
+    snapshot_manifest_path = snapshot_path / "manifest.json"
+    if not snapshot_manifest_path.is_file() or snapshot_manifest_path.is_symlink():
+        raise ValueError("external documentation snapshot has no manifest.json")
+    snapshot_manifest = _read_json(snapshot_manifest_path)
+    if snapshot_manifest.get("schema") != "scirel.documentation-snapshot.v1":
+        raise ValueError("external documentation snapshot has an invalid schema")
+    unsigned = {key: value for key, value in snapshot_manifest.items() if key != "snapshot_sha256"}
+    encoded = (json.dumps(unsigned, ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode()
+    if hashlib.sha256(encoded).hexdigest() != snapshot_manifest.get("snapshot_sha256"):
+        raise ValueError("external documentation snapshot manifest digest differs")
+    if snapshot_manifest.get("snapshot_sha256") != snapshot_info.get("sha256"):
+        raise ValueError("external documentation snapshot digest differs")
+    if snapshot_manifest.get("source_revision") != source_revision:
+        raise ValueError("external documentation snapshot source revision differs")
+    if snapshot_manifest.get("project_version") != version:
+        raise ValueError("external documentation snapshot project version differs")
+    files = snapshot_manifest.get("files")
+    if not isinstance(files, dict):
+        raise ValueError("external documentation snapshot files index is invalid")
+    actual_files: dict[str, Path] = {}
+    for path in snapshot_path.rglob("*"):
+        if path == snapshot_manifest_path:
+            continue
+        if path.is_symlink():
+            raise ValueError("external documentation snapshot contains a non-regular file")
+        if path.is_dir():
+            continue
+        if not path.is_file():
+            raise ValueError("external documentation snapshot contains a non-regular file")
+        relative = path.relative_to(snapshot_path).as_posix()
+        actual_files[relative] = path
+    if set(files) != set(actual_files):
+        raise ValueError("external documentation snapshot file set differs from its manifest")
+    for relative, metadata in files.items():
+        if not isinstance(metadata, dict):
+            raise ValueError("external documentation snapshot file metadata is invalid")
+        path = actual_files[relative]
+        if (
+            metadata.get("bytes") != path.stat().st_size
+            or metadata.get("sha256") != _sha256(path)
+        ):
+            raise ValueError(f"external documentation snapshot file differs: {relative}")
+    total_bytes = snapshot_manifest_path.stat().st_size + sum(
+        path.stat().st_size for path in actual_files.values()
+    )
+    if total_bytes != docs_artifact["snapshot_bytes"]:
+        raise ValueError("external documentation snapshot byte size differs")
+    return "external_artifact_verified"
 
 
 def _selected_documents(root: Path, record: dict[str, Any]) -> tuple[dict[str, dict[str, Any]], str]:
@@ -280,11 +500,14 @@ def _validate_platform_matrix(root: Path, *, version: str, receipt_paths: set[st
 
 
 def validate_alignment(
-    root: Path = ROOT, *, expected_source_revision: str | None = None
+    root: Path = ROOT,
+    *,
+    expected_source_revision: str | None = None,
+    artifact_root: Path | None = None,
 ) -> dict[str, Any]:
     canonical_path = root / "release/CURRENT.json"
     current = _read_json(canonical_path)
-    if current.get("schema") != "scirel.release-current.v1":
+    if current.get("schema") != "scirel.release-current.v2":
         raise ValueError("release CURRENT has an invalid schema")
     if current.get("package") != "scirel":
         raise ValueError("release CURRENT names an unexpected package")
@@ -313,20 +536,13 @@ def validate_alignment(
         raise ValueError("release tuple statuses differ")
     if not isinstance(wheel.get("artifact"), dict):
         raise ValueError("wheel tuple lacks artifact metadata")
-    artifact = wheel["artifact"]
-    if not isinstance(artifact.get("sha256"), str) or len(artifact["sha256"]) != 64:
-        raise ValueError("wheel artifact has an invalid sha256")
-    artifact_relpath = artifact.get("path")
-    if not isinstance(artifact_relpath, str) or not artifact_relpath:
-        raise ValueError("wheel artifact path is invalid")
-    artifact_path = (root / artifact_relpath).resolve()
-    if not artifact_path.is_relative_to(root.resolve()):
-        raise ValueError("wheel artifact path escapes the repository")
-    if artifact_path.is_file():
-        if _sha256(artifact_path) != artifact["sha256"]:
-            raise ValueError("wheel artifact digest differs from release CURRENT")
-        if artifact_path.stat().st_size != artifact.get("bytes"):
-            raise ValueError("wheel artifact byte size differs from release CURRENT")
+    artifact_status = _validate_external_artifacts(
+        root,
+        current,
+        version=version,
+        source_revision=source_revision,
+        artifact_root=artifact_root,
+    )
     _validate_platform_receipts(root, wheel, expected_source_revision=source_revision)
     _validate_platform_matrix(
         root,
@@ -402,6 +618,7 @@ def validate_alignment(
         "capability_counts": counts,
         "selection_sha256": selection_digest,
         "handbook_sha256": handbook_digest,
+        "external_artifacts": artifact_status,
     }
 
 
@@ -412,11 +629,18 @@ def main() -> None:
         "--expected-source-revision",
         help="require CURRENT.source_revision to match this exact Git commit",
     )
+    parser.add_argument(
+        "--artifact-root",
+        type=Path,
+        help="external root containing logical wheel/documentation artifact references",
+    )
     args = parser.parse_args()
     print(
         json.dumps(
             validate_alignment(
-                args.root.resolve(), expected_source_revision=args.expected_source_revision
+                args.root.resolve(),
+                expected_source_revision=args.expected_source_revision,
+                artifact_root=args.artifact_root.resolve() if args.artifact_root else None,
             ),
             ensure_ascii=False,
             sort_keys=True,

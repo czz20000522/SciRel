@@ -4,8 +4,8 @@ The authoritative version is the `project.version` field in `pyproject.toml` at 
 
 
 The canonical tuple contains the one wheel currently bound by this checkout.
-Its artifact record contains the exact SHA-256, byte size, source revision and
-selected capability closure. Older wheel files are not a required working-tree
+Its artifact record contains an external `manifest_ref`, the manifest digest,
+exact wheel SHA-256 and byte size, source revision and selected capability closure. Older wheel files are not a required working-tree
 asset: Git history is the version history, and a prior wheel must be restored
 from its recorded digest or external evidence when it is needed for an audit.
 Do not copy every historical wheel into the repository.
@@ -41,4 +41,6 @@ file mtimes. The helper records the full source revision, project version, wheel
 byte count and SHA-256 in its manifest, and fixes `PYTHONHASHSEED=0` alongside
 `SOURCE_DATE_EPOCH` and POSIX `umask 022`. Compare those values with the canonical
 tuple and run the platform receipt against that exact file before updating
-`release/CURRENT.json`.
+`release/CURRENT.json`. The logical manifest reference is resolved only against
+an explicitly supplied external artifact root; it never points into
+`build/releases/` inside the checkout.

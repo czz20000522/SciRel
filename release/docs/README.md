@@ -13,6 +13,12 @@ receipt; the wheel bytes may remain identical, but the source revision and
 document selection must be explicit. Git history records revisions instead of
 keeping duplicate copies of the same document set.
 
+The current tuple stores a logical external documentation `manifest_ref`, its
+manifest digest, and the snapshot digest/byte count. The rendered snapshot and
+its nested manifest are validated only when
+`validate_release_alignment.py --artifact-root <root>` is given; the Git tree
+does not retain a generated per-version documentation directory.
+
 Build a snapshot from an exact source ref with
 `scripts/build_scirel_docs_from_ref.py`. It archives the ref, invokes the
 archived `scripts/scirel_docs.py` with the explicit source revision, and writes
