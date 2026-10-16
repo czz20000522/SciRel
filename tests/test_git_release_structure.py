@@ -156,14 +156,21 @@ def test_ref_bound_document_builder_requires_selection(tmp_path: Path) -> None:
         raise AssertionError("unbound ref documentation build unexpectedly succeeded")
 
 
-def test_current_release_note_does_not_duplicate_stale_artifact_identity() -> None:
+def test_release_notes_do_not_duplicate_dynamic_artifact_identity() -> None:
     current = json.loads((ROOT / "release/CURRENT.json").read_text(encoding="utf-8"))
-    notes = (ROOT / "docs/release/0.1.0.dev9-notes.md").read_text(encoding="utf-8")
-    assert "release/CURRENT.json" in notes
-    assert current["source_revision"] not in notes
-    assert current["wheel"]["artifact"]["sha256"] not in notes
-    assert "7feb451b45da541bc4f2ced0c8dc0369bc8f5e66" not in notes
-    assert "34ac7cf21658412671c5290a41b2eed7662b8847444b04e809786f5b4535e8f2" not in notes
+    note_paths = sorted((ROOT / "docs/release").glob("*-notes.md"))
+    assert note_paths
+    for path in note_paths:
+        notes = path.read_text(encoding="utf-8")
+        assert "release/CURRENT.json" in notes
+        assert not re.search(r"scirel-[^`\s]+\.whl", notes)
+        assert not re.search(r"(?i)sha-?256", notes)
+        assert not re.search(r"(?i)source[_ ]revision", notes)
+        assert not re.search(r"(?i)\b[0-9a-f]{40}\b", notes)
+        assert not re.search(r"(?i)\b[0-9a-f]{64}\b", notes)
+    current_note = (ROOT / "docs/release/0.1.0.dev9-notes.md").read_text(encoding="utf-8")
+    assert current["source_revision"] not in current_note
+    assert current["wheel"]["artifact"]["sha256"] not in current_note
 
 
 def test_scipy_style_git_release_model_is_explicit() -> None:
