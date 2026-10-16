@@ -78,6 +78,18 @@ development dependency groups；源码仓库中的 `doc/source/release/` 只保�
 文档副本。`release/CURRENT.json` 可以随着当前候选更新，但它不产生新的版本线，也不
 替代 `pyproject.toml`、Git 或当前文档树。
 
+SciPy 还把发布自动化放在独立的最小 release 仓库：workflow 通过
+`SOURCE_REF_TO_BUILD` 指定要构建的 branch、tag 或 commit，checkout 该 ref 后在平台矩阵中
+生成并上传产物。SciRel 当前先把同一边界收敛在本仓库的两个 ref-bound 脚本中，避免在纯
+Python wheel 阶段再复制一个只装构建脚本的仓库；如果以后引入 `.so`、`.pyd` 或其他平台
+二进制扩展，再将这些脚本迁移到独立的最小 release automation 仓库。迁移时仍只传入
+SciRel 的确切 Git ref，不能复制源码、handbook 或历史 wheel。
+
+SciPy 的版本工具还把 Git revision 暴露给安装后的运行时，便于把开发版本追溯到提交。SciRel
+当前先把 revision 固定在 wheel、文档和平台 receipt 的外部 manifest 中；在不改变公共科学
+API 的后续版本中，可以增加只读的 `scirel.version.git_revision`，但它必须由 ref-bound
+构建生成，不能在运行时依赖用户 checkout 或网络查询。
+
 ### 文档重新资格化
 
 文档中的 `version.implementation_version` 是运行时兼容性约束，不是第二个版本源。
