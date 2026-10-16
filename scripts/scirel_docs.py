@@ -144,7 +144,7 @@ def chapter_directory():
     """Select one explicitly bound successor without rewriting old evidence."""
     selection_path = ROOT / 'tools/docs/chapter-selection.json'
     if not selection_path.exists():
-        return ROOT / 'tools/docs/magnetostatics'
+        raise ValueError('chapter selection is required; refusing historical fallback')
     selection = json.loads(selection_path.read_bytes())
     if set(selection) != {'schema', 'chapters'} or selection['schema'] != 'scirel.chapter-selection.v1':
         raise ValueError('invalid chapter selection schema')
@@ -167,10 +167,19 @@ def chapter_directory():
     return root
 
 
-def chapter_files(asset_ids):
+def chapter_files(asset_ids, *, expected_source_revision=None,
+                  expected_project_version=None, expected_wheel_sha256=None):
     """Bind executed examples to current implementation before publishing them."""
     root = chapter_directory()
     execution = json.loads((root/'execution.json').read_bytes())
+    if execution.get('schema') != 'scirel.chapter-execution.v1':
+        raise ValueError('selected chapter execution has an invalid schema')
+    if expected_source_revision is not None and execution.get('source_commit') != expected_source_revision:
+        raise ValueError('selected chapter execution source commit differs from requested source')
+    if expected_project_version is not None and execution.get('wheel_version') != expected_project_version:
+        raise ValueError('selected chapter execution wheel version differs from project version')
+    if expected_wheel_sha256 is not None and execution.get('wheel_sha256') != expected_wheel_sha256:
+        raise ValueError('selected chapter execution wheel digest differs from current release')
     for path, digest in execution['files'].items():
         if sha((ROOT/path).read_bytes()) != digest:
             raise ValueError('chapter implementation changed; rerun examples: ' + path)
@@ -215,6 +224,7 @@ def build(documents: Path, output: Path, outline: Path | None = None,
     docs = load_document_set(documents)
     if output.exists():
         raise FileExistsError('output already exists; build a new snapshot')
+    bound_source = source_revision
     source = source_revision
     if source is None:
         source = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
@@ -246,7 +256,21 @@ def build(documents: Path, output: Path, outline: Path | None = None,
     files['handbook.json'] = encode(book)
     for path in STATIC_FILES:
         files['static/' + path] = (ROOT / 'tools/docs' / path).read_bytes()
-    files.update(chapter_files({d['asset_id'] for d in docs}))
+    expected_wheel_sha256 = None
+    if bound_source is not None:
+        current_path = ROOT / 'release/CURRENT.json'
+        if current_path.is_file():
+            current = json.loads(current_path.read_bytes())
+            if current.get('source_revision') == bound_source:
+                expected_wheel_sha256 = (
+                    current.get('wheel', {}).get('artifact', {}).get('sha256')
+                )
+    files.update(chapter_files(
+        {d['asset_id'] for d in docs},
+        expected_source_revision=bound_source,
+        expected_project_version=project_version(),
+        expected_wheel_sha256=expected_wheel_sha256,
+    ))
     chapter = json.loads(files['chapters/magnetostatics/chapter.json'])
     files.update(render_site(
         ROOT, docs, book, translations, chapter,

@@ -47,6 +47,12 @@ def test_historical_release_data_is_not_parallel_wheel_or_doc_copies() -> None:
     assert "build/releases" not in (ROOT / "release/CURRENT.json").read_text(encoding="utf-8")
     assert not list((ROOT / "tools/docs/handbooks").glob("*.json"))
     assert (ROOT / "tools/docs/handbook.json").is_file()
+    chapter_dirs = sorted(
+        path.name for path in (ROOT / "tools/docs").glob("magnetostatics*") if path.is_dir()
+    )
+    assert chapter_dirs == ["magnetostatics"]
+    selection = json.loads((ROOT / "tools/docs/chapter-selection.json").read_text(encoding="utf-8"))
+    assert selection["chapters"]["magnetostatics"]["directory"] == "tools/docs/magnetostatics"
 
 
 def test_current_release_receipt_is_not_the_version_source() -> None:

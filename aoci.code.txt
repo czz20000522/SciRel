@@ -311,8 +311,8 @@ README.md[SB7T]: F:组织SciRel项目文档、科学合同、工作流与发行�
 architecture.md[SB7S]: F:定义科学关系、组合图、领域子包、独立分发与渐进发现边界 | R:code:src/scirel/__init__.py,code:docs/catalog.md | A:科学身份、DAG与有界反馈、领域API与分发合同 | S:未发布且无外部用户时同步调整调用方，不保留无消费者的顶层别名；延迟导入不缩减wheel或取消依赖
 catalog.md[SB7S]: F:定义分片目录渐进检索、稳定身份、反向依赖及增量构建合同 | R:code:scripts/build_catalog.py,code:contracts/scientific-catalog-release.schema.json | A:route到summary到exact与依赖闭包发现流程 | S:分页预算耗尽不能宣称无能力；complete只文档计数覆盖，不授予批准
 development-process.md[SW7M]: F:规定独立拆解与SciRel科学整合、审核和发行的阶段职责 | R:code:skills/extraction/README.md,code:skills/development/README.md,code:docs/requirements/scirel-workflow.md | A:输入交接、连续交付、受影响验证与最终审核 | S:阶段保真、科学修正和应用证据分开；异步交接不成为已授权项目默认等待理由
-searchable-documentation.md[SU7S]: F:说明同源手册构建、维护者查询与便携分层消费入口 | R:code:scripts/scirel_docs.py,code:skills/development/usage/scientific-asset-navigation/scripts/query.py | A:领域主题；候选；调用章节；完整合同；HTML维护 | S:便携查询只校验读到的文件，不审计全站；文档集合与构建成功不证明wheel科学资格
-handbook-authoring.md[SU7T]: F:规定领域手册、中文合同投影、用途表与完整案例的持续维护 | R:code:tools/docs/handbook.json,code:docs/requirements/asset-documentation.md | A:主题归属、参考导航、实际案例与逐批维护 | S:中文层绑定原摘要且保留全部条款，不能仅换摘要；纯导航改动复用不变且有效的运行证据
+searchable-documentation.md[SU7S]: F:说明同源手册构建、维护者查询与便携分层消费入口 | R:code:scripts/scirel_docs.py,code:scripts/build_scirel_sphinx.py,code:skills/development/usage/scientific-asset-navigation/scripts/query.py | A:领域主题、候选、调用章节、完整合同与HTML维护 | S:便携查询只校验读到的文件，不审计全站；章节由唯一目录和执行摘要选择，版本或实现变化必须重新绑定
+handbook-authoring.md[SU7T]: F:规定领域手册、中文合同投影、用途表与完整案例的持续维护 | R:code:tools/docs/handbook.json,code:docs/requirements/asset-documentation.md,code:tools/docs/magnetostatics | A:主题归属、参考导航、唯一教程源、实际案例与逐批维护 | S:中文层绑定原摘要且保留全部条款；历史教程运行快照由Git和仓外回执恢复，不复制工作树
 scientific-core-installation.md[SB9T]: F:说明当前科学包安装、Git绑定wheel和中文手册选择的使用边界 | R:code:release/CURRENT.json,code:docs/design/project-and-distribution.md,code:pyproject.toml | A:独立环境安装；领域入口检索；同源文档与wheel验证 | S:安装先核对CURRENT中的wheel摘要；技术接收不等于人工科学认可或发行资格；系统运行时按入口平台分别核对
 release.md[SV6T]: F:索引Git版本的短发行说明并指向当前release tuple | R:code:docs/release/0.1.0.dev8-notes.md,code:docs/release/0.1.0.dev9-notes.md,code:release/CURRENT.json,code:docs/README.md | A:按版本导航摘要；当前候选；历史恢复入口 | S:发行说明不复制完整API或手册；历史版本由Git提交、tag和外部工件摘要恢复
 
@@ -746,7 +746,7 @@ verify_review_selection.py[XV7M]: F:核验两次宿主导出的确切审核选�
 prepare_maintained_candidate.py[XV8S]: F:核验选择profile的源码许可与静态导入闭包并生成独立包暂存树 | R:code:scripts/scientific_runtime.py,code:licenses/Pleiades-MIT.txt | A:stage；显式初始化；固定依赖；选择回执 | S:拒绝动态导入与exec/eval、缺失父包及未声明外部导入；必须全新输出，包装闭包不等于科学批准
 build_gpdf_selected.py[XV6T]: F:构建三实现四入口的GPDF动理学所选wheel | R:code:scripts/scientific_runtime.py,code:src/scirel/kinetic/cauchy_transform.py | A:output与--notices；生成包初始化和离线构建 | S:要求三份许可说明和全新输出；依赖来自维护基线并记摘要，构建不授予科学或发行资格
 build_pleiades_selected.py[XV8S]: F:按摘要验证所选实现、原生资源、初始化器与许可后构建精确科学wheel | R:code:scripts/scientific_runtime.py,code:provenance/selections/scientific-core-20261014-r5.json | A:profile/output/--source-root、固定依赖、数据清单与构建回执 | S:先拒绝越界符号链接、重复路径和摘要差异；根初始化器版本须匹配profile字面版本，旧输出不覆写，data_files限m/in/json；回执不赋科学或发行批准
-scirel_docs.py[XU7M]: F:构建不可覆写中文科学快照并提供同源HTTP与CLI查询 | R:code:scripts/build_scirel_sphinx.py,code:scripts/validate_asset_documents.py | A:显式文档与翻译集、章节绑定、原文记录、索引与查询服务 | S:正式JSON保留原字节，快照整体摘要绑定；查询不导入科学，路由仅开放清单，渲染不等于科学重新验证
+scirel_docs.py[XU7M]: F:构建不可覆写中文科学快照并提供同源HTTP与CLI查询 | R:code:scripts/build_scirel_sphinx.py,code:scripts/validate_asset_documents.py,code:tools/docs/chapter-selection.json | A:显式文档与翻译集、单一章节选择、源码提交/包版本/wheel摘要绑定、原文记录、索引与查询服务 | S:正式JSON保留原字节；缺失章节选择、源提交、包版本或当前wheel绑定时失败关闭；整体快照摘要绑定，查询不导入科学
 build_scirel_sphinx.py[XU7M]: F:校验中文与精确合同并渲染领域参考及实跑教程Sphinx快照 | R:code:tools/docs/sphinx/conf.py,code:scripts/scirel_docs.py,code:provenance/validation/kinetic-tutorial-current-wheel-20261015.json | A:翻译覆盖、MathML、函数表、案例绑定和构建 | S:不导入科学或执行示例；摘要漂移及构建警告阻断，执行身份留元数据而不灌入教程正文。
 scientific_runtime.py[CV7T]: F:从pyproject读取科学与构建依赖基线并校验所选新包 | R:code:pyproject.toml,code:uv.lock,code:release/CURRENT.json | A:pin_dependencies；python_requirement；build_requirements；baseline_receipt | S:只接受精确锁定的科学依赖；拒绝URL、extras、marker和基线外包，不把test extra转入运行闭包
 mapping_interface_bindings.json[FC9L]: F:绑定复杂mapping入口的科学端口、默认和审查依据 | R:code:scripts/validate_asset_documents.py | A:15个mapping/关键词接口按条件默认、嵌套控件及对应合同定点绑定 | S:模块或合同变化即失效；kwargs不绕过必需科学端口；快路径范围需按记录解释，不替代实现或科学资格
@@ -1152,7 +1152,7 @@ test_profile_energy.py[TB7S]: F:回归径向剖面的离散守恒、边界和独
 test_thermal_cancellation.py[TB7T]: F:锁定储热有符号相消和中间上下溢的精确结果回归 | R:code:src/scirel/physics/thermal_energy.py | A:六排列保留1.5焦耳残量;超大中间乘积相消;次正规乘积先累加后舍入;最终上溢和舍零仍失败 | S:普通正压力用例通过不足以覆盖有符号合同，不能用longdouble替换精确乘加
 test_bootstrap.py[TQ7T]: F:回归自举系数有限极限、实际电流约定及严格输入边界 | R:code:src/scirel/neoclassical/bootstrap.py,code:src/scirel/geometry/face_to_cell.py | A:大碰撞率alpha极限;Redl L34;常规源式比较;总磁通符号与轴零;指数抵消;极端中点与布尔拒绝 | S:微俘获分数与大碰撞率的组合防止修成对数抵消；这些回归不单独建立经验拟合的物理适用性
 test_fvm.py[TQ8S]: F:验证有限体积守恒、制造解阶数、theta因果、Neumann不等宽重构及三对角带状求解回归 | R:code:src/scirel/fvm/cell_variable.py,code:src/scirel/fvm/convection.py,code:src/scirel/fvm/diffusion.py,code:src/scirel/fvm/implicit.py | A:边界非零通量守恒；上风极限；均匀扩散二阶；对流一阶；奇异失败；五网格多项式与掩码回归；禁止theta路径隐式构造dense矩阵 | S:原不等末宽0.74对0.8反例与等宽通过例均保留；Neumann含N2，Dirichlet端点割线和面值线性外推仍按旧定义；大网格回归只约束带状路径，不外推任意网格稳定性
-test_scirel_docs.py[TU7M]: F:验证中文绑定、领域导航、同源查询和明确后继章节选择 | R:code:scripts/scirel_docs.py,code:scripts/build_scirel_sphinx.py | A:136闭包；不可覆盖快照；漂移拒绝；公式和参考链接；显式中文集；摘要路径 | S:旧章节fixture从绑定提交取字节；新选择仍拒漏项重复漂移，静态测试不代替科学运行或视觉验收
+test_scirel_docs.py[TU7M]: F:验证中文绑定、领域导航、同源查询和明确后继章节选择 | R:code:scripts/scirel_docs.py,code:scripts/build_scirel_sphinx.py | A:136闭包、不可覆盖快照、漂移拒绝、Git历史fixture、缺失选择失败、公式和参考链接、显式中文集 | S:历史章节fixture从绑定提交取字节；新选择拒绝漏项、重复、漂移和旧版本回退，静态测试不代替科学运行或视觉验收
 test_lazy_namespace.py[TB7S]: F:验证根、field与kinetic命名空间的惰性发现、兼容身份和可选绘图边界 | R:code:src/scirel/__init__.py,code:src/scirel/field/__init__.py,code:src/scirel/kinetic/__init__.py,code:src/scirel/geometry/plotting.py | A:隔离解释器；根与领域__all__；from-import身份；缺Matplotlib边界 | S:必须在新解释器中运行以避免导入顺序污染；根导入不得预加载科学依赖；惰性断言保持完整公开集合
 test_scientific_runtime.py[TV6S]: F:验证维护的科学依赖基线、pyproject版本源、历史重资格拒绝和选定wheel元数据 | R:code:scripts/scientific_runtime.py,code:scripts/prepare_reviewed_distribution.py,code:pyproject.toml | A:固定pins；冲突拒绝；文档版本漂移拒绝；wheel构建元数据断言 | S:版本一致不等于科学通过；历史选择必须显式重资格；合成许可仅为夹具，不授予生产发行资格
 _document_fixtures.py[TQ6T]: F:为开发测试复制当前267份规范合同闭包 | R:code:tests/test_asset_documentation.py | A:example_document_sources与copy_example_closure | S:完整分母显式固定；外部来源catalog及D0至D3工作不作为包测试输入。
@@ -1166,7 +1166,7 @@ test_scientific_delivery.py[TQ7S]: F:回归保存数据、报告、图轴、作�
 test_release_alignment.py[TQ5T]: F:回归release tuple版本、闭包、平台回执、外部manifest和精确source revision | R:code:scripts/validate_release_alignment.py,code:release/CURRENT.json,code:release/wheel/CURRENT.json,code:release/docs/CURRENT.json,code:provenance/validation/scirel-dev9-linux-acceptance-20261017-9733bfc.json | A:拒绝版本漂移、闭包不一致、路径穿越、manifest、快照和字节不匹配 | S:external_artifact_verified只在artifact root下实际文件与manifest完全一致时返回；结构unchecked不能代替实物验收
 test_platform_support.py[TQ6T]: F:回归平台矩阵的状态、证据缺失拒绝及项目根导入路径 | R:code:scripts/validate_platform_support.py,code:release/platform-support-matrix.json | A:pytest；根路径注入；临时矩阵复制；状态与证据负例 | S:矩阵结构通过不证明平台科学parity、依赖闭包或人工发行批准
 test_validate_installed_wheel.py[TQ6T]: F:回归已安装wheel验证器的环境检查、依赖检查、公共运行和失败回执 | R:code:scripts/validate_installed_wheel.py | A:pytest；临时输出；目标平台不符；源码树拒绝；receipt字段断言 | S:测试必须保留非零失败和精确错误；不能把本地checkout或平台标签当作安装包验收
-test_git_release_structure.py[TQ5T]: F:回归Git单一版本源、无按版本复制、ref-bound构建和外部产物边界 | R:code:pyproject.toml,code:release/CURRENT.json,code:docs/release,code:scripts/build_scirel_docs_from_ref.py,code:docs/design/scirel-git-release-model.md | A:阻止仓内wheel、HTML和版本目录回流；检查v2 logical refs、SciPy结构对标锚点和短说明不重复动态摘要 | S:结构测试只证明仓库边界与元数据形状，不替代wheel安装、科学正确性或平台闭包
+test_git_release_structure.py[TQ5T]: F:回归Git单一版本源、无按版本复制、ref-bound构建和外部产物边界 | R:code:pyproject.toml,code:release/CURRENT.json,code:docs/release,code:scripts/build_scirel_docs_from_ref.py,code:docs/design/scirel-git-release-model.md,code:tools/docs/chapter-selection.json | A:阻止仓内wheel、HTML、版本目录和重复教程回流；检查v2 logical refs、SciPy结构对标锚点、单一章节目录和短说明不重复动态摘要 | S:结构测试只证明仓库边界与元数据形状，不替代wheel安装、科学正确性或平台闭包
 test_document_requalification.py[TQ5T]: F:验证dev8 selection到dev9的Git重资格化阻塞和不修改保证 | R:code:scripts/requalify_document_selection.py,code:catalog/examples,code:provenance/selections/scientific-core-documents-20261015-r9.json | A:覆盖257可复用、3 plotting阻塞、完整模式失败和apply禁止缩小分母 | S:测试断言当前历史基线895bc40的三条plotting阻塞，不把partial结果当完整候选
 
 ===/Users/tomczz/Projects/SciReL/tests/fixtures/l1/===
@@ -1599,17 +1599,17 @@ handbook.html[EU5T]: F:提供科学手册的目录、全书搜索与动态正文
 handbook.js[EU6S]: F:呈现领域章节、主题资产与全书搜索，连接函数参考和已执行案例 | R:code:tools/docs/navigation.js,code:scripts/scirel_docs.py | A:章节与主题hash路由、搜索结果、旧锚点转向 | S:主题合同分页读取且旧异步响应不能覆盖新页；无案例主题明确待补充，不生成科学结果
 handbook.json[SU6L]: F:按九领域七十二主题组织267份合同的当前学习目录 | R:code:scripts/scirel_docs.py,code:docs/handbook-authoring.md | A:章节、主题、唯一资产主归属与两教程 | S:空间色散主题区分候选根、有限谱与物理模态；按科学问题组织而非来源项目。
 navigation.js[EU5T]: F:将绑定学科目录挂载为手册与案例共享的折叠树并定位当前页 | R:code:tools/docs/handbook.json,code:tools/docs/handbook.js | A:ScirelNavigation.mount | S:案例原TOC移入对应主题；跳到正文仅移动焦点不触发hash路由
-chapter-selection.json[FU6T]: F:显式选择当前磁静力学教程及执行摘要 | R:code:scripts/scirel_docs.py,code:tools/docs/magnetostatics-current-wheel/execution.json | A:magnetostatics路由及directory/execution_sha256 | S:不按时间猜最新版；选择新包实跑后继不改历史收据。
+chapter-selection.json[FU6T]: F:显式选择唯一当前磁静力学教程及执行摘要 | R:code:scripts/scirel_docs.py,code:tools/docs/magnetostatics/execution.json | A:magnetostatics路由、canonical目录与execution_sha256 | S:不按时间猜最新版；选择缺失或执行摘要变化时失败，新的包必须实跑后继并更新绑定
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/magnetostatics/===
-chapter.json[SU6T]: F:定义轴对称线圈教程的问题方法、双格式公式和结果解释 | R:code:tools/docs/magnetostatics/example.py,code:tools/docs/chapter.html | A:圆环；线圈对；矩形截面；加密；API参考 | S:代码取自实跑脚本；MathML须与文本等义；固定总安匝数，局部加密不是全域误差界
+chapter.json[SU6T]: F:定义轴对称线圈教程的问题方法、双格式公式和结果解释 | R:code:tools/docs/magnetostatics/example.py,code:tools/docs/chapter.html | A:圆环、线圈对、矩形截面、加密、API参考与导线奇点限制 | S:代码取自实跑脚本；MathML须与文本等义；固定总安匝数，局部加密不是全域误差界；离散零不代表物理自场
 example.py[TB6T]: F:调用安装包运行圆环、对称线圈和矩形截面案例并导出结果 | R:code:src/scirel/field/multi_coil_vacuum_field.py,code:src/scirel/field/circular_filament_green.py | A:example.py results.json | S:矩形节点权重归一保持总安匝数；解析轴场、对称性和电流线性断言通过才写结果
-execution.json[OQ6T]: F:绑定章节执行的实现、合同、脚本、结果、图表和安装wheel身份 | R:code:scripts/scirel_docs.py,code:tools/docs/magnetostatics/example.py | A:源码摘要、运行环境、退出与绘图绑定 | S:科学在断网无源码挂载容器运行，Mac仅绘制记录值；选择性开发wheel不是公开发行
-pair.svg[SU4L]: F:展示同向线圈对相对单环的归一轴场与反向通电的轴场曲线 | R:code:tools/docs/magnetostatics/plot.py | A:教程图2 | S:左图归一化，右图为mT
-plot.py[XU5T]: F:从已运行结果绘制圆环比较、对称线圈与区域等值线黑白SVG | R:code:tools/docs/magnetostatics/results.json | A:生成single、pair和rectangle图 | S:只渲染记录值，轴上解析线另算作图；不重新执行SciRel科学函数
-rectangle.svg[SU4L]: F:显示矩形截面线圈组空腔内Bz灰度与等值线 | R:code:tools/docs/magnetostatics/plot.py | A:教程图3 | S:仅显示R不超过0.30m的无导线区域
-results.json[TD5L]: F:保存磁场章节实际运行的轴场序列、区域场、加密值与检查误差 | R:code:tools/docs/magnetostatics/example.py,code:tools/docs/magnetostatics/plot.py | A:scirel.chapter-results.v1 | S:数值以T保存，页面与图转为mT；有限案例不证明任意几何正确性
-single.svg[SU4L]: F:叠绘单圆环轴向磁场数值曲线和独立轴上公式采样 | R:code:tools/docs/magnetostatics/plot.py | A:教程图1 | S:图中重合仅验证所选轴上案例
+execution.json[OQ6T]: F:绑定章节执行的实现、合同、脚本、结果、图表和dev9安装wheel身份 | R:code:scripts/scirel_docs.py,code:tools/docs/magnetostatics/example.py,code:release/CURRENT.json | A:源码摘要、Git提交、包版本与wheel摘要、运行环境、退出与确定性绘图绑定 | S:科学在断网无源码挂载环境运行；图表字节可重复；选择性开发wheel不是公开发行，回执只覆盖本章检查
+pair.svg[SU4L]: F:展示同向线圈对相对单环的归一轴场与反向通电的轴场曲线 | R:code:tools/docs/magnetostatics/plot.py,code:tools/docs/magnetostatics/results.json | A:教程图2、中心归一化与反向电流mT轴场 | S:图表只呈现记录结果，归一化曲线不表示绝对场强
+plot.py[XU5T]: F:从已运行结果绘制圆环比较、对称线圈与区域等值线的可重复黑白SVG | R:code:tools/docs/magnetostatics/results.json | A:固定SVG哈希盐、去除时间元数据与尾随空格、生成single/pair/rectangle图 | S:只渲染记录值，轴上解析线另算作图；不重新执行SciRel科学函数
+rectangle.svg[SU4L]: F:显示矩形截面线圈组空腔内Bz灰度与等值线 | R:code:tools/docs/magnetostatics/plot.py,code:tools/docs/magnetostatics/results.json | A:教程图3、R/Z米制坐标、mT色标与等比例坐标 | S:仅显示R不超过0.30m的无导线区域，不证明全空间均匀性
+results.json[TD5L]: F:保存磁场章节实际运行的轴场序列、区域场、加密值与检查误差 | R:code:tools/docs/magnetostatics/example.py,code:tools/docs/magnetostatics/plot.py | A:scirel.chapter-results.v1、轴线/网格场、中心加密与解析/对称/线性误差 | S:数值以T保存，页面与图转为mT；有限案例不证明任意几何正确性
+single.svg[SU4L]: F:叠绘单圆环轴向磁场数值曲线和独立轴上公式采样 | R:code:tools/docs/magnetostatics/plot.py,code:tools/docs/magnetostatics/results.json | A:教程图1、Z坐标与Bz的mT对照 | S:图中重合仅验证所选轴上案例，不扩展到离轴或细丝自场
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/sphinx/_static/===
 scirel.css[FU5T]: F:为PyData科学文档统一白底黑字并约束长参数、函数表、公式和代码的排版 | R:code:tools/docs/sphinx/conf.py,code:scripts/build_scirel_sphinx.py | A:主题变量；field-list网格和折行；代码独立横滚；API表与MathML样式；窄屏内边距 | S:明暗主题均保持浅色；科学长参数不得撑宽文章，pre保留缩进与语法颜色且单独横滚；样式源码检查不等于浏览器验收
@@ -1664,26 +1664,6 @@ scirel-dev9-document-integration-20261017-aab0867.json[OV8M]: F:绑定同一Git 
 scirel-dev9-linux-acceptance-20261017-aab0867.json[TQ7S]: F:记录Linux amd64与CPython 3.14 clean-venv下的绑定wheel技术验收、依赖检查和代表性算子/TaskGraph结果 | R:code:release/CURRENT.json,code:pyproject.toml,code:scripts/validate_installed_wheel.py | A:status、artifact、runtime、dependencies、pip_check、operator与taskgraph验收字段 | S:回执绑定精确wheel摘要和source revision；依赖通过网络解析且offline wheelhouse尚未验收；技术PASS不等于科学、再分发或发行批准
 scirel-dev9-document-integration-20261017-9733bfc.json[OV5T]: F:记录dev9同源wheel、文档快照和catalog的Git绑定与摘要 | R:code:release/CURRENT.json,code:provenance/validation/scirel-dev9-linux-acceptance-20261017-9733bfc.json,code:provenance/selections/scientific-core-documents-20261017-dev9.json,code:tools/docs/handbook.json | A:提供260项选择、267项手册分母、catalog根摘要、文档快照和wheel摘要的技术整合回执 | S:生成物位于ignored构建根，回执PASS只表示技术绑定，不表示科学、再分发或公开发行批准
 scirel-dev9-linux-acceptance-20261017-9733bfc.json[OV6T]: F:记录Linux amd64与CPython 3.14 clean-venv对绑定dev9 wheel的安装验收 | R:code:release/CURRENT.json,code:scripts/validate_installed_wheel.py,code:release/platform-support-matrix.json,code:provenance/validation/scirel-dev9-document-integration-20261017-9733bfc.json | A:保存精确source archive、wheel摘要、pip check、核心依赖、代表性operator和跨域TaskGraph结果 | S:依赖通过网络解析且offline wheelhouse未运行，技术PASS不等于完整科学闭包、再分发或发行批准
-
-===/Users/tomczz/Projects/SciReL/tools/docs/magnetostatics-20261013/===
-chapter.json[SU6T]: F:组织单环、同反向线圈对、矩形线圈与加密检查的磁静力学教程 | R:code:tools/docs/magnetostatics-20261013/example.py,code:tools/docs/magnetostatics-20261013/results.json | A:问题；方法；MathML；代码；结果解释 | S:观测避导线；离散零不是自场；局部8到16加密不证明全域误差界
-example.py[TB6T]: F:实际调用安装科学包生成单环、线圈对和矩形组的数值案例 | R:code:src/scirel/field/multi_coil_vacuum_field.py | A:轴上解析；对称；反向电流；总安匝保持；加密；结果JSON | S:权重和为一使加密不增加电流；小节顺序共享变量，任何断言失败不能写all_checks_passed
-execution.json[SQ7T]: F:绑定dev5无源码安装章节的实现、合同、示例、结果及图字节 | R:code:tools/docs/magnetostatics-20261013/example.py,code:tools/docs/magnetostatics-20261013/plot.py | A:镜像；wheel；容器；无网络；exit0；前驱摘要 | S:source_commit是工作树基线，执行候选由文件摘要界定；历史章节执行不代表全D3或人工批准
-pair.svg[SU5L]: F:展示已记录同向线圈对中心平坦度及反向电流轴场 | R:code:tools/docs/magnetostatics-20261013/plot.py | A:黑白双图；归一化同向场；反向mT轴场 | S:左图各自中心归一化，不能据高度比较绝对场强；只是记录结果的呈现
-plot.py[XU5T]: F:从冻结数值结果绘制三张黑白磁场SVG | R:code:tools/docs/magnetostatics-20261013/results.json | A:Agg；轴场与公式；归一化线圈对；反向场；截面等值图 | S:只呈现已算结果，不运行SciRel；读固定同目录结果并写同目录三图
-rectangle.svg[SU5L]: F:呈现矩形线圈组目标R-Z区域的BZ灰阶及等值线 | R:code:tools/docs/magnetostatics-20261013/plot.py | A:R/Z米坐标；BZ毫特斯拉；等比例截面 | S:只显示指定区域及轴向分量，不证明全空间均匀性
-results.json[SD6L]: F:保存dev5安装章节的轴线数组、矩形场、加密中心值和实算检查 | R:code:tools/docs/magnetostatics-20261013/example.py,code:tools/docs/magnetostatics-20261013/execution.json | A:141轴点；101x61截面；单环及对中心；四级加密；三数值检查 | S:原始量为T、绘图才转mT；通过声明只覆盖该脚本检查，不能充作原尺寸压力D3
-single.svg[SU5L]: F:比较记录的圆环轴场与独立轴上解析公式 | R:code:tools/docs/magnetostatics-20261013/plot.py | A:黑实线数值；空心点解析；Z米；BZ毫特斯拉 | S:视觉重合仅为选定轴线，不证明离轴或自场正确
-
-===/Users/tomczz/Projects/SciReL/tools/docs/magnetostatics-20261014-mac/===
-chapter.json[SU6T]: F:提供当前磁静力学问题导向教程及具名结果解释 | R:code:tools/docs/magnetostatics-20261014-mac/example.py,code:tools/docs/magnetostatics-20261014-mac/results.json | A:圆环；线圈对；矩形组；加密；公式 | S:正文不灌入SHA及开发版本；单环需响应和电流叠加两步，有限样例不证明任意网格收敛
-example.py[TB6T]: F:在dev6安装包重跑磁静力学章节并输出真实数值与检查 | R:code:src/scirel/field/multi_coil_vacuum_field.py | A:轴限解析；正反向对；矩形组；四级中心加密；线性叠加；JSON | S:与前驱脚本字节相同仍须新运行绑定；归一权重保持总安匝，结果通过不自动扩展科学范围
-execution.json[SQ7T]: F:绑定Mac磁静力学章节实际执行的wheel、源码合同及结果图形 | R:code:tools/docs/magnetostatics-20261014-mac/example.py,code:tools/docs/magnetostatics-20261014-mac/plot.py | A:确切摘要；离线无源码；容器；输出；前驱绑定 | S:这是实际历史运行身份，版本只用于证据；章节通过独立于全核心D3与人工发行
-pair.svg[SU5L]: F:展示dev6重算的同向线圈对平坦度及反向轴场 | R:code:tools/docs/magnetostatics-20261014-mac/plot.py | A:双面板；中心归一化；反向电流mT场；黑白线型 | S:左图分别归一化，曲线高度不表示绝对幅值；新图绑定新结果
-plot.py[XU5T]: F:将dev6重算结果呈现为单环、线圈对和矩形截面黑白图 | R:code:tools/docs/magnetostatics-20261014-mac/results.json | A:Agg；SVG文本；轴解析对照；归一化曲线；灰阶等值线 | S:脚本同前驱但输入为当前同目录结果，不重复计算科学内核；输出三图用于章节绑定
-rectangle.svg[SU5L]: F:展示dev6矩形线圈组在指定R-Z截面的BZ分布 | R:code:tools/docs/magnetostatics-20261014-mac/plot.py | A:灰阶场；黑色等值线；mT标尺；等比例坐标 | S:截面图仅呈现BZ和所选空间域，不包含材料或等离子体响应
-results.json[SD6L]: F:保存dev6安装章节新算出的场数组、中心加密和解析检查 | R:code:tools/docs/magnetostatics-20261014-mac/example.py,code:tools/docs/magnetostatics-20261014-mac/execution.json | A:单环0.0017952T；同向对0.0025691T；截面；四级加密；误差 | S:与历史版本相近的结果仍有独立执行身份；all_checks_passed只对应章节有限断言
-single.svg[SU5L]: F:展示dev6单圆环轴场与解析值的重算对照 | R:code:tools/docs/magnetostatics-20261014-mac/plot.py | A:Z米；BZ毫特斯拉；数值曲线；解析空心点 | S:图上重合不扩展至任意位置或细丝自场
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/zh/selections/===
 legacy-six.json[SL7L]: F:说明六项吸收能力及两共享消费者的八条精确中文合同 | R:code:src/scirel/equilibrium/isotropic_pressure_flux.py,code:src/scirel/diagnostics/_margin_kernel.py | A:几何、样条状态、Picard、闭合求解、表插值、点式和组合裕度 | S:单点重复B不施导数约束；微角非零就旋转；状态前缀可重建，精确算术只修表示错误，不推断全局物理或许可
@@ -2043,16 +2023,6 @@ d3-observation-packet.md[SW6T]: F:定义候选与运行环境绑定的完整应�
 
 ===/Users/tomczz/Projects/SciReL/skills/development/usage/scientific-asset-navigation/scripts/===
 query.py[XU7S]: F:以标准库查询绑定快照的目录、分页卡片及精确合同 | R:code:tests/test_scirel_navigation_query.py | A:routes；search；show；相邻文档定位 | S:CLI紧凑JSON不改变摘要编码；调用视图保留完整公共段；根名可变；不导入科学模块
-
-===/Users/tomczz/Projects/SciReL/tools/docs/magnetostatics-current-wheel/===
-chapter.json[SU6S]: F:声明单圆环、对称线圈及矩形截面的磁场学习章节 | R:code:tools/docs/magnetostatics-current-wheel/example.py | A:科学问题、单位、代码小节、结果解释及局限 | S:总安匝数在离散加密时固定，单点加密趋势不能充当全目标域误差界。
-example.py[TV6S]: F:通过安装包执行磁静力学教程及独立轴线检查 | R:code:src/scirel/field/multi_coil_vacuum_field.py | A:单环、同反向双环、矩形截面及加密结果 | S:按归一权重保持总电流，示例断言不扩展到理想导线奇点或连续导体内部。
-execution.json[TV6T]: F:绑定新累积安装包上的磁静力学示例与图表 | R:code:tools/docs/magnetostatics-current-wheel/example.py,code:tools/docs/chapter-selection.json | A:实现/合同/结果/图像摘要及容器身份 | S:原数值结果复现相同，图形从新结果实际生成；元数据不进入教程正文。
-pair.svg[SU4L]: F:展示同向线圈归一均匀性与反向线圈轴线场 | R:code:tools/docs/magnetostatics-current-wheel/plot.py | A:两幅轴线磁场图 | S:-
-plot.py[XU5T]: F:从实跑结果生成三个单色磁静力学教程图 | R:code:tools/docs/magnetostatics-current-wheel/results.json | A:Matplotlib单环/双环/矩形场SVG | S:只绘制已保存结果，不重新执行科学核或发明数据点。
-rectangle.svg[SU4L]: F:展示矩形截面线圈组内腔的轴向场等值图 | R:code:tools/docs/magnetostatics-current-wheel/plot.py | A:R/Z米制坐标及mT色标 | S:-
-results.json[TV5L]: F:保存安装包磁静力学教程的实际场数组与检查量 | R:code:tools/docs/magnetostatics-current-wheel/example.py | A:轴线/网格场、中心加密与解析/对称/线性误差 | S:all_checks_passed只支持本例有限点，不给整个空间统一误差保证。
-single.svg[SU4L]: F:展示圆环轴线数值场与独立解析点比较 | R:code:tools/docs/magnetostatics-current-wheel/plot.py | A:Z坐标与Bz的mT图 | S:-
 
 ===/Users/tomczz/Projects/SciReL/skills/development/usage/scirel-solving/scripts/===
 delivery.py[XQ8M]: F:从保存CSV计算有界陈述、生成文件并重放最终文本一致性 | R:code:tests/test_scientific_delivery.py | A:范围；阈值；相对偏差；键对齐比较；图表；CLI | S:拒绝非有限值和未知结果字段；覆盖及比较完整匹配；实际采样与目标分开；绘图不重标度；失败保留；字节绑定不是认证；不验证模型或宿主消息权威

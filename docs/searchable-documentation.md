@@ -86,7 +86,7 @@ python3 scripts/scirel_docs.py build --documents <所选正式文档目录> --ou
 
 ## 章节的案例与维护
 
-章节内容位于 `tools/docs/magnetostatics/chapter.json`。`example.py` 是顺序运行的完整示例；页面代码从其小节标记提取，不另抄一份。`results.json` 保存已运行的数值，`plot.py` 使用 Matplotlib 从结果生成黑白 SVG，图表不发明数值。`execution.json` 绑定示例、结果、未改动的科学实现文件与实际安装 wheel。构建器拒绝实现或案例字节变化后继续发布旧结果；应先重新运行并更新证据。
+章节内容位于唯一的 `tools/docs/magnetostatics/chapter.json`。`example.py` 是顺序运行的完整示例；页面代码从其小节标记提取，不另抄一份。`results.json` 保存已运行的数值，`plot.py` 使用 Matplotlib 从结果生成可重复的黑白 SVG，图表不发明数值。`execution.json` 绑定示例、结果、未改动的科学实现文件与实际安装 wheel。构建器拒绝实现、包版本或案例字节变化后继续发布旧结果；应先重新运行并更新证据。历史平台和版本快照由 Git 历史及仓外回执恢复，不在 `tools/docs/` 建立副本。
 
 案例采用已安装的精确开发 wheel，在没有源码挂载、没有网络的独立容器中运行；解析式、对称性和线性叠加检查通过。所用五个实现文件的源提交见执行记录。该选择性开发 wheel 仅用于章节验证，不是完整 SciRel 发行。执行环境首次构建遇到系统 Python 没有 pip，改用镜像自带 ensurepip 创建独立 venv 后完成离线构建与安装；未改变科学实现。
 

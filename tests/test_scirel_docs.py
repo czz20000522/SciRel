@@ -130,10 +130,34 @@ def test_chapter_build_rejects_stale_execution(tmp_path, monkeypatch):
     import scirel_docs
     copy = tmp_path/'repo'
     shutil.copytree(ROOT/'tools/docs', copy/'tools/docs')
-    # This test exercises the preserved historical checker fixture. Current
-    # successor qualification is tested by the normal snapshot build above.
-    (copy/'tools/docs/chapter-selection.json').unlink(missing_ok=True)
-    binding = json.loads((copy/'tools/docs/magnetostatics/execution.json').read_text())
+    # Materialize a historical checker fixture from Git. Historical chapter
+    # bytes remain recoverable from Git, but the working tree keeps one
+    # canonical selected chapter only.
+    historical_root = copy/'tools/docs/magnetostatics'
+    shutil.rmtree(historical_root)
+    historical_root.mkdir()
+    historical_prefix = 'tools/docs/magnetostatics'
+    names = ('chapter.json', 'example.py', 'execution.json', 'pair.svg',
+             'plot.py', 'rectangle.svg', 'results.json', 'single.svg')
+    for name in names:
+        body = subprocess.check_output(
+            ['git', 'show', f'f669ee6c0f4b5d973d3f2c95666d970d48f42ac7:{historical_prefix}/{name}'],
+            cwd=ROOT,
+        )
+        (historical_root/name).write_bytes(body)
+    binding = json.loads((historical_root/'execution.json').read_text())
+    selection = {
+        'schema': 'scirel.chapter-selection.v1',
+        'chapters': {
+            'magnetostatics': {
+                'directory': 'tools/docs/magnetostatics',
+                'execution_sha256': __import__('hashlib').sha256(
+                    (historical_root/'execution.json').read_bytes()
+                ).hexdigest(),
+            }
+        },
+    }
+    (copy/'tools/docs/chapter-selection.json').write_text(json.dumps(selection))
     for path in list(binding['files']) + list(binding['document_files']):
         target = copy/path
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -151,6 +175,14 @@ def test_chapter_build_rejects_stale_execution(tmp_path, monkeypatch):
     path.write_text(path.read_text()+'\n# changed\n')
     with pytest.raises(ValueError, match='implementation changed'):
         scirel_docs.chapter_files(asset_ids)
+
+
+def test_chapter_selection_missing_fails_closed(tmp_path, monkeypatch):
+    import scirel_docs
+    root = tmp_path/'tools/docs'; root.mkdir(parents=True)
+    monkeypatch.setattr(scirel_docs, 'ROOT', tmp_path)
+    with pytest.raises(ValueError, match='selection is required'):
+        scirel_docs.chapter_directory()
 
 
 def test_successor_chapter_selection_is_explicit_and_digest_bound(tmp_path, monkeypatch):
