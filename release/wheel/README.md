@@ -17,3 +17,12 @@ implementations are organized by domain package, and the wheel exposes those
 domain paths directly. Legacy top-level module paths are intentionally absent;
 callers must import from the owning domain package. Tests, provenance,
 decomposition assets, and development tooling are outside the wheel intake.
+
+## Reproducing the bound wheel
+
+Build from the exact `source_revision` recorded in [`../CURRENT.json`](../CURRENT.json)
+and set `SOURCE_DATE_EPOCH` to that commit's Unix timestamp before running
+`uv build --wheel`. The fixed epoch makes the ZIP timestamps deterministic;
+without it, identical source bytes can produce different wheel digests. After
+building, compare the wheel byte count and SHA-256 with the canonical tuple and
+run the platform receipt against that exact file.

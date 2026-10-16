@@ -16,7 +16,7 @@ def test_current_release_alignment_is_exact() -> None:
     result = validate_alignment(ROOT)
     assert result["wheel_version"] == "0.1.0.dev9"
     assert result["documentation_version"] == "scientific-core-r18"
-    assert result["source_revision"] == "4748967522e16092e113a34eed2196e1102ba052"
+    assert result["source_revision"] == "7926770f44d076cc04c17ab86f487d60dbb795f4"
     assert result["capability_counts"] == {
         "operators": 230,
         "task_graphs": 30,

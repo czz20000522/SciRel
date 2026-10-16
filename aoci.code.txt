@@ -1899,7 +1899,7 @@ zfun.m[DD6S]: F:提供 fluidBW zfun 原生数值实现，供 Python 适配器调
 ===/Users/tomczz/Projects/SciReL/release/===
 README.md[SV7T]: F:规定SciRel当前release tuple、外部FINAL、wheel与文档证据边界及Git历史恢复策略 | R:code:release/CURRENT.json,code:release/wheel/README.md,code:release/docs/README.md,code:release/projects/README.md,code:docs/release.md | A:当前发行面；外部资产边界；短发行说明与Git历史 | S:新候选不复制per-version源码、wheel元数据或完整文档；当前身份只由canonical tuple给出
 platform-support-matrix.json[FV7T]: F:固定各平台与native capability的状态、证据路径和有界兼容性声明 | R:code:release/CURRENT.json,code:provenance/validation/scirel-dev9-linux-acceptance-20261017.json,code:uv.lock,code:scripts/validate_platform_support.py | A:平台身份、状态词、外部runtime和证据关联 | S:只有PASS行贡献有界兼容性；PARTIAL/NOT_RUN/FAIL/BLOCKED保持显式且不授予发行批准
-CURRENT.json[FV8T]: F:绑定当前SciRel版本、构建source revision、wheel摘要、文档闭包和平台回执 | R:code:pyproject.toml,code:release/platform-support-matrix.json,code:provenance/validation/scirel-dev9-linux-acceptance-20261017.json,code:provenance/selections/scientific-core-documents-20261015-r9.json,code:tools/docs/handbooks/scientific-core-r18.json | A:唯一当前release tuple与候选状态协调面 | S:source_revision是实际构建提交；development_candidate不等于tag、人工批准或全平台通过
+CURRENT.json[FV8T]: F:绑定当前SciRel版本、构建source revision、wheel摘要、文档闭包和平台回执 | R:code:pyproject.toml,code:release/platform-support-matrix.json,code:provenance/validation/scirel-dev9-linux-acceptance-20261017.json,code:provenance/selections/scientific-core-documents-20261015-r9.json,code:tools/docs/handbooks/scientific-core-r18.json | A:唯一当前release tuple与候选状态协调面 | S:source_revision指向实际构建提交；wheel摘要来自固定SOURCE_DATE_EPOCH；development_candidate不等于tag、人工批准或全平台通过
 
 ===/Users/tomczz/Projects/SciReL/release/docs/===
 CURRENT.json[FV5T]: F:提供文档线到release/CURRENT.json的兼容指针 | R:code:release/CURRENT.json,code:release/docs/README.md | A:保留旧消费者入口而不复制文档版本元数据 | S:该文件已弃用且不承载独立版本；修改当前身份必须更新canonical tuple
@@ -1911,7 +1911,7 @@ README.md[SV8T]: F:对账外部交付范围、已整合能力、当前安装文�
 
 ===/Users/tomczz/Projects/SciReL/release/wheel/===
 CURRENT.json[FV5T]: F:提供wheel线到release/CURRENT.json的兼容指针 | R:code:release/CURRENT.json,code:release/wheel/README.md | A:保留旧消费者入口而不复制版本身份 | S:该文件已弃用且不承载独立wheel记录；历史版本由Git、短说明和外部摘要恢复
-README.md[SV6T]: F:说明wheel版本来源、包布局、外部artifact和Git历史保留边界 | R:code:release/CURRENT.json,code:release/wheel/layout.json,code:pyproject.toml,code:docs/release.md | A:用户wheel与开发/来源资产分层；单一活动tuple；外部产物 | S:wheel文件不作为永久源码资产；不创建per-version wheel记录；测试、provenance、来源项目和工具不进入科学wheel
+README.md[SV6T]: F:说明wheel版本来源、包布局、外部artifact和Git历史保留边界 | R:code:release/CURRENT.json,code:release/wheel/layout.json,code:pyproject.toml,code:docs/release.md | A:用户wheel与开发/来源资产分层；单一活动tuple；外部产物；固定SOURCE_DATE_EPOCH复现 | S:wheel文件不作为永久源码资产；不创建per-version wheel记录；测试、provenance、来源项目和工具不进入科学wheel；未固定时间戳不得比较摘要
 layout.json[FP6T]: F:声明科学wheel领域子包与通用原语的模块归属 | R:code:pyproject.toml | A:18领域包；几何原语；平衡公共API | S:不维护顶层兼容模块；目录组织按解决的问题
 
 ===/Users/tomczz/Projects/SciReL/skills/development/===
