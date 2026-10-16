@@ -86,8 +86,10 @@ def test_explicit_proof_requalifies_a_changed_public_module(tmp_path: Path) -> N
     receipt = ROOT / "provenance/validation/scirel-dev9-linux-acceptance-20261017.json"
     manifest = {
         "schema": "scirel.document-requalification-proof.v1",
+        # The proof may bind the frozen source commit while release metadata
+        # continues in a later Git commit.
         "source_revision": subprocess.check_output(
-            ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
+            ["git", "rev-parse", "HEAD^"], cwd=ROOT, text=True
         ).strip(),
         "baseline_revision": subprocess.check_output(
             ["git", "rev-parse", f"{BASELINE}^{{commit}}"], cwd=ROOT, text=True

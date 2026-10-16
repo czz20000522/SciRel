@@ -109,8 +109,13 @@ def _proof_manifest(
     payload = _read_json(proof_path)
     if payload.get("schema") != PROOF_SCHEMA:
         raise ValueError("proof manifest has an invalid schema")
-    if payload.get("source_revision") != current_revision:
-        raise ValueError("proof manifest source_revision differs from current Git revision")
+    source_revision = payload.get("source_revision")
+    if not isinstance(source_revision, str) or len(source_revision) != 40:
+        raise ValueError("proof manifest source_revision must be an exact Git revision")
+    try:
+        source_revision = _resolve_ref(root, source_revision)
+    except ValueError as error:
+        raise ValueError("proof manifest source_revision is not a Git commit") from error
     if payload.get("baseline_revision") != baseline_revision:
         raise ValueError("proof manifest baseline_revision differs from requalification baseline")
     rows = payload.get("proofs")
@@ -141,7 +146,7 @@ def _proof_manifest(
         if not isinstance(module_digest, str) or _sha256(module_path.read_bytes()) != module_digest:
             raise ValueError(f"proof manifest module digest differs: {module}")
         try:
-            source_module = _git_file(root, current_revision, module)
+            source_module = _git_file(root, source_revision, module)
         except ValueError as error:
             raise ValueError(
                 f"proof manifest module is absent from source_revision: {module}"
