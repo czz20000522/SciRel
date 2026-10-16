@@ -24,6 +24,19 @@ Build from the exact `source_revision` recorded in [`../CURRENT.json`](../CURREN
 never from a dirty checkout. The reproducible procedure mirrors SciPy's ref-bound
 release tooling: archive that Git ref into a clean temporary directory, then run
 `uv build --wheel` there with `SOURCE_DATE_EPOCH` set to the ref's commit time.
+For a POSIX shell, the essential sequence is:
+
+```sh
+ref=<40-character-source-revision>
+epoch=$(git show -s --format=%ct "$ref")
+tmp_root=$(mktemp -d)
+tmp_source="$tmp_root/source"
+tmp_wheels="$tmp_root/wheels"
+mkdir -p "$tmp_source" "$tmp_wheels"
+git archive --format=tar --mtime="@$epoch" "$ref" | tar -x -C "$tmp_source"
+(cd "$tmp_source" && SOURCE_DATE_EPOCH="$epoch" uv build --wheel --out-dir "$tmp_wheels")
+```
+
 Git-archive extraction gives the source files one stable timestamp; setting the
 epoch alone in a working tree is insufficient because build backends may preserve
 file mtimes. After building, compare the wheel byte count and SHA-256 with the
