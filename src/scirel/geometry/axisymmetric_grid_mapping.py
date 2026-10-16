@@ -78,21 +78,40 @@ def _map_axes(r_m, z_m):
 
 
 def _interpolate_cylindrical(r_axis, z_axis, values, radii, axial):
-    """Separable two-stage linear interpolation on an axisymmetric map.
+    """Evaluate the tensor-product linear interpolant on flat query arrays.
 
-    Stage 1 interpolates every axial column onto the query radii; stage 2
-    interpolates the resulting radial profile onto the query axial coordinate.
-    Both stages run on flat query arrays and the flat result is returned, so the
-    ordering of the two stages is the only thing this function decides.
+    The retained source expressed this relation as radial interpolation
+    followed by axial interpolation.  On strictly increasing rectilinear axes
+    that is the same tensor-product bilinear interpolant as the direct
+    four-corner expression below.  Resolving both enclosing cells at once
+    avoids the source implementation's Python loop over query points and,
+    crucially, avoids materializing a ``(n_queries, n_z)`` intermediate array.
+    ``side='right'`` preserves ``numpy.interp`` endpoint behavior: an exact
+    last-axis query selects the final cell with fraction one.
     """
-    radial = np.stack(
-        [np.interp(radii, r_axis, values[:, index]) for index in range(z_axis.size)],
-        axis=1,
+    r_index = np.clip(
+        np.searchsorted(r_axis, radii, side="right") - 1,
+        0,
+        r_axis.size - 2,
     )
-    return np.asarray(
-        [np.interp(axial[index], z_axis, radial[index]) for index in range(axial.size)],
-        dtype=float,
+    r_fraction = (radii - r_axis[r_index]) / (r_axis[r_index + 1] - r_axis[r_index])
+
+    z_index = np.clip(
+        np.searchsorted(z_axis, axial, side="right") - 1,
+        0,
+        z_axis.size - 2,
     )
+    z_fraction = (axial - z_axis[z_index]) / (z_axis[z_index + 1] - z_axis[z_index])
+    # Gather only the four enclosing cell corners.  Expanding the two stages
+    # this way preserves the retained radial-then-axial order without creating
+    # the O(points * map_z) intermediate used by the original column loop.
+    radial_at_z0 = values[r_index, z_index] + r_fraction * (
+        values[r_index + 1, z_index] - values[r_index, z_index]
+    )
+    radial_at_z1 = values[r_index, z_index + 1] + r_fraction * (
+        values[r_index + 1, z_index + 1] - values[r_index, z_index + 1]
+    )
+    return radial_at_z0 + z_fraction * (radial_at_z1 - radial_at_z0)
 
 
 def map_axisymmetric_equilibrium_to_cartesian_grid(equilibrium, x_m, y_m, z_m):

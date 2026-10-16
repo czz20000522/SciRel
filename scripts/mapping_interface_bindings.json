@@ -146,7 +146,7 @@
       ],
       "modules": {
         "scirel.geometry.axisymmetric_equilibrium_grid_support": "468292de4d8f80c43182ea0ed276f48a9a2d99a8ab9652542f0bc745647d2bd6",
-        "scirel.geometry.axisymmetric_grid_mapping": "7efafc12724b2f7c3c4f52b9328f23d85a6111ab94f0084bef4e616bfbed9992",
+        "scirel.geometry.axisymmetric_grid_mapping": "61c1be908551e9e3dabe9faf6635a8e0523dc93d202effd2649829e7a94dec5d",
         "scirel.geometry.material_support": "b3571df67d9406f9c2856faae4d6ed4f5f7a2ee0256fc0d2b0c24b2de40d8497"
       },
       "review_basis": "Wrapper removes only the two injectable implementation callables then passes inputs to run_graph. run_graph requires exactly the seven documented scientific inputs via _REQUIRED_INPUTS, maps the caller equilibrium and solver axes, derives cylindrical geometry, and applies caller separatrix/PML/PEC metadata. It does not solve equilibrium or reconstruct material physics. Runtime missing ports are rejected; extra scientific input mapping entries are ignored as documented by the unchanged implementation."
