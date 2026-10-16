@@ -1292,6 +1292,38 @@ def test_reviewed_finalization_binds_item_document_test_and_wheel(tmp_path, monk
     assert set(manifest) == set(contract["required"])
 
 
+def test_reviewed_finalization_rejects_catalog_from_a_different_git_revision(
+    tmp_path, monkeypatch
+):
+    import finalize_release
+
+    artifacts, documents, catalog, wheel, _ = _reviewed_release_inputs(tmp_path)
+    release_path = catalog / "release.json"
+    release = json.loads(release_path.read_text(encoding="utf-8"))
+    release["source_revision"] = "b" * 40
+    unsigned = {key: value for key, value in release.items() if key != "root_digest"}
+    release["root_digest"] = "sha256:" + hashlib.sha256(
+        json.dumps(unsigned, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    release_path.write_text(json.dumps(release), encoding="utf-8")
+    monkeypatch.setattr(finalize_release, "_git_revision", lambda root: "a" * 40)
+    monkeypatch.setattr(finalize_release, "_git_changed_files", lambda root, revision: set())
+    monkeypatch.setattr(finalize_release, "_require_clean_release_sources", lambda root: None)
+    with pytest.raises(ValueError, match="catalog source_revision differs"):
+        finalize_release.finalize_reviewed_release(
+            release_index=tmp_path / "index.json",
+            candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
+            approved_results=tmp_path / "results.json",
+            review_artifacts_dir=artifacts,
+            documents_dir=documents,
+            catalog_dir=catalog,
+            wheel=wheel,
+            output_dir=tmp_path / "release",
+            release_id="release-test",
+            source_root=ROOT,
+        )
+
+
 def test_first_reviewed_distribution_builds_only_the_selected_asset(tmp_path, monkeypatch):
     import finalize_release
     from build_catalog import build_catalog
@@ -1368,6 +1400,33 @@ assert callable(discretize_rectangular_coil)
         source_root=ROOT,
     )
     assert Path(finalized["release_manifest"]).is_file()
+
+
+def test_reviewed_distribution_selection_records_the_source_revision(tmp_path, monkeypatch):
+    import prepare_reviewed_distribution as preparation
+
+    artifacts, _, _, _, _ = _reviewed_release_inputs(tmp_path)
+    monkeypatch.setattr(
+        preparation,
+        "_project_for_release",
+        lambda source_root, documents: (ROOT / "pyproject.toml").read_text(encoding="utf-8"),
+    )
+    staging = tmp_path / "reviewed-source"
+    result = preparation.prepare_reviewed_distribution(
+        release_index=tmp_path / "index.json",
+        candidate_entry_id=_candidate_entry_id(tmp_path / "index.json"),
+        approved_results=tmp_path / "results.json",
+        review_artifacts_dir=artifacts,
+        source_root=ROOT,
+        staging_dir=staging,
+    )
+    expected_revision = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
+    ).strip()
+    selection = json.loads((staging / "selection.json").read_text(encoding="utf-8"))
+    assert result["source_revision"] == expected_revision
+    assert selection["source_revision"] == expected_revision
+    assert isinstance(selection["source_dirty"], bool)
 
 
 @pytest.mark.parametrize("support_files, missing_module", [

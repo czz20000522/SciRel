@@ -17,6 +17,7 @@
     "schema": {"const": "scirel.catalog-release.v1"},
     "catalog_id": {"type": "string", "minLength": 1},
     "release_version": {"type": "string", "minLength": 1},
+    "source_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "coverage": {
       "type": "object",
       "additionalProperties": false,

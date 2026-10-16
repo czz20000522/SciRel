@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 import re
 import sys
+import subprocess
 import tempfile
 import tomllib
 from typing import Any
@@ -25,6 +26,35 @@ from validate_asset_documents import ASSET_ID_RE, load_document_set
 
 
 ROOT = Path(__file__).resolve().parents[1]
+_GIT_REVISION = re.compile(r"[0-9a-f]{40}")
+
+
+def _git_revision(source_root: Path) -> str:
+    result = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=source_root,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    revision = result.stdout.strip()
+    if _GIT_REVISION.fullmatch(revision) is None:
+        raise ValueError("source checkout did not provide an exact Git revision")
+    return revision
+
+
+def _source_dirty(source_root: Path) -> bool:
+    result = subprocess.run(
+        [
+            "git", "status", "--porcelain", "--",
+            "pyproject.toml", "src", "tests", "catalog/examples",
+        ],
+        cwd=source_root,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return bool(result.stdout.strip())
 
 
 def _project_for_release(source_root: Path, documents: dict) -> str:
@@ -148,6 +178,8 @@ def prepare_reviewed_distribution(
             test_files[name] = body
 
     source_root = source_root.resolve()
+    source_revision = _git_revision(source_root)
+    source_dirty = _source_dirty(source_root)
     selected_modules: dict[str, str] = {}
     test_paths = set()
     for asset_id, document in documents.items():
@@ -214,6 +246,8 @@ def prepare_reviewed_distribution(
             json.dumps({
                 "schema": "scirel.reviewed-distribution-selection.dev",
                 "candidate_entry_id": candidate_entry_id,
+                "source_revision": source_revision,
+                "source_dirty": source_dirty,
                 "scientific_runtime_baseline": baseline_receipt(),
                 "asset_ids": sorted(documents),
                 "test_paths": sorted(test_paths),
@@ -226,6 +260,8 @@ def prepare_reviewed_distribution(
         "documents_dir": str(staging_dir / "documents"),
         "asset_count": len(documents),
         "test_paths": sorted(test_paths),
+        "source_revision": source_revision,
+        "source_dirty": source_dirty,
     }
 
 

@@ -5,6 +5,7 @@ import sys
 import subprocess
 import shutil
 import threading
+import tomllib
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
@@ -12,7 +13,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
-from scirel_docs import Documentation, build, server
+from scirel_docs import Documentation, build, project_version, server
 from _document_fixtures import copy_example_closure, example_document_sources
 
 
@@ -43,6 +44,11 @@ def test_queries_are_bounded_and_exact_records_unchanged(snapshot):
     assert docs.search('中文未找到', offset=999)['next_offset'] is None
     code = 'from scirel_docs import Documentation; import sys; Documentation(sys.argv[1]).search(); assert not any(n == "scirel" or n.startswith("scirel.") for n in sys.modules)'
     subprocess.run([sys.executable, '-c', code, str(snapshot)], cwd=ROOT/'scripts', check=True)
+
+
+def test_document_builder_reads_the_project_version_from_pyproject():
+    project = tomllib.loads((ROOT / 'pyproject.toml').read_text(encoding='utf-8'))
+    assert project_version() == project['project']['version']
 
 
 @pytest.mark.parametrize('url', ['/api/search?limit=0', '/api/search?limit=101',

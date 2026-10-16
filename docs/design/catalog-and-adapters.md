@@ -10,6 +10,8 @@ SciRel wheel code and standardized asset documents are the core. The catalog is 
 
 `--execute-examples` executes repository-owned example code for release verification. It is not an evaluator for untrusted uploaded documents; an adapter handling untrusted input must parse values against the exact contract and use its own sandbox rather than passing arbitrary example code to this command.
 
+Production snapshots also record the exact Git `source_revision`. When a source checkout is supplied, `scripts/build_catalog.py` requires an explicit revision and checks that the checkout's `pyproject.toml` owns `release_version`; synthetic test fixtures may omit this binding.
+
 The snapshot contains:
 
 - `release.json`: schema, release identity, honest coverage, progressive-disclosure order, partition hashes and root digest;

@@ -6,14 +6,18 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
+import subprocess
 import sys
 import tempfile
+import tomllib
 from typing import Any
 
 from validate_asset_documents import load_document_set
 
 
 CATALOG_SCHEMA = "scirel.catalog-release.v1"
+_GIT_REVISION = re.compile(r"[0-9a-f]{40}")
 
 
 def _canonical_json(value: Any) -> bytes:
@@ -41,6 +45,25 @@ def _write_jsonl(path: Path, values: list[dict[str, Any]]) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
 
+def _project_version(source_root: Path) -> str:
+    try:
+        metadata = tomllib.loads(
+            (source_root / "pyproject.toml").read_text(encoding="utf-8")
+        )
+        version = metadata["project"]["version"]
+    except (OSError, KeyError, TypeError, tomllib.TOMLDecodeError) as error:
+        raise ValueError("source_root pyproject.toml has no readable project.version") from error
+    if not isinstance(version, str) or not version:
+        raise ValueError("source_root pyproject.toml project.version must be a non-empty string")
+    return version
+
+
+def _validate_source_revision(source_revision: str) -> str:
+    if not isinstance(source_revision, str) or _GIT_REVISION.fullmatch(source_revision) is None:
+        raise ValueError("source_revision must be an exact 40-character Git SHA")
+    return source_revision
+
+
 def build_catalog(
     documents_dir: Path,
     output_dir: Path,
@@ -49,6 +72,8 @@ def build_catalog(
     release_version: str,
     coverage_status: str,
     declared_total: int,
+    source_root: Path | None = None,
+    source_revision: str | None = None,
 ) -> dict[str, Any]:
     documents = sorted(load_document_set(documents_dir), key=lambda item: item["asset_id"])
     if output_dir.exists():
@@ -66,6 +91,18 @@ def build_catalog(
         raise ValueError("declared_total cannot be smaller than included assets")
     if coverage_status == "complete" and declared_total != len(documents):
         raise ValueError("complete coverage requires every declared asset")
+    if source_root is not None:
+        source_root = source_root.resolve()
+        if release_version != _project_version(source_root):
+            raise ValueError(
+                "catalog release_version must match source_root pyproject.toml project.version"
+            )
+        if source_revision is None:
+            raise ValueError(
+                "source_root catalog builds require an exact source_revision"
+            )
+    if source_revision is not None:
+        source_revision = _validate_source_revision(source_revision)
 
     output_dir.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(
@@ -185,6 +222,8 @@ def build_catalog(
             "progressive_disclosure": ["routes", "summaries", "exact_records"],
             "partitions": sorted(partitions, key=lambda item: item["path"]),
         }
+        if source_revision is not None:
+            release["source_revision"] = source_revision
         release["root_digest"] = _digest(_canonical_json(release))
         _write_json(root / "release.json", release)
         Path(temporary).replace(output_dir)
@@ -203,6 +242,14 @@ def main() -> int:
     parser.add_argument("--release-version", required=True)
     parser.add_argument("--coverage-status", choices=("partial", "complete"), required=True)
     parser.add_argument("--declared-total", type=int, required=True)
+    parser.add_argument(
+        "--source-root", type=Path,
+        help="source checkout whose pyproject.toml must own release_version",
+    )
+    parser.add_argument(
+        "--source-revision",
+        help="exact 40-character Git revision that generated this catalog",
+    )
     args = parser.parse_args()
     try:
         result = build_catalog(
@@ -212,6 +259,8 @@ def main() -> int:
             release_version=args.release_version,
             coverage_status=args.coverage_status,
             declared_total=args.declared_total,
+            source_root=args.source_root.resolve() if args.source_root else None,
+            source_revision=args.source_revision,
         )
     except Exception as error:
         print(f"catalog build failed: {error}", file=sys.stderr)

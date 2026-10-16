@@ -12,6 +12,7 @@ from pathlib import PurePosixPath
 import subprocess
 import sys
 import tempfile
+import re
 from typing import Any
 from zipfile import ZipFile, BadZipFile
 
@@ -20,6 +21,7 @@ from email.parser import Parser
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src"
+_GIT_REVISION = re.compile(r"[0-9a-f]{40}")
 if str(SOURCE) not in sys.path:
     sys.path.insert(0, str(SOURCE))
 
@@ -54,6 +56,9 @@ def _validate_catalog(catalog_dir: Path) -> dict[str, Any]:
     release = _read_json(release_path)
     if release.get("schema") != "scirel.catalog-release.v1":
         raise ValueError("catalog release has an unsupported schema")
+    source_revision = release.get("source_revision")
+    if source_revision is not None and _GIT_REVISION.fullmatch(source_revision) is None:
+        raise ValueError("catalog source_revision must be an exact 40-character Git SHA")
     expected_root_digest = release.get("root_digest")
     unsigned = dict(release)
     unsigned.pop("root_digest", None)
@@ -303,11 +308,16 @@ def _git_changed_files(source_root: Path, candidate_revision: str) -> set[str]:
 
 def _require_clean_release_sources(source_root: Path) -> None:
     result = subprocess.run(
-        ["git", "status", "--porcelain", "--", "src", "tests", "catalog/examples"],
+        [
+            "git", "status", "--porcelain", "--",
+            "pyproject.toml", "src", "tests", "catalog/examples",
+        ],
         cwd=source_root, capture_output=True, text=True, check=True,
     )
     if result.stdout.strip():
-        raise ValueError("release source, tests, or documents differ from the Git revision")
+        raise ValueError(
+            "release source, tests, documents, or pyproject.toml differ from the Git revision"
+        )
 
 
 def _wheel_contents(wheel: Path, release_version: str) -> dict[str, bytes]:
@@ -590,6 +600,11 @@ def finalize_reviewed_release(
         raise ValueError("release source changes since candidate include unapproved files")
 
     catalog = _validate_catalog(catalog_dir)
+    catalog_source_revision = catalog.get("source_revision")
+    if catalog_source_revision is not None and catalog_source_revision != release_git_revision:
+        raise ValueError(
+            "catalog source_revision differs from the release source Git revision"
+        )
     catalog_documents = {
         document["asset_id"]: document
         for document in (_read_json(path) for path in (catalog_dir / "records").rglob("*.json"))

@@ -269,3 +269,47 @@ def test_runtime_signatures_tests_and_examples_are_executable(tmp_path):
 def test_external_project_catalog_is_not_a_scirel_input():
     with pytest.raises(AssetDocumentError):
         load_document_set(ROOT / "catalog" / "torax-algebra-grid")
+
+
+def test_catalog_can_bind_a_git_revision_and_source_version(tmp_path, release_examples):
+    source_root = tmp_path / "source"
+    source_root.mkdir()
+    (source_root / "pyproject.toml").write_text(
+        f"[project]\nversion = \"{CATALOG_TEST_VERSION}\"\n",
+        encoding="utf-8",
+    )
+    output = tmp_path / "catalog"
+    result = build_catalog(
+        release_examples,
+        output,
+        catalog_id="scirel-bound-catalog",
+        release_version=CATALOG_TEST_VERSION,
+        coverage_status="partial",
+        declared_total=EXAMPLE_CLOSURE_COUNT + 1,
+        source_root=source_root,
+        source_revision="a" * 40,
+    )
+    release = json.loads((output / "release.json").read_text(encoding="utf-8"))
+    assert release["source_revision"] == "a" * 40
+    assert result["root_digest"] == release["root_digest"]
+
+
+def test_catalog_source_root_rejects_a_version_not_owned_by_pyproject(
+    tmp_path, release_examples
+):
+    source_root = tmp_path / "source"
+    source_root.mkdir()
+    (source_root / "pyproject.toml").write_text(
+        "[project]\nversion = \"0.0.0\"\n", encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="source_root pyproject.toml project.version"):
+        build_catalog(
+            release_examples,
+            tmp_path / "catalog",
+            catalog_id="scirel-bound-catalog",
+            release_version=CATALOG_TEST_VERSION,
+            coverage_status="partial",
+            declared_total=EXAMPLE_CLOSURE_COUNT + 1,
+            source_root=source_root,
+            source_revision="a" * 40,
+        )

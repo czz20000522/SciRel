@@ -24,6 +24,10 @@ SciRel 采用与 SciPy 同类的单一来源模型：源代码、`pyproject.toml
 4. 当前发行 tuple 与平台矩阵；
 5. 可复核的测试和安装回执。
 
+构建 catalog 时必须把这个 source revision 写入 `release.json`；当构建器绑定
+source checkout 时，`release_version` 只能来自该 checkout 的 `pyproject.toml`。
+synthetic fixture 可以省略 Git 绑定，但不能冒充生产发行 catalog。
+
 这些记录必须相互引用同一 `source_revision`、版本和能力计数。`release/CURRENT.json` 是当前候选的唯一协调记录；`release/wheel/CURRENT.json` 和 `release/docs/CURRENT.json` 只保留兼容指针，不再承载另一份版本元数据。任何文档变更若超出已安装 wheel 的能力闭包，必须先改变源码/API并重新构建后继候选，不能只改文档记录扩大声明。
 
 ## 依赖分层

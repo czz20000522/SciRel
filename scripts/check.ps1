@@ -233,6 +233,10 @@ print(json.dumps(roots))
         if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($releaseVersion)) {
             throw "Failed to read the installed SciRel distribution version."
         }
+        $sourceRevision = (& git -C $repoRoot rev-parse HEAD).Trim()
+        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($sourceRevision)) {
+            throw "Failed to resolve the release source Git revision."
+        }
 
         $catalogPath = Join-Path $releaseOutputPath "catalog"
         $catalogOutput = & $Python "scripts/build_catalog.py" `
@@ -240,6 +244,8 @@ print(json.dumps(roots))
             "--output-dir" $catalogPath `
             "--catalog-id" $CatalogId `
             "--release-version" $releaseVersion `
+            "--source-root" $repoRoot `
+            "--source-revision" $sourceRevision `
             "--coverage-status" "complete" `
             "--declared-total" $preparation.asset_count
         if ($LASTEXITCODE -ne 0) {

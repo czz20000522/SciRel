@@ -14,6 +14,7 @@ from pathlib import Path
 import re
 import subprocess
 import tempfile
+import tomllib
 from urllib.parse import parse_qs, urlsplit
 
 from validate_asset_documents import load_document_set
@@ -41,6 +42,17 @@ def encode(value):
 
 def sha(data):
     return hashlib.sha256(data).hexdigest()
+
+
+def project_version(root=ROOT):
+    try:
+        metadata = tomllib.loads((root / 'pyproject.toml').read_text(encoding='utf-8'))
+        version = metadata['project']['version']
+    except (OSError, KeyError, TypeError, tomllib.TOMLDecodeError) as error:
+        raise ValueError('pyproject.toml has no readable project.version') from error
+    if not isinstance(version, str) or not version:
+        raise ValueError('pyproject.toml project.version must be a non-empty string')
+    return version
 
 
 def handbook_document(asset_ids, outline=None):
@@ -178,7 +190,9 @@ def build(documents: Path, output: Path, outline: Path | None = None,
         figure_files={name: files['chapters/magnetostatics/' + name]
                       for name in ('single.svg', 'pair.svg', 'rectangle.svg')},
     ))
-    manifest = {'schema': SCHEMA, 'source_commit': source, 'source_dirty': dirty,
+    manifest = {'schema': SCHEMA, 'source_commit': source, 'source_revision': source,
+                'source_dirty': dirty,
+                'project_version': project_version(),
                 'asset_count': len(docs), 'notice': NOTICE,
                 'reader_language': 'zh-CN', 'human_renderer': 'sphinx-pydata',
                 'validation': {'schema_and_dependency_closure': True,
@@ -206,6 +220,12 @@ class Documentation:
         digest = sha(encode(unsigned))
         if self.manifest.get('schema') != SCHEMA or digest != self.manifest.get('snapshot_sha256'):
             raise ValueError('invalid snapshot manifest')
+        source_commit = self.manifest.get('source_commit')
+        source_revision = self.manifest.get('source_revision', source_commit)
+        if not isinstance(source_commit, str) or not re.fullmatch(r'[0-9a-f]{40}', source_commit):
+            raise ValueError('invalid documentation source_commit')
+        if source_revision != source_commit:
+            raise ValueError('documentation source_revision differs from source_commit')
         if expected_digest and expected_digest != digest:
             raise ValueError('snapshot differs from expected digest')
         for path in self.manifest['files']:
@@ -230,7 +250,9 @@ class Documentation:
     def envelope(self, **items):
         return {'schema': 'scirel.documentation-response.v1',
                 'snapshot_sha256': self.manifest['snapshot_sha256'],
-                'source_commit': self.manifest['source_commit'], 'notice': NOTICE, **items}
+                'source_commit': self.manifest['source_commit'],
+                'source_revision': self.manifest.get('source_revision', self.manifest['source_commit']),
+                'notice': NOTICE, **items}
 
     def search(self, q='', kind='', domain='', offset=0, limit=20, topic=''):
         if len(q) > 512 or offset < 0 or not 1 <= limit <= 100:

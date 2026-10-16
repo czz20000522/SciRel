@@ -91,3 +91,35 @@ def test_alignment_rejects_a_document_added_outside_the_wheel(tmp_path: Path) ->
     current_path.write_text(json.dumps(current), encoding="utf-8")
     with pytest.raises(ValueError, match="capability_counts"):
         validate_alignment(tmp_path)
+
+
+def test_alignment_rejects_a_built_catalog_from_a_different_source_revision(
+    tmp_path: Path,
+) -> None:
+    import shutil
+
+    for relative in ("release", "catalog", "provenance", "tools"):
+        source = ROOT / relative
+        target = tmp_path / relative
+        if source.is_dir():
+            shutil.copytree(source, target)
+        else:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(source.read_bytes())
+    (tmp_path / "pyproject.toml").write_bytes((ROOT / "pyproject.toml").read_bytes())
+    (tmp_path / "uv.lock").write_bytes((ROOT / "uv.lock").read_bytes())
+    catalog_root = tmp_path / "built-catalog"
+    catalog_root.mkdir()
+    (catalog_root / "release.json").write_text(
+        json.dumps({
+            "schema": "scirel.catalog-release.v1",
+            "source_revision": "0" * 40,
+        }),
+        encoding="utf-8",
+    )
+    current_path = tmp_path / "release/CURRENT.json"
+    current = json.loads(current_path.read_text(encoding="utf-8"))
+    current["documentation"]["catalog_root"] = "built-catalog"
+    current_path.write_text(json.dumps(current), encoding="utf-8")
+    with pytest.raises(ValueError, match="documentation catalog source_revision"):
+        validate_alignment(tmp_path)

@@ -12,6 +12,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
 from typing import Any
 import tomllib
 
@@ -94,6 +95,37 @@ def _handbook_assets(root: Path, record: dict[str, Any]) -> tuple[set[str], str]
     if len(assets) != len(set(assets)):
         raise ValueError("handbook repeats an asset")
     return set(assets), _sha256(handbook_path)
+
+
+def _validate_catalog_source_revision(
+    root: Path, record: dict[str, Any], expected_source_revision: str | None
+) -> None:
+    """Check a built catalog when the current tuple points at one.
+
+    Development CURRENT records may point at ``catalog/examples`` rather than a
+    built ``release.json``. In that case there is no catalog release tuple to
+    compare and the existing document selection checks remain authoritative.
+    """
+    catalog_value = record.get("catalog_root")
+    if not isinstance(catalog_value, str) or not catalog_value:
+        return
+    catalog_root = (root / catalog_value).resolve()
+    if not catalog_root.is_relative_to(root.resolve()):
+        raise ValueError("documentation catalog_root escapes the repository")
+    release_path = catalog_root / "release.json"
+    if not release_path.is_file():
+        return
+    release = _read_json(release_path)
+    if release.get("schema") != "scirel.catalog-release.v1":
+        raise ValueError("documentation catalog release has an invalid schema")
+    catalog_revision = release.get("source_revision")
+    if not isinstance(catalog_revision, str) or re.fullmatch(r"[0-9a-f]{40}", catalog_revision) is None:
+        raise ValueError("documentation catalog release lacks an exact source_revision")
+    required_revision = expected_source_revision
+    if required_revision is None:
+        required_revision = record.get("source_revision")
+    if required_revision is not None and catalog_revision != required_revision:
+        raise ValueError("documentation catalog source_revision differs from release CURRENT")
 
 
 def _validate_compat_pointer(root: Path, path: Path, *, line: str) -> None:
@@ -222,6 +254,7 @@ def validate_alignment(
     _validate_compat_pointer(root, root / "release/docs/CURRENT.json", line="documentation")
 
     selected, selection_digest = _selected_documents(root, docs)
+    _validate_catalog_source_revision(root, docs, source_revision)
     handbook_assets, handbook_digest = _handbook_assets(root, docs)
     selected_ids = set(selected)
     if handbook_assets != selected_ids:
