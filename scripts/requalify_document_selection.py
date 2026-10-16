@@ -139,6 +139,14 @@ def _proof_manifest(
         module_digest = row["module_sha256"]
         if not isinstance(module_digest, str) or _sha256(module_path.read_bytes()) != module_digest:
             raise ValueError(f"proof manifest module digest differs: {module}")
+        try:
+            source_module = _git_file(root, current_revision, module)
+        except ValueError as error:
+            raise ValueError(
+                f"proof manifest module is absent from source_revision: {module}"
+            ) from error
+        if source_module != module_path.read_bytes():
+            raise ValueError(f"proof manifest module differs from source_revision: {module}")
 
         for field in ("test_paths", "receipt_paths"):
             paths = row[field]
@@ -206,6 +214,13 @@ def requalify_selection(
             current_revision=current_revision,
             baseline_revision=resolved_ref,
         )
+        selected_ids = {row["asset_id"] for row in rows}
+        unknown = sorted(set(proofs) - selected_ids)
+        if unknown:
+            raise ValueError(
+                "proof manifest contains assets outside the selected document set: "
+                + ", ".join(unknown)
+            )
 
     eligible: list[dict[str, str]] = []
     blocked: list[dict[str, str]] = []
