@@ -48,12 +48,27 @@ SciPy 的仓库把核心运行依赖、可选运行依赖和测试/开发依赖�
 
 这套模型保留完整历史证据，同时让“当前版本是什么、由哪个提交生成、文档和 wheel 是否同源”都能从 Git 和一个当前 receipt 直接回答。
 
-## 对标依据
+## 对标依据与采用边界
 
-本模型参考 SciPy 当前仓库的公开做法：核心运行依赖与 optional runtime 依赖分列，测试/构建/文档使用 dependency groups；版本由 `pyproject.toml` 管理，发布提交、tag 和后继 `.dev0` 提交按 Git 顺序推进；发行说明按版本生成，但正文仍随同一源码仓库维护。
+本模型参考 SciPy 当前仓库的实际布局，而不是复制其编译工具链。SciPy 的
+`pyproject.toml` 同时声明当前包版本、核心依赖、optional runtime extras 和
+development dependency groups；源码仓库中的 `doc/source/release/` 只保存按版本
+命名的短发行说明，完整 API 文档仍由当前源码生成；顶层 `scipy` 命名空间保持很小，
+用显式 `__all__` 和惰性子模块导入提供发现入口。SciRel 对应的 Git 内容是：
 
-- SciPy `pyproject.toml`: https://github.com/scipy/scipy/blob/main/pyproject.toml
-- SciPy Core Developer Guide（Tagging a release）: https://scipy.github.io/devdocs/dev/core-dev/index.html
-- SciPy Release Notes: https://scipy.github.io/devdocs/release.html
+| SciPy 机制 | SciRel 采用方式 | 有意差异 |
+| --- | --- | --- |
+| `pyproject.toml` 的单一 `project.version` | `pyproject.toml` 是唯一人工版本源，`release/CURRENT.json` 只做当前候选的派生绑定 | 不把 wheel 文件或完整文档快照提交回源码树 |
+| `doc/source/release/<version>-notes.*` | `docs/release/<version>-notes.md` 只保留短摘要，正文/API/合同继续在当前 `docs/` 与 `catalog/` | 不复制整套手册来表示历史版本；Git commit/tag 提供历史恢复 |
+| `dependency-groups` 与 optional runtime extras | `[dependency-groups]` 管理 build/test，`[project.optional-dependencies]` 管理用户主动选择的能力 | SciRel 仍按实际 scientific closure 选择依赖，不照搬 SciPy 的编译依赖 |
+| 发布工具显式构建某个 Git ref | 构建和验收记录确切 `source_revision`，wheel/rendered docs 作为该提交的生成物 | 当前不引入 SciPy 的 Meson/Cython/native build system |
+| 小型顶层 namespace 与惰性 domain imports | `scirel` 根包只暴露版本和领域入口，领域 API 按 `__all__`/惰性 facade 整理 | 现有领域导出仍需按公共 API 审查逐步收敛，不能把未验证名称写进合同 |
 
-SciPy 的发布工具仓库还把“要构建哪个源码版本”显式表示为一个 Git ref；构建系统检出该 ref 后生成 wheel/sdist，发布上传前再检查它是否为 tag。SciRel 后续可用同样的 `SOURCE_REF_TO_BUILD` 语义驱动本地或 CI 构建，但不把生成物复制回源码目录；当前由 `release/CURRENT.json` 保存 source revision 和外部 artifact 摘要。
+因此，`0.1.0.dev8` 和后续 `0.1.0.dev9` 的身份由 Git 提交、tag（若有）和短
+发行说明恢复；不会新增 `release/wheel/versions/`、`release/docs/versions/` 或完整
+文档副本。`release/CURRENT.json` 可以随着当前候选更新，但它不产生新的版本线，也不
+替代 `pyproject.toml`、Git 或当前文档树。
+
+SciPy 的 release tooling 还把“要构建哪个源码版本”显式表示为 Git ref；SciRel
+采用同一事实边界：构建脚本必须从确切提交读取源码和 `pyproject.toml`，再在外部输出
+wheel、文档快照和平台回执。生成物不能反向成为另一份源码或文档事实。

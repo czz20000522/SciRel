@@ -8,7 +8,10 @@ copy. Git history and signed tags carry version history; new candidates must
 not add parallel per-version copies of the same source or documentation.
 
 
-SciRel has one canonical current release tuple in [`CURRENT.json`](CURRENT.json).
+SciRel has one canonical current *candidate receipt* in [`CURRENT.json`](CURRENT.json).
+It is derived coordination metadata for the checkout; it is not a second version
+source. `pyproject.toml` and the Git commit/tag remain authoritative for package
+identity and history.
 The wheel and documentation subdirectories retain compatibility pointers for
 older consumers, but they must not introduce another version identity. Git
 history and tags carry the version history; generated wheels and rendered
@@ -22,8 +25,9 @@ The tuple binds:
 - each platform receipt used by the bounded compatibility claim.
 
 Historical candidate identities are preserved by Git commits, tags, and the
-short release notes under `docs/release/`. Do not add a per-version wheel JSON
-or a complete documentation snapshot to this tree.
+short release notes under `docs/release/`. Do not add a per-version wheel JSON,
+a parallel documentation tree, or a complete generated catalog snapshot to this
+source tree merely to record a candidate.
 
 The project still has three *evidence lines*:
 
