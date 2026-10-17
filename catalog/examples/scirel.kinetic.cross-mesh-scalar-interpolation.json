@@ -114,7 +114,9 @@
     "python": {
       "module": "scirel.kinetic.cross_mesh_scalar_interpolation",
       "symbol": "interpolate_scalar_across_mesh",
-      "signature": "interpolate_scalar_across_mesh(fa, xa, xb, do_warn=0)"
+      "signature": "interpolate_scalar_across_mesh(fa, xa, xb, do_warn=0)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "interpolate_scalar_across_mesh"
     }
   },
   "version": {

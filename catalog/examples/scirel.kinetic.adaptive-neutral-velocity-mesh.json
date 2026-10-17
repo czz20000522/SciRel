@@ -117,7 +117,9 @@
     "python": {
       "module": "scirel.kinetic.adaptive_neutral_velocity_mesh",
       "symbol": "create_adaptive_neutral_velocity_mesh",
-      "signature": "create_adaptive_neutral_velocity_mesh(nv, ion_temperature_ev, requested_energy_ev=None, temperature_cap_ev=0.0)"
+      "signature": "create_adaptive_neutral_velocity_mesh(nv, ion_temperature_ev, requested_energy_ev=None, temperature_cap_ev=0.0)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "create_adaptive_neutral_velocity_mesh"
     }
   },
   "version": {

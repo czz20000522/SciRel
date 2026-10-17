@@ -174,7 +174,9 @@
     "python": {
       "module": "scirel.kinetic.shifted_maxwellian_seed",
       "symbol": "build_shifted_maxwellian_seed",
-      "signature": "build_shifted_maxwellian_seed(*, vr, vx, tnorm_ev, shifted_vx_m_s, temperature_ev, mass_amu, molecule_count, cylindrical_volume)"
+      "signature": "build_shifted_maxwellian_seed(*, vr, vx, tnorm_ev, shifted_vx_m_s, temperature_ev, mass_amu, molecule_count, cylindrical_volume)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "build_shifted_maxwellian_seed"
     }
   },
   "version": {

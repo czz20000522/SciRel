@@ -93,7 +93,9 @@
     "python": {
       "module": "scirel.kinetic.elastic_regeneration_aggregation",
       "symbol": "aggregate_elastic_regeneration_source",
-      "signature": "aggregate_elastic_regeneration_source(frequencies_s_inv, regenerated_distributions)"
+      "signature": "aggregate_elastic_regeneration_source(frequencies_s_inv, regenerated_distributions)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "aggregate_elastic_regeneration_source"
     }
   },
   "version": {

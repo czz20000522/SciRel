@@ -93,7 +93,9 @@
     "python": {
       "module": "scirel.kinetic.atomic_scattered_sources_reduction",
       "symbol": "reduce_atomic_scattered_sources",
-      "signature": "reduce_atomic_scattered_sources(charge_exchange_source_distribution, elastic_source_distribution)"
+      "signature": "reduce_atomic_scattered_sources(charge_exchange_source_distribution, elastic_source_distribution)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "reduce_atomic_scattered_sources"
     }
   },
   "version": {

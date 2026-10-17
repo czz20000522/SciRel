@@ -102,7 +102,9 @@
     "python": {
       "module": "scirel.kinetic.molecular_scattered_sources_reduction",
       "symbol": "reduce_molecular_scattered_sources",
-      "signature": "reduce_molecular_scattered_sources(wall_source_distribution, charge_exchange_source_distribution, elastic_source_distribution)"
+      "signature": "reduce_molecular_scattered_sources(wall_source_distribution, charge_exchange_source_distribution, elastic_source_distribution)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "reduce_molecular_scattered_sources"
     }
   },
   "version": {

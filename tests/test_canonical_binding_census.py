@@ -14,8 +14,8 @@ def test_current_canonical_binding_census_preserves_facade_and_exception_denomin
     counts = report["counts"]
 
     assert counts["total"] == 267
-    assert counts["explicit"] == 180
-    assert counts["candidate"] == 40
+    assert counts["explicit"] == 188
+    assert counts["candidate"] == 32
     assert counts["exception"] == 47
     assert report["unexpected_missing"] == []
 
@@ -194,7 +194,7 @@ def test_pdrf_gpdf_and_generalized_slice_pins_kinetic_facades_explicitly():
     }
     assert len(selected) == 11
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
-    assert rows["scirel.kinetic.adaptive-neutral-velocity-mesh"] == "candidate"
+    assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"
     assert rows["scirel.kinetic.generalized-small-k"] == "exception"
 
 
@@ -209,7 +209,7 @@ def test_fluidbw_slice_pins_kinetic_facades_explicitly():
     }
     assert len(selected) == 8
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
-    assert rows["scirel.kinetic.adaptive-neutral-velocity-mesh"] == "candidate"
+    assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"
 
 
 def test_vlasov_poisson_and_maxwellian_slice_pins_kinetic_facades_explicitly():
@@ -230,7 +230,7 @@ def test_vlasov_poisson_and_maxwellian_slice_pins_kinetic_facades_explicitly():
     }
     assert len(selected) == 14
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
-    assert rows["scirel.kinetic.adaptive-neutral-velocity-mesh"] == "candidate"
+    assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"
 
 
 def test_special_function_and_dispersion_slice_pins_kinetic_facades_explicitly():
@@ -247,7 +247,7 @@ def test_special_function_and_dispersion_slice_pins_kinetic_facades_explicitly()
     }
     assert len(selected) == 7
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
-    assert rows["scirel.kinetic.adaptive-neutral-velocity-mesh"] == "candidate"
+    assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"
 
 
 def test_terminal_and_neutral_basics_slice_pins_kinetic_facades_explicitly():
@@ -268,4 +268,21 @@ def test_terminal_and_neutral_basics_slice_pins_kinetic_facades_explicitly():
     }
     assert len(selected) == 11
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
-    assert rows["scirel.kinetic.adaptive-neutral-velocity-mesh"] == "candidate"
+    assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"
+
+
+def test_neutral_mesh_and_source_slice_pins_kinetic_facades_explicitly():
+    report = census(ROOT)
+    rows = {row["asset_id"]: row["status"] for row in report["rows"]}
+    selected = {
+        "scirel.kinetic.adaptive-neutral-velocity-mesh",
+        "scirel.kinetic.atomic-scattered-sources-reduction",
+        "scirel.kinetic.cross-mesh-scalar-interpolation",
+        "scirel.kinetic.cylindrical-velocity-quadrature",
+        "scirel.kinetic.elastic-regeneration-aggregation",
+        "scirel.kinetic.molecular-scattered-sources-reduction",
+        "scirel.kinetic.shifted-maxwellian-seed",
+        "scirel.kinetic.simple-charge-exchange-source",
+    }
+    assert len(selected) == 8
+    assert all(rows[asset_id] == "explicit" for asset_id in selected)

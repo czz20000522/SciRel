@@ -120,7 +120,9 @@
     "python": {
       "module": "scirel.kinetic.simple_charge_exchange_source",
       "symbol": "assemble_simple_charge_exchange_source",
-      "signature": "assemble_simple_charge_exchange_source(target_distribution, charge_exchange_frequency_s_inv, previous_generation_distribution, cylindrical_weight, dvx)"
+      "signature": "assemble_simple_charge_exchange_source(target_distribution, charge_exchange_frequency_s_inv, previous_generation_distribution, cylindrical_weight, dvx)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "assemble_simple_charge_exchange_source"
     }
   },
   "version": {

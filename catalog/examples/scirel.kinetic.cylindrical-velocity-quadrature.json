@@ -256,7 +256,9 @@
     "python": {
       "module": "scirel.kinetic.cylindrical_velocity_quadrature",
       "symbol": "make_cylindrical_velocity_quadrature",
-      "signature": "make_cylindrical_velocity_quadrature(*, vr, vx)"
+      "signature": "make_cylindrical_velocity_quadrature(*, vr, vx)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "make_cylindrical_velocity_quadrature"
     }
   },
   "version": {
