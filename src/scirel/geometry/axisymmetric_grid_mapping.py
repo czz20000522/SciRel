@@ -77,18 +77,8 @@ def _map_axes(r_m, z_m):
     return r_axis, z_axis
 
 
-def _interpolate_cylindrical(r_axis, z_axis, values, radii, axial):
-    """Evaluate the tensor-product linear interpolant on flat query arrays.
-
-    The retained source expressed this relation as radial interpolation
-    followed by axial interpolation.  On strictly increasing rectilinear axes
-    that is the same tensor-product bilinear interpolant as the direct
-    four-corner expression below.  Resolving both enclosing cells at once
-    avoids the source implementation's Python loop over query points and,
-    crucially, avoids materializing a ``(n_queries, n_z)`` intermediate array.
-    ``side='right'`` preserves ``numpy.interp`` endpoint behavior: an exact
-    last-axis query selects the final cell with fraction one.
-    """
+def _interpolation_coordinates(r_axis, z_axis, radii, axial):
+    """Resolve enclosing cells and fractions for one batch of query points."""
     r_index = np.clip(
         np.searchsorted(r_axis, radii, side="right") - 1,
         0,
@@ -102,6 +92,12 @@ def _interpolate_cylindrical(r_axis, z_axis, values, radii, axial):
         z_axis.size - 2,
     )
     z_fraction = (axial - z_axis[z_index]) / (z_axis[z_index + 1] - z_axis[z_index])
+    return r_index, r_fraction, z_index, z_fraction
+
+
+def _evaluate_cylindrical(values, coordinates):
+    """Evaluate the tensor-product interpolant at pre-resolved coordinates."""
+    r_index, r_fraction, z_index, z_fraction = coordinates
     # Gather only the four enclosing cell corners.  Expanding the two stages
     # this way preserves the retained radial-then-axial order without creating
     # the O(points * map_z) intermediate used by the original column loop.
@@ -112,6 +108,23 @@ def _interpolate_cylindrical(r_axis, z_axis, values, radii, axial):
         values[r_index + 1, z_index + 1] - values[r_index, z_index + 1]
     )
     return radial_at_z0 + z_fraction * (radial_at_z1 - radial_at_z0)
+
+
+def _interpolate_cylindrical(r_axis, z_axis, values, radii, axial):
+    """Evaluate the tensor-product linear interpolant on flat query arrays.
+
+    The retained source expressed this relation as radial interpolation
+    followed by axial interpolation.  On strictly increasing rectilinear axes
+    that is the same tensor-product bilinear interpolant as the direct
+    four-corner expression below.  Resolving both enclosing cells at once
+    avoids the source implementation's Python loop over query points and,
+    crucially, avoids materializing a ``(n_queries, n_z)`` intermediate array.
+    ``side='right'`` preserves ``numpy.interp`` endpoint behavior: an exact
+    last-axis query selects the final cell with fraction one.
+    """
+    return _evaluate_cylindrical(
+        values, _interpolation_coordinates(r_axis, z_axis, radii, axial)
+    )
 
 
 def map_axisymmetric_equilibrium_to_cartesian_grid(equilibrium, x_m, y_m, z_m):
@@ -146,11 +159,10 @@ def map_axisymmetric_equilibrium_to_cartesian_grid(equilibrium, x_m, y_m, z_m):
 
     flat_r = clamped_r.ravel()
     flat_z = clamped_z.ravel()
-    br = _interpolate_cylindrical(r_axis, z_axis, arrays["br_t"], flat_r, flat_z)
-    bz = _interpolate_cylindrical(r_axis, z_axis, arrays["bz_t"], flat_r, flat_z)
-    psi = _interpolate_cylindrical(
-        r_axis, z_axis, arrays["psi_wb_per_rad"], flat_r, flat_z
-    )
+    coordinates = _interpolation_coordinates(r_axis, z_axis, flat_r, flat_z)
+    br = _evaluate_cylindrical(arrays["br_t"], coordinates)
+    bz = _evaluate_cylindrical(arrays["bz_t"], coordinates)
+    psi = _evaluate_cylindrical(arrays["psi_wb_per_rad"], coordinates)
 
     shape = (x_axis.size, y_axis.size, z_axis_grid.size)
     br = br.reshape(shape)

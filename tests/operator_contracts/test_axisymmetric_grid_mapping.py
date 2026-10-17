@@ -18,6 +18,12 @@ import numpy as np
 import pytest
 from scipy.interpolate import RegularGridInterpolator
 
+from scirel.geometry.axisymmetric_grid_mapping import (
+    _evaluate_cylindrical,
+    _interpolate_cylindrical,
+    _interpolation_coordinates,
+)
+
 MAPPING_MODULE = Path(
     importlib.import_module("scirel.geometry.axisymmetric_grid_mapping").__file__
 ).resolve() if os.environ.get("SCIREL_INSTALLED_RUNTIME") == "1" else (
@@ -107,6 +113,26 @@ def test_u1_a_t02_stage_order_is_measured_to_be_non_discriminating(
     np.testing.assert_allclose(
         result["poloidal_flux_wb_per_rad"].ravel(), retained_order, rtol=1e-14, atol=1e-14
     )
+
+
+def test_u1_a_t02_pre_resolved_coordinates_preserve_interpolation_values(
+    equilibrium, axes
+):
+    eq = equilibrium()
+    x_axis, y_axis, z_axis, _ = axes(
+        x=(-1.1, 1.1, 11), y=(-0.9, 0.9, 9), z=(-0.7, 0.7, 8)
+    )
+    xx, yy, zz = np.meshgrid(x_axis, y_axis, z_axis, indexing="ij")
+    radii = np.clip(np.hypot(xx, yy), eq["r_m"][0], eq["r_m"][-1]).ravel()
+    axial = np.clip(zz, eq["z_m"][0], eq["z_m"][-1]).ravel()
+    coordinates = _interpolation_coordinates(eq["r_m"], eq["z_m"], radii, axial)
+
+    for name in ("psi_wb_per_rad", "br_t", "bz_t"):
+        expected = _interpolate_cylindrical(
+            eq["r_m"], eq["z_m"], eq[name], radii, axial
+        )
+        actual = _evaluate_cylindrical(eq[name], coordinates)
+        np.testing.assert_array_equal(actual, expected)
 
 
 # --- Test U1-A-T03: the coverage mask marks containment in the closed box. ---
