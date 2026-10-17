@@ -1027,7 +1027,7 @@ basis.py[EM8M]: F:实现源派生三次样条及多项式基并修正不等距�
 fieldline.py[EM8M]: F:实现参数场线、物理场插值、曲率和有界边界求交 | R:code:tests/pleiades/equilibrium/test_fieldline_t7_precision.py,code:tests/pleiades/equilibrium/test_curvature_consumer.py | A:FieldLine；HelperFieldLine；Boundary；d_ds_arclength；contours | S:曲率在同一局部参数微分，反向B不变；开线保持顺序；有限多起点交点不证明全部拓扑；零场、支撑外及非有限场拒绝
 numerics.py[EM7T]: F:计算严格递增非均匀网格的三点二次一二阶内部导数 | R:code:src/scirel/geometry/sampling.py | A:NumericalContractError；diff_12_central | S:只支持有限一维匹配数据，输出N-2项，不构造端点或扩大旧API适用域
 plotting.py[EU6T]: F:按源原地或浅复制合同缩放、镜像及转置图形patch，并在绘图变换调用时加载可选Matplotlib | R:code:tests/pleiades/equilibrium/test_analysis_families.py,code:tests/test_lazy_namespace.py | A:scale_patches；get_mirror_patches；transpose_patches；_affine2d | S:只变图形数据transform，不变物理场坐标；transpose返回None；Matplotlib缺失只在变换调用边界抛出ModuleNotFoundError；避免重复应用patch固有几何
-sampling.py[EM8M]: F:实现网格采样、极坐标投影、标量反射、沿线积分和批量二维样条插值 | R:code:src/scirel/geometry/numerics.py,code:tests/pleiades/geometry/test_polar_projection_repair.py | A:网格；SVD拟合；坐标互逆；选段；插值；flux_surface_avg；输入点批量求值 | S:regular_grid默认ij，矩形采样要求xy；反射仅标量偶量；积分Q/B ds不补2π或闭合开线；选段包含末端；interp保持(y,x)配对和float结果
+sampling.py[EM8M]: F:实现网格采样、极坐标投影、标量反射、沿线积分、批量二维样条插值和轮廓选段 | R:code:src/scirel/geometry/numerics.py,code:tests/pleiades/geometry/test_polar_projection_repair.py,code:tests/pleiades/equilibrium/test_analysis_corrections.py | A:regular_grid和poly_fit,坐标互逆和反射,locs查询,parse_segment和沿线距离,interp,flux_surface_avg和diff_central | S:regular_grid默认ij；parse_segment按最近顶点选择起止点，平局保留首个并包含选定末端；interp保持(y,x)配对并返回float结果；flux_surface_avg计算Q/B ds或1/B ds，不补2pi或闭合开线
 
 ===/Users/tomczz/Projects/SciReL/src/scirel/inference/===
 __init__.py[LB6T]: F:导出分层采样、试点评估及各向异性参数反演组合 | R:code:src/scirel/inference/direct_anisotropic_inversion.py | A:scirel.inference及__all__ | S:领域入口保持惰性导入，不在发现阶段加载NumPy或SciPy
@@ -1524,7 +1524,7 @@ __init__.py[LA6T]: F:公开扩展EQDSK读写、收敛压力终态导出和字典
 eqdsk.py[DI9L]: F:校验并交换扩展EQDSK文本、字典、轮廓及收敛压力结果，并声明稳定模块导出 | R:code:src/scirel/_optional.py,code:tests/pleiades/test_eqdsk.py,code:tests/pleiades/test_pressure_eqdsk.py,code:tests/test_optional_dependencies.py | A:定宽读写；C序ψ；边界；raw采样；压力Pa及导数；原子对象读入；显式__all__；raw绘图入口的可选Matplotlib边界 | S:网格R起零且Z对称，不是标准EFIT；绘图能力缺失时明确提示scirel[plot]，科学输出和默认分支不变
 
 ===/Users/tomczz/Projects/SciReL/tests/pleiades/equilibrium/===
-test_analysis_corrections.py[TQ8S]: F:以解析多项式、Hermite端点和圆切向场验证几何分析修正 | R:code:src/scirel/geometry/basis.py,code:src/scirel/geometry/fieldline.py,code:src/scirel/geometry/sampling.py | A:不等距夹持；Robin；弧长导数；反向曲率；末点 | S:替换插值隔离微分，不替代真实插值消费者；源重放保留原失败
+test_analysis_corrections.py[TQ8S]: F:以解析多项式、Hermite端点、圆切向场和选段回归验证几何分析修正 | R:code:src/scirel/geometry/basis.py,code:src/scirel/geometry/fieldline.py,code:src/scirel/geometry/sampling.py | A:不等距夹持与Robin,弧长导数,反向曲率,选段起止与方向,末点和平局 | S:选段回归固定默认方向、显式起止和首个最近点平局；替换插值隔离微分，不替代真实插值消费者；源重放保留原失败
 test_analysis_families.py[TQ8M]: F:用独立样条、解析微积分及仿射坐标覆盖保留分析家族 | R:code:src/scirel/geometry/basis.py,code:src/scirel/geometry/sampling.py,code:src/scirel/geometry/plotting.py | A:边界；factory；采样；SVD；反射；积分；场线；patch | S:曲率加密场网格，不把固定网格增加曲线点当同一结论；特殊样条只核声明闭合
 test_curvature_consumer.py[TQ8T]: F:通过实际插值链验证圆和椭圆曲率、反向不变及失败域 | R:code:src/scirel/geometry/fieldline.py | A:80/160场网格；双类；顶点及场反向；留出；零场与越域 | S:保留2.5e-3门限与固定网格曲线加密断言；文件存在不代表本次执行通过，不改写冻结失败
 test_distributed_current.py[TQ8S]: F:以独立环积分和三角插值oracle验证规则电流消费者的单位、分层、缩放、转置、轴源与零权重 | R:code:src/scirel/electromagnetism/distributed.py | A:净CDF有符号层和；A/cm²面积权重；输入不变；转置与缩放；零自项；几何掩码失败 | S:参考共享三角拓扑但独立求重心与电流收缩；零自项仅兼容离散约定，不能解释为有限导线自场

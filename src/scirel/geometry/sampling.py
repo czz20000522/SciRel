@@ -204,7 +204,8 @@ def get_fieldlines(contourset,level,start_coord=None,end_coord=None,clockwise=Tr
 
 def parse_segment(flpoints,start_coord=None,end_coord=None,clockwise=True):
     if start_coord is not None:
-        i_start = np.argmin(np.array([x0**2+y0**2 for x0,y0 in zip(flpoints[:,0]-start_coord[0],flpoints[:,1]-start_coord[1])]))
+        delta = flpoints - np.asarray(start_coord)
+        i_start = np.argmin(np.sum(delta**2, axis=1))
         flpoints = np.roll(flpoints,-i_start,axis=0)
     ## Find out if curve is cw or ccw
     x = flpoints[:,0]
@@ -214,7 +215,8 @@ def parse_segment(flpoints,start_coord=None,end_coord=None,clockwise=True):
         flpoints = np.roll(flpoints[::-1,:],1,axis=0)
     i_end = len(x)
     if end_coord is not None:
-        i_end = np.argmin(np.array([x0**2+y0**2 for x0,y0 in zip(flpoints[:,0]-end_coord[0],flpoints[:,1]-end_coord[1])]))
+        delta = flpoints - np.asarray(end_coord)
+        i_end = np.argmin(np.sum(delta**2, axis=1))
         i_end += 1
     flpoints = flpoints[0:i_end,:]
     return flpoints

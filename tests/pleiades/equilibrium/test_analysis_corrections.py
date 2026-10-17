@@ -99,3 +99,27 @@ def test_parse_segment_preserves_default_and_requested_last_vertex():
     p = np.array([[0.,0.], [0.,1.], [1.,1.], [1.,0.]]) # clockwise
     np.testing.assert_array_equal(helpers.parse_segment(p), p)
     np.testing.assert_array_equal(helpers.parse_segment(p, end_coord=(1,0)), p)
+
+
+@pytest.mark.parametrize(
+    ('clockwise', 'expected'),
+    [
+        (True, np.array([[0., 1.], [1., 1.], [1., 0.]])),
+        (False, np.array([[0., 1.], [0., 0.], [1., 0.]])),
+    ],
+)
+def test_parse_segment_preserves_requested_start_direction_and_endpoint(clockwise, expected):
+    p = np.array([[0., 0.], [0., 1.], [1., 1.], [1., 0.]])
+    got = helpers.parse_segment(
+        p,
+        start_coord=(0.1, 0.9),
+        end_coord=(0.9, 0.1),
+        clockwise=clockwise,
+    )
+    np.testing.assert_array_equal(got, expected)
+
+
+def test_parse_segment_keeps_first_nearest_vertex_on_ties():
+    p = np.array([[0., 0.], [0., 1.], [1., 1.], [1., 0.]])
+    got = helpers.parse_segment(p, start_coord=(0.5, 0.5), end_coord=(0.5, 0.5))
+    np.testing.assert_array_equal(got, p[:1])
