@@ -5,7 +5,50 @@ D2 successor: same domains, 40/80/160 spatial grids, 401 line vertices,
 """
 import numpy as np
 import pytest
-from scirel.geometry.fieldline import FieldLine, HelperFieldLine
+from scirel.geometry.fieldline import FieldLine, HelperFieldLine, _curve_curvature
+
+
+def _scalar_curvature_oracle(vertices, br, bz):
+    """Independent scalar-stencil oracle for the batched curvature path."""
+    p = np.asarray(vertices, dtype=float)
+    field = np.column_stack((br, bz))
+    magnitude = np.hypot(field[:, 0], field[:, 1])
+    ds = np.linalg.norm(np.diff(p, axis=0), axis=1)
+    t = np.r_[0.0, np.cumsum(ds)]
+    b = field / magnitude[:, None]
+    values = np.column_stack((p, b))
+    derivative = np.empty_like(values)
+    width = min(5, len(p))
+    for i in range(len(p)):
+        start = min(max(i - width // 2, 0), len(p) - width)
+        local = t[start:start + width] - t[i]
+        scale = np.max(np.abs(local))
+        x = local / scale
+        moments = np.zeros(width)
+        moments[1] = 1.0
+        weights = np.linalg.solve(
+            np.vander(x, N=width, increasing=True).T, moments
+        ) / scale
+        derivative[i] = weights @ (values[start:start + width] - values[i])
+    tangent, db = derivative[:, :2], derivative[:, 2:]
+    speed = np.linalg.norm(tangent, axis=1)
+    direction = np.sign(np.sum(tangent * b, axis=1))
+    return direction[:, None] * db / speed[:, None]
+
+
+@pytest.mark.parametrize("n", [3, 4, 5, 17])
+@pytest.mark.parametrize("reverse", [False, True])
+def test_batched_curvature_matches_scalar_nonuniform_oracle(n, reverse):
+    s = np.array([0.0, .03, .09, .22, .5, 1.0, 1.8, 2.9, 4.3, 5.2,
+                  6.7, 8.1, 9.0, 10.4, 11.8, 13.1, 14.7])[:n]
+    vertices = np.column_stack((s, .08 * s * s + .01 * np.cos(s)))
+    tangent = np.column_stack((np.ones(n), .16 * s - .01 * np.sin(s)))
+    if reverse:
+        vertices = vertices[::-1]
+        tangent = -tangent[::-1]
+    expected = _scalar_curvature_oracle(vertices, tangent[:, 0], tangent[:, 1])
+    actual = _curve_curvature(vertices, tangent[:, 0], tangent[:, 1])
+    np.testing.assert_allclose(actual, expected, rtol=3e-13, atol=3e-12)
 
 
 @pytest.mark.parametrize("klass", [FieldLine, HelperFieldLine])

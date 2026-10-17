@@ -122,18 +122,34 @@ def _curve_curvature(vertices, br, bz):
     t = np.r_[0., np.cumsum(ds)]
     b = field / magnitude[:, None]
     values = np.column_stack((p, b))
-    derivative = np.empty_like(values)
     width = min(5, len(p))
-    for i in range(len(p)):
-        start = min(max(i-width//2, 0), len(p)-width)
-        local = t[start:start+width]-t[i]
-        scale = np.max(np.abs(local))
-        x = local/scale
-        moments = np.zeros(width)
-        moments[1] = 1.
-        weights = np.linalg.solve(np.vander(x, N=width, increasing=True).T, moments)/scale
+    # The stencil has only a handful of points, but constructing and solving
+    # one system per vertex dominates long field lines.  Solve independent
+    # stencils in batches while retaining the exact endpoint/window rule above.
+    # A bounded batch keeps temporary arrays reasonable for very long lines.
+    derivative = np.empty_like(values)
+    batch_size = 4096
+    offsets = np.arange(width)
+    moments = np.zeros(width)
+    moments[1] = 1.
+    starts = np.minimum(np.maximum(np.arange(len(p)) - width // 2, 0), len(p) - width)
+    for begin in range(0, len(p), batch_size):
+        end = min(begin + batch_size, len(p))
+        rows = np.arange(begin, end)
+        indices = starts[rows, None] + offsets
+        local = t[indices] - t[rows, None]
+        scale = np.max(np.abs(local), axis=1)
+        x = local / scale[:, None]
+        # np.vander accepts only one-dimensional input, so form the same
+        # increasing-power matrix explicitly for the batched solve.
+        vandermonde = x[:, :, None] ** offsets[None, None, :]
+        rhs = np.broadcast_to(moments, (end - begin, width))[..., None]
+        weights = np.linalg.solve(vandermonde.transpose(0, 2, 1), rhs)[..., 0]
+        weights /= scale[:, None]
         # Subtract the central value to avoid cancellation under translation.
-        derivative[i] = weights @ (values[start:start+width]-values[i])
+        derivative[rows] = np.einsum(
+            "ij,ijk->ik", weights, values[indices] - values[rows, None]
+        )
     tangent, db = derivative[:, :2], derivative[:, 2:]
     speed = np.linalg.norm(tangent, axis=1)
     direction = np.sign(np.sum(tangent*b, axis=1))
