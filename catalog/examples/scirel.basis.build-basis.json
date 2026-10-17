@@ -66,7 +66,7 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
+    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred. Unknown keyword arguments, including misspelled polynomial options, raise TypeError instead of being ignored.",
     "runtime_failure": "Underlying numerical or interpolation exceptions propagate.",
     "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
     "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object."
@@ -88,7 +88,7 @@
     }
   },
   "version": {
-    "implementation_version": "0.1.0.dev10",
+    "implementation_version": "0.1.0.dev11",
     "dependencies": []
   },
   "example": {
