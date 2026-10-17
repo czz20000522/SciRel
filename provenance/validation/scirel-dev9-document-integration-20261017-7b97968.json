@@ -1,0 +1,50 @@
+{
+  "evidence": {
+    "docs_build_manifest": "scirel/0.1.0.dev9/7b97968-dev9-kinetic-facade-20261017/docs/build-manifest.json",
+    "docs_build_manifest_sha256": "ca2f50b32d53cd19358280a4950dff019ee76cebc7ff65814e136f4ea466205f",
+    "linux_acceptance": "provenance/validation/scirel-dev9-linux-offline-20261017-7b97968.json",
+    "linux_acceptance_sha256": "fbfc5e9d7cea8eb90e9200e96040218881383be64bc84fa782e38990b898efc7",
+    "linux_offline_wheelhouse_validation": "provenance/validation/scirel-dev9-linux-offline-20261017-7b97968.json",
+    "linux_offline_wheelhouse_validation_sha256": "fbfc5e9d7cea8eb90e9200e96040218881383be64bc84fa782e38990b898efc7",
+    "macos_arm64_offline_wheelhouse_validation": "provenance/validation/scirel-dev9-macos-arm64-offline-20261017-7b97968.json",
+    "macos_arm64_offline_wheelhouse_validation_sha256": "c3cfce1574d10fcb9198323f392e044d6182bd399d0804b91dadcfc5eb5d4119",
+    "wheel_build_manifest": "scirel/0.1.0.dev9/7b97968-dev9-kinetic-facade-20261017/build-manifest.json",
+    "wheel_build_manifest_sha256": "8969f1e2c651756a02959d45046edf36dddc0fae69923c8e25427ba0e88f37a1"
+  },
+  "handbook": {
+    "asset_count": 267,
+    "path": "tools/docs/handbook.json",
+    "scope": "repository",
+    "selected_asset_count": 260,
+    "sha256": "7aea04ee827699038d4be7a34bf2d579c875614867334657dae9de1e050bd9fc"
+  },
+  "limitations": [
+    "External wheel and documentation snapshot are generated artifacts under an ignored artifact root; Git source, selection and handbook remain canonical.",
+    "The Linux amd64 and macOS arm64 receipts bind the same 7b9796843eac078def5793e7f6da4ddb548becf7 source revision to exact-wheel offline installations using fixed three-wheel core runtime wheelhouses; complete scientific capability closure is not established.",
+    "The wheelhouses were downloaded during preparation with network access, while installation and validation used no-index binary-only environments; the Linux run used the Ubuntu-CodeFusion WSL environment and the macOS run used a local CPython 3.14 arm64 clean venv.",
+    "This metadata receipt does not constitute scientific expert approval, redistribution approval, or public release approval."
+  ],
+  "project_version": "0.1.0.dev9",
+  "schema": "scirel.dev9-document-integration.v1",
+  "selection": {
+    "asset_count": 260,
+    "operators": 230,
+    "path": "provenance/selections/scientific-core-documents-20261017-dev9.json",
+    "sha256": "ef3e6371dfdc8700bc49edaf4193ce1bbee3b21417313d08b20f7f9c5c95836e",
+    "task_graphs": 30
+  },
+  "snapshot": {
+    "asset_count": 260,
+    "bytes": 27722415,
+    "external_path": "scirel/0.1.0.dev9/7b97968-dev9-kinetic-facade-20261017/docs/snapshot",
+    "sha256": "a3f02f8b1ffa0f5865c1053c80a0a6aa0764903f1364acf234c02291ed99258a",
+    "source_dirty": false
+  },
+  "source_revision": "7b9796843eac078def5793e7f6da4ddb548becf7",
+  "status": "PASS",
+  "wheel": {
+    "bytes": 663303,
+    "path": "scirel/0.1.0.dev9/7b97968-dev9-kinetic-facade-20261017/scirel-0.1.0.dev9-py3-none-any.whl",
+    "sha256": "737e29462a79ea675b2db4092e9e9900e14bc0da268be8d0ebd3a2abb3e874e5"
+  }
+}

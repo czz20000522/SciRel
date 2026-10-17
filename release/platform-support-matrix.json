@@ -20,10 +20,10 @@
       "python": "CPython 3.14",
       "status": "PARTIAL",
       "evidence": [
-        "provenance/validation/scirel-dev9-linux-offline-20261017-19a4e6b.json",
+        "provenance/validation/scirel-dev9-linux-offline-20261017-7b97968.json",
         "release/CURRENT.json"
       ],
-      "scope": "dev9 Linux amd64 + CPython 3.14 clean-venv installation with the exact bound wheel, fixed offline runtime wheelhouse, representative core tasks and native resource inventory; complete scientific capability closure is not established"
+      "scope": "dev9 Linux amd64 + CPython 3.14 clean-venv installation with the exact bound wheel from source 7b9796843eac078def5793e7f6da4ddb548becf7, fixed offline runtime wheelhouse, representative core tasks and native resource inventory; complete scientific capability closure is not established"
     },
     {
       "id": "linux-aarch64-cp314",
@@ -54,10 +54,10 @@
       "python": "CPython 3.14",
       "status": "PARTIAL",
       "evidence": [
-        "provenance/validation/scirel-dev9-macos-arm64-offline-20261017-19a4e6b.json",
+        "provenance/validation/scirel-dev9-macos-arm64-offline-20261017-7b97968.json",
         "release/CURRENT.json"
       ],
-      "scope": "dev9 macOS arm64 + CPython 3.14 clean-venv installation with the exact bound wheel, fixed offline runtime wheelhouse, representative core tasks and native resource inventory; complete scientific capability closure is not established"
+      "scope": "dev9 macOS arm64 + CPython 3.14 clean-venv installation with the exact bound wheel from source 7b9796843eac078def5793e7f6da4ddb548becf7, fixed offline runtime wheelhouse, representative core tasks and native resource inventory; complete scientific capability closure is not established"
     },
     {
       "id": "macos-x86_64-cp314",
