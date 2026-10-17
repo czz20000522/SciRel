@@ -72,6 +72,12 @@ class BlockMatplotlib(importlib.abc.MetaPathFinder):
 sys.meta_path.insert(0, BlockMatplotlib())
 sys.path.insert(0, sys.argv[1])
 import scirel.geometry as geometry
+assert not any(
+    name.startswith("scirel.geometry.")
+    for name in sys.modules
+)
+assert "numpy" not in sys.modules
+assert "scipy" not in sys.modules
 assert "matplotlib" not in sys.modules
 assert callable(geometry.sample_rectilinear_field)
 try:
