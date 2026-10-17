@@ -1,7 +1,7 @@
 {
   "schema": "scirel.chapter-execution.v1",
-  "source_commit": "4a6176b0b5b3c0ebe57df2e4fbfc5515d03fc895",
-  "source_identity_note": "Chapter implementation files are bound to the validated source baseline 4a6176b0b5b3c0ebe57df2e4fbfc5515d03fc895; the surrounding documentation snapshot may advance by Git commit while these digests remain unchanged.",
+  "source_commit": "4bd9e82b74613ac59850df56d96126f23773231f",
+  "source_identity_note": "Chapter implementation files were rerun from the source-free SciRel 0.1.0.dev11 wheel built from candidate commit 4bd9e82b74613ac59850df56d96126f23773231f; the implementation file hashes remain bound below.",
   "files": {
     "src/scirel/field/circular_filament_green.py": "7fd4e56e7caa7e03e99a50fa4e9de30c380087fb8fd9a5bfe482497908385987",
     "src/scirel/field/current_green_superposition.py": "ef48b26b1e552fa11d54509d280ce16df4542517a833ea99e0b9a060941adf1e",
@@ -13,27 +13,26 @@
   "scope": "Current release-bound magnetostatics example; bounded technical validation.",
   "example_sha256": "feae9bb16913bcd304baa2e34b0d7d7f4ec9f65c06a04bf3d83492ab375257dc",
   "results_sha256": "e3352eb3a9b2e6cc3270698312c533a2b5e4bca1107686d38c8044bdf14edf45",
-  "wheel_sha256": "36cc7f1a9df4ae49576bfca9fb5366d6e2f043b1c03a013686fcfd80660e8e55",
-  "wheel_version": "0.1.0.dev10",
-  "image_id": "sha256:38382f431271e9dcee8b56113c23be9c232c37dd246e9e3da5fd02b47a3e5ed8",
-  "runtime": "Python3.14.7/NumPy2.5.4/SciPy1.18.1/Matplotlib3.11.2",
+  "wheel_sha256": "892b1f1e01669721483bf716a24cd905f50f3c4466a641c15212f349c2006601",
+  "wheel_version": "0.1.0.dev11",
+  "runtime": "CPython3.14.7/NumPy2.5.4/SciPy1.18.1/Matplotlib3.11.2",
   "network": "none",
   "source_checkout_mounted": false,
   "exit_code": 0,
-  "container_id": "192058025c6c8e0b7a95a968668c2263812fd5cc9045abe91fc0c73daab7efb3",
   "figure_files": {
     "plot.py": "2d5c4546fcf33e1205dc28757cf5933f2e34e3eee8d0ef6d6a79f0e0ad4137af",
     "single.svg": "98add82cde4abfbbdca1760f11ac4fdadeeab0610efe794e6c16460d36262d1f",
     "pair.svg": "fd0f4133af90931a49245d07dad5008cea0b9fafa71db3df528a6863c00a9f02",
     "rectangle.svg": "650ff248aa14f304e0278c609748a61ee195ab59a3726a90c4d80b1212985175"
   },
-  "plot_runtime": "Fresh Matplotlib3.11.2 plots from the current installed wheel results; offline source-free container.",
+  "plot_runtime": "Fresh Matplotlib3.11.2 plots from results produced by the dev11 installed wheel; SVG bytes are identical to the validated baseline.",
   "document_files": {
-    "catalog/examples/scirel.field.circular-filament-green.json": "f54d9698d01f175f5a3338ae98619e7bab40e9b7e38ab887647de761d33b9d79",
-    "catalog/examples/scirel.field.current-green-superposition.json": "dd4c441ae6c4ca863e5b92214f222c22f426a916b978a95ad4f984aed2e808d1",
-    "catalog/examples/scirel.field.rectangular-coil-filaments.json": "c8da606bd1a2a0df26a022878810ec8df1a423c810a7657ed501bb2bcbf4bb69",
-    "catalog/examples/scirel.field.multi-coil-vacuum-field.json": "16c18417f2944bc99c6a15ea723cf74aa62d80db28310e202dcfc995dad4ad42",
-    "catalog/examples/scirel.electromagnetism.circular-filament-green.json": "878d268ee234db80ea9668be9875f49a4d673cb22b2ed9876f49e395e5eed669"
+    "catalog/examples/scirel.field.circular-filament-green.json": "98afc12994c1d6b10ee3c21e0e30adfc370b9b4c16d1fffd7a8df2260820e028",
+    "catalog/examples/scirel.field.current-green-superposition.json": "65c90851d07aea97b3140ece688d843c7825a56f89aa7c65dc76a962379f2f67",
+    "catalog/examples/scirel.field.rectangular-coil-filaments.json": "eeaee1db4c6dc7613eea64b4de7d833e0fba5f202290cee474f9b9e6a1e28fdd",
+    "catalog/examples/scirel.field.multi-coil-vacuum-field.json": "b3f0863e9393b0480a02f24991d3b16d133911a82ac5ebd7f6e057a9faa5c4b6",
+    "catalog/examples/scirel.electromagnetism.circular-filament-green.json": "b7325e3c8f0f66a345184e09eb264cd9c8c6ccd7aa9ac98ac322c6552c016a66"
   },
-  "previous_execution_sha256": "ee1ed061cfa0b923adce2304feff22fda932466613ef70714ec69ffd47dc287d"
+  "previous_execution_sha256": "ee1ed061cfa0b923adce2304feff22fda932466613ef70714ec69ffd47dc287d",
+  "execution_environment": "macOS arm64 CPython 3.14.7 clean venv; source checkout not mounted"
 }

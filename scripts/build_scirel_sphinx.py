@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 import xml.etree.ElementTree as ET
 
 
@@ -106,6 +107,29 @@ def plain(text):
         else:
             result.append(escape(part))
     return ''.join(result)
+
+
+def kinetic_tutorial_proof(root):
+    """Select the newest Git-tracked tutorial proof for this package version."""
+    try:
+        package_version = tomllib.loads(
+            (root / 'pyproject.toml').read_text(encoding='utf-8')
+        )['project']['version']
+    except (OSError, KeyError, TypeError, tomllib.TOMLDecodeError) as error:
+        raise ValueError('pyproject.toml has no readable project.version') from error
+    validation = root / 'provenance/validation'
+    candidates = sorted(validation.glob('scirel-*-kinetic-tutorial-*.json'))
+    for path in reversed(candidates):
+        try:
+            proof = json.loads(path.read_bytes())
+        except (OSError, json.JSONDecodeError):
+            continue
+        if proof.get('wheel_version') == package_version:
+            return path
+    legacy = validation / 'scirel-dev9-kinetic-tutorial-20261018.json'
+    if legacy.is_file():
+        return legacy
+    return validation / 'kinetic-tutorial-current-wheel-20261015.json'
 
 
 def title(text, char='='):
@@ -258,9 +282,7 @@ def render_site(root, docs, book, translations, chapter, *, figure_files):
         if not any(t.get('tutorial_id') == 'kinetic-initial-value' for c in book['chapters'] for t in c['topics']):
             (source/'tutorials/kinetic-initial-value.rst').unlink(missing_ok=True)
         else:
-            proof_path = root / 'provenance/validation/scirel-dev9-kinetic-tutorial-20261018.json'
-            if not proof_path.is_file():
-                proof_path = root / 'provenance/validation/kinetic-tutorial-current-wheel-20261015.json'
+            proof_path = kinetic_tutorial_proof(root)
             proof = json.loads(proof_path.read_bytes())
             bound_paths = dict(proof['source_files'], **proof['document_files'])
             bound_paths['tools/docs/sphinx/tutorials/kinetic-initial-value.rst'] = proof['tutorial_rst_sha256']
