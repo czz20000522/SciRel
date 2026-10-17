@@ -147,7 +147,7 @@ assert result["B"][0, 0] == 5.0
 项目文档入口见 [`docs/README.md`](docs/README.md)，贡献与兼容要求见
 [`CONTRIBUTING.md`](CONTRIBUTING.md)。
 
-标准化资产文档是 framework-neutral catalog 与 HTML 手册的唯一科学输入。当前 133 条记录包含多个实现版本，先验证结构与依赖，再构建开发文档快照：
+标准化资产文档是 framework-neutral catalog 与 HTML 手册的唯一科学输入。开发树中的记录可能包含多个实现版本；当前发行选择、能力计数和文档绑定以 [`release/CURRENT.json`](release/CURRENT.json) 为准。先验证结构与依赖，再构建开发文档快照：
 
 ```powershell
 python scripts/validate_asset_documents.py catalog/examples

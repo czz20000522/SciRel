@@ -505,6 +505,12 @@ def test_current_document_tuple_has_one_implementation_version() -> None:
     assert documentation["compatible_wheel"] == current["version"]
 
 
+def test_project_readme_uses_current_release_for_dynamic_document_counts() -> None:
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "release/CURRENT.json" in readme
+    assert not re.search(r"当前\s+\d+\s*条记录", readme)
+
+
 def test_ref_bound_document_builder_requires_selection(tmp_path: Path) -> None:
     from build_scirel_docs_from_ref import build_from_ref
 
