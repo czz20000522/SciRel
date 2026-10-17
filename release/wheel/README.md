@@ -37,9 +37,11 @@ python scripts/build_scirel_from_ref.py --ref "$ref" --python 3.14 --output-dir 
 
 Git-archive extraction gives the source files one stable timestamp; setting the
 epoch alone in a working tree is insufficient because build backends may preserve
-file mtimes. The helper records the full source revision, project version, wheel
-byte count and SHA-256 in its manifest, and fixes `PYTHONHASHSEED=0` alongside
-`SOURCE_DATE_EPOCH` and POSIX `umask 022`. Compare those values with the canonical
+file mtimes. The helper also normalizes regular-file and directory modes before
+building, so a host tar umask cannot change wheel ZIP permission attributes. It
+records the full source revision, project version, wheel byte count and SHA-256 in
+its manifest, and fixes `PYTHONHASHSEED=0` alongside `SOURCE_DATE_EPOCH` and POSIX
+`umask 022`. Compare those values with the canonical
 tuple and run the platform receipt against that exact file before updating
 `release/CURRENT.json`. The logical manifest reference is resolved only against
 an explicitly supplied external artifact root; it never points into

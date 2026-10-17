@@ -172,3 +172,62 @@ assert all(namespace[name] is getattr(field, name) for name in field.__all__)
 ''', str(ROOT / 'src')], capture_output=True, text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_closures_namespace_is_dependency_light_before_operator_access():
+    result = subprocess.run(
+        [sys.executable, '-I', '-S', '-c', '''
+import sys
+
+sys.path.insert(0, sys.argv[1])
+import scirel.closures as closures
+
+assert len(closures.__all__) == 8
+assert not any(
+    name.startswith("scirel.closures.")
+    for name in sys.modules
+    if name != "scirel.closures"
+)
+assert "numpy" not in sys.modules
+assert "scipy" not in sys.modules
+assert "evaluate_tabulated_pressure" in dir(closures)
+
+try:
+    closures.evaluate_tabulated_pressure
+except ModuleNotFoundError:
+    pass
+else:
+    raise AssertionError("operator unexpectedly imported without scientific dependencies")
+''', str(ROOT / 'src')], capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_closures_exports_are_lazy_and_preserve_compatibility_identity():
+    result = subprocess.run(
+        [sys.executable, '-I', '-c', '''
+import sys
+
+sys.path.insert(0, sys.argv[1])
+import scirel.closures as closures
+
+assert len(closures.__all__) == 8
+assert not any(
+    name.startswith("scirel.closures.")
+    for name in sys.modules
+    if name != "scirel.closures"
+)
+
+from scirel.closures import close_hall_two_fluid_pressure
+from scirel.closures.hall_two_fluid_pressure import close_hall_two_fluid_pressure as direct
+
+assert close_hall_two_fluid_pressure is direct
+assert closures.close_hall_two_fluid_pressure is direct
+assert closures.hall_two_fluid_pressure is sys.modules["scirel.closures.hall_two_fluid_pressure"]
+
+namespace = {}
+exec("from scirel.closures import *", namespace)
+assert all(namespace[name] is getattr(closures, name) for name in closures.__all__)
+''', str(ROOT / 'src')], capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

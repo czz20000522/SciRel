@@ -7,6 +7,7 @@ import json
 import re
 import hashlib
 import sys
+import stat
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
@@ -72,6 +73,32 @@ def test_ref_bound_build_helper_is_documented_and_keeps_artifacts_external() -> 
     assert "build_scirel_from_ref.py" in readme
     assert "git archive" in docs_helper.read_text(encoding="utf-8")
     assert "build_scirel_docs_from_ref.py" in (ROOT / "release/docs/README.md").read_text(encoding="utf-8")
+    assert "normalizes regular-file and directory modes" in readme
+
+
+def test_ref_bound_archive_normalizes_umask_dependent_modes(tmp_path: Path) -> None:
+    from build_scirel_from_ref import _normalize_archive_modes
+
+    source = tmp_path / "source"
+    source.mkdir(mode=0o775)
+    data = source / "package-data.m"
+    executable = source / "tool.sh"
+    nested = source / "nested"
+    nested.mkdir(mode=0o775)
+    data.write_text("data\n", encoding="utf-8")
+    executable.write_text("#!/bin/sh\n", encoding="utf-8")
+    (nested / "metadata.json").write_text("{}\n", encoding="utf-8")
+    data.chmod(0o664)
+    executable.chmod(0o775)
+    (nested / "metadata.json").chmod(0o664)
+
+    _normalize_archive_modes(source)
+
+    assert stat.S_IMODE(data.stat().st_mode) == 0o644
+    assert stat.S_IMODE((nested / "metadata.json").stat().st_mode) == 0o644
+    assert stat.S_IMODE(executable.stat().st_mode) == 0o755
+    assert stat.S_IMODE(source.stat().st_mode) == 0o755
+    assert stat.S_IMODE(nested.stat().st_mode) == 0o755
 
 
 def test_document_selection_materializes_only_digest_bound_records(tmp_path: Path) -> None:

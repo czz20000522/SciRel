@@ -91,7 +91,39 @@ def _archive_ref(revision: str, epoch: int, destination: Path) -> Path:
     with tarfile.open(archive, mode="r") as tar:
         tar.extractall(source, filter="data")
     archive.unlink()
+    _normalize_archive_modes(source)
     return source
+
+
+def _normalize_archive_modes(source: Path) -> None:
+    """Normalize extracted Git-tree permissions before invoking the backend.
+
+    ``git archive`` records the repository mode (normally ``0644`` for regular
+    files and ``0755`` for executable files), but a tar extractor applies the
+    host process' umask while creating those paths.  A Linux container with a
+    permissive umask can therefore materialize package data as ``0664`` while
+    the same archive on macOS materializes it as ``0644``.  Setuptools carries
+    those modes into ZIP external attributes, making otherwise identical
+    ``py3-none-any`` wheels differ byte-for-byte.  Keep executable bits where
+    they were present and make every other regular file and directory
+    deterministic across hosts.
+    """
+
+    if not source.is_dir():
+        raise ValueError(f"archived source is not a directory: {source}")
+    for path in sorted(source.rglob("*"), key=lambda candidate: candidate.as_posix()):
+        if path.is_symlink():
+            # ``filter='data'`` normally rejects unsafe links.  Do not follow
+            # a link while normalizing modes if a repository deliberately
+            # contains a safe one.
+            continue
+        if path.is_dir():
+            path.chmod(0o755)
+        elif path.is_file():
+            current_mode = path.stat().st_mode
+            path.chmod(0o755 if current_mode & 0o111 else 0o644)
+        else:
+            raise ValueError(f"archived source contains a non-regular path: {path}")
 
 
 def build_from_ref(

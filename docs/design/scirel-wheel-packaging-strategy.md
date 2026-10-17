@@ -93,8 +93,10 @@ artifact SHA-256、字节数、直接依赖、Python 线和外部 runtime 要求
 
 `py3-none-any` 描述的是 wheel 中没有平台专属 Python ABI 扩展，不保证不同操作系统、构建
 前端或文件权限环境生成的 ZIP 字节完全相同。`scripts/build_scirel_from_ref.py` 从确切 Git
-提交归档构建，并固定 `SOURCE_DATE_EPOCH`、`PYTHONHASHSEED=0` 与 POSIX `umask 022`；manifest
-同时记录构建前端、Python 选择器和宿主身份。发行摘要只绑定实际目标平台生成并验收的 wheel，
+提交归档构建，并固定 `SOURCE_DATE_EPOCH`、`PYTHONHASHSEED=0` 与 POSIX `umask 022`；解包后
+还把普通文件规范化为 `0644`、可执行文件保留为 `0755`、目录规范化为 `0755`，避免 tar
+解包器的 umask 把同一份 package data 变成不同的 ZIP external attributes。manifest 同时记录
+构建前端、Python 选择器和宿主身份。发行摘要只绑定实际目标平台生成并验收的 wheel，
 Windows/macOS 后续各自生成和验收自己的 artifact，不复用 Linux 的摘要或回执。
 
 `uv.lock` 用于开发环境和可复现解析：
