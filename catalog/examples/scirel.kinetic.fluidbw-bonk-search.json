@@ -285,6 +285,8 @@
     "python": {
       "module": "scirel.kinetic.fluidbw",
       "signature": "solve_fluidbw_bonk(jcase=1, omegas=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "solve_fluidbw_bonk",
       "symbol": "solve_fluidbw_bonk"
     }
   },

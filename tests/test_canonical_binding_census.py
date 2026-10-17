@@ -14,8 +14,8 @@ def test_current_canonical_binding_census_preserves_facade_and_exception_denomin
     counts = report["counts"]
 
     assert counts["total"] == 267
-    assert counts["explicit"] == 140
-    assert counts["candidate"] == 80
+    assert counts["explicit"] == 148
+    assert counts["candidate"] == 72
     assert counts["exception"] == 47
     assert report["unexpected_missing"] == []
 
@@ -196,3 +196,17 @@ def test_pdrf_gpdf_and_generalized_slice_pins_kinetic_facades_explicitly():
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
     assert rows["scirel.kinetic.evaluate-maxwellian-fft"] == "candidate"
     assert rows["scirel.kinetic.generalized-small-k"] == "exception"
+
+
+def test_fluidbw_slice_pins_kinetic_facades_explicitly():
+    report = census(ROOT)
+    rows = {row["asset_id"]: row["status"] for row in report["rows"]}
+    selected = {
+        asset_id
+        for asset_id in rows
+        if asset_id.startswith("scirel.kinetic.fluidbw-")
+        or asset_id == "scirel.kinetic.kinetic-dispersion-sum-fluidbw"
+    }
+    assert len(selected) == 8
+    assert all(rows[asset_id] == "explicit" for asset_id in selected)
+    assert rows["scirel.kinetic.evaluate-maxwellian-fft"] == "candidate"

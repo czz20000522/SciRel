@@ -100,6 +100,8 @@
     "python": {
       "module": "scirel.kinetic.fluidbw",
       "signature": "evaluate_fluidbw_dispersion(kx, state, method='fDR')",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_fluidbw_dispersion",
       "symbol": "evaluate_fluidbw_dispersion"
     }
   },

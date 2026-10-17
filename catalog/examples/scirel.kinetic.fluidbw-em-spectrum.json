@@ -333,6 +333,8 @@
     "python": {
       "module": "scirel.kinetic.fluidbw",
       "signature": "solve_fluidbw_em(jcase=2, j_order=8, max_harmonic=6, omegas=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "solve_fluidbw_em",
       "symbol": "solve_fluidbw_em"
     }
   },

@@ -110,6 +110,8 @@
     "python": {
       "module": "scirel.kinetic.fluidbw",
       "signature": "assemble_fluidbw_em(state, omega, j_order=8, max_harmonic=6)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "assemble_fluidbw_em",
       "symbol": "assemble_fluidbw_em"
     }
   },

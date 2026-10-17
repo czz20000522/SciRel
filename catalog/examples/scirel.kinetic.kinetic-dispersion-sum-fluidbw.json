@@ -249,7 +249,9 @@
     "python": {
       "module": "scirel.kinetic.kinetic_dispersion_sum_fluidbw",
       "symbol": "evaluate_fluidbw_kinetic_dispersion_sum",
-      "signature": "evaluate_fluidbw_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5)"
+      "signature": "evaluate_fluidbw_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_fluidbw_kinetic_dispersion_sum"
     }
   },
   "version": {
