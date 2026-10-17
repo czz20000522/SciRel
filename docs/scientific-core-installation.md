@@ -58,7 +58,9 @@ python -I scripts/validate_installed_wheel.py \
 再把额外能力交给安装包验证器。缺少对应依赖 wheel、extra 未声明、依赖从环境外导入或能力 smoke
 失败时，extra 收据保持 `FAIL`，不会被 core 的通过结果覆盖。
 发行验收还应传入与该 wheel 版本绑定的 `--lockfile uv.lock`；验收器会将 wheel 的 PEP 508
-依赖与锁文件及目标平台的传递 wheel 闭包逐项核对。core 与 optional extra 共用的 wheelhouse
+依赖、锁文件顶层 `requires-python` 与目标 CPython 线，以及目标平台的传递 wheel 闭包逐项核对。
+不能用另一条 Python 线的锁文件替代；若锁文件不接受目标解释器，验收会直接失败。core 与 optional extra
+共用的 wheelhouse
 可以保留未被当前选择使用的锁定 wheel，收据会记录这些可复用成员而不会把它们误判为闭包失败。
 
 磁化色散的随包原语言入口还需要相应系统运行时：PDRK 的既有安装证据使用 Linux ARM64 的 Octave 8.4.0；

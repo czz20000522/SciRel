@@ -1069,6 +1069,41 @@ def _validate_catalog_source_revision(
         raise ValueError("documentation catalog source_revision differs from release CURRENT")
 
 
+def _catalog_documents(root: Path, record: dict[str, Any]) -> dict[str, dict[str, Any]] | None:
+    """Read the catalog records addressed by the current documentation tuple.
+
+    Development candidates may point directly at ``catalog/examples`` while
+    built candidates point at a catalog snapshot containing ``records`` and a
+    ``release.json``. Both forms must expose exactly the same document closure
+    as the selected document set.
+    """
+
+    catalog_value = record.get("catalog_root")
+    if not isinstance(catalog_value, str) or not catalog_value:
+        return None
+    catalog_root = (root / catalog_value).resolve()
+    if not catalog_root.is_relative_to(root.resolve()) or not catalog_root.is_dir():
+        raise ValueError("documentation catalog_root is missing or escapes the repository")
+    release_path = catalog_root / "release.json"
+    if release_path.is_file():
+        record_root = catalog_root / "records"
+        paths = sorted(record_root.rglob("*.json")) if record_root.is_dir() else []
+    else:
+        paths = sorted(catalog_root.glob("*.json"))
+    documents: dict[str, dict[str, Any]] = {}
+    for path in paths:
+        document = _read_json(path)
+        asset_id = document.get("asset_id")
+        if not isinstance(asset_id, str) or not asset_id:
+            raise ValueError(f"catalog document lacks an asset_id: {path.relative_to(root)}")
+        if asset_id in documents:
+            raise ValueError(f"catalog repeats an asset: {asset_id}")
+        documents[asset_id] = document
+    if not documents:
+        raise ValueError("documentation catalog contains no JSON asset records")
+    return documents
+
+
 def _validate_compat_pointer(root: Path, path: Path, *, line: str) -> None:
     pointer = _read_json(path)
     if pointer.get("schema") != "scirel.release-compat-pointer.v1":
@@ -1733,8 +1768,23 @@ def validate_alignment(
 
     selected, selection_digest = _selected_documents(root, docs)
     _validate_catalog_source_revision(root, docs, source_revision)
+    catalog_documents = _catalog_documents(root, docs)
     handbook_assets, handbook_digest = _handbook_assets(root, docs)
     selected_ids = set(selected)
+    if catalog_documents is not None:
+        catalog_ids = set(catalog_documents)
+        if catalog_ids != selected_ids:
+            missing = sorted(selected_ids - catalog_ids)
+            extra = sorted(catalog_ids - selected_ids)
+            raise ValueError(
+                "documentation catalog closure differs from selected documents"
+                f" (missing={missing}, extra={extra})"
+            )
+        for asset_id, document in selected.items():
+            if catalog_documents[asset_id] != document:
+                raise ValueError(
+                    f"documentation catalog record differs from selected document: {asset_id}"
+                )
     handbook_scope = docs.get("handbook_scope", "exact")
     if handbook_scope == "repository":
         if not selected_ids <= handbook_assets:

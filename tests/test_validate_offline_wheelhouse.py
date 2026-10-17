@@ -55,6 +55,14 @@ source = { registry = \"https://pypi.org/simple\" }
     )
 
 
+def _replace_lock_requires_python(path: Path, value: str) -> None:
+    content = path.read_text(encoding="utf-8")
+    path.write_text(
+        content.replace('requires-python = "==3.14.*"', f'requires-python = "{value}"'),
+        encoding="utf-8",
+    )
+
+
 def test_wheelhouse_inventory_is_sorted_and_content_bound(tmp_path: Path) -> None:
     wheelhouse = tmp_path / "wheelhouse"
     wheelhouse.mkdir()
@@ -269,6 +277,27 @@ def test_dependency_closure_audit_reports_missing_and_incompatible_wheels(tmp_pa
     assert receipt["status"] == "FAIL"
     assert receipt["missing_packages"] == []
     assert receipt["incompatible_wheels"] == ["numpy-1.0.0-py3-none-win_amd64.whl"]
+
+
+def test_dependency_closure_audit_rejects_lock_for_other_python_line(tmp_path: Path) -> None:
+    wheel = tmp_path / "scirel-0.1.0.dev9-py3-none-any.whl"
+    _write_test_wheel(wheel)
+    lockfile = tmp_path / "uv.lock"
+    _write_test_lock(lockfile)
+    _replace_lock_requires_python(lockfile, "==3.13.*")
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (wheelhouse / "numpy-1.0.0-py3-none-any.whl").write_bytes(b"numpy")
+
+    with pytest.raises(ValueError, match="does not admit CPython 3.14"):
+        validator._dependency_closure_audit(
+            wheel=wheel,
+            wheelhouse=wheelhouse,
+            lockfile=lockfile,
+            expected_platform="linux-x86_64-cp314",
+            expected_python="3.14",
+            extras=(),
+        )
 
 
 def test_dependency_closure_audit_rejects_pep508_drift(tmp_path: Path) -> None:

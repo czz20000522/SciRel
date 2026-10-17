@@ -29,9 +29,9 @@ def test_current_release_alignment_is_exact() -> None:
     assert result["documentation_selection"] == "scientific-core-current"
     assert result["source_revision"] == current["source_revision"]
     assert result["capability_counts"] == {
-        "operators": 230,
-        "task_graphs": 30,
-        "document_closure": 260,
+        "operators": 235,
+        "task_graphs": 32,
+        "document_closure": 267,
     }
     assert result["external_artifacts"] == "external_artifact_unchecked"
 
@@ -349,6 +349,30 @@ def test_alignment_rejects_a_document_added_outside_the_wheel(tmp_path: Path) ->
     current["documentation"]["capability_counts"]["document_closure"] += 1
     current_path.write_text(json.dumps(current), encoding="utf-8")
     with pytest.raises(ValueError, match="capability_counts"):
+        validate_alignment(tmp_path)
+
+
+def test_alignment_rejects_a_catalog_record_outside_the_selection(tmp_path: Path) -> None:
+    import shutil
+
+    for relative in ("release", "catalog", "provenance", "tools"):
+        source = ROOT / relative
+        target = tmp_path / relative
+        if source.is_dir():
+            shutil.copytree(source, target)
+        else:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(source.read_bytes())
+    (tmp_path / "pyproject.toml").write_bytes((ROOT / "pyproject.toml").read_bytes())
+    (tmp_path / "uv.lock").write_bytes((ROOT / "uv.lock").read_bytes())
+    extra = json.loads(
+        (tmp_path / "catalog/examples/scirel.kinetic.fluidbw-case-state.json").read_text()
+    )
+    extra["asset_id"] = "scirel.test.catalog-only"
+    (tmp_path / "catalog/examples/catalog-only.json").write_text(
+        json.dumps(extra), encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="catalog closure differs"):
         validate_alignment(tmp_path)
 
 

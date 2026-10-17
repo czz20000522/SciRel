@@ -170,6 +170,7 @@ assert not any(
     if name != "scirel.field"
 )
 assert "poloidal_field_from_flux" in dir(field)
+assert {"coil_green_geometry", "complete_elliptic_integrals_approx"} <= set(dir(field))
 
 from scirel.field import poloidal_field_from_flux
 from scirel.field.poloidal_field_from_flux import poloidal_field_from_flux as direct

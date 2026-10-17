@@ -46,16 +46,23 @@ _LAZY_EXPORTS = {
     "evaluate_filament_coil_green_field": ("filament_coil_green_field", "evaluate_filament_coil_green_field"),
 }
 
+# Keep child implementation modules discoverable without importing them.  The
+# callable exports above remain the wildcard API; module names are exposed by
+# ``dir`` and ordinary attribute access only, matching the other lazy domain
+# facades.
+_LAZY_MODULES = frozenset(module for module, _ in _LAZY_EXPORTS.values())
+
 
 def __getattr__(name):
-    try:
+    if name in _LAZY_EXPORTS:
         module_name, attribute_name = _LAZY_EXPORTS[name]
-    except KeyError as error:
-        raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from error
-    module = _import_module(f".{module_name}", __name__)
-    value = getattr(module, attribute_name)
-    globals()[name] = value
-    return value
+        module = _import_module(f".{module_name}", __name__)
+        value = getattr(module, attribute_name)
+        globals()[name] = value
+        return value
+    if name in _LAZY_MODULES:
+        return _import_module(f".{name}", __name__)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 class _LazyFieldModule(_ModuleType):
@@ -79,6 +86,12 @@ class _LazyFieldModule(_ModuleType):
             value = getattr(module, attribute_name)
             namespace[name] = value
             return value
+        modules = namespace.get("_LAZY_MODULES", ())
+        if name in modules:
+            current = namespace.get(name)
+            if isinstance(current, _ModuleType):
+                return current
+            return _import_module(f".{name}", _ModuleType.__getattribute__(self, "__name__"))
         return _ModuleType.__getattribute__(self, name)
 
 
@@ -86,4 +99,4 @@ _sys.modules[__name__].__class__ = _LazyFieldModule
 
 
 def __dir__():
-    return sorted(set(__all__))
+    return sorted(set(__all__) | set(_LAZY_MODULES))

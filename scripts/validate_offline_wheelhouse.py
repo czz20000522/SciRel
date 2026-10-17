@@ -52,7 +52,9 @@ from zipfile import BadZipFile, ZipFile
 
 from packaging.markers import default_environment
 from packaging.requirements import InvalidRequirement, Requirement
+from packaging.specifiers import InvalidSpecifier, SpecifierSet
 from packaging.utils import canonicalize_name, parse_wheel_filename
+from packaging.version import InvalidVersion, Version
 
 
 SCHEMA = "scirel.offline-wheelhouse-validation.v1"
@@ -398,6 +400,22 @@ def _dependency_closure_audit(
         raise ValueError(f"uv.lock must be a regular file: {lock_path}")
     lock = tomllib.loads(lock_path.read_text(encoding="utf-8"))
     environment = _marker_environment(expected_platform, expected_python)
+    lock_requires_python = lock.get("requires-python")
+    if not isinstance(lock_requires_python, str) or not lock_requires_python.strip():
+        raise ValueError("uv.lock requires-python is missing or invalid")
+    try:
+        lock_python_compatible = SpecifierSet(lock_requires_python).contains(
+            Version(expected_python), prereleases=True
+        )
+    except (InvalidSpecifier, InvalidVersion) as error:
+        raise ValueError(
+            f"uv.lock requires-python is invalid: {lock_requires_python!r}"
+        ) from error
+    if not lock_python_compatible:
+        raise ValueError(
+            f"uv.lock requires-python {lock_requires_python!r} does not admit "
+            f"CPython {expected_python}"
+        )
     wheel_name, wheel_version, wheel_requirements = _wheel_metadata_requirements(wheel)
     if canonicalize_name(wheel_name) != "scirel":
         raise ValueError(f"wheel metadata names {wheel_name!r}, expected scirel")
@@ -484,6 +502,8 @@ def _dependency_closure_audit(
         if not (missing or version_mismatches or duplicates or unknown or incompatible)
         else "FAIL",
         "lockfile": {"path": str(lock_path), "sha256": _sha256(lock_path)},
+        "lock_requires_python": lock_requires_python,
+        "target_python": expected_python,
         "requested_extras": sorted({extra.strip().lower() for extra in extras if extra.strip()}),
         "direct_requirements": sorted(
             {str(requirement) for requirement in lock_requirements_parsed}

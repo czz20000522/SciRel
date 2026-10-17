@@ -103,6 +103,23 @@ assert compute_greens is direct_greens
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_field_child_modules_are_discoverable_and_lazy() -> None:
+    result = _run(
+        """
+import sys
+import scirel.field as field
+
+assert {"coil_green_geometry", "complete_elliptic_integrals_approx"} <= set(dir(field))
+assert not any(name.startswith("scirel.field.") for name in sys.modules)
+
+child = field.coil_green_geometry
+assert child.__name__ == "scirel.field.coil_green_geometry"
+assert field.coil_green_geometry is child
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_domain_dirs_expose_only_public_contract_and_legal_lazy_names() -> None:
     result = _run(
         """
