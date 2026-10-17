@@ -1,0 +1,121 @@
+{
+  "schema": "scirel.external-handoff-addendum-reception.v1",
+  "reception_id": "fluidbw-d3-addendum-reception-20261018",
+  "received_at_utc": "2026-10-17T20:33:30Z",
+  "receiver": "SciRel integration thread",
+  "source_host": "tomos-home",
+  "source_path_mapping": {
+    "declared": "E:/SciRel-lab/projects/fluidbw",
+    "observed_git_bash": "/e/SciRel-lab/projects/fluidbw",
+    "mapping_verified": true
+  },
+  "delivery_mode": "authoritative Home E addendum plus digest-bound summary; no Mac payload copy",
+  "payload_transfer": {
+    "performed": false,
+    "reason": "The addendum keeps Home FINAL, runtime evidence and retained payload authoritative; this receipt does not copy the 4.4 GB payload into the Mac workspace."
+  },
+  "addendum": {
+    "path": "/mnt/e/SciRel-lab/projects/fluidbw/archive/manifests/SCIREL_INTEGRATION_HANDOFF_ADDENDUM-20261018-D3.json",
+    "bytes": 3828,
+    "sha256": "937b1ab5f312868e1516761d8da4d05b1fad09f35728e6a055cfb885e6636a33",
+    "remote_read_verified": true,
+    "stage": "D3_SOURCE_FREE_REPLAY",
+    "actual_status": "D3_TECHNICAL_PASS_HANDOFF_PENDING"
+  },
+  "source_handoff": {
+    "path": "/mnt/e/SciRel-lab/projects/fluidbw/archive/manifests/SCIREL_INTEGRATION_HANDOFF-20261018.json",
+    "declared_digest": "sha256:12169f0cc39ddd7c26858cc834034400d0c0cfa79297f0962b2dc2d4f9776e08",
+    "observed_sha256": "54b99850546f34630d65393440e6eb6a1f02afa2c88869de0fa169ee9716d61c",
+    "digest_match": false,
+    "gap": "The addendum's declared handoff_digest does not match the actual Home source handoff bytes; the declared 12169... digest was not found among the related Home handoff/addendum files."
+  },
+  "canonical_final": {
+    "path": "/mnt/e/SciRel-lab/projects/fluidbw/decomposition/FINAL/FINAL.json",
+    "bytes": 874,
+    "sha256": "fe6b88f23e5a7fde72461476bef7b59d632b14d5afa4ce61e6da7f6a9491a1a6",
+    "remote_sha256_verified": true
+  },
+  "final_support": [
+    {
+      "path": "/mnt/e/SciRel-lab/projects/fluidbw/decomposition/FINAL/FILES.json",
+      "bytes": 457823,
+      "sha256": "60827c75ea9e85a007f05a5cb190ba37bb1dfbacdbc4b4c32980c96f4828afe2",
+      "remote_sha256_verified": true
+    },
+    {
+      "path": "/mnt/e/SciRel-lab/projects/fluidbw/decomposition/FINAL/PATH_MAP.json",
+      "bytes": 415748,
+      "sha256": "df7e64f4ddb47fb0829011a619945fc5067e8128420616e557f2dcd51ea3c3fc",
+      "remote_sha256_verified": true
+    }
+  ],
+  "payload": {
+    "files": 2156,
+    "bytes": 4423513926,
+    "authority": "/mnt/e/SciRel-lab/projects/fluidbw/decomposition/FINAL/FINAL.json and its manifest-bound members"
+  },
+  "runtime": {
+    "backend": "Home Windows Docker Desktop via docker.exe",
+    "image_tag": "scirel/fluidbw-d0:20261009-v2",
+    "image_digest": "sha256:82c07562f5217250593cea9c86938cc741dfa89b61dca98753cc7ef056c62e19",
+    "image_tar_sha256": "8dce9e8df35f5229363f56f4fbd213fcfa6b67f7bb455cc767fe7b9232e21618",
+    "network": "none",
+    "source_absent": true,
+    "execution_status": {
+      "path": "/mnt/e/SciRel-lab/projects/fluidbw/decomposition/WORK/root-reception-d3-20261018/run/receipts/EXECUTION_STATUS-20261018.json",
+      "bytes": 1816,
+      "sha256": "292f46db5a24f39f7e88018c23a6b5c6291fec2e274f1fd7779c2be0852b4117",
+      "remote_sha256_verified": true,
+      "status": "PASS_TECHNICAL_D3_G4_G5"
+    }
+  },
+  "d3_evidence": {
+    "replay": {
+      "path": "/mnt/e/SciRel-lab/projects/fluidbw/decomposition/WORK/root-reception-d3-20261018/run/receipts/REPLAY.json",
+      "bytes": 4523,
+      "sha256": "1257ce1261e3a1901c16a9eb0d082f7806b959a070d1eecfe12e0850caabb2d4",
+      "remote_sha256_verified": true,
+      "gate": "D3-G4",
+      "status": "PASS",
+      "records": 117,
+      "source_absent": true,
+      "replay_matches_frozen": true,
+      "execution_receipt_sha256": "aa08d6e70c02c9f834430ba5d713bcc4f6705c70fc23e2f5bf9fb7c8c6c1d245"
+    },
+    "grading": {
+      "path": "/mnt/e/SciRel-lab/projects/fluidbw/decomposition/WORK/root-reception-d3-20261018/run/receipts/GRADING_REPLAY.json",
+      "bytes": 1073,
+      "sha256": "5c9430c5d7c03626bcd504c1a203a149a8e55e5c954db160fa8298b7e066b2bb",
+      "remote_sha256_verified": true,
+      "gate": "D3-G5",
+      "status": "PASS",
+      "frozen_rows": 2545,
+      "replayed_rows": 2545,
+      "frozen_failed": 0,
+      "replayed_failed": 0,
+      "row_identity_and_order_identical": true,
+      "replay_matches_frozen": true,
+      "grading_results_sha256": "ca0b90e5520452a5f0022b077d1f949edaef04c81dacbeeb300e724ad0236a61"
+    }
+  },
+  "claim_ceiling": [
+    "Technical D3 G4/G5 PASS only.",
+    "Human scientific approval, root-stage acceptance, release approval and third-party rights remain unresolved.",
+    "43 retained closed-set members remain unresolved on Home E; the denominator is not reduced.",
+    "This addendum does not claim whole-project completion or public distribution."
+  ],
+  "retained_items": [
+    "FINAL, FILES, PATH_MAP and all manifest-referenced scientific/failure evidence",
+    "D3 receipts and execution results under the run root",
+    "Pinned runtime image imported on Home Docker Desktop",
+    "run-pre-replay-20261018.tar historical replay evidence"
+  ],
+  "cleanup": {
+    "worker_container": "fluidbw-d3-replay completed and was removed by the contract-scoped --rm runner",
+    "image": "retained on Docker Desktop until integration work completes",
+    "unbounded_prune": false,
+    "mac_runtime_copy": "none"
+  },
+  "status": "RECEIVED_WITH_SOURCE_HANDOFF_DIGEST_GAP",
+  "next_action": "Resolve the declared 12169... handoff digest against the Home source manifest before treating the addendum as fully digest-bound. Technical D3 evidence may be used with this explicit gap; no human/root/release/rights claim is made."
+}
