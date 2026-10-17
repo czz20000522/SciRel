@@ -97,6 +97,31 @@ SciPy 的版本工具还把 Git revision 暴露给安装后的运行时，便于
 API 的后续版本中，可以增加只读的 `scirel.version.git_revision`，但它必须由 ref-bound
 构建生成，不能在运行时依赖用户 checkout 或网络查询。
 
+### 发布编排层的采用边界
+
+SciPy 把科学源码和发布编排分成两个 Git 仓库。主仓库保存源码、`pyproject.toml`、构建配置、
+完整文档和短发行说明；最小化的 `scipy-release` 仓库只保存 wheel/sdist 的 CI、锁文件和发布
+安全边界。发布 workflow 用 `SOURCE_REF_TO_BUILD` 明确指定要构建的 SciPy 分支、tag 或 commit，
+再把该 ref checkout 到独立目录；发布仓库不复制 SciPy 源码或文档。这个边界同时解决了两个
+问题：源码历史仍由主仓库和 tag 管理，发布权限和干净构建又不会被业务源码树中的临时产物
+污染。
+
+SciRel 采用这套边界时分两步进行：
+
+1. 当前阶段继续把 ref-bound 构建脚本和一个 `release/CURRENT.json` 候选回执放在 SciRel 主仓库，
+   因为项目仍是纯 Python wheel，且需要在同一提交中审查源码、合同、文档选择和平台回执。这个
+   回执只有一个当前 tuple，不承载历史版本列表；`release/wheel/CURRENT.json` 和
+   `release/docs/CURRENT.json` 只是已标记弃用的兼容指针，不能写入版本或 artifact 身份。
+2. 当需要多平台自动构建、签名或上传时，新增一个与主仓库同级的最小发布工作区（例如
+   `SciReL-release`），只保存构建 workflow、构建依赖锁和 `SCIREL_SOURCE_REF_TO_BUILD`。
+   它从 SciRel 的 tag/commit checkout 源码，调用主仓库随 ref 提供的构建入口，把 wheel、完整
+   文档和平台 receipt 写到仓库外；不得把源码、手册、历史 wheel 或按版本的完整 manifest 复制
+   回 SciRel 主仓库。
+
+这意味着历史开发 wheel 的身份来自 Git commit/tag、对应的短 release notes 和外部 artifact
+manifest。新候选必须提升 `pyproject.toml` 版本并绑定新的 source ref；不能以同一个版本号从
+较新的工作树重建并覆盖旧 wheel，也不能通过复制一份旧文档树来表示历史。
+
 ### 文档重新资格化
 
 文档中的 `version.implementation_version` 是运行时兼容性约束，不是第二个版本源。

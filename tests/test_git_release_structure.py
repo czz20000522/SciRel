@@ -205,6 +205,9 @@ def test_scipy_style_git_release_model_is_explicit() -> None:
         "tools/building/gitversion.py",
         "doc/source/release/",
         "git_revision",
+        "scipy-release",
+        "SOURCE_REF_TO_BUILD",
+        "SCIREL_SOURCE_REF_TO_BUILD",
     )
     for phrase in required_phrases:
         assert phrase in design
