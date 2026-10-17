@@ -14,8 +14,8 @@ def test_current_canonical_binding_census_preserves_facade_and_exception_denomin
     counts = report["counts"]
 
     assert counts["total"] == 267
-    assert counts["explicit"] == 188
-    assert counts["candidate"] == 32
+    assert counts["explicit"] == 190
+    assert counts["candidate"] == 30
     assert counts["exception"] == 47
     assert report["unexpected_missing"] == []
 
@@ -286,3 +286,15 @@ def test_neutral_mesh_and_source_slice_pins_kinetic_facades_explicitly():
     }
     assert len(selected) == 8
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
+
+
+def test_alpha_contraction_slice_pins_kinetic_facades_explicitly():
+    report = census(ROOT)
+    rows = {row["asset_id"]: row["status"] for row in report["rows"]}
+    selected = {
+        "scirel.kinetic.atomic-alpha-contraction",
+        "scirel.kinetic.molecular-alpha-contraction",
+    }
+    assert len(selected) == 2
+    assert all(rows[asset_id] == "explicit" for asset_id in selected)
+    assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"

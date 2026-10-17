@@ -178,7 +178,9 @@
     "python": {
       "module": "scirel.kinetic.molecular_alpha_contraction",
       "symbol": "contract_molecular_hydrogen_alpha_frequencies",
-      "signature": "contract_molecular_hydrogen_alpha_frequencies(SIG_CX, SIG_H2_H, SIG_H2_P, fH, fHp_hat, fi_hat, n, nHP, ni_correct=False)"
+      "signature": "contract_molecular_hydrogen_alpha_frequencies(SIG_CX, SIG_H2_H, SIG_H2_P, fH, fHp_hat, fi_hat, n, nHP, ni_correct=False)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "contract_molecular_hydrogen_alpha_frequencies"
     }
   },
   "version": {
