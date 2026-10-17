@@ -38,6 +38,9 @@ def regular_grid(xx,yy,*args,**kwargs):
     xi = kwargs.pop("xi",None)
     yi = kwargs.pop("yi",None)
     method = kwargs.pop("method","linear")
+    if kwargs:
+        unknown = ", ".join(sorted(kwargs))
+        raise TypeError(f"regular_grid() got unexpected keyword argument(s): {unknown}")
     """ interpolate irregularly gridded data onto regular grid."""
     if xi is not None and yi is not None:
         pass

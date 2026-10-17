@@ -68,6 +68,8 @@ def test_regular_grid_empty_fields_and_failure_paths_remain_unchanged():
         )
     with pytest.raises(ValueError, match="Unknown interpolation method"):
         sampling.regular_grid(x, y, x + y, xi=xi, yi=yi, method="bogus")
+    with pytest.raises(TypeError, match="metod"):
+        sampling.regular_grid(x, y, x + y, xi=xi, yi=yi, metod="cubic")
 
     degenerate_x = np.zeros((2, 2))
     degenerate_y = np.zeros((2, 2))
