@@ -234,7 +234,13 @@ def interp(Rho,Z,Q,flpoints):
     x0 = Rho[0,:].squeeze()
     y0 = Z[:,0].squeeze()
     f = RectBivariateSpline(y0,x0,Q)
-    return np.array([float(f(yi,xi)[0,0]) for xi,yi in zip(flpoints[:,0],flpoints[:,1])])
+    # Evaluate all requested points in one spline call.  The previous
+    # per-point loop rebuilt the tiny result array and paid Python dispatch
+    # overhead for every point while asking FITPACK to do the same batched
+    # interpolation work.  ``grid=False`` retains the legacy pointwise
+    # pairing (yi, xi) and produces the same scalar values in input order.
+    points = np.asarray(flpoints)
+    return np.asarray(f(points[:,1], points[:,0], grid=False), dtype=float)
 
 def flux_surface_avg(Rho,Z,B,flpoints,Q=None):
     """Compute flux surface average of quantity Q or return dVdpsi (dl_B)

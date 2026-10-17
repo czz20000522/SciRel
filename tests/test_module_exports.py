@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import importlib
+import json
+from pathlib import Path
 
 
 def test_fvm_modules_expose_only_their_public_operators() -> None:
@@ -24,3 +26,28 @@ def test_fvm_modules_expose_only_their_public_operators() -> None:
         for name in names:
             assert namespace[name] is getattr(module, name)
             assert getattr(fvm, name) is getattr(module, name)
+
+
+def test_eqdsk_catalog_callables_are_explicit_module_exports() -> None:
+    """Catalog records must resolve through the implementation module's API."""
+
+    module = importlib.import_module("scirel.io.eqdsk")
+    catalog_dir = Path(__file__).resolve().parents[1] / "catalog" / "examples"
+    records = sorted(catalog_dir.glob("scirel.io.*.json"))
+    documents = [json.loads(path.read_text(encoding="utf-8")) for path in records]
+    expected = {
+        document["public_api"]["python"]["symbol"]
+        for document in documents
+        if document["public_api"]["python"]["module"] == "scirel.io.eqdsk"
+    }
+
+    assert expected == {
+        "EQDSK",
+        "read_pleiades_eqdsk",
+        "write_pleiades_eqdsk",
+        "write_pleiades_eqdsk_legacy_raw",
+    }
+    assert expected <= set(module.__all__)
+    namespace: dict[str, object] = {}
+    exec("from scirel.io.eqdsk import *", namespace)
+    assert all(namespace[name] is getattr(module, name) for name in module.__all__)

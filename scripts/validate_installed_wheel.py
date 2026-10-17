@@ -36,6 +36,8 @@ import subprocess
 import sys
 import sysconfig
 from typing import Any
+from zipfile import BadZipFile, ZipFile
+from pathlib import PurePosixPath
 
 
 SCHEMA = "scirel.installed-wheel-validation.v1"
@@ -263,6 +265,107 @@ def _wheel_artifact(path: Path) -> tuple[dict[str, Any], list[str]]:
     return artifact, []
 
 
+def _wheel_payload(path: Path) -> tuple[dict[str, Any], list[str]]:
+    """Inspect the archive payload that was passed to the installer.
+
+    A clean-environment receipt should also prove that the wheel itself is a
+    scientific runtime artifact.  In particular, development trees and
+    interpreter caches must not be smuggled into an otherwise successful
+    installation.  This check is deliberately independent of package import
+    behaviour and does not infer scientific capability from file names.
+    """
+
+    details: dict[str, Any] = {
+        "status": "FAIL",
+        "path": path.name,
+        "file_count": 0,
+        "package_file_count": 0,
+        "dist_info_file_count": 0,
+        "native_resource_count": 0,
+        "uncompressed_bytes": 0,
+        "forbidden_files": [],
+    }
+    if not path.is_file():
+        return details, [f"wheel payload does not exist: {path}"]
+
+    errors: list[str] = []
+    try:
+        with ZipFile(path) as archive:
+            infos = archive.infolist()
+            names = [info.filename for info in infos]
+            details["file_count"] = len(names)
+            details["uncompressed_bytes"] = sum(info.file_size for info in infos)
+            duplicate_names = sorted({name for name in names if names.count(name) > 1})
+            if duplicate_names:
+                errors.append(f"wheel contains duplicate archive members: {duplicate_names}")
+
+            top_levels: set[str] = set()
+            dist_info_roots: set[str] = set()
+            metadata_name: str | None = None
+            metadata_version: str | None = None
+            for info in infos:
+                name = info.filename
+                if not name or name.endswith("/"):
+                    errors.append(f"wheel contains an empty or directory archive member: {name!r}")
+                    continue
+                if "\\" in name:
+                    errors.append(f"wheel member uses a backslash path: {name!r}")
+                    continue
+                relative = PurePosixPath(name)
+                if relative.is_absolute() or ".." in relative.parts:
+                    errors.append(f"wheel member escapes its archive root: {name!r}")
+                    continue
+                top = relative.parts[0]
+                top_levels.add(top)
+                if top == "scirel":
+                    details["package_file_count"] += 1
+                elif top.endswith(".dist-info"):
+                    dist_info_roots.add(top)
+                    details["dist_info_file_count"] += 1
+                else:
+                    details["forbidden_files"].append(name)
+                    errors.append(f"wheel contains a non-package top-level member: {name}")
+                if name.endswith(".pyc") or name.endswith(".pyo") or "__pycache__" in relative.parts:
+                    details["forbidden_files"].append(name)
+                    errors.append(f"wheel contains an interpreter cache: {name}")
+                if relative.parts[-1].lower() in {"tests", "provenance", "scripts"}:
+                    details["forbidden_files"].append(name)
+                    errors.append(f"wheel contains a development asset: {name}")
+                if name.endswith(".m"):
+                    details["native_resource_count"] += 1
+
+            if len(dist_info_roots) != 1:
+                errors.append(
+                    "wheel must contain exactly one dist-info root; "
+                    f"found {sorted(dist_info_roots)}"
+                )
+            else:
+                dist_info = next(iter(dist_info_roots))
+                metadata_path = f"{dist_info}/METADATA"
+                try:
+                    metadata_text = archive.read(metadata_path).decode("utf-8")
+                except (KeyError, UnicodeDecodeError) as exc:
+                    errors.append(f"wheel metadata is unreadable: {exc}")
+                else:
+                    for line in metadata_text.splitlines():
+                        if line.startswith("Name: "):
+                            metadata_name = line[6:].strip()
+                        elif line.startswith("Version: "):
+                            metadata_version = line[9:].strip()
+                    if metadata_name is None or metadata_version is None:
+                        errors.append("wheel metadata lacks Name or Version")
+                    else:
+                        details["metadata_name"] = metadata_name
+                        details["metadata_version"] = metadata_version
+            details["top_level_roots"] = sorted(top_levels)
+    except (BadZipFile, OSError) as exc:
+        errors.append(f"wheel payload is not a readable ZIP archive: {type(exc).__name__}: {exc}")
+
+    if not errors:
+        details["status"] = "PASS"
+    return details, errors
+
+
 def _run_pip_check() -> tuple[dict[str, Any], list[str]]:
     try:
         result = subprocess.run(
@@ -418,6 +521,7 @@ def validate_installed_wheel(
         "schema": SCHEMA,
         "status": "FAIL",
         "artifact": {},
+        "wheel_payload": {},
         "runtime": runtime,
         "package": {},
         "dependencies": [],
@@ -433,6 +537,9 @@ def validate_installed_wheel(
         artifact, artifact_errors = _wheel_artifact(wheel_path.resolve())
         receipt["artifact"] = artifact
         receipt["errors"].extend(artifact_errors)
+        payload, payload_errors = _wheel_payload(wheel_path.resolve())
+        receipt["wheel_payload"] = payload
+        receipt["errors"].extend(payload_errors)
     try:
         receipt["dependencies"] = _check_dependencies()
     except Exception as exc:

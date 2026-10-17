@@ -4,6 +4,7 @@ import hashlib
 import json
 import sys
 from pathlib import Path
+from zipfile import ZipFile
 
 import pytest
 
@@ -86,3 +87,43 @@ def test_validation_receipt_binds_the_installed_wheel_bytes(
         "sha256": hashlib.sha256(b"wheel-bytes").hexdigest(),
         "bytes": len(b"wheel-bytes"),
     }
+
+
+def test_wheel_payload_audit_accepts_runtime_files_and_reports_native_resources(tmp_path: Path) -> None:
+    wheel = tmp_path / "scirel-0.1.0.dev9-py3-none-any.whl"
+    with ZipFile(wheel, "w") as archive:
+        archive.writestr("scirel/__init__.py", "__version__ = '0.1.0.dev9'\n")
+        archive.writestr(
+            "scirel/kinetic/_native/current/initialize.m",
+            "disp('ok');\n",
+        )
+        archive.writestr(
+            "scirel-0.1.0.dev9.dist-info/METADATA",
+            "Metadata-Version: 2.4\nName: scirel\nVersion: 0.1.0.dev9\n",
+        )
+        archive.writestr("scirel-0.1.0.dev9.dist-info/WHEEL", "Wheel-Version: 1.0\n")
+
+    details, errors = validator._wheel_payload(wheel)
+
+    assert errors == []
+    assert details["status"] == "PASS"
+    assert details["package_file_count"] == 2
+    assert details["dist_info_file_count"] == 2
+    assert details["native_resource_count"] == 1
+    assert details["metadata_name"] == "scirel"
+    assert details["metadata_version"] == "0.1.0.dev9"
+
+
+def test_wheel_payload_audit_rejects_development_files_and_path_traversal(tmp_path: Path) -> None:
+    wheel = tmp_path / "bad.whl"
+    with ZipFile(wheel, "w") as archive:
+        archive.writestr("scirel/__init__.pyc", b"cache")
+        archive.writestr("tests/test_bad.py", "pass\n")
+        archive.writestr("../outside.txt", "bad\n")
+
+    details, errors = validator._wheel_payload(wheel)
+
+    assert details["status"] == "FAIL"
+    assert any("interpreter cache" in error for error in errors)
+    assert any("non-package top-level" in error for error in errors)
+    assert any("escapes its archive root" in error for error in errors)

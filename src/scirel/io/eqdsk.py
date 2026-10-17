@@ -21,6 +21,23 @@ from typing import Any, Mapping
 import numpy as np
 
 DIALECT = "pleiades-legacy-extended"
+
+# Keep the implementation module's public surface explicit so the catalog's
+# ``public_api.python`` records can be checked without relying on the package
+# initializer or guessing which aliases are intentional.
+__all__ = [
+    "DIALECT",
+    "EQDSK",
+    "EQDSKFormatError",
+    "read_eqdsk",
+    "read_pleiades_eqdsk",
+    "write_eqdsk_fromdict",
+    "write_pleiades_eqdsk",
+    "write_pleiades_eqdsk_legacy_raw",
+    "write_pressure_equilibrium_eqdsk",
+    "write_eqdsk",
+]
+
 _REQUIRED = (
     "title", "cursign", "nnr", "nnz", "nnv", "rbox", "zbox", "psi_lim",
     "Ip", "tor_flux", "p_flux", "rbphi_flux", "pprime_flux", "psi",
