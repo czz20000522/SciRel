@@ -81,10 +81,14 @@ def poly_fit(x,y,order=3):
     n = order+1
     m = len(y)
     basis_fns = [(lambda z,i=i: z**i) for i in range(n)]
-    A = np.zeros((m,n))
-    for i in range(m):
-        for j in range(n):
-            A[i,j] = basis_fns[j](x[i])
+    # Build the same increasing-power design matrix in one NumPy operation.
+    # ``np.power`` matches the historical scalar ``x[i]**j`` values exactly
+    # for the floating-point inputs accepted by this helper, while removing
+    # the O(m*n) Python dispatch overhead from the hot assembly loop.
+    # A masked scalar used to become NaN when assigned into the old float
+    # matrix; fill explicitly before broadcasting to preserve that behavior.
+    x_array = np.ma.asarray(x, dtype=float).filled(np.nan)
+    A = np.power(x_array[:, None], np.arange(n)[None, :])
     (u,s,vt) = np.linalg.svd(A)
     Sinv = np.zeros((n,m))
     s[ s<1.0e-10 ] = 0.0
