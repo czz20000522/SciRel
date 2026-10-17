@@ -201,15 +201,22 @@ _LAZY_EXPORTS = {'assemble_frank_egedal_pressure': ('frank_egedal_pressure_state
  'render_fluidbw_materials': ('fluidbw', 'render_fluidbw_materials'),
  'evaluate_gpdf_small_k': ('generalized_dispersion', 'evaluate_gpdf_small_k')}
 
+# Keep the child-module facade discoverable without importing every scientific
+# implementation.  All public top-level kinetic modules are represented by at
+# least one export above; ``pdrk`` is a nested package with its own lazy
+# namespace and therefore needs an explicit entry here.
+_LAZY_MODULES = frozenset({module for module, _ in _LAZY_EXPORTS.values()} | {"pdrk"})
+
 def __getattr__(name):
-    try:
+    if name in _LAZY_EXPORTS:
         module_name, attribute_name = _LAZY_EXPORTS[name]
-    except KeyError as error:
-        raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from error
-    module = _import_module(f".{module_name}", __name__)
-    value = getattr(module, attribute_name)
-    globals()[name] = value
-    return value
+        module = _import_module(f".{module_name}", __name__)
+        value = getattr(module, attribute_name)
+        globals()[name] = value
+        return value
+    if name in _LAZY_MODULES:
+        return _import_module(f".{name}", __name__)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 def __dir__():
-    return sorted(set(__all__) | set(_COMPAT_EXPORTS))
+    return sorted(set(__all__) | set(_COMPAT_EXPORTS) | set(_LAZY_MODULES))

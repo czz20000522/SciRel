@@ -132,6 +132,14 @@ assert not any(
     if name != "scirel.kinetic"
 )
 assert "evaluate_gpdf_small_k" in dir(kinetic)
+assert {"fluidbw", "generalized_dispersion", "pdrk"} <= set(dir(kinetic))
+assert not any(
+    name.startswith("numpy") or name.startswith("scipy")
+    for name in sys.modules
+)
+assert kinetic.fluidbw.__name__ == "scirel.kinetic.fluidbw"
+assert kinetic.generalized_dispersion.__name__ == "scirel.kinetic.generalized_dispersion"
+assert kinetic.pdrk.__name__ == "scirel.kinetic.pdrk"
 
 from scirel.kinetic import evaluate_gpdf_small_k
 from scirel.kinetic.generalized_dispersion import evaluate_gpdf_small_k as direct
