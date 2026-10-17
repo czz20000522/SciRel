@@ -231,3 +231,91 @@ assert all(namespace[name] is getattr(closures, name) for name in closures.__all
 ''', str(ROOT / 'src')], capture_output=True, text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_equilibrium_namespace_is_dependency_light_and_preserves_missing_dependency_errors():
+    result = subprocess.run(
+        [sys.executable, '-I', '-S', '-c', '''
+import sys
+
+sys.path.insert(0, sys.argv[1])
+import scirel.equilibrium as equilibrium
+
+assert len(equilibrium.__all__) == 13
+assert all(name in dir(equilibrium) for name in equilibrium.__all__)
+assert not any(
+    name.startswith("scirel.equilibrium.")
+    for name in sys.modules
+)
+assert "numpy" not in sys.modules
+assert "scipy" not in sys.modules
+
+try:
+    equilibrium.compute_equilibrium
+except ModuleNotFoundError as public_error:
+    assert public_error.name == "numpy"
+else:
+    raise AssertionError("equilibrium operator unexpectedly imported without NumPy")
+
+try:
+    from scirel.equilibrium.isotropic_picard_step import pressure_flux_picard_step
+except ModuleNotFoundError as direct_error:
+    assert direct_error.name == "numpy"
+else:
+    raise AssertionError("direct child module unexpectedly imported without NumPy")
+''', str(ROOT / 'src')], capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_equilibrium_exports_preserve_child_module_identity_and_from_star():
+    result = subprocess.run(
+        [sys.executable, '-I', '-c', '''
+import sys
+
+sys.path.insert(0, sys.argv[1])
+import scirel.equilibrium as equilibrium
+
+expected = {
+    "pressure_flux_picard_step",
+    "build_pressure_flux_state",
+    "update_anisotropic_picard_flux",
+    "compute_anisotropic_toroidal_current",
+    "update_axisymmetric_picard_flux",
+    "compute_anisotropic_force_balance",
+    "solve_free_boundary_anisotropic_picard",
+    "solve_isotropic_pressure_flux",
+    "solve_axisymmetric_anisotropic_picard",
+    "solve_reduced_hall_anisotropic_picard",
+    "solve_kinetic_mirror_hall_equilibrium",
+    "EquilibriumResult",
+    "compute_equilibrium",
+}
+assert set(equilibrium.__all__) == expected
+assert not any(
+    name.startswith("scirel.equilibrium.")
+    for name in sys.modules
+    if name != "scirel.equilibrium"
+)
+
+from scirel.equilibrium import compute_equilibrium
+from scirel.equilibrium.pleiades_feedback import compute_equilibrium as direct
+from scirel.equilibrium import pleiades_feedback as child
+from scirel.equilibrium import isotropic_pressure_flux as graph
+from scirel.equilibrium.isotropic_pressure_flux import (
+    solve_isotropic_pressure_flux as direct_graph,
+)
+
+assert compute_equilibrium is direct
+assert equilibrium.compute_equilibrium is direct
+assert child is sys.modules["scirel.equilibrium.pleiades_feedback"]
+assert graph is sys.modules["scirel.equilibrium.isotropic_pressure_flux"]
+assert equilibrium.solve_isotropic_pressure_flux is direct_graph
+
+namespace = {}
+exec("from scirel.equilibrium import *", namespace)
+assert all(namespace[name] is getattr(equilibrium, name) for name in equilibrium.__all__)
+assert "pleiades_feedback" not in namespace
+''', str(ROOT / 'src')], capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

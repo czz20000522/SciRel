@@ -499,7 +499,11 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
                 reason = "unmapped_adapter_source"
         elif path.startswith("src/scirel/") and path.endswith("/__init__.py"):
             path_tests.update(
-                ("tests/test_asset_documentation.py", "tests/test_public_surface.py")
+                (
+                    "tests/test_asset_documentation.py",
+                    "tests/test_public_surface.py",
+                    "tests/test_lazy_namespace.py",
+                )
             )
             if path == "src/scirel/collisions/__init__.py":
                 path_tests.add("tests/operator_contracts/test_momentum_scales.py")

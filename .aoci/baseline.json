@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-17T01:40:22Z",
+  "updated_at": "2026-10-17T02:06:10Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -65,9 +65,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "11db3062eec965ccf63d2199e253a0ad7e90987251fc2e38e679bd7ac62197cd",
-      "size": 573365,
-      "normalized_sha256": "11db3062eec965ccf63d2199e253a0ad7e90987251fc2e38e679bd7ac62197cd"
+      "sha256": "fa6800128c71d86181de2466be40a51afdd0436cc0e7360745e6dbe4cbeab39c",
+      "size": 573798,
+      "normalized_sha256": "fa6800128c71d86181de2466be40a51afdd0436cc0e7360745e6dbe4cbeab39c"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -6305,9 +6305,9 @@
     },
     "scripts/select_affected_tests.py": {
       "role": "index",
-      "sha256": "149a4559989cd9a2bb6d9add4effad90148961737445422adcad6aa68106b372",
-      "size": 25427,
-      "normalized_sha256": "149a4559989cd9a2bb6d9add4effad90148961737445422adcad6aa68106b372"
+      "sha256": "dda081e78af280988f51e036f756736b4c9d5bf0f507f64a475699e2b4c24729",
+      "size": 25538,
+      "normalized_sha256": "dda081e78af280988f51e036f756736b4c9d5bf0f507f64a475699e2b4c24729"
     },
     "scripts/spark_codex.py": {
       "role": "index",
@@ -7703,9 +7703,9 @@
     },
     "src/scirel/equilibrium/__init__.py": {
       "role": "index",
-      "sha256": "cca8fc74b5a392bb68f8ba2046974d0c9eddbc96ef079e77e805647c49492eee",
-      "size": 1456,
-      "normalized_sha256": "cca8fc74b5a392bb68f8ba2046974d0c9eddbc96ef079e77e805647c49492eee"
+      "sha256": "163dd19dac91fea5337d1b48244980f8fb70d910371eb6161903b74f6825d758",
+      "size": 3721,
+      "normalized_sha256": "163dd19dac91fea5337d1b48244980f8fb70d910371eb6161903b74f6825d758"
     },
     "src/scirel/equilibrium/_anisotropic_numerics.py": {
       "role": "index",
@@ -10883,9 +10883,9 @@
     },
     "tests/test_affected_test_selection.py": {
       "role": "index",
-      "sha256": "7f0bf4f3267da9a01647cec235f8002955bf66de7ba840ed478b243611d682a4",
-      "size": 38153,
-      "normalized_sha256": "7f0bf4f3267da9a01647cec235f8002955bf66de7ba840ed478b243611d682a4"
+      "sha256": "b6d4ee1f5269d5ec191f3bf0fb9d258ad03e34dab4e3d05c7b9789c640c2b989",
+      "size": 38549,
+      "normalized_sha256": "b6d4ee1f5269d5ec191f3bf0fb9d258ad03e34dab4e3d05c7b9789c640c2b989"
     },
     "tests/test_asset_documentation.py": {
       "role": "index",
@@ -10961,9 +10961,9 @@
     },
     "tests/test_lazy_namespace.py": {
       "role": "index",
-      "sha256": "d7100a2c69c5be54f5cfd6c33b75632b9d3176d68ae929d9e6fd2266dbc3501f",
-      "size": 7642,
-      "normalized_sha256": "d7100a2c69c5be54f5cfd6c33b75632b9d3176d68ae929d9e6fd2266dbc3501f"
+      "sha256": "d0d80f8d08ac7f887ff5dadfa52657b7329859fa1a793b10c8254647f68a753f",
+      "size": 10676,
+      "normalized_sha256": "d0d80f8d08ac7f887ff5dadfa52657b7329859fa1a793b10c8254647f68a753f"
     },
     "tests/test_library_composition.py": {
       "role": "index",

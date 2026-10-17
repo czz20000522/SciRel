@@ -132,6 +132,18 @@ def test_package_export_change_checks_public_surface_and_asset_examples():
     assert result["full_suite_required"] is False
     assert result["test_paths"] == [
         "tests/test_asset_documentation.py",
+        "tests/test_lazy_namespace.py",
+        "tests/test_public_surface.py",
+    ]
+
+
+def test_equilibrium_package_export_change_checks_lazy_namespace_contract():
+    result = select("src/scirel/equilibrium/__init__.py")
+
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == [
+        "tests/test_asset_documentation.py",
+        "tests/test_lazy_namespace.py",
         "tests/test_public_surface.py",
     ]
 
