@@ -25,7 +25,7 @@ def test_current_release_alignment_is_exact() -> None:
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     assert result["wheel_version"] == project["project"]["version"]
     assert result["documentation_selection"] == "scientific-core-current"
-    assert result["source_revision"] == "5556f1aede8104b815a1595fda03167c0dadd135"
+    assert result["source_revision"] == "2030ec359706e62249aa7267f739f0f0632dca7d"
     assert result["capability_counts"] == {
         "operators": 230,
         "task_graphs": 30,
@@ -241,7 +241,7 @@ def test_alignment_can_require_an_exact_git_source_revision() -> None:
 
 def test_current_release_strict_gate_accepts_bound_rebuild() -> None:
     result = validate_alignment(ROOT, require_bound_candidate_match=True)
-    assert result["source_revision"] == "5556f1aede8104b815a1595fda03167c0dadd135"
+    assert result["source_revision"] == "2030ec359706e62249aa7267f739f0f0632dca7d"
 
 
 def test_legacy_current_files_are_thin_compatibility_pointers() -> None:
