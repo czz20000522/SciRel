@@ -17,7 +17,13 @@ quadratic nonuniform operator; its qualified domain is finite monotone x.
 """
 import numpy as np
 import scipy.integrate
-from scipy.interpolate import griddata, RectBivariateSpline
+from scipy.interpolate import (
+    CloughTocher2DInterpolator,
+    LinearNDInterpolator,
+    RectBivariateSpline,
+    griddata,
+)
+from scipy.spatial import Delaunay
 from .numerics import diff_12_central
 
 def regular_grid(xx,yy,*args,**kwargs):
@@ -40,13 +46,35 @@ def regular_grid(xx,yy,*args,**kwargs):
         y = np.linspace(yy.min(), yy.max(), ny)
         xi, yi = np.meshgrid(x,y,indexing="ij")
 
-    #then, interpolate your data onto this grid:
+    # ``griddata`` rebuilds the same Delaunay triangulation for every field.
+    # Keep its method-specific defaults and call semantics, but reuse the
+    # triangulation for the two methods that consume one.  Empty field lists
+    # retain the historical validation-free ``(xi, yi)`` result.
     points = np.vstack((xx.flatten(),yy.flatten())).T
-    zs = []
-    for z in args:
-        zi = griddata(points,z.flatten(),(xi,yi),method=method)
-        zs.append(zi)
-    
+    if not args:
+        return (xi, yi)
+
+    if method == "linear":
+        triangulation = Delaunay(points)
+        zs = [
+            LinearNDInterpolator(triangulation, z.flatten(), fill_value=np.nan)(
+                xi, yi, simplex_tolerance=1.0
+            )
+            for z in args
+        ]
+    elif method == "cubic":
+        triangulation = Delaunay(points)
+        zs = [
+            CloughTocher2DInterpolator(triangulation, z.flatten(), fill_value=np.nan)(
+                xi, yi, simplex_tolerance=1.0
+            )
+            for z in args
+        ]
+    else:
+        # Nearest-neighbor and unsupported methods retain the exact griddata
+        # path, including its nearest-tree construction and error semantics.
+        zs = [griddata(points,z.flatten(),(xi,yi),method=method) for z in args]
+
     return (xi,yi) + tuple(zs)
 
 def poly_fit(x,y,order=3):

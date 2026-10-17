@@ -32,7 +32,7 @@ Agent 只组合已声明合同并编写胶水代码。安装成功、某个平�
 字节和原回执保持不变，不能覆盖。
 
 当前开发验收的唯一已绑定环境是 **Linux x86_64（amd64）+ CPython 3.14**。现有平台矩阵中
-Linux x86_64 和 Linux aarch64 为 `PARTIAL`，Windows amd64、macOS arm64 和 macOS x86_64
+Linux x86_64、Linux aarch64 和 macOS arm64 为 `PARTIAL`，Windows amd64 和 macOS x86_64
 为 `NOT_RUN`。这些状态必须保留在发行记录中，不能由 `py3-none-any` 自动扩大为全平台支持。
 
 ## 依赖分层
@@ -135,7 +135,7 @@ Windows/macOS 后续各自生成和验收自己的 artifact，不复用 Linux �
 | `linux-x86_64-cp314` | `PARTIAL` | clean venv core 闭包、公共 import、简单和跨域任务；Octave 7.3.0 native 单列 |
 | `linux-aarch64-cp314` | `PARTIAL` | clean venv core 闭包和 PDRK Octave 8.4.0 单列；fluidBW 不得推断通过 |
 | `windows-amd64-cp314` | `NOT_RUN` | Windows clean venv、锁定 wheelhouse、pip check、core API 和代表性科学任务 |
-| `macos-arm64-cp314` | `NOT_RUN` | macOS arm64 clean venv、锁定 wheelhouse、pip check、core API 和代表性科学任务 |
+| `macos-arm64-cp314` | `PARTIAL` | macOS arm64 clean venv、锁定 wheelhouse、pip check、core API 和代表性科学任务；plot extra 技术 smoke 已有独立证据 |
 | `macos-x86_64-cp314` | `NOT_RUN` | macOS x86_64 clean venv、锁定 wheelhouse、pip check、core API 和代表性科学任务 |
 
 每个平台的验收顺序如下：
