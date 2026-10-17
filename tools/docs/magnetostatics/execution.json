@@ -1,19 +1,19 @@
 {
   "schema": "scirel.chapter-execution.v1",
-  "source_commit": "9733bfc6e9f91a8526f5c72843b9203aa8ebbf04",
-  "source_identity_note": "SciRel 0.1.0.dev9 wheel bound by release/CURRENT.json; examples rerun in a fresh source-free CPython 3.14 environment with the exact wheel and pinned dependencies.",
+  "source_commit": "4a6176b0b5b3c0ebe57df2e4fbfc5515d03fc895",
+  "source_identity_note": "Chapter implementation files are bound to the validated source baseline 4a6176b0b5b3c0ebe57df2e4fbfc5515d03fc895; the surrounding documentation snapshot may advance by Git commit while these digests remain unchanged.",
   "files": {
     "src/scirel/field/circular_filament_green.py": "7fd4e56e7caa7e03e99a50fa4e9de30c380087fb8fd9a5bfe482497908385987",
     "src/scirel/field/current_green_superposition.py": "ef48b26b1e552fa11d54509d280ce16df4542517a833ea99e0b9a060941adf1e",
     "src/scirel/field/rectangular_coil_filaments.py": "1615ade92a272170d0799eab6779917e2c236ce698056a4f7efeb71c080c2ecb",
     "src/scirel/field/multi_coil_vacuum_field.py": "bfc04c817742d7bc935c88bc9f92c78036083d793ef9db94d794d2bbecb73acc",
     "src/scirel/_composition.py": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
-    "src/scirel/electromagnetism/greens.py": "0a2425308022b01d9c394bb1c9d390562272b20a093f33f1ccfb717e0cb5fb42"
+    "src/scirel/electromagnetism/greens.py": "fabfcb515fb64982d97493911badda290b7e08c89c645238edda2bccb1e970b0"
   },
   "scope": "Current release-bound magnetostatics example; bounded technical validation.",
   "example_sha256": "feae9bb16913bcd304baa2e34b0d7d7f4ec9f65c06a04bf3d83492ab375257dc",
   "results_sha256": "e3352eb3a9b2e6cc3270698312c533a2b5e4bca1107686d38c8044bdf14edf45",
-  "wheel_sha256": "175c9dc0edd62511bd25e8eba0f89566a7bfe2bf9d258050d2cf959537ff284b",
+  "wheel_sha256": "677e33a0992ffa7ab0dc2353d5a05f72ad4e37fd0373afecfadc96bfbd13a721",
   "wheel_version": "0.1.0.dev9",
   "image_id": "sha256:38382f431271e9dcee8b56113c23be9c232c37dd246e9e3da5fd02b47a3e5ed8",
   "runtime": "Python3.14.7/NumPy2.5.4/SciPy1.18.1/Matplotlib3.11.2",

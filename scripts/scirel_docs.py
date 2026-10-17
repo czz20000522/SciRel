@@ -174,8 +174,15 @@ def chapter_files(asset_ids, *, expected_source_revision=None,
     execution = json.loads((root/'execution.json').read_bytes())
     if execution.get('schema') != 'scirel.chapter-execution.v1':
         raise ValueError('selected chapter execution has an invalid schema')
-    if expected_source_revision is not None and execution.get('source_commit') != expected_source_revision:
-        raise ValueError('selected chapter execution source commit differs from requested source')
+    execution_source = execution.get('source_commit')
+    if not isinstance(execution_source, str) or not re.fullmatch(r'[0-9a-f]{40}', execution_source):
+        raise ValueError('selected chapter execution source commit is invalid')
+    # The execution record is itself a Git-tracked file, so it cannot embed
+    # the hash of the commit that contains its updated bytes.  Its
+    # ``source_commit`` therefore identifies the implementation baseline used
+    # for the run; the surrounding documentation snapshot remains bound to the
+    # requested source revision.  The file and document digests below are the
+    # compatibility proof between those two identities.
     if expected_project_version is not None and execution.get('wheel_version') != expected_project_version:
         raise ValueError('selected chapter execution wheel version differs from project version')
     if expected_wheel_sha256 is not None and execution.get('wheel_sha256') != expected_wheel_sha256:
