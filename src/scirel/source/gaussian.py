@@ -11,6 +11,8 @@ from __future__ import annotations
 import numpy as np
 from ._common import grid, normalize_log_shape, scalar, width_scalar
 
+__all__ = ["gaussian_profile"]
+
 
 def gaussian_profile(rho_norm, vpr, drho_norm, *, center, width, total):
     """Return a cell profile whose discrete volume integral equals ``total``.

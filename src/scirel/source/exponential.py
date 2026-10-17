@@ -10,6 +10,8 @@ from __future__ import annotations
 import numpy as np
 from ._common import grid, normalize_log_shape, scalar, width_scalar
 
+__all__ = ["exponential_profile"]
+
 
 def exponential_profile(rho_norm, vpr, drho_norm, *, decay_start, width, total):
     """Return a volume-normalized exponential profile on a nonuniform grid.

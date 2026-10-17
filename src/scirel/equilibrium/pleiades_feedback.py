@@ -14,6 +14,8 @@ from numbers import Integral
 import numpy as np
 from ._pressure_current import fit_pressure_spline, pressure_derivative, current_target, relaxed_green_update
 
+__all__ = ["EquilibriumResult", "compute_equilibrium"]
+
 
 @dataclass(frozen=True)
 class EquilibriumResult:

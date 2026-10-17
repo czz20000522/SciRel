@@ -51,3 +51,21 @@ def test_eqdsk_catalog_callables_are_explicit_module_exports() -> None:
     namespace: dict[str, object] = {}
     exec("from scirel.io.eqdsk import *", namespace)
     assert all(namespace[name] is getattr(module, name) for name in module.__all__)
+
+
+def test_public_operator_modules_do_not_leak_support_names() -> None:
+    expected = {
+        "scirel.equilibrium.pleiades_feedback": {"EquilibriumResult", "compute_equilibrium"},
+        "scirel.physics.thermal_energy": {"calculate_stored_thermal_energy"},
+        "scirel.source.gaussian": {"gaussian_profile"},
+        "scirel.source.exponential": {"exponential_profile"},
+    }
+
+    for module_name, names in expected.items():
+        module = importlib.import_module(module_name)
+        assert set(module.__all__) == names
+        namespace: dict[str, object] = {}
+        exec(f"from {module_name} import *", namespace)
+        assert {key for key in namespace if not key.startswith("__")} == names
+        for name in names:
+            assert namespace[name] is getattr(module, name)

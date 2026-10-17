@@ -11,6 +11,8 @@ from __future__ import annotations
 from fractions import Fraction
 import numpy as np
 
+__all__ = ["calculate_stored_thermal_energy"]
+
 
 def _profile(value, name, n=None):
     a = np.asarray(value)
