@@ -5,6 +5,8 @@ from __future__ import annotations
 import operator
 import numpy as np
 
+__all__ = ["get_gamma_lpole_coefficients"]
+
 # 冻结源码 em3d_Lpole.m:122-139 的 L 极点系数表，按 |n|+1 索引：rl 为留数，pl 为极点。
 _COEFFICIENTS = {
     1: (

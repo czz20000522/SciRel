@@ -5,6 +5,8 @@ from __future__ import annotations
 import operator
 import numpy as np
 
+__all__ = ["get_z_pole_coefficients"]
+
 # 冻结源码 em3d_Lpole.m:89-119 的极点表，前半段由源码写定，后半段按共轭对称补齐。
 _TABLE = {
     8: (

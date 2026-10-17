@@ -5,6 +5,8 @@ from __future__ import annotations
 import operator
 import numpy as np
 
+__all__ = ["assemble_fluid_dispersion_matrix"]
+
 
 def _integer(value, name):
     if isinstance(value, (bool, np.bool_)):

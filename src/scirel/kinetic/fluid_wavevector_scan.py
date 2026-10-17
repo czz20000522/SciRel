@@ -24,6 +24,8 @@ from .gamma_lpole_coefficients import get_gamma_lpole_coefficients
 from .species_equilibrium_scales import derive_species_equilibrium_scales
 from .z_pole_coefficients import get_z_pole_coefficients
 
+__all__ = ["scan_fluid_wavevectors"]
+
 
 def scan_wavenumber(*, kz_scale, kn):
     """Scale the reference wavenumber by the caller's parallel-wavenumber ratio.

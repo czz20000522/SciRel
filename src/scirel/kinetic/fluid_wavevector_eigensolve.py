@@ -6,6 +6,8 @@ import operator
 import numpy as np
 from scipy.linalg.lapack import zgeev
 
+__all__ = ["solve_fluid_wavevector_eigenproblem"]
+
 
 def _source_runtime_eigvals(matrix):
     """Return the eigenvalues via the general complex LAPACK driver the source runtime calls.
