@@ -13,8 +13,9 @@ SciRel 采用与 SciPy 同类的单一来源模型：源代码、`pyproject.toml
 - 历史版本通过 Git tag、commit 和外部归档恢复。不要新增 `release/wheel/versions/<version>.json` 或 `release/docs/versions/<version>.json` 作为平行复制品。
 
 历史候选的身份由 Git 历史和短发行说明保留。开发期可以连续提交多个实现修复而不切新的
-候选；切批次时再推进一个 PEP 440 `patch/post/dev` 版本，并为该批次绑定新的 commit 和
-artifact 路径。不能覆盖已经生成的 wheel、文档快照或回执。
+候选；切批次时再推进一个维护版本（通常为 PEP 440 `patch` 或 `dev`；`post` 只用于打包/元数据修正），
+并为该批次绑定新的 commit 和 artifact 路径。版本推进由批次切出触发，不由单次提交触发；不能覆盖
+已经生成的 wheel、文档快照或回执。
 
 ### Wheel 与文档的主线和修订号
 
@@ -23,8 +24,8 @@ wheel。主线取公共版本的 `major.minor` 对（例如 `0.1`）；wheel 的
 PEP 440 版本仍由 `pyproject.toml` 唯一决定，文档则可以在该主线上拥有独立的
 编辑修订号。
 
-这条规则同时适用于实现演进：wheel 可以在同一 `major.minor` 主线上推进
-patch、post 或 dev 版本。每次 wheel 版本改变都必须生成新的候选；该候选的
+这条规则同时适用于实现演进：wheel 可以在同一 `major.minor` 主线上推进维护批次版本。
+每次维护批次切出才生成新的候选；该候选的
 `compatible_wheel` 与每条 exact document 的 `version.implementation_version`
 必须精确跟随新的 wheel 版本。文档编辑修订号可以在同一主线上独立推进，但不能
 替代这个运行时实现版本。

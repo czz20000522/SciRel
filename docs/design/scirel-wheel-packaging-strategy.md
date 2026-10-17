@@ -31,8 +31,9 @@ Agent 只组合已声明合同并编写胶水代码。安装成功、某个平�
 函数修复或性能优化先作为 post-candidate Git 提交积累，不触发新的外部产物；达到批次边界
 后再统一更新版本和闭包。旧候选字节和原回执保持不变，不能覆盖。
 
-实现改进也可以在同一 `major.minor` 主线上推进 wheel 的 patch、post 或 dev 版本。此时
-`compatible_wheel` 和 exact document 的 `implementation_version` 必须一起切换到新的 wheel；
+实现改进可以在同一 `major.minor` 主线上累计为维护批次，切出时推进 wheel 的 patch 或 dev 版本；
+`post` 只用于同一版本的打包/元数据修正。此时 `compatible_wheel` 和 exact document 的
+`implementation_version` 必须一起切换到新的 wheel；
 只有纯编辑修订才允许复用相同 wheel 字节。
 
 当前开发验收的唯一已绑定环境是 **Linux x86_64（amd64）+ CPython 3.14**。现有平台矩阵中

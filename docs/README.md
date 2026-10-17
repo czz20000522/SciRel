@@ -40,7 +40,7 @@ SciRel 将已有科研代码整理为可复用的科学算子与任务图，供 
 
 - [科学请求需求](requirements/scientific-request-workflow.md)、[设计](design/scientific-request-workflow.md)和[求解 skill](../skills/development/usage/scirel-solving/SKILL.md)：用户需求到能力匹配、组合、执行与证据有界解释。
 - [发行说明索引](release.md)：只记录每个 Git 版本的短变更说明；完整 API、手册和 exact documents 继续维护在当前 `docs/` 树中。
-- [发行批次策略](design/scirel-release-batching.md)：区分大版本、批量 patch/dev 候选和 post-candidate 工作树，避免每个函数小修都触发完整发行流程。
+- [发行批次策略](design/scirel-release-batching.md)：区分能力线、维护批次和 post-candidate 工作树，避免每个函数小修都触发完整发行流程。
 - [薄 MCP 适配需求](requirements/thin-mcp-adapter.md)及[CodeFusion 消费合同](integration/codefusion-consumer-contract.md)：适配器只消费已发布的 catalog/wheel，不定义新的科学身份。
 - [CodeFusion 宿主插件需求](requirements/codefusion-plugin.md)、[插件合同](integration/codefusion-plugin-contract.md)及[中性 Agent 验收](integration/codefusion-runner-acceptance.md)：宿主提供执行、artifact、身份和审核 UI；SciRel 拥有领域结论。
 
