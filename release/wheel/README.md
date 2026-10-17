@@ -89,5 +89,8 @@ the installed scientific smoke checks. Missing or source-only dependencies
 remain a failed receipt; do not turn a network-backed receipt into an offline
 claim by editing its limitations. If `--source-revision` is omitted, the
 receipt remains a standalone technical record. Supplying the exact commit lets
-the release alignment validator accept it as a future `platform_receipts` row;
-the current dev9 tuple and its historical receipt are unchanged.
+the release alignment validator verify the receipt against the current wheel.
+For dev9, the current Linux platform receipt combines the existing same-source
+rebuild evidence with the offline validation result; the raw network and offline
+receipts remain separate lineage records. A passing offline check still does
+not establish complete scientific capability closure or release approval.

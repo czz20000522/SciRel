@@ -26,8 +26,12 @@ def test_git_release_structure_has_one_version_source() -> None:
     assert current["documentation"]["compatible_wheel"] == version
     assert "asset_implementation_baselines" not in current["documentation"]
     assert "path" not in current["wheel"]["artifact"]
-    assert current["wheel"]["artifact"]["manifest_ref"].endswith("/wheel/build-manifest.json")
-    assert current["documentation"]["artifact"]["manifest_ref"].endswith("/docs/build-manifest.json")
+    wheel_manifest_ref = current["wheel"]["artifact"]["manifest_ref"]
+    docs_manifest_ref = current["documentation"]["artifact"]["manifest_ref"]
+    assert wheel_manifest_ref.startswith(f"scirel/{version}/")
+    assert docs_manifest_ref.startswith(f"scirel/{version}/")
+    assert wheel_manifest_ref.endswith("build-manifest.json")
+    assert docs_manifest_ref.endswith("build-manifest.json")
     assert (ROOT / f"docs/release/{version}-notes.md").is_file()
 
 

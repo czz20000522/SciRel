@@ -2,10 +2,14 @@
   "evidence": {
     "docs_build_manifest": "scirel/0.1.0.dev9/5556f1a-docs/build-manifest.json",
     "docs_build_manifest_sha256": "d5821dd1183498dbe9bf9d79ef9b9b25429517da1825eb1468434316eeeb37ae",
-    "linux_acceptance": "provenance/validation/scirel-dev9-linux-acceptance-20261017-5556f1a.json",
-    "linux_acceptance_sha256": "b75b531bb130b2a6f96588ddc472f558b4a273be014b6779edfb836bf8e6b088",
+    "linux_acceptance": "provenance/validation/scirel-dev9-linux-offline-acceptance-20261017-5556f1a.json",
+    "linux_acceptance_sha256": "7b850a60ec1b8995804e19aee4acf1f5673047f0526f46cc2d3f51e02f3187f5",
     "wheel_build_manifest": "scirel/0.1.0.dev9/5556f1a/build-manifest.json",
-    "wheel_build_manifest_sha256": "355cf63b18afab169ea7fad935a07ca5416f9e3bf54bd6b66ee9380b51aa30d8"
+    "wheel_build_manifest_sha256": "355cf63b18afab169ea7fad935a07ca5416f9e3bf54bd6b66ee9380b51aa30d8",
+    "linux_offline_wheelhouse_validation": "provenance/validation/scirel-dev9-linux-offline-wheelhouse-20261017-5556f1a.json",
+    "linux_offline_wheelhouse_validation_sha256": "dcf19fdb2bdd866d08e8276cd1ebc889853c2a03ad40650bd078a5c9147cdf36",
+    "linux_offline_wheelhouse_context": "scirel/0.1.0.dev9/5556f1a/linux-x86_64-cp314-offline/offline-wheelhouse-validation-context.json",
+    "linux_offline_wheelhouse_context_sha256": "8308fefd661c455dda13b20845a19ccf3a565f1ffbc9dc1cd0d81e886e77f835"
   },
   "handbook": {
     "asset_count": 267,
@@ -16,7 +20,8 @@
   },
   "limitations": [
     "External wheel and documentation snapshot are generated artifacts under an ignored artifact root; Git source, selection and handbook remain canonical.",
-    "The Linux receipt establishes clean consumer installation with network-resolved runtime dependencies for the bound wheel and representative core scope; it does not establish complete scientific capability closure or offline wheelhouse acceptance.",
+    "The combined Linux receipt binds same-source reproducible-build evidence to an exact-wheel offline installation using a fixed three-wheel runtime wheelhouse; complete scientific capability closure is not established.",
+    "The wheelhouse was downloaded during preparation with network access, while the installation and validation container used Docker --network none and pip --no-index --only-binary=:all:.",
     "This metadata receipt does not constitute scientific expert approval, redistribution approval, or public release approval."
   ],
   "project_version": "0.1.0.dev9",
