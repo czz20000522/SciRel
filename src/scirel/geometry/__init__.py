@@ -206,4 +206,4 @@ _sys.modules[__name__].__class__ = _LazyGeometryModule
 
 
 def __dir__():
-    return sorted(set(globals()) | set(__all__) | set(_LAZY_MODULES))
+    return sorted(set(__all__) | set(_LAZY_MODULES))

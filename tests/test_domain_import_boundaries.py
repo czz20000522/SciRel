@@ -101,3 +101,36 @@ assert compute_greens is direct_greens
 """
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_domain_dirs_expose_only_public_contract_and_legal_lazy_names() -> None:
+    result = _run(
+        """
+import importlib
+
+import scirel
+
+
+def check_namespace(package):
+    public = set(package.__all__)
+    lazy_modules = getattr(package, "_LAZY_MODULES", ())
+    if hasattr(lazy_modules, "keys"):
+        lazy_modules = set(lazy_modules)
+    else:
+        lazy_modules = set(lazy_modules)
+    compatibility = set(getattr(package, "_COMPAT_EXPORTS", ()))
+    names = set(dir(package))
+    allowed = public | lazy_modules | compatibility
+    assert public <= names, (package.__name__, sorted(public - names))
+    assert compatibility <= names, (package.__name__, sorted(compatibility - names))
+    assert names <= allowed, (package.__name__, sorted(names - allowed))
+    assert not any(name.startswith("_") for name in names), package.__name__
+
+
+for domain_name in scirel.__all__:
+    check_namespace(importlib.import_module(f"scirel.{domain_name}"))
+
+check_namespace(importlib.import_module("scirel.kinetic.pdrk"))
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

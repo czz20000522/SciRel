@@ -86,4 +86,4 @@ _sys.modules[__name__].__class__ = _LazyFieldModule
 
 
 def __dir__():
-    return sorted(set(globals()) | set(__all__))
+    return sorted(set(__all__))

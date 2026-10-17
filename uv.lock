@@ -404,6 +404,10 @@ build = [
     { name = "setuptools" },
     { name = "wheel" },
 ]
+optional-runtime-deps = [
+    { name = "matplotlib" },
+    { name = "netcdf4" },
+]
 test = [
     { name = "matplotlib" },
     { name = "netcdf4" },
@@ -426,6 +430,10 @@ provides-extras = ["plot", "netcdf"]
 build = [
     { name = "setuptools", specifier = "==84.0.0" },
     { name = "wheel", specifier = "==0.48.0" },
+]
+optional-runtime-deps = [
+    { name = "matplotlib", specifier = "==3.11.2" },
+    { name = "netcdf4", specifier = "==1.7.4" },
 ]
 test = [
     { name = "matplotlib", specifier = "==3.11.2" },

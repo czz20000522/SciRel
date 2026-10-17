@@ -56,11 +56,14 @@ def test_pip_install_extra_command_is_offline_and_names_the_extra(tmp_path: Path
         tmp_path / "venv" / "bin" / "python",
         "plot",
         tmp_path / "wheelhouse",
+        tmp_path / "wheel-candidates",
     )
 
     assert "--no-index" in command
     assert "--only-binary=:all:" in command
     assert command[-1] == "scirel[plot]"
+    second_links = command.index("--find-links", command.index("--find-links") + 1)
+    assert command[second_links + 1].endswith("wheel-candidates")
 
 
 def test_offline_validation_binds_clean_install_and_inner_receipt(
@@ -162,5 +165,7 @@ def test_offline_validation_installs_and_forwards_requested_extra(
     assert receipt["status"] == "PASS"
     assert receipt["extras"]["plot"]["install"]["status"] == "PASS"
     assert any(command[-1] == "scirel[plot]" for command in commands)
+    extra_command = next(command for command in commands if command[-1] == "scirel[plot]")
+    assert extra_command.count("--find-links") == 2
     validation_command = commands[-1]
     assert validation_command[-2:] == ["--extra", "plot"]

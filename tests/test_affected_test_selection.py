@@ -843,8 +843,21 @@ def test_current_asset_index_uses_canonical_documents():
     assert len(fast_ion) == 1
     assert fast_ion[0]["public_api"]["python"]["symbol"] == "fast_ion_fractional_heating"
     assert len([doc for doc in direct_documents if doc["asset_id"] != "scirel.plasma.fast-ion-heating"]) == 266
-    assert len(assets) == 267
-    assert len({asset.public_callable for asset in assets}) == 267
+    assert len(assets) == 260
+    assert len({asset.public_callable for asset in assets}) == 260
+    stale_fluidbw_symbols = {
+        "derive_fluidbw_case",
+        "evaluate_fluidbw_special",
+        "evaluate_fluidbw_dispersion",
+        "assemble_fluidbw_em",
+        "solve_fluidbw_bonk",
+        "solve_fluidbw_em",
+        "render_fluidbw_materials",
+    }
+    assert not any(
+        asset.public_callable.rsplit(".", 1)[-1] in stale_fluidbw_symbols
+        for asset in assets
+    )
 
 
 def test_shared_corrected_green_keeps_current_consumers():

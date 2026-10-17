@@ -36,6 +36,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -107,9 +108,9 @@ def _pip_install_command(python: Path, wheel: Path, wheelhouse: Path) -> list[st
 
 
 def _pip_install_extra_command(
-    python: Path, extra: str, wheelhouse: Path
+    python: Path, extra: str, wheelhouse: Path, wheel_candidates: Path
 ) -> list[str]:
-    """Build the offline command that resolves one installed package extra."""
+    """Build the offline command that resolves one extra from the exact wheel."""
 
     extra = extra.strip().lower()
     if not extra:
@@ -125,6 +126,8 @@ def _pip_install_extra_command(
         "--only-binary=:all:",
         "--find-links",
         str(wheelhouse),
+        "--find-links",
+        str(wheel_candidates),
         f"scirel[{extra}]",
     ]
 
@@ -257,6 +260,13 @@ def validate_offline_wheelhouse(
             )
             return receipt
 
+        # pip resolves an extra by project name.  Stage only this exact wheel
+        # in a private candidate directory so the extra install remains
+        # offline while staying bound to the wheel already installed above.
+        wheel_candidates = workspace / "scirel-wheel-candidate"
+        wheel_candidates.mkdir()
+        shutil.copy2(wheel, wheel_candidates / wheel.name)
+
         normalised_extras: list[str] = []
         seen_extras: set[str] = set()
         for raw_extra in extras:
@@ -265,7 +275,9 @@ def validate_offline_wheelhouse(
                 continue
             seen_extras.add(extra)
             normalised_extras.append(extra)
-            extra_install = _pip_install_extra_command(python, extra, wheelhouse)
+            extra_install = _pip_install_extra_command(
+                python, extra, wheelhouse, wheel_candidates
+            )
             receipt["execution"]["commands"].append(extra_install)
             extra_result = _run(extra_install, env=environment)
             receipt["extras"][extra] = {

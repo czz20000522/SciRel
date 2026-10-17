@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import ast
 from dataclasses import dataclass, replace
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -17,6 +18,7 @@ from validate_asset_documents import resolve_test_reference
 ROOT = Path(__file__).resolve().parents[1]
 LEDGER = ROOT / "provenance" / "admitted-assets.json"
 CATALOG = ROOT / "catalog" / "examples"
+CURRENT_RELEASE = ROOT / "release" / "CURRENT.json"
 SCHEMA = "scirel.affected-tests.v1"
 
 DIRECT_TEST_OVERRIDES = {
@@ -242,9 +244,62 @@ def _load_catalog_assets() -> list[Asset]:
     """
     if not CATALOG.is_dir():
         return []
+
+    catalog_paths: list[Path]
+    if CATALOG.resolve() == (ROOT / "catalog" / "examples").resolve():
+        # The development catalog also retains historical or not-yet-admitted
+        # documents.  The affected-test selector must follow the current release
+        # selection, otherwise an old capability can silently become a discovery
+        # and dependency edge for the active candidate.  Bind both the selected
+        # path and its digest so a stale or edited selection fails closed.
+        current = json.loads(CURRENT_RELEASE.read_text(encoding="utf-8"))
+        documentation = current.get("documentation")
+        if not isinstance(documentation, dict):
+            raise ValueError("release/CURRENT.json has no documentation binding")
+        selection_ref = documentation.get("source_documents")
+        if not isinstance(selection_ref, str):
+            raise ValueError("release/CURRENT.json documentation source_documents is invalid")
+        selection_path = (ROOT / selection_ref).resolve()
+        try:
+            selection_path.relative_to(ROOT.resolve())
+        except ValueError as error:
+            raise ValueError("release selection escapes the SciRel repository") from error
+        selection = json.loads(selection_path.read_text(encoding="utf-8"))
+        records = selection.get("records")
+        if not isinstance(records, list):
+            raise ValueError("release document selection has no records list")
+        selected_paths: dict[Path, str] = {}
+        for record in records:
+            if not isinstance(record, dict):
+                raise ValueError("release document selection contains an invalid record")
+            relative = record.get("path")
+            digest = record.get("sha256")
+            if not isinstance(relative, str) or not isinstance(digest, str):
+                raise ValueError("release document selection record lacks path or sha256")
+            path = (ROOT / relative).resolve()
+            try:
+                path.relative_to(CATALOG.resolve())
+            except ValueError as error:
+                raise ValueError(f"release document selection escapes catalog: {relative}") from error
+            if path.suffix != ".json":
+                raise ValueError(f"release document selection member is not JSON: {relative}")
+            if not path.is_file():
+                raise ValueError(f"release document selection member is missing: {relative}")
+            actual = hashlib.sha256(path.read_bytes()).hexdigest()
+            if actual != digest:
+                raise ValueError(f"release document selection digest differs: {relative}")
+            if path in selected_paths:
+                raise ValueError(f"release document selection repeats: {relative}")
+            selected_paths[path] = digest
+        catalog_paths = sorted(selected_paths)
+    else:
+        # Tests and callers may provide an isolated catalog fixture.  Such a
+        # fixture is already its own selection boundary and must remain usable
+        # without rewriting repository release metadata.
+        catalog_paths = sorted(CATALOG.glob("*.json"))
+
     assets = []
-    catalog_paths = list(CATALOG.glob("*.json"))
-    for path in sorted(catalog_paths):
+    for path in catalog_paths:
         document = json.loads(path.read_text(encoding="utf-8"))
         python_api = document["public_api"]["python"]
         module = python_api["module"]

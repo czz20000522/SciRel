@@ -212,4 +212,4 @@ def __getattr__(name):
     return value
 
 def __dir__():
-    return sorted(set(globals()) | set(__all__) | set(_COMPAT_EXPORTS))
+    return sorted(set(__all__) | set(_COMPAT_EXPORTS))

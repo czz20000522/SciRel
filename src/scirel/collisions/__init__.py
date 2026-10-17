@@ -106,7 +106,7 @@ def __getattr__(name):
 
 
 def __dir__():
-    return sorted(set(globals()) | set(__all__) | set(_LAZY_MODULES))
+    return sorted(set(__all__) | set(_LAZY_MODULES))
 
 
 class _LazyCollisionModule(_ModuleType):
