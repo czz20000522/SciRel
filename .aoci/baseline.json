@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-17T12:05:48Z",
+  "updated_at": "2026-10-17T12:29:49Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -77,9 +77,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "9f1798e7ec239b7c8680a114e907438d15f9afb61143e4f9bc188c64f9537943",
-      "size": 598259,
-      "normalized_sha256": "9f1798e7ec239b7c8680a114e907438d15f9afb61143e4f9bc188c64f9537943"
+      "sha256": "da17d62ac95286f7bef40d5906947abb1fd46dd1b1ba1567c503618853003796",
+      "size": 597907,
+      "normalized_sha256": "da17d62ac95286f7bef40d5906947abb1fd46dd1b1ba1567c503618853003796"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -6455,9 +6455,9 @@
     },
     "scripts/validate_release_alignment.py": {
       "role": "index",
-      "sha256": "539704fd35ac440062653747bb24fc7673576e28a4ea53785d28eeea4665346f",
-      "size": 70770,
-      "normalized_sha256": "539704fd35ac440062653747bb24fc7673576e28a4ea53785d28eeea4665346f"
+      "sha256": "23436923fb8ed385a3d12a006fc002c243f39202aabc6cce03477ddff4055191",
+      "size": 76803,
+      "normalized_sha256": "23436923fb8ed385a3d12a006fc002c243f39202aabc6cce03477ddff4055191"
     },
     "scripts/verify_outbound_evaluation_manifests.py": {
       "role": "index",
@@ -8159,9 +8159,9 @@
     },
     "src/scirel/geometry/sampling.py": {
       "role": "index",
-      "sha256": "eaa6659dc0a0cb275a2f351ce202db9e5472c0b5273433d576cb0ba5ee2ea091",
-      "size": 12124,
-      "normalized_sha256": "eaa6659dc0a0cb275a2f351ce202db9e5472c0b5273433d576cb0ba5ee2ea091"
+      "sha256": "f64b2a31d4ce6866cf69e4b4c526656892af0a11516b7e5f382d15dcdad81dfb",
+      "size": 12576,
+      "normalized_sha256": "f64b2a31d4ce6866cf69e4b4c526656892af0a11516b7e5f382d15dcdad81dfb"
     },
     "src/scirel/geometry/transforms.py": {
       "role": "index",
@@ -11171,9 +11171,9 @@
     },
     "tests/test_release_alignment.py": {
       "role": "index",
-      "sha256": "639431cdb8fd196e2c8c5c7542bb1bd2034660404a3f29d9b3b65c864fbfd933",
-      "size": 18795,
-      "normalized_sha256": "639431cdb8fd196e2c8c5c7542bb1bd2034660404a3f29d9b3b65c864fbfd933"
+      "sha256": "2c6865e947e10f0ee32e1754d490f5bf83480031c52590b7b378dce3c27f718f",
+      "size": 20725,
+      "normalized_sha256": "2c6865e947e10f0ee32e1754d490f5bf83480031c52590b7b378dce3c27f718f"
     },
     "tests/test_release_environment.py": {
       "role": "index",
