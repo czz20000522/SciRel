@@ -104,7 +104,9 @@
     "python": {
       "module": "scirel.kinetic.plasma_dispersion_weideman",
       "symbol": "evaluate_plasma_dispersion_weideman",
-      "signature": "evaluate_plasma_dispersion_weideman(z)"
+      "signature": "evaluate_plasma_dispersion_weideman(z)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_plasma_dispersion_weideman"
     }
   },
   "version": {

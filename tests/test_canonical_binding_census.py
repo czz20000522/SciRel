@@ -14,8 +14,8 @@ def test_current_canonical_binding_census_preserves_facade_and_exception_denomin
     counts = report["counts"]
 
     assert counts["total"] == 267
-    assert counts["explicit"] == 162
-    assert counts["candidate"] == 58
+    assert counts["explicit"] == 169
+    assert counts["candidate"] == 51
     assert counts["exception"] == 47
     assert report["unexpected_missing"] == []
 
@@ -229,5 +229,22 @@ def test_vlasov_poisson_and_maxwellian_slice_pins_kinetic_facades_explicitly():
         }
     }
     assert len(selected) == 14
+    assert all(rows[asset_id] == "explicit" for asset_id in selected)
+    assert rows["scirel.kinetic.adaptive-neutral-velocity-mesh"] == "candidate"
+
+
+def test_special_function_and_dispersion_slice_pins_kinetic_facades_explicitly():
+    report = census(ROOT)
+    rows = {row["asset_id"]: row["status"] for row in report["rows"]}
+    selected = {
+        "scirel.kinetic.bessel-gamma",
+        "scirel.kinetic.gamma-lpole-coefficients",
+        "scirel.kinetic.gpdf-cauchy-transform",
+        "scirel.kinetic.plasma-dispersion-function",
+        "scirel.kinetic.plasma-dispersion-weideman",
+        "scirel.kinetic.ronnmark-r-function",
+        "scirel.kinetic.z-pole-coefficients",
+    }
+    assert len(selected) == 7
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
     assert rows["scirel.kinetic.adaptive-neutral-velocity-mesh"] == "candidate"

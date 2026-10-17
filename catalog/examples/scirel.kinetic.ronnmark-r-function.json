@@ -113,7 +113,9 @@
     "python": {
       "module": "scirel.kinetic.ronnmark_r_function",
       "symbol": "evaluate_ronnmark_r",
-      "signature": "evaluate_ronnmark_r(x, lambda_)"
+      "signature": "evaluate_ronnmark_r(x, lambda_)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_ronnmark_r"
     }
   },
   "version": {

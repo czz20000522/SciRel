@@ -96,7 +96,9 @@
     "python": {
       "module": "scirel.kinetic.plasma_dispersion",
       "symbol": "evaluate_plasma_dispersion",
-      "signature": "evaluate_plasma_dispersion(z)"
+      "signature": "evaluate_plasma_dispersion(z)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_plasma_dispersion"
     }
   },
   "version": {

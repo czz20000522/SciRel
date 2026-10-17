@@ -131,7 +131,9 @@
     "python": {
       "module": "scirel.kinetic.z_pole_coefficients",
       "symbol": "get_z_pole_coefficients",
-      "signature": "get_z_pole_coefficients(*, j_order)"
+      "signature": "get_z_pole_coefficients(*, j_order)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "get_z_pole_coefficients"
     }
   },
   "version": {

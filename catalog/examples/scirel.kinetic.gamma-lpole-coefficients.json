@@ -113,7 +113,9 @@
     "python": {
       "module": "scirel.kinetic.gamma_lpole_coefficients",
       "symbol": "get_gamma_lpole_coefficients",
-      "signature": "get_gamma_lpole_coefficients(*, max_harmonic: 'int') -> 'dict'"
+      "signature": "get_gamma_lpole_coefficients(*, max_harmonic: 'int') -> 'dict'",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "get_gamma_lpole_coefficients"
     }
   },
   "version": {

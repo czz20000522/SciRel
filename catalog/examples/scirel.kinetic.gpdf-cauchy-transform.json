@@ -158,7 +158,9 @@
     "python": {
       "module": "scirel.kinetic.cauchy_transform",
       "signature": "evaluate_cauchy_transform(z, density, *, bounds=None, analytic_density=None, epsabs=1e-10, epsrel=1e-10, limit=200, integration_mesh=None)",
-      "symbol": "evaluate_cauchy_transform"
+      "symbol": "evaluate_cauchy_transform",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_cauchy_transform"
     }
   },
   "schema": "scirel.asset-document.v1",
