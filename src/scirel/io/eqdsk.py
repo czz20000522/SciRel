@@ -20,6 +20,8 @@ from typing import Any, Mapping
 
 import numpy as np
 
+from scirel._optional import import_optional_module
+
 DIALECT = "pleiades-legacy-extended"
 
 # Keep the implementation module's public surface explicit so the catalog's
@@ -446,7 +448,11 @@ def write_pleiades_eqdsk_legacy_raw(R, Z, psi, plas_currents,
     if not np.isfinite(psi_lim):
         raise EQDSKFormatError("raw writer could not determine finite limiter flux")
     psi_ves = psi_lim * 1.02
-    import matplotlib.pyplot as plt
+    plt = import_optional_module(
+        "matplotlib.pyplot",
+        extra="plot",
+        feature="the Pleiades legacy EQDSK writer",
+    )
     fig, ax = plt.subplots()
     try:
         levels = sorted((psi_lim, psi_ves))

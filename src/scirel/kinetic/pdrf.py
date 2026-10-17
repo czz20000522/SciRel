@@ -37,6 +37,8 @@ from pathlib import Path
 import numpy as np
 from scipy import linalg
 
+from scirel._optional import import_optional_module
+
 __all__ = ["initialize_pdrf_plasma", "assemble_pdrf_matrix",
            "solve_pdrf_spectrum", "evaluate_pdrf_dispersion"]
 
@@ -407,8 +409,16 @@ def _grid(value, default, name):
 
 
 def _plot(out, path):
-    from matplotlib.figure import Figure
-    from matplotlib.backends.backend_agg import FigureCanvasAgg
+    Figure = import_optional_module(
+        "matplotlib.figure",
+        extra="plot",
+        feature="PDRF dispersion plotting",
+    ).Figure
+    FigureCanvasAgg = import_optional_module(
+        "matplotlib.backends.backend_agg",
+        extra="plot",
+        feature="PDRF dispersion plotting",
+    ).FigureCanvasAgg
     fig = Figure(figsize=(10, 4))
     FigureCanvasAgg(fig)
     real = fig.add_subplot(121, projection="3d" if out["method"] == 4 else None)

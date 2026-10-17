@@ -3,11 +3,21 @@ from pathlib import Path
 import hashlib,json
 import numpy as np
 
+from scirel._optional import import_optional_module
+
 
 def save_program(model,result,output_dir):
-    import matplotlib
+    matplotlib = import_optional_module(
+        "matplotlib",
+        extra="plot",
+        feature="PDRK scientific presentation",
+    )
     matplotlib.use('Agg')
-    from matplotlib import pyplot as plt
+    plt = import_optional_module(
+        "matplotlib.pyplot",
+        extra="plot",
+        feature="PDRK scientific presentation",
+    )
     root=Path(output_dir);root.mkdir(parents=True,exist_ok=False)
     fig,axes=plt.subplots(2,1,figsize=(7,7),layout='constrained')
     arrays={}
