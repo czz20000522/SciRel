@@ -60,6 +60,8 @@ def test_basis_factory_shapes_defaults_custom_columns_and_rejections():
     with pytest.raises(NotImplementedError):basis.build_basis('quartic_spline')
     with pytest.raises(NotImplementedError):basis.build_basis('j0')
     with pytest.raises(KeyError):basis.build_basis('missing')
+    with pytest.raises(TypeError, match='typo'):
+        basis.build_basis('poly', typo=1)
 
 
 def test_clamped_reference_and_spline_refinement():

@@ -271,6 +271,9 @@ def build_basis(basis='poly',**kwargs):
 def _poly_basis(**kwargs):
     poly_deg = kwargs.pop("poly_deg",3)
     coeffs = kwargs.pop("coeffs",None)
+    if kwargs:
+        unknown = ", ".join(sorted(kwargs))
+        raise TypeError(f"build_basis() got unexpected keyword argument(s): {unknown}")
     if coeffs is None:
         coeffs = np.eye(poly_deg)
     return [np.polynomial.polynomial.Polynomial(coeffs[:,i]) for i in range(coeffs.shape[1])]
