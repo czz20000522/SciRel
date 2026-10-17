@@ -492,10 +492,9 @@ def test_document_selection_filters_reader_bundle_to_exact_assets(tmp_path: Path
 def test_current_document_selection_matches_project_version() -> None:
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     expected = project["project"]["version"]
-    selection = json.loads(
-        (ROOT / "provenance/selections/scientific-core-documents-20261017-dev9.json")
-        .read_text(encoding="utf-8")
-    )
+    current = json.loads((ROOT / "release/CURRENT.json").read_text(encoding="utf-8"))
+    selection_path = ROOT / current["documentation"]["source_documents"]
+    selection = json.loads(selection_path.read_text(encoding="utf-8"))
     for record in selection["records"]:
         document = json.loads((ROOT / record["path"]).read_text(encoding="utf-8"))
         assert document["version"]["implementation_version"] == expected

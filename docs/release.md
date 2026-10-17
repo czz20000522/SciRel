@@ -4,8 +4,9 @@
 
 ## Wheel 与文档版本线
 
-Wheel 和文档必须属于同一公开 `major.minor` 主线。wheel 的完整版本来自
-`pyproject.toml`，每条 exact document 的 `implementation_version` 精确指向兼容的
+Wheel 和文档必须属于同一公开 `major.minor` 主线，但不要求两个完整的 PEP 440
+版本字符串相等。wheel 的完整版本来自 `pyproject.toml`；文档可以在同一主线上推进自己的编辑修订，
+`compatible_wheel` 和每条 exact document 的 `implementation_version` 仍精确指向兼容的
 wheel。只纠正文案、导航、翻译或示例排版时，可以在同一主线上推进独立的
 `documentation.version` 并保持
 相同 wheel 版本和结果字节；仍须从新的 Git 提交重新构建/重新绑定候选，文档 receipt 仍须
