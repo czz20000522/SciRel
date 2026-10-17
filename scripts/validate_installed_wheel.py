@@ -70,7 +70,13 @@ def _normalise_arch(value: str) -> str:
 
 
 def _parse_platform_id(value: str) -> dict[str, str]:
-    """Parse ``linux-x86_64-cp314`` style acceptance identifiers."""
+    """Parse ``linux-x86_64-cp314`` style acceptance identifiers.
+
+    The optional ``t`` suffix distinguishes CPython's free-threaded ABI from
+    the regular ABI.  Both runtimes report the same major/minor version, so
+    the suffix must remain part of the platform identity instead of being
+    inferred from the Python line alone.
+    """
 
     parts = value.strip().lower().split("-")
     if len(parts) < 3 or any(not part for part in parts):
@@ -79,10 +85,11 @@ def _parse_platform_id(value: str) -> dict[str, str]:
             "for example linux-x86_64-cp314"
         )
     python_tag = parts[-1]
-    if not re.fullmatch(r"cp\d+", python_tag):
-        raise ValueError("platform Python tag must use the cp314 form")
+    match = re.fullmatch(r"cp(?P<digits>\d{2,3})(?P<free_threaded>t)?", python_tag)
+    if not match:
+        raise ValueError("platform Python tag must use the cp314 or cp314t form")
     architecture = _normalise_arch("-".join(parts[1:-1]))
-    digits = python_tag[2:]
+    digits = match.group("digits")
     if len(digits) == 2:
         python_line = f"{int(digits[0])}.{int(digits[1])}"
     elif len(digits) == 3:
@@ -94,6 +101,7 @@ def _parse_platform_id(value: str) -> dict[str, str]:
         "architecture": architecture,
         "python_tag": python_tag,
         "python_line": python_line,
+        "python_abi": f"cpython-{digits}{'t' if match.group('free_threaded') else ''}",
     }
 
 
@@ -152,6 +160,11 @@ def _runtime_identity(expected_platform: str | None, expected_python: str) -> tu
                     f"{label} is {actual[actual_key]}, expected {expected[key]} "
                     f"for {expected_platform}"
                 )
+        if actual["python_abi"] != expected["python_abi"]:
+            errors.append(
+                f"Python ABI is {actual['python_abi']}, expected {expected['python_abi']} "
+                f"for {expected_platform}"
+            )
     return actual, errors
 
 

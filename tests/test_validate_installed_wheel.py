@@ -23,11 +23,19 @@ def test_platform_id_parser_canonicalizes_architecture_and_python_line() -> None
         "architecture": "x86_64",
         "python_tag": "cp314",
         "python_line": "3.14",
+        "python_abi": "cpython-314",
     }
     assert validator._parse_platform_id("macos-arm64-cp312")["python_line"] == "3.12"
+    assert validator._parse_platform_id("linux-x86_64-cp314t") == {
+        "os": "linux",
+        "architecture": "x86_64",
+        "python_tag": "cp314t",
+        "python_line": "3.14",
+        "python_abi": "cpython-314t",
+    }
 
 
-@pytest.mark.parametrize("value", ("linux", "linux-x86_64-py314", "linux-x86_64-cp3"))
+@pytest.mark.parametrize("value", ("linux", "linux-x86_64-py314", "linux-x86_64-cp3", "linux-x86_64-cp314tt"))
 def test_platform_id_parser_rejects_ambiguous_tags(value: str) -> None:
     with pytest.raises(ValueError):
         validator._parse_platform_id(value)
@@ -65,6 +73,29 @@ def test_runtime_identity_rejects_external_site_packages(
 
     assert actual["external_site_paths"] == ["/usr/lib/python3.14/site-packages"]
     assert any("outside the virtual environment" in error for error in errors)
+
+
+def test_runtime_identity_rejects_a_free_threaded_abi_for_regular_cpython(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        validator.sys,
+        "implementation",
+        SimpleNamespace(name="cpython", cache_tag="cpython-314t"),
+    )
+    monkeypatch.setattr(validator.platform, "python_implementation", lambda: "CPython")
+    monkeypatch.setattr(validator.platform, "python_version", lambda: "3.14.0")
+    monkeypatch.setattr(validator.platform, "system", lambda: "Linux")
+    monkeypatch.setattr(validator.platform, "machine", lambda: "x86_64")
+    monkeypatch.setattr(validator.sys, "version_info", SimpleNamespace(major=3, minor=14))
+    monkeypatch.setattr(validator.sys, "prefix", "/tmp/scirel-venv")
+    monkeypatch.setattr(validator.sys, "base_prefix", "/tmp/scirel-python")
+    monkeypatch.setattr(validator.sys, "path", ["/tmp/scirel-venv/lib/python3.14/site-packages"])
+
+    actual, errors = validator._runtime_identity("linux-x86_64-cp314", "3.14")
+
+    assert actual["python_abi"] == "cpython-314t"
+    assert any("Python ABI is cpython-314t, expected cpython-314" in error for error in errors)
 
 
 def test_dependency_import_must_resolve_inside_environment_prefix(
