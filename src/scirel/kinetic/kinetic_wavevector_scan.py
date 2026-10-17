@@ -10,6 +10,8 @@ import numpy as np
 from .kinetic_wavevector_roots import solve_kinetic_wavevector_roots
 from .species_equilibrium_scales import derive_species_equilibrium_scales
 
+__all__ = ["scan_kinetic_wavevectors"]
+
 
 def scan_frequencies(*, omega_scale, omega_step, omega_stop, wn):
     """Materialise the source's colon ladder ``xx=(0.11:0.05:3.95).*wn`` internally.

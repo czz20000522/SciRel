@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
+__all__ = ["assemble_simple_charge_exchange_source"]
+
 
 def _real_array(value, name):
     try:

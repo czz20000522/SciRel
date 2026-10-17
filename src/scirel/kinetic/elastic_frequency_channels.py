@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
+__all__ = ["sum_elastic_frequency_channels"]
+
 
 def _real_array(value, name):
     try:

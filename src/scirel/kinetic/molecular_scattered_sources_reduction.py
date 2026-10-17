@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
+__all__ = ["reduce_molecular_scattered_sources"]
+
 
 def _real_array(value, name):
     try:

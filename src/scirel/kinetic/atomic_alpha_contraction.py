@@ -20,6 +20,8 @@ from __future__ import annotations
 
 import numpy as np
 
+__all__ = ["contract_atomic_hydrogen_alpha_frequencies"]
+
 
 def _real_array(value, name):
     try:

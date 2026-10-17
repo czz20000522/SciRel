@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import numpy as np
 
+__all__ = ["evaluate_kn1d_outer_convergence"]
+
 
 def _finite_real(value, name, *, scalar=False):
     try:

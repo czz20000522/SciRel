@@ -8,6 +8,8 @@ from .kinetic_dispersion_ronnmark import evaluate_kinetic_dispersion_ronnmark
 from .kinetic_dispersion_sum_fluidbw import evaluate_fluidbw_kinetic_dispersion_sum
 from .species_equilibrium_scales import derive_species_equilibrium_scales
 
+__all__ = ["evaluate_kinetic_dispersion_relation"]
+
 
 def probe_frequency(*, omega_frac, wn):
     """Scale the caller's angular-frequency fraction by the graph's own normalisation.

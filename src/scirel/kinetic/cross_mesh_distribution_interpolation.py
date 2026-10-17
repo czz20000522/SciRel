@@ -46,6 +46,12 @@ from scipy.special import logsumexp
 
 from .cylindrical_velocity_quadrature import make_cylindrical_velocity_quadrature
 
+__all__ = [
+    "InfeasibleMomentsError",
+    "MomentCorrectionConvergenceError",
+    "interp_distribution_across_mesh",
+]
+
 
 def _make_dvr_dvx(vr, vx):
     """Adapt the existing source-equivalent quadrature to saved field order."""

@@ -8,6 +8,8 @@ import numpy as np
 
 from .ronnmark_r_function import evaluate_ronnmark_r
 
+__all__ = ["evaluate_kinetic_dispersion_ronnmark"]
+
 _C2 = (2.99792458e8) ** 2
 _EPSILON0 = 8.854187817e-12
 _KB = 1.38064852e-23

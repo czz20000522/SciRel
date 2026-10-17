@@ -9,6 +9,8 @@ _C2 = (2.99792458e8) ** 2
 _EPSILON0 = 8.854187817e-12
 _KB = 1.38064852e-23
 
+__all__ = ["evaluate_fluidbw_kinetic_dispersion_sum"]
+
 def evaluate_fluidbw_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
     """Return the fluidBW conventional harmonic sum and 3x3 tensors.
 

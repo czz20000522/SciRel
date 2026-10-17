@@ -6,6 +6,8 @@ from collections.abc import Mapping
 
 import numpy as np
 
+__all__ = ["aggregate_elastic_regeneration_source"]
+
 
 def _real_array(value, name):
     try:
