@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-17T11:48:10Z",
+  "updated_at": "2026-10-17T12:05:48Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -77,9 +77,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "f50d76c691ac753c3ab869122f5db73eea9afdff7fbf35d9e9d29de762e0ce63",
-      "size": 596593,
-      "normalized_sha256": "f50d76c691ac753c3ab869122f5db73eea9afdff7fbf35d9e9d29de762e0ce63"
+      "sha256": "9f1798e7ec239b7c8680a114e907438d15f9afb61143e4f9bc188c64f9537943",
+      "size": 598259,
+      "normalized_sha256": "9f1798e7ec239b7c8680a114e907438d15f9afb61143e4f9bc188c64f9537943"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -5883,6 +5883,12 @@
       "size": 3235,
       "normalized_sha256": "de29570494b06f6a6b4f3895ede2117b59d71d2d7cc30c3f7fc905ede957549b"
     },
+    "provenance/validation/scirel-dev9-document-integration-20261017-8385389.json": {
+      "role": "index",
+      "sha256": "b9a611e1fce11dc9d8810051ba6bda89cc4d723b0fe6b406c1c19628d75c6109",
+      "size": 3095,
+      "normalized_sha256": "b9a611e1fce11dc9d8810051ba6bda89cc4d723b0fe6b406c1c19628d75c6109"
+    },
     "provenance/validation/scirel-dev9-document-integration-20261017-9733bfc.json": {
       "role": "index",
       "sha256": "16b5ce2947b67aec45a743871c8b670ce69ad70a5889407ced790d5ee2c83191",
@@ -5961,6 +5967,12 @@
       "size": 8416,
       "normalized_sha256": "b02dd22cc865fabec3c626f2fae8fd9f545efd8edc01c87d025e237d0c0f8118"
     },
+    "provenance/validation/scirel-dev9-linux-offline-20261017-8385389.json": {
+      "role": "index",
+      "sha256": "3f1a16361b149e9e53a325c21f80cc32059bcde47507ce2dfaef92fca7e5315d",
+      "size": 18718,
+      "normalized_sha256": "3f1a16361b149e9e53a325c21f80cc32059bcde47507ce2dfaef92fca7e5315d"
+    },
     "provenance/validation/scirel-dev9-linux-offline-acceptance-20261017-5556f1a.json": {
       "role": "index",
       "sha256": "7b850a60ec1b8995804e19aee4acf1f5673047f0526f46cc2d3f51e02f3187f5",
@@ -5985,6 +5997,12 @@
       "size": 9178,
       "normalized_sha256": "ace6d65b6286cb1bebb0257c19ff3632517b6a0c476532b2d1c002eec5f20e7c"
     },
+    "provenance/validation/scirel-dev9-macos-arm64-offline-20261017-8385389.json": {
+      "role": "index",
+      "sha256": "c15fd3b0b874d783282b854d6c1591fe814f2527f6b88402e28d9977fcbf24b4",
+      "size": 22126,
+      "normalized_sha256": "c15fd3b0b874d783282b854d6c1591fe814f2527f6b88402e28d9977fcbf24b4"
+    },
     "provenance/validation/scirel-dev9-plotting-requalification-20261017.json": {
       "role": "index",
       "sha256": "4b9895f1d040fd69d9490336e1a0ccab06cdea3e0c502f86625e8bf0c34d871c",
@@ -5999,9 +6017,9 @@
     },
     "release/CURRENT.json": {
       "role": "index",
-      "sha256": "ea78a10a9053fc2e09c28c124174aa8db5bff4a72c2515c7ac8bdc70bcc84326",
-      "size": 2739,
-      "normalized_sha256": "ea78a10a9053fc2e09c28c124174aa8db5bff4a72c2515c7ac8bdc70bcc84326"
+      "sha256": "78dd5d3c0ecad9a8118fe2a6f75f0c6f0add7410575e3cd8472488b04d29f93e",
+      "size": 2735,
+      "normalized_sha256": "78dd5d3c0ecad9a8118fe2a6f75f0c6f0add7410575e3cd8472488b04d29f93e"
     },
     "release/README.md": {
       "role": "index",
@@ -6095,9 +6113,9 @@
     },
     "release/platform-support-matrix.json": {
       "role": "index",
-      "sha256": "1760aefe5c82f033a86d6cd6cd65010b832d350896dd8631a8f84860583408d1",
+      "sha256": "a31b5500547387d187955b16fa60a90a8b832ed83678b9e534a3ecc9420006e0",
       "size": 3573,
-      "normalized_sha256": "1760aefe5c82f033a86d6cd6cd65010b832d350896dd8631a8f84860583408d1"
+      "normalized_sha256": "a31b5500547387d187955b16fa60a90a8b832ed83678b9e534a3ecc9420006e0"
     },
     "release/projects/README.md": {
       "role": "index",
@@ -11153,9 +11171,9 @@
     },
     "tests/test_release_alignment.py": {
       "role": "index",
-      "sha256": "0822784e551ba758d26a9c46fcb92a4f1c0c1a26e065ba9a30ced12cd18befaf",
-      "size": 18655,
-      "normalized_sha256": "0822784e551ba758d26a9c46fcb92a4f1c0c1a26e065ba9a30ced12cd18befaf"
+      "sha256": "639431cdb8fd196e2c8c5c7542bb1bd2034660404a3f29d9b3b65c864fbfd933",
+      "size": 18795,
+      "normalized_sha256": "639431cdb8fd196e2c8c5c7542bb1bd2034660404a3f29d9b3b65c864fbfd933"
     },
     "tests/test_release_environment.py": {
       "role": "index",
