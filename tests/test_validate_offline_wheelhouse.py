@@ -235,6 +235,17 @@ def test_dependency_closure_audit_binds_pep508_lock_and_platform_tags(tmp_path: 
     assert receipt["expected_packages"] == [{"name": "numpy", "version": "1.0.0"}]
     assert receipt["direct_requirements"] == ["numpy==1.0.0"]
     assert receipt["incompatible_wheels"] == []
+    assert receipt["wheelhouse_packages"] == [
+        {
+            "filename": "numpy-1.0.0-py3-none-any.whl",
+            "sha256": receipt["wheelhouse_packages"][0]["sha256"],
+            "bytes": 5,
+            "name": "numpy",
+            "version": "1.0.0",
+            "tags": ["py3-none-any"],
+            "platform_compatible": True,
+        }
+    ]
 
 
 def test_dependency_closure_audit_reports_missing_and_incompatible_wheels(tmp_path: Path) -> None:

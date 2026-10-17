@@ -448,6 +448,8 @@ def _dependency_closure_audit(
         name = canonicalize_name(str(parsed_name))
         row = {
             "filename": path.name,
+            "sha256": _sha256(path),
+            "bytes": path.stat().st_size,
             "name": name,
             "version": str(parsed_version),
             "tags": sorted(str(tag) for tag in tags),

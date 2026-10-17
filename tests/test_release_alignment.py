@@ -457,9 +457,18 @@ def test_alignment_accepts_offline_wheelhouse_receipt_when_source_bound(
         },
         "wheelhouse": {
             "wheels": [
-                {"filename": "certifi.whl", "sha256": "d" * 64, "bytes": 1},
-                {"filename": "numpy.whl", "sha256": "c" * 64, "bytes": 1},
-            ]
+                {
+                    "filename": "certifi-2026.7.22-py3-none-any.whl",
+                    "sha256": "d" * 64,
+                    "bytes": 1,
+                },
+                {
+                    "filename": "numpy-1.0.0-py3-none-any.whl",
+                    "sha256": "c" * 64,
+                    "bytes": 1,
+                },
+            ],
+            "wheel_count": 2,
         },
         "dependency_closure": {
             "status": "PASS",
@@ -469,14 +478,18 @@ def test_alignment_accepts_offline_wheelhouse_receipt_when_source_bound(
             "expected_packages": [{"name": "numpy", "version": "1.0.0"}],
             "wheelhouse_packages": [
                 {
-                    "filename": "certifi.whl",
+                    "filename": "certifi-2026.7.22-py3-none-any.whl",
+                    "sha256": "d" * 64,
+                    "bytes": 1,
                     "name": "certifi",
                     "version": "2026.7.22",
                     "tags": ["py3-none-any"],
                     "platform_compatible": True,
                 },
                 {
-                    "filename": "numpy.whl",
+                    "filename": "numpy-1.0.0-py3-none-any.whl",
+                    "sha256": "c" * 64,
+                    "bytes": 1,
                     "name": "numpy",
                     "version": "1.0.0",
                     "tags": ["py3-none-any"],
@@ -516,6 +529,25 @@ def test_alignment_accepts_offline_wheelhouse_receipt_when_source_bound(
         tmp_path, wheel, expected_source_revision=source_revision
     )
 
+    tampered = json.loads(json.dumps(receipt))
+    tampered["dependency_closure"]["wheelhouse_packages"][1]["name"] = "not-numpy"
+    receipt_path.write_text(json.dumps(tampered), encoding="utf-8")
+    with pytest.raises(ValueError, match="wheel identity is inconsistent"):
+        _validate_platform_receipts(
+            tmp_path,
+            {
+                **wheel,
+                "platform_receipts": [
+                    {
+                        **wheel["platform_receipts"][0],
+                        "sha256": hashlib.sha256(receipt_path.read_bytes()).hexdigest(),
+                    }
+                ],
+            },
+            expected_source_revision=source_revision,
+        )
+
+    receipt = json.loads(json.dumps(receipt))
     receipt["execution"]["network_resolution"] = True
     receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
     with pytest.raises(ValueError, match="claims network resolution"):
