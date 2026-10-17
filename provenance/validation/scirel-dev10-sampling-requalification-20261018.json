@@ -21,7 +21,7 @@
     "module": "src/scirel/geometry/sampling.py",
     "module_sha256": "bcb64715deb6f43b92528644b6d444d0658162da68215fad02c7722761a73c3d"
   },
-  "source_revision": "833ffd0d6659a41bac6700d76d5c264893843c2c",
+  "source_revision": "e932c436d48b782a713ee1cfb688db7c24030970",
   "status": "PASS",
   "test": {
     "command": "PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q -p no:cacheprovider tests/pleiades/geometry/test_polar_projection_repair.py tests/pleiades/equilibrium/test_analysis_families.py tests/pleiades/equilibrium/test_analysis_corrections.py tests/pleiades/equilibrium/test_keyword_sampling_ports.py tests/pleiades/test_eqdsk_raw_repair.py tests/operator_contracts/test_bilinear_grid_sampling.py tests/operator_contracts/test_gpdf_numerical_repair.py tests/operator_contracts/test_latin_hypercube_sampling.py",
