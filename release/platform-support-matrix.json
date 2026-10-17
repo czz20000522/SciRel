@@ -20,10 +20,10 @@
       "python": "CPython 3.14",
       "status": "PARTIAL",
       "evidence": [
-        "provenance/validation/scirel-dev9-linux-acceptance-20261017-9733bfc.json",
+        "provenance/validation/scirel-dev9-linux-acceptance-20261017-34d06da.json",
         "release/CURRENT.json"
       ],
-      "scope": "dev9 clean consumer install and representative core task receipt; complete core plus PDRK native closure is not established"
+      "scope": "dev9 Linux amd64 + CPython 3.14 offline wheelhouse clean-venv installation, dependency checks, representative core tasks and native resource inventory; complete scientific capability closure is not established"
     },
     {
       "id": "linux-aarch64-cp314",

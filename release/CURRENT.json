@@ -3,17 +3,17 @@
   "package": "scirel",
   "version": "0.1.0.dev9",
   "status": "development_candidate",
-  "source_revision": "9733bfc6e9f91a8526f5c72843b9203aa8ebbf04",
+  "source_revision": "34d06da7a839870ee0c082418883de70551d37e0",
   "source_revision_status": "bound",
   "wheel": {
     "version": "0.1.0.dev9",
     "status": "development_candidate",
     "artifact": {
-      "manifest_ref": "scirel/0.1.0.dev9/9733bfc6e9f91a8526f5c72843b9203aa8ebbf04/wheel/build-manifest.json",
-      "manifest_sha256": "55fc4f77eafb3b61e50e439ef76044857face3f7bd2d61a23d96d113b020d51f",
+      "manifest_ref": "scirel/0.1.0.dev9/34d06da7a839870ee0c082418883de70551d37e0/wheel/build-manifest.json",
+      "manifest_sha256": "90e77e1c6fa2252ab2fee521efa9e9783e17aeccf3561f4ac39e278dedb3d3ff",
       "filename": "scirel-0.1.0.dev9-py3-none-any.whl",
-      "sha256": "175c9dc0edd62511bd25e8eba0f89566a7bfe2bf9d258050d2cf959537ff284b",
-      "bytes": 651570
+      "sha256": "5b586e045dfcf53618ca39521f7ecdc1cff0c0e41a3eec01f6d750e3acc6a0ce",
+      "bytes": 660195
     },
     "selected_capabilities": {
       "operators": 230,
@@ -24,8 +24,8 @@
     "platform_receipts": [
       {
         "platform": "linux-x86_64-cp314",
-        "path": "provenance/validation/scirel-dev9-linux-acceptance-20261017-9733bfc.json",
-        "sha256": "a64d4f209029ce26d5a86773bed7ae57521b0332f87e0aefda1b8f61b5f64924"
+        "path": "provenance/validation/scirel-dev9-linux-acceptance-20261017-34d06da.json",
+        "sha256": "c354bd93bca1e2bc422593211efad671bb6df316c85f6d89d7776bf5480057cb"
       }
     ]
   },
@@ -36,8 +36,8 @@
     "handbook": "tools/docs/handbook.json",
     "compatible_wheel": "0.1.0.dev9",
     "catalog_root": "catalog/examples",
-    "snapshot_sha256": "0c24b2f412b1e7a2f1fc98877869d4c277e80bfd310250b664d1630658576665",
-    "integration_record": "provenance/validation/scirel-dev9-document-integration-20261017-9733bfc.json",
+    "snapshot_sha256": "64c55a3f3c32a1cd61dff264ecc4115a74489391b4e6e48841da1c342cafc927",
+    "integration_record": "provenance/validation/scirel-dev9-document-integration-20261017-34d06da.json",
     "selection_sha256": "ef3e6371dfdc8700bc49edaf4193ce1bbee3b21417313d08b20f7f9c5c95836e",
     "handbook_sha256": "7aea04ee827699038d4be7a34bf2d579c875614867334657dae9de1e050bd9fc",
     "capability_counts": {
@@ -47,12 +47,12 @@
     },
     "handbook_scope": "repository",
     "artifact": {
-      "manifest_ref": "scirel/0.1.0.dev9/9733bfc6e9f91a8526f5c72843b9203aa8ebbf04/docs/build-manifest.json",
-      "manifest_sha256": "08db6067f491a6963784305f02555128f67b44ad3607b320ead05d9f2b321e71",
+      "manifest_ref": "scirel/0.1.0.dev9/34d06da7a839870ee0c082418883de70551d37e0/docs/build-manifest.json",
+      "manifest_sha256": "4424dbcf2d94f25d36931e4a7c399c2c2f933bb4ccfe1b1c4bc6590c2c702732",
       "snapshot_ref": "snapshot",
-      "snapshot_sha256": "0c24b2f412b1e7a2f1fc98877869d4c277e80bfd310250b664d1630658576665",
-      "snapshot_bytes": 27735067
+      "snapshot_sha256": "64c55a3f3c32a1cd61dff264ecc4115a74489391b4e6e48841da1c342cafc927",
+      "snapshot_bytes": 27722415
     }
   },
-  "next_action": "Keep this development candidate untagged until the remaining platform and scientific release gates are explicitly closed."
+  "next_action": "Keep this development candidate untagged until remaining platform and scientific release gates are explicitly closed."
 }

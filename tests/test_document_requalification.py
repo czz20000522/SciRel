@@ -17,7 +17,10 @@ from requalify_document_selection import requalify_selection  # noqa: E402
 
 SELECTION = ROOT / "provenance/selections/scientific-core-documents-20261015-r9.json"
 BASELINE = "895bc40"
-SOURCE_REF = json.loads((ROOT / "release/CURRENT.json").read_text(encoding="utf-8"))["source_revision"]
+# Requalification tests intentionally target the frozen pre-coordination dev9
+# candidate whose 256/4 result is part of this historical evidence.  The
+# mutable CURRENT tuple may advance to a later development commit.
+SOURCE_REF = "9733bfc6e9f91a8526f5c72843b9203aa8ebbf04"
 HISTORICAL_SOURCE_REF = "3d3b45a"
 
 
@@ -41,10 +44,9 @@ def test_dev8_selection_reports_changed_public_contracts_without_editing() -> No
 
     assert result["selected_count"] == 260
     assert result["source_revision"] == SOURCE_REF
-    # The bound dev9 wheel is built from SOURCE_REF (9733bfc...).  Later
-    # development commits changed bilinear and distributed Green modules, so
-    # their historical 252/8 result belongs to that later source ref rather
-    # than to the bound candidate.
+    # This historical candidate preserves the 256/4 requalification result;
+    # later development commits are evaluated by their own source-bound
+    # receipts.
     assert result["eligible_count"] == 256
     assert result["blocked_count"] == 4
     assert {

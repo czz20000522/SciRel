@@ -25,7 +25,7 @@ def test_current_release_alignment_is_exact() -> None:
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     assert result["wheel_version"] == project["project"]["version"]
     assert result["documentation_selection"] == "scientific-core-current"
-    assert result["source_revision"] == "9733bfc6e9f91a8526f5c72843b9203aa8ebbf04"
+    assert result["source_revision"] == "34d06da7a839870ee0c082418883de70551d37e0"
     assert result["capability_counts"] == {
         "operators": 230,
         "task_graphs": 30,
@@ -35,7 +35,7 @@ def test_current_release_alignment_is_exact() -> None:
 
 
 def test_source_revision_is_a_git_commit_with_matching_project_version() -> None:
-    revision = "9733bfc6e9f91a8526f5c72843b9203aa8ebbf04"
+    revision = "34d06da7a839870ee0c082418883de70551d37e0"
     _validate_source_revision(ROOT, revision, "0.1.0.dev9")
     with pytest.raises(ValueError, match="pyproject.toml version"):
         _validate_source_revision(ROOT, revision, "0.1.0.dev10")
@@ -45,7 +45,7 @@ def test_external_manifest_input_digests_bind_to_source_git_blobs() -> None:
     import hashlib
     import subprocess
 
-    revision = "9733bfc6e9f91a8526f5c72843b9203aa8ebbf04"
+    revision = "34d06da7a839870ee0c082418883de70551d37e0"
     pyproject = subprocess.check_output(
         ["git", "show", f"{revision}:pyproject.toml"], cwd=ROOT
     )
@@ -240,7 +240,7 @@ def test_alignment_can_require_an_exact_git_source_revision() -> None:
 
 
 def test_current_release_strict_gate_rejects_unmatched_rebuild() -> None:
-    with pytest.raises(ValueError, match="rebuild does not match bound candidate"):
+    with pytest.raises(ValueError, match="lacks reproducible build evidence"):
         validate_alignment(ROOT, require_bound_candidate_match=True)
 
 
