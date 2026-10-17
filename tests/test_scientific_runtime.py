@@ -67,8 +67,11 @@ def test_reviewed_project_rejects_document_version_drift(tmp_path):
 def test_reviewed_historical_runtime_requires_explicit_requalification(tmp_path):
     project = (ROOT / "pyproject.toml").read_text().replace("numpy==2.5.4", "numpy>=1.24")
     (tmp_path / "pyproject.toml").write_text(project)
+    import tomllib
+
+    version = tomllib.loads(project)["project"]["version"]
     with pytest.raises(ValueError, match="maintained scientific runtime"):
-        _project_for_release(tmp_path, {"a": {"version": {"implementation_version": "0.1.0.dev9"}}})
+        _project_for_release(tmp_path, {"a": {"version": {"implementation_version": version}}})
 
 
 def test_selected_wheel_binds_baseline_and_preserves_exact_science(tmp_path):

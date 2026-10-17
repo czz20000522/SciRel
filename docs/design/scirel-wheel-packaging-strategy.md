@@ -25,11 +25,11 @@ Agent 只组合已声明合同并编写胶水代码。安装成功、某个平�
 核心依赖、可选依赖和开发依赖分别由 `pyproject.toml` 的对应字段声明。`uv.lock` 是项目开发和
 重建解析的锁文件，不是 pip 用户端的跨平台证明；每个平台仍须用实际解析结果和 clean venv 验收。
 
-当前 checkout 的候选版本只由 `pyproject.toml` 的 `project.version` 给出。构建产物、文档和平台
-回执必须来自同一 Git 提交；文档编辑修订可以保持相同 wheel 字节，但仍需从包含该修订的确切提交重新构建并重新绑定整个候选。在候选完成验收前，不创建新的历史版本复制目录。开发 HEAD 已经
-超出 `release/CURRENT.json` 的 `source_revision` 时，可以继续使用同一个 `*.devN` 开发版本，
-但必须先提交变更，再把新 wheel、文档和回执写入以版本与 commit 共同命名的外部目录；旧候选
-字节和原回执保持不变，不能覆盖。
+当前已绑定候选版本只由 `release/CURRENT.json` 的 tuple 确定，候选切出时其值来自确切 Git
+提交的 `pyproject.toml`。构建产物、文档和平台回执必须来自同一 Git 提交；文档编辑修订可以
+保持相同 wheel 字节，但仍需在切候选时从包含该修订的确切提交重新构建并重新绑定。单个
+函数修复或性能优化先作为 post-candidate Git 提交积累，不触发新的外部产物；达到批次边界
+后再统一更新版本和闭包。旧候选字节和原回执保持不变，不能覆盖。
 
 实现改进也可以在同一 `major.minor` 主线上推进 wheel 的 patch、post 或 dev 版本。此时
 `compatible_wheel` 和 exact document 的 `implementation_version` 必须一起切换到新的 wheel；

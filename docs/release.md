@@ -4,6 +4,10 @@
 
 ## Wheel 与文档版本线
 
+发行按[发行批次策略](design/scirel-release-batching.md)执行。单个函数修复、性能优化或边界
+失败修正先进入 Git 累积；维护者切出批次时才一次性推进 wheel、exact documents、selection
+和平台回执。`release/CURRENT.json` 始终指向上一个已绑定候选，直到下一批次完成验收。
+
 Wheel 和文档必须属于同一公开 `major.minor` 主线，但不要求两个完整的 PEP 440
 版本字符串相等。wheel 的完整版本来自 `pyproject.toml`；文档可以在同一主线上推进自己的编辑修订，
 `compatible_wheel` 和每条 exact document 的 `implementation_version` 仍精确指向兼容的
@@ -12,10 +16,10 @@ wheel。只纠正文案、导航、翻译或示例排版时，可以在同一主
 相同 wheel 版本和结果字节；仍须从新的 Git 提交重新构建/重新绑定候选，文档 receipt 仍须
 绑定 exact compatible wheel、source revision、selection 和 snapshot 摘要。
 
-wheel 自身也可以在同一 `major.minor` 主线上推进 patch、post 或 dev 修订。此时必须生成
-新的 wheel 候选和文档 selection，`compatible_wheel` 及每条 exact document 的
-`implementation_version` 精确跟随新的 wheel；文档编辑修订号可以独立推进，但不能替代运行时
-实现版本。
+wheel 自身也可以在同一 `major.minor` 主线上推进 patch、post 或 dev 修订。累计的实现改动
+达到批次边界时，才生成新的 wheel 候选和文档 selection；`compatible_wheel` 及每条 exact
+document 的 `implementation_version` 在该批次中精确跟随新的 wheel。文档编辑修订号可以
+独立推进，但不能替代运行时实现版本。
 
 如果文档变化触及科学定义、公开 API、默认值、失败行为、适用域、依赖或 TaskGraph 组合，
 它就不是文档修订，必须和新的 wheel 候选一起发布。文档修订号不能替代

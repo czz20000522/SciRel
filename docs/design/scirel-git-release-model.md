@@ -2,6 +2,8 @@
 
 SciRel 采用与 SciPy 同类的单一来源模型：源代码、`pyproject.toml` 中的版本、领域文档和发行说明都在同一个 Git 仓库中演进；Git 提交和 tag 定义版本身份，wheel 与文档是从被构建的提交生成的产物。工作树不为每个候选复制一套源码、文档或 wheel 内容。
 
+发行按[批次策略](scirel-release-batching.md)执行：小修和性能优化先在 Git 中积累，`release/CURRENT.json` 保持上一个已绑定候选；只有切候选时才一次性推进版本、文档 selection、wheel 和平台回执。
+
 ## 版本身份
 
 - `pyproject.toml` 的 `project.version` 是当前 checkout 的唯一版本来源。
@@ -10,10 +12,9 @@ SciRel 采用与 SciPy 同类的单一来源模型：源代码、`pyproject.toml
 - tag 只指向已经构建并验收的提交。后续开发从 tag 之后的新提交继续，版本号按下一开发序列递进。
 - 历史版本通过 Git tag、commit 和外部归档恢复。不要新增 `release/wheel/versions/<version>.json` 或 `release/docs/versions/<version>.json` 作为平行复制品。
 
-历史候选的身份由 Git 历史和短发行说明保留。开发版可以在同一个 PEP 440
-`*.devN` 序列中持续提交；SciPy 主线也采用这种开发版本号保持稳定、提交继续前进的方式。
-每次构建仍必须绑定新的 commit 和新的 artifact 路径，不能覆盖已经生成的 wheel、文档快照或回执。
-只有进入下一个开发序列或正式发布时，才提升 `project.version` 或创建 tag。
+历史候选的身份由 Git 历史和短发行说明保留。开发期可以连续提交多个实现修复而不切新的
+候选；切批次时再推进一个 PEP 440 `patch/post/dev` 版本，并为该批次绑定新的 commit 和
+artifact 路径。不能覆盖已经生成的 wheel、文档快照或回执。
 
 ### Wheel 与文档的主线和修订号
 
