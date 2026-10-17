@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-17T22:22:44Z",
+  "updated_at": "2026-10-17T22:25:14Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -77,9 +77,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "475d653e73f85b844e9eb77a0dcebc946dad7174b210161159c56760fd255515",
-      "size": 616750,
-      "normalized_sha256": "475d653e73f85b844e9eb77a0dcebc946dad7174b210161159c56760fd255515"
+      "sha256": "601bbde194b3afed1def922e3e21ebe947389ef22297cadbe00b6d28ffb5c35a",
+      "size": 616770,
+      "normalized_sha256": "601bbde194b3afed1def922e3e21ebe947389ef22297cadbe00b6d28ffb5c35a"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -1103,15 +1103,15 @@
     },
     "catalog/examples/scirel.kinetic.neutral-boltzmann-rhs.json": {
       "role": "index",
-      "sha256": "54ba50a6314b7cc46f44c16976d4776dbb1cd88a926bbfae1d06b5f36f03674e",
-      "size": 7637,
-      "normalized_sha256": "54ba50a6314b7cc46f44c16976d4776dbb1cd88a926bbfae1d06b5f36f03674e"
+      "sha256": "7466b24b866a84e073116d56f9741db14837c34b30e0db3ca1ad23b620738d7b",
+      "size": 7741,
+      "normalized_sha256": "7466b24b866a84e073116d56f9741db14837c34b30e0db3ca1ad23b620738d7b"
     },
     "catalog/examples/scirel.kinetic.neutral-generation-propagation.json": {
       "role": "index",
-      "sha256": "895c1f7588b13ab355e015a4016ed787ea240d82efea737447e11b4534797ee9",
-      "size": 10450,
-      "normalized_sha256": "895c1f7588b13ab355e015a4016ed787ea240d82efea737447e11b4534797ee9"
+      "sha256": "1270822ead648a07009eee5191bdd5cb7695e90842b110a12e252192d4320100",
+      "size": 10552,
+      "normalized_sha256": "1270822ead648a07009eee5191bdd5cb7695e90842b110a12e252192d4320100"
     },
     "catalog/examples/scirel.kinetic.neutral-generation-stopping.json": {
       "role": "index",
@@ -1127,9 +1127,9 @@
     },
     "catalog/examples/scirel.kinetic.neutral-upwind-transport-coefficients.json": {
       "role": "index",
-      "sha256": "c12a0f7661bdfffe16bfb590bcf0cdae9664abb638dc7badd9a293dae15b6ce9",
-      "size": 7845,
-      "normalized_sha256": "c12a0f7661bdfffe16bfb590bcf0cdae9664abb638dc7badd9a293dae15b6ce9"
+      "sha256": "993a73fd0569b8a536d29313fb822a6010ac452c5670cabcde21e7e3b069b8d1",
+      "size": 7965,
+      "normalized_sha256": "993a73fd0569b8a536d29313fb822a6010ac452c5670cabcde21e7e3b069b8d1"
     },
     "catalog/examples/scirel.kinetic.outer-seed-convergence.json": {
       "role": "index",
@@ -1475,9 +1475,9 @@
     },
     "catalog/examples/scirel.kinetic.species-equilibrium-scales.json": {
       "role": "index",
-      "sha256": "d342ef8104e0e6e0f6936ce82e165b0f1ac1a1b76c16a8eebdd0bd8639a76147",
-      "size": 12910,
-      "normalized_sha256": "d342ef8104e0e6e0f6936ce82e165b0f1ac1a1b76c16a8eebdd0bd8639a76147"
+      "sha256": "e7d9a19242d06c198aeb2f33f26f724cf06cc43d972c504913922a1701afa594",
+      "size": 13017,
+      "normalized_sha256": "e7d9a19242d06c198aeb2f33f26f724cf06cc43d972c504913922a1701afa594"
     },
     "catalog/examples/scirel.kinetic.terminal-conservation-diagnostic.json": {
       "role": "index",
@@ -11171,9 +11171,9 @@
     },
     "tests/test_canonical_binding_census.py": {
       "role": "index",
-      "sha256": "79aeef295b97fb277ed0f465cc8aa3a84bd16dfee97a06201739d25ae064c2ea",
-      "size": 12853,
-      "normalized_sha256": "79aeef295b97fb277ed0f465cc8aa3a84bd16dfee97a06201739d25ae064c2ea"
+      "sha256": "d02d2de4402feef85a65dac238a7dacab9ba121600d2128b0039b18db73231e1",
+      "size": 13505,
+      "normalized_sha256": "d02d2de4402feef85a65dac238a7dacab9ba121600d2128b0039b18db73231e1"
     },
     "tests/test_catalog_snapshot_package.py": {
       "role": "index",

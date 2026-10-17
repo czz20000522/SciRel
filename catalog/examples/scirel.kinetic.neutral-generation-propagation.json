@@ -172,7 +172,9 @@
     "python": {
       "module": "scirel.kinetic.neutral_generation_propagation",
       "symbol": "propagate_neutral_generation",
-      "signature": "propagate_neutral_generation(vx, Ak, Bk, Fk, Ck, Dk, Gk, generation_kind, incoming_boundary=None, scattered_source_distribution=None)"
+      "signature": "propagate_neutral_generation(vx, Ak, Bk, Fk, Ck, Dk, Gk, generation_kind, incoming_boundary=None, scattered_source_distribution=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "propagate_neutral_generation"
     }
   },
   "version": {

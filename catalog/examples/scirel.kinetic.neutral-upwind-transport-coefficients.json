@@ -111,7 +111,9 @@
     "python": {
       "module": "scirel.kinetic.upwind_transport_coefficients",
       "symbol": "assemble_neutral_upwind_transport_coefficients",
-      "signature": "assemble_neutral_upwind_transport_coefficients(x_m, vx, collision_frequency_s_inv, source_distribution)"
+      "signature": "assemble_neutral_upwind_transport_coefficients(x_m, vx, collision_frequency_s_inv, source_distribution)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "assemble_neutral_upwind_transport_coefficients"
     }
   },
   "version": {

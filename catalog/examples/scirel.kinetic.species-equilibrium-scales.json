@@ -301,7 +301,9 @@
     "python": {
       "module": "scirel.kinetic.species_equilibrium_scales",
       "symbol": "derive_species_equilibrium_scales",
-      "signature": "derive_species_equilibrium_scales(*, ms, qs, ns_unit, Ts_unit, B0, n00, T00)"
+      "signature": "derive_species_equilibrium_scales(*, ms, qs, ns_unit, Ts_unit, B0, n00, T00)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "derive_species_equilibrium_scales"
     }
   },
   "version": {

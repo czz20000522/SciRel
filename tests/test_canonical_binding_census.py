@@ -14,8 +14,8 @@ def test_current_canonical_binding_census_preserves_facade_and_exception_denomin
     counts = report["counts"]
 
     assert counts["total"] == 267
-    assert counts["explicit"] == 197
-    assert counts["candidate"] == 23
+    assert counts["explicit"] == 201
+    assert counts["candidate"] == 19
     assert counts["exception"] == 47
     assert report["unexpected_missing"] == []
 
@@ -100,7 +100,7 @@ def test_geometry_and_field_slice_pins_package_facades_explicitly():
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
     # Other non-PDRK records still exercise the legacy inferred facade path
     # until their own canonical fields are migrated.
-    assert rows["scirel.kinetic.species-equilibrium-scales"] == "candidate"
+    assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"
 
 
 def test_explicit_canonical_binding_is_checked_against_runtime_identity(tmp_path):
@@ -137,7 +137,7 @@ def test_collision_and_electromagnetism_slice_pins_package_facades_explicitly():
     }
     assert len(selected) == 30
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
-    assert rows["scirel.kinetic.species-equilibrium-scales"] == "candidate"
+    assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"
 
 
 def test_closure_diagnostic_and_inference_slice_pins_package_facades_explicitly():
@@ -152,7 +152,7 @@ def test_closure_diagnostic_and_inference_slice_pins_package_facades_explicitly(
     }
     assert len(selected) == 19
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
-    assert rows["scirel.kinetic.species-equilibrium-scales"] == "candidate"
+    assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"
 
 
 def test_equilibrium_io_and_small_domain_slice_pins_package_facades_explicitly():
@@ -173,7 +173,7 @@ def test_equilibrium_io_and_small_domain_slice_pins_package_facades_explicitly()
     }
     assert len(selected) == 20
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
-    assert rows["scirel.kinetic.species-equilibrium-scales"] == "candidate"
+    assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"
 
 
 def test_pdrf_gpdf_and_generalized_slice_pins_kinetic_facades_explicitly():
@@ -323,5 +323,19 @@ def test_population_and_axisymmetric_moment_slice_pins_kinetic_facades_explicitl
         "scirel.kinetic.hydrogen-saha-equilibrium-population",
     }
     assert len(selected) == 2
+    assert all(rows[asset_id] == "explicit" for asset_id in selected)
+    assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"
+
+
+def test_transport_and_species_scale_slice_pins_kinetic_facades_explicitly():
+    report = census(ROOT)
+    rows = {row["asset_id"]: row["status"] for row in report["rows"]}
+    selected = {
+        "scirel.kinetic.neutral-boltzmann-rhs",
+        "scirel.kinetic.neutral-generation-propagation",
+        "scirel.kinetic.neutral-upwind-transport-coefficients",
+        "scirel.kinetic.species-equilibrium-scales",
+    }
+    assert len(selected) == 4
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
     assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"

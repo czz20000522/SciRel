@@ -138,7 +138,9 @@
     "python": {
       "module": "scirel.kinetic.neutral_boltzmann_rhs",
       "symbol": "assemble_neutral_boltzmann_rhs",
-      "signature": "assemble_neutral_boltzmann_rhs(thermal_speed_m_s, coefficient_source_distribution, charge_exchange_source_sum, collision_frequency_s_inv, total_distribution, elastic_source_sum, wall_source_sum)"
+      "signature": "assemble_neutral_boltzmann_rhs(thermal_speed_m_s, coefficient_source_distribution, charge_exchange_source_sum, collision_frequency_s_inv, total_distribution, elastic_source_sum, wall_source_sum)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "assemble_neutral_boltzmann_rhs"
     }
   },
   "version": {
