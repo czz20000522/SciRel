@@ -1622,7 +1622,7 @@ chapter-selection.json[FU6T]: F:显式选择唯一当前磁静力学教程及执
 ===/Users/tomczz/Projects/SciReL/tools/docs/magnetostatics/===
 chapter.json[SU6T]: F:定义轴对称线圈教程的问题方法、双格式公式和结果解释 | R:code:tools/docs/magnetostatics/example.py,code:tools/docs/chapter.html | A:圆环、线圈对、矩形截面、加密、API参考与导线奇点限制 | S:代码取自实跑脚本；MathML须与文本等义；固定总安匝数，局部加密不是全域误差界；离散零不代表物理自场
 example.py[TB6T]: F:调用安装包运行圆环、对称线圈和矩形截面案例并导出结果 | R:code:src/scirel/field/multi_coil_vacuum_field.py,code:src/scirel/field/circular_filament_green.py | A:example.py results.json | S:矩形节点权重归一保持总安匝数；解析轴场、对称性和电流线性断言通过才写结果
-execution.json[OQ6T]: F:绑定章节执行的实现、合同、脚本、结果、图表和dev9安装wheel身份 | R:code:scripts/scirel_docs.py,code:tools/docs/magnetostatics/example.py,code:release/CURRENT.json | A:源码摘要、Git提交、包版本与wheel摘要、运行环境、退出与确定性绘图绑定 | S:科学在断网无源码挂载环境运行；图表字节可重复；选择性开发wheel不是公开发行，回执只覆盖本章检查
+execution.json[OQ6T]: F:绑定章节执行的实现、合同、脚本、结果、图表和dev10安装wheel身份 | R:code:scripts/scirel_docs.py,code:tools/docs/magnetostatics/example.py,code:release/CURRENT.json | A:源码摘要、Git提交、包版本与wheel摘要、运行环境、退出与确定性绘图绑定 | S:科学在断网无源码挂载环境运行；图表字节可重复；章节回执只覆盖本章检查，不能扩大为全包发行验收
 pair.svg[SU4L]: F:展示同向线圈对相对单环的归一轴场与反向通电的轴场曲线 | R:code:tools/docs/magnetostatics/plot.py,code:tools/docs/magnetostatics/results.json | A:教程图2、中心归一化与反向电流mT轴场 | S:图表只呈现记录结果，归一化曲线不表示绝对场强
 plot.py[XU5T]: F:从已运行结果绘制圆环比较、对称线圈与区域等值线的可重复黑白SVG | R:code:tools/docs/magnetostatics/results.json | A:固定SVG哈希盐、去除时间元数据与尾随空格、生成single/pair/rectangle图 | S:只渲染记录值，轴上解析线另算作图；不重新执行SciRel科学函数
 rectangle.svg[SU4L]: F:显示矩形截面线圈组空腔内Bz灰度与等值线 | R:code:tools/docs/magnetostatics/plot.py,code:tools/docs/magnetostatics/results.json | A:教程图3、R/Z米制坐标、mT色标与等比例坐标 | S:仅显示R不超过0.30m的无导线区域，不证明全空间均匀性
@@ -1708,6 +1708,9 @@ scirel-dev9-macos-arm64-offline-20261018-1404fba.json[OV7L]: F:记录macOS arm64
 scirel-dev10-document-requalification-20261018.json[TQ7S]: F:记录基于0.1.0.dev9基线对267份科学文档重资格化的结果 | R:code:scripts/requalify_documents.py,code:catalog/examples | A:执行文档版本迁移、漂移检查与阻断项汇总 | S:重资格化不得放宽source_ref漂移检查，结果必须保留基线提交、变更路径和逐项计数
 scirel-dev10-document-requalification-proof-20261018.json[TQ7S]: F:绑定dev10文档重资格化证明所需的源码、测试和回执摘要 | R:code:src/scirel/geometry/sampling.py,code:tests,code:provenance/validation/scirel-dev10-sampling-requalification-20261018.json | A:提供模块摘要、测试路径和source_revision绑定 | S:证明只能绑定最终候选提交及实际测试回执，不能复用旧dev9 wheel或旧提交身份
 scirel-dev10-sampling-requalification-20261018.json[TQ7S]: F:记录sampling模块14项文档重资格化及79项测试通过结果 | R:code:src/scirel/geometry/sampling.py,code:tests | A:汇总采样模块摘要、测试命令、通过数和source_revision | S:测试回执必须由当前source_revision生成并保留实际退出码、失败数、通过数和测试文件摘要
+scirel-dev10-document-integration-20261018-c3f1302.json[OV7S]: F:绑定dev10外部wheel、文档快照、选择、手册和Linux/macOS离线回执 | R:code:release/CURRENT.json,code:provenance/selections/scientific-core-documents-20261018-dev10.json,code:provenance/validation/scirel-dev10-linux-offline-20261018-c3f1302.json,code:provenance/validation/scirel-dev10-macos-arm64-offline-20261018-c3f1302.json | A:scirel.dev10-document-integration.v1 | S:外部产物只作候选证据；source_revision、wheel/docs manifest、selection和平台回执必须逐项哈希绑定，不能转成发布批准
+scirel-dev10-linux-offline-20261018-c3f1302.json[OV7S]: F:记录dev10 Linux amd64与CPython 3.14无源码clean-venv离线安装及可选依赖回执 | R:code:src/scirel,code:pyproject.toml,code:uv.lock,code:release/CURRENT.json | A:scirel.offline-wheelhouse-validation.v1 | S:必须保留no-index、only-binary、依赖闭包、pip检查、平台标签和实际wheel摘要；PASS只覆盖有界技术回执，不等于完整科学能力或发布批准
+scirel-dev10-macos-arm64-offline-20261018-c3f1302.json[OV7S]: F:记录dev10 macOS arm64与CPython 3.14无源码clean-venv离线安装及可选依赖回执 | R:code:src/scirel,code:pyproject.toml,code:uv.lock,code:release/CURRENT.json | A:scirel.offline-wheelhouse-validation.v1 | S:必须保留no-index、only-binary、依赖闭包、pip检查、平台标签和实际wheel摘要；PASS只覆盖有界技术回执，不等于完整科学能力或发布批准
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/zh/selections/===
 legacy-six.json[SL7L]: F:说明六项吸收能力及两共享消费者的八条精确中文合同 | R:code:src/scirel/equilibrium/isotropic_pressure_flux.py,code:src/scirel/diagnostics/_margin_kernel.py | A:几何、样条状态、Picard、闭合求解、表插值、点式和组合裕度 | S:单点重复B不施导数约束；微角非零就旋转；状态前缀可重建，精确算术只修表示错误，不推断全局物理或许可
@@ -1920,8 +1923,8 @@ zfun.m[DD6S]: F:提供 fluidBW zfun 原生数值实现，供 Python 适配器调
 
 ===/Users/tomczz/Projects/SciReL/release/===
 README.md[SV7T]: F:规定Git发行边界、单一当前候选协调记录与外部wheel和文档artifact验证入口，并区分wheel实现演进与文档编辑修订 | R:code:release/CURRENT.json,code:release/wheel/README.md,code:release/docs/README.md,code:docs/release.md,code:scripts/validate_release_alignment.py | A:单一版本源；major.minor release line；exact compatible_wheel；implementation_version；documentation.version；外部manifest；历史恢复；平台回执；候选边界 | S:wheel patch/post/dev改进需新候选并同步文档实现版本；文案修订不能扩大wheel闭包；旧wheel/docs/receipt保持不可变
-platform-support-matrix.json[FV7T]: F:固定SciRel dev9各平台与native capability的状态、证据路径和兼容性边界 | R:code:release/CURRENT.json,code:provenance/validation/scirel-dev9-linux-offline-20261018-1404fba.json,code:provenance/validation/scirel-dev9-macos-arm64-offline-20261018-1404fba.json,code:provenance/validation/scirel-dev9-windows-amd64-offline-20261017-19a4e6b.json | A:把1404fba提交的Linux amd64与macOS arm64 CPython 3.14精确wheel、固定runtime wheelhouse和代表性技术回执绑定到PARTIAL平台行，并把Windows amd64验收保留为NOT_RUN | S:只有明确PASS行贡献有界兼容性；PARTIAL、NOT_RUN、FAIL和BLOCKED不扩大声明，离线安装通过仍不扩大完整科学或native能力
-CURRENT.json[FV8T]: F:绑定当前SciRel dev9开发候选的单一版本、1404fba源提交、外部wheel与文档manifest及平台离线回执 | R:code:release/platform-support-matrix.json,code:provenance/validation/scirel-dev9-linux-offline-20261018-1404fba.json,code:provenance/validation/scirel-dev9-macos-arm64-offline-20261018-1404fba.json,code:provenance/validation/scirel-dev9-windows-amd64-offline-20261017-19a4e6b.json | A:唯一当前release tuple；绑定1404fba源提交、664621字节wheel、267项文档闭包、0.1 release line、documentation.version和Linux/macOS PARTIAL、Windows NOT_RUN事实 | S:manifest_ref与snapshot_ref是外部artifact根下的完整revision逻辑键；documentation.version只能在兼容主线上修订，不能取代implementation_version；dev9仍是未tag开发候选
+platform-support-matrix.json[FV7T]: F:固定SciRel dev10各平台与native capability的状态、证据路径和兼容性边界 | R:code:release/CURRENT.json,code:provenance/validation/scirel-dev10-linux-offline-20261018-c3f1302.json,code:provenance/validation/scirel-dev10-macos-arm64-offline-20261018-c3f1302.json | A:把c3f1302提交的Linux amd64与macOS arm64 CPython 3.14精确wheel、固定runtime wheelhouse和代表性技术回执绑定到PARTIAL平台行，并把Windows amd64验收保留为NOT_RUN | S:只有明确PASS行贡献有界兼容性；PARTIAL、NOT_RUN、FAIL和BLOCKED不扩大声明，离线安装通过仍不扩大完整科学或native能力
+CURRENT.json[FV8T]: F:绑定当前SciRel dev10开发候选的单一版本、c3f1302源提交、外部wheel与文档manifest及平台离线回执 | R:code:release/platform-support-matrix.json,code:provenance/validation/scirel-dev10-linux-offline-20261018-c3f1302.json,code:provenance/validation/scirel-dev10-macos-arm64-offline-20261018-c3f1302.json,code:provenance/validation/scirel-dev10-document-integration-20261018-c3f1302.json | A:唯一当前release tuple；绑定dev10源提交、664745字节wheel、267项文档闭包、0.1 release line、documentation.version和Linux/macOS PARTIAL、Windows NOT_RUN事实 | S:manifest_ref与snapshot_ref是外部artifact根下的完整revision逻辑键；compatible_wheel和exact implementation_version精确跟随wheel；dev10仍是未tag开发候选
 
 ===/Users/tomczz/Projects/SciReL/release/docs/===
 CURRENT.json[FV5T]: F:提供文档线到release/CURRENT.json的兼容指针 | R:code:release/CURRENT.json,code:release/docs/README.md | A:保留旧消费者入口而不复制文档版本元数据 | S:该文件已弃用且不承载独立版本；修改当前身份必须更新canonical tuple
@@ -2068,9 +2071,10 @@ delivery.py[XQ8M]: F:从保存CSV计算有界陈述、生成文件并重放最�
 ===/Users/tomczz/Projects/SciReL/docs/release/===
 0.1.0.dev9-notes.md[SV7T]: F:记录Git管理的dev9开发候选边界、267项文档闭包、未闭合发行状态与kinetic子模块发现修复 | R:code:release/CURRENT.json,code:release/platform-support-matrix.json,code:src/scirel/kinetic/__init__.py,code:provenance/validation/scirel-dev9-linux-offline-20261018-1404fba.json,code:provenance/validation/scirel-dev9-macos-arm64-offline-20261018-1404fba.json | A:说明Linux amd64与macOS arm64 CPython 3.14离线验收、267项闭包、PARTIAL边界、单一Git版本源及子模块lazy发现契约 | S:动态wheel摘要、source revision、文档计数和回执只从release/CURRENT.json读取，短说明不形成第二版本源；技术通过不等于科学或发行批准
 0.1.0.dev8-notes.md[SV5T]: F:记录dev8开发候选的历史说明并收敛动态发行身份 | R:code:release/CURRENT.json,code:docs/release.md | A:历史候选的短变更边界；Git历史与外部回执恢复具体源码、wheel、文档选择和能力计数 | S:短说明不复制wheel文件名、摘要、字节数或源码提交，开发候选不等于公开发行批准
+0.1.0.dev10-notes.md[SV5T]: F:提供dev10候选的短发行说明并指向当前release tuple | R:code:docs/release.md,code:release/CURRENT.json | A:概述文档闭包重资格化、sampling失败语义修正和待完成平台回执 | S:短说明不复制wheel、哈希或源码身份，完整候选信息只从CURRENT和Git恢复
 
 ===/Users/tomczz/Projects/SciReL/src/scirel.egg-info/===
-PKG-INFO[XV3T]: F:保存当前SciRel项目的构建元数据和运行依赖声明 | R:code:pyproject.toml,code:uv.lock,code:release/CURRENT.json | A:记录0.1.0.dev9、CPython 3.14约束、NumPy/SciPy/mpmath核心依赖及plot/netcdf extras，供构建和wheel元数据校验 | S:生成元数据不是版本源；须与pyproject和wheel一致
+PKG-INFO[XV3T]: F:保存当前SciRel dev10项目的构建元数据和运行依赖声明 | R:code:pyproject.toml,code:uv.lock,code:release/CURRENT.json | A:记录0.1.0.dev10、CPython 3.14约束、NumPy/SciPy/mpmath核心依赖及plot/netcdf extras，供构建和wheel元数据校验 | S:生成元数据不是版本源；须与pyproject和wheel一致
 SOURCES.txt[XV3T]: F:保存构建元数据引用的源文件清单 | R:code:src/scirel.egg-info/PKG-INFO,code:pyproject.toml | A:为开发构建和wheel元数据提供可复核的源文件集合 | S:生成清单不独立决定wheel内容
 dependency_links.txt[XV2T]: F:保存构建系统的依赖链接元数据 | R:code:src/scirel.egg-info/PKG-INFO,code:pyproject.toml | A:记录当前项目没有额外依赖链接 | S:生成元数据不是版本源
 requires.txt[XV3T]: F:保存项目核心依赖与可选extra的构建元数据 | R:code:src/scirel.egg-info/PKG-INFO,code:pyproject.toml | A:列出NumPy、SciPy、mpmath及plot和netcdf extras的Requires-Dist投影 | S:生成依赖清单须与pyproject及wheel一致
@@ -2078,3 +2082,9 @@ top_level.txt[XV2T]: F:保存构建元数据的顶层包名 | R:code:src/scirel.
 
 ===/Users/tomczz/Projects/SciReL/.agents/state/notion-work-management/outbox/receipts/===
 20261017-scirel-dev9-5556f1a.json[OW3T]: F:保存已同步的dev9离线wheelhouse知识记录回执 | R:code:release/CURRENT.json,code:provenance/validation/scirel-dev9-linux-offline-acceptance-20261017-5556f1a.json | A:记录Notion远端页面、同步时间和候选验收摘要 | S:远端写入已回读验证；回执不替代仓库证据、科学闭包或发行批准
+
+===/Users/tomczz/Projects/SciReL/skills/development/post-acceptance-runtime-cleanup/===
+SKILL.md[SV5T]: F:将验收后运行资产清理路由到仓库canonical生命周期策略 | R:code:docs/design/project-and-distribution.md,code:docs/development-process.md,code:skills/development/references/scirel-development-core.md | A:定位manifest、接收owner、保护引用和dry-run/apply/verify闭环 | S:技能只提供路由，不复制清理政策、不授予删除权限，缺少owner或可核对manifest时保持BLOCKED/PENDING
+
+===/Users/tomczz/Projects/SciReL/skills/development/post-acceptance-runtime-cleanup/agents/===
+openai.yaml[SV3T]: F:声明验收后运行资产清理技能的展示信息和默认路由提示 | R:code:skills/development/post-acceptance-runtime-cleanup/SKILL.md | A:提供技能元数据和入口提示 | S:元数据不授予清理权限或替代canonical政策

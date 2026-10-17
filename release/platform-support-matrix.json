@@ -1,7 +1,7 @@
 {
   "schema": "scirel.platform-support-matrix.v1",
   "package": "scirel",
-  "package_version": "0.1.0.dev9",
+  "package_version": "0.1.0.dev10",
   "claim_status": "development-candidate",
   "compatibility_claim": "Only PASS rows contribute to a bounded compatibility claim; this matrix does not grant release approval.",
   "runtime_binding": {
@@ -20,10 +20,10 @@
       "python": "CPython 3.14",
       "status": "PARTIAL",
       "evidence": [
-        "provenance/validation/scirel-dev9-linux-offline-20261018-1404fba.json",
+        "provenance/validation/scirel-dev10-linux-offline-20261018-c3f1302.json",
         "release/CURRENT.json"
       ],
-      "scope": "dev9 Linux amd64 + CPython 3.14 clean-venv installation with the exact wheel bound to source 1404fba3a542bff62c4cef676969111289efb933, fixed offline runtime wheelhouse, representative core tasks, optional extras and native resource inventory; complete scientific capability closure is not established"
+      "scope": "dev10 Linux amd64 + CPython 3.14 clean-venv installation with the exact wheel bound to source c3f130201c836dcd635518203a79ae230f82d11d, fixed offline runtime wheelhouse, representative core tasks, optional extras and native resource inventory; complete scientific capability closure is not established"
     },
     {
       "id": "linux-aarch64-cp314",
@@ -54,10 +54,10 @@
       "python": "CPython 3.14",
       "status": "PARTIAL",
       "evidence": [
-        "provenance/validation/scirel-dev9-macos-arm64-offline-20261018-1404fba.json",
+        "provenance/validation/scirel-dev10-macos-arm64-offline-20261018-c3f1302.json",
         "release/CURRENT.json"
       ],
-      "scope": "dev9 macOS arm64 + CPython 3.14 clean-venv installation with the exact wheel bound to source 1404fba3a542bff62c4cef676969111289efb933, fixed offline runtime wheelhouse, representative core tasks, optional extras and native resource inventory; complete scientific capability closure is not established"
+      "scope": "dev10 macOS arm64 + CPython 3.14 clean-venv installation with the exact wheel bound to source c3f130201c836dcd635518203a79ae230f82d11d, fixed offline runtime wheelhouse, representative core tasks, optional extras and native resource inventory; complete scientific capability closure is not established"
     },
     {
       "id": "macos-x86_64-cp314",
