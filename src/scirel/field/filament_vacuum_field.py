@@ -53,12 +53,16 @@ def integrate_filament_vacuum_field(r_grid, z_grid, filaments):
     spacing = float(radial[1] - radial[0])
     if radial_axis == 1:
         integrand = radial * b_z
-        for index in range(1, r_grid.shape[1]):
-            psi[:, index] = psi[:, index - 1] + 0.5 * (integrand[:, index - 1] + integrand[:, index]) * spacing
+        # The source recurrence is a cumulative trapezoid along each row.
+        # Materialize all independent increments once and let NumPy perform
+        # the same left-to-right accumulation without Python dispatch per
+        # radial node.
+        increments = 0.5 * (integrand[:, :-1] + integrand[:, 1:]) * spacing
+        psi[:, 1:] = np.cumsum(increments, axis=1)
     else:
         integrand = radial[:, np.newaxis] * b_z
-        for index in range(1, r_grid.shape[0]):
-            psi[index, :] = psi[index - 1, :] + 0.5 * (integrand[index - 1, :] + integrand[index, :]) * spacing
+        increments = 0.5 * (integrand[:-1, :] + integrand[1:, :]) * spacing
+        psi[1:, :] = np.cumsum(increments, axis=0)
     if not all((np.all(np.isfinite(value)) for value in (psi, b_r, b_z))):
         raise FloatingPointError('filament field evaluation produced a nonfinite result')
     return {'psi': psi, 'b_r': b_r, 'b_z': b_z}

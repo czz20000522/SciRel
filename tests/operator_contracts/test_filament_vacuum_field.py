@@ -49,6 +49,31 @@ def test_radial_flux_matches_psi_ra_phi_with_first_radius_reference():
     np.testing.assert_allclose(result["psi"], expected, rtol=3e-5, atol=3e-9)
 
 
+@pytest.mark.parametrize("transpose", [False, True])
+def test_radial_flux_preserves_left_to_right_trapezoid_recurrence(transpose):
+    r_grid, z_grid = _grid()
+    if transpose:
+        r_grid, z_grid = r_grid.T, z_grid.T
+    result = scientific_operator(r_grid, z_grid, [[0.45, -0.02, 1200.0]])
+    axis = 1 if r_grid.shape[1] > r_grid.shape[0] else 0
+    radial = r_grid[0, :] if axis == 1 else r_grid[:, 0]
+    spacing = float(radial[1] - radial[0])
+    expected = np.zeros_like(r_grid)
+    if axis == 1:
+        integrand = radial * result["b_z"]
+        for index in range(1, r_grid.shape[1]):
+            expected[:, index] = expected[:, index - 1] + 0.5 * (
+                integrand[:, index - 1] + integrand[:, index]
+            ) * spacing
+    else:
+        integrand = radial[:, None] * result["b_z"]
+        for index in range(1, r_grid.shape[0]):
+            expected[index, :] = expected[index - 1, :] + 0.5 * (
+                integrand[index - 1, :] + integrand[index, :]
+            ) * spacing
+    np.testing.assert_array_equal(result["psi"], expected)
+
+
 def test_accepts_transposed_rectilinear_layout():
     r_grid, z_grid = _grid()
     result = scientific_operator(r_grid.T, z_grid.T, np.array([[0.45, 0.0, 1000.0]]))
