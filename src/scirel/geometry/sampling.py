@@ -16,14 +16,6 @@ The nearest requested endpoint is included. diff_central absorbs the shared
 quadratic nonuniform operator; its qualified domain is finite monotone x.
 """
 import numpy as np
-import scipy.integrate
-from scipy.interpolate import (
-    CloughTocher2DInterpolator,
-    LinearNDInterpolator,
-    RectBivariateSpline,
-    griddata,
-)
-from scipy.spatial import Delaunay
 from .numerics import diff_12_central
 
 def regular_grid(xx,yy,*args,**kwargs):
@@ -56,6 +48,9 @@ def regular_grid(xx,yy,*args,**kwargs):
     points = np.vstack((xx.flatten(),yy.flatten())).T
     if not args:
         return (xi, yi)
+
+    from scipy.interpolate import CloughTocher2DInterpolator, LinearNDInterpolator, griddata
+    from scipy.spatial import Delaunay
 
     if method == "linear":
         triangulation = Delaunay(points)
@@ -183,6 +178,8 @@ def locs_to_vals_griddata(X,Y,Q,coord_list):
         Q (2D array): value of Q on grid
         coord_list (list):list of tuples (x,y) for desired coordinates
     """
+    from scipy.interpolate import griddata
+
     xi,yi = zip(*coord_list)
     return griddata((X.flatten(),Y.flatten()),Q.flatten(),(xi,yi))
 
@@ -268,6 +265,8 @@ def get_fieldline_distance(flpoints):
 def interp(Rho,Z,Q,flpoints):
     """interpolate quantity Q on Rho, Z grid onto flpoints (Nx2 array of x,y pairs).
     """
+    from scipy.interpolate import RectBivariateSpline
+
     x0 = Rho[0,:].squeeze()
     y0 = Z[:,0].squeeze()
     f = RectBivariateSpline(y0,x0,Q)
@@ -282,6 +281,8 @@ def interp(Rho,Z,Q,flpoints):
 def flux_surface_avg(Rho,Z,B,flpoints,Q=None):
     """Compute flux surface average of quantity Q or return dVdpsi (dl_B)
     """
+    import scipy.integrate
+
     ## Interpolate B and quantity Q onto flux line
     B_interp = interp(Rho,Z,B,flpoints)
     s = get_fieldline_distance(flpoints)

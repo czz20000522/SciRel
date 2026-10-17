@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-17T20:21:48Z",
+  "updated_at": "2026-10-17T20:37:56Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -77,9 +77,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "404f077d8dc748cf4336e4f6568dcc262bf6cf07a132d247ca3d2a945fd2bb11",
-      "size": 614149,
-      "normalized_sha256": "404f077d8dc748cf4336e4f6568dcc262bf6cf07a132d247ca3d2a945fd2bb11"
+      "sha256": "13c8563c4c26e2ea026d28c3bd8ac05f8d28b9586fad91c4bb6925564fd50b59",
+      "size": 614848,
+      "normalized_sha256": "13c8563c4c26e2ea026d28c3bd8ac05f8d28b9586fad91c4bb6925564fd50b59"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -5385,6 +5385,12 @@
       "size": 4405,
       "normalized_sha256": "1fc61a4e28c8c7b0b2e8e9f972bfba79ff4296faba257768c4ab78afa3c52c72"
     },
+    "provenance/integrations/fluidbw-d3-addendum-reception-20261018.json": {
+      "role": "index",
+      "sha256": "7984763f4afcc2a255fc1290de2179e3cffde1f68ea0c28afe7bf489231b192a",
+      "size": 7001,
+      "normalized_sha256": "7984763f4afcc2a255fc1290de2179e3cffde1f68ea0c28afe7bf489231b192a"
+    },
     "provenance/integrations/fluidbw-full-retained-20261013/comparison.json": {
       "role": "index",
       "sha256": "1a8892da8491c7be568ce7e5c17d54769a41e53f4b7504fee8eb44fa325561d6",
@@ -8291,9 +8297,9 @@
     },
     "src/scirel/geometry/sampling.py": {
       "role": "index",
-      "sha256": "bcb64715deb6f43b92528644b6d444d0658162da68215fad02c7722761a73c3d",
-      "size": 12724,
-      "normalized_sha256": "bcb64715deb6f43b92528644b6d444d0658162da68215fad02c7722761a73c3d"
+      "sha256": "1f172ecbfab5a12ea9ff43f0b3f5d56946c039ec18b8ecdd4729622bdd125c40",
+      "size": 12795,
+      "normalized_sha256": "1f172ecbfab5a12ea9ff43f0b3f5d56946c039ec18b8ecdd4729622bdd125c40"
     },
     "src/scirel/geometry/transforms.py": {
       "role": "index",
@@ -11177,9 +11183,9 @@
     },
     "tests/test_domain_import_boundaries.py": {
       "role": "index",
-      "sha256": "2f73c254602c69ec92a55dac14eb8ff4f2d5e0f9adbc4e238cc9c7ac1ff36c3b",
-      "size": 4683,
-      "normalized_sha256": "2f73c254602c69ec92a55dac14eb8ff4f2d5e0f9adbc4e238cc9c7ac1ff36c3b"
+      "sha256": "aab3f916a4d268d474a2fc146dfb32d3025f5344bb9e16aac5a95cb7f81c9c8a",
+      "size": 5156,
+      "normalized_sha256": "aab3f916a4d268d474a2fc146dfb32d3025f5344bb9e16aac5a95cb7f81c9c8a"
     },
     "tests/test_fluid_public_surface.py": {
       "role": "index",

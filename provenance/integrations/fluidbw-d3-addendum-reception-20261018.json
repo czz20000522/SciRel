@@ -16,18 +16,31 @@
   },
   "addendum": {
     "path": "/mnt/e/SciRel-lab/projects/fluidbw/archive/manifests/SCIREL_INTEGRATION_HANDOFF_ADDENDUM-20261018-D3.json",
-    "bytes": 3828,
-    "sha256": "937b1ab5f312868e1516761d8da4d05b1fad09f35728e6a055cfb885e6636a33",
+    "bytes": 4065,
+    "sha256": "d142642a04b3a449e933e10c3c15353986c28fc6ac6aa0e970309edae80d35df",
     "remote_read_verified": true,
     "stage": "D3_SOURCE_FREE_REPLAY",
-    "actual_status": "D3_TECHNICAL_PASS_HANDOFF_PENDING"
+    "actual_status": "D3_TECHNICAL_PASS_HANDOFF_PENDING",
+    "sidecar": {
+      "path": "/mnt/e/SciRel-lab/projects/fluidbw/archive/manifests/SCIREL_INTEGRATION_HANDOFF_ADDENDUM-20261018-D3.sha256",
+      "bytes": 502,
+      "sha256": "1c7e37271c82d47846d1f5776e39ab6c0437df9eeffc3d2cc26557b629455397",
+      "remote_sha256_verified": true,
+      "declared_file_sha256": "d142642a04b3a449e933e10c3c15353986c28fc6ac6aa0e970309edae80d35df",
+      "content_digest": "sha256:12169f0cc39ddd7c26858cc834034400d0c0cfa79297f0962b2dc2d4f9776e08",
+      "content_digest_kind": "sha256 of canonical JSON body before the handoff_digest field was appended",
+      "file_sha256_matches_addendum": true
+    }
   },
   "source_handoff": {
     "path": "/mnt/e/SciRel-lab/projects/fluidbw/archive/manifests/SCIREL_INTEGRATION_HANDOFF-20261018.json",
-    "declared_digest": "sha256:12169f0cc39ddd7c26858cc834034400d0c0cfa79297f0962b2dc2d4f9776e08",
-    "observed_sha256": "54b99850546f34630d65393440e6eb6a1f02afa2c88869de0fa169ee9716d61c",
-    "digest_match": false,
-    "gap": "The addendum's declared handoff_digest does not match the actual Home source handoff bytes; the declared 12169... digest was not found among the related Home handoff/addendum files."
+    "file_sha256": "54b99850546f34630d65393440e6eb6a1f02afa2c88869de0fa169ee9716d61c",
+    "file_sha256_remote_verified": true,
+    "addendum_content_digest": "sha256:12169f0cc39ddd7c26858cc834034400d0c0cfa79297f0962b2dc2d4f9776e08",
+    "addendum_content_digest_kind": "sha256 of canonical JSON body before the handoff_digest field was appended",
+    "independent_file_identity_preserved": true,
+    "content_preimage_copied_to_mac": false,
+    "binding_basis": "sidecar attests the canonical-content digest; the original handoff file remains separately bound by its own file SHA-256"
   },
   "canonical_final": {
     "path": "/mnt/e/SciRel-lab/projects/fluidbw/decomposition/FINAL/FINAL.json",
@@ -116,6 +129,14 @@
     "unbounded_prune": false,
     "mac_runtime_copy": "none"
   },
-  "status": "RECEIVED_WITH_SOURCE_HANDOFF_DIGEST_GAP",
-  "next_action": "Resolve the declared 12169... handoff digest against the Home source manifest before treating the addendum as fully digest-bound. Technical D3 evidence may be used with this explicit gap; no human/root/release/rights claim is made."
+  "status": "RECEIVED_AND_BOUND_WITH_DECLARED_CONTENT_DIGEST",
+  "next_action": "Use the sidecar content digest and the independent source handoff file SHA as separate bindings; retain human/root/release/rights limits and 43 unresolved members.",
+  "reception_history": [
+    {
+      "status": "RECEIVED_WITH_SOURCE_HANDOFF_DIGEST_GAP",
+      "source_handoff_declared_digest": "sha256:12169f0cc39ddd7c26858cc834034400d0c0cfa79297f0962b2dc2d4f9776e08",
+      "source_handoff_observed_sha256": "54b99850546f34630d65393440e6eb6a1f02afa2c88869de0fa169ee9716d61c",
+      "note": "The addendum's declared handoff_digest does not match the actual Home source handoff bytes; the declared 12169... digest was not found among the related Home handoff/addendum files."
+    }
+  ]
 }

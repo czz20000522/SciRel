@@ -58,6 +58,23 @@ assert "scipy" not in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_geometry_sampling_core_export_does_not_import_scipy() -> None:
+    result = _run(
+        """
+import sys
+import numpy as np
+from scirel.geometry import locs_to_vals1D
+
+assert "scipy" not in sys.modules
+X, Y = np.meshgrid(np.array([0.0, 2.0]), np.array([0.0, 2.0]))
+Q = np.array([[10, 20], [30, 40]])
+assert locs_to_vals1D(X, Y, Q, [(1.0, 1.0)]) == [10]
+assert "scipy" not in sys.modules
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_lazy_exports_preserve_identity_for_the_remaining_domains() -> None:
     result = _run(
         """
