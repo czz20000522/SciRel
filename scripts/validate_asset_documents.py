@@ -622,6 +622,12 @@ def validate_runtime(
     function = getattr(module, python_api["symbol"], None)
     if not callable(function):
         _fail(document["asset_id"], "documented Python callable is unavailable")
+    exports = getattr(module, "__all__", None)
+    if not isinstance(exports, (list, tuple)) or python_api["symbol"] not in exports:
+        _fail(
+            document["asset_id"],
+            "documented Python callable is not listed in the implementation module __all__",
+        )
     if "canonical_module" in python_api:
         canonical_module = importlib.import_module(python_api["canonical_module"])
         if not hasattr(canonical_module, "__path__"):
@@ -636,6 +642,15 @@ def validate_runtime(
             _fail(
                 document["asset_id"],
                 "canonical documented Python callable is unavailable",
+            )
+        canonical_exports = getattr(canonical_module, "__all__", None)
+        if (
+            not isinstance(canonical_exports, (list, tuple))
+            or python_api["canonical_symbol"] not in canonical_exports
+        ):
+            _fail(
+                document["asset_id"],
+                "canonical documented Python callable is not listed in the canonical module __all__",
             )
         if canonical_function is not function:
             _fail(

@@ -417,8 +417,12 @@ def test_alignment_rejects_a_pyproject_version_drift(tmp_path: Path) -> None:
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(source.read_bytes())
     project = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    current_version = tomllib.loads(project)["project"]["version"]
     (tmp_path / "pyproject.toml").write_text(
-        project.replace('version = "0.1.0.dev9"', 'version = "0.1.0.dev10"'),
+        project.replace(
+            f'version = "{current_version}"',
+            'version = "0.1.0.dev999"',
+        ),
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="pyproject.toml project.version"):

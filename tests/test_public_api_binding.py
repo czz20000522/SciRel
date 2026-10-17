@@ -97,6 +97,42 @@ def test_canonical_binding_requires_a_pair_and_preserves_runtime_identity():
         validate_runtime(mismatched)
 
 
+def test_runtime_requires_the_implementation_symbol_in_module_all(monkeypatch):
+    document = _document("scirel.field.multi-coil-vacuum-field.json")
+    import importlib
+
+    module = importlib.import_module(document["public_api"]["python"]["module"])
+    symbol = document["public_api"]["python"]["symbol"]
+    monkeypatch.setattr(
+        module,
+        "__all__",
+        [name for name in module.__all__ if name != symbol],
+    )
+    with pytest.raises(AssetDocumentError, match="implementation module __all__"):
+        validate_runtime(document)
+
+
+def test_runtime_requires_the_canonical_symbol_in_package_all(monkeypatch):
+    document = _document("scirel.geometry.spherical-r-chord.json")
+    document["public_api"]["python"].update(
+        {
+            "module": "scirel.geometry.mesh",
+            "canonical_module": "scirel.geometry",
+            "canonical_symbol": "SphericalRChord",
+        }
+    )
+    import importlib
+
+    canonical = importlib.import_module("scirel.geometry")
+    monkeypatch.setattr(
+        canonical,
+        "__all__",
+        [name for name in canonical.__all__ if name != "SphericalRChord"],
+    )
+    with pytest.raises(AssetDocumentError, match="canonical module __all__"):
+        validate_runtime(document)
+
+
 def test_package_export_wins_over_same_named_child_module():
     import importlib
 

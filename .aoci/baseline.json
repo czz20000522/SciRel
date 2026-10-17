@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-17T19:28:30Z",
+  "updated_at": "2026-10-17T19:45:08Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -77,9 +77,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "aa899d2339b43a50744f9834bae02ebe8f946f3d5aba4d338cc13edf5399c13f",
-      "size": 612197,
-      "normalized_sha256": "aa899d2339b43a50744f9834bae02ebe8f946f3d5aba4d338cc13edf5399c13f"
+      "sha256": "4484eb8469f7d850f53f12f77e1e6e0c62716050707f264bf8d37ee221308d03",
+      "size": 612912,
+      "normalized_sha256": "4484eb8469f7d850f53f12f77e1e6e0c62716050707f264bf8d37ee221308d03"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -5403,6 +5403,12 @@
       "size": 8936,
       "normalized_sha256": "4a3a38e0cc6efa8795d2a99b8332763d89d045cad1298cbfe6f2acff89c7fe82"
     },
+    "provenance/integrations/home-three-project-handoff-reception-20261018.json": {
+      "role": "index",
+      "sha256": "fe1423be4bd42cd70e591f51872f6adae36c6bef12c28221d87812dc856724fc",
+      "size": 9215,
+      "normalized_sha256": "fe1423be4bd42cd70e591f51872f6adae36c6bef12c28221d87812dc856724fc"
+    },
     "provenance/integrations/legacy-six-20261014.json": {
       "role": "index",
       "sha256": "91b0e9708bf7caddece5aea76fdf34f901cd4b2d684a69d4b5d21f15586009eb",
@@ -6533,9 +6539,9 @@
     },
     "scripts/validate_asset_documents.py": {
       "role": "index",
-      "sha256": "c2a83595bb397ce7833b721fcb00ce98f2febfe96b01ae403944c4ea9c620c6d",
-      "size": 36452,
-      "normalized_sha256": "c2a83595bb397ce7833b721fcb00ce98f2febfe96b01ae403944c4ea9c620c6d"
+      "sha256": "96cd0359926ec9b55a445b561f5126b0357bdd75277ddab9ba599c676d8d1fb0",
+      "size": 37137,
+      "normalized_sha256": "96cd0359926ec9b55a445b561f5126b0357bdd75277ddab9ba599c676d8d1fb0"
     },
     "scripts/validate_installed_wheel.py": {
       "role": "index",
@@ -11279,9 +11285,9 @@
     },
     "tests/test_public_api_binding.py": {
       "role": "index",
-      "sha256": "d74b45f094c028692ebe46cabdf00c4a608f1867c7a895c86257e0529b2479bc",
-      "size": 5414,
-      "normalized_sha256": "d74b45f094c028692ebe46cabdf00c4a608f1867c7a895c86257e0529b2479bc"
+      "sha256": "114d24165e59bd630d123cee4cfd49204ee7d6caa8cc88d7e5ec8caa9d4f8dfb",
+      "size": 6672,
+      "normalized_sha256": "114d24165e59bd630d123cee4cfd49204ee7d6caa8cc88d7e5ec8caa9d4f8dfb"
     },
     "tests/test_public_surface.py": {
       "role": "index",
@@ -11297,9 +11303,9 @@
     },
     "tests/test_release_alignment.py": {
       "role": "index",
-      "sha256": "b7954d67627bb7825b49b3547e02942ccb77131a397bc1e734f30f610df4807d",
-      "size": 29367,
-      "normalized_sha256": "b7954d67627bb7825b49b3547e02942ccb77131a397bc1e734f30f610df4807d"
+      "sha256": "4640cbef2bb2ebcfac99519edfd1d9f731ed13f9ce309564bab3d022a85a30f5",
+      "size": 29478,
+      "normalized_sha256": "4640cbef2bb2ebcfac99519edfd1d9f731ed13f9ce309564bab3d022a85a30f5"
     },
     "tests/test_release_environment.py": {
       "role": "index",
