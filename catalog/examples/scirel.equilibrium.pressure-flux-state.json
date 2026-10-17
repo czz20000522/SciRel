@@ -159,7 +159,9 @@
     "python": {
       "module": "scirel.equilibrium.pressure_flux_state",
       "symbol": "build_pressure_flux_state",
-      "signature": "build_pressure_flux_state(r_grid, z_grid, psi, pressure_of_radius, plasma_mask=None)"
+      "signature": "build_pressure_flux_state(r_grid, z_grid, psi, pressure_of_radius, plasma_mask=None)",
+      "canonical_module": "scirel.equilibrium",
+      "canonical_symbol": "build_pressure_flux_state"
     }
   },
   "version": {

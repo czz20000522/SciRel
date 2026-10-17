@@ -175,7 +175,9 @@
     "python": {
       "module": "scirel.equilibrium.isotropic_picard_step",
       "symbol": "pressure_flux_picard_step",
-      "signature": "pressure_flux_picard_step(r_grid, z_grid, psi_state, psi_vac, g_psi, pressure_derivative, psi_edge, currents_old, relax)"
+      "signature": "pressure_flux_picard_step(r_grid, z_grid, psi_state, psi_vac, g_psi, pressure_derivative, psi_edge, currents_old, relax)",
+      "canonical_module": "scirel.equilibrium",
+      "canonical_symbol": "pressure_flux_picard_step"
     }
   },
   "version": {

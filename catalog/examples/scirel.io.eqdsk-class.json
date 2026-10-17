@@ -90,7 +90,9 @@
     "python": {
       "module": "scirel.io.eqdsk",
       "symbol": "EQDSK",
-      "signature": "EQDSK(fname: 'str | Path | None' = None)"
+      "signature": "EQDSK(fname: 'str | Path | None' = None)",
+      "canonical_module": "scirel.io",
+      "canonical_symbol": "EQDSK"
     }
   },
   "version": {

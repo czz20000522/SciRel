@@ -135,7 +135,9 @@
     "python": {
       "module": "scirel.io.eqdsk",
       "symbol": "write_pleiades_eqdsk_legacy_raw",
-      "signature": "write_pleiades_eqdsk_legacy_raw(R, Z, psi, plas_currents, filename: 'str | Path', title: 'str') -> 'None'"
+      "signature": "write_pleiades_eqdsk_legacy_raw(R, Z, psi, plas_currents, filename: 'str | Path', title: 'str') -> 'None'",
+      "canonical_module": "scirel.io",
+      "canonical_symbol": "write_pleiades_eqdsk_legacy_raw"
     }
   },
   "version": {

@@ -117,7 +117,9 @@
     "python": {
       "module": "scirel.fusion.dd_neutron_lab_energy",
       "symbol": "calculate_dd_neutron_lab_energy_kev",
-      "signature": "calculate_dd_neutron_lab_energy_kev(*, reactant1_velocity_cm_s, reactant2_velocity_cm_s, detector_unit_vector)"
+      "signature": "calculate_dd_neutron_lab_energy_kev(*, reactant1_velocity_cm_s, reactant2_velocity_cm_s, detector_unit_vector)",
+      "canonical_module": "scirel.fusion",
+      "canonical_symbol": "calculate_dd_neutron_lab_energy_kev"
     }
   },
   "version": {

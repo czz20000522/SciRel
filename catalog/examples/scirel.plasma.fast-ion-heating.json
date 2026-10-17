@@ -103,7 +103,9 @@
     "python": {
       "module": "scirel.plasma.fast_ion_heating",
       "symbol": "fast_ion_fractional_heating",
-      "signature": "fast_ion_fractional_heating(birth_energy, T_e, fast_ion_mass)"
+      "signature": "fast_ion_fractional_heating(birth_energy, T_e, fast_ion_mass)",
+      "canonical_module": "scirel.plasma",
+      "canonical_symbol": "fast_ion_fractional_heating"
     }
   },
   "version": {

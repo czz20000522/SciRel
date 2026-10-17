@@ -250,7 +250,9 @@
     "python": {
       "module": "scirel.equilibrium.isotropic_pressure_flux",
       "symbol": "solve_isotropic_pressure_flux",
-      "signature": "solve_isotropic_pressure_flux(inputs=None, **kwargs)"
+      "signature": "solve_isotropic_pressure_flux(inputs=None, **kwargs)",
+      "canonical_module": "scirel.equilibrium",
+      "canonical_symbol": "solve_isotropic_pressure_flux"
     }
   },
   "version": {

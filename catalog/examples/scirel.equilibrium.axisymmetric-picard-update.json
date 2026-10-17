@@ -196,7 +196,9 @@
     "python": {
       "module": "scirel.equilibrium.axisymmetric_picard_update",
       "symbol": "update_axisymmetric_picard_flux",
-      "signature": "update_axisymmetric_picard_flux(r_grid, z_grid, j_phi, psi_state, psi_vac, g_psi, relax, previous_cell_currents=None, *, cell_edges=None)"
+      "signature": "update_axisymmetric_picard_flux(r_grid, z_grid, j_phi, psi_state, psi_vac, g_psi, relax, previous_cell_currents=None, *, cell_edges=None)",
+      "canonical_module": "scirel.equilibrium",
+      "canonical_symbol": "update_axisymmetric_picard_flux"
     }
   },
   "version": {

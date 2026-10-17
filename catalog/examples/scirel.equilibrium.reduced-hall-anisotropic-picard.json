@@ -538,7 +538,9 @@
     "python": {
       "module": "scirel.equilibrium.reduced_hall_anisotropic_picard",
       "symbol": "solve_reduced_hall_anisotropic_picard",
-      "signature": "solve_reduced_hall_anisotropic_picard(inputs=None, **kwargs)"
+      "signature": "solve_reduced_hall_anisotropic_picard(inputs=None, **kwargs)",
+      "canonical_module": "scirel.equilibrium",
+      "canonical_symbol": "solve_reduced_hall_anisotropic_picard"
     }
   },
   "version": {

@@ -260,7 +260,9 @@
     "python": {
       "module": "scirel.equilibrium.anisotropic_force_balance",
       "symbol": "compute_anisotropic_force_balance",
-      "signature": "compute_anisotropic_force_balance(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular, active_mask=None)"
+      "signature": "compute_anisotropic_force_balance(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular, active_mask=None)",
+      "canonical_module": "scirel.equilibrium",
+      "canonical_symbol": "compute_anisotropic_force_balance"
     }
   },
   "version": {

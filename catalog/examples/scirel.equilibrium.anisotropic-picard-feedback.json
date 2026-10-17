@@ -248,7 +248,9 @@
     "python": {
       "module": "scirel.equilibrium.anisotropic_picard_feedback",
       "symbol": "update_anisotropic_picard_flux",
-      "signature": "update_anisotropic_picard_flux(j_phi, r_grid, z_grid, plasma_mask, currents_old, relax, g_psi, g_br, g_bz, psi_vac, br_vac, bz_vac, *, cell_edges=None)"
+      "signature": "update_anisotropic_picard_flux(j_phi, r_grid, z_grid, plasma_mask, currents_old, relax, g_psi, g_br, g_bz, psi_vac, br_vac, bz_vac, *, cell_edges=None)",
+      "canonical_module": "scirel.equilibrium",
+      "canonical_symbol": "update_anisotropic_picard_flux"
     }
   },
   "version": {

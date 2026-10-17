@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-17T21:31:58Z",
+  "updated_at": "2026-10-17T21:35:29Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -77,9 +77,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "9804f26aafa5bcf4f74e7e746fa32500daa2687302ba29098a52696908152953",
-      "size": 616504,
-      "normalized_sha256": "9804f26aafa5bcf4f74e7e746fa32500daa2687302ba29098a52696908152953"
+      "sha256": "a4d2e682516a40d506604b57b3b2c89512e2efb27e6a0eca46313f33d1509f29",
+      "size": 616502,
+      "normalized_sha256": "a4d2e682516a40d506604b57b3b2c89512e2efb27e6a0eca46313f33d1509f29"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -335,9 +335,9 @@
     },
     "catalog/examples/scirel.dielectric.cold-plasma-tensor.json": {
       "role": "index",
-      "sha256": "bb942c32452fb62378e242b239a3c109deae29a2cb9da1efca53e4eacab0194a",
-      "size": 58820,
-      "normalized_sha256": "bb942c32452fb62378e242b239a3c109deae29a2cb9da1efca53e4eacab0194a"
+      "sha256": "0c573d824818a271943011fb51a31ef21ceda815a39d7286a421d1ad5fb48c47",
+      "size": 58926,
+      "normalized_sha256": "0c573d824818a271943011fb51a31ef21ceda815a39d7286a421d1ad5fb48c47"
     },
     "catalog/examples/scirel.electromagnetism.arbitrary-points.json": {
       "role": "index",
@@ -407,75 +407,75 @@
     },
     "catalog/examples/scirel.equilibrium.anisotropic-force-balance.json": {
       "role": "index",
-      "sha256": "6e5f0d1210e2833c24266d26c7b57f8cd57935736b72ebf53659e1a0769785b6",
-      "size": 14222,
-      "normalized_sha256": "6e5f0d1210e2833c24266d26c7b57f8cd57935736b72ebf53659e1a0769785b6"
+      "sha256": "5fe68ccd4c15d0d7502a2ef77937be0d32b9308f76866eca4c61b46746470a84",
+      "size": 14333,
+      "normalized_sha256": "5fe68ccd4c15d0d7502a2ef77937be0d32b9308f76866eca4c61b46746470a84"
     },
     "catalog/examples/scirel.equilibrium.anisotropic-picard-feedback.json": {
       "role": "index",
-      "sha256": "cc43dc899e9da0f6e9e9ccf52e77f48d74780fc16a2b897ede7091a1ab554748",
-      "size": 15880,
-      "normalized_sha256": "cc43dc899e9da0f6e9e9ccf52e77f48d74780fc16a2b897ede7091a1ab554748"
+      "sha256": "bd952e7ba4cbd40457dc4727bf29f4d11fdf2e394988d6765fb421dd2d67f999",
+      "size": 15988,
+      "normalized_sha256": "bd952e7ba4cbd40457dc4727bf29f4d11fdf2e394988d6765fb421dd2d67f999"
     },
     "catalog/examples/scirel.equilibrium.anisotropic-toroidal-current.json": {
       "role": "index",
-      "sha256": "1bd4919c28232f03b560e10b4c77d1feb354dc5f0404957d1799afb920d7d2f1",
-      "size": 10181,
-      "normalized_sha256": "1bd4919c28232f03b560e10b4c77d1feb354dc5f0404957d1799afb920d7d2f1"
+      "sha256": "a060a5acec052879ae555cf6ee32f97113f6f8ad3771a746d251ea1c2f169a76",
+      "size": 10295,
+      "normalized_sha256": "a060a5acec052879ae555cf6ee32f97113f6f8ad3771a746d251ea1c2f169a76"
     },
     "catalog/examples/scirel.equilibrium.axisymmetric-anisotropic-picard.json": {
       "role": "index",
-      "sha256": "ea1e47b8dac9a8179156b4d13ebe454bec2cdc5b6340c4be1f8c7668abc04c86",
-      "size": 61698,
-      "normalized_sha256": "ea1e47b8dac9a8179156b4d13ebe454bec2cdc5b6340c4be1f8c7668abc04c86"
+      "sha256": "85d587d1badebca5bfb719fba9361ab1f8345a2448253be8aa9d3ae4889d8b47",
+      "size": 61813,
+      "normalized_sha256": "85d587d1badebca5bfb719fba9361ab1f8345a2448253be8aa9d3ae4889d8b47"
     },
     "catalog/examples/scirel.equilibrium.axisymmetric-picard-update.json": {
       "role": "index",
-      "sha256": "50adb03a2e64dfba008b807dce445fe3eef62166d2ea7b69cac833c3c8af82f9",
-      "size": 12487,
-      "normalized_sha256": "50adb03a2e64dfba008b807dce445fe3eef62166d2ea7b69cac833c3c8af82f9"
+      "sha256": "711641c4060b08843d56665630a84f836400d84495e28ba3df46446a7831cb29",
+      "size": 12596,
+      "normalized_sha256": "711641c4060b08843d56665630a84f836400d84495e28ba3df46446a7831cb29"
     },
     "catalog/examples/scirel.equilibrium.compute-equilibrium.json": {
       "role": "index",
-      "sha256": "00a37ade0e0dbae6ee2f5fd03d08f3d6cf1931927d36fb66eb646b2b1c968bec",
-      "size": 10133,
-      "normalized_sha256": "00a37ade0e0dbae6ee2f5fd03d08f3d6cf1931927d36fb66eb646b2b1c968bec"
+      "sha256": "c64fa5c8312fe04f7c23baafb8136e079f0506ed7aaaf58b42b669f158906ae5",
+      "size": 10230,
+      "normalized_sha256": "c64fa5c8312fe04f7c23baafb8136e079f0506ed7aaaf58b42b669f158906ae5"
     },
     "catalog/examples/scirel.equilibrium.free-boundary-anisotropic-picard.json": {
       "role": "index",
-      "sha256": "78c3cc5a96edd4a929623dd2097bf95075dd8ed42c5f16af55cf2f8c89953137",
-      "size": 79812,
-      "normalized_sha256": "78c3cc5a96edd4a929623dd2097bf95075dd8ed42c5f16af55cf2f8c89953137"
+      "sha256": "9a8870e17536d7ad9299cfeafb63524f6ca9016e7aa7b887a013e45634662359",
+      "size": 79928,
+      "normalized_sha256": "9a8870e17536d7ad9299cfeafb63524f6ca9016e7aa7b887a013e45634662359"
     },
     "catalog/examples/scirel.equilibrium.isotropic-picard-step.json": {
       "role": "index",
-      "sha256": "76e184315689d3eb2d1245ee62e1fd806e0aed393014d399ea1e3c0750ca36b1",
-      "size": 11623,
-      "normalized_sha256": "76e184315689d3eb2d1245ee62e1fd806e0aed393014d399ea1e3c0750ca36b1"
+      "sha256": "ff286cc3f489998bf9971d8e9930a59d962d994f451d100baac084077b697003",
+      "size": 11726,
+      "normalized_sha256": "ff286cc3f489998bf9971d8e9930a59d962d994f451d100baac084077b697003"
     },
     "catalog/examples/scirel.equilibrium.isotropic-pressure-flux.json": {
       "role": "index",
-      "sha256": "95cd7397097834a381726232c8ed16f16f1bde3d6e4d59c6d12a2ae832ffa97c",
-      "size": 29936,
-      "normalized_sha256": "95cd7397097834a381726232c8ed16f16f1bde3d6e4d59c6d12a2ae832ffa97c"
+      "sha256": "ac29626a4b175439f21506c83df62d6c9bb5f97721359ae7975cf30b94b589f3",
+      "size": 30043,
+      "normalized_sha256": "ac29626a4b175439f21506c83df62d6c9bb5f97721359ae7975cf30b94b589f3"
     },
     "catalog/examples/scirel.equilibrium.kinetic-mirror-hall-equilibrium.json": {
       "role": "index",
-      "sha256": "047fdb179ac4d4ef7debb1f1bbddadcb0020a4c20bc86b69d210c3579dd15501",
-      "size": 52416,
-      "normalized_sha256": "047fdb179ac4d4ef7debb1f1bbddadcb0020a4c20bc86b69d210c3579dd15501"
+      "sha256": "aa1a11d2b20c50c22af7e3c01cfbc9a46b9ccf8cff4760ab7039ec90726d53d2",
+      "size": 52531,
+      "normalized_sha256": "aa1a11d2b20c50c22af7e3c01cfbc9a46b9ccf8cff4760ab7039ec90726d53d2"
     },
     "catalog/examples/scirel.equilibrium.pressure-flux-state.json": {
       "role": "index",
-      "sha256": "a7e6caa9a10fb52b94ede89e0ae3e1d9f8633cf7ea362c9a0b3126755a167c44",
-      "size": 11929,
-      "normalized_sha256": "a7e6caa9a10fb52b94ede89e0ae3e1d9f8633cf7ea362c9a0b3126755a167c44"
+      "sha256": "4156eb32e2bf267710509553c0df9c2e7f4b916f88ffa7429d1188a58bde8ff9",
+      "size": 12032,
+      "normalized_sha256": "4156eb32e2bf267710509553c0df9c2e7f4b916f88ffa7429d1188a58bde8ff9"
     },
     "catalog/examples/scirel.equilibrium.reduced-hall-anisotropic-picard.json": {
       "role": "index",
-      "sha256": "b67c71dc6d910bdfc260668cb6a1e269efbe035b50f98e8b277ef078fd6e233c",
-      "size": 73942,
-      "normalized_sha256": "b67c71dc6d910bdfc260668cb6a1e269efbe035b50f98e8b277ef078fd6e233c"
+      "sha256": "7b01f404961ac3d726ec01a96df454dec218edc12cb0d5bc71493722dca3bae2",
+      "size": 74057,
+      "normalized_sha256": "7b01f404961ac3d726ec01a96df454dec218edc12cb0d5bc71493722dca3bae2"
     },
     "catalog/examples/scirel.field.circular-filament-green.json": {
       "role": "index",
@@ -605,9 +605,9 @@
     },
     "catalog/examples/scirel.fusion.dd-neutron-lab-energy.json": {
       "role": "index",
-      "sha256": "52f255931e0e1c22d1c9b8373a79d94fa97686dcb2db28fb04f6c277b60a2389",
-      "size": 26028,
-      "normalized_sha256": "52f255931e0e1c22d1c9b8373a79d94fa97686dcb2db28fb04f6c277b60a2389"
+      "sha256": "72a8dce47dda402314c8fb5fc78f3aaf0f1c189d2b31bbd3fb2de51283308521",
+      "size": 26136,
+      "normalized_sha256": "72a8dce47dda402314c8fb5fc78f3aaf0f1c189d2b31bbd3fb2de51283308521"
     },
     "catalog/examples/scirel.geometry.axisymmetric-equilibrium-grid-mapping.json": {
       "role": "index",
@@ -725,33 +725,33 @@
     },
     "catalog/examples/scirel.io.eqdsk-class.json": {
       "role": "index",
-      "sha256": "06e791f063bd3c557e4602710077d3fb8731acc720d3f7ba95b9fa22a821932f",
-      "size": 4836,
-      "normalized_sha256": "06e791f063bd3c557e4602710077d3fb8731acc720d3f7ba95b9fa22a821932f"
+      "sha256": "b7ae0ed2a522efaf68490f907f0ce6dce26022c5e7348d74aa6c2622a4032c5d",
+      "size": 4910,
+      "normalized_sha256": "b7ae0ed2a522efaf68490f907f0ce6dce26022c5e7348d74aa6c2622a4032c5d"
     },
     "catalog/examples/scirel.io.pressure-equilibrium-eqdsk.json": {
       "role": "index",
-      "sha256": "1f24815838318912b4d7792dc2a0b45e167711ee94af8413e15c5c7a85f29e90",
-      "size": 7254,
-      "normalized_sha256": "1f24815838318912b4d7792dc2a0b45e167711ee94af8413e15c5c7a85f29e90"
+      "sha256": "2083f5364cc99ef5985c5996eb8f72e3de64a2c7318190565f9f7378ad2108fc",
+      "size": 7355,
+      "normalized_sha256": "2083f5364cc99ef5985c5996eb8f72e3de64a2c7318190565f9f7378ad2108fc"
     },
     "catalog/examples/scirel.io.read-pleiades-eqdsk.json": {
       "role": "index",
-      "sha256": "5d631fd01f8d7423c9cea6157cb116ca285fc359f1ee9c0fd825c704365476bc",
-      "size": 5234,
-      "normalized_sha256": "5d631fd01f8d7423c9cea6157cb116ca285fc359f1ee9c0fd825c704365476bc"
+      "sha256": "14bec6d594b088689ac51695fe3aa51f9c901338d9f8354c2e587fbbdf8e4c44",
+      "size": 5322,
+      "normalized_sha256": "14bec6d594b088689ac51695fe3aa51f9c901338d9f8354c2e587fbbdf8e4c44"
     },
     "catalog/examples/scirel.io.write-pleiades-eqdsk-legacy-raw.json": {
       "role": "index",
-      "sha256": "2732ceb046f8aa6c092d405e3961786aef5b33bf9624ba3cc1af03ea6823ba47",
-      "size": 6872,
-      "normalized_sha256": "2732ceb046f8aa6c092d405e3961786aef5b33bf9624ba3cc1af03ea6823ba47"
+      "sha256": "429282b7fdb4801c4f6f1b745f08050b036e7328af807cdfe92a3e275434ca74",
+      "size": 6972,
+      "normalized_sha256": "429282b7fdb4801c4f6f1b745f08050b036e7328af807cdfe92a3e275434ca74"
     },
     "catalog/examples/scirel.io.write-pleiades-eqdsk.json": {
       "role": "index",
-      "sha256": "1c0e8661400827b18dac3d6bd7872e942e49501b3b14a66156ab7aec82f51b17",
-      "size": 5886,
-      "normalized_sha256": "1c0e8661400827b18dac3d6bd7872e942e49501b3b14a66156ab7aec82f51b17"
+      "sha256": "7b3d7b8e135d28df093b433711a40da21b89038a699b4c373a8cea645d2ab986",
+      "size": 5975,
+      "normalized_sha256": "7b3d7b8e135d28df093b433711a40da21b89038a699b4c373a8cea645d2ab986"
     },
     "catalog/examples/scirel.kinetic.adaptive-neutral-velocity-mesh.json": {
       "role": "index",
@@ -1589,9 +1589,9 @@
     },
     "catalog/examples/scirel.plasma.fast-ion-heating.json": {
       "role": "index",
-      "sha256": "acd65b573953ea5ea7072f375a5835816e69ca96d4e68e7214021e6923076106",
-      "size": 6327,
-      "normalized_sha256": "acd65b573953ea5ea7072f375a5835816e69ca96d4e68e7214021e6923076106"
+      "sha256": "6ce361fa897c1089fcc042775fc90f6f919ec5da02ada9bb33b2bced376913c2",
+      "size": 6427,
+      "normalized_sha256": "6ce361fa897c1089fcc042775fc90f6f919ec5da02ada9bb33b2bced376913c2"
     },
     "catalog/examples/scirel.plotting.mirror-patches.json": {
       "role": "index",
@@ -11171,9 +11171,9 @@
     },
     "tests/test_canonical_binding_census.py": {
       "role": "index",
-      "sha256": "ba2df99461833de1424cf6de7e78f0afb0655b80e9c8272cc964b89a2101812b",
-      "size": 5657,
-      "normalized_sha256": "ba2df99461833de1424cf6de7e78f0afb0655b80e9c8272cc964b89a2101812b"
+      "sha256": "3d76cae4b8d1e6d9afbcd2d18b092d75c7107a5d593a8d9e768c008c231990ee",
+      "size": 6360,
+      "normalized_sha256": "3d76cae4b8d1e6d9afbcd2d18b092d75c7107a5d593a8d9e768c008c231990ee"
     },
     "tests/test_catalog_snapshot_package.py": {
       "role": "index",

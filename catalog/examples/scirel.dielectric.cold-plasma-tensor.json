@@ -130,7 +130,9 @@
     "python": {
       "module": "scirel.dielectric.cold_plasma_tensor",
       "symbol": "cold_plasma_dielectric_tensor",
-      "signature": "cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species)"
+      "signature": "cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species)",
+      "canonical_module": "scirel.dielectric",
+      "canonical_symbol": "cold_plasma_dielectric_tensor"
     }
   },
   "version": {

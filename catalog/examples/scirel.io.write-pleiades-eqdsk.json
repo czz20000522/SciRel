@@ -99,7 +99,9 @@
     "python": {
       "module": "scirel.io.eqdsk",
       "symbol": "write_pleiades_eqdsk",
-      "signature": "write_pleiades_eqdsk(data: 'Mapping[str, Any]', filename: 'str | Path') -> 'None'"
+      "signature": "write_pleiades_eqdsk(data: 'Mapping[str, Any]', filename: 'str | Path') -> 'None'",
+      "canonical_module": "scirel.io",
+      "canonical_symbol": "write_pleiades_eqdsk"
     }
   },
   "version": {

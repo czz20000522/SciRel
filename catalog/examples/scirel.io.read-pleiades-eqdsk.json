@@ -99,7 +99,9 @@
     "python": {
       "module": "scirel.io.eqdsk",
       "symbol": "read_pleiades_eqdsk",
-      "signature": "read_pleiades_eqdsk(filename: 'str | Path', *, strict: 'bool' = True) -> 'dict[str, Any]'"
+      "signature": "read_pleiades_eqdsk(filename: 'str | Path', *, strict: 'bool' = True) -> 'dict[str, Any]'",
+      "canonical_module": "scirel.io",
+      "canonical_symbol": "read_pleiades_eqdsk"
     }
   },
   "version": {

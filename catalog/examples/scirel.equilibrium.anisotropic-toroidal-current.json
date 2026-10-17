@@ -166,7 +166,9 @@
     "python": {
       "module": "scirel.equilibrium.anisotropic_toroidal_current",
       "symbol": "compute_anisotropic_toroidal_current",
-      "signature": "compute_anisotropic_toroidal_current(r_grid, z_grid, br, bz, p_parallel, p_perp)"
+      "signature": "compute_anisotropic_toroidal_current(r_grid, z_grid, br, bz, p_parallel, p_perp)",
+      "canonical_module": "scirel.equilibrium",
+      "canonical_symbol": "compute_anisotropic_toroidal_current"
     }
   },
   "version": {

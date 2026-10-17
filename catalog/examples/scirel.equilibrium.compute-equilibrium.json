@@ -175,7 +175,9 @@
     "python": {
       "module": "scirel.equilibrium",
       "symbol": "compute_equilibrium",
-      "signature": "compute_equilibrium(R, Z, Pfunc: 'Callable[[float], float]', psi_vac, g_psi, tol=1e-10, maxiter=100, relax=0.0, plas_clip=None, plotit=False)"
+      "signature": "compute_equilibrium(R, Z, Pfunc: 'Callable[[float], float]', psi_vac, g_psi, tol=1e-10, maxiter=100, relax=0.0, plas_clip=None, plotit=False)",
+      "canonical_module": "scirel.equilibrium",
+      "canonical_symbol": "compute_equilibrium"
     }
   },
   "version": {

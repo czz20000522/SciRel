@@ -538,7 +538,9 @@
     "python": {
       "module": "scirel.equilibrium.kinetic_mirror_hall_equilibrium",
       "symbol": "solve_kinetic_mirror_hall_equilibrium",
-      "signature": "solve_kinetic_mirror_hall_equilibrium(inputs=None, *, kinetic_graph=None, hall_graph=None, **kwargs)"
+      "signature": "solve_kinetic_mirror_hall_equilibrium(inputs=None, *, kinetic_graph=None, hall_graph=None, **kwargs)",
+      "canonical_module": "scirel.equilibrium",
+      "canonical_symbol": "solve_kinetic_mirror_hall_equilibrium"
     }
   },
   "version": {

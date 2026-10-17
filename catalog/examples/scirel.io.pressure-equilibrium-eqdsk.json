@@ -122,7 +122,9 @@
     "python": {
       "module": "scirel.io",
       "symbol": "write_pressure_equilibrium_eqdsk",
-      "signature": "write_pressure_equilibrium_eqdsk(R, Z, result, filename: 'str | Path', title: 'str') -> 'np.ndarray'"
+      "signature": "write_pressure_equilibrium_eqdsk(R, Z, result, filename: 'str | Path', title: 'str') -> 'np.ndarray'",
+      "canonical_module": "scirel.io",
+      "canonical_symbol": "write_pressure_equilibrium_eqdsk"
     }
   },
   "version": {
