@@ -113,7 +113,9 @@
     "python": {
       "module": "scirel.diagnostics.pointwise_firehose_margin",
       "symbol": "compute_pointwise_firehose_margin",
-      "signature": "compute_pointwise_firehose_margin(p_parallel, p_perp, magnetic_field, mu0=1.2566370614359173e-06)"
+      "signature": "compute_pointwise_firehose_margin(p_parallel, p_perp, magnetic_field, mu0=1.2566370614359173e-06)",
+      "canonical_module": "scirel.diagnostics",
+      "canonical_symbol": "compute_pointwise_firehose_margin"
     }
   },
   "version": {

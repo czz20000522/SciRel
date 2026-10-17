@@ -132,7 +132,9 @@
     "python": {
       "module": "scirel.diagnostics.equilibrium_synthesis_diagnostics",
       "symbol": "synthesize_equilibrium_diagnostics",
-      "signature": "synthesize_equilibrium_diagnostics(inputs=None, **kwargs)"
+      "signature": "synthesize_equilibrium_diagnostics(inputs=None, **kwargs)",
+      "canonical_module": "scirel.diagnostics",
+      "canonical_symbol": "synthesize_equilibrium_diagnostics"
     }
   },
   "version": {

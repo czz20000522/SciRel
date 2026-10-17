@@ -179,7 +179,9 @@
     "python": {
       "module": "scirel.closures.tabulated_pressure_closure",
       "symbol": "evaluate_tabulated_pressure",
-      "signature": "evaluate_tabulated_pressure(magnetic_field, psi, psi_grid, p_parallel_table, p_perpendicular_table=None, b_grid=None, bounds_error=True, fill_value=None)"
+      "signature": "evaluate_tabulated_pressure(magnetic_field, psi, psi_grid, p_parallel_table, p_perpendicular_table=None, b_grid=None, bounds_error=True, fill_value=None)",
+      "canonical_module": "scirel.closures",
+      "canonical_symbol": "evaluate_tabulated_pressure"
     }
   },
   "version": {

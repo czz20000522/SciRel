@@ -101,7 +101,9 @@
     "python": {
       "module": "scirel.diagnostics.observation_residuals",
       "symbol": "reduce_observation_residuals",
-      "signature": "reduce_observation_residuals(*, predicted, observations)"
+      "signature": "reduce_observation_residuals(*, predicted, observations)",
+      "canonical_module": "scirel.diagnostics",
+      "canonical_symbol": "reduce_observation_residuals"
     }
   },
   "version": {

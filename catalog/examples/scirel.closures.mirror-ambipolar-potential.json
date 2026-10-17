@@ -331,7 +331,9 @@
     "python": {
       "module": "scirel.closures.mirror_ambipolar_potential",
       "symbol": "solve_mirror_ambipolar_potential",
-      "signature": "solve_mirror_ambipolar_potential(b_reference_t, b_plug_t, psi, ion_mass_kg, ion_charge_c, ion_density_ref_m3, ion_temperature_parallel_j, ion_temperature_perpendicular_j, electron_temperature_j, phi_reference_v=0.0, electron_density_ref_m3=None, ion_loss_refill=1.0, electron_loss_refill=1.0, potential_tolerance_v=1e-06, current_tolerance=1e-10, max_iterations=100, initial_bracket_thermal=8.0, mode='solve', phi_plug_v=None)"
+      "signature": "solve_mirror_ambipolar_potential(b_reference_t, b_plug_t, psi, ion_mass_kg, ion_charge_c, ion_density_ref_m3, ion_temperature_parallel_j, ion_temperature_perpendicular_j, electron_temperature_j, phi_reference_v=0.0, electron_density_ref_m3=None, ion_loss_refill=1.0, electron_loss_refill=1.0, potential_tolerance_v=1e-06, current_tolerance=1e-10, max_iterations=100, initial_bracket_thermal=8.0, mode='solve', phi_plug_v=None)",
+      "canonical_module": "scirel.closures",
+      "canonical_symbol": "solve_mirror_ambipolar_potential"
     }
   },
   "version": {

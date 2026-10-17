@@ -324,7 +324,9 @@
     "python": {
       "module": "scirel.inference.direct_anisotropic_inversion",
       "symbol": "solve_direct_anisotropic_inversion",
-      "signature": "solve_direct_anisotropic_inversion(inputs=None, **kwargs)"
+      "signature": "solve_direct_anisotropic_inversion(inputs=None, **kwargs)",
+      "canonical_module": "scirel.inference",
+      "canonical_symbol": "solve_direct_anisotropic_inversion"
     }
   },
   "version": {

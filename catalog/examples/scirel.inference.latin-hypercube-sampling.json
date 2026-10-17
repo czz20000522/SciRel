@@ -113,7 +113,9 @@
     "python": {
       "module": "scirel.inference.latin_hypercube_sampling",
       "symbol": "sample_latin_hypercube",
-      "signature": "sample_latin_hypercube(*, bounds, n_samples, seed=None, fit_keys=None)"
+      "signature": "sample_latin_hypercube(*, bounds, n_samples, seed=None, fit_keys=None)",
+      "canonical_module": "scirel.inference",
+      "canonical_symbol": "sample_latin_hypercube"
     }
   },
   "version": {

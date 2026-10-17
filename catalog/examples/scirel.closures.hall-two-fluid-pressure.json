@@ -298,7 +298,9 @@
     "python": {
       "module": "scirel.closures.hall_two_fluid_pressure",
       "symbol": "close_hall_two_fluid_pressure",
-      "signature": "close_hall_two_fluid_pressure(magnetic_field, psi, pressure_law, ion_density_m3, electron_pressure_pa, electrostatic_potential_v, ion_p_parallel_pa=None, ion_p_perpendicular_pa=None, electron_p_parallel_pa=None, electron_p_perpendicular_pa=None, pressure_composition_mode='independent_fit')"
+      "signature": "close_hall_two_fluid_pressure(magnetic_field, psi, pressure_law, ion_density_m3, electron_pressure_pa, electrostatic_potential_v, ion_p_parallel_pa=None, ion_p_perpendicular_pa=None, electron_p_parallel_pa=None, electron_p_perpendicular_pa=None, pressure_composition_mode='independent_fit')",
+      "canonical_module": "scirel.closures",
+      "canonical_symbol": "close_hall_two_fluid_pressure"
     }
   },
   "version": {

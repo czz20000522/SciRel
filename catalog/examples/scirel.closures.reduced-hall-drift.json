@@ -661,7 +661,9 @@
     "python": {
       "module": "scirel.closures.reduced_hall_drift",
       "symbol": "close_reduced_hall_drift",
-      "signature": "close_reduced_hall_drift(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular, closure_state, plasma_mask, ion_mass_kg, ion_charge_c, hall_multiplier=1.0, include_toroidal_inertia=True, hall_density_floor_fraction=0.1, maximum_inertial_mach=0.5, inertia_relax=0.5, inertia_tolerance=1e-10, inertia_max_iterations=80)"
+      "signature": "close_reduced_hall_drift(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular, closure_state, plasma_mask, ion_mass_kg, ion_charge_c, hall_multiplier=1.0, include_toroidal_inertia=True, hall_density_floor_fraction=0.1, maximum_inertial_mach=0.5, inertia_relax=0.5, inertia_tolerance=1e-10, inertia_max_iterations=80)",
+      "canonical_module": "scirel.closures",
+      "canonical_symbol": "close_reduced_hall_drift"
     }
   },
   "version": {

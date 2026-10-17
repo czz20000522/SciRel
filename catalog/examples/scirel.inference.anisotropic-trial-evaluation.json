@@ -221,7 +221,9 @@
     "python": {
       "module": "scirel.inference.anisotropic_trial_evaluation",
       "symbol": "evaluate_anisotropic_trial",
-      "signature": "evaluate_anisotropic_trial(*, params, observations, solver_config, equilibrium_solver, diagnostic_evaluator, residual_reducer, residual_size=None, failure_penalty=1000000000000.0)"
+      "signature": "evaluate_anisotropic_trial(*, params, observations, solver_config, equilibrium_solver, diagnostic_evaluator, residual_reducer, residual_size=None, failure_penalty=1000000000000.0)",
+      "canonical_module": "scirel.inference",
+      "canonical_symbol": "evaluate_anisotropic_trial"
     }
   },
   "version": {

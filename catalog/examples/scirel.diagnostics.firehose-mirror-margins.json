@@ -248,7 +248,9 @@
     "python": {
       "module": "scirel.diagnostics.firehose_mirror_margins",
       "symbol": "compute_firehose_mirror_margins",
-      "signature": "compute_firehose_mirror_margins(p_parallel, p_perp, magnetic_field, mu0=1.2566370614359173e-06, parallel_equilibrium=None, *, dp_perp_dB=None, field_axis=None, psi=None)"
+      "signature": "compute_firehose_mirror_margins(p_parallel, p_perp, magnetic_field, mu0=1.2566370614359173e-06, parallel_equilibrium=None, *, dp_perp_dB=None, field_axis=None, psi=None)",
+      "canonical_module": "scirel.diagnostics",
+      "canonical_symbol": "compute_firehose_mirror_margins"
     }
   },
   "version": {

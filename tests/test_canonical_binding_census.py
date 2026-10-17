@@ -14,8 +14,8 @@ def test_current_canonical_binding_census_preserves_facade_and_exception_denomin
     counts = report["counts"]
 
     assert counts["total"] == 267
-    assert counts["explicit"] == 90
-    assert counts["candidate"] == 130
+    assert counts["explicit"] == 109
+    assert counts["candidate"] == 111
     assert counts["exception"] == 47
     assert report["unexpected_missing"] == []
 
@@ -100,7 +100,7 @@ def test_geometry_and_field_slice_pins_package_facades_explicitly():
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
     # Other non-PDRK records still exercise the legacy inferred facade path
     # until their own canonical fields are migrated.
-    assert rows["scirel.closures.boltzmann-quasineutrality"] == "candidate"
+    assert rows["scirel.plasma.fast-ion-heating"] == "candidate"
 
 
 def test_explicit_canonical_binding_is_checked_against_runtime_identity(tmp_path):
@@ -137,4 +137,19 @@ def test_collision_and_electromagnetism_slice_pins_package_facades_explicitly():
     }
     assert len(selected) == 30
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
-    assert rows["scirel.closures.boltzmann-quasineutrality"] == "candidate"
+    assert rows["scirel.plasma.fast-ion-heating"] == "candidate"
+
+
+def test_closure_diagnostic_and_inference_slice_pins_package_facades_explicitly():
+    report = census(ROOT)
+    rows = {row["asset_id"]: row["status"] for row in report["rows"]}
+    selected = {
+        asset_id
+        for asset_id in rows
+        if asset_id.startswith(
+            ("scirel.closures.", "scirel.diagnostics.", "scirel.inference.")
+        )
+    }
+    assert len(selected) == 19
+    assert all(rows[asset_id] == "explicit" for asset_id in selected)
+    assert rows["scirel.plasma.fast-ion-heating"] == "candidate"

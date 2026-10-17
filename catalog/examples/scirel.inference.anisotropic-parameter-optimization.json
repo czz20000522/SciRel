@@ -315,7 +315,9 @@
     "python": {
       "module": "scirel.inference.anisotropic_parameter_optimization",
       "symbol": "optimize_anisotropic_parameters",
-      "signature": "optimize_anisotropic_parameters(*, initial_params, bounds, method, trial_evaluator, fit_keys=None, lhs_sampler=None, n_initial_samples=None, seed=None, residual_size=None, failure_penalty=1000000000000.0, max_evaluations=200)"
+      "signature": "optimize_anisotropic_parameters(*, initial_params, bounds, method, trial_evaluator, fit_keys=None, lhs_sampler=None, n_initial_samples=None, seed=None, residual_size=None, failure_penalty=1000000000000.0, max_evaluations=200)",
+      "canonical_module": "scirel.inference",
+      "canonical_symbol": "optimize_anisotropic_parameters"
     }
   },
   "version": {

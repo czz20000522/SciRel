@@ -124,7 +124,9 @@
     "python": {
       "module": "scirel.diagnostics.species_absorption_fraction",
       "symbol": "compute_species_absorption_fraction",
-      "signature": "compute_species_absorption_fraction(species_power_values)"
+      "signature": "compute_species_absorption_fraction(species_power_values)",
+      "canonical_module": "scirel.diagnostics",
+      "canonical_symbol": "compute_species_absorption_fraction"
     }
   },
   "version": {

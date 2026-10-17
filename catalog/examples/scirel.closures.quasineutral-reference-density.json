@@ -91,7 +91,9 @@
     "python": {
       "module": "scirel.closures.quasineutral_reference_density",
       "symbol": "compute_reference_electron_density",
-      "signature": "compute_reference_electron_density(density_ref_m3, ion_charge_state)"
+      "signature": "compute_reference_electron_density(density_ref_m3, ion_charge_state)",
+      "canonical_module": "scirel.closures",
+      "canonical_symbol": "compute_reference_electron_density"
     }
   },
   "version": {

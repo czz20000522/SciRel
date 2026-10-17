@@ -92,7 +92,9 @@
     "python": {
       "module": "scirel.diagnostics.picard_flux_residual",
       "symbol": "compute_picard_flux_residual",
-      "signature": "compute_picard_flux_residual(psi_previous, psi_next)"
+      "signature": "compute_picard_flux_residual(psi_previous, psi_next)",
+      "canonical_module": "scirel.diagnostics",
+      "canonical_symbol": "compute_picard_flux_residual"
     }
   },
   "version": {

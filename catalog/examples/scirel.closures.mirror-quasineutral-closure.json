@@ -470,7 +470,9 @@
     "python": {
       "module": "scirel.closures.mirror_quasineutral_closure",
       "symbol": "solve_mirror_quasineutral_closure",
-      "signature": "solve_mirror_quasineutral_closure(inputs=None, **kwargs)"
+      "signature": "solve_mirror_quasineutral_closure(inputs=None, **kwargs)",
+      "canonical_module": "scirel.closures",
+      "canonical_symbol": "solve_mirror_quasineutral_closure"
     }
   },
   "version": {

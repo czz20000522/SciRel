@@ -166,7 +166,9 @@
     "python": {
       "module": "scirel.closures.boltzmann_quasineutrality",
       "symbol": "compute_boltzmann_electron_state",
-      "signature": "compute_boltzmann_electron_state(potential_v, electron_temperature_j, electron_density_ref_m3, electron_phi_ref_v, ion_density_m3, ion_charge_state)"
+      "signature": "compute_boltzmann_electron_state(potential_v, electron_temperature_j, electron_density_ref_m3, electron_phi_ref_v, ion_density_m3, ion_charge_state)",
+      "canonical_module": "scirel.closures",
+      "canonical_symbol": "compute_boltzmann_electron_state"
     }
   },
   "version": {

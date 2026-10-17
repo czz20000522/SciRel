@@ -228,7 +228,9 @@
     "python": {
       "module": "scirel.diagnostics.parallel_pressure_residual",
       "symbol": "compute_parallel_pressure_residual",
-      "signature": "compute_parallel_pressure_residual(p_parallel, p_perp, magnetic_field, rtol=0.01, atol=1e-06, strict=False, *, dp_parallel_dB=None, field_axis=None, psi=None)"
+      "signature": "compute_parallel_pressure_residual(p_parallel, p_perp, magnetic_field, rtol=0.01, atol=1e-06, strict=False, *, dp_parallel_dB=None, field_axis=None, psi=None)",
+      "canonical_module": "scirel.diagnostics",
+      "canonical_symbol": "compute_parallel_pressure_residual"
     }
   },
   "version": {
