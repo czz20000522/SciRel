@@ -4,7 +4,7 @@
   "records": [
     {
       "asset_id": "scirel.kinetic.pdrf-temporal-matrix",
-      "source_sha256": "3662c846040fe1cc67a250e64454cb756b9c89bcd67c82305145ed316679259c",
+      "source_sha256": "d010e54dba4bad5ae5ff2b8f1d3061eb5ee65b0f73e9387a1c99a13986b9728b",
       "summary": "多流体时间色散矩阵：Assemble the independently corrected local fluid/Maxwell generator and relativistic inertia.。",
       "definition": "For k=(kx,0,kz), eps=(epsx,epsy,0): dn_dot=-i(k.v0)dn-n0*(i*k+eps).dv. Momentum A_v*d(v)_dot=-i(k.v0)A_v*dv+(q/m)*(dv cross B0+v0 cross dB+dE)-i*diag(csp2,csp2,csz2)*k*dn/n0+diag(csp2,csp2,csz2)*eps*dn/(gamma*n0)+collision. With D=(Psz-Psp)/B0/rho, add [-i*kz*D*dBx,-i*kz*D*dBy,-2*D*((i*kx+epsx)*dBx+epsy*dBy)] when B0!=0. Maxwell dE_dot=i*c2*(k cross dB)-sum(q*(n0*dv+v0*dn))/epsilon0; dB_dot=-i*(k cross dE). A_v=gamma_rel*I+gamma_rel^3*v0*v0^T/c2 if rel=1. The extra density and magnetic-coefficient gradient terms correct omitted derivatives of the source pressure acceleration. Positive self forcing is replaced by dissipative friction. No Lorentz overwrite correction is claimed: the original Lorentz and anisotropy entries use different columns.",
       "model": "Algebraic anisotropic multi-fluid closure with empirical longitudinal magnetic-pressure factor two",
@@ -121,7 +121,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrf-dispersion-scan",
-      "source_sha256": "0a0971b0211f9a49e2cadb082eec4fefee7ecb14a61c73dd147666f1a7a9a54d",
+      "source_sha256": "b671858b2623f90dbc8221b4e8df74956d719f1d6c92ae0d5222cf0fbbf3dc4e",
       "summary": "多流体色散扫描：Run the full retained source scan family through corrected operators with explicit state and limits.。",
       "definition": "Initialize once; for each source-selected k point assemble the corrected matrix and compute the conditioned eigenspectrum; collect every sorted mode and retain the last-point M,A,w1,w2,state. Methods2/3/4 retain defaults101/196 magnitude points,51 angles,50x75 Cartesian mesh and row-major kz then kx order. Single branch handles0/1 and unknown nonnegative selectors. Then produce a two-panel PNG in Agg for2/3/4; other selectors retain zero axes. Optional SI positional return is (M,A,w1,w2,kk,ww1,ww2,betasz,vA,csz2,c2,rhos0,wcs,qs,ms,wps,B0) prefix, all defined.",
       "model": "Composition of fresh state, corrected local multi-fluid matrix and conditioned spectrum; source scan grids retained",
@@ -448,7 +448,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrf-temporal-spectrum",
-      "source_sha256": "f3b5ae8f31a13119fa6844ca52eacde1353851bd5b3ad41a5e92b0095725e756",
+      "source_sha256": "1ac70fec301c7c5b9809ddb2db963dfa58239732070163527e6e4850d463bf28",
       "summary": "多流体时间色散谱：Solve and independently sort temporal modes with coherent arity and real precision refinement.。",
       "definition": "lambda*A*X=M*X; omega=i*lambda. Apply positive diagonal physical and radix-two similarity transforms to both matrices. Initial double eig is followed, when component residual>1e-12, by actual 50-decimal mpmath inversion and eig in a private cloned context. Reject final global or active component residual>1e-10. Convert to complex128 and normalize vectors without overflowing their unscaled magnitudes. Sorting is stable and independent by real/imaginary frequency.",
       "model": "Dense linear generalized eigenproblem, with backward-error controlled arithmetic refinement",
@@ -592,7 +592,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrf-plasma-state",
-      "source_sha256": "ba7c3dfb029030ee97a0c3d277f06ae96f4160823a6763e1c06b7322086fc88b",
+      "source_sha256": "33953512e91977e1aded9ac7b711a4c22124c90efbbb4d04cf1af0ee7138d02a",
       "summary": "多流体等离子体状态：Derive a fresh state, diagnostics and dissipative reciprocal collision matrix.。",
       "definition": "rho=m*n; Q=sum(q*n); J=sum(q*n*v); P_parallel/perpendicular=rho*cs^2/gamma; omega_c=q*B0/m; omega_p=sqrt(n*q^2/(epsilon0*m)). Pair friction: acceleration_i=sum_j rate_ij*(dv_j-dv_i)-drag_i*dv_i, rho_i rate_ij=rho_j rate_ji.",
       "model": "Effective local multi-fluid algebraic thermal state with externally supported background",

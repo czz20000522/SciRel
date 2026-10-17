@@ -4,6 +4,7 @@
   "records": [
     {
       "asset_id": "scirel.electromagnetism.green-response-matrices",
+      "source_sha256": "b013cf2d37d0a971e7d277aa82d5ae45dc914a1322be1538802950b54be7d444",
       "summary": "按实际源目标坐标生成逐源磁通、径向与轴向场响应，保留目标行、源列及有符号权重。",
       "definition": "每列使用实际坐标圆环核，不排序、不反射。第三列为无量纲 csign，乘一次；以安培为单位的电流由调用者矩阵乘向量施加。省略源时，目标依原顺序作为单位权重源。",
       "model": "真空理想圆电流丝，mu0=4π*1e-7 H/m。",
@@ -84,11 +85,11 @@
           "稠密 O(Ntarget*Nsource) 工作与存储。",
           "离散零自项不描述导体自场。"
         ]
-      },
-      "source_sha256": "25882900885bfa043457e0c6637637843998eb8287da8110ff04e4efc6f6cfba"
+      }
     },
     {
       "asset_id": "scirel.electromagnetism.loop-flux-matrix",
+      "source_sha256": "d0f8c64261e1e41dc2aa12be723306c98e2046566294f70b41f527577c682851",
       "summary": "逐对使用实际坐标构造目标行、源列圆环真空响应，保留明确的离散零自项。",
       "definition": "psi_i=Σ_j G_ij I_j，psi=R A_phi，两轴按 C 序展平。前驱反射平移行块仅对等 Z 间距及相同 R 行成立；后继逐对求实际几何。",
       "model": "真空理想圆电流丝及离散零自项，不是有限导线电感。",
@@ -158,11 +159,11 @@
           "零自项只是一种受限离散模型。",
           "不宣称有限导线、奇异源对或物理平衡求解。"
         ]
-      },
-      "source_sha256": "e62ea11dd88c7227da27507124086e1f2deab2aa1f8f5bfd6509467b97efcb7f"
+      }
     },
     {
       "asset_id": "scirel.electromagnetism.circular-filament-green",
+      "source_sha256": "b7325e3c8f0f66a345184e09eb264cd9c8c6ccd7aa9ac98ac322c6552c016a66",
       "summary": "在柱坐标 R、Z 目标上求有符号圆电流丝的 SI Green 响应。",
       "definition": "psi=R A_phi；源无量纲权重乘在每安培圆电流丝响应上，实际驱动电流由调用者施加。",
       "model": "理想圆电流丝：完全椭圆积分与等价超几何表达分区求值；m<0.5 避免消差，近丝 BZ 分子用 (a−R)(a+R)−h²。",
@@ -232,8 +233,7 @@
           "不建立有限导体内部自场、材料磁导率或全连续域误差界。",
           "独立计算及安装任务不构成人工或发行批准。"
         ]
-      },
-      "source_sha256": "878d268ee234db80ea9668be9875f49a4d673cb22b2ed9876f49e395e5eed669"
+      }
     }
   ]
 }
