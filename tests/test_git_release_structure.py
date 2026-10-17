@@ -22,6 +22,7 @@ def test_git_release_structure_has_one_version_source() -> None:
     assert current["version"] == version
     assert current["wheel"]["version"] == version
     assert current["documentation"]["compatible_wheel"] == version
+    assert "asset_implementation_baselines" not in current["documentation"]
     assert "path" not in current["wheel"]["artifact"]
     assert current["wheel"]["artifact"]["manifest_ref"].endswith("/wheel/build-manifest.json")
     assert current["documentation"]["artifact"]["manifest_ref"].endswith("/docs/build-manifest.json")
@@ -143,6 +144,13 @@ def test_current_document_selection_matches_project_version() -> None:
     for record in selection["records"]:
         document = json.loads((ROOT / record["path"]).read_text(encoding="utf-8"))
         assert document["version"]["implementation_version"] == expected
+
+
+def test_current_document_tuple_has_one_implementation_version() -> None:
+    current = json.loads((ROOT / "release/CURRENT.json").read_text(encoding="utf-8"))
+    documentation = current["documentation"]
+    assert set(documentation).isdisjoint({"asset_implementation_baselines", "versions"})
+    assert documentation["compatible_wheel"] == current["version"]
 
 
 def test_ref_bound_document_builder_requires_selection(tmp_path: Path) -> None:

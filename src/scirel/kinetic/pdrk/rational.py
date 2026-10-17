@@ -14,6 +14,23 @@ from scipy.linalg import eig
 from scipy.sparse.linalg import eigs
 from ._transport import NativeAction,NativeTransport
 from ._rational_frequency import solve_rational_frequency
+
+
+# Canonical rational operators are catalogued here.  The lower-level
+# composition helpers (``ordered_spectrum`` and friends) are routed through
+# ``scirel.kinetic.pdrk.workflows`` and are therefore not star-import exports.
+__all__ = [
+    "default_deck",
+    "equilibrium",
+    "pole_table",
+    "point_matrix",
+    "solve_matrix",
+    "em_coordinates",
+    "jpole_grid_coordinates",
+    "jpole_evaluate",
+    "jpole_coefficients",
+]
+
 _ROOT=Path(__file__).resolve().parent/'_native'
 _MODELS=('es1d','es3d','em')
 _EQ={

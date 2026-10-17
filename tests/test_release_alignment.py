@@ -167,6 +167,11 @@ def test_alignment_can_require_an_exact_git_source_revision() -> None:
         validate_alignment(ROOT, expected_source_revision="0" * 40)
 
 
+def test_current_release_strict_gate_rejects_unmatched_rebuild() -> None:
+    with pytest.raises(ValueError, match="rebuild does not match bound candidate"):
+        validate_alignment(ROOT, require_bound_candidate_match=True)
+
+
 def test_legacy_current_files_are_thin_compatibility_pointers() -> None:
     for line in ("wheel", "docs"):
         path = ROOT / "release" / line / "CURRENT.json"
@@ -255,6 +260,13 @@ def test_alignment_accepts_wrapped_platform_receipt_and_checks_source_revision(
         "schema": "scirel.dev9-linux-acceptance.v1",
         "status": "PASS",
         "source": {"revision": source_revision},
+        "build": {
+            "bound_candidate": {"sha256": artifact_sha, "bytes": 123},
+            "byte_identical": True,
+            "first_build": {"sha256": artifact_sha, "bytes": 123},
+            "matches_bound_candidate": True,
+            "second_build": {"sha256": artifact_sha, "bytes": 123},
+        },
         "validation": inner,
     }
     receipt_path = tmp_path / "receipt.json"
@@ -274,7 +286,69 @@ def test_alignment_accepts_wrapped_platform_receipt_and_checks_source_revision(
     _validate_platform_receipts(
         tmp_path, wheel, expected_source_revision=source_revision
     )
+    _validate_platform_receipts(
+        tmp_path,
+        wheel,
+        expected_source_revision=source_revision,
+        require_bound_candidate_match=True,
+    )
     with pytest.raises(ValueError, match="source revision differs"):
         _validate_platform_receipts(
             tmp_path, wheel, expected_source_revision="c" * 40
+        )
+
+
+def test_strict_gate_distinguishes_reproducibility_from_bound_candidate_match(
+    tmp_path: Path,
+) -> None:
+    import hashlib
+
+    source_revision = "a" * 40
+    bound_sha = "b" * 64
+    rebuilt_sha = "c" * 64
+    receipt = {
+        "schema": "scirel.dev9-linux-acceptance.v1",
+        "status": "PASS",
+        "source": {"revision": source_revision},
+        "build": {
+            "bound_candidate": {"sha256": bound_sha, "bytes": 123},
+            "byte_identical": True,
+            "first_build": {"sha256": rebuilt_sha, "bytes": 123},
+            "matches_bound_candidate": False,
+            "second_build": {"sha256": rebuilt_sha, "bytes": 123},
+        },
+        "validation": {
+            "schema": "scirel.installed-wheel-validation.v1",
+            "status": "PASS",
+            "package": {"version": "0.1.0.dev9"},
+            "artifact": {"sha256": bound_sha, "bytes": 123},
+            "runtime": {"expected_platform": "linux-x86_64-cp314"},
+        },
+    }
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+    wheel = {
+        "version": "0.1.0.dev9",
+        "artifact": {"sha256": bound_sha, "bytes": 123},
+        "platform_receipts": [
+            {
+                "platform": "linux-x86_64-cp314",
+                "path": "receipt.json",
+                "sha256": hashlib.sha256(receipt_path.read_bytes()).hexdigest(),
+            }
+        ],
+    }
+
+    # Structural/history inspection can preserve the development candidate.
+    _validate_platform_receipts(
+        tmp_path, wheel, expected_source_revision=source_revision
+    )
+    # The formal release gate must reject the equally reproducible but
+    # differently bound wheel.
+    with pytest.raises(ValueError, match="rebuild does not match bound candidate"):
+        _validate_platform_receipts(
+            tmp_path,
+            wheel,
+            expected_source_revision=source_revision,
+            require_bound_candidate_match=True,
         )

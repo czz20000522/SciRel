@@ -19,6 +19,7 @@ import tomllib
 
 
 ROOT = Path(__file__).resolve().parents[1]
+_SHA256_DIGEST = re.compile(r"[0-9a-f]{64}")
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -360,7 +361,11 @@ def _validate_compat_pointer(root: Path, path: Path, *, line: str) -> None:
 
 
 def _validate_platform_receipts(
-    root: Path, wheel: dict[str, Any], *, expected_source_revision: str | None = None
+    root: Path,
+    wheel: dict[str, Any],
+    *,
+    expected_source_revision: str | None = None,
+    require_bound_candidate_match: bool = False,
 ) -> None:
     receipts = wheel.get("platform_receipts")
     if not isinstance(receipts, list) or not receipts:
@@ -419,6 +424,113 @@ def _validate_platform_receipts(
         runtime = bound.get("runtime")
         if not isinstance(runtime, dict) or runtime.get("expected_platform") != row["platform"]:
             raise ValueError(f"platform receipt target differs: {row['platform']}")
+        _validate_reproducible_build_evidence(
+            receipt.get("build"),
+            expected_artifact,
+            platform=row["platform"],
+            require_bound_candidate_match=require_bound_candidate_match,
+        )
+
+
+def _validate_reproducible_build_evidence(
+    build: object,
+    expected_artifact: object,
+    *,
+    platform: str,
+    require_bound_candidate_match: bool,
+) -> None:
+    """Validate optional rebuild evidence attached to a platform receipt.
+
+    ``byte_identical`` only establishes that the two fresh builds agree with
+    each other.  ``matches_bound_candidate`` establishes the separate link to
+    the wheel selected by ``release/CURRENT.json``.  A strict release gate
+    requires both claims and recomputes them from the recorded digests instead
+    of trusting either boolean in isolation.
+    """
+
+    if build is None:
+        if require_bound_candidate_match:
+            raise ValueError(
+                f"platform receipt lacks reproducible build evidence: {platform}"
+            )
+        return
+    if not isinstance(build, dict):
+        raise ValueError(f"platform receipt build evidence is invalid: {platform}")
+
+    expected = expected_artifact
+    if not isinstance(expected, dict):
+        raise ValueError(f"release wheel artifact is invalid: {platform}")
+    expected_sha = expected.get("sha256")
+    expected_bytes = expected.get("bytes")
+    if not isinstance(expected_sha, str) or _SHA256_DIGEST.fullmatch(expected_sha) is None:
+        raise ValueError(f"release wheel artifact digest is invalid: {platform}")
+    if not isinstance(expected_bytes, int) or isinstance(expected_bytes, bool) or expected_bytes < 0:
+        raise ValueError(f"release wheel artifact byte count is invalid: {platform}")
+    expected_pair = {"sha256": expected_sha, "bytes": expected_bytes}
+
+    def _build_pair(field: str) -> dict[str, Any]:
+        value = build.get(field)
+        if not isinstance(value, dict):
+            raise ValueError(f"platform receipt build.{field} is missing: {platform}")
+        digest = value.get("sha256")
+        size = value.get("bytes")
+        if not isinstance(digest, str) or _SHA256_DIGEST.fullmatch(digest) is None:
+            raise ValueError(f"platform receipt build.{field}.sha256 is invalid: {platform}")
+        if not isinstance(size, int) or isinstance(size, bool) or size < 0:
+            raise ValueError(f"platform receipt build.{field}.bytes is invalid: {platform}")
+        return {"sha256": digest, "bytes": size}
+
+    has_build_pair = "first_build" in build or "second_build" in build
+    has_bound_pair = "bound_candidate" in build
+    if not has_build_pair and not has_bound_pair:
+        if require_bound_candidate_match:
+            raise ValueError(
+                f"platform receipt lacks first/second build evidence: {platform}"
+            )
+        return
+
+    first = _build_pair("first_build")
+    second = _build_pair("second_build")
+    byte_identical = build.get("byte_identical")
+    if not isinstance(byte_identical, bool):
+        raise ValueError(f"platform receipt byte_identical is invalid: {platform}")
+    computed_byte_identical = first == second
+    if byte_identical != computed_byte_identical:
+        raise ValueError(
+            f"platform receipt byte_identical disagrees with build digests: {platform}"
+        )
+
+    if has_bound_pair:
+        bound_candidate = _build_pair("bound_candidate")
+        if bound_candidate != expected_pair:
+            raise ValueError(
+                f"platform receipt bound_candidate differs from release wheel: {platform}"
+            )
+        matches_bound_candidate = build.get("matches_bound_candidate")
+        if not isinstance(matches_bound_candidate, bool):
+            raise ValueError(
+                f"platform receipt matches_bound_candidate is invalid: {platform}"
+            )
+        computed_match = first == bound_candidate
+        if matches_bound_candidate != computed_match:
+            raise ValueError(
+                "platform receipt matches_bound_candidate disagrees with build digests: "
+                f"{platform}"
+            )
+    elif require_bound_candidate_match:
+        raise ValueError(
+            f"platform receipt lacks bound_candidate evidence: {platform}"
+        )
+
+    if require_bound_candidate_match:
+        if byte_identical is not True:
+            raise ValueError(
+                f"platform receipt builds are not byte-identical: {platform}"
+            )
+        if build.get("matches_bound_candidate") is not True:
+            raise ValueError(
+                f"platform receipt rebuild does not match bound candidate: {platform}"
+            )
 
 
 def _validate_document_integration(
@@ -504,6 +616,7 @@ def validate_alignment(
     *,
     expected_source_revision: str | None = None,
     artifact_root: Path | None = None,
+    require_bound_candidate_match: bool = False,
 ) -> dict[str, Any]:
     canonical_path = root / "release/CURRENT.json"
     current = _read_json(canonical_path)
@@ -543,7 +656,12 @@ def validate_alignment(
         source_revision=source_revision,
         artifact_root=artifact_root,
     )
-    _validate_platform_receipts(root, wheel, expected_source_revision=source_revision)
+    _validate_platform_receipts(
+        root,
+        wheel,
+        expected_source_revision=source_revision,
+        require_bound_candidate_match=require_bound_candidate_match,
+    )
     _validate_platform_matrix(
         root,
         version=version,
@@ -577,15 +695,10 @@ def validate_alignment(
         else:
             raise ValueError(f"unsupported document kind: {kind}")
         implementation_version = document.get("version", {}).get("implementation_version")
-        baseline_versions = docs.get("asset_implementation_baselines")
-        if (
-            not isinstance(baseline_versions, list)
-            or not baseline_versions
-            or implementation_version not in baseline_versions
-        ):
+        if implementation_version != version:
             raise ValueError(
                 f"document {document.get('asset_id')} targets {implementation_version}, "
-                "which is outside documentation asset_implementation_baselines"
+                f"which differs from the current project version {version}"
             )
     counts["document_closure"] = len(selected)
     expected = wheel.get("selected_capabilities")
@@ -634,6 +747,14 @@ def main() -> None:
         type=Path,
         help="external root containing logical wheel/documentation artifact references",
     )
+    parser.add_argument(
+        "--require-bound-candidate-match",
+        action="store_true",
+        help=(
+            "require every platform receipt to prove reproducible builds and "
+            "a byte match to the wheel bound by CURRENT.json"
+        ),
+    )
     args = parser.parse_args()
     print(
         json.dumps(
@@ -641,6 +762,7 @@ def main() -> None:
                 args.root.resolve(),
                 expected_source_revision=args.expected_source_revision,
                 artifact_root=args.artifact_root.resolve() if args.artifact_root else None,
+                require_bound_candidate_match=args.require_bound_candidate_match,
             ),
             ensure_ascii=False,
             sort_keys=True,

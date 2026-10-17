@@ -33,6 +33,11 @@ commit the complete follow-up change, rebuild the wheel and documentation from t
 new ref, and update the tuple and receipts together. Never rebuild an older version
 number from a newer checkout and overwrite its external artifacts.
 
+The current documentation selection is single-version: every selected exact document
+must carry the `project.version` from the same checkout. The current tuple does not
+store a list of older implementation baselines. Git history, tags, and short release
+notes are the historical record; full wheel and handbook copies stay external.
+
 `release/CURRENT.json` stores only logical `manifest_ref` keys for generated
 wheel and documentation artifacts. They are resolved against an external
 artifact root during release validation; no `build/releases/` path or generated
@@ -40,6 +45,15 @@ wheel is part of the Git checkout. Run
 `scripts/validate_release_alignment.py --artifact-root <root>` for byte-level
 verification. Without that option, the validator reports the external bytes as
 unchecked while still validating the reference shape and inline digests.
+
+For a formal platform release gate, add
+`--require-bound-candidate-match`. The platform receipt must then include two
+independent claims: `byte_identical=true` means the two fresh builds agree with
+each other, while `matches_bound_candidate=true` means that build also has the
+same digest and byte count as the wheel bound by `CURRENT.json`. The validator
+recomputes both claims from the recorded build digests; one cannot stand in for
+the other. A historical or development-candidate inspection may omit this flag
+when the candidate is intentionally awaiting a matching rebuild.
 
 Historical candidate identities are preserved by Git commits, tags, and the
 short release notes under `docs/release/`. Do not add a per-version wheel JSON,

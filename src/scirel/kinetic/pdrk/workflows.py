@@ -6,6 +6,20 @@ operators; failures propagate with the underlying stage's partial-result rule.
 from . import magnetized as _m
 from . import _workflow_impl as _w
 
+
+__all__ = [
+    "solve_dispersion",
+    "scan_spectrum",
+    "reconstruct_polarization",
+    "original_program",
+    "selected_fields",
+    "rendered_output",
+    "preset_output",
+    "ordered_rational_spectrum",
+    "regenerate_jpole",
+    "reassemble_rational_program",
+]
+
 def solve_dispersion(inputs):
     """Species initialization then an ordered spectral scan."""
     return _m.solve_dispersion(**inputs)

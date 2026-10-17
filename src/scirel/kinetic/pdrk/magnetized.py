@@ -19,6 +19,28 @@ import numpy as np
 from scipy import sparse
 from ._transport import NativeAction, NativeTransport, NativeResult
 
+
+# These are the normalized callable entry points represented by the PDRK
+# catalog.  Internal helpers and legacy composition functions remain directly
+# importable for compatibility but are intentionally excluded from star
+# imports and discovery.
+__all__ = [
+    "initialize_equilibrium",
+    "electromagnetic_matrix",
+    "electrostatic_matrix",
+    "eigensolve",
+    "reconstruct_point_fields",
+    "select_modes",
+    "pole_coefficients",
+    "loss_cone_partition",
+    "render_spectrum",
+    "select_preset",
+    "interpolate_selected_dispersion",
+    "source_output",
+    "wavevector_coordinates",
+    "render_selected_modes",
+]
+
 _ROOT = Path(__file__).parent / '_native'
 CONTROLS = ('iem','N','J','sp','wg0','B0','ipa','ipb','iloga','ilogb',
             'pa1','pa2','dpa','pb1','pb2','dpb','iout')

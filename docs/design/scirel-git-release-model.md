@@ -34,7 +34,7 @@ wheel 和文档快照分别由 `scripts/build_scirel_from_ref.py` 与
 source checkout 时，`release_version` 只能来自该 checkout 的 `pyproject.toml`。
 synthetic fixture 可以省略 Git 绑定，但不能冒充生产发行 catalog。
 
-这些记录必须相互引用同一 `source_revision`、版本和能力计数。`release/CURRENT.json` 是当前候选的唯一协调记录；`release/wheel/CURRENT.json` 和 `release/docs/CURRENT.json` 只保留兼容指针，不再承载另一份版本元数据。任何文档变更若超出已安装 wheel 的能力闭包，必须先改变源码/API并重新构建后继候选，不能只改文档记录扩大声明。
+这些记录必须相互引用同一 `source_revision`、版本和能力计数。`release/CURRENT.json` 是当前候选的唯一协调记录；`release/wheel/CURRENT.json` 和 `release/docs/CURRENT.json` 只保留兼容指针，不再承载另一份版本元数据。当前文档选择中的每条 exact document 必须使用 `pyproject.toml` 的同一 `project.version`；不再在当前 tuple 中保存 `asset_implementation_baselines` 或其他多版本列表。历史版本从 Git 提交、tag 和短发行说明恢复。任何文档变更若超出已安装 wheel 的能力闭包，必须先改变源码/API并重新构建后继候选，不能只改文档记录扩大声明。
 
 ## 依赖分层
 
@@ -53,7 +53,7 @@ SciPy 的仓库把核心运行依赖、可选运行依赖和测试/开发依赖�
 1. 核心依赖收敛为 NumPy、SciPy、mpmath；Matplotlib 和 netCDF4 进入可选/测试闭包；
 2. 每次修改依赖时，在同一 Git 提交中同步 `uv.lock` 与 `pyproject.toml`；运行 extra 只保留用户主动选择的能力，测试/构建依赖使用 `dependency-groups`；
 3. 从安装包验证脚本生成 core、`plot` extra 和测试闭包的独立 receipt；
-4. 旧的每版本 release JSON 不属于工作树活动资产；历史身份从 Git 历史和短发行说明恢复，不再扩展平行版本目录；
+4. 旧的每版本 release JSON 不属于工作树活动资产；历史身份从 Git 历史和短发行说明恢复，不再扩展平行版本目录，也不在当前 tuple 中保留多版本基线列表；
 5. 发行指针收敛为一个当前 Git 绑定的 `release/CURRENT.json` tuple，历史记录不改写。
 
 这套模型保留完整历史证据，同时让“当前版本是什么、由哪个提交生成、文档和 wheel 是否同源”都能从 Git 和一个当前 receipt 直接回答。
@@ -117,7 +117,10 @@ API 的后续版本中，可以增加只读的 `scirel.version.git_revision`，�
 发行验收可用 `scripts/validate_release_alignment.py --expected-source-revision <commit>`
 把当前协调记录锁到确切 Git commit。未提供该参数时，工具仍允许审查历史或外部归档中的
 候选；正式构建和回写 `release/CURRENT.json` 时必须提供构建 ref，避免旧 wheel 摘要在
-新提交上继续通过结构校验。
+新提交上继续通过结构校验。正式平台门禁还应增加
+`--require-bound-candidate-match`：`byte_identical=true` 只证明两次重建彼此一致，
+`matches_bound_candidate=true` 才证明重建结果就是当前绑定 wheel；验证器会从回执摘要重新
+计算这两个关系。
 
 SciPy 的构建和版本工具都从当前 checkout 的 Git 内容产生发行信息；SciRel
 采用同一事实边界，并额外要求构建脚本显式接收确切 Git ref，从该提交读取源码和
