@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import numpy as np
 
+__all__ = ["evaluate_neutral_generation_stopping"]
+
 
 def _finite_real(value, name, *, scalar=False):
     try:

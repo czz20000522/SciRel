@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import numpy as np
 
+__all__ = ["propagate_neutral_generation"]
+
 
 def _finite_real_array(value, name):
     try:

@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import numpy as np
 
+__all__ = ["evaluate_neutral_outer_seed_convergence"]
+
 
 def _finite_real(value, name, *, scalar=False):
     try:

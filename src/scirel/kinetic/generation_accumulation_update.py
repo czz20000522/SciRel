@@ -6,6 +6,8 @@ from collections.abc import Mapping
 
 import numpy as np
 
+__all__ = ["update_neutral_generation_accumulation"]
+
 
 def _finite_real_array(value, name):
     try:

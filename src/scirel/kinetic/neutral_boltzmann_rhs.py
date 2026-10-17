@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import numpy as np
 
+__all__ = ["assemble_neutral_boltzmann_rhs"]
+
 
 def _finite_real_array(value, name):
     try:
