@@ -169,7 +169,9 @@
     "python": {
       "module": "scirel.kinetic.fluid_wavevector_eigensolve",
       "symbol": "solve_fluid_wavevector_eigenproblem",
-      "signature": "solve_fluid_wavevector_eigenproblem(*, matrix, kn, real_floor_scale=1e-05, keep=5)"
+      "signature": "solve_fluid_wavevector_eigenproblem(*, matrix, kn, real_floor_scale=1e-05, keep=5)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "solve_fluid_wavevector_eigenproblem"
     }
   },
   "version": {

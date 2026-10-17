@@ -276,7 +276,9 @@
     "python": {
       "module": "scirel.kinetic.fluid_dispersion_matrix",
       "symbol": "assemble_fluid_dispersion_matrix",
-      "signature": "assemble_fluid_dispersion_matrix(*, omega, kz, c2, epsilon0, wps2, wcs, vts, rhocs, sgns, absrhocs, cn_residues, cn_poles, order_lengths, bzj, czj, max_harmonic, n_species)"
+      "signature": "assemble_fluid_dispersion_matrix(*, omega, kz, c2, epsilon0, wps2, wcs, vts, rhocs, sgns, absrhocs, cn_residues, cn_poles, order_lengths, bzj, czj, max_harmonic, n_species)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "assemble_fluid_dispersion_matrix"
     }
   },
   "version": {

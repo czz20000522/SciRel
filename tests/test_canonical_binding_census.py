@@ -14,8 +14,8 @@ def test_current_canonical_binding_census_preserves_facade_and_exception_denomin
     counts = report["counts"]
 
     assert counts["total"] == 267
-    assert counts["explicit"] == 201
-    assert counts["candidate"] == 19
+    assert counts["explicit"] == 206
+    assert counts["candidate"] == 14
     assert counts["exception"] == 47
     assert report["unexpected_missing"] == []
 
@@ -337,5 +337,20 @@ def test_transport_and_species_scale_slice_pins_kinetic_facades_explicitly():
         "scirel.kinetic.species-equilibrium-scales",
     }
     assert len(selected) == 4
+    assert all(rows[asset_id] == "explicit" for asset_id in selected)
+    assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"
+
+
+def test_direct_plasma_wave_slice_pins_kinetic_facades_explicitly():
+    report = census(ROOT)
+    rows = {row["asset_id"]: row["status"] for row in report["rows"]}
+    selected = {
+        "scirel.kinetic.dielectric-tensor-diagnostic",
+        "scirel.kinetic.fluid-dispersion-matrix",
+        "scirel.kinetic.fluid-wavevector-eigensolve",
+        "scirel.kinetic.kinetic-dispersion-ronnmark",
+        "scirel.kinetic.kinetic-wavevector-roots",
+    }
+    assert len(selected) == 5
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
     assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"

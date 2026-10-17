@@ -267,7 +267,9 @@
     "python": {
       "module": "scirel.kinetic.dielectric_tensor_diagnostic",
       "symbol": "evaluate_kinetic_dielectric_tensor",
-      "signature": "evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=15)"
+      "signature": "evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=15)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_kinetic_dielectric_tensor"
     }
   },
   "version": {

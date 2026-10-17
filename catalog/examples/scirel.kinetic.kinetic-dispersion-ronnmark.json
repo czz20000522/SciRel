@@ -286,7 +286,9 @@
     "python": {
       "module": "scirel.kinetic.kinetic_dispersion_ronnmark",
       "symbol": "evaluate_kinetic_dispersion_ronnmark",
-      "signature": "evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx, omega=None)"
+      "signature": "evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx, omega=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_kinetic_dispersion_ronnmark"
     }
   },
   "version": {

@@ -1187,7 +1187,7 @@ test_native_resource_closure.py[TQ5T]: F:回归native资源闭包清单、显式
 test_optional_dependencies.py[TQ5T]: F:回归三个绘图入口在Matplotlib缺失时给出scirel[plot]提示 | R:code:src/scirel/_optional.py,code:src/scirel/io/eqdsk.py,code:src/scirel/kinetic/pdrf.py,code:src/scirel/kinetic/pdrk/_presentation.py | A:子进程阻断Matplotlib并断言异常名称和安装提示 | S:测试只覆盖可选依赖缺失边界，不把绘图通过扩大为核心科学能力
 test_public_api_binding.py[TQ6S]: F:回归implementation与canonical API绑定、package-root initializer生成及同名子模块导入顺序。 | R:code:scripts/public_api_binding.py,code:scripts/finalize_release.py,code:scripts/build_catalog.py,code:src/scirel/collisions/__init__.py | A:12个package-root文档；legacy子实现解析；canonical成对校验；callable identity；implementation与canonical __all__缺失时fail closed；catalog双绑定摘要；collision导出稳定性 | S:测试证明绑定和导入合同，不替代完整科学正确性、跨平台安装或发行批准
 test_runtime_dependency_boundaries.py[TQ5S]: F:静态审计SciRel运行时源码的外部依赖边界 | R:code:src/scirel,code:pyproject.toml,code:tests/test_scientific_runtime.py | A:用AST扫描import、from-import和动态导入字符串，确保netCDF4留在测试或可选闭包而不进入核心运行时 | S:扫描范围固定为src/scirel下Python文件；发现任一netCDF4引用即失败，不把静态边界检查当作科学数值通过
-test_canonical_binding_census.py[TQ7T]: F:锁定267份exact document的canonical facade覆盖、201份显式绑定、19份候选和47份例外分母 | R:code:scripts/audit_canonical_bindings.py,code:catalog/examples | A:canonical census回归、显式包级身份验证、Vlasov-Maxwellian、特殊函数色散、neutral-terminal、mesh-source、alpha、convergence、population-moment与transport-species批次和例外身份保护 | S:保持267总分母、201 explicit、19 candidate和47 exception；显式错误绑定必须成为unexpected_missing，不能通过缩小范围或放宽例外
+test_canonical_binding_census.py[TQ7T]: F:锁定267份exact document的canonical facade覆盖、206份显式绑定、14份候选和47份例外分母 | R:code:scripts/audit_canonical_bindings.py,code:catalog/examples | A:canonical census回归、显式包级身份验证、Vlasov-Maxwellian、特殊函数色散、neutral-terminal、mesh-source、alpha、convergence、population-moment、transport-species与direct plasma-wave批次和例外身份保护 | S:保持267总分母、206 explicit、14 candidate和47 exception；显式错误绑定必须成为unexpected_missing，不能通过缩小范围或放宽例外
 
 ===/Users/tomczz/Projects/SciReL/tests/fixtures/l1/===
 cycle-rework.json[TW4T]: F:提供两任务图互相依赖且dependency_closure失败的L1重做分支fixture | R:code:tests/test_l1_wire_smoke.py | A:scirel.l1-inventory.dev | S:-
@@ -1612,6 +1612,7 @@ bootstrap.py[KB8S]: F:计算Sauter和Redl面系数并以显式压力梯度组装
 20261012-legacy-operator-absorption.json[OW3T]: F:保存旧算子吸收dry run的Notion待同步摘要和证据入口 | R:- | A:PENDING_SYNC记录 | S:本地队列不证明远端写入或源码删除
 20261012-pleiades-anisotropy-correction.json[OW3T]: F:保存Pleiades修正版wheel与安装证据的Notion待同步摘要 | R:- | A:PENDING_SYNC记录 | S:有界验证不授予人工批准或再分发权
 20261013-scirel-main-baseline.json[OW3T]: F:保存主工作区18d2f2b提交与受影响测试结果的待同步知识记录 | R:- | A:PENDING_SYNC记录 | S:1580通过同时保留21失败，未称全套通过
+20261018-scirel-facade-closure-progress.json[SV4T]: F:保存SciRel facade闭包进展的Notion待同步记录 | R:- | A:记录201 explicit、19 candidate、47 exception、验证摘要及后续同步入口 | S:state必须保持PENDING_SYNC直到Notion读回成功，不能把本地队列文件当作远端写入证据
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/===
 index.html[EU6T]: F:提供科学函数检索分页、全书查询接续与含高亮代码的精确合同阅读 | R:code:scripts/scirel_docs.py,code:tools/docs/presentation.js,code:tools/docs/code.css | A:reference页面、q查询入口、资产详情锚点 | S:异步旧响应不能覆盖新查询；展示显式区分Python与JSON，版本和限制随详情显示

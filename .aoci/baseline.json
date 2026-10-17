@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-17T22:25:14Z",
+  "updated_at": "2026-10-17T22:30:15Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -26,6 +26,12 @@
       "sha256": "387096651996e0889f45eacdfde7e472d40b979dc263d531adc6e3d8fe5c6622",
       "size": 1905,
       "normalized_sha256": "387096651996e0889f45eacdfde7e472d40b979dc263d531adc6e3d8fe5c6622"
+    },
+    ".agents/state/notion-work-management/outbox/20261018-scirel-facade-closure-progress.json": {
+      "role": "index",
+      "sha256": "96622850108f329b2fab91c998b741c9c4d8832a65101b254acc66c1ada2c06a",
+      "size": 1758,
+      "normalized_sha256": "96622850108f329b2fab91c998b741c9c4d8832a65101b254acc66c1ada2c06a"
     },
     ".agents/state/notion-work-management/outbox/receipts/20261017-scirel-dev9-5556f1a.json": {
       "role": "index",
@@ -77,9 +83,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "601bbde194b3afed1def922e3e21ebe947389ef22297cadbe00b6d28ffb5c35a",
-      "size": 616770,
-      "normalized_sha256": "601bbde194b3afed1def922e3e21ebe947389ef22297cadbe00b6d28ffb5c35a"
+      "sha256": "345807e803ce8cdede4fdba7d9ca8e632ed2adf255d15c2129be93ce66b8af70",
+      "size": 617108,
+      "normalized_sha256": "345807e803ce8cdede4fdba7d9ca8e632ed2adf255d15c2129be93ce66b8af70"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -803,9 +809,9 @@
     },
     "catalog/examples/scirel.kinetic.dielectric-tensor-diagnostic.json": {
       "role": "index",
-      "sha256": "fd2bc57d19b8590527dfd02464733ee0e9eeef6d6b23731f4840179969a972d1",
-      "size": 14120,
-      "normalized_sha256": "fd2bc57d19b8590527dfd02464733ee0e9eeef6d6b23731f4840179969a972d1"
+      "sha256": "6eb9aa4156dede47d184f8ec20345f01e9e2a7e085745b44901494f49c0807c2",
+      "size": 14228,
+      "normalized_sha256": "6eb9aa4156dede47d184f8ec20345f01e9e2a7e085745b44901494f49c0807c2"
     },
     "catalog/examples/scirel.kinetic.elastic-frequency-channels.json": {
       "role": "index",
@@ -845,15 +851,15 @@
     },
     "catalog/examples/scirel.kinetic.fluid-dispersion-matrix.json": {
       "role": "index",
-      "sha256": "3d3931346e8ade64b4a25f2a0819e722459381045bf23a160f18330333501d19",
-      "size": 10972,
-      "normalized_sha256": "3d3931346e8ade64b4a25f2a0819e722459381045bf23a160f18330333501d19"
+      "sha256": "f15a6f9ce916ba8a51051a46b33206c9f820f55f257289c1b84cf8f4cd7ff588",
+      "size": 11078,
+      "normalized_sha256": "f15a6f9ce916ba8a51051a46b33206c9f820f55f257289c1b84cf8f4cd7ff588"
     },
     "catalog/examples/scirel.kinetic.fluid-wavevector-eigensolve.json": {
       "role": "index",
-      "sha256": "526f99ca6e706977f9a359e774591936d0f5c7ad2c2fdc2ec88cff7c4e772819",
-      "size": 7153,
-      "normalized_sha256": "526f99ca6e706977f9a359e774591936d0f5c7ad2c2fdc2ec88cff7c4e772819"
+      "sha256": "dc6909ad9d557ad5a708c982783038bbaf42f2705f2957205e213ee07a6dedcf",
+      "size": 7262,
+      "normalized_sha256": "dc6909ad9d557ad5a708c982783038bbaf42f2705f2957205e213ee07a6dedcf"
     },
     "catalog/examples/scirel.kinetic.fluid-wavevector-scan.json": {
       "role": "index",
@@ -1019,9 +1025,9 @@
     },
     "catalog/examples/scirel.kinetic.kinetic-dispersion-ronnmark.json": {
       "role": "index",
-      "sha256": "8fd3d97a031f30375e33fe99e093fe71d8728b1903ed35931afef72c4726828c",
-      "size": 11663,
-      "normalized_sha256": "8fd3d97a031f30375e33fe99e093fe71d8728b1903ed35931afef72c4726828c"
+      "sha256": "b11e2a566171a73ec547308597a6035dc97227ee8613429a4290181aef46db87",
+      "size": 11773,
+      "normalized_sha256": "b11e2a566171a73ec547308597a6035dc97227ee8613429a4290181aef46db87"
     },
     "catalog/examples/scirel.kinetic.kinetic-dispersion-sum-fluidbw.json": {
       "role": "index",
@@ -1037,9 +1043,9 @@
     },
     "catalog/examples/scirel.kinetic.kinetic-wavevector-roots.json": {
       "role": "index",
-      "sha256": "7dcedacf7aab2a9e66b8f0a1ed98a84fc1c4e7b6c84169456d4f51ed943e9544",
-      "size": 12729,
-      "normalized_sha256": "7dcedacf7aab2a9e66b8f0a1ed98a84fc1c4e7b6c84169456d4f51ed943e9544"
+      "sha256": "700d96c02b704f6b18e556b411c8f562f9e3ff825fdc0a782b3efdad133c01c2",
+      "size": 12833,
+      "normalized_sha256": "700d96c02b704f6b18e556b411c8f562f9e3ff825fdc0a782b3efdad133c01c2"
     },
     "catalog/examples/scirel.kinetic.kinetic-wavevector-scan.json": {
       "role": "index",
@@ -11171,9 +11177,9 @@
     },
     "tests/test_canonical_binding_census.py": {
       "role": "index",
-      "sha256": "d02d2de4402feef85a65dac238a7dacab9ba121600d2128b0039b18db73231e1",
-      "size": 13505,
-      "normalized_sha256": "d02d2de4402feef85a65dac238a7dacab9ba121600d2128b0039b18db73231e1"
+      "sha256": "dd1177f8c6390bb62c4e746e010ffe25a49f061b8af8de4201530dd1ba59416c",
+      "size": 14146,
+      "normalized_sha256": "dd1177f8c6390bb62c4e746e010ffe25a49f061b8af8de4201530dd1ba59416c"
     },
     "tests/test_catalog_snapshot_package.py": {
       "role": "index",

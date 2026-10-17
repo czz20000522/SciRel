@@ -306,7 +306,9 @@
     "python": {
       "module": "scirel.kinetic.kinetic_wavevector_roots",
       "symbol": "solve_kinetic_wavevector_roots",
-      "signature": "solve_kinetic_wavevector_roots(*, B0, qs, ms, ns0, Ts0, omegas, kz, kx_start, tol_fun=1e-16, tol_x=1e-16, max_iterations=400, max_function_evals=100)"
+      "signature": "solve_kinetic_wavevector_roots(*, B0, qs, ms, ns0, Ts0, omegas, kz, kx_start, tol_fun=1e-16, tol_x=1e-16, max_iterations=400, max_function_evals=100)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "solve_kinetic_wavevector_roots"
     }
   },
   "version": {
