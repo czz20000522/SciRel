@@ -67,7 +67,10 @@ Every document must bind one stable scientific `asset_id` and declare:
 - named input/output ports with meaning, units, shape, dtype, required/default status and constraints; optional ports carry a JSON-compatible `default`, while required ports omit it;
 - applicability preconditions, supported scope and explicit exclusions;
 - invalid-input, runtime-failure, nonconvergence and partial-result semantics;
-- stable Python module, symbol and exact signature;
+- stable implementation Python module, symbol and exact signature; an optional
+  `canonical_module`/`canonical_symbol` pair may name the package-level import
+  exposed to users, and validation requires that alias to resolve to the same
+  callable;
 - current SciRel implementation version and stable dependency asset IDs;
 - one minimal executable example and expected observable result;
 - verification scope, executable test paths, evidence ceiling and known limitations; and

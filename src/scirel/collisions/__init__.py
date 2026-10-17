@@ -1,6 +1,8 @@
 """Collision-domain public API with lazy scientific operator exports."""
 
 from importlib import import_module as _import_module
+from types import ModuleType as _ModuleType
+import sys as _sys
 
 
 __all__ = [
@@ -105,3 +107,32 @@ def __getattr__(name):
 
 def __dir__():
     return sorted(set(globals()) | set(__all__) | set(_LAZY_MODULES))
+
+
+class _LazyCollisionModule(_ModuleType):
+    """Keep public callables ahead of same-named child modules.
+
+    Importing ``scirel.collisions.relativistic_maxwellian_bessel`` places the
+    child module on this package under the same attribute name as the public
+    function. Resolve declared exports first so package-level imports remain
+    stable regardless of import order.
+    """
+
+    def __getattribute__(self, name):
+        namespace = _ModuleType.__getattribute__(self, "__dict__")
+        exports = namespace.get("_LAZY_EXPORTS", {})
+        if name in exports:
+            current = namespace.get(name)
+            if current is not None and not isinstance(current, _ModuleType):
+                return current
+            return _load_export(name)
+        modules = namespace.get("_LAZY_MODULES", ())
+        if name in modules:
+            current = namespace.get(name)
+            if isinstance(current, _ModuleType):
+                return current
+            return _import_module(f".{name}", _ModuleType.__getattribute__(self, "__name__"))
+        return _ModuleType.__getattribute__(self, name)
+
+
+_sys.modules[__name__].__class__ = _LazyCollisionModule

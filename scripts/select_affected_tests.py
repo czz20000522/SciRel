@@ -11,6 +11,7 @@ import subprocess
 import sys
 from typing import Iterable
 
+from public_api_binding import canonical_binding, implementation_module, source_module_path
 from validate_asset_documents import resolve_test_reference
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -247,7 +248,8 @@ def _load_catalog_assets() -> list[Asset]:
         python_api = document["public_api"]["python"]
         module = python_api["module"]
         symbol = python_api["symbol"]
-        implementation_module = _exported_module(module, symbol)
+        implementation = implementation_module(ROOT, module, symbol)
+        canonical_module, canonical_symbol = canonical_binding(python_api)
         direct_tests = tuple(document["verification"]["tests"])
         for direct_test in direct_tests:
             try:
@@ -256,9 +258,9 @@ def _load_catalog_assets() -> list[Asset]:
                 raise ValueError(f"{path.name}: {error}") from error
         assets.append(
             Asset(
-                public_callable=f"{module}.{symbol}",
-                module=implementation_module,
-                source_path="src/" + implementation_module.replace(".", "/") + ".py",
+                public_callable=f"{canonical_module}.{canonical_symbol}",
+                module=implementation,
+                source_path=source_module_path(ROOT, implementation).as_posix(),
                 kind=document["kind"],
                 asset_ref=document["asset_id"],
                 dependency_refs=frozenset(

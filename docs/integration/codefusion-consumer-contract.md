@@ -70,8 +70,11 @@ search result, not a claim that the capability cannot exist.
 
 ## Callable and connector surface
 
-The Python binding is `public_api.python.module`, `symbol`, and exact `signature`. The framework-neutral thin adapter
-supports four logical capabilities:
+The implementation Python binding is `public_api.python.module`, `symbol`, and exact `signature`. Newer documents may
+also carry `canonical_module` and `canonical_symbol` as a pair. The canonical binding is a stable package-level import
+for discovery and user code; the implementation binding remains the source/wheel closure and signature authority.
+The validator and thin adapter import both bindings and require the canonical package object to expose the identical
+callable object. Older documents omit the optional pair and retain their existing binding semantics. The framework-neutral thin adapter supports four logical capabilities:
 
 - `catalog.discover`
 - `asset.read`

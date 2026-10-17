@@ -331,6 +331,25 @@ def _validate_release_binding(
             raise ValueError("external wheel capability entry has invalid identity")
         seen_assets.add(asset_id)
         capability_members.add(member)
+        canonical_module = capability.get("canonical_module")
+        canonical_symbol = capability.get("canonical_symbol")
+        canonical_member = capability.get("canonical_wheel_member")
+        if any(
+            value is not None
+            for value in (canonical_module, canonical_symbol, canonical_member)
+        ):
+            if (
+                not isinstance(canonical_module, str)
+                or not isinstance(canonical_symbol, str)
+                or not canonical_symbol
+                or not isinstance(canonical_member, str)
+                or not canonical_member.endswith("/__init__.py")
+                or not canonical_module.startswith("scirel.")
+                or not all(part.isidentifier() for part in canonical_module.split("."))
+                or not canonical_symbol.isidentifier()
+            ):
+                raise ValueError("external wheel canonical capability binding is invalid")
+            capability_members.add(canonical_member)
 
     layout_members = layout.get("members")
     if not isinstance(layout_members, list) or len(layout_members) != len(set(layout_members)) or any(
@@ -408,15 +427,41 @@ def _validate_release_binding(
                 symbol = python_api.get("symbol")
                 if not isinstance(symbol, str) or not symbol:
                     raise ValueError(f"source selected document symbol is invalid: {asset_id}")
-                expected_capabilities.append(
-                    {
+                expected_capability: dict[str, object] = {
                         "asset_id": asset_id,
                         "kind": kind,
                         "module": module,
                         "symbol": symbol,
                         "wheel_member": _public_module_wheel_member(module, package_members),
-                    }
-                )
+                }
+                canonical_module = python_api.get("canonical_module")
+                canonical_symbol = python_api.get("canonical_symbol")
+                if canonical_module is not None or canonical_symbol is not None:
+                    if (
+                        not isinstance(canonical_module, str)
+                        or not isinstance(canonical_symbol, str)
+                        or not canonical_module
+                        or not canonical_symbol
+                        or not canonical_module.startswith("scirel.")
+                        or not all(part.isidentifier() for part in canonical_module.split("."))
+                        or not canonical_symbol.isidentifier()
+                    ):
+                        raise ValueError(
+                            f"source document canonical public API is invalid: {asset_id}"
+                        )
+                    canonical_member = _public_module_wheel_member(canonical_module, package_members)
+                    if not canonical_member.endswith("/__init__.py"):
+                        raise ValueError(
+                            f"source document canonical module is not a package: {asset_id}"
+                        )
+                    expected_capability.update(
+                        {
+                            "canonical_module": canonical_module,
+                            "canonical_symbol": canonical_symbol,
+                            "canonical_wheel_member": canonical_member,
+                        }
+                    )
+                expected_capabilities.append(expected_capability)
             if selection.get("capabilities") != expected_capabilities:
                 raise ValueError("external wheel capability closure differs from source selection")
             if selection.get("counts") != expected_counts:

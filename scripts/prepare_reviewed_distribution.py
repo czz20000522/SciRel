@@ -23,6 +23,7 @@ from finalize_release import (
 from scientific_runtime import baseline_receipt, build_requirements, pin_dependencies, python_requirement
 from release_index import current_unpublished_entries, read_index
 from validate_asset_documents import ASSET_ID_RE, load_document_set
+from public_api_binding import implementation_module, source_module_path
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -186,11 +187,14 @@ def prepare_reviewed_distribution(
         dependencies = {part["asset_id"] for part in document["version"]["dependencies"]}
         if not dependencies <= documents.keys():
             raise ValueError(f"release dependency closure is incomplete: {asset_id}")
-        module = document["public_api"]["python"]["module"]
+        api = document["public_api"]["python"]
+        module = implementation_module(source_root, api["module"], api["symbol"])
         parts = module.split(".")
         if len(parts) < 3 or parts[0] != "scirel" or not all(part.isidentifier() for part in parts):
             raise ValueError(f"approved Python module is invalid: {module}")
-        selected_modules["src/" + module.replace(".", "/") + ".py"] = module
+        selected_modules[
+            "src/" + source_module_path(source_root, module).as_posix().removeprefix("src/")
+        ] = module
         test_paths.update(document["verification"]["tests"])
     if not test_paths <= test_files.keys():
         raise ValueError("reviewed test files do not cover every selected document")
@@ -228,7 +232,9 @@ def prepare_reviewed_distribution(
             destination.parent.mkdir(parents=True, exist_ok=True)
             destination.write_bytes(body)
             members[relative] = body
-        for name, body in _reviewed_initializers(documents, support_modules).items():
+        for name, body in _reviewed_initializers(
+            documents, support_modules, source_root
+        ).items():
             destination = stage / "src" / name
             destination.parent.mkdir(parents=True, exist_ok=True)
             destination.write_bytes(body)

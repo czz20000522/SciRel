@@ -383,15 +383,41 @@ def _release_binding(
         if not isinstance(symbol, str) or not symbol:
             raise ValueError(f"document public API symbol is invalid: {asset_id}")
         wheel_member = _module_wheel_member(module, package_members)
-        capabilities.append(
-            {
-                "asset_id": asset_id,
-                "kind": kind,
-                "module": module,
-                "symbol": symbol,
-                "wheel_member": wheel_member,
-            }
-        )
+        capability: dict[str, object] = {
+            "asset_id": asset_id,
+            "kind": kind,
+            "module": module,
+            "symbol": symbol,
+            "wheel_member": wheel_member,
+        }
+        canonical_module = python_api.get("canonical_module")
+        canonical_symbol = python_api.get("canonical_symbol")
+        if canonical_module is not None or canonical_symbol is not None:
+            if (
+                not isinstance(canonical_module, str)
+                or not isinstance(canonical_symbol, str)
+                or not canonical_module
+                or not canonical_symbol
+                or not canonical_module.startswith("scirel.")
+                or not all(part.isidentifier() for part in canonical_module.split("."))
+                or not canonical_symbol.isidentifier()
+            ):
+                raise ValueError(f"document canonical public API is invalid: {asset_id}")
+            canonical_wheel_member = _module_wheel_member(
+                canonical_module, package_members
+            )
+            if not canonical_wheel_member.endswith("/__init__.py"):
+                raise ValueError(
+                    f"document canonical module is not a package: {asset_id}"
+                )
+            capability.update(
+                {
+                    "canonical_module": canonical_module,
+                    "canonical_symbol": canonical_symbol,
+                    "canonical_wheel_member": canonical_wheel_member,
+                }
+            )
+        capabilities.append(capability)
     expected_counts = wheel.get("selected_capabilities")
     doc_counts = docs.get("capability_counts")
     if expected_counts != counts or doc_counts != counts:

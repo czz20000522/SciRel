@@ -13,6 +13,11 @@ import tempfile
 import tomllib
 from typing import Any
 
+from public_api_binding import (
+    canonical_binding,
+    has_explicit_canonical_binding,
+    qualified_name,
+)
 from validate_asset_documents import load_document_set
 
 
@@ -171,48 +176,49 @@ def build_catalog(
                     "exact_record": exact_refs[asset_id],
                 }
             )
-            summaries.append(
-                {
-                    "asset_id": asset_id,
-                    "kind": document["kind"],
-                    "title": document["title"],
-                    "summary": document["summary"],
-                    "identity": {
-                        field: document["identity"][field]
-                        for field in ("model", "geometry", "coordinates", "boundary")
-                    },
-                    "inputs": [
-                        {
-                            field: port[field]
-                            for field in (
-                                "name",
-                                "units",
-                                "shape",
-                                "dtype",
-                                "required",
-                                "default",
-                            )
-                            if field in port
-                        }
-                        for port in document["inputs"]
-                    ],
-                    "outputs": [
-                        {
-                            field: port[field]
-                            for field in ("name", "units", "shape", "dtype")
-                        }
-                        for port in document["outputs"]
-                    ],
-                    "public_callable": (
-                        f"{document['public_api']['python']['module']}."
-                        f"{document['public_api']['python']['symbol']}"
-                    ),
-                    "supported": document["applicability"]["supported"],
-                    "known_limitations": document["verification"]["known_limitations"],
-                    "evidence_ceiling": document["verification"]["evidence_ceiling"],
-                    "exact_record": exact_refs[asset_id],
-                }
-            )
+            python_api = document["public_api"]["python"]
+            summary = {
+                "asset_id": asset_id,
+                "kind": document["kind"],
+                "title": document["title"],
+                "summary": document["summary"],
+                "identity": {
+                    field: document["identity"][field]
+                    for field in ("model", "geometry", "coordinates", "boundary")
+                },
+                "inputs": [
+                    {
+                        field: port[field]
+                        for field in (
+                            "name",
+                            "units",
+                            "shape",
+                            "dtype",
+                            "required",
+                            "default",
+                        )
+                        if field in port
+                    }
+                    for port in document["inputs"]
+                ],
+                "outputs": [
+                    {
+                        field: port[field]
+                        for field in ("name", "units", "shape", "dtype")
+                    }
+                    for port in document["outputs"]
+                ],
+                "public_callable": qualified_name(*canonical_binding(python_api)),
+                "supported": document["applicability"]["supported"],
+                "known_limitations": document["verification"]["known_limitations"],
+                "evidence_ceiling": document["verification"]["evidence_ceiling"],
+                "exact_record": exact_refs[asset_id],
+            }
+            if has_explicit_canonical_binding(python_api):
+                summary["implementation_callable"] = qualified_name(
+                    python_api["module"], python_api["symbol"]
+                )
+            summaries.append(summary)
 
         route_path = root / "routes" / "all.jsonl"
         summary_path = root / "summaries" / "all.jsonl"

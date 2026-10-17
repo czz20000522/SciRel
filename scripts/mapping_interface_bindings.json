@@ -105,9 +105,9 @@
         }
       ],
       "modules": {
-        "scirel.kinetic.pdrk.workflows": "c0bc4a50d4085b13b6e92f3b2964eb11261b9893119bfec5fb5655cbabea4b9a",
-        "scirel.kinetic.pdrk.rational": "e150f1fe3ba6634ef706a3c8fd5b923dd4daa845364b738c18872fb88e0ecc79",
-        "scirel.kinetic.pdrk._presentation": "a90daf8243c310e8d8bbc9c3cbf95ca7a8292af0279540a49c32637413bd4ed8"
+        "scirel.kinetic.pdrk.workflows": "6eccbc6cd4891ac7c93734fedae039c6842c26be8c1d5cf660bc0b25015f9d3a",
+        "scirel.kinetic.pdrk.rational": "8a59963f3bf3a7e9c037f039a35e8a6915f9f430395314a90ff93726209ffb24",
+        "scirel.kinetic.pdrk._presentation": "738434ec6b4340236d4147da782547aec0f8d715835a69720c0e636bc4d747f8"
       },
       "review_basis": "Transparent wrapper delegates to rational.reassemble_original_program, which routes generator controls to jpole_generator(J=12,I=16,precision=80), otherwise ordered_spectrum(J=8,opt=None,N=None,B0=None,points=None,sp=0,wg0=1.5). model/output_dir required; I/precision apply only generator, other model-specific controls retain documented failures. The J dictionary is a documented per-model default, not a Python parameter default."
     },
@@ -928,7 +928,7 @@
       "modules": {
         "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
         "scirel.diagnostics.equilibrium_synthesis_diagnostics": "f4185e7184d3ee3db66ead6fd45be9a41f4f6daa60bf3455c5ce69340ee3f96a",
-        "scirel.geometry.bilinear_grid_sampling": "8b4f3506833e1cc4a00369959352d80e8dd45cc7f138f0304ac047bb84b4c251",
+        "scirel.geometry.bilinear_grid_sampling": "72394c893ca93078dff8f68074c62ef791fdde364c746f34d609d8c2e257160c",
         "scirel.diagnostics.observation_residuals": "e2e8df4d18ae438372c06c212bfb5784bc2909ca9c7c5ba5784c3c811a0074bc"
       },
       "review_basis": "Port identity only; root scientific acceptance is separate. Current run_graph validates nonempty explicit observation requests, source/profile units and psi-to-Wb convention before sampling. Shared channel vocabulary is source-bound; requested missing channels reject."
@@ -1047,7 +1047,7 @@
         "scirel._validation": "08d251465f9e03ea5e9e26066dd08fa5bbc70ec7deed2b6009dc2719345b94ee",
         "scirel.equilibrium.isotropic_pressure_flux": "5d43e2cc451ddfde57a380120786262b4a24fe51a87628b5b3a90f83ab564667",
         "scirel.equilibrium.pressure_flux_state": "85108c105911ec83584bf964d4e03e089d39685eaeb897da2506f062f72e9bda",
-        "scirel.equilibrium.pleiades_feedback": "ba2c2a11467b2174741347f46f5cf8e2a0ad83006e371adf6114b0160b053ff7",
+        "scirel.equilibrium.pleiades_feedback": "61d9ee1860751ede822fe04f0ca7f27c24eb6ee164a51145fe9e3147b7b0cbde",
         "scirel.equilibrium._pressure_current": "d888e3be3c30588ea6a8695da26ca54ca46f1b2398ac74d06f88c198caecb004"
       },
       "review_basis": "Port identity only: explicit mapping requires grids, pressure callable, vacuum flux, Green matrix and tol/maxiter/relax; optional boolean plasma_mask defaults to None. Named calls to the qualified shared solver and exact terminal serializer are source-bound. Feedback has one owner; no second adapter loop. Scientific qualification requires the separate exact successor receipt."

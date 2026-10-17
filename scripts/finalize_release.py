@@ -29,6 +29,12 @@ from scirel_workflow import SciRelWorkflow, WorkflowStatus  # noqa: E402
 from scirel_plugin.adapter import review_item_from_body  # noqa: E402
 from validate_asset_documents import load_document_set  # noqa: E402
 from release_index import append_entry, current_unpublished_entries, read_index  # noqa: E402
+from public_api_binding import (
+    canonical_binding,
+    has_explicit_canonical_binding,
+    implementation_module,
+    source_module_path,
+)  # noqa: E402
 
 
 def _canonical_json(value: Any) -> bytes:
@@ -410,15 +416,37 @@ def _validate_wheel_import_closure(wheel_members: dict[str, bytes], source_root:
 
 
 def _reviewed_initializers(
-    documents: dict[str, dict[str, Any]], support_modules: set[str]
+    documents: dict[str, dict[str, Any]],
+    support_modules: set[str],
+    source_root: Path | None = None,
 ) -> dict[str, bytes]:
-    exports: dict[str, list[tuple[str, str]]] = {}
+    exports: dict[str, list[tuple[str, str, str]]] = {}
     packages = {"scirel"}
     for document in documents.values():
         api = document["public_api"]["python"]
-        module = api["module"]
-        package = module.rpartition(".")[0]
-        exports.setdefault(package, []).append((module, api["symbol"]))
+        implementation = api["module"]
+        canonical_module, canonical_symbol = canonical_binding(api)
+        if source_root is not None:
+            implementation = implementation_module(
+                source_root, implementation, api["symbol"]
+            )
+        if has_explicit_canonical_binding(api):
+            package = canonical_module
+        elif implementation != api["module"]:
+            # Legacy package-root documents keep the package as their public
+            # binding while the initializer maps the symbol to a child.
+            package = api["module"]
+        else:
+            package = api["module"].rpartition(".")[0]
+        if not package:
+            raise ValueError(f"public API has no package: {api['module']}")
+        if source_root is None and implementation != api["module"]:
+            raise ValueError(
+                "package-root public API initializer generation requires source_root"
+            )
+        exports.setdefault(package, []).append(
+            (implementation, api["symbol"], canonical_symbol)
+        )
         parts = package.split(".")
         packages.update(".".join(parts[:index]) for index in range(1, len(parts) + 1))
     for module in support_modules:
@@ -434,11 +462,24 @@ def _reviewed_initializers(
             if child.rpartition(".")[0] == package and not child.rsplit(".", 1)[1].startswith("_")
         )
         lines = [f"from . import {child}" for child in public_children]
-        lines.extend(
-            f"from .{module.removeprefix(package + '.')} import {symbol}"
-            for module, symbol in members
-        )
-        names = [*public_children, *(symbol for _, symbol in members)]
+        for module, implementation_symbol, public_symbol in members:
+            if module.startswith(package + "."):
+                relative = module.removeprefix(package + ".")
+            elif module.startswith("scirel.") and package == "scirel":
+                relative = module.removeprefix("scirel.")
+            else:
+                raise ValueError(
+                    f"implementation module is outside canonical package: {module} -> {package}"
+                )
+            alias = (
+                f" as {public_symbol}"
+                if public_symbol != implementation_symbol
+                else ""
+            )
+            lines.append(
+                f"from .{relative} import {implementation_symbol}{alias}"
+            )
+        names = [*public_children, *(symbol for _, _, symbol in members)]
         if len(names) != len(set(names)):
             raise ValueError(f"reviewed package exports duplicate a name: {package}")
         lines.append(f"__all__ = {sorted(names)!r}")
@@ -647,7 +688,14 @@ def finalize_reviewed_release(
     wheel_members = _wheel_contents(wheel, release_version)
     _validate_wheel_import_closure(wheel_members, source_root)
     approved_modules = {
-        document["public_api"]["python"]["module"].replace(".", "/") + ".py"
+        source_module_path(
+            source_root,
+            implementation_module(
+                source_root,
+                document["public_api"]["python"]["module"],
+                document["public_api"]["python"]["symbol"],
+            ),
+        ).as_posix().removeprefix("src/")
         for document in documents.values()
     }
     support_modules = {
@@ -655,7 +703,9 @@ def finalize_reviewed_release(
         for name in code_files
         if name.endswith(".py") and any(part.startswith("_") for part in PurePosixPath(name).parts[2:])
     }
-    expected_initializers = _reviewed_initializers(documents, support_modules)
+    expected_initializers = _reviewed_initializers(
+        documents, support_modules, source_root
+    )
     for wheel_name in wheel_members:
         parts = PurePosixPath(wheel_name).parts
         if (
@@ -682,10 +732,10 @@ def finalize_reviewed_release(
             if source_path.read_bytes() != body:
                 raise ValueError(f"release wheel differs from source: {wheel_name}")
     for asset_id, document in documents.items():
-        module = document["public_api"]["python"]["module"]
-        source_name = "src/" + module.replace(".", "/") + ".py"
-        source_path = _relative_file(source_root, source_name, "src/scirel/")
-        wheel_name = source_name.removeprefix("src/")
+        api = document["public_api"]["python"]
+        module = implementation_module(source_root, api["module"], api["symbol"])
+        source_path = source_root / source_module_path(source_root, module)
+        wheel_name = source_path.relative_to(source_root / "src").as_posix()
         if wheel_members.get(wheel_name) != source_path.read_bytes():
             raise ValueError(f"release wheel differs from source module: {asset_id}")
     for name, body in code_files.items():

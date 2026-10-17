@@ -106,8 +106,20 @@
           "properties": {
             "module": {"type": "string", "pattern": "^scirel(?:\\.[A-Za-z_][A-Za-z0-9_]*)+$"},
             "symbol": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"},
-            "signature": {"type": "string", "minLength": 1}
-          }
+            "signature": {"type": "string", "minLength": 1},
+            "canonical_module": {"type": "string", "pattern": "^scirel(?:\\.[A-Za-z_][A-Za-z0-9_]*)+$"},
+            "canonical_symbol": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"}
+          },
+          "allOf": [
+            {
+              "if": {"required": ["canonical_module"]},
+              "then": {"required": ["canonical_symbol"]}
+            },
+            {
+              "if": {"required": ["canonical_symbol"]},
+              "then": {"required": ["canonical_module"]}
+            }
+          ]
         }
       }
     },

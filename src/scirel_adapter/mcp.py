@@ -395,6 +395,34 @@ class ThinMcpAdapter:
             ) from error
         if not callable(function):
             _fail("callable_mismatch", f"documented symbol is not callable for {asset_id}")
+        canonical_module_name = python_api.get("canonical_module")
+        canonical_symbol = python_api.get("canonical_symbol")
+        if canonical_module_name is not None or canonical_symbol is not None:
+            if (
+                not isinstance(canonical_module_name, str)
+                or not isinstance(canonical_symbol, str)
+                or not canonical_module_name.startswith("scirel.")
+                or not all(
+                    part.isidentifier() for part in canonical_module_name.split(".")
+                )
+                or not canonical_symbol.isidentifier()
+            ):
+                _fail("invalid_snapshot", f"canonical Python binding is invalid for {asset_id}")
+            try:
+                canonical_module = importlib.import_module(canonical_module_name)
+                canonical_function = getattr(canonical_module, canonical_symbol)
+            except (ImportError, AttributeError) as error:
+                raise ThinMcpAdapterError(
+                    "callable_mismatch",
+                    f"canonical documented callable is unavailable for {asset_id}",
+                ) from error
+            if not hasattr(canonical_module, "__path__"):
+                _fail("callable_mismatch", f"canonical binding is not a package for {asset_id}")
+            if not callable(canonical_function) or canonical_function is not function:
+                _fail(
+                    "callable_mismatch",
+                    f"canonical callable differs for {asset_id}",
+                )
         signature = inspect.signature(function)
         actual_signature = f"{python_api['symbol']}{signature}"
         if actual_signature != python_api["signature"]:

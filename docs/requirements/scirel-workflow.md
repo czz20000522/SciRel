@@ -175,6 +175,8 @@ candidate/source digest、SciRel Git base、候选池与 skill digest、L1 资�
 
 候选文档是专家审核的主入口。新增或改变公共资产时，其中拟议的 canonical asset document 必须使用现有 `scirel.asset-document.v1` 合同；候选代码和候选测试用于核对其主张。缺少科学关系、单位、坐标、适用域、失败语义或证据时登记 gap，不从名称、源码相似度或项目经验猜补。
 
+公共 Python 绑定区分实现入口和稳定发现入口：`public_api.python.module`、`symbol`、`signature` 始终绑定实际实现及其 wheel 闭包；需要面向用户的包级导入时，可成对增加 `canonical_module` 与 `canonical_symbol`。校验器必须确认两者指向同一个可调用对象，旧文档省略这两个可选字段时保持原有语义。该别名只进入后续候选文档，不回写已冻结的文档或发布物。
+
 审核工作台只展示 SciRel 的 draft、证据、依赖和候选差异。CodeFusion 提供 UI、身份和动作投递；审核结论写入 SciRel workflow 记录。
 
 批准只授权候选中明确列出的内容。实施时发现需要改变科学合同、API、依赖或测试主张，必须形成新候选或回到专家审核，不能静默扩大批准范围。

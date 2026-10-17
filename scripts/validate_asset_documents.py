@@ -224,8 +224,19 @@ def _validate_public_api(value: Any) -> tuple[str, str, str]:
     public_api = _object(value, "public_api")
     _exact_keys(public_api, {"python"}, {"python"}, "public_api")
     python_api = _object(public_api["python"], "public_api.python")
-    keys = {"module", "symbol", "signature"}
-    _exact_keys(python_api, keys, keys, "public_api.python")
+    keys = {
+        "module",
+        "symbol",
+        "signature",
+        "canonical_module",
+        "canonical_symbol",
+    }
+    _exact_keys(
+        python_api,
+        {"module", "symbol", "signature"},
+        keys,
+        "public_api.python",
+    )
     module = _text(python_api["module"], "public_api.python.module")
     symbol = _text(python_api["symbol"], "public_api.python.symbol")
     signature = _text(python_api["signature"], "public_api.python.signature")
@@ -233,6 +244,32 @@ def _validate_public_api(value: Any) -> tuple[str, str, str]:
         _fail("public_api.python.module", "must be an importable scirel module")
     if not symbol.isidentifier():
         _fail("public_api.python.symbol", "must be a Python identifier")
+    has_canonical_module = "canonical_module" in python_api
+    has_canonical_symbol = "canonical_symbol" in python_api
+    if has_canonical_module != has_canonical_symbol:
+        _fail(
+            "public_api.python",
+            "canonical_module and canonical_symbol must be provided together",
+        )
+    if has_canonical_module:
+        canonical_module = _text(
+            python_api["canonical_module"], "public_api.python.canonical_module"
+        )
+        canonical_symbol = _text(
+            python_api["canonical_symbol"], "public_api.python.canonical_symbol"
+        )
+        if not canonical_module.startswith("scirel.") or not all(
+            part.isidentifier() for part in canonical_module.split(".")
+        ):
+            _fail(
+                "public_api.python.canonical_module",
+                "must be an importable scirel package module",
+            )
+        if not canonical_symbol.isidentifier():
+            _fail(
+                "public_api.python.canonical_symbol",
+                "must be a Python identifier",
+            )
     try:
         parsed = ast.parse(f"def {signature}:\n    pass\n")
     except SyntaxError as error:
@@ -585,6 +622,26 @@ def validate_runtime(
     function = getattr(module, python_api["symbol"], None)
     if not callable(function):
         _fail(document["asset_id"], "documented Python callable is unavailable")
+    if "canonical_module" in python_api:
+        canonical_module = importlib.import_module(python_api["canonical_module"])
+        if not hasattr(canonical_module, "__path__"):
+            _fail(
+                document["asset_id"],
+                "canonical Python module must be a package",
+            )
+        canonical_function = getattr(
+            canonical_module, python_api["canonical_symbol"], None
+        )
+        if not callable(canonical_function):
+            _fail(
+                document["asset_id"],
+                "canonical documented Python callable is unavailable",
+            )
+        if canonical_function is not function:
+            _fail(
+                document["asset_id"],
+                "canonical Python callable differs from implementation binding",
+            )
     signature = inspect.signature(function)
     actual_signature = f"{python_api['symbol']}{signature}"
     if actual_signature != python_api["signature"]:

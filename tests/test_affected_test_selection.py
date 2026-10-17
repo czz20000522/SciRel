@@ -842,9 +842,9 @@ def test_current_asset_index_uses_canonical_documents():
     fast_ion = [doc for doc in direct_documents if doc["asset_id"] == "scirel.plasma.fast-ion-heating"]
     assert len(fast_ion) == 1
     assert fast_ion[0]["public_api"]["python"]["symbol"] == "fast_ion_fractional_heating"
-    assert len([doc for doc in direct_documents if doc["asset_id"] != "scirel.plasma.fast-ion-heating"]) == 140
-    assert len(assets) == 141
-    assert len({asset.public_callable for asset in assets}) == 141
+    assert len([doc for doc in direct_documents if doc["asset_id"] != "scirel.plasma.fast-ion-heating"]) == 266
+    assert len(assets) == 267
+    assert len({asset.public_callable for asset in assets}) == 267
 
 
 def test_shared_corrected_green_keeps_current_consumers():
