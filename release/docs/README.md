@@ -38,11 +38,12 @@ receipt. The wheel bytes may remain identical only under the editorial rule abov
 new source revision and document selection must still be explicit. Git history records
 revisions instead of keeping duplicate copies of the same document set.
 
-The wheel itself may also advance by a patch, post, or development revision on the same
-public release line. That creates a new wheel candidate and document selection: the
+The wheel itself may also advance by a patch or development maintenance revision on the
+same public release line. That creates a new wheel candidate and document selection: the
 exact `compatible_wheel` and every document's `implementation_version` move with the
-new wheel, while an editorial `documentation.version` may continue independently on
-the same line.
+new wheel, while an editorial `documentation.version` may continue independently on the
+same line. A PEP 440 `post` revision is reserved for packaging or metadata correction of
+an existing version.
 
 The current tuple stores a logical external documentation `manifest_ref`, its
 manifest digest, and the snapshot digest/byte count. The rendered snapshot and

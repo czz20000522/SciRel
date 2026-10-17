@@ -52,11 +52,13 @@ remain source-bound. It must still record the exact
 Every selected document continues to expose the exact wheel `implementation_version`,
 so a documentation revision cannot silently describe a different runtime.
 
-Wheel implementation improvements use the same release line: when the wheel moves to
-a new patch, post, or development version, a new wheel candidate and document selection
-are required, `compatible_wheel` changes to that exact wheel version, and every selected
-document's `implementation_version` follows it. The documentation editorial revision
-may advance separately, but it cannot replace the implementation contract it describes.
+Wheel implementation improvements use the same release line: when accumulated compatible
+changes are cut as a new patch or development maintenance batch, a new wheel candidate and
+document selection are required, `compatible_wheel` changes to that exact wheel version, and
+every selected document's `implementation_version` follows it. A PEP 440 `post` revision is
+reserved for packaging or metadata correction of an existing version. The documentation
+editorial revision may advance separately, but it cannot replace the implementation contract
+it describes.
 
 A documentation change that adds, removes, or changes a public scientific capability,
 API signature, default, failure contract, applicability boundary, dependency, or
