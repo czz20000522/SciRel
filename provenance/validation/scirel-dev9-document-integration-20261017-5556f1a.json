@@ -1,0 +1,45 @@
+{
+  "evidence": {
+    "docs_build_manifest": "scirel/0.1.0.dev9/5556f1a-docs/build-manifest.json",
+    "docs_build_manifest_sha256": "d5821dd1183498dbe9bf9d79ef9b9b25429517da1825eb1468434316eeeb37ae",
+    "linux_acceptance": "provenance/validation/scirel-dev9-linux-acceptance-20261017-5556f1a.json",
+    "linux_acceptance_sha256": "b75b531bb130b2a6f96588ddc472f558b4a273be014b6779edfb836bf8e6b088",
+    "wheel_build_manifest": "scirel/0.1.0.dev9/5556f1a/build-manifest.json",
+    "wheel_build_manifest_sha256": "355cf63b18afab169ea7fad935a07ca5416f9e3bf54bd6b66ee9380b51aa30d8"
+  },
+  "handbook": {
+    "asset_count": 267,
+    "path": "tools/docs/handbook.json",
+    "scope": "repository",
+    "selected_asset_count": 260,
+    "sha256": "7aea04ee827699038d4be7a34bf2d579c875614867334657dae9de1e050bd9fc"
+  },
+  "limitations": [
+    "External wheel and documentation snapshot are generated artifacts under an ignored artifact root; Git source, selection and handbook remain canonical.",
+    "The Linux receipt establishes clean consumer installation with network-resolved runtime dependencies for the bound wheel and representative core scope; it does not establish complete scientific capability closure or offline wheelhouse acceptance.",
+    "This metadata receipt does not constitute scientific expert approval, redistribution approval, or public release approval."
+  ],
+  "project_version": "0.1.0.dev9",
+  "schema": "scirel.dev9-document-integration.v1",
+  "selection": {
+    "asset_count": 260,
+    "operators": 230,
+    "path": "provenance/selections/scientific-core-documents-20261017-dev9.json",
+    "sha256": "ef3e6371dfdc8700bc49edaf4193ce1bbee3b21417313d08b20f7f9c5c95836e",
+    "task_graphs": 30
+  },
+  "snapshot": {
+    "asset_count": 260,
+    "bytes": 27722415,
+    "external_path": "scirel/0.1.0.dev9/5556f1a-docs/snapshot",
+    "sha256": "58d6ef0557e6218b12a217a7525f141fa15aaaff724ca82421385a7abeb6a899",
+    "source_dirty": false
+  },
+  "source_revision": "5556f1aede8104b815a1595fda03167c0dadd135",
+  "status": "PASS",
+  "wheel": {
+    "bytes": 661402,
+    "path": "scirel/0.1.0.dev9/5556f1a/scirel-0.1.0.dev9-py3-none-any.whl",
+    "sha256": "8ac085e4f108824835436eb5138892a7055b4406d26a3bc5cab712b90d9a9fba"
+  }
+}

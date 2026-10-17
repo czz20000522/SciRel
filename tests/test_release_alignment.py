@@ -25,7 +25,7 @@ def test_current_release_alignment_is_exact() -> None:
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     assert result["wheel_version"] == project["project"]["version"]
     assert result["documentation_selection"] == "scientific-core-current"
-    assert result["source_revision"] == "34d06da7a839870ee0c082418883de70551d37e0"
+    assert result["source_revision"] == "5556f1aede8104b815a1595fda03167c0dadd135"
     assert result["capability_counts"] == {
         "operators": 230,
         "task_graphs": 30,
@@ -239,9 +239,9 @@ def test_alignment_can_require_an_exact_git_source_revision() -> None:
         validate_alignment(ROOT, expected_source_revision="0" * 40)
 
 
-def test_current_release_strict_gate_rejects_unmatched_rebuild() -> None:
-    with pytest.raises(ValueError, match="lacks reproducible build evidence"):
-        validate_alignment(ROOT, require_bound_candidate_match=True)
+def test_current_release_strict_gate_accepts_bound_rebuild() -> None:
+    result = validate_alignment(ROOT, require_bound_candidate_match=True)
+    assert result["source_revision"] == "5556f1aede8104b815a1595fda03167c0dadd135"
 
 
 def test_legacy_current_files_are_thin_compatibility_pointers() -> None:

@@ -3,17 +3,17 @@
   "package": "scirel",
   "version": "0.1.0.dev9",
   "status": "development_candidate",
-  "source_revision": "34d06da7a839870ee0c082418883de70551d37e0",
+  "source_revision": "5556f1aede8104b815a1595fda03167c0dadd135",
   "source_revision_status": "bound",
   "wheel": {
     "version": "0.1.0.dev9",
     "status": "development_candidate",
     "artifact": {
-      "manifest_ref": "scirel/0.1.0.dev9/34d06da7a839870ee0c082418883de70551d37e0/wheel/build-manifest.json",
-      "manifest_sha256": "90e77e1c6fa2252ab2fee521efa9e9783e17aeccf3561f4ac39e278dedb3d3ff",
+      "manifest_ref": "scirel/0.1.0.dev9/5556f1a/build-manifest.json",
+      "manifest_sha256": "355cf63b18afab169ea7fad935a07ca5416f9e3bf54bd6b66ee9380b51aa30d8",
       "filename": "scirel-0.1.0.dev9-py3-none-any.whl",
-      "sha256": "5b586e045dfcf53618ca39521f7ecdc1cff0c0e41a3eec01f6d750e3acc6a0ce",
-      "bytes": 660195
+      "sha256": "8ac085e4f108824835436eb5138892a7055b4406d26a3bc5cab712b90d9a9fba",
+      "bytes": 661402
     },
     "selected_capabilities": {
       "operators": 230,
@@ -24,8 +24,8 @@
     "platform_receipts": [
       {
         "platform": "linux-x86_64-cp314",
-        "path": "provenance/validation/scirel-dev9-linux-acceptance-20261017-34d06da.json",
-        "sha256": "c354bd93bca1e2bc422593211efad671bb6df316c85f6d89d7776bf5480057cb"
+        "path": "provenance/validation/scirel-dev9-linux-acceptance-20261017-5556f1a.json",
+        "sha256": "b75b531bb130b2a6f96588ddc472f558b4a273be014b6779edfb836bf8e6b088"
       }
     ]
   },
@@ -36,8 +36,8 @@
     "handbook": "tools/docs/handbook.json",
     "compatible_wheel": "0.1.0.dev9",
     "catalog_root": "catalog/examples",
-    "snapshot_sha256": "64c55a3f3c32a1cd61dff264ecc4115a74489391b4e6e48841da1c342cafc927",
-    "integration_record": "provenance/validation/scirel-dev9-document-integration-20261017-34d06da.json",
+    "snapshot_sha256": "58d6ef0557e6218b12a217a7525f141fa15aaaff724ca82421385a7abeb6a899",
+    "integration_record": "provenance/validation/scirel-dev9-document-integration-20261017-5556f1a.json",
     "selection_sha256": "ef3e6371dfdc8700bc49edaf4193ce1bbee3b21417313d08b20f7f9c5c95836e",
     "handbook_sha256": "7aea04ee827699038d4be7a34bf2d579c875614867334657dae9de1e050bd9fc",
     "capability_counts": {
@@ -47,10 +47,10 @@
     },
     "handbook_scope": "repository",
     "artifact": {
-      "manifest_ref": "scirel/0.1.0.dev9/34d06da7a839870ee0c082418883de70551d37e0/docs/build-manifest.json",
-      "manifest_sha256": "4424dbcf2d94f25d36931e4a7c399c2c2f933bb4ccfe1b1c4bc6590c2c702732",
+      "manifest_ref": "scirel/0.1.0.dev9/5556f1a-docs/build-manifest.json",
+      "manifest_sha256": "d5821dd1183498dbe9bf9d79ef9b9b25429517da1825eb1468434316eeeb37ae",
       "snapshot_ref": "snapshot",
-      "snapshot_sha256": "64c55a3f3c32a1cd61dff264ecc4115a74489391b4e6e48841da1c342cafc927",
+      "snapshot_sha256": "58d6ef0557e6218b12a217a7525f141fa15aaaff724ca82421385a7abeb6a899",
       "snapshot_bytes": 27722415
     }
   },

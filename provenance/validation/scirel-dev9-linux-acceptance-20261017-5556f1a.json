@@ -1,0 +1,236 @@
+{
+  "build": {
+    "bound_candidate": {
+      "bytes": 661402,
+      "sha256": "8ac085e4f108824835436eb5138892a7055b4406d26a3bc5cab712b90d9a9fba"
+    },
+    "builder": "scripts/build_scirel_from_ref.py on macOS arm64 CPython 3.14",
+    "byte_identical": true,
+    "first_build": {
+      "bytes": 661402,
+      "sha256": "8ac085e4f108824835436eb5138892a7055b4406d26a3bc5cab712b90d9a9fba"
+    },
+    "matches_bound_candidate": true,
+    "second_build": {
+      "bytes": 661402,
+      "sha256": "8ac085e4f108824835436eb5138892a7055b4406d26a3bc5cab712b90d9a9fba"
+    },
+    "source_date_epoch": 1792214444
+  },
+  "execution": {
+    "commands": [
+      "scp wheel and scripts to sub2api:/tmp/scirel-dev9-5556f1a",
+      "docker run --rm --pull=missing --platform linux/amd64 python:3.14-slim",
+      "python -m venv /tmp/scirel-linux-5556f1a/venv",
+      "venv/bin/python -m pip install numpy==2.5.4 scipy==1.18.1 mpmath==1.4.1",
+      "venv/bin/python -m pip install --no-index --no-deps scirel-0.1.0.dev9-py3-none-any.whl",
+      "venv/bin/python -I validate_installed_wheel.py --expected-platform linux-x86_64-cp314"
+    ],
+    "container": {
+      "engine": "Docker",
+      "image": "python:3.14-slim",
+      "platform": "linux/amd64"
+    },
+    "dependency_installation": {
+      "network_resolution": true,
+      "offline_wheelhouse_acceptance": false,
+      "wheel_install": "local wheel with --no-index --no-deps"
+    },
+    "host": "sub2api"
+  },
+  "limitations": [
+    "Runtime dependency wheels were resolved from the network during clean-venv setup.",
+    "This receipt establishes Linux amd64 CPython 3.14 installed-wheel acceptance for the bound wheel and representative core scope, not complete scientific capability closure.",
+    "This technical receipt does not constitute scientific expert approval, redistribution approval, or public release approval."
+  ],
+  "schema": "scirel.dev9-linux-acceptance.v1",
+  "source": {
+    "commit_epoch": 1792214444,
+    "commit_time_utc": "2026-10-17T05:20:44Z",
+    "revision": "5556f1aede8104b815a1595fda03167c0dadd135"
+  },
+  "status": "PASS",
+  "validation": {
+    "artifact": {
+      "bytes": 661402,
+      "path": "scirel-0.1.0.dev9-py3-none-any.whl",
+      "sha256": "8ac085e4f108824835436eb5138892a7055b4406d26a3bc5cab712b90d9a9fba"
+    },
+    "cross_domain_task": {
+      "expected_value": 1.5,
+      "outputs": {
+        "flux_loops": {
+          "dtype": "float64",
+          "expected_shape": [
+            1
+          ],
+          "finite": true,
+          "max": 1.5,
+          "min": 1.5,
+          "shape": [
+            1
+          ],
+          "shape_match": true
+        }
+      },
+      "status": "PASS",
+      "units": {
+        "flux_loops": "Wb/rad"
+      },
+      "value": 1.5
+    },
+    "dependencies": [
+      {
+        "import_candidates": [
+          "numpy"
+        ],
+        "imported_from": "/tmp/scirel-linux-5556f1a/venv/lib/python3.14/site-packages/numpy/__init__.py",
+        "imported_module": "numpy",
+        "installed_version": "2.5.4",
+        "name": "numpy",
+        "requirement": "numpy==2.5.4",
+        "status": "PASS",
+        "within_sys_prefix": true
+      },
+      {
+        "import_candidates": [
+          "scipy"
+        ],
+        "imported_from": "/tmp/scirel-linux-5556f1a/venv/lib/python3.14/site-packages/scipy/__init__.py",
+        "imported_module": "scipy",
+        "installed_version": "1.18.1",
+        "name": "scipy",
+        "requirement": "scipy==1.18.1",
+        "status": "PASS",
+        "within_sys_prefix": true
+      },
+      {
+        "import_candidates": [
+          "mpmath"
+        ],
+        "imported_from": "/tmp/scirel-linux-5556f1a/venv/lib/python3.14/site-packages/mpmath/__init__.py",
+        "imported_module": "mpmath",
+        "installed_version": "1.4.1",
+        "name": "mpmath",
+        "requirement": "mpmath==1.4.1",
+        "status": "PASS",
+        "within_sys_prefix": true
+      }
+    ],
+    "errors": [],
+    "package": {
+      "in_source_tree": false,
+      "metadata_path": "/tmp/scirel-linux-5556f1a/venv/lib/python3.14/site-packages/scirel-0.1.0.dev9.dist-info",
+      "metadata_within_sys_prefix": true,
+      "module_file": "/tmp/scirel-linux-5556f1a/venv/lib/python3.14/site-packages/scirel/__init__.py",
+      "requires_python": "<3.15,>=3.14",
+      "status": "PASS",
+      "version": "0.1.0.dev9",
+      "within_sys_prefix": true
+    },
+    "pip_check": {
+      "returncode": 0,
+      "status": "PASS",
+      "stderr": "",
+      "stdout": "No broken requirements found."
+    },
+    "runtime": {
+      "architecture": "x86_64",
+      "base_prefix": "/usr/local",
+      "executable": "/usr/local/bin/python3.14",
+      "expected_platform": "linux-x86_64-cp314",
+      "external_site_paths": [],
+      "implementation": "CPython",
+      "is_virtualenv": true,
+      "os": "linux",
+      "platform": "linux-x86_64",
+      "prefix": "/tmp/scirel-linux-5556f1a/venv",
+      "python_abi": "cpython-314",
+      "version": "3.14.8",
+      "version_line": "3.14"
+    },
+    "schema": "scirel.installed-wheel-validation.v1",
+    "simple_operator": {
+      "filaments": {
+        "dtype": "float64",
+        "expected_shape": [
+          1,
+          3
+        ],
+        "finite": true,
+        "max": 1.0,
+        "min": 0.0,
+        "shape": [
+          1,
+          3
+        ],
+        "shape_match": true
+      },
+      "outputs": {
+        "b_r_vac": {
+          "dtype": "float64",
+          "expected_shape": [
+            2,
+            2
+          ],
+          "finite": true,
+          "max": 0.00016387123614653912,
+          "min": -0.00016387123614653912,
+          "shape": [
+            2,
+            2
+          ],
+          "shape_match": true
+        },
+        "b_z_vac": {
+          "dtype": "float64",
+          "expected_shape": [
+            2,
+            2
+          ],
+          "finite": true,
+          "max": 0.0006035865100375208,
+          "min": -0.00010474203168983597,
+          "shape": [
+            2,
+            2
+          ],
+          "shape_match": true
+        },
+        "psi_vac": {
+          "dtype": "float64",
+          "expected_shape": [
+            2,
+            2
+          ],
+          "finite": true,
+          "max": 0.000226828371854452,
+          "min": 7.237352441360569e-05,
+          "shape": [
+            2,
+            2
+          ],
+          "shape_match": true
+        }
+      },
+      "status": "PASS"
+    },
+    "status": "PASS",
+    "wheel_payload": {
+      "dist_info_file_count": 25,
+      "file_count": 361,
+      "forbidden_files": [],
+      "metadata_name": "scirel",
+      "metadata_version": "0.1.0.dev9",
+      "native_resource_count": 105,
+      "package_file_count": 336,
+      "path": "scirel-0.1.0.dev9-py3-none-any.whl",
+      "status": "PASS",
+      "top_level_roots": [
+        "scirel",
+        "scirel-0.1.0.dev9.dist-info"
+      ],
+      "uncompressed_bytes": 1726862
+    }
+  }
+}
