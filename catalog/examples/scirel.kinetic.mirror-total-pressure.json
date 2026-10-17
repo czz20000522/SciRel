@@ -176,7 +176,9 @@
     "python": {
       "module": "scirel.kinetic.mirror_total_pressure",
       "symbol": "assemble_mirror_total_pressure",
-      "signature": "assemble_mirror_total_pressure(kinetic_moments, electron_state)"
+      "signature": "assemble_mirror_total_pressure(kinetic_moments, electron_state)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "assemble_mirror_total_pressure"
     }
   },
   "version": {

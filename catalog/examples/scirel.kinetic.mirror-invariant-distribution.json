@@ -263,7 +263,9 @@
     "python": {
       "module": "scirel.kinetic.mirror_invariant_distribution",
       "symbol": "evaluate_mirror_invariant_distribution",
-      "signature": "evaluate_mirror_invariant_distribution(v_parallel_m_s, v_perpendicular_m_s, b_t, psi, potential_v, mass_kg, charge_c, density_ref_m3, temperature_parallel_j, temperature_perpendicular_ref_j, b_ref_t, phi_ref_v=0.0, b_plug_left_t=None, b_plug_right_t=None, phi_plug_left_v=0.0, phi_plug_right_v=0.0, loss_cone_refill=0.0)"
+      "signature": "evaluate_mirror_invariant_distribution(v_parallel_m_s, v_perpendicular_m_s, b_t, psi, potential_v, mass_kg, charge_c, density_ref_m3, temperature_parallel_j, temperature_perpendicular_ref_j, b_ref_t, phi_ref_v=0.0, b_plug_left_t=None, b_plug_right_t=None, phi_plug_left_v=0.0, phi_plug_right_v=0.0, loss_cone_refill=0.0)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_mirror_invariant_distribution"
     }
   },
   "version": {
