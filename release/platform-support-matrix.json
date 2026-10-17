@@ -51,9 +51,12 @@
       "os": "macos",
       "architecture": "arm64",
       "python": "CPython 3.14",
-      "status": "NOT_RUN",
-      "evidence": [],
-      "scope": "target platform; no compatibility claim"
+      "status": "PARTIAL",
+      "evidence": [
+        "provenance/validation/scirel-dev9-macos-arm64-offline-20261017-5556f1a.json",
+        "release/CURRENT.json"
+      ],
+      "scope": "dev9 macOS arm64 + CPython 3.14 clean-venv installation with the exact bound wheel, fixed offline runtime wheelhouse, representative core tasks and native resource inventory; complete scientific capability closure is not established"
     },
     {
       "id": "macos-x86_64-cp314",

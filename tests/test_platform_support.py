@@ -31,6 +31,7 @@ def test_platform_matrix_is_explicit_and_fail_closed() -> None:
     result = validate_matrix(ROOT)
     assert result["platforms"]["linux-x86_64-cp314"] == "PARTIAL"
     assert result["platforms"]["windows-amd64-cp314"] == "NOT_RUN"
+    assert result["platforms"]["macos-arm64-cp314"] == "PARTIAL"
     assert result["capabilities"]["fluidbw-native-octave"] == "PASS"
     assert result["capabilities"]["pdrk-native-octave"] == "PARTIAL"
 

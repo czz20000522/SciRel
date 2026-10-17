@@ -9,7 +9,9 @@
     "linux_offline_wheelhouse_validation": "provenance/validation/scirel-dev9-linux-offline-wheelhouse-20261017-5556f1a.json",
     "linux_offline_wheelhouse_validation_sha256": "dcf19fdb2bdd866d08e8276cd1ebc889853c2a03ad40650bd078a5c9147cdf36",
     "linux_offline_wheelhouse_context": "scirel/0.1.0.dev9/5556f1a/linux-x86_64-cp314-offline/offline-wheelhouse-validation-context.json",
-    "linux_offline_wheelhouse_context_sha256": "8308fefd661c455dda13b20845a19ccf3a565f1ffbc9dc1cd0d81e886e77f835"
+    "linux_offline_wheelhouse_context_sha256": "8308fefd661c455dda13b20845a19ccf3a565f1ffbc9dc1cd0d81e886e77f835",
+    "macos_arm64_offline_wheelhouse_validation": "provenance/validation/scirel-dev9-macos-arm64-offline-20261017-5556f1a.json",
+    "macos_arm64_offline_wheelhouse_validation_sha256": "ace6d65b6286cb1bebb0257c19ff3632517b6a0c476532b2d1c002eec5f20e7c"
   },
   "handbook": {
     "asset_count": 267,
@@ -20,8 +22,8 @@
   },
   "limitations": [
     "External wheel and documentation snapshot are generated artifacts under an ignored artifact root; Git source, selection and handbook remain canonical.",
-    "The combined Linux receipt binds same-source reproducible-build evidence to an exact-wheel offline installation using a fixed three-wheel runtime wheelhouse; complete scientific capability closure is not established.",
-    "The wheelhouse was downloaded during preparation with network access, while the installation and validation container used Docker --network none and pip --no-index --only-binary=:all:.",
+    "The combined Linux and macOS arm64 receipts bind same-source reproducible-build evidence to exact-wheel offline installations using fixed three-wheel runtime wheelhouses; complete scientific capability closure is not established.",
+    "The wheelhouses were downloaded during preparation with network access, while installation and validation used no-index binary-only environments; the Linux run used Docker --network none and the macOS run used a local CPython 3.14 arm64 clean venv.",
     "This metadata receipt does not constitute scientific expert approval, redistribution approval, or public release approval."
   ],
   "project_version": "0.1.0.dev9",
