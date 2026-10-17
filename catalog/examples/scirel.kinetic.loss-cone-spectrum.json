@@ -167,7 +167,9 @@
     "python": {
       "module": "scirel.kinetic.loss_cone_spectrum",
       "symbol": "solve_loss_cone_spectrum",
-      "signature": "solve_loss_cone_spectrum(xi_tp, mode_count, grid_points=256, backend='truncated')"
+      "signature": "solve_loss_cone_spectrum(xi_tp, mode_count, grid_points=256, backend='truncated')",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "solve_loss_cone_spectrum"
     }
   },
   "version": {

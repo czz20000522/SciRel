@@ -14,8 +14,8 @@ def test_current_canonical_binding_census_preserves_facade_and_exception_denomin
     counts = report["counts"]
 
     assert counts["total"] == 267
-    assert counts["explicit"] == 209
-    assert counts["candidate"] == 11
+    assert counts["explicit"] == 210
+    assert counts["candidate"] == 10
     assert counts["exception"] == 47
     assert report["unexpected_missing"] == []
 
@@ -365,5 +365,13 @@ def test_mirror_direct_slice_pins_kinetic_facades_explicitly():
         "scirel.kinetic.mirror-total-pressure",
     }
     assert len(selected) == 3
+    assert all(rows[asset_id] == "explicit" for asset_id in selected)
+    assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"
+
+
+def test_loss_cone_spectrum_slice_pins_kinetic_facades_explicitly():
+    report = census(ROOT)
+    rows = {row["asset_id"]: row["status"] for row in report["rows"]}
+    selected = {"scirel.kinetic.loss-cone-spectrum"}
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
     assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"
