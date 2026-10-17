@@ -15,6 +15,45 @@ SciRel 采用与 SciPy 同类的单一来源模型：源代码、`pyproject.toml
 每次构建仍必须绑定新的 commit 和新的 artifact 路径，不能覆盖已经生成的 wheel、文档快照或回执。
 只有进入下一个开发序列或正式发布时，才提升 `project.version` 或创建 tag。
 
+### Wheel 与文档的主线和修订号
+
+Wheel 和文档需要保持同一条公开发行主线，但不要求每次文字修订都重建相同的
+wheel。主线取公共版本的 `major.minor` 对（例如 `0.1`）；wheel 的完整
+PEP 440 版本仍由 `pyproject.toml` 唯一决定，文档则可以在该主线上拥有独立的
+编辑修订号。
+
+这条规则同时适用于实现演进：wheel 可以在同一 `major.minor` 主线上推进
+patch、post 或 dev 版本。每次 wheel 版本改变都必须生成新的候选；该候选的
+`compatible_wheel` 与每条 exact document 的 `version.implementation_version`
+必须精确跟随新的 wheel 版本。文档编辑修订号可以在同一主线上独立推进，但不能
+替代这个运行时实现版本。
+
+这里有两个必须分开的字段：
+
+- exact document 的 `version.implementation_version` 是运行时兼容性字段，必须
+  精确等于它所描述的 compatible wheel 版本。它不随错别字、导航、翻译或示例
+  排版修订而改变。
+- `release/CURRENT.json` 中的 `documentation.version` 是文档发行修订身份，记录
+  文案/导航/翻译的递进；它必须声明同一 `major.minor` 主线、exact
+  `compatible_wheel`、source revision、selection digest 和 snapshot digest。
+
+因此，文档只纠正文案时可以在 `0.1` 主线上推进文档修订而保持 wheel 的 exact
+版本和结果字节不变；仍须从包含文档修订的新 Git 提交重新构建/重新绑定候选，
+以便 wheel 与文档 receipt 继续拥有同一 source revision。文档的实现版本仍然写
+wheel 的 exact 版本。若文档变化触及科学定义、公开
+API、默认值、失败语义、适用域、依赖或 TaskGraph 组合，则它已经改变实现合同，
+必须构建新的 wheel 候选，并从同一 source revision 生成新的文档 selection；不能
+用文档修订号掩盖能力或实现漂移。
+
+当前开发候选仍采用最简单的单一 exact 版本：wheel、selection 和所有
+`implementation_version` 都来自同一个 `project.version`。引入独立文档修订号前，
+不能把 `project_version` 或 `implementation_version` 改成一个仅用于文案的版本值。
+
+当前契约不允许文档偷偷使用独立的 source ref：即使只是编辑修订，也要把修改提交
+到新的 Git commit，并从这个 commit 重新构建/重新绑定 wheel 与文档。这样
+`release/CURRENT.json` 仍可用一个 `source_revision` 绑定完整候选；wheel 字节和
+实现版本可以保持不变，但它们的构建身份已经明确地指向包含该文档修订的新 commit。
+
 ## 文档与源码绑定
 
 文档正文、API 参考、领域导航和发行说明与源码同仓库维护。文档构建读取当前 checkout 的 API 和 exact document，不从历史版本目录复制一份“当前文档”。`tools/docs/handbook.json` 是唯一手册源；当发行选择只覆盖其中一部分资产时，构建器在内存中裁剪导航，不提交第二份按版本命名的 handbook。每个公开能力的合同、失败语义和验证边界仍由 exact document 表达；当前文档选择用 `selection_id`、Git commit 和构建 receipt 标识，不把它伪装成第二个包版本。发行历史只保留短小的 `docs/release/<version>-notes.md`（或等价的索引条目），不复制完整手册或 API 树。
@@ -36,7 +75,15 @@ wheel 和文档快照分别由 `scripts/build_scirel_from_ref.py` 与
 source checkout 时，`release_version` 只能来自该 checkout 的 `pyproject.toml`。
 synthetic fixture 可以省略 Git 绑定，但不能冒充生产发行 catalog。
 
-这些记录必须相互引用同一 `source_revision`、版本和能力计数。`release/CURRENT.json` 是当前候选的唯一协调记录；`release/wheel/CURRENT.json` 和 `release/docs/CURRENT.json` 只保留兼容指针，不再承载另一份版本元数据。当前文档选择中的每条 exact document 必须使用 `pyproject.toml` 的同一 `project.version`；不再在当前 tuple 中保存 `asset_implementation_baselines` 或其他多版本列表。历史版本从 Git 提交、tag 和短发行说明恢复。任何文档变更若超出已安装 wheel 的能力闭包，必须先改变源码/API并重新构建后继候选，不能只改文档记录扩大声明。
+这些记录必须相互引用同一 `source_revision`、compatible wheel、主线和能力计数。
+`release/CURRENT.json` 是当前候选的唯一协调记录；`release/wheel/CURRENT.json` 和
+`release/docs/CURRENT.json` 只保留兼容指针，不再承载另一份版本元数据。当前文档
+选择中的每条 exact document 必须使用 `pyproject.toml` 的同一 `project.version`；
+`documentation.version` 若另有编辑修订，也只能作为文档记录字段，不能成为运行时版本或替代
+`implementation_version`。不再在当前 tuple 中保存 `asset_implementation_baselines`
+或其他多版本列表。历史版本从 Git 提交、tag 和短发行说明恢复。任何文档变更若
+超出已安装 wheel 的能力闭包，必须先改变源码/API并重新构建后继候选，不能只改文档
+记录扩大声明。
 
 ## 依赖分层
 

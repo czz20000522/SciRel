@@ -1,6 +1,6 @@
 # SciRel 定位与发行硬合同
 
-SciRel 的版本和文档遵循 Git 单一来源：源码、`pyproject.toml`、exact documents、API 文档和发行说明在同一提交演进；wheel 与渲染文档是该提交的生成产物，历史版本由 Git commit/tag 和外部归档恢复，不复制平行版本目录。
+SciRel 的版本和文档遵循 Git 单一来源：源码、`pyproject.toml`、exact documents、API 文档和发行说明在同一仓库演进；每个候选的 wheel、渲染文档和回执绑定同一确切提交，历史版本由 Git commit/tag 和外部归档恢复，不复制平行版本目录。文档可在同一 `major.minor` 主线上推进独立编辑修订号，但 exact document 的实现版本仍精确绑定 compatible wheel。
 
 SciRel 按科学标准库维护。它提供可安装、可复用、可发现的 Operator 和
 TaskGraph；每项公开能力都绑定 exact contract、实现版本、运行依赖、适用域、失败语义和验证边界。

@@ -17,6 +17,8 @@ import tempfile
 import tomllib
 from urllib.parse import parse_qs, urlsplit
 
+from packaging.version import InvalidVersion, Version
+
 from validate_asset_documents import load_document_set
 from build_scirel_sphinx import load_translations, render_site
 
@@ -53,6 +55,20 @@ def project_version(root=ROOT):
     if not isinstance(version, str) or not version:
         raise ValueError('pyproject.toml project.version must be a non-empty string')
     return version
+
+
+def _validate_documentation_version(value, package_version):
+    try:
+        documentation = Version(value)
+        package = Version(package_version)
+    except InvalidVersion as error:
+        raise ValueError('documentation_version must be a valid PEP 440 version') from error
+    if len(documentation.release) < 2 or len(package.release) < 2:
+        raise ValueError('documentation_version and project version need major/minor components')
+    if (documentation.epoch, documentation.release[0], documentation.release[1]) != (
+        package.epoch, package.release[0], package.release[1]
+    ):
+        raise ValueError('documentation_version must stay on the wheel major.minor release line')
 
 
 def handbook_document(asset_ids, outline=None):
@@ -227,8 +243,14 @@ def chapter_files(asset_ids, *, expected_source_revision=None,
 def build(documents: Path, output: Path, outline: Path | None = None,
           translation_paths: list[Path] | None = None,
           *, source_revision: str | None = None,
-          source_dirty: bool | None = None):
+          source_dirty: bool | None = None,
+          documentation_version: str | None = None):
     docs = load_document_set(documents)
+    if documentation_version is None:
+        documentation_version = project_version()
+    if not isinstance(documentation_version, str) or not documentation_version.strip():
+        raise ValueError('documentation_version must be a non-empty version')
+    _validate_documentation_version(documentation_version, project_version())
     if output.exists():
         raise FileExistsError('output already exists; build a new snapshot')
     bound_source = source_revision
@@ -287,6 +309,7 @@ def build(documents: Path, output: Path, outline: Path | None = None,
     manifest = {'schema': SCHEMA, 'source_commit': source, 'source_revision': source,
                 'source_dirty': dirty,
                 'project_version': project_version(),
+                'documentation_version': documentation_version,
                 'asset_count': len(docs), 'notice': NOTICE,
                 'reader_language': 'zh-CN', 'human_renderer': 'sphinx-pydata',
                 'validation': {'schema_and_dependency_closure': True,
@@ -346,6 +369,9 @@ class Documentation:
                 'snapshot_sha256': self.manifest['snapshot_sha256'],
                 'source_commit': self.manifest['source_commit'],
                 'source_revision': self.manifest.get('source_revision', self.manifest['source_commit']),
+                'documentation_version': self.manifest.get(
+                    'documentation_version', self.manifest.get('project_version')
+                ),
                 'notice': NOTICE, **items}
 
     def search(self, q='', kind='', domain='', offset=0, limit=20, topic=''):
@@ -480,7 +506,7 @@ def server(docs, port):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     subs = parser.add_subparsers(dest='command', required=True)
-    b = subs.add_parser('build'); b.add_argument('--documents', type=Path, default=ROOT/'catalog/examples'); b.add_argument('--output', type=Path, required=True); b.add_argument('--outline', type=Path); b.add_argument('--translations', type=Path, action='append', help='Explicit complete reader bundle(s) for the selected document set; repeatable'); b.add_argument('--source-revision', help='explicit full Git commit id for an archived source tree'); b.add_argument('--source-dirty', action='store_true', help='mark an explicitly bound source tree as dirty')
+    b = subs.add_parser('build'); b.add_argument('--documents', type=Path, default=ROOT/'catalog/examples'); b.add_argument('--output', type=Path, required=True); b.add_argument('--outline', type=Path); b.add_argument('--translations', type=Path, action='append', help='Explicit complete reader bundle(s) for the selected document set; repeatable'); b.add_argument('--source-revision', help='explicit full Git commit id for an archived source tree'); b.add_argument('--source-dirty', action='store_true', help='mark an explicitly bound source tree as dirty'); b.add_argument('--documentation-version', help='documentation editorial version on the compatible wheel release line')
     for name in ('query', 'serve'):
         sub = subs.add_parser(name); sub.add_argument('--snapshot', type=Path, required=True); sub.add_argument('--expected-digest')
         if name == 'query':
@@ -492,7 +518,8 @@ def main():
         bound_dirty = True if a.source_dirty else (False if a.source_revision else None)
         result = build(a.documents, a.output, a.outline, a.translations,
                        source_revision=a.source_revision,
-                       source_dirty=bound_dirty)
+                       source_dirty=bound_dirty,
+                       documentation_version=a.documentation_version)
         print(json.dumps({k:v for k,v in result.items() if k != 'files'}, ensure_ascii=False)); return
     docs = Documentation(a.snapshot, a.expected_digest)
     if a.command == 'query':

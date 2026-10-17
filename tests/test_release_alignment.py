@@ -14,6 +14,7 @@ from validate_release_alignment import (
     _validate_build_inputs,
     _validate_external_artifacts,
     _validate_platform_receipts,
+    _validate_documentation_version,
     _validate_wheel_metadata,
     _validate_wheel_contents,
     _validate_source_revision,
@@ -26,6 +27,10 @@ def test_current_release_alignment_is_exact() -> None:
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     current = json.loads((ROOT / "release/CURRENT.json").read_text(encoding="utf-8"))
     assert result["wheel_version"] == project["project"]["version"]
+    assert _validate_documentation_version(
+        current["documentation"], wheel_version=project["project"]["version"]
+    ) == result["documentation_version"]
+    assert result["documentation_source_revision"] == current["source_revision"]
     assert result["documentation_selection"] == "scientific-core-current"
     assert result["source_revision"] == current["source_revision"]
     assert result["capability_counts"] == {
@@ -170,6 +175,16 @@ def test_external_artifact_manifest_and_snapshot_are_verified(tmp_path: Path) ->
         source_revision=revision,
         artifact_root=artifact_root,
     ) == "external_artifact_verified"
+    revised_current = json.loads(json.dumps(current))
+    revised_current["documentation"]["version"] = "0.1.1"
+    with pytest.raises(ValueError, match="documentation manifest documentation version"):
+        _validate_external_artifacts(
+            ROOT,
+            revised_current,
+            version=version,
+            source_revision=revision,
+            artifact_root=artifact_root,
+        )
     (snapshot_dir / "index.html").write_bytes(b"tampered")
     with pytest.raises(ValueError, match="snapshot file differs"):
         _validate_external_artifacts(
@@ -179,7 +194,6 @@ def test_external_artifact_manifest_and_snapshot_are_verified(tmp_path: Path) ->
             source_revision=revision,
             artifact_root=artifact_root,
         )
-
 
 def test_external_artifact_reference_rejects_path_traversal() -> None:
     current = {
@@ -281,6 +295,114 @@ def test_current_release_version_is_the_pyproject_version() -> None:
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     current = json.loads((ROOT / "release/CURRENT.json").read_text(encoding="utf-8"))
     assert current["version"] == project["project"]["version"]
+
+
+def test_documentation_revision_can_advance_within_the_wheel_release_line() -> None:
+    wheel = "0.1.0.dev9"
+    for documentation in ("0.1.1", "0.1.0.post1", "0.1.0.dev10", "0.1.3+wording.1"):
+        assert _validate_documentation_version(
+            {"version": documentation}, wheel_version=wheel
+        ) == documentation
+
+
+def test_wheel_patch_evolution_keeps_documentation_on_the_same_release_line() -> None:
+    assert _validate_documentation_version(
+        {"version": "0.1.1", "release_line": "0.1"},
+        wheel_version="0.1.0.dev10",
+    ) == "0.1.1"
+
+
+def test_documentation_revision_rejects_a_different_wheel_release_line() -> None:
+    with pytest.raises(ValueError, match="release line differs"):
+        _validate_documentation_version(
+            {"version": "0.2.0"}, wheel_version="0.1.0.dev9"
+        )
+    with pytest.raises(ValueError, match="release line differs"):
+        _validate_documentation_version(
+            {"version": "1.1.0"}, wheel_version="0.1.0.dev9"
+        )
+
+
+def test_documentation_revision_uses_wheel_version_for_legacy_records() -> None:
+    assert _validate_documentation_version({}, wheel_version="0.1.0.dev9") == "0.1.0.dev9"
+    with pytest.raises(ValueError, match="valid PEP 440"):
+        _validate_documentation_version(
+            {"version": "release-next"}, wheel_version="0.1.0.dev9"
+        )
+
+
+def test_documentation_release_line_must_match_its_pep440_version() -> None:
+    assert _validate_documentation_version(
+        {"version": "0.1.1", "release_line": "0.1"},
+        wheel_version="0.1.0.dev9",
+    ) == "0.1.1"
+    with pytest.raises(ValueError, match="documentation release_line"):
+        _validate_documentation_version(
+            {"version": "0.1.1", "release_line": "0.2"},
+            wheel_version="0.1.0.dev9",
+        )
+
+
+def test_alignment_accepts_documentation_patch_revision_when_integration_binds_it(
+    tmp_path: Path,
+) -> None:
+    import shutil
+
+    for relative in ("release", "catalog", "provenance", "tools"):
+        source = ROOT / relative
+        target = tmp_path / relative
+        shutil.copytree(source, target)
+    for relative in ("pyproject.toml", "uv.lock"):
+        (tmp_path / relative).write_bytes((ROOT / relative).read_bytes())
+    current_path = tmp_path / "release/CURRENT.json"
+    current = json.loads(current_path.read_text(encoding="utf-8"))
+    current["documentation"]["version"] = "0.1.1"
+    current["documentation"]["release_line"] = "0.1"
+    integration_path = tmp_path / current["documentation"]["integration_record"]
+    integration = json.loads(integration_path.read_text(encoding="utf-8"))
+    integration["documentation_version"] = "0.1.1"
+    integration_path.write_text(json.dumps(integration), encoding="utf-8")
+    current_path.write_text(json.dumps(current), encoding="utf-8")
+    result = validate_alignment(tmp_path)
+    assert result["documentation_version"] == "0.1.1"
+
+
+def test_alignment_rejects_documentation_revision_on_a_different_release_line(
+    tmp_path: Path,
+) -> None:
+    import shutil
+
+    for relative in ("release", "catalog", "provenance", "tools"):
+        source = ROOT / relative
+        target = tmp_path / relative
+        if source.is_dir():
+            shutil.copytree(source, target)
+        else:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(source.read_bytes())
+    for relative in ("pyproject.toml", "uv.lock"):
+        (tmp_path / relative).write_bytes((ROOT / relative).read_bytes())
+    current_path = tmp_path / "release/CURRENT.json"
+    current = json.loads(current_path.read_text(encoding="utf-8"))
+    current["documentation"]["version"] = "0.2.0"
+    current_path.write_text(json.dumps(current), encoding="utf-8")
+    with pytest.raises(ValueError, match="release line differs"):
+        validate_alignment(tmp_path)
+
+
+def test_alignment_rejects_a_split_documentation_source_revision(tmp_path: Path) -> None:
+    import shutil
+
+    for relative in ("release", "catalog", "provenance", "tools"):
+        shutil.copytree(ROOT / relative, tmp_path / relative)
+    for relative in ("pyproject.toml", "uv.lock"):
+        (tmp_path / relative).write_bytes((ROOT / relative).read_bytes())
+    current_path = tmp_path / "release/CURRENT.json"
+    current = json.loads(current_path.read_text(encoding="utf-8"))
+    current["documentation"]["source_revision"] = "a" * 40
+    current_path.write_text(json.dumps(current), encoding="utf-8")
+    with pytest.raises(ValueError, match="documentation source revision must match"):
+        validate_alignment(tmp_path)
 
 
 def test_alignment_rejects_a_pyproject_version_drift(tmp_path: Path) -> None:

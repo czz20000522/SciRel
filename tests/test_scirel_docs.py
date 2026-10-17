@@ -51,6 +51,34 @@ def test_document_builder_reads_the_project_version_from_pyproject():
     assert project_version() == project['project']['version']
 
 
+def test_document_builder_records_an_editorial_documentation_version(tmp_path):
+    documents = copy_example_closure(tmp_path / 'documents')
+    output = tmp_path / 'docs'
+    build(documents, output, documentation_version='0.1.1')
+    manifest = json.loads((output / 'manifest.json').read_text(encoding='utf-8'))
+    assert manifest['project_version'] == project_version()
+    assert manifest['documentation_version'] == '0.1.1'
+
+
+def test_document_builder_rejects_a_different_release_line(tmp_path):
+    documents = copy_example_closure(tmp_path / 'documents')
+    with pytest.raises(ValueError, match='major.minor release line'):
+        build(documents, tmp_path / 'docs', documentation_version='0.2.0')
+
+
+def test_document_builder_rejects_an_empty_editorial_version(tmp_path):
+    documents = copy_example_closure(tmp_path / 'documents')
+    with pytest.raises(ValueError, match='non-empty version'):
+        build(documents, tmp_path / 'docs', documentation_version='')
+
+
+def test_document_responses_expose_the_documentation_revision(snapshot):
+    docs = Documentation(snapshot)
+    result = docs.search('Pleiades', limit=1)
+    manifest = json.loads((snapshot / 'manifest.json').read_text(encoding='utf-8'))
+    assert result['documentation_version'] == manifest['documentation_version']
+
+
 @pytest.mark.parametrize('url', ['/api/search?limit=0', '/api/search?limit=101',
                                  '/api/search?offset=-1', '/api/search?offset=x',
                                  '/api/search?q=a&q=b', '/api/search?unknown=x',

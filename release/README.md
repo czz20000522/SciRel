@@ -35,10 +35,42 @@ commit first, write its wheel and documentation under a new external
 points back to that source commit. Never overwrite the older external artifact or
 its receipt; the coordination commit cannot be self-referential.
 
-The current documentation selection is single-version: every selected exact document
-must carry the `project.version` from the same checkout. The current tuple does not
-store a list of older implementation baselines. Git history, tags, and short release
-notes are the historical record; full wheel and handbook copies stay external.
+The current documentation selection is single-version at the implementation boundary:
+every selected exact document must carry the `project.version` from the same checkout.
+That exact value is the document's `implementation_version`; it tells a consumer which
+installed wheel implements the documented contract and must never be replaced by an
+editorial document number.
+
+Wheel and documentation also share a **release line**. The line is the public
+`major.minor` pair (for example, `0.1`), while the wheel's patch/development suffix and
+`documentation.version` may advance independently. A documentation-only
+correction may therefore publish a new documentation revision on the same `0.1` line
+without changing the wheel implementation version or resulting bytes. The candidate is
+still rebuilt/rebound from the new Git commit so the wheel and documentation receipt
+remain source-bound. It must still record the exact
+`compatible_wheel`, `source_revision`, document-selection digest, and snapshot digest.
+Every selected document continues to expose the exact wheel `implementation_version`,
+so a documentation revision cannot silently describe a different runtime.
+
+Wheel implementation improvements use the same release line: when the wheel moves to
+a new patch, post, or development version, a new wheel candidate and document selection
+are required, `compatible_wheel` changes to that exact wheel version, and every selected
+document's `implementation_version` follows it. The documentation editorial revision
+may advance separately, but it cannot replace the implementation contract it describes.
+
+A documentation change that adds, removes, or changes a public scientific capability,
+API signature, default, failure contract, applicability boundary, dependency, or
+TaskGraph edge is not editorial. It requires a new wheel candidate and a new exact
+document selection from the same source revision; the wheel and documentation then
+advance together on the current release line (or enter a new line when compatibility
+requires it). A document revision must never expand the wheel's capability closure.
+
+The current candidate tuple uses the same exact package value for the wheel,
+`documentation.version`, and all selected documents because no separate editorial
+revision is needed. The tuple does not store a
+list of older implementation baselines. Git history, tags, short release notes, and
+external immutable manifests remain the historical record; full wheel and handbook
+copies stay external.
 
 `release/CURRENT.json` stores only logical `manifest_ref` keys for generated
 wheel and documentation artifacts. They are resolved against an external
@@ -71,9 +103,12 @@ The project still has three *evidence lines*:
    digest. A wheel record names the selected capabilities and the external
    project FINAL manifests consumed by that integration; Git history carries
    prior wheel versions instead of retaining every wheel in the working tree.
-3. The documentation line records the current handbook/catalog selection. A
-   documentation record may advance without rebuilding the wheel, but the
-   current selection must remain exactly bound to the current wheel closure.
+3. The documentation line records the current handbook/catalog selection, its release
+   line, and its editorial revision. It may advance without changing the wheel version
+   or resulting bytes only for a wording/navigation/translation correction that leaves
+   every scientific contract and the wheel closure unchanged. The candidate is still
+   rebuilt/rebound from the new Git commit, and the record must remain exactly bound to
+   one compatible wheel, source revision, selection digest, and snapshot digest.
 
 The current maintainer reconciliation of delivered scope, integrated code,
 packaged runtime and documentation is in [project intake reconciliation](projects/README.md).

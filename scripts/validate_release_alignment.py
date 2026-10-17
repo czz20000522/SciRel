@@ -23,6 +23,7 @@ import zipfile
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.specifiers import InvalidSpecifier, SpecifierSet
 from packaging.utils import canonicalize_name, parse_wheel_filename
+from packaging.version import InvalidVersion, Version
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -47,6 +48,75 @@ def _project_version(root: Path) -> str:
     if not isinstance(version, str) or not version:
         raise ValueError("pyproject.toml project.version must be a non-empty string")
     return version
+
+
+def _version_release_line(value: object, *, field: str) -> tuple[int, int, int]:
+    """Return the PEP 440 release line used for wheel/document compatibility.
+
+    Documentation may receive an editorial patch, post, development, or local
+    revision without rebuilding an unchanged wheel.  The package major/minor
+    release line (and PEP 440 epoch) still identifies the compatible API line.
+    """
+
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{field} must be a non-empty PEP 440 version")
+    try:
+        parsed = Version(value)
+    except InvalidVersion as error:
+        raise ValueError(f"{field} is not a valid PEP 440 version: {value}") from error
+    release = parsed.release
+    if len(release) < 2:
+        raise ValueError(f"{field} must declare at least major and minor components")
+    return parsed.epoch, release[0], release[1]
+
+
+def _validate_documentation_version(
+    documentation: dict[str, Any], *, wheel_version: str
+) -> str:
+    """Validate the documentation revision line against the bound wheel.
+
+    ``documentation.version`` is an editorial/documentation revision and may
+    advance independently within the same PEP 440 major/minor release line.
+    ``compatible_wheel`` remains the exact wheel version and is checked by the
+    enclosing release tuple validator.
+    """
+
+    # Historical CURRENT records predate the separate documentation revision
+    # field.  They remain valid as exact wheel/document tuples; new records
+    # should write the field explicitly so editorial revisions are visible.
+    documentation_version = documentation.get("version", wheel_version)
+    documentation_line = _version_release_line(
+        documentation_version, field="documentation.version"
+    )
+    wheel_line = _version_release_line(wheel_version, field="wheel.version")
+    if documentation_line != wheel_line:
+        raise ValueError(
+            "documentation version release line differs from wheel version"
+        )
+    declared_release_line = documentation.get("release_line")
+    if declared_release_line is not None:
+        epoch_prefix = f"{wheel_line[0]}!" if wheel_line[0] else ""
+        expected_release_line = f"{epoch_prefix}{wheel_line[1]}.{wheel_line[2]}"
+        if declared_release_line != expected_release_line:
+            raise ValueError(
+                "documentation release_line differs from wheel version release line"
+            )
+    return documentation_version
+
+
+def _documentation_source_revision(
+    documentation: dict[str, Any], *, wheel_source_revision: str | None
+) -> str | None:
+    """Resolve the documentation source ref, defaulting to the wheel ref."""
+
+    value = documentation.get("source_revision", wheel_source_revision)
+    if value is not None and (
+        not isinstance(value, str) or _COMMIT.fullmatch(value) is None
+    ):
+        raise ValueError(
+            "documentation.source_revision must be null or an exact 40-character Git SHA"
+        )
+    return value
 
 
 def _sha256(path: Path) -> str:
@@ -343,6 +413,7 @@ def _validate_release_binding(
     wheel_path: Path,
     *,
     source_revision: str | None,
+    documentation_source_revision: str | None = None,
 ) -> None:
     """Validate capability/layout/source bindings added after the dev9 build."""
 
@@ -419,6 +490,10 @@ def _validate_release_binding(
         raise ValueError("external wheel integration path differs from release CURRENT")
     if matrix["path"] != "release/platform-support-matrix.json":
         raise ValueError("external wheel platform matrix path is invalid")
+    if documentation_source_revision != source_revision:
+        raise ValueError(
+            "documentation source revision must match wheel source revision"
+        )
     if selection.get("sha256") != docs.get("selection_sha256"):
         raise ValueError("external wheel selection digest differs from release CURRENT")
     if handbook.get("sha256") != docs.get("handbook_sha256"):
@@ -791,6 +866,8 @@ def _validate_external_artifacts(
     version: str,
     source_revision: str | None,
     artifact_root: Path | None,
+    documentation_version: str | None = None,
+    documentation_source_revision: str | None = None,
 ) -> str:
     """Validate external wheel/docs manifests when an artifact root is supplied.
 
@@ -802,6 +879,10 @@ def _validate_external_artifacts(
 
     wheel = current["wheel"]
     docs = current["documentation"]
+    if documentation_version is None:
+        documentation_version = docs.get("version", version)
+    if documentation_source_revision is None:
+        documentation_source_revision = docs.get("source_revision", source_revision)
     wheel_artifact = wheel.get("artifact")
     docs_artifact = docs.get("artifact")
     if not isinstance(wheel_artifact, dict) or not isinstance(docs_artifact, dict):
@@ -867,14 +948,21 @@ def _validate_external_artifacts(
             raise ValueError(f"external {label} manifest lacks source/project binding")
         if project.get("name") != "scirel" or project.get("version") != version:
             raise ValueError(f"external {label} manifest project differs from release CURRENT")
-        if source_revision is not None and source.get("revision") != source_revision:
+        expected_manifest_revision = (
+            source_revision if label == "wheel" else documentation_source_revision
+        )
+        if expected_manifest_revision is not None and source.get("revision") != expected_manifest_revision:
             raise ValueError(f"external {label} manifest source revision differs")
         _validate_build_inputs(
             root,
             manifest,
-            source_revision=source_revision,
+            source_revision=expected_manifest_revision,
             field=label,
         )
+
+    manifest_documentation_version = docs_manifest.get("documentation_version", version)
+    if manifest_documentation_version != documentation_version:
+        raise ValueError("external documentation manifest documentation version differs")
 
     wheel_info = wheel_manifest.get("wheel")
     if not isinstance(wheel_info, dict):
@@ -912,6 +1000,7 @@ def _validate_external_artifacts(
         wheel_manifest,
         wheel_path,
         source_revision=source_revision,
+        documentation_source_revision=documentation_source_revision,
     )
 
     snapshot_info = docs_manifest.get("snapshot")
@@ -957,10 +1046,15 @@ def _validate_external_artifacts(
         raise ValueError("external documentation snapshot manifest digest differs")
     if snapshot_manifest.get("snapshot_sha256") != snapshot_info.get("sha256"):
         raise ValueError("external documentation snapshot digest differs")
-    if snapshot_manifest.get("source_revision") != source_revision:
+    if snapshot_manifest.get("source_revision") != documentation_source_revision:
         raise ValueError("external documentation snapshot source revision differs")
     if snapshot_manifest.get("project_version") != version:
         raise ValueError("external documentation snapshot project version differs")
+    snapshot_documentation_version = snapshot_manifest.get(
+        "documentation_version", snapshot_manifest.get("project_version", version)
+    )
+    if snapshot_documentation_version != documentation_version:
+        raise ValueError("external documentation snapshot documentation version differs")
     files = snapshot_manifest.get("files")
     if not isinstance(files, dict):
         raise ValueError("external documentation snapshot files index is invalid")
@@ -1631,6 +1725,8 @@ def _validate_document_integration(
     docs: dict[str, Any],
     *,
     version: str,
+    documentation_version: str,
+    documentation_source_revision: str | None,
     source_revision: str | None,
     wheel: dict[str, Any],
     selection_digest: str,
@@ -1643,7 +1739,24 @@ def _validate_document_integration(
         raise ValueError("documentation integration record is not PASS")
     if record.get("project_version") != version:
         raise ValueError("documentation integration record version differs")
-    if source_revision is not None and record.get("source_revision") != source_revision:
+    record_documentation_version = record.get("documentation_version", version)
+    if record_documentation_version != documentation_version:
+        raise ValueError("documentation integration documentation version differs")
+    if "documentation_source_revision" in record:
+        if (
+            source_revision is not None
+            and record.get("source_revision") != source_revision
+        ):
+            raise ValueError("documentation integration wheel source revision differs")
+        record_documentation_source = record.get("documentation_source_revision")
+    else:
+        # Historical integration records used source_revision for the docs
+        # source because wheel and docs were required to share one commit.
+        record_documentation_source = record.get("source_revision")
+    if (
+        documentation_source_revision is not None
+        and record_documentation_source != documentation_source_revision
+    ):
         raise ValueError("documentation integration source revision differs")
 
     record_wheel = record.get("wheel")
@@ -1740,6 +1853,14 @@ def validate_alignment(
         raise ValueError("release CURRENT version differs from wheel tuple")
     if docs.get("compatible_wheel") != version:
         raise ValueError("documentation tuple is compatible with a different wheel")
+    documentation_version = _validate_documentation_version(docs, wheel_version=version)
+    documentation_source_revision = _documentation_source_revision(
+        docs, wheel_source_revision=source_revision
+    )
+    if documentation_source_revision != source_revision:
+        raise ValueError(
+            "documentation source revision must match release CURRENT source revision"
+        )
     if wheel.get("status") != current.get("status") or docs.get("status") != current.get("status"):
         raise ValueError("release tuple statuses differ")
     if not isinstance(wheel.get("artifact"), dict):
@@ -1750,6 +1871,8 @@ def validate_alignment(
         version=version,
         source_revision=source_revision,
         artifact_root=artifact_root,
+        documentation_version=documentation_version,
+        documentation_source_revision=documentation_source_revision,
     )
     _validate_platform_receipts(
         root,
@@ -1767,7 +1890,7 @@ def validate_alignment(
     _validate_compat_pointer(root, root / "release/docs/CURRENT.json", line="documentation")
 
     selected, selection_digest = _selected_documents(root, docs)
-    _validate_catalog_source_revision(root, docs, source_revision)
+    _validate_catalog_source_revision(root, docs, documentation_source_revision)
     catalog_documents = _catalog_documents(root, docs)
     handbook_assets, handbook_digest = _handbook_assets(root, docs)
     selected_ids = set(selected)
@@ -1828,6 +1951,8 @@ def validate_alignment(
         root,
         docs,
         version=version,
+        documentation_version=documentation_version,
+        documentation_source_revision=documentation_source_revision,
         source_revision=source_revision,
         wheel=wheel,
         selection_digest=selection_digest,
@@ -1836,6 +1961,8 @@ def validate_alignment(
 
     return {
         "wheel_version": version,
+        "documentation_version": documentation_version,
+        "documentation_source_revision": documentation_source_revision,
         "documentation_selection": docs["selection_id"],
         "source_revision": source_revision,
         "capability_counts": counts,

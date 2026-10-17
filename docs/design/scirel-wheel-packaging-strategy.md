@@ -26,10 +26,14 @@ Agent 只组合已声明合同并编写胶水代码。安装成功、某个平�
 重建解析的锁文件，不是 pip 用户端的跨平台证明；每个平台仍须用实际解析结果和 clean venv 验收。
 
 当前 checkout 的候选版本只由 `pyproject.toml` 的 `project.version` 给出。构建产物、文档和平台
-回执必须来自同一 Git 提交；在候选完成验收前，不创建新的历史版本复制目录。开发 HEAD 已经
+回执必须来自同一 Git 提交；文档编辑修订可以保持相同 wheel 字节，但仍需从包含该修订的确切提交重新构建并重新绑定整个候选。在候选完成验收前，不创建新的历史版本复制目录。开发 HEAD 已经
 超出 `release/CURRENT.json` 的 `source_revision` 时，可以继续使用同一个 `*.devN` 开发版本，
 但必须先提交变更，再把新 wheel、文档和回执写入以版本与 commit 共同命名的外部目录；旧候选
 字节和原回执保持不变，不能覆盖。
+
+实现改进也可以在同一 `major.minor` 主线上推进 wheel 的 patch、post 或 dev 版本。此时
+`compatible_wheel` 和 exact document 的 `implementation_version` 必须一起切换到新的 wheel；
+只有纯编辑修订才允许复用相同 wheel 字节。
 
 当前开发验收的唯一已绑定环境是 **Linux x86_64（amd64）+ CPython 3.14**。现有平台矩阵中
 Linux x86_64、Linux aarch64 和 macOS arm64 为 `PARTIAL`，Windows amd64 和 macOS x86_64

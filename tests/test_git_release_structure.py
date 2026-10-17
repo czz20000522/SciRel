@@ -24,6 +24,9 @@ def test_git_release_structure_has_one_version_source() -> None:
     assert current["version"] == version
     assert current["wheel"]["version"] == version
     assert current["documentation"]["compatible_wheel"] == version
+    documentation_version = current["documentation"]["version"]
+    assert documentation_version.split(".")[:2] == version.split(".")[:2]
+    assert current["documentation"]["release_line"] == ".".join(version.split(".")[:2])
     assert "asset_implementation_baselines" not in current["documentation"]
     assert "path" not in current["wheel"]["artifact"]
     wheel_manifest_ref = current["wheel"]["artifact"]["manifest_ref"]
@@ -501,8 +504,11 @@ def test_current_document_selection_matches_project_version() -> None:
 def test_current_document_tuple_has_one_implementation_version() -> None:
     current = json.loads((ROOT / "release/CURRENT.json").read_text(encoding="utf-8"))
     documentation = current["documentation"]
-    assert set(documentation).isdisjoint({"asset_implementation_baselines", "versions"})
+    assert "asset_implementation_baselines" not in documentation
+    assert "versions" not in documentation
     assert documentation["compatible_wheel"] == current["version"]
+    assert documentation["version"].split(".")[:2] == current["version"].split(".")[:2]
+    assert documentation["release_line"] == ".".join(current["version"].split(".")[:2])
 
 
 def test_project_readme_uses_current_release_for_dynamic_document_counts() -> None:

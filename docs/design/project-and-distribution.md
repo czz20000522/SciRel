@@ -22,7 +22,16 @@ D1 的行为对照与完整性范围绑定冻结 D0，不隐含覆盖已剔除�
 
 API 使用说明、单位、适用条件和失败行为是用户需要的使用合同。它们可以随包或作为绑定发行版本的
 文档提供。Agent 的 catalog 是 exact documents 的只读发现投影，可以由平台单独安装；
-它与 wheel 必须绑定同一发行内容。运行不加载审核队列、完整来源快照或开发状态账本。
+它与 wheel 必须绑定同一发行主线和 exact compatible wheel。运行不加载审核队列、完整来源快照
+或开发状态账本。
+
+发行主线使用公开版本的 `major.minor` 对。wheel 的 exact `project.version` 是实现身份，
+每条 exact document 的 `implementation_version` 必须与其 compatible wheel 完全相等。文档
+`release/CURRENT.json` 的 `documentation.version` 可以拥有独立的编辑修订号，用于错别字、导航、翻译
+和示例排版等不改变科学合同的变更；这种
+修订必须继续声明同一主线、exact compatible wheel、source revision、selection 和 snapshot
+摘要，且不能扩展 wheel 的能力闭包。若文档变更影响科学定义、公开 API、默认值、失败语义、
+适用域、依赖或 TaskGraph 组合，就必须重建 wheel 和文档 selection，不能把它记作文档小修订。
 唯一 exact document 与审核依据仍在项目层维护，用户文档/catalog 不成为第二套科学真值。
 
 ## 外部资产的保留与状态边界
@@ -145,6 +154,9 @@ ref 在仓库外生成。`release/CURRENT.json` 是当前候选的协调回执�
 分支是演进路线，worktree 是工作目录；二者都不授予科学批准。
 每次构建固定确切提交、包版本、依赖/工具链与支持平台，输出到本工作树内全新的运行目录，
 记录实际 wheel 摘要及相应证据。一个分支可以产生多个版本；一个版本无需永久保留 worktree。
+文档只做编辑修订时可以保持相同 wheel 版本和结果字节，但必须从新的 Git 提交重新构建/重新
+绑定候选，产生新的文档 receipt，并明确记录 `documentation.version` 与 compatible wheel；文档修订不能改变
+exact document 的实现版本或制造新的科学能力。
 正式构建输入不得含未绑定的工作区改动；开发试验若使用未提交变更，须记录差异，不能冒充冻结发行。
 
 创建前检查现有 worktree、分支与未提交修改，优先复用适合且写权明确的工作区。

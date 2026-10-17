@@ -11,7 +11,9 @@
 SciRel 项目拥有生产科学库的完整开发与治理过程，用户核心交付为确切版本的 `scirel` 包。
 `src/scirel/` 提供科学运行实现；workflow、审核状态、skill、来源工件、开发工具和宿主适配由项目层维护。
 普通 wheel 只收集 `scirel` 与其子包，必要本地组件/数据及许可证等分发元数据也须进入实际发行物。
-用户文档和可选 Agent catalog 绑定同一科学版本，运行不加载完整开发材料或审核状态。
+用户文档和可选 Agent catalog 绑定同一兼容 wheel 与能力闭包；文档可在同一 `major.minor` 主线上有独立编辑修订号，但每条 exact document 的实现版本仍精确指向安装的 wheel。运行不加载完整开发材料或审核状态。
+wheel 的 patch、post 或 dev 改进也在该主线上产生新的兼容 wheel；文档的 `compatible_wheel` 与
+`implementation_version` 必须随之更新，编辑修订号不能替代实现版本。
 历史试验不自动成为后续正式主线的公共能力或永久门禁；仍被引用的来源与许可依据保持可取得。
 完整目录、构建及多版本分支/worktree 规则见 [开发项目与科学包交付](design/project-and-distribution.md)。
 

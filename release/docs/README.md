@@ -1,23 +1,62 @@
 # SciRel documentation selection
 
-Documentation is generated from the same Git commit as the candidate wheel. The current checkout and its exact documents are the source of truth; Git history, tags, and short release notes carry prior wording and API history. The canonical handbook source is [`../../tools/docs/handbook.json`](../../tools/docs/handbook.json); a smaller release selection is projected in memory during the external build. The canonical current binding is [`../CURRENT.json`](../CURRENT.json). Its `selection_id` identifies the selected document set; it is not a second package version. Do not copy a complete documentation tree or add a per-version documentation record just to record a candidate.
+Documentation is generated from a Git commit that is explicitly bound to a candidate
+wheel. The current checkout and its exact documents are the source of truth; Git
+history, tags, and short release notes carry prior wording and API history. The
+canonical handbook source is [`../../tools/docs/handbook.json`](../../tools/docs/handbook.json);
+a smaller release selection is projected in memory during the external build. The
+canonical current binding is [`../CURRENT.json`](../CURRENT.json). Its `selection_id`
+identifies the selected document set; it is not a second implementation version. Do
+not copy a complete documentation tree or add a per-version documentation record just
+to record a candidate.
 
 
 Documentation evidence is maintained separately from wheel evidence so wording,
 examples, and navigation can be reviewed independently while remaining in the
-same Git candidate. The current documentation pointer must bind one exact wheel
-version and its complete document closure: the selected records, handbook asset
-IDs, and operator/task-graph counts must equal the wheel record. Any documentation
-change that is carried forward requires a new Git-bound candidate and refreshed
-receipt; the wheel bytes may remain identical, but the source revision and
-document selection must be explicit. Git history records revisions instead of
-keeping duplicate copies of the same document set.
+same Git candidate. The current documentation pointer must bind one exact compatible
+wheel version and its complete document closure: the selected records, handbook asset
+IDs, and operator/task-graph counts must equal the wheel record. Every selected record's
+`implementation_version` remains the exact compatible wheel version.
+
+The wheel and documentation share a public `major.minor` release line. The wheel's
+patch/development suffix identifies the implementation candidate; documentation may
+carry a separate `documentation.version` editorial revision on the same line. A wording, navigation, or
+translation correction can therefore create a new documentation revision while the
+wheel implementation version and resulting bytes remain unchanged. The wheel is still
+rebuilt/rebound from the new Git commit, and the record must retain `compatible_wheel`,
+that exact source revision, and both selection/snapshot digests. This is a documentation
+release, not a new implementation release.
+
+Any change to a scientific contract, public API, default, failure behavior,
+applicability, dependency, or graph composition requires a new wheel candidate and a
+new document selection from the same source revision. Such a change cannot be hidden
+in an editorial document revision, and a documentation revision cannot add a capability
+that is absent from the wheel closure.
+
+Any documentation change that is carried forward requires a new Git-bound document
+receipt. The wheel bytes may remain identical only under the editorial rule above; the
+new source revision and document selection must still be explicit. Git history records
+revisions instead of keeping duplicate copies of the same document set.
+
+The wheel itself may also advance by a patch, post, or development revision on the same
+public release line. That creates a new wheel candidate and document selection: the
+exact `compatible_wheel` and every document's `implementation_version` move with the
+new wheel, while an editorial `documentation.version` may continue independently on
+the same line.
 
 The current tuple stores a logical external documentation `manifest_ref`, its
 manifest digest, and the snapshot digest/byte count. The rendered snapshot and
 its nested manifest are validated only when
 `validate_release_alignment.py --artifact-root <root>` is given; the Git tree
 does not retain a generated per-version documentation directory.
+
+When an editorial documentation revision is introduced, its external manifest and
+current tuple must expose both the exact `compatible_wheel` and a distinct
+`documentation.version` identity. The latter stays on the same release line and
+does not replace `project_version`/`implementation_version`; those fields continue to
+bind every document to the installed implementation. The validator must reject a
+revision whose release line differs from the compatible wheel or whose closure/counts
+exceed the wheel binding.
 
 Build a snapshot from an exact source ref with
 `scripts/build_scirel_docs_from_ref.py`. It archives the ref, invokes the

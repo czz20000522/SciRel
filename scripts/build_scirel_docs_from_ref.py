@@ -20,6 +20,8 @@ import subprocess
 import sys
 import tempfile
 
+from packaging.version import InvalidVersion, Version
+
 from build_scirel_from_ref import (
     ROOT,
     _archive_ref,
@@ -101,6 +103,22 @@ def _normalize_documents_argument(documents: str | os.PathLike[str]) -> str:
     if not isinstance(value, str) or not value:
         raise ValueError("documents must be a non-empty project-relative path")
     return value
+
+
+def _validate_documentation_version(value: str, project_version: str) -> None:
+    try:
+        documentation = Version(value)
+        project = Version(project_version)
+    except InvalidVersion as error:
+        raise ValueError("documentation-version must be a valid PEP 440 version") from error
+    if len(documentation.release) < 2 or len(project.release) < 2:
+        raise ValueError("documentation-version and project version need major/minor components")
+    if (documentation.epoch, documentation.release[0], documentation.release[1]) != (
+        project.epoch,
+        project.release[0],
+        project.release[1],
+    ):
+        raise ValueError("documentation-version must stay on the wheel major.minor release line")
 
 
 def _resolve_documents_root(source: Path, documents: str | os.PathLike[str]) -> Path:
@@ -323,6 +341,7 @@ def build_from_ref(
     documents: str | os.PathLike[str] = "catalog/examples",
     selection: str | None = None,
     python: str | None = None,
+    documentation_version: str | None = None,
 ) -> dict[str, object]:
     """Build and return a stable manifest for one exact Git commit."""
 
@@ -355,6 +374,11 @@ def build_from_ref(
             staging = Path(temporary)
             source = _archive_ref(revision, epoch, staging)
             name, version = _project_metadata(source)
+            if documentation_version is None:
+                documentation_version = version
+            if not isinstance(documentation_version, str) or not documentation_version.strip():
+                raise ValueError("documentation-version must be a non-empty version")
+            _validate_documentation_version(documentation_version, version)
             source_root = source.resolve()
             selection_info = None
             translation_info = None
@@ -394,6 +418,8 @@ def build_from_ref(
                 command.extend(["--source-revision", revision])
             else:
                 _legacy_git_adapter(staging, revision, environment)
+            if "--documentation-version" in docs_script.read_text(encoding="utf-8"):
+                command.extend(["--documentation-version", documentation_version])
             if translation_info is not None:
                 if "--translations" not in docs_script.read_text(encoding="utf-8"):
                     raise ValueError(
@@ -420,6 +446,13 @@ def build_from_ref(
             manifest_version = manifest.get("project_version", version)
             if manifest_version != version:
                 raise ValueError("documentation snapshot version differs from archived project")
+            manifest_documentation_version = manifest.get(
+                "documentation_version", manifest_version
+            )
+            if manifest_documentation_version != documentation_version:
+                raise ValueError(
+                    "documentation snapshot documentation version differs from requested version"
+                )
             snapshot_digest = manifest.get("snapshot_sha256")
             if not isinstance(snapshot_digest, str) or len(snapshot_digest) != 64:
                 raise ValueError("documentation snapshot has no valid snapshot_sha256")
@@ -445,6 +478,7 @@ def build_from_ref(
         "schema": "scirel.git-docs-build.v1",
         "source": {"ref": ref, "revision": revision, "commit_epoch": epoch},
         "project": {"name": name, "version": version},
+        "documentation_version": documentation_version,
         "documents": {"path": documents},
         "inputs": inputs,
         "snapshot": {
@@ -489,6 +523,10 @@ def main() -> None:
         help="project-relative selected-document-set JSON inside the archived ref",
     )
     parser.add_argument("--python", help="Python executable for the documentation builder")
+    parser.add_argument(
+        "--documentation-version",
+        help="documentation editorial version on the compatible wheel release line",
+    )
     args = parser.parse_args()
     result = build_from_ref(
         args.ref,
@@ -496,6 +534,7 @@ def main() -> None:
         documents=args.documents,
         selection=args.selection,
         python=args.python,
+        documentation_version=args.documentation_version,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
 
