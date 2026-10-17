@@ -661,7 +661,9 @@
     "python": {
       "module": "scirel.kinetic.grid_mirror_kinetic_closure",
       "symbol": "solve_grid_mirror_kinetic_closure",
-      "signature": "solve_grid_mirror_kinetic_closure(inputs=None, **kwargs)"
+      "signature": "solve_grid_mirror_kinetic_closure(inputs=None, **kwargs)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "solve_grid_mirror_kinetic_closure"
     }
   },
   "version": {

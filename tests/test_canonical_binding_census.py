@@ -14,8 +14,8 @@ def test_current_canonical_binding_census_preserves_facade_and_exception_denomin
     counts = report["counts"]
 
     assert counts["total"] == 267
-    assert counts["explicit"] == 219
-    assert counts["candidate"] == 1
+    assert counts["explicit"] == 220
+    assert counts["candidate"] == 0
     assert counts["exception"] == 47
     assert report["unexpected_missing"] == []
 
@@ -406,7 +406,7 @@ def test_frank_egedal_pressure_graph_pins_kinetic_facade_explicitly():
     report = census(ROOT)
     rows = {row["asset_id"]: row["status"] for row in report["rows"]}
     assert rows["scirel.kinetic.frank-egedal-pressure-closure"] == "explicit"
-    assert rows["scirel.kinetic.grid-mirror-kinetic-closure"] == "candidate"
+    assert rows["scirel.kinetic.grid-mirror-kinetic-closure"] == "explicit"
     assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "explicit"
 
 
@@ -414,4 +414,11 @@ def test_cross_mesh_distribution_slice_pins_kinetic_facade_explicitly():
     report = census(ROOT)
     rows = {row["asset_id"]: row["status"] for row in report["rows"]}
     assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "explicit"
-    assert rows["scirel.kinetic.grid-mirror-kinetic-closure"] == "candidate"
+    assert rows["scirel.kinetic.grid-mirror-kinetic-closure"] == "explicit"
+
+
+def test_grid_mirror_graph_pins_kinetic_facade_explicitly():
+    report = census(ROOT)
+    rows = {row["asset_id"]: row["status"] for row in report["rows"]}
+    assert rows["scirel.kinetic.grid-mirror-kinetic-closure"] == "explicit"
+    assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "explicit"
