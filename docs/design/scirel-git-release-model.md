@@ -126,10 +126,12 @@ manifest。新候选必须提升 `pyproject.toml` 版本并绑定新的 source r
 
 文档中的 `version.implementation_version` 是运行时兼容性约束，不是第二个版本源。
 后继候选不能把旧文档目录复制一份再改版本；使用
-`scripts/requalify_document_selection.py` 从旧版本的确切 Git ref 对当前选择逐条核对：
+`scripts/requalify_document_selection.py` 从旧版本的确切 Git ref 对候选版本的确切
+source ref 逐条核对。`--source-ref`（也接受 `--target-ref` 作为 CLI 别名）默认是
+`HEAD`，正式历史重资格化必须显式绑定候选提交，避免后续开发提交改变历史分母：
 
-1. 当前文档必须仍由旧 selection 的摘要绑定，且只允许实现版本字段变化；
-2. 文档声明的公共模块必须在基线 ref 与当前 checkout 中逐字节一致；
+1. 候选 ref 的文档必须仍由旧 selection 的摘要绑定，且只允许实现版本字段变化；
+2. 文档声明的公共模块必须在基线 ref 与候选 source ref 中逐字节一致；
 3. 任一合同或公共模块发生变化，都输出阻塞项并停止完整 requalification；
 4. 只有完成针对性科学测试且没有任何阻塞项后，才可以用 `--apply` 在同一
    `catalog/examples` 文件上更新版本字段，并生成新的完整 selection/receipt；

@@ -1,8 +1,10 @@
 """Requalify one Git-owned asset selection for a successor package version.
 
 The asset documents remain in their canonical ``catalog/examples`` tree.  This
-tool compares the current documents with the historical bytes at a baseline Git
-ref, so a successor release never needs a copied ``dev8`` document tree.
+tool compares the candidate bytes at an explicit source Git ref with the
+historical bytes at a baseline Git ref, so a successor release never needs a
+copied ``dev8`` document tree.  The source ref defaults to ``HEAD`` for local
+development, while release checks should bind it to the candidate commit.
 Changed implementations are reported as blocked and stop a complete
 requalification by default; callers must test those assets separately before
 running an applying pass.  Applying is idempotent when the current documents
@@ -94,7 +96,7 @@ def _proof_manifest(
     proof_path: Path,
     *,
     root: Path,
-    current_revision: str,
+    source_revision: str,
     baseline_revision: str,
 ) -> tuple[dict[str, dict[str, Any]], str]:
     """Load and verify explicit evidence for changed public modules.
@@ -102,20 +104,24 @@ def _proof_manifest(
     A proof manifest is deliberately separate from the requalification receipt.
     It is a small, Git-reviewable declaration that ties each changed module to
     the exact source revision, test files, and PASS receipts that justified
-    requalification.  The hashes are checked against the current checkout so a
-    stale manifest cannot silently authorize an apply.
+    requalification.  Evidence paths are checked against the current checkout
+    so a stale manifest cannot silently authorize an apply.  The public module
+    digest is checked against the exact source Git revision being requalified;
+    release metadata may be committed after that source revision.
     """
     proof_path = proof_path.resolve()
     payload = _read_json(proof_path)
     if payload.get("schema") != PROOF_SCHEMA:
         raise ValueError("proof manifest has an invalid schema")
-    source_revision = payload.get("source_revision")
-    if not isinstance(source_revision, str) or len(source_revision) != 40:
+    manifest_source_revision = payload.get("source_revision")
+    if not isinstance(manifest_source_revision, str) or len(manifest_source_revision) != 40:
         raise ValueError("proof manifest source_revision must be an exact Git revision")
     try:
-        source_revision = _resolve_ref(root, source_revision)
+        manifest_source_revision = _resolve_ref(root, manifest_source_revision)
     except ValueError as error:
         raise ValueError("proof manifest source_revision is not a Git commit") from error
+    if manifest_source_revision != source_revision:
+        raise ValueError("proof manifest source_revision differs from requalification source")
     if payload.get("baseline_revision") != baseline_revision:
         raise ValueError("proof manifest baseline_revision differs from requalification baseline")
     rows = payload.get("proofs")
@@ -140,19 +146,17 @@ def _proof_manifest(
         if not isinstance(module, str) or not module or Path(module).is_absolute():
             raise ValueError("proof manifest module must be a relative path")
         module_path = (root / module).resolve()
-        if not module_path.is_relative_to(root) or not module_path.is_file():
-            raise ValueError(f"proof manifest module is not a repository file: {module}")
+        if not module_path.is_relative_to(root):
+            raise ValueError(f"proof manifest module is not a repository path: {module}")
         module_digest = row["module_sha256"]
-        if not isinstance(module_digest, str) or _sha256(module_path.read_bytes()) != module_digest:
-            raise ValueError(f"proof manifest module digest differs: {module}")
         try:
             source_module = _git_file(root, source_revision, module)
         except ValueError as error:
             raise ValueError(
                 f"proof manifest module is absent from source_revision: {module}"
             ) from error
-        if source_module != module_path.read_bytes():
-            raise ValueError(f"proof manifest module differs from source_revision: {module}")
+        if not isinstance(module_digest, str) or _sha256(source_module) != module_digest:
+            raise ValueError(f"proof manifest module digest differs: {module}")
 
         for field in ("test_paths", "receipt_paths"):
             paths = row[field]
@@ -201,6 +205,8 @@ def requalify_selection(
     apply: bool = False,
     require_complete: bool = True,
     proof_manifest: Path | None = None,
+    source_ref: str = "HEAD",
+    target_ref: str | None = None,
 ) -> dict[str, Any]:
     if old_version == new_version:
         raise ValueError("old_version and new_version must differ")
@@ -208,16 +214,20 @@ def requalify_selection(
     selection_path = selection_path.resolve()
     if not selection_path.is_relative_to(root):
         raise ValueError("selection must be inside the repository")
+    if target_ref is not None:
+        if source_ref != "HEAD":
+            raise ValueError("source_ref and target_ref cannot both be provided")
+        source_ref = target_ref
     rows = _selection_rows(selection_path)
     resolved_ref = _resolve_ref(root, baseline_ref)
-    current_revision = _resolve_ref(root, "HEAD")
+    source_revision = _resolve_ref(root, source_ref)
     proofs: dict[str, dict[str, Any]] = {}
     proof_digest: str | None = None
     if proof_manifest is not None:
         proofs, proof_digest = _proof_manifest(
             proof_manifest,
             root=root,
-            current_revision=current_revision,
+            source_revision=source_revision,
             baseline_revision=resolved_ref,
         )
         selected_ids = {row["asset_id"] for row in rows}
@@ -237,7 +247,12 @@ def requalify_selection(
         if not document_path.is_relative_to(root) or not document_path.is_file():
             raise ValueError(f"selected document path is invalid: {relative}")
         current_bytes = document_path.read_bytes()
-        current = json.loads(current_bytes)
+        candidate_bytes = _git_file(root, source_revision, relative)
+        if current_bytes != candidate_bytes:
+            raise ValueError(
+                f"candidate document changed since source_ref: {asset_id}"
+            )
+        current = json.loads(candidate_bytes)
         if not isinstance(current, dict) or current.get("asset_id") != asset_id:
             raise ValueError(f"document asset ID differs from selection: {asset_id}")
         current_version = current.get("version", {}).get("implementation_version")
@@ -273,14 +288,20 @@ def requalify_selection(
                 baseline_module = _git_file(root, resolved_ref, candidate)
             except ValueError:
                 continue
-            if (root / candidate).is_file():
-                module_relative = candidate
-                break
+            module_relative = candidate
+            break
         if module_relative is None or baseline_module is None:
             reasons.append("public_module_missing_at_baseline")
             module_relative = _module_candidates(current)[0]
-        elif (root / module_relative).read_bytes() != baseline_module:
-            reasons.append("public_module_changed")
+        else:
+            try:
+                source_module = _git_file(root, source_revision, module_relative)
+            except ValueError:
+                source_module = None
+            if source_module is None:
+                reasons.append("public_module_missing_at_source")
+            elif source_module != baseline_module:
+                reasons.append("public_module_changed")
 
         item = {
             "asset_id": asset_id,
@@ -365,6 +386,8 @@ def requalify_selection(
         "schema": RECEIPT_SCHEMA,
         "baseline_ref": baseline_ref,
         "baseline_revision": resolved_ref,
+        "source_ref": source_ref,
+        "source_revision": source_revision,
         "selection": str(selection_path.relative_to(root)),
         "old_version": old_version,
         "new_version": new_version,
@@ -402,6 +425,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--selection", type=Path, required=True)
     parser.add_argument("--baseline-ref", required=True)
+    parser.add_argument(
+        "--source-ref",
+        "--target-ref",
+        dest="source_ref",
+        default="HEAD",
+        help="candidate source Git ref to compare against the baseline (default: HEAD)",
+    )
     parser.add_argument("--old-version", required=True)
     parser.add_argument("--new-version", required=True)
     parser.add_argument("--root", type=Path, default=ROOT)
@@ -426,6 +456,7 @@ def main() -> int:
         receipt = requalify_selection(
             selection_path=args.selection,
             baseline_ref=args.baseline_ref,
+            source_ref=args.source_ref,
             old_version=args.old_version,
             new_version=args.new_version,
             root=args.root,
