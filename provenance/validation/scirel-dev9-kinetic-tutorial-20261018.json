@@ -1,7 +1,7 @@
 {
   "schema": "scirel.executed-tutorial.v1",
   "tutorial": "kinetic-initial-value",
-  "wheel_sha256": "34ac7cf21658412671c5290a41b2eed7662b8847444b04e809786f5b4535e8f2",
+  "wheel_sha256": "b457e30e126a8def21cbd896bedf322808b4be740e2734e024e7143ad2cd0bc8",
   "example_sha256": "341e5a4e204db1535cb3072b49b5540ed6cf502860f2f216cb890499b47e076f",
   "results": {
     "all_checks_passed": true,
@@ -20,8 +20,8 @@
     "src/scirel/kinetic/vlasov_poisson.py": "a94a5247c72b5fcf206b6dcfee294e4a68abc57866264fc776834174f3a221b8"
   },
   "document_files": {
-    "catalog/examples/scirel.kinetic.generalized-root-scans.json": "56b33ab6fbb721b68e9acb301a2ab242cc8c0f54a2f0ab368f759936c25619b8",
-    "catalog/examples/scirel.kinetic.vp-landau.json": "067f796f32fcc507643094a05078ad0a0643b516654d322e1ad436953f8628c8"
+    "catalog/examples/scirel.kinetic.generalized-root-scans.json": "83843bcedb69eb7557206265ffc836142782d40d1040799026791d6776127912",
+    "catalog/examples/scirel.kinetic.vp-landau.json": "e81744f6243f975590cdef17d03d5424bb7145283e373aad0afde558ebe75688"
   },
   "tutorial_rst_sha256": "8b3917d32c0471ccd8fd5c226565342064cd630ef21a829a330baa98f5a85ff0",
   "environment": {
@@ -42,5 +42,5 @@
   "human_approval": false,
   "release_approval": false,
   "previous_execution_sha256": "b3d6162ae34fc12744827d772ee5b8bdd59989d031d3305eb78a2525c8e3c2e1",
-  "source_revision": "7feb451b45da541bc4f2ced0c8dc0369bc8f5e66"
+  "source_revision": "f0599a8c9be79c8d6016304f0633d8a8938f6aca"
 }
