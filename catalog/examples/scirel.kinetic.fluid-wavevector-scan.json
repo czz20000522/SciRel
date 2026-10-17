@@ -286,7 +286,9 @@
     "python": {
       "module": "scirel.kinetic.fluid_wavevector_scan",
       "symbol": "scan_fluid_wavevectors",
-      "signature": "scan_fluid_wavevectors(ms, qs, ns_unit, Ts_unit, B0, n00, T00, omega_scale, omega_step, omega_stop, kz_scale, max_harmonic, j_order, keep=5)"
+      "signature": "scan_fluid_wavevectors(ms, qs, ns_unit, Ts_unit, B0, n00, T00, omega_scale, omega_step, omega_stop, kz_scale, max_harmonic, j_order, keep=5)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "scan_fluid_wavevectors"
     }
   },
   "version": {

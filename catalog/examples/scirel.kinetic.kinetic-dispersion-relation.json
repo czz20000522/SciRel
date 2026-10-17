@@ -268,7 +268,9 @@
     "python": {
       "module": "scirel.kinetic.kinetic_dispersion_relation",
       "symbol": "evaluate_kinetic_dispersion_relation",
-      "signature": "evaluate_kinetic_dispersion_relation(ms, qs, ns_unit, Ts_unit, B0, n00, T00, omega_frac, kz, kx_frac, lmx=5)"
+      "signature": "evaluate_kinetic_dispersion_relation(ms, qs, ns_unit, Ts_unit, B0, n00, T00, omega_frac, kz, kx_frac, lmx=5)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_kinetic_dispersion_relation"
     }
   },
   "version": {
