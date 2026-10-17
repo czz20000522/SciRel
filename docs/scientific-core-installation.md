@@ -16,6 +16,26 @@ Python 及依赖的确切约束以 wheel 元数据和对应安装收据为准；
 这些是本选择实现的运行依赖；无需安装 Git、PowerShell、pytest、原来源 checkout 或 SciRel 开发工具。
 `mpmath` 用于运行期高精度有理系数构造，不只是测试参考工具。
 
+## Linux amd64 + CPython 3.14 clean-venv 验收
+
+验收必须从不继承系统 `site-packages` 的虚拟环境开始。将目标 wheel 和已锁定的运行依赖放在同一个
+wheelhouse 后，可按下面的命令执行；`--no-index` 确保缺失依赖不会被网络或开发机环境静默补上：
+
+```bash
+python3.14 -m venv /tmp/scirel-linux-x86_64-cp314
+/tmp/scirel-linux-x86_64-cp314/bin/python -m pip install \
+  --disable-pip-version-check --no-index --find-links /path/to/wheelhouse \
+  /path/to/wheelhouse/scirel-<project.version>-py3-none-any.whl
+/tmp/scirel-linux-x86_64-cp314/bin/python -I scripts/validate_installed_wheel.py \
+  --expected-platform linux-x86_64-cp314 \
+  --wheel /path/to/wheelhouse/scirel-<project.version>-py3-none-any.whl \
+  --output /path/to/receipt.json
+```
+
+验收脚本会记录虚拟环境前缀、外部 `site-packages` 路径和每个声明依赖的实际导入位置；若解释器不是
+虚拟环境，或依赖从环境前缀之外导入，收据为 `FAIL`。这只是运行闭包和代表性任务的技术回执，不能
+单独提升 `release/platform-support-matrix.json` 的状态。
+
 磁化色散的随包原语言入口还需要相应系统运行时：PDRK 的既有安装证据使用 Linux ARM64 的 Octave 8.4.0；
 fluidBW 的完整算例、特殊函数、响应、矩阵、搜索、谱和材料入口使用 Linux amd64 的 Octave 7.3.0，固定单线程。
 两类入口的运行条件分别核对，不能把一个平台的证据当作另一个平台的通过。

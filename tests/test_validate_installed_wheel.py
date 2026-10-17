@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from types import SimpleNamespace
 import sys
 from pathlib import Path
 from zipfile import ZipFile
@@ -30,6 +31,97 @@ def test_platform_id_parser_canonicalizes_architecture_and_python_line() -> None
 def test_platform_id_parser_rejects_ambiguous_tags(value: str) -> None:
     with pytest.raises(ValueError):
         validator._parse_platform_id(value)
+
+
+def test_runtime_identity_rejects_a_non_virtual_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(validator.sys, "prefix", "/tmp/scirel-system")
+    monkeypatch.setattr(validator.sys, "base_prefix", "/tmp/scirel-system")
+    expected_python = f"{sys.version_info.major}.{sys.version_info.minor}"
+
+    actual, errors = validator._runtime_identity(None, expected_python)
+
+    assert actual["is_virtualenv"] is False
+    assert any("virtual environment" in error for error in errors)
+
+
+def test_runtime_identity_rejects_external_site_packages(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(validator.sys, "prefix", "/tmp/scirel-venv")
+    monkeypatch.setattr(validator.sys, "base_prefix", "/tmp/scirel-python")
+    monkeypatch.setattr(
+        validator.sys,
+        "path",
+        [
+            "/tmp/scirel-venv/lib/python3.14/site-packages",
+            "/usr/lib/python3.14/site-packages",
+        ],
+    )
+    expected_python = f"{sys.version_info.major}.{sys.version_info.minor}"
+
+    actual, errors = validator._runtime_identity(None, expected_python)
+
+    assert actual["external_site_paths"] == ["/usr/lib/python3.14/site-packages"]
+    assert any("outside the virtual environment" in error for error in errors)
+
+
+def test_dependency_import_must_resolve_inside_environment_prefix(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    outside = tmp_path / "system-site-packages" / "fake_module.py"
+    outside.parent.mkdir()
+    outside.write_text("# test fixture\n", encoding="utf-8")
+    monkeypatch.setattr(validator.metadata, "requires", lambda _: ["fake-dist==1"])
+    monkeypatch.setattr(validator.metadata, "packages_distributions", lambda: {"fake_module": ["fake-dist"]})
+    monkeypatch.setattr(validator.metadata, "version", lambda _: "1")
+    monkeypatch.setattr(
+        validator.importlib,
+        "import_module",
+        lambda _: SimpleNamespace(__file__=str(outside)),
+    )
+
+    checks = validator._check_dependencies()
+
+    assert checks == [
+        {
+            "requirement": "fake-dist==1",
+            "name": "fake-dist",
+            "status": "FAIL",
+            "import_candidates": ["fake_module"],
+            "installed_version": "1",
+            "imported_module": "fake_module",
+            "imported_from": str(outside),
+            "within_sys_prefix": False,
+            "error": f"imported module is outside the current environment prefix: {outside}",
+        }
+    ]
+
+
+def test_distribution_metadata_must_resolve_inside_environment_prefix(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    metadata_root = tmp_path / "system-site-packages" / "scirel-0.1.0.dev9.dist-info"
+    metadata_root.mkdir(parents=True)
+    distribution = SimpleNamespace(
+        _path=metadata_root,
+        version="0.1.0.dev9",
+        metadata={"Requires-Python": ">=3.14,<3.15"},
+    )
+    monkeypatch.setattr(validator.metadata, "distribution", lambda _: distribution)
+    installed_module = Path(sys.prefix) / "lib" / "python3.14" / "site-packages" / "scirel" / "__init__.py"
+    monkeypatch.setattr(
+        validator.importlib,
+        "import_module",
+        lambda _: SimpleNamespace(__file__=str(installed_module)),
+    )
+
+    details, errors, _ = validator._check_distribution()
+
+    assert details["metadata_within_sys_prefix"] is False
+    assert details["within_sys_prefix"] is True
+    assert any("distribution metadata is outside" in error for error in errors)
 
 
 def test_validation_receipt_aggregates_successful_checks(monkeypatch: pytest.MonkeyPatch) -> None:

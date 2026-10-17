@@ -11,7 +11,7 @@ Typical Linux amd64 acceptance invocation::
 
     python -I scripts/validate_installed_wheel.py \
         --expected-platform linux-x86_64-cp314 \
-    --wheel dist/scirel-<project.version>-py3-none-any.whl \
+        --wheel dist/scirel-<project.version>-py3-none-any.whl \
         --output installed-wheel-validation.json
 
 The optional ``--wheel`` argument records the exact artifact digest and byte
@@ -100,19 +100,44 @@ def _parse_platform_id(value: str) -> dict[str, str]:
 def _runtime_identity(expected_platform: str | None, expected_python: str) -> tuple[dict[str, Any], list[str]]:
     implementation = platform.python_implementation()
     version_line = f"{sys.version_info.major}.{sys.version_info.minor}"
+    prefix = Path(sys.prefix).resolve()
+    base_prefix = Path(sys.base_prefix).resolve()
+    is_virtualenv = prefix != base_prefix
+    external_site_paths = sorted(
+        {
+            str(path.resolve())
+            for raw_path in sys.path
+            if raw_path
+            for path in [Path(raw_path)]
+            if path.name in {"site-packages", "dist-packages"}
+            and not _path_is_within(path.resolve(), prefix)
+        }
+    )
     actual = {
         "implementation": implementation,
         "version": platform.python_version(),
         "version_line": version_line,
         "executable": str(Path(sys.executable).resolve()),
-        "prefix": str(Path(sys.prefix).resolve()),
-        "base_prefix": str(Path(sys.base_prefix).resolve()),
+        "prefix": str(prefix),
+        "base_prefix": str(base_prefix),
+        "is_virtualenv": is_virtualenv,
+        "external_site_paths": external_site_paths,
         "os": _normalise_os(platform.system()),
         "architecture": _normalise_arch(platform.machine()),
         "platform": sysconfig.get_platform(),
         "python_abi": getattr(sys.implementation, "cache_tag", None),
     }
     errors: list[str] = []
+    if not is_virtualenv:
+        errors.append(
+            "Python interpreter is not running inside a virtual environment; "
+            "create a clean venv with `python -m venv`"
+        )
+    if external_site_paths:
+        errors.append(
+            "Python path exposes site-packages outside the virtual environment: "
+            + ", ".join(external_site_paths)
+        )
     if implementation != "CPython":
         errors.append(f"Python implementation is {implementation}, expected CPython")
     if version_line != expected_python:
@@ -163,6 +188,7 @@ def _dependency_import_candidates(name: str) -> list[str]:
 
 def _check_dependencies() -> list[dict[str, Any]]:
     checks: list[dict[str, Any]] = []
+    prefix = Path(sys.prefix).resolve()
     for row in _declared_runtime_requirements():
         name = row["name"]
         item: dict[str, Any] = {**row, "status": "FAIL", "import_candidates": _dependency_import_candidates(name)}
@@ -182,10 +208,22 @@ def _check_dependencies() -> list[dict[str, Any]]:
                 continue
             item["imported_module"] = module_name
             item["imported_from"] = str(getattr(module, "__file__", ""))
+            module_file = getattr(module, "__file__", None)
+            if module_file:
+                module_path = Path(module_file).resolve()
+                item["within_sys_prefix"] = _path_is_within(module_path, prefix)
+            else:
+                item["within_sys_prefix"] = False
             imported = True
             break
         if imported:
-            item["status"] = "PASS"
+            if item["within_sys_prefix"]:
+                item["status"] = "PASS"
+            else:
+                item["error"] = (
+                    "imported module is outside the current environment prefix: "
+                    f"{item['imported_from']}"
+                )
         else:
             item["error"] = "; ".join(import_errors) or f"no import candidate for {name}"
         checks.append(item)
@@ -234,16 +272,24 @@ def _check_distribution() -> tuple[dict[str, Any], list[str], Any | None]:
         return details, [details["error"]], None
     module_path = Path(getattr(module, "__file__", "")).resolve()
     prefix = Path(sys.prefix).resolve()
+    metadata_path = Path(dist._path).resolve()
     source_roots = _source_tree_roots()
+    metadata_within_prefix = _path_is_within(metadata_path, prefix)
     within_prefix = _path_is_within(module_path, prefix)
     in_source_tree = any(_path_is_within(module_path, root / "src") for root in source_roots)
     details.update(
         {
             "module_file": str(module_path),
+            "metadata_within_sys_prefix": metadata_within_prefix,
             "within_sys_prefix": within_prefix,
             "in_source_tree": in_source_tree,
         }
     )
+    if not metadata_within_prefix:
+        errors.append(
+            "scirel distribution metadata is outside the current environment prefix: "
+            f"{metadata_path}"
+        )
     if not within_prefix:
         errors.append(f"scirel module is outside the current environment prefix: {module_path}")
     if in_source_tree:
