@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-17T06:22:11Z",
+  "updated_at": "2026-10-17T06:32:16Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -26,6 +26,12 @@
       "sha256": "387096651996e0889f45eacdfde7e472d40b979dc263d531adc6e3d8fe5c6622",
       "size": 1905,
       "normalized_sha256": "387096651996e0889f45eacdfde7e472d40b979dc263d531adc6e3d8fe5c6622"
+    },
+    ".agents/state/notion-work-management/outbox/receipts/20261017-scirel-dev9-5556f1a.json": {
+      "role": "index",
+      "sha256": "9afe8a1867ab293e6b777d928e11c77ac95d6a5eaf428e57f00bad709fd70c18",
+      "size": 1739,
+      "normalized_sha256": "9afe8a1867ab293e6b777d928e11c77ac95d6a5eaf428e57f00bad709fd70c18"
     },
     ".codex/config.toml": {
       "role": "index",
@@ -71,9 +77,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "190e856e7d79b2316d53e5239b51910a29ace7663c88e7f12c3ac0c509b2fe2e",
-      "size": 586836,
-      "normalized_sha256": "190e856e7d79b2316d53e5239b51910a29ace7663c88e7f12c3ac0c509b2fe2e"
+      "sha256": "7bd57e22deb3b26650477c5640769fe0874b95062a81d4bc892666b95b0ef127",
+      "size": 586801,
+      "normalized_sha256": "7bd57e22deb3b26650477c5640769fe0874b95062a81d4bc892666b95b0ef127"
     },
     "aoci.meta.txt": {
       "role": "index",

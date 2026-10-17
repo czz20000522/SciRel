@@ -1602,7 +1602,6 @@ bootstrap.py[KB8S]: F:计算Sauter和Redl面系数并以显式压力梯度组装
 20261012-legacy-operator-absorption.json[OW3T]: F:保存旧算子吸收dry run的Notion待同步摘要和证据入口 | R:- | A:PENDING_SYNC记录 | S:本地队列不证明远端写入或源码删除
 20261012-pleiades-anisotropy-correction.json[OW3T]: F:保存Pleiades修正版wheel与安装证据的Notion待同步摘要 | R:- | A:PENDING_SYNC记录 | S:有界验证不授予人工批准或再分发权
 20261013-scirel-main-baseline.json[OW3T]: F:保存主工作区18d2f2b提交与受影响测试结果的待同步知识记录 | R:- | A:PENDING_SYNC记录 | S:1580通过同时保留21失败，未称全套通过
-20261017-scirel-dev9-5556f1a.json[OV5T]: F:保存dev9候选与离线wheelhouse验收的Notion待同步摘要 | R:code:release/CURRENT.json,code:provenance/validation/scirel-dev9-document-integration-20261017-5556f1a.json,code:provenance/validation/scirel-dev9-linux-offline-acceptance-20261017-5556f1a.json | A:记录5556f1a源提交、wheel与文档摘要、Linux和Mac验收、当前平台边界及下一步事实 | S:PENDING_SYNC只表示本地队列待处理，不能当作Notion远端已写入
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/===
 index.html[EU6T]: F:提供科学函数检索分页、全书查询接续与含高亮代码的精确合同阅读 | R:code:scripts/scirel_docs.py,code:tools/docs/presentation.js,code:tools/docs/code.css | A:reference页面、q查询入口、资产详情锚点 | S:异步旧响应不能覆盖新查询；展示显式区分Python与JSON，版本和限制随详情显示
@@ -2052,3 +2051,6 @@ SOURCES.txt[XV3T]: F:保存构建元数据引用的源文件清单 | R:code:src/
 dependency_links.txt[XV2T]: F:保存构建系统的依赖链接元数据 | R:code:src/scirel.egg-info/PKG-INFO,code:pyproject.toml | A:记录当前项目没有额外依赖链接 | S:生成元数据不是版本源
 requires.txt[XV3T]: F:保存项目核心依赖与可选extra的构建元数据 | R:code:src/scirel.egg-info/PKG-INFO,code:pyproject.toml | A:列出NumPy、SciPy、mpmath及plot和netcdf extras的Requires-Dist投影 | S:生成依赖清单须与pyproject及wheel一致
 top_level.txt[XV2T]: F:保存构建元数据的顶层包名 | R:code:src/scirel.egg-info/PKG-INFO,code:pyproject.toml | A:声明scirel为唯一顶层包 | S:生成元数据不是版本源
+
+===/Users/tomczz/Projects/SciReL/.agents/state/notion-work-management/outbox/receipts/===
+20261017-scirel-dev9-5556f1a.json[OW3T]: F:保存已同步的dev9离线wheelhouse知识记录回执 | R:code:release/CURRENT.json,code:provenance/validation/scirel-dev9-linux-offline-acceptance-20261017-5556f1a.json | A:记录Notion远端页面、同步时间和候选验收摘要 | S:远端写入已回读验证；回执不替代仓库证据、科学闭包或发行批准
