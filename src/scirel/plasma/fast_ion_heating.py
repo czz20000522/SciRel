@@ -14,6 +14,9 @@ failure are retained in the D2 evidence record.
 import numpy as np
 
 
+__all__ = ["fast_ion_fractional_heating"]
+
+
 def fast_ion_fractional_heating(
     birth_energy, T_e, fast_ion_mass
 ):

@@ -9,6 +9,9 @@ from __future__ import annotations
 import numpy as np
 
 
+__all__ = ["NumericalContractError", "diff_12_central"]
+
+
 class NumericalContractError(ValueError):
     """Input violates the supported numerical contract."""
 
