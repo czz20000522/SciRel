@@ -18,16 +18,41 @@ import numpy as np
 import scipy.special as spec
 
 
+def _validated_spline_data(x_data, y_data):
+    """Coerce and validate the knot/ordinate contract before matrix assembly."""
+    try:
+        raw_x = np.asarray(x_data)
+        raw_y = np.asarray(y_data)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("spline knots and ordinates must be finite real arrays") from exc
+    if (
+        raw_x.ndim != 1
+        or raw_y.ndim != 1
+        or raw_x.dtype.kind not in "iuf"
+        or raw_y.dtype.kind not in "iuf"
+        or raw_x.size != raw_y.size
+        or raw_x.size < 3
+    ):
+        raise ValueError(
+            "spline knots and ordinates must be finite real one-dimensional arrays "
+            "with equal length at least 3"
+        )
+    x = np.asarray(raw_x, dtype=float)
+    y = np.asarray(raw_y, dtype=float)
+    if not np.all(np.isfinite(x)) or not np.all(np.isfinite(y)):
+        raise ValueError("spline knots and ordinates must be finite")
+    if not np.all(np.diff(x) > 0.0):
+        raise ValueError("spline knots must be strictly increasing")
+    return x, y
+
+
 class spline:
     '''
     Master Spline Class
     defines basic data structures and basic functions
     '''
     def __init__(self, x_data, y_data):
-        x_data = np.array(x_data,dtype=float)
-        y_data = np.array(y_data,dtype=float)
-        assert len(x_data) == len(y_data), \
-            'Vectors are not of equal lengths'
+        x_data, y_data = _validated_spline_data(x_data, y_data)
         self.x_data = x_data
         self.y_data = y_data
         self.dimension = len(x_data)
