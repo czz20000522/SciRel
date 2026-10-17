@@ -29,6 +29,19 @@ def test_native_resource_closure_covers_source_and_declared_package_data() -> No
         "pdrk-finiteN": 2,
         "pdrk-shared-plot-helper": 1,
     }
+    manifest = json.loads((ROOT / "release/wheel/native-resource-closure.json").read_text())
+    pdrk_binding = next(
+        binding
+        for binding in manifest["package_data_bindings"]
+        if binding["package"] == "scirel.kinetic.pdrk"
+    )
+    assert pdrk_binding["patterns"] == [
+        "_native/scirel_prepare_plot.m",
+        "_native/current/**/*",
+        "_native/examples/*",
+        "_native/finiteN/*",
+        "_native/legacy/*",
+    ]
 
 
 def test_native_resource_closure_rejects_unlisted_resource(tmp_path: Path) -> None:

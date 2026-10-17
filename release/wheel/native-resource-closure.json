@@ -15,7 +15,11 @@
     {
       "package": "scirel.kinetic.pdrk",
       "patterns": [
-        "_native/**/*"
+        "_native/scirel_prepare_plot.m",
+        "_native/current/**/*",
+        "_native/examples/*",
+        "_native/finiteN/*",
+        "_native/legacy/*"
       ],
       "groups": [
         "pdrk-current-core",

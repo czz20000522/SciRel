@@ -29,7 +29,13 @@ include = ["scirel", "scirel.*"]
 
 [tool.setuptools.package-data]
 "scirel.kinetic" = ["_fluidbw_native/*.m"]
-"scirel.kinetic.pdrk" = ["_native/**/*"]
+"scirel.kinetic.pdrk" = [
+    "_native/scirel_prepare_plot.m",
+    "_native/current/**/*",
+    "_native/examples/*",
+    "_native/finiteN/*",
+    "_native/legacy/*",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

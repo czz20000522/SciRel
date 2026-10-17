@@ -26,6 +26,13 @@ a source-only check, or add `--wheel <path>` to prove that an actual wheel has
 exactly the declared native members. The closure is an inventory and future
 split boundary; it does not grant a platform or scientific release claim.
 
+The PDRK package-data binding names the five reviewed resource roots explicitly
+(`current`, `examples`, `finiteN`, `legacy`, and the shared plot helper). It
+does not use a catch-all `_native/**/*` pattern, so a new native file must first
+be added to the reviewed closure before it can enter a wheel. The resulting
+wheel still contains the same 117 resources; this only makes the source-side
+split boundary fail closed.
+
 ## Reproducing the bound wheel
 
 Build from the exact `source_revision` recorded in [`../CURRENT.json`](../CURRENT.json),
