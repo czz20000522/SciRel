@@ -101,7 +101,9 @@
     "python": {
       "module": "scirel.kinetic.kn1d_outer_convergence",
       "symbol": "evaluate_kn1d_outer_convergence",
-      "signature": "evaluate_kn1d_outer_convergence(previous_density_m3, current_density_m3, truncate)"
+      "signature": "evaluate_kn1d_outer_convergence(previous_density_m3, current_density_m3, truncate)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_kn1d_outer_convergence"
     }
   },
   "version": {

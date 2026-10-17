@@ -101,7 +101,9 @@
     "python": {
       "module": "scirel.kinetic.generation_accumulation_update",
       "symbol": "update_neutral_generation_accumulation",
-      "signature": "update_neutral_generation_accumulation(state, generation_distribution, generation_density_m3)"
+      "signature": "update_neutral_generation_accumulation(state, generation_distribution, generation_density_m3)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "update_neutral_generation_accumulation"
     }
   },
   "version": {

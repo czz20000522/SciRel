@@ -121,7 +121,9 @@
     "python": {
       "module": "scirel.kinetic.neutral_generation_stopping",
       "symbol": "evaluate_neutral_generation_stopping",
-      "signature": "evaluate_neutral_generation_stopping(generation_density_m3, accumulated_density_m3, truncate, seed_iteration_enabled=False, seed_error=None)"
+      "signature": "evaluate_neutral_generation_stopping(generation_density_m3, accumulated_density_m3, truncate, seed_iteration_enabled=False, seed_error=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_neutral_generation_stopping"
     }
   },
   "version": {

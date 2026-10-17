@@ -92,7 +92,9 @@
     "python": {
       "module": "scirel.kinetic.thermal_speed_scale",
       "symbol": "compute_thermal_speed_m_s",
-      "signature": "compute_thermal_speed_m_s(temperature_ev, mass_amu)"
+      "signature": "compute_thermal_speed_m_s(temperature_ev, mass_amu)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "compute_thermal_speed_m_s"
     }
   },
   "version": {

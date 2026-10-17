@@ -101,7 +101,9 @@
     "python": {
       "module": "scirel.kinetic.outer_seed_convergence",
       "symbol": "evaluate_neutral_outer_seed_convergence",
-      "signature": "evaluate_neutral_outer_seed_convergence(previous_density_m3, current_density_m3, truncate)"
+      "signature": "evaluate_neutral_outer_seed_convergence(previous_density_m3, current_density_m3, truncate)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_neutral_outer_seed_convergence"
     }
   },
   "version": {
