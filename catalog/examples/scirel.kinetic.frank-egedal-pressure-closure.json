@@ -141,7 +141,9 @@
     "python": {
       "module": "scirel.kinetic.frank_egedal_pressure_closure",
       "symbol": "solve_frank_egedal_pressure_closure",
-      "signature": "solve_frank_egedal_pressure_closure(inputs=None, **kwargs)"
+      "signature": "solve_frank_egedal_pressure_closure(inputs=None, **kwargs)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "solve_frank_egedal_pressure_closure"
     }
   },
   "version": {

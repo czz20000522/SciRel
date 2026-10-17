@@ -14,8 +14,8 @@ def test_current_canonical_binding_census_preserves_facade_and_exception_denomin
     counts = report["counts"]
 
     assert counts["total"] == 267
-    assert counts["explicit"] == 217
-    assert counts["candidate"] == 3
+    assert counts["explicit"] == 218
+    assert counts["candidate"] == 2
     assert counts["exception"] == 47
     assert report["unexpected_missing"] == []
 
@@ -399,4 +399,12 @@ def test_frank_egedal_direct_slice_pins_kinetic_facades_explicitly():
         "scirel.kinetic.frank-egedal-source-projection",
     }
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
+    assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"
+
+
+def test_frank_egedal_pressure_graph_pins_kinetic_facade_explicitly():
+    report = census(ROOT)
+    rows = {row["asset_id"]: row["status"] for row in report["rows"]}
+    assert rows["scirel.kinetic.frank-egedal-pressure-closure"] == "explicit"
+    assert rows["scirel.kinetic.grid-mirror-kinetic-closure"] == "candidate"
     assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"
