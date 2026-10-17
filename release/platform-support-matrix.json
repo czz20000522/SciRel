@@ -42,8 +42,10 @@
       "architecture": "amd64",
       "python": "CPython 3.14",
       "status": "NOT_RUN",
-      "evidence": [],
-      "scope": "target platform; no compatibility claim"
+      "evidence": [
+        "provenance/validation/scirel-dev9-windows-amd64-offline-20261017-19a4e6b.json"
+      ],
+      "scope": "target platform; validation remains NOT_RUN because the bound Windows wheelhouse transfer was interrupted on the DERP SSH path and the target OpenSSH service stopped returning a banner; no clean-venv or package result was recorded"
     },
     {
       "id": "macos-arm64-cp314",

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-17T12:29:49Z",
+  "updated_at": "2026-10-17T13:47:33Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -77,9 +77,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "da17d62ac95286f7bef40d5906947abb1fd46dd1b1ba1567c503618853003796",
-      "size": 597907,
-      "normalized_sha256": "da17d62ac95286f7bef40d5906947abb1fd46dd1b1ba1567c503618853003796"
+      "sha256": "5d8595e812b4e07e5e6c7ea8ed2db20947901c96071dc8996d53c5185c5a9d46",
+      "size": 600676,
+      "normalized_sha256": "5d8595e812b4e07e5e6c7ea8ed2db20947901c96071dc8996d53c5185c5a9d46"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -5865,6 +5865,12 @@
       "size": 5907,
       "normalized_sha256": "d19a15f5efc2e7a3206df99420f62d1d60f24d0ba7b211707962df2ae55d0936"
     },
+    "provenance/validation/scirel-dev9-document-integration-20261017-19a4e6b.json": {
+      "role": "index",
+      "sha256": "d3320b251e588bcf3feb4f1b24df337f0b7cab6277850b97412a0e9eca0da042",
+      "size": 3091,
+      "normalized_sha256": "d3320b251e588bcf3feb4f1b24df337f0b7cab6277850b97412a0e9eca0da042"
+    },
     "provenance/validation/scirel-dev9-document-integration-20261017-2030ec3.json": {
       "role": "index",
       "sha256": "67e6c85ab0fc8d47a535e42cb9f24207f151b060a64b781fd13523450de27085",
@@ -5961,6 +5967,12 @@
       "size": 7671,
       "normalized_sha256": "1b15120f8cd2776dc36f01e9dda5f6f656ade36393d1b36149ee46ba299b6aba"
     },
+    "provenance/validation/scirel-dev9-linux-offline-20261017-19a4e6b.json": {
+      "role": "index",
+      "sha256": "1adfcd79e0678ca538b9e666648f714c2ec306541d0d52aae673fcf1c45a2da3",
+      "size": 20095,
+      "normalized_sha256": "1adfcd79e0678ca538b9e666648f714c2ec306541d0d52aae673fcf1c45a2da3"
+    },
     "provenance/validation/scirel-dev9-linux-offline-20261017-2030ec3.json": {
       "role": "index",
       "sha256": "b02dd22cc865fabec3c626f2fae8fd9f545efd8edc01c87d025e237d0c0f8118",
@@ -5984,6 +5996,12 @@
       "sha256": "dcf19fdb2bdd866d08e8276cd1ebc889853c2a03ad40650bd078a5c9147cdf36",
       "size": 7776,
       "normalized_sha256": "dcf19fdb2bdd866d08e8276cd1ebc889853c2a03ad40650bd078a5c9147cdf36"
+    },
+    "provenance/validation/scirel-dev9-macos-arm64-offline-20261017-19a4e6b.json": {
+      "role": "index",
+      "sha256": "aafb619bbb2b85c4f792d9c34c01c906f592e76a70a00f0e6b22faaa0f351abb",
+      "size": 22054,
+      "normalized_sha256": "aafb619bbb2b85c4f792d9c34c01c906f592e76a70a00f0e6b22faaa0f351abb"
     },
     "provenance/validation/scirel-dev9-macos-arm64-offline-20261017-2030ec3.json": {
       "role": "index",
@@ -6009,6 +6027,12 @@
       "size": 1190,
       "normalized_sha256": "4b9895f1d040fd69d9490336e1a0ccab06cdea3e0c502f86625e8bf0c34d871c"
     },
+    "provenance/validation/scirel-dev9-windows-amd64-offline-20261017-19a4e6b.json": {
+      "role": "index",
+      "sha256": "97831a68d504c0caa158bc007cca5f1d6aac9496ed79e3592be412c22f6b1a8a",
+      "size": 6484,
+      "normalized_sha256": "97831a68d504c0caa158bc007cca5f1d6aac9496ed79e3592be412c22f6b1a8a"
+    },
     "pyproject.toml": {
       "role": "index",
       "sha256": "e2d1034e8d74850653307789a26ccbc0a2bbaf7c94e06247acf9741ed02635a3",
@@ -6017,9 +6041,9 @@
     },
     "release/CURRENT.json": {
       "role": "index",
-      "sha256": "78dd5d3c0ecad9a8118fe2a6f75f0c6f0add7410575e3cd8472488b04d29f93e",
-      "size": 2735,
-      "normalized_sha256": "78dd5d3c0ecad9a8118fe2a6f75f0c6f0add7410575e3cd8472488b04d29f93e"
+      "sha256": "0d39377dbbc7931f3a32292949c35d7adcf7db9818c6ea4423c45811bfe97fed",
+      "size": 2733,
+      "normalized_sha256": "0d39377dbbc7931f3a32292949c35d7adcf7db9818c6ea4423c45811bfe97fed"
     },
     "release/README.md": {
       "role": "index",
@@ -6113,9 +6137,9 @@
     },
     "release/platform-support-matrix.json": {
       "role": "index",
-      "sha256": "a31b5500547387d187955b16fa60a90a8b832ed83678b9e534a3ecc9420006e0",
-      "size": 3573,
-      "normalized_sha256": "a31b5500547387d187955b16fa60a90a8b832ed83678b9e534a3ecc9420006e0"
+      "sha256": "8a0d48f46484562bc7c2ca7e27f953a6d71ccb05ef33d7fa68baef30e76d33f4",
+      "size": 3859,
+      "normalized_sha256": "8a0d48f46484562bc7c2ca7e27f953a6d71ccb05ef33d7fa68baef30e76d33f4"
     },
     "release/projects/README.md": {
       "role": "index",

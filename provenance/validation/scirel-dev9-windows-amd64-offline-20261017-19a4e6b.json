@@ -1,0 +1,192 @@
+{
+  "artifact": {
+    "bytes": 663107,
+    "filename": "scirel-0.1.0.dev9-py3-none-any.whl",
+    "sha256": "c4d81f5b8c4ad281ca3cb811eb33385e395aaf799c927dd2737038cddf6c27d8"
+  },
+  "errors": [
+    "Windows acceptance blocked before clean-venv installation: tomos-company SSH service stopped completing handshakes after large-wheel transfer attempt.",
+    "Remote wheelhouse was not proven complete; observed partial files are excluded from acceptance evidence.",
+    "pip install, pip check, core smoke, plot extra, and netcdf extra were NOT_RUN."
+  ],
+  "execution": {
+    "commands": [
+      [
+        "python3",
+        "/Users/tomczz/.agents/skills/tailnet-ssh/scripts/windows_ps.py",
+        "tomos-company",
+        "--file",
+        "/tmp/scirel_windows_probe.ps1",
+        "--engine",
+        "pwsh",
+        "--timeout",
+        "60"
+      ],
+      [
+        "scp",
+        "-O",
+        "<wheelhouse files>",
+        "tomos-company:/d/SciRel-validation/dev9-19a4e6b-windows-20261017/wheelhouse/"
+      ],
+      [
+        "ssh",
+        "tomos-company",
+        "<remote sha256/bytes verification>"
+      ]
+    ],
+    "network_resolution": false,
+    "pip_install": {
+      "returncode": null,
+      "status": "NOT_RUN",
+      "stderr": "",
+      "stdout": ""
+    },
+    "transfer": {
+      "completed_remote_files": [
+        {
+          "bytes": 136983,
+          "filename": "certifi-2026.7.22-py3-none-any.whl",
+          "sha256": "62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775"
+        }
+      ],
+      "last_observed": "SSH TCP connection accepted, but SSH handshake/banner timed out after transfer attempt; no remote installation or hash closure was executed.",
+      "partial_remote_files_observed": [
+        {
+          "bytes": 1831936,
+          "expected_bytes": 37362755,
+          "filename": "scipy-1.18.1-cp314-cp314-win_amd64.whl"
+        },
+        {
+          "bytes": 262144,
+          "expected_bytes": 2500790,
+          "filename": "fonttools-4.67.0-cp314-cp314-win_amd64.whl"
+        }
+      ],
+      "pseudo_files_removed": [
+        "._.",
+        "._scipy-1.18.1-cp314-cp314-win_amd64.whl"
+      ],
+      "status": "BLOCKED"
+    }
+  },
+  "extras": {
+    "netcdf": {
+      "status": "NOT_RUN"
+    },
+    "plot": {
+      "status": "NOT_RUN"
+    }
+  },
+  "schema": "scirel.offline-wheelhouse-validation.v1",
+  "source_revision": "19a4e6bf4ded8e770770ed7cb8030426a0b2f1c2",
+  "status": "FAIL",
+  "target": {
+    "architecture": "amd64",
+    "expected_platform": "windows-amd64-cp314",
+    "host": "TomOS",
+    "host_alias": "tomos-company",
+    "os": "Windows",
+    "probe_evidence": {
+      "desktop_root": "D:/Users/26569/Desktop",
+      "free_space_bytes": 363772989440,
+      "powershell": "7.6.7",
+      "target_root_preexisting": false
+    },
+    "probe_status": "PASS",
+    "python_executable": "C:/Users/26569/AppData/Local/Python/pythoncore-3.14-64/python.exe",
+    "python_implementation": "CPython",
+    "python_version": "3.14.3",
+    "target_root": "D:/SciRel-validation/dev9-19a4e6b-windows-20261017"
+  },
+  "validation": {
+    "reason": "remote SSH service became unavailable during wheel transfer; clean venv was not created",
+    "status": "NOT_RUN"
+  },
+  "wheelhouse": {
+    "path": "/Users/tomczz/Projects/SciReL-artifacts-v2/scirel/0.1.0.dev9/19a4e6b-dev9-rebuild-20261017/windows-amd64-cp314-wheelhouse-20261017",
+    "remote_verified": false,
+    "wheel_count": 16,
+    "wheels": [
+      {
+        "bytes": 136983,
+        "filename": "certifi-2026.7.22-py3-none-any.whl",
+        "sha256": "62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775"
+      },
+      {
+        "bytes": 512994,
+        "filename": "cftime-1.6.6.1-cp311-abi3-win_amd64.whl",
+        "sha256": "e4ed505118cbffec8ca6b59636f283d55df1675a3f092bc2d276f917a04af68a"
+      },
+      {
+        "bytes": 240101,
+        "filename": "contourpy-1.4.0-cp314-cp314-win_amd64.whl",
+        "sha256": "181bea01bc742734ae672fa00c717d855dd35e1f029536406538c52e7b0cd73d"
+      },
+      {
+        "bytes": 8321,
+        "filename": "cycler-0.12.1-py3-none-any.whl",
+        "sha256": "85cef7cff222d8644161529808465972e51340599459b8ac3ccbac5a854e0d30"
+      },
+      {
+        "bytes": 2500790,
+        "filename": "fonttools-4.67.0-cp314-cp314-win_amd64.whl",
+        "sha256": "4e2c1586b5b6588a47d02e2588170eefdc996b708f2659c44dbe169bd6fcacb5"
+      },
+      {
+        "bytes": 72282,
+        "filename": "kiwisolver-1.5.1-cp314-cp314-win_amd64.whl",
+        "sha256": "f4167e87b397f273dc2356fcf1eaf50a6bac51e6105f45103ef7129c8efb0255"
+      },
+      {
+        "bytes": 9505972,
+        "filename": "matplotlib-3.11.2-cp314-cp314-win_amd64.whl",
+        "sha256": "ecea603dd2fbf8242fd31a305a8b12a4ece2de28096870c65fdd0d1e35b8d9a6"
+      },
+      {
+        "bytes": 567787,
+        "filename": "mpmath-1.4.1-py3-none-any.whl",
+        "sha256": "dc4f0ea2304480d4a9a48a94c1020571558ade522b44a6912efac63a586e140f"
+      },
+      {
+        "bytes": 21299637,
+        "filename": "netcdf4-1.7.4-cp311-abi3-win_amd64.whl",
+        "sha256": "9476e1f23161ae5159cd1548c50c8a37922e77d76583e247133f256ef7b825fc"
+      },
+      {
+        "bytes": 12703552,
+        "filename": "numpy-2.5.4-cp314-cp314-win_amd64.whl",
+        "sha256": "2ca144f15135b6212a5c47b1e2aeca6e412f102f95a2d5d88d8aec77eb255de3"
+      },
+      {
+        "bytes": 129956,
+        "filename": "packaging-26.3-py3-none-any.whl",
+        "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c"
+      },
+      {
+        "bytes": 7281830,
+        "filename": "pillow-13.0.0-cp314-cp314-win_amd64.whl",
+        "sha256": "f7cbb7a64e7ec664775195e4f81923bc8a93d9451b963f844e59118f63147a7a"
+      },
+      {
+        "bytes": 126420,
+        "filename": "pyparsing-3.3.3-py3-none-any.whl",
+        "sha256": "ece8c00a69cf01b45d0b1dedabb469c90d8caf996d4fda40f147627a122849a4"
+      },
+      {
+        "bytes": 229892,
+        "filename": "python_dateutil-2.9.0.post0-py2.py3-none-any.whl",
+        "sha256": "a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427"
+      },
+      {
+        "bytes": 37362755,
+        "filename": "scipy-1.18.1-cp314-cp314-win_amd64.whl",
+        "sha256": "78a0d7c918e74a232394117160e7e3db503377572a45bcef8826e4ab8a35feba"
+      },
+      {
+        "bytes": 11050,
+        "filename": "six-1.17.0-py2.py3-none-any.whl",
+        "sha256": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"
+      }
+    ]
+  }
+}
