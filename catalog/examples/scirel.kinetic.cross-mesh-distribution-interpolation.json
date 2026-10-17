@@ -204,7 +204,9 @@
     "python": {
       "module": "scirel.kinetic.cross_mesh_distribution_interpolation",
       "symbol": "interp_distribution_across_mesh",
-      "signature": "interp_distribution_across_mesh(fa, vr_a, vx_a, x_a, Tnorm_a, vr_b, vx_b, x_b, Tnorm_b, correct=1, do_warn=None, max_correction_iterations=1000)"
+      "signature": "interp_distribution_across_mesh(fa, vr_a, vx_a, x_a, Tnorm_a, vr_b, vx_b, x_b, Tnorm_b, correct=1, do_warn=None, max_correction_iterations=1000)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "interp_distribution_across_mesh"
     }
   },
   "version": {
