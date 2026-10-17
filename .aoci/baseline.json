@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-17T00:33:38Z",
+  "updated_at": "2026-10-17T00:40:49Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -65,9 +65,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "689f476e91cae3ef60f4f1f7718e5e146e1627d29368d0385566b273593c1a8d",
-      "size": 569784,
-      "normalized_sha256": "689f476e91cae3ef60f4f1f7718e5e146e1627d29368d0385566b273593c1a8d"
+      "sha256": "49a27a23a506713a239cbfed43065d663233f38e3008957dc7d696ce4b24a3b4",
+      "size": 570259,
+      "normalized_sha256": "49a27a23a506713a239cbfed43065d663233f38e3008957dc7d696ce4b24a3b4"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -7943,9 +7943,9 @@
     },
     "src/scirel/geometry/__init__.py": {
       "role": "index",
-      "sha256": "5feb1c5daca0aaac654c41ca2f0200edb2f3400936bd89d6f6d7c17986cfd612",
-      "size": 2900,
-      "normalized_sha256": "5feb1c5daca0aaac654c41ca2f0200edb2f3400936bd89d6f6d7c17986cfd612"
+      "sha256": "e5357e48e97b9b246b6160db481cf2bef55f3091e2d99b72da01c0a920638329",
+      "size": 7661,
+      "normalized_sha256": "e5357e48e97b9b246b6160db481cf2bef55f3091e2d99b72da01c0a920638329"
     },
     "src/scirel/geometry/analysis.py": {
       "role": "index",
@@ -8021,9 +8021,9 @@
     },
     "src/scirel/geometry/numerics.py": {
       "role": "index",
-      "sha256": "476dfbca8184f1aafb1355a17099135289569319487a2e821e3f2fe52a019417",
-      "size": 1647,
-      "normalized_sha256": "476dfbca8184f1aafb1355a17099135289569319487a2e821e3f2fe52a019417"
+      "sha256": "3ebce98846efdbbb8943e0bff179536f4fe43dcbaaab8f31bc32a5fbee7fe10a",
+      "size": 1705,
+      "normalized_sha256": "3ebce98846efdbbb8943e0bff179536f4fe43dcbaaab8f31bc32a5fbee7fe10a"
     },
     "src/scirel/geometry/planar_wavevector.py": {
       "role": "index",
@@ -9383,9 +9383,9 @@
     },
     "src/scirel/plasma/fast_ion_heating.py": {
       "role": "index",
-      "sha256": "da378cf492c79715a224aa39578091c7792740abbdca5396d81b7c5250dd5348",
-      "size": 3400,
-      "normalized_sha256": "da378cf492c79715a224aa39578091c7792740abbdca5396d81b7c5250dd5348"
+      "sha256": "6b514d2e20ddf36b46d6a29308a525a19eb48b7f6c12ac1ab9388ecc76d1eb91",
+      "size": 3444,
+      "normalized_sha256": "6b514d2e20ddf36b46d6a29308a525a19eb48b7f6c12ac1ab9388ecc76d1eb91"
     },
     "src/scirel/plotting.py": {
       "role": "index",
@@ -10923,6 +10923,12 @@
       "size": 7895,
       "normalized_sha256": "eb317d751e1e5df0c06e84be950dfd73eb93173dc4961767e376b6b74fe25651"
     },
+    "tests/test_geometry_plasma_public_surface.py": {
+      "role": "index",
+      "sha256": "71f8a51b3f95f8b1a9aa1b797d48f4bb60ee94beefa1c1032d69fdeffed389ed",
+      "size": 1704,
+      "normalized_sha256": "71f8a51b3f95f8b1a9aa1b797d48f4bb60ee94beefa1c1032d69fdeffed389ed"
+    },
     "tests/test_git_release_structure.py": {
       "role": "index",
       "sha256": "936de70e851117157a2965545e73aab14378690dbab44488bb17c60c1a678cb8",
@@ -10943,9 +10949,9 @@
     },
     "tests/test_lazy_namespace.py": {
       "role": "index",
-      "sha256": "286d0f356daef60b158de5efbc90ec133c61739424abefccb83ab5e1da8a5677",
-      "size": 5663,
-      "normalized_sha256": "286d0f356daef60b158de5efbc90ec133c61739424abefccb83ab5e1da8a5677"
+      "sha256": "c8463cae9289158a6228e86c69b4d06ea8eda51bd0c0f7d676ad6caae79d372d",
+      "size": 5817,
+      "normalized_sha256": "c8463cae9289158a6228e86c69b4d06ea8eda51bd0c0f7d676ad6caae79d372d"
     },
     "tests/test_library_composition.py": {
       "role": "index",
