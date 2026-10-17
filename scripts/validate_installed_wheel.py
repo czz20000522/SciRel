@@ -20,10 +20,10 @@ build wheels, modify release records, or update the platform matrix. It is
 safe to run against a historical wheel while a later candidate is being
 prepared.
 
-Use ``--extra plot`` or ``--extra netcdf`` after installing that extra in the
-same clean environment to validate its declared dependency closure and a
-capability-specific smoke path. Repeat ``--extra`` to validate more than one
-optional capability. Core validation remains the default.
+Use ``--extra plot`` after installing that extra in the same clean environment
+to validate its declared dependency closure and a capability-specific smoke
+path. Repeat ``--extra`` to validate more than one optional capability. Core
+validation remains the default; undeclared extras fail closed.
 """
 
 from __future__ import annotations
@@ -40,7 +40,6 @@ import re
 import subprocess
 import sys
 import sysconfig
-import tempfile
 from typing import Any
 from zipfile import BadZipFile, ZipFile
 from pathlib import PurePosixPath
@@ -304,46 +303,9 @@ def _run_plot_extra() -> tuple[dict[str, Any], list[str]]:
         return details, [f"plot extra smoke failed: {type(exc).__name__}: {exc}"]
 
 
-def _run_netcdf_extra() -> tuple[dict[str, Any], list[str]]:
-    try:
-        import numpy as np
-        from netCDF4 import Dataset
-
-        from scirel.electromagnetism.distributed import get_deltapsi
-
-        with tempfile.TemporaryDirectory(prefix="scirel-netcdf-extra-") as temporary:
-            path = Path(temporary) / "currents.nc"
-            with Dataset(path, "w", format="NETCDF4_CLASSIC") as data:
-                data.createDimension("nzeqadim", 2)
-                data.createDimension("nreqadim", 2)
-                variable = data.createVariable(
-                    "curr_diamcurv_phi", "f8", ("nzeqadim", "nreqadim")
-                )
-                variable.units = "A/cm^2"
-                variable[:] = np.ones((2, 2), dtype=float)
-                r_grid, z_grid = np.meshgrid(
-                    np.array([0.35, 1.25]), np.array([-0.6, 0.8])
-                )
-                result = get_deltapsi(data, r_grid, z_grid)
-        summary = _array_summary(result, (2, 2))
-        errors: list[str] = []
-        if not summary["finite"] or not summary["shape_match"]:
-            errors.append("netcdf extra smoke returned a non-finite or mis-shaped result")
-        return {
-            "status": "PASS" if not errors else "FAIL",
-            "netcdf4_version": metadata.version("netCDF4"),
-            "output": summary,
-        }, errors
-    except Exception as exc:
-        details = {"status": "FAIL", "error": f"{type(exc).__name__}: {exc}"}
-        return details, [f"netcdf extra smoke failed: {type(exc).__name__}: {exc}"]
-
-
 def _run_extra_smoke(extra: str) -> tuple[dict[str, Any], list[str]]:
     if extra == "plot":
         return _run_plot_extra()
-    if extra == "netcdf":
-        return _run_netcdf_extra()
     return {"status": "FAIL", "error": f"unsupported extra: {extra}"}, [
         f"unsupported optional extra: {extra}"
     ]

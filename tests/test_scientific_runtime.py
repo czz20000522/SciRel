@@ -23,12 +23,13 @@ def test_old_compatible_selection_gets_exact_current_pins():
     # importing every dependency used by another selected scientific reader.
     expected = ["numpy==2.5.4", "scipy==1.18.1", "matplotlib==3.11.2"]
     assert pin_dependencies(requested) == expected
-    assert pin_dependencies(["netCDF4>=1.7"]) == ["netCDF4==1.7.4"]
+    with pytest.raises(ValueError, match="outside the scientific baseline"):
+        pin_dependencies(["netCDF4>=1.7"])
     assert baseline()["project"]["dependencies"] == [
         "numpy==2.5.4", "scipy==1.18.1", "mpmath==1.4.1"
     ]
     assert baseline()["project"]["optional-dependencies"]["plot"] == ["matplotlib==3.11.2"]
-    assert baseline()["project"]["optional-dependencies"]["netcdf"] == ["netCDF4==1.7.4"]
+    assert "netcdf" not in baseline()["project"]["optional-dependencies"]
     assert baseline_receipt()["pyproject_sha256"] == hashlib.sha256((ROOT / "pyproject.toml").read_bytes()).hexdigest()
 
 

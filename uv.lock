@@ -392,9 +392,6 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-netcdf = [
-    { name = "netcdf4" },
-]
 plot = [
     { name = "matplotlib" },
 ]
@@ -406,7 +403,6 @@ build = [
 ]
 optional-runtime-deps = [
     { name = "matplotlib" },
-    { name = "netcdf4" },
 ]
 test = [
     { name = "matplotlib" },
@@ -420,21 +416,17 @@ test = [
 requires-dist = [
     { name = "matplotlib", marker = "extra == 'plot'", specifier = "==3.11.2" },
     { name = "mpmath", specifier = "==1.4.1" },
-    { name = "netcdf4", marker = "extra == 'netcdf'", specifier = "==1.7.4" },
     { name = "numpy", specifier = "==2.5.4" },
     { name = "scipy", specifier = "==1.18.1" },
 ]
-provides-extras = ["plot", "netcdf"]
+provides-extras = ["plot"]
 
 [package.metadata.requires-dev]
 build = [
     { name = "setuptools", specifier = "==84.0.0" },
     { name = "wheel", specifier = "==0.48.0" },
 ]
-optional-runtime-deps = [
-    { name = "matplotlib", specifier = "==3.11.2" },
-    { name = "netcdf4", specifier = "==1.7.4" },
-]
+optional-runtime-deps = [{ name = "matplotlib", specifier = "==3.11.2" }]
 test = [
     { name = "matplotlib", specifier = "==3.11.2" },
     { name = "netcdf4", specifier = "==1.7.4" },

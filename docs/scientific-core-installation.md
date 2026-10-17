@@ -36,7 +36,7 @@ python3.14 -m venv /tmp/scirel-linux-x86_64-cp314
 虚拟环境，或依赖从环境前缀之外导入，收据为 `FAIL`。这只是运行闭包和代表性任务的技术回执，不能
 单独提升 `release/platform-support-matrix.json` 的状态。
 
-可选能力必须在同一个 clean venv 中单独安装并验收。验证绘图和 NetCDF 能力时，分别执行：
+可选绘图能力必须在同一个 clean venv 中单独安装并验收：
 
 ```bash
 python -m pip install --no-index --only-binary=:all: --find-links /path/to/wheelhouse 'scirel[plot]'
@@ -45,14 +45,10 @@ python -I scripts/validate_installed_wheel.py \
   --wheel /path/to/wheelhouse/scirel-<project.version>-py3-none-any.whl \
   --extra plot \
   --output /path/to/plot-extra-validation.json
-
-python -m pip install --no-index --only-binary=:all: --find-links /path/to/wheelhouse 'scirel[netcdf]'
-python -I scripts/validate_installed_wheel.py \
-  --expected-platform linux-x86_64-cp314 \
-  --wheel /path/to/wheelhouse/scirel-<project.version>-py3-none-any.whl \
-  --extra netcdf \
-  --output /path/to/netcdf-extra-validation.json
 ```
+
+SciRel 不声明 `netcdf` 用户 extra。需要测试 `get_deltapsi` 的消费者应提供满足接口的
+NetCDF-like 对象；`netCDF4` 只属于 SciRel 测试依赖，不会进入用户运行闭包。
 
 离线 wheelhouse 验收器也接受重复的 `--extra` 参数；它会先用同一 wheelhouse 安装每个额外依赖，
 再把额外能力交给安装包验证器。缺少对应依赖 wheel、extra 未声明、依赖从环境外导入或能力 smoke
