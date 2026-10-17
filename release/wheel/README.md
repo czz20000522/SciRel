@@ -85,6 +85,7 @@ python -I scripts/validate_offline_wheelhouse.py \
   --source-revision <40-character-source-commit> \
   --wheel /artifacts/scirel-<project.version>-py3-none-any.whl \
   --wheelhouse /artifacts/linux-x86_64-cp314-wheelhouse \
+  --lockfile /path/to/uv.lock \
   --output /artifacts/linux-x86_64-cp314-offline-validation.json
 ```
 
@@ -97,6 +98,11 @@ remain a failed receipt; do not turn a network-backed receipt into an offline
 claim by editing its limitations. If `--source-revision` is omitted, the
 receipt remains a standalone technical record. Supplying the exact commit lets
 the release alignment validator verify the receipt against the current wheel.
+Passing `--lockfile uv.lock` also binds the wheel's PEP 508 metadata to the
+locked direct and transitive dependency closure and records platform-tag
+compatibility for every wheelhouse member. A shared wheelhouse may contain the
+union of core and optional-extra wheels; the receipt reports unneeded members
+for each selected closure without treating that reusable superset as a failure.
 For dev9, the current Linux platform receipt combines the existing same-source
 rebuild evidence with the offline validation result; the raw network and offline
 receipts remain separate lineage records. A passing offline check still does

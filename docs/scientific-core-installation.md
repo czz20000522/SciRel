@@ -57,6 +57,9 @@ python -I scripts/validate_installed_wheel.py \
 离线 wheelhouse 验收器也接受重复的 `--extra` 参数；它会先用同一 wheelhouse 安装每个额外依赖，
 再把额外能力交给安装包验证器。缺少对应依赖 wheel、extra 未声明、依赖从环境外导入或能力 smoke
 失败时，extra 收据保持 `FAIL`，不会被 core 的通过结果覆盖。
+发行验收还应传入与该 wheel 版本绑定的 `--lockfile uv.lock`；验收器会将 wheel 的 PEP 508
+依赖与锁文件及目标平台的传递 wheel 闭包逐项核对。core 与 optional extra 共用的 wheelhouse
+可以保留未被当前选择使用的锁定 wheel，收据会记录这些可复用成员而不会把它们误判为闭包失败。
 
 磁化色散的随包原语言入口还需要相应系统运行时：PDRK 的既有安装证据使用 Linux ARM64 的 Octave 8.4.0；
 fluidBW 的完整算例、特殊函数、响应、矩阵、搜索、谱和材料入口使用 Linux amd64 的 Octave 7.3.0，固定单线程。

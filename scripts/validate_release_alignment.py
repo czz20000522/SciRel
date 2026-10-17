@@ -1080,6 +1080,164 @@ def _validate_compat_pointer(root: Path, path: Path, *, line: str) -> None:
         raise ValueError(f"{line} CURRENT canonical target is invalid")
 
 
+def _validate_dependency_closure_receipt(
+    dependency_closure: object,
+    wheelhouse: dict[str, Any],
+    *,
+    platform: str,
+) -> None:
+    """Validate the self-described shape of a static dependency audit.
+
+    The closure audit is generated outside this repository and its lockfile
+    may live on the build host, so release alignment cannot recompute it here.
+    It can still reject a malformed or internally inconsistent receipt before
+    accepting the platform result.
+    """
+
+    if not isinstance(dependency_closure, dict):
+        raise ValueError(f"offline platform dependency closure is invalid: {platform}")
+    if dependency_closure.get("status") != "PASS":
+        raise ValueError(f"offline platform dependency closure is not PASS: {platform}")
+    lockfile = dependency_closure.get("lockfile")
+    if (
+        not isinstance(lockfile, dict)
+        or not isinstance(lockfile.get("path"), str)
+        or not lockfile["path"]
+        or not isinstance(lockfile.get("sha256"), str)
+        or _SHA256_DIGEST.fullmatch(lockfile["sha256"]) is None
+    ):
+        raise ValueError(f"offline platform dependency closure lacks a lock digest: {platform}")
+
+    def _string_list(field: str) -> list[str]:
+        value = dependency_closure.get(field)
+        if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+            raise ValueError(
+                f"offline platform dependency closure has an invalid {field}: {platform}"
+            )
+        return value
+
+    requested_extras = _string_list("requested_extras")
+    if requested_extras != sorted(set(requested_extras)):
+        raise ValueError(
+            f"offline platform dependency closure extras are not canonical: {platform}"
+        )
+    _string_list("direct_requirements")
+
+    def _package_name_list(field: str) -> list[str]:
+        values = _string_list(field)
+        canonical = [canonicalize_name(value) for value in values]
+        if any(not value or value != normalized for value, normalized in zip(values, canonical)):
+            raise ValueError(
+                f"offline platform dependency closure has non-canonical {field}: {platform}"
+            )
+        if len(canonical) != len(set(canonical)):
+            raise ValueError(
+                f"offline platform dependency closure repeats {field}: {platform}"
+            )
+        return canonical
+
+    missing_packages = _package_name_list("missing_packages")
+    version_mismatches = _package_name_list("version_mismatches")
+    duplicate_packages = _package_name_list("duplicate_packages")
+    unknown_packages = _package_name_list("unknown_packages")
+    unneeded_packages = _package_name_list("unneeded_packages")
+    incompatible_wheels = _string_list("incompatible_wheels")
+    if any(
+        value
+        for value in (
+            missing_packages,
+            version_mismatches,
+            duplicate_packages,
+            unknown_packages,
+            incompatible_wheels,
+        )
+    ):
+        raise ValueError(
+            f"offline platform dependency closure has unresolved packages: {platform}"
+        )
+
+    expected_rows = dependency_closure.get("expected_packages")
+    if not isinstance(expected_rows, list):
+        raise ValueError(
+            f"offline platform dependency closure expected_packages is invalid: {platform}"
+        )
+    expected_by_name: dict[str, str] = {}
+    for row in expected_rows:
+        if (
+            not isinstance(row, dict)
+            or set(row) != {"name", "version"}
+            or not isinstance(row["name"], str)
+            or not isinstance(row["version"], str)
+            or not row["version"]
+        ):
+            raise ValueError(
+                f"offline platform dependency closure has an invalid expected row: {platform}"
+            )
+        name = canonicalize_name(row["name"])
+        if name in expected_by_name:
+            raise ValueError(
+                f"offline platform dependency closure repeats expected package: {platform}"
+            )
+        expected_by_name[name] = row["version"]
+
+    wheel_rows = dependency_closure.get("wheelhouse_packages")
+    if not isinstance(wheel_rows, list):
+        raise ValueError(
+            f"offline platform dependency closure wheelhouse_packages is invalid: {platform}"
+        )
+    outer_filenames = {
+        item["filename"]
+        for item in wheelhouse["wheels"]
+        if isinstance(item, dict) and isinstance(item.get("filename"), str)
+    }
+    inner_filenames: set[str] = set()
+    by_name: dict[str, list[dict[str, Any]]] = {}
+    for row in wheel_rows:
+        if (
+            not isinstance(row, dict)
+            or set(row)
+            != {"filename", "name", "version", "tags", "platform_compatible"}
+            or not isinstance(row["filename"], str)
+            or Path(row["filename"]).name != row["filename"]
+            or not row["filename"].endswith(".whl")
+            or not isinstance(row["name"], str)
+            or not isinstance(row["version"], str)
+            or not row["version"]
+            or not isinstance(row["tags"], list)
+            or any(not isinstance(tag, str) for tag in row["tags"])
+            or not isinstance(row["platform_compatible"], bool)
+        ):
+            raise ValueError(
+                f"offline platform dependency closure has an invalid wheel row: {platform}"
+            )
+        if row["filename"] in inner_filenames:
+            raise ValueError(
+                f"offline platform dependency closure repeats a wheel: {platform}"
+            )
+        inner_filenames.add(row["filename"])
+        by_name.setdefault(canonicalize_name(row["name"]), []).append(row)
+        if not row["platform_compatible"]:
+            raise ValueError(
+                f"offline platform dependency closure has an incompatible wheel: {platform}"
+            )
+    if inner_filenames != outer_filenames:
+        raise ValueError(
+            f"offline platform dependency closure wheelhouse differs from inventory: {platform}"
+        )
+    for name, version in expected_by_name.items():
+        rows = by_name.get(name, [])
+        if len(rows) != 1 or rows[0]["version"] != version:
+            raise ValueError(
+                f"offline platform dependency closure does not bind expected wheels: {platform}"
+            )
+    expected_name_set = set(expected_by_name)
+    for name in unneeded_packages:
+        if name not in by_name or name in expected_name_set:
+            raise ValueError(
+                f"offline platform dependency closure has invalid unneeded package: {platform}"
+            )
+
+
 def _validate_platform_receipts(
     root: Path,
     wheel: dict[str, Any],
@@ -1168,6 +1326,13 @@ def _validate_platform_receipts(
                     raise ValueError(
                         f"offline platform receipt has an invalid wheelhouse identity: {row['platform']}"
                     )
+            dependency_closure = receipt.get("dependency_closure")
+            if dependency_closure is not None:
+                _validate_dependency_closure_receipt(
+                    dependency_closure,
+                    wheelhouse,
+                    platform=row["platform"],
+                )
             if validation.get("status") != "PASS":
                 raise ValueError(f"offline platform inner validation is not PASS: {row['platform']}")
             receipt_source_revision = receipt.get("source_revision")

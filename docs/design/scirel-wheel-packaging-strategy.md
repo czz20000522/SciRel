@@ -121,6 +121,12 @@ Windows/macOS 后续各自生成和验收自己的 artifact，不复用 Linux �
    重建 wheel、修改 `release/CURRENT.json` 或把网络解析结果伪装成离线证据。未提供
    `--source-revision` 的回执只是独立技术证据；带有确切 Git 提交的 PASS 回执才可以在
    后续候选中作为 `platform_receipts` 绑定，并继续接受 `CURRENT` 的 wheel 摘要和版本校验。
+   目标平台验收应同时传入 `--lockfile uv.lock`。此模式会解析 wheel 的 PEP 508
+   `Requires-Dist`，逐项与锁文件根包的 `package.metadata.requires-dist` 对照，再按请求的
+   optional extra 遍历锁定的传递闭包；每个 wheel 的规范化名称、版本和 PEP 425 tag 也会与
+   目标平台比对。回执中的 `dependency_closure` 若不是 `PASS`，或仍有缺失、版本漂移、重复、
+   未知包或不兼容 tag，发行对齐验证会拒绝该平台回执。这样 `pip check` 的运行结果与锁文件
+   的静态闭包各自保留，不能互相替代。
 
 如果某平台没有 CPython 3.14 的依赖 wheel，或者只能从源码构建而构建工具链未被声明和验证，
 该平台必须保持 `NOT_RUN` 或 `BLOCKED`，不能偷偷使用开发机已有包或把源码构建成功写成 wheel

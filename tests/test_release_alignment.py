@@ -456,7 +456,39 @@ def test_alignment_accepts_offline_wheelhouse_receipt_when_source_bound(
             "pip_install": {"status": "PASS"},
         },
         "wheelhouse": {
-            "wheels": [{"filename": "numpy.whl", "sha256": "c" * 64, "bytes": 1}]
+            "wheels": [
+                {"filename": "certifi.whl", "sha256": "d" * 64, "bytes": 1},
+                {"filename": "numpy.whl", "sha256": "c" * 64, "bytes": 1},
+            ]
+        },
+        "dependency_closure": {
+            "status": "PASS",
+            "lockfile": {"path": "uv.lock", "sha256": "e" * 64},
+            "requested_extras": [],
+            "direct_requirements": ["numpy==1.0.0"],
+            "expected_packages": [{"name": "numpy", "version": "1.0.0"}],
+            "wheelhouse_packages": [
+                {
+                    "filename": "certifi.whl",
+                    "name": "certifi",
+                    "version": "2026.7.22",
+                    "tags": ["py3-none-any"],
+                    "platform_compatible": True,
+                },
+                {
+                    "filename": "numpy.whl",
+                    "name": "numpy",
+                    "version": "1.0.0",
+                    "tags": ["py3-none-any"],
+                    "platform_compatible": True,
+                },
+            ],
+            "missing_packages": [],
+            "version_mismatches": [],
+            "duplicate_packages": [],
+            "unknown_packages": [],
+            "unneeded_packages": ["certifi"],
+            "incompatible_wheels": [],
         },
         "validation": {
             "schema": "scirel.installed-wheel-validation.v1",
