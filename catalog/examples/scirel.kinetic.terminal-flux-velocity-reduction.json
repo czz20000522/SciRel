@@ -130,7 +130,9 @@
     "python": {
       "module": "scirel.kinetic.terminal_flux_velocity_reduction",
       "symbol": "reduce_terminal_molecular_flux_velocity",
-      "signature": "reduce_terminal_molecular_flux_velocity(vx, thermal_speed_m_s, terminal_distribution, cylindrical_weight, dvx)"
+      "signature": "reduce_terminal_molecular_flux_velocity(vx, thermal_speed_m_s, terminal_distribution, cylindrical_weight, dvx)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "reduce_terminal_molecular_flux_velocity"
     }
   },
   "version": {

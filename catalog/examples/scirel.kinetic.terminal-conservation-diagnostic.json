@@ -102,7 +102,9 @@
     "python": {
       "module": "scirel.kinetic.terminal_conservation_diagnostic",
       "symbol": "reduce_qh2_total_conservation_diagnostic",
-      "signature": "reduce_qh2_total_conservation_diagnostic(axial_position_m, total_heat_flux_profile_w_m2, total_energy_transfer_rate_profile_w_m3)"
+      "signature": "reduce_qh2_total_conservation_diagnostic(axial_position_m, total_heat_flux_profile_w_m2, total_energy_transfer_rate_profile_w_m3)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "reduce_qh2_total_conservation_diagnostic"
     }
   },
   "version": {

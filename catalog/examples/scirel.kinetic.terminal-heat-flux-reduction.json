@@ -148,7 +148,9 @@
     "python": {
       "module": "scirel.kinetic.terminal_heat_flux_reduction",
       "symbol": "reduce_terminal_molecular_heat_flux",
-      "signature": "reduce_terminal_molecular_heat_flux(radial_velocity_normalized, axial_velocity_normalized, mass_ratio, thermal_speed_m_s, terminal_distribution, cylindrical_weight, dvx)"
+      "signature": "reduce_terminal_molecular_heat_flux(radial_velocity_normalized, axial_velocity_normalized, mass_ratio, thermal_speed_m_s, terminal_distribution, cylindrical_weight, dvx)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "reduce_terminal_molecular_heat_flux"
     }
   },
   "version": {

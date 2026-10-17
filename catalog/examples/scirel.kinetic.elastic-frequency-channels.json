@@ -84,7 +84,9 @@
     "python": {
       "module": "scirel.kinetic.elastic_frequency_channels",
       "symbol": "sum_elastic_frequency_channels",
-      "signature": "sum_elastic_frequency_channels(frequency_profiles)"
+      "signature": "sum_elastic_frequency_channels(frequency_profiles)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "sum_elastic_frequency_channels"
     }
   },
   "version": {

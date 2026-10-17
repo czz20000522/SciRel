@@ -14,8 +14,8 @@ def test_current_canonical_binding_census_preserves_facade_and_exception_denomin
     counts = report["counts"]
 
     assert counts["total"] == 267
-    assert counts["explicit"] == 169
-    assert counts["candidate"] == 51
+    assert counts["explicit"] == 180
+    assert counts["candidate"] == 40
     assert counts["exception"] == 47
     assert report["unexpected_missing"] == []
 
@@ -246,5 +246,26 @@ def test_special_function_and_dispersion_slice_pins_kinetic_facades_explicitly()
         "scirel.kinetic.z-pole-coefficients",
     }
     assert len(selected) == 7
+    assert all(rows[asset_id] == "explicit" for asset_id in selected)
+    assert rows["scirel.kinetic.adaptive-neutral-velocity-mesh"] == "candidate"
+
+
+def test_terminal_and_neutral_basics_slice_pins_kinetic_facades_explicitly():
+    report = census(ROOT)
+    rows = {row["asset_id"]: row["status"] for row in report["rows"]}
+    selected = {
+        "scirel.kinetic.elastic-frequency-channels",
+        "scirel.kinetic.generation-density-reduction",
+        "scirel.kinetic.incoming-boundary-flux-normalization",
+        "scirel.kinetic.neutral-total-collision-frequency",
+        "scirel.kinetic.spatial-source-shape-normalization",
+        "scirel.kinetic.terminal-conservation-diagnostic",
+        "scirel.kinetic.terminal-energy-transfer-reduction",
+        "scirel.kinetic.terminal-flux-velocity-reduction",
+        "scirel.kinetic.terminal-heat-flux-reduction",
+        "scirel.kinetic.terminal-ion-state-reduction",
+        "scirel.kinetic.terminal-pressure-temperature-reduction",
+    }
+    assert len(selected) == 11
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
     assert rows["scirel.kinetic.adaptive-neutral-velocity-mesh"] == "candidate"

@@ -100,7 +100,9 @@
     "python": {
       "module": "scirel.kinetic.spatial_source_shape_normalization",
       "symbol": "normalize_spatial_source_shape",
-      "signature": "normalize_spatial_source_shape(source, x_m)"
+      "signature": "normalize_spatial_source_shape(source, x_m)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "normalize_spatial_source_shape"
     }
   },
   "version": {

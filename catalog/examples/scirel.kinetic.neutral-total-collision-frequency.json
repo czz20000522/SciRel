@@ -140,7 +140,9 @@
     "python": {
       "module": "scirel.kinetic.neutral_total_collision_frequency",
       "symbol": "assemble_neutral_total_collision_frequency",
-      "signature": "assemble_neutral_total_collision_frequency(vr, vx, base_loss_frequency_s_inv, elastic_frequency_s_inv, pipe_diameter_m, charge_exchange_frequency_s_inv=None, charge_exchange_enabled=True)"
+      "signature": "assemble_neutral_total_collision_frequency(vr, vx, base_loss_frequency_s_inv, elastic_frequency_s_inv, pipe_diameter_m, charge_exchange_frequency_s_inv=None, charge_exchange_enabled=True)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "assemble_neutral_total_collision_frequency"
     }
   },
   "version": {

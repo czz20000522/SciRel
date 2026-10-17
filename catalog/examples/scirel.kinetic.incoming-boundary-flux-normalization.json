@@ -137,7 +137,9 @@
     "python": {
       "module": "scirel.kinetic.incoming_boundary_flux_normalization",
       "symbol": "normalize_incoming_neutral_boundary",
-      "signature": "normalize_incoming_neutral_boundary(boundary_shape, vx, cylindrical_volume, thermal_speed_m_s, target_flux_m2_s)"
+      "signature": "normalize_incoming_neutral_boundary(boundary_shape, vx, cylindrical_volume, thermal_speed_m_s, target_flux_m2_s)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "normalize_incoming_neutral_boundary"
     }
   },
   "version": {

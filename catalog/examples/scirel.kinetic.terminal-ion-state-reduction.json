@@ -167,7 +167,9 @@
     "python": {
       "module": "scirel.kinetic.terminal_ion_state_reduction",
       "symbol": "reduce_terminal_molecular_ion_state",
-      "signature": "reduce_terminal_molecular_ion_state(molecular_density_m3, neutral_density_m3, ion_temperature_ev, mass_ratio, ionization_rate_s_inv, reaction_rate_table_s_inv, loss_frequency_s_inv)"
+      "signature": "reduce_terminal_molecular_ion_state(molecular_density_m3, neutral_density_m3, ion_temperature_ev, mass_ratio, ionization_rate_s_inv, reaction_rate_table_s_inv, loss_frequency_s_inv)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "reduce_terminal_molecular_ion_state"
     }
   },
   "version": {
