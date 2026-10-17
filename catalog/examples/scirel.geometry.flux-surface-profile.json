@@ -140,7 +140,9 @@
     "python": {
       "module": "scirel.geometry.flux_surface_profile",
       "symbol": "evaluate_flux_surface_profile",
-      "signature": "evaluate_flux_surface_profile(*, psi_samples, values, target, left=None, right=None) -> 'dict[str, np.ndarray]'"
+      "signature": "evaluate_flux_surface_profile(*, psi_samples, values, target, left=None, right=None) -> 'dict[str, np.ndarray]'",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "evaluate_flux_surface_profile"
     }
   },
   "version": {

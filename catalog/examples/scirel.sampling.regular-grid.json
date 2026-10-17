@@ -99,7 +99,9 @@
     "python": {
       "module": "scirel.geometry.sampling",
       "symbol": "regular_grid",
-      "signature": "regular_grid(xx, yy, *args, **kwargs)"
+      "signature": "regular_grid(xx, yy, *args, **kwargs)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "regular_grid"
     }
   },
   "version": {

@@ -86,7 +86,9 @@
     "python": {
       "module": "scirel.geometry.fieldline",
       "symbol": "FieldLineSet",
-      "signature": "FieldLineSet(contourset, **kwargs)"
+      "signature": "FieldLineSet(contourset, **kwargs)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "FieldLineSet"
     }
   },
   "version": {

@@ -129,7 +129,9 @@
     "python": {
       "module": "scirel.geometry.sampling",
       "symbol": "get_fieldlines",
-      "signature": "get_fieldlines(contourset, level, start_coord=None, end_coord=None, clockwise=True, idx_check=[])"
+      "signature": "get_fieldlines(contourset, level, start_coord=None, end_coord=None, clockwise=True, idx_check=[])",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "get_fieldlines"
     }
   },
   "version": {

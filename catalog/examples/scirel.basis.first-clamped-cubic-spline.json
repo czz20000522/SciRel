@@ -113,7 +113,9 @@
     "python": {
       "module": "scirel.geometry.basis",
       "symbol": "FirstClampedCubicSpline",
-      "signature": "FirstClampedCubicSpline(x_data, y_data, yp=0, m=0)"
+      "signature": "FirstClampedCubicSpline(x_data, y_data, yp=0, m=0)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "FirstClampedCubicSpline"
     }
   },
   "version": {

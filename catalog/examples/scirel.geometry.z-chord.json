@@ -111,7 +111,9 @@
     "python": {
       "module": "scirel.geometry",
       "symbol": "ZChord",
-      "signature": "ZChord(zpts: 'Iterable[float]', r0: 'float' = 0.0)"
+      "signature": "ZChord(zpts: 'Iterable[float]', r0: 'float' = 0.0)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "ZChord"
     }
   },
   "example": {

@@ -90,7 +90,9 @@
     "python": {
       "module": "scirel.geometry.fieldline",
       "symbol": "d_ds_arclength",
-      "signature": "d_ds_arclength(vertices, values)"
+      "signature": "d_ds_arclength(vertices, values)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "d_ds_arclength"
     }
   },
   "version": {

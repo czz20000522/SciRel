@@ -115,7 +115,9 @@
     "python": {
       "module": "scirel.geometry.complex_rectilinear_interpolation",
       "symbol": "interpolate_complex_rectilinear_field",
-      "signature": "interpolate_complex_rectilinear_field(source_axes_m, source_values, target_points_m)"
+      "signature": "interpolate_complex_rectilinear_field(source_axes_m, source_values, target_points_m)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "interpolate_complex_rectilinear_field"
     }
   },
   "version": {

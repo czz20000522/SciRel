@@ -158,7 +158,9 @@
     "python": {
       "module": "scirel.geometry",
       "symbol": "RectMesh",
-      "signature": "RectMesh(rmin=0.0, rmax=1.0, nr=101, zmin=-0.5, zmax=0.5, nz=101)"
+      "signature": "RectMesh(rmin=0.0, rmax=1.0, nr=101, zmin=-0.5, zmax=0.5, nz=101)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "RectMesh"
     }
   },
   "example": {

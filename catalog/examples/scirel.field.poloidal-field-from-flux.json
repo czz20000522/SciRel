@@ -122,7 +122,9 @@
     "python": {
       "module": "scirel.field.poloidal_field_from_flux",
       "symbol": "poloidal_field_from_flux",
-      "signature": "poloidal_field_from_flux(r_grid, z_grid, psi)"
+      "signature": "poloidal_field_from_flux(r_grid, z_grid, psi)",
+      "canonical_module": "scirel.field",
+      "canonical_symbol": "poloidal_field_from_flux"
     }
   },
   "version": {

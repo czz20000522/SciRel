@@ -78,7 +78,9 @@
     "python": {
       "module": "scirel.geometry.sampling",
       "symbol": "get_fieldline_distance",
-      "signature": "get_fieldline_distance(flpoints)"
+      "signature": "get_fieldline_distance(flpoints)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "get_fieldline_distance"
     }
   },
   "version": {

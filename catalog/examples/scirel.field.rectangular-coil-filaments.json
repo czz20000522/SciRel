@@ -136,7 +136,9 @@
     "python": {
       "module": "scirel.field.rectangular_coil_filaments",
       "symbol": "discretize_rectangular_coil",
-      "signature": "discretize_rectangular_coil(r0, z0, nr, nz, dr, dz, angle_deg=0.0)"
+      "signature": "discretize_rectangular_coil(r0, z0, nr, nz, dr, dz, angle_deg=0.0)",
+      "canonical_module": "scirel.field",
+      "canonical_symbol": "discretize_rectangular_coil"
     }
   },
   "version": {

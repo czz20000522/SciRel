@@ -88,7 +88,9 @@
     "python": {
       "module": "scirel.geometry.plotting",
       "symbol": "scale_patches",
-      "signature": "scale_patches(patches, scale)"
+      "signature": "scale_patches(patches, scale)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "scale_patches"
     }
   },
   "version": {

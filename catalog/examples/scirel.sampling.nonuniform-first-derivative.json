@@ -89,7 +89,9 @@
     "python": {
       "module": "scirel.geometry.sampling",
       "symbol": "diff_central",
-      "signature": "diff_central(x, y)"
+      "signature": "diff_central(x, y)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "diff_central"
     }
   },
   "version": {

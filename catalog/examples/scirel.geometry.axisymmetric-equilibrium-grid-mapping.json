@@ -159,7 +159,9 @@
     "python": {
       "module": "scirel.geometry.axisymmetric_grid_mapping",
       "symbol": "map_axisymmetric_equilibrium_to_cartesian_grid",
-      "signature": "map_axisymmetric_equilibrium_to_cartesian_grid(equilibrium, x_m, y_m, z_m)"
+      "signature": "map_axisymmetric_equilibrium_to_cartesian_grid(equilibrium, x_m, y_m, z_m)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "map_axisymmetric_equilibrium_to_cartesian_grid"
     }
   },
   "version": {

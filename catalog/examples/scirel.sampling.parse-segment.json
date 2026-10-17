@@ -108,7 +108,9 @@
     "python": {
       "module": "scirel.geometry.sampling",
       "symbol": "parse_segment",
-      "signature": "parse_segment(flpoints, start_coord=None, end_coord=None, clockwise=True)"
+      "signature": "parse_segment(flpoints, start_coord=None, end_coord=None, clockwise=True)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "parse_segment"
     }
   },
   "version": {

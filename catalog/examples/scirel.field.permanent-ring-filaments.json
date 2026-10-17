@@ -130,7 +130,9 @@
     "python": {
       "module": "scirel.field.permanent_ring_filaments",
       "symbol": "discretize_permanent_ring",
-      "signature": "discretize_permanent_ring(r0, z0, width, height, mu_hat_deg=0.0)"
+      "signature": "discretize_permanent_ring(r0, z0, width, height, mu_hat_deg=0.0)",
+      "canonical_module": "scirel.field",
+      "canonical_symbol": "discretize_permanent_ring"
     }
   },
   "version": {

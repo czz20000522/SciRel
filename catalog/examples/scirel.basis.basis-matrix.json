@@ -83,7 +83,9 @@
     "python": {
       "module": "scirel.geometry.basis",
       "symbol": "BasisMatrix",
-      "signature": "BasisMatrix(basis, **kwargs)"
+      "signature": "BasisMatrix(basis, **kwargs)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "BasisMatrix"
     }
   },
   "version": {

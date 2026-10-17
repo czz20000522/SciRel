@@ -100,7 +100,9 @@
     "python": {
       "module": "scirel.field.poloidal_field_magnitude",
       "symbol": "compute_poloidal_field_magnitude",
-      "signature": "compute_poloidal_field_magnitude(br, bz)"
+      "signature": "compute_poloidal_field_magnitude(br, bz)",
+      "canonical_module": "scirel.field",
+      "canonical_symbol": "compute_poloidal_field_magnitude"
     }
   },
   "version": {

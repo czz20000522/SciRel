@@ -90,7 +90,9 @@
     "python": {
       "module": "scirel.geometry.basis",
       "symbol": "NaturalCubicSpline",
-      "signature": "NaturalCubicSpline(x_data, y_data)"
+      "signature": "NaturalCubicSpline(x_data, y_data)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "NaturalCubicSpline"
     }
   },
   "version": {

@@ -108,7 +108,9 @@
     "python": {
       "module": "scirel.geometry.sampling",
       "symbol": "locs_to_vals1D",
-      "signature": "locs_to_vals1D(X, Y, Q, coord_list)"
+      "signature": "locs_to_vals1D(X, Y, Q, coord_list)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "locs_to_vals1D"
     }
   },
   "version": {

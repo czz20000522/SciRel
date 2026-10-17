@@ -127,7 +127,9 @@
     "python": {
       "module": "scirel.field.coil_green_geometry",
       "symbol": "compute_axisymmetric_coil_modulus",
-      "signature": "compute_axisymmetric_coil_modulus(observation_radius_m, observation_z_m, coil_radius_m, coil_z_m)"
+      "signature": "compute_axisymmetric_coil_modulus(observation_radius_m, observation_z_m, coil_radius_m, coil_z_m)",
+      "canonical_module": "scirel.field",
+      "canonical_symbol": "compute_axisymmetric_coil_modulus"
     }
   },
   "version": {

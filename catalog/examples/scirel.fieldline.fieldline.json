@@ -101,7 +101,9 @@
     "python": {
       "module": "scirel.geometry.fieldline",
       "symbol": "FieldLine",
-      "signature": "FieldLine(psi, verts, **kwargs)"
+      "signature": "FieldLine(psi, verts, **kwargs)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "FieldLine"
     }
   },
   "version": {

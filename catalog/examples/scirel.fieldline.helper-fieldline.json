@@ -100,7 +100,9 @@
     "python": {
       "module": "scirel.geometry.fieldline",
       "symbol": "HelperFieldLine",
-      "signature": "HelperFieldLine(psi, verts)"
+      "signature": "HelperFieldLine(psi, verts)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "HelperFieldLine"
     }
   },
   "version": {

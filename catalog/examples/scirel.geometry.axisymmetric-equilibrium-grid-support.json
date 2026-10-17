@@ -210,7 +210,9 @@
     "python": {
       "module": "scirel.geometry.axisymmetric_equilibrium_grid_support",
       "symbol": "solve_axisymmetric_equilibrium_grid_mapping",
-      "signature": "solve_axisymmetric_equilibrium_grid_mapping(inputs=None, **kwargs)"
+      "signature": "solve_axisymmetric_equilibrium_grid_mapping(inputs=None, **kwargs)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "solve_axisymmetric_equilibrium_grid_mapping"
     }
   },
   "version": {

@@ -99,7 +99,9 @@
     "python": {
       "module": "scirel.geometry.plotting",
       "symbol": "get_mirror_patches",
-      "signature": "get_mirror_patches(patches, axis=0, scale=1)"
+      "signature": "get_mirror_patches(patches, axis=0, scale=1)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "get_mirror_patches"
     }
   },
   "version": {

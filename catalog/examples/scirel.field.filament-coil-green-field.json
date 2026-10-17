@@ -173,7 +173,9 @@
     "python": {
       "module": "scirel.field.filament_coil_green_field",
       "symbol": "evaluate_filament_coil_green_field",
-      "signature": "evaluate_filament_coil_green_field(regularized_radius_m, observation_z_m, coil_radius_m, coil_z_m, current_a, turns, modulus_squared, complete_k, complete_e)"
+      "signature": "evaluate_filament_coil_green_field(regularized_radius_m, observation_z_m, coil_radius_m, coil_z_m, current_a, turns, modulus_squared, complete_k, complete_e)",
+      "canonical_module": "scirel.field",
+      "canonical_symbol": "evaluate_filament_coil_green_field"
     }
   },
   "version": {

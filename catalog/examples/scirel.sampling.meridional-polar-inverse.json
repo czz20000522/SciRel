@@ -109,7 +109,9 @@
     "python": {
       "module": "scirel.geometry.sampling",
       "symbol": "transform_to_rhoz",
-      "signature": "transform_to_rhoz(R, Theta, r_component, theta_component)"
+      "signature": "transform_to_rhoz(R, Theta, r_component, theta_component)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "transform_to_rhoz"
     }
   },
   "version": {

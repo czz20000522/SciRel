@@ -84,7 +84,9 @@
     "python": {
       "module": "scirel.geometry.basis",
       "symbol": "build_basis",
-      "signature": "build_basis(basis='poly', **kwargs)"
+      "signature": "build_basis(basis='poly', **kwargs)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "build_basis"
     }
   },
   "version": {

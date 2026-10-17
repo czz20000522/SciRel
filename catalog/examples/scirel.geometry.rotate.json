@@ -125,7 +125,9 @@
     "python": {
       "module": "scirel.geometry.transforms",
       "symbol": "rotate",
-      "signature": "rotate(pts, angle, pivot=(0.0, 0.0))"
+      "signature": "rotate(pts, angle, pivot=(0.0, 0.0))",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "rotate"
     }
   },
   "example": {

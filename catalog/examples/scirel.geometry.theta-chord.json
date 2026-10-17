@@ -112,7 +112,9 @@
     "python": {
       "module": "scirel.geometry",
       "symbol": "ThetaChord",
-      "signature": "ThetaChord(tpts: 'Iterable[float]', r0: 'float' = 1.0)"
+      "signature": "ThetaChord(tpts: 'Iterable[float]', r0: 'float' = 1.0)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "ThetaChord"
     }
   },
   "example": {

@@ -90,7 +90,9 @@
     "python": {
       "module": "scirel.field.complete_elliptic_integrals_approx",
       "symbol": "evaluate_complete_elliptic_integrals",
-      "signature": "evaluate_complete_elliptic_integrals(modulus_squared)"
+      "signature": "evaluate_complete_elliptic_integrals(modulus_squared)",
+      "canonical_module": "scirel.field",
+      "canonical_symbol": "evaluate_complete_elliptic_integrals"
     }
   },
   "version": {

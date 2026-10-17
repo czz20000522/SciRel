@@ -111,7 +111,9 @@
     "python": {
       "module": "scirel.geometry.bilinear_grid_sampling",
       "symbol": "sample_rectilinear_field",
-      "signature": "sample_rectilinear_field(r_grid, z_grid, quantity, points)"
+      "signature": "sample_rectilinear_field(r_grid, z_grid, quantity, points)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "sample_rectilinear_field"
     }
   },
   "version": {

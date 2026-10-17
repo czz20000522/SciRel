@@ -121,7 +121,9 @@
     "python": {
       "module": "scirel.field.filament_vacuum_field",
       "symbol": "integrate_filament_vacuum_field",
-      "signature": "integrate_filament_vacuum_field(r_grid, z_grid, filaments)"
+      "signature": "integrate_filament_vacuum_field(r_grid, z_grid, filaments)",
+      "canonical_module": "scirel.field",
+      "canonical_symbol": "integrate_filament_vacuum_field"
     }
   },
   "version": {

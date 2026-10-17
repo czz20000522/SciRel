@@ -187,7 +187,9 @@
     "python": {
       "module": "scirel.geometry.material_support",
       "symbol": "classify_material_support",
-      "signature": "classify_material_support(poloidal_flux_wb_per_rad, covered_mask, radii_m, axial_coordinate_m, *, separatrix_flux_wb_per_rad, closed_flux_side, xpoint_half_length_m, pml_cells, pec_mask)"
+      "signature": "classify_material_support(poloidal_flux_wb_per_rad, covered_mask, radii_m, axial_coordinate_m, *, separatrix_flux_wb_per_rad, closed_flux_side, xpoint_half_length_m, pml_cells, pec_mask)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "classify_material_support"
     }
   },
   "version": {

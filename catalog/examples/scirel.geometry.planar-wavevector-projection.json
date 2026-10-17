@@ -150,7 +150,9 @@
     "python": {
       "module": "scirel.geometry.planar_wavevector",
       "symbol": "project_planar_wavevector",
-      "signature": "project_planar_wavevector(*, k_grid=None, theta_rad=None, kx_grid=None, kz_grid=None)"
+      "signature": "project_planar_wavevector(*, k_grid=None, theta_rad=None, kx_grid=None, kz_grid=None)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "project_planar_wavevector"
     }
   },
   "version": {

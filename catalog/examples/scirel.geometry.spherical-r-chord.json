@@ -112,7 +112,9 @@
     "python": {
       "module": "scirel.geometry",
       "symbol": "SphericalRChord",
-      "signature": "SphericalRChord(rpts: 'Iterable[float]', theta0: 'float' = 0.0)"
+      "signature": "SphericalRChord(rpts: 'Iterable[float]', theta0: 'float' = 0.0)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "SphericalRChord"
     }
   },
   "example": {

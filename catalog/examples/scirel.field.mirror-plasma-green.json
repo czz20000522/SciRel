@@ -93,7 +93,9 @@
     "python": {
       "module": "scirel.field.mirror_plasma_green",
       "symbol": "build_mirror_plasma_flux_green",
-      "signature": "build_mirror_plasma_flux_green(r_grid, z_grid)"
+      "signature": "build_mirror_plasma_flux_green(r_grid, z_grid)",
+      "canonical_module": "scirel.field",
+      "canonical_symbol": "build_mirror_plasma_flux_green"
     }
   },
   "version": {

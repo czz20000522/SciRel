@@ -110,7 +110,9 @@
     "python": {
       "module": "scirel.field.circular_filament_green",
       "symbol": "circular_filament_green_response",
-      "signature": "circular_filament_green_response(rzw, rz_pts)"
+      "signature": "circular_filament_green_response(rzw, rz_pts)",
+      "canonical_module": "scirel.field",
+      "canonical_symbol": "circular_filament_green_response"
     }
   },
   "version": {

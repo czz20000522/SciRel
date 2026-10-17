@@ -112,7 +112,9 @@
     "python": {
       "module": "scirel.field.dense_axisymmetric_green",
       "symbol": "dense_axisymmetric_green_response",
-      "signature": "dense_axisymmetric_green_response(rz_pts, source_rzw)"
+      "signature": "dense_axisymmetric_green_response(rz_pts, source_rzw)",
+      "canonical_module": "scirel.field",
+      "canonical_symbol": "dense_axisymmetric_green_response"
     }
   },
   "version": {

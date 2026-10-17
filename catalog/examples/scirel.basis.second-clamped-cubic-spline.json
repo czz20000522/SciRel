@@ -104,7 +104,9 @@
     "python": {
       "module": "scirel.geometry.basis",
       "symbol": "SecondClampedCubicSpline",
-      "signature": "SecondClampedCubicSpline(x_data, y_data, m=1)"
+      "signature": "SecondClampedCubicSpline(x_data, y_data, m=1)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "SecondClampedCubicSpline"
     }
   },
   "version": {

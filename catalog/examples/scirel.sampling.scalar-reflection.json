@@ -99,7 +99,9 @@
     "python": {
       "module": "scirel.geometry.sampling",
       "symbol": "reflect_and_hstack",
-      "signature": "reflect_and_hstack(Rho, Z, *args, quantities=None)"
+      "signature": "reflect_and_hstack(Rho, Z, *args, quantities=None)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "reflect_and_hstack"
     }
   },
   "version": {

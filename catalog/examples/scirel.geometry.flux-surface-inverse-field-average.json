@@ -132,7 +132,9 @@
     "python": {
       "module": "scirel.geometry.flux_surface_inverse_field_average",
       "symbol": "compute_flux_surface_inverse_field_average",
-      "signature": "compute_flux_surface_inverse_field_average(r_grid, z_grid, magnetic_field, field_line_points, quantity=None)"
+      "signature": "compute_flux_surface_inverse_field_average(r_grid, z_grid, magnetic_field, field_line_points, quantity=None)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "compute_flux_surface_inverse_field_average"
     }
   },
   "version": {

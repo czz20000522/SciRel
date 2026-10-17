@@ -112,7 +112,9 @@
     "python": {
       "module": "scirel.geometry",
       "symbol": "PointsMesh",
-      "signature": "PointsMesh(rpts: 'Iterable[float]', zpts: 'Iterable[float]')"
+      "signature": "PointsMesh(rpts: 'Iterable[float]', zpts: 'Iterable[float]')",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "PointsMesh"
     }
   },
   "example": {

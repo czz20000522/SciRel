@@ -109,7 +109,9 @@
     "python": {
       "module": "scirel.geometry.sampling",
       "symbol": "transform_to_rtheta",
-      "signature": "transform_to_rtheta(Rho, Z, rho_component, z_component)"
+      "signature": "transform_to_rtheta(Rho, Z, rho_component, z_component)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "transform_to_rtheta"
     }
   },
   "version": {

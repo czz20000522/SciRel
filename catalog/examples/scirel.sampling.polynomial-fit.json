@@ -109,7 +109,9 @@
     "python": {
       "module": "scirel.geometry.sampling",
       "symbol": "poly_fit",
-      "signature": "poly_fit(x, y, order=3)"
+      "signature": "poly_fit(x, y, order=3)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "poly_fit"
     }
   },
   "version": {

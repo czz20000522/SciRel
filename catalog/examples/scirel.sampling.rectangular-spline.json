@@ -107,7 +107,9 @@
     "python": {
       "module": "scirel.geometry.sampling",
       "symbol": "interp",
-      "signature": "interp(Rho, Z, Q, flpoints)"
+      "signature": "interp(Rho, Z, Q, flpoints)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "interp"
     }
   },
   "version": {

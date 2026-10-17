@@ -1,3 +1,4 @@
+import json
 import sys
 from pathlib import Path
 
@@ -13,8 +14,8 @@ def test_current_canonical_binding_census_preserves_facade_and_exception_denomin
     counts = report["counts"]
 
     assert counts["total"] == 267
-    assert counts["explicit"] == 0
-    assert counts["candidate"] == 220
+    assert counts["explicit"] == 60
+    assert counts["candidate"] == 160
     assert counts["exception"] == 47
     assert report["unexpected_missing"] == []
 
@@ -75,3 +76,52 @@ def test_current_canonical_binding_census_preserves_facade_and_exception_denomin
             )
         },
     }
+
+
+def test_geometry_and_field_slice_pins_package_facades_explicitly():
+    report = census(ROOT)
+    rows = {row["asset_id"]: row["status"] for row in report["rows"]}
+    selected = {
+        asset_id
+        for asset_id in rows
+        if asset_id.startswith(
+            (
+                "scirel.basis.",
+                "scirel.field.",
+                "scirel.fieldline.",
+                "scirel.geometry.",
+                "scirel.numerics.",
+                "scirel.plotting.",
+                "scirel.sampling.",
+            )
+        )
+    }
+    assert len(selected) == 60
+    assert all(rows[asset_id] == "explicit" for asset_id in selected)
+    # Other non-PDRK records still exercise the legacy inferred facade path
+    # until their own canonical fields are migrated.
+    assert rows["scirel.closures.boltzmann-quasineutrality"] == "candidate"
+
+
+def test_explicit_canonical_binding_is_checked_against_runtime_identity(tmp_path):
+    source = ROOT / "catalog/examples/scirel.field.poloidal-field-from-flux.json"
+    document = json.loads(source.read_text(encoding="utf-8"))
+    document["public_api"]["python"]["canonical_symbol"] = "MissingExport"
+    candidate = tmp_path / source.name
+    candidate.write_text(json.dumps(document), encoding="utf-8")
+
+    report = census(ROOT, tmp_path)
+
+    assert report["counts"] == {
+        "total": 1,
+        "explicit": 0,
+        "candidate": 0,
+        "exception": 0,
+    }
+    assert report["rows"] == [
+        {
+            "asset_id": "scirel.field.poloidal-field-from-flux",
+            "status": "explicit_invalid",
+        }
+    ]
+    assert report["unexpected_missing"][0]["canonical_symbol"] == "MissingExport"

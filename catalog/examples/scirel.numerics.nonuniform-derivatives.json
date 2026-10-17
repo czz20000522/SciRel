@@ -98,7 +98,9 @@
     "python": {
       "module": "scirel.geometry.numerics",
       "symbol": "diff_12_central",
-      "signature": "diff_12_central(x, y)"
+      "signature": "diff_12_central(x, y)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "diff_12_central"
     }
   },
   "version": {

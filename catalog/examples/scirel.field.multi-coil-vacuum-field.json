@@ -131,7 +131,9 @@
     "python": {
       "module": "scirel.field.multi_coil_vacuum_field",
       "symbol": "solve_multi_coil_vacuum_field",
-      "signature": "solve_multi_coil_vacuum_field(inputs=None, **kwargs)"
+      "signature": "solve_multi_coil_vacuum_field(inputs=None, **kwargs)",
+      "canonical_module": "scirel.field",
+      "canonical_symbol": "solve_multi_coil_vacuum_field"
     }
   },
   "version": {
