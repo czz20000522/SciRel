@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-17T00:21:21Z",
+  "updated_at": "2026-10-17T00:33:38Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -65,9 +65,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "cfb52099f36aeee61e25f7d44bdda1f0f0913e1662609949e1fdcfa10c40f661",
-      "size": 569497,
-      "normalized_sha256": "cfb52099f36aeee61e25f7d44bdda1f0f0913e1662609949e1fdcfa10c40f661"
+      "sha256": "689f476e91cae3ef60f4f1f7718e5e146e1627d29368d0385566b273593c1a8d",
+      "size": 569784,
+      "normalized_sha256": "689f476e91cae3ef60f4f1f7718e5e146e1627d29368d0385566b273593c1a8d"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -8477,9 +8477,9 @@
     },
     "src/scirel/kinetic/generation_accumulation_update.py": {
       "role": "index",
-      "sha256": "16ed9c15e9b0833142b528a265c831dac4c82f4df77918dc8775362fd40b4c69",
-      "size": 4929,
-      "normalized_sha256": "16ed9c15e9b0833142b528a265c831dac4c82f4df77918dc8775362fd40b4c69"
+      "sha256": "aac1c0f90c65c9769fa5800bd7e8fef481851555badfd337f0be0b5a30a90291",
+      "size": 4983,
+      "normalized_sha256": "aac1c0f90c65c9769fa5800bd7e8fef481851555badfd337f0be0b5a30a90291"
     },
     "src/scirel/kinetic/generation_density_reduction.py": {
       "role": "index",
@@ -8591,33 +8591,33 @@
     },
     "src/scirel/kinetic/neutral_boltzmann_rhs.py": {
       "role": "index",
-      "sha256": "cc106c10fbb10be58ded1e98c4d4135f1321d433636bb565af0dad4256c86a07",
-      "size": 2703,
-      "normalized_sha256": "cc106c10fbb10be58ded1e98c4d4135f1321d433636bb565af0dad4256c86a07"
+      "sha256": "cfb3eb7da924842f4690d17e333c6ccebfb704d2e4d22a6a20f2732b6b9001f3",
+      "size": 2749,
+      "normalized_sha256": "cfb3eb7da924842f4690d17e333c6ccebfb704d2e4d22a6a20f2732b6b9001f3"
     },
     "src/scirel/kinetic/neutral_generation_propagation.py": {
       "role": "index",
-      "sha256": "610c7042024a411b525af7e9c580acd1d4d862bb781a05e9eb424084514982e0",
-      "size": 3745,
-      "normalized_sha256": "610c7042024a411b525af7e9c580acd1d4d862bb781a05e9eb424084514982e0"
+      "sha256": "95cbe2d5cdf96938a750bd8aa401b101f1219731fa101c350141af133df12957",
+      "size": 3789,
+      "normalized_sha256": "95cbe2d5cdf96938a750bd8aa401b101f1219731fa101c350141af133df12957"
     },
     "src/scirel/kinetic/neutral_generation_stopping.py": {
       "role": "index",
-      "sha256": "87475ebc11199981b41982e919179357a38ac916804e169e15c07916ab82202f",
-      "size": 2734,
-      "normalized_sha256": "87475ebc11199981b41982e919179357a38ac916804e169e15c07916ab82202f"
+      "sha256": "01b8dbbe9b8922d06e9ee4f72392dcb672292ef2ea45cc91f527d72d57fef0c6",
+      "size": 2786,
+      "normalized_sha256": "01b8dbbe9b8922d06e9ee4f72392dcb672292ef2ea45cc91f527d72d57fef0c6"
     },
     "src/scirel/kinetic/neutral_total_collision_frequency.py": {
       "role": "index",
-      "sha256": "98fa797d2886288f7bead1a4e35b9e6ea4974ceeff1578b1a2f947428472861f",
-      "size": 3013,
-      "normalized_sha256": "98fa797d2886288f7bead1a4e35b9e6ea4974ceeff1578b1a2f947428472861f"
+      "sha256": "893bec39b4d80f6998536dc18381aa4d910ddc04a4baa40a9263863b7ca071f4",
+      "size": 3071,
+      "normalized_sha256": "893bec39b4d80f6998536dc18381aa4d910ddc04a4baa40a9263863b7ca071f4"
     },
     "src/scirel/kinetic/outer_seed_convergence.py": {
       "role": "index",
-      "sha256": "c71901b1bd325fc0917746f1a12216a0a19eb437eb1a9267b7e2780b95c89708",
-      "size": 2591,
-      "normalized_sha256": "c71901b1bd325fc0917746f1a12216a0a19eb437eb1a9267b7e2780b95c89708"
+      "sha256": "5c04f717ed0cd3948b79a9b3f1edaa50f771ab6b2df804683d39345f3df84525",
+      "size": 2646,
+      "normalized_sha256": "5c04f717ed0cd3948b79a9b3f1edaa50f771ab6b2df804683d39345f3df84525"
     },
     "src/scirel/kinetic/pdrf.py": {
       "role": "index",
@@ -9317,9 +9317,9 @@
     },
     "src/scirel/kinetic/upwind_transport_coefficients.py": {
       "role": "index",
-      "sha256": "f14dfc9ad1e6cf08f794177baf7aaa81ace395ca7e541685dade63dd5040860e",
-      "size": 3218,
-      "normalized_sha256": "f14dfc9ad1e6cf08f794177baf7aaa81ace395ca7e541685dade63dd5040860e"
+      "sha256": "16ff9c2cc626c5ffbf4fa09574ecbd384a1943c01509e8e3a7b17fac61613631",
+      "size": 3280,
+      "normalized_sha256": "16ff9c2cc626c5ffbf4fa09574ecbd384a1943c01509e8e3a7b17fac61613631"
     },
     "src/scirel/kinetic/vlasov_poisson.py": {
       "role": "index",
@@ -10964,6 +10964,12 @@
       "sha256": "866c9f052408b1ca6c73e9923b2e77d3899c68df332e73802aafa8b108de5f79",
       "size": 1972,
       "normalized_sha256": "866c9f052408b1ca6c73e9923b2e77d3899c68df332e73802aafa8b108de5f79"
+    },
+    "tests/test_neutral_public_surface.py": {
+      "role": "index",
+      "sha256": "ea710207130bc718a9738bb766c2fbfd3bbb08873abc237c40f16658cd0254fc",
+      "size": 1456,
+      "normalized_sha256": "ea710207130bc718a9738bb766c2fbfd3bbb08873abc237c40f16658cd0254fc"
     },
     "tests/test_outbound_evaluation_manifests.py": {
       "role": "index",
