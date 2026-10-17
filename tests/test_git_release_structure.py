@@ -76,6 +76,24 @@ def test_ref_bound_build_helper_is_documented_and_keeps_artifacts_external() -> 
     assert "normalizes regular-file and directory modes" in readme
 
 
+def test_ref_bound_build_input_binding_covers_project_lock_license_and_helper() -> None:
+    from build_scirel_from_ref import build_input_binding
+
+    binding = build_input_binding(
+        ROOT,
+        helper_paths=("scripts/build_scirel_from_ref.py",),
+    )
+
+    assert binding["schema"] == "scirel.build-inputs.v1"
+    files = binding["files"]
+    assert set(("pyproject.toml", "uv.lock")) <= set(files)
+    assert binding["license_files"]
+    assert binding["helper"]["files"]["scripts/build_scirel_from_ref.py"]["bytes"] > 0
+    for summary in files.values():
+        assert len(summary["sha256"]) == 64
+        assert summary["bytes"] > 0
+
+
 def test_ref_bound_archive_normalizes_umask_dependent_modes(tmp_path: Path) -> None:
     from build_scirel_from_ref import _normalize_archive_modes
 

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-17T02:06:10Z",
+  "updated_at": "2026-10-17T02:22:55Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -65,9 +65,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "fa6800128c71d86181de2466be40a51afdd0436cc0e7360745e6dbe4cbeab39c",
-      "size": 573798,
-      "normalized_sha256": "fa6800128c71d86181de2466be40a51afdd0436cc0e7360745e6dbe4cbeab39c"
+      "sha256": "8555971e50032e1a83760def3f7e3b63197f0b6c6433e9d4722408fe5cf06cce",
+      "size": 574306,
+      "normalized_sha256": "8555971e50032e1a83760def3f7e3b63197f0b6c6433e9d4722408fe5cf06cce"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -5945,9 +5945,9 @@
     },
     "release/docs/README.md": {
       "role": "index",
-      "sha256": "f4d1d7ecfe67a074d1fca4c7b9b9a2b4116dd989eee7cb0b1e49869db4d2d9cd",
-      "size": 2656,
-      "normalized_sha256": "f4d1d7ecfe67a074d1fca4c7b9b9a2b4116dd989eee7cb0b1e49869db4d2d9cd"
+      "sha256": "ddf5ef2d4320d8ecd86fc071016210a3dc09859637ba5cf8b5fd4548d80f73f1",
+      "size": 2991,
+      "normalized_sha256": "ddf5ef2d4320d8ecd86fc071016210a3dc09859637ba5cf8b5fd4548d80f73f1"
     },
     "release/docs/versions/scientific-core-r10.json": {
       "role": "index",
@@ -6047,9 +6047,9 @@
     },
     "release/wheel/README.md": {
       "role": "index",
-      "sha256": "bbd0306138a51685b182c1c71e682e713adb98d16cfb4f0925c47b5aa9ce8e4b",
-      "size": 3072,
-      "normalized_sha256": "bbd0306138a51685b182c1c71e682e713adb98d16cfb4f0925c47b5aa9ce8e4b"
+      "sha256": "039fffdffabd65c5609c9b45eccfc15a910387d029f28b4149f5e95ed9334f45",
+      "size": 3478,
+      "normalized_sha256": "039fffdffabd65c5609c9b45eccfc15a910387d029f28b4149f5e95ed9334f45"
     },
     "release/wheel/layout.json": {
       "role": "index",
@@ -6191,15 +6191,15 @@
     },
     "scripts/build_scirel_docs_from_ref.py": {
       "role": "index",
-      "sha256": "32211d07380e552fe0c30ea7a3999e3934f72bc2d1317e03b61c5fb520845f64",
-      "size": 16932,
-      "normalized_sha256": "32211d07380e552fe0c30ea7a3999e3934f72bc2d1317e03b61c5fb520845f64"
+      "sha256": "f32356b866319f18edd022be49050aa2209e9c4dee001b7664dfe8f64b421c63",
+      "size": 17230,
+      "normalized_sha256": "f32356b866319f18edd022be49050aa2209e9c4dee001b7664dfe8f64b421c63"
     },
     "scripts/build_scirel_from_ref.py": {
       "role": "index",
-      "sha256": "23b2677376aaf26cffc2610d16ca828b6c166688e94f21395169ec62498fd426",
-      "size": 9644,
-      "normalized_sha256": "23b2677376aaf26cffc2610d16ca828b6c166688e94f21395169ec62498fd426"
+      "sha256": "d05d9db83b778db4154549b5ff795e1ac2a921ef4c43580d28ab274bb40d1d5a",
+      "size": 14848,
+      "normalized_sha256": "d05d9db83b778db4154549b5ff795e1ac2a921ef4c43580d28ab274bb40d1d5a"
     },
     "scripts/build_scirel_sphinx.py": {
       "role": "index",
@@ -6341,9 +6341,9 @@
     },
     "scripts/validate_release_alignment.py": {
       "role": "index",
-      "sha256": "81556e300032c290e6f4477edd010ea7c8fdf4e8d9bae8899d16f345c716afda",
-      "size": 36124,
-      "normalized_sha256": "81556e300032c290e6f4477edd010ea7c8fdf4e8d9bae8899d16f345c716afda"
+      "sha256": "0a1674ee79015f87722c124a42d984d9f282a07aad673a96bf4f5301757201f4",
+      "size": 43923,
+      "normalized_sha256": "0a1674ee79015f87722c124a42d984d9f282a07aad673a96bf4f5301757201f4"
     },
     "scripts/verify_outbound_evaluation_manifests.py": {
       "role": "index",
@@ -10937,9 +10937,9 @@
     },
     "tests/test_git_release_structure.py": {
       "role": "index",
-      "sha256": "08240b70f19a44bcc8645c266d5612b8d827f3bac948a38109f996b2e62eb897",
-      "size": 10452,
-      "normalized_sha256": "08240b70f19a44bcc8645c266d5612b8d827f3bac948a38109f996b2e62eb897"
+      "sha256": "06c7d8825fbc00bcb22dc020e790904cd2a8369d93bcf5319f6386dee3877f44",
+      "size": 11102,
+      "normalized_sha256": "06c7d8825fbc00bcb22dc020e790904cd2a8369d93bcf5319f6386dee3877f44"
     },
     "tests/test_incremental_admissions.py": {
       "role": "index",
@@ -11021,9 +11021,9 @@
     },
     "tests/test_release_alignment.py": {
       "role": "index",
-      "sha256": "b08d23c91dfc34812b4ce13c0c92674fef14183d79412180513169b52699a5b0",
-      "size": 13957,
-      "normalized_sha256": "b08d23c91dfc34812b4ce13c0c92674fef14183d79412180513169b52699a5b0"
+      "sha256": "d476fcb80988c8c2bc11eef55d87f6166280e4bfb5da69932fa1ac45fa43474a",
+      "size": 15761,
+      "normalized_sha256": "d476fcb80988c8c2bc11eef55d87f6166280e4bfb5da69932fa1ac45fa43474a"
     },
     "tests/test_release_environment.py": {
       "role": "index",

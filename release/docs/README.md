@@ -27,6 +27,11 @@ an unbound snapshot, or a candidate invocation without `--selection` is
 rejected. The helper verifies each selected record digest and implementation
 version, filters the archived Chinese reader bundles to the same asset set,
 and materializes the exact set only in its temporary build directory.
+Its manifest uses the same `scirel.build-inputs.v1` binding as the wheel build:
+the archived project metadata, lock file, license set, and both documentation
+build helpers are summarized alongside the snapshot. This keeps wheel and
+documentation outputs tied to one Git source without copying a versioned
+handbook into the repository.
 Use an absolute interpreter path when selecting a virtual environment so the
 archived build retains that environment's documentation dependencies:
 

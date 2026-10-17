@@ -24,6 +24,7 @@ from build_scirel_from_ref import (
     ROOT,
     _archive_ref,
     _project_metadata,
+    build_input_binding,
     commit_epoch,
     resolve_revision,
 )
@@ -346,6 +347,13 @@ def build_from_ref(
             if not isinstance(snapshot_digest, str) or len(snapshot_digest) != 64:
                 raise ValueError("documentation snapshot has no valid snapshot_sha256")
             snapshot_bytes = sum(path.stat().st_size for path in snapshot.rglob("*") if path.is_file())
+            inputs = build_input_binding(
+                source,
+                helper_paths=(
+                    "scripts/build_scirel_docs_from_ref.py",
+                    "scripts/build_scirel_from_ref.py",
+                ),
+            )
     finally:
         if previous_umask is not None:
             os.umask(previous_umask)
@@ -360,6 +368,7 @@ def build_from_ref(
         "schema": "scirel.git-docs-build.v1",
         "source": {"ref": ref, "revision": revision, "commit_epoch": epoch},
         "project": {"name": name, "version": version},
+        "inputs": inputs,
         "snapshot": {
             "path": "snapshot",
             "sha256": snapshot_digest,

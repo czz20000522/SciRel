@@ -11,8 +11,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from validate_release_alignment import (
+    _validate_build_inputs,
     _validate_external_artifacts,
     _validate_platform_receipts,
+    _validate_source_revision,
     validate_alignment,
 )  # noqa: E402
 
@@ -29,6 +31,55 @@ def test_current_release_alignment_is_exact() -> None:
         "document_closure": 260,
     }
     assert result["external_artifacts"] == "external_artifact_unchecked"
+
+
+def test_source_revision_is_a_git_commit_with_matching_project_version() -> None:
+    revision = "9733bfc6e9f91a8526f5c72843b9203aa8ebbf04"
+    _validate_source_revision(ROOT, revision, "0.1.0.dev9")
+    with pytest.raises(ValueError, match="pyproject.toml version"):
+        _validate_source_revision(ROOT, revision, "0.1.0.dev10")
+
+
+def test_external_manifest_input_digests_bind_to_source_git_blobs() -> None:
+    import hashlib
+    import subprocess
+
+    revision = "9733bfc6e9f91a8526f5c72843b9203aa8ebbf04"
+    pyproject = subprocess.check_output(
+        ["git", "show", f"{revision}:pyproject.toml"], cwd=ROOT
+    )
+    helper = ROOT / "scripts/build_scirel_from_ref.py"
+    manifest = {
+        "inputs": {
+            "schema": "scirel.build-inputs.v1",
+            "files": {
+                "pyproject.toml": {
+                    "sha256": hashlib.sha256(pyproject).hexdigest(),
+                    "bytes": len(pyproject),
+                }
+            },
+            "license_files": [],
+            "helper": {
+                "revision": None,
+                "dirty": True,
+                "files": {
+                    "scripts/build_scirel_from_ref.py": {
+                        "sha256": hashlib.sha256(helper.read_bytes()).hexdigest(),
+                        "bytes": helper.stat().st_size,
+                    }
+                },
+            },
+        }
+    }
+    _validate_build_inputs(
+        ROOT,
+        manifest,
+        source_revision=revision,
+        field="wheel",
+    )
+    manifest["inputs"]["files"]["pyproject.toml"]["sha256"] = "0" * 64
+    with pytest.raises(ValueError, match="differs from source revision"):
+        _validate_build_inputs(ROOT, manifest, source_revision=revision, field="wheel")
 
 
 def test_external_artifact_manifest_and_snapshot_are_verified(tmp_path: Path) -> None:

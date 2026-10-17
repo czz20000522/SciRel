@@ -21,6 +21,7 @@ import sys
 import tarfile
 import tempfile
 import tomllib
+from typing import Iterable
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -75,6 +76,136 @@ def _sha256(path: Path) -> str:
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def _file_summary(path: Path, *, relative: str) -> dict[str, object]:
+    """Return the stable identity of one build input file."""
+
+    if not path.is_file() or path.is_symlink():
+        raise ValueError(f"build input is not a regular file: {relative}")
+    return {
+        "path": relative,
+        "sha256": _sha256(path),
+        "bytes": path.stat().st_size,
+    }
+
+
+def _safe_relative_path(value: str, *, field: str) -> Path:
+    path = Path(value)
+    if path.is_absolute() or ".." in path.parts:
+        raise ValueError(f"{field} must be a relative path: {value}")
+    return path
+
+
+def _license_input_paths(source: Path, metadata: dict[str, object]) -> list[Path]:
+    """Resolve the license files declared by the archived project metadata.
+
+    PEP 639 uses ``project.license-files`` as a list of relative glob
+    patterns.  Older refs may not declare it, so fall back to the repository's
+    conventional ``licenses/`` tree without making that absence a build
+    failure.  Directories and symlinks are excluded because neither is a
+    license payload copied into a wheel.
+    """
+
+    project = metadata.get("project")
+    if not isinstance(project, dict):
+        raise ValueError("archived pyproject.toml has no project table")
+    declared = project.get("license-files")
+    if declared is None:
+        patterns: list[str] = []
+    elif isinstance(declared, str):
+        patterns = [declared]
+    elif isinstance(declared, list) and all(isinstance(item, str) for item in declared):
+        patterns = list(declared)
+    else:
+        raise ValueError("project.license-files must be a string or list of strings")
+
+    candidates: set[Path] = set()
+    if patterns:
+        for pattern in patterns:
+            _safe_relative_path(pattern, field="project.license-files")
+            for path in source.glob(pattern):
+                if path.is_file() and not path.is_symlink():
+                    candidates.add(path)
+    else:
+        licenses = source / "licenses"
+        if licenses.is_dir() and not licenses.is_symlink():
+            candidates.update(
+                path
+                for path in licenses.rglob("*")
+                if path.is_file() and not path.is_symlink()
+            )
+    return sorted(candidates, key=lambda path: path.relative_to(source).as_posix())
+
+
+def build_input_binding(source: Path, *, helper_paths: Iterable[str]) -> dict[str, object]:
+    """Summarize source and helper inputs that affect a ref-bound build.
+
+    This is additive metadata in the existing ``scirel.git-build.v1`` and
+    ``scirel.git-docs-build.v1`` manifests.  It does not alter ``CURRENT`` or
+    require historical manifests to be regenerated.  ``uv.lock`` is optional
+    for older Git refs, but when present its bytes are always bound.
+    """
+
+    source = source.resolve()
+    pyproject = source / "pyproject.toml"
+    if not pyproject.is_file() or pyproject.is_symlink():
+        raise ValueError("archived source has no regular pyproject.toml")
+    try:
+        metadata = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError) as error:
+        raise ValueError("archived pyproject.toml is not readable TOML") from error
+
+    files: dict[str, dict[str, object]] = {
+        "pyproject.toml": _file_summary(pyproject, relative="pyproject.toml")
+    }
+    lockfile = source / "uv.lock"
+    if lockfile.is_file() and not lockfile.is_symlink():
+        files["uv.lock"] = _file_summary(lockfile, relative="uv.lock")
+    license_files = _license_input_paths(source, metadata)
+    for path in license_files:
+        relative = path.relative_to(source).as_posix()
+        files[relative] = _file_summary(path, relative=relative)
+
+    return {
+        "schema": "scirel.build-inputs.v1",
+        "files": files,
+        "license_files": [
+            path.relative_to(source).as_posix() for path in license_files
+        ],
+        "helper": helper_binding(helper_paths),
+    }
+
+
+def helper_binding(paths: Iterable[str]) -> dict[str, object]:
+    """Bind the exact helper source used by an external build.
+
+    The Git revision identifies the checkout baseline while per-file digests
+    detect a locally modified helper.  This keeps the old ref-bound build
+    workflow usable while making a dirty helper explicit in the manifest.
+    """
+
+    normalized = sorted(
+        {
+            _safe_relative_path(path, field="helper path").as_posix()
+            for path in paths
+        }
+    )
+    files: dict[str, dict[str, object]] = {}
+    for relative in normalized:
+        path = ROOT / relative
+        files[relative] = _file_summary(path, relative=relative)
+    try:
+        revision = resolve_revision("HEAD")
+        status = _run_git("status", "--porcelain", "--", *normalized) if normalized else ""
+    except (OSError, subprocess.CalledProcessError, ValueError):
+        revision = None
+        status = ""
+    return {
+        "revision": revision,
+        "dirty": bool(status),
+        "files": files,
+    }
 
 
 def _archive_ref(revision: str, epoch: int, destination: Path) -> Path:
@@ -204,6 +335,10 @@ def build_from_ref(
                 )
             target = output_dir / wheel.name
             shutil.copyfile(wheel, target)
+            inputs = build_input_binding(
+                source,
+                helper_paths=("scripts/build_scirel_from_ref.py",),
+            )
     finally:
         if previous_umask is not None:
             os.umask(previous_umask)
@@ -222,6 +357,7 @@ def build_from_ref(
             "commit_epoch": epoch,
         },
         "project": {"name": name, "version": version},
+        "inputs": inputs,
         "wheel": {
             "filename": target.name,
             "sha256": _sha256(target),

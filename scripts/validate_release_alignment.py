@@ -14,6 +14,7 @@ import json
 from pathlib import Path
 from pathlib import PurePosixPath
 import re
+import subprocess
 from typing import Any
 import tomllib
 
@@ -87,6 +88,159 @@ def _validate_external_manifest_digest(path: Path, expected: object, *, field: s
         raise ValueError(f"{field} manifest digest differs")
     manifest = _read_json(path)
     return manifest
+
+
+def _git_blob_summary(root: Path, revision: str, relative: str) -> tuple[str, int] | None:
+    """Return a Git blob digest and byte count when the source object resolves.
+
+    External-artifact tests and archived receipts may intentionally use a
+    synthetic revision without a Git checkout.  In that case shape validation
+    still applies and content comparison is skipped; a real repository/ref is
+    checked byte-for-byte.
+    """
+
+    try:
+        result = subprocess.run(
+            ["git", "cat-file", "blob", f"{revision}:{relative}"],
+            cwd=root,
+            check=False,
+            capture_output=True,
+        )
+    except OSError:
+        return None
+    if result.returncode:
+        return None
+    return hashlib.sha256(result.stdout).hexdigest(), len(result.stdout)
+
+
+def _validate_build_inputs(
+    root: Path,
+    manifest: dict[str, Any],
+    *,
+    source_revision: str | None,
+    field: str,
+) -> None:
+    """Validate additive source/helper input metadata in a build manifest.
+
+    ``inputs`` was added after the first ``scirel.git-*.-v1`` manifests were
+    issued, so its absence remains valid for historical ``CURRENT`` records.
+    When present, the metadata is checked structurally and, if the source ref
+    is available in the checkout, against Git blob bytes.
+    """
+
+    inputs = manifest.get("inputs")
+    if inputs is None:
+        return
+    if not isinstance(inputs, dict) or inputs.get("schema") != "scirel.build-inputs.v1":
+        raise ValueError(f"external {field} manifest has invalid inputs schema")
+    files = inputs.get("files")
+    if not isinstance(files, dict) or "pyproject.toml" not in files:
+        raise ValueError(f"external {field} manifest inputs lack pyproject.toml")
+    for relative, summary in files.items():
+        if not isinstance(relative, str) or not relative or "\\" in relative:
+            raise ValueError(f"external {field} manifest has an unsafe input path")
+        logical = PurePosixPath(relative)
+        if logical.is_absolute() or any(part in {"", ".", ".."} for part in logical.parts):
+            raise ValueError(f"external {field} manifest has an unsafe input path: {relative}")
+        if not isinstance(summary, dict):
+            raise ValueError(f"external {field} manifest input summary is invalid: {relative}")
+        digest = summary.get("sha256")
+        size = summary.get("bytes")
+        if not isinstance(digest, str) or _SHA256_DIGEST.fullmatch(digest) is None:
+            raise ValueError(f"external {field} manifest input digest is invalid: {relative}")
+        if not isinstance(size, int) or size < 0:
+            raise ValueError(f"external {field} manifest input byte count is invalid: {relative}")
+        if source_revision is not None:
+            actual = _git_blob_summary(root, source_revision, relative)
+            if actual is not None and actual != (digest, size):
+                raise ValueError(f"external {field} manifest input differs from source revision: {relative}")
+
+    license_files = inputs.get("license_files")
+    if not isinstance(license_files, list) or any(
+        not isinstance(path, str) or path not in files for path in license_files
+    ):
+        raise ValueError(f"external {field} manifest license input list is invalid")
+    if len(set(license_files)) != len(license_files):
+        raise ValueError(f"external {field} manifest license input list repeats a path")
+
+    helper = inputs.get("helper")
+    if not isinstance(helper, dict):
+        raise ValueError(f"external {field} manifest lacks helper input binding")
+    helper_revision = helper.get("revision")
+    if helper_revision is not None and (
+        not isinstance(helper_revision, str) or re.fullmatch(r"[0-9a-f]{40}", helper_revision) is None
+    ):
+        raise ValueError(f"external {field} manifest helper revision is invalid")
+    if not isinstance(helper.get("dirty"), bool):
+        raise ValueError(f"external {field} manifest helper dirty flag is invalid")
+    helper_files = helper.get("files")
+    if not isinstance(helper_files, dict) or not helper_files:
+        raise ValueError(f"external {field} manifest helper files are missing")
+    for relative, summary in helper_files.items():
+        if not isinstance(relative, str) or not relative.startswith("scripts/"):
+            raise ValueError(f"external {field} manifest helper path is invalid: {relative}")
+        logical = PurePosixPath(relative)
+        if logical.is_absolute() or any(part in {"", ".", ".."} for part in logical.parts):
+            raise ValueError(f"external {field} manifest helper path is unsafe: {relative}")
+        if not isinstance(summary, dict):
+            raise ValueError(f"external {field} manifest helper summary is invalid: {relative}")
+        digest = summary.get("sha256")
+        size = summary.get("bytes")
+        if not isinstance(digest, str) or _SHA256_DIGEST.fullmatch(digest) is None:
+            raise ValueError(f"external {field} manifest helper digest is invalid: {relative}")
+        if not isinstance(size, int) or size < 0:
+            raise ValueError(f"external {field} manifest helper byte count is invalid: {relative}")
+        if helper_revision is not None and not helper.get("dirty"):
+            actual = _git_blob_summary(root, helper_revision, relative)
+            if actual is not None and actual != (digest, size):
+                raise ValueError(f"external {field} manifest helper differs from helper revision: {relative}")
+
+
+def _validate_source_revision(root: Path, revision: object, version: str) -> None:
+    """Check a bound source revision when ``root`` is a Git checkout.
+
+    Copied fixture roots used by structural tests have no ``.git`` directory;
+    those roots still receive all file-level checks and leave this optional
+    repository-object check unclaimed.  A real checkout must resolve the
+    exact commit and expose a matching ``pyproject.toml`` at that commit.
+    """
+
+    if not isinstance(revision, str) or re.fullmatch(r"[0-9a-f]{40}", revision) is None:
+        raise ValueError("source_revision must be an exact 40-character Git SHA")
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--verify", f"{revision}^{{commit}}"],
+            cwd=root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError:
+        return
+    if result.returncode:
+        # A copied source fixture is not a checkout.  A path that does contain
+        # Git metadata must fail closed when its recorded object is missing.
+        git_marker = root / ".git"
+        if git_marker.exists():
+            raise ValueError("source_revision does not resolve to a Git commit")
+        return
+    resolved = result.stdout.strip()
+    if resolved != revision:
+        raise ValueError("source_revision does not resolve to the recorded Git commit")
+    try:
+        pyproject = subprocess.run(
+            ["git", "show", f"{revision}:pyproject.toml"],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout
+        metadata = tomllib.loads(pyproject)
+        source_version = metadata["project"]["version"]
+    except (OSError, subprocess.CalledProcessError, KeyError, TypeError, tomllib.TOMLDecodeError) as error:
+        raise ValueError("source_revision has no readable pyproject.toml") from error
+    if source_version != version:
+        raise ValueError("source_revision pyproject.toml version differs from release CURRENT")
 
 
 def _validate_external_artifacts(
@@ -174,6 +328,12 @@ def _validate_external_artifacts(
             raise ValueError(f"external {label} manifest project differs from release CURRENT")
         if source_revision is not None and source.get("revision") != source_revision:
             raise ValueError(f"external {label} manifest source revision differs")
+        _validate_build_inputs(
+            root,
+            manifest,
+            source_revision=source_revision,
+            field=label,
+        )
 
     wheel_info = wheel_manifest.get("wheel")
     if not isinstance(wheel_info, dict):
@@ -636,6 +796,8 @@ def validate_alignment(
         raise ValueError(
             "release CURRENT source_revision differs from the expected Git revision"
         )
+    if source_revision is not None:
+        _validate_source_revision(root, source_revision, version)
 
     wheel = current.get("wheel")
     docs = current.get("documentation")

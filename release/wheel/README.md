@@ -46,3 +46,10 @@ tuple and run the platform receipt against that exact file before updating
 `release/CURRENT.json`. The logical manifest reference is resolved only against
 an explicitly supplied external artifact root; it never points into
 `build/releases/` inside the checkout.
+
+The manifest also carries a `scirel.build-inputs.v1` summary for the archived
+`pyproject.toml`, optional `uv.lock`, declared license files, and the exact
+build helper files. When the source checkout is available, the release
+validator compares those summaries with Git blobs at the recorded commit; a
+dirty helper remains explicit in the receipt instead of being presented as
+source-only reproducibility.
