@@ -19,6 +19,11 @@ size, so the receipt can be bound to the release tuple. The script does not
 build wheels, modify release records, or update the platform matrix. It is
 safe to run against a historical wheel while a later candidate is being
 prepared.
+
+Use ``--extra plot`` or ``--extra netcdf`` after installing that extra in the
+same clean environment to validate its declared dependency closure and a
+capability-specific smoke path. Repeat ``--extra`` to validate more than one
+optional capability. Core validation remains the default.
 """
 
 from __future__ import annotations
@@ -35,6 +40,7 @@ import re
 import subprocess
 import sys
 import sysconfig
+import tempfile
 from typing import Any
 from zipfile import BadZipFile, ZipFile
 from pathlib import PurePosixPath
@@ -183,6 +189,32 @@ def _declared_runtime_requirements(dist_name: str = "scirel") -> list[dict[str, 
     return rows
 
 
+def _declared_extra_requirements(extra: str, dist_name: str = "scirel") -> list[dict[str, str]]:
+    """Return the installed distribution requirements for one named extra."""
+
+    requested = extra.strip().lower()
+    if not requested:
+        raise ValueError("extra name must not be empty")
+    rows: list[dict[str, str]] = []
+    marker_pattern = re.compile(r"\bextra\s*==\s*['\"]([^'\"]+)['\"]", re.IGNORECASE)
+    for raw in metadata.requires(dist_name) or []:
+        requirement, _, marker = raw.partition(";")
+        match = marker_pattern.search(marker)
+        if match is None or match.group(1).strip().lower() != requested:
+            continue
+        requirement_match = _REQUIREMENT_NAME.match(requirement)
+        if not requirement_match:
+            raise ValueError(f"cannot parse declared dependency: {raw}")
+        rows.append(
+            {
+                "requirement": raw,
+                "name": requirement_match.group(1),
+                "extra": requested,
+            }
+        )
+    return rows
+
+
 def _dependency_import_candidates(name: str) -> list[str]:
     target = _normalise_distribution(name)
     mapping = metadata.packages_distributions()
@@ -199,10 +231,11 @@ def _dependency_import_candidates(name: str) -> list[str]:
     return candidates
 
 
-def _check_dependencies() -> list[dict[str, Any]]:
+def _check_dependencies(requirements: list[dict[str, str]] | None = None) -> list[dict[str, Any]]:
     checks: list[dict[str, Any]] = []
     prefix = Path(sys.prefix).resolve()
-    for row in _declared_runtime_requirements():
+    rows = requirements if requirements is not None else _declared_runtime_requirements()
+    for row in rows:
         name = row["name"]
         item: dict[str, Any] = {**row, "status": "FAIL", "import_candidates": _dependency_import_candidates(name)}
         try:
@@ -241,6 +274,79 @@ def _check_dependencies() -> list[dict[str, Any]]:
             item["error"] = "; ".join(import_errors) or f"no import candidate for {name}"
         checks.append(item)
     return checks
+
+
+def _available_extras(dist: Any | None) -> set[str]:
+    if dist is None or not hasattr(dist, "metadata"):
+        return set()
+    return {
+        value.strip().lower()
+        for value in (dist.metadata.get_all("Provides-Extra") or [])
+        if value.strip()
+    }
+
+
+def _run_plot_extra() -> tuple[dict[str, Any], list[str]]:
+    try:
+        from matplotlib.patches import Rectangle
+
+        from scirel.geometry.plotting import scale_patches
+
+        patch = Rectangle((0.0, 0.0), 1.0, 1.0)
+        scale_patches([patch], 2.0)
+        return {
+            "status": "PASS",
+            "matplotlib_version": metadata.version("matplotlib"),
+            "patch_type": type(patch).__name__,
+        }, []
+    except Exception as exc:
+        details = {"status": "FAIL", "error": f"{type(exc).__name__}: {exc}"}
+        return details, [f"plot extra smoke failed: {type(exc).__name__}: {exc}"]
+
+
+def _run_netcdf_extra() -> tuple[dict[str, Any], list[str]]:
+    try:
+        import numpy as np
+        from netCDF4 import Dataset
+
+        from scirel.electromagnetism.distributed import get_deltapsi
+
+        with tempfile.TemporaryDirectory(prefix="scirel-netcdf-extra-") as temporary:
+            path = Path(temporary) / "currents.nc"
+            with Dataset(path, "w", format="NETCDF4_CLASSIC") as data:
+                data.createDimension("nzeqadim", 2)
+                data.createDimension("nreqadim", 2)
+                variable = data.createVariable(
+                    "curr_diamcurv_phi", "f8", ("nzeqadim", "nreqadim")
+                )
+                variable.units = "A/cm^2"
+                variable[:] = np.ones((2, 2), dtype=float)
+                r_grid, z_grid = np.meshgrid(
+                    np.array([0.35, 1.25]), np.array([-0.6, 0.8])
+                )
+                result = get_deltapsi(data, r_grid, z_grid)
+        summary = _array_summary(result, (2, 2))
+        errors: list[str] = []
+        if not summary["finite"] or not summary["shape_match"]:
+            errors.append("netcdf extra smoke returned a non-finite or mis-shaped result")
+        return {
+            "status": "PASS" if not errors else "FAIL",
+            "netcdf4_version": metadata.version("netCDF4"),
+            "output": summary,
+        }, errors
+    except Exception as exc:
+        details = {"status": "FAIL", "error": f"{type(exc).__name__}: {exc}"}
+        return details, [f"netcdf extra smoke failed: {type(exc).__name__}: {exc}"]
+
+
+def _run_extra_smoke(extra: str) -> tuple[dict[str, Any], list[str]]:
+    if extra == "plot":
+        return _run_plot_extra()
+    if extra == "netcdf":
+        return _run_netcdf_extra()
+    return {"status": "FAIL", "error": f"unsupported extra: {extra}"}, [
+        f"unsupported optional extra: {extra}"
+    ]
 
 
 def _path_is_within(path: Path, root: Path) -> bool:
@@ -308,9 +414,9 @@ def _check_distribution() -> tuple[dict[str, Any], list[str], Any | None]:
     if in_source_tree:
         errors.append(f"scirel module resolves to a source checkout: {module_path}")
     if errors:
-        return details, errors, module
+        return details, errors, dist
     details["status"] = "PASS"
-    return details, errors, module
+    return details, errors, dist
 
 
 def _wheel_artifact(path: Path) -> tuple[dict[str, Any], list[str]]:
@@ -574,6 +680,7 @@ def validate_installed_wheel(
     expected_platform: str | None = None,
     expected_python: str = DEFAULT_EXPECTED_PYTHON,
     wheel_path: Path | None = None,
+    extras: tuple[str, ...] = (),
 ) -> dict[str, Any]:
     runtime, errors = _runtime_identity(expected_platform, expected_python)
     receipt: dict[str, Any] = {
@@ -584,12 +691,13 @@ def validate_installed_wheel(
         "runtime": runtime,
         "package": {},
         "dependencies": [],
+        "extras": {},
         "pip_check": {},
         "simple_operator": {},
         "cross_domain_task": {},
         "errors": errors.copy(),
     }
-    package, package_errors, _ = _check_distribution()
+    package, package_errors, distribution = _check_distribution()
     receipt["package"] = package
     receipt["errors"].extend(package_errors)
     if wheel_path is not None:
@@ -608,6 +716,47 @@ def validate_installed_wheel(
             receipt["errors"].append(
                 f"declared dependency failed import: {item.get('name', '<unknown>')}"
             )
+    seen_extras: set[str] = set()
+    available_extras = _available_extras(distribution)
+    for raw_extra in extras:
+        extra = raw_extra.strip().lower()
+        if not extra or extra in seen_extras:
+            continue
+        seen_extras.add(extra)
+        extra_details: dict[str, Any] = {
+            "status": "FAIL",
+            "dependencies": [],
+            "smoke": {},
+        }
+        receipt["extras"][extra] = extra_details
+        if extra not in available_extras:
+            error = f"optional extra is not declared by the installed distribution: {extra}"
+            extra_details["error"] = error
+            receipt["errors"].append(error)
+            continue
+        try:
+            extra_requirements = _declared_extra_requirements(extra)
+            extra_details["declared_requirements"] = extra_requirements
+            extra_details["dependencies"] = _check_dependencies(extra_requirements)
+        except Exception as exc:
+            error = f"extra dependency inspection failed for {extra}: {type(exc).__name__}: {exc}"
+            extra_details["error"] = error
+            receipt["errors"].append(error)
+            continue
+        dependency_failed = False
+        for item in extra_details["dependencies"]:
+            if item.get("status") != "PASS":
+                dependency_failed = True
+                receipt["errors"].append(
+                    f"extra dependency failed import ({extra}): {item.get('name', '<unknown>')}"
+                )
+        smoke, smoke_errors = _run_extra_smoke(extra)
+        extra_details["smoke"] = smoke
+        receipt["errors"].extend(smoke_errors)
+        if not dependency_failed and not smoke_errors:
+            extra_details["status"] = "PASS"
+        else:
+            extra_details["status"] = "FAIL"
     pip_check, pip_errors = _run_pip_check()
     receipt["pip_check"] = pip_check
     receipt["errors"].extend(pip_errors)
@@ -637,6 +786,14 @@ def main() -> int:
         type=Path,
         help="exact wheel file installed into the clean environment; records its SHA-256 and size",
     )
+    parser.add_argument(
+        "--extra",
+        action="append",
+        default=[],
+        dest="extras",
+        metavar="NAME",
+        help="validate an installed optional extra; repeat for multiple extras",
+    )
     parser.add_argument("--output", type=Path, help="write the JSON receipt to this path")
     args = parser.parse_args()
     try:
@@ -644,6 +801,7 @@ def main() -> int:
             expected_platform=args.expected_platform,
             expected_python=args.expected_python,
             wheel_path=args.wheel,
+            extras=tuple(args.extras),
         )
     except Exception as exc:  # keep command failures machine-readable
         receipt = {

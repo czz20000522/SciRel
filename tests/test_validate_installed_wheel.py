@@ -130,6 +130,29 @@ def test_dependency_import_must_resolve_inside_environment_prefix(
     ]
 
 
+def test_declared_extra_requirements_select_only_the_requested_marker(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        validator.metadata,
+        "requires",
+        lambda _: [
+            "numpy==2.5.4",
+            'matplotlib==3.11.2; extra == "plot"',
+            'netCDF4==1.7.4; extra == "netcdf"',
+        ],
+    )
+
+    assert validator._declared_extra_requirements("plot") == [
+        {
+            "requirement": 'matplotlib==3.11.2; extra == "plot"',
+            "name": "matplotlib",
+            "extra": "plot",
+        }
+    ]
+    assert validator._declared_extra_requirements("netcdf")[0]["name"] == "netCDF4"
+
+
 def test_distribution_metadata_must_resolve_inside_environment_prefix(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -167,7 +190,63 @@ def test_validation_receipt_aggregates_successful_checks(monkeypatch: pytest.Mon
 
     assert receipt["schema"] == "scirel.installed-wheel-validation.v1"
     assert receipt["status"] == "PASS"
+    assert receipt["extras"] == {}
     assert receipt["errors"] == []
+
+
+def test_validation_receipt_records_a_successful_optional_extra(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeMetadata:
+        def get_all(self, name: str):
+            return ["plot"] if name == "Provides-Extra" else None
+
+    monkeypatch.setattr(validator, "_runtime_identity", lambda expected_platform, expected_python: ({}, []))
+    monkeypatch.setattr(
+        validator,
+        "_check_distribution",
+        lambda: ({"status": "PASS"}, [], SimpleNamespace(metadata=FakeMetadata())),
+    )
+    monkeypatch.setattr(validator, "_check_dependencies", lambda requirements=None: [{"name": "numpy", "status": "PASS"}])
+    monkeypatch.setattr(
+        validator,
+        "_declared_extra_requirements",
+        lambda extra: [{"name": "matplotlib", "requirement": "matplotlib==3.11.2", "extra": extra}],
+    )
+    monkeypatch.setattr(validator, "_run_extra_smoke", lambda extra: ({"status": "PASS", "extra": extra}, []))
+    monkeypatch.setattr(validator, "_run_pip_check", lambda: ({"status": "PASS"}, []))
+    monkeypatch.setattr(validator, "_run_simple_operator", lambda: ({"status": "PASS"}, []))
+    monkeypatch.setattr(validator, "_run_cross_domain_task", lambda: ({"status": "PASS"}, []))
+
+    receipt = validator.validate_installed_wheel(extras=("plot",))
+
+    assert receipt["status"] == "PASS"
+    assert receipt["extras"]["plot"]["status"] == "PASS"
+    assert receipt["extras"]["plot"]["smoke"]["extra"] == "plot"
+
+
+def test_validation_receipt_rejects_an_undeclared_optional_extra(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeMetadata:
+        def get_all(self, name: str):
+            return [] if name == "Provides-Extra" else None
+
+    monkeypatch.setattr(validator, "_runtime_identity", lambda expected_platform, expected_python: ({}, []))
+    monkeypatch.setattr(
+        validator,
+        "_check_distribution",
+        lambda: ({"status": "PASS"}, [], SimpleNamespace(metadata=FakeMetadata())),
+    )
+    monkeypatch.setattr(validator, "_check_dependencies", lambda requirements=None: [])
+    monkeypatch.setattr(validator, "_run_pip_check", lambda: ({"status": "PASS"}, []))
+    monkeypatch.setattr(validator, "_run_simple_operator", lambda: ({"status": "PASS"}, []))
+    monkeypatch.setattr(validator, "_run_cross_domain_task", lambda: ({"status": "PASS"}, []))
+
+    receipt = validator.validate_installed_wheel(extras=("plot",))
+
+    assert receipt["status"] == "FAIL"
+    assert "not declared" in receipt["extras"]["plot"]["error"]
 
 
 def test_validation_receipt_preserves_failed_check(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -59,4 +59,7 @@ def __getattr__(name):
 
 
 def __dir__():
-    return sorted(set(globals()) | set(__all__))
+    # Keep discovery focused on the package contract.  Implementation helpers
+    # such as ``_project_version`` remain available to the module itself but
+    # are not part of ``dir(scirel)`` for callers using introspection.
+    return sorted(set(__all__) | {"__version__"})

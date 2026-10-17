@@ -36,6 +36,28 @@ python3.14 -m venv /tmp/scirel-linux-x86_64-cp314
 虚拟环境，或依赖从环境前缀之外导入，收据为 `FAIL`。这只是运行闭包和代表性任务的技术回执，不能
 单独提升 `release/platform-support-matrix.json` 的状态。
 
+可选能力必须在同一个 clean venv 中单独安装并验收。验证绘图和 NetCDF 能力时，分别执行：
+
+```bash
+python -m pip install --no-index --only-binary=:all: --find-links /path/to/wheelhouse 'scirel[plot]'
+python -I scripts/validate_installed_wheel.py \
+  --expected-platform linux-x86_64-cp314 \
+  --wheel /path/to/wheelhouse/scirel-<project.version>-py3-none-any.whl \
+  --extra plot \
+  --output /path/to/plot-extra-validation.json
+
+python -m pip install --no-index --only-binary=:all: --find-links /path/to/wheelhouse 'scirel[netcdf]'
+python -I scripts/validate_installed_wheel.py \
+  --expected-platform linux-x86_64-cp314 \
+  --wheel /path/to/wheelhouse/scirel-<project.version>-py3-none-any.whl \
+  --extra netcdf \
+  --output /path/to/netcdf-extra-validation.json
+```
+
+离线 wheelhouse 验收器也接受重复的 `--extra` 参数；它会先用同一 wheelhouse 安装每个额外依赖，
+再把额外能力交给安装包验证器。缺少对应依赖 wheel、extra 未声明、依赖从环境外导入或能力 smoke
+失败时，extra 收据保持 `FAIL`，不会被 core 的通过结果覆盖。
+
 磁化色散的随包原语言入口还需要相应系统运行时：PDRK 的既有安装证据使用 Linux ARM64 的 Octave 8.4.0；
 fluidBW 的完整算例、特殊函数、响应、矩阵、搜索、谱和材料入口使用 Linux amd64 的 Octave 7.3.0，固定单线程。
 两类入口的运行条件分别核对，不能把一个平台的证据当作另一个平台的通过。

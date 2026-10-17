@@ -18,6 +18,9 @@ import sys
 sys.path.insert(0, sys.argv[1])
 import scirel
 assert set(scirel.__all__) <= set(dir(scirel))
+assert "__version__" in dir(scirel)
+assert "_project_version" not in dir(scirel)
+assert "_import_module" not in dir(scirel)
 assert not hasattr(scirel, "not_a_scientific_api")
 assert scirel.__version__ == sys.argv[2]
 assert not any(n.startswith("scirel.") for n in sys.modules)

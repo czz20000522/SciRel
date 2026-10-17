@@ -106,6 +106,29 @@ def _pip_install_command(python: Path, wheel: Path, wheelhouse: Path) -> list[st
     ]
 
 
+def _pip_install_extra_command(
+    python: Path, extra: str, wheelhouse: Path
+) -> list[str]:
+    """Build the offline command that resolves one installed package extra."""
+
+    extra = extra.strip().lower()
+    if not extra:
+        raise ValueError("extra name must not be empty")
+    return [
+        str(python),
+        "-m",
+        "pip",
+        "install",
+        "--disable-pip-version-check",
+        "--no-cache-dir",
+        "--no-index",
+        "--only-binary=:all:",
+        "--find-links",
+        str(wheelhouse),
+        f"scirel[{extra}]",
+    ]
+
+
 def _run(
     command: Sequence[str],
     *,
@@ -164,6 +187,7 @@ def validate_offline_wheelhouse(
     expected_python: str = DEFAULT_EXPECTED_PYTHON,
     source_revision: str | None = None,
     validator_path: Path = VALIDATOR,
+    extras: Sequence[str] = (),
 ) -> dict[str, Any]:
     """Install and validate one wheel with no network or source fallback."""
 
@@ -194,6 +218,7 @@ def validate_offline_wheelhouse(
             "commands": [],
         },
         "validation": {},
+        "extras": {},
         "errors": [],
     }
 
@@ -232,6 +257,31 @@ def validate_offline_wheelhouse(
             )
             return receipt
 
+        normalised_extras: list[str] = []
+        seen_extras: set[str] = set()
+        for raw_extra in extras:
+            extra = raw_extra.strip().lower()
+            if not extra or extra in seen_extras:
+                continue
+            seen_extras.add(extra)
+            normalised_extras.append(extra)
+            extra_install = _pip_install_extra_command(python, extra, wheelhouse)
+            receipt["execution"]["commands"].append(extra_install)
+            extra_result = _run(extra_install, env=environment)
+            receipt["extras"][extra] = {
+                "install": {
+                    "status": "PASS" if extra_result.returncode == 0 else "FAIL",
+                    "returncode": extra_result.returncode,
+                    "stdout": _trim(extra_result.stdout),
+                    "stderr": _trim(extra_result.stderr),
+                }
+            }
+            if extra_result.returncode:
+                receipt["errors"].append(
+                    f"offline installation of extra {extra!r} failed with exit code "
+                    f"{extra_result.returncode}"
+                )
+
         validation_path = workspace / "installed-wheel-validation.json"
         validate_command = [
             str(python),
@@ -246,6 +296,8 @@ def validate_offline_wheelhouse(
         ]
         if expected_platform:
             validate_command[3:3] = ["--expected-platform", expected_platform]
+        for extra in normalised_extras:
+            validate_command.extend(["--extra", extra])
         receipt["execution"]["commands"].append(validate_command)
         validated = _run(validate_command, env=environment)
         if validation_path.is_file():
@@ -280,6 +332,14 @@ def main() -> int:
         default=DEFAULT_EXPECTED_PYTHON,
         help=f"expected CPython major.minor line (default: {DEFAULT_EXPECTED_PYTHON})",
     )
+    parser.add_argument(
+        "--extra",
+        action="append",
+        default=[],
+        dest="extras",
+        metavar="NAME",
+        help="install and validate an optional extra; repeat for multiple extras",
+    )
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     try:
@@ -289,6 +349,7 @@ def main() -> int:
             expected_platform=args.expected_platform,
             expected_python=args.expected_python,
             source_revision=args.source_revision,
+            extras=tuple(args.extras),
         )
     except Exception as error:  # keep command failures machine-readable
         receipt = {
