@@ -1024,7 +1024,7 @@ mesh.py[DH8S]: F:表示有限柱坐标点集、固定半径或角度弦线和规
 transforms.py[KA6T]: F:按来源行向量约定绕给定轴心旋转R/Z点并返回新数组。 | R:code:src/scirel/electromagnetism/sources.py | A:末维2;轴心二元组;角度输入度;正角顺时针;不改输入 | S:这是平面坐标变换，旋转后非负半径和源完整状态由调用者验证。
 face_to_cell.py[KB7T]: F:将有限一维面值转为相邻算术中点并保持单位和N-1长度 | R:code:tests/operator_contracts/test_torax_algebra_grid.py | A:face_to_cell；float64；N≥2；类型形状有限性拒绝 | S:可表示时先和后除保留次正规舍入，和溢出才分半相加；不推断坐标或广播
 analysis.py[EB5T]: F:汇集几何分析中的磁通、非均匀微分及弧长导数原语 | R:code:src/scirel/electromagnetism/greens.py,code:src/scirel/geometry/fieldline.py,code:src/scirel/geometry/numerics.py | A:get_gpsi；NumericalContractError；d_ds_arclength；diff_12_central | S:只导出既有实现，不扩展验证范围
-basis.py[EM8M]: F:实现源派生三次样条及多项式基并修正不等距结点的夹持连续性 | R:code:tests/pleiades/equilibrium/test_analysis_families.py | A:四种样条；build_basis；BasisMatrix | S:有限严格递增结点且N≥3；区间外为零；特殊Robin闭合不等于物理磁拟合资格；Quartic与部分factory选择显式拒绝
+basis.py[EM8M]: F:实现源派生三次样条及多项式基，并用向量化区间选择保持多查询插值效率 | R:code:tests/pleiades/equilibrium/test_analysis_families.py | A:四种样条；build_basis；BasisMatrix；标量、向量和多维查询 | S:结点必须有限且严格递增；区间外及非有限查询返回零；末结点使用末段；deriv=1/2使用对应导数公式，其余选择器返回函数值
 fieldline.py[EM8M]: F:实现参数场线、物理场插值、曲率和有界边界求交 | R:code:tests/pleiades/equilibrium/test_fieldline_t7_precision.py,code:tests/pleiades/equilibrium/test_curvature_consumer.py | A:FieldLine；HelperFieldLine；Boundary；d_ds_arclength；contours | S:曲率在同一局部参数微分，反向B不变；开线保持顺序；有限多起点交点不证明全部拓扑；零场、支撑外及非有限场拒绝
 numerics.py[EM7T]: F:计算严格递增非均匀网格的三点二次一二阶内部导数 | R:code:src/scirel/geometry/sampling.py | A:NumericalContractError；diff_12_central | S:只支持有限一维匹配数据，输出N-2项，不构造端点或扩大旧API适用域
 plotting.py[EU6T]: F:按源原地或浅复制合同缩放、镜像及转置图形patch，并在绘图变换调用时加载可选Matplotlib | R:code:tests/pleiades/equilibrium/test_analysis_families.py,code:tests/test_lazy_namespace.py | A:scale_patches；get_mirror_patches；transpose_patches；_affine2d | S:只变图形数据transform，不变物理场坐标；transpose返回None；Matplotlib缺失只在变换调用边界抛出ModuleNotFoundError；避免重复应用patch固有几何
@@ -1527,7 +1527,7 @@ eqdsk.py[DI9L]: F:校验并交换扩展EQDSK文本、字典、轮廓及收敛压
 
 ===/Users/tomczz/Projects/SciReL/tests/pleiades/equilibrium/===
 test_analysis_corrections.py[TQ8S]: F:以解析多项式、Hermite端点、圆切向场和选段回归验证几何分析修正 | R:code:src/scirel/geometry/basis.py,code:src/scirel/geometry/fieldline.py,code:src/scirel/geometry/sampling.py | A:不等距夹持与Robin,弧长导数,反向曲率,选段起止与方向,末点和平局 | S:选段回归固定默认方向、显式起止和首个最近点平局；替换插值隔离微分，不替代真实插值消费者；源重放保留原失败
-test_analysis_families.py[TQ8M]: F:用独立样条、解析微积分及仿射坐标覆盖保留分析家族 | R:code:src/scirel/geometry/basis.py,code:src/scirel/geometry/sampling.py,code:src/scirel/geometry/plotting.py | A:边界；factory；采样；SVD；反射；积分；场线；patch | S:曲率加密场网格，不把固定网格增加曲线点当同一结论；特殊样条只核声明闭合
+test_analysis_families.py[TQ8M]: F:以独立样条、解析微积分及仿射坐标覆盖保留分析家族，并回归验证多维惰性插值 | R:code:src/scirel/geometry/basis.py,code:src/scirel/geometry/sampling.py,code:src/scirel/geometry/plotting.py | A:边界；factory；采样；SVD；反射；积分；场线；patch；二维查询和导数选择器 | S:回归保持标量与多维结果形状；区间外和NaN为零；末结点边界及deriv=0/1/2/其他选择器语义固定
 test_curvature_consumer.py[TQ8T]: F:通过实际插值链验证圆和椭圆曲率、反向不变及失败域 | R:code:src/scirel/geometry/fieldline.py | A:80/160场网格；双类；顶点及场反向；留出；零场与越域 | S:保留2.5e-3门限与固定网格曲线加密断言；文件存在不代表本次执行通过，不改写冻结失败
 test_distributed_current.py[TQ8S]: F:以独立环积分和三角插值oracle验证规则电流消费者的单位、分层、缩放、转置、轴源与零权重 | R:code:src/scirel/electromagnetism/distributed.py | A:净CDF有符号层和；A/cm²面积权重；输入不变；转置与缩放；零自项；几何掩码失败 | S:参考共享三角拓扑但独立求重心与电流收缩；零自项仅兼容离散约定，不能解释为有限导线自场
 test_equilibrium_boundaries.py[TQ8S]: F:以参数反例和解析反馈轨迹质疑离散平衡输入域与终末状态。 | R:code:src/scirel/equilibrium/pleiades_feedback.py | A:拒relax=1;复数投影禁止;迭代上限整数;裁剪精确形状;严格规则网格;几何衰减和零边失败 | S:零Green和制造压力用于证明数值状态合同，不构成真实力平衡；外部目标模块模式与安装模块模式分开。
@@ -1715,7 +1715,7 @@ Faddeeva-Ikuma-BSD-2-Clause.txt[SV6T]: F:保留Ikuma有限阶Faddeeva实现的�
 NOTICE[SV7T]: F:绑定Ikuma原件身份与有限阶改动署名并区分其他PDRK材料权限 | R:code:licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt | A:原件摘要、官方归属、erfcx/有限值修正与私有累积分发说明 | S:Weideman算法引用不替代实现许可；PDRK公开仓库非通用分发授权，WHAMP表非求解器且权利未明
 
 ===/Users/tomczz/Projects/SciReL/src/scirel/kinetic/pdrk/===
-__init__.py[LB6M]: F:标识PDRK磁化、平行束流和多流体色散领域包并提供惰性公共模块发现 | R:code:src/scirel/kinetic/pdrk/magnetized.py,code:src/scirel/kinetic/pdrk/rational.py,code:src/scirel/kinetic/pdrk/workflows.py | A:pdrk子包入口；__all__、__getattr__和__dir__发现；不主动初始化科学任务 | S:原生数值/支持调用需要Octave；惰性模块发现不等同科学任务执行
+__init__.py[LB6T]: F:标识PDRK磁化、平行束流和多流体色散领域包，并以ModuleType代理提供惰性公共模块发现 | R:code:src/scirel/kinetic/pdrk/magnetized.py,code:src/scirel/kinetic/pdrk/rational.py,code:src/scirel/kinetic/pdrk/workflows.py | A:pdrk子包入口；__all__、模块代理、__getattr__和__dir__发现；成员访问后解析真实模块 | S:星号导入只返回ModuleType代理且不加载PDRK子模块；访问模块成员或vars代理才加载真实后端；原生数值调用仍需要Octave
 _example_native.py[IB7T]: F:绑定最小随包示例原生动作及明确端口和MAT数值转换 | R:code:src/scirel/kinetic/pdrk/_transport.py | A:invoke、fluid_deck、绘图/WHAMP访问及finiteN动作 | S:前驱FIG字节免于数值转换；其他整数/低精度数转double，有限阶N拒bool，未读取完整D1包
 _example_support.py[IB7T]: F:适配科学结果到原生展示、表读取和前驱图的显式坐标状态 | R:code:src/scirel/kinetic/pdrk/_example_native.py,code:src/scirel/kinetic/pdrk/_fluid_parallel.py | A:fluid_deck、fluid_plot_scan、em1d_plot、WHAMP表与叠图 | S:仅method2支持成对归一化；零场beta None传空不造零，method4转轴；图例不认证前驱分支或数表真值
 _fluid_parallel.py[KB8L]: F:实现SI多流体广义频率束、守恒碰撞变体、精化求谱和平行EM因果延拓 | R:code:src/scirel/kinetic/plasma_dispersion.py,code:src/scirel/kinetic/pdrk/multifluid.py | A:平衡/矩阵/QZ精化/零根分类；显式角色碰撞率；有限扫描和续根 | S:字面非零支撑分块，原M/A验分量后向误差；精确零重数不伪造完整本征基；随场各向异性禁零B，相对论禁非零非相对论碰撞，续根失败不递交种子

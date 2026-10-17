@@ -79,6 +79,23 @@ def test_clamped_reference_and_spline_refinement():
     for d in [0,1,2]:np.testing.assert_allclose(fit(q,deriv=d),ref(q,nu=d),rtol=0,atol=2e-12)
 
 
+def test_cubic_spline_vectorized_query_shapes_and_retained_selector_rules():
+    x=np.array([-.6,-.4,.2,.9,1.4])
+    y=np.cos(x)
+    fit=basis.NaturalCubicSpline(x,y)
+    q=np.array([[-1.,x[0],x[1],x[-1]],[2.,np.nan,.3,.9]])
+    for deriv in [0,1,2,3]:
+        got=fit(q,deriv=deriv)
+        assert got.shape==q.shape
+        np.testing.assert_array_equal(got[0,0],0.)
+        np.testing.assert_array_equal(got[1,:2],[0.,0.])
+        if deriv==0:
+            np.testing.assert_allclose(got[0,1:],y[[0,1,-1]],rtol=0,atol=3e-15)
+        elif deriv==3:
+            np.testing.assert_array_equal(got,fit(q,deriv=0))
+        np.testing.assert_allclose(got,np.asarray([fit(value,deriv=deriv) for value in q.ravel()]).reshape(q.shape),rtol=0,atol=0)
+
+
 def test_numerics_manufactured_and_refinement_contract():
     x=np.array([-.7,-.5,-.11,.3,.8,1.4]);y=2*x*x-3*x+.1
     d1,d2=diff_12_central(x,y)

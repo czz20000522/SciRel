@@ -49,31 +49,45 @@ class CubicSpline(spline):
         spline.__init__(self, x_data, y_data)
         
     def _interpolate(self,x_value,deriv=0):
-        '''Interpolate to get the functional value to x_value'''
+        '''Interpolate to get the functional value to x_value.
+
+        Segment selection is vectorized with ``searchsorted``.  The public
+        contract remains the source behavior: values outside the knot
+        interval (including nonfinite queries) return zero, the final knot is
+        evaluated on the final segment, and only derivatives 1 and 2 select
+        derivative formulas; every other selector returns the value.
+        '''
         x_value=np.array(x_value,dtype=float)
         y_int=np.zeros_like(x_value)
-        for i in range(self.k.size-1):
-            if i==0:
-                tmploc=(x_value<=self.x_data[i+1])*(x_value>=self.x_data[i])
-            else:
-                tmploc=(x_value<=self.x_data[i+1])*(x_value>self.x_data[i])
-            xs=x_value[tmploc]
-            if xs.size==0:continue
-            x_l, x_u = self.x_data[i], self.x_data[i + 1]
-            y_l, y_u = self.y_data[i], self.y_data[i + 1]
-            k_l, k_u = self.k[i], self.k[i + 1]
-            d_x = (x_u - x_l) 
-            t=(xs-x_l)/(d_x)
-            a=k_l*d_x-(y_u-y_l)
-            b=-k_u*d_x+(y_u-y_l)
-            if deriv == 1:
-                y_int[tmploc]=(y_u-y_l)/d_x+(1.-2.*t)*(a*(1-t)+b*t)/d_x+\
-                            t*(1-t)*(b-a)/d_x
-            elif deriv == 2:
-                y_int[tmploc]=2.*(b-2.*a+(a-b)*3.*t)/d_x**2
-            else:
-                y_int[tmploc]=(1.-t)*y_l+t*y_u+t*(1.-t)*(a*(1.-t)+b*t)
-        return y_int 
+        in_domain=(x_value>=self.x_data[0]) & (x_value<=self.x_data[-1])
+        if not np.any(in_domain):
+            return y_int
+
+        # ``self.k`` is created through ``np.matrix`` in the retained source
+        # constructors, so flatten it before gathering one slope per query.
+        xs=np.asarray(x_value[in_domain]).reshape(-1)
+        interval=np.searchsorted(self.x_data,xs,side='right')-1
+        interval=np.minimum(interval,self.k.size-2)
+        k=np.asarray(self.k).reshape(-1)
+        x_l=self.x_data[interval]
+        x_u=self.x_data[interval+1]
+        y_l=self.y_data[interval]
+        y_u=self.y_data[interval+1]
+        k_l=k[interval]
+        k_u=k[interval+1]
+        d_x=x_u-x_l
+        t=(xs-x_l)/d_x
+        a=k_l*d_x-(y_u-y_l)
+        b=-k_u*d_x+(y_u-y_l)
+        if deriv == 1:
+            values=(y_u-y_l)/d_x+(1.-2.*t)*(a*(1-t)+b*t)/d_x+\
+                   t*(1-t)*(b-a)/d_x
+        elif deriv == 2:
+            values=2.*(b-2.*a+(a-b)*3.*t)/d_x**2
+        else:
+            values=(1.-t)*y_l+t*y_u+t*(1.-t)*(a*(1.-t)+b*t)
+        y_int[in_domain]=values
+        return y_int
         
 class NaturalCubicSpline(CubicSpline):
     def __init__(self, x_data, y_data):
