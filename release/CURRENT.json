@@ -3,17 +3,17 @@
   "package": "scirel",
   "version": "0.1.0.dev9",
   "status": "development_candidate",
-  "source_revision": "83853895f4a6ef329d033473fc5592917b7e8214",
+  "source_revision": "19a4e6bf4ded8e770770ed7cb8030426a0b2f1c2",
   "source_revision_status": "bound",
   "wheel": {
     "version": "0.1.0.dev9",
     "status": "development_candidate",
     "artifact": {
-      "manifest_ref": "scirel/0.1.0.dev9/8385389-aoci-baseline-20261017/build-manifest.json",
-      "manifest_sha256": "795d7f1908609332c14f25e231c63c6e30d033192b77cad5433f4f395e29a08d",
+      "manifest_ref": "scirel/0.1.0.dev9/19a4e6b-dev9-rebuild-20261017/build-manifest.json",
+      "manifest_sha256": "33e024c72f8e920d9306ad2191dec4a0dc18cfd939065da581dd4e48a51ebc77",
       "filename": "scirel-0.1.0.dev9-py3-none-any.whl",
-      "sha256": "a26878578bcb4caf9279ecd0900b337ebdd4cf5fd809015dca8e3fd49e8e1cb7",
-      "bytes": 662892
+      "sha256": "c4d81f5b8c4ad281ca3cb811eb33385e395aaf799c927dd2737038cddf6c27d8",
+      "bytes": 663107
     },
     "selected_capabilities": {
       "operators": 230,
@@ -24,13 +24,13 @@
     "platform_receipts": [
       {
         "platform": "linux-x86_64-cp314",
-        "path": "provenance/validation/scirel-dev9-linux-offline-20261017-8385389.json",
-        "sha256": "3f1a16361b149e9e53a325c21f80cc32059bcde47507ce2dfaef92fca7e5315d"
+        "path": "provenance/validation/scirel-dev9-linux-offline-20261017-19a4e6b.json",
+        "sha256": "1adfcd79e0678ca538b9e666648f714c2ec306541d0d52aae673fcf1c45a2da3"
       },
       {
         "platform": "macos-arm64-cp314",
-        "path": "provenance/validation/scirel-dev9-macos-arm64-offline-20261017-8385389.json",
-        "sha256": "c15fd3b0b874d783282b854d6c1591fe814f2527f6b88402e28d9977fcbf24b4"
+        "path": "provenance/validation/scirel-dev9-macos-arm64-offline-20261017-19a4e6b.json",
+        "sha256": "aafb619bbb2b85c4f792d9c34c01c906f592e76a70a00f0e6b22faaa0f351abb"
       }
     ]
   },
@@ -41,8 +41,8 @@
     "handbook": "tools/docs/handbook.json",
     "compatible_wheel": "0.1.0.dev9",
     "catalog_root": "catalog/examples",
-    "snapshot_sha256": "504e2bb666266adcc2afb7b522be7b7bae6a931325ef6829e3afb0638f8e9029",
-    "integration_record": "provenance/validation/scirel-dev9-document-integration-20261017-8385389.json",
+    "snapshot_sha256": "75b2ef8fa8595bd06fe3048b8b3820d50aeb667bdf53cc735400e1a97ead0eaf",
+    "integration_record": "provenance/validation/scirel-dev9-document-integration-20261017-19a4e6b.json",
     "selection_sha256": "ef3e6371dfdc8700bc49edaf4193ce1bbee3b21417313d08b20f7f9c5c95836e",
     "handbook_sha256": "7aea04ee827699038d4be7a34bf2d579c875614867334657dae9de1e050bd9fc",
     "capability_counts": {
@@ -52,10 +52,10 @@
     },
     "handbook_scope": "repository",
     "artifact": {
-      "manifest_ref": "scirel/0.1.0.dev9/8385389-aoci-baseline-20261017/docs/build-manifest.json",
-      "manifest_sha256": "470e0f6e9c2cd6867b1a0c0fc214f3e03ae8afa30cdd64cdda877e0b519d2d96",
+      "manifest_ref": "scirel/0.1.0.dev9/19a4e6b-dev9-rebuild-20261017/docs/build-manifest.json",
+      "manifest_sha256": "ebc74fe26ce1a05ac143aaac76ada36a32f01df3a144ec8d4c52bbbe7fe364bf",
       "snapshot_ref": "snapshot",
-      "snapshot_sha256": "504e2bb666266adcc2afb7b522be7b7bae6a931325ef6829e3afb0638f8e9029",
+      "snapshot_sha256": "75b2ef8fa8595bd06fe3048b8b3820d50aeb667bdf53cc735400e1a97ead0eaf",
       "snapshot_bytes": 27722415
     }
   },
