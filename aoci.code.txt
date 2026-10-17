@@ -1012,7 +1012,7 @@ dd_neutron_lab_energy.py[KB7M]: F:由两氘核速度与探测方向求非相对�
 
 ===/Users/tomczz/Projects/SciReL/src/scirel/geometry/===
 __init__.py[EB6M]: F:以惰性装载组织几何领域的网格、插值、基函数、场线和采样公开接口 | R:code:src/scirel/geometry/mesh.py,code:src/scirel/geometry/basis.py,code:src/scirel/geometry/fieldline.py | A:__all__；__getattr__；from-import身份 | S:首次导入不加载NumPy、SciPy或Matplotlib；子模块先导入仍保持公开符号身份
-axisymmetric_equilibrium_grid_support.py[AB7S]: F:依次组合轴对称平衡映射与冷等离子材料支持分类 | R:code:src/scirel/geometry/axisymmetric_grid_mapping.py,code:src/scirel/geometry/material_support.py | A:solve_axisymmetric_equilibrium_grid_mapping;run_graph | S:有序无反馈DAG；可注入两依赖，未知关键字拒绝，分类参数从显式平衡映射取得
+axisymmetric_equilibrium_grid_support.py[AB7S]: F:依次组合轴对称平衡映射与冷等离子材料支持分类，并以可广播坐标视图避免重复构造三维网格 | R:code:src/scirel/geometry/axisymmetric_grid_mapping.py,code:src/scirel/geometry/material_support.py | A:solve_axisymmetric_equilibrium_grid_mapping;run_graph;_cylindrical_coordinates | S:坐标值与历史完整网格精确一致但返回轴向独立的只读广播视图；分类依赖只读消费坐标，未知关键字拒绝，参数从显式平衡映射取得
 axisymmetric_grid_mapping.py[KB7S]: F:将轴对称R-Z平衡场双线性重建到笛卡尔求解网格并报告覆盖 | R:code:src/scirel/geometry/axisymmetric_equilibrium_grid_support.py | A:map_axisymmetric_equilibrium_to_cartesian_grid | S:源数组为[R,Z]且每轴至少5点；域外夹到边界，径向计数只统计越外半径，轴上横场零
 bilinear_grid_sampling.py[KB6T]: F:在显式二维R-Z标量场中批量双线性采样诊断点 | R:code:src/scirel/diagnostics/equilibrium_synthesis_diagnostics.py,code:tests/operator_contracts/test_bilinear_grid_sampling.py | A:sample_rectilinear_field | S:源数组为[Z,R]；闭边界可采样，域外直接拒绝；向量化只改变批量实现，不改变四角公式和端点约定
 complex_rectilinear_interpolation.py[KB7T]: F:在严格笛卡尔网格对复场三线性插值并标记几何有效性 | R:code:src/scirel/geometry/bilinear_grid_sampling.py | A:interpolate_complex_rectilinear_field | S:容差盒内夹边，盒外nan+nanj；valid_mask仅几何判断，非有限源会在true位置传播
@@ -1202,7 +1202,7 @@ task_graph.yaml[TB6M]: F:声明轴对称各向异性Picard完整节点、状态�
 test_graph_axisymmetric_anisotropic_picard.py[TB6S]: F:验证Picard图的解析电流、终态闭合、动态掩膜及失效边界 | R:code:src/scirel/equilibrium/axisymmetric_anisotropic_picard.py | A:pytest；恒BZ线性压力；节点积分权重；firehose与平行力失败 | S:恒J=.5在声明矩形积分为.08；终态须重查minimum_field并重算压力，不能返回前一轮
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/axisymmetric_equilibrium_grid_support/===
-test_graph_axisymmetric_equilibrium_grid_support.py[TB6M]: F:检验网格映射后材料分类的纯有序DAG、两依赖精确绑定、文档端口闭包和分类参数透传。 | R:code:src/scirel/geometry/axisymmetric_equilibrium_grid_support.py | A:pytest | S:源/安装环境分别定位实现；运行图不得依赖YAML、来源checkout或隐式文件加载。
+test_graph_axisymmetric_equilibrium_grid_support.py[TB6M]: F:检验网格映射后材料分类的纯有序DAG、两依赖精确绑定、文档端口闭包、分类参数透传及广播坐标值的完整网格一致性 | R:code:src/scirel/geometry/axisymmetric_equilibrium_grid_support.py | A:pytest | S:坐标值、形状和广播轴步长保持受测实现合同；测试不把私有坐标胶水扩大为公共科学入口
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/direct_anisotropic_inversion/===
 task_graph.yaml[TB6M]: F:声明LHS可选起点与显式平衡/诊断/残差端口驱动的有界直接反演状态和失败惩罚。 | R:code:src/scirel/inference/direct_anisotropic_inversion.py | A:scientific_task_graph contract | S:每次试探须新平衡状态；converged指优化与嵌套平衡成功，不另要求残差阈值。

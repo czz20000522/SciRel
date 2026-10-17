@@ -51,8 +51,17 @@ def _cylindrical_coordinates(x_m, y_m, z_m):
         if array.ndim != 1 or array.size < 2:
             raise ValueError(f"grid axis {name} must be a 1D array of at least two points")
         axes.append(array)
-    xx, yy, zz = np.meshgrid(axes[0], axes[1], axes[2], indexing="ij")
-    return np.hypot(xx, yy), zz
+    # The radius is independent of the axial coordinate, and the axial
+    # coordinate is independent of x/y.  Keep those two separable arrays as
+    # broadcast views instead of materializing three full 3-D mesh arrays.
+    # Consumers only read these coordinates, so the views preserve the
+    # numerical contract while avoiding an O(Nx*Ny*Nz) temporary allocation.
+    radius_xy = np.hypot(axes[0][:, None], axes[1][None, :])
+    shape = (axes[0].size, axes[1].size, axes[2].size)
+    return (
+        np.broadcast_to(radius_xy[..., None], shape),
+        np.broadcast_to(axes[2][None, None, :], shape),
+    )
 
 
 def _classification_parameters(equilibrium):

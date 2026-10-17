@@ -262,6 +262,25 @@ def test_u1_c_t06_coordinates_are_the_composition_glue(
         candidate["graph"]({**inputs, "x_m": np.zeros((2, 2))})
 
 
+def test_u1_c_t06_coordinate_glue_preserves_full_grid_values_without_mesh_copy(
+    candidate,
+):
+    """Separable coordinates must match the historical full mesh exactly."""
+    x_axis = np.array([-0.7, -0.1, 0.4, 1.2])
+    y_axis = np.array([-0.5, 0.2, 0.9])
+    z_axis = np.array([-0.3, 0.0, 0.6, 1.1, 1.8])
+    radii, axial = candidate["graph"].__globals__["_cylindrical_coordinates"](
+        x_axis, y_axis, z_axis
+    )
+    xx, yy, zz = np.meshgrid(x_axis, y_axis, z_axis, indexing="ij")
+    np.testing.assert_array_equal(radii, np.hypot(xx, yy))
+    np.testing.assert_array_equal(axial, zz)
+    assert radii.shape == (4, 3, 5)
+    assert axial.shape == (4, 3, 5)
+    assert radii.strides[2] == 0
+    assert axial.strides[0] == 0 and axial.strides[1] == 0
+
+
 # --- Test U1-C-T07: the public signature is the documented one. ------------
 def test_u1_c_t07_public_signature_is_the_documented_one(candidate):
     document = json.loads(GRAPH_DOCUMENT.read_text(encoding="utf-8"))
