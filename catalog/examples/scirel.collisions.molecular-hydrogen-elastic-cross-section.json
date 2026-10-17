@@ -103,7 +103,9 @@
     "python": {
       "module": "scirel.collisions.hydrogen2_hydrogen2_elastic_cross_section",
       "symbol": "evaluate_hydrogen2_hydrogen2_elastic_cross_section",
-      "signature": "evaluate_hydrogen2_hydrogen2_elastic_cross_section(energy_ev, viscosity=False)"
+      "signature": "evaluate_hydrogen2_hydrogen2_elastic_cross_section(energy_ev, viscosity=False)",
+      "canonical_module": "scirel.collisions",
+      "canonical_symbol": "evaluate_hydrogen2_hydrogen2_elastic_cross_section"
     }
   },
   "version": {

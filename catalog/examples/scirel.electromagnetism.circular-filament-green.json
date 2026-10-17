@@ -96,7 +96,9 @@
     "python": {
       "module": "scirel.electromagnetism.greens",
       "symbol": "compute_greens",
-      "signature": "compute_greens(rzw, rz_pts)"
+      "signature": "compute_greens(rzw, rz_pts)",
+      "canonical_module": "scirel.electromagnetism",
+      "canonical_symbol": "compute_greens"
     }
   },
   "version": {

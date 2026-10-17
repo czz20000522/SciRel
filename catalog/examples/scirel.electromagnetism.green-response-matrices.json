@@ -112,7 +112,9 @@
     "python": {
       "module": "scirel.electromagnetism",
       "symbol": "green_response_matrices",
-      "signature": "green_response_matrices(rz_pts, rzw=None)"
+      "signature": "green_response_matrices(rz_pts, rzw=None)",
+      "canonical_module": "scirel.electromagnetism",
+      "canonical_symbol": "green_response_matrices"
     }
   },
   "version": {

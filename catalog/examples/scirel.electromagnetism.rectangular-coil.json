@@ -202,7 +202,9 @@
     "python": {
       "module": "scirel.electromagnetism.sources",
       "symbol": "RectangularCoil",
-      "signature": "RectangularCoil(r0=1.0, z0=0.0, nr=1, nz=1, dr=0.1, dz=0.1, angle=0.0, **kwargs)"
+      "signature": "RectangularCoil(r0=1.0, z0=0.0, nr=1, nz=1, dr=0.1, dz=0.1, angle=0.0, **kwargs)",
+      "canonical_module": "scirel.electromagnetism",
+      "canonical_symbol": "RectangularCoil"
     }
   },
   "example": {

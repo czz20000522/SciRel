@@ -94,7 +94,9 @@
     "python": {
       "module": "scirel.collisions.hydrogen_h2_elastic_cross_section",
       "symbol": "evaluate_hydrogen_h2_elastic_cross_section",
-      "signature": "evaluate_hydrogen_h2_elastic_cross_section(energy_ev)"
+      "signature": "evaluate_hydrogen_h2_elastic_cross_section(energy_ev)",
+      "canonical_module": "scirel.collisions",
+      "canonical_symbol": "evaluate_hydrogen_h2_elastic_cross_section"
     }
   },
   "version": {

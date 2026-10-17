@@ -146,6 +146,8 @@ def test_callable_binding_and_invocation_are_document_driven(catalog):
         "module": "scirel.field.current_green_superposition",
         "symbol": "superpose_current_green_field",
         "signature": "superpose_current_green_field(currents, gpsi, gBR, gBZ)",
+        "canonical_module": "scirel.field",
+        "canonical_symbol": "superpose_current_green_field",
     }
 
     response = adapter.handle(

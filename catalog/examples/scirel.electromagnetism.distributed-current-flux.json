@@ -110,7 +110,9 @@
     "python": {
       "module": "scirel.electromagnetism.distributed",
       "symbol": "get_deltapsi",
-      "signature": "get_deltapsi(data, Req, Zeq)"
+      "signature": "get_deltapsi(data, Req, Zeq)",
+      "canonical_module": "scirel.electromagnetism",
+      "canonical_symbol": "get_deltapsi"
     }
   },
   "version": {

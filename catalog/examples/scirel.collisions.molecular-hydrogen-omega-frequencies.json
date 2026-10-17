@@ -447,7 +447,9 @@
     "python": {
       "module": "scirel.collisions.molecular_hydrogen_omega_frequencies",
       "symbol": "assemble_molecular_hydrogen_omega_frequencies",
-      "signature": "assemble_molecular_hydrogen_omega_frequencies(fH2, nH2, Alpha_H2_P, Alpha_H2_H, SIG_H2_H2, Vr2pidVr, dVx, vr, vx, Vth, vxi, VxH, *, moment_state='central', target_distribution=None, H2_P_EL=True, H2_H_EL=True, H2_H2_EL=True)"
+      "signature": "assemble_molecular_hydrogen_omega_frequencies(fH2, nH2, Alpha_H2_P, Alpha_H2_H, SIG_H2_H2, Vr2pidVr, dVx, vr, vx, Vth, vxi, VxH, *, moment_state='central', target_distribution=None, H2_P_EL=True, H2_H_EL=True, H2_H2_EL=True)",
+      "canonical_module": "scirel.collisions",
+      "canonical_symbol": "assemble_molecular_hydrogen_omega_frequencies"
     }
   },
   "version": {

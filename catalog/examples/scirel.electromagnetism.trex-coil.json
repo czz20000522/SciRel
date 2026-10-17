@@ -144,7 +144,9 @@
     "python": {
       "module": "scirel.configurations",
       "symbol": "TREXCoil",
-      "signature": "TREXCoil(z0=1.1, **kwargs)"
+      "signature": "TREXCoil(z0=1.1, **kwargs)",
+      "canonical_module": "scirel.configurations",
+      "canonical_symbol": "TREXCoil"
     }
   },
   "example": {

@@ -104,7 +104,9 @@
     "python": {
       "module": "scirel.collisions.momentum_scales",
       "symbol": "thermal_electron_momentum",
-      "signature": "thermal_electron_momentum(*, temperature_kev, restmkev)"
+      "signature": "thermal_electron_momentum(*, temperature_kev, restmkev)",
+      "canonical_module": "scirel.collisions",
+      "canonical_symbol": "thermal_electron_momentum"
     }
   },
   "version": {

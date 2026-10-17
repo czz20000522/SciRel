@@ -97,7 +97,9 @@
     "python": {
       "module": "scirel.collisions.molecular_hydrogen_charge_exchange_cross_section",
       "symbol": "evaluate_molecular_hydrogen_charge_exchange_cross_section",
-      "signature": "evaluate_molecular_hydrogen_charge_exchange_cross_section(energy_ev)"
+      "signature": "evaluate_molecular_hydrogen_charge_exchange_cross_section(energy_ev)",
+      "canonical_module": "scirel.collisions",
+      "canonical_symbol": "evaluate_molecular_hydrogen_charge_exchange_cross_section"
     }
   },
   "version": {

@@ -95,7 +95,9 @@
     "python": {
       "module": "scirel.electromagnetism.greens",
       "symbol": "get_gpsi",
-      "signature": "get_gpsi(R, Z)"
+      "signature": "get_gpsi(R, Z)",
+      "canonical_module": "scirel.electromagnetism",
+      "canonical_symbol": "get_gpsi"
     }
   },
   "version": {

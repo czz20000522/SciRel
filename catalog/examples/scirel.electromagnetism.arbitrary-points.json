@@ -138,7 +138,9 @@
     "python": {
       "module": "scirel.electromagnetism.sources",
       "symbol": "ArbitraryPoints",
-      "signature": "ArbitraryPoints(rz_pts, **kwargs)"
+      "signature": "ArbitraryPoints(rz_pts, **kwargs)",
+      "canonical_module": "scirel.electromagnetism",
+      "canonical_symbol": "ArbitraryPoints"
     }
   },
   "example": {

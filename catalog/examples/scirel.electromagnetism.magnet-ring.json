@@ -182,7 +182,9 @@
     "python": {
       "module": "scirel.electromagnetism.sources",
       "symbol": "MagnetRing",
-      "signature": "MagnetRing(r0=1.0, z0=0.0, width=0.01, height=0.01, mu_hat=0.0, **kwargs)"
+      "signature": "MagnetRing(r0=1.0, z0=0.0, width=0.01, height=0.01, mu_hat=0.0, **kwargs)",
+      "canonical_module": "scirel.electromagnetism",
+      "canonical_symbol": "MagnetRing"
     }
   },
   "example": {

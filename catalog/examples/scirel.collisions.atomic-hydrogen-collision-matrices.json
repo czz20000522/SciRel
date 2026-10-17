@@ -226,7 +226,9 @@
     "python": {
       "module": "scirel.collisions.atomic_hydrogen_collision_matrices",
       "symbol": "assemble_atomic_hydrogen_collision_matrices",
-      "signature": "assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu=1.0, *, n_theta=5)"
+      "signature": "assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu=1.0, *, n_theta=5)",
+      "canonical_module": "scirel.collisions",
+      "canonical_symbol": "assemble_atomic_hydrogen_collision_matrices"
     }
   },
   "version": {

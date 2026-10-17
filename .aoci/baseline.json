@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-17T21:21:11Z",
+  "updated_at": "2026-10-17T21:26:36Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -77,9 +77,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "85900b3229efa3e6ec9e222dfbbee8601542995b11c05ce279d08866a0ab6b60",
-      "size": 616300,
-      "normalized_sha256": "85900b3229efa3e6ec9e222dfbbee8601542995b11c05ce279d08866a0ab6b60"
+      "sha256": "7a1dab205973770a5b0be3e3a46531c207f3bbc29bea2d019635d8cac8031891",
+      "size": 616502,
+      "normalized_sha256": "7a1dab205973770a5b0be3e3a46531c207f3bbc29bea2d019635d8cac8031891"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -179,117 +179,117 @@
     },
     "catalog/examples/scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient.json": {
       "role": "index",
-      "sha256": "e333f4d476dd0b50a91826111fd5292125b76b5af997b23b7697cd070fc49769",
-      "size": 7537,
-      "normalized_sha256": "e333f4d476dd0b50a91826111fd5292125b76b5af997b23b7697cd070fc49769"
+      "sha256": "e7cc43c28f4263aa5f45604bff063a21738e08b2069728db38eb388440ab0d7f",
+      "size": 7670,
+      "normalized_sha256": "e7cc43c28f4263aa5f45604bff063a21738e08b2069728db38eb388440ab0d7f"
     },
     "catalog/examples/scirel.collisions.atomic-hydrogen-charge-exchange-cross-section.json": {
       "role": "index",
-      "sha256": "154d44f30b1e0ac4ae70c3c1d27b06a393273de7420dc8af2a1869f73955eb48",
-      "size": 13470,
-      "normalized_sha256": "154d44f30b1e0ac4ae70c3c1d27b06a393273de7420dc8af2a1869f73955eb48"
+      "sha256": "3ad9c5797e9241f4086631b3ab979fecb1e9e89a3191c3e492b788f5bb1eefda",
+      "size": 13601,
+      "normalized_sha256": "3ad9c5797e9241f4086631b3ab979fecb1e9e89a3191c3e492b788f5bb1eefda"
     },
     "catalog/examples/scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient.json": {
       "role": "index",
-      "sha256": "c60a0e9d65c130deed242468fb5e07a8e7ac00092329c70ebcbc338de02140c0",
-      "size": 8352,
-      "normalized_sha256": "c60a0e9d65c130deed242468fb5e07a8e7ac00092329c70ebcbc338de02140c0"
+      "sha256": "c654b0d1eae5998b1910371c1f58f09891f7d0627d6f20ef3a7e5f8c70bb70e6",
+      "size": 8474,
+      "normalized_sha256": "c654b0d1eae5998b1910371c1f58f09891f7d0627d6f20ef3a7e5f8c70bb70e6"
     },
     "catalog/examples/scirel.collisions.atomic-hydrogen-collision-matrices.json": {
       "role": "index",
-      "sha256": "22010fcf64be4534dfae9eeb47bd82091be2935340795506b1318374dcddf734",
-      "size": 12326,
-      "normalized_sha256": "22010fcf64be4534dfae9eeb47bd82091be2935340795506b1318374dcddf734"
+      "sha256": "39060c9fc9099fed77ab3463eb62615e1f3a8603bcdda3c5cd230efd39481ac1",
+      "size": 12446,
+      "normalized_sha256": "39060c9fc9099fed77ab3463eb62615e1f3a8603bcdda3c5cd230efd39481ac1"
     },
     "catalog/examples/scirel.collisions.atomic-hydrogen-elastic-cross-section.json": {
       "role": "index",
-      "sha256": "cdddde75c2ad3aea1a3b2cd4544c34d5712d94dae6d46ab8a2b881e5bb41d3e6",
-      "size": 12346,
-      "normalized_sha256": "cdddde75c2ad3aea1a3b2cd4544c34d5712d94dae6d46ab8a2b881e5bb41d3e6"
+      "sha256": "08059789ad1c52fd5811d63fdbaaf8f3df59b99f3caf1a636eafb253080775e6",
+      "size": 12469,
+      "normalized_sha256": "08059789ad1c52fd5811d63fdbaaf8f3df59b99f3caf1a636eafb253080775e6"
     },
     "catalog/examples/scirel.collisions.atomic-hydrogen-omega-frequencies.json": {
       "role": "index",
-      "sha256": "2da337c7a57a8734d6e1e261d1f1d1d7f10a9be5446f9b712a4f0df04be3b30b",
-      "size": 21471,
-      "normalized_sha256": "2da337c7a57a8734d6e1e261d1f1d1d7f10a9be5446f9b712a4f0df04be3b30b"
+      "sha256": "e57462a84e5798e04abc9804c0c9bec8b82441cf8107af65179c47ed0cdb4601",
+      "size": 21590,
+      "normalized_sha256": "e57462a84e5798e04abc9804c0c9bec8b82441cf8107af65179c47ed0cdb4601"
     },
     "catalog/examples/scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section.json": {
       "role": "index",
-      "sha256": "f2ef8e77d4dd618e474fa6460268f315a5a401601e09ce348a8f2e0207b522be",
-      "size": 10762,
-      "normalized_sha256": "f2ef8e77d4dd618e474fa6460268f315a5a401601e09ce348a8f2e0207b522be"
+      "sha256": "def5399a0b2073c341f95d9038bf9b5cbe771ec786c691307d7b7bb10b2fdd6c",
+      "size": 10881,
+      "normalized_sha256": "def5399a0b2073c341f95d9038bf9b5cbe771ec786c691307d7b7bb10b2fdd6c"
     },
     "catalog/examples/scirel.collisions.janev-electron-impact-ionization-rate.json": {
       "role": "index",
-      "sha256": "4fedf655dc841fc2e09e20d241819f938285c6e0dcddebd9fe4d28f6604e65e0",
-      "size": 8084,
-      "normalized_sha256": "4fedf655dc841fc2e09e20d241819f938285c6e0dcddebd9fe4d28f6604e65e0"
+      "sha256": "5b45fe8f2f13f064385f07362788be02474e4d75181e3f3b31baf031fc8f5548",
+      "size": 8207,
+      "normalized_sha256": "5b45fe8f2f13f064385f07362788be02474e4d75181e3f3b31baf031fc8f5548"
     },
     "catalog/examples/scirel.collisions.maxwellian-relative-speed-rate-average.json": {
       "role": "index",
-      "sha256": "e9df3ef0a67312edd62dc900202b0cb9d2edcb550b86f3639fda0c37a39546a9",
-      "size": 22175,
-      "normalized_sha256": "e9df3ef0a67312edd62dc900202b0cb9d2edcb550b86f3639fda0c37a39546a9"
+      "sha256": "d8288ef3ec1906381e6cbbb3eb034e54a4ee85fb725cd66f8a0f7aaa72fc9492",
+      "size": 22289,
+      "normalized_sha256": "d8288ef3ec1906381e6cbbb3eb034e54a4ee85fb725cd66f8a0f7aaa72fc9492"
     },
     "catalog/examples/scirel.collisions.molecular-hydrogen-charge-exchange-cross-section.json": {
       "role": "index",
-      "sha256": "c9d1c64be2df870e18a8fe90beebcc58e1c621426b57ebf0a3ca9998bcaf5984",
-      "size": 11738,
-      "normalized_sha256": "c9d1c64be2df870e18a8fe90beebcc58e1c621426b57ebf0a3ca9998bcaf5984"
+      "sha256": "c303ba73d15efdc1ea5412401d4d60b526506f6a68887257a7a0178d57154526",
+      "size": 11872,
+      "normalized_sha256": "c303ba73d15efdc1ea5412401d4d60b526506f6a68887257a7a0178d57154526"
     },
     "catalog/examples/scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient.json": {
       "role": "index",
-      "sha256": "9d42c0551bb86185cc5c11235be9d77fdab130d092c5950e9d5f3474d35ac1d4",
-      "size": 8718,
-      "normalized_sha256": "9d42c0551bb86185cc5c11235be9d77fdab130d092c5950e9d5f3474d35ac1d4"
+      "sha256": "33825a10a2eb76901fd4fa3b9ac3b577e374f9bbdb6cac544219d491d3987e59",
+      "size": 8834,
+      "normalized_sha256": "33825a10a2eb76901fd4fa3b9ac3b577e374f9bbdb6cac544219d491d3987e59"
     },
     "catalog/examples/scirel.collisions.molecular-hydrogen-collision-matrices.json": {
       "role": "index",
-      "sha256": "1bce6245db8db7b7807ee22a9cbf933ee127ba62ee07b3a11b06c5c9c07fe4f7",
-      "size": 12373,
-      "normalized_sha256": "1bce6245db8db7b7807ee22a9cbf933ee127ba62ee07b3a11b06c5c9c07fe4f7"
+      "sha256": "a6c5ceb47b063930499df4d90a8d86f2d7e09688aa5ecd90167043c92916ed08",
+      "size": 12496,
+      "normalized_sha256": "a6c5ceb47b063930499df4d90a8d86f2d7e09688aa5ecd90167043c92916ed08"
     },
     "catalog/examples/scirel.collisions.molecular-hydrogen-elastic-cross-section.json": {
       "role": "index",
-      "sha256": "891ccb859045087fef25da375ee7e356e6fec39a496987accfc17b07280323a9",
-      "size": 11512,
-      "normalized_sha256": "891ccb859045087fef25da375ee7e356e6fec39a496987accfc17b07280323a9"
+      "sha256": "b27767beeac83d0436e084e934044da353edc37f84f51c2d10dda1ee226e743b",
+      "size": 11639,
+      "normalized_sha256": "b27767beeac83d0436e084e934044da353edc37f84f51c2d10dda1ee226e743b"
     },
     "catalog/examples/scirel.collisions.molecular-hydrogen-omega-frequencies.json": {
       "role": "index",
-      "sha256": "5479b8855a96e87b3885c684f33ffd53d9862ebe6c19f43b75006ee0288ab07b",
-      "size": 21637,
-      "normalized_sha256": "5479b8855a96e87b3885c684f33ffd53d9862ebe6c19f43b75006ee0288ab07b"
+      "sha256": "d10bc76517b14a40ed82a69f26c3d1f70f207cf0666c3897bf05aa5a30e68637",
+      "size": 21759,
+      "normalized_sha256": "d10bc76517b14a40ed82a69f26c3d1f70f207cf0666c3897bf05aa5a30e68637"
     },
     "catalog/examples/scirel.collisions.normalized-momentum.json": {
       "role": "index",
-      "sha256": "1e6c3f150397a62d3473e32e0bd18a7c63b46a0272c64a867e4a055b8721bd7b",
-      "size": 10927,
-      "normalized_sha256": "1e6c3f150397a62d3473e32e0bd18a7c63b46a0272c64a867e4a055b8721bd7b"
+      "sha256": "65f4d76d73dbf035a8ed7ce4e028dba66105d5cf47991146df47110157c9093e",
+      "size": 11023,
+      "normalized_sha256": "65f4d76d73dbf035a8ed7ce4e028dba66105d5cf47991146df47110157c9093e"
     },
     "catalog/examples/scirel.collisions.proton-atomic-hydrogen-elastic-cross-section.json": {
       "role": "index",
-      "sha256": "e636c8357ececb15266938cfbc5ffd3cfe02f1f42512c859d3db992091eae9e8",
-      "size": 6691,
-      "normalized_sha256": "e636c8357ececb15266938cfbc5ffd3cfe02f1f42512c859d3db992091eae9e8"
+      "sha256": "2ea94597002825ce846b4076b9e11263aab32212363d316129e79bcf37098783",
+      "size": 6814,
+      "normalized_sha256": "2ea94597002825ce846b4076b9e11263aab32212363d316129e79bcf37098783"
     },
     "catalog/examples/scirel.collisions.proton-molecular-hydrogen-elastic-cross-section.json": {
       "role": "index",
-      "sha256": "1d6df266977c013c36ec75e05407b103f1fc2674e27c90937665c901097e10eb",
-      "size": 9644,
-      "normalized_sha256": "1d6df266977c013c36ec75e05407b103f1fc2674e27c90937665c901097e10eb"
+      "sha256": "7a4c3d60699ca6b2fde247553dde7bd94c68855cd4a18a781f7c4a1966fde552",
+      "size": 9768,
+      "normalized_sha256": "7a4c3d60699ca6b2fde247553dde7bd94c68855cd4a18a781f7c4a1966fde552"
     },
     "catalog/examples/scirel.collisions.relativistic-maxwellian-bessel-closure.json": {
       "role": "index",
-      "sha256": "3b49202b5cf5782c53154044fd44928300b9380753933ee2a482dd94a9f54357",
-      "size": 19640,
-      "normalized_sha256": "3b49202b5cf5782c53154044fd44928300b9380753933ee2a482dd94a9f54357"
+      "sha256": "135161a8a8368705620a11aec5d9c8a629e3b9a9bc343fee883ff1d1b8ea43fa",
+      "size": 19747,
+      "normalized_sha256": "135161a8a8368705620a11aec5d9c8a629e3b9a9bc343fee883ff1d1b8ea43fa"
     },
     "catalog/examples/scirel.collisions.thermal-electron-momentum.json": {
       "role": "index",
-      "sha256": "7e311a51489843588be4c64470eeb5acf76b3996db81cd272138d4e0abfc876f",
-      "size": 10463,
-      "normalized_sha256": "7e311a51489843588be4c64470eeb5acf76b3996db81cd272138d4e0abfc876f"
+      "sha256": "375472046b111afb81c1cb948d1f9efe703ca658caaab6c9dbdcebd09256a76f",
+      "size": 10565,
+      "normalized_sha256": "375472046b111afb81c1cb948d1f9efe703ca658caaab6c9dbdcebd09256a76f"
     },
     "catalog/examples/scirel.diagnostics.equilibrium-synthesis-diagnostics.json": {
       "role": "index",
@@ -341,69 +341,69 @@
     },
     "catalog/examples/scirel.electromagnetism.arbitrary-points.json": {
       "role": "index",
-      "sha256": "22be9dd24bb4b74152e1f891ccea7eb97547dcc1d855e7299b104d4243939c9a",
-      "size": 5723,
-      "normalized_sha256": "22be9dd24bb4b74152e1f891ccea7eb97547dcc1d855e7299b104d4243939c9a"
+      "sha256": "cd5fa11505c8b5b11c0847b340610312b13c80313fdc77e52fbf82331f41e1c8",
+      "size": 5821,
+      "normalized_sha256": "cd5fa11505c8b5b11c0847b340610312b13c80313fdc77e52fbf82331f41e1c8"
     },
     "catalog/examples/scirel.electromagnetism.brb.json": {
       "role": "index",
-      "sha256": "01f7f878759c7759ac6ccdad603de15579cf140606f5fb00f30ab5653f13d486",
-      "size": 5376,
-      "normalized_sha256": "01f7f878759c7759ac6ccdad603de15579cf140606f5fb00f30ab5653f13d486"
+      "sha256": "714786b8ab7290ce4e082cc93de87d1f7d528885ada36647c92b7437f0f60a57",
+      "size": 5460,
+      "normalized_sha256": "714786b8ab7290ce4e082cc93de87d1f7d528885ada36647c92b7437f0f60a57"
     },
     "catalog/examples/scirel.electromagnetism.circular-filament-green.json": {
       "role": "index",
-      "sha256": "878d268ee234db80ea9668be9875f49a4d673cb22b2ed9876f49e395e5eed669",
-      "size": 5335,
-      "normalized_sha256": "878d268ee234db80ea9668be9875f49a4d673cb22b2ed9876f49e395e5eed669"
+      "sha256": "a2293396819fb28dac4553c4cf4b845f9fe9e96521525c21b88f4e26800acbf3",
+      "size": 5432,
+      "normalized_sha256": "a2293396819fb28dac4553c4cf4b845f9fe9e96521525c21b88f4e26800acbf3"
     },
     "catalog/examples/scirel.electromagnetism.device.json": {
       "role": "index",
-      "sha256": "e5d9a096b3b07f51c5a146c36a2d94690b36442fa8d5aaec70ce554b5eb38d27",
-      "size": 5362,
-      "normalized_sha256": "e5d9a096b3b07f51c5a146c36a2d94690b36442fa8d5aaec70ce554b5eb38d27"
+      "sha256": "ea221aa7dce113c17ad88ab5708232ba4ee6776d5e4b46671494c9f12be71e56",
+      "size": 5451,
+      "normalized_sha256": "ea221aa7dce113c17ad88ab5708232ba4ee6776d5e4b46671494c9f12be71e56"
     },
     "catalog/examples/scirel.electromagnetism.distributed-current-flux.json": {
       "role": "index",
-      "sha256": "031e85fc2c82b8a016d02c7b9df33e5c75c66da5bff1b03790856db1441d3ba4",
-      "size": 6603,
-      "normalized_sha256": "031e85fc2c82b8a016d02c7b9df33e5c75c66da5bff1b03790856db1441d3ba4"
+      "sha256": "b7ae6c9cd961bbaa0a793f748e0a195ef33247ba216bc8dfd7ee4e21d510a200",
+      "size": 6698,
+      "normalized_sha256": "b7ae6c9cd961bbaa0a793f748e0a195ef33247ba216bc8dfd7ee4e21d510a200"
     },
     "catalog/examples/scirel.electromagnetism.green-response-matrices.json": {
       "role": "index",
-      "sha256": "25882900885bfa043457e0c6637637843998eb8287da8110ff04e4efc6f6cfba",
-      "size": 6290,
-      "normalized_sha256": "25882900885bfa043457e0c6637637843998eb8287da8110ff04e4efc6f6cfba"
+      "sha256": "9fbebead1d324d38aa8621ef47e03f70466b1409269dcc7460170d253160bf2f",
+      "size": 6396,
+      "normalized_sha256": "9fbebead1d324d38aa8621ef47e03f70466b1409269dcc7460170d253160bf2f"
     },
     "catalog/examples/scirel.electromagnetism.loop-flux-matrix.json": {
       "role": "index",
-      "sha256": "e62ea11dd88c7227da27507124086e1f2deab2aa1f8f5bfd6509467b97efcb7f",
-      "size": 5205,
-      "normalized_sha256": "e62ea11dd88c7227da27507124086e1f2deab2aa1f8f5bfd6509467b97efcb7f"
+      "sha256": "6d588103eefcdba4c4cd076f81cae8116a2ba6b992082b9c9f6e35ba77d158c3",
+      "size": 5296,
+      "normalized_sha256": "6d588103eefcdba4c4cd076f81cae8116a2ba6b992082b9c9f6e35ba77d158c3"
     },
     "catalog/examples/scirel.electromagnetism.magnet-ring.json": {
       "role": "index",
-      "sha256": "d0f1e6085e386f54ba5a13cba6f229cc4466005f3d4022e943052275f2875057",
-      "size": 6673,
-      "normalized_sha256": "d0f1e6085e386f54ba5a13cba6f229cc4466005f3d4022e943052275f2875057"
+      "sha256": "4ca10a9a4d150b7ac848fc51370a2dbf6fcb8df0d26f7d0c5fc63593d2f31690",
+      "size": 6766,
+      "normalized_sha256": "4ca10a9a4d150b7ac848fc51370a2dbf6fcb8df0d26f7d0c5fc63593d2f31690"
     },
     "catalog/examples/scirel.electromagnetism.rectangular-coil.json": {
       "role": "index",
-      "sha256": "f5a8a7a955b39f852dc293670b1d3cf7ce6088ed34c8f10b9230e2ba47ee6925",
-      "size": 7139,
-      "normalized_sha256": "f5a8a7a955b39f852dc293670b1d3cf7ce6088ed34c8f10b9230e2ba47ee6925"
+      "sha256": "19a31f0cc7cd1e514c08f0627f2d17fabf6d6c2933f0f74f17e710f6bd03fe2c",
+      "size": 7237,
+      "normalized_sha256": "19a31f0cc7cd1e514c08f0627f2d17fabf6d6c2933f0f74f17e710f6bd03fe2c"
     },
     "catalog/examples/scirel.electromagnetism.trex-coil.json": {
       "role": "index",
-      "sha256": "daed5ad5f8b4b5d6ee3de02e4e634eb08e02fb9ece07cc26217d7b6f77c0754c",
-      "size": 6330,
-      "normalized_sha256": "daed5ad5f8b4b5d6ee3de02e4e634eb08e02fb9ece07cc26217d7b6f77c0754c"
+      "sha256": "f74261f9868dd5e7305e4d58fc09b14bb2cbdc1070f0be62f0a96ea4ac2c9d40",
+      "size": 6419,
+      "normalized_sha256": "f74261f9868dd5e7305e4d58fc09b14bb2cbdc1070f0be62f0a96ea4ac2c9d40"
     },
     "catalog/examples/scirel.electromagnetism.wham.json": {
       "role": "index",
-      "sha256": "df375a086f929c7ea6dd4aacc28a88e51f39b319998d3464dea10a5ecf469f7c",
-      "size": 5170,
-      "normalized_sha256": "df375a086f929c7ea6dd4aacc28a88e51f39b319998d3464dea10a5ecf469f7c"
+      "sha256": "072df9625c8fb7f57721d22e9d66f8c27bb7de58715cabddd7099b398f539a2a",
+      "size": 5255,
+      "normalized_sha256": "072df9625c8fb7f57721d22e9d66f8c27bb7de58715cabddd7099b398f539a2a"
     },
     "catalog/examples/scirel.equilibrium.anisotropic-force-balance.json": {
       "role": "index",
@@ -11171,9 +11171,9 @@
     },
     "tests/test_canonical_binding_census.py": {
       "role": "index",
-      "sha256": "3fca21a8c7bd44c342f1681b948da9dd741d8e32f508298ba81925920c1374ff",
-      "size": 4635,
-      "normalized_sha256": "3fca21a8c7bd44c342f1681b948da9dd741d8e32f508298ba81925920c1374ff"
+      "sha256": "6a6d21c2afb698159425a8a475a02083ce22c885fe59f89107d0d570574c65dc",
+      "size": 5143,
+      "normalized_sha256": "6a6d21c2afb698159425a8a475a02083ce22c885fe59f89107d0d570574c65dc"
     },
     "tests/test_catalog_snapshot_package.py": {
       "role": "index",
@@ -11417,9 +11417,9 @@
     },
     "tests/test_thin_mcp_adapter.py": {
       "role": "index",
-      "sha256": "ea7cbc4a9f270c3bf7744b349a3c2ecb9570995dfc34544e82c22a967ce87c3f",
-      "size": 15375,
-      "normalized_sha256": "ea7cbc4a9f270c3bf7744b349a3c2ecb9570995dfc34544e82c22a967ce87c3f"
+      "sha256": "303b0f06797b1f59cce5d43b5bafc8f9b304c34ccf88b8a023fc4c4133aec079",
+      "size": 15480,
+      "normalized_sha256": "303b0f06797b1f59cce5d43b5bafc8f9b304c34ccf88b8a023fc4c4133aec079"
     },
     "tests/test_user_acceptance.py": {
       "role": "index",

@@ -95,7 +95,9 @@
     "python": {
       "module": "scirel.collisions.atomic_hydrogen_charge_exchange_rate",
       "symbol": "evaluate_atomic_hydrogen_charge_exchange_rate",
-      "signature": "evaluate_atomic_hydrogen_charge_exchange_rate(temperature_ev, energy_ev)"
+      "signature": "evaluate_atomic_hydrogen_charge_exchange_rate(temperature_ev, energy_ev)",
+      "canonical_module": "scirel.collisions",
+      "canonical_symbol": "evaluate_atomic_hydrogen_charge_exchange_rate"
     }
   },
   "version": {

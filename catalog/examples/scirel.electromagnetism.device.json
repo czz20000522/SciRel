@@ -111,7 +111,9 @@
     "python": {
       "module": "scirel.electromagnetism.sources",
       "symbol": "Device",
-      "signature": "Device(mesh=None, **kwargs)"
+      "signature": "Device(mesh=None, **kwargs)",
+      "canonical_module": "scirel.electromagnetism",
+      "canonical_symbol": "Device"
     }
   },
   "example": {

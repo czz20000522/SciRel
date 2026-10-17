@@ -98,7 +98,9 @@
     "python": {
       "module": "scirel.collisions.janev_electron_impact_ionization_rate",
       "symbol": "evaluate_janev_electron_impact_ionization_rate",
-      "signature": "evaluate_janev_electron_impact_ionization_rate(electron_temperature_ev, target_species)"
+      "signature": "evaluate_janev_electron_impact_ionization_rate(electron_temperature_ev, target_species)",
+      "canonical_module": "scirel.collisions",
+      "canonical_symbol": "evaluate_janev_electron_impact_ionization_rate"
     }
   },
   "version": {

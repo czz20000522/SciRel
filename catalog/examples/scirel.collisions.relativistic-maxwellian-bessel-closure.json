@@ -113,7 +113,9 @@
     "python": {
       "module": "scirel.collisions.relativistic_maxwellian_bessel",
       "symbol": "relativistic_maxwellian_bessel",
-      "signature": "relativistic_maxwellian_bessel(x)"
+      "signature": "relativistic_maxwellian_bessel(x)",
+      "canonical_module": "scirel.collisions",
+      "canonical_symbol": "relativistic_maxwellian_bessel"
     }
   },
   "version": {

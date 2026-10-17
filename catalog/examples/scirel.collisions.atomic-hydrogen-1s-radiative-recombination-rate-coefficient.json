@@ -88,7 +88,9 @@
     "python": {
       "module": "scirel.collisions.atomic_hydrogen_1s_radiative_recombination_rate",
       "symbol": "evaluate_atomic_hydrogen_1s_radiative_recombination_rate",
-      "signature": "evaluate_atomic_hydrogen_1s_radiative_recombination_rate(electron_temperature_ev)"
+      "signature": "evaluate_atomic_hydrogen_1s_radiative_recombination_rate(electron_temperature_ev)",
+      "canonical_module": "scirel.collisions",
+      "canonical_symbol": "evaluate_atomic_hydrogen_1s_radiative_recombination_rate"
     }
   },
   "version": {

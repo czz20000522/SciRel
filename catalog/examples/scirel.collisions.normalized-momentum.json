@@ -113,7 +113,9 @@
     "python": {
       "module": "scirel.collisions.momentum_scales",
       "symbol": "normalized_momentum",
-      "signature": "normalized_momentum(*, x, vnorm, clight)"
+      "signature": "normalized_momentum(*, x, vnorm, clight)",
+      "canonical_module": "scirel.collisions",
+      "canonical_symbol": "normalized_momentum"
     }
   },
   "version": {

@@ -173,7 +173,9 @@
     "python": {
       "module": "scirel.collisions.maxwellian_relative_speed_rate_average",
       "symbol": "average_cross_section_over_maxwellian",
-      "signature": "average_cross_section_over_maxwellian(*, particle_energy_ev, particle_mass_amu, target_temperature_ev, target_mass_amu, vx, vr, tnorm_ev, cylindrical_volume, cross_section_m2)"
+      "signature": "average_cross_section_over_maxwellian(*, particle_energy_ev, particle_mass_amu, target_temperature_ev, target_mass_amu, vx, vr, tnorm_ev, cylindrical_volume, cross_section_m2)",
+      "canonical_module": "scirel.collisions",
+      "canonical_symbol": "average_cross_section_over_maxwellian"
     }
   },
   "version": {
