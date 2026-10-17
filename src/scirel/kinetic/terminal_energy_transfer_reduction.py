@@ -99,12 +99,14 @@ def reduce_terminal_molecular_energy_transfer(
 
     mean_velocity = particle_flux / density
     normalized_mean_velocity = mean_velocity / thermal
-    random_velocity_squared = np.zeros_like(distribution)
-    for i in range(radial_velocity.size):
-        for k in range(nx):
-            random_velocity_squared[i, :, k] = radial_velocity[i] ** 2 + (
-                axial_velocity - normalized_mean_velocity[k]
-            ) ** 2
+    # Build the centered random-speed field in one NumPy pass.  The previous
+    # nested Python loops assigned each radial/spatial slice separately even
+    # though the expression is an outer broadcast.  Broadcasting keeps the
+    # same elementwise arithmetic and leaves the per-slice reduction order
+    # below unchanged.
+    random_velocity_squared = radial_velocity[:, None, None] ** 2 + (
+        axial_velocity[None, :, None] - normalized_mean_velocity[None, None, :]
+    ) ** 2
 
     thermal_squared = thermal * thermal
     thermal_energy_transfer = np.zeros(nx, dtype=float)
