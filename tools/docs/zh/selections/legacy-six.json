@@ -4,7 +4,7 @@
   "records": [
     {
       "asset_id": "scirel.field.permanent-ring-filaments",
-      "source_sha256": "adeeb470d21b86cf438f202ed936874082ac249c3d36d64c32c4d6c9bc455f44",
+      "source_sha256": "8c6612b8deed29bb24c84031788499fbcf1cd4de1cfa628299fc2e401e71ee70",
       "summary": "用两组各八根的圆电流丝表示矩形永磁环截面两侧表面，并赋予相反的无量纲权重。",
       "definition": "在 r0−width/2 和 r0+width/2 两个径向面各取八个等间距 Z 点；前八点权重为 −1，后八点为 +1。可按行向量 R–Z 约定绕中心旋转，顺序和权重保持不变。 几何委派给维护中的 MagnetRing 默认十六点实现并复制结果；任意非零角度都旋转，不做微角归零。",
       "model": "以固定 16 根电流丝近似永磁环的相反表面电流。",
@@ -101,7 +101,7 @@
     },
     {
       "asset_id": "scirel.equilibrium.pressure-flux-state",
-      "source_sha256": "8fedccafcb5a6a9dfcdd3457391fb76b99b73d419bdef032397eab6fddd0c859",
+      "source_sha256": "a7e6caa9a10fb52b94ede89e0ae3e1d9f8633cf7ea362c9a0b3126755a167c44",
       "summary": "在严格 Z=0 的一行采样径向压力，将首个零压点之前含该点的递增磁通段拟合为压力样条，返回截断后的压力导数和样条状态。",
       "definition": "只把唯一精确 Z=0 中平面索引按物理半径递增排序，并拒绝重复半径。逐点采样有限非负压力，用至第一个向外零压点的至少四点严格递增磁通前缀拟合；序列化同一前缀、样条节点、系数及三次阶数。在原 C 顺序网格求导，先拒绝非有限系数或导数，再按边界和真实布尔掩码置零。",
       "model": "按物理径向遍历、可精确重建的各向同性压力—磁通三次样条。",
@@ -217,7 +217,7 @@
     },
     {
       "asset_id": "scirel.equilibrium.isotropic-picard-step",
-      "source_sha256": "98f82e22e8067a8860a2feb1597b269cbe1f0981f73c0a717cd76b5979448221",
+      "source_sha256": "76e184315689d3eb2d1245ee62e1fd806e0aed393014d399ea1e3c0750ca36b1",
       "summary": "由压力导数构造松弛后的网格电流，用外供格林矩阵更新磁通，并计算一次 Picard 更新的磁通变化。",
       "definition": "按 C 顺序计算 I_target=R(dP/dpsi)dR dZ、I_new=(1−relax)I_target+relax I_old，再计算 Green 磁通和真空磁通之和。relax=1 明确保留旧电流，不计算未使用的目标。电流、Green 收缩、总磁通及 ||psi_next−psi_state||₂/|psi_edge| 任一非有限均失败，不静默置零；此接口只执行一步。",
       "model": "历史轴对称各向同性压力—磁通 Picard 网格电流更新，采用外供格林响应。",
@@ -345,7 +345,7 @@
     },
     {
       "asset_id": "scirel.equilibrium.isotropic-pressure-flux",
-      "source_sha256": "1e2366bc1d49fcb79d1c06ceed8a19a04ede0ee1980e5f942b95ecdb0eca7fb0",
+      "source_sha256": "95cd7397097834a381726232c8ed16f16f1bde3d6e4d59c6d12a2ae832ffa97c",
       "summary": "通过唯一共享的轴对称压力电流求解器执行有界反馈，同时检查磁通更新和末态电流闭合残差，并序列化最终压力样条。",
       "definition": "委派给已维护的 compute_equilibrium：按物理半径向外构造压力样条，求目标电流、松弛电流及 Green 磁通，重建末态样条；同时检查归一化磁通变化和 ||I_new−I_target(psi_new)||₂/||I_target||₂。零目标且零误差取零，零目标而电流非零失败。只有实际更新后两项有限且不大于 tol 才收敛。适配入口不再维护第二迭代环，并返回精确拟合前缀。",
       "model": "复用共享双残差求解器的轴对称各向同性纯压力离散闭合。",
@@ -525,7 +525,7 @@
     },
     {
       "asset_id": "scirel.closures.tabulated-pressure",
-      "source_sha256": "978582fe18bdebcaf9b7141b5822d5b49d3938a1c160ef030dfa95b2f06066ec",
+      "source_sha256": "6266ee6e0ae5269a689eff243d040706e541ce765e62f7eb9169186c966b4051",
       "summary": "在广播后的磁场、磁通查询点插值平行与垂直压力表；一维磁通表返回各向同性压力，二维 (B,psi) 表分别插值两分量。",
       "definition": "B 与 psi 联合广播。无 b_grid 时用一维线性插值；若给出垂直表，转换为 float64 后必须与平行表逐项完全相等，否则拒绝而不丢弃差异。有 b_grid 时分别双线性插值两个分量。is_isotropic 表示完整分量表是否严格相等；table_dimension 独立记录 1 或 2 维。结果须有限非负；分量表相等不构成热力学证明。",
       "model": "给定各向同性/旋磁压力表的一维线性或二维双线性插值，不推导压力定律或求力平衡。",
@@ -650,7 +650,7 @@
     },
     {
       "asset_id": "scirel.diagnostics.pointwise-firehose-margin",
-      "source_sha256": "939c20f3d3da724bae278e32e4a97ff4f25b500cac9c30ab51948b02c7b8331d",
+      "source_sha256": "4ff427561d346d00dc9860b22aeb09be62a06df7361912a4aef4f9132284ad97",
       "summary": "逐点计算 B²/mu0+p_perp-p_parallel（Pa），不求导、不进入镜模分支，也不生成稳定性标志。",
       "definition": "firehose_margin=B²/mu0+p_perp-p_parallel，各样本独立求值。不排序、不求导、不取全局最小值，也不作汇总判定。单样本或所有 B 相同与其他同形输入同样有效。 与组合诊断共享同一算术内核；独立入口保留单点、重复及无序磁场，不构造任何压力导数。 普通非严重相消数值保留原 float64 运算顺序。异号贡献抵消后，若结果幅度不大于最大项的一半，或中间乘积/商丢失量级，则对完整关系使用精确二进制有理数求值，最后一次舍入到 float64。此算术分支不是物理容差，不把结果钳制为零，也不只特判相等压强；最终确实不可表示时仍失败。",
       "model": "以压强单位表示的局部流体 CGL 序 firehose 判别量。正值只是算术观察；梯度、动力学、有限回旋半径修正及完整稳定性判定不在此关系内。",
@@ -737,7 +737,7 @@
     },
     {
       "asset_id": "scirel.diagnostics.firehose-mirror-margins",
-      "source_sha256": "eb722ceb289e9533cec82c57771e3601a8489195ac4c3362e5a07c67d39c6003",
+      "source_sha256": "09d0a5f01f9eec7c49ade24f24ee7d57ebd04f05cbadc23967d493fcfde6e5bb",
       "summary": "用显式固定磁通导数计算局部旋磁对称压强诊断。",
       "definition": "firehose_margin=B²/mu0+p_perp-p_parallel；mirror_margin=B*d[p_perp+B²/(2*mu0)]/dB|psi=B²/mu0+B*dp_perp_dB。所有样本最小值严格为正时相应局部标志为 True。对守恒量双 Maxwell 分布，镜模条件为 1-beta_perp*(T_perp/T_parallel-1)>0。 普通非严重相消数值保留原 float64 运算顺序。异号贡献抵消后，若结果幅度不大于最大项的一半，或中间乘积/商丢失量级，则对完整关系使用精确二进制有理数求值，最后一次舍入到 float64。此算术分支不是物理容差，不把结果钳制为零，也不只特判相等压强；最终确实不可表示时仍失败。",
       "model": "局部无流旋磁对称张力和长波总压强斜率准则。正导数号由此定义和双 Maxwell 阈值给出，与 Frank2509.17288v4 Eq6 的字面反号冲突；不声称作者确认勘误。",
@@ -908,7 +908,7 @@
     },
     {
       "asset_id": "scirel.equilibrium.compute-equilibrium",
-      "source_sha256": "41f3c2a8b3ee23dede3987c35bc30826d732fce65e75700f1df203923ea57268",
+      "source_sha256": "00a37ade0e0dbae6ee2f5fd03d08f3d6cf1931927d36fb66eb646b2b1c968bec",
       "summary": "根据径向压力样条和给定 Green 矩阵迭代等离子体电流，返回明确终态状态。",
       "definition": "在 ψ=R Aφ 约定下使用仅含压力的轴对称闭合 jφ=R dP/dψ。I目标=R(dP/dψ)|dR dZ|，I新=(1−relax)I目标+relax I旧，ψ新=ψ真空+G I新，并重新拟合给定中平面 P(R)。保留更新残差 ‖ψ新−ψ旧‖₂/|新边界磁通|，另算终态电流闭合残差 ‖I新−I目标(ψ新,新拟合)‖₂/‖I目标‖₂。零目标且零误差记零；零目标而电流非零记无穷并触发非有限终态失败。两残差都≤tol 才收敛。状态仅属于本次调用，按拟合导数、遮罩、松弛电流、Green 收缩、新磁通、边界／拟合及两残差的次序更新，至收敛、状态无效或 maxiter 停止。",
       "model": "来源派生的径向压力反馈，使用 InterpolatedUnivariateSpline 和调用者给定 Green 矩阵。",

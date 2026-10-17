@@ -4,7 +4,7 @@
   "records": [
     {
       "asset_id": "scirel.basis.basis-matrix",
-      "source_sha256": "0d6b9c9a734b65a87c1322893e8ae73941226031d44222a99745f045c7989292",
+      "source_sha256": "992202a590ca88e1e05bda40f39f4d62901c6d6af6d58cc90b292f1023fdf979",
       "summary": "将选定基函数逐列求值，形成设计矩阵。",
       "definition": "在给定自变量上逐一求值所选基函数，结果按基函数次序组成矩阵列。",
       "model": "构造过程委托给明确的来源基函数工厂。",
@@ -67,7 +67,7 @@
     },
     {
       "asset_id": "scirel.basis.build-basis",
-      "source_sha256": "a73b7206e735f091592c8a0669ba931ca44ae53d23c4f1f9f13ea202ec7d7ffe",
+      "source_sha256": "2a78dc80e0619c14ba6f1dcba29a3d572fc069442070bce774f528c533ee6f54",
       "summary": "构造升幂多项式或保留三次样条的求值器列表。",
       "definition": "根据明确选择返回独立的升幂多项式或三次样条基函数求值器。",
       "model": "来源基函数映射选择，默认 poly_deg=3 或 n_knots=5。",
@@ -130,7 +130,7 @@
     },
     {
       "asset_id": "scirel.basis.clamped-cubic-spline",
-      "source_sha256": "c33cef5887779cb338af007c5b9a06540eec373cfc119ee1de65a83909f7593e",
+      "source_sha256": "4aa0c5196dc8dd522db0dc87379a44950b139fa512f8c56194abe1fdd5fc8bcb",
       "summary": "以专门边界斜率线性系统构造分段三次 Hermite 插值。",
       "definition": "通过满足端点条件的斜率线性系统建立分段三次 Hermite 插值。",
       "model": "二阶连续的三次样条；双端和左端钳制类使用修正后的非等距节点连续性方程。",
@@ -203,7 +203,7 @@
     },
     {
       "asset_id": "scirel.basis.first-clamped-cubic-spline",
-      "source_sha256": "6383e1dfad59798a629d2b37b179a01fbf4f00b0e711abb3cd2a5ae8a90ec4f7",
+      "source_sha256": "302d012533a08567b661be0abc2675d800f89a21093543244ac7d799bda54457",
       "summary": "以专门边界斜率线性系统构造分段三次 Hermite 插值。",
       "definition": "通过满足端点条件的斜率线性系统建立分段三次 Hermite 插值。",
       "model": "二阶连续的三次样条；双端和左端钳制类使用修正后的非等距节点连续性方程。",
@@ -286,7 +286,7 @@
     },
     {
       "asset_id": "scirel.basis.natural-cubic-spline",
-      "source_sha256": "3eabc4d9c70d313fda11bb419fb8a8ad0e6a78ab730e2608b3d47b8d00ed3889",
+      "source_sha256": "e3fcb7722c4152a3301f832d63fd4452be7bcf82fde99873dda0d7532904db73",
       "summary": "以专门边界斜率线性系统构造分段三次 Hermite 插值。",
       "definition": "通过满足端点条件的斜率线性系统建立分段三次 Hermite 插值。",
       "model": "二阶连续的三次样条；双端和左端钳制类使用修正后的非等距节点连续性方程。",
@@ -353,7 +353,7 @@
     },
     {
       "asset_id": "scirel.basis.second-clamped-cubic-spline",
-      "source_sha256": "e5793bbcf98fae0775be79142c9e64516ca9aecac195d626b0076b845882345e",
+      "source_sha256": "ab15025ce1a21a94700d0c2dc216e60a81d83f72073895a420a8805de29daa77",
       "summary": "以专门边界斜率线性系统构造分段三次 Hermite 插值。",
       "definition": "通过满足端点条件的斜率线性系统建立分段三次 Hermite 插值。",
       "model": "二阶连续的三次样条；双端和左端钳制类使用修正后的非等距节点连续性方程。",
@@ -432,7 +432,7 @@
     },
     {
       "asset_id": "scirel.fieldline.arclength-derivative",
-      "source_sha256": "11d5d432d75a8aaf18d56c0f61afab485139ce5586878346f82b3ed2dafcc38d",
+      "source_sha256": "309cfdc3ca7e994a8c69d922e4f5465a6565710488bdbe3ac57b4fda977dd09d",
       "summary": "以相邻顶点累计距离为自变量，对采样值求导。",
       "definition": "沿顶点给定次序累计相邻点距离，再对标量采样值求一阶导数。",
       "model": "三点非等距二次差分，端点使用单侧公式。",
@@ -499,7 +499,7 @@
     },
     {
       "asset_id": "scirel.fieldline.boundary",
-      "source_sha256": "12238cd2dde0862e151f8e224e744ece43cd339d41ee5a716339ce65996c0984",
+      "source_sha256": "b8d1fbecdb9131c5e50bf45f2d1a7ef5c415d60e769a2aa3f8d60fc1fe6d2a51",
       "summary": "对平面边界顶点拟合参数样条。",
       "definition": "将有序平面边界顶点拟合为可插值的参数曲线。",
       "model": "来源三次 splprep，s=0、npts=200。",
@@ -556,7 +556,7 @@
     },
     {
       "asset_id": "scirel.fieldline.contour-points",
-      "source_sha256": "7a86b15a6f661ca362163f3a6699ed4a768d18704e3b44fed7df8adf0631d317",
+      "source_sha256": "a1ebb5e1461975043e0f52c5099a53dafd15b7c328acadb26c38689d35a6b506",
       "summary": "从等值线分段构造按级别分组的 FieldLine 列表。",
       "definition": "逐个等值线级别将分段顶点构造成 FieldLine，组成列表。",
       "model": "来源集合映射，不另行重建磁场。",
@@ -623,7 +623,7 @@
     },
     {
       "asset_id": "scirel.fieldline.fieldline",
-      "source_sha256": "ecd9fd1f42ace35c26c33f427301a6bed28462bf4e289e4980fa459a6138e628",
+      "source_sha256": "7c8765cc526094b6780e769ae370bd236cfc14e1298f788b73d008491ac0856b",
       "summary": "参数化轮廓几何、可选物理分量插值，以及采用共同局部几何度量的切向定向场曲率。",
       "definition": "真实光滑磁场线 p(t) 上，κ=sign(p′·b̂)b̂′/|p′|。先采样物理 BR、BZ 再归一化，几何与单位场方向使用相同局部多项式导数权重，消除折线度量偏差；公开 d_ds 仍单独使用实际折线弧长的三点公式。",
       "model": "主入口在不完整／散点采样时筛除非有限 Q，构造接受 u、s=0、k=2、npts=1000。有限完整实数矩形数据每轴至少四点时，默认 cubic 使用插值三次张量样条、显式支持域及精确节点值；下降轴与数据同步反转。其他 cubic 支持使用 tol=1e-12 的 Clough–Tocher；linear／nearest 仍使用对应 griddata。场曲率最多五点局部四次，三／四点用可用二／三次公式，以 hypot 计算场模。开放路径保留给定顺序。",
@@ -707,7 +707,7 @@
     },
     {
       "asset_id": "scirel.fieldline.fieldline-set",
-      "source_sha256": "970aa9435756488243bae14b24e82ce3ec8271bd331aaf71c35a09daca012ca9",
+      "source_sha256": "aeed71196a582851e3122e83d6b8e6f9f5f51000cb614b6abd3fc1f8d895be11",
       "summary": "从等值线分段构造按级别分组的 FieldLine 列表。",
       "definition": "逐个等值线级别将分段顶点构造成 FieldLine，存入集合。",
       "model": "来源集合映射，不另行重建磁场。",
@@ -774,7 +774,7 @@
     },
     {
       "asset_id": "scirel.fieldline.helper-contour-points",
-      "source_sha256": "52443b32f1f6f62c236672e2fbb8f9d35b802ec68abc3d23ba30caac38300417",
+      "source_sha256": "b4ff54e2975be6c7f75b16357bc182fd0c52d4abe509f38f205ffe2a0814ea2d",
       "summary": "从等值线分段构造按级别分组的 HelperFieldLine 列表。",
       "definition": "逐个等值线级别将分段顶点构造成 HelperFieldLine，组成列表。",
       "model": "来源集合映射，不另行重建磁场。",
@@ -841,7 +841,7 @@
     },
     {
       "asset_id": "scirel.fieldline.helper-fieldline",
-      "source_sha256": "75feed4e9783bd540be2193836d357c442a3630dbad43679d262e7b657a070c5",
+      "source_sha256": "afe5507c5125e8bb366a682837a330fd14b22dd17dc0cdfea987cd224fec8d10",
       "summary": "参数化轮廓几何、可选物理分量插值，以及采用共同局部几何度量的切向定向场曲率。",
       "definition": "真实光滑磁场线 p(t) 上，κ=sign(p′·b̂)b̂′/|p′|。先采样物理 BR、BZ 再归一化，几何与单位场方向使用相同局部多项式导数权重，消除折线度量偏差；公开 d_ds 仍单独使用实际折线弧长的三点公式。",
       "model": "辅助入口保留不筛除非有限 Q 和固定构造采样的区别；显式 method 由采样、梯度及场曲率遵从。有限完整实数矩形数据每轴至少四点时，默认 cubic 使用插值三次张量样条、显式支持域及精确节点值；下降轴与数据同步反转。其他 cubic 支持使用 tol=1e-12 的 Clough–Tocher；linear／nearest 仍使用对应 griddata。场曲率最多五点局部四次，三／四点用可用二／三次公式，以 hypot 计算场模。开放路径保留给定顺序。",
@@ -924,7 +924,7 @@
     },
     {
       "asset_id": "scirel.geometry.rotate",
-      "source_sha256": "7da5ea81d1e0b059c7e3e978f4eb7fcf925d8cfc7b52c2eb7cb5d6df745e6a44",
+      "source_sha256": "42cc353a58877b8ab61398a61dd6ad6ea2fcfeb5e477fbe17517b2112f45f09d",
       "summary": "在柱坐标 R、Z 平面旋转行向量。",
       "definition": "采用顺时针为正的行向量旋转，角度单位为度。",
       "model": "二维 R、Z 平面。",
@@ -1067,7 +1067,7 @@
           "周期端点、含噪数据推断及极端条件数尚无资格。"
         ]
       },
-      "source_sha256": "3661ea052eaf9a95c94ac8a7ec612cfda799c8c1744e05571cf8e03e06b71d45"
+      "source_sha256": "32555207c29d1ce16b2a9ae4f69ece1df7522ff0247aea6a20ccb2bf1a8d71e6"
     },
     {
       "asset_id": "scirel.plotting.mirror-patches",
@@ -1138,7 +1138,7 @@
           "Artist 所有权及任意自定义 Patch 子类尚无资格。"
         ]
       },
-      "source_sha256": "1920b9d2ff8d5b5314298cf01ab5f185e77596e83bf95b1d0c197a6b56106d63"
+      "source_sha256": "c1832b7ba66acd80cd1dd414c5d54f6cde8ee2b1c29edff508cab56ea77e147b"
     },
     {
       "asset_id": "scirel.plotting.scale-patches",
@@ -1203,7 +1203,7 @@
           "Artist 所有权及任意自定义 Patch 子类尚无资格。"
         ]
       },
-      "source_sha256": "e37e5e905b1e0aa2e3887be517f77bcd0e6ae3bf19d22c364150ea7f67599f81"
+      "source_sha256": "6135ec4eba0d349e6288e86767fc2edd0513932e02d37a2cc1c671b61191b504"
     },
     {
       "asset_id": "scirel.plotting.transpose-patches",
@@ -1262,7 +1262,7 @@
           "Artist 所有权及任意自定义 Patch 子类尚无资格。"
         ]
       },
-      "source_sha256": "29c1e5e1e74e0daece5af5828e586f89bfb41eff8015be8747ac279d02c11f54"
+      "source_sha256": "45850c055aeb4e5fb12842444c6c92b8b1d7a1a44543d3e721a54032aded95b7"
     },
     {
       "asset_id": "scirel.sampling.meridional-polar-forward",
@@ -1342,7 +1342,7 @@
           "长度和矢量单位仍由调用者提供。"
         ]
       },
-      "source_sha256": "44f6ae7a6521d4deaf6950ed0edb1c655101899aeac48d2a8dba7bfee59795fe"
+      "source_sha256": "8840f0840882d760e0ff36133ac82a2cb9ef641d795fefd8e5093ac960f7deeb"
     },
     {
       "asset_id": "scirel.sampling.meridional-polar-inverse",
@@ -1422,7 +1422,7 @@
           "长度和矢量单位仍由调用者提供。"
         ]
       },
-      "source_sha256": "5c6ba6530d635453cd2e866b469b9effd69cfbede3f032f5baa5bb6f02275156"
+      "source_sha256": "b104292db034d759a07f2e58aaf12bd378623142970a389d8c125107c2beabfe"
     },
     {
       "asset_id": "scirel.sampling.nonuniform-first-derivative",
@@ -1487,7 +1487,7 @@
           "周期端点、含噪数据推断及极端条件数尚无资格。"
         ]
       },
-      "source_sha256": "c1f42514b4cac16263eb26bb394b85e53c38b6e6f722b80354fca42973629018"
+      "source_sha256": "2ab2f78209ae5e55d0947da4d9f215a723211d400a4c5cf40f37412854010460"
     },
     {
       "asset_id": "scirel.sampling.parse-segment",
@@ -1562,7 +1562,7 @@
           "开放曲线闭合、重复端点及拓扑策略未作一般化。"
         ]
       },
-      "source_sha256": "c3663f507ee82661ee2cf7357500a1e6ef0456c96291f0b9c83682b2542473e6"
+      "source_sha256": "a7e4fd84d81639105ecb853fcfd64bdf2cd904ca98ff568b2b6c32f2441af335"
     },
     {
       "asset_id": "scirel.sampling.path-distance",
@@ -1619,7 +1619,7 @@
           "不提供真实光滑曲线弧长或隐含闭合。"
         ]
       },
-      "source_sha256": "48de08d87bbae0588f058e68f722baf74e4c4e86b7eea39fcbbc4e7005753032"
+      "source_sha256": "d1d8d7be442b78098773d5d8ea5e660b462d820f7a2711ebd8c6b08050295cb9"
     },
     {
       "asset_id": "scirel.sampling.point-nearest",
@@ -1698,7 +1698,7 @@
           "支持范围外及非有限场案例尚无资格。"
         ]
       },
-      "source_sha256": "0ec5b868412a7e347622c74849981bc1793b4ebd9de45375593123188c5a9422"
+      "source_sha256": "6cbadb2ac75f74a978547bb4f4943773dd8d66062ffd1269479706445a5ceec5"
     },
     {
       "asset_id": "scirel.sampling.polynomial-fit",
@@ -1777,7 +1777,7 @@
           "不保证不确定度/置信度或病态条件下的表现。"
         ]
       },
-      "source_sha256": "f818b2ee0441d1412e7b3c72f1c2001f4cfe2ab47857a13fa2c27bcb9cefc8f0"
+      "source_sha256": "f3eee1a5c95f0dec2d0b6773e3ce7574bae5fe008337c1e43361eca1b550f760"
     },
     {
       "asset_id": "scirel.sampling.rectangular-nearest",
@@ -1856,7 +1856,7 @@
           "支持范围外及非有限场案例尚无资格。"
         ]
       },
-      "source_sha256": "f8cc8a277533f396e927e7fd095df141ec3622585181a21ded724bdc303c1db7"
+      "source_sha256": "54d8b03b1b946874ca03f56891c371b130c9610c85557397cb40a3ee2337713b"
     },
     {
       "asset_id": "scirel.sampling.rectangular-spline",
@@ -1933,7 +1933,7 @@
           "网格外样条外推及任意非线性插值误差尚无资格。"
         ]
       },
-      "source_sha256": "2ce501bbd840908a65733ee052aa6d579811a58dd87248c4fa3f2af2dcb1844d"
+      "source_sha256": "879264bb979fa9562538c9a676d3e4c7608eb0f63c4858151769852970506354"
     },
     {
       "asset_id": "scirel.sampling.regular-grid",
@@ -2004,7 +2004,7 @@
           "不合成凸包外的值，也不宣称非线性插值精度。"
         ]
       },
-      "source_sha256": "76c53f983639366acea8d9cfa176d0640350fd2b61db19e525b17e36b141c2f3"
+      "source_sha256": "0c3ba8bcea1490123aa376bf12fce298090b0447df79ca8e6e3a45681bfa1b3d"
     },
     {
       "asset_id": "scirel.sampling.scalar-reflection",
@@ -2075,7 +2075,7 @@
           "不提供矢量分量奇偶性或有符号半径的物理场解释。"
         ]
       },
-      "source_sha256": "c8c0d25037f5cc31eb7db25cb9f44b97e3f314725a13f820378acd08611907a5"
+      "source_sha256": "5ccabf36a13d0ebf50a9808b08a001b9352298e8f5b2b8b950af74a0e8a574ab"
     },
     {
       "asset_id": "scirel.sampling.scattered-linear",
@@ -2154,7 +2154,7 @@
           "支持范围外及非有限场案例尚无资格。"
         ]
       },
-      "source_sha256": "dac7bfc4e55ee0acdb550b27f90b196b2e96d75b3a1ff06fbb44193f68979b91"
+      "source_sha256": "12c607ef82e4f36d8055125446b064cdfa0aefbfa8c2667f5d4e33e3f1b57b89"
     },
     {
       "asset_id": "scirel.sampling.select-fieldline",
@@ -2243,7 +2243,7 @@
           "不确立唯一物理磁通面，也不连接分离的线段。"
         ]
       },
-      "source_sha256": "92be2ae517c5f24dba71dd90f65c20fe3e5aca11046b29dfe599bdf8b6b53e6c"
+      "source_sha256": "48be621ba0f6223e04877d90ab3b7286f63511bbdfd59d957319fe77d8ee7c5f"
     },
     {
       "asset_id": "scirel.sampling.weighted-line-integral",
@@ -2330,7 +2330,7 @@
           "B 为零/非有限或查询位于支持范围外，不在声明范围内。"
         ]
       },
-      "source_sha256": "c05e57fd5707653ca6c6368e482bd72323186307b924df85d686840fa638578a"
+      "source_sha256": "f2d56049b3e7ccc7074a6e2021eb6fbc6a498ee91e9fb7685f9e59801e4996d7"
     }
   ]
 }

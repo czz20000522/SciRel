@@ -4,7 +4,7 @@
   "records": [
     {
       "asset_id": "scirel.kinetic.pdrk-dispersion-workflow",
-      "source_sha256": "e0cec43d4118caccb8c87d017a2f0f5586a0d42a07c7627d5cf0e7342edfd123",
+      "source_sha256": "6bd87fcc1ffdb2083d6456cf9754694869ac2633a19d08b606166226322f7dfb",
       "summary": "先初始化物种，再按规定顺序完成有限谱扫描。",
       "definition": "先初始化物种，再按规定顺序完成有限谱扫描。inputs 映射为 deck=None,scenario=\"default\",controls=None,par=None；沿用算子的单位与默认值。科学任务图节点复用已声明的原生数值关系；融合的原生实现可在同一进程中执行这些关系。受控连接代码只负责调度、传递状态和选取结果。公共 Python 包装器接收一个 inputs 映射；每个列出的科学端口都是该映射的一项，其必填性与默认值来自实际底层可调用对象。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -114,7 +114,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-electromagnetic-eigenmatrix",
-      "source_sha256": "c00e2c4fe89defa82ff26320c0db901d62f26ca61052444ec5527040a6c0f366",
+      "source_sha256": "54c2af3680d994f9c4e2ee4849733e73e4032ade9b5bae6874b2651466cc931d",
       "summary": "组装有限谐波电磁频率矩阵，包含满足因果性的有符号 kz 映射和精确的垂直速度矩。",
       "definition": "M 作用于按三分量电流分组的辅助变量，其后为 Ex,Ey,Ez,Bx,By,Bz，满足 M V=omega V。NN=3[S(2N+1)J+1]+6。kz<0 时，以 abs(kz) 和反射后的漂移组装，再变换极向量的 z 电流／Ez 与轴向量的 Bx/By。kz=0 时使用速度积分留数 C0 和 Cp，保留辅助变量维数。均匀 kx=kz=0 的物理张量需要独立于所选扫描截断的回旋 n=+/-1 矩；这是另行检查的解析极限。近似介电张量为 K=I-sum_s(omega_ps^2/omega^2)I+sum_s,b,n(omega_ps^2/omega^2)r_bs <[-2(n Omega_s/vtp_bs^2+kz(vz-vd_s)/vtz_s^2)/(omega-kz vz-n Omega_s)] Pi_n>，其中 n=-N..N，速度测度为归一化高斯测度。Pi_n 的各行为 (a^2,i a b,a c),(-i a b,b^2,-i b c),(a c,i b c,c^2)，其中 a=n Omega_s J_n(kx vperp/Omega_s)/kx,b=vperp J_nprime,c=vz J_n。解析轴极限替代奇异表达式。平行速度积分以已声明的 J 极点 Z 近似表示；响应资格限于 Im(omega)>0。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -193,7 +193,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-electrostatic-eigenmatrix",
-      "source_sha256": "6c762223f973b7e027dc018ddcdae67b6863bce0a167d773609c4e9f2329bf68",
+      "source_sha256": "3df57569dac7c0dda6427e804de76a6f1e883c14837811960ad518f55c812fe9",
       "summary": "组装有限谐波静电频率矩阵，包括精确的平行静电约化和满足因果性的负 kz 分支。",
       "definition": "有限有理静电响应写为 M V=omega V；NN=S(2N+1)J+1。平行 kx=0 分支约化为 ES1D。负 kz 通过反射平行漂移保持上半平面因果性。排除真正的 kx=kz=0 情形。有限谐波标量响应为 epsilon=1-sum_s,b,n(kDs^2/k^2)r_bs Gamma_n <[kz(vz-vd_s)+lambda_bs*n*Omega_s]/[omega-kz*vz-n*Omega_s]>，lambda_bs=vtz_s^2/vtp_bs^2，Gamma_n=<J_n(kx*vperp/Omega_s)^2> 是对垂直高斯分布的平均。平行高斯积分使用已声明的有理 Z 表。保留原生 kx=0 时对 Bessel 变量的防护，并与精确 n=0 平行静电响应独立核对；不声称存在任意空间 k=0 静电极限。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -272,7 +272,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-faddeeva-finite-order",
-      "source_sha256": "65d892efb486e55d8ed496c352385d29a077f8d9e5c81580a2e7c205c4989b47",
+      "source_sha256": "02559849b94d0239e4ef8eaa2b39ddfbd6c763e5d533a3a27db1ea8ea3ec41e7",
       "summary": "将带来源归属的有限 N Weideman 近似作为显式数值变体提供；默认科学关系仍采用持续维护的标准等离子体色散 API。",
       "definition": "利用来源有限 N 的 FFT／有理构造、下半平面反射及修正后的虚轴 erfcx 求值，近似 w(z)=exp(-z^2)erfc(-i*z)。",
       "model": "显式的有限阶特殊函数近似。",
@@ -345,7 +345,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-fluid-deck",
-      "source_sha256": "240804028752fb157eb09eec49c7cb1f0bf1a5fadc72177c9d3b59710f1b47df",
+      "source_sha256": "e849619e4832b911e729fc84925560d009123475728ff2f539407df3a33800ba",
       "summary": "返回随包 PDRF 十列、双物种物理输入表的独立副本。",
       "definition": "读取双物种十列 pdrf_SI 字面数据表，不改变其中的物理数值。",
       "model": "带来源归属的固定电子／质子流体输入数据。",
@@ -394,7 +394,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-fluid-equilibrium",
-      "source_sha256": "da86f7f88b26c092c6942ce924319bd2a4f67e6986b75f6d99500cd30dc47741",
+      "source_sha256": "814da098e71a58ee81def3e4727f24c851c2354d0f35fdcda4c700caf1b8aeac",
       "summary": "用显式压力坐标框架和守恒的成对动量交换初始化物理流体状态。零磁场下未定义的 beta 用 None 表示。",
       "definition": "rho_j=m_j n_j；P_parallel/perpendicular=rho_j cs_parallel/perpendicular^2/gamma_j；随磁场转动时 P=P_perp I+(P_parallel-P_perp)bb。L_ji=K_ji/rho_j；L_jj=-sum_i K_ji/rho_j-bath_j。",
       "model": "多物种非相对论平衡，可选守恒的成对动量交换与外部静止背景阻力。",
@@ -488,7 +488,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-fluid-frequency-pencil",
-      "source_sha256": "76b11a35351e0bf0ee2269cd843d9dfdcae6c12f762c6967c0a8a1118aaae383",
+      "source_sha256": "6ca9637c12f4f13ff129d2f6c904810b7f5281102a7a18c58aa6869f35f0257b",
       "summary": "组装修正后的 Maxwell–流体广义矩阵铅笔，保留物理 SI 坐标与有符号复空间波矢。",
       "definition": "M X=lambda A X；omega=i lambda。连续性方程、Lorentz 力、旋转对称压力、已声明的速度碰撞及 Maxwell 方程均在原始 SI 状态坐标中组装。",
       "model": "线性多物种暖流体电磁模型，可选相对论惯性。",
@@ -569,7 +569,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-fluid-frequency-solve",
-      "source_sha256": "50b2dc52a1c9b768c4346a1d5d4362b5598ed1d9924034df62d317da4e16db5f",
+      "source_sha256": "f6f56164c89926ee29b9f458db7ad81244d5b244dac576eb49b46ef8bcc3ac0f",
       "summary": "在物理坐标中计算完整流体谱，逐分量检查矩阵铅笔残差，并显式提供缺陷零本征值元数据；数值调理不改变科学矩阵铅笔。",
       "definition": "在缩放坐标中按支撑结构分解并求解 QZ；通过对已存储二进制系数作精确有理数矩阵幂秩计算，证明零本征值重数；必要时细化非零本征对，并针对组装的原始 M,A 检查每个本征对。",
       "model": "线性多物种暖流体电磁模型，可选相对论惯性。",
@@ -662,7 +662,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-fluid-plot",
-      "source_sha256": "6e062cec502e5f6c224342edecba8fcb14b472a425a0591dc0cb297f52f7a237",
+      "source_sha256": "d5593b9ea1a60e2ba00807f3313e1ca32d67ff7e5debcbe9129e08e94a7fdfa5",
       "summary": "使用显式 SI 或方法 2 归一化显示所声明的流体扫描轴，不使用动理学全局变量，也不编造零磁场 beta。",
       "definition": "方法 2 绘制 k*length_scale 和 omega/frequency_scale；省略尺度时保留 SI。方法 3 使用以弧度表示的 theta；方法 4 将标准 (kx,kz,root) 状态转置为来源曲面方向。",
       "model": "完整局部流体频谱的可视化。",
@@ -756,7 +756,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-fluid-relative-rate-equilibrium",
-      "source_sha256": "65333fae0ee8026c9efc1706acfa7adfd9d2602eefe1af01106113538efe1830",
+      "source_sha256": "ad29fe2d0b88db61076486b9c8becffad14ecedcb635b0c401ddb993ae2fd5d7",
       "summary": "将五个显式定义的标量速率和声明的电子／离子类别转换为守恒动量交换平衡。这是新的端口解释，不声称与含义不明的上游 nu 控制量等价。",
       "definition": "对每个无序物种对，K_ij=nu_relative*rho_i*rho_j/(rho_i+rho_j)。按类别定义的外部背景速率形成独立的对角阻力。两体相对速度以声明的 nu_relative 衰减。",
       "model": "多物种非相对论平衡，可选守恒的成对动量交换与外部静止背景阻力。",
@@ -872,7 +872,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-fluid-scan",
-      "source_sha256": "18b891ed9c2bacc2a37f1304aad0785bfd935baf8da97c70d172841f0519362f",
+      "source_sha256": "78dbad04441481ae6837a69ad99d47b3ec28acf3264ba70dfce676987c625245",
       "summary": "运行四个字面定义的流体扫描族，采用独立逐点求解、显式状态和标准轴序。默认方法 2 含 101 个物理点；方法 4 含 3750 个点。",
       "definition": "构造各方法字面规定的物理网格，在适用处映射 kx=k*sin(theta),kz=k*cos(theta)，独立求解每个点，并按标准轴序汇总经过认证的频谱。",
       "model": "线性多物种暖流体电磁模型，可选相对论惯性。",
@@ -958,7 +958,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-frequency-eigensolve",
-      "source_sha256": "82d1409a6928b6b24d5e51ae4267ca77fc73affb442a3503d9195bafd77c2f8a",
+      "source_sha256": "840a4d0b5c78ac54b2234771369855ec520cc26f617a8b36a853873fd6417627",
       "summary": "用稠密 eig 或目标附近的稀疏 eigs 求解单点矩阵，返回按增长率排序的有量纲频率。",
       "definition": "稠密 sp=0 使用 eig(full(M))；稀疏 sp=1 求取 wg 附近的 nw 个值。d=omega 为未排序的计算谱，w=omega[ind] 按虚部降序，wi 是相应增长率，wg=w[0]。d0_serialized 用 17 位十进制数字记录 binary64 值，不增加精度。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -1049,7 +1049,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-loss-cone-partition",
-      "source_sha256": "8ceb5318edc43aabff92f12b0a0863ef8ffcddec735d82e1ee7b84449e70b555",
+      "source_sha256": "466cba6e2d08a5e17a1abd13547bada9cb99aed4ae36938ae7b3d6e934b44138",
       "summary": "计算显式双分支权重，并保留 alpha=1 时单独定义的 Maxwell 分布约定。",
       "definition": "alpha!=1 时：ra=(1-alpha*Delta)/(1-alpha),rb=alpha*(Delta-1)/(1-alpha),ra+rb=1。alpha==1 时，无论 Delta 如何均返回 (1,0)。平衡组装中，第二分支的垂直热速度平方是第一分支的 alpha 倍。",
       "model": "用于磁化动理学响应的显式有理近似或双高斯表示。",
@@ -1116,7 +1116,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-magnetized-mode-fields",
-      "source_sha256": "bf8174c8c1302697d4e6275c9b39cda8dfdd90149cefac51e6a3efc4bf4b0ca1",
+      "source_sha256": "66dba5f1aca8f9afdc0e167ef75975dcec06cb7366beb1c6913b358294250fdb",
       "summary": "计算一个目标附近的电磁本征对，采用共同的单位 Hermitian 电场归一化，并给出物理场状态诊断。",
       "definition": "在已存储内核目标 (frequency_guess/wcs1)*wcs1+1e-8i rad/s 处请求 M 的一个稀疏电磁本征对。提取最后 6 个分量；使 E 的 Hermitian 范数为 1，对 B 应用相同尺度／相位，并使表示出的最大 E 分量为非负实数（精确并列时取首项）。UE=epsilon0|E|^2/2，UB=|B|^2/(2mu0)。d=diag(D) 归属于新计算的频率。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -1209,7 +1209,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-parallel-em-continuation",
-      "source_sha256": "2669a770337523f15c9d063e52a9387242ed6479ae302956503e9f4f6ec1c1cd",
+      "source_sha256": "ef90031fdfb2bc351556649e450f8ddbcd484d96ea0b8c91a9f17d3864e021ca",
       "summary": "通过显式网格延续一个满足因果性的动理学根，以已接受种子反馈并记录诊断失败。失败的根或虚假成功的根不会向后传播。",
       "definition": "在每个 k 处，用 scipy.optimize.root(method=hybr) 求解 f/scale 的两个实分量。只有 solver.success、输出有限且满足声明的残差界时才接受。仅已接受的根会成为下一次初猜。",
       "model": "任意物种数的漂移各向同性 Maxwell 分布平行电磁响应。",
@@ -1301,7 +1301,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-parallel-em-plot",
-      "source_sha256": "f44f253cbb5579acc204048d268ef5a97ff21af9dc19a46f4fc71ed8a53157d6",
+      "source_sha256": "f6a1babf024a089eacfff6203623e70e8bc4ce8edfc0c56667dcf5e90db71611",
       "summary": "将已接受的延续曲线追加到显式原生前驱图中，保留来源线型和图例行为。",
       "definition": "将 k*cwp 和 Re/Im(omega)/wcs1 绘制到显式前驱图上；pm=-1 保留来源的六标签图例组合。",
       "model": "显示已接受的平行动理学延续；不进行色散求解。",
@@ -1384,7 +1384,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-parallel-em-residual",
-      "source_sha256": "0b8b640c7b72040109197c9ba79693f9b4cbd6984c06b214c99d0daa435166e4",
+      "source_sha256": "2f0c809c188f39094c5bafcd413af5b96329b42f70f2c3fc351516b891936f09",
       "summary": "对任意物种和任一固定圆极化符号，求满足因果性的有符号波矢平行电磁残差。",
       "definition": "f=omega^2-c2*k^2+sum_s wps2_s*(omega-k*vds_s)/(|k|*vtzs_s)*Z((omega-k*vds_s+pm*wcs_s)/(|k|*vtzs_s))。Z=i*sqrt(pi)*w；scale=max(|omega^2|+|c2*k^2|+sum|species terms|,tiny)。",
       "model": "任意物种数的漂移各向同性 Maxwell 分布平行电磁响应。",
@@ -1470,7 +1470,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-polarization-workflow",
-      "source_sha256": "cf5c3e23f9cef05b46791cb109675e4e46f916b3c0eb54dd938b6b565d4480d6",
+      "source_sha256": "1f7f433857e4124b682765a4f4f64dc8f58b419f95279c2c30e9fbbf04533173",
       "summary": "有界选定模态本征对、Hermitian E 规范和科学场状态。",
       "definition": "有界选定模态本征对、Hermitian E 规范和科学场状态。inputs 映射中 state 必填，rng_seed=None。state 必须包含选定的 wws,npl 及真实的最终扫描 d；要求 iem1/iout2。科学任务图节点复用所声明的原生数值关系；融合的原生实现可在同一进程中执行这些关系。受控连接代码只负责调度、传递状态和选取结果。公共 Python 包装器接收一个 inputs 映射；每个列出的科学端口都是该映射的一项，其必填性与默认值来自实际底层可调用对象。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -1550,7 +1550,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-preset-mode-selection",
-      "source_sha256": "dca9a3286e587999ba430cb7923ed653023e12bfee5362d3f46958afc0aa6011",
+      "source_sha256": "2314b0b527b46fb5b09bd61efdd34018ebbda4bd5ae731a3791e4aa0871cbc46",
       "summary": "将随包场景的种子／缩放脚本应用于已绘制的频谱状态，保留其显式插值约定。",
       "definition": "频谱绘制后执行已存储的 wpdat／缩放。选择遵循种子模态选择算法；ES1D 示例还在其存储坐标处计算 interp1。已存储的规定选出算法意义的曲面，不证明它是唯一的物理分支。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -1636,7 +1636,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-preset-output-workflow",
-      "source_sha256": "655a5a5cd41ff0a0f454b02b8d1249b52c3d12b5ae3589399b0b53980574052c",
+      "source_sha256": "2ac7a0bed97f410d11490df3c11d2e79e13c733e62a4ec8a124ed60096c01821",
       "summary": "绘制频谱，应用随包来源种子／缩放规定，并产生选定输出。",
       "definition": "绘制频谱，应用随包来源种子／缩放规定，并产生选定输出。inputs 映射中 scan_state 必填；scenario=\"default\",runtime=0,rng_seed=None。场景规定必须对应预期物理设置。科学任务图节点复用已声明的原生数值关系；融合的原生实现可在同一进程中执行这些关系。受控连接代码只负责调度、传递状态和选取结果。公共 Python 包装器接收一个 inputs 映射；每个列出的科学端口都是该映射的一项，其必填性与默认值来自实际底层可调用对象。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -1746,7 +1746,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-rational-default-deck",
-      "source_sha256": "a24a7e87f594e986003b8aef55afbd2d53ca8cc23d9ebcb6490aa35fd935cb27",
+      "source_sha256": "8892cbbf8ea5c1d9c1baa44d60d0f4757e375702981833439a4a1d4b445af459",
       "summary": "将随包、对应具体模型的原始物种表读入新的数值数组。",
       "definition": "不会隐藏地读取来源 checkout。物种表是具有模型专用列和单位的声明科学样例；调用数据访问器本身不验证物理应用。",
       "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
@@ -1809,7 +1809,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-rational-em-coordinates",
-      "source_sha256": "3f6512e46f9c58d4723d57b567bfc5ea65feb1eae89d44be957669cb47e8a110",
+      "source_sha256": "956fbcd6c861cd049384007d2b725d6bfea79402f26a36df4dac26396b51fff0",
       "summary": "将无量纲 k c/omega_pi 和传播角换算成 SI 垂直、平行坐标。",
       "definition": "k=kj/cwp，kx=k sin(theta)，kz=k cos(theta)；cwp=c/omega_pi 使用明确的来源参考物种，theta 以度表示。",
       "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
@@ -1902,7 +1902,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-rational-equilibrium",
-      "source_sha256": "70196a7c382adb4721d09ecfc8b5f49c5cdb32398ee3a7d3ac9edc4ae6b0c3fd",
+      "source_sha256": "4cc1ed654f1a0b62f9ea3e71772bc8d23cd86bcfea7fe556d83dd484ac602c19",
       "summary": "将声明的旧实现物种表换算为热速度、Debye、等离子体及有符号回旋尺度；保留显式 ES 与 EM 单位约定。",
       "definition": "ES1D 归一化尺度为 vts=sqrt(2T/m),lambdaDs=sqrt(T/(n q²)),kDs=1/lambdaDs,wps=sqrt(n q²/m)。ES3D 在这些尺度中使用 Tparallel，Omega=B0*q/m，rho=sqrt(Tperp/m)/abs(Omega)；B0 是默认 1 的有符号归一化输入，不以特斯拉标注。EM 常数严格为 qe=1.6022e-19 C、me=9.1094e-31 kg、c=2.9979e8 m/s、epsilon0=8.8542e-12 F/m、kB=1.3807e-23 J/K；c2=c²，mu0=1/(c² epsilon0)。EM 中 q=deck_q*qe,m=deck_m*me,Tz/p[K]=deck_Tz/p[eV]*qe/kB,vd=deck_vd*c。继而 vtz=sqrt(2 kB Tz/m),lambdaD=sqrt(epsilon0 kB Tz/(n q²)),wp=sqrt(n q²/(m epsilon0))，有符号 Omega=B0*q/m，有符号 rho=sqrt(kB Tp/m)/Omega。来源归一化明确使用 wci=abs(Omega_second),wpi=sqrt(n_first*q_second²/(m_second*epsilon0)),cwp=c/wpi，以及上述 mu0；不会静默换成其他参考物种。输出还包括 beta_z/p=2mu0*n*kB*Tz/p/B0²,vA=B0/sqrt(mu0 sum m*n),cS=sqrt(2min(kB*Tz)/max(m)),vAwp=vA/wci。这套归一化 ES／SI EM 解析与当前 PDRK 八列 m/mp 损失锥初始化、以及持续维护的固定频率流体波矢关系不同。",
       "model": "ES1D 或 ES3D 归一化高斯物种，或使用明确列出的旧实现常数的 EM SI 漂移双 Maxwell 物种；不暗示损失锥分支。",
@@ -1985,7 +1985,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-rational-jpole-coefficients",
-      "source_sha256": "02da1c97843fc2e9e031052f400a298cf34adbfe4e4654d322f2245d352369df",
+      "source_sha256": "4ae9218003f6cb693792de76efdfe8911190882c4b210e57616ad67b0ad277b3",
       "summary": "在声明的十进制精度下求解来源 Maxwell 分布的 Taylor／渐近匹配方程，细化单根并计算留数。",
       "definition": "I+K=2J；Mpq*pq=B 匹配来源 Taylor 系数与逆幂系数。留数 b=P(c)/Qprime(c)。80/120 位精度细化及独立 erfc 响应检查与矩阵调理分别记录。数值端口仍为 complex128；构造字符串保留更高精度。",
       "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
@@ -2158,7 +2158,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-rational-jpole-evaluate",
-      "source_sha256": "3be59a8486844b99c0e9137af96b97445cbee602f028a5e2adf2e5d6aa466ce2",
+      "source_sha256": "2f704a7aa7446ef0dc522e6c1954b5bd6bea3c011563dbfea84304c1db9e384d",
       "summary": "求值声明的单极点有理近似，并保留求值点的形状。",
       "definition": "Z_J(z)=sum b_j/(z-c_j)，使用 complex128 求值；不隐藏选择 Z 系数表，也不外推科学定义域。",
       "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
@@ -2233,7 +2233,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-rational-jpole-generator",
-      "source_sha256": "33d9d182fb03a8b0513317da9c3c4043e6389e859c2123ec708bd64f3f899aeb",
+      "source_sha256": "66ad5ba5eb72b463964c88cb68c6f7e8830aa3ffd472552c0f6c0455d9facf7d",
       "summary": "组合高精度系数、历史诊断坐标与有理求值。",
       "definition": "先构造系数，再进行 ndgrid 求值；近似适用性与构造、绘图分别判断。",
       "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
@@ -2429,7 +2429,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-rational-jpole-grid-coordinates",
-      "source_sha256": "24e41647e48134e38ebb1c720f861410e07ee0fc7501dac0b029bc9cb9870a50",
+      "source_sha256": "60deb7cc615fb5eb6a2e4c52b9b73b674d4fa4224b55b82eed375e625290fdbb",
       "summary": "返回所保留的来源 101×101 复诊断 ndgrid，不暗示近似在该网格上处处有效。",
       "definition": "历史 x,y ndgrid 与 z=x+i*y；为诊断绘图保留完整二维方向。",
       "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
@@ -2491,7 +2491,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-rational-ordered-spectrum",
-      "source_sha256": "208a522c5eba2437da59ab8c003c9fc8288896e0068ba72e49d6ec32aff91622",
+      "source_sha256": "778343d43b472e1227b79804f3851cc84e0dca31efe40452297f1f42930fb443",
       "summary": "按显式逐点次序组合平衡、极点表、单点组装与频率求解，并传递电磁稀疏延续状态。",
       "definition": "保留原生原始 for 循环默认网格，避免将区间预先物化带来的舍入漂移。每点保留矩阵和完整解；模态数量可以变化而不填充。电磁初始移位 wg0*wci 从前一个按增长率选择的根更新；ES3D 保留完整十进制载体。",
       "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
@@ -2640,7 +2640,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-rational-point-matrix",
-      "source_sha256": "0c51f8aff248abac035a0f6d3e168b75dc21e7cd7885b0d629d501731e52e615",
+      "source_sha256": "039dd975128b0d3fbd5583ff08c2f5b5fda50535d023d428418e04f3d1e2dabb",
       "summary": "组装 ES1D 频率矩阵、修正后的 ES3D 有限 Harris 描述子系数，或具有因果有符号波矢与精确轴极限的 EM Maxwell 矩阵铅笔。",
       "definition": "ES3D 中 D(omega)=a+sum B/(omega-C)；来源普通本征问题 a*diag(C)-B*ones 的本征值缩放错误。EM 精确垂直响应包含完整 Maxwell 常数；均匀零波矢冷回旋响应在解析上不依赖谐波截断。负 k/kz 选择满足因果性的 Z 极点。压缩极点铅笔保留 E/B 可观测量；来源辅助变量别名不是物理波。",
       "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
@@ -2741,7 +2741,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-rational-pole-table",
-      "source_sha256": "fb79f0dca7a08cf50a82be774710f0466d012a915dda2c4fcd0df2c33f8eb59f",
+      "source_sha256": "251348737a1fd82320e1d08be60472d7255eef206ac282c6ef8f39c776b2d122",
       "summary": "选择显式的来源系数表族与变体；J12 使用对来源双侧 Padé 方程经过资格验证的高精度重构。",
       "definition": "Z_J(z)=sum_j b_j/(z-c_j)。保留历史低阶族与来源次序；重新生成的 J12 是有意的数值修正，不是历史数值的逐值复制。",
       "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
@@ -2824,7 +2824,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-rational-reassemble-original-program",
-      "source_sha256": "0ebe39b5b301ddaa2ac0f0398be3572115c707b8cc73aa8a6d5a20a62bf2f891",
+      "source_sha256": "755e71cc145cdb1c626190b7446275ce9e2d79c09ea0ac047add1153fd2e26d6",
       "summary": "组合修正后的模型扫描或 Padé 诊断，并保存科学末端数组、必要时的完整载体，以及带标签的图。",
       "definition": "保留 es1d/es3d/em/generator 四种旧实现科学用途。来源 D1 图继续作为历史证据，不将已知错误当作修正后的默认结果。舍入后的栅格图与十进制载体状态不同；人工视觉认可仍显式独立记录。",
       "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
@@ -2967,7 +2967,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-rational-solve-matrix",
-      "source_sha256": "2c0df3a4c76724ff2e3e8ffa4bd4ac66e0ef2532c243b8c739b98fc48e0f64b5",
+      "source_sha256": "7a369d69438ee2da5a9150363dd222c36cc7d226a05cbeea3460670450e96132",
       "summary": "求解频率矩阵或 Harris 描述子，显式提供残差、消去与无穷模态分类，并保留完整近极点载体。",
       "definition": "ES1D／EM 使用稠密 sp0 eig 或移位稀疏 sp1 eigs，返回 complex128 本征对与归一化后向残差。一般 ES3D 齐次描述子给出 alpha,beta 和无穷／消去模态，拒绝未获资格的有限根。正值物种的垂直 ES 使用 80 位十进制的最近极点有符号偏移交错方法；十进制 base+offset 保留小于 ulp 的位移。舍入后的 omega／图不是完整载体。",
       "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
@@ -3326,7 +3326,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-rational-z-poles",
-      "source_sha256": "544c0b99ad8dab4380ab0a8fc9ce51efd5a20e9db1fb74ed918947fbd14938b0",
+      "source_sha256": "d5f04025806b72236199b83e2e192c61bd1d35fc89698fbb24af3c3d8397ba4c",
       "summary": "返回有序 J4/J8 表，或精度修正后的 J12/I16/K8 极点－留数表。",
       "definition": "Z_J(z)=sum_j bzj[j]/(z-czj[j])；成对系数表在原生精度内满足 sum b=-1,sum bc=0,sum bc^2=-1/2。J12 以 80 位精度重新生成来源规定的 Padé 关系，并在舍入为 binary64 前与 120 位构造核对；保留 J4/J8 来源值。",
       "model": "用于磁化动理学响应的显式有理近似或双高斯表示。",
@@ -3394,7 +3394,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-rendered-output-workflow",
-      "source_sha256": "c37fcddac08c55f86b8014035acf966b4a6a5d3f654aefdffb04e7490b54ffa8",
+      "source_sha256": "86a549c9316960cb83cf3e63aa8846c123ee5ca1a37534ece68355a7bf50fa30",
       "summary": "全谱展示、显式种子选择、选定结果展示与科学输出末端步骤。",
       "definition": "全谱展示、显式种子选择、选定结果展示与科学输出末端步骤。inputs 映射中 scan_state,seeds 必填；scales=(1,1,1),runtime=0,rng_seed=None。全部物理算子合同与产物限制均适用。科学任务图节点复用已声明的原生数值关系；融合的原生实现可在同一进程中执行这些关系。受控连接代码只负责调度、传递状态和选取结果。公共 Python 包装器接收一个 inputs 映射；每个列出的科学端口都是该映射的一项，其必填性与默认值来自实际底层可调用对象。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -3510,7 +3510,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-seed-mode-selection",
-      "source_sha256": "916e2be2d2904d9a49c4410a244b77bc595b63ffa77a53e5d6b9e05b54079acd",
+      "source_sha256": "d189ba2f8647ddb966362b9c26fb42ab86002b7996c94ad03dd18811f354eea4",
       "summary": "按保留的最近值／PCHIP 预测与并列判定算法，跟踪选定归一化频率。",
       "definition": "将来源有量纲 ww 除以标准初始化的正参考值 wcs1=abs(wcs(1))。各物种 wcs 保留其电荷／B0 符号，但参考分母取正。在最近种子坐标处比较实部；若种子实部严格为零，则比较虚部。首索引并列、初始最近值延续与 PCHIP 预测都是明确的算法选择，不代表物理唯一性。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -3589,7 +3589,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-selected-dispersion-interpolation",
-      "source_sha256": "2022c60a0410fffe3ea6aed36e77fde68fbe6a505a0a447cf5c00c2bde290444",
+      "source_sha256": "432697257f5d65bdaf4bcdf2c1d5322bbca7b51da17d9e60c96154b92f75eb52",
       "summary": "在显式缩放后的选定坐标与频率上计算 ES1D 示例插值。",
       "definition": "winterp=interp1(rex*pas,rez*wws[:,0,0],coordinate)，使用原生 interp1 默认值。这是对已选择数据的线性插值，不是色散求解。保留越界时的 NaN。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -3668,7 +3668,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-selected-fields-workflow",
-      "source_sha256": "76315f4f0d02111c4cc859e9b78caed87abd50deef93ee2c00d5c9c46a6c142f",
+      "source_sha256": "08e03f9131008b44b382b123cb4616d0b10ec3fe731e658872b3b66c93c9f88e",
       "summary": "先按种子选择归一化模态，再执行有界极化任务图。",
       "definition": "先按种子选择归一化模态，再执行有界极化任务图。inputs 映射中 scan_state,seeds 必填；rng_seed=None。scan_state 必须是真实已完成的扫描；seeds 形状为 (npl,3)。科学任务图节点复用已声明的原生数值关系；融合的原生实现可在同一进程中执行这些关系。受控连接代码只负责调度、传递状态和选取结果。公共 Python 包装器接收一个 inputs 映射；每个列出的科学端口都是该映射的一项，其必填性与默认值来自实际底层可调用对象。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -3754,7 +3754,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-selected-mode-artifacts",
-      "source_sha256": "a45a37b17ee9b19c5cd2e1305d29f37edcff6f5d3d8b7c9467fa8e400f7f02cd",
+      "source_sha256": "3bcc31f1ac0e3e66f20645239ab3e51d69fee8821fb5ec28c135fcb096f4c05a",
       "summary": "生成选定模态的场／绘图／工作空间产物；已存储输出阶段失败时保留部分末端状态。",
       "definition": "输出末端步骤自行执行 EM iout2 目标附近本征求解与共用的 Hermitian E 归一化，然后写图和工作空间。E 的 Hermitian 范数为 1；表示出的最大 E 分量为非负实数，精确并列时首项优先；B 使用同一尺度与相位。UE=epsilon0|E|^2/2,UB=|B|^2/(2mu0)。iout1 写入数值 d0=d，不新增场求解。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -3852,7 +3852,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-selection-artifacts",
-      "source_sha256": "b9e9745a60737e2aa747d5827cf426de6002ca589d9003d8d05c8127c33e6992",
+      "source_sha256": "c4710349fa7ddf873852d24d0293317c2fa99d273a1abd890839fdaba7c94c58",
       "summary": "生成选定模态展示及显式尺度／绘图环境，不选择或求解新根。",
       "definition": "使用选定 wws、显式 rex/rey/rez 及来源坐标。构造工作空间输出末端步骤所使用的原生展示元数据，同时保留科学选择。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -3944,7 +3944,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-species-equilibrium",
-      "source_sha256": "e24ca1a1bd1ad3d39d3515b722bbbfcaed88324fd3802fcbdf4b41eefac33b1c",
+      "source_sha256": "be45edbb0161a1cdc2c54b004c2f54aed14197fa1a3618cb8ec6056222b02858",
       "summary": "从物种表生成物理平衡、损失锥分支、有符号回旋频率、有理极点和有限扫描控制量。",
       "definition": "将 q/e 与 m/mp 换算为 SI，温度由 eV 换为 K，drift/c 换为 m/s；vt_parallel=sqrt(2 kB Tparallel/m),omega_c=qB0/m,omega_p^2=nq^2/(epsilon0 m),cwp=c/omega_p1。保留 alpha==1 Maxwell 分布分支，以及相互独立的极坐标／笛卡尔 par 项。来源常数配置：c=2.9979e8 m/s,epsilon0=8.8542e-12 F/m,kB=1.3807e-23 J/K,qe=1.6022e-19 C,mp=1.6726e-27 kg；mu0=1/(c^2 epsilon0)。物种表电荷为 q/qe，质量为 m/mp，温度为 eV，平行漂移为 vd/c。这些来源近似值有意与其他运行配置不同。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -4041,7 +4041,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-spectral-scan-workflow",
-      "source_sha256": "3bab45f232699d21276c5c89e6b80b2c5f433671dc27297484fcd1f40f38be6f",
+      "source_sha256": "cf4fc3d16563427bed655cff3c35e8e46fdfec54159b2aaa82ecffbc38bdd274",
       "summary": "有限、有序的坐标扫描，含显式矩阵组装、频率求解和逐行延续。",
       "definition": "有限、有序的坐标扫描，含显式矩阵组装、频率求解和逐行延续。inputs 映射中 state 必填，rng_seed=None。state 必须为已初始化平衡。继承所有扫描控制量，执行前固定 npa*npb。科学任务图节点复用已声明的原生数值关系；融合的原生实现可在同一进程中执行这些关系。受控连接代码只负责调度、传递状态和选取结果。公共 Python 包装器接收一个 inputs 映射；每个列出的科学端口都是该映射的一项，其必填性与默认值来自实际底层可调用对象。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -4139,7 +4139,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-spectrum-artifacts",
-      "source_sha256": "9f67864241433d5bc6077aa14b1ece0c35fd6bc8eb65468c8b4e1dbf6862a0e1",
+      "source_sha256": "4243d5aef639a33f085a83a584d90353a06c5755ed3b0ea57d2aac9ec2a19566",
       "summary": "生成全谱 PNG／Octave FIG 产物和显式归一化绘图状态。",
       "definition": "将保留的有量纲 ww 按来源 wcs1 归一化与坐标缩放后绘制。科学点来自已完成扫描；绘图器不求新根，也不证明视觉保真。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -4219,7 +4219,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-stored-program-workflow",
-      "source_sha256": "4b77f9ed631e49b1a2a9b94c0be9f6e23d3463ee25de406d1c956a0b6e1ad186",
+      "source_sha256": "2fd44d7d485c36f6036e64c30adb373903134a5060065f9c6f6f78208cb257a6",
       "summary": "在一个原生进程中，运行一个随包存储场景的科学扫描、选择、场／输出及写入组合。",
       "definition": "在一个原生进程中，运行一个随包存储场景的科学扫描、选择、场／输出及写入组合。inputs 映射为 scenario=\"default\",timeout=86400,rng_seed=None。两个已存储的交互式继续提示均接收空响应。在 main 清空工作空间之前只设置一次种子。科学任务图节点复用已声明的原生数值关系；融合的原生实现可在同一进程中执行这些关系。受控连接代码只负责调度、传递状态和选取结果。公共 Python 包装器接收一个 inputs 映射；每个列出的科学端口都是该映射的一项，其必填性与默认值来自实际底层可调用对象。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -4348,7 +4348,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-wavevector-coordinates",
-      "source_sha256": "ce0ca2789a971af31ce6756607027dda80185abdb8a3b41c3e525fa9bfaf755a",
+      "source_sha256": "b6cc932da8b2bd715e4043845cf99bd522a7a1b0b8519afdd779dda2f2b53962",
       "summary": "更新一对来源扫描索引，通过显式对数选择器返回物理笛卡尔 k 和角度。",
       "definition": "将 pa[row] 或 10^pa[row] 赋给 par[ipa]；若 ipa!=ipb，则独立将 pb[column] 或 10^pb[column] 赋给 par[ipb]。选择器 3/4 使用独立笛卡尔项除以 cwp；否则使用 abs(par1)/cwp，theta 以度表示。返回 k=hypot(kx,kz),theta=arg(kz+i kx)*180/pi。",
       "model": "均匀磁化、非相对论的带电高斯物种，可选用旋转对称的损失锥混合分布；B0 沿有符号 z 轴，k=(kx,0,kz)。",
@@ -4445,7 +4445,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-whamp-overlay",
-      "source_sha256": "03f99d1ebb7c010dd57dc9c3a5cb656c028f958416fca06f00ea4e1aeacf66f8",
+      "source_sha256": "92124b374cf821d5c78c88f92ec651a0fa30a83969627311b58ab58b0e7f4b42",
       "summary": "将字面存储参考叠加到显式原生前驱图；保留来源图例，但不声称前驱物理相容。",
       "definition": "将来源行 1:2:end 绘为线宽 2 的黑色 x 标记；保留虚轴范围 [-1,0.1] 及西南侧的五个图例标签。已有前驱曲线原样保留。",
       "model": "外部求解器的已存储参考观测；不是可执行的 WHAMP 求解器。",
@@ -4509,7 +4509,7 @@
     },
     {
       "asset_id": "scirel.kinetic.pdrk-whamp-reference",
-      "source_sha256": "00ae522565db080511d9de0483c6de29c0ed56a398c22ec156831f0499d3263f",
+      "source_sha256": "5790488746119675e77e3ba2fd9501c424d6748d5c5335134e2b69a03f2702e3",
       "summary": "以有类型的包数据提供字面 WHAMP 参考表，并保留来源元数据限制。",
       "definition": "返回来源精确的 40 行、4 列 whpdat，以及 kxwhp,kzwhp,wrwhp,wiwhp 各列。",
       "model": "外部求解器的已存储参考观测；不是可执行的 WHAMP 求解器。",
