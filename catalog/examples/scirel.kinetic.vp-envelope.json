@@ -114,7 +114,9 @@
     "python": {
       "module": "scirel.kinetic.vlasov_poisson",
       "symbol": "vp_envelope",
-      "signature": "vp_envelope(dEt, tt, *, wr=None, wi=None)"
+      "signature": "vp_envelope(dEt, tt, *, wr=None, wi=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "vp_envelope"
     }
   },
   "version": {

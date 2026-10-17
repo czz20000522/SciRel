@@ -121,7 +121,9 @@
     "python": {
       "module": "scirel.kinetic.vlasov_poisson",
       "symbol": "vp_rhs",
-      "signature": "vp_rhs(df, dE, vv, df0dv, k)"
+      "signature": "vp_rhs(df, dE, vv, df0dv, k)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "vp_rhs"
     }
   },
   "version": {

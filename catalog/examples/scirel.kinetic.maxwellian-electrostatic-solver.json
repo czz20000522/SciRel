@@ -160,6 +160,8 @@
     "python": {
       "module": "scirel.kinetic.maxwellian_electrostatic",
       "signature": "solve_maxwellian_electrostatic_mode(k, initial_omega, *, xtol=1e-10, residual_tolerance=1e-09, max_evaluations=200)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "solve_maxwellian_electrostatic_mode",
       "symbol": "solve_maxwellian_electrostatic_mode"
     }
   },

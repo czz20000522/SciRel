@@ -46,8 +46,10 @@ Wheel and documentation also share a **release line**. The line is the public
 `documentation.version` may advance independently. A documentation-only
 correction may therefore publish a new documentation revision on the same `0.1` line
 without changing the wheel implementation version or resulting bytes. The candidate is
-still rebuilt/rebound from the new Git commit so the wheel and documentation receipt
-remain source-bound. It must still record the exact
+still rebuilt/rebound from the new Git commit when that documentation batch is cut so the
+wheel and documentation receipt remain source-bound. Individual wording edits are first
+accumulated in Git and do not each create a receipt, rebuild, or platform gate. The batch
+must still record the exact
 `compatible_wheel`, `source_revision`, document-selection digest, and snapshot digest.
 Every selected document continues to expose the exact wheel `implementation_version`,
 so a documentation revision cannot silently describe a different runtime.

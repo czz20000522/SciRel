@@ -103,7 +103,9 @@
     "python": {
       "module": "scirel.kinetic.vlasov_poisson",
       "symbol": "vp_field",
-      "signature": "vp_field(df, k, dv)"
+      "signature": "vp_field(df, k, dv)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "vp_field"
     }
   },
   "version": {

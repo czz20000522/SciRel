@@ -139,7 +139,9 @@
     "python": {
       "module": "scirel.kinetic.vlasov_poisson",
       "symbol": "vp_rk4_step",
-      "signature": "vp_rk4_step(df, dE, vv, df0dv, k, dv, dt)"
+      "signature": "vp_rk4_step(df, dE, vv, df0dv, k, dv, dt)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "vp_rk4_step"
     }
   },
   "version": {

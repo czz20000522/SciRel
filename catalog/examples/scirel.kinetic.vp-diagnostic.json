@@ -114,7 +114,9 @@
     "python": {
       "module": "scirel.kinetic.vlasov_poisson",
       "symbol": "vp_diagnostic",
-      "signature": "vp_diagnostic(dEt, tt, *, start=None, end=None)"
+      "signature": "vp_diagnostic(dEt, tt, *, start=None, end=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "vp_diagnostic"
     }
   },
   "version": {

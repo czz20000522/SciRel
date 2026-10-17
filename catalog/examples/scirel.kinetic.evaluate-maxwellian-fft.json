@@ -122,7 +122,9 @@
     "python": {
       "module": "scirel.kinetic.faddeeva_variants",
       "symbol": "evaluate_maxwellian_fft",
-      "signature": "evaluate_maxwellian_fft(z, *, order=32)"
+      "signature": "evaluate_maxwellian_fft(z, *, order=32)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_maxwellian_fft"
     }
   },
   "example": {

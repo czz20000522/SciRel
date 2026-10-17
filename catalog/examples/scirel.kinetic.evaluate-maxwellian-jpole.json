@@ -120,7 +120,9 @@
     "python": {
       "module": "scirel.kinetic.faddeeva_variants",
       "symbol": "evaluate_maxwellian_jpole",
-      "signature": "evaluate_maxwellian_jpole(z, *, order=8)"
+      "signature": "evaluate_maxwellian_jpole(z, *, order=8)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_maxwellian_jpole"
     }
   },
   "example": {

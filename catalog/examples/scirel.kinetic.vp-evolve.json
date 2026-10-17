@@ -85,7 +85,9 @@
     "python": {
       "module": "scirel.kinetic.vlasov_poisson",
       "symbol": "vp_evolve",
-      "signature": "vp_evolve(state)"
+      "signature": "vp_evolve(state)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "vp_evolve"
     }
   },
   "version": {

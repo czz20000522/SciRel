@@ -23,7 +23,9 @@ patch/development suffix identifies the implementation candidate; documentation 
 carry a separate `documentation.version` editorial revision on the same line. A wording, navigation, or
 translation correction can therefore create a new documentation revision while the
 wheel implementation version and resulting bytes remain unchanged. The wheel is still
-rebuilt/rebound from the new Git commit, and the record must retain `compatible_wheel`,
+rebuilt/rebound from the new Git commit when the documentation batch is cut; individual
+wording edits are accumulated in Git and do not each create a receipt or trigger a wheel
+build. The record must retain `compatible_wheel`,
 that exact source revision, and both selection/snapshot digests. This is a documentation
 release, not a new implementation release.
 

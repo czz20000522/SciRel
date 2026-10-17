@@ -125,7 +125,9 @@
     "python": {
       "module": "scirel.kinetic.vlasov_poisson",
       "symbol": "vp_distribution",
-      "signature": "vp_distribution(vv, Fn=2, *, k=0.15, kappa=1.0, cutoff_mode='weak')"
+      "signature": "vp_distribution(vv, Fn=2, *, k=0.15, kappa=1.0, cutoff_mode='weak')",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "vp_distribution"
     }
   },
   "version": {

@@ -146,7 +146,9 @@
     "python": {
       "module": "scirel.kinetic.vlasov_poisson",
       "symbol": "vp_init",
-      "signature": "vp_init(Fn=2, kappa=1.0, nv=2048, dt=0.01, nt=2000, *, k=0.15, vmax=20.0)"
+      "signature": "vp_init(Fn=2, kappa=1.0, nv=2048, dt=0.01, nt=2000, *, k=0.15, vmax=20.0)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "vp_init"
     }
   },
   "version": {

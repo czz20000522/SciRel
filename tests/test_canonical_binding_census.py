@@ -14,8 +14,8 @@ def test_current_canonical_binding_census_preserves_facade_and_exception_denomin
     counts = report["counts"]
 
     assert counts["total"] == 267
-    assert counts["explicit"] == 148
-    assert counts["candidate"] == 72
+    assert counts["explicit"] == 162
+    assert counts["candidate"] == 58
     assert counts["exception"] == 47
     assert report["unexpected_missing"] == []
 
@@ -194,7 +194,7 @@ def test_pdrf_gpdf_and_generalized_slice_pins_kinetic_facades_explicitly():
     }
     assert len(selected) == 11
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
-    assert rows["scirel.kinetic.evaluate-maxwellian-fft"] == "candidate"
+    assert rows["scirel.kinetic.adaptive-neutral-velocity-mesh"] == "candidate"
     assert rows["scirel.kinetic.generalized-small-k"] == "exception"
 
 
@@ -209,4 +209,25 @@ def test_fluidbw_slice_pins_kinetic_facades_explicitly():
     }
     assert len(selected) == 8
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
-    assert rows["scirel.kinetic.evaluate-maxwellian-fft"] == "candidate"
+    assert rows["scirel.kinetic.adaptive-neutral-velocity-mesh"] == "candidate"
+
+
+def test_vlasov_poisson_and_maxwellian_slice_pins_kinetic_facades_explicitly():
+    report = census(ROOT)
+    rows = {row["asset_id"]: row["status"] for row in report["rows"]}
+    selected = {
+        asset_id
+        for asset_id in rows
+        if asset_id.startswith("scirel.kinetic.vp-")
+        or asset_id
+        in {
+            "scirel.kinetic.evaluate-maxwellian-fft",
+            "scirel.kinetic.evaluate-maxwellian-jpole",
+            "scirel.kinetic.kinetic-dispersion-sum",
+            "scirel.kinetic.maxwellian-electrostatic-mode",
+            "scirel.kinetic.maxwellian-electrostatic-solver",
+        }
+    }
+    assert len(selected) == 14
+    assert all(rows[asset_id] == "explicit" for asset_id in selected)
+    assert rows["scirel.kinetic.adaptive-neutral-velocity-mesh"] == "candidate"

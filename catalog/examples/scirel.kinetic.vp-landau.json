@@ -146,7 +146,9 @@
     "python": {
       "module": "scirel.kinetic.vlasov_poisson",
       "symbol": "solve_vlasov_poisson",
-      "signature": "solve_vlasov_poisson(Fn=2, kappa=1.0, nv=2048, dt=0.01, nt=2000, *, k=0.15, vmax=20.0)"
+      "signature": "solve_vlasov_poisson(Fn=2, kappa=1.0, nv=2048, dt=0.01, nt=2000, *, k=0.15, vmax=20.0)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "solve_vlasov_poisson"
     }
   },
   "version": {
