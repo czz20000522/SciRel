@@ -1,0 +1,50 @@
+{
+  "evidence": {
+    "docs_build_manifest": "scirel/0.1.0.dev9/1404fba3a542bff62c4cef676969111289efb933/docs/build-manifest.json",
+    "docs_build_manifest_sha256": "48c02e4118b2c4e2f20e586b1ca880d2bdb038e6f14620808d72b60ce94eece4",
+    "linux_acceptance": "provenance/validation/scirel-dev9-linux-offline-20261018-1404fba.json",
+    "linux_acceptance_sha256": "1b443341c07a37600079c12e1f7b67d8dacbdafd2c7bcbd5d0242812b8a3f1de",
+    "linux_offline_wheelhouse_validation": "provenance/validation/scirel-dev9-linux-offline-20261018-1404fba.json",
+    "linux_offline_wheelhouse_validation_sha256": "1b443341c07a37600079c12e1f7b67d8dacbdafd2c7bcbd5d0242812b8a3f1de",
+    "macos_arm64_offline_wheelhouse_validation": "provenance/validation/scirel-dev9-macos-arm64-offline-20261018-1404fba.json",
+    "macos_arm64_offline_wheelhouse_validation_sha256": "4036da396fb082bfb33400b61984dbd8d94ea279a821d8c2fbb3bdc7c6760abc",
+    "wheel_build_manifest": "scirel/0.1.0.dev9/1404fba3a542bff62c4cef676969111289efb933/wheel/build-manifest.json",
+    "wheel_build_manifest_sha256": "8c1421dc44479e57859d044089dde6282b99820eefb5b661032a5425ddf50fc4"
+  },
+  "handbook": {
+    "asset_count": 267,
+    "path": "tools/docs/handbook.json",
+    "scope": "exact",
+    "selected_asset_count": 267,
+    "sha256": "7aea04ee827699038d4be7a34bf2d579c875614867334657dae9de1e050bd9fc"
+  },
+  "limitations": [
+    "External wheel and documentation snapshot are generated artifacts under the ignored artifact root; Git source, selection and handbook remain canonical.",
+    "The Linux amd64 and macOS arm64 receipts bind the same 1404fba3a542bff62c4cef676969111289efb933 source revision to exact-wheel offline installations with fixed core and optional-extra runtime wheelhouses; complete scientific capability closure is not established.",
+    "The wheelhouses were prepared with network access, while installation and validation used no-index binary-only clean virtual environments; the Linux run used the x86_64 CPython 3.14 remote environment and the macOS run used local arm64 CPython 3.14.",
+    "This metadata receipt does not constitute scientific expert approval, redistribution approval, or public release approval."
+  ],
+  "project_version": "0.1.0.dev9",
+  "schema": "scirel.dev9-document-integration.v1",
+  "selection": {
+    "asset_count": 267,
+    "operators": 235,
+    "path": "provenance/selections/scientific-core-documents-20261017-dev9.json",
+    "sha256": "2c7b08a2f606c5af81cc45948da147f9c6ad3dffd0dff99cc42da0f18930c5aa",
+    "task_graphs": 32
+  },
+  "snapshot": {
+    "asset_count": 267,
+    "bytes": 28148397,
+    "external_path": "scirel/0.1.0.dev9/1404fba3a542bff62c4cef676969111289efb933/docs/snapshot",
+    "sha256": "977e055e6013fea2c40e4590fe34651f63e0a343d191536b6afb89065f885924",
+    "source_dirty": false
+  },
+  "source_revision": "1404fba3a542bff62c4cef676969111289efb933",
+  "status": "PASS",
+  "wheel": {
+    "bytes": 664621,
+    "path": "scirel/0.1.0.dev9/1404fba3a542bff62c4cef676969111289efb933/wheel/scirel-0.1.0.dev9-py3-none-any.whl",
+    "sha256": "234b542552a0b5e6ae1136c484ca85b9632bc162ee4d17378562f441e38a13f7"
+  }
+}

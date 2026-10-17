@@ -3,34 +3,34 @@
   "package": "scirel",
   "version": "0.1.0.dev9",
   "status": "development_candidate",
-  "source_revision": "7b9796843eac078def5793e7f6da4ddb548becf7",
+  "source_revision": "1404fba3a542bff62c4cef676969111289efb933",
   "source_revision_status": "bound",
   "wheel": {
     "version": "0.1.0.dev9",
     "status": "development_candidate",
     "artifact": {
-      "manifest_ref": "scirel/0.1.0.dev9/7b97968-dev9-kinetic-facade-20261017/build-manifest.json",
-      "manifest_sha256": "8969f1e2c651756a02959d45046edf36dddc0fae69923c8e25427ba0e88f37a1",
+      "manifest_ref": "scirel/0.1.0.dev9/1404fba3a542bff62c4cef676969111289efb933/wheel/build-manifest.json",
+      "manifest_sha256": "8c1421dc44479e57859d044089dde6282b99820eefb5b661032a5425ddf50fc4",
       "filename": "scirel-0.1.0.dev9-py3-none-any.whl",
-      "sha256": "737e29462a79ea675b2db4092e9e9900e14bc0da268be8d0ebd3a2abb3e874e5",
-      "bytes": 663303
+      "sha256": "234b542552a0b5e6ae1136c484ca85b9632bc162ee4d17378562f441e38a13f7",
+      "bytes": 664621
     },
     "selected_capabilities": {
-      "operators": 230,
-      "task_graphs": 30,
-      "document_closure": 260
+      "operators": 235,
+      "task_graphs": 32,
+      "document_closure": 267
     },
     "package_layout": "release/wheel/layout.json",
     "platform_receipts": [
       {
         "platform": "linux-x86_64-cp314",
-        "path": "provenance/validation/scirel-dev9-linux-offline-20261017-7b97968.json",
-        "sha256": "fbfc5e9d7cea8eb90e9200e96040218881383be64bc84fa782e38990b898efc7"
+        "path": "provenance/validation/scirel-dev9-linux-offline-20261018-1404fba.json",
+        "sha256": "1b443341c07a37600079c12e1f7b67d8dacbdafd2c7bcbd5d0242812b8a3f1de"
       },
       {
         "platform": "macos-arm64-cp314",
-        "path": "provenance/validation/scirel-dev9-macos-arm64-offline-20261017-7b97968.json",
-        "sha256": "c3cfce1574d10fcb9198323f392e044d6182bd399d0804b91dadcfc5eb5d4119"
+        "path": "provenance/validation/scirel-dev9-macos-arm64-offline-20261018-1404fba.json",
+        "sha256": "4036da396fb082bfb33400b61984dbd8d94ea279a821d8c2fbb3bdc7c6760abc"
       }
     ]
   },
@@ -41,22 +41,22 @@
     "handbook": "tools/docs/handbook.json",
     "compatible_wheel": "0.1.0.dev9",
     "catalog_root": "catalog/examples",
-    "snapshot_sha256": "a3f02f8b1ffa0f5865c1053c80a0a6aa0764903f1364acf234c02291ed99258a",
-    "integration_record": "provenance/validation/scirel-dev9-document-integration-20261017-7b97968.json",
-    "selection_sha256": "ef3e6371dfdc8700bc49edaf4193ce1bbee3b21417313d08b20f7f9c5c95836e",
+    "snapshot_sha256": "977e055e6013fea2c40e4590fe34651f63e0a343d191536b6afb89065f885924",
+    "integration_record": "provenance/validation/scirel-dev9-document-integration-20261018-1404fba.json",
+    "selection_sha256": "2c7b08a2f606c5af81cc45948da147f9c6ad3dffd0dff99cc42da0f18930c5aa",
     "handbook_sha256": "7aea04ee827699038d4be7a34bf2d579c875614867334657dae9de1e050bd9fc",
     "capability_counts": {
-      "operators": 230,
-      "task_graphs": 30,
-      "document_closure": 260
+      "operators": 235,
+      "task_graphs": 32,
+      "document_closure": 267
     },
-    "handbook_scope": "repository",
+    "handbook_scope": "exact",
     "artifact": {
-      "manifest_ref": "scirel/0.1.0.dev9/7b97968-dev9-kinetic-facade-20261017/docs/build-manifest.json",
-      "manifest_sha256": "ca2f50b32d53cd19358280a4950dff019ee76cebc7ff65814e136f4ea466205f",
+      "manifest_ref": "scirel/0.1.0.dev9/1404fba3a542bff62c4cef676969111289efb933/docs/build-manifest.json",
+      "manifest_sha256": "48c02e4118b2c4e2f20e586b1ca880d2bdb038e6f14620808d72b60ce94eece4",
       "snapshot_ref": "snapshot",
-      "snapshot_sha256": "a3f02f8b1ffa0f5865c1053c80a0a6aa0764903f1364acf234c02291ed99258a",
-      "snapshot_bytes": 27722415
+      "snapshot_sha256": "977e055e6013fea2c40e4590fe34651f63e0a343d191536b6afb89065f885924",
+      "snapshot_bytes": 28148397
     }
   },
   "next_action": "Keep this development candidate untagged until remaining platform and scientific release gates are explicitly closed."
