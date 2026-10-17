@@ -4,7 +4,7 @@
   "records": [
     {
       "asset_id": "scirel.electromagnetism.arbitrary-points",
-      "source_sha256": "22be9dd24bb4b74152e1f891ccea7eb97547dcc1d855e7299b104d4243939c9a",
+      "source_sha256": "5106da2fe959fae6e7e6b80e8fb4c25d0d7663e484ae451b6bc92db488f53cd6",
       "summary": "有限、带权的圆电流丝源点。",
       "definition": "一组理想圆电流丝共用同一电流。",
       "model": "轴对称圆电流丝。",
@@ -88,7 +88,7 @@
     },
     {
       "asset_id": "scirel.electromagnetism.brb",
-      "source_sha256": "01f7f878759c7759ac6ccdad603de15579cf140606f5fb00f30ab5653f13d486",
+      "source_sha256": "bc11afabc4fd2265a853cdaecc614056bfddaf13be05e88d57b33b74cc8de4d4",
       "summary": "有序来源常数组成：两组 88 丝 TREX 线圈、两组 130 丝矩形镜线圈和 36 个各含 16 条带符号电流丝的磁环。",
       "definition": "按来源次序组合两组 88 丝 TREX、两组 130 丝矩形镜线圈及 36 个带符号 16 丝磁环。",
       "model": "来源定义的 Big Red Ball 几何，以轴对称圆电流丝表示。",
@@ -151,7 +151,7 @@
     },
     {
       "asset_id": "scirel.electromagnetism.device",
-      "source_sha256": "e5d9a096b3b07f51c5a146c36a2d94690b36442fa8d5aaec70ce554b5eb38d27",
+      "source_sha256": "fdf123e6fa07087f0a5e1f2ff22c8a559135fe1f1474a36b28b5e64c1eb585af",
       "summary": "构造有序电流丝装置，子属性赋值注册源；场方法接受有限标量或逐子源电流覆盖并对带权 Green 矩阵求和。",
       "definition": "逐子源 Green 矩阵由电流向量投影后叠加。",
       "model": "轴对称源组合。",
@@ -218,7 +218,7 @@
     },
     {
       "asset_id": "scirel.electromagnetism.distributed-current-flux",
-      "source_sha256": "031e85fc2c82b8a016d02c7b9df33e5c75c66da5bff1b03790856db1441d3ba4",
+      "source_sha256": "2c681ffc3938dadc8c8b8a0eb4162a7578cf667fdbf334062082b55105fd95bd",
       "summary": "在均匀源网格上叠加环向电流层，将离散磁通响应插值到柱坐标目标。",
       "definition": "ψ=R Aφ；源节点电流为密度乘均匀完整单元面积，重合自节点响应为零。",
       "model": "真空圆电流丝响应，保留兼容的离散零自点积分策略。",
@@ -303,7 +303,7 @@
     },
     {
       "asset_id": "scirel.electromagnetism.magnet-ring",
-      "source_sha256": "d0f1e6085e386f54ba5a13cba6f229cc4466005f3d4022e943052275f2875057",
+      "source_sha256": "451c79f2bd67ee8e5ba6cf0b8de7701d5f7823f2a2ca217ea36171c0f2465a5a",
       "summary": "用有限带符号电流丝近似有方向的矩形磁体截面。",
       "definition": "在两个径向表面沿轴向采样并赋予有符号权重。",
       "model": "轴对称理想化磁环。",
@@ -410,7 +410,7 @@
     },
     {
       "asset_id": "scirel.electromagnetism.rectangular-coil",
-      "source_sha256": "f5a8a7a955b39f852dc293670b1d3cf7ce6088ed34c8f10b9230e2ba47ee6925",
+      "source_sha256": "108b9b85866091dcffeaced3f001fc578b27151238aefd4862635302df0c5627",
       "summary": "参数化的矩形圆电流丝阵列。",
       "definition": "按均匀矩形点阵采样，施加有符号权重。",
       "model": "轴对称圆电流丝阵列。",
@@ -529,7 +529,7 @@
     },
     {
       "asset_id": "scirel.electromagnetism.trex-coil",
-      "source_sha256": "daed5ad5f8b4b5d6ee3de02e4e634eb08e02fb9ece07cc26217d7b6f77c0754c",
+      "source_sha256": "62d2bffb3c889775ef398c96b17d7c207fa5816c85c45930536bd78482d15f3a",
       "summary": "88 条电流丝：五个径向列各 16 个轴向点，外列为 8 个轴向中点；面积沿用 88×(0.0134166 m)²。",
       "definition": "五列各 16 点加外列 8 个中点构成 88 丝；来源面积约定为 88×(0.0134166 m)²。",
       "model": "来源定义的 TREX 电流丝几何，采用轴对称圆电流丝。",
@@ -617,7 +617,7 @@
     },
     {
       "asset_id": "scirel.electromagnetism.wham",
-      "source_sha256": "df375a086f929c7ea6dd4aacc28a88e51f39b319998d3464dea10a5ecf469f7c",
+      "source_sha256": "efd0c5e27aad61d78eadef8eab4b82a5c97950b10d601c2ba68510f6624ac248",
       "summary": "有序四线圈几何，电流丝数依次 32、32、10、10；各共同电流保留构造默认 1 A。",
       "definition": "按固定次序组合 32、32、10、10 条丝的四个线圈，共同电流默认均为 1 A。",
       "model": "来源定义的 WHAM 几何，以轴对称圆电流丝表示。",
@@ -680,7 +680,7 @@
     },
     {
       "asset_id": "scirel.geometry.points-mesh",
-      "source_sha256": "def886e1c81b6aae34bc7f8f60e75454aa679ebdf1ab9df8b58865dd88175215",
+      "source_sha256": "8bd354ad5760842b797de5ca157f637b7fe759cd59b8be5cfa2f2b5c61ad3d4d",
       "summary": "有限的非结构柱坐标点集。",
       "definition": "每对 rpts、zpts 值定义一个点。",
       "model": "非结构有限点集。",
@@ -751,7 +751,7 @@
     },
     {
       "asset_id": "scirel.geometry.r-chord",
-      "source_sha256": "255fc23081628afa279d2466bcd1f98a9937e5268f1ee48e183d91906e4285db",
+      "source_sha256": "565f3da7744d331b3aa292724a03cf57e7b2210bd6f9961ac5f5231f28dc6f8a",
       "summary": "在固定 Z 位置沿 R 变化的点列。",
       "definition": "径向坐标改变，轴向坐标保持常数。",
       "model": "柱坐标弦。",
@@ -820,7 +820,7 @@
     },
     {
       "asset_id": "scirel.geometry.rect-mesh",
-      "source_sha256": "b9fba4666cbd163e96c79bcb51ec630e901fb49cb5c4500325d729b1a157dd42",
+      "source_sha256": "86e651459e18b0f19115e46be92d37057a4a5442040070f0c23acfdb708ef02b",
       "summary": "柱坐标 R、Z 上的规则矩形网格。",
       "definition": "对独立 R、Z 边界构造 meshgrid。",
       "model": "规则矩形网格。",
@@ -918,7 +918,7 @@
     },
     {
       "asset_id": "scirel.geometry.spherical-r-chord",
-      "source_sha256": "d9ff6fda79323a78c43a9c84f7f72b20082035e73f5ebc382e49673e113d3a1a",
+      "source_sha256": "02d5509abc992c30d52a9b12d83ee488906d384b7c93fe0469eeabf697456368",
       "summary": "在固定角度处改变球半径得到点列。",
       "definition": "按 R=r sinθ、Z=r cosθ 将球坐标输入映射为柱坐标。",
       "model": "球坐标到柱坐标的映射。",
@@ -1054,7 +1054,7 @@
           "所有科学、人工和发行批准仍为 false。"
         ]
       },
-      "source_sha256": "f4c693e3f1959a867cae3e9540e0f945cec65b796af7018cf1eb88af344aa75c"
+      "source_sha256": "527fec6b81df6c5803ec5e2b653b32824d21bc5a801258c5b1c79dc22a7e620a"
     },
     {
       "asset_id": "scirel.geometry.z-chord",
@@ -1123,7 +1123,7 @@
           "所有科学、人工和发行批准仍为 false。"
         ]
       },
-      "source_sha256": "d4e4594d77a6c2d12993f69c743fd410d482cd5fdd7ff727350cc510515df87a"
+      "source_sha256": "b571223e6bc555eb58cf365e53c1418c27a209aed3c5908dd1e44d1f15a5e5c5"
     },
     {
       "asset_id": "scirel.io.eqdsk-class",
@@ -1191,7 +1191,7 @@
           "此方言无法表示任意径向或轴向原点；附带求解器坐标轴，以便写入前检测信息丢失。"
         ]
       },
-      "source_sha256": "06e791f063bd3c557e4602710077d3fb8731acc720d3f7ba95b9fa22a821932f"
+      "source_sha256": "55e545263b94664498b1ed371eba8a056ef646cc367be4d72a18957d89859fee"
     },
     {
       "asset_id": "scirel.io.pressure-equilibrium-eqdsk",
@@ -1284,7 +1284,7 @@
           "Jphi/P 二维数组需由实际终态单独消费。"
         ]
       },
-      "source_sha256": "1f24815838318912b4d7792dc2a0b45e167711ee94af8413e15c5c7a85f29e90"
+      "source_sha256": "998b8403fb68e244176f84b51487c6643b76b0a66b715cf41909295e0068e45c"
     },
     {
       "asset_id": "scirel.io.read-pleiades-eqdsk",
@@ -1357,7 +1357,7 @@
           "没有单位/COCOS。"
         ]
       },
-      "source_sha256": "5d631fd01f8d7423c9cea6157cb116ca285fc359f1ee9c0fd825c704365476bc"
+      "source_sha256": "e7d6f195ea5454e665fb805d6aec3058f335da779169ce7e8d5564ec80069c53"
     },
     {
       "asset_id": "scirel.io.write-pleiades-eqdsk",
@@ -1432,7 +1432,7 @@
           "此方言无法表示任意径向或轴向原点；附带求解器坐标轴，以便写入前检测信息丢失。"
         ]
       },
-      "source_sha256": "1c0e8661400827b18dac3d6bd7872e942e49501b3b14a66156ab7aec82f51b17"
+      "source_sha256": "101993eeba1af4ac1d53937c0a9aa15a4f400b06b43db2426e9f40101bbef946"
     },
     {
       "asset_id": "scirel.io.write-pleiades-eqdsk-legacy-raw",
@@ -1532,7 +1532,7 @@
           "仍不支持任意原点。"
         ]
       },
-      "source_sha256": "2732ceb046f8aa6c092d405e3961786aef5b33bf9624ba3cc1af03ea6823ba47"
+      "source_sha256": "61a985245593f529610a17b7c53993b039d533e3264583229904e63bc88de124"
     }
   ]
 }
