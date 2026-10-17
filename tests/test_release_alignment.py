@@ -14,6 +14,7 @@ from validate_release_alignment import (
     _validate_build_inputs,
     _validate_external_artifacts,
     _validate_platform_receipts,
+    _validate_wheel_metadata,
     _validate_wheel_contents,
     _validate_source_revision,
     validate_alignment,
@@ -207,6 +208,73 @@ def test_wheel_contents_binding_rejects_member_byte_drift(tmp_path: Path) -> Non
     binding["members"][0]["sha256"] = "0" * 64
     with pytest.raises(ValueError, match="member bytes differ"):
         _validate_wheel_contents(wheel, binding)
+
+
+def test_wheel_metadata_parity_covers_python_dependencies_and_extras(tmp_path: Path) -> None:
+    import zipfile
+
+    (tmp_path / "pyproject.toml").write_text(
+        """[project]
+name = "scirel"
+version = "0.1.0.dev9"
+requires-python = ">=3.14,<3.15"
+dependencies = ["numpy==2.5.4", "scipy==1.18.1"]
+
+[project.optional-dependencies]
+plot = ["matplotlib==3.11.2"]
+netcdf = ["netCDF4==1.7.4"]
+""",
+        encoding="utf-8",
+    )
+    wheel = tmp_path / "scirel-0.1.0.dev9-py3-none-any.whl"
+    metadata = """Metadata-Version: 2.4
+Name: scirel
+Version: 0.1.0.dev9
+Requires-Python: <3.15,>=3.14
+Requires-Dist: numpy==2.5.4
+Requires-Dist: scipy==1.18.1
+Provides-Extra: plot
+Requires-Dist: matplotlib==3.11.2; extra == "plot"
+Provides-Extra: netcdf
+Requires-Dist: netCDF4==1.7.4; extra == "netcdf"
+
+"""
+    with zipfile.ZipFile(wheel, "w") as archive:
+        archive.writestr("scirel-0.1.0.dev9.dist-info/METADATA", metadata)
+
+    _validate_wheel_metadata(tmp_path, wheel, source_revision=None)
+
+
+def test_wheel_metadata_parity_rejects_dependency_drift(tmp_path: Path) -> None:
+    import zipfile
+
+    (tmp_path / "pyproject.toml").write_text(
+        """[project]
+name = "scirel"
+version = "0.1.0.dev9"
+requires-python = ">=3.14,<3.15"
+dependencies = ["numpy==2.5.4"]
+
+[project.optional-dependencies]
+plot = ["matplotlib==3.11.2"]
+""",
+        encoding="utf-8",
+    )
+    wheel = tmp_path / "scirel-0.1.0.dev9-py3-none-any.whl"
+    metadata = """Metadata-Version: 2.4
+Name: scirel
+Version: 0.1.0.dev9
+Requires-Python: >=3.14,<3.15
+Requires-Dist: numpy==2.5.3
+Provides-Extra: plot
+Requires-Dist: matplotlib==3.11.2; extra == "plot"
+
+"""
+    with zipfile.ZipFile(wheel, "w") as archive:
+        archive.writestr("scirel-0.1.0.dev9.dist-info/METADATA", metadata)
+
+    with pytest.raises(ValueError, match="Requires-Dist differs"):
+        _validate_wheel_metadata(tmp_path, wheel, source_revision=None)
 
 
 def test_current_release_version_is_the_pyproject_version() -> None:

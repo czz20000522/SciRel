@@ -9,6 +9,7 @@ release notes rather than parallel metadata directories.
 from __future__ import annotations
 
 import argparse
+from email.parser import Parser
 import hashlib
 import json
 from pathlib import Path
@@ -18,6 +19,10 @@ import subprocess
 from typing import Any
 import tomllib
 import zipfile
+
+from packaging.requirements import InvalidRequirement, Requirement
+from packaging.specifiers import InvalidSpecifier, SpecifierSet
+from packaging.utils import canonicalize_name
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -130,6 +135,123 @@ def _git_blob_bytes(root: Path, revision: str, relative: str) -> bytes | None:
     if result.returncode:
         return None
     return result.stdout
+
+
+def _source_project_metadata(root: Path, source_revision: str | None) -> dict[str, Any]:
+    """Read the project metadata bound to the wheel source revision.
+
+    A real checkout should resolve the exact Git blob.  Structural fixture
+    roots used by tests may intentionally have no Git repository, in which
+    case their local ``pyproject.toml`` is the only available source.
+    """
+
+    raw: bytes | None = None
+    if source_revision is not None:
+        raw = _git_blob_bytes(root, source_revision, "pyproject.toml")
+    if raw is None:
+        path = root / "pyproject.toml"
+        if not path.is_file():
+            raise ValueError("source project metadata has no pyproject.toml")
+        raw = path.read_bytes()
+    try:
+        project = tomllib.loads(raw.decode("utf-8")).get("project")
+    except (UnicodeDecodeError, tomllib.TOMLDecodeError) as error:
+        raise ValueError("source project metadata has an unreadable pyproject.toml") from error
+    if not isinstance(project, dict):
+        raise ValueError("source project metadata lacks a project table")
+    return project
+
+
+def _requirement_key(value: str) -> tuple[str, str, tuple[str, ...], str, str]:
+    """Canonicalize one PEP 508 requirement for metadata parity checks."""
+
+    try:
+        requirement = Requirement(value)
+    except InvalidRequirement as error:
+        raise ValueError(f"wheel dependency metadata contains an invalid requirement: {value}") from error
+    marker = str(requirement.marker) if requirement.marker is not None else ""
+    return (
+        canonicalize_name(requirement.name),
+        str(requirement.specifier),
+        tuple(sorted(requirement.extras)),
+        requirement.url or "",
+        marker,
+    )
+
+
+def _validate_wheel_metadata(
+    root: Path,
+    wheel: Path,
+    *,
+    source_revision: str | None,
+) -> None:
+    """Ensure pip-facing wheel metadata matches the bound ``pyproject.toml``.
+
+    The wheel's Python requirement, unconditional runtime closure, and named
+    extras are part of the install contract.  Checking them against the same
+    source revision that produced the wheel catches backend/configuration drift
+    before a platform receipt can make the artifact look installable.
+    """
+
+    try:
+        with zipfile.ZipFile(wheel) as archive:
+            metadata_names = [
+                name for name in archive.namelist() if name.endswith(".dist-info/METADATA")
+            ]
+            if len(metadata_names) != 1:
+                raise ValueError("wheel needs exactly one distribution METADATA for parity")
+            fields = Parser().parsestr(archive.read(metadata_names[0]).decode("utf-8"))
+    except (OSError, UnicodeDecodeError, zipfile.BadZipFile) as error:
+        raise ValueError("wheel metadata is not a readable ZIP member") from error
+
+    project = _source_project_metadata(root, source_revision)
+    expected_name = project.get("name")
+    expected_version = project.get("version")
+    if fields.get("Name") != expected_name or fields.get("Version") != expected_version:
+        raise ValueError("wheel metadata name/version differs from source project")
+
+    expected_python = project.get("requires-python")
+    actual_python = fields.get("Requires-Python")
+    if not isinstance(expected_python, str) or not isinstance(actual_python, str):
+        raise ValueError("wheel and source project must both declare Requires-Python")
+    try:
+        if SpecifierSet(actual_python) != SpecifierSet(expected_python):
+            raise ValueError("wheel Requires-Python differs from source project")
+    except InvalidSpecifier as error:
+        raise ValueError("wheel or source project has an invalid Requires-Python specifier") from error
+
+    dependencies = project.get("dependencies", [])
+    optional = project.get("optional-dependencies", {})
+    if not isinstance(dependencies, list) or any(not isinstance(item, str) for item in dependencies):
+        raise ValueError("source project dependencies are invalid")
+    if not isinstance(optional, dict) or any(
+        not isinstance(name, str)
+        or not isinstance(requirements, list)
+        or any(not isinstance(item, str) for item in requirements)
+        for name, requirements in optional.items()
+    ):
+        raise ValueError("source project optional dependencies are invalid")
+
+    expected_requirements = [_requirement_key(item) for item in dependencies]
+    for extra, requirements in optional.items():
+        expected_requirements.extend(
+            _requirement_key(f"{item}; extra == '{extra}'") for item in requirements
+        )
+    actual_requirements = [
+        _requirement_key(item)
+        for item in (fields.get_all("Requires-Dist") or [])
+    ]
+    if sorted(actual_requirements) != sorted(expected_requirements):
+        raise ValueError("wheel Requires-Dist differs from source project dependencies")
+
+    actual_extras = {
+        value.strip().lower()
+        for value in (fields.get_all("Provides-Extra") or [])
+        if value.strip()
+    }
+    expected_extras = {name.lower() for name in optional}
+    if actual_extras != expected_extras:
+        raise ValueError("wheel Provides-Extra differs from source project optional dependencies")
 
 
 def _validate_wheel_contents(
@@ -772,6 +894,18 @@ def _validate_external_artifacts(
         raise ValueError("external wheel filename does not resolve beside its manifest")
     if _sha256(wheel_path) != wheel_artifact["sha256"] or wheel_path.stat().st_size != wheel_artifact["bytes"]:
         raise ValueError("external wheel bytes differ from release CURRENT")
+    # New-style ref-bound manifests carry a complete wheel member index.  For
+    # those artifacts, also verify the pip-facing metadata against the source
+    # project's exact dependency and extra declarations.  Historical manifests
+    # without ``contents`` retain their earlier structural validation contract.
+    if "contents" in wheel_manifest:
+        if not isinstance(wheel_manifest["contents"], dict):
+            raise ValueError("external wheel manifest contents binding is invalid")
+        _validate_wheel_metadata(
+            root,
+            wheel_path,
+            source_revision=source_revision,
+        )
     _validate_release_binding(
         root,
         current,
