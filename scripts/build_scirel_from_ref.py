@@ -15,12 +15,14 @@ import json
 import os
 import platform
 from pathlib import Path
+from pathlib import PurePosixPath
 import shutil
 import subprocess
 import sys
 import tarfile
 import tempfile
 import tomllib
+import zipfile
 from typing import Iterable
 
 
@@ -76,6 +78,411 @@ def _sha256(path: Path) -> str:
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def _sha256_bytes(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
+
+
+def _read_json_object(path: Path, *, label: str) -> dict[str, object]:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        raise ValueError(f"{label} is not readable JSON: {path}") from error
+    if not isinstance(value, dict):
+        raise ValueError(f"{label} must be a JSON object: {path}")
+    return value
+
+
+def _source_relative_path(source: Path, value: object, *, field: str) -> Path:
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{field} must be a non-empty relative path")
+    path = Path(value)
+    if path.is_absolute() or ".." in path.parts:
+        raise ValueError(f"{field} must be a safe relative path: {value}")
+    resolved = (source / path).resolve()
+    if not resolved.is_relative_to(source.resolve()) or not resolved.is_file() or resolved.is_symlink():
+        raise ValueError(f"{field} does not name a regular source file: {value}")
+    return resolved
+
+
+def _source_file_summary(source: Path, value: object, *, field: str) -> dict[str, object]:
+    path = _source_relative_path(source, value, field=field)
+    relative = path.relative_to(source).as_posix()
+    return {
+        "path": relative,
+        "sha256": _sha256(path),
+        "bytes": path.stat().st_size,
+    }
+
+
+def _wheel_content_binding(wheel: Path) -> dict[str, object]:
+    """Summarize every wheel member and its package subset.
+
+    The summary lives beside the external wheel rather than inside it.  It is
+    intentionally derived from the final ZIP bytes, so a later validator can
+    detect a changed member even when the outer artifact digest was copied
+    incorrectly.
+    """
+
+    try:
+        with zipfile.ZipFile(wheel) as archive:
+            infos = archive.infolist()
+            names = [info.filename for info in infos]
+            if len(names) != len(set(names)):
+                raise ValueError("wheel contains duplicate members")
+            members: list[dict[str, object]] = []
+            for info in sorted(infos, key=lambda item: item.filename):
+                if info.is_dir() or info.filename.endswith("/"):
+                    raise ValueError(f"wheel contains a directory member: {info.filename}")
+                if "\\" in info.filename or info.filename.startswith("/"):
+                    raise ValueError(f"wheel member has an unsafe path: {info.filename}")
+                path = PurePosixPath(info.filename)
+                if any(part in {"", ".", ".."} for part in path.parts):
+                    raise ValueError(f"wheel member has an unsafe path: {info.filename}")
+                data = archive.read(info)
+                members.append(
+                    {
+                        "path": info.filename,
+                        "sha256": _sha256_bytes(data),
+                        "bytes": len(data),
+                    }
+                )
+    except zipfile.BadZipFile as error:
+        raise ValueError(f"wheel is not a valid ZIP archive: {wheel}") from error
+
+    package_members = [
+        entry["path"]
+        for entry in members
+        if isinstance(entry.get("path"), str)
+        and entry["path"].startswith("scirel/")
+    ]
+    return {
+        "schema": "scirel.wheel-contents.v1",
+        "members": members,
+        "package_members": package_members,
+    }
+
+
+def _native_resource_closure_binding(
+    source: Path,
+    *,
+    wheel_contents: dict[str, object],
+) -> dict[str, object] | None:
+    """Bind the source native-resource closure to actual wheel ZIP members.
+
+    The closure is optional for historical refs.  Once a source ref carries
+    it, a build fails closed if a resource is missing, extra, or byte-different
+    in the wheel.  This keeps future split/package decisions in Git while
+    leaving old dev9 manifests untouched.
+    """
+
+    closure_path = source / "release/wheel/native-resource-closure.json"
+    if not closure_path.is_file() or closure_path.is_symlink():
+        return None
+    closure = _read_json_object(closure_path, label="native resource closure")
+    if closure.get("schema") != "scirel.native-resource-closure.v1":
+        raise ValueError("native resource closure has an invalid schema")
+    if closure.get("package") != "scirel":
+        raise ValueError("native resource closure names an unexpected package")
+    groups = closure.get("groups")
+    if not isinstance(groups, list) or not groups:
+        raise ValueError("native resource closure groups are invalid")
+    expected: dict[str, dict[str, object]] = {}
+    group_counts: dict[str, int] = {}
+    for group in groups:
+        if not isinstance(group, dict) or not isinstance(group.get("id"), str):
+            raise ValueError("native resource closure group is invalid")
+        group_id = group["id"]
+        digests = group.get("file_digests")
+        if not isinstance(digests, dict) or not digests:
+            raise ValueError(f"native resource closure group has no file_digests: {group_id}")
+        group_counts[group_id] = len(digests)
+        for relative, summary in digests.items():
+            if not isinstance(relative, str) or not isinstance(summary, dict):
+                raise ValueError(f"native resource closure digest row is invalid: {group_id}")
+            path = PurePosixPath(relative)
+            if path.is_absolute() or any(part in {"", ".", ".."} for part in path.parts):
+                raise ValueError(f"native resource closure path is unsafe: {relative}")
+            if relative in expected:
+                raise ValueError(f"native resource closure repeats resource: {relative}")
+            source_file = (source / "src/scirel/kinetic" / path).resolve()
+            if not source_file.is_file() or source_file.is_symlink():
+                raise ValueError(f"native resource closure source file is missing: {relative}")
+            digest = summary.get("sha256")
+            size = summary.get("bytes")
+            if (
+                not isinstance(digest, str)
+                or len(digest) != 64
+                or any(character not in "0123456789abcdef" for character in digest)
+                or not isinstance(size, int)
+                or isinstance(size, bool)
+            ):
+                raise ValueError(f"native resource closure digest is invalid: {relative}")
+            if _sha256(source_file) != digest or source_file.stat().st_size != size:
+                raise ValueError(f"native resource closure digest differs from source: {relative}")
+            expected[relative] = {"sha256": digest, "bytes": size, "group": group_id}
+    package_members = set(wheel_contents.get("package_members", []))
+    member_rows = {
+        row.get("path"): row
+        for row in wheel_contents.get("members", [])
+        if isinstance(row, dict) and isinstance(row.get("path"), str)
+    }
+    expected_members = {"scirel/kinetic/" + relative for relative in expected}
+    actual_native = {
+        member
+        for member in package_members
+        if member.startswith("scirel/kinetic/_fluidbw_native/")
+        or member.startswith("scirel/kinetic/pdrk/_native/")
+    }
+    if actual_native != expected_members:
+        missing = sorted(expected_members - actual_native)
+        extra = sorted(actual_native - expected_members)
+        detail = []
+        if missing:
+            detail.append("missing: " + ", ".join(missing))
+        if extra:
+            detail.append("extra: " + ", ".join(extra))
+        raise ValueError("wheel native resource members differ from source closure (" + "; ".join(detail) + ")")
+    for relative, summary in expected.items():
+        row = member_rows.get("scirel/kinetic/" + relative)
+        if row is None or row.get("sha256") != summary["sha256"] or row.get("bytes") != summary["bytes"]:
+            raise ValueError(f"wheel native resource bytes differ from source closure: {relative}")
+    return {
+        "schema": "scirel.native-resource-closure.v1",
+        "path": closure_path.relative_to(source).as_posix(),
+        "sha256": _sha256(closure_path),
+        "bytes": closure_path.stat().st_size,
+        "resource_count": len(expected),
+        "group_counts": group_counts,
+    }
+
+
+def _module_wheel_member(module: str, package_members: set[str]) -> str:
+    if not isinstance(module, str) or not module or not module.startswith("scirel"):
+        raise ValueError(f"document public_api.python.module is invalid: {module!r}")
+    module_path = module.replace(".", "/")
+    direct = module_path + ".py"
+    package = module_path + "/__init__.py"
+    if direct in package_members:
+        return direct
+    if package in package_members:
+        return package
+    raise ValueError(f"document public API module is absent from wheel: {module}")
+
+
+def _release_binding(
+    source: Path,
+    *,
+    revision: str,
+    version: str,
+    wheel_contents: dict[str, object],
+) -> dict[str, object] | None:
+    """Bind a v2 source release tuple to the final wheel ZIP.
+
+    Older refs intentionally have no binding because their release tuple was
+    issued before this extension.  That preserves historical dev9 manifests;
+    a later ref must carry a self-contained v2 tuple before the extension is
+    emitted.
+    """
+
+    current_path = source / "release/CURRENT.json"
+    if not current_path.is_file() or current_path.is_symlink():
+        return None
+    current = _read_json_object(current_path, label="release CURRENT")
+    if current.get("schema") != "scirel.release-current.v2":
+        return None
+    # ``release/CURRENT.json`` is written after the source commit that it
+    # describes: adding the tuple changes the Git commit hash, so a source
+    # archive cannot contain a self-referential CURRENT record.  A ref whose
+    # tuple still points at an older commit is therefore an ordinary
+    # development build and receives no embedded release binding.  The later
+    # coordination commit binds its external manifests back to this source
+    # revision through the alignment validator.
+    if current.get("package") != "scirel" or current.get("version") != version:
+        return None
+    if current.get("source_revision") != revision:
+        return None
+    wheel = current.get("wheel")
+    docs = current.get("documentation")
+    if not isinstance(wheel, dict) or not isinstance(docs, dict):
+        raise ValueError("release CURRENT lacks wheel/documentation objects")
+    layout_value = wheel.get("package_layout")
+    selection_value = docs.get("source_documents")
+    handbook_value = docs.get("handbook")
+    integration_value = docs.get("integration_record")
+    matrix_value = "release/platform-support-matrix.json"
+    layout_path = _source_relative_path(source, layout_value, field="wheel package_layout")
+    selection_path = _source_relative_path(source, selection_value, field="documentation source_documents")
+    handbook_path = _source_relative_path(source, handbook_value, field="documentation handbook")
+    integration_path = _source_relative_path(source, integration_value, field="documentation integration_record")
+    matrix_path = _source_relative_path(source, matrix_value, field="platform support matrix")
+
+    layout = _read_json_object(layout_path, label="wheel layout")
+    if layout.get("schema") != "scirel.wheel-layout.v1":
+        raise ValueError("wheel layout has an invalid schema")
+    domain_packages = layout.get("domain_packages")
+    organized = layout.get("organized_general_primitives")
+    if not isinstance(domain_packages, list) or any(not isinstance(item, str) for item in domain_packages):
+        raise ValueError("wheel layout domain_packages is invalid")
+    if not isinstance(organized, dict):
+        raise ValueError("wheel layout organized_general_primitives is invalid")
+    package_members = set(wheel_contents.get("package_members", []))
+    expected_layout_members: set[str] = set()
+    for domain in domain_packages:
+        expected_layout_members.add(f"scirel/{domain}/__init__.py")
+    for package, modules in organized.items():
+        if not isinstance(package, str) or not isinstance(modules, list):
+            raise ValueError("wheel layout organized_general_primitives has an invalid entry")
+        for module in modules:
+            if not isinstance(module, str):
+                raise ValueError("wheel layout primitive module is invalid")
+            expected_layout_members.add(f"scirel/{package}/{module}.py")
+    missing_layout = sorted(expected_layout_members - package_members)
+    if missing_layout:
+        raise ValueError("wheel is missing layout package members: " + ", ".join(missing_layout))
+
+    selection = _read_json_object(selection_path, label="selected document set")
+    if selection.get("schema") != "scirel.selected-document-set.v1":
+        raise ValueError("selected document set has an invalid schema")
+    rows = selection.get("records")
+    if not isinstance(rows, list) or not rows:
+        raise ValueError("selected document set is empty")
+    capabilities: list[dict[str, object]] = []
+    seen_assets: set[str] = set()
+    counts = {"operators": 0, "task_graphs": 0, "document_closure": len(rows)}
+    for row in rows:
+        if not isinstance(row, dict) or set(row) != {"asset_id", "path", "sha256"}:
+            raise ValueError("selected document set contains an invalid row")
+        asset_id = row["asset_id"]
+        if not isinstance(asset_id, str) or not asset_id or asset_id in seen_assets:
+            raise ValueError("selected document set repeats or lacks asset_id")
+        seen_assets.add(asset_id)
+        document_path = _source_relative_path(source, row["path"], field=f"document[{asset_id}]")
+        if _sha256(document_path) != row["sha256"]:
+            raise ValueError(f"document digest differs from selection: {asset_id}")
+        document = _read_json_object(document_path, label=f"document[{asset_id}]")
+        if document.get("asset_id") != asset_id:
+            raise ValueError(f"document asset_id differs from selection: {asset_id}")
+        kind = document.get("kind")
+        if kind == "operator":
+            counts["operators"] += 1
+        elif kind == "task_graph":
+            counts["task_graphs"] += 1
+        else:
+            raise ValueError(f"selected document has unsupported kind: {asset_id}")
+        document_version = document.get("version")
+        if not isinstance(document_version, dict) or document_version.get("implementation_version") != version:
+            raise ValueError(f"document implementation version differs: {asset_id}")
+        public_api = document.get("public_api")
+        python_api = public_api.get("python") if isinstance(public_api, dict) else None
+        if not isinstance(python_api, dict):
+            raise ValueError(f"document lacks Python public API: {asset_id}")
+        module = python_api.get("module")
+        symbol = python_api.get("symbol")
+        if not isinstance(symbol, str) or not symbol:
+            raise ValueError(f"document public API symbol is invalid: {asset_id}")
+        wheel_member = _module_wheel_member(module, package_members)
+        capabilities.append(
+            {
+                "asset_id": asset_id,
+                "kind": kind,
+                "module": module,
+                "symbol": symbol,
+                "wheel_member": wheel_member,
+            }
+        )
+    expected_counts = wheel.get("selected_capabilities")
+    doc_counts = docs.get("capability_counts")
+    if expected_counts != counts or doc_counts != counts:
+        raise ValueError("release CURRENT capability counts differ from selected documents")
+
+    matrix = _read_json_object(matrix_path, label="platform support matrix")
+    if matrix.get("schema") != "scirel.platform-support-matrix.v1":
+        raise ValueError("platform support matrix has an invalid schema")
+    if matrix.get("package") != "scirel" or matrix.get("package_version") != version:
+        raise ValueError("platform support matrix package/version differs")
+
+    integration = _read_json_object(integration_path, label="document integration record")
+    if integration.get("status") != "PASS":
+        raise ValueError("document integration record is not PASS")
+    if integration.get("project_version") != version:
+        raise ValueError("document integration record version differs")
+    if integration.get("source_revision") != revision:
+        raise ValueError("document integration record source_revision differs")
+    selection_binding = integration.get("selection")
+    handbook_binding = integration.get("handbook")
+    if not isinstance(selection_binding, dict) or not isinstance(handbook_binding, dict):
+        raise ValueError("document integration record lacks selection/handbook binding")
+
+    selection_relative = selection_path.relative_to(source).as_posix()
+    handbook_relative = handbook_path.relative_to(source).as_posix()
+    selection_digest = _sha256(selection_path)
+    handbook_digest = _sha256(handbook_path)
+    if (
+        selection_binding.get("path") != selection_relative
+        or selection_binding.get("sha256") != selection_digest
+    ):
+        raise ValueError("integration selection digest/path differs from source files")
+    if (
+        handbook_binding.get("path") != handbook_relative
+        or handbook_binding.get("sha256") != handbook_digest
+    ):
+        raise ValueError("integration handbook digest/path differs from source files")
+
+    def file_summary(path: Path) -> dict[str, object]:
+        return {
+            "path": path.relative_to(source).as_posix(),
+            "sha256": _sha256(path),
+            "bytes": path.stat().st_size,
+        }
+
+    return {
+        "schema": "scirel.release-binding.v1",
+        "source": {"revision": revision, "version": version},
+        "files": {
+            "current": file_summary(current_path),
+            "layout": file_summary(layout_path),
+            "selection": file_summary(selection_path),
+            "handbook": file_summary(handbook_path),
+            "integration": file_summary(integration_path),
+            "platform_matrix": file_summary(matrix_path),
+        },
+        "layout": {
+            "path": layout_path.relative_to(source).as_posix(),
+            "sha256": _sha256(layout_path),
+            "domain_packages": sorted(domain_packages),
+            "organized_general_primitives": organized,
+            "members": sorted(expected_layout_members),
+        },
+        "selection": {
+            "path": selection_relative,
+            "sha256": selection_digest,
+            "counts": counts,
+            "capabilities": capabilities,
+        },
+        "handbook": {
+            "path": handbook_relative,
+            "sha256": handbook_digest,
+            "scope": docs.get("handbook_scope", "exact"),
+        },
+        "integration": {
+            "path": integration_path.relative_to(source).as_posix(),
+            "sha256": _sha256(integration_path),
+            "selection_sha256": selection_binding.get("sha256"),
+            "handbook_sha256": handbook_binding.get("sha256"),
+        },
+        "platform_matrix": {
+            "path": matrix_path.relative_to(source).as_posix(),
+            "sha256": _sha256(matrix_path),
+            "platform_ids": sorted(
+                row["id"] for row in matrix.get("platforms", [])
+                if isinstance(row, dict) and isinstance(row.get("id"), str)
+            ),
+        },
+        "capability_counts": counts,
+        "wheel_members": sorted(package_members),
+    }
 
 
 def _file_summary(path: Path, *, relative: str) -> dict[str, object]:
@@ -335,6 +742,17 @@ def build_from_ref(
                 )
             target = output_dir / wheel.name
             shutil.copyfile(wheel, target)
+            wheel_contents = _wheel_content_binding(target)
+            release_binding = _release_binding(
+                source,
+                revision=revision,
+                version=version,
+                wheel_contents=wheel_contents,
+            )
+            native_resource_closure = _native_resource_closure_binding(
+                source,
+                wheel_contents=wheel_contents,
+            )
             inputs = build_input_binding(
                 source,
                 helper_paths=("scripts/build_scirel_from_ref.py",),
@@ -363,6 +781,7 @@ def build_from_ref(
             "sha256": _sha256(target),
             "bytes": target.stat().st_size,
         },
+        "contents": wheel_contents,
         "builder": {
             "command": "uv build --wheel",
             "source_date_epoch": epoch,
@@ -376,6 +795,10 @@ def build_from_ref(
             "host_machine": platform.machine(),
         },
     }
+    if release_binding is not None:
+        manifest["release_binding"] = release_binding
+    if native_resource_closure is not None:
+        manifest["native_resource_closure"] = native_resource_closure
     (output_dir / "build-manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",

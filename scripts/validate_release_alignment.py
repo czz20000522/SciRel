@@ -17,9 +17,11 @@ import re
 import subprocess
 from typing import Any
 import tomllib
+import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
+_COMMIT = re.compile(r"[0-9a-f]{40}")
 _SHA256_DIGEST = re.compile(r"[0-9a-f]{64}")
 
 
@@ -111,6 +113,378 @@ def _git_blob_summary(root: Path, revision: str, relative: str) -> tuple[str, in
     if result.returncode:
         return None
     return hashlib.sha256(result.stdout).hexdigest(), len(result.stdout)
+
+
+def _git_blob_bytes(root: Path, revision: str, relative: str) -> bytes | None:
+    """Read a Git blob when the recorded source revision is available."""
+
+    try:
+        result = subprocess.run(
+            ["git", "cat-file", "blob", f"{revision}:{relative}"],
+            cwd=root,
+            check=False,
+            capture_output=True,
+        )
+    except OSError:
+        return None
+    if result.returncode:
+        return None
+    return result.stdout
+
+
+def _validate_wheel_contents(
+    wheel_path: Path,
+    contents: object,
+    *,
+    package_layout_members: set[str] | None = None,
+) -> set[str]:
+    """Check a ref-build's member digest index against the actual ZIP bytes."""
+
+    if not isinstance(contents, dict) or contents.get("schema") != "scirel.wheel-contents.v1":
+        raise ValueError("external wheel manifest has an invalid contents binding")
+    rows = contents.get("members")
+    package_members = contents.get("package_members")
+    if not isinstance(rows, list) or not isinstance(package_members, list):
+        raise ValueError("external wheel manifest contents are incomplete")
+    expected: dict[str, tuple[str, int]] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            raise ValueError("external wheel manifest member summary is invalid")
+        name = row.get("path")
+        digest = row.get("sha256")
+        size = row.get("bytes")
+        if not isinstance(name, str) or not name or "\\" in name or name.startswith("/"):
+            raise ValueError("external wheel manifest member path is invalid")
+        logical = PurePosixPath(name)
+        if any(part in {"", ".", ".."} for part in logical.parts):
+            raise ValueError(f"external wheel manifest member path is unsafe: {name}")
+        if not isinstance(digest, str) or _SHA256_DIGEST.fullmatch(digest) is None:
+            raise ValueError(f"external wheel manifest member digest is invalid: {name}")
+        if not isinstance(size, int) or isinstance(size, bool) or size < 0:
+            raise ValueError(f"external wheel manifest member byte count is invalid: {name}")
+        if name in expected:
+            raise ValueError(f"external wheel manifest repeats member: {name}")
+        expected[name] = (digest, size)
+    if len(package_members) != len(set(package_members)) or any(
+        not isinstance(name, str) or name not in expected or not name.startswith("scirel/")
+        for name in package_members
+    ):
+        raise ValueError("external wheel manifest package member list is invalid")
+    expected_package = {name for name in expected if name.startswith("scirel/")}
+    if set(package_members) != expected_package:
+        raise ValueError("external wheel manifest package member list differs from members")
+    if package_layout_members is not None and not package_layout_members <= expected_package:
+        raise ValueError("external wheel manifest is missing package layout members")
+
+    try:
+        with zipfile.ZipFile(wheel_path) as archive:
+            infos = archive.infolist()
+            names = [info.filename for info in infos]
+            if len(names) != len(set(names)):
+                raise ValueError("external wheel repeats a member")
+            actual: dict[str, tuple[str, int]] = {}
+            for info in infos:
+                if info.is_dir() or info.filename.endswith("/"):
+                    raise ValueError(f"external wheel contains a directory member: {info.filename}")
+                data = archive.read(info)
+                actual[info.filename] = (hashlib.sha256(data).hexdigest(), len(data))
+    except zipfile.BadZipFile as error:
+        raise ValueError("external wheel is not a valid ZIP archive") from error
+    if actual != expected:
+        missing = sorted(set(expected) - set(actual))
+        extra = sorted(set(actual) - set(expected))
+        if missing:
+            raise ValueError("external wheel is missing manifest members: " + ", ".join(missing))
+        if extra:
+            raise ValueError("external wheel has unbound members: " + ", ".join(extra))
+        raise ValueError("external wheel member bytes differ from manifest")
+    return expected_package
+
+
+def _public_module_wheel_member(module: object, package_members: set[str]) -> str:
+    if not isinstance(module, str) or not module or not module.startswith("scirel"):
+        raise ValueError(f"source document public API module is invalid: {module!r}")
+    module_path = module.replace(".", "/")
+    direct = module_path + ".py"
+    package = module_path + "/__init__.py"
+    if direct in package_members:
+        return direct
+    if package in package_members:
+        return package
+    raise ValueError(f"source document public API module is absent from wheel: {module}")
+
+
+def _validate_release_binding(
+    root: Path,
+    current: dict[str, Any],
+    wheel_manifest: dict[str, Any],
+    wheel_path: Path,
+    *,
+    source_revision: str | None,
+) -> None:
+    """Validate capability/layout/source bindings added after the dev9 build."""
+
+    binding = wheel_manifest.get("release_binding")
+    if binding is None:
+        # Historical manifests, including the immutable dev9 artifact, use the
+        # earlier build schema.  Their existing artifact and document checks
+        # remain authoritative.
+        return
+    if not isinstance(binding, dict) or binding.get("schema") != "scirel.release-binding.v1":
+        raise ValueError("external wheel manifest has an invalid release binding")
+    source = binding.get("source")
+    if not isinstance(source, dict):
+        raise ValueError("external wheel release binding lacks source metadata")
+    if source.get("revision") != source_revision or source.get("version") != current.get("version"):
+        raise ValueError("external wheel release binding source differs from release CURRENT")
+
+    files = binding.get("files")
+    if not isinstance(files, dict):
+        raise ValueError("external wheel release binding lacks source file summaries")
+    for label, summary in files.items():
+        if not isinstance(label, str) or not isinstance(summary, dict):
+            raise ValueError("external wheel release binding file summary is invalid")
+        relative = summary.get("path")
+        digest = summary.get("sha256")
+        size = summary.get("bytes")
+        if not isinstance(relative, str) or not relative or "\\" in relative or relative.startswith("/"):
+            raise ValueError(f"external wheel release binding path is invalid: {label}")
+        path = PurePosixPath(relative)
+        if any(part in {"", ".", ".."} for part in path.parts):
+            raise ValueError(f"external wheel release binding path is unsafe: {relative}")
+        if not isinstance(digest, str) or _SHA256_DIGEST.fullmatch(digest) is None:
+            raise ValueError(f"external wheel release binding digest is invalid: {label}")
+        if not isinstance(size, int) or isinstance(size, bool) or size < 0:
+            raise ValueError(f"external wheel release binding byte count is invalid: {label}")
+        if source_revision is not None:
+            actual = _git_blob_summary(root, source_revision, relative)
+            if actual is not None and actual != (digest, size):
+                raise ValueError(f"external wheel release binding differs from source revision: {relative}")
+
+    layout = binding.get("layout")
+    selection = binding.get("selection")
+    handbook = binding.get("handbook")
+    integration = binding.get("integration")
+    matrix = binding.get("platform_matrix")
+    for label, value in (
+        ("layout", layout),
+        ("selection", selection),
+        ("handbook", handbook),
+        ("integration", integration),
+        ("platform_matrix", matrix),
+    ):
+        if not isinstance(value, dict) or not isinstance(value.get("path"), str):
+            raise ValueError(f"external wheel release binding {label} is invalid")
+        file_summary = files.get(label)
+        if not isinstance(file_summary, dict):
+            raise ValueError(f"external wheel release binding lacks {label} file summary")
+        if (
+            value.get("path") != file_summary.get("path")
+            or value.get("sha256") != file_summary.get("sha256")
+        ):
+            raise ValueError(f"external wheel release binding {label} digest differs from file summary")
+    wheel = current.get("wheel")
+    docs = current.get("documentation")
+    if not isinstance(wheel, dict) or not isinstance(docs, dict):
+        raise ValueError("release CURRENT lacks wheel/documentation objects")
+    if layout["path"] != wheel.get("package_layout"):
+        raise ValueError("external wheel layout path differs from release CURRENT")
+    if selection["path"] != docs.get("source_documents"):
+        raise ValueError("external wheel selection path differs from release CURRENT")
+    if handbook["path"] != docs.get("handbook"):
+        raise ValueError("external wheel handbook path differs from release CURRENT")
+    if integration["path"] != docs.get("integration_record"):
+        raise ValueError("external wheel integration path differs from release CURRENT")
+    if matrix["path"] != "release/platform-support-matrix.json":
+        raise ValueError("external wheel platform matrix path is invalid")
+    if selection.get("sha256") != docs.get("selection_sha256"):
+        raise ValueError("external wheel selection digest differs from release CURRENT")
+    if handbook.get("sha256") != docs.get("handbook_sha256"):
+        raise ValueError("external wheel handbook digest differs from release CURRENT")
+
+    counts = selection.get("counts")
+    if not isinstance(counts, dict) or counts != wheel.get("selected_capabilities") or counts != docs.get("capability_counts"):
+        raise ValueError("external wheel capability counts differ from release CURRENT")
+    capabilities = selection.get("capabilities")
+    if not isinstance(capabilities, list) or len(capabilities) != counts.get("document_closure"):
+        raise ValueError("external wheel capability closure count is invalid")
+    seen_assets: set[str] = set()
+    capability_members: set[str] = set()
+    for capability in capabilities:
+        if not isinstance(capability, dict):
+            raise ValueError("external wheel capability entry is invalid")
+        asset_id = capability.get("asset_id")
+        module = capability.get("module")
+        symbol = capability.get("symbol")
+        member = capability.get("wheel_member")
+        kind = capability.get("kind")
+        if (
+            not isinstance(asset_id, str)
+            or not asset_id
+            or asset_id in seen_assets
+            or not isinstance(module, str)
+            or not isinstance(symbol, str)
+            or not symbol
+            or not isinstance(member, str)
+            or not isinstance(kind, str)
+        ):
+            raise ValueError("external wheel capability entry has invalid identity")
+        seen_assets.add(asset_id)
+        capability_members.add(member)
+
+    layout_members = layout.get("members")
+    if not isinstance(layout_members, list) or len(layout_members) != len(set(layout_members)) or any(
+        not isinstance(member, str) for member in layout_members
+    ):
+        raise ValueError("external wheel layout member list is invalid")
+    package_members = _validate_wheel_contents(
+        wheel_path,
+        wheel_manifest.get("contents"),
+        package_layout_members=set(layout_members),
+    )
+    wheel_members = binding.get("wheel_members")
+    if not isinstance(wheel_members, list) or len(wheel_members) != len(set(wheel_members)):
+        raise ValueError("external wheel release binding wheel member list is invalid")
+    if set(wheel_members) != package_members:
+        raise ValueError("external wheel release binding wheel members differ from contents")
+    if not capability_members <= package_members:
+        raise ValueError("external wheel capability closure points outside wheel package")
+    if integration.get("selection_sha256") != selection.get("sha256"):
+        raise ValueError("external wheel integration selection digest differs")
+    if integration.get("handbook_sha256") != handbook.get("sha256"):
+        raise ValueError("external wheel integration handbook digest differs")
+
+    # Parse the source layout and matrix through Git when possible.  This is a
+    # bidirectional check: the manifest points to source files, and those files
+    # must describe the same package paths and platform identities.
+    if source_revision is not None:
+        selection_bytes = _git_blob_bytes(root, source_revision, selection["path"])
+        if selection_bytes is not None:
+            try:
+                selection_record = json.loads(selection_bytes)
+            except json.JSONDecodeError as error:
+                raise ValueError("source selected document set is not valid JSON") from error
+            if not isinstance(selection_record, dict) or selection_record.get("schema") != "scirel.selected-document-set.v1":
+                raise ValueError("source selected document set has an invalid schema")
+            source_rows = selection_record.get("records")
+            if not isinstance(source_rows, list):
+                raise ValueError("source selected document set records are invalid")
+            expected_capabilities: list[dict[str, object]] = []
+            expected_counts = {"operators": 0, "task_graphs": 0, "document_closure": len(source_rows)}
+            for row in source_rows:
+                if not isinstance(row, dict) or set(row) != {"asset_id", "path", "sha256"}:
+                    raise ValueError("source selected document set contains an invalid row")
+                asset_id = row.get("asset_id")
+                document_path = row.get("path")
+                expected_digest = row.get("sha256")
+                if not isinstance(asset_id, str) or not isinstance(document_path, str):
+                    raise ValueError("source selected document set identity is invalid")
+                document_bytes = _git_blob_bytes(root, source_revision, document_path)
+                if document_bytes is None:
+                    raise ValueError(f"source selected document is missing: {document_path}")
+                if not isinstance(expected_digest, str) or hashlib.sha256(document_bytes).hexdigest() != expected_digest:
+                    raise ValueError(f"source selected document digest differs: {asset_id}")
+                try:
+                    document = json.loads(document_bytes)
+                except json.JSONDecodeError as error:
+                    raise ValueError(f"source selected document is not valid JSON: {asset_id}") from error
+                if not isinstance(document, dict) or document.get("asset_id") != asset_id:
+                    raise ValueError(f"source selected document asset_id differs: {asset_id}")
+                kind = document.get("kind")
+                if kind == "operator":
+                    expected_counts["operators"] += 1
+                elif kind == "task_graph":
+                    expected_counts["task_graphs"] += 1
+                else:
+                    raise ValueError(f"source selected document kind is invalid: {asset_id}")
+                implementation = document.get("version")
+                if not isinstance(implementation, dict) or implementation.get("implementation_version") != current.get("version"):
+                    raise ValueError(f"source selected document implementation version differs: {asset_id}")
+                public_api = document.get("public_api")
+                python_api = public_api.get("python") if isinstance(public_api, dict) else None
+                if not isinstance(python_api, dict):
+                    raise ValueError(f"source selected document lacks Python public API: {asset_id}")
+                module = python_api.get("module")
+                symbol = python_api.get("symbol")
+                if not isinstance(symbol, str) or not symbol:
+                    raise ValueError(f"source selected document symbol is invalid: {asset_id}")
+                expected_capabilities.append(
+                    {
+                        "asset_id": asset_id,
+                        "kind": kind,
+                        "module": module,
+                        "symbol": symbol,
+                        "wheel_member": _public_module_wheel_member(module, package_members),
+                    }
+                )
+            if selection.get("capabilities") != expected_capabilities:
+                raise ValueError("external wheel capability closure differs from source selection")
+            if selection.get("counts") != expected_counts:
+                raise ValueError("external wheel capability counts differ from source selection")
+
+        layout_bytes = _git_blob_bytes(root, source_revision, layout["path"])
+        if layout_bytes is not None:
+            try:
+                layout_record = json.loads(layout_bytes)
+            except json.JSONDecodeError as error:
+                raise ValueError("source wheel layout is not valid JSON") from error
+            if not isinstance(layout_record, dict) or layout_record.get("schema") != "scirel.wheel-layout.v1":
+                raise ValueError("source wheel layout has an invalid schema")
+            expected_layout = {
+                f"scirel/{domain}/__init__.py"
+                for domain in layout_record.get("domain_packages", [])
+                if isinstance(domain, str)
+            }
+            organized = layout_record.get("organized_general_primitives", {})
+            if isinstance(organized, dict):
+                for domain, modules in organized.items():
+                    if isinstance(domain, str) and isinstance(modules, list):
+                        expected_layout.update(
+                            f"scirel/{domain}/{module}.py"
+                            for module in modules
+                            if isinstance(module, str)
+                        )
+            if set(layout_members) != expected_layout:
+                raise ValueError("external wheel layout members differ from source layout")
+            if not expected_layout <= package_members:
+                raise ValueError("external wheel is missing source layout members")
+
+        matrix_bytes = _git_blob_bytes(root, source_revision, matrix["path"])
+        if matrix_bytes is not None:
+            try:
+                matrix_record = json.loads(matrix_bytes)
+            except json.JSONDecodeError as error:
+                raise ValueError("source platform matrix is not valid JSON") from error
+            if not isinstance(matrix_record, dict) or matrix_record.get("schema") != "scirel.platform-support-matrix.v1":
+                raise ValueError("source platform matrix has an invalid schema")
+            source_ids = sorted(
+                row["id"] for row in matrix_record.get("platforms", [])
+                if isinstance(row, dict) and isinstance(row.get("id"), str)
+            )
+            if matrix.get("platform_ids") != source_ids:
+                raise ValueError("external wheel platform matrix differs from source")
+
+        integration_bytes = _git_blob_bytes(root, source_revision, integration["path"])
+        if integration_bytes is not None:
+            try:
+                integration_record = json.loads(integration_bytes)
+            except json.JSONDecodeError as error:
+                raise ValueError("source document integration record is not valid JSON") from error
+            if not isinstance(integration_record, dict):
+                raise ValueError("source document integration record is invalid")
+            if integration_record.get("project_version") != current.get("version"):
+                raise ValueError("source document integration record version differs")
+            record_selection = integration_record.get("selection")
+            record_handbook = integration_record.get("handbook")
+            if (
+                not isinstance(record_selection, dict)
+                or record_selection.get("path") != selection["path"]
+                or record_selection.get("sha256") != selection["sha256"]
+                or not isinstance(record_handbook, dict)
+                or record_handbook.get("path") != handbook["path"]
+                or record_handbook.get("sha256") != handbook["sha256"]
+            ):
+                raise ValueError("external wheel integration binding differs from source record")
 
 
 def _validate_build_inputs(
@@ -353,6 +727,13 @@ def _validate_external_artifacts(
         raise ValueError("external wheel filename does not resolve beside its manifest")
     if _sha256(wheel_path) != wheel_artifact["sha256"] or wheel_path.stat().st_size != wheel_artifact["bytes"]:
         raise ValueError("external wheel bytes differ from release CURRENT")
+    _validate_release_binding(
+        root,
+        current,
+        wheel_manifest,
+        wheel_path,
+        source_revision=source_revision,
+    )
 
     snapshot_info = docs_manifest.get("snapshot")
     selection_info = docs_manifest.get("selection")
@@ -555,6 +936,69 @@ def _validate_platform_receipts(
             receipt_source_revision = source.get("revision")
             if validation.get("schema") != "scirel.installed-wheel-validation.v1":
                 raise ValueError(f"platform receipt inner schema is invalid: {row['platform']}")
+            bound = validation
+        elif schema == "scirel.offline-wheelhouse-validation.v1":
+            # Offline wheelhouse receipts are accepted only when the runner
+            # proves that no index/network resolution was used and the inner
+            # installed-wheel validator passed.  ``source_revision`` is
+            # optional at generation time, but the common binding check below
+            # requires it whenever CURRENT carries a source revision.
+            if receipt.get("status") != "PASS":
+                raise ValueError(f"platform receipt is not PASS: {row['platform']}")
+            validation = receipt.get("validation")
+            execution = receipt.get("execution")
+            wheelhouse = receipt.get("wheelhouse")
+            if not isinstance(validation, dict) or not isinstance(execution, dict):
+                raise ValueError(
+                    f"offline platform receipt lacks wrapped validation: {row['platform']}"
+                )
+            if validation.get("schema") != "scirel.installed-wheel-validation.v1":
+                raise ValueError(f"offline platform receipt inner schema is invalid: {row['platform']}")
+            if execution.get("network_resolution") is not False:
+                raise ValueError(f"offline platform receipt claims network resolution: {row['platform']}")
+            pip_install = execution.get("pip_install")
+            if not isinstance(pip_install, dict) or pip_install.get("status") != "PASS":
+                raise ValueError(f"offline platform receipt pip install is not PASS: {row['platform']}")
+            if (
+                not isinstance(wheelhouse, dict)
+                or not isinstance(wheelhouse.get("wheels"), list)
+                or not wheelhouse["wheels"]
+            ):
+                raise ValueError(
+                    f"offline platform receipt lacks wheelhouse inventory: {row['platform']}"
+                )
+            for wheelhouse_row in wheelhouse["wheels"]:
+                if not isinstance(wheelhouse_row, dict) or set(wheelhouse_row) != {
+                    "filename",
+                    "sha256",
+                    "bytes",
+                }:
+                    raise ValueError(
+                        f"offline platform receipt has an invalid wheelhouse row: {row['platform']}"
+                    )
+                if (
+                    not isinstance(wheelhouse_row["filename"], str)
+                    or not wheelhouse_row["filename"].endswith(".whl")
+                    or Path(wheelhouse_row["filename"]).name != wheelhouse_row["filename"]
+                    or not isinstance(wheelhouse_row["sha256"], str)
+                    or _SHA256_DIGEST.fullmatch(wheelhouse_row["sha256"]) is None
+                    or not isinstance(wheelhouse_row["bytes"], int)
+                    or isinstance(wheelhouse_row["bytes"], bool)
+                    or wheelhouse_row["bytes"] < 0
+                ):
+                    raise ValueError(
+                        f"offline platform receipt has an invalid wheelhouse identity: {row['platform']}"
+                    )
+            if validation.get("status") != "PASS":
+                raise ValueError(f"offline platform inner validation is not PASS: {row['platform']}")
+            receipt_source_revision = receipt.get("source_revision")
+            if (
+                not isinstance(receipt_source_revision, str)
+                or _COMMIT.fullmatch(receipt_source_revision) is None
+            ):
+                raise ValueError(
+                    f"offline platform receipt lacks an exact source revision: {row['platform']}"
+                )
             bound = validation
         else:
             raise ValueError(f"platform receipt has an invalid schema: {row['platform']}")

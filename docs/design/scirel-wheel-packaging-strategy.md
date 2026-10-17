@@ -26,9 +26,10 @@ Agent 只组合已声明合同并编写胶水代码。安装成功、某个平�
 重建解析的锁文件，不是 pip 用户端的跨平台证明；每个平台仍须用实际解析结果和 clean venv 验收。
 
 当前 checkout 的候选版本只由 `pyproject.toml` 的 `project.version` 给出。构建产物、文档和平台
-回执必须来自同一 Git 提交；在候选完成验收前，不创建新的历史版本复制目录。若开发 HEAD 已经
-超出 `release/CURRENT.json` 的 `source_revision`，它仍属于后续开发，不能用旧版本号重新构建并
-覆盖旧候选；应先提交后继变更，再提升版本或明确新的候选绑定。
+回执必须来自同一 Git 提交；在候选完成验收前，不创建新的历史版本复制目录。开发 HEAD 已经
+超出 `release/CURRENT.json` 的 `source_revision` 时，可以继续使用同一个 `*.devN` 开发版本，
+但必须先提交变更，再把新 wheel、文档和回执写入以版本与 commit 共同命名的外部目录；旧候选
+字节和原回执保持不变，不能覆盖。
 
 当前开发验收的唯一已绑定环境是 **Linux x86_64（amd64）+ CPython 3.14**。现有平台矩阵中
 Linux x86_64 和 Linux aarch64 为 `PARTIAL`，Windows amd64、macOS arm64 和 macOS x86_64
@@ -83,6 +84,15 @@ fluidBW 当前在运行时明确要求 Linux amd64 和 GNU Octave 7.3.0；PDRK �
 可移植 Python/编译扩展，或拆成带平台标签和独立系统运行时合同的能力包；不能用额外 pip extra
 伪装系统 Octave 已被安装。
 
+当前随包资源的精确来源闭包记录在
+[`release/wheel/native-resource-closure.json`](../../release/wheel/native-resource-closure.json)。
+它把 117 个 `.m`、输入和数据文件按 fluidBW、PDRK current、场景 fixture、legacy、examples、
+finite-N 及共享绘图 helper 分组，并把组绑定到 catalog capability。
+`scripts/validate_native_resource_closure.py` 同时检查源码资源全集、组间重复、`package-data`
+覆盖和可选 wheel 成员；通过这一步只说明资源进入了实际 wheel，不提升外部 Octave 或科学发布
+状态。后续拆包应以这些组作为候选边界，先补每组独立的运行时和平台收据，再改变
+`pyproject.toml` 的分发边界。
+
 ## 构建产物与锁定
 
 在不改变科学源码的阶段，继续构建一个 `py3-none-any` SciRel wheel。构建输入必须绑定确切
@@ -106,6 +116,11 @@ Windows/macOS 后续各自生成和验收自己的 artifact，不复用 Linux �
 3. 对每个目标平台生成实际使用的 wheelhouse 或下载清单；锁文件中的候选 wheel 列表不能替代
    目标平台安装回执。
 4. 离线验收使用锁定的 wheelhouse，保留每个文件的 SHA-256、平台 tag、Python tag 和失败原因。
+   `scripts/validate_offline_wheelhouse.py` 只消费已经构建的 wheel 和 wheelhouse，使用
+   `--no-index --only-binary=:all:` 在临时 clean venv 中完成安装，再调用安装包验收器；它不会
+   重建 wheel、修改 `release/CURRENT.json` 或把网络解析结果伪装成离线证据。未提供
+   `--source-revision` 的回执只是独立技术证据；带有确切 Git 提交的 PASS 回执才可以在
+   后续候选中作为 `platform_receipts` 绑定，并继续接受 `CURRENT` 的 wheel 摘要和版本校验。
 
 如果某平台没有 CPython 3.14 的依赖 wheel，或者只能从源码构建而构建工具链未被声明和验证，
 该平台必须保持 `NOT_RUN` 或 `BLOCKED`，不能偷偷使用开发机已有包或把源码构建成功写成 wheel

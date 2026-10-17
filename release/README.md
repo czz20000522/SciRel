@@ -28,10 +28,12 @@ The tuple binds:
 
 `CURRENT.json` may continue to point at an earlier exact commit while the checkout
 contains later development commits. Those commits are post-candidate work; they do
-not change the bound wheel or documentation. Before moving the candidate forward,
-commit the complete follow-up change, rebuild the wheel and documentation from that
-new ref, and update the tuple and receipts together. Never rebuild an older version
-number from a newer checkout and overwrite its external artifacts.
+not change the bound wheel or documentation. A development sequence may keep the
+same `*.devN` package version while its Git commit advances. Build the source
+commit first, write its wheel and documentation under a new external
+`<version>/<commit>/` directory, then commit the updated `CURRENT.json` tuple that
+points back to that source commit. Never overwrite the older external artifact or
+its receipt; the coordination commit cannot be self-referential.
 
 The current documentation selection is single-version: every selected exact document
 must carry the `project.version` from the same checkout. The current tuple does not

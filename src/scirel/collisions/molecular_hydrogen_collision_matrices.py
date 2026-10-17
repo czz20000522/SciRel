@@ -66,27 +66,25 @@ def _build_predecessor_state(vr, vx, Vr2pidVr, dVx, n_theta=5):
     cos_theta = np.cos(np.pi * (np.arange(n_theta) + 0.5) / n_theta)
     nvr = vr.size
     nvx = vx.size
-    v_v2 = np.zeros((nvr, nvx, nvr, nvx, n_theta))
-    vr2_vx2 = np.zeros((nvr, nvx, nvr, nvx, n_theta))
-    for m in range(n_theta):
-        for l in range(nvx):
-            for k in range(nvr):
-                for i in range(nvr):
-                    v_starter = vr[i] ** 2 + vr[k] ** 2 - 2 * vr[i] * vr[k] * cos_theta[m]
-                    v_v2[i, :, k, l, m] = v_starter + (vx[:] - vx[l]) ** 2
-                    vr2_vx2[i, :, k, l, m] = v_starter - 2 * (vx[:] - vx[l]) ** 2
+    # Broadcast the four velocity axes together.  This preserves the source
+    # geometry while avoiding the O(n_theta*n_vr**2*n_vx) Python assignment
+    # loop on every matrix assembly.
+    vr_i = vr[:, None, None, None, None]
+    vr_k = vr[None, None, :, None, None]
+    delta_vx = vx[None, :, None, None, None] - vx[None, None, None, :, None]
+    v_starter = vr_i**2 + vr_k**2 - 2 * vr_i * vr_k * cos_theta[None, None, None, None, :]
+    v_v2 = v_starter + delta_vx**2
+    vr2_vx2 = v_starter - 2 * delta_vx**2
     v_v = np.sqrt(v_v2)
 
-    vx_vx = np.zeros((nvr, nvx, nvr, nvx))
-    for j in range(nvx):
-        for l in range(nvx):
-            vx_vx[:, j, :, l] = vx[j] - vx[l]
-
-    Vr2pidVrdVx = np.zeros((nvr, nvx, nvr, nvx))
-    for k in range(nvr):
-        Vr2pidVrdVx[:, :, k, :] = Vr2pidVr[k]
-    for l in range(nvx):
-        Vr2pidVrdVx[:, :, :, l] = Vr2pidVrdVx[:, :, :, l] * dVx[l]
+    vx_vx = np.broadcast_to(
+        vx[None, :, None, None] - vx[None, None, None, :],
+        (nvr, nvx, nvr, nvx),
+    ).copy()
+    Vr2pidVrdVx = np.broadcast_to(
+        Vr2pidVr[None, None, :, None] * dVx[None, None, None, :],
+        (nvr, nvx, nvr, nvx),
+    ).copy()
     return v_v2, v_v, vr2_vx2, vx_vx, Vr2pidVrdVx
 
 

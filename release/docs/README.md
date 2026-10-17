@@ -32,6 +32,10 @@ the archived project metadata, lock file, license set, and both documentation
 build helpers are summarized alongside the snapshot. This keeps wheel and
 documentation outputs tied to one Git source without copying a versioned
 handbook into the repository.
+The `--documents` path remains authoritative when `--selection` is supplied:
+selection records may use a path relative to that directory or a full
+repository-relative path, but records outside the requested directory are
+rejected.
 Use an absolute interpreter path when selecting a virtual environment so the
 archived build retains that environment's documentation dependencies:
 

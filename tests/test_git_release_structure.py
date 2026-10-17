@@ -7,6 +7,7 @@ import json
 import re
 import hashlib
 import sys
+import pytest
 import stat
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -119,6 +120,117 @@ def test_ref_bound_archive_normalizes_umask_dependent_modes(tmp_path: Path) -> N
     assert stat.S_IMODE(nested.stat().st_mode) == 0o755
 
 
+def test_wheel_manifest_binds_v2_release_closure_to_zip_members(tmp_path: Path) -> None:
+    from build_scirel_from_ref import _release_binding, _wheel_content_binding
+
+    source = tmp_path / "source"
+    (source / "src/scirel/foo").mkdir(parents=True)
+    (source / "src/scirel/foo/__init__.py").write_text(
+        "def evaluate(value):\n    return value\n", encoding="utf-8"
+    )
+    (source / "release/wheel").mkdir(parents=True)
+    (source / "provenance/selections").mkdir(parents=True)
+    (source / "provenance/validation").mkdir(parents=True)
+    (source / "tools/docs").mkdir(parents=True)
+    (source / "release/platform-support-matrix.json").write_text(
+        json.dumps(
+            {
+                "schema": "scirel.platform-support-matrix.v1",
+                "package": "scirel",
+                "package_version": "0.1.0.dev10",
+                "platforms": [{"id": "linux-x86_64-cp314"}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    document = {
+        "schema": "scirel.asset-document.v1",
+        "asset_id": "scirel.foo.evaluate",
+        "kind": "operator",
+        "version": {"implementation_version": "0.1.0.dev10"},
+        "public_api": {"python": {"module": "scirel.foo", "symbol": "evaluate"}},
+    }
+    document_path = source / "catalog/examples/scirel.foo.evaluate.json"
+    document_path.parent.mkdir(parents=True)
+    document_path.write_text(json.dumps(document), encoding="utf-8")
+    document_digest = hashlib.sha256(document_path.read_bytes()).hexdigest()
+    selection = {
+        "schema": "scirel.selected-document-set.v1",
+        "records": [
+            {
+                "asset_id": "scirel.foo.evaluate",
+                "path": "catalog/examples/scirel.foo.evaluate.json",
+                "sha256": document_digest,
+            }
+        ],
+    }
+    selection_path = source / "provenance/selections/current.json"
+    selection_path.write_text(json.dumps(selection), encoding="utf-8")
+    layout = {
+        "schema": "scirel.wheel-layout.v1",
+        "source_layout": "src/scirel",
+        "domain_packages": ["foo"],
+        "organized_general_primitives": {},
+    }
+    layout_path = source / "release/wheel/layout.json"
+    layout_path.write_text(json.dumps(layout), encoding="utf-8")
+    handbook_path = source / "tools/docs/handbook.json"
+    handbook_path.write_text(json.dumps({"schema": "scirel.handbook.v1"}), encoding="utf-8")
+    revision = "a" * 40
+    integration_path = source / "provenance/validation/integration.json"
+    integration_path.write_text(
+        json.dumps(
+            {
+                "source_revision": revision,
+                "status": "PASS",
+                "project_version": "0.1.0.dev10",
+                "selection": {"path": "provenance/selections/current.json", "sha256": hashlib.sha256(selection_path.read_bytes()).hexdigest()},
+                "handbook": {"path": "tools/docs/handbook.json", "sha256": hashlib.sha256(handbook_path.read_bytes()).hexdigest()},
+            }
+        ),
+        encoding="utf-8",
+    )
+    current = {
+        "schema": "scirel.release-current.v2",
+        "package": "scirel",
+        "version": "0.1.0.dev10",
+        "source_revision": revision,
+        "wheel": {
+            "version": "0.1.0.dev10",
+            "selected_capabilities": {"operators": 1, "task_graphs": 0, "document_closure": 1},
+            "package_layout": "release/wheel/layout.json",
+        },
+        "documentation": {
+            "source_documents": "provenance/selections/current.json",
+            "handbook": "tools/docs/handbook.json",
+            "integration_record": "provenance/validation/integration.json",
+            "selection_sha256": hashlib.sha256(selection_path.read_bytes()).hexdigest(),
+            "handbook_sha256": hashlib.sha256(handbook_path.read_bytes()).hexdigest(),
+            "capability_counts": {"operators": 1, "task_graphs": 0, "document_closure": 1},
+        },
+    }
+    (source / "release/CURRENT.json").write_text(json.dumps(current), encoding="utf-8")
+
+    wheel = tmp_path / "scirel.whl"
+    import zipfile
+
+    with zipfile.ZipFile(wheel, "w") as archive:
+        archive.writestr("scirel/foo/__init__.py", (source / "src/scirel/foo/__init__.py").read_bytes())
+        archive.writestr("scirel-0.1.0.dev10.dist-info/METADATA", "Name: scirel\n")
+    contents = _wheel_content_binding(wheel)
+    binding = _release_binding(
+        source,
+        revision=revision,
+        version="0.1.0.dev10",
+        wheel_contents=contents,
+    )
+    assert binding is not None
+    assert binding["schema"] == "scirel.release-binding.v1"
+    assert binding["selection"]["counts"] == {"operators": 1, "task_graphs": 0, "document_closure": 1}
+    assert binding["selection"]["capabilities"][0]["wheel_member"] == "scirel/foo/__init__.py"
+    assert binding["layout"]["members"] == ["scirel/foo/__init__.py"]
+
+
 def test_document_selection_materializes_only_digest_bound_records(tmp_path: Path) -> None:
     from build_scirel_docs_from_ref import _materialize_selection, _materialize_translations
 
@@ -149,6 +261,197 @@ def test_document_selection_materializes_only_digest_bound_records(tmp_path: Pat
 
     assert result["asset_count"] == 1
     assert (tmp_path / "staging/selected-documents/scirel.test.example.json").read_bytes() == document.read_bytes()
+
+
+def test_document_selection_honors_requested_documents_root(tmp_path: Path) -> None:
+    from build_scirel_docs_from_ref import (
+        _materialize_selection,
+        _resolve_documents_root,
+    )
+
+    source = tmp_path / "source"
+    document = source / "catalog/custom/scirel.test.example.json"
+    document.parent.mkdir(parents=True)
+    document.write_text('{"asset_id":"scirel.test.example"}\n', encoding="utf-8")
+    selection = source / "provenance/selections/current.json"
+    selection.parent.mkdir(parents=True)
+    selection.write_text(
+        json.dumps(
+            {
+                "schema": "scirel.selected-document-set.v1",
+                "records": [
+                    {
+                        "asset_id": "scirel.test.example",
+                        "path": "scirel.test.example.json",
+                        "sha256": hashlib.sha256(document.read_bytes()).hexdigest(),
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    documents_root = _resolve_documents_root(source, "catalog/custom")
+    result = _materialize_selection(
+        source,
+        "provenance/selections/current.json",
+        tmp_path / "staging",
+        documents_root=documents_root,
+    )
+
+    assert result["asset_count"] == 1
+    assert (tmp_path / "staging/selected-documents/scirel.test.example.json").read_bytes() == document.read_bytes()
+
+    # Existing repository selections use a full repository-relative path;
+    # that form remains valid when the same custom documents root is supplied.
+    selection.write_text(
+        json.dumps(
+            {
+                "schema": "scirel.selected-document-set.v1",
+                "records": [
+                    {
+                        "asset_id": "scirel.test.example",
+                        "path": "catalog/custom/scirel.test.example.json",
+                        "sha256": hashlib.sha256(document.read_bytes()).hexdigest(),
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    _materialize_selection(
+        source,
+        "provenance/selections/current.json",
+        tmp_path / "staging-full-path",
+        documents_root=documents_root,
+    )
+
+    outside = source / "catalog/other/scirel.outside.json"
+    outside.parent.mkdir(parents=True)
+    outside.write_text('{"asset_id":"scirel.outside"}\n', encoding="utf-8")
+    selection.write_text(
+        json.dumps(
+            {
+                "schema": "scirel.selected-document-set.v1",
+                "records": [
+                    {
+                        "asset_id": "scirel.outside",
+                        "path": "../other/scirel.outside.json",
+                        "sha256": hashlib.sha256(outside.read_bytes()).hexdigest(),
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="outside requested documents directory"):
+        _materialize_selection(
+            source,
+            "provenance/selections/current.json",
+            tmp_path / "staging-outside",
+            documents_root=documents_root,
+        )
+
+
+def test_ref_bound_builder_passes_documents_root_into_selection(tmp_path: Path, monkeypatch) -> None:
+    import build_scirel_docs_from_ref as docs_builder
+
+    source = tmp_path / "archived-source"
+    documents = source / "custom-documents"
+    documents.mkdir(parents=True)
+    document = documents / "scirel.test.example.json"
+    document.write_text(
+        json.dumps(
+            {
+                "asset_id": "scirel.test.example",
+                "version": {"implementation_version": "0.0.1"},
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    digest = hashlib.sha256(document.read_bytes()).hexdigest()
+    (source / "selection.json").write_text(
+        json.dumps(
+            {
+                "schema": "scirel.selected-document-set.v1",
+                "records": [
+                    {
+                        "asset_id": "scirel.test.example",
+                        "path": document.name,
+                        "sha256": digest,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (source / "scripts").mkdir()
+    (source / "scripts/scirel_docs.py").write_text(
+        "# --source-revision --translations\n", encoding="utf-8"
+    )
+    (source / "pyproject.toml").write_text(
+        '[project]\nname = "scirel"\nversion = "0.0.1"\n', encoding="utf-8"
+    )
+
+    revision = "a" * 40
+    monkeypatch.setattr(docs_builder, "resolve_revision", lambda ref: revision)
+    monkeypatch.setattr(docs_builder, "commit_epoch", lambda value: 0)
+    monkeypatch.setattr(docs_builder, "_archive_ref", lambda *args: source)
+    monkeypatch.setattr(docs_builder, "_project_metadata", lambda path: ("scirel", "0.0.1"))
+    monkeypatch.setattr(
+        docs_builder,
+        "_materialize_translations",
+        lambda source_root, asset_ids, staging: {
+            "source": "fixture",
+            "sha256": "b" * 64,
+            "asset_count": len(asset_ids),
+        },
+    )
+    monkeypatch.setattr(docs_builder, "build_input_binding", lambda *args, **kwargs: {"schema": "fixture"})
+    monkeypatch.setattr(docs_builder.platform, "platform", lambda: "fixture-platform")
+    monkeypatch.setattr(docs_builder.platform, "machine", lambda: "fixture-machine")
+
+    class Completed:
+        returncode = 0
+        stdout = "Python 3.14.0\n"
+        stderr = ""
+
+        def check_returncode(self):
+            if self.returncode:
+                raise subprocess.CalledProcessError(self.returncode, "fixture")
+
+    def fake_run(command, **kwargs):
+        if command[-1] == "--version":
+            return Completed()
+        documents_arg = Path(command[command.index("--documents") + 1])
+        assert (documents_arg / document.name).read_bytes() == document.read_bytes()
+        snapshot = Path(command[command.index("--output") + 1])
+        snapshot.mkdir(parents=True)
+        (snapshot / "manifest.json").write_text(
+            json.dumps(
+                {
+                    "source_revision": revision,
+                    "source_dirty": False,
+                    "project_version": "0.0.1",
+                    "snapshot_sha256": "c" * 64,
+                }
+            ),
+            encoding="utf-8",
+        )
+        return Completed()
+
+    monkeypatch.setattr(docs_builder.subprocess, "run", fake_run)
+    result = docs_builder.build_from_ref(
+        "fixture-ref",
+        tmp_path / "output",
+        documents="custom-documents",
+        selection="selection.json",
+        python=sys.executable,
+    )
+
+    assert result["source"]["revision"] == revision
+    assert result["documents"] == {"path": "custom-documents"}
+    assert result["selection"]["asset_count"] == 1
 
 
 def test_document_selection_filters_reader_bundle_to_exact_assets(tmp_path: Path) -> None:

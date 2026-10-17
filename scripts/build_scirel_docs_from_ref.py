@@ -93,18 +93,95 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _normalize_documents_argument(documents: str | os.PathLike[str]) -> str:
+    try:
+        value = os.fspath(documents)
+    except TypeError as error:
+        raise ValueError("documents must be a non-empty project-relative path") from error
+    if not isinstance(value, str) or not value:
+        raise ValueError("documents must be a non-empty project-relative path")
+    return value
+
+
+def _resolve_documents_root(source: Path, documents: str | os.PathLike[str]) -> Path:
+    """Resolve the requested document directory inside an archived source.
+
+    ``documents`` is part of the ref-bound build contract even when a
+    selection is supplied.  The selection may narrow the directory, but it
+    must never silently replace an explicitly requested source with a record
+    from another tree.
+    """
+
+    source_root = source.resolve()
+    documents = _normalize_documents_argument(documents)
+    document_root = (source_root / documents).resolve()
+    if not document_root.is_relative_to(source_root) or not document_root.is_dir():
+        raise ValueError(f"documents path is outside archived source or missing: {documents}")
+    return document_root
+
+
+def _resolve_selected_document(
+    source_root: Path, documents_root: Path, relative_path: str
+) -> Path:
+    """Resolve a selection record against its requested documents root.
+
+    Existing selection files use repository-relative paths such as
+    ``catalog/examples/foo.json``.  New or independently authored selections
+    may use paths relative to the supplied ``documents`` directory.  Accept
+    both forms, but only when the resolved file remains inside both the
+    archived source and the requested documents root.  Ambiguous mappings
+    fail closed instead of silently choosing one.
+    """
+
+    raw_path = Path(relative_path)
+    candidates = [documents_root / raw_path]
+    if documents_root != source_root:
+        candidates.append(source_root / raw_path)
+    valid: list[Path] = []
+    for candidate in candidates:
+        resolved = candidate.resolve()
+        if (
+            resolved.is_file()
+            and resolved.is_relative_to(source_root)
+            and resolved.is_relative_to(documents_root)
+            and resolved not in valid
+        ):
+            valid.append(resolved)
+    if len(valid) == 1:
+        return valid[0]
+    if len(valid) > 1:
+        raise ValueError(f"selection document path is ambiguous: {relative_path}")
+    raise ValueError(
+        "selection document path is outside requested documents directory or missing: "
+        f"{relative_path}"
+    )
+
+
 def _materialize_selection(
     source: Path,
     selection: str,
     staging: Path,
     *,
     expected_version: str | None = None,
+    documents_root: Path | None = None,
 ) -> dict[str, object]:
-    """Materialize one exact selected-document-set without adding a source copy."""
+    """Materialize one exact selected-document-set without adding a source copy.
 
-    selection_path = (source / selection).resolve()
-    if not selection_path.is_relative_to(source.resolve()) or not selection_path.is_file():
+    When ``documents_root`` is provided, every selected record must resolve
+    below that archived directory.  This keeps the public ``documents``
+    parameter meaningful when a strict selection narrows the input set.
+    """
+
+    source_root = source.resolve()
+    selection_path = (source_root / selection).resolve()
+    if not selection_path.is_relative_to(source_root) or not selection_path.is_file():
         raise ValueError(f"selection path is outside archived source or missing: {selection}")
+    if documents_root is None:
+        document_root = source_root
+    else:
+        document_root = documents_root.resolve()
+        if not document_root.is_relative_to(source_root) or not document_root.is_dir():
+            raise ValueError("documents path is outside archived source or missing")
     try:
         value = json.loads(selection_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
@@ -137,9 +214,7 @@ def _materialize_selection(
         if asset_id in seen_ids:
             raise ValueError(f"selection repeats asset_id: {asset_id}")
         seen_ids.add(asset_id)
-        document_path = (source / relative_path).resolve()
-        if not document_path.is_relative_to(source.resolve()) or not document_path.is_file():
-            raise ValueError(f"selection document path is outside archived source: {relative_path}")
+        document_path = _resolve_selected_document(source_root, document_root, relative_path)
         actual_digest = _sha256(document_path)
         if actual_digest != expected_digest:
             raise ValueError(f"selection document digest differs: {relative_path}")
@@ -245,7 +320,7 @@ def build_from_ref(
     ref: str,
     output_dir: Path,
     *,
-    documents: str = "catalog/examples",
+    documents: str | os.PathLike[str] = "catalog/examples",
     selection: str | None = None,
     python: str | None = None,
 ) -> dict[str, object]:
@@ -256,6 +331,7 @@ def build_from_ref(
             "ref-bound candidate documentation requires --selection; use "
             "scripts/scirel_docs.py directly for an unbound development snapshot"
         )
+    documents = _normalize_documents_argument(documents)
     output_dir = _new_external_directory(output_dir)
     revision = resolve_revision(ref)
     epoch = commit_epoch(revision)
@@ -287,6 +363,7 @@ def build_from_ref(
                 selection,
                 staging,
                 expected_version=version,
+                documents_root=_resolve_documents_root(source_root, documents),
             )
             document_root = staging / "selected-documents"
             translation_info = _materialize_translations(
@@ -368,6 +445,7 @@ def build_from_ref(
         "schema": "scirel.git-docs-build.v1",
         "source": {"ref": ref, "revision": revision, "commit_epoch": epoch},
         "project": {"name": name, "version": version},
+        "documents": {"path": documents},
         "inputs": inputs,
         "snapshot": {
             "path": "snapshot",

@@ -1,6 +1,6 @@
 # SciRel wheel version line
 
-The authoritative version is the `project.version` field in `pyproject.toml` at the Git commit being built. The canonical current receipt is [`../CURRENT.json`](../CURRENT.json); this directory is a compatibility surface only. Do not create a per-version wheel record. Git history, tags, and short release notes identify prior versions, while the generated wheel remains outside the source-of-truth path.
+The authoritative version is the `project.version` field in `pyproject.toml` at the Git commit being built. The canonical current receipt is [`../CURRENT.json`](../CURRENT.json); this directory is a compatibility surface only. Do not create a per-version wheel record. Git history, tags, and short release notes identify prior versions, while the generated wheel remains outside the source-of-truth path. A `*.devN` version may span several development commits; the external artifact path and manifest must include the exact commit so each build remains immutable.
 
 
 The canonical tuple contains the one wheel currently bound by this checkout.
@@ -17,6 +17,14 @@ implementations are organized by domain package, and the wheel exposes those
 domain paths directly. Legacy top-level module paths are intentionally absent;
 callers must import from the owning domain package. Tests, provenance,
 decomposition assets, and development tooling are outside the wheel intake.
+
+Native runtime resources have one source-side closure at
+[`native-resource-closure.json`](native-resource-closure.json). It enumerates
+the 117 files currently included by `package-data`, grouped by capability and
+external runtime. Run `python scripts/validate_native_resource_closure.py` for
+a source-only check, or add `--wheel <path>` to prove that an actual wheel has
+exactly the declared native members. The closure is an inventory and future
+split boundary; it does not grant a platform or scientific release claim.
 
 ## Reproducing the bound wheel
 
@@ -41,11 +49,12 @@ file mtimes. The helper also normalizes regular-file and directory modes before
 building, so a host tar umask cannot change wheel ZIP permission attributes. It
 records the full source revision, project version, wheel byte count and SHA-256 in
 its manifest, and fixes `PYTHONHASHSEED=0` alongside `SOURCE_DATE_EPOCH` and POSIX
-`umask 022`. Compare those values with the canonical
-tuple and run the platform receipt against that exact file before updating
-`release/CURRENT.json`. The logical manifest reference is resolved only against
-an explicitly supplied external artifact root; it never points into
-`build/releases/` inside the checkout.
+`umask 022`. Compare those values with the canonical tuple and run the platform
+receipt against that exact file before updating `release/CURRENT.json`. Build the
+source commit first and update the coordination tuple in a later commit; the
+tuple cannot self-reference the commit that contains it. The logical manifest
+reference is resolved only against an explicitly supplied external artifact
+root; it never points into `build/releases/` inside the checkout.
 
 The manifest also carries a `scirel.build-inputs.v1` summary for the archived
 `pyproject.toml`, optional `uv.lock`, declared license files, and the exact
@@ -53,3 +62,32 @@ build helper files. When the source checkout is available, the release
 validator compares those summaries with Git blobs at the recorded commit; a
 dirty helper remains explicit in the receipt instead of being presented as
 source-only reproducibility.
+
+## Offline wheelhouse acceptance
+
+The ordinary Linux receipt may install runtime dependencies from a network
+resolver while preparing its clean environment. That is useful for an initial
+platform smoke, but it does not prove that a consumer can reproduce the
+installation without network access. For that stronger check, prepare a
+platform-specific wheelhouse outside this checkout and run
+`scripts/validate_offline_wheelhouse.py` against the exact wheel:
+
+```sh
+python -I scripts/validate_offline_wheelhouse.py \
+  --expected-platform linux-x86_64-cp314 \
+  --source-revision <40-character-source-commit> \
+  --wheel /artifacts/scirel-<project.version>-py3-none-any.whl \
+  --wheelhouse /artifacts/linux-x86_64-cp314-wheelhouse \
+  --output /artifacts/linux-x86_64-cp314-offline-validation.json
+```
+
+The runner creates a temporary clean venv and invokes pip with
+`--no-index --only-binary=:all: --find-links <wheelhouse>`. It then runs the
+installed-wheel validator inside that venv. A passing receipt therefore binds
+the wheel digest, every wheelhouse member digest, the target interpreter and
+the installed scientific smoke checks. Missing or source-only dependencies
+remain a failed receipt; do not turn a network-backed receipt into an offline
+claim by editing its limitations. If `--source-revision` is omitted, the
+receipt remains a standalone technical record. Supplying the exact commit lets
+the release alignment validator accept it as a future `platform_receipts` row;
+the current dev9 tuple and its historical receipt are unchanged.

@@ -14,6 +14,7 @@ from validate_release_alignment import (
     _validate_build_inputs,
     _validate_external_artifacts,
     _validate_platform_receipts,
+    _validate_wheel_contents,
     _validate_source_revision,
     validate_alignment,
 )  # noqa: E402
@@ -187,6 +188,26 @@ def test_external_artifact_reference_rejects_path_traversal() -> None:
         _validate_external_artifacts(ROOT, current, version="0.1.0.dev9", source_revision=None, artifact_root=None)
 
 
+def test_wheel_contents_binding_rejects_member_byte_drift(tmp_path: Path) -> None:
+    import hashlib
+    import zipfile
+
+    wheel = tmp_path / "scirel.whl"
+    payload = b"print('ok')\n"
+    with zipfile.ZipFile(wheel, "w") as archive:
+        archive.writestr("scirel/foo.py", payload)
+    digest = hashlib.sha256(payload).hexdigest()
+    binding = {
+        "schema": "scirel.wheel-contents.v1",
+        "members": [{"path": "scirel/foo.py", "sha256": digest, "bytes": len(payload)}],
+        "package_members": ["scirel/foo.py"],
+    }
+    assert _validate_wheel_contents(wheel, binding) == {"scirel/foo.py"}
+    binding["members"][0]["sha256"] = "0" * 64
+    with pytest.raises(ValueError, match="member bytes differ"):
+        _validate_wheel_contents(wheel, binding)
+
+
 def test_current_release_version_is_the_pyproject_version() -> None:
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     current = json.loads((ROOT / "release/CURRENT.json").read_text(encoding="utf-8"))
@@ -346,6 +367,68 @@ def test_alignment_accepts_wrapped_platform_receipt_and_checks_source_revision(
     with pytest.raises(ValueError, match="source revision differs"):
         _validate_platform_receipts(
             tmp_path, wheel, expected_source_revision="c" * 40
+        )
+
+
+def test_alignment_accepts_offline_wheelhouse_receipt_when_source_bound(
+    tmp_path: Path,
+) -> None:
+    import hashlib
+
+    source_revision = "a" * 40
+    artifact_sha = "b" * 64
+    receipt = {
+        "schema": "scirel.offline-wheelhouse-validation.v1",
+        "status": "PASS",
+        "source_revision": source_revision,
+        "execution": {
+            "network_resolution": False,
+            "pip_install": {"status": "PASS"},
+        },
+        "wheelhouse": {
+            "wheels": [{"filename": "numpy.whl", "sha256": "c" * 64, "bytes": 1}]
+        },
+        "validation": {
+            "schema": "scirel.installed-wheel-validation.v1",
+            "status": "PASS",
+            "package": {"version": "0.1.0.dev9"},
+            "artifact": {"sha256": artifact_sha, "bytes": 123},
+            "runtime": {"expected_platform": "linux-x86_64-cp314"},
+        },
+    }
+    receipt_path = tmp_path / "offline-receipt.json"
+    receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+    wheel = {
+        "version": "0.1.0.dev9",
+        "artifact": {"sha256": artifact_sha, "bytes": 123},
+        "platform_receipts": [
+            {
+                "platform": "linux-x86_64-cp314",
+                "path": receipt_path.name,
+                "sha256": hashlib.sha256(receipt_path.read_bytes()).hexdigest(),
+            }
+        ],
+    }
+
+    _validate_platform_receipts(
+        tmp_path, wheel, expected_source_revision=source_revision
+    )
+
+    receipt["execution"]["network_resolution"] = True
+    receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+    with pytest.raises(ValueError, match="claims network resolution"):
+        _validate_platform_receipts(
+            tmp_path,
+            {
+                **wheel,
+                "platform_receipts": [
+                    {
+                        **wheel["platform_receipts"][0],
+                        "sha256": hashlib.sha256(receipt_path.read_bytes()).hexdigest(),
+                    }
+                ],
+            },
+            expected_source_revision=source_revision,
         )
 
 

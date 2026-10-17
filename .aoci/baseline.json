@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-17T02:22:55Z",
+  "updated_at": "2026-10-17T03:05:21Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -65,9 +65,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "8555971e50032e1a83760def3f7e3b63197f0b6c6433e9d4722408fe5cf06cce",
-      "size": 574306,
-      "normalized_sha256": "8555971e50032e1a83760def3f7e3b63197f0b6c6433e9d4722408fe5cf06cce"
+      "sha256": "0a4bb1af4327cb3cfe3ae4e1102d1ea76339dd930e91f8f93bc45db7785673dc",
+      "size": 577527,
+      "normalized_sha256": "0a4bb1af4327cb3cfe3ae4e1102d1ea76339dd930e91f8f93bc45db7785673dc"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -3095,9 +3095,9 @@
     },
     "docs/design/scirel-wheel-packaging-strategy.md": {
       "role": "index",
-      "sha256": "b36b5f4d212dbb5d58f2cffdf78ee5ddbe32ae1cb51afa6e4644d0e8973a3547",
-      "size": 12497,
-      "normalized_sha256": "b36b5f4d212dbb5d58f2cffdf78ee5ddbe32ae1cb51afa6e4644d0e8973a3547"
+      "sha256": "02ef8b22142bf6ba128d185d95ad4576779bed858eef18423c390740cd1b6ddc",
+      "size": 13042,
+      "normalized_sha256": "02ef8b22142bf6ba128d185d95ad4576779bed858eef18423c390740cd1b6ddc"
     },
     "docs/design/scirel-workflow.md": {
       "role": "index",
@@ -5945,9 +5945,9 @@
     },
     "release/docs/README.md": {
       "role": "index",
-      "sha256": "ddf5ef2d4320d8ecd86fc071016210a3dc09859637ba5cf8b5fd4548d80f73f1",
-      "size": 2991,
-      "normalized_sha256": "ddf5ef2d4320d8ecd86fc071016210a3dc09859637ba5cf8b5fd4548d80f73f1"
+      "sha256": "55dd9cd91de6d005a9e893fd57fbfa6a8772b2d50fc76e2593040b0b626ab541",
+      "size": 3222,
+      "normalized_sha256": "55dd9cd91de6d005a9e893fd57fbfa6a8772b2d50fc76e2593040b0b626ab541"
     },
     "release/docs/versions/scientific-core-r10.json": {
       "role": "index",
@@ -6047,9 +6047,9 @@
     },
     "release/wheel/README.md": {
       "role": "index",
-      "sha256": "039fffdffabd65c5609c9b45eccfc15a910387d029f28b4149f5e95ed9334f45",
-      "size": 3478,
-      "normalized_sha256": "039fffdffabd65c5609c9b45eccfc15a910387d029f28b4149f5e95ed9334f45"
+      "sha256": "14460930b06e677173e86418235d8abbd48e43a2582cee87ac38fef400254fb9",
+      "size": 5024,
+      "normalized_sha256": "14460930b06e677173e86418235d8abbd48e43a2582cee87ac38fef400254fb9"
     },
     "release/wheel/layout.json": {
       "role": "index",
@@ -6191,15 +6191,15 @@
     },
     "scripts/build_scirel_docs_from_ref.py": {
       "role": "index",
-      "sha256": "f32356b866319f18edd022be49050aa2209e9c4dee001b7664dfe8f64b421c63",
-      "size": 17230,
-      "normalized_sha256": "f32356b866319f18edd022be49050aa2209e9c4dee001b7664dfe8f64b421c63"
+      "sha256": "65bc493fb3aff3dfec8ac4679b475dd29285e48ae293a1e1ace662ce96bc7d2d",
+      "size": 20438,
+      "normalized_sha256": "65bc493fb3aff3dfec8ac4679b475dd29285e48ae293a1e1ace662ce96bc7d2d"
     },
     "scripts/build_scirel_from_ref.py": {
       "role": "index",
-      "sha256": "d05d9db83b778db4154549b5ff795e1ac2a921ef4c43580d28ab274bb40d1d5a",
-      "size": 14848,
-      "normalized_sha256": "d05d9db83b778db4154549b5ff795e1ac2a921ef4c43580d28ab274bb40d1d5a"
+      "sha256": "0b0693e17ee32f4e4b5744c6480cbd056c164e8b0f125bc768fa6dfe216b0791",
+      "size": 29622,
+      "normalized_sha256": "0b0693e17ee32f4e4b5744c6480cbd056c164e8b0f125bc768fa6dfe216b0791"
     },
     "scripts/build_scirel_sphinx.py": {
       "role": "index",
@@ -6333,6 +6333,12 @@
       "size": 25663,
       "normalized_sha256": "6e012dada0d695d0e5cc40b796aa0fb743a5f0c5df6f41f8a9ef28da8772c935"
     },
+    "scripts/validate_offline_wheelhouse.py": {
+      "role": "index",
+      "sha256": "d2bfb9a5693a07a1f04cb90d9a277a4879451902d7e0afe0e7354bbd880167d9",
+      "size": 10885,
+      "normalized_sha256": "d2bfb9a5693a07a1f04cb90d9a277a4879451902d7e0afe0e7354bbd880167d9"
+    },
     "scripts/validate_platform_support.py": {
       "role": "index",
       "sha256": "20605bc57bfb3fc69d67829e4978eb046c051b2554c67ebf3be2f923f444f6bd",
@@ -6341,9 +6347,9 @@
     },
     "scripts/validate_release_alignment.py": {
       "role": "index",
-      "sha256": "0a1674ee79015f87722c124a42d984d9f282a07aad673a96bf4f5301757201f4",
-      "size": 43923,
-      "normalized_sha256": "0a1674ee79015f87722c124a42d984d9f282a07aad673a96bf4f5301757201f4"
+      "sha256": "0e2a83653b432690a96deebd2479c9f78d30186e8eab64e633dffb70845aba3a",
+      "size": 68213,
+      "normalized_sha256": "0e2a83653b432690a96deebd2479c9f78d30186e8eab64e633dffb70845aba3a"
     },
     "scripts/verify_outbound_evaluation_manifests.py": {
       "role": "index",
@@ -7469,9 +7475,9 @@
     },
     "src/scirel/collisions/__init__.py": {
       "role": "index",
-      "sha256": "7214ddc9933f8976eba009448505dde790b7a035d072120c2b53f6458ddd0335",
-      "size": 2886,
-      "normalized_sha256": "7214ddc9933f8976eba009448505dde790b7a035d072120c2b53f6458ddd0335"
+      "sha256": "a593d0531e9247659ddad0b720674823e50fa569fb9d3815a366f0b0bd9ce2db",
+      "size": 4904,
+      "normalized_sha256": "a593d0531e9247659ddad0b720674823e50fa569fb9d3815a366f0b0bd9ce2db"
     },
     "src/scirel/collisions/_elastic_moments.py": {
       "role": "index",
@@ -7505,9 +7511,9 @@
     },
     "src/scirel/collisions/atomic_hydrogen_collision_matrices.py": {
       "role": "index",
-      "sha256": "a0983f07361f1fdb27f716d0f122a3a089639b172a22a2532a16ad4bd5226978",
-      "size": 9788,
-      "normalized_sha256": "a0983f07361f1fdb27f716d0f122a3a089639b172a22a2532a16ad4bd5226978"
+      "sha256": "a8cabc718517ebfeaaf61ad2639f0b3113c1e1e1bf535f69945e55686247df1c",
+      "size": 9780,
+      "normalized_sha256": "a8cabc718517ebfeaaf61ad2639f0b3113c1e1e1bf535f69945e55686247df1c"
     },
     "src/scirel/collisions/atomic_hydrogen_elastic_cross_section.py": {
       "role": "index",
@@ -7571,9 +7577,9 @@
     },
     "src/scirel/collisions/molecular_hydrogen_collision_matrices.py": {
       "role": "index",
-      "sha256": "347d265fdacdec0fbdc363ea1ece19705117e26e5420b71d6e7d42af56855426",
-      "size": 10563,
-      "normalized_sha256": "347d265fdacdec0fbdc363ea1ece19705117e26e5420b71d6e7d42af56855426"
+      "sha256": "b292fdb2bd824fcd2438c5dae22441b3865038ff248a0846fae58f73d83956b7",
+      "size": 10517,
+      "normalized_sha256": "b292fdb2bd824fcd2438c5dae22441b3865038ff248a0846fae58f73d83956b7"
     },
     "src/scirel/collisions/molecular_hydrogen_omega_frequencies.py": {
       "role": "index",
@@ -7595,9 +7601,9 @@
     },
     "src/scirel/configurations/__init__.py": {
       "role": "index",
-      "sha256": "3a8ca5e4d16b4146c3c306a1bb5afafe19993bfdf14af893fc573427a005558d",
-      "size": 147,
-      "normalized_sha256": "3a8ca5e4d16b4146c3c306a1bb5afafe19993bfdf14af893fc573427a005558d"
+      "sha256": "6786193ee659ff81cd1c9c76eafba560c78b3d449d038a64f6ebc798e589d813",
+      "size": 915,
+      "normalized_sha256": "6786193ee659ff81cd1c9c76eafba560c78b3d449d038a64f6ebc798e589d813"
     },
     "src/scirel/configurations/brb.py": {
       "role": "index",
@@ -7679,9 +7685,9 @@
     },
     "src/scirel/electromagnetism/__init__.py": {
       "role": "index",
-      "sha256": "d68d2ec0b1b5f234c9db4e3a95663dae2289a9d759f75e72985effec269cc50a",
-      "size": 415,
-      "normalized_sha256": "d68d2ec0b1b5f234c9db4e3a95663dae2289a9d759f75e72985effec269cc50a"
+      "sha256": "bd6ce69b88a7e206aca4f10a561039e23f61fe938b39756d6a594c1bed03f4c7",
+      "size": 1459,
+      "normalized_sha256": "bd6ce69b88a7e206aca4f10a561039e23f61fe938b39756d6a594c1bed03f4c7"
     },
     "src/scirel/electromagnetism/distributed.py": {
       "role": "index",
@@ -10917,6 +10923,12 @@
       "size": 9370,
       "normalized_sha256": "24dda60fe47fad741642b5f5c4b02927d487dffdcbae5408ba632cc763a05b5b"
     },
+    "tests/test_domain_import_boundaries.py": {
+      "role": "index",
+      "sha256": "2e6ef4b24728b42adaad6120def93ab57a6b902614deaffa7aaf4c32389f888b",
+      "size": 1839,
+      "normalized_sha256": "2e6ef4b24728b42adaad6120def93ab57a6b902614deaffa7aaf4c32389f888b"
+    },
     "tests/test_fluid_public_surface.py": {
       "role": "index",
       "sha256": "80e62e71d9a638bbe921f1653c6e263b814795b983d1cb3fb18a4c0c62a05297",
@@ -10937,9 +10949,9 @@
     },
     "tests/test_git_release_structure.py": {
       "role": "index",
-      "sha256": "06c7d8825fbc00bcb22dc020e790904cd2a8369d93bcf5319f6386dee3877f44",
-      "size": 11102,
-      "normalized_sha256": "06c7d8825fbc00bcb22dc020e790904cd2a8369d93bcf5319f6386dee3877f44"
+      "sha256": "d39ad0ecb56ac4768a67b292afebd376066ccbe9f572a8c9d5204a98d78a1475",
+      "size": 22806,
+      "normalized_sha256": "d39ad0ecb56ac4768a67b292afebd376066ccbe9f572a8c9d5204a98d78a1475"
     },
     "tests/test_incremental_admissions.py": {
       "role": "index",
@@ -11019,11 +11031,17 @@
       "size": 14144,
       "normalized_sha256": "d4444e327a16a8f1634ceeb91fd927406dc62a6af12a7e18a000849ce86e71a3"
     },
+    "tests/test_ref_release_binding.py": {
+      "role": "index",
+      "sha256": "4ad41f00f95101945e31ef4751f7b54199466ae3abb5aa5b83cc0e0a6b6b0a9b",
+      "size": 6259,
+      "normalized_sha256": "4ad41f00f95101945e31ef4751f7b54199466ae3abb5aa5b83cc0e0a6b6b0a9b"
+    },
     "tests/test_release_alignment.py": {
       "role": "index",
-      "sha256": "d476fcb80988c8c2bc11eef55d87f6166280e4bfb5da69932fa1ac45fa43474a",
-      "size": 15761,
-      "normalized_sha256": "d476fcb80988c8c2bc11eef55d87f6166280e4bfb5da69932fa1ac45fa43474a"
+      "sha256": "e5a9de5b92591e603e4dc13161b804480c270d3a48f7ca9fb4d01407c88c78a1",
+      "size": 18655,
+      "normalized_sha256": "e5a9de5b92591e603e4dc13161b804480c270d3a48f7ca9fb4d01407c88c78a1"
     },
     "tests/test_release_environment.py": {
       "role": "index",
@@ -11120,6 +11138,12 @@
       "sha256": "71a4a242b619615c1cf143302827a1f328ca4ddc71670b90ac8a64449a4ad47a",
       "size": 9239,
       "normalized_sha256": "71a4a242b619615c1cf143302827a1f328ca4ddc71670b90ac8a64449a4ad47a"
+    },
+    "tests/test_validate_offline_wheelhouse.py": {
+      "role": "index",
+      "sha256": "4b871f962585bc7fe25d0e77fa0b6f38bee159280b9c464d609694f2fe15723f",
+      "size": 4173,
+      "normalized_sha256": "4b871f962585bc7fe25d0e77fa0b6f38bee159280b9c464d609694f2fe15723f"
     },
     "tests/test_workflow_contracts.py": {
       "role": "index",

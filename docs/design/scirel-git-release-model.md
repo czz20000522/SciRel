@@ -10,8 +10,10 @@ SciRel 采用与 SciPy 同类的单一来源模型：源代码、`pyproject.toml
 - tag 只指向已经构建并验收的提交。后续开发从 tag 之后的新提交继续，版本号按下一开发序列递进。
 - 历史版本通过 Git tag、commit 和外部归档恢复。不要新增 `release/wheel/versions/<version>.json` 或 `release/docs/versions/<version>.json` 作为平行复制品。
 
-历史候选的身份由 Git 历史和短发行说明保留；开发 HEAD 超出当前候选绑定时，后继证据必须绑定
-新的 commit 和新的 wheel 摘要，不能复用旧候选的版本或 artifact 身份。
+历史候选的身份由 Git 历史和短发行说明保留。开发版可以在同一个 PEP 440
+`*.devN` 序列中持续提交；SciPy 主线也采用这种开发版本号保持稳定、提交继续前进的方式。
+每次构建仍必须绑定新的 commit 和新的 artifact 路径，不能覆盖已经生成的 wheel、文档快照或回执。
+只有进入下一个开发序列或正式发布时，才提升 `project.version` 或创建 tag。
 
 ## 文档与源码绑定
 
@@ -119,8 +121,9 @@ SciRel 采用这套边界时分两步进行：
    回 SciRel 主仓库。
 
 这意味着历史开发 wheel 的身份来自 Git commit/tag、对应的短 release notes 和外部 artifact
-manifest。新候选必须提升 `pyproject.toml` 版本并绑定新的 source ref；不能以同一个版本号从
-较新的工作树重建并覆盖旧 wheel，也不能通过复制一份旧文档树来表示历史。
+manifest。开发候选可以继续使用同一个 `pyproject.toml` 开发版本，但必须绑定新的 source ref，
+并将产物写入以版本和 commit 共同命名的外部目录；不能覆盖旧 wheel，也不能通过复制一份旧文档树
+来表示历史。
 
 ### 文档重新资格化
 
