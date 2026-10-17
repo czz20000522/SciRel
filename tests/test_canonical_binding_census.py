@@ -14,8 +14,8 @@ def test_current_canonical_binding_census_preserves_facade_and_exception_denomin
     counts = report["counts"]
 
     assert counts["total"] == 267
-    assert counts["explicit"] == 195
-    assert counts["candidate"] == 25
+    assert counts["explicit"] == 197
+    assert counts["candidate"] == 23
     assert counts["exception"] == 47
     assert report["unexpected_missing"] == []
 
@@ -311,5 +311,17 @@ def test_neutral_convergence_slice_pins_kinetic_facades_explicitly():
         "scirel.kinetic.thermal-speed-scale",
     }
     assert len(selected) == 5
+    assert all(rows[asset_id] == "explicit" for asset_id in selected)
+    assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"
+
+
+def test_population_and_axisymmetric_moment_slice_pins_kinetic_facades_explicitly():
+    report = census(ROOT)
+    rows = {row["asset_id"]: row["status"] for row in report["rows"]}
+    selected = {
+        "scirel.kinetic.axisymmetric-neutral-moments",
+        "scirel.kinetic.hydrogen-saha-equilibrium-population",
+    }
+    assert len(selected) == 2
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
     assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"

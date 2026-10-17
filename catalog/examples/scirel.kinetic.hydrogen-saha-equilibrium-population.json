@@ -108,7 +108,9 @@
     "python": {
       "module": "scirel.kinetic.hydrogen_saha_equilibrium_population",
       "symbol": "evaluate_h_saha_equilibrium_population",
-      "signature": "evaluate_h_saha_equilibrium_population(electron_density_m3, electron_temperature_ev, principal_level)"
+      "signature": "evaluate_h_saha_equilibrium_population(electron_density_m3, electron_temperature_ev, principal_level)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_h_saha_equilibrium_population"
     }
   },
   "version": {

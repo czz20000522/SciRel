@@ -172,7 +172,9 @@
     "python": {
       "module": "scirel.kinetic.axisymmetric_neutral_moments",
       "symbol": "reduce_axisymmetric_neutral_moments",
-      "signature": "reduce_axisymmetric_neutral_moments(distribution, vx, vr, cylindrical_volume, normalization_temperature_ev, isotope_mass_amu, molecularity, *, axial_quadrature=None, radial_quadrature=None, empty_slice_policy='reject')"
+      "signature": "reduce_axisymmetric_neutral_moments(distribution, vx, vr, cylindrical_volume, normalization_temperature_ev, isotope_mass_amu, molecularity, *, axial_quadrature=None, radial_quadrature=None, empty_slice_policy='reject')",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "reduce_axisymmetric_neutral_moments"
     }
   },
   "version": {
