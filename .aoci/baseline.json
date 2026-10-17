@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-17T14:59:07Z",
+  "updated_at": "2026-10-17T15:17:30Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -77,9 +77,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "0cb07876fda63e155194f70ec3dc58ab99d4d2e6d2c375ce1e7ebaa2d762e183",
-      "size": 603938,
-      "normalized_sha256": "0cb07876fda63e155194f70ec3dc58ab99d4d2e6d2c375ce1e7ebaa2d762e183"
+      "sha256": "ea018d339af31d4a6d4bc44005a5e16694d116252f087e99a892134011617270",
+      "size": 603908,
+      "normalized_sha256": "ea018d339af31d4a6d4bc44005a5e16694d116252f087e99a892134011617270"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -6485,9 +6485,9 @@
     },
     "scripts/validate_offline_wheelhouse.py": {
       "role": "index",
-      "sha256": "efaa0586b8843b05cdcc7816c981774b52021c722c46bd5fd1f4e7e29a34cca5",
-      "size": 31631,
-      "normalized_sha256": "efaa0586b8843b05cdcc7816c981774b52021c722c46bd5fd1f4e7e29a34cca5"
+      "sha256": "a6d5bd33b004f1d415f3711b23247cdad24e193a2d6c626deb3dc29086b2fb6f",
+      "size": 31710,
+      "normalized_sha256": "a6d5bd33b004f1d415f3711b23247cdad24e193a2d6c626deb3dc29086b2fb6f"
     },
     "scripts/validate_platform_support.py": {
       "role": "index",
@@ -6497,9 +6497,9 @@
     },
     "scripts/validate_release_alignment.py": {
       "role": "index",
-      "sha256": "fe51d7d9c7198f02a35a2d51f1f39da9d77d04c086623591729eb97dd567115d",
-      "size": 83707,
-      "normalized_sha256": "fe51d7d9c7198f02a35a2d51f1f39da9d77d04c086623591729eb97dd567115d"
+      "sha256": "30ea21ff280563a72c70261f842caba3277dbfdf2ab5bd48dffb112f58b25bf9",
+      "size": 89039,
+      "normalized_sha256": "30ea21ff280563a72c70261f842caba3277dbfdf2ab5bd48dffb112f58b25bf9"
     },
     "scripts/verify_outbound_evaluation_manifests.py": {
       "role": "index",
@@ -11213,9 +11213,9 @@
     },
     "tests/test_release_alignment.py": {
       "role": "index",
-      "sha256": "f7477a7c7fa361ea748e9a67d90abf133babafd1905cc1ba84ee740707c7193f",
-      "size": 21935,
-      "normalized_sha256": "f7477a7c7fa361ea748e9a67d90abf133babafd1905cc1ba84ee740707c7193f"
+      "sha256": "9b68d1ba177913cc931aa0ea60e8c3d2b0a099be6ac4a1bf91c1da774fbf4346",
+      "size": 23098,
+      "normalized_sha256": "9b68d1ba177913cc931aa0ea60e8c3d2b0a099be6ac4a1bf91c1da774fbf4346"
     },
     "tests/test_release_environment.py": {
       "role": "index",
@@ -11315,9 +11315,9 @@
     },
     "tests/test_validate_offline_wheelhouse.py": {
       "role": "index",
-      "sha256": "3640d647f05818a447c69222338acd6e813c2d2528d442d1e05ecdd9ba66bc32",
-      "size": 11289,
-      "normalized_sha256": "3640d647f05818a447c69222338acd6e813c2d2528d442d1e05ecdd9ba66bc32"
+      "sha256": "a0a84a6031b4fcf31dda18b5491b06ac8a6c729136ec4baa4d1a94714dc708d4",
+      "size": 11649,
+      "normalized_sha256": "a0a84a6031b4fcf31dda18b5491b06ac8a6c729136ec4baa4d1a94714dc708d4"
     },
     "tests/test_workflow_contracts.py": {
       "role": "index",
