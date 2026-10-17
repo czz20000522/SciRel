@@ -94,7 +94,9 @@
     "python": {
       "module": "scirel.kinetic.frank_egedal_radial_envelope",
       "symbol": "evaluate_frank_egedal_radial_envelope",
-      "signature": "evaluate_frank_egedal_radial_envelope(psi, params)"
+      "signature": "evaluate_frank_egedal_radial_envelope(psi, params)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_frank_egedal_radial_envelope"
     }
   },
   "version": {

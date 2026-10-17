@@ -150,7 +150,9 @@
     "python": {
       "module": "scirel.kinetic.frank_egedal_source_projection",
       "symbol": "project_frank_egedal_source_modes",
-      "signature": "project_frank_egedal_source_modes(params, spectrum_operator=None)"
+      "signature": "project_frank_egedal_source_modes(params, spectrum_operator=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "project_frank_egedal_source_modes"
     }
   },
   "version": {

@@ -207,7 +207,9 @@
     "python": {
       "module": "scirel.kinetic.frank_egedal_hot_ion_moments",
       "symbol": "evaluate_frank_egedal_hot_ion_moments",
-      "signature": "evaluate_frank_egedal_hot_ion_moments(magnetic_field, params, degrees, source_coefficients, legendre_terms, fractional_mode)"
+      "signature": "evaluate_frank_egedal_hot_ion_moments(magnetic_field, params, degrees, source_coefficients, legendre_terms, fractional_mode)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_frank_egedal_hot_ion_moments"
     }
   },
   "version": {

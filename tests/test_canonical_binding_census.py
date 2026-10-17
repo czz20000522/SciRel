@@ -14,8 +14,8 @@ def test_current_canonical_binding_census_preserves_facade_and_exception_denomin
     counts = report["counts"]
 
     assert counts["total"] == 267
-    assert counts["explicit"] == 213
-    assert counts["candidate"] == 7
+    assert counts["explicit"] == 217
+    assert counts["candidate"] == 3
     assert counts["exception"] == 47
     assert report["unexpected_missing"] == []
 
@@ -384,6 +384,19 @@ def test_wavevector_and_dispersion_graph_slice_pins_kinetic_facades_explicitly()
         "scirel.kinetic.fluid-wavevector-scan",
         "scirel.kinetic.kinetic-dispersion-relation",
         "scirel.kinetic.kinetic-wavevector-scan",
+    }
+    assert all(rows[asset_id] == "explicit" for asset_id in selected)
+    assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"
+
+
+def test_frank_egedal_direct_slice_pins_kinetic_facades_explicitly():
+    report = census(ROOT)
+    rows = {row["asset_id"]: row["status"] for row in report["rows"]}
+    selected = {
+        "scirel.kinetic.frank-egedal-hot-ion-moments",
+        "scirel.kinetic.frank-egedal-pressure-state",
+        "scirel.kinetic.frank-egedal-radial-envelope",
+        "scirel.kinetic.frank-egedal-source-projection",
     }
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
     assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "candidate"

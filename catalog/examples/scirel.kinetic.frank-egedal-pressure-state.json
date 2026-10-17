@@ -158,7 +158,9 @@
     "python": {
       "module": "scirel.kinetic.frank_egedal_pressure_state",
       "symbol": "assemble_frank_egedal_pressure",
-      "signature": "assemble_frank_egedal_pressure(psi, radial_shape, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, params)"
+      "signature": "assemble_frank_egedal_pressure(psi, radial_shape, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, params)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "assemble_frank_egedal_pressure"
     }
   },
   "version": {
