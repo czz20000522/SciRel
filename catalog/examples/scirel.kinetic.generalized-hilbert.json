@@ -91,7 +91,9 @@
     "python": {
       "module": "scirel.kinetic.generalized_dispersion",
       "symbol": "evaluate_generalized_hilbert",
-      "signature": "evaluate_generalized_hilbert(z, expression, *, integration_mesh, continuation=True)"
+      "signature": "evaluate_generalized_hilbert(z, expression, *, integration_mesh, continuation=True)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_generalized_hilbert"
     }
   },
   "applicability": {

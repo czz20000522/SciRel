@@ -210,7 +210,9 @@
     "python": {
       "module": "scirel.kinetic.pdrf",
       "symbol": "solve_pdrf_spectrum",
-      "signature": "solve_pdrf_spectrum(M, A, *, vectors=False, oldmethod=2, scales=None, output_count=None)"
+      "signature": "solve_pdrf_spectrum(M, A, *, vectors=False, oldmethod=2, scales=None, output_count=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "solve_pdrf_spectrum"
     }
   },
   "version": {

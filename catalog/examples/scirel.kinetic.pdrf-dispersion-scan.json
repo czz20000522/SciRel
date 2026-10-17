@@ -496,7 +496,9 @@
     "python": {
       "module": "scirel.kinetic.pdrf",
       "symbol": "evaluate_pdrf_dispersion",
-      "signature": "evaluate_pdrf_dispersion(species=None, *, unit='normalized', method=2, rel=0, vectors=False, oldmethod=2, prior=None, cfg=None, k_grid=None, theta_grid=None, kx_grid=None, kz_grid=None, k=0.1, theta=1.0471975511965976, max_points=10000, plot_path=None, output_count=None)"
+      "signature": "evaluate_pdrf_dispersion(species=None, *, unit='normalized', method=2, rel=0, vectors=False, oldmethod=2, prior=None, cfg=None, k_grid=None, theta_grid=None, kx_grid=None, kz_grid=None, k=0.1, theta=1.0471975511965976, max_points=10000, plot_path=None, output_count=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_pdrf_dispersion"
     }
   },
   "version": {

@@ -14,8 +14,8 @@ def test_current_canonical_binding_census_preserves_facade_and_exception_denomin
     counts = report["counts"]
 
     assert counts["total"] == 267
-    assert counts["explicit"] == 129
-    assert counts["candidate"] == 91
+    assert counts["explicit"] == 140
+    assert counts["candidate"] == 80
     assert counts["exception"] == 47
     assert report["unexpected_missing"] == []
 
@@ -174,3 +174,25 @@ def test_equilibrium_io_and_small_domain_slice_pins_package_facades_explicitly()
     assert len(selected) == 20
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
     assert rows["scirel.kinetic.species-equilibrium-scales"] == "candidate"
+
+
+def test_pdrf_gpdf_and_generalized_slice_pins_kinetic_facades_explicitly():
+    report = census(ROOT)
+    rows = {row["asset_id"]: row["status"] for row in report["rows"]}
+    selected = {
+        "scirel.kinetic.evaluate-faddeeva-dr",
+        "scirel.kinetic.evaluate-faddeeva-gpdf",
+        "scirel.kinetic.generalized-dispersion",
+        "scirel.kinetic.generalized-expression-differentiation",
+        "scirel.kinetic.generalized-hilbert",
+        "scirel.kinetic.generalized-residual",
+        "scirel.kinetic.generalized-root-scans",
+        "scirel.kinetic.pdrf-dispersion-scan",
+        "scirel.kinetic.pdrf-plasma-state",
+        "scirel.kinetic.pdrf-temporal-matrix",
+        "scirel.kinetic.pdrf-temporal-spectrum",
+    }
+    assert len(selected) == 11
+    assert all(rows[asset_id] == "explicit" for asset_id in selected)
+    assert rows["scirel.kinetic.evaluate-maxwellian-fft"] == "candidate"
+    assert rows["scirel.kinetic.generalized-small-k"] == "exception"

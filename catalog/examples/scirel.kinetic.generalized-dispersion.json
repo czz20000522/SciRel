@@ -92,7 +92,9 @@
     "python": {
       "module": "scirel.kinetic.generalized_dispersion",
       "symbol": "evaluate_generalized_dispersion",
-      "signature": "evaluate_generalized_dispersion(z, selector=0, *, expression='exp(-v.^2)/sqrt(pi)', integration_mesh=None)"
+      "signature": "evaluate_generalized_dispersion(z, selector=0, *, expression='exp(-v.^2)/sqrt(pi)', integration_mesh=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_generalized_dispersion"
     }
   },
   "applicability": {

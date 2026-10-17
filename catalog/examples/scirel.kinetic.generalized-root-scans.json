@@ -199,7 +199,9 @@
     "python": {
       "module": "scirel.kinetic.generalized_dispersion",
       "symbol": "scan_gpdf_roots",
-      "signature": "scan_gpdf_roots(kind, *, k_values=None, initial_guess=None, residual_tolerance=1e-09, max_evaluations=300, **parameters)"
+      "signature": "scan_gpdf_roots(kind, *, k_values=None, initial_guess=None, residual_tolerance=1e-09, max_evaluations=300, **parameters)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "scan_gpdf_roots"
     }
   },
   "applicability": {

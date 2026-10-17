@@ -54,7 +54,9 @@
     "python": {
       "module": "scirel.kinetic.generalized_dispersion",
       "symbol": "DensityExpression",
-      "signature": "DensityExpression(expression)"
+      "signature": "DensityExpression(expression)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "DensityExpression"
     }
   },
   "applicability": {

@@ -151,7 +151,9 @@
     "python": {
       "module": "scirel.kinetic.generalized_dispersion",
       "symbol": "evaluate_gpdf_residual",
-      "signature": "evaluate_gpdf_residual(kind, x, k, *, ion_temperature=1.0, ion_mass=1836.0, beam_fraction=0.1, beam_temperature=1.0, beam_drift=5.0, selector=0, expression='exp(-v.^2)/sqrt(pi)', integration_mesh=None)"
+      "signature": "evaluate_gpdf_residual(kind, x, k, *, ion_temperature=1.0, ion_mass=1836.0, beam_fraction=0.1, beam_temperature=1.0, beam_drift=5.0, selector=0, expression='exp(-v.^2)/sqrt(pi)', integration_mesh=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_gpdf_residual"
     }
   },
   "applicability": {

@@ -162,7 +162,9 @@
     "python": {
       "module": "scirel.kinetic.pdrf",
       "symbol": "assemble_pdrf_matrix",
-      "signature": "assemble_pdrf_matrix(state, kx, kz, *, rel=0)"
+      "signature": "assemble_pdrf_matrix(state, kx, kz, *, rel=0)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "assemble_pdrf_matrix"
     }
   },
   "version": {

@@ -462,7 +462,9 @@
     "python": {
       "module": "scirel.kinetic.pdrf",
       "symbol": "initialize_pdrf_plasma",
-      "signature": "initialize_pdrf_plasma(species=None, *, unit='normalized', prior=None, cfg=None)"
+      "signature": "initialize_pdrf_plasma(species=None, *, unit='normalized', prior=None, cfg=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "initialize_pdrf_plasma"
     }
   },
   "version": {
