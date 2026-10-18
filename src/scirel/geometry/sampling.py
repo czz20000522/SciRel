@@ -19,6 +19,38 @@ import numpy as np
 from .numerics import diff_12_central
 
 def regular_grid(xx,yy,*args,**kwargs):
+    """Interpolate scattered fields onto a supplied or generated grid.
+
+    Parameters
+    ----------
+    xx, yy : array_like
+        Matched finite planar sample coordinates.
+    *args : array_like
+        Positional scalar fields sampled at ``(xx, yy)``.  Supplying no
+        fields returns only the selected ``(xi, yi)`` grid.
+    values : sequence of array_like, optional
+        Alternative named field sequence.  It cannot be combined with
+        positional fields.
+    nx, ny : int, default=200
+        Dimensions of the generated ``ij`` grid when ``xi`` and ``yi`` are
+        not supplied together.
+    xi, yi : array_like, optional
+        Query grids used together instead of generating regular axes.
+    method : str, default='linear'
+        SciPy interpolation method forwarded to the selected interpolation
+        implementation.
+
+    Returns
+    -------
+    tuple
+        ``(xi, yi)`` followed by interpolated fields in their input order.
+
+    Raises
+    ------
+    TypeError, ValueError
+        Unknown keywords or simultaneous positional and ``values`` fields
+        are rejected; NumPy and SciPy validation errors may also propagate.
+    """
     # Named scientific port for exact documents; preserve positional source calls.
     values = kwargs.pop("values", None)
     if values is not None:

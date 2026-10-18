@@ -132,6 +132,16 @@ def test_sampling_grid_interpolation_and_nearest_location_contracts():
     np.testing.assert_array_equal(sampling.locs_to_vals1D(x,y,q,exact),[q[2,3],q[4,1]])
 
 
+def test_regular_grid_public_docstring_declares_contract():
+    doc = inspect.getdoc(sampling.regular_grid)
+    assert doc is not None
+    assert "Parameters" in doc
+    assert "Returns" in doc
+    assert "Raises" in doc
+    assert "values" in doc
+    assert "method" in doc
+
+
 def test_poly_fit_cutoff_and_underdetermined_minimum_norm():
     x=np.linspace(-1,1,17);y=.2-1.3*x+.7*x*x-.4*x**3
     f,c=sampling.poly_fit(x,y)
