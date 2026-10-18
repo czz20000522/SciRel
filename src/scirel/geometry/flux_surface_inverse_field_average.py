@@ -1,8 +1,6 @@
 """Flux-surface 1/B measure and weighted average."""
 from __future__ import annotations
 import numpy as np
-from scipy.integrate import trapezoid
-from scipy.interpolate import RectBivariateSpline
 
 def compute_flux_surface_inverse_field_average(r_grid, z_grid, magnetic_field, field_line_points, quantity=None):
     """Compute ``dl_B = integral(dl/B)`` and optionally ``<quantity>_B``."""
@@ -43,6 +41,9 @@ def compute_flux_surface_inverse_field_average(r_grid, z_grid, magnetic_field, f
     segment_lengths = np.linalg.norm(segment, axis=1)
     if np.any(segment_lengths <= 0.0):
         raise ValueError('field_line_points must define a nondegenerate polyline without repeated consecutive points')
+    from scipy.integrate import trapezoid
+    from scipy.interpolate import RectBivariateSpline
+
     interpolator = RectBivariateSpline(z_axis, r_axis, magnetic_field)
     magnetic_values = np.asarray(interpolator(points_z, points_r, grid=False), dtype=float)
     if not np.all(np.isfinite(magnetic_values)) or np.any(magnetic_values <= 0.0):

@@ -143,6 +143,30 @@ assert "scipy" in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_geometry_flux_surface_average_defers_scipy_until_called() -> None:
+    result = _run(
+        """
+import sys
+import numpy as np
+from scirel.geometry import compute_flux_surface_inverse_field_average
+
+assert "scipy" not in sys.modules
+r = np.linspace(0.0, 1.0, 4)
+z = np.linspace(-1.0, 1.0, 4)
+r_grid, z_grid = np.meshgrid(r, z)
+output = compute_flux_surface_inverse_field_average(
+    r_grid,
+    z_grid,
+    np.ones_like(r_grid),
+    np.array([[0.0, 0.0], [1.0, 0.0]]),
+)
+assert output["dl_B"] > 0.0
+assert "scipy" in sys.modules
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_lazy_exports_preserve_identity_for_the_remaining_domains() -> None:
     result = _run(
         """
