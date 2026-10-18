@@ -129,6 +129,44 @@ def test_cylindrical_quadrature_change_selects_distribution_handoff():
     } <= set(result["test_paths"])
 
 
+@pytest.mark.parametrize(
+    ("source_path", "auxiliary_test"),
+    [
+        ("src/scirel/kinetic/bessel_gamma.py", "tests/test_domain_import_boundaries.py"),
+        ("src/scirel/kinetic/spatial_source_shape_normalization.py", "tests/test_domain_import_boundaries.py"),
+        ("src/scirel/kinetic/cross_mesh_scalar_interpolation.py", "tests/test_domain_import_boundaries.py"),
+        ("src/scirel/kinetic/maxwellian_electrostatic.py", "tests/test_maxwellian_import_boundary.py"),
+        ("src/scirel/kinetic/plasma_dispersion_weideman.py", "tests/test_weideman_import_boundary.py"),
+        ("src/scirel/kinetic/faddeeva_variants.py", "tests/test_faddeeva_import_boundary.py"),
+        (
+            "src/scirel/kinetic/cross_mesh_distribution_interpolation.py",
+            "tests/operator_contracts/test_cross_mesh_distribution_imports.py",
+        ),
+        (
+            "src/scirel/kinetic/frank_egedal_source_projection.py",
+            "tests/test_frank_egedal_source_projection_import_boundary.py",
+        ),
+        (
+            "src/scirel/kinetic/dielectric_tensor_diagnostic.py",
+            "tests/operator_contracts/test_fluidbw_r43_kinetic.py",
+        ),
+        (
+            "src/scirel/kinetic/cauchy_transform.py",
+            "tests/test_cauchy_transform_import_boundary.py",
+        ),
+        (
+            "src/scirel/collisions/relativistic_maxwellian_bessel.py",
+            "tests/test_relativistic_maxwellian_bessel_import_boundary.py",
+        ),
+    ],
+)
+def test_import_boundary_regressions_are_selected_with_source_changes(source_path, auxiliary_test):
+    result = select(source_path)
+
+    assert result["full_suite_required"] is False
+    assert auxiliary_test in result["test_paths"]
+
+
 def test_nested_task_graph_dependents_are_selected_transitively():
     result = select("src/scirel/closures/reduced_hall_drift.py")
 

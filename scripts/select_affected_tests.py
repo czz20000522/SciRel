@@ -185,6 +185,33 @@ SOURCE_DIRECT_TESTS = {
     "src/scirel_adapter/mcp.py": ("tests/test_thin_mcp_adapter.py",),
 }
 
+# Import-boundary regressions live beside the canonical direct contract when
+# they exercise a cross-cutting fresh-process condition. Keep them explicit so
+# an affected source selection cannot silently omit the regression.
+SOURCE_AUXILIARY_TESTS = {
+    "src/scirel/kinetic/bessel_gamma.py": ("tests/test_domain_import_boundaries.py",),
+    "src/scirel/kinetic/spatial_source_shape_normalization.py": ("tests/test_domain_import_boundaries.py",),
+    "src/scirel/kinetic/cross_mesh_scalar_interpolation.py": ("tests/test_domain_import_boundaries.py",),
+    "src/scirel/kinetic/maxwellian_electrostatic.py": ("tests/test_maxwellian_import_boundary.py",),
+    "src/scirel/kinetic/plasma_dispersion_weideman.py": ("tests/test_weideman_import_boundary.py",),
+    "src/scirel/kinetic/faddeeva_variants.py": ("tests/test_faddeeva_import_boundary.py",),
+    "src/scirel/kinetic/cross_mesh_distribution_interpolation.py": (
+        "tests/operator_contracts/test_cross_mesh_distribution_imports.py",
+    ),
+    "src/scirel/kinetic/frank_egedal_source_projection.py": (
+        "tests/test_frank_egedal_source_projection_import_boundary.py",
+    ),
+    "src/scirel/kinetic/dielectric_tensor_diagnostic.py": (
+        "tests/operator_contracts/test_fluidbw_r43_kinetic.py",
+    ),
+    "src/scirel/kinetic/cauchy_transform.py": (
+        "tests/test_cauchy_transform_import_boundary.py",
+    ),
+    "src/scirel/collisions/relativistic_maxwellian_bessel.py": (
+        "tests/test_relativistic_maxwellian_bessel_import_boundary.py",
+    ),
+}
+
 NO_TEST_PREFIXES = (
     "docs/",
     "skills/",
@@ -693,6 +720,7 @@ def select(
         elif path.startswith("src/scirel/") and path.endswith(".py"):
             direct_source_tests = SOURCE_DIRECT_TESTS.get(path, ())
             path_tests.update(direct_source_tests)
+            path_tests.update(SOURCE_AUXILIARY_TESTS.get(path, ()))
             if direct_source_tests:
                 reason = "source_engineering_contract"
             selected_for_path.update(assets_by_source.get(path, ()))
