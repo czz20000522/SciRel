@@ -56,8 +56,14 @@ def fast_ion_fractional_heating(
     small = x2 < 0.01
     y = np.where(small, x2, 0.0)**1.5
     out = np.zeros_like(x2)
-    for k in range(12):
-        out += 2.0 * (-y)**k / (3*k + 2)
+    if np.any(small):
+        # The series is only used for small x².  Avoid evaluating all twelve
+        # terms for entries that are replaced by the closed form below.
+        ys = y[small]
+        series = np.zeros_like(ys)
+        for k in range(12):
+            series += 2.0 * (-ys)**k / (3*k + 2)
+        out[small] = series
     xn = np.sqrt(x2[~small])
     x2n = x2[~small]
     numerator = (1.0 / 6.0) * np.log((1.0 - xn + x2n) / (1.0 + 2.0 * xn + x2n))
