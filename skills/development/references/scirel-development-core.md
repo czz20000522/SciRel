@@ -1,17 +1,23 @@
 # SciRel development-skill operating contract
 
-This contract is self-contained for the SciRel development package. It covers
-candidate modification, D2 integration, D3 project delivery, review
+This contract is the shared operating entry for the SciRel development package.
+It covers candidate modification, D2 integration, D3 project delivery, review
 preparation and release handoff. It never loads or references the decomposition
-package; decomposition outputs arrive as exact input artifacts.
+package; decomposition outputs arrive as exact input artifacts. Mode triggers,
+versioning and artifact closure are canonical in
+[the development lifecycle](development-lifecycle.md).
 
 ## Invocation binding
 
-Bind only the identities required by the selected lifecycle mode. Every mode
-still binds `task`, owner, writable work root, evidence already received and
-the next owner; missing bindings stop the affected claim as `blocked` or
-`NOT_RUN` with a concrete reopen condition. Never replace an exact candidate
-with `latest` or infer a scientific oracle from a summary.
+Bind only the identities required by the selected lifecycle mode. Ordinary
+`development` binds the task, Git base/head, owned change scope, primary claim
+and the tests or benchmark that can decide it. Bind owner, consumer, next
+owner and handoff custody only for a checkpoint, handoff or release. Bind an
+exact runtime or dependency only when the task actually executes it. A missing
+required identity stops that claim as `blocked` or `NOT_RUN` with a concrete
+reopen condition; do not manufacture a denominator or a release packet to fill
+an unused field. Never replace an exact candidate with `latest` or infer a
+scientific oracle from a summary.
 
 - In `development`, bind the Git base/head (or the current source revision),
   changed scope, affected API/test/benchmark target and claim. Bind exact
@@ -27,38 +33,9 @@ with `latest` or infer a scientific oracle from a summary.
 
 Before choosing tests or artifacts, bind the work to one lifecycle mode. The
 default is `development`; `integration_checkpoint` and `release_freeze` require
-an explicit task or owner decision. Do not infer a release freeze from a version
-string, a document count, a clean worktree or the fact that a wheel can be built.
-
-When the task is framed as optimization, maintenance, continuation or review,
-keep it in `development` unless the user names a consumer, handoff, candidate
-cut or release decision. Historical `devN` labels, a growing capability
-denominator and a buildable wheel are observations of the tree, not requests to
-start release work.
-
-- **development**: evolve Git, source, tests, benchmarks, draft documents and
-  the development catalog. Counts are dynamic. Do affected checks and bounded
-  API/scientific checks; do not update `release/CURRENT.json`, create platform
-  receipts or run the full release matrix unless a consumer explicitly needs an
-  installed development wheel.
-- **integration_checkpoint**: serve a named consumer, handoff or
-  owner-requested checkpoint. Recompute document/catalog closure only when that
-  artifact is needed. The denominator is the current manifest, not a historical
-  count. Build an installed development wheel only for the declared consumer
-  or D3 case.
-- **release_freeze**: freeze one exact Git revision for a real candidate or
-  public release. Generate the manifest at that revision, derive its operator,
-  TaskGraph and document counts, build wheel/document/catalog artifacts, bind
-  platform receipts and run the release gates. Only this mode advances the
-  public version or writes the current release tuple.
-
-Read [the development lifecycle](development-lifecycle.md) for transition
-triggers and the complete mode boundary.
-
-Lifecycle, version, closure and artifact-binding policy is canonical in
-[the development lifecycle](development-lifecycle.md). Read that reference
-when packaging, documents, catalogs, wheels, native resources or release state
-are in scope; do not duplicate its gates in a task-specific route.
+an explicit task or owner decision. Read [the development lifecycle](development-lifecycle.md)
+for transition triggers, versioning, closure and artifact gates; do not duplicate
+those rules in a task-specific route.
 
 ## Product-development loop
 
@@ -86,9 +63,11 @@ before/after observation. These are development checks, not a request to build
 a wheel or regenerate release projections.
 
 After the edit, rerun the affected selector and reverse dependencies. Unknown
-ownership fails closed to a wider test layer. A clean diff and a Git commit for
-the coherent change set are part of the development record; a commit may
-contain several compatible fixes, but it must not mix unrelated work.
+ownership fails closed to a wider test layer. Finish with a reviewable diff and
+the checks that support the claim. Create a Git commit when the requested
+handoff or repository workflow calls for one; a continuation, status request or
+unchanged evidence does not justify a new commit. A commit may contain several
+compatible fixes, but it must not mix unrelated work.
 
 Batch compatible local fixes into one reviewable change set when they share a
 contract or dependency boundary. Do not create a version or release cycle for
@@ -96,8 +75,9 @@ each function-level improvement; Git history preserves intermediate states.
 
 During development, docstrings, comments and draft notes are sufficient for
 an evolving contract. Create or refresh exact asset documents and the catalog
-when a discovery handoff, integration checkpoint or review needs them; a stable
-batch or changed count alone is not a trigger. Do not rebuild the complete
+when producing or binding a named artifact, discovery handoff, integration
+checkpoint or review needs them; a stable batch or changed count alone is not a
+trigger. Do not rebuild the complete
 catalog for every edit. Keep one current working-tree representation and use
 Git history for prior wording or code; do not copy full wheel, document or
 catalog trees into version directories.
@@ -114,11 +94,15 @@ correctness or normalization sub-skills for a local API, import, performance or
 packaging change.
 
 AOCI is a repository-maintenance aid, not a development gate. For a local
-source or skill change, read only the related evidence. If the task explicitly
-selects AOCI and changes a managed object, perform one applicable
-`aoci_maintain` after the batch reaches its final stable state; do not repeat it
-for every commit or intermediate edit. A full Overview/Attestation is only for
-a task that actually requires complete repository cognition.
+source or skill change, read only the related evidence. If the final change
+touches an AOCI-managed object, perform one applicable `aoci_maintain` after
+the batch reaches its final stable state, following the repository's AOCI
+closeout rules; do not repeat it for every commit or intermediate edit. This
+does not start a full Overview/Attestation unless the task actually requires
+complete repository cognition.
+
+Use the lifecycle reference's minimal execution and stop rule for ordinary
+development; do not repeat that policy in a routed skill.
 
 ## Development boundaries
 

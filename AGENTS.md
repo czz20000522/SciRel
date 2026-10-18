@@ -6,12 +6,14 @@ SciRel 是长期独立维护的 Python 科学关系库；不要套用相邻 Code
 
 - 普通任务默认处于 `development`：优化源码、公共 API、依赖边界、测试、文档、基准和构建配置，使用影响范围匹配的检查，并以一个可审阅的 Git change set 收口。
 - “继续”“完成”“审查”“验证”本身不会启动发布流程。没有明确的 consumer、handoff、candidate cut 或 release decision 时，不构建 wheel、不更新 `release/CURRENT.json`、不生成发布回执、不跑全平台矩阵，也不推进 `devN`。
+- 普通开发先确定一个主要 claim、一个 owned scope 和一个 stop condition，运行能够决定该 claim 的最小 affected 检查；达到 `passed`、`failed`、`blocked` 或 `NOT_RUN` 后收口。只有结果改变影响范围、暴露具体阻塞或用户明确要求时，才追加更宽测试、wheel、平台、catalog 或 AOCI；若本次产生 durable decision、blocker 或 next action，按收尾约定同步工作台。
 - operators、TaskGraphs、文档和 catalog 的数量随当前 Git 树变化；数量只属于具体 manifest/revision，不是项目永久门禁。需要 wheel、文档和 catalog 时，才从同一个确切 revision 派生并绑定它们。
 - 多个相互关联的小修复可以合并为一个变更批次；Git 历史保存中间状态，不为每个函数或每个文档修订单独制造版本和验收循环。
 - SciRel 对公开算子和 TaskGraph 的实现、输入/输出合同、数值结果、失败语义和直接回归负责；Agent 只负责发现、选择、组合和编写胶水代码，不在胶水层复制科学算法或用组合测试替代能力本身的正确性证据。
-- 先按影响范围选检查：局部实现运行 affected 测试，共享 API/依赖边界扩大到直接反向依赖，只有候选/发布或明确的安装消费者才构建 wheel、生成闭包和运行平台门禁。没有证据支持时，不把一次慢运行或一次成功安装升级成通用性能/跨平台结论。
+- 先按影响范围选检查：局部实现运行 affected 测试，共享 API/依赖边界扩大到直接反向依赖；只有 named `integration_checkpoint` 且该 checkpoint 明确需要安装 artifact，或 `release_freeze` 时才构建 wheel、生成闭包和运行平台门禁。没有证据支持时，不把一次慢运行或一次成功安装升级成通用性能/跨平台结论。
 - 平台 wheel 的拆分由实际 native/ABI 和依赖闭包决定：纯 Python 或已有通用 wheel 能覆盖的能力保持统一分发；只有实测存在平台边界时才增加平台特定构建和门禁。
 - 非平凡修改或验证任务按 lifecycle reference 先确定 mode、主要 claim 和负责路径，并记录已有脏改动；证据复用及工作记录更新遵循该入口，不因“继续”或状态查询重复验证、重建 wheel 或同步不变状态。
+- 普通开发只要求可审阅的 diff 和与 claim 匹配的检查；提交由用户交付或仓库工作流需要时再做，不因状态查询、继续或不变证据制造新提交。
 
 - 区分 SciRel 开发项目与用户安装的 `scirel` 包：skill、审核状态、来源工件、开发工具和平台适配属于项目开发/集成层；科学 wheel 只包含所选科学 API、运行实现、必要组件/数据及分发元数据。历史试验不自动进入后续发行或成为永久门禁；仍被引用的来源与许可依据保留可取得。
 - 不同整合批次、发行候选和维护版本在确有重叠或需要隔离验收时使用隔离分支/worktree、环境及构建输出；普通小范围开发继续使用当前工作树。以确切提交、审核内容和 wheel 摘要定义版本，不以分支名/worktree 路径定义批准。具体边界见 `docs/design/project-and-distribution.md`；创建 worktree 前检查已有工作区，不覆盖他人未提交修改。
@@ -25,11 +27,11 @@ SciRel 是长期独立维护的 Python 科学关系库；不要套用相邻 Code
 - 公共 API 按科学领域组织，任务图是组合函数；共享代码必须保持科学合同、默认值与失败行为。
 - 普通 TaskGraph 依赖保持 DAG；反馈/迭代必须显式声明状态、顺序、停止条件和上限。资产发现使用分片索引与渐进披露，不建立需要全量 import 或把全部合同送入上下文的 registry。
 - 日常内循环先用 `scripts/check.ps1 -Mode affected` 根据变更资产、共享源码和 TaskGraph 反向依赖选择精确测试；无法归属时先扩大到能覆盖未知归属的更宽测试层，只有影响范围仍无法界定时才回落到全仓。只有影响范围、发布门禁或公共基线要求时才跑全仓，不把全仓测试作为每个算子修改的默认动作。
-- 新增回归应放在 affected selector 能识别的 canonical direct test 路径中；若必须新建测试文件，应在同一变更中补充 selector 归属，否则该测试不能单独支撑日常开发结论。
+- 新增回归应放在 affected selector 能识别的 canonical direct test 路径中，或在同一变更中补充 selector 归属；selector 未覆盖的测试不能支撑自动 affected 结论，但手动执行且范围匹配时仍可作为已报告的局部证据。
 - 新增或改变公共资产，在 D2 比较、去重和代码稳定后、最终待审冻结前维护唯一 `scirel.asset-document.v1` exact document；实验内循环使用代码、YAML、注释/docstring 和现有证据锚点，不要求先写正式文档。catalog 只从已验证文档生成。不得从名称/源码猜补科学字段，不得把 CodeFusion 私有 owner/ref 或 adapter session/job 字段写入公共合同。
 - 上一阶段交付只读；本阶段的修正、重复吸收和来源说明写入本阶段派生代码注释/docstring 或接续记录。正式审查文档面向人，不复制内部路径或过程备注。不用文件覆盖方式重复导入整批资产；对照当前 Git 基线逐项整合，保留其他贡献者的修改。
 - 改变科学行为先写失败回归；保持旧数值断言和容差，不能为了通过测试弱化它们。
-- 改动后运行与声明匹配的相关测试；只有 named `integration_checkpoint` 或 `release_freeze` 才构建 wheel，只有 `release_freeze` 才在没有源码的环境验证全套测试和公共 API。
+- 改动后运行与声明匹配的相关测试；只有明确需要安装 artifact 的 named `integration_checkpoint` 或 `release_freeze` 才构建 wheel，只有 `release_freeze` 才在没有源码的环境验证全套测试和公共 API。
 - 冻结的来源、审核和准入记录不可改写；源码演进另记版本和审查。语言/格式调整也要保留可核对差异。
 - 每个来源项目使用独立容器，环境定义随交付保存；源码、依赖/工具、探针、缓存、证据与产物分开，冻结预处理与索引供各 worker 复用，不逐区域重装或重建。依赖下载通过开发机本地代理；服务器不构建。清理前先列出精确范围进行 dry run；用户明确清空旧工作且不备份时遵从该范围，保留指定来源、工具与凭据，不把历史运行保留规则变成额外批准门槛。
 

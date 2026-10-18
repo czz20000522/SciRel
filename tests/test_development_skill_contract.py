@@ -46,6 +46,8 @@ def test_project_contract_keeps_ordinary_optimization_out_of_release_flow():
     assert "多个相互关联的小修复可以合并为一个变更批次" in project_contract
     assert "canonical direct test 路径" in project_contract
     assert "遵循该入口" in project_contract
+    assert "一个主要 claim、一个 owned scope 和一个 stop condition" in project_contract
+    assert "不因状态查询、继续或不变证据制造新提交" in project_contract
 
 
 def test_lifecycle_requires_selector_visible_regressions():
@@ -76,6 +78,11 @@ def test_lifecycle_keeps_incubation_counts_dynamic_and_release_gates_explicit():
     assert "Reuse a previous result" in lifecycle
     assert "does not by itself justify replaying the same validation" in lifecycle
     assert "per-iteration release records" in lifecycle
+    assert "one minimal pass" in lifecycle
+    assert "initial claim-matched check set" in lifecycle
+    assert "not reasons to start a companion route" in lifecycle
+    assert "durable decision, blocker or next action" in lifecycle
+    assert "For every task" not in readme
 
 
 def test_development_loop_keeps_related_evidence_together_without_release_work():
@@ -144,7 +151,9 @@ def test_direct_product_work_does_not_synthesize_d1_or_full_aoci_proof():
 
     assert "Without an exact D1 packet" in core
     assert "AOCI is a repository-maintenance aid, not a development gate" in core
-    assert "one applicable `aoci_maintain`" in core
+    assert "one applicable `aoci_maintain` after" in core
+    assert "minimal execution and stop rule" in core
+    assert "**release_freeze**" not in core
 
 
 def test_routed_development_skills_reuse_one_loaded_shared_contract():

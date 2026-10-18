@@ -1,8 +1,9 @@
 # SciRel development lifecycle
 
 This reference keeps daily SciRel work separate from candidate and public
-release work. Read it when a task mentions wheels, documents, catalog counts,
-platform matrices, version changes or release validation.
+release work. Read it when producing or binding artifacts, choosing gates, or
+changing version/release state. A simple read-only status lookup can use the
+routing shortcut directly.
 
 The current development baseline is Linux amd64 with CPython 3.14. Other
 platforms remain `NOT_RUN` unless a named checkpoint or release claim exercises
@@ -59,6 +60,17 @@ new decision, blocker, durable result or next action was produced. Do not create
 per-iteration release records or repeat an unchanged status merely because a
 long-running task continued.
 
+Use one minimal pass for ordinary work: select the mode and claim, run the
+initial claim-matched check set (the affected selector for code, or the relevant
+document/schema/link check for documentation), inspect the result and stop at
+the supported claim ceiling. Add a wider test, wheel, platform or catalog route
+only when the first result changes the affected scope, exposes a concrete
+blocker or the user names that output. A work-management closeout remains
+appropriate when this task produced a durable decision, blocker or next action
+under the repository's closeout convention. Tool availability, elapsed time and
+the words “continue”, “finish”, “review” or “verify” are not reasons to start a
+companion route.
+
 ### SciPy-style change-set loop
 
 Treat one coherent change as the working unit. Before editing, inspect the
@@ -84,14 +96,16 @@ Neither claim requires a wheel or catalog during ordinary development.
 
 After editing, rerun the affected selector and its reverse dependencies, then
 run the narrow API/import/failure checks needed by the claim. Unknown ownership
-fails closed to a wider test layer. Finish a coherent change set with a clean
-diff check and a Git commit that states the affected area; do not stage an
-unrelated work-in-progress file merely to make the tree look complete.
+fails closed to a wider test layer. Finish with a reviewable diff and the
+recorded checks; commit the coherent change set when the requested handoff or
+repository workflow calls for it. Do not stage an unrelated work-in-progress
+file merely to make the tree look complete.
 
 Put a new regression in the canonical direct test path that the affected
 selector recognizes, or update the selector mapping in the same change set. A
-test file that the daily selector cannot reach is not sufficient evidence for
-an ordinary development claim.
+test file that the daily selector cannot reach cannot support an automatic
+affected-test conclusion; a manually run, scope-matched test may still support
+the claim when its command and coverage are reported.
 
 Several compatible local fixes may share one change set and one validation
 round. A function-level edit, a new capability or a changed count is not a
@@ -101,8 +115,8 @@ checkpoint or release freeze is requested.
 Treat the capability set as open during incubation. Counts such as
 `267 documents = 235 operators + 32 TaskGraphs` describe one manifest at one
 revision; they are not project-wide invariants and must never be copied into a
-skill as a permanent gate. When a catalog, document selection or wheel is
-actually requested, derive its members and counts from the same current
+skill as a permanent gate. When producing or binding a catalog, document
+selection or wheel, derive its members and counts from the same current
 manifest. If several artifacts are produced together, bind all of them to one
 exact Git revision and record the derived closure; if no artifact is requested,
 leave the projections alone.
@@ -123,7 +137,7 @@ this mode is the only default. A legacy `0.1.0.devN` value, an old release note,
 or a previous candidate in `release/CURRENT.json` does not create a new release
 cadence. Do not increment `devN`, create a successor release note, or run
 publication/platform gates because a task says to continue or to close the
-current work. Record the Git commit and affected checks, then stop at the claim
+current work. Record the Git state and affected checks, then stop at the claim
 supported by that evidence.
 
 ## Named integration checkpoint

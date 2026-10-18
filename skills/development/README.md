@@ -28,15 +28,6 @@ Choose the mode before choosing artifacts or gates:
 - **public release**: publish only after the separate human, rights and release
   decisions are complete.
 
-The default posture before the first public release is optimization, not
-acceptance. Treat SciRel as one continuously evolving SciPy-style source tree:
-improve public contracts, implementations, dependency boundaries, tests,
-documentation and benchmarks together, then stop at the claim supported by
-the affected checks. Do not build a wheel, update `release/CURRENT.json`,
-create a release receipt or run the full platform matrix merely because a task
-says to continue, finish, review or verify. Those words do not name a
-checkpoint or release.
-
 Within ordinary `development`, use one of two routes:
 
 - **direct product development (default)**: change the SciRel Git tree itself
@@ -48,30 +39,14 @@ Within ordinary `development`, use one of two routes:
   remain bound to that route; they do not become a requirement for ordinary
   product edits.
 
-No source change, new capability, performance claim, document edit, clean
-worktree or buildable wheel changes mode by itself. A current capability count
-is a property of the checked-out tree, not a permanent gate.
-
 Batch compatible fixes into one reviewable Git change set. A changed function,
 document or capability count does not require its own version or acceptance
 cycle; use Git history to preserve earlier states and create a new release
 projection only when a named checkpoint or release decision needs one.
 
-## Pre-publication guard
-
-Until the owner explicitly decides to make the first public release, treat the
-repository as an incubation tree. An existing `project.version` or historical
-`devN` label is metadata left by an earlier checkpoint; do not increment it,
-create another `devN` release note, or update a release pointer for routine
-development. A request to “continue”, “finish”, “review” or “verify” does not
-change the mode. It remains `development` unless the task names a consumer,
-handoff or release decision.
-
-The first public release chooses its initial public version from the actual
-capability and compatibility boundary at that time. Earlier development labels
-do not constrain that choice. After publication, compatible fixes can accumulate
-as a maintenance batch on the same line; a broad capability or compatibility
-boundary can start the next line.
+Mode triggers, version handling, closure binding and the pre-publication guard
+are canonical in [the development lifecycle](references/development-lifecycle.md);
+use that reference instead of repeating release rules in each route.
 
 ## SciPy-style repository boundary
 
@@ -97,9 +72,10 @@ optional and development dependencies. Use the existing affected selector as
 the daily test entry point. Do not add a native build system, platform wheel
 matrix or release automation until measured ABI/native evidence requires it.
 
-For every task, use the lifecycle reference's work-triage and evidence-reuse
-rules before selecting tools or gates; unchanged evidence should be reused
-instead of replayed.
+For non-trivial edits, validation or artifact/gate work, use the lifecycle
+reference's work-triage, evidence-reuse and stop rules before selecting tools
+or gates. Simple known edits and read-only status queries can use the routing
+shortcut directly.
 
 ## Correctness ownership
 
