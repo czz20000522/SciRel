@@ -44,6 +44,9 @@ def test_project_contract_keeps_ordinary_optimization_out_of_release_flow():
     assert "不会启动发布流程" in project_contract
     assert "数量只属于具体 manifest/revision" in project_contract
     assert "多个相互关联的小修复可以合并为一个变更批次" in project_contract
+    assert "长程 goal 只是待处理 claim 的队列" in project_contract
+    assert "首次公开发布时才选择初始 `major.minor`" in project_contract
+    assert "按 SciPy 式标准库结构维护一个当前源树" in project_contract
     assert "canonical direct test 路径" in project_contract
     assert "遵循该入口" in project_contract
     assert "一个主要 claim、一个 owned scope 和一个 stop condition" in project_contract
@@ -82,6 +85,11 @@ def test_lifecycle_keeps_incubation_counts_dynamic_and_release_gates_explicit():
     assert "initial claim-matched check set" in lifecycle
     assert "not reasons to start a companion route" in lifecycle
     assert "durable decision, blocker or next action" in lifecycle
+    assert "queue of possible claims, not an execution scheduler" in lifecycle
+    assert "Release acceptance means the frozen wheel/document/catalog" in lifecycle
+    assert "exact clean ref" in readme
+    assert "source_dirty" in readme
+    assert "same-revision rule applies only when a wheel" in readme
     assert "For every task" not in readme
 
 
@@ -152,6 +160,7 @@ def test_direct_product_work_does_not_synthesize_d1_or_full_aoci_proof():
     assert "Without an exact D1 packet" in core
     assert "AOCI is a repository-maintenance aid, not a development gate" in core
     assert "one applicable `aoci_maintain` after" in core
+    assert "dirty artifact is explicitly requested" in core
     assert "minimal execution and stop rule" in core
     assert "**release_freeze**" not in core
 

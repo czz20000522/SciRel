@@ -6,9 +6,11 @@ SciRel 是长期独立维护的 Python 科学关系库；不要套用相邻 Code
 
 - 普通任务默认处于 `development`：优化源码、公共 API、依赖边界、测试、文档、基准和构建配置，使用影响范围匹配的检查，并以一个可审阅的 Git change set 收口。
 - “继续”“完成”“审查”“验证”本身不会启动发布流程。没有明确的 consumer、handoff、candidate cut 或 release decision 时，不构建 wheel、不更新 `release/CURRENT.json`、不生成发布回执、不跑全平台矩阵，也不推进 `devN`。
+- 长程 goal 只是待处理 claim 的队列，不是无限执行许可：每次继续只把当前 claim 推到 stop condition；达到 `passed`、`failed`、`blocked` 或 `NOT_RUN` 后收口，没有新的范围或阻塞就不自动启动下一项优化，也不重复同一检查。
 - 普通开发先确定一个主要 claim、一个 owned scope 和一个 stop condition，运行能够决定该 claim 的最小 affected 检查；达到 `passed`、`failed`、`blocked` 或 `NOT_RUN` 后收口。只有结果改变影响范围、暴露具体阻塞或用户明确要求时，才追加更宽测试、wheel、平台、catalog 或 AOCI；若本次产生 durable decision、blocker 或 next action，按收尾约定同步工作台。
 - operators、TaskGraphs、文档和 catalog 的数量随当前 Git 树变化；数量只属于具体 manifest/revision，不是项目永久门禁。需要 wheel、文档和 catalog 时，才从同一个确切 revision 派生并绑定它们。
 - 多个相互关联的小修复可以合并为一个变更批次；Git 历史保存中间状态，不为每个函数或每个文档修订单独制造版本和验收循环。
+- incubation 期间版本号只是 Git 可追溯的开发元数据；首次公开发布时才选择初始 `major.minor`。兼容修复、数值修正、性能优化和内部重构可批量留在同一能力线，只有公共能力或兼容边界的大范围变化才开启新的能力线。
 - SciRel 对公开算子和 TaskGraph 的实现、输入/输出合同、数值结果、失败语义和直接回归负责；Agent 只负责发现、选择、组合和编写胶水代码，不在胶水层复制科学算法或用组合测试替代能力本身的正确性证据。
 - 先按影响范围选检查：局部实现运行 affected 测试，共享 API/依赖边界扩大到直接反向依赖；只有 named `integration_checkpoint` 且该 checkpoint 明确需要安装 artifact，或 `release_freeze` 时才构建 wheel、生成闭包和运行平台门禁。没有证据支持时，不把一次慢运行或一次成功安装升级成通用性能/跨平台结论。
 - 平台 wheel 的拆分由实际 native/ABI 和依赖闭包决定：纯 Python 或已有通用 wheel 能覆盖的能力保持统一分发；只有实测存在平台边界时才增加平台特定构建和门禁。
@@ -18,6 +20,7 @@ SciRel 是长期独立维护的 Python 科学关系库；不要套用相邻 Code
 - 长程 goal 不会自动扩大当前范围；每次继续都重新绑定 mode、主要 claim、owned scope 和 stop condition。达到 `passed`、`failed`、`blocked` 或 `NOT_RUN` 且没有新边界或阻塞时立即收口，不因为“继续”自行构建 wheel、推进版本、跑平台矩阵、重建 catalog 或开始下一轮优化。
 
 - 区分 SciRel 开发项目与用户安装的 `scirel` 包：skill、审核状态、来源工件、开发工具和平台适配属于项目开发/集成层；科学 wheel 只包含所选科学 API、运行实现、必要组件/数据及分发元数据。历史试验不自动进入后续发行或成为永久门禁；仍被引用的来源与许可依据保留可取得。
+- 按 SciPy 式标准库结构维护一个当前源树：`src/scirel`、直接测试、公共文档、构建配置和依赖声明各保留一套 Git 表示；各科学域保持显式导出、可调用文档和直接回归，运行时、可选和开发依赖分层。完整 wheel、文档快照和 catalog 属于按确切 revision 生成的外部投影，不复制进版本目录。
 - 不同整合批次、发行候选和维护版本在确有重叠或需要隔离验收时使用隔离分支/worktree、环境及构建输出；普通小范围开发继续使用当前工作树。以确切提交、审核内容和 wheel 摘要定义版本，不以分支名/worktree 路径定义批准。具体边界见 `docs/design/project-and-distribution.md`；创建 worktree 前检查已有工作区，不覆盖他人未提交修改。
 - 任务消费或产生 D0/D1 来源交付时，先读 README、`docs/` 中相关架构/目录/流程、相关函数、科学测试和 provenance；不得把候选来源记录解释为人工批准。
 - 任务消费或产生 D0/D1 来源交付时，官方来源只读；D0 在可编辑的 Git 分支/副本先完成或复用初始 AOCI 索引，再清理有依据的不完整/明显有问题代码，对稳定改动增量维护 AOCI/CodeGraph，最后交付固定 D0。记录相对上游的改动、剔除范围和理由；首建完成不自动触发全量语义重审，已知缺陷仍须按证据范围修复。已授权范围由 Agent 自主处理，不逐项申请批准；具体边界见 `docs/development-process.md`。

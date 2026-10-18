@@ -10,6 +10,12 @@ platforms remain `NOT_RUN` unless a named checkpoint, explicit platform claim,
 or release claim exercises them; a local macOS or Windows result must not be
 generalized to this baseline.
 
+A long-running goal is a queue of possible claims, not an execution scheduler.
+One development turn closes one bounded change set. Once its claim reaches the
+stop condition, do not start another optimization, rebuild an unchanged
+artifact or replay an unchanged gate without a new claim or an explicit owner
+request.
+
 ## Default: development
 
 Use the current Git worktree as the development truth. New operators,
@@ -36,6 +42,11 @@ Use this impact rule for the daily loop:
 - only a named checkpoint, `release_freeze`, or an explicit user/owner request
   creates a wheel/document/catalog closure, and only `release_freeze` runs the
   complete release matrix.
+
+In `development`, “验收” means the smallest check that decides the named
+claim. Release acceptance means the frozen wheel/document/catalog and platform
+closure produced by `release_freeze`; do not use that term for every local
+optimization check.
 
 Do not repeat a larger gate merely because a smaller check passed, and do not
 start a release projection to make a development count look current.
@@ -172,6 +183,10 @@ dependencies, package imports, dependency boundaries and the claim ceiling.
 This checkpoint can produce a development report or installed development
 wheel for the named consumer. It does not freeze a public release, advance
 `devN`, update `release/CURRENT.json`, or require the full platform matrix.
+Source-only smoke may use a dirty working tree. An installable wheel,
+document/catalog selection or receipt must come from one exact clean revision;
+an explicitly requested dirty artifact is labelled `source_dirty`/`unbound` and
+cannot establish a same-revision closure.
 
 ## Development output budget
 

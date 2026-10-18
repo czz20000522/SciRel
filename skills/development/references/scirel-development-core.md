@@ -24,9 +24,12 @@ scientific oracle from a summary.
   runtime or dependency identities only when the task actually executes a
   scientific runtime, installed package or consumer case. A source-only
   change does not need a release candidate or a complete denominator.
-- In `integration_checkpoint`, bind the current working-tree or exact
-  development candidate, its dependency/runtime identities when exercised,
-  the current manifest scope and reverse dependencies.
+- In `integration_checkpoint`, bind the current working-tree for source-only
+  smoke or an exact clean development candidate for any installable artifact;
+  if a dirty artifact is explicitly requested, mark it `source_dirty` and
+  `unbound` and do not use it as revision-bound evidence. Also bind its
+  dependency/runtime identities when exercised, the current manifest scope and
+  reverse dependencies.
 - In `release_freeze`, bind one exact Git revision, complete manifest and
   denominator, dependency/runtime identities, selected scope and all release
   evidence before making candidate or publication claims.

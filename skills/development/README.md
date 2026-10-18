@@ -17,6 +17,12 @@ and public release work is an explicit `release_freeze` mode; it derives a new
 manifest and exact closure once, instead of making every development change
 advance a wheel version or run the full platform matrix.
 
+Treat a long-running goal as a queue of possible claims, not as a scheduler.
+Each development turn owns one bounded change set, one primary claim and one
+stop condition. When that claim reaches its supported result, report the
+reviewable diff and evidence; a later optimization or a repeated gate needs a
+new claim or an explicit owner request.
+
 Choose the mode before choosing artifacts or gates:
 
 - **development**: improve the Git tree and run impact-matched checks. This is
@@ -52,13 +58,21 @@ use that reference instead of repeating release rules in each route.
 
 Keep one Git source tree for `src/scirel/`, `docs/`, build/test tooling and
 `pyproject.toml`. Generate wheels, rendered documentation, catalogs and receipts
-from an exact ref into task-local or external output directories; do not copy a
-full source, handbook or catalog tree into versioned directories. Keep only
-short release notes in `docs/release/`; Git history and tags provide older
-source and wording. Separate core runtime dependencies, user-selected extras
-and development/test groups in packaging metadata. These are repository
+from an exact clean ref into task-local or external output directories; do not
+copy a full source, handbook or catalog tree into versioned directories. A
+named checkpoint may run source-only smoke from the current working tree. If it
+explicitly asks for an installable artifact from dirty sources, mark it
+`source_dirty` and `unbound`; it cannot serve as a revision-bound closure.
+Keep only short release notes in `docs/release/`; Git history and tags provide
+older source and wording. Separate core runtime dependencies, user-selected
+extras and development/test groups in packaging metadata. These are repository
 invariants for the future release path, not reasons to run release gates during
 ordinary development.
+
+The same-revision rule applies only when a wheel, exact document selection,
+catalog or receipt is actually produced. Ordinary development may leave those
+projections absent while the current Git tree and its dynamic capability set
+continue to evolve.
 
 The repository documents are the public, handoff-friendly source for project
 and development methods. Skills are personal routing and method overlays; they
