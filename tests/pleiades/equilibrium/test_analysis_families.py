@@ -112,6 +112,16 @@ def test_clamped_reference_and_spline_refinement():
     for d in [0,1,2]:np.testing.assert_allclose(fit(q,deriv=d),ref(q,nu=d),rtol=0,atol=2e-12)
 
 
+def test_clamped_cubic_spline_public_docstring_declares_contract():
+    doc = inspect.getdoc(basis.ClampedCubicSpline)
+    assert doc is not None
+    assert "Parameters" in doc
+    assert "Returns" in doc
+    assert "Raises" in doc
+    assert "yp" in doc
+    assert "endpoint slopes" in doc
+
+
 def test_cubic_spline_vectorized_query_shapes_and_retained_selector_rules():
     x=np.array([-.6,-.4,.2,.9,1.4])
     y=np.cos(x)

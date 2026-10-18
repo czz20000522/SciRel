@@ -183,6 +183,39 @@ class NaturalCubicSpline(CubicSpline):
         self.k=np.array(k)
         
 class ClampedCubicSpline(CubicSpline):
+    """Construct a cubic spline with prescribed endpoint slopes.
+
+    Parameters
+    ----------
+    x_data : array_like, shape (N,)
+        Finite, strictly increasing interpolation knots with ``N >= 3``.
+    y_data : array_like, shape (N,)
+        Finite ordinates matched to ``x_data``.
+    yp : array_like, shape (2,), default=[0, 0]
+        Left and right endpoint first derivatives.
+
+    Returns
+    -------
+    ClampedCubicSpline
+        Callable spline retaining the validated data and solved knot slopes.
+        Query arrays preserve their shape; values outside the knot interval
+        are zero.
+
+    Raises
+    ------
+    AssertionError
+        If ``yp`` does not contain exactly two endpoint slopes.
+    ValueError
+        If the knot or ordinate arrays are nonfinite, unsorted, mismatched or
+        shorter than the supported minimum.
+    numpy.linalg.LinAlgError
+        If the clamped boundary slope system cannot be solved.
+
+    Notes
+    -----
+    ``deriv=1`` and ``deriv=2`` select derivative evaluations.  Other
+    selectors retain the value-evaluation compatibility behavior.
+    """
     def __init__(self, x_data, y_data,yp=[0,0]):
         CubicSpline.__init__(self, x_data, y_data)
         '''Data check'''
