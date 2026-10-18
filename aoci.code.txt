@@ -966,7 +966,7 @@ _elastic_moments.py[KB6T]: F:提供碰撞截面与归一化矩核共享的单元
 
 ===/Users/tomczz/Projects/SciReL/src/scirel/diagnostics/===
 __init__.py[LB6T]: F:导出平衡残差、稳定裕量、合成观测和吸收分配诊断 | R:code:src/scirel/diagnostics/observation_residuals.py | A:scirel.diagnostics及__all__ | S:领域入口保持惰性导入，不在发现阶段加载NumPy或SciPy
-equilibrium_synthesis_diagnostics.py[AB8M]: F:从显式平衡网格合成磁通环和提供的profile点样本 | R:code:src/scirel/geometry/bilinear_grid_sampling.py,code:src/scirel/inference/anisotropic_trial_evaluation.py | A:raw_psi与Wb磁通单位明确分支；[Z,R]场按[R,Z]点采样，结果带units | S:只对声明Wb/rad的psi乘2π；thomson命名不等于仪器模型，不推断缺通道，输入不修改
+equilibrium_synthesis_diagnostics.py[AB8M]: F:从显式平衡网格合成磁通环和提供的profile点样本，并提供公开callable使用合同 | R:code:src/scirel/geometry/bilinear_grid_sampling.py,code:src/scirel/inference/anisotropic_trial_evaluation.py | A:raw_psi与Wb磁通单位明确分支；[Z,R]场按[R,Z]点采样，结果带units；文档明确observations、flux_loops和FloatingPointError边界 | S:只对声明Wb/rad的psi乘2π；thomson命名不等于仪器模型，不推断缺通道，输入不修改
 firehose_mirror_margins.py[KB8T]: F:组合共享稳定算术计算局部张力与固定磁通总压力斜率裕量 | R:code:src/scirel/diagnostics/_fixed_flux_derivative.py,code:src/scirel/diagnostics/pointwise_firehose_margin.py | A:compute_firehose_mirror_margins；显式导数或固定psi采样及严格正稳定标记 | S:不对空间B排序求导，不以零导数补缺；镜判据只适用于无流回旋对称局部模型，Frank原式反号冲突保留而非确认勘误，不外推全局或Hall流稳定
 observation_residuals.py[KB8S]: F:按固定通道次序和sigma计算同形单位校验残差向量及chi2 | R:code:src/scirel/diagnostics/equilibrium_synthesis_diagnostics.py,code:src/scirel/inference/anisotropic_trial_evaluation.py | A:磁通、密度、电子温度、平行压、垂直压按C序拼接；缺预测拒绝 | S:sigma严格正可广播，显式单位必须一致；不删通道或提供统计协方差，不将chi2单独解释为显著性
 parallel_pressure_residual.py[KB7T]: F:检查值空间磁场导数定义的平行压力平衡残差 | R:code:src/scirel/diagnostics/firehose_mirror_margins.py | A:compute_parallel_pressure_residual | S:重复非恒定B报错；atol是相对误差分母下限，strict失败才抛错
@@ -1231,7 +1231,7 @@ test_graph_direct_anisotropic_inversion.py[TB6M]: F:检验显式平衡/诊断端
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/equilibrium_synthesis_diagnostics/===
 task_graph.yaml[TB5S]: F:声明观测者图的磁通环/Thomson双线性采样端口、只读状态和缺失字段失败策略。 | R:code:src/scirel/diagnostics/equilibrium_synthesis_diagnostics.py | A:scientific_task_graph contract | S:Thomson压力必需而密度温度可选，磁通分支先于Thomson。
-test_graph_equilibrium_synthesis_diagnostics.py[TB5S]: F:检验双线性合成诊断的公开依赖注入、磁通优先顺序、必需/可选Thomson字段和只读状态。 | R:code:src/scirel/diagnostics/equilibrium_synthesis_diagnostics.py | A:pytest | S:未知/空observations返回空mapping，越界点不得外推；可选密度温度缺失即不输出。
+test_graph_equilibrium_synthesis_diagnostics.py[TB5S]: F:检验双线性合成诊断的公开依赖注入、磁通优先顺序、必需/可选Thomson字段、只读状态和公开callable文档字段 | R:code:src/scirel/diagnostics/equilibrium_synthesis_diagnostics.py | A:pytest | S:未知/空observations返回空mapping，越界点不得外推；可选密度温度缺失即不输出；docstring断言覆盖observations、flux_loops和FloatingPointError
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/frank_egedal_pressure_closure/===
 task_graph.yaml[TB6M]: F:声明Frank-Egedal谱、共同速度人口、热矩及压力组装的有序组合 | R:code:src/scirel/kinetic/frank_egedal_pressure_closure.py | A:显式模式；损失锥依赖；共同下限；b=1归一；径向包络；收敛检查 | S:vc是慢化尺度非垂直专用截断；三矩同人口，归一前原始矩须收敛，电子温度用J
