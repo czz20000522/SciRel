@@ -5,11 +5,21 @@ products. These establish geometry/state conventions, not experimental
 validity of BRB, WHAM, or a permanent-magnet constitutive model.
 """
 import numpy as np
+import inspect
 import pytest
 
 from scirel.configurations import BRB, TREXCoil, WHAM
 from scirel.electromagnetism import ArbitraryPoints, Device, MagnetRing, RectangularCoil
 from scirel.geometry import Mesh, PointsMesh, RChord, ZChord, SphericalRChord, ThetaChord, RectMesh, rotate
+
+
+def test_magnet_ring_public_docstring_declares_contract():
+    doc = inspect.getdoc(MagnetRing)
+    assert doc is not None
+    assert "Parameters" in doc
+    assert "Returns" in doc
+    assert "Raises" in doc
+    assert "signed-filament geometry approximation" in doc
 
 
 @pytest.mark.parametrize('angle', [-130., -7., 0., 37., 91., 360.])

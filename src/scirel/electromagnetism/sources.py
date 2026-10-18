@@ -197,6 +197,44 @@ class RectangularCoil(CurrentFilamentSet):
         _rebuild_atomic(self, {'_r0': center[0], '_z0': center[1], '_angle': self._angle + angle})
 
 class MagnetRing(CurrentFilamentSet):
+    """Construct a finite signed-filament rectangular magnet approximation.
+
+    Parameters
+    ----------
+    r0 : float, default=1.0
+        Center radius in metres; must be nonnegative and finite.
+    z0 : float, default=0.0
+        Center height in metres.
+    width, height : float, default=0.01
+        Positive radial and axial dimensions in metres.
+    mu_hat : float, default=0.0
+        Finite orientation angle in degrees.
+    **kwargs
+        Inherited source options such as finite common ``current``, an even
+        positive ``weights`` vector, and an optional target ``mesh``.
+
+    Returns
+    -------
+    MagnetRing
+        A weighted circular-filament source exposing generated ``rz_pts``,
+        ``total_current`` and mesh-dependent field responses.
+
+    Raises
+    ------
+    ValueError
+        If geometry, weights, current or mesh inputs violate their finite
+        shape/domain contracts.
+    FloatingPointError
+        If a field evaluation produces a nonrepresentable kernel result.
+    NotImplementedError
+        If an unsupported source operation such as simplification is called.
+
+    Notes
+    -----
+    This is a bounded signed-filament geometry approximation.  It does not
+    establish experimental material constants or a magnetic constitutive law.
+    Failed parameterized setters preserve the preceding valid geometry.
+    """
     def __init__(self, r0=1., z0=0., width=.01, height=.01, mu_hat=0., **kwargs):
         self._r0,self._z0,self._width,self._height,self._mu_hat=map(float,(r0,z0,width,height,mu_hat))
         if r0<0 or width<=0 or height<=0 or not np.isfinite([r0,z0,width,height,mu_hat]).all(): raise ValueError('invalid magnet geometry')
