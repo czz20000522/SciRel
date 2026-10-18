@@ -100,7 +100,7 @@ else:
 
 def test_root_namespace_discovers_every_public_domain_package():
     result = subprocess.run(
-        [sys.executable, '-c', '''
+        [sys.executable, '-I', '-c', '''
 import sys
 from pathlib import Path
 
@@ -116,6 +116,10 @@ namespace = {}
 exec("from scirel import *", namespace)
 assert all(name in namespace for name in expected)
 assert all(getattr(scirel, name).__name__ == f"scirel.{name}" for name in expected)
+assert not any(
+    name.split(".", 1)[0] in ("numpy", "scipy", "matplotlib", "mpmath")
+    for name in sys.modules
+)
 ''', str(ROOT / 'src')], capture_output=True, text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
