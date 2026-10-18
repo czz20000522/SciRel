@@ -1,6 +1,7 @@
 """Verify the actual developer wheel keeps project tools outside the science package."""
 
 from pathlib import Path
+from email.parser import Parser
 import hashlib
 import json
 import shutil
@@ -10,6 +11,7 @@ import tomllib
 from zipfile import ZipFile
 
 from setuptools import find_packages
+from packaging.specifiers import SpecifierSet
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -40,6 +42,19 @@ def test_built_scientific_wheel_excludes_project_tool_packages(tmp_path):
     assert len(artifacts) == 1
     with ZipFile(artifacts[0]) as archive:
         files = set(archive.namelist())
+        metadata_name = next(
+            name for name in files
+            if name.endswith('.dist-info/METADATA')
+        )
+        metadata = Parser().parsestr(archive.read(metadata_name).decode('utf-8'))
+        config = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+        project = config["project"]
+        assert SpecifierSet(metadata["Requires-Python"]) == SpecifierSet(
+            project["requires-python"]
+        )
+        requires_dist = set(metadata.get_all("Requires-Dist") or [])
+        assert set(project["dependencies"]) <= requires_dist
+        assert f'{project["optional-dependencies"]["plot"][0]}; extra == "plot"' in requires_dist
         accepted = json.loads((ROOT / 'provenance/selections/scientific-core-20261014-r7.json').read_text())
         for resource in accepted['data_files']:
             name = resource['path'].removeprefix('src/')
@@ -56,7 +71,6 @@ def test_built_scientific_wheel_excludes_project_tool_packages(tmp_path):
         path.startswith("scirel/") or path.split("/", 1)[0].endswith(".dist-info")
         for path in files
     ), sorted(files)
-    config = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     discovery = config["tool"]["setuptools"]["packages"]["find"]
     packages = find_packages(
         where=str(ROOT / discovery["where"][0]),
