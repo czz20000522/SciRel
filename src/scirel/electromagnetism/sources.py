@@ -153,6 +153,36 @@ class CurrentFilamentSet:
 
 
 class ArbitraryPoints(CurrentFilamentSet):
+    """Construct finite weighted circular-filament source points.
+
+    Parameters
+    ----------
+    rz_pts : array_like, shape (N, 2)
+        Finite cylindrical ``(R, Z)`` filament centers with nonnegative
+        radii.
+    **kwargs
+        Inherited source options such as finite common ``current``, a finite
+        matching ``weights`` vector, and an optional target ``mesh``.
+
+    Returns
+    -------
+    ArbitraryPoints
+        A source exposing the point geometry, weighted current and mesh-
+        dependent ``psi``, ``BR`` and ``BZ`` responses.
+
+    Raises
+    ------
+    ValueError
+        If points, weights, current or mesh inputs violate their finite shape
+        and domain contracts.
+    FloatingPointError
+        If a field evaluation produces a nonrepresentable kernel result.
+
+    Notes
+    -----
+    Active source/target coincidence is singular.  Geometry and weights are
+    caller-visible arrays; cache keys detect their content before reuse.
+    """
     def __init__(self, rz_pts, **kwargs):
         self._rz_pts=np.asarray(rz_pts, dtype=float)
         if self._rz_pts.ndim != 2 or self._rz_pts.shape[1] != 2: raise ValueError('rz_pts must have shape (N, 2)')
