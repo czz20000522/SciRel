@@ -12,9 +12,20 @@ Dxz/Dzx 符号修正）均按冻结源码照抄，不做任何"修正"或归一�
 import operator as _operator
 
 import numpy as _np
-from scipy import special as _sp
 
 __all__ = ["evaluate_kinetic_dielectric_tensor"]
+
+_SPECIAL = None
+
+
+def _special_backend():
+    """Load SciPy's special-function backend at the first numeric call."""
+    global _SPECIAL
+    if _SPECIAL is None:
+        from scipy import special
+
+        _SPECIAL = special
+    return _SPECIAL
 
 # bonk/fDtensor.m:22-25 的默认 SI 常数（原样照抄）
 _C2 = (2.99792458e8) ** 2
@@ -35,6 +46,7 @@ def _zfun(z):
     实部恰为 0 的点走 erfc 分支；其余点走 Weideman N=64 的 FFT 系数多项式分支，
     下半平面点先共轭到上半平面再共轭还原。标量与数组输入均可。
     """
+    _sp = _special_backend()
     zz_in = _np.asarray(z, dtype=_np.complex128)
     scalar = zz_in.ndim == 0
     zz = _np.atleast_1d(zz_in).ravel().copy()
@@ -80,11 +92,13 @@ def _zfun(z):
 
 def _gamman(n, x):
     """bonk/Gamman.m:2-6：besseli(n,x,1)*exp(-x+|Re x|)，x 可为复数。"""
+    _sp = _special_backend()
     return _sp.ive(n, x) * _np.exp(-x + _np.abs(_np.real(x)))
 
 
 def _gammapn(n, x):
     """bonk/Gammapn.m:2-6：(besseli(n-1,x,1)+besseli(n+1,x,1))/2-besseli(n,x,1) 的指数标度版。"""
+    _sp = _special_backend()
     return ((_sp.ive(n - 1, x) + _sp.ive(n + 1, x)) / 2.0 - _sp.ive(n, x)) * _np.exp(
         -x + _np.abs(_np.real(x))
     )

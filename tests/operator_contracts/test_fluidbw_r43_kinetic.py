@@ -1,5 +1,10 @@
 """Ronnmark, tensor diagnostic, and signed complex-root source cases."""
 
+import os
+from pathlib import Path
+import subprocess
+import sys
+
 import numpy as np
 import pytest
 
@@ -17,6 +22,20 @@ CASE = dict(
 )
 WN = 175881684853.009
 KN = 13261.94247879565
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def _run_import_probe(source: str) -> subprocess.CompletedProcess[str]:
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = str(ROOT / "src")
+    return subprocess.run(
+        [sys.executable, "-c", source],
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
 
 
 @pytest.mark.parametrize("x,lam,branch", [
@@ -108,6 +127,48 @@ def test_diagnostic_module_star_import_exports_public_callable():
     namespace = {}
     exec("from scirel.kinetic.dielectric_tensor_diagnostic import *", namespace)
     assert namespace["evaluate_kinetic_dielectric_tensor"] is evaluate_kinetic_dielectric_tensor
+
+
+def test_full_tensor_diagnostic_import_and_rejected_call_defer_scipy():
+    result = _run_import_probe(
+        """
+import sys
+from scirel.kinetic import evaluate_kinetic_dielectric_tensor
+from scirel.kinetic.dielectric_tensor_diagnostic import (
+    evaluate_kinetic_dielectric_tensor as direct,
+)
+
+assert evaluate_kinetic_dielectric_tensor is direct
+assert "scipy" not in sys.modules
+try:
+    evaluate_kinetic_dielectric_tensor(
+        0.0, [-1.0], [1.0], [1.0], [1.0], 1.0, 1.0, 1.0,
+    )
+except ValueError as error:
+    assert str(error) == "B0 must be non-zero: wcs and rhocs degenerate at B0=0"
+else:
+    raise AssertionError("invalid dielectric-tensor input unexpectedly succeeded")
+assert "scipy" not in sys.modules
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_full_tensor_diagnostic_valid_call_loads_special_backend():
+    result = _run_import_probe(
+        """
+import sys
+from scirel.kinetic import evaluate_kinetic_dielectric_tensor
+
+assert "scipy" not in sys.modules
+output = evaluate_kinetic_dielectric_tensor(
+    1.0, [-1.0], [1.0], [1.0], [1.0], 1.0, 1.0, 1.0, lmx=0,
+)
+assert output["K"].shape == (3, 3)
+assert "scipy.special" in sys.modules
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_complex_root_preserves_source_sign_and_exit_flag():
