@@ -69,6 +69,36 @@ def test_zero_weight_cells_are_allowed_when_density_stays_positive():
         )
 
 
+def test_spatial_batch_reduction_preserves_per_slice_float64_results():
+    rng = np.random.default_rng(20261019)
+    shape = (7, 11, 17)
+    vx = rng.normal(size=shape[1])
+    radial_weight = rng.lognormal(mean=0.0, sigma=2.0, size=shape[0])
+    axial_width = rng.lognormal(mean=-1.0, sigma=1.5, size=shape[1])
+    distribution = rng.lognormal(mean=0.0, sigma=4.0, size=shape)
+    radial_weight[0] = 0.0
+    axial_width[3] = 0.0
+    thermal_speed = 3.7e4
+
+    expected_density = np.zeros(shape[2], dtype=float)
+    expected_flux = np.zeros(shape[2], dtype=float)
+    for k in range(shape[2]):
+        expected_density[k] = np.sum(
+            radial_weight * (distribution[:, :, k] @ axial_width)
+        )
+        expected_flux[k] = thermal_speed * np.sum(
+            radial_weight * (distribution[:, :, k] @ (vx * axial_width))
+        )
+
+    result = reduce_terminal_molecular_flux_velocity(
+        vx, thermal_speed, distribution, radial_weight, axial_width
+    )
+    np.testing.assert_array_equal(result["flux_profile_m2_s"], expected_flux)
+    np.testing.assert_array_equal(
+        result["mean_velocity_profile_m_s"], expected_flux / expected_density
+    )
+
+
 @pytest.mark.parametrize("argument_index,value", [
     (0, np.array([True, False, True])),
     (1, True),

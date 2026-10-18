@@ -62,13 +62,17 @@ def reduce_terminal_molecular_flux_velocity(
             "terminal flux inputs must be finite, shape-compatible, and physically nonnegative"
         )
 
-    density = np.zeros(distribution.shape[2], dtype=float)
-    flux = np.zeros(distribution.shape[2], dtype=float)
-    for k in range(distribution.shape[2]):
-        density[k] = np.sum(weight * (distribution[:, :, k] @ widths))
-        flux[k] = float(thermal_speed) * np.sum(
-            weight * (distribution[:, :, k] @ (velocity * widths))
-        )
+    # Move the spatial axis to the leading position so each k-slice keeps the
+    # original matrix-vector reduction order while NumPy handles the batch.
+    # The explicit per-slice order is part of the saved terminal contract:
+    # reductions remain ``weight * (slice @ widths)`` followed by the radial
+    # sum, rather than a three-axis reduction with a different accumulation
+    # order.
+    slices = distribution.transpose(2, 0, 1)
+    density = np.sum(np.matmul(slices, widths) * weight[None, :], axis=1)
+    flux = float(thermal_speed) * np.sum(
+        np.matmul(slices, velocity * widths) * weight[None, :], axis=1
+    )
     if not np.all(np.isfinite(density)) or np.any(density <= 0.0):
         raise ValueError("terminal flux reduction requires strictly positive density")
     if not np.all(np.isfinite(flux)):
