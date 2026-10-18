@@ -21,6 +21,16 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "release/wheel/native-resource-closure.json"
 SCHEMA = "scirel.native-resource-reachability.v1"
 
+_FLUIDBW_PUBLIC_PYTHON_ENTRYPOINTS = [
+    "evaluate_fluidbw_special",
+    "derive_fluidbw_case",
+    "evaluate_fluidbw_dispersion",
+    "solve_fluidbw_bonk",
+    "assemble_fluidbw_em",
+    "solve_fluidbw_em",
+    "render_fluidbw_materials",
+]
+
 
 def _read_json(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
@@ -204,6 +214,22 @@ def audit(root: Path = ROOT, manifest_path: Path = MANIFEST) -> dict[str, Any]:
             "reachable_files": sorted(reachable),
             "unreachable_candidates": [] if dynamic_root else sorted(set(files) - reachable),
             "dynamic_root": dynamic_root,
+            "public_python_entrypoints": (
+                list(_FLUIDBW_PUBLIC_PYTHON_ENTRYPOINTS)
+                if group_id == "fluidbw-octave"
+                else []
+            ),
+            "orphan_native_wrappers": (
+                [] if dynamic_root else sorted(set(files) - reachable)
+            ),
+            "dynamic_feval_targets": sorted(
+                {
+                    target
+                    for source, targets in dynamic_edges.items()
+                    if source in files
+                    for target in targets
+                }
+            ),
         }
     return {
         "schema": SCHEMA,

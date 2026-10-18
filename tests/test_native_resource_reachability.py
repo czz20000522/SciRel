@@ -27,6 +27,26 @@ def test_native_reachability_audit_preserves_full_closure_and_marks_fluid_candid
         "_fluidbw_native/RYLA.m",
     ]
     assert len(fluid["reachable_files"]) == 32
+    assert fluid["public_python_entrypoints"] == [
+        "evaluate_fluidbw_special",
+        "derive_fluidbw_case",
+        "evaluate_fluidbw_dispersion",
+        "solve_fluidbw_bonk",
+        "assemble_fluidbw_em",
+        "solve_fluidbw_em",
+        "render_fluidbw_materials",
+    ]
+    assert fluid["orphan_native_wrappers"] == fluid["unreachable_candidates"]
+    assert fluid["dynamic_feval_targets"] == [
+        "_fluidbw_native/Gamman.m",
+        "_fluidbw_native/Gammapn.m",
+        "_fluidbw_native/RASY.m",
+        "_fluidbw_native/RINT.m",
+        "_fluidbw_native/RTAY.m",
+        "_fluidbw_native/RYLA.m",
+        "_fluidbw_native/fD.m",
+        "_fluidbw_native/fDR.m",
+    ]
     assert report["groups"]["pdrk-current-fixtures"]["unreachable_candidates"] == []
     assert report["groups"]["pdrk-rational-legacy"]["unreachable_candidates"] == []
 
