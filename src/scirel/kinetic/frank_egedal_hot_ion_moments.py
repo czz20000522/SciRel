@@ -1,7 +1,6 @@
 """Velocity--pitch hot-ion moments for Frank--Egedal closure."""
 import math
 import numpy as np
-from scipy.special import roots_legendre, roots_jacobi
 
 def _mode_sum(xi0, speed, degrees, coefficients, vc, beta_m, n_terms, fractional_mode):
     u = np.power(np.clip((1.0 + vc ** 3) / (speed ** 3 + vc ** 3) * speed ** 3, 0.0, None), beta_m / 3.0)
@@ -76,6 +75,13 @@ def evaluate_frank_egedal_hot_ion_moments(magnetic_field, params, degrees, sourc
         xi_tp_loc = math.sqrt(max(0.0, 1.0 - float(b) / max(mirror_ratio, 1e-12)))
         if xi_tp_loc <= 0.0 or xi_tp_mid <= 0.0:
             return (0.0, 0.0, 0.0)
+        # Keep the public kinetic namespace dependency-light.  All input
+        # validation above must complete before importing the quadrature
+        # backend; invalid calls therefore preserve their old rejection
+        # order without importing SciPy.  The guard above also avoids the
+        # import when this field has no admissible pitch interval.
+        from scipy.special import roots_jacobi, roots_legendre
+
         if weighted_endpoint:
             # Factor the exact small-speed density power v^(2+leading).
             # Gauss-Jacobi resolves integrable singularities near leading=-3

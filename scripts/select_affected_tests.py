@@ -201,6 +201,9 @@ SOURCE_AUXILIARY_TESTS = {
     "src/scirel/kinetic/frank_egedal_source_projection.py": (
         "tests/test_frank_egedal_source_projection_import_boundary.py",
     ),
+    "src/scirel/kinetic/frank_egedal_hot_ion_moments.py": (
+        "tests/test_frank_egedal_hot_ion_moments_import_boundary.py",
+    ),
     "src/scirel/kinetic/dielectric_tensor_diagnostic.py": (
         "tests/operator_contracts/test_fluidbw_r43_kinetic.py",
     ),
