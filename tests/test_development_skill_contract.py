@@ -36,6 +36,17 @@ def test_project_contract_routes_agents_changes_to_the_lightweight_contract():
     assert result["test_paths"] == ["tests/test_development_skill_contract.py"]
 
 
+def test_skill_maintenance_closes_before_product_candidate_work():
+    readme = compact((ROOT / "skills/development/README.md").read_text(encoding="utf-8"))
+    project_contract = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+
+    assert "close that maintenance claim before changing product code" in readme
+    assert "do not build a wheel" in readme
+    assert "keep it read-only until the skill claim closes" in readme
+    assert "先收口 skill 维护并跑轻量合同检查" in project_contract
+    assert "不按中间编辑重复维护" in project_contract
+
+
 def test_project_contract_keeps_ordinary_optimization_out_of_release_flow():
     project_contract = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
 
@@ -74,7 +85,7 @@ def test_lifecycle_keeps_incubation_counts_dynamic_and_release_gates_explicit():
         )
     )
 
-    assert "them once per task mode" in readme
+    assert "Load those references only when the current route needs them" in readme
     assert "Repeated guidance may be duplicated deliberately" not in readme
     assert "not project-wide invariants" in lifecycle
     assert "derive its members and counts from the same current" in lifecycle
@@ -82,6 +93,9 @@ def test_lifecycle_keeps_incubation_counts_dynamic_and_release_gates_explicit():
     assert "Linux amd64 with CPython 3.14" in lifecycle
     assert "Reuse a previous result" in lifecycle
     assert "does not by itself justify replaying the same validation" in lifecycle
+    assert "reuse the previous triage binding" in lifecycle
+    assert "lightweight identity check" in lifecycle
+    assert "do not repeat full triage" in lifecycle
     assert "per-iteration release records" in lifecycle
     assert "one minimal pass" in lifecycle
     assert "initial claim-matched check set" in lifecycle

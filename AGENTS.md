@@ -8,7 +8,7 @@ SciRel 是长期独立维护的 Python 科学关系库；不要套用相邻 Code
 - “继续”“完成”“审查”“验证”本身不会启动发布流程。没有明确的 consumer、handoff、candidate cut 或 release decision 时，不构建 wheel、不更新 `release/CURRENT.json`、不生成发布回执、不跑全平台矩阵，也不推进 `devN`。
 - 长程 goal 只是待处理 claim 的队列，不是无限执行许可：每次继续只把当前 claim 推到 stop condition；达到 `passed`、`failed`、`blocked` 或 `NOT_RUN` 后收口，没有新的范围或阻塞就不自动启动下一项优化，也不重复同一检查。
 - 普通开发先确定一个主要 claim、一个 owned scope 和一个 stop condition，运行能够决定该 claim 的最小 affected 检查；达到 `passed`、`failed`、`blocked` 或 `NOT_RUN` 后收口。结果改变影响范围或暴露具体阻塞时，可以追加更宽测试；wheel、文档/catalog 闭包和平台门禁只在 named `integration_checkpoint` 明确需要 consumer/handoff artifact，或进入 `release_freeze` 时追加。AOCI 只按受管对象的收尾规则处理；若本次产生 durable decision、blocker 或 next action，按收尾约定同步工作台，不为每次继续创建 release record。
-- skill/AGENTS 维护与候选 diff 审查可以同轮进行，但必须保持两个独立 claim 和 owned scope：skill 维护跑轻量合同检查，候选审查保持只读；只有审查发现确定且影响范围明确的产品 claim，才另起产品变更，不把它混入 skill 维护或自动进入发布流程。
+- skill/AGENTS 维护与候选 diff 审查可以同轮进行，但必须保持两个独立 claim 和 owned scope：先收口 skill 维护并跑轻量合同检查，候选审查在此之前保持只读；只有审查发现确定且影响范围明确的产品 claim，才另起产品变更，不把它混入 skill 维护或自动进入发布流程。skill 维护和产品变更各自达到 stop condition 后再做一次 AOCI 收尾，不按中间编辑重复维护。
 - operators、TaskGraphs、文档和 catalog 的数量随当前 Git 树变化；数量只属于具体 manifest/revision，不是项目永久门禁。需要 wheel、文档和 catalog 时，才从同一个确切 revision 派生并绑定它们。
 - 普通开发期间 `release/CURRENT.json`、外部 wheel、文档 selection 或 catalog 可以继续指向旧 revision；这属于待切候选的 stale projection，不是当前开发失败，不要为了对齐 `HEAD` 先修复或重建它们。
 - 多个相互关联的小修复可以合并为一个变更批次；Git 历史保存中间状态，不为每个函数或每个文档修订单独制造版本和验收循环。

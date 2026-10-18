@@ -85,6 +85,19 @@ separate claims: the former uses the lightweight skill contract check, while
 the latter is read-only unless it produces a selected product claim. Simple
 known edits and read-only status queries can use the routing shortcut directly.
 
+## Skill and AGENTS maintenance route
+
+When a task asks to improve this skill or `AGENTS.md`, close that maintenance
+claim before changing product code. Identify one observed routing failure or
+cost source, change only its owning decision point, and run
+`tests/test_development_skill_contract.py` plus the relevant skill structure
+check. Stop when that claim is `passed`, `failed` or `NOT_RUN`; do not build a
+wheel, refresh catalog/release projections, or start a full acceptance route.
+If a candidate diff is reviewed in the same turn, keep it read-only until the
+skill claim closes, then promote only a concrete, bounded product claim. Run
+one AOCI maintenance pass after the final stable managed-file batch, not after
+each intermediate edit.
+
 Delegation keeps one editing owner per mutable path. Parallelize independent
 inspection or measurement only, and serialize source-bound maintenance. For
 continuation and scope rules, use the lifecycle reference rather than adding a

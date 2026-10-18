@@ -59,6 +59,13 @@ claim, or the owner explicitly asks for a fresh observation. A status request
 or a continuation with no new change does not by itself justify replaying the
 same validation or rebuilding a wheel.
 
+For a continuation of the same active claim, reuse the previous triage binding
+when the Git base/head, worktree ownership/status, runtime/dependency identity,
+checker, target scope, primary claim and stop condition are unchanged. Perform
+only a lightweight identity check; do not repeat full triage, selector
+discovery or validation. Rebind when any binding changes, evidence becomes
+stale, or the owner asks for a fresh observation.
+
 Ordinary development may update an existing work-management record only when a
 new decision, blocker, durable result or next action was produced. Do not create
 per-iteration release records or repeat an unchanged status merely because a
@@ -88,8 +95,10 @@ result and requires one new final maintenance pass.
 
 A long-running goal is a queue of possible claims, not an execution scheduler.
 It does not widen the current task. At each continuation,
-rebind the mode, primary claim, owned scope and stop condition. “Continue” or
-“keep going” resumes that scope; it does not authorize a wheel build, version
+reconfirm the mode, primary claim, owned scope and stop condition from the
+previous binding; perform only the lightweight identity check above and rebind
+only when a binding changes. “Continue” or “keep going” resumes that scope; it
+does not authorize a wheel build, version
 change, platform matrix, catalog regeneration or a new optimization search.
 When the claim reaches `passed`, `failed`, `blocked` or `NOT_RUN` and no new
 scope or blocker is present, stop with the reviewable diff and evidence already
