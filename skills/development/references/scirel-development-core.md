@@ -35,11 +35,11 @@ string, a document count, a clean worktree or the fact that a wheel can be built
   API/scientific checks; do not update `release/CURRENT.json`, create platform
   receipts or run the full release matrix unless a consumer explicitly needs an
   installed development wheel.
-- **integration_checkpoint**: close a stable scientific batch or handoff. Check
-  the current working-tree document/catalog closure and affected reverse
-  dependencies. The denominator is the current manifest, not a historical
-  count. Build an installed development wheel only when the declared consumer
-  or D3 case requires it.
+- **integration_checkpoint**: serve a named consumer, handoff or
+  owner-requested checkpoint. Recompute document/catalog closure only when that
+  artifact is needed. The denominator is the current manifest, not a historical
+  count. Build an installed development wheel only for the declared consumer
+  or D3 case.
 - **release_freeze**: freeze one exact Git revision for a real candidate or
   public release. Generate the manifest at that revision, derive its operator,
   TaskGraph and document counts, build wheel/document/catalog artifacts, bind
@@ -82,16 +82,19 @@ release states remain separate from technical success.
 ## Evidence and state
 
 Keep source/decomposition, runtime, scientific, human and release evidence
-separate. Use explicit `passed`, `failed`, `blocked`, `NOT_RUN`, `inapplicable`,
-`pending_human` and `no_changes`. Preserve exact failure, exit status, target
-identity and command. A repaired checker or candidate creates a successor
-receipt; never relabel the original observation.
+separate when those evidence classes are in scope. Use explicit `passed`,
+`failed`, `blocked`, `NOT_RUN`, `inapplicable`, `pending_human` and `no_changes`.
+Preserve exact failure, exit status, target identity and command. A repaired
+checker or candidate creates a successor receipt; never relabel the original
+observation.
 
-Carry the complete received denominator, original grids, thresholds, failure
-rows and applicability reasons. A digest proves bytes and a manifest proves
-membership; neither proves scientific correctness. Never shrink scope, loosen a
-tolerance, hide a failure behind a warning, or treat one D3 case as library-wide
-acceptance.
+For scientific claims and D1-D3 handoffs, carry the complete received
+denominator, original grids, thresholds, failure rows and applicability reasons.
+Packaging, API glue, dependency and document tasks record their changed scope
+and relevant checks without inventing a scientific denominator. A digest proves
+bytes and a manifest proves membership; neither proves scientific correctness.
+Never shrink scope, loosen a tolerance, hide a failure behind a warning, or
+treat one D3 case as library-wide acceptance.
 
 The capability denominator is scoped to the current manifest or exact
 candidate. A historical closure such as `267 documents = 235 operators + 32
@@ -100,13 +103,17 @@ Adding or removing capabilities in development changes the next manifest.
 
 ## Compact output and evolution
 
-Return exact identities, selected scope and counts, checks actually executed,
-evidence references and hashes, claim ceiling, limitations, changed artifacts,
-next owner and reopen condition. For repeated work, measure context loaded,
-specialist calls, retries, rework and handoff size against the same claim
-boundary. Promote a route change only when the accepted result is preserved at
-lower or better-bounded total cost. A retro records one reusable invariant,
-route, validator or retirement decision; it does not accumulate case stories.
+In `development`, return changed scope, checks actually executed, exact
+failures or unknowns, and the claim ceiling when one exists. At a named
+checkpoint add the current manifest, dynamic counts and consumer receipt when
+needed. At `release_freeze`, return complete identities, hashes, receipts,
+limitations, next owner and reopen condition. Measure context, specialist
+calls, retries, rework or handoff size only when evaluating this skill, a
+repeated failure, or a long-running route; do not turn every small edit into a
+governance report. Promote a route change only when the accepted result is
+preserved at lower or better-bounded total cost. A retro records one reusable
+invariant, route, validator or retirement decision; it does not accumulate case
+stories.
 
 Do not increment a development `devN` version for ordinary source, test,
 document or performance commits. Git identifies development state. Choose the

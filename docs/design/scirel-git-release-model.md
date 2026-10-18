@@ -40,9 +40,9 @@ PEP 440 版本仍由 `pyproject.toml` 唯一决定，文档则可以在该主线
   `compatible_wheel`、source revision、selection digest 和 snapshot digest。
 
 因此，文档只纠正文案时可以在 `0.1` 主线上推进文档修订而保持 wheel 的 exact
-版本和结果字节不变；仍须从包含文档修订的新 Git 提交重新构建/重新绑定候选，
-以便 wheel 与文档 receipt 继续拥有同一 source revision。文档的实现版本仍然写
-wheel 的 exact 版本。若文档变化触及科学定义、公开
+版本和结果字节不变。开发期只提交 Git 并运行受影响的文档检查，不构建候选、不生成
+receipt，也不更新 `release/CURRENT.json`。进入 `release_freeze` 后，才从包含文档修订的
+确切提交生成/绑定候选；文档的实现版本仍然写 wheel 的 exact 版本。若文档变化触及科学定义、公开
 API、默认值、失败语义、适用域、依赖或 TaskGraph 组合，则它已经改变实现合同，
 必须构建新的 wheel 候选，并从同一 source revision 生成新的文档 selection；不能
 用文档修订号掩盖能力或实现漂移。
@@ -51,8 +51,8 @@ API、默认值、失败语义、适用域、依赖或 TaskGraph 组合，则它
 `implementation_version` 都来自同一个 `project.version`。引入独立文档修订号前，
 不能把 `project_version` 或 `implementation_version` 改成一个仅用于文案的版本值。
 
-当前契约不允许文档偷偷使用独立的 source ref：即使只是编辑修订，也要把修改提交
-到新的 Git commit，并从这个 commit 重新构建/重新绑定 wheel 与文档。这样
+候选契约不允许文档偷偷使用独立的 source ref：进入 `release_freeze` 后，即使只是编辑修订，
+也要把修改提交到新的 Git commit，并从这个 commit 重新生成/重新绑定 wheel 与文档。这样
 `release/CURRENT.json` 仍可用一个 `source_revision` 绑定完整候选；wheel 字节和
 实现版本可以保持不变，但它们的构建身份已经明确地指向包含该文档修订的新 commit。
 
@@ -77,7 +77,8 @@ wheel 和文档快照分别由 `scripts/build_scirel_from_ref.py` 与
 source checkout 时，`release_version` 只能来自该 checkout 的 `pyproject.toml`。
 synthetic fixture 可以省略 Git 绑定，但不能冒充生产发行 catalog。
 
-这些记录必须相互引用同一 `source_revision`、compatible wheel、主线和能力计数。
+这些发行记录必须相互引用同一 `source_revision`、compatible wheel、主线，以及同一冻结
+manifest 的成员关系和派生计数。
 `release/CURRENT.json` 是当前候选的唯一协调记录；`release/wheel/CURRENT.json` 和
 `release/docs/CURRENT.json` 只保留兼容指针，不再承载另一份版本元数据。当前文档
 选择中的每条 exact document 必须使用 `pyproject.toml` 的同一 `project.version`；

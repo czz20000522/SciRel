@@ -2,7 +2,9 @@
 
 版本和文档的 Git 单一来源规则见 [scirel-git-release-model.md](scirel-git-release-model.md)。历史候选由 Git、短发行说明和相关 provenance 摘要保留；当前候选只由仓库根目录的 `release/CURRENT.json` 协调，不新增平行版本目录。
 
-本文把 SciRel 的产品目标落到可执行的打包和验收边界上。SciRel 应像标准科学库一样能够通过
+本文把 SciRel 的产品目标落到可执行的打包和验收边界上。下述完整绑定和平台门禁属于
+`release_freeze`/public release；development 只做影响匹配的源码、合同和必要安装 smoke。
+SciRel 应像标准科学库一样能够通过
 `pip install scirel` 安装并被 Agent 复用；科学正确性由 SciRel 的 Operator 和 TaskGraph 负责，
 Agent 只组合已声明合同并编写胶水代码。安装成功、某个平台的函数返回，或一次教程通过，都不能
 替代逐能力、逐平台的科学验收。
@@ -27,18 +29,18 @@ Agent 只组合已声明合同并编写胶水代码。安装成功、某个平�
 
 当前已绑定候选版本只由 `release/CURRENT.json` 的 tuple 确定，候选切出时其值来自确切 Git
 提交的 `pyproject.toml`。构建产物、文档和平台回执必须来自同一 Git 提交；文档编辑修订可以
-保持相同 wheel 字节，但仍需在切候选时从包含该修订的确切提交重新构建并重新绑定。单个
-函数修复或性能优化先作为 post-candidate Git 提交积累，不触发新的外部产物；达到批次边界
-后再统一更新版本和闭包。旧候选字节和原回执保持不变，不能覆盖。
+保持相同 wheel 字节，但仅在 `release_freeze` 时从包含该修订的确切提交重新构建并重新绑定。单个
+函数修复或性能优化先作为 Git 提交积累，不触发新的外部产物；只有 owner 明确进入
+`release_freeze` 后才统一更新版本和闭包。旧候选字节和原回执保持不变，不能覆盖。
 
 实现改进可以在同一 `major.minor` 主线上累计为维护批次，切出时推进 wheel 的 patch 或 dev 版本；
 `post` 只用于同一版本的打包/元数据修正。此时 `compatible_wheel` 和 exact document 的
 `implementation_version` 必须一起切换到新的 wheel；
 只有纯编辑修订才允许复用相同 wheel 字节。
 
-当前开发验收的唯一已绑定环境是 **Linux x86_64（amd64）+ CPython 3.14**。现有平台矩阵中
-Linux x86_64、Linux aarch64 和 macOS arm64 为 `PARTIAL`，Windows amd64 和 macOS x86_64
-为 `NOT_RUN`。这些状态必须保留在发行记录中，不能由 `py3-none-any` 自动扩大为全平台支持。
+当前 development 的默认安装 smoke 是 **Linux x86_64（amd64）+ CPython 3.14**。Windows、macOS
+和其他架构只有在 named consumer 或 `release_freeze` 声明时追加；平台状态必须保留在对应回执中，
+不能由 `py3-none-any` 自动扩大为全平台支持。
 
 ## 依赖分层
 
@@ -140,15 +142,16 @@ Windows/macOS 后续各自生成和验收自己的 artifact，不复用 Linux �
 
 ## 每个平台的最小验收包
 
-目标矩阵固定以下五个平台，直到证据支持扩展：
+候选矩阵由 `release_freeze` 针对本次声明的平台生成；它不是 development 的固定门禁。当前默认
+开发 smoke 如下，其他平台按需追加：
 
 | 平台 ID | 当前状态 | 立即需要的证据 |
 | --- | --- | --- |
-| `linux-x86_64-cp314` | `PARTIAL` | clean venv core 闭包、公共 import、简单和跨域任务；Octave 7.3.0 native 单列 |
-| `linux-aarch64-cp314` | `PARTIAL` | clean venv core 闭包和 PDRK Octave 8.4.0 单列；fluidBW 不得推断通过 |
-| `windows-amd64-cp314` | `NOT_RUN` | Windows clean venv、锁定 wheelhouse、pip check、core API 和代表性科学任务 |
-| `macos-arm64-cp314` | `PARTIAL` | macOS arm64 clean venv、锁定 wheelhouse、pip check、core API 和代表性科学任务；plot extra 技术 smoke 已有独立证据 |
-| `macos-x86_64-cp314` | `NOT_RUN` | macOS x86_64 clean venv、锁定 wheelhouse、pip check、core API 和代表性科学任务 |
+| `linux-x86_64-cp314` | `development baseline` | clean venv core 闭包、公共 import、简单和跨域任务；Octave 7.3.0 native 单列 |
+
+Linux aarch64、Windows amd64、macOS arm64 和 macOS x86_64 等平台在候选
+manifest 中声明后，按同一顺序建立各自的 clean-venv receipt；没有声明的
+平台不产生默认的 `NOT_RUN` 发布门禁。
 
 每个平台的验收顺序如下：
 

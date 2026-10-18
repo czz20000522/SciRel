@@ -24,7 +24,7 @@ The snapshot contains:
 - `records/<prefix>/<asset-id>.json`: exact standardized documents; and
 - `reverse-dependencies/*.jsonl`: direct consumers used for impact and closure analysis.
 
-The v1 release schema is [`contracts/scientific-catalog-release.schema.json`](../../contracts/scientific-catalog-release.schema.json). An output directory must be new; a failed build cannot replace the previous snapshot. `coverage.status=complete` is valid only when included and declared totals match. The historical 24-included/71-declared pilot remains historical; the current dev11 development snapshot is 267 included and 267 declared (235 operators and 32 task graphs), and it is still development metadata rather than an approved public catalog.
+The v1 release schema is [`contracts/scientific-catalog-release.schema.json`](../../contracts/scientific-catalog-release.schema.json). An output directory must be new; a failed build cannot replace the previous snapshot. `coverage.status=complete` is valid only when included and declared totals match. Snapshot counts are derived from the selected manifest; the current development snapshot is still development metadata rather than an approved public catalog, and future additions or removals change its totals.
 
 The catalog does not participate in `import scirel` and does not import every module at startup. Exact runtime callable resolution occurs only after selection and must match the selected record's module, symbol, signature and implementation version. Exact content binding belongs to the enclosing catalog release, whose partition and root digests cover the record.
 
@@ -86,13 +86,13 @@ Implemented in this slice:
 - v1 asset and catalog release schemas;
 - semantic/runtime/example validator;
 - deterministic progressive catalog builder;
-- the historical dependency-closed 14-asset pilot and the current 267-record development snapshot; and
+- historical dependency-closed pilots and the current development snapshot; and
 - SDK-free thin MCP adapter core for bounded discovery, documentation retrieval, callable resolution and invocation; and
 - regression tests for missing units, private-field leakage, dependency closure, graph cycles, deterministic projections and adapter boundary enforcement.
 
 Deferred until this contract stabilizes:
 
-- a public approval/release decision for the current 267-record snapshot;
+- a public approval/release decision for the current development snapshot;
 - a production MCP transport/server or separately distributed adapter package;
 - a source-free wheel plus catalog conformance run across multiple frameworks;
 - catalog pagination/search indexing beyond the single pilot shard; and

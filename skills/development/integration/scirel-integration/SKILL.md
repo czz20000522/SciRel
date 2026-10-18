@@ -40,6 +40,8 @@ SciRel tree, bind the Git base/head and the affected public surface, then use
 the repository's affected selector and reverse dependencies. Add a regression
 before changing scientific behavior, keep existing tolerances and failure
 semantics, and update benchmarks when making a performance claim. Accumulate
-small changes in Git; do not build a release wheel, update `release/CURRENT.json`
-or run the full platform matrix unless a named consumer, checkpoint or release
-freeze requires it.
+small changes in Git. A stable batch, changed capability count or buildable
+wheel does not create a checkpoint by itself; do not build an installed wheel,
+update `release/CURRENT.json`, generate a release receipt or run the full
+platform matrix unless a named consumer, owner-requested checkpoint or
+`release_freeze` requires it.

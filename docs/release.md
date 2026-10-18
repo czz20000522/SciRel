@@ -16,22 +16,24 @@
   一次发布。`devN` 在切候选时才推进，Git 每次提交不推进；`post` 只保留给同一版本的打包/元数据
   修正。
 
-维护批次可以包含任意数量的兼容改动。日常提交只跑受影响验证；切出维护批次时再统一构建 wheel、
-重绑文档并执行对应范围的安装和发布检查。只有能力闭包、依赖或平台边界变化时，才扩大到完整平台门禁。
+维护批次可以包含任意数量的兼容改动。日常提交只跑受影响验证；只有 owner 明确切出
+`release_freeze` 批次时，才统一构建 wheel、重绑文档并执行对应范围的安装和发布检查。只有能力
+闭包、依赖或平台边界变化时，才扩大到完整平台门禁。
 
-实现候选切出时，wheel 和文档 selection 必须来自同一 Git 提交，并保持相同的能力 ID、数量和实现
-版本。纯文案、导航、翻译或排版可以只推进同一能力线的文档修订；它不能增加 wheel 没有的能力。
+实现候选切出时，wheel 和文档 selection 必须来自同一 Git 提交，并保持同一冻结 manifest 的
+成员关系、派生计数和实现版本。数量是该 revision 的属性；新增或删除能力会改变下一份 manifest。
+纯文案、导航、翻译或排版可以只推进同一能力线的文档修订；它不能增加 wheel 没有的能力。
 
 Wheel 和文档必须属于同一公开 `major.minor` 主线，但不要求两个完整的 PEP 440
 版本字符串相等。wheel 的完整版本来自 `pyproject.toml`；文档可以在同一主线上推进自己的编辑修订，
 `compatible_wheel` 和每条 exact document 的 `implementation_version` 仍精确指向兼容的
 wheel。只纠正文案、导航、翻译或示例排版时，可以在同一主线上推进独立的
 `documentation.version` 并保持
-相同 wheel 版本和结果字节；仍须从新的 Git 提交重新构建/重新绑定候选，文档 receipt 仍须
-绑定 exact compatible wheel、source revision、selection 和 snapshot 摘要。
+相同 wheel 版本和结果字节。开发期只提交 Git 并运行受影响文档检查；只有 `release_freeze`
+才从新的 Git 提交重新绑定候选，生成文档 receipt 并更新 `release/CURRENT.json`。
 
-wheel 自身可以在同一 `major.minor` 主线上推进维护批次版本。累计的实现改动达到批次边界时，才
-生成新的 wheel 候选和文档 selection；`compatible_wheel` 及每条 exact document 的
+wheel 自身可以在同一 `major.minor` 主线上推进维护批次版本。只有 owner 明确进入
+`release_freeze` 时，才生成新的 wheel 候选和文档 selection；`compatible_wheel` 及每条 exact document 的
 `implementation_version` 在该批次中精确跟随新的 wheel。文档编辑修订号可以独立推进，但不能
 替代运行时实现版本。
 

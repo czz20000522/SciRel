@@ -45,7 +45,11 @@ SciRel 自身 wheel 字节没有本地扩展，不能证明 NumPy、SciPy、netC
 计入 universal core。只有迁移到可移植实现并完成逐平台科学 parity，或明确拆成平台能力包后，才能
 扩大 universal core 的声明。
 
-## 必须通过的 release 门禁
+## `release_freeze` / public release 门禁
+
+以下门禁只适用于明确的候选冻结或公开发行。普通 development 使用 affected
+checks；named consumer checkpoint 只运行该消费者需要的安装 smoke，不把试点
+结果升级成 release 资格。
 
 1. 在每个声明平台的 clean venv 中离线或按锁文件安装，确认实际 import 路径不来自 checkout，运行
    `pip check` 和公共 API smoke。

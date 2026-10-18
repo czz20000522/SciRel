@@ -16,6 +16,21 @@ and public release work is an explicit `release_freeze` mode; it derives a new
 manifest and exact closure once, instead of making every development change
 advance a wheel version or run the full platform matrix.
 
+Choose the mode before choosing artifacts or gates:
+
+- **development**: improve the Git tree and run impact-matched checks. This is
+  the default when there is no named consumer or release decision.
+- **integration_checkpoint**: build a bounded development report or installed
+  wheel only for a named consumer, handoff, or owner-requested checkpoint.
+- **release_freeze**: freeze one revision for an explicitly named candidate or
+  public release and run the declared release gates.
+- **public release**: publish only after the separate human, rights and release
+  decisions are complete.
+
+No source change, new capability, performance claim, document edit, clean
+worktree or buildable wheel changes mode by itself. A current capability count
+is a property of the checked-out tree, not a permanent gate.
+
 The repository documents are the public, handoff-friendly source for project
 and development methods. Skills are personal routing and method overlays; they
 may point to the canonical documents or add a narrowly scoped working habit,
