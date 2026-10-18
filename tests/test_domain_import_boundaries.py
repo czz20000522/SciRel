@@ -94,6 +94,24 @@ assert "scipy" not in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_geometry_complex_interpolation_defers_scipy_until_called() -> None:
+    result = _run(
+        """
+import sys
+import numpy as np
+from scirel.geometry import interpolate_complex_rectilinear_field
+
+assert "scipy" not in sys.modules
+axes = {"x_m": [0.0, 1.0], "y_m": [0.0, 1.0], "z_m": [0.0, 1.0]}
+values = np.zeros((2, 2, 2), dtype=complex)
+output = interpolate_complex_rectilinear_field(axes, values, np.array([[0.5, 0.5, 0.5]]))
+assert output["valid_mask"].tolist() == [True]
+assert "scipy" in sys.modules
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_lazy_exports_preserve_identity_for_the_remaining_domains() -> None:
     result = _run(
         """

@@ -29,7 +29,6 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 import numpy as np
-from scipy.interpolate import RegularGridInterpolator
 
 __all__ = ["interpolate_complex_rectilinear_field"]
 
@@ -63,6 +62,8 @@ def interpolate_complex_rectilinear_field(source_axes_m, source_values, target_p
     source box are clamped onto the closed box and interpolated; points outside
     it return ``nan+nanj`` with ``valid_mask`` false.
     """
+    from scipy.interpolate import RegularGridInterpolator
+
     axes = _source_axes(source_axes_m)
     values = np.asarray(source_values, dtype=complex)
     if values.shape[:3] != tuple(axis.size for axis in axes):
