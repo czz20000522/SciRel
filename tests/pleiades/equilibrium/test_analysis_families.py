@@ -32,6 +32,16 @@ def test_natural_spline_boundary_continuity_and_reference():
     np.testing.assert_array_equal(fit(q,deriv=3),fit(q))
 
 
+def test_natural_cubic_spline_public_docstring_declares_contract():
+    doc = inspect.getdoc(basis.NaturalCubicSpline)
+    assert doc is not None
+    assert "Parameters" in doc
+    assert "Returns" in doc
+    assert "Raises" in doc
+    assert "deriv=1" in doc
+    assert "outside the knot interval" in doc
+
+
 def test_second_clamped_supported_origin_and_robin_residual():
     x=np.array([0.,.17,.5,1.1,1.8])
     y=np.array([0.,.2,.7,.3,.5])

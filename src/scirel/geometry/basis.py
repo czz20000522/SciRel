@@ -126,6 +126,35 @@ class CubicSpline(spline):
         return y_int
         
 class NaturalCubicSpline(CubicSpline):
+    """Construct a natural cubic Hermite spline.
+
+    Parameters
+    ----------
+    x_data : array_like, shape (N,)
+        Finite, strictly increasing interpolation knots with ``N >= 3``.
+    y_data : array_like, shape (N,)
+        Finite ordinates matched to ``x_data``.
+
+    Returns
+    -------
+    NaturalCubicSpline
+        Callable spline retaining the validated data and solved knot slopes.
+        Query arrays preserve their shape; values outside the knot interval
+        are zero.
+
+    Raises
+    ------
+    ValueError
+        If the knot or ordinate arrays are nonfinite, unsorted, mismatched or
+        shorter than the supported minimum.
+    numpy.linalg.LinAlgError
+        If the natural boundary slope system cannot be solved.
+
+    Notes
+    -----
+    ``deriv=1`` and ``deriv=2`` select derivative evaluations.  Other
+    selectors retain the value-evaluation compatibility behavior.
+    """
     def __init__(self, x_data, y_data):
         CubicSpline.__init__(self, x_data, y_data)
         '''Convience Pointers'''
