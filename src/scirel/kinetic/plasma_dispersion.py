@@ -1,7 +1,6 @@
 """Analytic plasma dispersion function for dimensionless complex arguments."""
 
 import numpy as np
-from scipy.special import wofz
 
 
 def evaluate_plasma_dispersion(z):
@@ -24,6 +23,12 @@ def evaluate_plasma_dispersion(z):
     values = np.asarray(values, dtype=np.complex128)
     if not np.all(np.isfinite(values)):
         raise ValueError("z must contain finite numeric values")
+
+    # Keep the analytic backend out of import-time and rejected-input paths.
+    # SciPy remains a declared core runtime dependency; loading it only after
+    # the input contract is established keeps the public namespace cheap while
+    # preserving the exact backend and numerical behavior for valid calls.
+    from scipy.special import wofz
 
     with np.errstate(over="ignore", invalid="ignore", under="ignore"):
         w = np.asarray(wofz(values), dtype=np.complex128)

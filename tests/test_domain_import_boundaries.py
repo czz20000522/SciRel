@@ -143,6 +143,30 @@ assert "scipy" in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_kinetic_plasma_dispersion_defers_scipy_until_valid_call() -> None:
+    result = _run(
+        """
+import sys
+from scirel.kinetic import evaluate_plasma_dispersion
+from scirel.kinetic.plasma_dispersion import evaluate_plasma_dispersion as direct
+
+assert evaluate_plasma_dispersion is direct
+assert "scipy" not in sys.modules
+try:
+    evaluate_plasma_dispersion([])
+except ValueError as error:
+    assert str(error) == "z must contain finite numeric values"
+else:
+    raise AssertionError("empty plasma-dispersion input unexpectedly succeeded")
+assert "scipy" not in sys.modules
+result = evaluate_plasma_dispersion(0j)
+assert result["w"] == 1.0
+assert "scipy" in sys.modules
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_geometry_flux_surface_average_defers_scipy_until_called() -> None:
     result = _run(
         """
