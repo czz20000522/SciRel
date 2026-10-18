@@ -74,3 +74,18 @@ def test_probe_mode_records_call_time_scientific_dependency(tmp_path: Path) -> N
     assert result["status"] == "PASS"
     assert "numpy" in result["external_import_roots"]
     assert "scipy" in result["external_import_roots"]
+
+
+def test_probe_mode_records_high_precision_mpmath_dependency(tmp_path: Path) -> None:
+    probe = tmp_path / "probe.py"
+    probe.write_text(
+        "from scirel.kinetic.pdrk.rational import jpole_coefficients\n"
+        "jpole_coefficients(J=2, I=2, precision=32)\n",
+        encoding="utf-8",
+    )
+
+    result = measure(ROOT, probe=probe)
+
+    assert result["status"] == "PASS"
+    assert "numpy" in result["external_import_roots"]
+    assert "mpmath" in result["external_import_roots"]
