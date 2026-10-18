@@ -96,12 +96,11 @@ def reduce_terminal_molecular_heat_flux(
 
     mean_velocity = particle_flux / density
     normalized_mean_velocity = mean_velocity / thermal
-    random_velocity_squared = np.zeros_like(distribution)
-    for i in range(radial_velocity.size):
-        for k in range(nx):
-            random_velocity_squared[i, :, k] = radial_velocity[i] ** 2 + (
-                axial_velocity - normalized_mean_velocity[k]
-            ) ** 2
+    # This is an outer broadcast; keep the per-slice reduction order below
+    # unchanged while avoiding Python loops over radial and spatial cells.
+    random_velocity_squared = radial_velocity[:, None, None] ** 2 + (
+        axial_velocity[None, :, None] - normalized_mean_velocity[None, None, :]
+    ) ** 2
 
     pressure = np.zeros(nx, dtype=float)
     longitudinal_stress = np.zeros(nx, dtype=float)

@@ -93,12 +93,11 @@ def reduce_terminal_molecular_pressure_temperature(
 
     mean_velocity = flux / density
     normalized_mean_velocity = mean_velocity / float(thermal_speed)
-    random_velocity_squared = np.zeros_like(distribution)
-    for i in range(radial_velocity.size):
-        for k in range(nx):
-            random_velocity_squared[i, :, k] = radial_velocity[i] ** 2 + (
-                velocity - normalized_mean_velocity[k]
-            ) ** 2
+    # This is an outer broadcast; keep the per-slice reduction order below
+    # unchanged while avoiding Python loops over radial and spatial cells.
+    random_velocity_squared = radial_velocity[:, None, None] ** 2 + (
+        velocity[None, :, None] - normalized_mean_velocity[None, None, :]
+    ) ** 2
 
     pressure = np.zeros(nx, dtype=float)
     thermal_speed_squared = float(thermal_speed) * float(thermal_speed)
