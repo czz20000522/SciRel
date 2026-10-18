@@ -5,6 +5,7 @@ import scirel
 from _review_bindings import load_asset as _load_asset, load_graph as _load_graph, load_operator as _load_operator
 from pathlib import Path
 from functools import partial
+import inspect
 
 import numpy as np
 import pytest
@@ -150,6 +151,16 @@ def test_requires_explicit_method_contract():
     inputs.pop("method")
     with pytest.raises(ValueError, match="method is required"):
         graph.run_graph(inputs, operator_loader=_operator_loader)
+
+
+def test_public_solver_docstring_declares_contract():
+    doc = inspect.getdoc(solve_direct_anisotropic_inversion)
+    assert doc is not None
+    for section in ("Parameters", "Returns", "Raises"):
+        assert section in doc
+    assert "forward_converged" in doc
+    assert "evaluation_log" in doc
+    assert "identifiability" in doc
 
 
 def test_public_scirel_injects_declared_operator_resolver():

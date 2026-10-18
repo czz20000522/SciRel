@@ -1042,7 +1042,7 @@ sampling.py[KM8M]: F:实现网格采样、极坐标投影、标量反射、沿�
 __init__.py[LB6T]: F:导出分层采样、试点评估及各向异性参数反演组合 | R:code:src/scirel/inference/direct_anisotropic_inversion.py | A:scirel.inference及__all__ | S:领域入口保持惰性导入，不在发现阶段加载NumPy或SciPy
 anisotropic_parameter_optimization.py[KB7T]: F:对显式试点评估端口执行有界优化与可选Latin超立方初始化 | R:code:src/scirel/inference/anisotropic_trial_evaluation.py,code:src/scirel/inference/latin_hypercube_sampling.py | A:optimize_anisotropic_parameters | S:优化异常记录后回放x0；converged还要求最佳平衡收敛，保留全部评估日志
 anisotropic_trial_evaluation.py[AB7T]: F:组合调用者平衡求解、诊断与残差端口评价一次反演试点 | R:code:src/scirel/diagnostics/observation_residuals.py | A:evaluate_anisotropic_trial | S:任一端口异常转换为单元素1e12惩罚残差及失败原因，平衡置None
-direct_anisotropic_inversion.py[AB7T]: F:绑定试点评估、残差、采样及优化叶函数执行直接各向异性反演 | R:code:src/scirel/inference/anisotropic_parameter_optimization.py,code:src/scirel/inference/anisotropic_trial_evaluation.py | A:solve_direct_anisotropic_inversion | S:平衡和诊断仍为调用者必填端口；不收敛且缺原因时补明确失败记录
+direct_anisotropic_inversion.py[AB7T]: F:绑定试点评估、残差、采样及优化叶函数执行直接各向异性反演并提供公开调用合同 | R:code:src/scirel/inference/anisotropic_parameter_optimization.py,code:src/scirel/inference/anisotropic_trial_evaluation.py | A:solve_direct_anisotropic_inversion；返回固定残差、终点状态、评估日志、失败原因及分离的优化器/前向收敛标志 | S:平衡和诊断仍为调用者必填端口；不收敛且缺原因时补明确失败记录；部分有效候选不证明拟合完成或可辨识
 latin_hypercube_sampling.py[KB6T]: F:按给定有界参数和种子生成逐维分层Latin超立方设计，并提供公开callable使用合同 | R:code:src/scirel/inference/anisotropic_parameter_optimization.py | A:sample_latin_hypercube | S:参数次序依bounds或fit_keys；文档明确选中边界、输出initial_samples和ValueError/KeyError边界；逐维独立置乱分层
 
 ===/Users/tomczz/Projects/SciReL/src/scirel/kinetic/===
@@ -1227,7 +1227,7 @@ test_graph_axisymmetric_equilibrium_grid_support.py[TB6M]: F:检验网格映射�
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/direct_anisotropic_inversion/===
 task_graph.yaml[TB6M]: F:声明LHS可选起点与显式平衡/诊断/残差端口驱动的有界直接反演状态和失败惩罚。 | R:code:src/scirel/inference/direct_anisotropic_inversion.py | A:scientific_task_graph contract | S:每次试探须新平衡状态；converged指优化与嵌套平衡成功，不另要求残差阈值。
-test_graph_direct_anisotropic_inversion.py[TB6M]: F:检验显式平衡/诊断端口下合成p0恢复、LHS确定性、优化失败惩罚及公开依赖注入。 | R:code:src/scirel/inference/direct_anisotropic_inversion.py | A:pytest | S:嵌套异常残差为单项1e12且equilibrium=None；优化器成功仍需平衡自身收敛。
+test_graph_direct_anisotropic_inversion.py[TB6M]: F:检验显式平衡/诊断端口下合成p0恢复、LHS确定性、优化失败惩罚、公开依赖注入和solver文档合同 | R:code:src/scirel/inference/direct_anisotropic_inversion.py | A:pytest；验证Parameters/Returns/Raises以及forward_converged、evaluation_log、identifiability字段说明 | S:嵌套异常残差为单项1e12且equilibrium=None；优化器成功仍需平衡自身收敛；文档断言只锁定公开调用合同，不替代数值回归
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/equilibrium_synthesis_diagnostics/===
 task_graph.yaml[TB5S]: F:声明观测者图的磁通环/Thomson双线性采样端口、只读状态和缺失字段失败策略。 | R:code:src/scirel/diagnostics/equilibrium_synthesis_diagnostics.py | A:scientific_task_graph contract | S:Thomson压力必需而密度温度可选，磁通分支先于Thomson。

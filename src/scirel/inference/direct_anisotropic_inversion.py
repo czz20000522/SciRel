@@ -62,6 +62,39 @@ def run_graph(inputs, *, operator_loader):
     return result
 
 def solve_direct_anisotropic_inversion(inputs=None, **kwargs):
+    """Run a bounded direct anisotropic inversion through caller-owned ports.
+
+    Parameters
+    ----------
+    inputs : mapping, optional
+        Mapping containing ``initial_params``, ``bounds``, ``method``,
+        ``observations``, ``solver_config``, ``equilibrium_solver`` and
+        ``diagnostic_evaluator``.  Optional controls include ``fit_keys``,
+        ``n_initial_samples``, ``seed``, ``failure_penalty`` and
+        ``max_evaluations``.
+    **kwargs
+        Composition overrides passed to the public graph boundary.
+
+    Returns
+    -------
+    dict
+        Inversion state containing the fixed-size ``residual_vector``,
+        ``best_parameters``, ``equilibrium``, ``evaluation_log``,
+        ``failure_reason`` and separate ``converged``,
+        ``forward_converged`` and ``optimizer_converged`` flags.  A partial
+        valid candidate may be returned when optimization or a forward trial
+        stops; it is not a proof of fit completion or identifiability.
+
+    Raises
+    ------
+    ValueError
+        If the input mapping, observation layout, ports, method, bounds or
+        evaluation budget violates the declared graph contract.
+    Exception
+        Scientific port, diagnostic, optimizer and dependency exceptions
+        propagate according to their trial or composition boundary.
+    """
+
     from scirel._composition import compose
     from scirel.diagnostics.observation_residuals import reduce_observation_residuals as _dependency_0
     from scirel.inference.anisotropic_trial_evaluation import evaluate_anisotropic_trial as _dependency_1
