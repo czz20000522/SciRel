@@ -16,6 +16,14 @@ denominator. Generate or update the development catalog only when a named
 discovery handoff or another task actually needs that projection; do not rebuild
 the full catalog after every source or document edit.
 
+This mode is an optimization loop. Before the first public release, a request
+to continue, finish, review or verify remains ordinary development unless it
+also names a consumer, handoff, candidate cut or release decision. Do not turn
+an internal performance, import, API, dependency or documentation improvement
+into wheel installation, release-current updates, platform receipts or a full
+acceptance run. Those artifacts are produced only by the lifecycle mode that
+needs them.
+
 ### SciPy-style change-set loop
 
 Treat one coherent change as the working unit. Before editing, inspect the
@@ -44,6 +52,11 @@ run the narrow API/import/failure checks needed by the claim. Unknown ownership
 fails closed to a wider test layer. Finish a coherent change set with a clean
 diff check and a Git commit that states the affected area; do not stage an
 unrelated work-in-progress file merely to make the tree look complete.
+
+Several compatible local fixes may share one change set and one validation
+round. A function-level edit, a new capability or a changed count is not a
+version boundary; Git history records the intermediate state until a named
+checkpoint or release freeze is requested.
 
 Treat the capability set as open during incubation. Counts such as
 `267 documents = 235 operators + 32 TaskGraphs` describe one manifest at one

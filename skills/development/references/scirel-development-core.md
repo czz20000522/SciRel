@@ -30,6 +30,12 @@ default is `development`; `integration_checkpoint` and `release_freeze` require
 an explicit task or owner decision. Do not infer a release freeze from a version
 string, a document count, a clean worktree or the fact that a wheel can be built.
 
+When the task is framed as optimization, maintenance, continuation or review,
+keep it in `development` unless the user names a consumer, handoff, candidate
+cut or release decision. Historical `devN` labels, a growing capability
+denominator and a buildable wheel are observations of the tree, not requests to
+start release work.
+
 - **development**: evolve Git, source, tests, benchmarks, draft documents and
   the development catalog. Counts are dynamic. Do affected checks and bounded
   API/scientific checks; do not update `release/CURRENT.json`, create platform
@@ -76,6 +82,10 @@ After the edit, rerun the affected selector and reverse dependencies. Unknown
 ownership fails closed to a wider test layer. A clean diff and a Git commit for
 the coherent change set are part of the development record; a commit may
 contain several compatible fixes, but it must not mix unrelated work.
+
+Batch compatible local fixes into one reviewable change set when they share a
+contract or dependency boundary. Do not create a version or release cycle for
+each function-level improvement; Git history preserves intermediate states.
 
 During development, docstrings, comments and draft notes are sufficient for
 an evolving contract. Create or refresh exact asset documents and the catalog

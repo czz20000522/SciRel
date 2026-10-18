@@ -28,6 +28,15 @@ Choose the mode before choosing artifacts or gates:
 - **public release**: publish only after the separate human, rights and release
   decisions are complete.
 
+The default posture before the first public release is optimization, not
+acceptance. Treat SciRel as one continuously evolving SciPy-style source tree:
+improve public contracts, implementations, dependency boundaries, tests,
+documentation and benchmarks together, then stop at the claim supported by
+the affected checks. Do not build a wheel, update `release/CURRENT.json`,
+create a release receipt or run the full platform matrix merely because a task
+says to continue, finish, review or verify. Those words do not name a
+checkpoint or release.
+
 Within ordinary `development`, use one of two routes:
 
 - **direct product development (default)**: change the SciRel Git tree itself
@@ -42,6 +51,11 @@ Within ordinary `development`, use one of two routes:
 No source change, new capability, performance claim, document edit, clean
 worktree or buildable wheel changes mode by itself. A current capability count
 is a property of the checked-out tree, not a permanent gate.
+
+Batch compatible fixes into one reviewable Git change set. A changed function,
+document or capability count does not require its own version or acceptance
+cycle; use Git history to preserve earlier states and create a new release
+projection only when a named checkpoint or release decision needs one.
 
 ## Pre-publication guard
 

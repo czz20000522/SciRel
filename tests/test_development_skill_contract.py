@@ -23,6 +23,16 @@ def test_development_skill_changes_use_one_lightweight_contract_test():
     assert result["test_paths"] == ["tests/test_development_skill_contract.py"]
 
 
+def test_project_contract_keeps_ordinary_optimization_out_of_release_flow():
+    project_contract = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+
+    assert "当前默认开发模式" in project_contract
+    assert "普通任务默认处于 `development`" in project_contract
+    assert "不会启动发布流程" in project_contract
+    assert "数量只属于具体 manifest/revision" in project_contract
+    assert "多个相互关联的小修复可以合并为一个变更批次" in project_contract
+
+
 def test_lifecycle_keeps_incubation_counts_dynamic_and_release_gates_explicit():
     readme = (ROOT / "skills/development/README.md").read_text(encoding="utf-8")
     lifecycle = (
