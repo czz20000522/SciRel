@@ -52,22 +52,19 @@ def compute_greens(rzw, rz_pts):
     sources = _array(rzw, 3, 'rzw')
     out = np.zeros((3, len(points)))
     r, z = points.T
-
-    # Keep empty and zero-weight calls dependency-light.  Validate all active
-    # singularities before loading SciPy so a rejected call preserves its
-    # ValueError boundary without importing the numerical backend.
-    active = sources[(sources[:, 0] != 0.0) & (sources[:, 2] != 0.0)]
-    if not len(active):
-        return tuple(out)
-    for a, z0, _weight in active:
-        if np.any((r == a) & (z == z0)):
-            raise ValueError('target coincident with singular circular filament')
-    ellipkm1, ellipe, hyp2f1 = _load_special_functions()
+    ellipkm1 = ellipe = hyp2f1 = None
     with np.errstate(over='raise', divide='raise', invalid='raise'):
         for a, z0, weight in sources:
             if a == 0 or weight == 0:
                 continue
             h = z-z0
+            # Validate the singularity before loading SciPy.  This keeps
+            # rejected calls dependency-light while preserving source order
+            # and the original failure precedence for later sources.
+            if np.any((r == a) & (h == 0)):
+                raise ValueError('target coincident with singular circular filament')
+            if ellipkm1 is None:
+                ellipkm1, ellipe, hyp2f1 = _load_special_functions()
             d = np.hypot(r+a, h)
             q = (np.hypot(r-a, h)/d)**2
             m = 4*(r/d)*(a/d)
