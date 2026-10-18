@@ -157,8 +157,9 @@ Windows/macOS 后续各自生成和验收自己的 artifact，不复用 Linux �
 2. 从该平台 wheelhouse 安装当前 wheel 及 core 依赖，运行 `pip check`；安装路径必须位于 venv，
    不能来自 checkout、`.pth` 或开发环境。
 3. 运行 `import scirel` 和声明的 domain package 公共导入，确认导入路径和版本来自安装包。
-   安装包验收器还必须遍历根命名空间及每个 domain 的 `__all__`，逐项解析公开导出并记录
-   `public_surface` 计数；常量和异常类只要求可解析，不强制要求 callable。
+   安装包验收器还必须遍历根命名空间、每个 domain 以及 nested public packages（例如 `kinetic.pdrk`）
+   的 `__all__`，逐项解析公开导出并记录 `public_surface` 计数；常量和异常类只要求可解析，
+   不强制要求 callable。
 4. 运行至少一个 simple Operator、一个跨域 TaskGraph 和对应结果级检查；保留输入摘要、命令、
    退出码、输出摘要、检查结果和环境身份。
 5. 安装并验证每个 optional extra 的独立路径。没有 extra 时验证 core 不受影响；有 extra 时

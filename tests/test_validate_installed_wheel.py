@@ -189,7 +189,17 @@ def test_validation_receipt_aggregates_successful_checks(monkeypatch: pytest.Mon
     monkeypatch.setattr(
         validator,
         "_run_public_surface",
-        lambda: ({"status": "PASS", "domain_count": 18, "export_count": 251}, []),
+        lambda: (
+            {
+                "status": "PASS",
+                "domain_count": 18,
+                "export_count": 251,
+                "nested_package_count": 1,
+                "nested_module_count": 8,
+                "nested_export_count": 47,
+            },
+            [],
+        ),
     )
 
     receipt = validator.validate_installed_wheel(expected_platform="linux-x86_64-cp314")
@@ -199,6 +209,7 @@ def test_validation_receipt_aggregates_successful_checks(monkeypatch: pytest.Mon
     assert receipt["extras"] == {}
     assert receipt["errors"] == []
     assert receipt["public_surface"]["export_count"] == 251
+    assert receipt["public_surface"]["nested_export_count"] == 47
 
 
 def test_public_surface_resolves_current_installed_exports() -> None:
@@ -208,6 +219,9 @@ def test_public_surface_resolves_current_installed_exports() -> None:
     assert details["status"] == "PASS"
     assert details["domain_count"] == 18
     assert details["export_count"] == 251
+    assert details["nested_package_count"] == 1
+    assert details["nested_module_count"] == 8
+    assert details["nested_export_count"] == 47
 
 
 def test_public_surface_fails_closed_on_a_missing_export(monkeypatch: pytest.MonkeyPatch) -> None:

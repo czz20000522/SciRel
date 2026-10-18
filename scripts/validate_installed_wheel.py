@@ -34,6 +34,7 @@ import importlib
 import importlib.metadata as metadata
 import json
 import os
+import pkgutil
 from pathlib import Path
 import platform
 import re
@@ -650,6 +651,9 @@ def _run_public_surface() -> tuple[dict[str, Any], list[str]]:
         "status": "FAIL",
         "domain_count": 0,
         "export_count": 0,
+        "nested_package_count": 0,
+        "nested_module_count": 0,
+        "nested_export_count": 0,
         "failures": [],
     }
     failures: list[str] = []
@@ -707,6 +711,73 @@ def _run_public_surface() -> tuple[dict[str, Any], list[str]]:
                 failures.append(
                     f"{expected_name}.{export_name} cannot be resolved: {type(exc).__name__}: {exc}"
                 )
+
+    # Some public packages are intentionally nested below a domain facade.
+    # Discover those packages from the installed namespace instead of keeping
+    # a permanent list of capability counts in the validator.
+    kinetic = getattr(root, "kinetic", None)
+    nested_packages = []
+    if isinstance(kinetic, ModuleType) and hasattr(kinetic, "__path__"):
+        nested_packages = [
+            info.name
+            for info in pkgutil.iter_modules(kinetic.__path__, prefix="scirel.kinetic.")
+            if info.ispkg and not info.name.rsplit(".", 1)[-1].startswith("_")
+        ]
+    for package_name in sorted(nested_packages):
+        try:
+            package = importlib.import_module(package_name)
+        except Exception as exc:
+            failures.append(
+                f"nested package {package_name!r} cannot be resolved: {type(exc).__name__}: {exc}"
+            )
+            continue
+        details["nested_package_count"] += 1
+        exports = getattr(package, "__all__", None)
+        if not isinstance(exports, (list, tuple)) or not all(
+            isinstance(name, str) and name for name in exports
+        ):
+            failures.append(f"nested package {package_name} has invalid __all__")
+            continue
+        if len(set(exports)) != len(exports):
+            failures.append(f"nested package {package_name} has duplicate __all__ names")
+            continue
+        for export_name in exports:
+            try:
+                child = getattr(package, export_name)
+            except Exception as exc:
+                failures.append(
+                    f"{package_name}.{export_name} cannot be resolved: {type(exc).__name__}: {exc}"
+                )
+                continue
+            if not isinstance(child, ModuleType):
+                failures.append(f"nested package export {package_name}.{export_name} is not a module")
+                continue
+            expected_name = f"{package_name}.{export_name}"
+            if child.__name__ != expected_name:
+                failures.append(
+                    f"nested package export {package_name}.{export_name} resolves to {child.__name__!r}, "
+                    f"expected {expected_name!r}"
+                )
+                continue
+            details["nested_module_count"] += 1
+            child_exports = getattr(child, "__all__", None)
+            if not isinstance(child_exports, (list, tuple)) or not all(
+                isinstance(name, str) and name for name in child_exports
+            ):
+                failures.append(f"nested module {expected_name} has invalid __all__")
+                continue
+            if len(set(child_exports)) != len(child_exports):
+                failures.append(f"nested module {expected_name} has duplicate __all__ names")
+                continue
+            for child_export_name in child_exports:
+                details["nested_export_count"] += 1
+                try:
+                    getattr(child, child_export_name)
+                except Exception as exc:
+                    failures.append(
+                        f"{expected_name}.{child_export_name} cannot be resolved: "
+                        f"{type(exc).__name__}: {exc}"
+                    )
 
     details["failures"] = failures
     if not failures:
