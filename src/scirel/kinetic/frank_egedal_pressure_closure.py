@@ -20,6 +20,35 @@ def run_graph(inputs, *, asset_loader):
     return result
 
 def solve_frank_egedal_pressure_closure(inputs=None, **kwargs):
+    """Resolve the Frank--Egedal pressure-closure TaskGraph.
+
+    Parameters
+    ----------
+    inputs : mapping, optional
+        Mapping containing ``psi``, ``B`` and a required ``params`` mapping.
+        ``params`` carries radial normalization, loss-cone source, quadrature,
+        pressure and optional density/electron-temperature controls described
+        by the catalog contract.
+    **kwargs
+        Named inputs merged with ``inputs`` by the TaskGraph composition
+        boundary.
+
+    Returns
+    -------
+    dict
+        ``p_parallel`` and ``p_perp`` pressure fields, optional density and
+        electron-temperature fields, and an inspectable ``closure_state``.
+
+    Raises
+    ------
+    ValueError
+        If the parameter mapping or dependency inputs violate the declared
+        grid, normalization or control contract.
+    RuntimeError
+        If source normalization, spectrum evaluation or hot-moment quadrature
+        cannot produce a converged closure; failures propagate without a
+        partial pressure result.
+    """
     from scirel._composition import compose
     from scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments as _dependency_0
     from scirel.kinetic.frank_egedal_pressure_state import assemble_frank_egedal_pressure as _dependency_1

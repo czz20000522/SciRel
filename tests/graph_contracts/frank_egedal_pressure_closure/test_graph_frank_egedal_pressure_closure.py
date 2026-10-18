@@ -1,3 +1,5 @@
+import inspect
+
 from scirel.kinetic.frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure
 import scirel
 from _review_bindings import load_asset as _load_asset, load_graph as _load_graph, load_operator as _load_operator
@@ -13,6 +15,13 @@ def _asset_loader(asset_ref):
 
 def _run_graph(inputs):
     return graph.run_graph(inputs, asset_loader=_asset_loader)
+
+
+def test_public_callable_documents_the_catalog_contract():
+    text = inspect.getdoc(solve_frank_egedal_pressure_closure) or ""
+    assert "params" in text
+    assert "closure_state" in text
+    assert "RuntimeError" in text
 
 
 def _inputs(**parameter_overrides):
