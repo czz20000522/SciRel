@@ -4,6 +4,7 @@ Quadratic/cubic expectations are analytic, curvature follows d(bhat)/ds_B;
 continuity uses independently expanded Hermite endpoint derivatives.
 """
 import importlib.util
+import inspect
 import os
 from pathlib import Path
 import sys
@@ -123,3 +124,12 @@ def test_parse_segment_keeps_first_nearest_vertex_on_ties():
     p = np.array([[0., 0.], [0., 1.], [1., 1.], [1., 0.]])
     got = helpers.parse_segment(p, start_coord=(0.5, 0.5), end_coord=(0.5, 0.5))
     np.testing.assert_array_equal(got, p[:1])
+
+
+def test_parse_segment_public_docstring_declares_contract():
+    doc = inspect.getdoc(helpers.parse_segment)
+    assert doc is not None
+    assert "Parameters" in doc
+    assert "Returns" in doc
+    assert "Raises" in doc
+    assert "terminal vertex" in doc

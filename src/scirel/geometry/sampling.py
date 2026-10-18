@@ -235,6 +235,34 @@ def get_fieldlines(contourset,level,start_coord=None,end_coord=None,clockwise=Tr
     return flpoints
 
 def parse_segment(flpoints,start_coord=None,end_coord=None,clockwise=True):
+    """Orient and trim an ordered planar contour segment.
+
+    Parameters
+    ----------
+    flpoints : array_like, shape (N, 2)
+        Ordered planar vertices of the sampled contour segment.
+    start_coord : array_like, shape (2,), optional
+        Coordinate used to select the nearest starting vertex.  When omitted,
+        the supplied first vertex remains the start.
+    end_coord : array_like, shape (2,), optional
+        Coordinate used to select the nearest terminal vertex.  The selected
+        vertex is included in the returned segment; no interpolated crossing
+        is added.
+    clockwise : bool, default=True
+        Desired signed polygon orientation.  The vertices are reversed when
+        their measured orientation does not match this value.
+
+    Returns
+    -------
+    segment : ndarray, shape (M, 2)
+        The oriented, optionally trimmed vertices in traversal order.
+
+    Raises
+    ------
+    TypeError, ValueError, IndexError
+        Exceptions from NumPy array operations may propagate when the input
+        vertices or coordinates have an unsupported shape or dtype.
+    """
     if start_coord is not None:
         delta = flpoints - np.asarray(start_coord)
         i_start = np.argmin(np.sum(delta**2, axis=1))
