@@ -2,7 +2,7 @@
 
 本文定义 SciRel 从当前 267 条开发闭包扩展到数万 Operator、数千 TaskGraph 时的目录边界。catalog 服务发现、依赖分析和发行核对；它是从已选发行内容重建的索引，不拥有准入、科学身份或发布权威。
 
-标准资产字段的权威需求见[标准化资产文档需求](requirements/asset-documentation.md)，catalog builder 与 MCP/CLI/云适配边界见[设计](design/catalog-and-adapters.md)。当前 dev10 selection 的 `catalog/examples/` 是 267/267 的依赖闭合开发 snapshot（235 operators、32 task graphs）；文档计数完整不代表专家批准或可发行目录。132/132 只保留为早期 pilot 的历史口径。
+标准资产字段的权威需求见[标准化资产文档需求](requirements/asset-documentation.md)，catalog builder 与 MCP/CLI/云适配边界见[设计](design/catalog-and-adapters.md)。当前 dev11 selection 的 `catalog/examples/` 是 267/267 的依赖闭合开发 snapshot（235 operators、32 task graphs）；文档计数完整不代表专家批准或可发行目录。132/132 只保留为早期 pilot 的历史口径。
 
 ## 设计目标
 
@@ -106,6 +106,6 @@ SciRel 的发布索引选取；开发 catalog 即使覆盖完整、摘要有效�
 
 ## 当前迁移边界
 
-现有 `provenance/admitted-assets.json` 与 wheel `_admitted_manifest.json` 已提供 52 条历史开发样本的 callable、来源 revision、依赖绑定和内容摘要，但不是完整 catalog。`scirel.asset-document.v1`、验证器和 route/summary/exact/reverse-dependency builder 早期由 132 条依赖闭合开发 pilot 验证；当前 dev10 selection 已扩展为 267 条（235 operators、32 task graphs），不表达审核或发行状态。
+现有 `provenance/admitted-assets.json` 与 wheel `_admitted_manifest.json` 已提供 52 条历史开发样本的 callable、来源 revision、依赖绑定和内容摘要，但不是完整 catalog。`scirel.asset-document.v1`、验证器和 route/summary/exact/reverse-dependency builder 早期由 132 条依赖闭合开发 pilot 验证；当前 dev11 selection 已扩展为 267 条（235 operators、32 task graphs），不表达审核或发行状态。
 
 下一阶段在稳定的 267 条文档闭包上测量分片字节、token、查询延迟和增量重建成本，并据此选择生产分片和索引策略。只有小批次及完整批次门禁都成立后才扩展到数万资产；现有开发文档仍需独立的专家审核与发行决策。

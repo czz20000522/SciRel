@@ -36,12 +36,13 @@ wheel 自身可以在同一 `major.minor` 主线上推进维护批次版本。�
 它就不是纯文档修订，必须和新的 wheel 候选一起发布；兼容变化仍留在当前能力线，只有不兼容或
 导致能力闭包大范围变化时才在下一次切候选时推进新的 `major.minor`。文档修订号不能替代
 `implementation_version`，也不能增加 wheel 没有的能力。当前 dev8/dev9 历史候选继续由
-Git、短发行说明和外部 manifest 恢复；当前 dev10 使用单一 exact `0.1.0.dev10`。
+Git、短发行说明和外部 manifest 恢复；当前 dev11 使用单一 exact `0.1.0.dev11`。
 
 ## 开发版本
 
 - [0.1.0.dev8](release/0.1.0.dev8-notes.md)：历史开发候选摘要；完整源码和 wheel 由 Git 历史恢复。
 - [0.1.0.dev9](release/0.1.0.dev9-notes.md)：依赖分层、安装包版本读取和 Linux amd64 + CPython 3.14 clean-venv 验收；历史开发候选。
 - [0.1.0.dev10](release/0.1.0.dev10-notes.md)：文档闭包重资格化和 sampling 失败语义修正；当前仍是开发候选。
+- [0.1.0.dev11](release/0.1.0.dev11-notes.md)：267 份文档闭包与 wheel 重新绑定，章节执行证据重跑，并完成 Linux amd64 与 macOS arm64 的锁定依赖 clean-venv 验收；当前仍是开发候选。
 
 历史版本由 Git 提交和 tag 恢复。构建产物摘要、平台回执和当前候选绑定见 [`release/CURRENT.json`](../release/CURRENT.json)。
