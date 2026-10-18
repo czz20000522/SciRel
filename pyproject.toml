@@ -9,6 +9,21 @@ description = "Scientific Relations Library"
 requires-python = ">=3.14,<3.15"
 dependencies = ["numpy==2.5.4", "scipy==1.18.1", "mpmath==1.4.1"]
 license-files = ["licenses/**/*"]
+keywords = ["scientific computing", "numerical methods", "plasma physics"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+
+[project.urls]
+Homepage = "https://github.com/czz20000522/SciRel"
+Repository = "https://github.com/czz20000522/SciRel"
+Issues = "https://github.com/czz20000522/SciRel/issues"
 
 [project.optional-dependencies]
 plot = ["matplotlib==3.11.2"]
@@ -34,6 +49,10 @@ include-package-data = false
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["scirel", "scirel.*"]
+exclude = [
+    "scirel._framework_compositions",
+    "scirel._framework_compositions.*",
+]
 
 [tool.setuptools.package-data]
 "scirel.kinetic" = ["_fluidbw_native/*.m"]
