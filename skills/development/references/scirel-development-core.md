@@ -7,12 +7,23 @@ package; decomposition outputs arrive as exact input artifacts.
 
 ## Invocation binding
 
-Bind `task`, `stage` (`D2`, `D3`, `review`, or `read_only_diagnosis`), exact
-candidate/dependency/runtime identities, selected scope and denominator, owner,
-writable work root, evidence already received, and the next owner. Missing
-bindings stop the affected claim as `blocked` or `NOT_RUN` with a concrete
-reopen condition. Never replace an exact candidate with `latest` or infer a
-scientific oracle from a summary.
+Bind only the identities required by the selected lifecycle mode. Every mode
+still binds `task`, owner, writable work root, evidence already received and
+the next owner; missing bindings stop the affected claim as `blocked` or
+`NOT_RUN` with a concrete reopen condition. Never replace an exact candidate
+with `latest` or infer a scientific oracle from a summary.
+
+- In `development`, bind the Git base/head (or the current source revision),
+  changed scope, affected API/test/benchmark target and claim. Bind exact
+  runtime or dependency identities only when the task actually executes a
+  scientific runtime, installed package or consumer case. A source-only
+  change does not need a release candidate or a complete denominator.
+- In `integration_checkpoint`, bind the current working-tree or exact
+  development candidate, its dependency/runtime identities when exercised,
+  the current manifest scope and reverse dependencies.
+- In `release_freeze`, bind one exact Git revision, complete manifest and
+  denominator, dependency/runtime identities, selected scope and all release
+  evidence before making candidate or publication claims.
 
 Before choosing tests or artifacts, bind the work to one lifecycle mode. The
 default is `development`; `integration_checkpoint` and `release_freeze` require
@@ -37,6 +48,22 @@ string, a document count, a clean worktree or the fact that a wheel can be built
 
 Read [the development lifecycle](development-lifecycle.md) for transition
 triggers and the complete mode boundary.
+
+## Product-development loop
+
+SciRel follows a standard-library product loop: one Git source tree is the
+development truth while public API, implementation, tests, documentation,
+benchmarks and CI evolve together. Use the affected selector and the smallest
+checks that support the claim for ordinary source work. A direct product
+change does not enter the D1 handoff loop unless it is consuming an exact D1
+packet.
+
+During development, docstrings, comments and draft notes are sufficient for
+an evolving contract. Create or refresh exact asset documents and the catalog
+when a stable batch, discovery handoff, integration checkpoint or review needs
+them; do not rebuild the complete catalog for every edit. Keep one current
+working-tree representation and use Git history for prior wording or code;
+do not copy full wheel, document or catalog trees into version directories.
 
 ## Development boundaries
 
@@ -85,3 +112,9 @@ Do not increment a development `devN` version for ordinary source, test,
 document or performance commits. Git identifies development state. Choose the
 candidate or public version once at `release_freeze`, and keep the frozen
 wheel/document/catalog tuple immutable afterward.
+
+Use the canonical batching policy in
+[`docs/design/scirel-release-batching.md`](../../../docs/design/scirel-release-batching.md):
+advance the capability line for a broad capability or compatibility boundary;
+accumulate compatible fixes, performance work and internal refactors into a
+maintenance batch. A Git commit alone never advances `devN`.

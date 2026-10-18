@@ -64,5 +64,7 @@ approval or an equivalent owner decision. A source change, performance
 improvement or new capability alone stays in development mode.
 
 Critical correctness, security or data-integrity fixes may justify an expedited
-freeze; record the reason and keep the development and frozen evidence
-separate.
+freeze only when an external or public consumer depends on an existing frozen
+candidate and needs a correction or withdrawal. An internal development tree
+without such a consumer remains in `development`, with impact-matched checks;
+record the reason and keep development and frozen evidence separate.

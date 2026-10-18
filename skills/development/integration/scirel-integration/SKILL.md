@@ -12,6 +12,11 @@ separate. This skill cannot grant human approval, rights or release.
 
 ## Coordinator loop
 
+When the task consumes an exact D1 packet, run the following coordinator loop.
+For direct SciRel product development without a D1 packet, use the product
+development path below and do not invent a D1 freeze or a complete project
+denominator.
+
 1. Freeze the D1 handoff, complete denominator, target/dependency hashes, source issues, runtime and rights/licence
    evidence. Keep upstream deliveries read-only and preserve every failure/`NOT_RUN` row.
 2. Route each issue once: scientific/numerical claim to [asset correctness](../scientific-asset-correctness/SKILL.md);
@@ -27,3 +32,14 @@ separate. This skill cannot grant human approval, rights or release.
 
 Formal asset documents are created once code is stable and before final review freeze. The compact handoff is evidence,
 not approval or release; the receiving project supplies lifecycle and distribution policy.
+
+## Direct product-development path
+
+For a source, API, test, documentation or performance change made in the
+SciRel tree, bind the Git base/head and the affected public surface, then use
+the repository's affected selector and reverse dependencies. Add a regression
+before changing scientific behavior, keep existing tolerances and failure
+semantics, and update benchmarks when making a performance claim. Accumulate
+small changes in Git; do not build a release wheel, update `release/CURRENT.json`
+or run the full platform matrix unless a named consumer, checkpoint or release
+freeze requires it.

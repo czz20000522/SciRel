@@ -25,3 +25,13 @@ Lifecycle route: [post-acceptance-runtime-cleanup](post-acceptance-runtime-clean
 routes acceptance-owned cleanup to the repository's runtime-asset policy.
 
 For the mode boundary and transition triggers, read [the development lifecycle](references/development-lifecycle.md).
+
+Routing shortcut:
+
+- Changes to `src/`, public API, tests, documentation, benchmarks, CI or packaging metadata use `development`.
+- A task that consumes an exact D1 packet uses D2 integration methods.
+- A real user scientific request uses the usage skills and an already selected capability.
+- A named candidate cut, publication or release approval uses `release_freeze`.
+
+An ordinary documentation edit stays in `development`; mentioning a document,
+wheel or catalog does not by itself trigger a release check.
