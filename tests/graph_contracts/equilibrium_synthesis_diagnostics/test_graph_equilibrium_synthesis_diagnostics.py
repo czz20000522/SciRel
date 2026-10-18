@@ -1,3 +1,5 @@
+import inspect
+
 from scirel.diagnostics.equilibrium_synthesis_diagnostics import synthesize_equilibrium_diagnostics
 import scirel
 from _review_bindings import load_asset as _load_asset, load_graph as _load_graph, load_operator as _load_operator
@@ -13,6 +15,13 @@ def _asset_loader(asset_ref):
 
 def _run(inputs):
     return graph.run_graph(inputs, asset_loader=_asset_loader)
+
+
+def test_public_callable_documents_the_catalog_contract():
+    text = inspect.getdoc(synthesize_equilibrium_diagnostics) or ""
+    assert "observations" in text
+    assert "flux_loops" in text
+    assert "FloatingPointError" in text
 
 
 def test_public_scirel_injects_declared_sampler_dependency():

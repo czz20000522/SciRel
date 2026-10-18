@@ -95,6 +95,31 @@ def run_graph(inputs, *, asset_loader):
 
 
 def synthesize_equilibrium_diagnostics(inputs=None, **kwargs):
+    """Sample declared equilibrium diagnostics at caller-supplied points.
+
+    Parameters
+    ----------
+    inputs : mapping, optional
+        Mapping containing ``R``, ``Z``, ``equilibrium`` and nonempty
+        ``observations``. Flux-loop requests declare ``quantity`` and ``unit``;
+        profile requests use explicit ``thomson`` channel units.
+    **kwargs
+        Named inputs merged with ``inputs`` by the composition boundary.
+
+    Returns
+    -------
+    dict
+        Requested ``flux_loops`` and/or ``thomson`` samples plus matching
+        ``units`` metadata. Only explicitly requested channels are returned.
+
+    Raises
+    ------
+    ValueError
+        If grids, observation requests, points, fields or units are missing,
+        incompatible or outside the declared domain.
+    FloatingPointError
+        If a magnetic-flux conversion produces a nonfinite value.
+    """
     from scirel._composition import compose
     from scirel.geometry.bilinear_grid_sampling import sample_rectilinear_field
     return compose(run_graph, inputs, kwargs, {'asset_loader': {'scirel.geometry.bilinear_grid_sampling': sample_rectilinear_field}})
