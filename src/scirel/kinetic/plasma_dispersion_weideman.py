@@ -9,7 +9,6 @@ Reference: bonk/zfun.m:1-46 in the frozen fluidBW source tree.
 """
 
 import numpy as _np
-from scipy.special import erfc as _erfc
 
 __all__ = ["evaluate_plasma_dispersion_weideman"]
 
@@ -60,6 +59,14 @@ def evaluate_plasma_dispersion_weideman(z):
     zeta = _np.asarray(z, dtype=_np.complex128)
     if zeta.size == 0 or not _np.all(_np.isfinite(zeta)):
         raise ValueError("z must be nonempty and finite")
+
+    # Keep the scientific backend out of import-time and rejected-input paths.
+    # The rational branch below is unchanged; importing ``erfc`` only after
+    # the input contract is established preserves the source backend and
+    # numerical behavior for valid calls without making namespace discovery
+    # pay the SciPy import cost.
+    from scipy.special import erfc as _erfc
+
     shape = zeta.shape
     flat = zeta.reshape(-1)
 
