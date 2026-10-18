@@ -17,7 +17,6 @@ import subprocess
 import tempfile
 
 import numpy as np
-from scipy.io import loadmat, savemat
 
 __all__ = ["evaluate_fluidbw_special", "derive_fluidbw_case", "evaluate_fluidbw_dispersion",
            "solve_fluidbw_bonk", "assemble_fluidbw_em", "solve_fluidbw_em",
@@ -49,6 +48,11 @@ def _run(function, args, *, nout=1, output_directory=None):
     octave = shutil.which("octave")
     if octave is None:
         raise RuntimeError("GNU Octave 7.3.0 is required")
+    # MAT transport is only needed once a native Octave call is requested.
+    # Keeping this import here lets direct module discovery avoid scipy.io and
+    # preserves the existing load/save behavior inside the native boundary.
+    from scipy.io import loadmat, savemat
+
     environment = os.environ.copy()
     environment.update(OPENBLAS_NUM_THREADS="1", OMP_NUM_THREADS="1")
     native = Path(__file__).with_name("_fluidbw_native").resolve()

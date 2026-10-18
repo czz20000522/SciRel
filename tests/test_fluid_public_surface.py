@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import importlib
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -34,3 +36,23 @@ def test_catalog_callable_is_an_explicit_module_export(document_name: str) -> No
     namespace: dict[str, object] = {}
     exec(f"from {python_api['module']} import *", namespace)
     assert namespace[python_api["symbol"]] is getattr(module, python_api["symbol"])
+
+
+def test_fluidbw_direct_import_does_not_preload_scipy_io() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-I",
+            "-c",
+            r'''
+import sys
+sys.path.insert(0, sys.argv[1])
+import scirel.kinetic.fluidbw
+assert "scipy.io" not in sys.modules
+''',
+            str(ROOT / "src"),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
