@@ -5,7 +5,9 @@ description: Coordinate D2 integration of saved D1 assets into a runnable scient
 
 # SciReL D2 integration
 
-Read [the shared operating contract](../../references/scirel-development-core.md).
+Use the shared operating contract already loaded for this task mode. If it is
+not loaded, read [the shared operating contract](../../references/scirel-development-core.md)
+once before proceeding; do not reload it for each routed sub-skill.
 Own the D2 queue and the durable development candidate: compare, deduplicate, route correctness, normalize,
 assemble and prepare stable documentation. D1 fidelity (including original errors) and D3 application evidence are
 separate. This skill cannot grant human approval, rights or release.
@@ -42,13 +44,9 @@ before changing scientific behavior, keep existing tolerances and failure
 semantics, and update the callable docstring/user-facing example when a public
 contract changes. Update benchmarks when making a performance claim and record
 a comparable before/after observation. Accumulate complete related changes in
-Git; do not mix unrelated work into the same commit. A stable batch, changed
-capability count or buildable wheel does not create a checkpoint by itself; do
-not build an installed wheel, update `release/CURRENT.json`, generate a release
-receipt or run the full platform matrix unless a named consumer,
-owner-requested checkpoint or `release_freeze` requires it.
+Git; do not mix unrelated work into the same commit.
 
 Keep the direct path in `development` unless the task names a consumer,
 handoff or release decision. Use the canonical
 [development lifecycle](../../references/development-lifecycle.md) for version,
-closure and artifact rules; do not reproduce those gates here.
+closure, artifact and gate decisions; do not reproduce those rules here.

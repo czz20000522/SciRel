@@ -5,7 +5,9 @@ description: Design, execute, or assess claim-specific scientific and numerical 
 
 # Scientific computation validation
 
-Read [the shared operating contract](../references/scirel-development-core.md).
+Use the shared operating contract already loaded for this task mode. If it is
+not loaded, read [the shared operating contract](../references/scirel-development-core.md)
+once before proceeding; do not reload it for each routed sub-skill.
 This skill proves named claims for one exact target. It does not choose extraction boundaries, implement repairs,
 normalize candidates, approve assets, write stage state or release a package.
 

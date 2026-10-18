@@ -58,7 +58,7 @@ def test_development_loop_keeps_related_evidence_together_without_release_work()
     assert "Neither claim requires a wheel or catalog" in lifecycle
     assert "Unknown" in core
     assert "unrelated work" in integration
-    assert "installed wheel" in integration
+    assert "development lifecycle" in integration
 
 
 def test_direct_product_work_does_not_synthesize_d1_or_full_aoci_proof():
@@ -69,6 +69,33 @@ def test_direct_product_work_does_not_synthesize_d1_or_full_aoci_proof():
     assert "Without an exact D1 packet" in core
     assert "AOCI is a repository-maintenance aid, not a development gate" in core
     assert "one applicable `aoci_maintain`" in core
+
+
+def test_routed_development_skills_reuse_one_loaded_shared_contract():
+    skill_paths = [
+        ROOT / "skills/development/scientific-computation-validation/SKILL.md",
+        ROOT / "skills/development/scientific-runtime-dataset-construction/SKILL.md",
+        ROOT / "skills/development/integration/scientific-asset-correctness/SKILL.md",
+        ROOT / "skills/development/integration/scientific-asset-normalization/SKILL.md",
+        ROOT / "skills/development/integration/scirel-integration/SKILL.md",
+        ROOT / "skills/development/integration/scirel-review-preparation/SKILL.md",
+    ]
+
+    for path in skill_paths:
+        text = path.read_text(encoding="utf-8")
+        assert "shared operating contract already loaded for this task mode" in text
+        assert "do not reload it for each routed sub-skill" in text
+
+
+def test_integration_route_points_to_lifecycle_without_copying_release_gates():
+    integration = (
+        ROOT / "skills/development/integration/scirel-integration/SKILL.md"
+    ).read_text(encoding="utf-8")
+
+    assert "[development lifecycle](../../references/development-lifecycle.md)" in integration
+    assert "do not reproduce those rules here" in integration
+    assert "release/CURRENT.json" not in integration
+    assert "full platform matrix" not in integration
 
 
 def test_development_selector_reads_live_catalog_without_release_current(

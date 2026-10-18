@@ -5,7 +5,9 @@ description: Prepare a stable D2 scientific development increment for final huma
 
 # SciReL final review preparation
 
-Read [the shared operating contract](../../references/scirel-development-core.md).
+Use the shared operating contract already loaded for this task mode. If it is
+not loaded, read [the shared operating contract](../../references/scirel-development-core.md)
+once before proceeding; do not reload it for each routed sub-skill.
 Use after D2 has integrated retained changes and relevant D3 evidence exists. Humans decide endorsement and
 publication; this skill prepares a truthful review surface and cannot approve, grant rights or publish.
 

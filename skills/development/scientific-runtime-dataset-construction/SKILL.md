@@ -5,7 +5,9 @@ description: Capture source-runtime inputs, predecessor/hidden state, branches, 
 
 # Scientific runtime dataset construction
 
-Read [the shared operating contract](../references/scirel-development-core.md).
+Use the shared operating contract already loaded for this task mode. If it is
+not loaded, read [the shared operating contract](../references/scirel-development-core.md)
+once before proceeding; do not reload it for each routed sub-skill.
 Use the real bound source runtime to expose a named observation gap. The dataset is external evidence, never a
 formal operator/TaskGraph dependency or a captured answer. This skill does not choose boundaries, implement science,
 judge correctness, write owner state or accept/release an asset.

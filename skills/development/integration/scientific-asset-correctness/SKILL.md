@@ -5,7 +5,9 @@ description: Establish scientific and numerical correctness for exact operators 
 
 # Scientific asset correctness
 
-Read [the shared operating contract](../../references/scirel-development-core.md).
+Use the shared operating contract already loaded for this task mode. If it is
+not loaded, read [the shared operating contract](../../references/scirel-development-core.md)
+once before proceeding; do not reload it for each routed sub-skill.
 This D2 skill consumes exact D1 candidates and owns independent scientific correctness, evidence-bounded repair and
 affected revalidation. It does not discover source scope, normalize/merge candidates, write lifecycle state,
 approve, package or publish.

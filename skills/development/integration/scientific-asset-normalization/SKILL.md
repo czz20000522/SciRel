@@ -5,7 +5,9 @@ description: Normalize a caller-selected batch of correctness-qualified scientif
 
 # Scientific asset normalization
 
-Read [the shared operating contract](../../references/scirel-development-core.md).
+Use the shared operating contract already loaded for this task mode. If it is
+not loaded, read [the shared operating contract](../../references/scirel-development-core.md)
+once before proceeding; do not reload it for each routed sub-skill.
 This D2 skill operates on an exact, correctness-qualified batch. It compares scientific meaning before code shape,
 preserves applicability differences and produces a coherent development implementation with comparison evidence.
 It does not reopen source discovery, re-decide correctness without a concrete contradiction, write lifecycle state,
