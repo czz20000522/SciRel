@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from types import ModuleType
 from types import SimpleNamespace
 import sys
 from pathlib import Path
@@ -185,6 +186,11 @@ def test_validation_receipt_aggregates_successful_checks(monkeypatch: pytest.Mon
     monkeypatch.setattr(validator, "_run_pip_check", lambda: ({"status": "PASS"}, []))
     monkeypatch.setattr(validator, "_run_simple_operator", lambda: ({"status": "PASS"}, []))
     monkeypatch.setattr(validator, "_run_cross_domain_task", lambda: ({"status": "PASS"}, []))
+    monkeypatch.setattr(
+        validator,
+        "_run_public_surface",
+        lambda: ({"status": "PASS", "domain_count": 18, "export_count": 251}, []),
+    )
 
     receipt = validator.validate_installed_wheel(expected_platform="linux-x86_64-cp314")
 
@@ -192,6 +198,35 @@ def test_validation_receipt_aggregates_successful_checks(monkeypatch: pytest.Mon
     assert receipt["status"] == "PASS"
     assert receipt["extras"] == {}
     assert receipt["errors"] == []
+    assert receipt["public_surface"]["export_count"] == 251
+
+
+def test_public_surface_resolves_current_installed_exports() -> None:
+    details, errors = validator._run_public_surface()
+
+    assert errors == []
+    assert details["status"] == "PASS"
+    assert details["domain_count"] == 18
+    assert details["export_count"] == 251
+
+
+def test_public_surface_fails_closed_on_a_missing_export(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_domain = ModuleType("scirel.fake")
+    fake_domain.__all__ = ["present", "missing"]
+    fake_domain.present = object()
+
+    fake_root = ModuleType("scirel")
+    fake_root.__all__ = ["fake"]
+    fake_root.fake = fake_domain
+
+    monkeypatch.setattr(validator.importlib, "import_module", lambda name: fake_root)
+
+    details, errors = validator._run_public_surface()
+
+    assert details["status"] == "FAIL"
+    assert details["domain_count"] == 1
+    assert details["export_count"] == 2
+    assert any("fake.missing cannot be resolved" in error for error in errors)
 
 
 def test_validation_receipt_records_a_successful_optional_extra(

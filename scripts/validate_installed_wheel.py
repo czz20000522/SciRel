@@ -40,6 +40,7 @@ import re
 import subprocess
 import sys
 import sysconfig
+from types import ModuleType
 from typing import Any
 from zipfile import BadZipFile, ZipFile
 from pathlib import PurePosixPath
@@ -637,6 +638,85 @@ def _run_cross_domain_task() -> tuple[dict[str, Any], list[str]]:
         }, [f"cross-domain TaskGraph failed: {type(exc).__name__}: {exc}"]
 
 
+def _run_public_surface() -> tuple[dict[str, Any], list[str]]:
+    """Resolve every installed domain and symbol advertised by ``__all__``.
+
+    This is a discoverability check, not a numerical acceptance run.  Public
+    constants and exception classes are valid exports, so the probe requires
+    successful attribute resolution rather than callability.
+    """
+
+    details: dict[str, Any] = {
+        "status": "FAIL",
+        "domain_count": 0,
+        "export_count": 0,
+        "failures": [],
+    }
+    failures: list[str] = []
+    try:
+        root = importlib.import_module("scirel")
+    except Exception as exc:
+        error = f"cannot import public root: {type(exc).__name__}: {exc}"
+        details["failures"] = [error]
+        return details, [f"public surface failed: {error}"]
+
+    root_exports = getattr(root, "__all__", None)
+    if not isinstance(root_exports, (list, tuple)) or not all(
+        isinstance(name, str) and name for name in root_exports
+    ):
+        error = "scirel.__all__ is missing or contains invalid names"
+        details["failures"] = [error]
+        return details, [f"public surface failed: {error}"]
+    if len(set(root_exports)) != len(root_exports):
+        error = "scirel.__all__ contains duplicate names"
+        details["failures"] = [error]
+        return details, [f"public surface failed: {error}"]
+
+    for domain_name in root_exports:
+        try:
+            domain = getattr(root, domain_name)
+        except Exception as exc:
+            failures.append(
+                f"domain {domain_name!r} cannot be resolved: {type(exc).__name__}: {exc}"
+            )
+            continue
+        if not isinstance(domain, ModuleType):
+            failures.append(f"root export {domain_name!r} is not a module")
+            continue
+        expected_name = f"scirel.{domain_name}"
+        if domain.__name__ != expected_name:
+            failures.append(
+                f"root export {domain_name!r} resolves to {domain.__name__!r}, expected {expected_name!r}"
+            )
+            continue
+        details["domain_count"] += 1
+        exports = getattr(domain, "__all__", None)
+        if not isinstance(exports, (list, tuple)) or not all(
+            isinstance(name, str) and name for name in exports
+        ):
+            failures.append(f"domain {expected_name} has invalid __all__")
+            continue
+        if len(set(exports)) != len(exports):
+            failures.append(f"domain {expected_name} has duplicate __all__ names")
+            continue
+        for export_name in exports:
+            details["export_count"] += 1
+            try:
+                getattr(domain, export_name)
+            except Exception as exc:
+                failures.append(
+                    f"{expected_name}.{export_name} cannot be resolved: {type(exc).__name__}: {exc}"
+                )
+
+    details["failures"] = failures
+    if not failures:
+        details["status"] = "PASS"
+        return details, []
+    return details, [
+        f"public surface has {len(failures)} unresolved export(s): " + "; ".join(failures)
+    ]
+
+
 def validate_installed_wheel(
     *,
     expected_platform: str | None = None,
@@ -657,6 +737,7 @@ def validate_installed_wheel(
         "pip_check": {},
         "simple_operator": {},
         "cross_domain_task": {},
+        "public_surface": {},
         "errors": errors.copy(),
     }
     package, package_errors, distribution = _check_distribution()
@@ -728,6 +809,9 @@ def validate_installed_wheel(
     cross_domain, cross_errors = _run_cross_domain_task()
     receipt["cross_domain_task"] = cross_domain
     receipt["errors"].extend(cross_errors)
+    public_surface, public_surface_errors = _run_public_surface()
+    receipt["public_surface"] = public_surface
+    receipt["errors"].extend(public_surface_errors)
     receipt["status"] = "PASS" if not receipt["errors"] else "FAIL"
     return receipt
 
