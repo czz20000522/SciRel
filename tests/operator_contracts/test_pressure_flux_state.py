@@ -1,3 +1,8 @@
+import os
+from pathlib import Path
+import subprocess
+import sys
+
 import numpy as np
 import pytest
 
@@ -75,3 +80,40 @@ def test_reviewed_relation_example():
     assert result["pressure_derivative"].shape == (r_grid.size,)
     assert result["pressure_of_psi"]["extrapolation"] == "zeros"
     np.testing.assert_allclose(result["pressure_of_psi"]["psi_samples"], r_grid[1])
+
+
+def test_pressure_spline_defers_scipy_until_valid_fit() -> None:
+    root = Path(__file__).resolve().parents[2]
+    source = """
+import sys
+import numpy as np
+from scirel.equilibrium._pressure_current import fit_pressure_spline
+
+assert "scipy" not in sys.modules
+try:
+    fit_pressure_spline([0.0, 1.0, 1.0, 2.0], [0.0, 1.0, 2.0, 3.0])
+except FloatingPointError as error:
+    assert str(error) == (
+        "midplane flux must be finite and strictly increasing with at least four points"
+    )
+else:
+    raise AssertionError("invalid pressure spline input unexpectedly succeeded")
+assert "scipy" not in sys.modules
+
+fitted = fit_pressure_spline(
+    np.array([0.0, 1.0, 2.0, 3.0]),
+    np.array([0.0, 1.0, 4.0, 9.0]),
+)
+assert "scipy" in sys.modules
+np.testing.assert_allclose(fitted(1.5), 2.25)
+"""
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = str(root / "src")
+    result = subprocess.run(
+        [sys.executable, "-c", source],
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

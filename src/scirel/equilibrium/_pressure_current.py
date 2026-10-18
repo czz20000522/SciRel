@@ -1,6 +1,5 @@
 """Shared finite pressure-spline and current/Green equations."""
 import numpy as np
-from scipy.interpolate import InterpolatedUnivariateSpline
 
 
 def fit_pressure_spline(psi_samples, pressure_samples):
@@ -8,6 +7,12 @@ def fit_pressure_spline(psi_samples, pressure_samples):
     x,y=np.asarray(psi_samples,dtype=float),np.asarray(pressure_samples,dtype=float)
     if x.ndim!=1 or x.size<4 or y.shape!=x.shape or not np.isfinite(x).all() or not np.isfinite(y).all() or np.any(np.diff(x)<=0):
         raise FloatingPointError('midplane flux must be finite and strictly increasing with at least four points')
+    # Keep SciPy outside module import and rejected-input paths.  The spline
+    # backend is still the exact declared numerical implementation; loading it
+    # only after the input contract has passed preserves the existing error
+    # order while keeping lightweight discovery and invalid calls dependency-light.
+    from scipy.interpolate import InterpolatedUnivariateSpline
+
     fitted=InterpolatedUnivariateSpline(x,y,ext='zeros')
     if not np.isfinite(fitted.get_coeffs()).all():
         raise FloatingPointError('nonfinite pressure-current spline coefficients')
