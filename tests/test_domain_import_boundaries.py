@@ -167,17 +167,42 @@ assert "scipy" in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_electromagnetism_defers_scipy_until_numerical_call() -> None:
+def test_electromagnetism_greens_defers_scipy_until_valid_numerical_call() -> None:
     result = _run(
         """
 import sys
 import numpy as np
 from scirel.electromagnetism.greens import compute_greens
-from scirel.electromagnetism.distributed import get_deltapsi
 
+assert "scipy" not in sys.modules
+empty = compute_greens(np.empty((0, 3)), np.array([[0.3, 0.2]]))
+assert all(value.shape == (1,) for value in empty)
+assert "scipy" not in sys.modules
+zero_weight = compute_greens(np.array([[1.0, 0.0, 0.0]]), np.array([[0.3, 0.2]]))
+assert all(value.tolist() == [0.0] for value in zero_weight)
+assert "scipy" not in sys.modules
+try:
+    compute_greens(np.array([[1.0, 0.0, 1.0]]), np.array([[1.0, 0.0]]))
+except ValueError as error:
+    assert str(error) == "target coincident with singular circular filament"
+else:
+    raise AssertionError("singular filament unexpectedly produced a value")
 assert "scipy" not in sys.modules
 compute_greens(np.array([[1.0, 0.0, 1.0]]), np.array([[0.3, 0.2]]))
 assert "scipy" in sys.modules
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_electromagnetism_distributed_defers_scipy_until_numerical_call() -> None:
+    result = _run(
+        """
+import sys
+import numpy as np
+from scirel.electromagnetism.distributed import get_deltapsi
+
+assert "scipy" not in sys.modules
 
 class Dimension:
     size = 2
