@@ -1043,7 +1043,7 @@ __init__.py[LB6T]: F:导出分层采样、试点评估及各向异性参数反�
 anisotropic_parameter_optimization.py[KB7T]: F:对显式试点评估端口执行有界优化与可选Latin超立方初始化 | R:code:src/scirel/inference/anisotropic_trial_evaluation.py,code:src/scirel/inference/latin_hypercube_sampling.py | A:optimize_anisotropic_parameters | S:优化异常记录后回放x0；converged还要求最佳平衡收敛，保留全部评估日志
 anisotropic_trial_evaluation.py[AB7T]: F:组合调用者平衡求解、诊断与残差端口评价一次反演试点 | R:code:src/scirel/diagnostics/observation_residuals.py | A:evaluate_anisotropic_trial | S:任一端口异常转换为单元素1e12惩罚残差及失败原因，平衡置None
 direct_anisotropic_inversion.py[AB7T]: F:绑定试点评估、残差、采样及优化叶函数执行直接各向异性反演 | R:code:src/scirel/inference/anisotropic_parameter_optimization.py,code:src/scirel/inference/anisotropic_trial_evaluation.py | A:solve_direct_anisotropic_inversion | S:平衡和诊断仍为调用者必填端口；不收敛且缺原因时补明确失败记录
-latin_hypercube_sampling.py[KB6T]: F:按给定有界参数和种子生成逐维分层Latin超立方设计 | R:code:src/scirel/inference/anisotropic_parameter_optimization.py | A:sample_latin_hypercube | S:参数次序依bounds或fit_keys；逐维独立置乱分层，返回参数映射列表
+latin_hypercube_sampling.py[KB6T]: F:按给定有界参数和种子生成逐维分层Latin超立方设计，并提供公开callable使用合同 | R:code:src/scirel/inference/anisotropic_parameter_optimization.py | A:sample_latin_hypercube | S:参数次序依bounds或fit_keys；文档明确选中边界、输出initial_samples和ValueError/KeyError边界；逐维独立置乱分层
 
 ===/Users/tomczz/Projects/SciReL/src/scirel/kinetic/===
 __init__.py[DD7T]: F:提供动理学公共导出、子模块发现与按需加载实现 | R:code:src/scirel/kinetic/generalized_dispersion.py,code:src/scirel/kinetic/fluidbw.py,code:src/scirel/kinetic/pdrk/__init__.py,code:tests/test_lazy_namespace.py | A:维护92项稳定__all__、67个公开子模块的惰性属性解析与evaluate_gpdf_small_k包级canonical导出，避免包级导入全部动理学实现 | S:__all__只含科学callable且包含evaluate_gpdf_small_k；子模块通过__dir__/__getattr__发现与加载，访问实现仍保留真实依赖错误
@@ -1358,7 +1358,7 @@ test_isotropic_picard_step.py[TB4T]: F:独立计算松弛电流、Green磁通更
 test_janev_electron_impact_ionization_rate.py[TB5T]: F:检验Janev氢原子与分子电子碰撞电离率参考点、温度裁剪、标量结果及输入合同。 | R:code:src/scirel/collisions/janev_electron_impact_ionization_rate.py | A:pytest | S:species仅接受区分大小写的H或H2，温度必须为正有限实数。
 test_janev_electron_impact_ionization_rate_l1.py[TB5T]: F:SHA绑定保存来源比较两种Janev电离率，并固定负值、布尔和字符串由旧转换裁剪到明确拒绝的变化。 | R:code:src/scirel/collisions/janev_electron_impact_ionization_rate.py | A:pytest | S:SCIREL_KN1DPY_REVIEW_ROOT未配置时跳过比较。
 test_kinetic_dispersion_sum_n.py[TB6T]: F:验证多物种动理学谐波求和的来源参考点、张量对称性、Maxwell项及行列式，并检验尺度和谐波上限失败。 | R:code:src/scirel/kinetic/kinetic_dispersion_sum_n.py | A:pytest | S:零磁场、频率或波数、布尔/分数lmx与造成不可表示尺度的输入均拒绝。
-test_latin_hypercube_sampling.py[TB4T]: F:验证拉丁超立方抽样的种子复现、每层一项、拟合键子集和非法样本区间失败。 | R:code:src/scirel/inference/latin_hypercube_sampling.py | A:pytest | S:-
+test_latin_hypercube_sampling.py[TB4T]: F:验证拉丁超立方抽样的种子复现、每层一项、拟合键子集、非法样本区间失败和公开callable文档字段 | R:code:src/scirel/inference/latin_hypercube_sampling.py | A:pytest | S:固定种子与分层测试继续验证采样行为；docstring断言覆盖bounds、initial_samples和ValueError
 test_loss_cone_spectrum.py[TB5T]: F:校验损失锥谱的有序特征值、整区间归一模式与超几何边界条件，覆盖多模式求解。 | R:code:src/scirel/kinetic/loss_cone_spectrum.py | A:pytest | S:离散xi网格不含真实xi_tp，必须用实际端点独立检查边界。
 test_material_support.py[TB5M]: F:独立检验PML六面剔除、闭合磁通支持互斥分类和PEC覆盖剔除，验证材料支持标量与网格形状合同。 | R:code:src/scirel/geometry/material_support.py | A:pytest | S:最内半径只有满足覆盖最小值才保留，映射只提供覆盖/磁通而不改变分类规则。
 test_maxwellian_relative_speed_rate_average.py[TB6L]: F:用单束循环和解析极限检验Maxwell截面平均与领域API | R:code:src/scirel/collisions/maxwellian_relative_speed_rate_average.py | A:pytest；速度权重；回调输入输出；不可表示尺度 | S:非有限碰撞能量须在回调前拒绝；根级旧导出须缺席，原数值容差保留

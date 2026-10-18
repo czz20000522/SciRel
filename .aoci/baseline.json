@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-18T20:30:12Z",
+  "updated_at": "2026-10-18T20:33:36Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -101,9 +101,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "126278ca5a527b47818214bfd2610abd14407d93916c3f60835c4fea1a30ba5c",
-      "size": 639303,
-      "normalized_sha256": "126278ca5a527b47818214bfd2610abd14407d93916c3f60835c4fea1a30ba5c"
+      "sha256": "5b0c83a850e9b81a2e571661d3b46809f22ba5c72270ad9ccc529d0848139835",
+      "size": 639530,
+      "normalized_sha256": "5b0c83a850e9b81a2e571661d3b46809f22ba5c72270ad9ccc529d0848139835"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -8459,9 +8459,9 @@
     },
     "src/scirel/inference/latin_hypercube_sampling.py": {
       "role": "index",
-      "sha256": "dd8171f58e24391f858b7bbf7edfd37c7e6a89c73d0c0aff594e75c7b27f99f1",
-      "size": 1120,
-      "normalized_sha256": "dd8171f58e24391f858b7bbf7edfd37c7e6a89c73d0c0aff594e75c7b27f99f1"
+      "sha256": "463a3dca97290e4d4b8cd8fad4544b9f6951f3722dab0962c05851fac1dcfba9",
+      "size": 2106,
+      "normalized_sha256": "463a3dca97290e4d4b8cd8fad4544b9f6951f3722dab0962c05851fac1dcfba9"
     },
     "src/scirel/io/__init__.py": {
       "role": "index",
@@ -10673,9 +10673,9 @@
     },
     "tests/operator_contracts/test_latin_hypercube_sampling.py": {
       "role": "index",
-      "sha256": "bef2562f0f3c33618b518f7996e43f0b90bdc1c2b1ea148fe0b029957aabebb7",
-      "size": 1652,
-      "normalized_sha256": "bef2562f0f3c33618b518f7996e43f0b90bdc1c2b1ea148fe0b029957aabebb7"
+      "sha256": "32b81bf7fdb5aee1874da577a59662da4a30a0e7cde6b8530947882a0df85613",
+      "size": 1882,
+      "normalized_sha256": "32b81bf7fdb5aee1874da577a59662da4a30a0e7cde6b8530947882a0df85613"
     },
     "tests/operator_contracts/test_legacy_admission_regressions.py": {
       "role": "index",
