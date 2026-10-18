@@ -42,6 +42,14 @@ def test_reduced_hall_closure_does_not_load_equilibrium_private_helpers() -> Non
     assert "scirel.equilibrium._anisotropic_numerics" not in result["loaded_scirel_modules"]
 
 
+def test_mirror_ambipolar_closure_does_not_load_kinetic_private_helpers() -> None:
+    result = measure(ROOT, asset_id="scirel.closures.mirror-ambipolar-potential")
+
+    assert result["status"] == "PASS"
+    assert "scirel._mirror_numerics" in result["loaded_scirel_modules"]
+    assert "scirel.kinetic._mirror_numerics" not in result["loaded_scirel_modules"]
+
+
 def test_direct_pdrk_capability_reports_implementation_path() -> None:
     result = measure(ROOT, asset_id="scirel.kinetic.pdrk-rational-jpole-coefficients")
 

@@ -1,8 +1,8 @@
 """Ambipolar end-loss potential closure for one magnetized ion species."""
 from scirel._validation import required_finite_scalar as _require_finite_scalar, required_integer_scalar as _require_integer_scalar
 import numpy as np
+from scirel._mirror_numerics import _mirror_flux
 from scirel._numerics import _potential_midpoint
-from scirel.kinetic._mirror_numerics import _mirror_flux
 ELEMENTARY_CHARGE_C = 1.602176634e-19
 ELECTRON_MASS_KG = 9.1093837139e-31
 

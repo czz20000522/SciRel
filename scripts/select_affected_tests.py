@@ -211,6 +211,14 @@ SOURCE_AUXILIARY_TESTS = {
         "tests/operator_contracts/test_reduced_hall_drift.py",
         "tests/graph_contracts/reduced_hall_anisotropic_picard/test_graph_reduced_hall_anisotropic_picard.py",
     ),
+    "src/scirel/_mirror_numerics.py": (
+        "tests/operator_contracts/test_mirror_ambipolar_potential.py",
+        "tests/operator_contracts/test_mirror_gauge_scientific_correction.py",
+        "tests/operator_contracts/test_mirror_constrained_moments.py",
+        "tests/operator_contracts/test_mirror_invariant_distribution.py",
+        "tests/operator_contracts/test_mirror_kinetic_scientific_correction.py",
+        "tests/graph_contracts/mirror_quasineutral_closure/test_graph_mirror_quasineutral_closure.py",
+    ),
     "src/scirel/_anisotropic_numerics.py": (
         "tests/operator_contracts/test_anisotropic_force_balance.py",
         "tests/operator_contracts/test_reduced_hall_drift.py",
