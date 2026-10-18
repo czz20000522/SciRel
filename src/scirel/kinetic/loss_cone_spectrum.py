@@ -1,8 +1,6 @@
 """Ordered even loss-cone eigenpairs, with an integer-regular angular basis."""
 from functools import lru_cache
 import numpy as np
-from scipy.integrate import solve_ivp
-from scipy.optimize import brentq
 from ._loss_cone_modes import regular_even_mode
 
 
@@ -20,6 +18,8 @@ def _endpoint_phase(eigenvalue, end, order):
     # This phase is continuous through zeros and counts the ordered modes.
     def rhs(x, theta):
         return k * (np.cos(theta) ** 2 / (1.0 - x*x) + np.sin(theta) ** 2)
+    from scipy.integrate import solve_ivp
+
     solution = solve_ivp(rhs, (0.0, end), [np.pi/2], method='DOP853',
                          rtol=2e-13, atol=2e-14,
                          max_step=end / max(32, 8*(order+1)))
@@ -30,6 +30,8 @@ def _endpoint_phase(eigenvalue, end, order):
 
 @lru_cache(maxsize=128)
 def _ordered_degrees(xi_tp, mode_count):
+    from scipy.optimize import brentq
+
     roots = []
     for order in range(mode_count):
         target = (order + 1) * np.pi

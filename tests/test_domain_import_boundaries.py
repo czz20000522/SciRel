@@ -167,6 +167,30 @@ assert "scipy" in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_kinetic_loss_cone_spectrum_defers_scipy_until_valid_call() -> None:
+    result = _run(
+        """
+import sys
+from scirel.kinetic import solve_loss_cone_spectrum
+from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum as direct
+
+assert solve_loss_cone_spectrum is direct
+assert "scipy" not in sys.modules
+try:
+    solve_loss_cone_spectrum(0.0, 1)
+except ValueError as error:
+    assert str(error) == "xi_tp must be inside the open interval (0, 1)"
+else:
+    raise AssertionError("invalid loss-cone endpoint unexpectedly succeeded")
+assert "scipy" not in sys.modules
+result = solve_loss_cone_spectrum(0.6, 1, grid_points=16)
+assert result["eigenfunctions"].shape == (16, 1)
+assert "scipy" in sys.modules
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_geometry_flux_surface_average_defers_scipy_until_called() -> None:
     result = _run(
         """

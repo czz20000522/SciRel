@@ -1,6 +1,5 @@
 """Regular even solutions of -((1-x²)y')' = nu(nu+1)y, y(0)=1,y'(0)=0."""
 import numpy as np
-from scipy.integrate import solve_ivp
 
 
 def regular_even_mode(degree, xi):
@@ -27,6 +26,8 @@ def regular_even_mode(degree, xi):
     end = float(np.max(np.abs(xi)))
     if end == 0.0 or degree == 0.0:
         return np.ones_like(xi)
+    from scipy.integrate import solve_ivp
+
     k = np.sqrt(degree * (degree + 1.0))
     scale = end * k
     def rhs(t, state):
