@@ -11,7 +11,6 @@ of redistribution permission. Fixed pole approximations are not exact Z.
 from functools import lru_cache
 import operator
 import numpy as np
-from scipy.special import erfcx
 from ._gpdf_pole_data import POLES
 
 __all__=['evaluate_faddeeva_gpdf','evaluate_faddeeva_dr',
@@ -54,7 +53,11 @@ def _evaluate(z,n):
     w=(2*np.polyval(coefficients,(length+1j*upper)/denom)/denom)/denom+(1/np.sqrt(np.pi))/denom
     axis=z.real==0
     with np.errstate(over='ignore',invalid='ignore',under='ignore'):
-        w[axis]=erfcx(upper[axis].imag)
+        if np.any(axis):
+            # Keep the domain import light: erfcx is only needed for the
+            # positive-imaginary-axis stabilization path.
+            from scipy.special import erfcx
+            w[axis]=erfcx(upper[axis].imag)
         lower=z.imag<0
         w[lower]=np.conj(2*np.exp(-upper[lower].astype(np.clongdouble)**2).astype(complex)-w[lower])
     if not np.all(np.isfinite(w)):
