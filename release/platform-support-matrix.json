@@ -20,10 +20,9 @@
       "python": "CPython 3.14",
       "status": "PARTIAL",
       "evidence": [
-        "provenance/validation/scirel-dev11-linux-offline-20261018-47303fe.json",
-        "release/CURRENT.json"
+        "provenance/validation/scirel-dev11-linux-offline-20261018-47303fe.json"
       ],
-      "scope": "dev11 Linux amd64 + CPython 3.14 clean-venv installation with the exact wheel bound to source 47303fedf04d9ba077fa47af8b7f3f585e9c8411, fixed offline runtime wheelhouse, representative core tasks, optional plot extra and native resource inventory; complete scientific capability closure is not established"
+      "scope": "historical dev11 47303fedf04d9ba077fa47af8b7f3f585e9c8411 Linux amd64 + CPython 3.14 clean-venv technical evidence; the current f4a19bc candidate rerun is pending and complete scientific capability closure is not established"
     },
     {
       "id": "linux-aarch64-cp314",
@@ -54,10 +53,10 @@
       "python": "CPython 3.14",
       "status": "PARTIAL",
       "evidence": [
-        "provenance/validation/scirel-dev11-macos-arm64-offline-20261018-47303fe.json",
+        "provenance/validation/scirel-dev11-macos-arm64-offline-20261018-f4a19bc.json",
         "release/CURRENT.json"
       ],
-      "scope": "dev11 macOS arm64 + CPython 3.14 clean-venv installation with the exact wheel bound to source 47303fedf04d9ba077fa47af8b7f3f585e9c8411, fixed offline runtime wheelhouse, representative core tasks, optional plot extra and native resource inventory; complete scientific capability closure is not established"
+      "scope": "f4a19bc dev11 macOS arm64 + CPython 3.14 clean-venv installation with the exact wheel bound to source f4a19bcc85824507fca7e7e7bfed436e42268410, reproducible rebuild match, fixed offline runtime wheelhouse, representative core tasks, optional plot extra and native resource inventory; complete scientific capability closure is not established"
     },
     {
       "id": "macos-x86_64-cp314",
@@ -80,7 +79,7 @@
         "macos-arm64-cp314",
         "macos-x86_64-cp314"
       ],
-      "reason": "representative and selected core evidence exists, but a complete per-platform capability matrix is not yet complete"
+      "reason": "representative and selected core evidence exists, but a complete per-platform capability matrix is not yet complete; Linux amd64 exact f4a19bc rerun remains pending"
     },
     {
       "id": "fluidbw-native-octave",

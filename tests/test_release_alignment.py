@@ -11,7 +11,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-BOUND_CANDIDATE_REVISION = "47303fedf04d9ba077fa47af8b7f3f585e9c8411"
+BOUND_CANDIDATE_REVISION = "f4a19bcc85824507fca7e7e7bfed436e42268410"
 BOUND_SMALL_K_DOCUMENT = "catalog/examples/scirel.kinetic.generalized-small-k.json"
 
 

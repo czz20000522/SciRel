@@ -884,11 +884,11 @@ def test_post_candidate_asset_index_reads_bound_selection_and_documents():
         ).read_text(encoding="utf-8")
     )
 
-    # The worktree document has the post-candidate package-level alias, while
-    # CURRENT.source_revision still binds the previous document representation.
+    # The current candidate document carries the package-level alias in its
+    # bound Git representation, and the selector exposes that canonical call.
     assert current_document["public_api"]["python"]["canonical_module"] == "scirel.kinetic"
     assert small_k.public_callable == (
-        "scirel.kinetic.generalized_dispersion.evaluate_gpdf_small_k"
+        "scirel.kinetic.evaluate_gpdf_small_k"
     )
 
 

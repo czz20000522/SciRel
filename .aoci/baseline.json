@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-18T02:44:03Z",
+  "updated_at": "2026-10-18T03:17:25Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -89,9 +89,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "75541c11639653fec076469226862111ae11e1b173c3141fb59bdf7e49bda063",
-      "size": 622125,
-      "normalized_sha256": "75541c11639653fec076469226862111ae11e1b173c3141fb59bdf7e49bda063"
+      "sha256": "e02c8c07e45d63ba21721e768b5ac51384c79400bf0318177405ab997f9083f8",
+      "size": 622541,
+      "normalized_sha256": "e02c8c07e45d63ba21721e768b5ac51384c79400bf0318177405ab997f9083f8"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -5961,6 +5961,12 @@
       "size": 3016,
       "normalized_sha256": "90cc1a3cb5d0c7bc861b34553d0274f2138a7b1930c7bcdeb4abd4326ea4f634"
     },
+    "provenance/validation/scirel-dev11-document-integration-20261018-f4a19bc.json": {
+      "role": "index",
+      "sha256": "d4da77b90ee2aa3cfb823a006818c33760e5ab244e5981c688d0dad6040a2636",
+      "size": 2691,
+      "normalized_sha256": "d4da77b90ee2aa3cfb823a006818c33760e5ab244e5981c688d0dad6040a2636"
+    },
     "provenance/validation/scirel-dev11-kinetic-tutorial-20261018.json": {
       "role": "index",
       "sha256": "da4f77d83e8d7fa37aa2f7badb0a8f2ff5ae4ba89eb8e4dd7cba0d7d805bff5b",
@@ -5978,6 +5984,12 @@
       "sha256": "951eeec34f116c777be6a33c773a997f9a62e72dc16b5acecc4324a5da48a04c",
       "size": 23221,
       "normalized_sha256": "951eeec34f116c777be6a33c773a997f9a62e72dc16b5acecc4324a5da48a04c"
+    },
+    "provenance/validation/scirel-dev11-macos-arm64-offline-20261018-f4a19bc.json": {
+      "role": "index",
+      "sha256": "6144235ea7922552e21d443d25f3f25d64f05264385fdadf10468e9e0c587964",
+      "size": 23227,
+      "normalized_sha256": "6144235ea7922552e21d443d25f3f25d64f05264385fdadf10468e9e0c587964"
     },
     "provenance/validation/scirel-dev9-document-integration-20261017-19a4e6b.json": {
       "role": "index",
@@ -6191,9 +6203,9 @@
     },
     "release/CURRENT.json": {
       "role": "index",
-      "sha256": "2c8b728453bd217c1d5755be48d0d9e64bdcd62c2fa20ab687e79d7594140e8a",
-      "size": 2890,
-      "normalized_sha256": "2c8b728453bd217c1d5755be48d0d9e64bdcd62c2fa20ab687e79d7594140e8a"
+      "sha256": "376258975ba061d2ed523e566adcb235b83f0811415223793c32d9d8ce5bffd0",
+      "size": 2695,
+      "normalized_sha256": "376258975ba061d2ed523e566adcb235b83f0811415223793c32d9d8ce5bffd0"
     },
     "release/README.md": {
       "role": "index",
@@ -6287,9 +6299,9 @@
     },
     "release/platform-support-matrix.json": {
       "role": "index",
-      "sha256": "b66b94abbbe66522b4746a306960189ee2d196aea289c2281015bfd6adcfb304",
-      "size": 4218,
-      "normalized_sha256": "b66b94abbbe66522b4746a306960189ee2d196aea289c2281015bfd6adcfb304"
+      "sha256": "cafec2ea723d0581cae7e7cdfb1ab1cb73b8e717a7782a530bd04755c6899414",
+      "size": 4190,
+      "normalized_sha256": "cafec2ea723d0581cae7e7cdfb1ab1cb73b8e717a7782a530bd04755c6899414"
     },
     "release/projects/README.md": {
       "role": "index",
@@ -11201,9 +11213,9 @@
     },
     "tests/test_affected_test_selection.py": {
       "role": "index",
-      "sha256": "8d8f2409ec81a8b44adc4f92fc18e046a4de79ced641cca08993d84e9836f602",
-      "size": 40981,
-      "normalized_sha256": "8d8f2409ec81a8b44adc4f92fc18e046a4de79ced641cca08993d84e9836f602"
+      "sha256": "da0031811db5a51b340e863159517b329df603ef05640122698f438c7554cf7c",
+      "size": 40954,
+      "normalized_sha256": "da0031811db5a51b340e863159517b329df603ef05640122698f438c7554cf7c"
     },
     "tests/test_asset_documentation.py": {
       "role": "index",
@@ -11375,9 +11387,9 @@
     },
     "tests/test_release_alignment.py": {
       "role": "index",
-      "sha256": "17804d1b9e7cfaee0cc2ec3299db2d223e8f81e9bcd271b8d21fbb31294ebb25",
+      "sha256": "edf3acbe74ef90bc0bf5761343d765c3fdfb34368bbfdfcb4c563b17b9f5aa7a",
       "size": 30245,
-      "normalized_sha256": "17804d1b9e7cfaee0cc2ec3299db2d223e8f81e9bcd271b8d21fbb31294ebb25"
+      "normalized_sha256": "edf3acbe74ef90bc0bf5761343d765c3fdfb34368bbfdfcb4c563b17b9f5aa7a"
     },
     "tests/test_release_environment.py": {
       "role": "index",
