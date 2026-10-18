@@ -211,6 +211,11 @@ SOURCE_AUXILIARY_TESTS = {
         "tests/operator_contracts/test_reduced_hall_drift.py",
         "tests/graph_contracts/reduced_hall_anisotropic_picard/test_graph_reduced_hall_anisotropic_picard.py",
     ),
+    "src/scirel/_anisotropic_numerics.py": (
+        "tests/operator_contracts/test_anisotropic_force_balance.py",
+        "tests/operator_contracts/test_reduced_hall_drift.py",
+        "tests/graph_contracts/reduced_hall_anisotropic_picard/test_graph_reduced_hall_anisotropic_picard.py",
+    ),
     "src/scirel/kinetic/bessel_gamma.py": ("tests/test_domain_import_boundaries.py",),
     "src/scirel/kinetic/spatial_source_shape_normalization.py": ("tests/test_domain_import_boundaries.py",),
     "src/scirel/kinetic/cross_mesh_scalar_interpolation.py": ("tests/test_domain_import_boundaries.py",),

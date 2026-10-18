@@ -61,7 +61,8 @@ def _state_array(state, name, shape):
 def _rms(values, mask):
     return 0.0 if not np.any(mask) else float(np.sqrt(np.mean(np.asarray(values)[mask] ** 2)))
 
-from scirel.equilibrium._anisotropic_numerics import stable_gradient as _source_gradient, pressure_divergence, residual_metrics, gradient_roundoff
+from scirel._anisotropic_numerics import gradient_roundoff, pressure_divergence, residual_metrics
+from scirel._numerics import stable_gradient as _source_gradient
 
 def _pressure_force(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular):
     r_grid, z_grid, _, _ = _grid(r_grid, z_grid)
