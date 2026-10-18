@@ -75,6 +75,7 @@ __all__ = ['assemble_frank_egedal_pressure',
  'evaluate_generalized_dispersion',
  'evaluate_generalized_hilbert',
  'evaluate_gpdf_residual',
+ 'evaluate_gpdf_small_k',
  'evaluate_maxwellian_fft',
  'evaluate_maxwellian_jpole',
  'scan_gpdf_roots',
@@ -94,9 +95,6 @@ __all__ = ['assemble_frank_egedal_pressure',
  'assemble_fluidbw_em',
  'solve_fluidbw_em',
  'render_fluidbw_materials']
-
-# Historical direct access retained for compatibility without broadening ``__all__``.
-_COMPAT_EXPORTS = ("evaluate_gpdf_small_k",)
 
 _LAZY_EXPORTS = {'assemble_frank_egedal_pressure': ('frank_egedal_pressure_state', 'assemble_frank_egedal_pressure'),
  'evaluate_frank_egedal_radial_envelope': ('frank_egedal_radial_envelope', 'evaluate_frank_egedal_radial_envelope'),
@@ -219,4 +217,4 @@ def __getattr__(name):
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 def __dir__():
-    return sorted(set(__all__) | set(_COMPAT_EXPORTS) | set(_LAZY_MODULES))
+    return sorted(set(__all__) | set(_LAZY_MODULES))

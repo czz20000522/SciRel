@@ -18,7 +18,6 @@ ROOT = Path(__file__).resolve().parents[1]
 # either add a reviewed exception here or provide a package-level canonical
 # alias.  A prefix rule would silently hide a new, unreviewed discovery gap.
 EXPECTED_INTENTIONAL_EXCEPTIONS = {
-    "scirel.kinetic.generalized-small-k",
     *{
         f"scirel.kinetic.{name}"
         for name in (

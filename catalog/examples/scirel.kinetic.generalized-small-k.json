@@ -61,7 +61,9 @@
     "python": {
       "module": "scirel.kinetic.generalized_dispersion",
       "symbol": "evaluate_gpdf_small_k",
-      "signature": "evaluate_gpdf_small_k(k)"
+      "signature": "evaluate_gpdf_small_k(k)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_gpdf_small_k"
     }
   },
   "applicability": {

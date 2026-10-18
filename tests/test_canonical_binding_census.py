@@ -16,16 +16,15 @@ def test_current_canonical_binding_census_preserves_facade_and_exception_denomin
     counts = report["counts"]
 
     assert counts["total"] == 267
-    assert counts["explicit"] == 220
+    assert counts["explicit"] == 221
     assert counts["candidate"] == 0
-    assert counts["exception"] == 47
+    assert counts["exception"] == 46
     assert report["unexpected_missing"] == []
 
     exception_ids = {
         row["asset_id"] for row in report["rows"] if row["status"] == "exception"
     }
     assert exception_ids == {
-        "scirel.kinetic.generalized-small-k",
         *{
             f"scirel.kinetic.{name}"
             for name in (
@@ -223,7 +222,7 @@ def test_pdrf_gpdf_and_generalized_slice_pins_kinetic_facades_explicitly():
     assert len(selected) == 11
     assert all(rows[asset_id] == "explicit" for asset_id in selected)
     assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "explicit"
-    assert rows["scirel.kinetic.generalized-small-k"] == "exception"
+    assert rows["scirel.kinetic.generalized-small-k"] == "explicit"
 
 
 def test_fluidbw_slice_pins_kinetic_facades_explicitly():

@@ -120,7 +120,7 @@ assert all(getattr(scirel, name).__name__ == f"scirel.{name}" for name in expect
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_kinetic_exports_are_lazy_and_preserve_compatibility_identity():
+def test_kinetic_exports_are_lazy_and_preserve_canonical_identity():
     result = subprocess.run(
         [sys.executable, '-I', '-c', '''
 import sys
@@ -128,12 +128,13 @@ import sys
 sys.path.insert(0, sys.argv[1])
 import scirel.kinetic as kinetic
 
-assert len(kinetic.__all__) == 91
+assert len(kinetic.__all__) == 92
 assert not any(
     name.startswith("scirel.kinetic.")
     for name in sys.modules
     if name != "scirel.kinetic"
 )
+assert "evaluate_gpdf_small_k" in kinetic.__all__
 assert "evaluate_gpdf_small_k" in dir(kinetic)
 assert {"fluidbw", "generalized_dispersion", "pdrk"} <= set(dir(kinetic))
 assert not any(
