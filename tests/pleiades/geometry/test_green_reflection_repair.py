@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 from scipy.integrate import quad
-from scirel.electromagnetism.greens import get_gpsi
+from scirel.electromagnetism.greens import _psi_matrix, compute_greens, get_gpsi
 
 
 def reference(R, Z):
@@ -12,6 +12,20 @@ def reference(R, Z):
         for j,(a,z0) in enumerate(points):
             if r==0 or a==0 or i==j:continue
             out[i,j]=1e-7*a*r*quad(lambda phi:np.cos(phi)/np.sqrt((r-a)**2+4*r*a*np.sin(phi/2)**2+(z-z0)**2),0,2*np.pi,epsabs=1e-12,epsrel=1e-12)[0]
+    return out
+
+
+def scalar_kernel_reference(R, Z):
+    """Reference the pre-batched per-source assembly through compute_greens."""
+    points = np.column_stack((R.ravel(), Z.ravel()))
+    out = np.zeros((len(points), len(points)))
+    for j, (a, z0) in enumerate(points):
+        if a == 0.0:
+            continue
+        off_self = np.arange(len(points)) != j
+        out[off_self, j] = compute_greens(
+            np.array([[a, z0, 1.0]]), points[off_self]
+        )[0]
     return out
 
 @pytest.mark.parametrize('z',[[-.5,0,.5],[-.5,0,.9]])
@@ -30,6 +44,23 @@ def test_asymmetric_heldout_actual_coordinates_and_order():
     perm=get_gpsi(R.ravel()[permutation].reshape(3,4),Z.ravel()[permutation].reshape(3,4))
     np.testing.assert_allclose(perm,got[np.ix_(permutation,permutation)],rtol=0,atol=1e-22)
     assert np.all(np.diag(got)==0)
+
+
+def test_batched_source_blocks_are_bitwise_equal_to_scalar_kernel():
+    ratio = 3.0 - 2.0 * np.sqrt(2.0)
+    half_m_height = np.sqrt(7.0) / 2.0
+    R = np.array([[0.0, 1.0, 0.5, ratio, np.nextafter(ratio, 0.0)],
+                  [0.35, 1.7, 0.71, 1.23, 1.41]])
+    Z = np.array([[0.0, 0.0, half_m_height, 0.0, 0.0],
+                  [-0.4, 0.6, 0.2, 1.1, -0.8]])
+    expected = scalar_kernel_reference(R, Z)
+    np.testing.assert_array_equal(get_gpsi(R, Z), expected)
+
+    points = np.column_stack((R.ravel(), Z.ravel()))
+    active = points[:, 0] > 0.0
+    np.testing.assert_array_equal(
+        _psi_matrix(points, max_pairs=3), expected[:, active]
+    )
 
 
 def test_axis_zero_self_duplicate_and_failure_contract():

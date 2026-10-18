@@ -166,6 +166,86 @@ def _weighted_psi(rzw, rz_pts, *, zero_self=False, max_pairs=1_000_000):
     return result
 
 
+def _psi_matrix(points, *, max_pairs=1_000_000):
+    """Return the unit-weight ``psi`` matrix for positive-radius sources.
+
+    ``points`` is the flattened ``(R, Z)`` coordinate table used by
+    :func:`get_gpsi`.  The source axis is evaluated in bounded blocks so the
+    temporary source/target arrays remain bounded independently of the dense
+    output matrix.  This is the matrix analogue of :func:`_weighted_psi`; it
+    deliberately keeps the same small-modulus hypergeometric and large-modulus
+    elliptic partition as :func:`compute_greens`.
+    """
+    source_indices = np.flatnonzero(points[:, 0] > 0.0)
+    matrix = np.zeros((len(points), len(source_indices)))
+    if not len(source_indices) or not len(points):
+        return matrix
+
+    ellipkm1, ellipe, hyp2f1 = _load_special_functions()
+    block_size = max(1, min(len(source_indices), int(max_pairs) // max(1, len(points))))
+    r = points[:, 0][None, :]
+    z = points[:, 1][None, :]
+
+    with np.errstate(over='raise', divide='raise', invalid='raise'):
+        for start in range(0, len(source_indices), block_size):
+            indices = source_indices[start:start + block_size]
+            block = points[indices]
+            a = block[:, 0, None]
+            z0 = block[:, 1, None]
+            h = z - z0
+            self_mask = (r == a) & (z == z0)
+            # Avoid evaluating the singular self expression; compatibility
+            # values are assigned back to zero after the regular formula.
+            h = np.where(self_mask, 1.0, h)
+            d = np.hypot(r + a, h)
+            q = (np.hypot(r - a, h) / d) ** 2
+            m = 4 * (r / d) * (a / d)
+            small = m < 0.5
+            psi = np.zeros_like(m)
+            a_full = np.broadcast_to(a, m.shape)
+            r_full = np.broadcast_to(r, m.shape)
+            if np.any(small):
+                ds = d[small]
+                rs = r_full[small]
+                ms = m[small]
+                H = hyp2f1(1.5, 1.5, 3.0, ms)
+                Hp = 0.75 * hyp2f1(2.5, 2.5, 4.0, ms)
+                c = np.pi * 1e-7 * (a_full[small] / ds) ** 2 / ds
+                dm = 4 * (a_full[small] / ds) / ds - 2 * ms * (
+                    (rs + a_full[small]) / ds
+                ) / ds
+                psi[small] = c * rs**2 * H
+                # Keep compute_greens' arithmetic-failure contract even though
+                # get_gpsi only returns psi: its historical implementation
+                # evaluated BR/BZ for every off-self pair as well.
+                _ = c * (rs / ds) * ((h[small] / ds) * (3 * H + 2 * ms * Hp))
+                _ = c * (
+                    (2 - 3 * (rs / ds) * ((rs + a_full[small]) / ds)) * H
+                    + rs * Hp * dm
+                )
+            large = ~small
+            if np.any(large):
+                dl = d[large]
+                ql = q[large]
+                ml = m[large]
+                K, E = ellipkm1(ql), ellipe(1 - ql)
+                psi[large] = 1e-7 * dl * ((2 - ml) * K - 2 * E)
+                rho2 = np.hypot(r_full[large] - a_full[large], h[large]) ** 2
+                _ = 2e-7 * h[large] / (r_full[large] * dl) * (
+                    -K + (a_full[large] ** 2 + r_full[large] ** 2 + h[large] ** 2) / rho2 * E
+                )
+                _ = 2e-7 / dl * (
+                    K + ((a_full[large] - r_full[large]) * (a_full[large] + r_full[large])
+                         - h[large] ** 2) / rho2 * E
+                )
+            psi[self_mask] = 0.0
+            matrix[:, start:start + len(indices)] = psi.T
+
+    if not np.all(np.isfinite(matrix)):
+        raise FloatingPointError('Green psi matrix output is not representable as finite float64')
+    return matrix
+
+
 def get_gpsi(R, Z):
     """Return the actual-coordinate discrete loop flux matrix (target, source).
 
@@ -190,10 +270,9 @@ def get_gpsi(R, Z):
     if len(np.unique(active,axis=0))!=len(active):
         raise ValueError("distinct positive-radius loop entries cannot be coincident")
     matrix=np.zeros((len(points),len(points)))
-    for j,(a,h) in enumerate(points):
-        if a==0:continue
-        off_self=np.arange(len(points))!=j
-        matrix[off_self,j]=compute_greens(np.array([[a,h,1.]]),points[off_self])[0]
+    active_indices = np.flatnonzero(points[:, 0] > 0.0)
+    if len(active_indices):
+        matrix[:, active_indices] = _psi_matrix(points)
     return matrix
 
 
