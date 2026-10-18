@@ -69,6 +69,13 @@ checks that support the claim for ordinary source work. A direct product
 change does not enter the D1 handoff loop unless it is consuming an exact D1
 packet.
 
+SciRel is the correctness boundary for each public operator and TaskGraph.
+Keep the implementation, scientific input/output contract, failure semantics
+and direct regression evidence in SciRel. Agent glue may discover, select,
+compose and adapt a capability, but it does not reimplement domain mathematics
+or use a successful composition as a substitute for direct capability
+correctness.
+
 Use a complete related change set as the unit of work. Inspect the Git base and
 worktree before editing, capture an affected baseline when behavior or
 performance is difficult to attribute, and keep unrelated edits out of the
@@ -94,6 +101,12 @@ batch or changed count alone is not a trigger. Do not rebuild the complete
 catalog for every edit. Keep one current working-tree representation and use
 Git history for prior wording or code; do not copy full wheel, document or
 catalog trees into version directories.
+
+For packaging changes, measure the actual capability dependency and native/ABI
+closure before changing the distribution shape. Keep a common wheel when the
+same Python sources and runtime closure support the target platforms; introduce
+platform-specific wheels only for a demonstrated platform or native boundary,
+with a focused install check for that boundary.
 
 Without an exact D1 packet, keep product work on this direct development path.
 Do not manufacture a D1 manifest or complete denominator to enter the

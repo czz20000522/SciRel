@@ -24,6 +24,19 @@ into wheel installation, release-current updates, platform receipts or a full
 acceptance run. Those artifacts are produced only by the lifecycle mode that
 needs them.
 
+Use this impact rule for the daily loop:
+
+- a local implementation or import change runs its direct and affected tests;
+- a shared API, dependency, or TaskGraph boundary adds its known reverse
+  dependencies and a focused contract check;
+- a packaging, platform, or native boundary adds a measured closure/install
+  check;
+- only a named checkpoint or `release_freeze` creates a wheel/document/catalog
+  closure, and only `release_freeze` runs the complete release matrix.
+
+Do not repeat a larger gate merely because a smaller check passed, and do not
+start a release projection to make a development count look current.
+
 ### SciPy-style change-set loop
 
 Treat one coherent change as the working unit. Before editing, inspect the

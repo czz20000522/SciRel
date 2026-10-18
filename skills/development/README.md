@@ -90,6 +90,21 @@ and development methods. Skills are personal routing and method overlays; they
 may point to the canonical documents or add a narrowly scoped working habit,
 but must not hide or duplicate the general policy.
 
+## Correctness ownership
+
+SciRel is the correctness boundary for every public operator and TaskGraph. A
+capability change keeps its scientific contract, input/output validation,
+failure behavior and direct regression evidence in the SciRel tree. Agent code
+may discover, select, compose and adapt those capabilities, but it must not
+reimplement domain mathematics or turn a passing integration path into proof
+that an individual capability is correct.
+
+When an optimization changes imports, dependencies or execution structure,
+preserve the public API and numerical/failure behavior and measure only the
+claim supported by the affected checks. If the change exposes a platform or
+native boundary, first measure the actual runtime/ABI closure; do not create
+per-platform wheels merely because multiple platforms are possible.
+
 Lifecycle route: [post-acceptance-runtime-cleanup](post-acceptance-runtime-cleanup/SKILL.md)
 routes acceptance-owned cleanup to the repository's runtime-asset policy.
 
