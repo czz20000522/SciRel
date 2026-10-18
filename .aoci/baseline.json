@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-18T04:11:57Z",
+  "updated_at": "2026-10-18T18:32:41Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -59,9 +59,9 @@
     },
     ".gitignore": {
       "role": "index",
-      "sha256": "938be04249156850ec98272898100b60109c3c317d13c7e15c42c1418acec4e2",
-      "size": 384,
-      "normalized_sha256": "938be04249156850ec98272898100b60109c3c317d13c7e15c42c1418acec4e2"
+      "sha256": "c4dcf3d2960e5d1e0161393e47cfbbfaf33b32a2646759ce80a88b37d67f91e6",
+      "size": 439,
+      "normalized_sha256": "c4dcf3d2960e5d1e0161393e47cfbbfaf33b32a2646759ce80a88b37d67f91e6"
     },
     ".python-version": {
       "role": "index",
@@ -69,11 +69,23 @@
       "size": 7,
       "normalized_sha256": "922fe0c3de073b01988e23348ea184456161678c5e329e6f34be89be24383f93"
     },
+    ".scirel/credentials/README.md": {
+      "role": "index",
+      "sha256": "527ba38856f13048706c756cb1858585b35301f5f21ac031f826f092eb7d1cfe",
+      "size": 1022,
+      "normalized_sha256": "527ba38856f13048706c756cb1858585b35301f5f21ac031f826f092eb7d1cfe"
+    },
+    ".scirel/credentials/scirel-company-codex-provider.json": {
+      "role": "index",
+      "sha256": "c1ff3176f14e8a50071d8ad47d8cb7f5175acf30b62247608529945fbf56285b",
+      "size": 317,
+      "normalized_sha256": "c1ff3176f14e8a50071d8ad47d8cb7f5175acf30b62247608529945fbf56285b"
+    },
     "AGENTS.md": {
       "role": "index",
-      "sha256": "7b5fad9e2df65a26166674190cdd1dbf5674b1fc7b312dc1d8adc6a6b0fcfff3",
-      "size": 23591,
-      "normalized_sha256": "7b5fad9e2df65a26166674190cdd1dbf5674b1fc7b312dc1d8adc6a6b0fcfff3"
+      "sha256": "e7f7b587b680bf34617852dc7db8018b51e46da1ea1244d61d7668fb3e6646dc",
+      "size": 28662,
+      "normalized_sha256": "e7f7b587b680bf34617852dc7db8018b51e46da1ea1244d61d7668fb3e6646dc"
     },
     "CONTRIBUTING.md": {
       "role": "index",
@@ -89,9 +101,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "d15f96bd22c9bc41ab0f16745ce708091f16cdb60fd87d66a6c2028bbc0c6306",
-      "size": 623335,
-      "normalized_sha256": "d15f96bd22c9bc41ab0f16745ce708091f16cdb60fd87d66a6c2028bbc0c6306"
+      "sha256": "d03cb12113fae2a2920c0f24e735ed220368aa277276e84039804f7384e911fc",
+      "size": 637972,
+      "normalized_sha256": "d03cb12113fae2a2920c0f24e735ed220368aa277276e84039804f7384e911fc"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -3047,15 +3059,15 @@
     },
     "docs/architecture.md": {
       "role": "index",
-      "sha256": "4725402c5faad5e71445fb41a2ce0db58630cf0ebfea7ce6c3faed85addab996",
-      "size": 16834,
-      "normalized_sha256": "4725402c5faad5e71445fb41a2ce0db58630cf0ebfea7ce6c3faed85addab996"
+      "sha256": "46a115085912be7bab8d691c65f4279b8f2ce4005c4046a81f001e3a50a2d1d6",
+      "size": 16880,
+      "normalized_sha256": "46a115085912be7bab8d691c65f4279b8f2ce4005c4046a81f001e3a50a2d1d6"
     },
     "docs/catalog.md": {
       "role": "index",
-      "sha256": "e3d33da4c51cb28e5429bbd8e107abdc2fbed09a147eaec509870cdadb03de35",
-      "size": 8141,
-      "normalized_sha256": "e3d33da4c51cb28e5429bbd8e107abdc2fbed09a147eaec509870cdadb03de35"
+      "sha256": "b97cffe702aa079720d364a2061ea923cdf81d6c3e50519d5dbf35da6acfb57c",
+      "size": 8011,
+      "normalized_sha256": "b97cffe702aa079720d364a2061ea923cdf81d6c3e50519d5dbf35da6acfb57c"
     },
     "docs/design/aoci-index-maintenance.md": {
       "role": "index",
@@ -3065,9 +3077,9 @@
     },
     "docs/design/catalog-and-adapters.md": {
       "role": "index",
-      "sha256": "49dc307a60e6fe9094e7fc2c216f2e70029946ab2d30e2293e14e4c2817c6992",
-      "size": 9760,
-      "normalized_sha256": "49dc307a60e6fe9094e7fc2c216f2e70029946ab2d30e2293e14e4c2817c6992"
+      "sha256": "c2a741a807d11f441736efb3afed1ac185a436c3d8d98475f2abbbcebe37ed62",
+      "size": 9699,
+      "normalized_sha256": "c2a741a807d11f441736efb3afed1ac185a436c3d8d98475f2abbbcebe37ed62"
     },
     "docs/design/development-trust-versions.md": {
       "role": "index",
@@ -3083,9 +3095,9 @@
     },
     "docs/design/project-and-distribution.md": {
       "role": "index",
-      "sha256": "cc9cc3af9076a56642dda1ec41469f792bf76d2fdce5b8864c8c442f3bf35414",
-      "size": 18952,
-      "normalized_sha256": "cc9cc3af9076a56642dda1ec41469f792bf76d2fdce5b8864c8c442f3bf35414"
+      "sha256": "1e8895cd503c03eada325a2a5029ec6c3d17ec604c554cfc0858ba481fee504d",
+      "size": 20218,
+      "normalized_sha256": "1e8895cd503c03eada325a2a5029ec6c3d17ec604c554cfc0858ba481fee504d"
     },
     "docs/design/scientific-request-workflow.md": {
       "role": "index",
@@ -3107,27 +3119,27 @@
     },
     "docs/design/scirel-git-release-model.md": {
       "role": "index",
-      "sha256": "96700594423eb0d1f696af7d46a764084384e2539d979dc7399a8ce1bfdd5080",
-      "size": 17017,
-      "normalized_sha256": "96700594423eb0d1f696af7d46a764084384e2539d979dc7399a8ce1bfdd5080"
+      "sha256": "4a02e1cd19ac41303cf69c2781360bae081c0426781312291909a928d66c0253",
+      "size": 17515,
+      "normalized_sha256": "4a02e1cd19ac41303cf69c2781360bae081c0426781312291909a928d66c0253"
     },
     "docs/design/scirel-positioning.md": {
       "role": "index",
-      "sha256": "ccabf3c8d0eb3a02f07334136168fd4dd945911df400069ac1627dc9941a0a48",
-      "size": 4661,
-      "normalized_sha256": "ccabf3c8d0eb3a02f07334136168fd4dd945911df400069ac1627dc9941a0a48"
+      "sha256": "5d7b268ec07926015cb4b5f8503b7a16d5033c852991e682487ec96d53abf5cd",
+      "size": 4897,
+      "normalized_sha256": "5d7b268ec07926015cb4b5f8503b7a16d5033c852991e682487ec96d53abf5cd"
     },
     "docs/design/scirel-release-batching.md": {
       "role": "index",
-      "sha256": "208c0dbb44aa952e96e71da51f4a15fa11683c6e80bc82559766e655f6ef0da9",
-      "size": 4594,
-      "normalized_sha256": "208c0dbb44aa952e96e71da51f4a15fa11683c6e80bc82559766e655f6ef0da9"
+      "sha256": "1773d620c652754ca9595422fa379aebe39ff6bf6902bfb5a8bf582e7947e5c6",
+      "size": 5435,
+      "normalized_sha256": "1773d620c652754ca9595422fa379aebe39ff6bf6902bfb5a8bf582e7947e5c6"
     },
     "docs/design/scirel-wheel-packaging-strategy.md": {
       "role": "index",
-      "sha256": "e94c0a2386bfbe9162fe51e814f0887ad00ce63ffa6ec4b33f7c6872ee7d1643",
-      "size": 14938,
-      "normalized_sha256": "e94c0a2386bfbe9162fe51e814f0887ad00ce63ffa6ec4b33f7c6872ee7d1643"
+      "sha256": "ad7f32411d21f087edf138bdb08687117325405cb278e576e655f1fcad3a65bc",
+      "size": 15490,
+      "normalized_sha256": "ad7f32411d21f087edf138bdb08687117325405cb278e576e655f1fcad3a65bc"
     },
     "docs/design/scirel-workflow.md": {
       "role": "index",
@@ -3137,9 +3149,9 @@
     },
     "docs/development-process.md": {
       "role": "index",
-      "sha256": "8fe0d48f0f89a2b12b74c63e2b7a51972ff8577f17e5d2c26e3f158242bb11dc",
-      "size": 33968,
-      "normalized_sha256": "8fe0d48f0f89a2b12b74c63e2b7a51972ff8577f17e5d2c26e3f158242bb11dc"
+      "sha256": "38ae07b0e7850bedd2584c94f6a763ba85e23a2a341299953634ebeb1cd7b4c8",
+      "size": 34150,
+      "normalized_sha256": "38ae07b0e7850bedd2584c94f6a763ba85e23a2a341299953634ebeb1cd7b4c8"
     },
     "docs/domains/README.md": {
       "role": "index",
@@ -5069,15 +5081,15 @@
     },
     "docs/integration/extraction-skill-bundle-deployment.md": {
       "role": "index",
-      "sha256": "04dd9ac426c2964ec2cb08b6d2e220e88a2e7947cc7a1eb9998372e0ca78f229",
-      "size": 5119,
-      "normalized_sha256": "04dd9ac426c2964ec2cb08b6d2e220e88a2e7947cc7a1eb9998372e0ca78f229"
+      "sha256": "2f74127e67b2f115880326a74a3eb902fa9b106b0f4d0bf8663f8d2dd4baf4f2",
+      "size": 5758,
+      "normalized_sha256": "2f74127e67b2f115880326a74a3eb902fa9b106b0f4d0bf8663f8d2dd4baf4f2"
     },
     "docs/release.md": {
       "role": "index",
-      "sha256": "f7c4ed1f255c9ec140274c1ebbbb5fc5753d01b889b5c336a47a221033257dff",
-      "size": 4131,
-      "normalized_sha256": "f7c4ed1f255c9ec140274c1ebbbb5fc5753d01b889b5c336a47a221033257dff"
+      "sha256": "c45739af68f440fb33e456c7b0bed462cd7544aeb7f29860870f633b3b3bf362",
+      "size": 4912,
+      "normalized_sha256": "c45739af68f440fb33e456c7b0bed462cd7544aeb7f29860870f633b3b3bf362"
     },
     "docs/release/0.1.0.dev10-notes.md": {
       "role": "index",
@@ -5105,9 +5117,9 @@
     },
     "docs/requirements/asset-documentation.md": {
       "role": "index",
-      "sha256": "c2fb0905ae3167045b635ab0ed682d8699eb186f326c93a1edeb0a293859de5c",
-      "size": 12770,
-      "normalized_sha256": "c2fb0905ae3167045b635ab0ed682d8699eb186f326c93a1edeb0a293859de5c"
+      "sha256": "3c09741eb19e00fb43c98a5fce30d7ba08f4ccb4eb3781e8e508e13f69033401",
+      "size": 12780,
+      "normalized_sha256": "3c09741eb19e00fb43c98a5fce30d7ba08f4ccb4eb3781e8e508e13f69033401"
     },
     "docs/requirements/codefusion-plugin.md": {
       "role": "index",
@@ -5819,9 +5831,9 @@
     },
     "provenance/tests/test_admitted_distribution_builder.py": {
       "role": "index",
-      "sha256": "3d3101e8a37dbdf3c853e1de864a6e57501767395691a6f36483bb5c4bef6232",
-      "size": 15861,
-      "normalized_sha256": "3d3101e8a37dbdf3c853e1de864a6e57501767395691a6f36483bb5c4bef6232"
+      "sha256": "194fb2111971ecaacd8d18ba1201869541c72b7045fc807828c1a8493082ebbc",
+      "size": 19623,
+      "normalized_sha256": "194fb2111971ecaacd8d18ba1201869541c72b7045fc807828c1a8493082ebbc"
     },
     "provenance/validation/codefusion-consumer-material.json": {
       "role": "index",
@@ -6203,9 +6215,9 @@
     },
     "pyproject.toml": {
       "role": "index",
-      "sha256": "a4814e259ee47241ad5360b877174cdb9700bc1868c036172f4ba336e5b29892",
-      "size": 1407,
-      "normalized_sha256": "a4814e259ee47241ad5360b877174cdb9700bc1868c036172f4ba336e5b29892"
+      "sha256": "d603d37a9e60fe90ec1764ff7a7e70f2ad0c51d0b7614e53556936a394b96c9b",
+      "size": 2097,
+      "normalized_sha256": "d603d37a9e60fe90ec1764ff7a7e70f2ad0c51d0b7614e53556936a394b96c9b"
     },
     "release/CURRENT.json": {
       "role": "index",
@@ -6423,11 +6435,17 @@
       "size": 7909,
       "normalized_sha256": "02bfef5bcbd8fa09088ce7501af14681d5a6e919055a33eb1ce7304ab1aca4f9"
     },
+    "scripts/audit_native_resource_reachability.py": {
+      "role": "index",
+      "sha256": "bf94e0b41ab3577d18e5d1ba7ab62762a8fea61ebf4dbc96d488c2d55ab5f9c4",
+      "size": 11002,
+      "normalized_sha256": "bf94e0b41ab3577d18e5d1ba7ab62762a8fea61ebf4dbc96d488c2d55ab5f9c4"
+    },
     "scripts/build_admitted_distribution.py": {
       "role": "index",
-      "sha256": "515c410209ec724bfdf062d04b91a5983920896ad7f7b4222a530b02c57e94f0",
-      "size": 18679,
-      "normalized_sha256": "515c410209ec724bfdf062d04b91a5983920896ad7f7b4222a530b02c57e94f0"
+      "sha256": "2ee09c714dcc26b2b7ff84b13d182c1333411e9ee8a6d9097539ad48154f7927",
+      "size": 23346,
+      "normalized_sha256": "2ee09c714dcc26b2b7ff84b13d182c1333411e9ee8a6d9097539ad48154f7927"
     },
     "scripts/build_catalog.py": {
       "role": "index",
@@ -6543,6 +6561,12 @@
       "size": 37355,
       "normalized_sha256": "b20df4140125a55d432fc341bdce936bda22fdb1066c8fb9e50af8e03b0ed470"
     },
+    "scripts/measure_capability_runtime.py": {
+      "role": "index",
+      "sha256": "6e2bf08ac4ed86daeb36796a1d12ac1ab8e7f02ab46acbcda36ecc748df82ebd",
+      "size": 10611,
+      "normalized_sha256": "6e2bf08ac4ed86daeb36796a1d12ac1ab8e7f02ab46acbcda36ecc748df82ebd"
+    },
     "scripts/package_catalog_snapshot.py": {
       "role": "index",
       "sha256": "541c794a147b8df01290b9bb3af0fd15f710ce7cdfc48bf2f1ab981321a894f6",
@@ -6605,15 +6629,15 @@
     },
     "scripts/select_affected_tests.py": {
       "role": "index",
-      "sha256": "36fa07b58ccaa66e406bca213b71e67db2c17d479988f2a2f52251ff05d09eb5",
-      "size": 31485,
-      "normalized_sha256": "36fa07b58ccaa66e406bca213b71e67db2c17d479988f2a2f52251ff05d09eb5"
+      "sha256": "5f037e6dc97f3b2e7926f0910589ee7c0ef0bebac7e4bee4a34a90e3e22ede6d",
+      "size": 40561,
+      "normalized_sha256": "5f037e6dc97f3b2e7926f0910589ee7c0ef0bebac7e4bee4a34a90e3e22ede6d"
     },
     "scripts/spark_codex.py": {
       "role": "index",
-      "sha256": "f77538a1afbcb7410de1b396c20f9bbc116df0506057bb734c25cf3afce03d7c",
-      "size": 6646,
-      "normalized_sha256": "f77538a1afbcb7410de1b396c20f9bbc116df0506057bb734c25cf3afce03d7c"
+      "sha256": "cc1d5bc07e9f69edc598e03b931196eb39e22eeec55e460cc0c897e8e5bca218",
+      "size": 8158,
+      "normalized_sha256": "cc1d5bc07e9f69edc598e03b931196eb39e22eeec55e460cc0c897e8e5bca218"
     },
     "scripts/submit_standardization.py": {
       "role": "index",
@@ -6629,9 +6653,9 @@
     },
     "scripts/validate_installed_wheel.py": {
       "role": "index",
-      "sha256": "fb9fd645d477f021c6c8c211726f2d57ea744142a24bc81723910b02a62aa0b5",
-      "size": 31044,
-      "normalized_sha256": "fb9fd645d477f021c6c8c211726f2d57ea744142a24bc81723910b02a62aa0b5"
+      "sha256": "b573ebc657ae12a51942fe8997e27febb2a2f12c0ffe398c507b617f7a28241e",
+      "size": 47840,
+      "normalized_sha256": "b573ebc657ae12a51942fe8997e27febb2a2f12c0ffe398c507b617f7a28241e"
     },
     "scripts/validate_native_resource_closure.py": {
       "role": "index",
@@ -6657,6 +6681,12 @@
       "size": 104090,
       "normalized_sha256": "0950d7da53c56e22b54875eed3afe04bfe0b96bf32e341f9435634ff5df5e7a4"
     },
+    "scripts/validate_runtime_imports.py": {
+      "role": "index",
+      "sha256": "bcfd9d66aa6e1fd71fe8dad044a3230ee7e903f98162cab878f8526adcd4c9d2",
+      "size": 5934,
+      "normalized_sha256": "bcfd9d66aa6e1fd71fe8dad044a3230ee7e903f98162cab878f8526adcd4c9d2"
+    },
     "scripts/verify_outbound_evaluation_manifests.py": {
       "role": "index",
       "sha256": "838a8c9ec68dddb494ffd48f7ea28c8c323c3fa4643dc955a06dd341f939622a",
@@ -6671,15 +6701,15 @@
     },
     "skills/development/README.md": {
       "role": "index",
-      "sha256": "8ce40987981e1151ad5b2345e0803aa91b88a6f9744ae0fa1e0849e9bf45c482",
-      "size": 1046,
-      "normalized_sha256": "8ce40987981e1151ad5b2345e0803aa91b88a6f9744ae0fa1e0849e9bf45c482"
+      "sha256": "356eb123ead1329472303b6cdd81d23d8c0790e1d571b19ba6a8c90ad07309dd",
+      "size": 7156,
+      "normalized_sha256": "356eb123ead1329472303b6cdd81d23d8c0790e1d571b19ba6a8c90ad07309dd"
     },
     "skills/development/integration/scientific-asset-correctness/SKILL.md": {
       "role": "index",
-      "sha256": "995a79451c04e605de2c2d52cf1461dc675f30ba714d3de65fe84521c750e607",
-      "size": 2326,
-      "normalized_sha256": "995a79451c04e605de2c2d52cf1461dc675f30ba714d3de65fe84521c750e607"
+      "sha256": "d2780d497e9ad6dc52a56cb46059b9be67bbb0aeb2a706b7364f6d63857cf4d9",
+      "size": 2714,
+      "normalized_sha256": "d2780d497e9ad6dc52a56cb46059b9be67bbb0aeb2a706b7364f6d63857cf4d9"
     },
     "skills/development/integration/scientific-asset-correctness/agents/openai.yaml": {
       "role": "index",
@@ -6701,9 +6731,9 @@
     },
     "skills/development/integration/scientific-asset-normalization/SKILL.md": {
       "role": "index",
-      "sha256": "e8c6e27b4bc2454f8d59695d2234bf40c95ecfb5c0fccf9b8000c979fa29f4ae",
-      "size": 2317,
-      "normalized_sha256": "e8c6e27b4bc2454f8d59695d2234bf40c95ecfb5c0fccf9b8000c979fa29f4ae"
+      "sha256": "1b020a43dfd60eac5c8554b6369181d1b1cafd81daa6fb22fc312ff20ec19fae",
+      "size": 2733,
+      "normalized_sha256": "1b020a43dfd60eac5c8554b6369181d1b1cafd81daa6fb22fc312ff20ec19fae"
     },
     "skills/development/integration/scientific-asset-normalization/agents/openai.yaml": {
       "role": "index",
@@ -6737,39 +6767,39 @@
     },
     "skills/development/integration/scirel-integration/SKILL.md": {
       "role": "index",
-      "sha256": "b78d9ab849e042c4430900d7eafe3e6695b42612eb821f54979756e719105f59",
-      "size": 2135,
-      "normalized_sha256": "b78d9ab849e042c4430900d7eafe3e6695b42612eb821f54979756e719105f59"
+      "sha256": "cdd3ab9fa5ab9c09d9edf3f453ad8c26d90788b6a05a72561b792024169061a9",
+      "size": 3469,
+      "normalized_sha256": "cdd3ab9fa5ab9c09d9edf3f453ad8c26d90788b6a05a72561b792024169061a9"
     },
     "skills/development/integration/scirel-integration/agents/openai.yaml": {
       "role": "index",
-      "sha256": "d5ee86a67c2acdbda8526c98e25b4cffe3ee2fc555110a8e9a5ac488623f8618",
-      "size": 346,
-      "normalized_sha256": "d5ee86a67c2acdbda8526c98e25b4cffe3ee2fc555110a8e9a5ac488623f8618"
+      "sha256": "457fc6e0e008a5aaabc8480f7c776ddb42e99047c89468076d9e4d4175e886b9",
+      "size": 374,
+      "normalized_sha256": "457fc6e0e008a5aaabc8480f7c776ddb42e99047c89468076d9e4d4175e886b9"
     },
     "skills/development/integration/scirel-integration/references/scientific-correction.md": {
       "role": "index",
-      "sha256": "a79805f8feeede142f6eb2d941aac072ab97942c0cacfe5ba9fd005261eb73a8",
-      "size": 6913,
-      "normalized_sha256": "a79805f8feeede142f6eb2d941aac072ab97942c0cacfe5ba9fd005261eb73a8"
+      "sha256": "6edf52f1c89b20a36797f5ec8fce6b3e54ccb3414b054021ca8d3b5d1e87617f",
+      "size": 302,
+      "normalized_sha256": "6edf52f1c89b20a36797f5ec8fce6b3e54ccb3414b054021ca8d3b5d1e87617f"
     },
     "skills/development/integration/scirel-review-preparation/SKILL.md": {
       "role": "index",
-      "sha256": "71fd03e7a7e50396258b7c9a36adabfd51439878ff7c50982d2005c1c450beaa",
-      "size": 2314,
-      "normalized_sha256": "71fd03e7a7e50396258b7c9a36adabfd51439878ff7c50982d2005c1c450beaa"
+      "sha256": "8e0783b0fa0d23cabb2460f4f2a753b7c2a98e8f563de6f68ef2badced251594",
+      "size": 2503,
+      "normalized_sha256": "8e0783b0fa0d23cabb2460f4f2a753b7c2a98e8f563de6f68ef2badced251594"
     },
     "skills/development/integration/scirel-review-preparation/agents/openai.yaml": {
       "role": "index",
-      "sha256": "5e25e4593af345e198c77fd9aba85e25360ea21713749b96d6b64e5ba356563b",
-      "size": 270,
-      "normalized_sha256": "5e25e4593af345e198c77fd9aba85e25360ea21713749b96d6b64e5ba356563b"
+      "sha256": "5cd0b7a9c6cbace677864539e989f0f28f97f3df9c2379e5caae039d47f087f9",
+      "size": 313,
+      "normalized_sha256": "5cd0b7a9c6cbace677864539e989f0f28f97f3df9c2379e5caae039d47f087f9"
     },
     "skills/development/integration/scirel-review-preparation/references/scientific-correction.md": {
       "role": "index",
-      "sha256": "a79805f8feeede142f6eb2d941aac072ab97942c0cacfe5ba9fd005261eb73a8",
-      "size": 6913,
-      "normalized_sha256": "a79805f8feeede142f6eb2d941aac072ab97942c0cacfe5ba9fd005261eb73a8"
+      "sha256": "6edf52f1c89b20a36797f5ec8fce6b3e54ccb3414b054021ca8d3b5d1e87617f",
+      "size": 302,
+      "normalized_sha256": "6edf52f1c89b20a36797f5ec8fce6b3e54ccb3414b054021ca8d3b5d1e87617f"
     },
     "skills/development/post-acceptance-runtime-cleanup/SKILL.md": {
       "role": "index",
@@ -6779,21 +6809,27 @@
     },
     "skills/development/post-acceptance-runtime-cleanup/agents/openai.yaml": {
       "role": "index",
-      "sha256": "c5c36217e331380d1da555601e3beb6b0463a7515424135209c4792fe7405306",
-      "size": 270,
-      "normalized_sha256": "c5c36217e331380d1da555601e3beb6b0463a7515424135209c4792fe7405306"
+      "sha256": "1b01c79af0d1add475c7a8739807f88369c6589074c174be16f87ed328626875",
+      "size": 313,
+      "normalized_sha256": "1b01c79af0d1add475c7a8739807f88369c6589074c174be16f87ed328626875"
+    },
+    "skills/development/references/development-lifecycle.md": {
+      "role": "index",
+      "sha256": "a1c345aa045804e428342e50803f81a08d04657ad4e5a991f699427f2a818c28",
+      "size": 15615,
+      "normalized_sha256": "a1c345aa045804e428342e50803f81a08d04657ad4e5a991f699427f2a818c28"
     },
     "skills/development/references/scirel-development-core.md": {
       "role": "index",
-      "sha256": "ff21f4edc54c96e4e7fc60c79ba7003571123b2b3398d4722afa29bcbd06af1e",
-      "size": 2782,
-      "normalized_sha256": "ff21f4edc54c96e4e7fc60c79ba7003571123b2b3398d4722afa29bcbd06af1e"
+      "sha256": "aaa781429289094b65ac384e2657a6ce541f083544e1cb480831ff34eb3dc331",
+      "size": 9055,
+      "normalized_sha256": "aaa781429289094b65ac384e2657a6ce541f083544e1cb480831ff34eb3dc331"
     },
     "skills/development/scientific-computation-validation/SKILL.md": {
       "role": "index",
-      "sha256": "256cf9d702ef8f5b08e05e456c9c25c8a9cc6cb1a0097254b34f6f09546050bd",
-      "size": 3312,
-      "normalized_sha256": "256cf9d702ef8f5b08e05e456c9c25c8a9cc6cb1a0097254b34f6f09546050bd"
+      "sha256": "57a0bf5424aa7cef102b92f1c2e48da890487a1780f220ea2394477ab31aafc6",
+      "size": 3629,
+      "normalized_sha256": "57a0bf5424aa7cef102b92f1c2e48da890487a1780f220ea2394477ab31aafc6"
     },
     "skills/development/scientific-computation-validation/agents/openai.yaml": {
       "role": "index",
@@ -6815,9 +6851,9 @@
     },
     "skills/development/scientific-runtime-dataset-construction/SKILL.md": {
       "role": "index",
-      "sha256": "4126c26b06abbff19a646dab91b84b169906ca045d7a2b638d3f002e6e41a5c9",
-      "size": 2684,
-      "normalized_sha256": "4126c26b06abbff19a646dab91b84b169906ca045d7a2b638d3f002e6e41a5c9"
+      "sha256": "c67c2156e8827b93f354e768792a5898fc73cac28d66a486f71c604675c04e76",
+      "size": 2841,
+      "normalized_sha256": "c67c2156e8827b93f354e768792a5898fc73cac28d66a486f71c604675c04e76"
     },
     "skills/development/scientific-runtime-dataset-construction/agents/openai.yaml": {
       "role": "index",
@@ -7667,15 +7703,15 @@
     },
     "src/scirel.egg-info/PKG-INFO": {
       "role": "index",
-      "sha256": "ebdcf8f7a1347f40108d6f6dc730bb89897a68ecb22b48eb4fef440284aa7717",
-      "size": 1369,
-      "normalized_sha256": "ebdcf8f7a1347f40108d6f6dc730bb89897a68ecb22b48eb4fef440284aa7717"
+      "sha256": "77687943e9619cdbce4ece74f00c45ea4bdcb35b9ea3731a4d6295fdfa5e731d",
+      "size": 23142,
+      "normalized_sha256": "77687943e9619cdbce4ece74f00c45ea4bdcb35b9ea3731a4d6295fdfa5e731d"
     },
     "src/scirel.egg-info/SOURCES.txt": {
       "role": "index",
-      "sha256": "dec2747862026b6765cb4a94648fcc1184bf9adf744b8390c7e16caa7061984d",
-      "size": 19393,
-      "normalized_sha256": "dec2747862026b6765cb4a94648fcc1184bf9adf744b8390c7e16caa7061984d"
+      "sha256": "73df501f97cf8cca9586406432cd97ac32c7cfdd4b6b897a6c5271a28ea7ff6a",
+      "size": 19869,
+      "normalized_sha256": "73df501f97cf8cca9586406432cd97ac32c7cfdd4b6b897a6c5271a28ea7ff6a"
     },
     "src/scirel.egg-info/dependency_links.txt": {
       "role": "index",
@@ -7701,6 +7737,12 @@
       "size": 1892,
       "normalized_sha256": "107fecc3362779ea50f12a28394dc0d054466341c34721a6f9eeec48efc3d580"
     },
+    "src/scirel/_anisotropic_numerics.py": {
+      "role": "index",
+      "sha256": "f6ea93c17ec19e5586e039d63b8f6f015629f03067e10fe6fe6da790ab96d6bc",
+      "size": 3662,
+      "normalized_sha256": "f6ea93c17ec19e5586e039d63b8f6f015629f03067e10fe6fe6da790ab96d6bc"
+    },
     "src/scirel/_composition.py": {
       "role": "index",
       "sha256": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
@@ -7718,6 +7760,18 @@
       "sha256": "ae0aebec065393d3c18512da23362a3a0725bd7e055605d292ab7a75f14cb772",
       "size": 1769,
       "normalized_sha256": "ae0aebec065393d3c18512da23362a3a0725bd7e055605d292ab7a75f14cb772"
+    },
+    "src/scirel/_mirror_numerics.py": {
+      "role": "index",
+      "sha256": "66c048dbe898e9b599c8223b4ebaa9c9aa747f16ffa3831fe27cd437061cb7c9",
+      "size": 2854,
+      "normalized_sha256": "66c048dbe898e9b599c8223b4ebaa9c9aa747f16ffa3831fe27cd437061cb7c9"
+    },
+    "src/scirel/_numerics.py": {
+      "role": "index",
+      "sha256": "cdfe94ebb458fb6d7f34bfe542e157061a7d25c1cb4339a176aae3538d818f96",
+      "size": 3135,
+      "normalized_sha256": "cdfe94ebb458fb6d7f34bfe542e157061a7d25c1cb4339a176aae3538d818f96"
     },
     "src/scirel/_optional.py": {
       "role": "index",
@@ -7751,9 +7805,9 @@
     },
     "src/scirel/closures/boltzmann_quasineutrality.py": {
       "role": "index",
-      "sha256": "b2473dcc9046165487b70f431f8cebe0c2b1fb390bf981dc3265a16c70eff076",
-      "size": 4038,
-      "normalized_sha256": "b2473dcc9046165487b70f431f8cebe0c2b1fb390bf981dc3265a16c70eff076"
+      "sha256": "31921f4c5e414edf9f1812e62e18f8a60d63bdf19b5d7407c068a12833b97bf5",
+      "size": 4023,
+      "normalized_sha256": "31921f4c5e414edf9f1812e62e18f8a60d63bdf19b5d7407c068a12833b97bf5"
     },
     "src/scirel/closures/hall_two_fluid_pressure.py": {
       "role": "index",
@@ -7763,9 +7817,9 @@
     },
     "src/scirel/closures/mirror_ambipolar_potential.py": {
       "role": "index",
-      "sha256": "0dc7567f12745a6fb881c06b40e5b6b9bddc104b3b598b9f1547e57f101c9a1d",
-      "size": 9939,
-      "normalized_sha256": "0dc7567f12745a6fb881c06b40e5b6b9bddc104b3b598b9f1547e57f101c9a1d"
+      "sha256": "b540322d98ba268bb5b8e8dee4279662adeb1292f044f07068d23ebad0c48107",
+      "size": 9959,
+      "normalized_sha256": "b540322d98ba268bb5b8e8dee4279662adeb1292f044f07068d23ebad0c48107"
     },
     "src/scirel/closures/mirror_quasineutral_closure.py": {
       "role": "index",
@@ -7775,9 +7829,9 @@
     },
     "src/scirel/closures/quasineutral_potential.py": {
       "role": "index",
-      "sha256": "d2edaf3ff564ecbd3498c541e66813087f6bbedc49ab9bb25cc55a2c892175fc",
-      "size": 6545,
-      "normalized_sha256": "d2edaf3ff564ecbd3498c541e66813087f6bbedc49ab9bb25cc55a2c892175fc"
+      "sha256": "0b006557732be30b26e5859f71a101e7cc6e235fb032a93624f3b3ca4493d0ff",
+      "size": 6530,
+      "normalized_sha256": "0b006557732be30b26e5859f71a101e7cc6e235fb032a93624f3b3ca4493d0ff"
     },
     "src/scirel/closures/quasineutral_reference_density.py": {
       "role": "index",
@@ -7787,15 +7841,15 @@
     },
     "src/scirel/closures/reduced_hall_drift.py": {
       "role": "index",
-      "sha256": "1be7bc7c3d7233f436ef46299065cd1befce98fcdf3824191abaaa0f6b816d68",
-      "size": 17425,
-      "normalized_sha256": "1be7bc7c3d7233f436ef46299065cd1befce98fcdf3824191abaaa0f6b816d68"
+      "sha256": "986bdbb88b265cc2fe1531a6f22e2e07b4f3f19bf8e68d1bd3417e7f1bfee887",
+      "size": 17441,
+      "normalized_sha256": "986bdbb88b265cc2fe1531a6f22e2e07b4f3f19bf8e68d1bd3417e7f1bfee887"
     },
     "src/scirel/closures/tabulated_pressure_closure.py": {
       "role": "index",
-      "sha256": "52d3ffa2d1bf9086e6d1ee6f26e6fc645f32b67b36319321863e7b341bb0b81c",
-      "size": 4815,
-      "normalized_sha256": "52d3ffa2d1bf9086e6d1ee6f26e6fc645f32b67b36319321863e7b341bb0b81c"
+      "sha256": "1779d5a2726406077ad811b99bbe183005e95a4007777f1633119d7db8a930c1",
+      "size": 4858,
+      "normalized_sha256": "1779d5a2726406077ad811b99bbe183005e95a4007777f1633119d7db8a930c1"
     },
     "src/scirel/collisions/__init__.py": {
       "role": "index",
@@ -7805,9 +7859,9 @@
     },
     "src/scirel/collisions/_elastic_moments.py": {
       "role": "index",
-      "sha256": "1eb7dea98b85287e58f54b6453b31f0ba374ab32fee31c9bee0b15f3ac9a0fb9",
-      "size": 7381,
-      "normalized_sha256": "1eb7dea98b85287e58f54b6453b31f0ba374ab32fee31c9bee0b15f3ac9a0fb9"
+      "sha256": "ce51f2f4343d393513e6a823fad3dbff2226d0e9eacf95008de20601c1e16b3f",
+      "size": 7743,
+      "normalized_sha256": "ce51f2f4343d393513e6a823fad3dbff2226d0e9eacf95008de20601c1e16b3f"
     },
     "src/scirel/collisions/_energy_input.py": {
       "role": "index",
@@ -7829,9 +7883,9 @@
     },
     "src/scirel/collisions/atomic_hydrogen_charge_exchange_rate.py": {
       "role": "index",
-      "sha256": "8e2b0f1b0cc0760db252bbd48af881418c9dd6e61dfdcd0b2a09fce67be38266",
-      "size": 4000,
-      "normalized_sha256": "8e2b0f1b0cc0760db252bbd48af881418c9dd6e61dfdcd0b2a09fce67be38266"
+      "sha256": "4c3ee64a7cf6d222392b43d2c6d8077d5f907328a701d050df5825ed4b996c86",
+      "size": 4483,
+      "normalized_sha256": "4c3ee64a7cf6d222392b43d2c6d8077d5f907328a701d050df5825ed4b996c86"
     },
     "src/scirel/collisions/atomic_hydrogen_collision_matrices.py": {
       "role": "index",
@@ -7853,9 +7907,9 @@
     },
     "src/scirel/collisions/hydrogen2_charge_exchange_rate.py": {
       "role": "index",
-      "sha256": "502a3d39252594bf9d13a5e1233bdc56fde899d57145cd5310f7cd3fce45e976",
-      "size": 4070,
-      "normalized_sha256": "502a3d39252594bf9d13a5e1233bdc56fde899d57145cd5310f7cd3fce45e976"
+      "sha256": "5436fc8ee02d130f6d669ecae1bd534749f6d4d99aaebb913825e914471ac419",
+      "size": 4553,
+      "normalized_sha256": "5436fc8ee02d130f6d669ecae1bd534749f6d4d99aaebb913825e914471ac419"
     },
     "src/scirel/collisions/hydrogen2_hydrogen2_elastic_cross_section.py": {
       "role": "index",
@@ -7919,9 +7973,9 @@
     },
     "src/scirel/collisions/relativistic_maxwellian_bessel.py": {
       "role": "index",
-      "sha256": "7ce887d662817e86522ccaa2beb77c025c981badc355be6565937363819a898d",
-      "size": 7290,
-      "normalized_sha256": "7ce887d662817e86522ccaa2beb77c025c981badc355be6565937363819a898d"
+      "sha256": "c16244c329362808e5a266a367d5ab099954ffd840af58364d3f3b2eb8fb5806",
+      "size": 7613,
+      "normalized_sha256": "c16244c329362808e5a266a367d5ab099954ffd840af58364d3f3b2eb8fb5806"
     },
     "src/scirel/configurations/__init__.py": {
       "role": "index",
@@ -8015,15 +8069,15 @@
     },
     "src/scirel/electromagnetism/distributed.py": {
       "role": "index",
-      "sha256": "861984c087eca892c0fa13143a55c153b08327a40540f9df90c9f0df391f3996",
-      "size": 4482,
-      "normalized_sha256": "861984c087eca892c0fa13143a55c153b08327a40540f9df90c9f0df391f3996"
+      "sha256": "1163f5c2c5e41267cbac22776680934e5ab94ff1ef312c39fd7673857e4d2514",
+      "size": 4487,
+      "normalized_sha256": "1163f5c2c5e41267cbac22776680934e5ab94ff1ef312c39fd7673857e4d2514"
     },
     "src/scirel/electromagnetism/greens.py": {
       "role": "index",
-      "sha256": "fabfcb515fb64982d97493911badda290b7e08c89c645238edda2bccb1e970b0",
-      "size": 11410,
-      "normalized_sha256": "fabfcb515fb64982d97493911badda290b7e08c89c645238edda2bccb1e970b0"
+      "sha256": "470ff234163dfe4e45292742a3462440da527f08ede84ca9bfec39138647a5bc",
+      "size": 15870,
+      "normalized_sha256": "470ff234163dfe4e45292742a3462440da527f08ede84ca9bfec39138647a5bc"
     },
     "src/scirel/electromagnetism/sources.py": {
       "role": "index",
@@ -8039,15 +8093,15 @@
     },
     "src/scirel/equilibrium/_anisotropic_numerics.py": {
       "role": "index",
-      "sha256": "e221c6a3899154be9f64e8a6b6db6a0dcf18fbcaad1139faf8c71e28a35b56fc",
-      "size": 7322,
-      "normalized_sha256": "e221c6a3899154be9f64e8a6b6db6a0dcf18fbcaad1139faf8c71e28a35b56fc"
+      "sha256": "0bd1134f0531ff863f8f272cd958e3ad4fa0c5c3800adee05adcc5c6f3d4f8a0",
+      "size": 3162,
+      "normalized_sha256": "0bd1134f0531ff863f8f272cd958e3ad4fa0c5c3800adee05adcc5c6f3d4f8a0"
     },
     "src/scirel/equilibrium/_pressure_current.py": {
       "role": "index",
-      "sha256": "d888e3be3c30588ea6a8695da26ca54ca46f1b2398ac74d06f88c198caecb004",
-      "size": 2172,
-      "normalized_sha256": "d888e3be3c30588ea6a8695da26ca54ca46f1b2398ac74d06f88c198caecb004"
+      "sha256": "f398d6d669dc65d28906182d11b9301b4d835eef5df4e19ba239c333403025cd",
+      "size": 2493,
+      "normalized_sha256": "f398d6d669dc65d28906182d11b9301b4d835eef5df4e19ba239c333403025cd"
     },
     "src/scirel/equilibrium/anisotropic_force_balance.py": {
       "role": "index",
@@ -8207,9 +8261,9 @@
     },
     "src/scirel/field/poloidal_field_from_flux.py": {
       "role": "index",
-      "sha256": "6243b6810dff9021afd2a1f504d5ca72ab566be38469f8e9f64f63718206bc86",
-      "size": 3038,
-      "normalized_sha256": "6243b6810dff9021afd2a1f504d5ca72ab566be38469f8e9f64f63718206bc86"
+      "sha256": "ed465c74feb7e04f302277fc790fab7cacda28aaf6c66dd02947d6728a25a3ce",
+      "size": 3014,
+      "normalized_sha256": "ed465c74feb7e04f302277fc790fab7cacda28aaf6c66dd02947d6728a25a3ce"
     },
     "src/scirel/field/poloidal_field_magnitude.py": {
       "role": "index",
@@ -8297,9 +8351,9 @@
     },
     "src/scirel/geometry/basis.py": {
       "role": "index",
-      "sha256": "ba80b5f07c9e3078399c605df95518f7f9e54bc2d77b5e09723de4120f3f6de8",
-      "size": 11406,
-      "normalized_sha256": "ba80b5f07c9e3078399c605df95518f7f9e54bc2d77b5e09723de4120f3f6de8"
+      "sha256": "d8a5a280e283af5c741e2adebceeb7b0d4fa3296b552143bb2aeecb89fd14745",
+      "size": 11773,
+      "normalized_sha256": "d8a5a280e283af5c741e2adebceeb7b0d4fa3296b552143bb2aeecb89fd14745"
     },
     "src/scirel/geometry/bilinear_grid_sampling.py": {
       "role": "index",
@@ -8309,9 +8363,9 @@
     },
     "src/scirel/geometry/complex_rectilinear_interpolation.py": {
       "role": "index",
-      "sha256": "101be468d0cecbf9cb2c72d5b269ec00b33d4bad7dd0af79fbc02b7dfdab6ef5",
-      "size": 4637,
-      "normalized_sha256": "101be468d0cecbf9cb2c72d5b269ec00b33d4bad7dd0af79fbc02b7dfdab6ef5"
+      "sha256": "ff5eb3e6e81102921f7f1f0ce2112339204081b7be0742e710deb4c8b1b85142",
+      "size": 4642,
+      "normalized_sha256": "ff5eb3e6e81102921f7f1f0ce2112339204081b7be0742e710deb4c8b1b85142"
     },
     "src/scirel/geometry/face_to_cell.py": {
       "role": "index",
@@ -8321,15 +8375,15 @@
     },
     "src/scirel/geometry/fieldline.py": {
       "role": "index",
-      "sha256": "b1074f069d29ee96351d1c238c1063e0f4d368b3ead97665bf4ffd18c3c1414a",
-      "size": 18452,
-      "normalized_sha256": "b1074f069d29ee96351d1c238c1063e0f4d368b3ead97665bf4ffd18c3c1414a"
+      "sha256": "253e6086a1be08bfd016ede95bbf2de757add49108f7d23a444627dbda8347ac",
+      "size": 18714,
+      "normalized_sha256": "253e6086a1be08bfd016ede95bbf2de757add49108f7d23a444627dbda8347ac"
     },
     "src/scirel/geometry/flux_surface_inverse_field_average.py": {
       "role": "index",
-      "sha256": "5f54008eceeff7645b8f0f52343cefeb212df891fbcd5eeaca84a59628ad7616",
-      "size": 4049,
-      "normalized_sha256": "5f54008eceeff7645b8f0f52343cefeb212df891fbcd5eeaca84a59628ad7616"
+      "sha256": "8eaa255aa103c0b8f9a39ed44f66e5a7f981a5ef95935e35ee1d645030f78635",
+      "size": 4058,
+      "normalized_sha256": "8eaa255aa103c0b8f9a39ed44f66e5a7f981a5ef95935e35ee1d645030f78635"
     },
     "src/scirel/geometry/flux_surface_profile.py": {
       "role": "index",
@@ -8651,15 +8705,15 @@
     },
     "src/scirel/kinetic/_loss_cone_modes.py": {
       "role": "index",
-      "sha256": "f3c29af29553358e6577cc5e65ec50e525f417e379b8de60886dd95c1719bad0",
-      "size": 2109,
-      "normalized_sha256": "f3c29af29553358e6577cc5e65ec50e525f417e379b8de60886dd95c1719bad0"
+      "sha256": "826128043818672968d7876d13a3845a4365df3e4078fe10e33754f0dc64256c",
+      "size": 2114,
+      "normalized_sha256": "826128043818672968d7876d13a3845a4365df3e4078fe10e33754f0dc64256c"
     },
     "src/scirel/kinetic/_mirror_numerics.py": {
       "role": "index",
-      "sha256": "3dc16125682f870dc1c274bab7f365fade058a8ed71ae796c3f012979d04a197",
-      "size": 10016,
-      "normalized_sha256": "3dc16125682f870dc1c274bab7f365fade058a8ed71ae796c3f012979d04a197"
+      "sha256": "cc5c32aca5729e00e6e14cbb899066e672fe4873e54c76489b64dc7fe747fdfd",
+      "size": 5140,
+      "normalized_sha256": "cc5c32aca5729e00e6e14cbb899066e672fe4873e54c76489b64dc7fe747fdfd"
     },
     "src/scirel/kinetic/adaptive_neutral_velocity_mesh.py": {
       "role": "index",
@@ -8669,9 +8723,9 @@
     },
     "src/scirel/kinetic/atomic_alpha_contraction.py": {
       "role": "index",
-      "sha256": "b1e1f961fdca8e110c19490983973f08612e0eb995d0fe960d7f93a27c6c30f8",
-      "size": 5750,
-      "normalized_sha256": "b1e1f961fdca8e110c19490983973f08612e0eb995d0fe960d7f93a27c6c30f8"
+      "sha256": "96230944dd5bf6fa6aacff0b4bcc854e93db724aae73e36aee89d8356395137d",
+      "size": 5423,
+      "normalized_sha256": "96230944dd5bf6fa6aacff0b4bcc854e93db724aae73e36aee89d8356395137d"
     },
     "src/scirel/kinetic/atomic_scattered_sources_reduction.py": {
       "role": "index",
@@ -8687,27 +8741,27 @@
     },
     "src/scirel/kinetic/bessel_gamma.py": {
       "role": "index",
-      "sha256": "6a86d7c6553fbd14fa4e44b66a0269aad449592495f6786e94ba2057a5bb529c",
-      "size": 2717,
-      "normalized_sha256": "6a86d7c6553fbd14fa4e44b66a0269aad449592495f6786e94ba2057a5bb529c"
+      "sha256": "d1604a622af59a4c907a60e20d0041371af30fb2af02e6ff5a9ed7c1aa578fbb",
+      "size": 3035,
+      "normalized_sha256": "d1604a622af59a4c907a60e20d0041371af30fb2af02e6ff5a9ed7c1aa578fbb"
     },
     "src/scirel/kinetic/cauchy_transform.py": {
       "role": "index",
-      "sha256": "205c4821d63b904389e6532ca37b0772d19ac45ffd7dcf54874b21fdc3c65b9d",
-      "size": 11575,
-      "normalized_sha256": "205c4821d63b904389e6532ca37b0772d19ac45ffd7dcf54874b21fdc3c65b9d"
+      "sha256": "dbee7df412028867b28bf3f3f2d695637351bbeeaa26bd194af5f3f2ddd43f91",
+      "size": 11915,
+      "normalized_sha256": "dbee7df412028867b28bf3f3f2d695637351bbeeaa26bd194af5f3f2ddd43f91"
     },
     "src/scirel/kinetic/cross_mesh_distribution_interpolation.py": {
       "role": "index",
-      "sha256": "356a11518eaafc11b7eab5dc6cd0e20bc24315c81e2e3c374473ae29a046cd90",
-      "size": 27441,
-      "normalized_sha256": "356a11518eaafc11b7eab5dc6cd0e20bc24315c81e2e3c374473ae29a046cd90"
+      "sha256": "94701b385991854feb5bbf4a6154fa616b59be6a78f08b445453f1e74c676a22",
+      "size": 27914,
+      "normalized_sha256": "94701b385991854feb5bbf4a6154fa616b59be6a78f08b445453f1e74c676a22"
     },
     "src/scirel/kinetic/cross_mesh_scalar_interpolation.py": {
       "role": "index",
-      "sha256": "e7cce327d4626e6459756cc871b4c387c776b81451ea2003fecf2dd3049b4c98",
-      "size": 2874,
-      "normalized_sha256": "e7cce327d4626e6459756cc871b4c387c776b81451ea2003fecf2dd3049b4c98"
+      "sha256": "32293fab81be13effaf00b402992bd94e3f3352d0491a990e962587933e0df20",
+      "size": 3143,
+      "normalized_sha256": "32293fab81be13effaf00b402992bd94e3f3352d0491a990e962587933e0df20"
     },
     "src/scirel/kinetic/cylindrical_velocity_quadrature.py": {
       "role": "index",
@@ -8717,9 +8771,9 @@
     },
     "src/scirel/kinetic/dielectric_tensor_diagnostic.py": {
       "role": "index",
-      "sha256": "7c9b2ffbb129c2a35ed330a18b5b4a04b89635ba53155af501bbfb692453e8eb",
-      "size": 9741,
-      "normalized_sha256": "7c9b2ffbb129c2a35ed330a18b5b4a04b89635ba53155af501bbfb692453e8eb"
+      "sha256": "a4f00afb67ac0c6eb85307b3d6939097f2250c72a64b849c549960517321a390",
+      "size": 10040,
+      "normalized_sha256": "a4f00afb67ac0c6eb85307b3d6939097f2250c72a64b849c549960517321a390"
     },
     "src/scirel/kinetic/elastic_frequency_channels.py": {
       "role": "index",
@@ -8735,9 +8789,9 @@
     },
     "src/scirel/kinetic/faddeeva_variants.py": {
       "role": "index",
-      "sha256": "cefda0b727a73ccc294c183f7788ade23efb0334fdf811d8e803165f6e5a56ed",
-      "size": 4619,
-      "normalized_sha256": "cefda0b727a73ccc294c183f7788ade23efb0334fdf811d8e803165f6e5a56ed"
+      "sha256": "83c0e09ed2fc8602641e2923e408b66396c01afeef093e86ddf7e5489d66942a",
+      "size": 4791,
+      "normalized_sha256": "83c0e09ed2fc8602641e2923e408b66396c01afeef093e86ddf7e5489d66942a"
     },
     "src/scirel/kinetic/fluid_dispersion_matrix.py": {
       "role": "index",
@@ -8747,27 +8801,27 @@
     },
     "src/scirel/kinetic/fluid_wavevector_eigensolve.py": {
       "role": "index",
-      "sha256": "dddff92e2ef3c5dc997a42c39541b712536a41d3bd8204944d93651c32977de2",
-      "size": 3828,
-      "normalized_sha256": "dddff92e2ef3c5dc997a42c39541b712536a41d3bd8204944d93651c32977de2"
+      "sha256": "d71a429eb38f40e8ae1805a1f6f17a0807f99e8b33a5cdc81a447fa3ba00ae60",
+      "size": 3833,
+      "normalized_sha256": "d71a429eb38f40e8ae1805a1f6f17a0807f99e8b33a5cdc81a447fa3ba00ae60"
     },
     "src/scirel/kinetic/fluid_wavevector_scan.py": {
       "role": "index",
-      "sha256": "76a269d94a4f6c5f9e074b35bd27de033abdeaef3162339b91add712d9373906",
-      "size": 7142,
-      "normalized_sha256": "76a269d94a4f6c5f9e074b35bd27de033abdeaef3162339b91add712d9373906"
+      "sha256": "54cdc13d8959693f54ff9ede826c9744aa27788053913bfe3273f66ad6b154eb",
+      "size": 7384,
+      "normalized_sha256": "54cdc13d8959693f54ff9ede826c9744aa27788053913bfe3273f66ad6b154eb"
     },
     "src/scirel/kinetic/fluidbw.py": {
       "role": "index",
-      "sha256": "52ad062785dd1816d15c6ff50c1147a086353413fb69243fbec61f1c607f26c8",
-      "size": 11486,
-      "normalized_sha256": "52ad062785dd1816d15c6ff50c1147a086353413fb69243fbec61f1c607f26c8"
+      "sha256": "e268f58aad5cf9c80725019181e4e7821ca6521af5168d05d6127f76f3bc4b9a",
+      "size": 11721,
+      "normalized_sha256": "e268f58aad5cf9c80725019181e4e7821ca6521af5168d05d6127f76f3bc4b9a"
     },
     "src/scirel/kinetic/frank_egedal_hot_ion_moments.py": {
       "role": "index",
-      "sha256": "c26ba5c56d8f7749adf584f0daf78b8f09b295cc40f1ce70f60e09d5c10b2104",
-      "size": 10536,
-      "normalized_sha256": "c26ba5c56d8f7749adf584f0daf78b8f09b295cc40f1ce70f60e09d5c10b2104"
+      "sha256": "ba76eb6a10df8481e86fdddae6a939f8554aab9b7ebba9fe936fe1310904027b",
+      "size": 17755,
+      "normalized_sha256": "ba76eb6a10df8481e86fdddae6a939f8554aab9b7ebba9fe936fe1310904027b"
     },
     "src/scirel/kinetic/frank_egedal_pressure_closure.py": {
       "role": "index",
@@ -8789,9 +8843,9 @@
     },
     "src/scirel/kinetic/frank_egedal_source_projection.py": {
       "role": "index",
-      "sha256": "f4a6b6991de76944bdd8d6fa9bd72ac4a84c7dad6e1b0150a24f81d9114d3aee",
-      "size": 4659,
-      "normalized_sha256": "f4a6b6991de76944bdd8d6fa9bd72ac4a84c7dad6e1b0150a24f81d9114d3aee"
+      "sha256": "847ea9502d14622b7949c19e32c13073f32ffcc1a5e55833ad19e2e1ba17c439",
+      "size": 4912,
+      "normalized_sha256": "847ea9502d14622b7949c19e32c13073f32ffcc1a5e55833ad19e2e1ba17c439"
     },
     "src/scirel/kinetic/gamma_lpole_coefficients.py": {
       "role": "index",
@@ -8801,9 +8855,9 @@
     },
     "src/scirel/kinetic/generalized_dispersion.py": {
       "role": "index",
-      "sha256": "69e6b81895f5b8b3bbe71cd46da8605743577e2b07e4de48b4e28a5dd7c099b3",
-      "size": 21289,
-      "normalized_sha256": "69e6b81895f5b8b3bbe71cd46da8605743577e2b07e4de48b4e28a5dd7c099b3"
+      "sha256": "1fdcf973ad45145abd8b4b654a2fd52a88daa58ba943f11588e4989367555141",
+      "size": 22673,
+      "normalized_sha256": "1fdcf973ad45145abd8b4b654a2fd52a88daa58ba943f11588e4989367555141"
     },
     "src/scirel/kinetic/generation_accumulation_update.py": {
       "role": "index",
@@ -8837,9 +8891,9 @@
     },
     "src/scirel/kinetic/kinetic_dispersion_relation.py": {
       "role": "index",
-      "sha256": "d40e2c9a70ab9da6ce2a4a4774b641b5d8531bbb9eb1c78c4773992f5f03cdbc",
-      "size": 4050,
-      "normalized_sha256": "d40e2c9a70ab9da6ce2a4a4774b641b5d8531bbb9eb1c78c4773992f5f03cdbc"
+      "sha256": "82166b276a29ef776645d7e6fbd6ae032c97da5dfeba9f09e668ad9fa7ee472e",
+      "size": 4407,
+      "normalized_sha256": "82166b276a29ef776645d7e6fbd6ae032c97da5dfeba9f09e668ad9fa7ee472e"
     },
     "src/scirel/kinetic/kinetic_dispersion_ronnmark.py": {
       "role": "index",
@@ -8849,9 +8903,9 @@
     },
     "src/scirel/kinetic/kinetic_dispersion_sum_fluidbw.py": {
       "role": "index",
-      "sha256": "aced7db0afe9f823fa1e5df2f875378e7663c33d4a872ebc577a66d56daa95ca",
-      "size": 6818,
-      "normalized_sha256": "aced7db0afe9f823fa1e5df2f875378e7663c33d4a872ebc577a66d56daa95ca"
+      "sha256": "e6a23a7021cd526be9e63c11c4bd127170283f0803b28b7d00400cdbf83cd2ec",
+      "size": 7072,
+      "normalized_sha256": "e6a23a7021cd526be9e63c11c4bd127170283f0803b28b7d00400cdbf83cd2ec"
     },
     "src/scirel/kinetic/kinetic_dispersion_sum_n.py": {
       "role": "index",
@@ -8867,9 +8921,9 @@
     },
     "src/scirel/kinetic/kinetic_wavevector_scan.py": {
       "role": "index",
-      "sha256": "01b9dd664bdfb4686a04aa7be4087f76f3d216f4d05b8f7f3d143f59b9dd4154",
-      "size": 5829,
-      "normalized_sha256": "01b9dd664bdfb4686a04aa7be4087f76f3d216f4d05b8f7f3d143f59b9dd4154"
+      "sha256": "da8944f2a9176062446bbb6a2131e5558911420646846d120f1df3cd310f9dca",
+      "size": 6179,
+      "normalized_sha256": "da8944f2a9176062446bbb6a2131e5558911420646846d120f1df3cd310f9dca"
     },
     "src/scirel/kinetic/kn1d_outer_convergence.py": {
       "role": "index",
@@ -8879,15 +8933,15 @@
     },
     "src/scirel/kinetic/loss_cone_spectrum.py": {
       "role": "index",
-      "sha256": "8625cd7c2828e479d271ba5ad393994b94f799cbfd6e386262e41a8718e7bdda",
-      "size": 4044,
-      "normalized_sha256": "8625cd7c2828e479d271ba5ad393994b94f799cbfd6e386262e41a8718e7bdda"
+      "sha256": "024e718ab22bb84335c9c523df11cb6465ce655adc16c08996444eb5c73036f8",
+      "size": 4054,
+      "normalized_sha256": "024e718ab22bb84335c9c523df11cb6465ce655adc16c08996444eb5c73036f8"
     },
     "src/scirel/kinetic/maxwellian_electrostatic.py": {
       "role": "index",
-      "sha256": "6d3bb9a6e915c56f70a4776fc7386a1631ab5f82d0590e8bed233eecc34df985",
-      "size": 6876,
-      "normalized_sha256": "6d3bb9a6e915c56f70a4776fc7386a1631ab5f82d0590e8bed233eecc34df985"
+      "sha256": "a8af7de55bf1b00b015c1facf535fe473f1a65f2df72a3f6b6cbd12f8e2cb350",
+      "size": 7195,
+      "normalized_sha256": "a8af7de55bf1b00b015c1facf535fe473f1a65f2df72a3f6b6cbd12f8e2cb350"
     },
     "src/scirel/kinetic/mirror_constrained_moments.py": {
       "role": "index",
@@ -8909,9 +8963,9 @@
     },
     "src/scirel/kinetic/molecular_alpha_contraction.py": {
       "role": "index",
-      "sha256": "ea9b43a8db02b8b1a431274cf5c1034c20318ef0ba28ce85b53e036d2a0e28f1",
-      "size": 6572,
-      "normalized_sha256": "ea9b43a8db02b8b1a431274cf5c1034c20318ef0ba28ce85b53e036d2a0e28f1"
+      "sha256": "a5e0773173d2e1c01616be0a7b4433f8100d6f061322700dfb54f86c56a26046",
+      "size": 6329,
+      "normalized_sha256": "a5e0773173d2e1c01616be0a7b4433f8100d6f061322700dfb54f86c56a26046"
     },
     "src/scirel/kinetic/molecular_scattered_sources_reduction.py": {
       "role": "index",
@@ -8951,9 +9005,9 @@
     },
     "src/scirel/kinetic/pdrf.py": {
       "role": "index",
-      "sha256": "a79d58f8d9771d09e22398b185a59a92d8abef2369b6ebb88c4ca25595f5e1e9",
-      "size": 28282,
-      "normalized_sha256": "a79d58f8d9771d09e22398b185a59a92d8abef2369b6ebb88c4ca25595f5e1e9"
+      "sha256": "70974fd1b1f233c8112de3510decd9846aa1bd8eb0d83a92d2d9ba462ed148e4",
+      "size": 28560,
+      "normalized_sha256": "70974fd1b1f233c8112de3510decd9846aa1bd8eb0d83a92d2d9ba462ed148e4"
     },
     "src/scirel/kinetic/pdrk/__init__.py": {
       "role": "index",
@@ -8963,21 +9017,21 @@
     },
     "src/scirel/kinetic/pdrk/_example_native.py": {
       "role": "index",
-      "sha256": "f073852ec16b23c560145dc94b93f1e0d1b00c8dcae3d987ccaaf5805674a4c3",
-      "size": 3547,
-      "normalized_sha256": "f073852ec16b23c560145dc94b93f1e0d1b00c8dcae3d987ccaaf5805674a4c3"
+      "sha256": "46ca648246eea93f2c94d3665274a315651130fdba2b88542a32b0a17c1c5edd",
+      "size": 3579,
+      "normalized_sha256": "46ca648246eea93f2c94d3665274a315651130fdba2b88542a32b0a17c1c5edd"
     },
     "src/scirel/kinetic/pdrk/_example_support.py": {
       "role": "index",
-      "sha256": "448def0d25a72a532e072c6c05df564fc4dc99276a32feefedce6f7d841f10f8",
-      "size": 3841,
-      "normalized_sha256": "448def0d25a72a532e072c6c05df564fc4dc99276a32feefedce6f7d841f10f8"
+      "sha256": "4dad5a472202e32d86fdf87590942fe60601cb26876e27e99da487b0755b749c",
+      "size": 3846,
+      "normalized_sha256": "4dad5a472202e32d86fdf87590942fe60601cb26876e27e99da487b0755b749c"
     },
     "src/scirel/kinetic/pdrk/_fluid_parallel.py": {
       "role": "index",
-      "sha256": "527338144200e1f3d7b742fc72a790edc9b81b790e8627340fb8b800f3caa2bc",
-      "size": 30207,
-      "normalized_sha256": "527338144200e1f3d7b742fc72a790edc9b81b790e8627340fb8b800f3caa2bc"
+      "sha256": "1932f8ed08e4e63773cd9536bb12672395def8e5dbe5550d0799b49638de5dc7",
+      "size": 30461,
+      "normalized_sha256": "1932f8ed08e4e63773cd9536bb12672395def8e5dbe5550d0799b49638de5dc7"
     },
     "src/scirel/kinetic/pdrk/_harris_descriptor.py": {
       "role": "index",
@@ -8987,9 +9041,9 @@
     },
     "src/scirel/kinetic/pdrk/_harris_perpendicular.py": {
       "role": "index",
-      "sha256": "b0801adf12a08dd933b42a633c44d8773078797d89204665e458e5e68ffe28bf",
-      "size": 7273,
-      "normalized_sha256": "b0801adf12a08dd933b42a633c44d8773078797d89204665e458e5e68ffe28bf"
+      "sha256": "ecccf70071828aee340a8cedc6d4597b404e161c47c2bdfb0efa9f0afdd113bf",
+      "size": 7512,
+      "normalized_sha256": "ecccf70071828aee340a8cedc6d4597b404e161c47c2bdfb0efa9f0afdd113bf"
     },
     "src/scirel/kinetic/pdrk/_native/current/code/input/pdrk.in": {
       "role": "index",
@@ -9479,15 +9533,15 @@
     },
     "src/scirel/kinetic/pdrk/_pade.py": {
       "role": "index",
-      "sha256": "ed3b1ed7f7ba1f7823f8255e85bdba482053cff2fc06ad91ec607b0312fea76e",
-      "size": 4128,
-      "normalized_sha256": "ed3b1ed7f7ba1f7823f8255e85bdba482053cff2fc06ad91ec607b0312fea76e"
+      "sha256": "755e2513225d24d7a80a0ca75b949ac85c6eff3dcbf5e1135039b4a125e0d556",
+      "size": 4354,
+      "normalized_sha256": "755e2513225d24d7a80a0ca75b949ac85c6eff3dcbf5e1135039b4a125e0d556"
     },
     "src/scirel/kinetic/pdrk/_perpendicular_em.py": {
       "role": "index",
-      "sha256": "deed683c1683abbd7b711694f509b6ed61c9ef634460e7f01a18921fcfed141f",
-      "size": 3075,
-      "normalized_sha256": "deed683c1683abbd7b711694f509b6ed61c9ef634460e7f01a18921fcfed141f"
+      "sha256": "e786e752d01ca118d8d7b5d86cc4fcc9a612f1d5e9281c02afb8a2dd82c602c7",
+      "size": 3223,
+      "normalized_sha256": "e786e752d01ca118d8d7b5d86cc4fcc9a612f1d5e9281c02afb8a2dd82c602c7"
     },
     "src/scirel/kinetic/pdrk/_presentation.py": {
       "role": "index",
@@ -9497,15 +9551,15 @@
     },
     "src/scirel/kinetic/pdrk/_rational_frequency.py": {
       "role": "index",
-      "sha256": "8bf28fcef98b118dbeb23ffd27db58fa8a22879c9d8f1a7ecebea0819302a8f0",
-      "size": 2616,
-      "normalized_sha256": "8bf28fcef98b118dbeb23ffd27db58fa8a22879c9d8f1a7ecebea0819302a8f0"
+      "sha256": "91ac19a978363a9d08a3918b3350b34a75b417d79b4ed4e898dd629a085db05e",
+      "size": 2621,
+      "normalized_sha256": "91ac19a978363a9d08a3918b3350b34a75b417d79b4ed4e898dd629a085db05e"
     },
     "src/scirel/kinetic/pdrk/_transport.py": {
       "role": "index",
-      "sha256": "4df9f72686a39c2bf763b734724d83f811ebf007e17a799b90c0ef920d1a0ba3",
-      "size": 10954,
-      "normalized_sha256": "4df9f72686a39c2bf763b734724d83f811ebf007e17a799b90c0ef920d1a0ba3"
+      "sha256": "2f579571342e19cb9d9a2e980e62b8912b34b30f5a841b6256518ebb61853ede",
+      "size": 11235,
+      "normalized_sha256": "2f579571342e19cb9d9a2e980e62b8912b34b30f5a841b6256518ebb61853ede"
     },
     "src/scirel/kinetic/pdrk/_workflow_impl.py": {
       "role": "index",
@@ -9515,9 +9569,9 @@
     },
     "src/scirel/kinetic/pdrk/magnetized.py": {
       "role": "index",
-      "sha256": "39942a0acd53e4870273d8152968b483f339fabb26d21b1ad798ce587287a523",
-      "size": 21072,
-      "normalized_sha256": "39942a0acd53e4870273d8152968b483f339fabb26d21b1ad798ce587287a523"
+      "sha256": "f95e52d4573cc52b71b8e14de9b8fb1bff2ff0e3e1af5197a7ffa30d1efffc44",
+      "size": 21077,
+      "normalized_sha256": "f95e52d4573cc52b71b8e14de9b8fb1bff2ff0e3e1af5197a7ffa30d1efffc44"
     },
     "src/scirel/kinetic/pdrk/multifluid.py": {
       "role": "index",
@@ -9539,9 +9593,9 @@
     },
     "src/scirel/kinetic/pdrk/rational.py": {
       "role": "index",
-      "sha256": "8a59963f3bf3a7e9c037f039a35e8a6915f9f430395314a90ff93726209ffb24",
-      "size": 15634,
-      "normalized_sha256": "8a59963f3bf3a7e9c037f039a35e8a6915f9f430395314a90ff93726209ffb24"
+      "sha256": "8ee94796665d73be60e7834b5961ee5c4ae82b486c658325b4789ae1d936b02b",
+      "size": 16022,
+      "normalized_sha256": "8ee94796665d73be60e7834b5961ee5c4ae82b486c658325b4789ae1d936b02b"
     },
     "src/scirel/kinetic/pdrk/reference.py": {
       "role": "index",
@@ -9563,15 +9617,15 @@
     },
     "src/scirel/kinetic/plasma_dispersion.py": {
       "role": "index",
-      "sha256": "8db12eedf6ccbd056ae72d171500eaeb369baf6831913dbe2a849584dd330546",
-      "size": 1421,
-      "normalized_sha256": "8db12eedf6ccbd056ae72d171500eaeb369baf6831913dbe2a849584dd330546"
+      "sha256": "0c7403ea716fde12d4cbc549bb2676427feecb65b946b3625402bf285dcff655",
+      "size": 1735,
+      "normalized_sha256": "0c7403ea716fde12d4cbc549bb2676427feecb65b946b3625402bf285dcff655"
     },
     "src/scirel/kinetic/plasma_dispersion_weideman.py": {
       "role": "index",
-      "sha256": "331a5b172aa432a5ef855c8c7ad939c608dc189ed181e39df88f7fd27a5859b8",
-      "size": 3458,
-      "normalized_sha256": "331a5b172aa432a5ef855c8c7ad939c608dc189ed181e39df88f7fd27a5859b8"
+      "sha256": "d4012862e2745862ce8954669a3d726d66a738d136d310cfdf1abd45c3155b2f",
+      "size": 3801,
+      "normalized_sha256": "d4012862e2745862ce8954669a3d726d66a738d136d310cfdf1abd45c3155b2f"
     },
     "src/scirel/kinetic/ronnmark_r_function.py": {
       "role": "index",
@@ -9593,9 +9647,9 @@
     },
     "src/scirel/kinetic/spatial_source_shape_normalization.py": {
       "role": "index",
-      "sha256": "8b0c3e67bd052d0a9a044f2a8a8b944af4fde5ea6a7d2f8b8cbefd667ec82040",
-      "size": 3729,
-      "normalized_sha256": "8b0c3e67bd052d0a9a044f2a8a8b944af4fde5ea6a7d2f8b8cbefd667ec82040"
+      "sha256": "d93f2d48eb91d99cc5b520e7af9eeddde7c3363e1a5bab6e032f66a1659b02ea",
+      "size": 4295,
+      "normalized_sha256": "d93f2d48eb91d99cc5b520e7af9eeddde7c3363e1a5bab6e032f66a1659b02ea"
     },
     "src/scirel/kinetic/species_equilibrium_scales.py": {
       "role": "index",
@@ -9617,15 +9671,15 @@
     },
     "src/scirel/kinetic/terminal_flux_velocity_reduction.py": {
       "role": "index",
-      "sha256": "5206cab8b5c578d51949c807dc11db2e603ccb846942eaee6c649551b23e353c",
-      "size": 3237,
-      "normalized_sha256": "5206cab8b5c578d51949c807dc11db2e603ccb846942eaee6c649551b23e353c"
+      "sha256": "dfa4adaa9d36277503f753c8b4ebd89a987bb262e7edcf08b0359634e3075a18",
+      "size": 3515,
+      "normalized_sha256": "dfa4adaa9d36277503f753c8b4ebd89a987bb262e7edcf08b0359634e3075a18"
     },
     "src/scirel/kinetic/terminal_heat_flux_reduction.py": {
       "role": "index",
-      "sha256": "abde9a993e921893b0e1b12514fdcbd1a7fd00d2b47b1a7fd8a0e0a514b90f1e",
-      "size": 5639,
-      "normalized_sha256": "abde9a993e921893b0e1b12514fdcbd1a7fd00d2b47b1a7fd8a0e0a514b90f1e"
+      "sha256": "c51313fa450decdd7a2da96e4cb1d77e274fdd2905674edfad19b5877b52670c",
+      "size": 5667,
+      "normalized_sha256": "c51313fa450decdd7a2da96e4cb1d77e274fdd2905674edfad19b5877b52670c"
     },
     "src/scirel/kinetic/terminal_ion_state_reduction.py": {
       "role": "index",
@@ -9635,9 +9689,9 @@
     },
     "src/scirel/kinetic/terminal_pressure_temperature_reduction.py": {
       "role": "index",
-      "sha256": "880c859289e674548b304cde0ea8e4be7c645be6dd0f1418770a62f8dbc72fd8",
-      "size": 4646,
-      "normalized_sha256": "880c859289e674548b304cde0ea8e4be7c645be6dd0f1418770a62f8dbc72fd8"
+      "sha256": "c28d205b8d9fb8ec541518758319919ed7dd60876b9ff4fc0c8232c3ccbe2cb2",
+      "size": 4674,
+      "normalized_sha256": "c28d205b8d9fb8ec541518758319919ed7dd60876b9ff4fc0c8232c3ccbe2cb2"
     },
     "src/scirel/kinetic/thermal_speed_scale.py": {
       "role": "index",
@@ -9713,9 +9767,9 @@
     },
     "src/scirel/plasma/fast_ion_heating.py": {
       "role": "index",
-      "sha256": "6b514d2e20ddf36b46d6a29308a525a19eb48b7f6c12ac1ab9388ecc76d1eb91",
-      "size": 3444,
-      "normalized_sha256": "6b514d2e20ddf36b46d6a29308a525a19eb48b7f6c12ac1ab9388ecc76d1eb91"
+      "sha256": "5c4a797a166ef38f19f8a21ed26ecb5f1ea409a656f9e072f576db18e58b322a",
+      "size": 3713,
+      "normalized_sha256": "5c4a797a166ef38f19f8a21ed26ecb5f1ea409a656f9e072f576db18e58b322a"
     },
     "src/scirel/plotting.py": {
       "role": "index",
@@ -10103,9 +10157,9 @@
     },
     "tests/operator_contracts/test_alpha_contraction.py": {
       "role": "index",
-      "sha256": "501e32fd67dfbc56614e06b02af407384ae5b5bf24f02b54dddf04745b22413f",
-      "size": 8805,
-      "normalized_sha256": "501e32fd67dfbc56614e06b02af407384ae5b5bf24f02b54dddf04745b22413f"
+      "sha256": "65ae0ec59a8cdb938e20a34fada583f5d100ebe81598854c07aa1da583a82820",
+      "size": 11383,
+      "normalized_sha256": "65ae0ec59a8cdb938e20a34fada583f5d100ebe81598854c07aa1da583a82820"
     },
     "tests/operator_contracts/test_alpha_contraction_l1.py": {
       "role": "index",
@@ -10175,9 +10229,9 @@
     },
     "tests/operator_contracts/test_atomic_hydrogen_charge_exchange_rate.py": {
       "role": "index",
-      "sha256": "f20893a203ec1f16c0d8d5132dce1e2cae63f4d516b10ff7f4ff6745e79da2c0",
-      "size": 2509,
-      "normalized_sha256": "f20893a203ec1f16c0d8d5132dce1e2cae63f4d516b10ff7f4ff6745e79da2c0"
+      "sha256": "bfacd19172c15c017e502ede52ee123066830a739b2bfc8b3181402cfcec3c05",
+      "size": 3456,
+      "normalized_sha256": "bfacd19172c15c017e502ede52ee123066830a739b2bfc8b3181402cfcec3c05"
     },
     "tests/operator_contracts/test_atomic_hydrogen_charge_exchange_rate_l1.py": {
       "role": "index",
@@ -10205,9 +10259,9 @@
     },
     "tests/operator_contracts/test_atomic_hydrogen_omega_frequencies.py": {
       "role": "index",
-      "sha256": "4cd1159a3cd680b4c76f54fd637da7abf74ce42bf44618b820282553ada9a8a3",
-      "size": 7754,
-      "normalized_sha256": "4cd1159a3cd680b4c76f54fd637da7abf74ce42bf44618b820282553ada9a8a3"
+      "sha256": "5f842f43c4932b0a2ebd1bf7659fdc18c730aae08f7e12b0f735725a9d8bfa57",
+      "size": 9128,
+      "normalized_sha256": "5f842f43c4932b0a2ebd1bf7659fdc18c730aae08f7e12b0f735725a9d8bfa57"
     },
     "tests/operator_contracts/test_axisymmetric_grid_mapping.py": {
       "role": "index",
@@ -10317,6 +10371,12 @@
       "size": 13136,
       "normalized_sha256": "0898d232b026731394ac5e1a80206abb2f0e23aeadc199a6ea8fe16c228bce8f"
     },
+    "tests/operator_contracts/test_cross_mesh_distribution_imports.py": {
+      "role": "index",
+      "sha256": "06405f653b58ffb13426264d0137ac67efc36fdfd7612ef3ae6d95f4f4954b32",
+      "size": 2117,
+      "normalized_sha256": "06405f653b58ffb13426264d0137ac67efc36fdfd7612ef3ae6d95f4f4954b32"
+    },
     "tests/operator_contracts/test_cross_mesh_scalar_interpolation.py": {
       "role": "index",
       "sha256": "56db4e5951976cf5c7cede5677b24d4eef4c83160a66376c20af37d35a292353",
@@ -10349,9 +10409,9 @@
     },
     "tests/operator_contracts/test_fast_ion_heating.py": {
       "role": "index",
-      "sha256": "80fa59992b689ef93e62bc5be2ad0d00eaab5c243f1a94090096f48b9c50695c",
-      "size": 964,
-      "normalized_sha256": "80fa59992b689ef93e62bc5be2ad0d00eaab5c243f1a94090096f48b9c50695c"
+      "sha256": "e985737155a9f69fc92807bb535e184420535e1e66498a0f500c3f61303e2788",
+      "size": 1291,
+      "normalized_sha256": "e985737155a9f69fc92807bb535e184420535e1e66498a0f500c3f61303e2788"
     },
     "tests/operator_contracts/test_filament_coil_green_gseq.py": {
       "role": "index",
@@ -10377,6 +10437,12 @@
       "size": 7636,
       "normalized_sha256": "ac75fae7b6546987564ffaec7b5b549f4411d02a46583fdac9cc9471beeb473f"
     },
+    "tests/operator_contracts/test_fluidbw_native_negative_candidates.py": {
+      "role": "index",
+      "sha256": "c40881beca0730120b1a5c3700bebedf5ae9915741bca8fd5fbfc5fb2c2732dc",
+      "size": 2197,
+      "normalized_sha256": "c40881beca0730120b1a5c3700bebedf5ae9915741bca8fd5fbfc5fb2c2732dc"
+    },
     "tests/operator_contracts/test_fluidbw_r43_fluid.py": {
       "role": "index",
       "sha256": "71f9db1c316db254e4eccfc7419350859880b041e1105df7d63687a275ca62fb",
@@ -10385,9 +10451,9 @@
     },
     "tests/operator_contracts/test_fluidbw_r43_kinetic.py": {
       "role": "index",
-      "sha256": "1fe14a99f9186c93238aabb521e29a779a679e8558893edf93bfccf00f5e8ec6",
-      "size": 4452,
-      "normalized_sha256": "1fe14a99f9186c93238aabb521e29a779a679e8558893edf93bfccf00f5e8ec6"
+      "sha256": "f5f1d30b6403d7f09dee6ec48522135dce2abbf0e185d5d751b7d446c488edbe",
+      "size": 6167,
+      "normalized_sha256": "f5f1d30b6403d7f09dee6ec48522135dce2abbf0e185d5d751b7d446c488edbe"
     },
     "tests/operator_contracts/test_fluidbw_r43_variants.py": {
       "role": "index",
@@ -10409,9 +10475,9 @@
     },
     "tests/operator_contracts/test_frank_egedal_hot_ion_moments.py": {
       "role": "index",
-      "sha256": "ce2395b64e5d6395ee77652aaa3c47c4326f9acda411eff67f9158b82a54b1bc",
-      "size": 3451,
-      "normalized_sha256": "ce2395b64e5d6395ee77652aaa3c47c4326f9acda411eff67f9158b82a54b1bc"
+      "sha256": "8239f121292bbee8b637c8b62f616b72737af8b61bf7c705c59b20d89e79e953",
+      "size": 5175,
+      "normalized_sha256": "8239f121292bbee8b637c8b62f616b72737af8b61bf7c705c59b20d89e79e953"
     },
     "tests/operator_contracts/test_frank_egedal_pressure_admitted.py": {
       "role": "index",
@@ -10505,9 +10571,9 @@
     },
     "tests/operator_contracts/test_hydrogen2_charge_exchange_rate.py": {
       "role": "index",
-      "sha256": "242b49dff8951281d2fb5ae7127c9c03d590102257c16c7133485a230909c941",
-      "size": 2653,
-      "normalized_sha256": "242b49dff8951281d2fb5ae7127c9c03d590102257c16c7133485a230909c941"
+      "sha256": "592def3a46517ec3c10abc8ec9956145300f0530c3d4c4d9d635df8accc19132",
+      "size": 3594,
+      "normalized_sha256": "592def3a46517ec3c10abc8ec9956145300f0530c3d4c4d9d635df8accc19132"
     },
     "tests/operator_contracts/test_hydrogen2_charge_exchange_rate_l1.py": {
       "role": "index",
@@ -10649,9 +10715,9 @@
     },
     "tests/operator_contracts/test_mirror_constrained_moments.py": {
       "role": "index",
-      "sha256": "426b86867b716660593edc86d06925d0ae3a3ff55ab58ba3ffb01ec365c8bf12",
-      "size": 9402,
-      "normalized_sha256": "426b86867b716660593edc86d06925d0ae3a3ff55ab58ba3ffb01ec365c8bf12"
+      "sha256": "558c3d3a57fbd5666c94d04dd4458b6bf8cdd300422540167652dcaafc70c9e5",
+      "size": 10616,
+      "normalized_sha256": "558c3d3a57fbd5666c94d04dd4458b6bf8cdd300422540167652dcaafc70c9e5"
     },
     "tests/operator_contracts/test_mirror_gauge_scientific_correction.py": {
       "role": "index",
@@ -10871,9 +10937,9 @@
     },
     "tests/operator_contracts/test_pressure_flux_state.py": {
       "role": "index",
-      "sha256": "e236f10f30699e69d47e1a35448b17883f7f36651638ae067e3191edea7d9dc4",
-      "size": 2697,
-      "normalized_sha256": "e236f10f30699e69d47e1a35448b17883f7f36651638ae067e3191edea7d9dc4"
+      "sha256": "1b374eb22e703050c9af6be786f6a0069135d263fb9cceef75af40ecb0fce2d7",
+      "size": 3883,
+      "normalized_sha256": "1b374eb22e703050c9af6be786f6a0069135d263fb9cceef75af40ecb0fce2d7"
     },
     "tests/operator_contracts/test_pressure_margin_cancellation.py": {
       "role": "index",
@@ -10961,9 +11027,9 @@
     },
     "tests/operator_contracts/test_terminal_molecular_flux_velocity.py": {
       "role": "index",
-      "sha256": "7792d85ec23eeb8ce2ed69be7b18e3401b73716effed313bdf67f30a3458cf98",
-      "size": 4185,
-      "normalized_sha256": "7792d85ec23eeb8ce2ed69be7b18e3401b73716effed313bdf67f30a3458cf98"
+      "sha256": "bc6c22baf69bd5a7f5accdbd40d908af2120abbfb9c34184fadd0a10515c9a9a",
+      "size": 5355,
+      "normalized_sha256": "bc6c22baf69bd5a7f5accdbd40d908af2120abbfb9c34184fadd0a10515c9a9a"
     },
     "tests/operator_contracts/test_terminal_molecular_flux_velocity_l1.py": {
       "role": "index",
@@ -11135,9 +11201,9 @@
     },
     "tests/pleiades/geometry/test_green_reflection_repair.py": {
       "role": "index",
-      "sha256": "1d2c092379baae4e57b97dc24bfb4c454fd0cc409e81a14dd2430f378e1ad08c",
-      "size": 2492,
-      "normalized_sha256": "1d2c092379baae4e57b97dc24bfb4c454fd0cc409e81a14dd2430f378e1ad08c"
+      "sha256": "0e5e2e2b0538623abf5743f122bb541d42ecbbc0f32b2bb5e9d22bcb5520665a",
+      "size": 3656,
+      "normalized_sha256": "0e5e2e2b0538623abf5743f122bb541d42ecbbc0f32b2bb5e9d22bcb5520665a"
     },
     "tests/pleiades/geometry/test_green_response_matrices.py": {
       "role": "index",
@@ -11219,9 +11285,9 @@
     },
     "tests/test_affected_test_selection.py": {
       "role": "index",
-      "sha256": "da0031811db5a51b340e863159517b329df603ef05640122698f438c7554cf7c",
-      "size": 40954,
-      "normalized_sha256": "da0031811db5a51b340e863159517b329df603ef05640122698f438c7554cf7c"
+      "sha256": "c5171d1bebf0d28a320d71dfd0ffe27b2a9f370cd1a802659a6bfa175ff26c89",
+      "size": 46008,
+      "normalized_sha256": "c5171d1bebf0d28a320d71dfd0ffe27b2a9f370cd1a802659a6bfa175ff26c89"
     },
     "tests/test_asset_documentation.py": {
       "role": "index",
@@ -11241,17 +11307,35 @@
       "size": 19151,
       "normalized_sha256": "cf52a74f678f90f9b6b696df3b4bfbacb758b0fb353c5bf4be25b5544dc42d47"
     },
+    "tests/test_capability_import_closure.py": {
+      "role": "index",
+      "sha256": "a0d676bd01f8f944068c4485d7d3fa362c3e81e9bfb2cd9edc827fccf8c4429c",
+      "size": 4180,
+      "normalized_sha256": "a0d676bd01f8f944068c4485d7d3fa362c3e81e9bfb2cd9edc827fccf8c4429c"
+    },
     "tests/test_catalog_snapshot_package.py": {
       "role": "index",
       "sha256": "5caadf182cae7cfbd47708c686386757f490bacebaa0735cf830466f0c28d52b",
       "size": 3194,
       "normalized_sha256": "5caadf182cae7cfbd47708c686386757f490bacebaa0735cf830466f0c28d52b"
     },
+    "tests/test_cauchy_transform_import_boundary.py": {
+      "role": "index",
+      "sha256": "c6df1968146cc81f94f916b0046575799540e9d08806118a699bdb64ac038e4b",
+      "size": 1272,
+      "normalized_sha256": "c6df1968146cc81f94f916b0046575799540e9d08806118a699bdb64ac038e4b"
+    },
     "tests/test_codefusion_consumer_contract.py": {
       "role": "index",
       "sha256": "ab1f715582adf79743b811d4bc1b6651a4be113e4f11fd33b17b0002101d9a96",
       "size": 2525,
       "normalized_sha256": "ab1f715582adf79743b811d4bc1b6651a4be113e4f11fd33b17b0002101d9a96"
+    },
+    "tests/test_development_skill_contract.py": {
+      "role": "index",
+      "sha256": "c6e6fb963e8e4595e698d099756176ad5b7d0d0a8e076268d9703e3e00f446dd",
+      "size": 8762,
+      "normalized_sha256": "c6e6fb963e8e4595e698d099756176ad5b7d0d0a8e076268d9703e3e00f446dd"
     },
     "tests/test_document_requalification.py": {
       "role": "index",
@@ -11261,15 +11345,33 @@
     },
     "tests/test_domain_import_boundaries.py": {
       "role": "index",
-      "sha256": "aab3f916a4d268d474a2fc146dfb32d3025f5344bb9e16aac5a95cb7f81c9c8a",
-      "size": 5156,
-      "normalized_sha256": "aab3f916a4d268d474a2fc146dfb32d3025f5344bb9e16aac5a95cb7f81c9c8a"
+      "sha256": "f830529560aab9b1e159cba5129c5bae50eb19745818343e63c38bedf831cd0b",
+      "size": 15872,
+      "normalized_sha256": "f830529560aab9b1e159cba5129c5bae50eb19745818343e63c38bedf831cd0b"
+    },
+    "tests/test_faddeeva_import_boundary.py": {
+      "role": "index",
+      "sha256": "fb6a25d1785e4a0416d10484a1b71947b50c834a3e41c633e9ab2069e89c8d87",
+      "size": 1623,
+      "normalized_sha256": "fb6a25d1785e4a0416d10484a1b71947b50c834a3e41c633e9ab2069e89c8d87"
     },
     "tests/test_fluid_public_surface.py": {
       "role": "index",
-      "sha256": "80e62e71d9a638bbe921f1653c6e263b814795b983d1cb3fb18a4c0c62a05297",
-      "size": 1322,
-      "normalized_sha256": "80e62e71d9a638bbe921f1653c6e263b814795b983d1cb3fb18a4c0c62a05297"
+      "sha256": "2df8dd7fcc24f1243f486850c8e5e232882aace1fb836a4453f3e0294d22f174",
+      "size": 1817,
+      "normalized_sha256": "2df8dd7fcc24f1243f486850c8e5e232882aace1fb836a4453f3e0294d22f174"
+    },
+    "tests/test_frank_egedal_hot_ion_moments_import_boundary.py": {
+      "role": "index",
+      "sha256": "00e8ce4c41bf37eb2c1bd90ce6f696b14b281e5be01f1a18ceb65491bc47b12d",
+      "size": 1760,
+      "normalized_sha256": "00e8ce4c41bf37eb2c1bd90ce6f696b14b281e5be01f1a18ceb65491bc47b12d"
+    },
+    "tests/test_frank_egedal_source_projection_import_boundary.py": {
+      "role": "index",
+      "sha256": "fdcef92d44c7eeb729cfe08c387f082b523507352417812c30aa21d3f7388fc6",
+      "size": 1844,
+      "normalized_sha256": "fdcef92d44c7eeb729cfe08c387f082b523507352417812c30aa21d3f7388fc6"
     },
     "tests/test_fvm.py": {
       "role": "index",
@@ -11309,9 +11411,9 @@
     },
     "tests/test_lazy_namespace.py": {
       "role": "index",
-      "sha256": "cf97dabfdeae59aa09c0c40d2ccb4968a0ec6a5ed3c608268cedbca7c3a2201d",
-      "size": 11507,
-      "normalized_sha256": "cf97dabfdeae59aa09c0c40d2ccb4968a0ec6a5ed3c608268cedbca7c3a2201d"
+      "sha256": "2453baf9da8b7c6f5a76e0823ed63d74433655e65d907400e964bf42f2d8051f",
+      "size": 13822,
+      "normalized_sha256": "2453baf9da8b7c6f5a76e0823ed63d74433655e65d907400e964bf42f2d8051f"
     },
     "tests/test_library_composition.py": {
       "role": "index",
@@ -11325,6 +11427,12 @@
       "size": 6544,
       "normalized_sha256": "eef1c2dda547f0fc6e1004273303eacaa4f0e236a91a287561a1f7770b8251dd"
     },
+    "tests/test_maxwellian_import_boundary.py": {
+      "role": "index",
+      "sha256": "96d72ae47d7f86976c686f200ac3c57bd917a2ea38984a789bccfe6a6bb64bb1",
+      "size": 1939,
+      "normalized_sha256": "96d72ae47d7f86976c686f200ac3c57bd917a2ea38984a789bccfe6a6bb64bb1"
+    },
     "tests/test_module_exports.py": {
       "role": "index",
       "sha256": "b61aaf3cebd7da5f37d194081728ff5e67bcd53f6987a310ab02d2715cac9750",
@@ -11336,6 +11444,12 @@
       "sha256": "b70c2733be57f97d4e56f6ad6de57bd313b8851821bed85cdb82238a486cebbd",
       "size": 3869,
       "normalized_sha256": "b70c2733be57f97d4e56f6ad6de57bd313b8851821bed85cdb82238a486cebbd"
+    },
+    "tests/test_native_resource_reachability.py": {
+      "role": "index",
+      "sha256": "f306ba09cef8472983e7fdec00d6d87148ef7eadaf6246910ac72f4ee3052ec3",
+      "size": 2807,
+      "normalized_sha256": "f306ba09cef8472983e7fdec00d6d87148ef7eadaf6246910ac72f4ee3052ec3"
     },
     "tests/test_neutral_public_surface.py": {
       "role": "index",
@@ -11357,9 +11471,9 @@
     },
     "tests/test_pdrk_public_surface.py": {
       "role": "index",
-      "sha256": "4e0e71cfbf76044ce8756cd362bb50fe3d40a40180789f0270a368bbfa80f6bd",
-      "size": 2532,
-      "normalized_sha256": "4e0e71cfbf76044ce8756cd362bb50fe3d40a40180789f0270a368bbfa80f6bd"
+      "sha256": "d0e032807d4f8ad21b6533ed1669f247eab9498d5f41a1a8d445affa9414e0f7",
+      "size": 7993,
+      "normalized_sha256": "d0e032807d4f8ad21b6533ed1669f247eab9498d5f41a1a8d445affa9414e0f7"
     },
     "tests/test_platform_support.py": {
       "role": "index",
@@ -11372,6 +11486,12 @@
       "sha256": "a286fb237d9069e269873061dad62191613c68102be4ecd279ba4f3d3ad6e49d",
       "size": 4606,
       "normalized_sha256": "a286fb237d9069e269873061dad62191613c68102be4ecd279ba4f3d3ad6e49d"
+    },
+    "tests/test_project_metadata.py": {
+      "role": "index",
+      "sha256": "57a033933fb7b3b490f537b6d0645cae29119e56143424473aaa37216784d97f",
+      "size": 1500,
+      "normalized_sha256": "57a033933fb7b3b490f537b6d0645cae29119e56143424473aaa37216784d97f"
     },
     "tests/test_public_api_binding.py": {
       "role": "index",
@@ -11390,6 +11510,12 @@
       "sha256": "ef16db1cf7387dca5de474a7df3b2113418d33cbc3cc145462d6db39cb502662",
       "size": 8510,
       "normalized_sha256": "ef16db1cf7387dca5de474a7df3b2113418d33cbc3cc145462d6db39cb502662"
+    },
+    "tests/test_relativistic_maxwellian_bessel_import_boundary.py": {
+      "role": "index",
+      "sha256": "3e2bc2fa099a80a2cf25aa4234f866bec2d6303c67733036340b51232359d250",
+      "size": 1271,
+      "normalized_sha256": "3e2bc2fa099a80a2cf25aa4234f866bec2d6303c67733036340b51232359d250"
     },
     "tests/test_release_alignment.py": {
       "role": "index",
@@ -11429,9 +11555,9 @@
     },
     "tests/test_runtime_dependency_boundaries.py": {
       "role": "index",
-      "sha256": "ec2a4471c19d37e5c1a561fc790d680095ce59dd915ef4fc755bd8a1738a458d",
-      "size": 1474,
-      "normalized_sha256": "ec2a4471c19d37e5c1a561fc790d680095ce59dd915ef4fc755bd8a1738a458d"
+      "sha256": "27eff6d2f7e284cdb0e408b95556bee83cdaacf63f129a0815d075edca99d8ed",
+      "size": 3088,
+      "normalized_sha256": "27eff6d2f7e284cdb0e408b95556bee83cdaacf63f129a0815d075edca99d8ed"
     },
     "tests/test_scientific_delivery.py": {
       "role": "index",
@@ -11441,9 +11567,9 @@
     },
     "tests/test_scientific_distribution.py": {
       "role": "index",
-      "sha256": "cb480bb4ee9d8c4fca661b351dab0aae29e923aca992b3d9ae61d1767965bbbd",
-      "size": 3243,
-      "normalized_sha256": "cb480bb4ee9d8c4fca661b351dab0aae29e923aca992b3d9ae61d1767965bbbd"
+      "sha256": "731befd91e0033233db04f801ef944b7ac824273dde6f47c01d567d481e47c89",
+      "size": 4433,
+      "normalized_sha256": "731befd91e0033233db04f801ef944b7ac824273dde6f47c01d567d481e47c89"
     },
     "tests/test_scientific_request_workflow_docs.py": {
       "role": "index",
@@ -11471,9 +11597,9 @@
     },
     "tests/test_spark_codex.py": {
       "role": "index",
-      "sha256": "846517b35ae4255496b93eebce69129701a90507c415cb84930263ff6e4f5b5c",
-      "size": 3263,
-      "normalized_sha256": "846517b35ae4255496b93eebce69129701a90507c415cb84930263ff6e4f5b5c"
+      "sha256": "186d05474c15caf286cd8bf9b301d06027530ef8a5ccf74e8f2fffe8164246fb",
+      "size": 4415,
+      "normalized_sha256": "186d05474c15caf286cd8bf9b301d06027530ef8a5ccf74e8f2fffe8164246fb"
     },
     "tests/test_thermal_cancellation.py": {
       "role": "index",
@@ -11495,15 +11621,21 @@
     },
     "tests/test_validate_installed_wheel.py": {
       "role": "index",
-      "sha256": "43c640bd31fb46abab7e4f0097dc0bfe27b02a52b184082b7467f7e76e9ef351",
-      "size": 13870,
-      "normalized_sha256": "43c640bd31fb46abab7e4f0097dc0bfe27b02a52b184082b7467f7e76e9ef351"
+      "sha256": "31de8f185e34a02b8642d0bb965aa0d9d0315a0cb03c1b30d6ed0c2739fb9fc4",
+      "size": 18834,
+      "normalized_sha256": "31de8f185e34a02b8642d0bb965aa0d9d0315a0cb03c1b30d6ed0c2739fb9fc4"
     },
     "tests/test_validate_offline_wheelhouse.py": {
       "role": "index",
       "sha256": "ef8ebe1c3523ffc5a71ed742a1a2c13281dd71a933993f913dd97174f4477bf8",
       "size": 12682,
       "normalized_sha256": "ef8ebe1c3523ffc5a71ed742a1a2c13281dd71a933993f913dd97174f4477bf8"
+    },
+    "tests/test_weideman_import_boundary.py": {
+      "role": "index",
+      "sha256": "8a3f436db205debd21738f8275a54342244cfd0a8f4572d9bb2f88a0ca06ef52",
+      "size": 1326,
+      "normalized_sha256": "8a3f436db205debd21738f8275a54342244cfd0a8f4572d9bb2f88a0ca06ef52"
     },
     "tests/test_workflow_contracts.py": {
       "role": "index",
