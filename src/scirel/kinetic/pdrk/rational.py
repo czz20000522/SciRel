@@ -9,9 +9,6 @@ This development module is not approved for default distribution.
 """
 from pathlib import Path
 import numpy as np
-from scipy import sparse
-from scipy.linalg import eig
-from scipy.sparse.linalg import eigs
 from ._transport import NativeAction,NativeTransport
 from ._rational_frequency import solve_rational_frequency
 
@@ -71,6 +68,7 @@ def _integer(value,name,minimum=0):
 
 
 def _native(script,state,outputs):
+ from scipy import sparse
  state={k:(v.astype(np.complex128 if v.dtype.kind=='c' else np.float64) if sparse.issparse(v) else np.asarray(v,dtype=np.complex128 if np.asarray(v).dtype.kind=='c' else np.float64)) for k,v in state.items()}
  if not all(np.isfinite(v.data if sparse.issparse(v) else v).all() for v in state.values()):raise ValueError('native numeric port not representable in float64/complex128')
  action=NativeAction('legacy/'+script+'.m',tuple(outputs),tuple(state))
@@ -175,8 +173,10 @@ def solve_matrix(matrix,*,model='es1d',sp=0,nw=None,wg=0):
   if 'accepted' in r and not np.all(r['accepted']):
    error=ArithmeticError('unqualified finite descriptor modes; inspect attached diagnostics');error.diagnostics=r;raise error
   return r
- M=matrix if sparse.issparse(matrix) else np.asarray(matrix,dtype=complex)
- if len(M.shape)!=2 or M.shape[0]!=M.shape[1] or M.shape[0]==0 or not np.isfinite(M.data if sparse.issparse(M) else M).all():raise ValueError('finite square frequency matrix required')
+ is_sparse = type(matrix).__module__.startswith('scipy.sparse.')
+ M=matrix if is_sparse else np.asarray(matrix,dtype=complex)
+ finite_values=M.data if is_sparse else M
+ if len(M.shape)!=2 or M.shape[0]!=M.shape[1] or M.shape[0]==0 or not np.isfinite(finite_values).all():raise ValueError('finite square frequency matrix required')
  sp=_integer(sp,'sp')
  if sp not in (0,1):raise ValueError('sp must be dense0 or shifted sparse1')
  if sp:
@@ -184,9 +184,13 @@ def solve_matrix(matrix,*,model='es1d',sp=0,nw=None,wg=0):
   if count>=M.shape[0]-1:raise ValueError('sparse eigs requires nw<dimension-1')
   shift=_complex_scalar(wg,'wg')
   if not np.isfinite(shift):raise ValueError('finite frequency shift required')
+ from scipy import sparse
+ from scipy.linalg import eig
+ from scipy.sparse.linalg import eigs
+ if sp:
   d,V=eigs(sparse.csc_matrix(M),k=count,sigma=shift)
- else:d,V=eig(M.toarray() if sparse.issparse(M) else M)
- norm=sparse.linalg.norm(M) if sparse.issparse(M) else np.linalg.norm(M)
+ else:d,V=eig(M.toarray() if is_sparse else M)
+ norm=sparse.linalg.norm(M) if is_sparse else np.linalg.norm(M)
  residual=np.linalg.norm(M@V-V*d,axis=0)/((norm+abs(d))*np.linalg.norm(V,axis=0))
  if not np.isfinite(d).all() or not np.isfinite(residual).all() or np.any(residual>max(1e-11,128*len(d)*np.finfo(float).eps)):raise ArithmeticError('frequency eigensolver failed backward residual gate')
  order=np.argsort(-d.imag,kind='stable');w=d[order]

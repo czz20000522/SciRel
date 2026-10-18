@@ -1,6 +1,5 @@
 """Validated finite rational descriptor solver, source-independent."""
 import numpy as np
-from scipy.linalg import eig
 from ._harris_descriptor import rational_frequency_descriptor
 
 def solve_rational_frequency(*, constant, poles, residues):
@@ -25,6 +24,8 @@ def solve_rational_frequency(*, constant, poles, residues):
             constant=p['constant'],poles=np.empty(0,complex),residues=np.empty(0,complex))
     c=np.asarray([x[0] for x in kept]); b=np.asarray([x[1] for x in kept])
     p=rational_frequency_descriptor(constant=p['constant'],poles=c,residues=b)
+    from scipy.linalg import eig
+
     ab,V=eig(p['A'],p['H'],right=True,homogeneous_eigvals=True)
     alpha,beta=ab
     valid=beta!=0

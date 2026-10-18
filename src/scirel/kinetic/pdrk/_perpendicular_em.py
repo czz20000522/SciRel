@@ -7,16 +7,22 @@ Gaussian components may carry signed mixture weights, but caller owns whether
 that mixture is a nonnegative physical distribution. No loss-cone guard is guessed.
 """
 import numpy as np
-from scipy.special import ive
-from scipy import sparse
 
 
 def perpendicular_maxwell_pencil(*,components,kx,N,c2):
     if not np.isfinite(kx) or int(N)!=N or N<0 or not np.isfinite(c2) or c2<=0:raise ValueError('finite kx,integer N>=0,positive c² required')
-    terms={};totalwp2=0.
+    normalized=[]
     for s in components:
         g,wp2,vtz,vtp,vd,weight=[float(s[k]) for k in ('gyro','wp2','vtz','vtp','drift','weight')]
         if not np.isfinite([g,wp2,vtz,vtp,vd,weight]).all() or g==0 or min(wp2,vtz,vtp)<=0:raise ValueError('finite physical Gaussian component required')
+        normalized.append((g,wp2,vtz,vtp,vd,weight))
+
+    from scipy import sparse
+    if kx != 0:
+        from scipy.special import ive
+
+    terms={};totalwp2=0.
+    for g,wp2,vtz,vtp,vd,weight in normalized:
         totalwp2+=weight*wp2
         if kx==0:
             # Analytic uniform-field cold response: fundamental gyro poles are

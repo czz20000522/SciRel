@@ -7,8 +7,12 @@ the associated development provenance. Human endorsement and public
 redistribution are pending.
 """
 import numpy as np
-from scipy.linalg import eig, lstsq
-from scipy.optimize import root
+
+# Kept as a patch point for the continuation contract tests.  The concrete
+# SciPy solver is still resolved only when this compatibility wrapper is used.
+def root(*args, **kwargs):
+    from scipy.optimize import root as _root
+    return _root(*args, **kwargs)
 
 
 def canonical_faddeeva(z):
@@ -156,6 +160,8 @@ def solve_frequency_pencil(M,A,*,state_scales=None,backward_tolerance=1e-10):
         raise ValueError('M/A must be finite nonempty square pencils of equal shape')
     d=np.ones(M.shape[0])if state_scales is None else np.asarray(state_scales,dtype=float)
     if d.shape!=(M.shape[0],)or not np.isfinite(d).all()or np.any(d<=0):raise ValueError('state_scales positive finite required')
+    from scipy.linalg import eig, lstsq
+
     Ms=M*d[None,:]/d[:,None];As=A*d[None,:]/d[:,None]
     # Exact sparsity components prevent arbitrary mixing of degenerate modes
     # between mathematically uncoupled invariant subspaces. Only literal zeros
@@ -351,13 +357,14 @@ def continue_em1d(state,*,pm=1,k_grid=None,initial_guess=None,residual_tolerance
         if supplied.dtype.kind not in 'iuf'or not supplied.size or not np.isfinite(supplied).all()or np.any(supplied==0):raise ValueError('finite real nonzero continuation grid required; both signs supported')
     k=(np.arange(1,51)*.01/float(np.asarray(state['cwp']).item()))if k_grid is None else np.asarray(k_grid,dtype=float).reshape(-1)
     seed=complex((.05+.04j)*float(np.asarray(state['wcs1']).item()))if initial_guess is None else complex(initial_guess)
+    solver = root
     accepted=[];records=[]
     for point in k:
         def fun(v):
             f,scale=em1d_parallel_residual(state,complex(*v),point,pm=pm)
             return np.array([f.real/scale,f.imag/scale])
         try:
-            result=root(fun,[seed.real,seed.imag],method='hybr',options=solver_options or {})
+            result=solver(fun,[seed.real,seed.imag],method='hybr',options=solver_options or {})
         except Exception as cause:
             raise ContinuationFailure(dict(k=float(point),guess=seed,accepted_prefix=tuple(accepted),evaluation_error=repr(cause))) from cause
         attempted=complex(*result.x);f,scale=em1d_parallel_residual(state,attempted,point,pm=pm)

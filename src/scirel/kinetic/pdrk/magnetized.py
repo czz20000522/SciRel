@@ -16,7 +16,6 @@ Promotion retains the caller's represented values, not lost input precision.
 from pathlib import Path
 from types import MappingProxyType
 import numpy as np
-from scipy import sparse
 from ._transport import NativeAction, NativeTransport, NativeResult
 
 
@@ -109,6 +108,8 @@ def _controls(controls):
     return controls
 
 def _call(action, inputs, outputs, *, merge=None, timeout=86400):
+    from scipy import sparse
+
     converted={}
     for key,value in inputs.items():
         array=value if sparse.issparse(value) else np.asarray(value)

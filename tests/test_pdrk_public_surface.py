@@ -131,3 +131,59 @@ def test_pdrk_catalog_modules_have_explicit_callable_exports() -> None:
         assert set(module.__all__) == expected[name]
         assert all(callable(getattr(module, symbol)) for symbol in module.__all__)
 
+
+def test_pdrk_numeric_modules_defer_scipy_until_valid_backend() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-I",
+            "-c",
+            r'''
+import sys
+import numpy as np
+sys.path.insert(0, sys.argv[1])
+
+from scirel.kinetic.pdrk import (
+    _fluid_parallel,
+    _perpendicular_em,
+    _rational_frequency,
+    magnetized,
+    rational,
+)
+
+assert "scipy" not in sys.modules
+
+for call in (
+    lambda: _fluid_parallel.solve_frequency_pencil(np.empty((0, 0)), np.empty((0, 0))),
+    lambda: _fluid_parallel.continue_em1d({}, k_grid=[0.0]),
+    lambda: _perpendicular_em.perpendicular_maxwell_pencil(
+        components=[], kx=np.nan, N=0, c2=1.0
+    ),
+    lambda: _rational_frequency.solve_rational_frequency(
+        constant=0.0, poles=[], residues=[]
+    ),
+    lambda: magnetized.initialize_equilibrium(controls={"B0": 0.0}),
+    lambda: rational.solve_matrix(np.eye(1), model="unknown"),
+    lambda: rational.solve_matrix(np.empty((0, 0)), model="es1d"),
+):
+    try:
+        call()
+    except (ValueError, TypeError):
+        pass
+    else:
+        raise AssertionError("invalid PDRK input unexpectedly succeeded")
+    assert "scipy" not in sys.modules
+
+output = _rational_frequency.solve_rational_frequency(
+    constant=1.0, poles=[1.0], residues=[1.0]
+)
+assert output["omega"].shape == (1,)
+assert "scipy" in sys.modules
+''',
+            str(ROOT / "src"),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+

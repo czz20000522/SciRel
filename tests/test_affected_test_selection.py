@@ -162,6 +162,11 @@ def test_cylindrical_quadrature_change_selects_distribution_handoff():
             "src/scirel/collisions/relativistic_maxwellian_bessel.py",
             "tests/test_relativistic_maxwellian_bessel_import_boundary.py",
         ),
+        ("src/scirel/kinetic/pdrk/_fluid_parallel.py", "tests/test_pdrk_public_surface.py"),
+        ("src/scirel/kinetic/pdrk/_perpendicular_em.py", "tests/test_pdrk_public_surface.py"),
+        ("src/scirel/kinetic/pdrk/_rational_frequency.py", "tests/test_pdrk_public_surface.py"),
+        ("src/scirel/kinetic/pdrk/magnetized.py", "tests/test_pdrk_public_surface.py"),
+        ("src/scirel/kinetic/pdrk/rational.py", "tests/test_pdrk_public_surface.py"),
     ],
 )
 def test_import_boundary_regressions_are_selected_with_source_changes(source_path, auxiliary_test):
