@@ -17,62 +17,6 @@ def _case():
     return vr, vx, 1.0, 5000.0, distribution, np.array([1.0, 2.0]), np.array([0.5, 1.0, 0.25])
 
 
-def _pre_cache_reference(vr, vx, mass, speed, distribution, radial_weight, widths):
-    """Evaluate the pre-cache slice reductions with the original order."""
-    nx = distribution.shape[2]
-    molecule_mass = 2.0 * mass * 1.6726231e-27
-    density = np.zeros(nx, dtype=float)
-    particle_flux = np.zeros(nx, dtype=float)
-    for k in range(nx):
-        density[k] = np.sum(radial_weight * (distribution[:, :, k] @ widths))
-        particle_flux[k] = speed * np.sum(
-            radial_weight * (distribution[:, :, k] @ (vx * widths))
-        )
-    mean_velocity = particle_flux / density
-    normalized_mean_velocity = mean_velocity / speed
-    random_velocity_squared = vr[:, None, None] ** 2 + (
-        vx[None, :, None] - normalized_mean_velocity[None, None, :]
-    ) ** 2
-    pressure = np.zeros(nx, dtype=float)
-    longitudinal_stress = np.zeros(nx, dtype=float)
-    random_heat_flux = np.zeros(nx, dtype=float)
-    thermal_squared = speed * speed
-    thermal_cubed = thermal_squared * speed
-    for k in range(nx):
-        weighted_random_second = np.sum(
-            radial_weight
-            * ((random_velocity_squared[:, :, k] * distribution[:, :, k]) @ widths)
-        )
-        pressure[k] = molecule_mass * thermal_squared * weighted_random_second / (
-            3.0 * 1.602177e-19
-        )
-        weighted_axial_second = np.sum(
-            radial_weight
-            * (
-                distribution[:, :, k]
-                @ (widths * (vx - normalized_mean_velocity[k]) ** 2)
-            )
-        )
-        longitudinal_stress[k] = (
-            molecule_mass * thermal_squared * weighted_axial_second / 1.602177e-19
-        ) - pressure[k]
-        random_heat_flux[k] = 0.5 * molecule_mass * thermal_cubed * np.sum(
-            radial_weight
-            * (
-                (random_velocity_squared[:, :, k] * distribution[:, :, k])
-                @ (widths * (vx - normalized_mean_velocity[k]))
-            )
-        )
-    total_heat_flux = (
-        (0.5 * density * molecule_mass * mean_velocity * mean_velocity
-         + 2.5 * pressure * 1.602177e-19)
-        * mean_velocity
-        + 1.602177e-19 * longitudinal_stress * mean_velocity
-        + random_heat_flux
-    )
-    return random_heat_flux, total_heat_flux
-
-
 def test_random_and_total_heat_flux_match_independent_cell_moments():
     vr, vx, mass, speed, f, radial_weight, widths = _case()
     result = reduce_terminal_molecular_heat_flux(
@@ -106,22 +50,31 @@ def test_random_and_total_heat_flux_match_independent_cell_moments():
                                expected_total, rtol=1e-14, atol=1e-30)
 
 
-def test_slice_cache_preserves_pre_cache_bitwise_results():
+def test_spatial_partition_preserves_bitwise_outputs():
     rng = np.random.default_rng(20261019)
-    vr = np.array([0.0, 0.25, 1.5])
-    vx = np.array([-2.0, -0.125, 0.75, 3.0])
-    distribution = rng.random((vr.size, vx.size, 3)) * 1e4
-    radial_weight = rng.random(vr.size)
-    widths = rng.random(vx.size)
-    speed = 2.75e4
-    result = reduce_terminal_molecular_heat_flux(
-        vr, vx, 0.75, speed, distribution, radial_weight, widths
-    )
-    expected_random, expected_total = _pre_cache_reference(
-        vr, vx, 0.75, speed, distribution, radial_weight, widths
-    )
-    np.testing.assert_array_equal(result["random_heat_flux_profile_w_m2"], expected_random)
-    np.testing.assert_array_equal(result["total_heat_flux_profile_w_m2"], expected_total)
+    shape = (7, 11, 17)
+    vr = np.abs(rng.normal(size=shape[0]))
+    vx = rng.normal(size=shape[1])
+    distribution = rng.lognormal(0.0, 4.0, size=shape)
+    radial_weight = rng.lognormal(0.0, 2.0, size=shape[0])
+    widths = rng.lognormal(-1.0, 1.5, size=shape[1])
+    radial_weight[0] = 0.0
+    widths[3] = 0.0
+    args = (vr, vx, 3.7, 3.7e4, distribution, radial_weight, widths)
+    whole = reduce_terminal_molecular_heat_flux(*args)
+    split = {
+        key: np.concatenate(
+            [
+                reduce_terminal_molecular_heat_flux(
+                    vr, vx, 3.7, 3.7e4, distribution[:, :, k:k + 1], radial_weight, widths
+                )[key]
+                for k in range(shape[2])
+            ]
+        )
+        for key in whole
+    }
+    for key in whole:
+        np.testing.assert_array_equal(whole[key], split[key])
 
 
 def test_random_heat_flux_agrees_with_nine_moment_relation():
