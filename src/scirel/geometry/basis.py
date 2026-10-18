@@ -15,7 +15,18 @@ closure is certified as a physical magnetic-fitting boundary. Quartic and
 special-function factory selections retain explicit rejection behavior.
 """
 import numpy as np
-import scipy.special as spec
+
+
+def _lazy_special(name):
+    """Resolve an optional SciPy special function only when it is called."""
+    def _call(*args, **kwargs):
+        from scipy import special
+
+        return getattr(special, name)(*args, **kwargs)
+
+    _call.__name__ = name
+    _call.__qualname__ = name
+    return _call
 
 
 def _validated_spline_data(x_data, y_data):
@@ -248,14 +259,14 @@ basis_map = {"natural_cubic_spline":NaturalCubicSpline,
         "clamped_cubic_spline2":SecondClampedCubicSpline,
         "quartic_spline":QuarticSpline,
         "poly":np.polynomial.polynomial.Polynomial,
-        "j0":spec.j0,
-        "j1":spec.j1,
-        "y0":spec.y0,
-        "y1":spec.y1,
-        "i0":spec.i0,
-        "i1":spec.i1,
-        "k0":spec.k0,
-        "k1":spec.k1,
+        "j0":_lazy_special("j0"),
+        "j1":_lazy_special("j1"),
+        "y0":_lazy_special("y0"),
+        "y1":_lazy_special("y1"),
+        "i0":_lazy_special("i0"),
+        "i1":_lazy_special("i1"),
+        "k0":_lazy_special("k0"),
+        "k1":_lazy_special("k1"),
         }
 
 def build_basis(basis='poly',**kwargs):

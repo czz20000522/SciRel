@@ -75,6 +75,25 @@ assert "scipy" not in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_geometry_basis_core_export_does_not_import_scipy_special() -> None:
+    result = _run(
+        """
+import sys
+from scirel.geometry import build_basis
+
+assert "scipy" not in sys.modules
+try:
+    build_basis("j0")
+except NotImplementedError:
+    pass
+else:
+    raise AssertionError("unimplemented special basis unexpectedly became available")
+assert "scipy" not in sys.modules
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_lazy_exports_preserve_identity_for_the_remaining_domains() -> None:
     result = _run(
         """
