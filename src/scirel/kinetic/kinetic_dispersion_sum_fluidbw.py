@@ -87,8 +87,7 @@ def evaluate_fluidbw_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, 
         a = a_s[s]
         for l in range(-lmx, lmx + 1):
             zn = (omega - l * wcs[s]) / (kz * vts[s])
-            gam = _gamma(l, b)
-            gamp = _gamma_prime(l, b)
+            gam, gamp = _gamma_and_prime(l, b)
             x_xx = l**2 * gam / b
             x_xy = 1j * l * gamp
             x_xz = np.sqrt(2.0) * zn * l * gam / a
@@ -133,18 +132,18 @@ def evaluate_fluidbw_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, 
     }
 
 
-def _gamma(n, b):
-    """Scaled Bessel Gamma_n(b) = besseli(n, b, 1)."""
+def _gamma_and_prime(n, b):
+    """Return scaled ``Gamma_n`` and its neighbor derivative together.
+
+    Both quantities use the same three neighboring ``ive`` values.  Keeping
+    the center subtraction and averaging order unchanged preserves the
+    existing floating-point contract while avoiding a duplicate special
+    function evaluation for every species/harmonic pair.
+    """
     from scipy.special import ive
 
-    return float(ive(n, b))
-
-
-def _gamma_prime(n, b):
-    """Neighbour combination ((I_{n-1}+I_{n+1})/2 - I_n) * exp(-b), scaled by ive."""
-    from scipy.special import ive
-
-    return float((ive(n - 1, b) + ive(n + 1, b)) / 2.0 - ive(n, b))
+    previous, center, following = ive(np.asarray([n - 1, n, n + 1]), b)
+    return float(center), float((previous + following) / 2.0 - center)
 
 
 @lru_cache(maxsize=1)

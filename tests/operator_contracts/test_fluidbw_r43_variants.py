@@ -2,12 +2,22 @@
 
 import numpy as np
 import pytest
+from scipy.special import ive
 
 from scirel.kinetic import (
     evaluate_fluidbw_kinetic_dispersion_sum,
     evaluate_kinetic_dispersion_sum,
     evaluate_plasma_dispersion_weideman,
 )
+from scirel.kinetic.kinetic_dispersion_sum_fluidbw import _gamma_and_prime
+
+
+@pytest.mark.parametrize("n,b", [(-15, 0.0), (-3, 1e-12), (0, 2.5), (11, 100.0)])
+def test_fluidbw_gamma_pair_preserves_scalar_ive_contract(n, b):
+    expected_gamma = float(ive(n, b))
+    expected_derivative = float((ive(n - 1, b) + ive(n + 1, b)) / 2.0 - ive(n, b))
+
+    assert _gamma_and_prime(n, b) == (expected_gamma, expected_derivative)
 
 
 def test_weideman_source_values_and_branch():
