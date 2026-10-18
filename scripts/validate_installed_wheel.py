@@ -46,8 +46,14 @@ from typing import Any
 from zipfile import BadZipFile, ZipFile
 from pathlib import PurePosixPath
 
+try:
+    from public_api_binding import implementation_module
+except ModuleNotFoundError:  # imported as ``scripts.validate_installed_wheel`` in tests
+    from scripts.public_api_binding import implementation_module
+
 
 SCHEMA = "scirel.installed-wheel-validation.v1"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_EXPECTED_PYTHON = "3.14"
 _REQUIREMENT_NAME = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9_.-]*)")
 
@@ -505,6 +511,50 @@ def _wheel_payload(path: Path) -> tuple[dict[str, Any], list[str]]:
     return details, errors
 
 
+def _catalog_wheel_closure(root: Path, wheel: Path) -> tuple[dict[str, Any], list[str]]:
+    """Check that every catalog implementation module is present in a wheel."""
+
+    details: dict[str, Any] = {
+        "status": "FAIL",
+        "document_count": 0,
+        "implementation_module_count": 0,
+        "missing_modules": [],
+    }
+    documents = sorted((root / "catalog" / "examples").glob("*.json"))
+    if not documents:
+        details["status"] = "NOT_RUN"
+        return details, []
+    try:
+        with ZipFile(wheel) as archive:
+            members = set(archive.namelist())
+    except (BadZipFile, OSError) as exc:
+        return details, [f"catalog wheel closure could not read wheel: {exc}"]
+
+    implementations: set[str] = set()
+    errors: list[str] = []
+    for path in documents:
+        try:
+            document = json.loads(path.read_text(encoding="utf-8"))
+            api = document["public_api"]["python"]
+            implementations.add(implementation_module(root, api["module"], api["symbol"]))
+        except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+            errors.append(f"catalog binding could not be resolved for {path.name}: {exc}")
+
+    missing = sorted(
+        implementation
+        for implementation in implementations
+        if implementation.replace(".", "/") + ".py" not in members
+    )
+    details["document_count"] = len(documents)
+    details["implementation_module_count"] = len(implementations)
+    details["missing_modules"] = missing
+    if missing:
+        errors.append("catalog implementation modules are absent from wheel: " + ", ".join(missing))
+    if not errors:
+        details["status"] = "PASS"
+    return details, errors
+
+
 def _run_pip_check() -> tuple[dict[str, Any], list[str]]:
     try:
         result = subprocess.run(
@@ -803,6 +853,7 @@ def validate_installed_wheel(
     expected_platform: str | None = None,
     expected_python: str = DEFAULT_EXPECTED_PYTHON,
     wheel_path: Path | None = None,
+    catalog_root: Path | None = None,
     extras: tuple[str, ...] = (),
 ) -> dict[str, Any]:
     runtime, errors = _runtime_identity(expected_platform, expected_python)
@@ -811,6 +862,7 @@ def validate_installed_wheel(
         "status": "FAIL",
         "artifact": {},
         "wheel_payload": {},
+        "catalog_wheel_closure": {},
         "runtime": runtime,
         "package": {},
         "dependencies": [],
@@ -831,6 +883,12 @@ def validate_installed_wheel(
         payload, payload_errors = _wheel_payload(wheel_path.resolve())
         receipt["wheel_payload"] = payload
         receipt["errors"].extend(payload_errors)
+        if catalog_root is not None:
+            closure, closure_errors = _catalog_wheel_closure(
+                catalog_root.resolve(), wheel_path.resolve()
+            )
+            receipt["catalog_wheel_closure"] = closure
+            receipt["errors"].extend(closure_errors)
     try:
         receipt["dependencies"] = _check_dependencies()
     except Exception as exc:
@@ -914,6 +972,11 @@ def main() -> int:
         help="exact wheel file installed into the clean environment; records its SHA-256 and size",
     )
     parser.add_argument(
+        "--catalog-root",
+        type=Path,
+        help="source checkout whose catalog implementation modules must be present in --wheel",
+    )
+    parser.add_argument(
         "--extra",
         action="append",
         default=[],
@@ -928,6 +991,7 @@ def main() -> int:
             expected_platform=args.expected_platform,
             expected_python=args.expected_python,
             wheel_path=args.wheel,
+            catalog_root=args.catalog_root,
             extras=tuple(args.extras),
         )
     except Exception as exc:  # keep command failures machine-readable

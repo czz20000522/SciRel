@@ -379,3 +379,29 @@ def test_wheel_payload_audit_rejects_development_files_and_path_traversal(tmp_pa
     assert any("interpreter cache" in error for error in errors)
     assert any("non-package top-level" in error for error in errors)
     assert any("escapes its archive root" in error for error in errors)
+
+
+def test_catalog_wheel_closure_checks_dynamic_document_count(tmp_path: Path) -> None:
+    root = tmp_path / "project"
+    (root / "catalog/examples").mkdir(parents=True)
+    (root / "src/scirel/field").mkdir(parents=True)
+    (root / "src/scirel/field/poloidal.py").write_text(
+        "def value(): return 1\n", encoding="utf-8"
+    )
+    (root / "catalog/examples/example.json").write_text(
+        '{"public_api":{"python":{"module":"scirel.field.poloidal","symbol":"value"}}}',
+        encoding="utf-8",
+    )
+    wheel = tmp_path / "scirel.whl"
+    with ZipFile(wheel, "w") as archive:
+        archive.writestr("scirel/field/poloidal.py", "def value(): return 1\n")
+
+    details, errors = validator._catalog_wheel_closure(root, wheel)
+
+    assert errors == []
+    assert details == {
+        "status": "PASS",
+        "document_count": 1,
+        "implementation_module_count": 1,
+        "missing_modules": [],
+    }
