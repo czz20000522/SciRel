@@ -23,6 +23,7 @@ def test_documented_field_capability_reports_import_closure() -> None:
     assert "numpy" in result["external_import_roots"]
     assert "scipy" not in result["external_import_roots"]
     assert "scirel.field.poloidal_field_from_flux" in result["loaded_scirel_modules"]
+    assert "scirel.equilibrium._anisotropic_numerics" not in result["loaded_scirel_modules"]
 
 
 def test_direct_pdrk_capability_reports_implementation_path() -> None:

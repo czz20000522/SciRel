@@ -4,22 +4,7 @@ These are numerical kernels, not additional physical closures. Arrays use
 [Z,R]; psi is R*A_phi (Wb/rad) and filament current is J_phi*dR*dZ (A).
 """
 import numpy as np
-
-
-def stable_gradient(values, coordinates, axis):
-    """Quadratic three-point derivative written as differences of local values.
-
-    Algebraically this is the nonuniform edge_order=2 stencil, but an exactly
-    constant input has an exactly zero result (including at both boundaries).
-    """
-    f = np.moveaxis(np.asarray(values, dtype=float), axis, -1)
-    h = np.diff(np.asarray(coordinates, dtype=float))
-    slopes = np.diff(f, axis=-1) / h
-    result = np.empty_like(f)
-    result[..., 1:-1] = (h[1:] * slopes[..., :-1] + h[:-1] * slopes[..., 1:]) / (h[:-1] + h[1:])
-    result[..., 0] = slopes[..., 0] - h[0] * (slopes[..., 1] - slopes[..., 0]) / (h[0] + h[1])
-    result[..., -1] = slopes[..., -1] + h[-1] * (slopes[..., -1] - slopes[..., -2]) / (h[-2] + h[-1])
-    return np.moveaxis(result, -1, axis)
+from scirel._numerics import stable_gradient
 
 
 def gradient_roundoff(values, coordinates, axis):

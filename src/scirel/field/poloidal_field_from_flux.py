@@ -33,7 +33,7 @@ def _source_hypot(left, right):
             values.append(math.inf)
     return np.asarray(values, dtype=float).reshape(left.shape)
 
-from scirel.equilibrium._anisotropic_numerics import stable_gradient as _source_gradient
+from scirel._numerics import stable_gradient as _source_gradient
 
 def poloidal_field_from_flux(r_grid, z_grid, psi):
     """Return ``B_R=-dpsi/dZ/R`` and ``B_Z=dpsi/dR/R`` with the regular even-flux axis limit.
