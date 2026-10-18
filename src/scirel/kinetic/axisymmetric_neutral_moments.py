@@ -206,10 +206,14 @@ def reduce_axisymmetric_neutral_moments(
             raise ValueError("explicit quadrature must match cylindrical_volume")
         density = np.empty(f.shape[2], dtype=float)
         axial_flux = np.empty(f.shape[2], dtype=float)
+        axial_integrals = np.empty((radial.size, f.shape[2]), dtype=float)
+        axial_weighted = axial * axial_weight
         for k in range(f.shape[2]):
-            density[k] = np.sum(radial_weight * (f[:, :, k] @ axial_weight))
+            axial_integral = f[:, :, k] @ axial_weight
+            axial_integrals[:, k] = axial_integral
+            density[k] = np.sum(radial_weight * axial_integral)
             axial_flux[k] = thermal_speed * np.sum(
-                radial_weight * (f[:, :, k] @ (axial * axial_weight))
+                radial_weight * (f[:, :, k] @ axial_weighted)
             )
     valid_density = density > 0.0
     if np.any(~valid_density) and empty_slice_policy == "reject":
@@ -284,7 +288,7 @@ def reduce_axisymmetric_neutral_moments(
                 mass_kg
                 * thermal_speed**2
                 * 0.5
-                * np.sum((radial_weight * radial**2) * (f[:, :, k] @ axial_weight))
+                * np.sum((radial_weight * radial**2) * axial_integrals[:, k])
                 / _ELEMENTARY_CHARGE_C
             )
             heat_flux_w_m2[k] = (
