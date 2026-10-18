@@ -189,6 +189,41 @@ class ArbitraryPoints(CurrentFilamentSet):
         super().__init__(**kwargs)
 
 class RectangularCoil(CurrentFilamentSet):
+    """Construct a parameterized rectangular array of circular filaments.
+
+    Parameters
+    ----------
+    r0, z0 : float, default=(1.0, 0.0)
+        Center radius and height; ``r0`` must be nonnegative and finite.
+    nr, nz : int, default=(1, 1)
+        Positive radial and axial filament counts.
+    dr, dz : float, default=(0.1, 0.1)
+        Positive radial and axial spacings in metres.
+    angle : float, default=0.0
+        Finite orientation angle in degrees.
+    **kwargs
+        Inherited source options such as finite common ``current``, a finite
+        weight vector matching ``nr*nz``, and an optional target ``mesh``.
+
+    Returns
+    -------
+    RectangularCoil
+        A parameterized source exposing generated ``rz_pts``, ``area``,
+        ``current_density`` and mesh-dependent field responses.
+
+    Raises
+    ------
+    ValueError
+        If counts, geometry, weights, current or mesh inputs violate their
+        finite shape/domain contracts.
+    FloatingPointError
+        If a field evaluation produces a nonrepresentable kernel result.
+
+    Notes
+    -----
+    Parameterized geometry setters rebuild atomically and preserve the prior
+    valid state when validation or weight-cardinality checks fail.
+    """
     def __init__(self, r0=1., z0=0., nr=1, nz=1, dr=.1, dz=.1, angle=0., **kwargs):
         if isinstance(nr,bool) or isinstance(nz,bool) or int(nr)!=nr or int(nz)!=nz or nr<1 or nz<1: raise ValueError('nr and nz must be positive integers')
         if not np.isfinite([r0,z0,dr,dz,angle]).all() or r0 < 0 or dr <= 0 or dz <= 0: raise ValueError('invalid coil geometry')

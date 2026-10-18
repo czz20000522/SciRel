@@ -32,6 +32,16 @@ def test_arbitrary_points_public_docstring_declares_contract():
     assert "coincidence is singular" in doc
 
 
+def test_rectangular_coil_public_docstring_declares_contract():
+    doc = inspect.getdoc(RectangularCoil)
+    assert doc is not None
+    assert "Parameters" in doc
+    assert "Returns" in doc
+    assert "Raises" in doc
+    assert "nr*nz" in doc
+    assert "rebuild atomically" in doc
+
+
 @pytest.mark.parametrize('angle', [-130., -7., 0., 37., 91., 360.])
 def test_rotation_inverse_distance_and_nonmutation(angle):
     points=np.array([[1.4, -.3], [2.1, .7], [.2, 1.5]])
