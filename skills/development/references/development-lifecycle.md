@@ -53,6 +53,11 @@ fails closed to a wider test layer. Finish a coherent change set with a clean
 diff check and a Git commit that states the affected area; do not stage an
 unrelated work-in-progress file merely to make the tree look complete.
 
+Put a new regression in the canonical direct test path that the affected
+selector recognizes, or update the selector mapping in the same change set. A
+test file that the daily selector cannot reach is not sufficient evidence for
+an ordinary development claim.
+
 Several compatible local fixes may share one change set and one validation
 round. A function-level edit, a new capability or a changed count is not a
 version boundary; Git history records the intermediate state until a named

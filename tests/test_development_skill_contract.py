@@ -31,6 +31,16 @@ def test_project_contract_keeps_ordinary_optimization_out_of_release_flow():
     assert "不会启动发布流程" in project_contract
     assert "数量只属于具体 manifest/revision" in project_contract
     assert "多个相互关联的小修复可以合并为一个变更批次" in project_contract
+    assert "canonical direct test 路径" in project_contract
+
+
+def test_lifecycle_requires_selector_visible_regressions():
+    lifecycle = (
+        ROOT / "skills/development/references/development-lifecycle.md"
+    ).read_text(encoding="utf-8")
+
+    assert "canonical direct test path" in lifecycle
+    assert "daily selector cannot reach" in lifecycle
 
 
 def test_lifecycle_keeps_incubation_counts_dynamic_and_release_gates_explicit():
