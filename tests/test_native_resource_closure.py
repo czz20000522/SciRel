@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import sys
+import tomllib
 import zipfile
 
 import pytest
@@ -42,6 +43,8 @@ def test_native_resource_closure_covers_source_and_declared_package_data() -> No
         "_native/finiteN/*",
         "_native/legacy/*",
     ]
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    assert project["tool"]["setuptools"]["include-package-data"] is False
 
 
 def test_native_resource_closure_rejects_unlisted_resource(tmp_path: Path) -> None:

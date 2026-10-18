@@ -25,6 +25,12 @@ test = [
     "pytest==9.1.1",
 ]
 
+# Keep wheel intake fail-closed: only the explicit package-data declarations
+# below may add non-Python resources. VCS metadata, egg-info leftovers and
+# future unreviewed files must not enter the scientific distribution implicitly.
+[tool.setuptools]
+include-package-data = false
+
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["scirel", "scirel.*"]
