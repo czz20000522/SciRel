@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import numpy as np
-from scipy.special import ive
 
 
 def _numeric_array(value, name):
@@ -50,6 +49,12 @@ def evaluate_bessel_gamma(n, x):
         raise ValueError("n must contain exactly representable integer orders")
     if not np.all(np.isfinite(arguments)):
         raise ValueError("x must contain finite values")
+
+    # Keep the special-function backend out of module import and rejected-input
+    # paths.  SciPy remains a declared core runtime dependency; loading it only
+    # after the public input contract is established preserves the exact
+    # numerical implementation while keeping discovery and failure paths light.
+    from scipy.special import ive
 
     with np.errstate(divide="ignore", invalid="ignore", over="ignore", under="ignore"):
         scale = np.exp(-arguments + np.abs(arguments.real))

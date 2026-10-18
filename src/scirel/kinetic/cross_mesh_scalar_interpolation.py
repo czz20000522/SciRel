@@ -7,7 +7,6 @@ evidence, not a qualified D1 source or an approved scientific asset.
 from __future__ import annotations
 
 import numpy as np
-from scipy import interpolate
 
 __all__ = ["interpolate_scalar_across_mesh"]
 
@@ -54,6 +53,12 @@ def interpolate_scalar_across_mesh(fa, xa, xb, do_warn=0):
     # The saved positional slice raises a raw broadcast error for holes.
     if k1 - k0 + 1 != okk.size:
         raise ValueError("in-range mesh_b nodes must form one contiguous block")
+
+    # Keep the dependency at the numerical backend boundary.  All public
+    # input rejection above is intentionally completed before importing
+    # SciPy, so malformed calls preserve their failure order and remain
+    # dependency-light in a fresh interpreter.
+    from scipy import interpolate
 
     fb = np.zeros(xb.size)
     fb[k0:k1 + 1] = interpolate.interp1d(xa, fa)(xb[okk])

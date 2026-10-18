@@ -23,7 +23,6 @@ D1 qualification has been withdrawn.
 from __future__ import annotations
 
 import numpy as np
-from scipy.integrate import trapezoid
 
 __all__ = [
     "normalize_spatial_source_shape",
@@ -80,6 +79,17 @@ def normalize_spatial_source_shape(source, x_m):
         or np.any(np.diff(coordinates) <= 0.0)
     ):
         raise ValueError("source and x_m must be aligned finite one-dimensional profiles")
+    # For a nonnegative profile on a strictly increasing grid, an all-zero
+    # profile has a zero integral by construction.  Reject it before loading
+    # the integration backend so this invalid-input path stays dependency-light.
+    if not np.any(profile > 0.0):
+        raise ValueError("source must have a positive spatial integral")
+
+    # Keep the integration backend out of module import and rejected-input
+    # paths.  The valid numerical path still uses SciPy's exact trapezoidal
+    # implementation after the public contract has been established.
+    from scipy.integrate import trapezoid
+
     integral = float(trapezoid(profile, coordinates))
     if not np.isfinite(integral) or integral <= 0.0:
         raise ValueError("source must have a positive spatial integral")

@@ -197,6 +197,59 @@ assert "scipy" in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+
+def test_kinetic_bessel_gamma_defers_scipy_until_valid_call() -> None:
+    result = _run(
+        """
+import sys
+import numpy as np
+from scirel.kinetic import evaluate_bessel_gamma
+from scirel.kinetic.bessel_gamma import evaluate_bessel_gamma as direct
+
+assert evaluate_bessel_gamma is direct
+assert "scipy" not in sys.modules
+try:
+    evaluate_bessel_gamma([], [])
+except ValueError as error:
+    assert str(error) == "n must contain finite numeric values"
+else:
+    raise AssertionError("invalid Bessel-Gamma input unexpectedly succeeded")
+assert "scipy" not in sys.modules
+result = evaluate_bessel_gamma(np.array([0]), np.array([0.0]))
+assert result["Gamma_n"].tolist() == [1.0 + 0.0j]
+assert "scipy" in sys.modules
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_kinetic_spatial_source_shape_defers_scipy_until_valid_call() -> None:
+    result = _run(
+        """
+import sys
+import numpy as np
+from scirel.kinetic import normalize_spatial_source_shape
+from scirel.kinetic.spatial_source_shape_normalization import (
+    normalize_spatial_source_shape as direct,
+)
+
+assert normalize_spatial_source_shape is direct
+assert "scipy" not in sys.modules
+try:
+    normalize_spatial_source_shape([0.0, 0.0], [0.0, 1.0])
+except ValueError as error:
+    assert str(error) == "source must have a positive spatial integral"
+else:
+    raise AssertionError("zero source profile unexpectedly succeeded")
+assert "scipy" not in sys.modules
+result = normalize_spatial_source_shape(np.array([1.0, 2.0]), np.array([0.0, 1.0]))
+assert result["integral_source"] == 1.5
+assert "scipy" in sys.modules
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_kinetic_generalized_dispersion_defers_backends_until_valid_call() -> None:
     result = _run(
         """
