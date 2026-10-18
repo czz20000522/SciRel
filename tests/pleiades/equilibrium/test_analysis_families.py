@@ -1,5 +1,6 @@
 """New bounded D2 independent analytic/consumer gates; source replay excluded."""
 from types import SimpleNamespace
+import inspect
 import numpy as np
 import pytest
 from scipy.interpolate import CubicSpline as ReferenceSpline
@@ -143,6 +144,16 @@ def test_poly_fit_cutoff_and_underdetermined_minimum_norm():
     assert abs(c[0]-1)<3e-14
     assert abs(c[1])<3e-11
     assert abs(c[2])<3e-22
+
+
+def test_poly_fit_public_docstring_declares_contract():
+    doc = inspect.getdoc(sampling.poly_fit)
+    assert doc is not None
+    assert "Parameters" in doc
+    assert "Returns" in doc
+    assert "Raises" in doc
+    assert "ascending-power" in doc
+    assert "1e-10" in doc
 
 
 def test_reflection_is_scalar_even_and_endpoint_unique():

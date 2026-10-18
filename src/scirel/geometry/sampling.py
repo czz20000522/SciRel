@@ -76,6 +76,31 @@ def regular_grid(xx,yy,*args,**kwargs):
     return (xi,yi) + tuple(zs)
 
 def poly_fit(x,y,order=3):
+    """Fit an ascending-power polynomial with an absolute SVD cutoff.
+
+    Parameters
+    ----------
+    x : array_like, shape (M,)
+        Finite sample coordinates.
+    y : array_like, shape (M,)
+        Finite sample values matched to ``x``.
+    order : int, default=3
+        Highest polynomial power.  Supported fits use a nonnegative integer.
+
+    Returns
+    -------
+    basis_fns : list of callable
+        Evaluators for ``1, x, ..., x**order`` in ascending-power order.
+    coefficients : ndarray, shape (order + 1,)
+        Minimum-norm coefficients.  Singular values below ``1e-10`` are
+        discarded using the source's absolute cutoff.
+
+    Raises
+    ------
+    TypeError, ValueError, IndexError, numpy.linalg.LinAlgError
+        Exceptions from array construction or the underlying SVD may
+        propagate for unsupported shapes, dtypes or numerical inputs.
+    """
     n = order+1
     m = len(y)
     basis_fns = [(lambda z,i=i: z**i) for i in range(n)]
