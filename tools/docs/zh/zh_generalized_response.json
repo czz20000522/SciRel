@@ -943,7 +943,7 @@
     },
     {
       "asset_id": "scirel.kinetic.generalized-small-k",
-      "source_sha256": "36b224ec318545bad9c293a90b76c5c209e4bbdd17117f7533553f303c3001ce",
+      "source_sha256": "a1fc07ef4068acb1c67c815bb856316445d52c532b6a4c52a7be89b062cf6cc5",
       "summary": "计算来源定义的 Langmuir 频率与阻尼渐近式。",
       "definition": "在对数域计算阻尼幅值，避免 k³ 下溢时来源表达式出现 0/0；拒绝精确 k=0。",
       "model": "一维、无磁场、无碰撞的静电等离子体。",

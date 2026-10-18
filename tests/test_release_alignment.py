@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import subprocess
 import sys
 import tomllib
 
@@ -9,6 +10,21 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
+
+BOUND_CANDIDATE_REVISION = "47303fedf04d9ba077fa47af8b7f3f585e9c8411"
+BOUND_SMALL_K_DOCUMENT = "catalog/examples/scirel.kinetic.generalized-small-k.json"
+
+
+def _restore_bound_small_k_document(root: Path) -> None:
+    """Keep no-Git copied fixtures aligned with the bound dev11 selection."""
+
+    payload = subprocess.check_output(
+        ["git", "show", f"{BOUND_CANDIDATE_REVISION}:{BOUND_SMALL_K_DOCUMENT}"],
+        cwd=ROOT,
+    )
+    target = root / BOUND_SMALL_K_DOCUMENT
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(payload)
 
 from validate_release_alignment import (
     _validate_build_inputs,
@@ -352,6 +368,7 @@ def test_alignment_accepts_documentation_patch_revision_when_integration_binds_i
         source = ROOT / relative
         target = tmp_path / relative
         shutil.copytree(source, target)
+    _restore_bound_small_k_document(tmp_path)
     for relative in ("pyproject.toml", "uv.lock"):
         (tmp_path / relative).write_bytes((ROOT / relative).read_bytes())
     current_path = tmp_path / "release/CURRENT.json"
@@ -468,6 +485,7 @@ def test_alignment_rejects_a_document_added_outside_the_wheel(tmp_path: Path) ->
         else:
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(source.read_bytes())
+    _restore_bound_small_k_document(tmp_path)
     (tmp_path / "pyproject.toml").write_bytes((ROOT / "pyproject.toml").read_bytes())
     (tmp_path / "uv.lock").write_bytes((ROOT / "uv.lock").read_bytes())
     current_path = tmp_path / "release/CURRENT.json"
@@ -489,6 +507,7 @@ def test_alignment_rejects_a_catalog_record_outside_the_selection(tmp_path: Path
         else:
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(source.read_bytes())
+    _restore_bound_small_k_document(tmp_path)
     (tmp_path / "pyproject.toml").write_bytes((ROOT / "pyproject.toml").read_bytes())
     (tmp_path / "uv.lock").write_bytes((ROOT / "uv.lock").read_bytes())
     extra = json.loads(
@@ -515,6 +534,7 @@ def test_alignment_rejects_a_built_catalog_from_a_different_source_revision(
         else:
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(source.read_bytes())
+    _restore_bound_small_k_document(tmp_path)
     (tmp_path / "pyproject.toml").write_bytes((ROOT / "pyproject.toml").read_bytes())
     (tmp_path / "uv.lock").write_bytes((ROOT / "uv.lock").read_bytes())
     catalog_root = tmp_path / "built-catalog"

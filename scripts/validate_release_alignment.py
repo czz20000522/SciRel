@@ -12,6 +12,7 @@ import argparse
 from email.parser import Parser
 import hashlib
 import json
+from functools import lru_cache
 from pathlib import Path
 from pathlib import PurePosixPath
 import re
@@ -205,6 +206,96 @@ def _git_blob_bytes(root: Path, revision: str, relative: str) -> bytes | None:
     if result.returncode:
         return None
     return result.stdout
+
+
+@lru_cache(maxsize=32)
+def _git_bound_commit(root: str, revision: str) -> bool | None:
+    """Return Git source availability, or ``None`` for non-checkout fixtures."""
+
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--verify", f"{revision}^{{commit}}"],
+            cwd=root,
+            check=False,
+            capture_output=True,
+        )
+    except OSError:
+        return None
+    if result.returncode:
+        if (Path(root) / ".git").exists():
+            return False
+        return None
+    return True
+
+
+def _bound_git_blob_bytes(
+    root: Path, revision: str | None, relative: str, *, field: str
+) -> bytes | None:
+    """Read a source-bound blob without falling through stale checkout bytes.
+
+    ``release/CURRENT.json`` may intentionally point at an earlier commit while
+    the checkout contains post-candidate development.  When that commit is
+    available in a real Git checkout, source-bound validation must read the
+    recorded blob rather than the mutable worktree.  Copied fixture roots used
+    by structural tests have no Git metadata and retain the local-file fallback.
+    """
+
+    if revision is None:
+        return None
+    logical = PurePosixPath(relative)
+    if logical.is_absolute() or not logical.parts or any(
+        part in {"", ".", ".."} for part in logical.parts
+    ):
+        raise ValueError(f"{field} is not a safe source-relative path: {relative}")
+    available = _git_bound_commit(str(root), revision)
+    if available is None:
+        return None
+    if not available:
+        raise ValueError(f"{field} source revision is unavailable: {revision}")
+    try:
+        result = subprocess.run(
+            ["git", "cat-file", "blob", f"{revision}:{logical.as_posix()}"],
+            cwd=root,
+            check=False,
+            capture_output=True,
+        )
+    except OSError:
+        return None
+    if result.returncode:
+        raise ValueError(f"{field} is missing from bound source revision: {relative}")
+    return result.stdout
+
+
+def _bound_git_paths(
+    root: Path, revision: str | None, prefix: str, *, field: str
+) -> list[str] | None:
+    """List files below a source-bound Git tree, with fixture fallback."""
+
+    if revision is None:
+        return None
+    logical = PurePosixPath(prefix)
+    if logical.is_absolute() or not logical.parts or any(
+        part in {"", ".", ".."} for part in logical.parts
+    ):
+        raise ValueError(f"{field} is not a safe source-relative path: {prefix}")
+    available = _git_bound_commit(str(root), revision)
+    if available is None:
+        return None
+    if not available:
+        raise ValueError(f"{field} source revision is unavailable: {revision}")
+    try:
+        result = subprocess.run(
+            ["git", "ls-tree", "-r", "--name-only", revision, logical.as_posix()],
+            cwd=root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError:
+        return None
+    if result.returncode:
+        raise ValueError(f"{field} cannot enumerate bound source tree: {prefix}")
+    return [line for line in result.stdout.splitlines() if line]
 
 
 def _source_project_metadata(root: Path, source_revision: str | None) -> dict[str, Any]:
@@ -1089,10 +1180,27 @@ def _validate_external_artifacts(
     return "external_artifact_verified"
 
 
-def _selected_documents(root: Path, record: dict[str, Any]) -> tuple[dict[str, dict[str, Any]], str]:
-    selection_path = _repo_path(root, record["source_documents"], field="source_documents")
-    selection_digest = _sha256(selection_path)
-    selection = _read_json(selection_path)
+def _selected_documents(
+    root: Path,
+    record: dict[str, Any],
+    *,
+    source_revision: str | None = None,
+) -> tuple[dict[str, dict[str, Any]], str]:
+    selection_relative = record["source_documents"]
+    selection_bytes = _bound_git_blob_bytes(
+        root,
+        source_revision,
+        selection_relative,
+        field="source_documents",
+    )
+    if selection_bytes is None:
+        selection_path = _repo_path(root, selection_relative, field="source_documents")
+        selection_bytes = selection_path.read_bytes()
+    selection_digest = hashlib.sha256(selection_bytes).hexdigest()
+    try:
+        selection = json.loads(selection_bytes)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("source document selection is not valid JSON") from error
     if selection.get("schema") != "scirel.selected-document-set.v1":
         raise ValueError("source document selection has an invalid schema")
     rows = selection.get("records")
@@ -1103,10 +1211,22 @@ def _selected_documents(root: Path, record: dict[str, Any]) -> tuple[dict[str, d
         if not isinstance(row, dict) or set(row) != {"asset_id", "path", "sha256"}:
             raise ValueError("source document selection contains an invalid row")
         asset_id = row["asset_id"]
-        document_path = _repo_path(root, row["path"], field=f"document[{asset_id}]")
-        if _sha256(document_path) != row["sha256"]:
+        document_relative = row["path"]
+        document_bytes = _bound_git_blob_bytes(
+            root,
+            source_revision,
+            document_relative,
+            field=f"document[{asset_id}]",
+        )
+        if document_bytes is None:
+            document_path = _repo_path(root, document_relative, field=f"document[{asset_id}]")
+            document_bytes = document_path.read_bytes()
+        if hashlib.sha256(document_bytes).hexdigest() != row["sha256"]:
             raise ValueError(f"document digest differs from selection: {asset_id}")
-        document = _read_json(document_path)
+        try:
+            document = json.loads(document_bytes)
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise ValueError(f"document is not valid JSON: {asset_id}") from error
         if document.get("asset_id") != asset_id:
             raise ValueError(f"document asset ID differs from selection: {asset_id}")
         if asset_id in documents:
@@ -1115,9 +1235,26 @@ def _selected_documents(root: Path, record: dict[str, Any]) -> tuple[dict[str, d
     return documents, selection_digest
 
 
-def _handbook_assets(root: Path, record: dict[str, Any]) -> tuple[set[str], str]:
-    handbook_path = _repo_path(root, record["handbook"], field="handbook")
-    handbook = _read_json(handbook_path)
+def _handbook_assets(
+    root: Path,
+    record: dict[str, Any],
+    *,
+    source_revision: str | None = None,
+) -> tuple[set[str], str]:
+    handbook_relative = record["handbook"]
+    handbook_bytes = _bound_git_blob_bytes(
+        root,
+        source_revision,
+        handbook_relative,
+        field="handbook",
+    )
+    if handbook_bytes is None:
+        handbook_path = _repo_path(root, handbook_relative, field="handbook")
+        handbook_bytes = handbook_path.read_bytes()
+    try:
+        handbook = json.loads(handbook_bytes)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("handbook is not valid JSON") from error
     if handbook.get("schema") != "scirel.handbook.v1":
         raise ValueError("handbook has an invalid schema")
     assets: list[str] = []
@@ -1129,7 +1266,7 @@ def _handbook_assets(root: Path, record: dict[str, Any]) -> tuple[set[str], str]
             assets.extend(topic_assets)
     if len(assets) != len(set(assets)):
         raise ValueError("handbook repeats an asset")
-    return set(assets), _sha256(handbook_path)
+    return set(assets), hashlib.sha256(handbook_bytes).hexdigest()
 
 
 def _validate_catalog_source_revision(
@@ -1163,7 +1300,12 @@ def _validate_catalog_source_revision(
         raise ValueError("documentation catalog source_revision differs from release CURRENT")
 
 
-def _catalog_documents(root: Path, record: dict[str, Any]) -> dict[str, dict[str, Any]] | None:
+def _catalog_documents(
+    root: Path,
+    record: dict[str, Any],
+    *,
+    source_revision: str | None = None,
+) -> dict[str, dict[str, Any]] | None:
     """Read the catalog records addressed by the current documentation tuple.
 
     Development candidates may point directly at ``catalog/examples`` while
@@ -1177,19 +1319,57 @@ def _catalog_documents(root: Path, record: dict[str, Any]) -> dict[str, dict[str
         return None
     catalog_root = (root / catalog_value).resolve()
     if not catalog_root.is_relative_to(root.resolve()) or not catalog_root.is_dir():
-        raise ValueError("documentation catalog_root is missing or escapes the repository")
-    release_path = catalog_root / "release.json"
-    if release_path.is_file():
-        record_root = catalog_root / "records"
-        paths = sorted(record_root.rglob("*.json")) if record_root.is_dir() else []
+        if source_revision is None:
+            raise ValueError("documentation catalog_root is missing or escapes the repository")
+        # A post-candidate checkout may remove or replace a catalog directory;
+        # the bound Git tree remains authoritative for the candidate.
+        paths = []
     else:
-        paths = sorted(catalog_root.glob("*.json"))
+        release_path = catalog_root / "release.json"
+        if release_path.is_file():
+            record_root = catalog_root / "records"
+            paths = sorted(record_root.rglob("*.json")) if record_root.is_dir() else []
+        else:
+            paths = sorted(catalog_root.glob("*.json"))
+    bound_paths = _bound_git_paths(
+        root,
+        source_revision,
+        catalog_value,
+        field="documentation catalog_root",
+    )
+    if bound_paths is not None:
+        if any(path.endswith("/release.json") for path in bound_paths):
+            prefix = f"{catalog_value}/records/"
+            paths_relative = sorted(
+                path for path in bound_paths if path.startswith(prefix) and path.endswith(".json")
+            )
+        else:
+            paths_relative = sorted(
+                path for path in bound_paths
+                if PurePosixPath(path).parent.as_posix() == catalog_value and path.endswith(".json")
+            )
+    else:
+        paths_relative = None
     documents: dict[str, dict[str, Any]] = {}
-    for path in paths:
-        document = _read_json(path)
+    if paths_relative is not None:
+        source_paths = [(path, _bound_git_blob_bytes(
+            root,
+            source_revision,
+            path,
+            field=f"catalog document[{path}]",
+        )) for path in paths_relative]
+    else:
+        source_paths = [(path.relative_to(root).as_posix(), path.read_bytes()) for path in paths]
+    for relative, document_bytes in source_paths:
+        if document_bytes is None:
+            raise ValueError(f"documentation catalog document is missing: {relative}")
+        try:
+            document = json.loads(document_bytes)
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise ValueError(f"catalog document is not valid JSON: {relative}") from error
         asset_id = document.get("asset_id")
         if not isinstance(asset_id, str) or not asset_id:
-            raise ValueError(f"catalog document lacks an asset_id: {path.relative_to(root)}")
+            raise ValueError(f"catalog document lacks an asset_id: {relative}")
         if asset_id in documents:
             raise ValueError(f"catalog repeats an asset: {asset_id}")
         documents[asset_id] = document
@@ -1889,10 +2069,22 @@ def validate_alignment(
     _validate_compat_pointer(root, root / "release/wheel/CURRENT.json", line="wheel")
     _validate_compat_pointer(root, root / "release/docs/CURRENT.json", line="documentation")
 
-    selected, selection_digest = _selected_documents(root, docs)
+    selected, selection_digest = _selected_documents(
+        root,
+        docs,
+        source_revision=source_revision,
+    )
     _validate_catalog_source_revision(root, docs, documentation_source_revision)
-    catalog_documents = _catalog_documents(root, docs)
-    handbook_assets, handbook_digest = _handbook_assets(root, docs)
+    catalog_documents = _catalog_documents(
+        root,
+        docs,
+        source_revision=source_revision,
+    )
+    handbook_assets, handbook_digest = _handbook_assets(
+        root,
+        docs,
+        source_revision=source_revision,
+    )
     selected_ids = set(selected)
     if catalog_documents is not None:
         catalog_ids = set(catalog_documents)
