@@ -7,7 +7,6 @@ Numerical brackets are not rigorous interval certificates. Independent gates
 and root-owner admission are separate. No source/default grid is reduced.
 """
 import numpy as np
-import mpmath as mp
 
 
 def solve_perpendicular_harris(*,alpha,rho,gyro,temperature_ratio,kx,N,source_pole_order=8,precision=80,frequency_scale=1.):
@@ -21,6 +20,11 @@ def solve_perpendicular_harris(*,alpha,rho,gyro,temperature_ratio,kx,N,source_po
     for v,name,minimum in [(N,'N',0),(source_pole_order,'source_pole_order',1),(precision,'precision',32)]:
         if isinstance(v,(bool,np.bool_)) or int(v)!=v or v<minimum:raise ValueError(name+' integer outside declared domain')
     if not np.isfinite(kx) or kx==0 or not np.isfinite(frequency_scale) or frequency_scale<=0:raise ValueError('finite nonzero kx and positive frequency_scale required')
+    # Delay the high-precision backend until all public input-contract checks
+    # have passed.  Importing this module or rejecting a call therefore stays
+    # independent of mpmath; valid numerical paths retain the same algorithm.
+    import mpmath as mp
+
     N=int(N);J=int(source_pole_order);digits=int(precision)
     with mp.workdps(digits):
         a=mp.mpf(1);groups={};source_groups={}

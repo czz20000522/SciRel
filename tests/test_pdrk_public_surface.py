@@ -99,6 +99,81 @@ assert "scipy.io" not in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_pdrk_pade_defers_mpmath_until_valid_numeric_call() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-I",
+            "-c",
+            r'''
+import sys
+sys.path.insert(0, sys.argv[1])
+from scirel.kinetic.pdrk import _pade
+
+assert "mpmath" not in sys.modules
+for kwargs in (
+    {"J": 0, "I": 0, "precision": 32},
+    {"J": 1, "I": 3, "precision": 32},
+    {"J": 1, "I": 0, "precision": 31},
+):
+    try:
+        _pade.construct_maxwellian_pade(**kwargs)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("invalid Padé input unexpectedly succeeded")
+    assert "mpmath" not in sys.modules
+
+output = _pade.construct_maxwellian_pade(J=1, I=0, precision=32)
+assert output["bzj"].shape == (1,)
+assert "mpmath" in sys.modules
+''',
+            str(ROOT / "src"),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_pdrk_harris_defers_mpmath_until_valid_numeric_call() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-I",
+            "-c",
+            r'''
+import sys
+sys.path.insert(0, sys.argv[1])
+from scirel.kinetic.pdrk import _harris_perpendicular
+
+assert "mpmath" not in sys.modules
+try:
+    _harris_perpendicular.solve_perpendicular_harris(
+        alpha=[], rho=[], gyro=[], temperature_ratio=[],
+        kx=0.5, N=1, source_pole_order=1, precision=32,
+    )
+except ValueError:
+    pass
+else:
+    raise AssertionError("invalid Harris input unexpectedly succeeded")
+assert "mpmath" not in sys.modules
+
+output = _harris_perpendicular.solve_perpendicular_harris(
+    alpha=[1.0], rho=[1.0], gyro=[1.0], temperature_ratio=[1.0],
+    kx=0.5, N=1, source_pole_order=1, precision=32,
+)
+assert output["omega"].shape == (2,)
+assert "mpmath" in sys.modules
+''',
+            str(ROOT / "src"),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_pdrk_catalog_modules_have_explicit_callable_exports() -> None:
     from scirel.kinetic.pdrk import magnetized, rational, workflows
 

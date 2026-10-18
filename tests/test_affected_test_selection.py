@@ -167,6 +167,8 @@ def test_cylindrical_quadrature_change_selects_distribution_handoff():
         ("src/scirel/kinetic/pdrk/_rational_frequency.py", "tests/test_pdrk_public_surface.py"),
         ("src/scirel/kinetic/pdrk/magnetized.py", "tests/test_pdrk_public_surface.py"),
         ("src/scirel/kinetic/pdrk/rational.py", "tests/test_pdrk_public_surface.py"),
+        ("src/scirel/kinetic/pdrk/_pade.py", "tests/test_pdrk_public_surface.py"),
+        ("src/scirel/kinetic/pdrk/_harris_perpendicular.py", "tests/test_pdrk_public_surface.py"),
         ("src/scirel/kinetic/fluid_wavevector_scan.py", "tests/test_lazy_namespace.py"),
         ("src/scirel/kinetic/kinetic_wavevector_scan.py", "tests/test_lazy_namespace.py"),
         ("src/scirel/kinetic/kinetic_dispersion_relation.py", "tests/test_lazy_namespace.py"),

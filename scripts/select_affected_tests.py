@@ -228,6 +228,12 @@ SOURCE_AUXILIARY_TESTS = {
     "src/scirel/kinetic/pdrk/rational.py": (
         "tests/test_pdrk_public_surface.py",
     ),
+    "src/scirel/kinetic/pdrk/_pade.py": (
+        "tests/test_pdrk_public_surface.py",
+    ),
+    "src/scirel/kinetic/pdrk/_harris_perpendicular.py": (
+        "tests/test_pdrk_public_surface.py",
+    ),
     "src/scirel/kinetic/fluid_wavevector_scan.py": (
         "tests/test_lazy_namespace.py",
     ),

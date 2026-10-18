@@ -5,7 +5,6 @@ mpmath precision replacing the ill-conditioned binary64 coefficient solve.
 Separate approximation, precision-refinement and simple-pole gates are required.
 """
 import numpy as np
-import mpmath as mp
 
 
 def construct_maxwellian_pade(*,J,I,precision):
@@ -14,6 +13,11 @@ def construct_maxwellian_pade(*,J,I,precision):
             raise ValueError(name+' must be an integer')
     if J<1 or not 0<=I<=2*J or precision<32:
         raise ValueError('J>=1, 0<=I<=2J and precision>=32 required')
+    # mpmath is needed only for a valid high-precision construction.  Keep
+    # discovery and rejected-input paths independent of this optional numeric
+    # backend while preserving the existing calculation and errors.
+    import mpmath as mp
+
     with mp.workdps(int(precision)):
         J=int(J);I=int(I);K=2*J-I
         anp=[mp.mpc(0)]*(2*J+4);anm=anp.copy()
