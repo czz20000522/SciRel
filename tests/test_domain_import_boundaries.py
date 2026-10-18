@@ -167,6 +167,27 @@ assert "scipy" in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_closures_tabulated_pressure_defers_scipy_until_called() -> None:
+    result = _run(
+        """
+import sys
+import numpy as np
+from scirel.closures import evaluate_tabulated_pressure
+
+assert "scipy" not in sys.modules
+output = evaluate_tabulated_pressure(
+    np.array([0.25, 0.75]),
+    np.array([0.25, 0.75]),
+    np.array([0.0, 0.5, 1.0]),
+    np.array([1.0, 2.0, 3.0]),
+)
+assert output["is_isotropic"] is True
+assert "scipy" in sys.modules
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_lazy_exports_preserve_identity_for_the_remaining_domains() -> None:
     result = _run(
         """

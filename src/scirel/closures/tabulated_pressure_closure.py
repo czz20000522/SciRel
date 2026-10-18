@@ -1,6 +1,5 @@
 """Tabulated anisotropic or isotropic pressure closure on ``(B, psi)``."""
 import numpy as np
-from scipy.interpolate import RegularGridInterpolator, interp1d
 
 def evaluate_tabulated_pressure(magnetic_field, psi, psi_grid, p_parallel_table, p_perpendicular_table=None, b_grid=None, bounds_error=True, fill_value=None):
     """Linearly interpolate supplied nonnegative pressure tables.
@@ -36,6 +35,8 @@ def evaluate_tabulated_pressure(magnetic_field, psi, psi_grid, p_parallel_table,
                 raise ValueError('an isotropic perpendicular pressure table must match psi_grid and be finite and nonnegative')
             if not np.array_equal(parallel_table, perpendicular_table):
                 raise ValueError('b_grid=None requires equal parallel and perpendicular pressure tables')
+        from scipy.interpolate import interp1d
+
         extrapolation = 'extrapolate' if not bounds_error and fill_value is None else fill_value
         interpolator = interp1d(psi_grid, parallel_table, kind='linear', bounds_error=bool(bounds_error), fill_value=np.nan if bounds_error else extrapolation, assume_sorted=True)
         pressure = np.asarray(interpolator(flux), dtype=float)
@@ -49,6 +50,8 @@ def evaluate_tabulated_pressure(magnetic_field, psi, psi_grid, p_parallel_table,
         raise ValueError('b_grid must be one-dimensional, finite, and strictly increasing')
     if parallel_table.shape != expected_shape or perpendicular_table.shape != expected_shape or (not np.all(np.isfinite(perpendicular_table))) or np.any(perpendicular_table < 0.0):
         raise ValueError('anisotropic pressure tables must be finite nonnegative arrays with shape (len(b_grid), len(psi_grid))')
+    from scipy.interpolate import RegularGridInterpolator
+
     options = {'bounds_error': bool(bounds_error), 'fill_value': fill_value}
     points = np.column_stack((field.ravel(), flux.ravel()))
     parallel = RegularGridInterpolator((b_grid, psi_grid), parallel_table, **options)(points).reshape(field.shape)
