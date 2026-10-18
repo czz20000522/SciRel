@@ -24,7 +24,7 @@ denominator.
 2. Route each issue once: scientific/numerical claim to [asset correctness](../scientific-asset-correctness/SKILL.md);
    selected qualified batch to [normalization](../scientific-asset-normalization/SKILL.md); source-only gap back to D1;
    application/repeatability to D3. Do not send every intermediate choice to a human.
-3. For a confirmed determinate defect, use [scientific correction](references/scientific-correction.md):
+3. For a confirmed determinate defect, use [scientific correction](../scientific-asset-correctness/references/scientific-correction.md):
    diagnose, implement successor, independently validate, then obtain read-only review. A defect list is not
    remediation; temporary runtime failure remains pending with a reopen condition.
 4. Assemble only compatible contracts. Preserve ports, units, axes, state ownership, order, convergence, exceptions,

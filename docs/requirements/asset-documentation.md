@@ -51,7 +51,7 @@ behavior; it does not reproduce the internal review queue. Code docstrings/comme
 For a confirmed source defect, the normal human-review target is the corrected and validated implementation.
 Its review page must connect the source's observed behavior, the independent reason it is wrong, the implemented
 change, and the final numerical/behavioral results with applicability and remaining limits. Follow the existing
-[scientific-correction disclosure](../../skills/development/integration/scirel-integration/references/scientific-correction.md#required-disclosure-at-the-current-stage)
+[scientific-correction disclosure](../../skills/development/integration/scientific-asset-correctness/references/scientific-correction.md#required-disclosure-at-the-current-stage)
 without creating another full report or placing raw logs/private paths in the scientific narrative. Diagnose-only
 or feasible-but-unimplemented repairs are not ready for final scientific approval; genuinely undetermined cases
 remain explicit exceptions with investigation attempts and the exact missing decision, not requests for experts

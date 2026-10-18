@@ -114,10 +114,11 @@ correctness or normalization sub-skills for a local API, import, performance or
 packaging change.
 
 AOCI is a repository-maintenance aid, not a development gate. For a local
-source or skill change, read only the related evidence; after the batch reaches
-its final stable state, perform one applicable `aoci_maintain` and do not repeat
-it for every commit or intermediate edit. A full Overview/Attestation is only
-for a task that actually requires complete repository cognition.
+source or skill change, read only the related evidence. If the task explicitly
+selects AOCI and changes a managed object, perform one applicable
+`aoci_maintain` after the batch reaches its final stable state; do not repeat it
+for every commit or intermediate edit. A full Overview/Attestation is only for
+a task that actually requires complete repository cognition.
 
 ## Development boundaries
 

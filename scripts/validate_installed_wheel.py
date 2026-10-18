@@ -29,6 +29,7 @@ validation remains the default; undeclared extras fail closed.
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import importlib
 import importlib.metadata as metadata
@@ -47,10 +48,10 @@ from zipfile import BadZipFile, ZipFile
 from pathlib import PurePosixPath
 
 try:
-    from public_api_binding import implementation_module
+    from public_api_binding import implementation_module, source_module_path
 except ModuleNotFoundError:  # imported as ``scripts.validate_installed_wheel`` in tests
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from public_api_binding import implementation_module
+    from public_api_binding import implementation_module, source_module_path
 
 
 SCHEMA = "scirel.installed-wheel-validation.v1"
@@ -512,14 +513,52 @@ def _wheel_payload(path: Path) -> tuple[dict[str, Any], list[str]]:
     return details, errors
 
 
-def _catalog_wheel_closure(root: Path, wheel: Path) -> tuple[dict[str, Any], list[str]]:
-    """Check that every catalog implementation module is present in a wheel."""
+def _wheel_member_for_source_module(root: Path, module: str) -> tuple[Path, str]:
+    """Return the checkout path and wheel member for one implementation module."""
+
+    source_path = root / source_module_path(root, module)
+    if source_path.name == "__init__.py":
+        member = module.replace(".", "/") + "/__init__.py"
+    else:
+        member = module.replace(".", "/") + ".py"
+    return source_path, member
+
+
+def _module_symbols(source: bytes, *, filename: str) -> set[str]:
+    """Collect symbols that a wheel implementation module defines or imports."""
+
+    tree = ast.parse(source.decode("utf-8"), filename=filename)
+    symbols: set[str] = set()
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            symbols.add(node.name)
+        elif isinstance(node, (ast.Assign, ast.AnnAssign)):
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            symbols.update(target.id for target in targets if isinstance(target, ast.Name))
+        elif isinstance(node, (ast.Import, ast.ImportFrom)):
+            for alias in node.names:
+                symbols.add(alias.asname or alias.name.split(".", 1)[0])
+    return symbols
+
+
+def _catalog_wheel_closure(
+    root: Path,
+    wheel: Path,
+    *,
+    expected_source_revision: str | None = None,
+) -> tuple[dict[str, Any], list[str]]:
+    """Check catalog bindings against exact source and wheel implementation bytes."""
 
     details: dict[str, Any] = {
         "status": "FAIL",
         "document_count": 0,
         "implementation_module_count": 0,
         "missing_modules": [],
+        "missing_symbols": [],
+        "source_digest_mismatches": [],
+        "document_version_mismatches": [],
+        "source_revision": expected_source_revision,
+        "source_revision_status": "unbound" if expected_source_revision is None else "expected",
     }
     documents = sorted((root / "catalog" / "examples").glob("*.json"))
     if not documents:
@@ -528,29 +567,142 @@ def _catalog_wheel_closure(root: Path, wheel: Path) -> tuple[dict[str, Any], lis
     try:
         with ZipFile(wheel) as archive:
             members = set(archive.namelist())
+            member_bytes = {
+                name: archive.read(name)
+                for name in members
+                if name.startswith("scirel/") and name.endswith(".py")
+                or name.endswith("/METADATA")
+            }
     except (BadZipFile, OSError) as exc:
         return details, [f"catalog wheel closure could not read wheel: {exc}"]
 
-    implementations: set[str] = set()
+    implementations: dict[str, set[str]] = {}
+    document_versions: set[str] = set()
     errors: list[str] = []
     for path in documents:
         try:
             document = json.loads(path.read_text(encoding="utf-8"))
             api = document["public_api"]["python"]
-            implementations.add(implementation_module(root, api["module"], api["symbol"]))
+            implementation = implementation_module(root, api["module"], api["symbol"])
+            implementations.setdefault(implementation, set()).add(api["symbol"])
+            version = document.get("version", {}).get("implementation_version")
+            if isinstance(version, str) and version:
+                document_versions.add(version)
         except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
             errors.append(f"catalog binding could not be resolved for {path.name}: {exc}")
 
+    member_by_implementation: dict[str, str] = {}
+    for implementation in implementations:
+        try:
+            _, member = _wheel_member_for_source_module(root, implementation)
+        except (OSError, ValueError) as exc:
+            errors.append(f"catalog implementation source could not be resolved for {implementation}: {exc}")
+            continue
+        member_by_implementation[implementation] = member
     missing = sorted(
         implementation
-        for implementation in implementations
-        if implementation.replace(".", "/") + ".py" not in members
+        for implementation, member in member_by_implementation.items()
+        if member not in members
     )
     details["document_count"] = len(documents)
     details["implementation_module_count"] = len(implementations)
     details["missing_modules"] = missing
     if missing:
         errors.append("catalog implementation modules are absent from wheel: " + ", ".join(missing))
+
+    metadata_version: str | None = None
+    dist_info_roots = {
+        PurePosixPath(name).parts[0]
+        for name in members
+        if PurePosixPath(name).parts and PurePosixPath(name).parts[0].endswith(".dist-info")
+    }
+    if len(dist_info_roots) == 1:
+        metadata_member = next(iter(dist_info_roots)) + "/METADATA"
+        metadata_bytes = member_bytes.get(metadata_member)
+        if metadata_bytes is None:
+            metadata_text = ""
+        else:
+            try:
+                metadata_text = metadata_bytes.decode("utf-8")
+            except UnicodeDecodeError:
+                metadata_text = ""
+        for line in metadata_text.splitlines():
+            if line.startswith("Version: "):
+                metadata_version = line[9:].strip()
+                break
+    if metadata_version and document_versions and document_versions != {metadata_version}:
+        details["document_version_mismatches"] = sorted(document_versions)
+        errors.append(
+            "catalog document implementation versions do not match wheel metadata: "
+            + ", ".join(sorted(document_versions))
+            + f" (wheel={metadata_version})"
+        )
+
+    for implementation, symbols in sorted(implementations.items()):
+        if implementation in missing:
+            continue
+        try:
+            source_path = root / source_module_path(root, implementation)
+            member = member_by_implementation[implementation]
+            source_bytes = source_path.read_bytes()
+            wheel_bytes = member_bytes[member]
+        except (KeyError, OSError, ValueError) as exc:
+            errors.append(f"catalog implementation binding could not be read for {implementation}: {exc}")
+            continue
+        source_digest = hashlib.sha256(source_bytes).hexdigest()
+        wheel_digest = hashlib.sha256(wheel_bytes).hexdigest()
+        if source_digest != wheel_digest:
+            details["source_digest_mismatches"].append(
+                {
+                    "module": implementation,
+                    "source": source_digest,
+                    "wheel": wheel_digest,
+                }
+            )
+            errors.append(
+                f"catalog implementation bytes differ between checkout and wheel: {implementation}"
+            )
+        try:
+            available_symbols = _module_symbols(wheel_bytes, filename=member)
+        except (UnicodeDecodeError, SyntaxError) as exc:
+            errors.append(f"wheel implementation module is not parseable for {implementation}: {exc}")
+            continue
+        for symbol in sorted(symbols):
+            if symbol not in available_symbols:
+                details["missing_symbols"].append(f"{implementation}.{symbol}")
+    details["missing_symbols"] = sorted(set(details["missing_symbols"]))
+    if details["missing_symbols"]:
+        errors.append(
+            "catalog implementation symbols are absent from wheel: "
+            + ", ".join(details["missing_symbols"])
+        )
+
+    actual_source_revision: str | None = None
+    try:
+        revision = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "HEAD"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if revision.returncode == 0:
+            actual_source_revision = revision.stdout.strip()
+    except OSError:
+        actual_source_revision = None
+    details["source_revision_actual"] = actual_source_revision
+    if expected_source_revision is not None:
+        if actual_source_revision is None:
+            details["source_revision_status"] = "unavailable"
+            errors.append("expected source revision cannot be checked because the catalog root is not a Git checkout")
+        elif actual_source_revision != expected_source_revision:
+            details["source_revision_status"] = "mismatch"
+            errors.append(
+                "catalog source revision does not match the expected revision: "
+                f"{actual_source_revision} (expected {expected_source_revision})"
+            )
+        else:
+            details["source_revision_status"] = "matched"
+
     if not errors:
         details["status"] = "PASS"
     return details, errors
@@ -855,6 +1007,7 @@ def validate_installed_wheel(
     expected_python: str = DEFAULT_EXPECTED_PYTHON,
     wheel_path: Path | None = None,
     catalog_root: Path | None = None,
+    expected_source_revision: str | None = None,
     extras: tuple[str, ...] = (),
 ) -> dict[str, Any]:
     runtime, errors = _runtime_identity(expected_platform, expected_python)
@@ -886,7 +1039,9 @@ def validate_installed_wheel(
         receipt["errors"].extend(payload_errors)
         if catalog_root is not None:
             closure, closure_errors = _catalog_wheel_closure(
-                catalog_root.resolve(), wheel_path.resolve()
+                catalog_root.resolve(),
+                wheel_path.resolve(),
+                expected_source_revision=expected_source_revision,
             )
             receipt["catalog_wheel_closure"] = closure
             receipt["errors"].extend(closure_errors)
@@ -978,6 +1133,11 @@ def main() -> int:
         help="source checkout whose catalog implementation modules must be present in --wheel",
     )
     parser.add_argument(
+        "--source-revision",
+        dest="expected_source_revision",
+        help="expected Git revision for --catalog-root; also checks implementation bytes and symbols",
+    )
+    parser.add_argument(
         "--extra",
         action="append",
         default=[],
@@ -993,6 +1153,7 @@ def main() -> int:
             expected_python=args.expected_python,
             wheel_path=args.wheel,
             catalog_root=args.catalog_root,
+            expected_source_revision=args.expected_source_revision,
             extras=tuple(args.extras),
         )
     except Exception as exc:  # keep command failures machine-readable

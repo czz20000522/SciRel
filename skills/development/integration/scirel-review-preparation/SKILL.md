@@ -24,7 +24,7 @@ publication; this skill prepares a truthful review surface and cannot approve, g
 2. Separate unfinished Agent work, scientific failures, missing independent evidence, rights/licence constraints,
    human decisions and release checks. `pending_human` must not hide a repairable defect or missing oracle.
 3. For a confirmed source defect, require D2 successor correction and validation before asking an expert to judge it.
-   Use [correction disclosure](references/scientific-correction.md#required-disclosure-at-the-current-stage)
+   Use [correction disclosure](../scientific-asset-correctness/references/scientific-correction.md#required-disclosure-at-the-current-stage)
    with original observation, independent basis, exact change, before/after result and remaining limits.
 4. Build the human reading surface from exact contracts and evidence: scope/assumptions/gaps, capability/port map,
    actual checks and claim ceiling. Keep raw logs and internal paths as linked drill-down, not duplicated prose.

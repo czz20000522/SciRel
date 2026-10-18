@@ -9,15 +9,28 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import select_affected_tests as selector  # noqa: E402
 
 
+def compact(text: str) -> str:
+    return " ".join(text.split())
+
+
 def test_development_skill_changes_use_one_lightweight_contract_test():
     changed = [
+        "AGENTS.md",
         "skills/development/README.md",
         "skills/development/references/development-lifecycle.md",
         "skills/development/references/scirel-development-core.md",
         "skills/development/integration/scirel-integration/SKILL.md",
+        "skills/development/integration/scirel-review-preparation/SKILL.md",
     ]
 
     result = selector.select(changed)
+
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == ["tests/test_development_skill_contract.py"]
+
+
+def test_project_contract_routes_agents_changes_to_the_lightweight_contract():
+    result = selector.select(["AGENTS.md"])
 
     assert result["full_suite_required"] is False
     assert result["test_paths"] == ["tests/test_development_skill_contract.py"]
@@ -32,22 +45,27 @@ def test_project_contract_keeps_ordinary_optimization_out_of_release_flow():
     assert "数量只属于具体 manifest/revision" in project_contract
     assert "多个相互关联的小修复可以合并为一个变更批次" in project_contract
     assert "canonical direct test 路径" in project_contract
+    assert "遵循该入口" in project_contract
 
 
 def test_lifecycle_requires_selector_visible_regressions():
-    lifecycle = (
-        ROOT / "skills/development/references/development-lifecycle.md"
-    ).read_text(encoding="utf-8")
+    lifecycle = compact(
+        (ROOT / "skills/development/references/development-lifecycle.md").read_text(
+            encoding="utf-8"
+        )
+    )
 
     assert "canonical direct test path" in lifecycle
     assert "daily selector cannot reach" in lifecycle
 
 
 def test_lifecycle_keeps_incubation_counts_dynamic_and_release_gates_explicit():
-    readme = (ROOT / "skills/development/README.md").read_text(encoding="utf-8")
-    lifecycle = (
-        ROOT / "skills/development/references/development-lifecycle.md"
-    ).read_text(encoding="utf-8")
+    readme = compact((ROOT / "skills/development/README.md").read_text(encoding="utf-8"))
+    lifecycle = compact(
+        (ROOT / "skills/development/references/development-lifecycle.md").read_text(
+            encoding="utf-8"
+        )
+    )
 
     assert "them once per task mode" in readme
     assert "Repeated guidance may be duplicated deliberately" not in readme
@@ -55,6 +73,9 @@ def test_lifecycle_keeps_incubation_counts_dynamic_and_release_gates_explicit():
     assert "derive its members and counts from the same current" in lifecycle
     assert "Do not create a release receipt" in lifecycle
     assert "Linux amd64 with CPython 3.14" in lifecycle
+    assert "Reuse a previous result" in lifecycle
+    assert "does not by itself justify replaying the same validation" in lifecycle
+    assert "per-iteration release records" in lifecycle
 
 
 def test_development_loop_keeps_related_evidence_together_without_release_work():
@@ -62,9 +83,11 @@ def test_development_loop_keeps_related_evidence_together_without_release_work()
     lifecycle = (
         ROOT / "skills/development/references/development-lifecycle.md"
     ).read_text(encoding="utf-8")
-    core = (
-        ROOT / "skills/development/references/scirel-development-core.md"
-    ).read_text(encoding="utf-8")
+    core = compact(
+        (ROOT / "skills/development/references/scirel-development-core.md").read_text(
+            encoding="utf-8"
+        )
+    )
     integration = (
         ROOT / "skills/development/integration/scirel-integration/SKILL.md"
     ).read_text(encoding="utf-8")
@@ -81,10 +104,43 @@ def test_development_loop_keeps_related_evidence_together_without_release_work()
     assert "development lifecycle" in integration
 
 
-def test_direct_product_work_does_not_synthesize_d1_or_full_aoci_proof():
-    core = (
-        ROOT / "skills/development/references/scirel-development-core.md"
+def test_skill_routes_structural_reference_adoption_without_native_build_drift():
+    readme = (ROOT / "skills/development/README.md").read_text(encoding="utf-8")
+
+    assert "domain self-contained" in readme
+    assert "top-level namespace small" in readme
+    assert "Do not add a native build system" in readme
+
+
+def test_heavy_development_routes_are_explicit_only():
+    for relative in (
+        "skills/development/integration/scirel-integration/agents/openai.yaml",
+        "skills/development/integration/scirel-review-preparation/agents/openai.yaml",
+        "skills/development/post-acceptance-runtime-cleanup/agents/openai.yaml",
+    ):
+        text = (ROOT / relative).read_text(encoding="utf-8")
+        assert "allow_implicit_invocation: false" in text
+
+    integration = (
+        ROOT / "skills/development/integration/scirel-integration/agents/openai.yaml"
     ).read_text(encoding="utf-8")
+    assert "exact D1 packet" in integration
+
+
+def test_scientific_validation_scopes_coverage_to_the_named_claim():
+    text = (ROOT / "skills/development/scientific-computation-validation/SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    assert "target and affected capability closure" in compact(text)
+    assert "only when the claim explicitly concerns a complete project" in compact(text)
+
+
+def test_direct_product_work_does_not_synthesize_d1_or_full_aoci_proof():
+    core = compact(
+        (ROOT / "skills/development/references/scirel-development-core.md").read_text(
+            encoding="utf-8"
+        )
+    )
 
     assert "Without an exact D1 packet" in core
     assert "AOCI is a repository-maintenance aid, not a development gate" in core

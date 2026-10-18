@@ -37,6 +37,28 @@ Use this impact rule for the daily loop:
 Do not repeat a larger gate merely because a smaller check passed, and do not
 start a release projection to make a development count look current.
 
+### Work triage and evidence reuse
+
+For a non-trivial task that edits files or executes validation, identify the
+lifecycle mode, the primary claim (and directly related subclaims), the owned
+paths and the output that claim needs before editing or rerunning a check.
+Record the pre-existing worktree state and keep files outside the owned scope
+out of the change set. This is especially important when the tree already
+contains an unfinished candidate or a user's local changes. A read-only
+question or simple status lookup does not need this record.
+
+Reuse a previous result when the source revision, dependency/runtime identity,
+checker, target scope and claim are unchanged. Rerun it only after one of those
+inputs changes, the evidence is known to be stale, repeatability itself is the
+claim, or the owner explicitly asks for a fresh observation. A status request
+or a continuation with no new change does not by itself justify replaying the
+same validation or rebuilding a wheel.
+
+Ordinary development may update an existing work-management record only when a
+new decision, blocker, durable result or next action was produced. Do not create
+per-iteration release records or repeat an unchanged status merely because a
+long-running task continued.
+
 ### SciPy-style change-set loop
 
 Treat one coherent change as the working unit. Before editing, inspect the

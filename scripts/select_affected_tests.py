@@ -58,6 +58,7 @@ EXTERNAL_TOOLING_TESTS = {
 }
 
 ENGINEERING_TESTS = {
+    "AGENTS.md": ("tests/test_development_skill_contract.py",),
     "skills/development/README.md": ("tests/test_development_skill_contract.py",),
     "skills/development/references/development-lifecycle.md": (
         "tests/test_development_skill_contract.py",
@@ -68,10 +69,25 @@ ENGINEERING_TESTS = {
     "skills/development/integration/scirel-integration/SKILL.md": (
         "tests/test_development_skill_contract.py",
     ),
+    "skills/development/integration/scirel-integration/agents/openai.yaml": (
+        "tests/test_development_skill_contract.py",
+    ),
+    "skills/development/integration/scirel-review-preparation/SKILL.md": (
+        "tests/test_development_skill_contract.py",
+    ),
+    "skills/development/integration/scirel-review-preparation/agents/openai.yaml": (
+        "tests/test_development_skill_contract.py",
+    ),
+    "skills/development/post-acceptance-runtime-cleanup/agents/openai.yaml": (
+        "tests/test_development_skill_contract.py",
+    ),
     "skills/development/integration/scientific-asset-correctness/SKILL.md": (
         "tests/test_development_skill_contract.py",
     ),
     "skills/development/integration/scientific-asset-normalization/SKILL.md": (
+        "tests/test_development_skill_contract.py",
+    ),
+    "skills/development/scientific-computation-validation/SKILL.md": (
         "tests/test_development_skill_contract.py",
     ),
     "scripts/validate_installed_wheel.py": ("tests/test_validate_installed_wheel.py",),

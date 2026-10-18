@@ -152,7 +152,7 @@ D1 不重新裁决 D0 的剔除/修正，不为通过验收继续缩小 D0 范�
 D0 预处理不免除 D2 的科学正确性职责；本阶段在派生候选中处理问题，不重开已固定的 D0 范围裁决。
 科学和数值正确性验证在本阶段按保留能力的主张开展；来源对照通过不自动关闭这些门槛。
 修正先保留失败回归，说明相对来源的有意差异，再验证改变的合同和受影响依赖。
-确认错误后，D2 owner 必须启动已有[科学修正流程](../skills/development/integration/scirel-integration/references/scientific-correction.md)：
+确认错误后，D2 owner 必须启动已有[科学修正流程](../skills/development/integration/scientific-asset-correctness/references/scientific-correction.md)：
 恢复原行为和错误依据，使用科学实现 skill 完成派生修正，再做独立科学/数值验证与只读复核。
 已授权 D2 范围内的修复不逐项等待人工批准。隔离用于保护包，不能把“发现并剔除问题”当作修复任务完成，
 也不能以缩小范围替代本可完成的修正。临时环境/资源故障记录为修复待续；只有必要调查后仍无法理解行为、

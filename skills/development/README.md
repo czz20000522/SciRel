@@ -90,6 +90,17 @@ and development methods. Skills are personal routing and method overlays; they
 may point to the canonical documents or add a narrowly scoped working habit,
 but must not hide or duplicate the general policy.
 
+Adopt SciPy's structural ideas only where they fit SciRel: keep each scientific
+domain self-contained with explicit public exports, direct tests and callable
+documentation; keep the top-level namespace small; and separate runtime,
+optional and development dependencies. Use the existing affected selector as
+the daily test entry point. Do not add a native build system, platform wheel
+matrix or release automation until measured ABI/native evidence requires it.
+
+For every task, use the lifecycle reference's work-triage and evidence-reuse
+rules before selecting tools or gates; unchanged evidence should be reused
+instead of replayed.
+
 ## Correctness ownership
 
 SciRel is the correctness boundary for every public operator and TaskGraph. A

@@ -381,7 +381,9 @@ def test_wheel_payload_audit_rejects_development_files_and_path_traversal(tmp_pa
     assert any("escapes its archive root" in error for error in errors)
 
 
-def test_catalog_wheel_closure_checks_dynamic_document_count(tmp_path: Path) -> None:
+def test_catalog_wheel_closure_checks_dynamic_document_count(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     root = tmp_path / "project"
     (root / "catalog/examples").mkdir(parents=True)
     (root / "src/scirel/field").mkdir(parents=True)
@@ -396,7 +398,14 @@ def test_catalog_wheel_closure_checks_dynamic_document_count(tmp_path: Path) -> 
     with ZipFile(wheel, "w") as archive:
         archive.writestr("scirel/field/poloidal.py", "def value(): return 1\n")
 
-    details, errors = validator._catalog_wheel_closure(root, wheel)
+    monkeypatch.setattr(
+        validator.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="expected-revision\n"),
+    )
+    details, errors = validator._catalog_wheel_closure(
+        root, wheel, expected_source_revision="expected-revision"
+    )
 
     assert errors == []
     assert details == {
@@ -404,4 +413,52 @@ def test_catalog_wheel_closure_checks_dynamic_document_count(tmp_path: Path) -> 
         "document_count": 1,
         "implementation_module_count": 1,
         "missing_modules": [],
+        "missing_symbols": [],
+        "source_digest_mismatches": [],
+        "document_version_mismatches": [],
+        "source_revision": "expected-revision",
+        "source_revision_status": "matched",
+        "source_revision_actual": "expected-revision",
     }
+
+
+def test_catalog_wheel_closure_rejects_same_module_with_different_source_bytes(tmp_path: Path) -> None:
+    root = tmp_path / "project"
+    (root / "catalog/examples").mkdir(parents=True)
+    (root / "src/scirel/field").mkdir(parents=True)
+    source = root / "src/scirel/field/poloidal.py"
+    source.write_text("def value(): return 2\n", encoding="utf-8")
+    (root / "catalog/examples/example.json").write_text(
+        '{"public_api":{"python":{"module":"scirel.field.poloidal","symbol":"value"}}}',
+        encoding="utf-8",
+    )
+    wheel = tmp_path / "scirel.whl"
+    with ZipFile(wheel, "w") as archive:
+        archive.writestr("scirel/field/poloidal.py", "def value(): return 1\n")
+
+    details, errors = validator._catalog_wheel_closure(root, wheel)
+
+    assert details["status"] == "FAIL"
+    assert details["source_digest_mismatches"]
+    assert any("bytes differ" in error for error in errors)
+
+
+def test_catalog_wheel_closure_rejects_missing_bound_symbol(tmp_path: Path) -> None:
+    root = tmp_path / "project"
+    (root / "catalog/examples").mkdir(parents=True)
+    (root / "src/scirel/field").mkdir(parents=True)
+    source = "def other(): return 1\n"
+    (root / "src/scirel/field/poloidal.py").write_text(source, encoding="utf-8")
+    (root / "catalog/examples/example.json").write_text(
+        '{"public_api":{"python":{"module":"scirel.field.poloidal","symbol":"missing"}}}',
+        encoding="utf-8",
+    )
+    wheel = tmp_path / "scirel.whl"
+    with ZipFile(wheel, "w") as archive:
+        archive.writestr("scirel/field/poloidal.py", source)
+
+    details, errors = validator._catalog_wheel_closure(root, wheel)
+
+    assert details["status"] == "FAIL"
+    assert details["missing_symbols"] == ["scirel.field.poloidal.missing"]
+    assert any("symbols are absent" in error for error in errors)

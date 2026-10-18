@@ -36,8 +36,10 @@ scientific evidence.
    boundaries, failure rows and `atol=0`/other explicit criteria.
 2. Build an independent oracle or reference and name its provenance. Separate source-runtime, wheel-runtime,
    development and reference dependencies; a missing tool is a runtime gap, not a numerical pass.
-3. Cover every retained core capability, then spend deeper cases on algorithmic risk, coupled state/iteration,
-   conditioning and boundary sensitivity. Use a separate holdout only when the selected claim requires it.
+3. Cover the target and affected capability closure named by the claim, then spend deeper cases on algorithmic
+   risk, coupled state/iteration, conditioning and boundary sensitivity. Cover every retained core capability only
+   when the claim explicitly concerns a complete project or full source reassembly. Use a separate holdout only when
+   the selected claim requires it.
 4. Execute in the authorized environment, verify runtime identity before import, and keep source-free runs free of
    undeclared source mounts/network. Record command, case counts, observations and exact failures.
 5. Interpret only the selected claim. Rerun changed behavior and affected reverse dependencies; do not relax a
