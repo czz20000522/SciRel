@@ -40,6 +40,47 @@ def test_independent_scalar_reductions_and_units(op,names,flow,stress):
 
 
 @pytest.mark.parametrize('op,names,flow,stress',OPS)
+def test_self_matrix_keeps_fortran_flatten_and_exact_cell_results(
+    op, names, flow, stress
+):
+    rng = np.random.default_rng(20261019)
+    nr, nv, nx = 3, 4, 5
+    f_base = rng.lognormal(mean=-230.0, sigma=0.5, size=(nr, nv, nx * 2))
+    f = f_base[:, :, ::2]
+    wr = rng.lognormal(mean=0.0, sigma=1.0, size=nr)
+    dx = rng.lognormal(mean=-1.0, sigma=1.0, size=nv)
+    vr = np.arange(nr, dtype=float) + 0.5
+    vx = np.linspace(-2.0, 2.0, nv)
+    weights = wr[:, None] * dx[None, :]
+    density = np.sum(weights[:, :, None] * f, axis=(0, 1))
+    alpha1 = np.zeros_like(f)
+    alpha2 = np.zeros_like(f)
+    m = nr * nv
+    sig_base = rng.normal(size=(2 * m, 2 * m)) * 1.0e100
+    sig_self = sig_base[::2, ::2]
+    expected_self = np.stack([
+        (sig_self @ f[:, :, k].reshape(-1, order='F')).reshape(
+            (nr, nv), order='F'
+        )
+        for k in range(nx)
+    ], axis=2)
+    expected_moment = (
+        np.sum(weights[:, :, None] * (f * expected_self), axis=(0, 1))
+        / density
+    )
+
+    result = op(
+        f, density, alpha1, alpha2, sig_self, wr, dx, vr, vx, 2.0,
+        np.zeros(nx), np.zeros(nx),
+        **{
+            names[0] + '_EL': False,
+            names[1] + '_EL': False,
+        },
+    )
+    np.testing.assert_array_equal(result['moment_' + names[2]], expected_moment)
+
+
+@pytest.mark.parametrize('op,names,flow,stress',OPS)
 @pytest.mark.parametrize('boost',[.25,4.,-7.])
 def test_common_boost_and_spatial_partition(op,names,flow,stress,boost):
     a=arguments();target=a[0].copy();target[0,:,1] *= .75

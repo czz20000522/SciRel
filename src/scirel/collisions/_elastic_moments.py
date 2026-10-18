@@ -87,9 +87,15 @@ def reduce_elastic_moments(f, density, alpha1, alpha2, sig_self, wr, dx, vr, vx,
     elif target_distribution is not None:
         raise ValueError('target_distribution supplied without a target-state cell')
     with np.errstate(over='ignore', invalid='ignore', divide='ignore'):
-        self_alpha = np.stack([
-            (sig_self @ f[:, :, k].reshape(-1, order='F')).reshape((nr,nv), order='F')
-            for k in range(nx)], axis=2)
+        # SIG is column-weighted in Fortran velocity order.  Keep each
+        # spatial cell as an m-by-1 matrix-vector product while broadcasting
+        # the batch axis; multiplying SIG by an m-by-nx matrix would change
+        # the BLAS reduction path and can change the saved floating-point
+        # result by a few ULPs.
+        flat = f.reshape((nr * nv, nx), order='F')
+        self_alpha = np.matmul(
+            sig_self[None, :, :], flat.T[:, :, None]
+        ).squeeze(2).T.reshape((nr, nv, nx), order='F')
         numerators = [integral(f*a)/density for a in (alpha1, alpha2, self_alpha)]
         denominators = [(vth*u - flow1)/vth, (vth*u - flow2)/vth, stress]
     result = {flow_name: vth*u, stress_name: stress, 'central_stress': central}
