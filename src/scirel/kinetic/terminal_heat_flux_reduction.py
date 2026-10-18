@@ -108,8 +108,11 @@ def reduce_terminal_molecular_heat_flux(
     thermal_squared = thermal * thermal
     thermal_cubed = thermal_squared * thermal
     for k in range(nx):
+        distribution_slice = distribution[:, :, k]
+        random_slice = random_velocity_squared[:, :, k] * distribution_slice
+        centered_axial = axial_velocity - normalized_mean_velocity[k]
         weighted_random_second = np.sum(
-            weight * ((random_velocity_squared[:, :, k] * distribution[:, :, k]) @ widths)
+            weight * (random_slice @ widths)
         )
         pressure[k] = molecule_mass * thermal_squared * weighted_random_second / (
             3.0 * Q_COULOMB
@@ -117,8 +120,8 @@ def reduce_terminal_molecular_heat_flux(
         weighted_axial_second = np.sum(
             weight
             * (
-                distribution[:, :, k]
-                @ (widths * (axial_velocity - normalized_mean_velocity[k]) ** 2)
+                distribution_slice
+                @ (widths * centered_axial**2)
             )
         )
         longitudinal_stress[k] = (
@@ -127,8 +130,7 @@ def reduce_terminal_molecular_heat_flux(
         random_heat_flux[k] = 0.5 * molecule_mass * thermal_cubed * np.sum(
             weight
             * (
-                (random_velocity_squared[:, :, k] * distribution[:, :, k])
-                @ (widths * (axial_velocity - normalized_mean_velocity[k]))
+                random_slice @ (widths * centered_axial)
             )
         )
 
