@@ -4,15 +4,21 @@ import hashlib
 import importlib.util
 import json
 import os
+import pytest
 import shutil
 import subprocess
 import sys
+import tomllib
 import venv
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
 BUILDER = ROOT / "scripts" / "build_admitted_distribution.py"
+_BUILDER_SPEC = importlib.util.spec_from_file_location("scirel_admitted_builder", BUILDER)
+assert _BUILDER_SPEC is not None and _BUILDER_SPEC.loader is not None
+_BUILDER = importlib.util.module_from_spec(_BUILDER_SPEC)
+_BUILDER_SPEC.loader.exec_module(_BUILDER)
 
 
 def _build(staging: Path) -> subprocess.CompletedProcess[str]:
@@ -109,6 +115,103 @@ def _add_support_import_to_selected_module(source_root: Path, import_statement: 
     )
     entry["library_source_lf_sha256"] = digest
     provenance.write_text(json.dumps(records, ensure_ascii=False), encoding="utf-8")
+
+
+def test_builder_reads_canonical_build_and_runtime_metadata(tmp_path):
+    source_root = tmp_path / "source"
+    source_root.mkdir()
+    (source_root / "pyproject.toml").write_text(
+        """
+[build-system]
+requires = ["setuptools==84.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scirel"
+version = "9.8.7"
+description = "Canonical test metadata"
+requires-python = ">=3.14,<3.15"
+dependencies = ["numpy==2.5.4", "scipy==1.18.1", "mpmath==1.4.1"]
+
+[project.optional-dependencies]
+plot = ["matplotlib==3.11.2"]
+""".lstrip(),
+        encoding="utf-8",
+    )
+
+    metadata = _BUILDER._read_project_metadata(source_root)
+    rendered = tomllib.loads(_BUILDER._render_admitted_pyproject(metadata))
+
+    assert rendered["build-system"] == {
+        "requires": ["setuptools==84.0.0"],
+        "build-backend": "setuptools.build_meta",
+    }
+    assert rendered["project"] == {
+        "name": "scirel",
+        "version": "9.8.7",
+        "description": "Canonical test metadata",
+        "requires-python": ">=3.14,<3.15",
+        "dependencies": ["numpy==2.5.4", "scipy==1.18.1", "mpmath==1.4.1"],
+        "optional-dependencies": {"plot": ["matplotlib==3.11.2"]},
+    }
+
+
+def test_builder_rejects_a_canonical_project_name_that_cannot_match_the_package_tree(tmp_path):
+    source_root = tmp_path / "source"
+    source_root.mkdir()
+    (source_root / "pyproject.toml").write_text(
+        """
+[build-system]
+requires = ["setuptools==84.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "other-name"
+version = "9.8.7"
+requires-python = ">=3.14,<3.15"
+""".lstrip(),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="project.name = 'scirel'"):
+        _BUILDER._read_project_metadata(source_root)
+
+
+def test_builder_staging_uses_canonical_runtime_metadata(tmp_path):
+    source_root = tmp_path / "source"
+    (source_root / "provenance").mkdir(parents=True)
+    shutil.copyfile(ROOT / "pyproject.toml", source_root / "pyproject.toml")
+    records = json.loads(
+        (ROOT / "provenance" / "admitted-assets.json").read_text(encoding="utf-8")
+    )
+    entry = next(
+        item
+        for item in records["integrations"]
+        if item["public_callable"].endswith("close_hall_two_fluid_pressure")
+    )
+    module = Path("src", *entry["public_callable"].split(".")[:-1]).with_suffix(".py")
+    target = source_root / module
+    target.parent.mkdir(parents=True)
+    shutil.copyfile(ROOT / module, target)
+    entry["library_source_lf_sha256"] = hashlib.sha256(target.read_bytes()).hexdigest()
+    records["integrations"] = [entry]
+    records["support_modules"] = []
+    (source_root / "provenance" / "admitted-assets.json").write_text(
+        json.dumps(records, ensure_ascii=False), encoding="utf-8"
+    )
+
+    staging = tmp_path / "staging"
+    result = _build_from(source_root, staging)
+
+    assert result.returncode == 0, result.stderr
+    rendered = tomllib.loads((staging / "pyproject.toml").read_text(encoding="utf-8"))
+    canonical = tomllib.loads((source_root / "pyproject.toml").read_text(encoding="utf-8"))
+    assert rendered["build-system"] == {
+        key: canonical["build-system"][key] for key in ("requires", "build-backend")
+    }
+    for key in ("name", "version", "description", "requires-python", "dependencies"):
+        assert rendered["project"][key] == canonical["project"][key]
+    assert rendered["project"]["optional-dependencies"] == canonical["project"]["optional-dependencies"]
 
 
 def test_staging_contains_only_hash_locked_admitted_modules(tmp_path):

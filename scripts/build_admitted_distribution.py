@@ -11,6 +11,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import tomllib
 from pathlib import Path
 from typing import Any
 
@@ -32,12 +33,125 @@ def _canonical_json(value: Any) -> bytes:
     ).encode("utf-8")
 
 
+def _string_list(value: Any, field: str, *, required: bool = False) -> list[str]:
+    if value is None and not required:
+        return []
+    if not isinstance(value, list) or any(not isinstance(item, str) or not item for item in value):
+        raise ValueError(f"pyproject.toml {field} must be a non-empty string list")
+    return list(value)
+
+
+def _read_project_metadata(source_root: Path) -> dict[str, Any]:
+    """Read the canonical build and runtime metadata for an admitted build.
+
+    The admitted source closure is historical, but its generated wheel must use
+    the same Python and dependency contract as the current project.  Only
+    metadata that is self-contained in the staging tree is copied here;
+    source-only fields such as ``readme`` and ``license-files`` are deliberately
+    left out because the admitted staging tree does not contain those files.
+    """
+
+    pyproject_path = source_root / "pyproject.toml"
+    try:
+        with pyproject_path.open("rb") as stream:
+            config = tomllib.load(stream)
+    except FileNotFoundError as error:
+        raise FileNotFoundError(f"canonical project metadata is missing: {pyproject_path}") from error
+    except tomllib.TOMLDecodeError as error:
+        raise ValueError(f"invalid canonical project metadata: {pyproject_path}") from error
+
+    build_system = config.get("build-system")
+    project = config.get("project")
+    if not isinstance(build_system, dict):
+        raise ValueError("pyproject.toml has no [build-system] table")
+    if not isinstance(project, dict):
+        raise ValueError("pyproject.toml has no [project] table")
+
+    build_requires = _string_list(build_system.get("requires"), "build-system.requires", required=True)
+    build_backend = build_system.get("build-backend")
+    if not isinstance(build_backend, str) or not build_backend:
+        raise ValueError("pyproject.toml build-system.build-backend must be a non-empty string")
+
+    metadata: dict[str, Any] = {
+        "name": project.get("name"),
+        "version": project.get("version"),
+        "description": project.get("description", ""),
+        "requires_python": project.get("requires-python"),
+        "dependencies": _string_list(project.get("dependencies"), "project.dependencies"),
+        "optional_dependencies": project.get("optional-dependencies", {}),
+        "build_requires": build_requires,
+        "build_backend": build_backend,
+    }
+    for field in ("name", "version", "requires_python"):
+        if not isinstance(metadata[field], str) or not metadata[field]:
+            raise ValueError(f"pyproject.toml project.{field.replace('_', '-')} must be a non-empty string")
+    if metadata["name"] != "scirel":
+        raise ValueError(
+            "admitted distribution staging requires pyproject.toml project.name = 'scirel'"
+        )
+    if not isinstance(metadata["description"], str):
+        raise ValueError("pyproject.toml project.description must be a string")
+
+    optional_dependencies = metadata["optional_dependencies"]
+    if not isinstance(optional_dependencies, dict):
+        raise ValueError("pyproject.toml project.optional-dependencies must be a table")
+    normalized_optional: dict[str, list[str]] = {}
+    for extra, requirements in optional_dependencies.items():
+        if not isinstance(extra, str) or not extra:
+            raise ValueError("pyproject.toml project.optional-dependencies has an invalid extra name")
+        normalized_optional[extra] = _string_list(
+            requirements, f"project.optional-dependencies.{extra}", required=True
+        )
+    metadata["optional_dependencies"] = normalized_optional
+    return metadata
+
+
 def _read_version(source_root: Path) -> str:
-    pyproject = (source_root / "pyproject.toml").read_text(encoding="utf-8")
-    match = re.search(r'(?m)^version\s*=\s*"([0-9A-Za-z.+!-]+)"\s*$', pyproject)
-    if not match:
-        raise ValueError("pyproject.toml has no simple project version")
-    return match.group(1)
+    """Return the canonical project version (kept for callers of the old helper)."""
+
+    return _read_project_metadata(source_root)["version"]
+
+
+def _toml_value(value: Any) -> str:
+    return json.dumps(value, ensure_ascii=False)
+
+
+def _render_admitted_pyproject(metadata: dict[str, Any]) -> str:
+    """Render the self-contained pyproject used by the admitted staging tree."""
+
+    lines = [
+        "[build-system]",
+        f"requires = {_toml_value(metadata['build_requires'])}",
+        f"build-backend = {_toml_value(metadata['build_backend'])}",
+        "",
+        "[project]",
+        f"name = {_toml_value(metadata['name'])}",
+        f"version = {_toml_value(metadata['version'])}",
+    ]
+    if metadata["description"]:
+        lines.append(f"description = {_toml_value(metadata['description'])}")
+    lines.extend(
+        [
+            f"requires-python = {_toml_value(metadata['requires_python'])}",
+            f"dependencies = {_toml_value(metadata['dependencies'])}",
+        ]
+    )
+    if metadata["optional_dependencies"]:
+        lines.extend(["", "[project.optional-dependencies]"])
+        for extra, requirements in sorted(metadata["optional_dependencies"].items()):
+            lines.append(f"{_toml_value(extra)} = {_toml_value(requirements)}")
+    lines.extend(
+        [
+            "",
+            "[tool.setuptools.packages.find]",
+            'where = ["src"]',
+            "",
+            "[tool.setuptools.package-data]",
+            'scirel = ["_admitted_manifest.json"]',
+            "",
+        ]
+    )
+    return "\n".join(lines)
 
 
 def _module_source(source_root: Path, public_callable: str) -> tuple[str, str, Path]:
@@ -213,7 +327,8 @@ def assemble(source_root: Path, staging_dir: Path) -> dict[str, Any]:
 
     admitted_modules = selected_modules | support_modules
 
-    version = _read_version(source_root)
+    project_metadata = _read_project_metadata(source_root)
+    version = project_metadata["version"]
     target_parent = staging_dir.parent
     target_parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=f".{staging_dir.name}-", dir=target_parent) as temporary:
@@ -294,7 +409,7 @@ def assemble(source_root: Path, staging_dir: Path) -> dict[str, Any]:
 
         manifest: dict[str, Any] = {
             "schema": MANIFEST_SCHEMA,
-            "distribution_name": "scirel",
+            "distribution_name": project_metadata["name"],
             "distribution_version": version,
             "source_integrations_schema": records["schema"],
             "source_integrations_sha256": "sha256:" + _sha256(_canonical_json(records)),
@@ -309,7 +424,7 @@ def assemble(source_root: Path, staging_dir: Path) -> dict[str, Any]:
             newline="\n",
         )
 
-        pyproject = f'''[build-system]\nrequires = ["setuptools>=68"]\nbuild-backend = "setuptools.build_meta"\n\n[project]\nname = "scirel"\nversion = "{version}"\ndescription = "Admitted scientific relations for the CodeFusion platform runtime"\nrequires-python = ">=3.10"\ndependencies = ["numpy>=1.24", "scipy>=1.10"]\n\n[tool.setuptools.packages.find]\nwhere = ["src"]\n\n[tool.setuptools.package-data]\nscirel = ["_admitted_manifest.json"]\n'''
+        pyproject = _render_admitted_pyproject(project_metadata)
         (stage / "pyproject.toml").write_text(pyproject, encoding="utf-8", newline="\n")
 
         locked_files = []
@@ -323,7 +438,7 @@ def assemble(source_root: Path, staging_dir: Path) -> dict[str, Any]:
             )
         content_lock = {
             "schema": CONTENT_LOCK_SCHEMA,
-            "distribution_name": "scirel",
+            "distribution_name": project_metadata["name"],
             "distribution_version": version,
             "admitted_manifest_digest": manifest["manifest_digest"],
             "files": locked_files,
