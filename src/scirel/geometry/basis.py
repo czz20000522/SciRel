@@ -248,6 +248,41 @@ class ClampedCubicSpline(CubicSpline):
         self.k=np.array(k)
         
 class FirstClampedCubicSpline(CubicSpline):
+    """Construct the retained left-clamped cylindrical spline.
+
+    Parameters
+    ----------
+    x_data : array_like, shape (N,)
+        Finite, strictly increasing knots with ``N >= 3``.
+    y_data : array_like, shape (N,)
+        Finite ordinates matched to ``x_data``.
+    yp : float, default=0
+        Prescribed first derivative at the left endpoint.
+    m : float, default=0
+        Coefficient in the retained right-hand Robin row.  No physical mode
+        interpretation is asserted by this API.
+
+    Returns
+    -------
+    FirstClampedCubicSpline
+        Callable spline retaining the solved knot slopes.  Query arrays
+        preserve their shape; values outside the knot interval are zero.
+
+    Raises
+    ------
+    ValueError
+        If the knots or ordinates violate the finite, increasing and matched
+        input contract.
+    numpy.linalg.LinAlgError
+        If the left-clamped/Robin slope system cannot be solved.
+
+    Notes
+    -----
+    The qualified domain includes ``x_data[-1] > 0`` and in-domain
+    ``deriv=0/1/2``.  Other derivative selectors retain source behavior.
+    The cylindrical boundary interpretation remains an implementation
+    convention rather than a physical qualification.
+    """
     '''
     Class for doing special clamped splines for 
     BC's on Cylindrical Magnetic Fitting Problem

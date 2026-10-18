@@ -57,6 +57,16 @@ def test_first_clamped_second_derivative_continuity_and_robin():
     assert abs(left[-1]+slopes[-1]/x[-1]-4*y[-1]/x[-1]**2) < 5e-12
 
 
+def test_first_clamped_spline_public_docstring_declares_contract():
+    doc = inspect.getdoc(basis.FirstClampedCubicSpline)
+    assert doc is not None
+    assert "Parameters" in doc
+    assert "Returns" in doc
+    assert "Raises" in doc
+    assert "left endpoint" in doc
+    assert "physical qualification" in doc
+
+
 
 
 
