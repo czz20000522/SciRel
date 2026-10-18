@@ -178,7 +178,8 @@ Windows/macOS 后续各自生成和验收自己的 artifact，不复用 Linux �
 
 1. 固定当前 Linux amd64 + CPython 3.14 基线，重新生成并校验 wheel、`uv.lock`、文档和平台矩阵，
    确认源码安装路径与 wheel 内容一致。
-2. 对 `src/scirel` 做运行时依赖导入审计，验证 netCDF4 的测试专用事实；用户 wheel metadata 不声明
+2. 运行 `scripts/validate_runtime_imports.py` 对 `src/scirel` 做运行时依赖导入审计，验证
+   core/optional 声明、动态可选导入和 netCDF4 的测试专用事实；用户 wheel metadata 不声明
    不属于运行闭包的 NetCDF extra。
 3. 基于已完成的 geometry 绘图惰性导入，试验 Matplotlib optional 化；保持绘图能力的独立测试和
    缺依赖错误，不让 core import 通过隐式安装 Matplotlib。
