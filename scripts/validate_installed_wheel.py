@@ -411,6 +411,7 @@ def _wheel_payload(path: Path) -> tuple[dict[str, Any], list[str]]:
         "package_file_count": 0,
         "dist_info_file_count": 0,
         "native_resource_count": 0,
+        "native_source_file_count": 0,
         "uncompressed_bytes": 0,
         "forbidden_files": [],
     }
@@ -460,8 +461,17 @@ def _wheel_payload(path: Path) -> tuple[dict[str, Any], list[str]]:
                 if relative.parts[-1].lower() in {"tests", "provenance", "scripts"}:
                     details["forbidden_files"].append(name)
                     errors.append(f"wheel contains a development asset: {name}")
-                if name.endswith(".m"):
+                is_native_resource = name.startswith(
+                    (
+                        "scirel/kinetic/_fluidbw_native/",
+                        "scirel/kinetic/_native/",
+                        "scirel/kinetic/pdrk/_native/",
+                    )
+                )
+                if is_native_resource:
                     details["native_resource_count"] += 1
+                    if name.endswith(".m"):
+                        details["native_source_file_count"] += 1
 
             if len(dist_info_roots) != 1:
                 errors.append(

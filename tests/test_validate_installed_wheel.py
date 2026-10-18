@@ -361,6 +361,7 @@ def test_wheel_payload_audit_accepts_runtime_files_and_reports_native_resources(
     assert details["package_file_count"] == 2
     assert details["dist_info_file_count"] == 2
     assert details["native_resource_count"] == 1
+    assert details["native_source_file_count"] == 1
     assert details["metadata_name"] == "scirel"
     assert details["metadata_version"] == "0.1.0.dev9"
 
