@@ -54,6 +54,16 @@ def test_second_clamped_supported_origin_and_robin_residual():
     assert abs(upper[-1]+k[-1]/x[-1]-9*y[-1]/x[-1]**2)<5e-12
 
 
+def test_second_clamped_spline_public_docstring_declares_contract():
+    doc = inspect.getdoc(basis.SecondClampedCubicSpline)
+    assert doc is not None
+    assert "Parameters" in doc
+    assert "Returns" in doc
+    assert "Raises" in doc
+    assert "x_data[0] == 0" in doc
+    assert "physical cylindrical" in doc
+
+
 def test_basis_factory_shapes_defaults_custom_columns_and_rejections():
     x=np.array([-.4,0.,.3,1.])
     obj=basis.BasisMatrix(''.join(['p','o','l','y']))

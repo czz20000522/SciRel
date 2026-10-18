@@ -281,6 +281,40 @@ class FirstClampedCubicSpline(CubicSpline):
         self.k=np.array(k)
         
 class SecondClampedCubicSpline(CubicSpline):       
+     """Construct the retained origin-natural cylindrical spline.
+
+     Parameters
+     ----------
+     x_data : array_like, shape (N,)
+         Finite, strictly increasing knots with ``N >= 3`` and
+         ``x_data[0] == 0``.
+     y_data : array_like, shape (N,)
+         Finite ordinates matched to ``x_data`` with ``y_data[0] == 0``.
+     m : float, default=1
+         Coefficient in the retained right-hand Robin row.  No physical mode
+         interpretation is asserted by this API.
+
+     Returns
+     -------
+     SecondClampedCubicSpline
+         Callable spline retaining the solved knot slopes.  Query arrays
+         preserve their shape; values outside the knot interval are zero.
+
+     Raises
+     ------
+     ValueError
+         If the knots or ordinates violate the finite, increasing, matched
+         input contract.
+     numpy.linalg.LinAlgError
+         If the origin/Robin slope system cannot be solved.
+
+     Notes
+     -----
+     The qualified domain includes ``x_data[-1] > 0`` and in-domain
+     ``deriv=0/1/2``.  Other derivative selectors retain source behavior.
+     The boundary row is not a natural boundary for arbitrary nonzero origin
+     data and does not establish a physical cylindrical fitting model.
+     """
      def __init__(self, x_data, y_data,m=1):
         CubicSpline.__init__(self, x_data, y_data)
         '''Convience Pointers'''
