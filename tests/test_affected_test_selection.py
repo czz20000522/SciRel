@@ -168,6 +168,8 @@ def test_cylindrical_quadrature_change_selects_distribution_handoff():
         ("src/scirel/kinetic/pdrk/magnetized.py", "tests/test_pdrk_public_surface.py"),
         ("src/scirel/kinetic/pdrk/rational.py", "tests/test_pdrk_public_surface.py"),
         ("src/scirel/kinetic/fluid_wavevector_scan.py", "tests/test_lazy_namespace.py"),
+        ("src/scirel/kinetic/kinetic_wavevector_scan.py", "tests/test_lazy_namespace.py"),
+        ("src/scirel/kinetic/kinetic_dispersion_relation.py", "tests/test_lazy_namespace.py"),
     ],
 )
 def test_import_boundary_regressions_are_selected_with_source_changes(source_path, auxiliary_test):

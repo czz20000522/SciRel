@@ -4,10 +4,6 @@ from __future__ import annotations
 
 import numpy as np
 
-from .kinetic_dispersion_ronnmark import evaluate_kinetic_dispersion_ronnmark
-from .kinetic_dispersion_sum_fluidbw import evaluate_fluidbw_kinetic_dispersion_sum
-from .species_equilibrium_scales import derive_species_equilibrium_scales
-
 __all__ = ["evaluate_kinetic_dispersion_relation"]
 
 
@@ -75,12 +71,22 @@ def evaluate_kinetic_dispersion_relation(
     ``kn`` and the absolute ``omega``/``kx`` itself from the caller's raw equilibrium
     controls. ``kz`` is the source driver's own absolute parallel wavenumber.
     """
+    # Resolve the scale operator first so its established input validation runs before
+    # loading the two determinant implementations and their numerical helpers.
+    from .species_equilibrium_scales import derive_species_equilibrium_scales
+
     scales = derive_species_equilibrium_scales(
         ms=ms, qs=qs, ns_unit=ns_unit, Ts_unit=Ts_unit, B0=B0, n00=n00, T00=T00
     )
     kz = float(kz)
     if not np.isfinite(kz):
         raise ValueError("kz must be finite")
+
+    # These are graph dependencies, not namespace dependencies.  Load them only at the
+    # public call boundary after the shared equilibrium and scalar checks have succeeded.
+    from .kinetic_dispersion_ronnmark import evaluate_kinetic_dispersion_ronnmark
+    from .kinetic_dispersion_sum_fluidbw import evaluate_fluidbw_kinetic_dispersion_sum
+
     omega = probe_frequency(omega_frac=omega_frac, wn=scales["wn"])["omega"]
     kx = probe_wavenumber(kx_frac=kx_frac, kn=scales["kn"])["kx"]
     f = omega_to_frequency(omega=omega)["f"]

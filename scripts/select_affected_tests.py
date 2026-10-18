@@ -231,6 +231,12 @@ SOURCE_AUXILIARY_TESTS = {
     "src/scirel/kinetic/fluid_wavevector_scan.py": (
         "tests/test_lazy_namespace.py",
     ),
+    "src/scirel/kinetic/kinetic_wavevector_scan.py": (
+        "tests/test_lazy_namespace.py",
+    ),
+    "src/scirel/kinetic/kinetic_dispersion_relation.py": (
+        "tests/test_lazy_namespace.py",
+    ),
 }
 
 NO_TEST_PREFIXES = (

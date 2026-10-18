@@ -184,6 +184,54 @@ assert not any(
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_kinetic_wavevector_scan_defers_graph_dependencies_until_call():
+    result = subprocess.run(
+        [sys.executable, '-I', '-c', '''
+import sys
+
+sys.path.insert(0, sys.argv[1])
+from scirel.kinetic import scan_kinetic_wavevectors
+
+assert callable(scan_kinetic_wavevectors)
+assert "scirel.kinetic.kinetic_wavevector_scan" in sys.modules
+assert not any(
+    name in sys.modules
+    for name in (
+        "scirel.kinetic.kinetic_wavevector_roots",
+        "scirel.kinetic.kinetic_dispersion_ronnmark",
+        "scirel.kinetic.ronnmark_r_function",
+        "scirel.kinetic.species_equilibrium_scales",
+    )
+)
+''', str(ROOT / 'src')], capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_kinetic_dispersion_relation_defers_graph_dependencies_until_call():
+    result = subprocess.run(
+        [sys.executable, '-I', '-c', '''
+import sys
+
+sys.path.insert(0, sys.argv[1])
+from scirel.kinetic import evaluate_kinetic_dispersion_relation
+
+assert callable(evaluate_kinetic_dispersion_relation)
+assert "scirel.kinetic.kinetic_dispersion_relation" in sys.modules
+assert not any(
+    name in sys.modules
+    for name in (
+        "scirel.kinetic.kinetic_dispersion_ronnmark",
+        "scirel.kinetic.ronnmark_r_function",
+        "scirel.kinetic.kinetic_dispersion_sum_fluidbw",
+        "scirel.kinetic.species_equilibrium_scales",
+    )
+)
+''', str(ROOT / 'src')], capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_field_exports_are_lazy_and_preserve_compatibility_identity():
     result = subprocess.run(
         [sys.executable, '-I', '-c', '''

@@ -7,9 +7,6 @@ from fractions import Fraction
 
 import numpy as np
 
-from .kinetic_wavevector_roots import solve_kinetic_wavevector_roots
-from .species_equilibrium_scales import derive_species_equilibrium_scales
-
 __all__ = ["scan_kinetic_wavevectors"]
 
 
@@ -100,12 +97,21 @@ def scan_kinetic_wavevectors(
     The frequency ladder bounds are the source's written colon expression, so both the
     ladder and its length are derived here.
     """
+    # Resolve the scale operator first so invalid equilibrium controls keep their existing
+    # validation and do not load the numerical root-solver graph unnecessarily.
+    from .species_equilibrium_scales import derive_species_equilibrium_scales
+
     scales = derive_species_equilibrium_scales(
         ms=ms, qs=qs, ns_unit=ns_unit, Ts_unit=Ts_unit, B0=B0, n00=n00, T00=T00
     )
     kz = float(kz)
     if not np.isfinite(kz):
         raise ValueError("kz must be finite")
+
+    # This is a graph dependency rather than a namespace dependency.  Import it only
+    # once the public scan is actually called and its lightweight inputs are valid.
+    from .kinetic_wavevector_roots import solve_kinetic_wavevector_roots
+
     grid = scan_frequencies(omega_scale=omega_scale, omega_step=omega_step,
                             omega_stop=omega_stop, wn=scales["wn"])
     omegas = grid["omegas"]
