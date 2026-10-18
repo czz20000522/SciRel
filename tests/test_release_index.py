@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import tomllib
 from zipfile import ZipFile
 
 import pytest
@@ -25,6 +26,14 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 def _candidate_entry_id(path):
     return json.loads(path.read_text(encoding="utf-8"))["entries"][0]["entry_id"]
+
+
+def _project_text_with_version(version: str) -> str:
+    """Project fixture text must follow the checkout's current version source."""
+    path = ROOT / "pyproject.toml"
+    text = path.read_text(encoding="utf-8")
+    current = tomllib.loads(text)["project"]["version"]
+    return text.replace(f'version = "{current}"', f'version = "{version}"', 1)
 
 
 def _pending_item(
@@ -1345,9 +1354,7 @@ def test_first_reviewed_distribution_builds_only_the_selected_asset(tmp_path, mo
         preparation,
         "_project_for_release",
         lambda source_root, documents: (
-            (ROOT / "pyproject.toml")
-            .read_text(encoding="utf-8")
-            .replace('version = "0.1.0.dev9"', 'version = "0.1.0.dev8"')
+            _project_text_with_version("0.1.0.dev8")
         ),
     )
 
@@ -1495,11 +1502,7 @@ def test_first_reviewed_distribution_includes_bound_private_support(tmp_path, mo
     monkeypatch.setattr(
         preparation,
         "_project_for_release",
-        lambda source_root, documents: (
-            (ROOT / "pyproject.toml")
-            .read_text(encoding="utf-8")
-            .replace('version = "0.1.0.dev9"', 'version = "0.1.0.dev8"')
-        ),
+        lambda source_root, documents: _project_text_with_version("0.1.0.dev8"),
     )
 
     support = ("src/scirel/_validation.py", "src/scirel/kinetic/_mirror_numerics.py")

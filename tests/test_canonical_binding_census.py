@@ -1,3 +1,5 @@
+import importlib
+import inspect
 import json
 import sys
 from pathlib import Path
@@ -125,6 +127,32 @@ def test_explicit_canonical_binding_is_checked_against_runtime_identity(tmp_path
         }
     ]
     assert report["unexpected_missing"][0]["canonical_symbol"] == "MissingExport"
+
+
+def test_new_pdrk_record_cannot_be_silently_added_to_exception_set(tmp_path):
+    source = ROOT / "catalog/examples/scirel.kinetic.pdrk-species-equilibrium.json"
+    document = json.loads(source.read_text(encoding="utf-8"))
+    document["asset_id"] = "scirel.kinetic.pdrk-unreviewed-new-capability"
+    candidate = tmp_path / source.name
+    candidate.write_text(json.dumps(document), encoding="utf-8")
+
+    report = census(ROOT, tmp_path)
+
+    assert report["counts"] == {
+        "total": 1,
+        "explicit": 0,
+        "candidate": 0,
+        "exception": 0,
+    }
+    assert report["rows"] == [
+        {
+            "asset_id": "scirel.kinetic.pdrk-unreviewed-new-capability",
+            "status": "unexpected_missing",
+        }
+    ]
+    assert report["unexpected_missing"][0]["implementation"] == (
+        "scirel.kinetic.pdrk.magnetized"
+    )
 
 
 def test_collision_and_electromagnetism_slice_pins_package_facades_explicitly():
@@ -422,3 +450,28 @@ def test_grid_mirror_graph_pins_kinetic_facade_explicitly():
     rows = {row["asset_id"]: row["status"] for row in report["rows"]}
     assert rows["scirel.kinetic.grid-mirror-kinetic-closure"] == "explicit"
     assert rows["scirel.kinetic.cross-mesh-distribution-interpolation"] == "explicit"
+
+
+def test_module_bound_exceptions_keep_a_direct_discoverable_callable():
+    """Nested PDRK and legacy GPDF records remain directly resolvable.
+
+    These records intentionally do not promise a flat package-level alias.
+    Their documented implementation module is nevertheless a public,
+    ``__all__``-listed discovery path and must not drift into a private-only
+    helper or an unavailable callable.
+    """
+    report = census(ROOT)
+    exception_ids = {
+        row["asset_id"] for row in report["rows"] if row["status"] == "exception"
+    }
+
+    for path in sorted((ROOT / "catalog" / "examples").glob("*.json")):
+        document = json.loads(path.read_text(encoding="utf-8"))
+        if document["asset_id"] not in exception_ids:
+            continue
+        api = document["public_api"]["python"]
+        module = importlib.import_module(api["module"])
+        function = getattr(module, api["symbol"], None)
+        assert callable(function), document["asset_id"]
+        assert api["symbol"] in module.__all__, document["asset_id"]
+        assert f"{api['symbol']}{inspect.signature(function)}" == api["signature"]

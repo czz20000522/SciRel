@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 import os
+import shutil
 import subprocess
 
 import pytest
@@ -10,7 +11,13 @@ HELPERS = ROOT / "scripts" / "check_helpers.ps1"
 CHECK = ROOT / "scripts" / "check.ps1"
 
 
+def _require_pwsh():
+    if shutil.which("pwsh") is None:
+        pytest.skip("PowerShell release checks require pwsh")
+
+
 def _resolve(environment: Path, platform: str):
+    _require_pwsh()
     command = (
         f". '{HELPERS}'; "
         f"Resolve-SciRelVenvPython -EnvironmentPath '{environment}' -Platform {platform}"
@@ -88,6 +95,7 @@ def test_release_gate_builds_from_exact_review_inputs():
 
 
 def test_release_gate_requires_review_inputs_before_creating_output(tmp_path):
+    _require_pwsh()
     output = tmp_path / "release-output"
     result = subprocess.run(
         [
@@ -117,6 +125,7 @@ def test_first_release_mode_smoke_from_review_fixture(tmp_path):
         pytest.skip("release gate is already running its source suite")
     if os.environ.get("SCIREL_RUN_RELEASE_SMOKE") != "1":
         pytest.skip("run explicitly for the full release gate")
+    _require_pwsh()
 
     from test_release_index import _candidate_entry_id, _reviewed_release_inputs
 

@@ -3,9 +3,16 @@ import json
 from pathlib import Path
 import numpy as np
 import pytest
+import shutil
 from scirel.kinetic.pdrk import magnetized as m
 import _pdrk_oracle as oracle
 import _pdrk_axis_oracle as axes
+
+
+pytestmark = pytest.mark.skipif(
+    shutil.which("octave") is None,
+    reason="PDRK magnetized contracts require GNU Octave",
+)
 
 T=Path(__file__).resolve().parents[1]
 CASES=json.loads((T/'pdrk-canonical-fixtures.json').read_text())['cases']+json.loads((T/'pdrk-holdout-fixtures.json').read_text())['cases']

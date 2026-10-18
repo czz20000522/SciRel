@@ -2,7 +2,14 @@
 import numpy as np
 import mpmath as mp
 import pytest
+import shutil
 from scirel.kinetic.pdrk import multifluid as f, plotting as p, reference, special
+
+
+pytestmark = pytest.mark.skipif(
+    shutil.which("octave") is None,
+    reason="PDRK native support contracts require GNU Octave",
+)
 
 def test_stored_data_and_deck_are_attributed_independent_values():
     a=f.fluid_deck(); b=f.fluid_deck(); a[0,0]=0

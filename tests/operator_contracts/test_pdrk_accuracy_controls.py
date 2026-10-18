@@ -1,7 +1,14 @@
 """Invalid accuracy controls cannot disable accepted-root residual gates."""
 import numpy as np
 import pytest
+import shutil
 from scirel.kinetic.pdrk import multifluid, parallel
+
+
+pytestmark = pytest.mark.skipif(
+    shutil.which("octave") is None,
+    reason="PDRK accuracy controls require GNU Octave",
+)
 
 @pytest.mark.parametrize('api',['fluid_solve_state','continue_em1d'])
 @pytest.mark.parametrize('criterion',[np.nan,np.inf,0.,-1.,np.longdouble('1e400')],

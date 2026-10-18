@@ -13,13 +13,68 @@ from public_api_binding import implementation_module
 
 
 ROOT = Path(__file__).resolve().parents[1]
+# These records intentionally use their public implementation modules as the
+# discovery path.  Keep this closed set explicit: a new PDRK document must
+# either add a reviewed exception here or provide a package-level canonical
+# alias.  A prefix rule would silently hide a new, unreviewed discovery gap.
 EXPECTED_INTENTIONAL_EXCEPTIONS = {
     "scirel.kinetic.generalized-small-k",
+    *{
+        f"scirel.kinetic.{name}"
+        for name in (
+            "pdrk-dispersion-workflow",
+            "pdrk-electromagnetic-eigenmatrix",
+            "pdrk-electrostatic-eigenmatrix",
+            "pdrk-faddeeva-finite-order",
+            "pdrk-fluid-deck",
+            "pdrk-fluid-equilibrium",
+            "pdrk-fluid-frequency-pencil",
+            "pdrk-fluid-frequency-solve",
+            "pdrk-fluid-plot",
+            "pdrk-fluid-relative-rate-equilibrium",
+            "pdrk-fluid-scan",
+            "pdrk-frequency-eigensolve",
+            "pdrk-loss-cone-partition",
+            "pdrk-magnetized-mode-fields",
+            "pdrk-parallel-em-continuation",
+            "pdrk-parallel-em-plot",
+            "pdrk-parallel-em-residual",
+            "pdrk-polarization-workflow",
+            "pdrk-preset-mode-selection",
+            "pdrk-preset-output-workflow",
+            "pdrk-rational-default-deck",
+            "pdrk-rational-em-coordinates",
+            "pdrk-rational-equilibrium",
+            "pdrk-rational-jpole-coefficients",
+            "pdrk-rational-jpole-evaluate",
+            "pdrk-rational-jpole-generator",
+            "pdrk-rational-jpole-grid-coordinates",
+            "pdrk-rational-ordered-spectrum",
+            "pdrk-rational-point-matrix",
+            "pdrk-rational-pole-table",
+            "pdrk-rational-reassemble-original-program",
+            "pdrk-rational-solve-matrix",
+            "pdrk-rational-z-poles",
+            "pdrk-rendered-output-workflow",
+            "pdrk-seed-mode-selection",
+            "pdrk-selected-dispersion-interpolation",
+            "pdrk-selected-fields-workflow",
+            "pdrk-selected-mode-artifacts",
+            "pdrk-selection-artifacts",
+            "pdrk-species-equilibrium",
+            "pdrk-spectral-scan-workflow",
+            "pdrk-spectrum-artifacts",
+            "pdrk-stored-program-workflow",
+            "pdrk-wavevector-coordinates",
+            "pdrk-whamp-overlay",
+            "pdrk-whamp-reference",
+        )
+    },
 }
 
 
 def _is_intentional_exception(asset_id: str) -> bool:
-    return asset_id.startswith("scirel.kinetic.pdrk-") or asset_id in EXPECTED_INTENTIONAL_EXCEPTIONS
+    return asset_id in EXPECTED_INTENTIONAL_EXCEPTIONS
 
 
 def _check_binding(source_root: Path, api: dict[str, Any]) -> tuple[str, str, str]:

@@ -2,10 +2,18 @@
 import json
 from pathlib import Path
 import numpy as np
+import pytest
+import shutil
 from scirel.kinetic.pdrk import magnetized as m,workflows as g
 import _pdrk_oracle as oracle
 
 F=json.loads((Path(__file__).resolve().parents[1]/'pdrk-holdout-fixtures.json').read_text())['cases'][0]
+
+
+pytestmark = pytest.mark.skipif(
+    shutil.which("octave") is None,
+    reason="PDRK graph contracts require GNU Octave",
+)
 
 def _scan():
     return g.solve_dispersion(dict(deck=np.asarray(F['deck']),controls=dict(B0=F['B0'],N=1,J=4,iem=1,iout=2,sp=0,ipa=3,ipb=3,pa1=.25,pa2=.45,dpa=.1),par=np.array([.25,0,.25,.07,0,0])))

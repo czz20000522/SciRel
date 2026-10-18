@@ -112,7 +112,29 @@ def test_cli_is_source_free_and_errors_are_not_empty_results(snapshot, tmp_path)
                              'show', '../manifest'], cwd=tmp_path, capture_output=True, text=True)
     assert result.returncode == 2 and not result.stdout
     assert json.loads(result.stderr)['outcome'] == 'catalog_unavailable_not_capability_absent'
-    assert not any(k == 'scirel' or k.startswith('scirel.') for k in sys.modules)
+    probe = subprocess.run(
+        [
+            sys.executable,
+            '-I',
+            '-c',
+            '''
+import runpy, sys
+tool, snapshot = sys.argv[1:]
+sys.argv = [tool, '--snapshot', snapshot, 'search', '--topic', 'tensor', '--limit', '1']
+try:
+    runpy.run_path(tool, run_name='__main__')
+except SystemExit as error:
+    assert error.code == 0
+assert not any(name == 'scirel' or name.startswith('scirel.') for name in sys.modules)
+''',
+            str(TOOL),
+            str(snapshot),
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+    )
+    assert probe.returncode == 0, probe.stdout + probe.stderr
 
 
 def test_renamed_delivery_locates_its_own_snapshot_from_unrelated_cwd(snapshot, tmp_path):

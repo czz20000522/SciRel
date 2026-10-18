@@ -351,9 +351,21 @@ def _load_assets() -> list[Asset]:
     """Union current documents with legacy samples under one dependency ID space."""
     catalog = _load_catalog_assets()
     catalog_by_callable = {asset.public_callable: asset for asset in catalog}
+    catalog_by_implementation = {
+        (asset.module, asset.public_callable.rsplit(".", 1)[-1]): asset
+        for asset in catalog
+    }
     ledger_assets = _load_ledger_assets()
+
+    def current_asset(asset: Asset) -> Asset:
+        direct = catalog_by_callable.get(asset.public_callable)
+        if direct is not None:
+            return direct
+        symbol = asset.public_callable.rsplit(".", 1)[-1]
+        return catalog_by_implementation.get((asset.module, symbol), asset)
+
     legacy_to_current_ref = {
-        asset.asset_ref: catalog_by_callable.get(asset.public_callable, asset).asset_ref
+        asset.asset_ref: current_asset(asset).asset_ref
         for asset in ledger_assets
     }
     ledger = [

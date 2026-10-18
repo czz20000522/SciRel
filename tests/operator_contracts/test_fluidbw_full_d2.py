@@ -2,10 +2,20 @@
 import copy
 import numpy as np
 import pytest
+import platform
+import shutil
 from scipy.special import erfcx, iv
 from scirel.kinetic.fluidbw import (
     evaluate_fluidbw_special, derive_fluidbw_case, evaluate_fluidbw_dispersion,
     assemble_fluidbw_em, solve_fluidbw_bonk, solve_fluidbw_em,
+)
+
+
+pytestmark = pytest.mark.skipif(
+    platform.system() != "Linux"
+    or platform.machine().lower() not in {"x86_64", "amd64"}
+    or shutil.which("octave") is None,
+    reason="fluidBW D2 contracts require Linux amd64 and GNU Octave",
 )
 
 

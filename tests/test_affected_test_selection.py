@@ -46,6 +46,8 @@ def test_bilinear_sampler_change_selects_equilibrium_diagnostics_graph():
         "tests/operator_contracts/test_anisotropic_inference_independent.py",
         "tests/operator_contracts/test_bilinear_grid_sampling.py",
         "tests/operator_contracts/test_inference_physical_closure.py",
+        "tests/graph_contracts/equilibrium_synthesis_diagnostics/"
+        "test_graph_equilibrium_synthesis_diagnostics.py",
     }
 
 
@@ -170,7 +172,7 @@ def test_atomic_cx_rate_change_selects_its_direct_tests():
 
     assert result["full_suite_required"] is False
     assert result["affected_assets"] == [
-        "scirel.collisions.atomic_hydrogen_charge_exchange_rate.evaluate_atomic_hydrogen_charge_exchange_rate"
+        "scirel.collisions.evaluate_atomic_hydrogen_charge_exchange_rate"
     ]
     assert {
         "tests/operator_contracts/test_atomic_hydrogen_charge_exchange_rate.py",
@@ -183,7 +185,7 @@ def test_molecular_cx_rate_change_selects_its_direct_tests():
 
     assert result["full_suite_required"] is False
     assert result["affected_assets"] == [
-        "scirel.collisions.hydrogen2_charge_exchange_rate.evaluate_hydrogen2_charge_exchange_rate"
+        "scirel.collisions.evaluate_hydrogen2_charge_exchange_rate"
     ]
     assert {
         "tests/operator_contracts/test_hydrogen2_charge_exchange_rate.py",
@@ -196,7 +198,7 @@ def test_janev_ionization_rate_change_selects_its_direct_tests():
 
     assert result["full_suite_required"] is False
     assert result["affected_assets"] == [
-        "scirel.collisions.janev_electron_impact_ionization_rate.evaluate_janev_electron_impact_ionization_rate"
+        "scirel.collisions.evaluate_janev_electron_impact_ionization_rate"
     ]
     assert {
         "tests/operator_contracts/test_janev_electron_impact_ionization_rate.py",
@@ -209,7 +211,7 @@ def test_atomic_h1s_recombination_change_selects_its_direct_tests():
 
     assert result["full_suite_required"] is False
     assert result["affected_assets"] == [
-        "scirel.collisions.atomic_hydrogen_1s_radiative_recombination_rate.evaluate_atomic_hydrogen_1s_radiative_recombination_rate"
+        "scirel.collisions.evaluate_atomic_hydrogen_1s_radiative_recombination_rate"
     ]
     assert {
         "tests/operator_contracts/test_atomic_hydrogen_1s_radiative_recombination_rate.py",
@@ -221,7 +223,7 @@ def test_alpha_change_selects_omega_dependent_and_direct_replay():
     result = select("src/scirel/kinetic/atomic_alpha_contraction.py")
 
     assert result["full_suite_required"] is False
-    assert "scirel.collisions.atomic_hydrogen_omega_frequencies.assemble_atomic_hydrogen_omega_frequencies" in result["affected_assets"]
+    assert "scirel.collisions.assemble_atomic_hydrogen_omega_frequencies" in result["affected_assets"]
     assert {
         "tests/operator_contracts/test_atomic_hydrogen_omega_frequencies.py",
         "tests/operator_contracts/test_omega_frequencies_l1.py",
@@ -233,7 +235,7 @@ def test_terminal_flux_change_selects_its_two_direct_tests():
 
     assert result["full_suite_required"] is False
     assert result["affected_assets"] == [
-        "scirel.kinetic.terminal_flux_velocity_reduction.reduce_terminal_molecular_flux_velocity"
+        "scirel.kinetic.reduce_terminal_molecular_flux_velocity"
     ]
     assert {
         "tests/operator_contracts/test_terminal_molecular_flux_velocity.py",
@@ -246,7 +248,7 @@ def test_terminal_pressure_change_selects_its_two_direct_tests():
 
     assert result["full_suite_required"] is False
     assert result["affected_assets"] == [
-        "scirel.kinetic.terminal_pressure_temperature_reduction.reduce_terminal_molecular_pressure_temperature"
+        "scirel.kinetic.reduce_terminal_molecular_pressure_temperature"
     ]
     assert {
         "tests/operator_contracts/test_terminal_molecular_pressure_temperature.py",
@@ -259,7 +261,7 @@ def test_terminal_heat_flux_change_selects_its_two_direct_tests():
 
     assert result["full_suite_required"] is False
     assert result["affected_assets"] == [
-        "scirel.kinetic.terminal_heat_flux_reduction.reduce_terminal_molecular_heat_flux"
+        "scirel.kinetic.reduce_terminal_molecular_heat_flux"
     ]
     assert {
         "tests/operator_contracts/test_terminal_molecular_heat_flux.py",
@@ -272,7 +274,7 @@ def test_terminal_energy_transfer_change_selects_its_two_direct_tests():
 
     assert result["full_suite_required"] is False
     assert result["affected_assets"] == [
-        "scirel.kinetic.terminal_energy_transfer_reduction.reduce_terminal_molecular_energy_transfer"
+        "scirel.kinetic.reduce_terminal_molecular_energy_transfer"
     ]
     assert {
         "tests/operator_contracts/test_terminal_molecular_energy_transfer.py",
@@ -285,7 +287,7 @@ def test_terminal_ion_state_change_selects_its_two_direct_tests():
 
     assert result["full_suite_required"] is False
     assert result["affected_assets"] == [
-        "scirel.kinetic.terminal_ion_state_reduction.reduce_terminal_molecular_ion_state"
+        "scirel.kinetic.reduce_terminal_molecular_ion_state"
     ]
     assert {
         "tests/operator_contracts/test_terminal_molecular_ion_state.py",
@@ -298,7 +300,7 @@ def test_terminal_conservation_change_selects_its_two_direct_tests():
 
     assert result["full_suite_required"] is False
     assert result["affected_assets"] == [
-        "scirel.kinetic.terminal_conservation_diagnostic.reduce_qh2_total_conservation_diagnostic"
+        "scirel.kinetic.reduce_qh2_total_conservation_diagnostic"
     ]
     assert {
         "tests/operator_contracts/test_terminal_molecular_conservation.py",
@@ -591,16 +593,20 @@ def test_unmapped_scirel_source_fails_closed_to_full_suite():
 
 
 def test_every_admitted_asset_has_a_direct_test_mapping():
+    admitted = json.loads(
+        (ROOT / "provenance/admitted-assets.json").read_text(encoding="utf-8")
+    )["integrations"]
+    expected_callables = {
+        item["public_callable"] for item in admitted
+    }
     result = select(
         *[
             "src/" + item["public_callable"].rsplit(".", 1)[0].replace(".", "/") + ".py"
-            for item in json.loads(
-                (ROOT / "provenance/admitted-assets.json").read_text(encoding="utf-8")
-            )["integrations"]
+            for item in admitted
         ]
     )
 
-    assert len(result["affected_assets"]) == 52
+    assert expected_callables <= set(result["affected_assets"])
     assert result["full_suite_required"] is False
 
 
@@ -616,18 +622,16 @@ def test_documented_operator_selects_its_own_direct_test():
 
 def test_documented_u1_operators_reverse_select_the_task_graph_test():
     graph_asset = (
-        "scirel.geometry.axisymmetric_equilibrium_grid_support."
-        "solve_axisymmetric_equilibrium_grid_mapping"
+        "scirel.geometry.solve_axisymmetric_equilibrium_grid_mapping"
     )
     cases = {
         "src/scirel/geometry/axisymmetric_grid_mapping.py": (
             "tests/operator_contracts/test_axisymmetric_grid_mapping.py",
-            "scirel.geometry.axisymmetric_grid_mapping."
-            "map_axisymmetric_equilibrium_to_cartesian_grid",
+            "scirel.geometry.map_axisymmetric_equilibrium_to_cartesian_grid",
         ),
         "src/scirel/geometry/material_support.py": (
             "tests/operator_contracts/test_material_support.py",
-            "scirel.geometry.material_support.classify_material_support",
+            "scirel.geometry.classify_material_support",
         ),
     }
     for operator, (operator_test, operator_asset) in cases.items():
@@ -658,15 +662,16 @@ def test_legacy_graph_dependencies_are_canonicalized_to_documented_asset_ids(tmp
     catalog = tmp_path / "catalog"
     catalog.mkdir()
     documented_callables = (
-        "scirel.field.rectangular_coil_filaments.discretize_rectangular_coil",
-        "scirel.field.current_green_superposition.superpose_current_green_field",
-        "scirel.field.circular_filament_green.circular_filament_green_response",
+        "scirel.field.discretize_rectangular_coil",
+        "scirel.field.superpose_current_green_field",
+        "scirel.field.circular_filament_green_response",
     )
     for source in (ROOT / "catalog/examples").glob("*.json"):
         document = json.loads(source.read_text(encoding="utf-8"))
+        api = document["public_api"]["python"]
         public_callable = (
-            f"{document['public_api']['python']['module']}."
-            f"{document['public_api']['python']['symbol']}"
+            f"{api.get('canonical_module', api['module'])}."
+            f"{api.get('canonical_symbol', api['symbol'])}"
         )
         if public_callable in documented_callables:
             (catalog / source.name).write_text(
@@ -836,16 +841,18 @@ def test_documented_ideal_conductor_boundary_keeps_free_boundary_graph():
 
 def test_current_asset_index_uses_canonical_documents():
     namespace = runpy.run_path(str(SELECTOR))
+    catalog_assets = namespace["_load_catalog_assets"]()
     assets = namespace["_load_assets"]()
 
     direct_documents = [json.loads(path.read_text()) for path in (ROOT / "catalog/examples").glob("*.json")]
     fast_ion = [doc for doc in direct_documents if doc["asset_id"] == "scirel.plasma.fast-ion-heating"]
     assert len(fast_ion) == 1
     assert fast_ion[0]["public_api"]["python"]["symbol"] == "fast_ion_fractional_heating"
-    assert len([doc for doc in direct_documents if doc["asset_id"] != "scirel.plasma.fast-ion-heating"]) == 266
-    assert len(assets) == 260
-    assert len({asset.public_callable for asset in assets}) == 260
-    stale_fluidbw_symbols = {
+    assert len(direct_documents) == 267
+    assert len(catalog_assets) == 267
+    assert len({asset.public_callable for asset in catalog_assets}) == 267
+    assert len(assets) == 319
+    fluidbw_symbols = {
         "derive_fluidbw_case",
         "evaluate_fluidbw_special",
         "evaluate_fluidbw_dispersion",
@@ -854,10 +861,9 @@ def test_current_asset_index_uses_canonical_documents():
         "solve_fluidbw_em",
         "render_fluidbw_materials",
     }
-    assert not any(
-        asset.public_callable.rsplit(".", 1)[-1] in stale_fluidbw_symbols
-        for asset in assets
-    )
+    assert fluidbw_symbols <= {
+        asset.public_callable.rsplit(".", 1)[-1] for asset in catalog_assets
+    }
 
 
 def test_shared_corrected_green_keeps_current_consumers():
@@ -908,8 +914,7 @@ def test_documented_task_graph_selects_only_its_own_direct_test():
 
     assert result["full_suite_required"] is False
     assert result["affected_assets"] == [
-        "scirel.geometry.axisymmetric_equilibrium_grid_support."
-        "solve_axisymmetric_equilibrium_grid_mapping"
+        "scirel.geometry.solve_axisymmetric_equilibrium_grid_mapping"
     ]
     assert result["test_paths"] == [
         "tests/graph_contracts/axisymmetric_equilibrium_grid_support/"
@@ -922,8 +927,7 @@ def test_documented_diagnostics_operator_selects_its_own_direct_test():
 
     assert result["full_suite_required"] is False
     assert result["affected_assets"] == [
-        "scirel.diagnostics.species_absorption_fraction."
-        "compute_species_absorption_fraction"
+        "scirel.diagnostics.compute_species_absorption_fraction"
     ]
     assert set(result["test_paths"]) == {
         "tests/operator_contracts/test_legacy_admission_regressions.py",

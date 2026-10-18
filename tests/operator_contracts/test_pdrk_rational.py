@@ -10,8 +10,15 @@ import importlib.util
 import json
 import numpy as np
 import pytest
+import shutil
 from scipy.special import wofz
 from scirel.kinetic.pdrk import rational
+
+
+pytestmark = pytest.mark.skipif(
+    shutil.which("octave") is None,
+    reason="PDRK rational contracts require GNU Octave",
+)
 
 
 def _schur(M,omega):
