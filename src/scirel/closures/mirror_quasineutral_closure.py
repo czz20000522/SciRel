@@ -101,6 +101,39 @@ def run_graph(inputs, *, asset_loader):
     return state
 
 def solve_mirror_quasineutral_closure(inputs=None, **kwargs):
+    """Solve a bounded mirror quasineutral closure with Boltzmann electrons.
+
+    Parameters
+    ----------
+    inputs : mapping, optional
+        Mapping containing the required ``b_t``, ``psi``, ``mass_kg``,
+        ``charge_c``, ``density_ref_m3``, ``temperature_parallel_j``,
+        ``temperature_perpendicular_ref_j``, ``b_ref_t`` and
+        ``electron_temperature_j`` fields. Profile fields may be scalars,
+        psi-shaped arrays or callables of ``psi``. Optional plug, reference
+        density, potential-solver tolerance and iteration controls follow the
+        catalog contract; keyword arguments are merged at the composition
+        boundary.
+    **kwargs
+        Named inputs merged with ``inputs`` by the TaskGraph composition
+        boundary.
+
+    Returns
+    -------
+    dict
+        Final ion/electron pressures and densities, electrostatic potential,
+        relative charge residual, nested ``kinetic_moments`` and solver
+        status fields. Array outputs follow the ``psi`` sample shape.
+
+    Raises
+    ------
+    ValueError
+        If required fields, profiles, reference-density masks, plug inputs or
+        solver controls are invalid.
+    RuntimeError
+        If the bounded potential solve fails to bracket or converge, or the
+        reevaluated terminal residual exceeds its declared tolerance.
+    """
     from scirel._composition import compose
     from scirel.closures.boltzmann_quasineutrality import compute_boltzmann_electron_state as _dependency_0
     from scirel.closures.quasineutral_potential import solve_quasineutral_potential as _dependency_1

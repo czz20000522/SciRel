@@ -1,3 +1,5 @@
+import inspect
+
 from scirel.closures.mirror_quasineutral_closure import solve_mirror_quasineutral_closure
 import scirel
 from _review_bindings import load_asset as _load_asset, load_graph as _load_graph, load_operator as _load_operator
@@ -19,6 +21,13 @@ def _inputs(**overrides):
     inputs = dict(b_t=np.array([1.0, 1.4, 2.0]), psi=np.zeros(3), mass_kg=M, charge_c=E, density_ref_m3=2e18, temperature_parallel_j=1200*E, temperature_perpendicular_ref_j=2400*E, b_ref_t=1.0, electron_temperature_j=600*E)
     inputs.update(overrides)
     return inputs
+
+
+def test_public_callable_documents_the_catalog_contract():
+    text = inspect.getdoc(solve_mirror_quasineutral_closure) or ""
+    assert "b_t" in text
+    assert "electrostatic potential" in text
+    assert "RuntimeError" in text
 
 
 def test_no_plug_limit_matches_analytic_potential_and_neutrality():
