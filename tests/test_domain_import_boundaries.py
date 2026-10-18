@@ -112,6 +112,21 @@ assert "scipy" in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_geometry_arclength_export_defers_fieldline_scipy_backend() -> None:
+    result = _run(
+        """
+import sys
+from scirel.geometry import d_ds_arclength
+
+assert "scipy" not in sys.modules
+values = d_ds_arclength([[0.0, 0.0], [1.0, 0.0], [2.0, 0.0]], [0.0, 1.0, 4.0])
+assert values.tolist() == [0.0, 2.0, 4.0]
+assert "scipy" not in sys.modules
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_lazy_exports_preserve_identity_for_the_remaining_domains() -> None:
     result = _run(
         """

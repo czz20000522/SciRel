@@ -52,10 +52,6 @@ def d_ds_arclength(vertices, values):
     return out
 
 
-from scipy.interpolate import griddata, CloughTocher2DInterpolator, RectBivariateSpline
-from scipy.interpolate import splprep,splev
-from scipy.optimize import least_squares
-
 def _sample_fieldline(vertices, R, Z, Q, method, filter_nonfinite):
     """Interpolate physical samples without degrading a complete tensor grid.
 
@@ -65,6 +61,8 @@ def _sample_fieldline(vertices, R, Z, Q, method, filter_nonfinite):
     1e-12 rather than griddata's default 1e-6. Linear/nearest remain griddata.
     The two public classes retain their distinct finite-Q filtering behavior.
     """
+    from scipy.interpolate import CloughTocher2DInterpolator, RectBivariateSpline, griddata
+
     R, Z, Q = (np.asarray(v) for v in (R, Z, Q))
     if (method == "cubic" and not np.iscomplexobj(Q) and R.ndim == 2 and
             min(R.shape) >= 4 and Z.shape == R.shape == Q.shape and
@@ -160,6 +158,8 @@ def _curve_curvature(vertices, br, bz):
 
 
 def _bounded_intersection(line,boundary):
+    from scipy.optimize import least_squares
+
     lower = np.array([float(line.u.min()),float(boundary.u.min())])
     upper = np.array([float(line.u.max()),float(boundary.u.max())])
     geometry = np.vstack((line.verts,boundary.verts))
@@ -199,6 +199,8 @@ class FieldLine(object):
         return np.all(self._verts[0,:] == self._verts[-1,:])
 
     def _interpolate_verts(self,u=None,s=0.0,k=2,npts=1000):
+        from scipy.interpolate import splev, splprep
+
         if self.is_closed():
             per = 1
         else:
@@ -211,6 +213,8 @@ class FieldLine(object):
         self.verts = np.vstack((r_new,z_new)).T
 
     def interpolate(self,u):
+        from scipy.interpolate import splev
+
         return splev(u,self.tck,der=0)
 
     def reorder_verts(self,steptol=0.1):
@@ -307,6 +311,8 @@ class Boundary(object):
         self._interpolate_verts(vertices)
 
     def _interpolate_verts(self,vertices,u=None,s=0.0,npts=200):
+        from scipy.interpolate import splev, splprep
+
         tck,u = splprep(vertices.T,u=u,s=s)
         u_new = np.linspace(u.min(),u.max(),npts)
         self.tck = tck
@@ -315,6 +321,8 @@ class Boundary(object):
         self.verts = np.vstack((r_new,z_new)).T
 
     def interpolate(self,u):
+        from scipy.interpolate import splev
+
         return splev(u,self.tck,der=0)
 
 
@@ -329,6 +337,8 @@ class HelperFieldLine(object):
         return np.all(self._verts[0,:] == self._verts[-1,:])
 
     def _interpolate_verts(self,u=None,s=0.0,k=2,npts=1000):
+        from scipy.interpolate import splev, splprep
+
         if self.is_closed():
             per = 1
         else:
@@ -341,6 +351,8 @@ class HelperFieldLine(object):
         self.verts = np.vstack((r_new,z_new)).T
 
     def interpolate(self,u):
+        from scipy.interpolate import splev
+
         return splev(u,self.tck,der=0)
 
     def reorder_verts(self,steptol=0.1):
