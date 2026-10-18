@@ -1,3 +1,5 @@
+import inspect
+
 from scirel.equilibrium.axisymmetric_anisotropic_picard import solve_axisymmetric_anisotropic_picard
 import scirel
 from _review_bindings import load_asset as _load_asset, load_graph as _load_graph, load_operator as _load_operator
@@ -18,6 +20,13 @@ def _closure(b, psi):
 
 def _scalar_closure(b, psi):
     return {"p_parallel": 7.0, "p_perpendicular": 5.0, "closure_marker": float(np.mean(b))}
+
+
+def test_public_callable_documents_the_catalog_contract():
+    text = inspect.getdoc(solve_axisymmetric_anisotropic_picard) or ""
+    assert "r_grid" in text
+    assert "pressure_closure" in text
+    assert "FloatingPointError" in text
 
 
 def _inputs(**overrides):

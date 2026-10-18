@@ -115,6 +115,38 @@ def run_graph(inputs, *, asset_loader):
     return {'psi': psi, 'plasma_cell_currents': terminal_cell_currents, 'J_phi': j_phi, 'B_R': magnetic['B_R'], 'B_Z': magnetic['B_Z'], 'B': magnetic['B'], 'p_parallel': state['p_parallel'], 'p_perpendicular': state['p_perpendicular'], 'parallel_force': force_state['parallel_force'], 'force_R': force_state['force_R'], 'force_Z': force_state['force_Z'], 'converged': converged, 'fixed_point_residual':fixed_point_residual, 'iterations': iteration, 'relative_psi_change': relative_change, 'parallel_force_error': force_state['parallel_force_error'], 'force_diagnostics': force_state, 'closure_state': state, 'firehose_margin': force_state['firehose_margin'], 'iteration_history': history}
 
 def solve_axisymmetric_anisotropic_picard(inputs=None, **kwargs):
+    """Run the axisymmetric anisotropic Picard field/pressure feedback loop.
+
+    Parameters
+    ----------
+    inputs : mapping, optional
+        Mapping containing ``r_grid``, ``z_grid``, ``psi_vac``, ``g_psi`` and
+        callable ``pressure_closure(B, psi)``. Optional controls include
+        ``tol``, ``maxiter``, ``relax``, ``plasma_mask``, field/firehose gates,
+        compatibility checks and explicit ``cell_edges``; keyword arguments
+        are merged at the composition boundary.
+    **kwargs
+        Named inputs merged with ``inputs`` by the TaskGraph composition
+        boundary.
+
+    Returns
+    -------
+    dict
+        Terminal ``psi``, magnetic field, pressure, current and force fields,
+        convergence diagnostics, closure state and iteration history. Array
+        outputs follow the declared rectilinear R-Z grid.
+
+    Raises
+    ------
+    ValueError
+        If the grid, Green matrix, controls, pressure closure, mask or terminal
+        compatibility contract is invalid.
+    TypeError
+        If the pressure closure or its returned state has an invalid type.
+    FloatingPointError
+        If the field gate, firehose gate or another declared finite-value gate
+        fails during iteration or terminal reevaluation.
+    """
     from scirel._composition import compose
     from scirel.equilibrium.anisotropic_force_balance import compute_anisotropic_force_balance as _dependency_0
     from scirel.equilibrium.axisymmetric_picard_update import update_axisymmetric_picard_flux as _dependency_1
