@@ -9,7 +9,6 @@ The saved direct subtraction loses the small-k cold response and its absolute
 D root gate can accept any seed. D remains a diagnostic; roots use epsilon.
 """
 import numpy as np
-from scipy.optimize import root
 from .plasma_dispersion import evaluate_plasma_dispersion
 
 
@@ -119,6 +118,12 @@ def solve_maxwellian_electrostatic_mode(k,initial_omega,*,xtol=1e-10,residual_to
     def residual(parts):
         value=complex(evaluate_maxwellian_electrostatic(complex(*parts),k)['epsilon'])
         return [value.real,value.imag]
+    # Keep the nonlinear solver backend out of module import and rejected-input
+    # paths.  SciPy remains a declared core runtime dependency; loading it only
+    # after the seed response has passed its representability contract keeps
+    # discovery and validation cheap while preserving the exact solver path.
+    from scipy.optimize import root
+
     try:
         result=root(residual,[seed.real,seed.imag],method='hybr',options={'xtol':xtol,'maxfev':int(max_evaluations)})
     except ValueError as exc:
