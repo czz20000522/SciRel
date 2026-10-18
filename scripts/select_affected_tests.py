@@ -14,6 +14,7 @@ from typing import Iterable
 
 from public_api_binding import canonical_binding, implementation_module, source_module_path
 from validate_asset_documents import resolve_test_reference
+from validate_release_alignment import _bound_git_blob_bytes
 
 ROOT = Path(__file__).resolve().parents[1]
 LEDGER = ROOT / "provenance" / "admitted-assets.json"
@@ -242,10 +243,12 @@ def _load_catalog_assets() -> list[Asset]:
     selection aligned with the same source the catalog is built from, and it does
     not reintroduce admission or review records into the public contract.
     """
-    if not CATALOG.is_dir():
+    source_bound_catalog = CATALOG.resolve() == (ROOT / "catalog" / "examples").resolve()
+    if not CATALOG.is_dir() and not source_bound_catalog:
         return []
 
     catalog_paths: list[Path]
+    source_revision: str | None = None
     if CATALOG.resolve() == (ROOT / "catalog" / "examples").resolve():
         # The development catalog also retains historical or not-yet-admitted
         # documents.  The affected-test selector must follow the current release
@@ -253,6 +256,9 @@ def _load_catalog_assets() -> list[Asset]:
         # and dependency edge for the active candidate.  Bind both the selected
         # path and its digest so a stale or edited selection fails closed.
         current = json.loads(CURRENT_RELEASE.read_text(encoding="utf-8"))
+        source_revision = current.get("source_revision")
+        if source_revision is not None and not isinstance(source_revision, str):
+            raise ValueError("release/CURRENT.json source_revision is invalid")
         documentation = current.get("documentation")
         if not isinstance(documentation, dict):
             raise ValueError("release/CURRENT.json has no documentation binding")
@@ -264,7 +270,26 @@ def _load_catalog_assets() -> list[Asset]:
             selection_path.relative_to(ROOT.resolve())
         except ValueError as error:
             raise ValueError("release selection escapes the SciRel repository") from error
-        selection = json.loads(selection_path.read_text(encoding="utf-8"))
+        selection_bytes = _bound_git_blob_bytes(
+            ROOT,
+            source_revision,
+            selection_ref,
+            field="source_documents",
+        )
+        if selection_bytes is None:
+            selection_bytes = selection_path.read_bytes()
+        try:
+            selection = json.loads(selection_bytes)
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise ValueError("release document selection is not valid JSON") from error
+        selection_digest = hashlib.sha256(selection_bytes).hexdigest()
+        recorded_selection_digest = documentation.get("selection_sha256")
+        if recorded_selection_digest is not None:
+            if (
+                not isinstance(recorded_selection_digest, str)
+                or recorded_selection_digest != selection_digest
+            ):
+                raise ValueError("release document selection binding digest differs")
         records = selection.get("records")
         if not isinstance(records, list):
             raise ValueError("release document selection has no records list")
@@ -283,9 +308,17 @@ def _load_catalog_assets() -> list[Asset]:
                 raise ValueError(f"release document selection escapes catalog: {relative}") from error
             if path.suffix != ".json":
                 raise ValueError(f"release document selection member is not JSON: {relative}")
-            if not path.is_file():
-                raise ValueError(f"release document selection member is missing: {relative}")
-            actual = hashlib.sha256(path.read_bytes()).hexdigest()
+            document_bytes = _bound_git_blob_bytes(
+                ROOT,
+                source_revision,
+                relative,
+                field=f"document[{relative}]",
+            )
+            if document_bytes is None:
+                if not path.is_file():
+                    raise ValueError(f"release document selection member is missing: {relative}")
+                document_bytes = path.read_bytes()
+            actual = hashlib.sha256(document_bytes).hexdigest()
             if actual != digest:
                 raise ValueError(f"release document selection digest differs: {relative}")
             if path in selected_paths:
@@ -300,7 +333,21 @@ def _load_catalog_assets() -> list[Asset]:
 
     assets = []
     for path in catalog_paths:
-        document = json.loads(path.read_text(encoding="utf-8"))
+        document_bytes = None
+        if source_bound_catalog:
+            relative = path.relative_to(ROOT).as_posix()
+            document_bytes = _bound_git_blob_bytes(
+                ROOT,
+                source_revision,
+                relative,
+                field=f"catalog document[{relative}]",
+            )
+        if document_bytes is None:
+            document_bytes = path.read_bytes()
+        try:
+            document = json.loads(document_bytes)
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise ValueError(f"catalog document is not valid JSON: {path}") from error
         python_api = document["public_api"]["python"]
         module = python_api["module"]
         symbol = python_api["symbol"]

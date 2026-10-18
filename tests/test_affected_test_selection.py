@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import pytest
 import runpy
 import subprocess
 import sys
@@ -864,6 +865,69 @@ def test_current_asset_index_uses_canonical_documents():
     assert fluidbw_symbols <= {
         asset.public_callable.rsplit(".", 1)[-1] for asset in catalog_assets
     }
+
+
+def test_post_candidate_asset_index_reads_bound_selection_and_documents():
+    """A post-candidate checkout must use the CURRENT source revision as its catalog baseline."""
+    namespace = runpy.run_path(str(SELECTOR))
+    catalog_assets = namespace["_load_catalog_assets"]()
+
+    small_k = next(
+        asset
+        for asset in catalog_assets
+        if asset.asset_ref == "scirel.kinetic.generalized-small-k"
+    )
+    current_document = json.loads(
+        (
+            ROOT
+            / "catalog/examples/scirel.kinetic.generalized-small-k.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    # The worktree document has the post-candidate package-level alias, while
+    # CURRENT.source_revision still binds the previous document representation.
+    assert current_document["public_api"]["python"]["canonical_module"] == "scirel.kinetic"
+    assert small_k.public_callable == (
+        "scirel.kinetic.generalized_dispersion.evaluate_gpdf_small_k"
+    )
+
+
+def test_post_candidate_bound_document_digest_drift_fails_closed(monkeypatch):
+    namespace = runpy.run_path(str(SELECTOR))
+    original = namespace["_bound_git_blob_bytes"]
+
+    def corrupt_document(root, revision, relative, *, field):
+        value = original(root, revision, relative, field=field)
+        if value is not None and relative.endswith("scirel.kinetic.generalized-small-k.json"):
+            return value + b"\n"
+        return value
+
+    monkeypatch.setitem(
+        namespace["_load_catalog_assets"].__globals__,
+        "_bound_git_blob_bytes",
+        corrupt_document,
+    )
+    with pytest.raises(ValueError, match="release document selection digest differs"):
+        namespace["_load_catalog_assets"]()
+
+
+def test_post_candidate_bound_selection_digest_drift_fails_closed(monkeypatch):
+    namespace = runpy.run_path(str(SELECTOR))
+    original = namespace["_bound_git_blob_bytes"]
+
+    def corrupt_selection(root, revision, relative, *, field):
+        value = original(root, revision, relative, field=field)
+        if value is not None and field == "source_documents":
+            return value + b"\n"
+        return value
+
+    monkeypatch.setitem(
+        namespace["_load_catalog_assets"].__globals__,
+        "_bound_git_blob_bytes",
+        corrupt_selection,
+    )
+    with pytest.raises(ValueError, match="selection binding digest differs"):
+        namespace["_load_catalog_assets"]()
 
 
 def test_shared_corrected_green_keeps_current_consumers():
