@@ -59,9 +59,20 @@ def evaluate_hydrogen2_charge_exchange_rate(temperature_ev, energy_ev):
     log_temperature = np.log(clipped_temperature)
     log_energy = np.log(clipped_energy)
     log_rate = np.zeros_like(log_energy, dtype=float)
+    # Cache the powers once while preserving the historical accumulation
+    # order below.  The fit is replayed bit-for-bit, but the old loop raised
+    # both powers for every one of the 81 coefficient terms.
+    log_energy_powers = [log_energy**energy_power for energy_power in range(9)]
+    log_temperature_powers = [
+        log_temperature**temperature_power for temperature_power in range(9)
+    ]
     for energy_power in range(9):
         for temperature_power in range(9):
-            log_rate = log_rate + _COEFFICIENTS[temperature_power, energy_power] * log_energy**energy_power * log_temperature**temperature_power
+            log_rate = log_rate + (
+                _COEFFICIENTS[temperature_power, energy_power]
+                * log_energy_powers[energy_power]
+                * log_temperature_powers[temperature_power]
+            )
     rate = np.exp(log_rate) * 1.0e-6
     if not np.all(np.isfinite(rate)) or np.any(rate <= 0.0):
         raise ValueError("molecular hydrogen charge-exchange fit produced a non-finite or nonpositive rate")

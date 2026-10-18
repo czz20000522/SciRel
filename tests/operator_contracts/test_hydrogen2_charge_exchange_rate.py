@@ -31,6 +31,29 @@ def test_fit_matches_reference_points_and_differs_from_atomic_sibling():
     assert np.all(np.isfinite(result)) and np.all(result > 0.0)
 
 
+def test_fit_preserves_legacy_term_order_bit_for_bit():
+    rng = np.random.default_rng(20261019)
+    temperature = np.exp(rng.uniform(np.log(0.1), np.log(2.01e4), (5, 7)))
+    energy = np.exp(rng.uniform(np.log(0.1), np.log(2.01e4), (5, 7)))
+    log_temperature = np.log(np.minimum(np.maximum(temperature, 0.1), 2.01e4))
+    log_energy = np.log(np.minimum(np.maximum(energy, 0.1), 2.01e4))
+
+    expected_log_rate = np.zeros_like(log_energy, dtype=float)
+    for energy_power in range(9):
+        for temperature_power in range(9):
+            expected_log_rate = expected_log_rate + (
+                _COEFFICIENTS[temperature_power, energy_power]
+                * log_energy**energy_power
+                * log_temperature**temperature_power
+            )
+    expected = np.exp(expected_log_rate) * 1.0e-6
+
+    np.testing.assert_array_equal(
+        evaluate_hydrogen2_charge_exchange_rate(temperature, energy),
+        expected,
+    )
+
+
 def test_clipping_and_scalar_shape():
     clipped = evaluate_hydrogen2_charge_exchange_rate(
         np.array([0.01, 50000.0]), np.array([0.0, 50000.0]),
