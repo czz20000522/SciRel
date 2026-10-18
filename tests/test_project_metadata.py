@@ -13,6 +13,7 @@ def test_project_metadata_exposes_standard_discovery_fields() -> None:
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
 
     assert project["name"] == "scirel"
+    assert project["readme"] == "README.md"
     assert project["keywords"] == [
         "scientific computing",
         "numerical methods",
