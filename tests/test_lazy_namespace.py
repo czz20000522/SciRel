@@ -25,6 +25,9 @@ assert not hasattr(scirel, "not_a_scientific_api")
 assert scirel.__version__ == sys.argv[2]
 assert not any(n.startswith("scirel.") for n in sys.modules)
 assert not any(n in sys.modules for n in ("numpy", "scipy", "matplotlib"))
+# A source checkout resolves its version from the single pyproject source;
+# installed-wheel metadata is only needed after the package is built.
+assert "importlib.metadata" not in sys.modules
 # Domain discovery itself is dependency-light; the scientific child
 # modules still raise their normal missing-dependency error when used.
 scirel.field

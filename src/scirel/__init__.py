@@ -5,24 +5,28 @@ Importing ``scirel`` alone does not load scientific backends.
 """
 
 from importlib import import_module as _import_module
-from importlib.metadata import PackageNotFoundError as _PackageNotFoundError
-from importlib.metadata import version as _installed_version
-from pathlib import Path as _Path
-import tomllib as _tomllib
+import os as _os
 
 
 def _project_version():
     # Source checkouts read the single version source directly; installed
     # wheels read their own dist-info metadata. No version is duplicated here.
-    project = _Path(__file__).resolve().parents[2] / "pyproject.toml"
-    if project.is_file():
+    project = _os.path.abspath(
+        _os.path.join(_os.path.dirname(__file__), "..", "..", "pyproject.toml")
+    )
+    if _os.path.isfile(project):
         try:
-            return str(_tomllib.loads(project.read_text(encoding="utf-8"))["project"]["version"])
-        except (OSError, KeyError, TypeError, _tomllib.TOMLDecodeError):
+            import tomllib
+
+            with open(project, "rb") as stream:
+                return str(tomllib.load(stream)["project"]["version"])
+        except (OSError, KeyError, TypeError, ValueError):
             pass
     try:
-        return _installed_version("scirel")
-    except _PackageNotFoundError:
+        from importlib.metadata import PackageNotFoundError, version
+
+        return version("scirel")
+    except PackageNotFoundError:
         return "0+unknown"
 
 
