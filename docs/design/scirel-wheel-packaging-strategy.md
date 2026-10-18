@@ -68,6 +68,30 @@ NumPy 和 SciPy 是当前大量数值 Operator 的直接运行依赖，mpmath �
 “不含绘图和外部 native 程序也能完成的已声明科学能力”，不是把当前源树每个模块都自动纳入
 通用正确性范围。
 
+### 能力级运行时闭包（开发期）
+
+当前 `pyproject.toml` 的 core 依赖是整个科学 wheel 的统一安装闭包；它不能回答某一个
+Operator 或 TaskGraph 的最小 Python 依赖。exact document 的 `version.dependencies` 只描述
+SciRel 内部资产关系，也不能被当作 pip 包依赖。能力级拆分必须先建立独立、可复核的运行时闭包证据。
+
+开发期使用 `scripts/measure_capability_runtime.py` 在 fresh process 中分别记录：
+
+1. **import closure**：只导入公共模块/符号时实际加载的外部 import roots；
+2. **call closure**：执行 caller-owned probe 后才出现的延迟依赖；
+3. **optional/native boundary**：需要 `plot` extra、外部程序或随包资源的能力及其失败语义；
+4. **runtime identity**：Python、OS、架构、发行包版本和探针摘要。
+
+这些结果先作为 source-bound development evidence，不能直接改写 wheel 元数据。只有当本次
+选定的完整能力闭包逐项拥有可复核的 PASS/NOT_RUN 状态、直接和传递依赖清单、失败行为以及
+目标平台 clean-venv 证据后，才可设计 capability metadata 或 schema successor，并据此把
+SciPy/mpmath 移入 optional extra、拆出 native capability 或保留为 core。缺少任一能力的
+闭包证据时，保留当前 core 声明比按几个 NumPy-only 样本缩小安装闭包更安全。
+
+当前 fresh-process 观察已经显示部分 field、geometry、PDRK rational 和 physics 能力只加载
+NumPy；这说明存在依赖精简机会，但不构成移除 SciPy 或 mpmath 的资格。后续若引入能力级
+运行时字段，必须由同一 source revision、同一文档选择和同一 wheel candidate 绑定，不能把
+测量脚本输出直接复制成第二套科学合同。
+
 ### Optional Python
 
 当前源码中没有 `netCDF4` 的 `src/scirel` 导入，搜索结果只在测试中使用它。`get_deltapsi`
