@@ -182,6 +182,29 @@ def _bounded_intersection(line,boundary):
 
 
 class FieldLineSet(object):
+    """Construct per-level :class:`FieldLine` objects from contour segments.
+
+    Parameters
+    ----------
+    contourset : object
+        Contour-like object exposing ``levels`` and matching ``allsegs``
+        sequences of finite planar segments.
+    **kwargs
+        Keyword arguments forwarded to each :class:`FieldLine`, including
+        optional spline parameters such as ``u``, ``s``, ``k`` and ``npts``.
+
+    Attributes
+    ----------
+    flset : dict
+        Mapping from each contour level to its list of ``FieldLine`` objects.
+
+    Raises
+    ------
+    Exception
+        Exceptions raised while constructing a member ``FieldLine`` or while
+        reading the contour-like input propagate unchanged.
+    """
+
     def __init__(self,contourset,**kwargs):
         self.flset = {}
         for ilev,lev in enumerate(contourset.levels):
@@ -189,6 +212,47 @@ class FieldLineSet(object):
             self.flset[lev] = fllist 
 
 class FieldLine(object):
+    """Represent one parametric contour and its field-line diagnostics.
+
+    Parameters
+    ----------
+    psi : scalar
+        Contour level label in caller-defined flux-label units.  It is kept as
+        a label and is not reconstructed into a flux field.
+    verts : array_like, shape (M, 2)
+        Ordered finite ``(R, Z)`` contour vertices with sufficient distinct
+        points for the spline fit.  Closed paths use a periodic spline;
+        open paths retain their supplied order.
+    u : array_like, optional
+        Optional spline parameter values forwarded to SciPy ``splprep``.
+    s : float, default=0.0
+        Smoothing factor forwarded to ``splprep``.
+    k : int, default=2
+        Spline degree forwarded to ``splprep``.
+    npts : int, default=1000
+        Number of fitted samples stored in ``verts``.
+
+    Attributes
+    ----------
+    psi : scalar
+        Original contour level label.
+    verts : ndarray, shape (npts, 2)
+        Fitted planar samples.
+    tck : tuple
+        SciPy parametric spline representation used by ``interpolate``.
+    u : ndarray
+        Stored fitted parameter samples.
+
+    Raises
+    ------
+    ValueError
+        Diagnostic methods raise this for invalid curvature support, duplicate
+        adjacent vertices, undefined field values or rejected crossings.
+    Exception
+        SciPy spline, interpolation and optimization exceptions propagate from
+        the underlying operation.
+    """
+
     def __init__(self,psi,verts,**kwargs):
         self.psi = psi
         self._verts = verts
@@ -329,6 +393,30 @@ def contour_points(contourset):
 
 
 class Boundary(object):
+    """Fit a nonperiodic parametric spline to ordered planar boundary points.
+
+    Parameters
+    ----------
+    vertices : array_like, shape (N, 2)
+        Ordered finite boundary vertices in caller-defined length units.
+        The cubic ``splprep`` fit requires an appropriate finite point set.
+
+    Attributes
+    ----------
+    verts : ndarray, shape (200, 2)
+        Stored fitted boundary samples.
+    tck : tuple
+        SciPy parametric spline representation used by ``interpolate``.
+    u : ndarray
+        Stored fitted parameter samples.
+
+    Raises
+    ------
+    Exception
+        Input-shape, linear-algebra and SciPy interpolation exceptions
+        propagate; no missing-value or knot repair is inferred.
+    """
+
     def __init__(self,vertices):
         self._interpolate_verts(vertices)
 
@@ -349,6 +437,39 @@ class Boundary(object):
 
 
 class HelperFieldLine(object):
+    """Represent a helper contour with field-based diagnostics.
+
+    Parameters
+    ----------
+    psi : scalar
+        Contour level label in caller-defined flux-label units.  It is kept as
+        a label and is not reconstructed into a flux field.
+    verts : array_like, shape (M, 2)
+        Ordered finite ``(R, Z)`` contour vertices with sufficient distinct
+        points for the spline fit.  Closed paths use a periodic spline;
+        open paths retain their supplied order.
+
+    Attributes
+    ----------
+    psi : scalar
+        Original contour level label.
+    verts : ndarray, shape (1000, 2)
+        Fitted planar samples.
+    tck : tuple
+        SciPy parametric spline representation used by ``interpolate``.
+    u : ndarray
+        Stored fitted parameter samples.
+
+    Raises
+    ------
+    ValueError
+        Diagnostic methods raise this for invalid curvature support, duplicate
+        adjacent vertices, undefined field values or rejected crossings.
+    Exception
+        SciPy spline, interpolation and optimization exceptions propagate from
+        the underlying operation.
+    """
+
     def __init__(self,psi,verts):
         self.psi = psi
         self._verts = verts
@@ -429,6 +550,27 @@ class HelperFieldLine(object):
         return self.interpolate(np.linspace(self.ubound0,self.ubound1,npts))
 
 def helper_contour_points(contourset):
+    """Build one :class:`HelperFieldLine` list for every contour level.
+
+    Parameters
+    ----------
+    contourset : object
+        Contour-like object exposing ``levels`` and a matching ``allsegs``
+        sequence of finite planar segments.
+
+    Returns
+    -------
+    dict
+        Mapping from each contour level to the constructed list of
+        :class:`HelperFieldLine` objects.
+
+    Raises
+    ------
+    Exception
+        Exceptions raised while constructing a helper line or reading the
+        contour-like input propagate unchanged.
+    """
+
     condict = {}
     for ilev, lev in enumerate(contourset.levels):
         condict[lev] = [HelperFieldLine(lev,seg) for seg in contourset.allsegs[ilev]]

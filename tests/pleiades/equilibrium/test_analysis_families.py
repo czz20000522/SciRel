@@ -279,6 +279,21 @@ def test_contour_points_public_docstring_declares_contract():
     assert "FieldLine" in doc
 
 
+def test_fieldline_public_docstrings_declare_contracts():
+    expected = {
+        fieldline.FieldLineSet: ("Parameters", "Attributes", "Raises", "flset"),
+        fieldline.FieldLine: ("Parameters", "Attributes", "Raises", "diagnostics"),
+        fieldline.HelperFieldLine: ("Parameters", "Attributes", "Raises", "diagnostics"),
+        fieldline.Boundary: ("Parameters", "Attributes", "Raises", "interpolate"),
+        fieldline.helper_contour_points: ("Parameters", "Returns", "Raises", "HelperFieldLine"),
+    }
+    for target, sections in expected.items():
+        doc = inspect.getdoc(target)
+        assert doc is not None
+        for section in sections:
+            assert section in doc
+
+
 def test_closed_circle_flux_curvature_refinement():
     theta=np.linspace(0,2*np.pi,401)
     verts=np.column_stack([1.5+.4*np.cos(theta),.4*np.sin(theta)])
