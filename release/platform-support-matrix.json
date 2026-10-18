@@ -84,12 +84,15 @@
     },
     {
       "id": "fluidbw-native-octave",
-      "status": "PASS",
+      "status": "PARTIAL",
       "platforms": [
         "linux-x86_64-cp314"
       ],
       "runtime": "GNU Octave 7.3.0",
-      "reason": "separate Linux amd64 evidence; excluded from universal-python-core"
+      "reason": "historical Linux amd64 evidence exists for an older dev8 wheel, but no receipt is bound to the current dev11 source revision and wheel; exact dev11 + GNU Octave 7.3.0 rerun is pending",
+      "evidence": [
+        "provenance/validation/fluidbw-amd64-installed.json"
+      ]
     },
     {
       "id": "pdrk-native-octave",
