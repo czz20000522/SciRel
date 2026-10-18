@@ -2,6 +2,8 @@ from pathlib import Path
 
 import sys
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import select_affected_tests as selector  # noqa: E402
@@ -43,3 +45,16 @@ def test_direct_product_work_does_not_synthesize_d1_or_full_aoci_proof():
     assert "Without an exact D1 packet" in core
     assert "AOCI is a repository-maintenance aid, not a development gate" in core
     assert "one applicable `aoci_maintain`" in core
+
+
+def test_development_selector_reads_live_catalog_without_release_current(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    live_catalog = ROOT / "catalog" / "examples"
+    monkeypatch.setattr(selector, "CATALOG", live_catalog)
+    monkeypatch.setattr(selector, "CURRENT_RELEASE", tmp_path / "missing-current.json")
+
+    assets = selector._load_catalog_assets()
+
+    assert len(assets) == len(list((ROOT / "catalog" / "examples").glob("*.json")))
+    assert all(asset.asset_ref.startswith("scirel.") for asset in assets)

@@ -266,7 +266,9 @@ def _load_ledger_assets() -> list[Asset]:
     return assets
 
 
-def _load_catalog_assets() -> list[Asset]:
+def _load_catalog_assets(
+    *, selection_ref: str | None = None, source_revision: str | None = None
+) -> list[Asset]:
     """Load the canonical exact documents as the current asset index.
 
     A document is the current authority for one scientific identity: it names the
@@ -280,35 +282,20 @@ def _load_catalog_assets() -> list[Asset]:
         return []
 
     catalog_paths: list[Path]
-    source_revision: str | None = None
-    if CATALOG.resolve() == (ROOT / "catalog" / "examples").resolve():
-        # The development catalog also retains historical or not-yet-admitted
-        # documents.  The affected-test selector must follow the current release
-        # selection, otherwise an old capability can silently become a discovery
-        # and dependency edge for the active candidate.  Bind both the selected
-        # path and its digest so a stale or edited selection fails closed.
-        current = json.loads(CURRENT_RELEASE.read_text(encoding="utf-8"))
-        source_revision = current.get("source_revision")
-        if source_revision is not None and not isinstance(source_revision, str):
-            raise ValueError("release/CURRENT.json source_revision is invalid")
-        documentation = current.get("documentation")
-        if not isinstance(documentation, dict):
-            raise ValueError("release/CURRENT.json has no documentation binding")
-        selection_ref = documentation.get("source_documents")
+    if selection_ref is not None:
         if not isinstance(selection_ref, str):
-            raise ValueError("release/CURRENT.json documentation source_documents is invalid")
+            raise ValueError("catalog selection reference is invalid")
         selection_path = (ROOT / selection_ref).resolve()
         try:
             selection_path.relative_to(ROOT.resolve())
         except ValueError as error:
             raise ValueError("release selection escapes the SciRel repository") from error
         selection_bytes = _bound_git_blob_bytes(
-            ROOT,
-            source_revision,
-            selection_ref,
-            field="source_documents",
+            ROOT, source_revision, selection_ref, field="source_documents"
         )
         if selection_bytes is None:
+            if not selection_path.is_file():
+                raise ValueError(f"catalog selection is missing: {selection_ref}")
             selection_bytes = selection_path.read_bytes()
         try:
             selection = json.loads(selection_bytes)
@@ -358,9 +345,10 @@ def _load_catalog_assets() -> list[Asset]:
             selected_paths[path] = digest
         catalog_paths = sorted(selected_paths)
     else:
-        # Tests and callers may provide an isolated catalog fixture.  Such a
-        # fixture is already its own selection boundary and must remain usable
-        # without rewriting repository release metadata.
+        # Development follows the live working-tree catalog.  A named
+        # selection_ref is required when a checkpoint or release needs an exact
+        # frozen closure; ordinary development must see newly added documents
+        # instead of silently inheriting release/CURRENT.json.
         catalog_paths = sorted(CATALOG.glob("*.json"))
 
     assets = []
@@ -426,9 +414,13 @@ def _exported_module(module: str, symbol: str) -> str:
     return module
 
 
-def _load_assets() -> list[Asset]:
+def _load_assets(
+    *, selection_ref: str | None = None, source_revision: str | None = None
+) -> list[Asset]:
     """Union current documents with legacy samples under one dependency ID space."""
-    catalog = _load_catalog_assets()
+    catalog = _load_catalog_assets(
+        selection_ref=selection_ref, source_revision=source_revision
+    )
     catalog_by_callable = {asset.public_callable: asset for asset in catalog}
     catalog_by_implementation = {
         (asset.module, asset.public_callable.rsplit(".", 1)[-1]): asset
@@ -574,8 +566,16 @@ def _pyproject_requires_full_suite(base_ref: str | None) -> bool:
     )
 
 
-def select(changed_paths: Iterable[str], *, base_ref: str | None = None) -> dict[str, object]:
-    assets = _load_assets()
+def select(
+    changed_paths: Iterable[str],
+    *,
+    base_ref: str | None = None,
+    selection_ref: str | None = None,
+    source_revision: str | None = None,
+) -> dict[str, object]:
+    assets = _load_assets(
+        selection_ref=selection_ref, source_revision=source_revision
+    )
     assets_by_source: dict[str, set[Asset]] = {}
     assets_by_module: dict[str, set[Asset]] = {}
     for asset in assets:
@@ -781,13 +781,26 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--changed-path", action="append", default=[])
     parser.add_argument("--base-ref")
+    parser.add_argument(
+        "--selection-ref",
+        help="exact document selection JSON for a named checkpoint or release",
+    )
+    parser.add_argument(
+        "--source-revision",
+        help="Git revision that owns --selection-ref; required for ref-bound validation",
+    )
     parser.add_argument("--format", choices=("json", "paths"), default="json")
     args = parser.parse_args()
     if args.changed_path and args.base_ref:
         parser.error("use either --changed-path or --base-ref, not both")
     try:
         paths = args.changed_path or _git_paths(args.base_ref)
-        result = select(paths, base_ref=args.base_ref)
+        result = select(
+            paths,
+            base_ref=args.base_ref,
+            selection_ref=args.selection_ref,
+            source_revision=args.source_revision,
+        )
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
         print(f"affected test selection failed: {error}", file=sys.stderr)
         return 2
