@@ -300,6 +300,28 @@ class FieldLine(object):
         return self.interpolate(np.linspace(self.ubound0,self.ubound1,npts))
     
 def contour_points(contourset):
+    """Build one :class:`FieldLine` list for every contour level.
+
+    Parameters
+    ----------
+    contourset : object
+        Contour-like object exposing ``levels`` and a matching ``allsegs``
+        sequence of finite planar segments.
+
+    Returns
+    -------
+    dict
+        Mapping from each contour level to the constructed list of
+        :class:`FieldLine` objects.  Each line retains its contour level and
+        fitted spline representation.
+
+    Raises
+    ------
+    ValueError, TypeError
+        If a segment cannot be fitted or the contour object does not provide
+        a supported finite segment representation; underlying SciPy spline
+        errors may propagate.
+    """
     condict = {}
     for ilev, lev in enumerate(contourset.levels):
         condict[lev] = [FieldLine(lev,seg) for seg in contourset.allsegs[ilev]]

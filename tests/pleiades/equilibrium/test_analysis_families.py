@@ -269,6 +269,16 @@ def test_fieldline_geometry_shapes_selection_and_gradient():
     np.testing.assert_allclose(p.interpolate([0,1]),[[0,1],[0,1]],rtol=0,atol=4e-14)
 
 
+def test_contour_points_public_docstring_declares_contract():
+    doc = inspect.getdoc(fieldline.contour_points)
+    assert doc is not None
+    assert "Parameters" in doc
+    assert "Returns" in doc
+    assert "Raises" in doc
+    assert "allsegs" in doc
+    assert "FieldLine" in doc
+
+
 def test_closed_circle_flux_curvature_refinement():
     theta=np.linspace(0,2*np.pi,401)
     verts=np.column_stack([1.5+.4*np.cos(theta),.4*np.sin(theta)])
