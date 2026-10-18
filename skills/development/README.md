@@ -44,17 +44,11 @@ Within ordinary `development`, use one of two routes:
   remain bound to that route; they do not become a requirement for ordinary
   product edits.
 
-Batch compatible fixes into one reviewable Git change set. When one task
-uncovers several siblings in the same scientific domain or affected closure
-(for example, callable documentation for one module), collect them into one
-stable batch before committing or running source-bound maintenance. A single
-function or document is not automatically a batch boundary. Split only when
-ownership, risk, dependency boundary or stop condition differs; do not create
-one commit, work-management record or AOCI pass per sibling. A changed
-function, document or capability count does not require its own version or
-acceptance cycle; use Git history to preserve earlier states. A release
-projection is created only for a named checkpoint that needs an artifact or
-for `release_freeze`.
+Batching related changes, choosing a stop condition and deciding when to run
+source-bound maintenance are canonical in [the development lifecycle](references/development-lifecycle.md).
+Use one reviewable batch for compatible siblings and keep unrelated ownership,
+risk or dependency boundaries separate; a changed function, document or
+capability count does not create a version or acceptance cycle.
 
 Mode triggers, version handling, closure binding and the pre-publication guard
 are canonical in [the development lifecycle](references/development-lifecycle.md);

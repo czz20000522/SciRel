@@ -133,7 +133,18 @@ The evidence level follows the claim: a public API change needs import,
 failure-contract and focused behavior checks plus its docstring/user-facing
 explanation; an internal performance change whose public contract is unchanged
 needs the affected correctness checks and a comparable before/after benchmark.
-Neither claim requires a wheel or catalog during ordinary development.
+If that benchmark cannot run, mark only the performance subclaim `NOT_RUN`,
+retain the affected correctness result, and stop at that evidence ceiling; do
+not turn the missing benchmark into a release or platform route. Neither claim
+requires a wheel or catalog during ordinary development.
+
+Routine docstring and public-document edits stay in `development`. They do not
+create exact asset documents or rebuild the catalog; those projections are
+created only when a named handoff, integration checkpoint, review preparation
+or release freeze requires them. A prose-only document with no schema, example
+or rendered-output contract can close with the scoped diff/link review and no
+scientific test selection; do not invent a wider gate just because the file is
+under `docs/`.
 
 After editing, rerun the affected selector and its reverse dependencies, then
 run the narrow API/import/failure checks needed by the claim. Unknown ownership
@@ -197,7 +208,10 @@ wheel for the named consumer. It does not freeze a public release, advance
 Source-only smoke may use a dirty working tree. An installable wheel,
 document/catalog selection or receipt must come from one exact clean revision;
 an explicitly requested dirty artifact is labelled `source_dirty`/`unbound` and
-cannot establish a same-revision closure.
+cannot establish a same-revision closure. When a checkpoint emits multiple
+artifacts, every artifact and manifest must carry that same exact
+`source_revision`; a clean artifact from another revision is not a valid
+checkpoint tuple.
 
 ## Development output budget
 

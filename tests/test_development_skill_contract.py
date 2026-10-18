@@ -54,7 +54,7 @@ def test_project_contract_keeps_ordinary_optimization_out_of_release_flow():
     assert "普通任务默认处于 `development`" in project_contract
     assert "不会启动发布流程" in project_contract
     assert "数量只属于具体 manifest/revision" in project_contract
-    assert "同一科学域或 affected closure 中相互关联的小修复" in project_contract
+    assert "相关变更的批次、停点和 source-bound maintenance 遵循" in project_contract
     assert "长程 goal 只是待处理 claim 的队列" in project_contract
     assert "首次公开发布时才选择初始 `major.minor`" in project_contract
     assert "按 SciPy 式标准库结构维护一个当前源树" in project_contract
@@ -116,9 +116,11 @@ def test_lifecycle_keeps_incubation_counts_dynamic_and_release_gates_explicit():
 
 def test_development_loop_keeps_related_evidence_together_without_release_work():
     readme = (ROOT / "skills/development/README.md").read_text(encoding="utf-8")
-    lifecycle = (
-        ROOT / "skills/development/references/development-lifecycle.md"
-    ).read_text(encoding="utf-8")
+    lifecycle = compact(
+        (ROOT / "skills/development/references/development-lifecycle.md").read_text(
+            encoding="utf-8"
+        )
+    )
     core = compact(
         (ROOT / "skills/development/references/scirel-development-core.md").read_text(
             encoding="utf-8"
@@ -134,7 +136,7 @@ def test_development_loop_keeps_related_evidence_together_without_release_work()
     assert "callable docstring" in lifecycle
     assert "comparable benchmark" in lifecycle
     assert "several related public surfaces" in lifecycle
-    assert "Do not\nrepeat the same setup" in lifecycle
+    assert "Do not repeat the same setup" in lifecycle
     assert "public API change needs import" in lifecycle
     assert "Neither claim requires a wheel or catalog" in lifecycle
     assert "Unknown" in core
@@ -142,11 +144,45 @@ def test_development_loop_keeps_related_evidence_together_without_release_work()
     assert "development lifecycle" in integration
 
 
+def test_claim_ceiling_does_not_turn_missing_benchmark_into_release_work():
+    lifecycle = compact(
+        (ROOT / "skills/development/references/development-lifecycle.md").read_text(
+            encoding="utf-8"
+        )
+    )
+    project_contract = compact((ROOT / "AGENTS.md").read_text(encoding="utf-8"))
+
+    assert "benchmark" in lifecycle
+    assert "性能基准" in project_contract
+    for text in (lifecycle, project_contract):
+        assert "NOT_RUN" in text
+    assert "performance subclaim" in lifecycle
+    assert "retain the affected correctness result" in lifecycle
+    assert "release or platform route" in lifecycle
+
+
+def test_document_and_checkpoint_projection_boundaries_are_explicit():
+    lifecycle = compact(
+        (ROOT / "skills/development/references/development-lifecycle.md").read_text(
+            encoding="utf-8"
+        )
+    )
+    project_contract = compact((ROOT / "AGENTS.md").read_text(encoding="utf-8"))
+
+    assert "Routine docstring and public-document edits stay in `development`" in lifecycle
+    assert "do not create exact asset documents or rebuild the catalog" in lifecycle
+    assert "named handoff, integration checkpoint, review preparation or release freeze" in lifecycle
+    assert "prose-only document" in lifecycle
+    assert "do not invent a wider gate" in lifecycle
+    assert "every artifact and manifest must carry that same exact `source_revision`" in lifecycle
+    assert "必须绑定同一个确切 `source_revision`" in project_contract
+
+
 def test_skill_routes_structural_reference_adoption_without_native_build_drift():
     readme = (ROOT / "skills/development/README.md").read_text(encoding="utf-8")
 
-    assert "several siblings in the same scientific domain" in readme
-    assert "do not create\none commit" in readme
+    assert "Batching related changes" in readme
+    assert "canonical in [the development lifecycle]" in readme
     assert "domain self-contained" in readme
     assert "top-level namespace small" in readme
     assert "Do not add a native build system" in readme
