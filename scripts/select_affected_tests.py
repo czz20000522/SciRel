@@ -28,9 +28,25 @@ DIRECT_TEST_OVERRIDES = {
     ),
 }
 
-FULL_SUITE_PATHS = {
-    "pyproject.toml",
-}
+FULL_SUITE_PATHS = set()
+
+PROJECT_CONFIGURATION_TESTS = (
+    "tests/test_project_metadata.py",
+    "tests/test_runtime_dependency_boundaries.py",
+    "tests/test_native_resource_closure.py",
+    "tests/test_validate_installed_wheel.py",
+    "tests/test_scientific_runtime.py",
+    "tests/test_git_release_structure.py",
+)
+
+PYPROJECT_HIGH_IMPACT_MARKERS = (
+    "[build-system]",
+    "build-backend",
+    "requires-python",
+    "version =",
+    "[tool.pytest",
+    "dependency-groups",
+)
 
 EXTERNAL_TOOLING_TESTS = {
     "scripts/build_extraction_skill_bundle.py": "skills/extraction/tests/test_extraction_skill_bundle.py",
@@ -516,7 +532,33 @@ def _dependent_assets(initial: set[Asset], assets: list[Asset]) -> set[Asset]:
     return affected
 
 
-def select(changed_paths: Iterable[str]) -> dict[str, object]:
+def _pyproject_diff_lines(base_ref: str | None) -> list[str]:
+    command = ["git", "diff", "--unified=0", base_ref or "HEAD", "--", "pyproject.toml"]
+    completed = subprocess.run(
+        command, cwd=ROOT, capture_output=True, text=True, encoding="utf-8"
+    )
+    if completed.returncode:
+        raise RuntimeError(completed.stderr.strip() or "pyproject diff failed")
+    return [
+        line[1:]
+        for line in completed.stdout.splitlines()
+        if line.startswith(("+", "-")) and not line.startswith(("+++", "---"))
+    ]
+
+
+def _pyproject_requires_full_suite(base_ref: str | None) -> bool:
+    changed_lines = _pyproject_diff_lines(base_ref)
+    if not changed_lines:
+        # An explicit path without a readable diff has no trustworthy scope.
+        return True
+    return any(
+        marker in line
+        for line in changed_lines
+        for marker in PYPROJECT_HIGH_IMPACT_MARKERS
+    )
+
+
+def select(changed_paths: Iterable[str], *, base_ref: str | None = None) -> dict[str, object]:
     assets = _load_assets()
     assets_by_source: dict[str, set[Asset]] = {}
     assets_by_module: dict[str, set[Asset]] = {}
@@ -540,6 +582,13 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
             reason = "external_tooling"
         elif path.startswith(("skills/extraction/", "provenance/tests/")):
             reason = "external_tooling"
+        elif path == "pyproject.toml":
+            if _pyproject_requires_full_suite(base_ref):
+                full_suite_reasons.append(f"{path} changes a high-impact or unknown project configuration")
+                reason = "full_suite_project_configuration"
+            else:
+                path_tests.update(PROJECT_CONFIGURATION_TESTS)
+                reason = "project_configuration_contract"
         elif path in FULL_SUITE_PATHS:
             full_suite_reasons.append(f"{path} changes the test/dependency baseline")
             reason = "full_suite_baseline"
@@ -722,7 +771,7 @@ def main() -> int:
         parser.error("use either --changed-path or --base-ref, not both")
     try:
         paths = args.changed_path or _git_paths(args.base_ref)
-        result = select(paths)
+        result = select(paths, base_ref=args.base_ref)
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
         print(f"affected test selection failed: {error}", file=sys.stderr)
         return 2

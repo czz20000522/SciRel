@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SELECTOR = ROOT / "scripts" / "select_affected_tests.py"
 # runpy fixtures need the same sibling-module search path as the CLI process.
 sys.path.insert(0, str(ROOT / "scripts"))
+import select_affected_tests as selector  # noqa: E402
 
 
 def select(*paths):
@@ -25,6 +26,29 @@ def select(*paths):
     )
     assert completed.returncode == 0, completed.stderr
     return json.loads(completed.stdout)
+
+
+def test_metadata_only_pyproject_change_selects_project_contracts(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(
+        selector,
+        "_pyproject_diff_lines",
+        lambda base_ref: ["[project]", "keywords = [\"scientific computing\"]", "[tool.setuptools.package-data]"],
+    )
+
+    result = selector.select(["pyproject.toml"])
+
+    assert result["full_suite_required"] is False
+    assert set(result["test_paths"]) == set(selector.PROJECT_CONFIGURATION_TESTS)
+
+
+def test_high_impact_pyproject_change_fails_closed_to_full_suite(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(selector, "_pyproject_diff_lines", lambda base_ref: ["requires-python = \">=3.14,<3.15\""])
+
+    result = selector.select(["pyproject.toml"])
+
+    assert result["full_suite_required"] is True
+    assert result["test_paths"] == ["tests"]
+    assert "high-impact" in result["full_suite_reasons"][0]
 
 
 def test_operator_change_selects_only_its_contract_and_dependent_graphs():
