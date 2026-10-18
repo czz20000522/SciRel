@@ -28,6 +28,17 @@ Choose the mode before choosing artifacts or gates:
 - **public release**: publish only after the separate human, rights and release
   decisions are complete.
 
+Within ordinary `development`, use one of two routes:
+
+- **direct product development (default)**: change the SciRel Git tree itself
+  (`src/`, tests, public docs, benchmarks, CI or packaging metadata), then run
+  the affected selector and claim-matched checks. Do not invent a D1 packet or
+  rebuild release projections for this route.
+- **D1 integration**: consume an exact D1 packet and use the D2 correctness,
+  normalization and integration skills. The packet's denominator and evidence
+  remain bound to that route; they do not become a requirement for ordinary
+  product edits.
+
 No source change, new capability, performance claim, document edit, clean
 worktree or buildable wheel changes mode by itself. A current capability count
 is a property of the checked-out tree, not a permanent gate.

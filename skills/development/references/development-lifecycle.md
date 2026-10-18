@@ -16,6 +16,35 @@ denominator. Generate or update the development catalog only when a named
 discovery handoff or another task actually needs that projection; do not rebuild
 the full catalog after every source or document edit.
 
+### SciPy-style change-set loop
+
+Treat one coherent change as the working unit. Before editing, inspect the
+current Git base, worktree status and affected selector; for a behavior or
+performance change, capture a focused baseline when it will help distinguish a
+regression from an existing failure. Work in an isolated branch or worktree
+when the change can overlap another route, and keep unrelated files out of the
+change set.
+
+Keep the implementation and its evidence together. A public API or behavior
+change updates the callable docstring and the focused regression/contract test
+in the same change set; add the relevant user-facing page or example when the
+change is large enough to need one. A performance claim adds or updates a
+comparable benchmark and records the before/after result. Formal exact
+documents and the catalog remain checkpoint/release projections, so this loop
+does not require rebuilding them for every edit.
+
+The evidence level follows the claim: a public API change needs import,
+failure-contract and focused behavior checks plus its docstring/user-facing
+explanation; an internal performance change whose public contract is unchanged
+needs the affected correctness checks and a comparable before/after benchmark.
+Neither claim requires a wheel or catalog during ordinary development.
+
+After editing, rerun the affected selector and its reverse dependencies, then
+run the narrow API/import/failure checks needed by the claim. Unknown ownership
+fails closed to a wider test layer. Finish a coherent change set with a clean
+diff check and a Git commit that states the affected area; do not stage an
+unrelated work-in-progress file merely to make the tree look complete.
+
 Treat the capability set as open during incubation. Counts such as
 `267 documents = 235 operators + 32 TaskGraphs` describe one manifest at one
 revision; they are not project-wide invariants and must never be copied into a

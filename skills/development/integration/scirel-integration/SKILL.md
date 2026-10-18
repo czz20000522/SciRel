@@ -39,12 +39,14 @@ For a source, API, test, documentation or performance change made in the
 SciRel tree, bind the Git base/head and the affected public surface, then use
 the repository's affected selector and reverse dependencies. Add a regression
 before changing scientific behavior, keep existing tolerances and failure
-semantics, and update benchmarks when making a performance claim. Accumulate
-small changes in Git. A stable batch, changed capability count or buildable
-wheel does not create a checkpoint by itself; do not build an installed wheel,
-update `release/CURRENT.json`, generate a release receipt or run the full
-platform matrix unless a named consumer, owner-requested checkpoint or
-`release_freeze` requires it.
+semantics, and update the callable docstring/user-facing example when a public
+contract changes. Update benchmarks when making a performance claim and record
+a comparable before/after observation. Accumulate complete related changes in
+Git; do not mix unrelated work into the same commit. A stable batch, changed
+capability count or buildable wheel does not create a checkpoint by itself; do
+not build an installed wheel, update `release/CURRENT.json`, generate a release
+receipt or run the full platform matrix unless a named consumer,
+owner-requested checkpoint or `release_freeze` requires it.
 
 Keep the direct path in `development` unless the task names a consumer,
 handoff or release decision. Use the canonical

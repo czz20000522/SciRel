@@ -37,6 +37,30 @@ def test_lifecycle_keeps_incubation_counts_dynamic_and_release_gates_explicit():
     assert "Linux amd64 with CPython 3.14" in lifecycle
 
 
+def test_development_loop_keeps_related_evidence_together_without_release_work():
+    readme = (ROOT / "skills/development/README.md").read_text(encoding="utf-8")
+    lifecycle = (
+        ROOT / "skills/development/references/development-lifecycle.md"
+    ).read_text(encoding="utf-8")
+    core = (
+        ROOT / "skills/development/references/scirel-development-core.md"
+    ).read_text(encoding="utf-8")
+    integration = (
+        ROOT / "skills/development/integration/scirel-integration/SKILL.md"
+    ).read_text(encoding="utf-8")
+
+    assert "direct product development (default)" in readme
+    assert "D1 integration" in readme
+    assert "SciPy-style change-set loop" in lifecycle
+    assert "callable docstring" in lifecycle
+    assert "comparable benchmark" in lifecycle
+    assert "public API change needs import" in lifecycle
+    assert "Neither claim requires a wheel or catalog" in lifecycle
+    assert "Unknown" in core
+    assert "unrelated work" in integration
+    assert "installed wheel" in integration
+
+
 def test_direct_product_work_does_not_synthesize_d1_or_full_aoci_proof():
     core = (
         ROOT / "skills/development/references/scirel-development-core.md"

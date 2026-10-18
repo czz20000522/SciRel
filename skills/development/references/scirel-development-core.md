@@ -63,6 +63,20 @@ checks that support the claim for ordinary source work. A direct product
 change does not enter the D1 handoff loop unless it is consuming an exact D1
 packet.
 
+Use a complete related change set as the unit of work. Inspect the Git base and
+worktree before editing, capture an affected baseline when behavior or
+performance is difficult to attribute, and keep unrelated edits out of the
+commit. Public API or behavior changes carry their callable docstring and a
+focused regression/contract test; add a user-facing page or example when the
+scope warrants it. Performance claims carry a comparable benchmark with a
+before/after observation. These are development checks, not a request to build
+a wheel or regenerate release projections.
+
+After the edit, rerun the affected selector and reverse dependencies. Unknown
+ownership fails closed to a wider test layer. A clean diff and a Git commit for
+the coherent change set are part of the development record; a commit may
+contain several compatible fixes, but it must not mix unrelated work.
+
 During development, docstrings, comments and draft notes are sufficient for
 an evolving contract. Create or refresh exact asset documents and the catalog
 when a discovery handoff, integration checkpoint or review needs them; a stable
