@@ -38,6 +38,9 @@ Agent 只组合已声明合同并编写胶水代码。安装成功、某个平�
 `implementation_version` 必须一起切换到新的 wheel；
 只有纯编辑修订才允许复用相同 wheel 字节。
 
+这条公开版本线规则不适用于首次公开发布前的 incubation。现有 `0.1.0.devN` 只作为历史工作元数据，
+优化和兼容修复继续在 Git 中累积；首次 `release_freeze` 才按实际能力与兼容边界归一化初始公开版本。
+
 当前 development 的默认安装 smoke 是 **Linux x86_64（amd64）+ CPython 3.14**。Windows、macOS
 和其他架构只有在 named consumer 或 `release_freeze` 声明时追加；平台状态必须保留在对应回执中，
 不能由 `py3-none-any` 自动扩大为全平台支持。

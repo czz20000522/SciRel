@@ -8,6 +8,8 @@ dist/
 
 # Local machine configuration, credentials and runtime scratch are never source.
 /.runtime/
+/.scirel/credentials/*
+!/.scirel/credentials/README.md
 
 # AOCI agent host integration (machine-bound; do not commit)
 .codex/config.toml

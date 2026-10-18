@@ -53,23 +53,35 @@ old run receipts; `.dev` evidence remains superseded history.
 
 ## Private model configuration
 
-The control checkout keeps model credentials in the Git-ignored
-`.runtime/spark-model.local.json`, with string fields `url`, `model`, and `key`.
-This file is a local secret, not part of a skill bundle, wheel, review packet, or
-scientific contract. Never print its contents or stage it with `git add -f`.
+The Mac SciRel checkout keeps model credentials in the Git-ignored
+`.scirel/credentials/scirel-company-codex-provider.json`, with string fields
+`base_url`, `model`, and `api_key` plus non-secret provider metadata. This file
+under the Mac project root is the only credential authority. It is not part of
+a skill bundle, wheel, review packet, or scientific contract. Never print its
+contents or stage it with `git add -f`. Do not use a personal home directory,
+WSL distribution, or shared Codex config as a replacement source.
 
-Use the maintained transfer entrypoint from the control checkout:
+Use the maintained transfer entrypoint from the control checkout and provide
+the existing project root on the SSH host:
 
-```powershell
-python scripts/spark_codex.py sync --host <ssh-host>
+```sh
+python scripts/spark_codex.py sync --host <ssh-host> \
+  --project-root <remote-project-root> \
+  --remote-python <python-command>
 ```
 
-It sends the JSON through SSH stdin, installs a private mode-0600 copy at
-`~/.config/scirel/spark-model.local.json`, and installs
-`~/.local/bin/scirel-codex`. The launcher reads that copy on every invocation and
-supplies the key through `SCIREL_MODEL_API_KEY`, never command arguments. It uses
-the Responses API and leaves shared Codex configuration and authentication files
-unchanged. Re-run `sync` after changing the control JSON.
+For the Home Windows SSH host, the command is `--remote-python "py -3"`; the
+default `python3` is for Unix-like SSH targets.
+
+It sends the canonical project configuration through SSH stdin, installs a private
+mode-0600 runtime projection at
+`<remote-project-root>/.scirel/credentials/scirel-company-codex-provider.json`,
+and installs the project-local `.scirel/bin/scirel-codex` launcher. The
+launcher reads that projection on every invocation and supplies the key through
+`SCIREL_MODEL_API_KEY`, never command arguments. It uses the Responses API and
+leaves shared Codex configuration and authentication files unchanged. Re-run
+`sync` only after changing the Mac project credential file; the remote copy is
+not authoritative.
 
 For runs explicitly configured to use Codex, use `scirel-codex` in place of the direct `codex` executable.
 This adapter does not select the execution harness: caller-selected native Claude runs retain their private

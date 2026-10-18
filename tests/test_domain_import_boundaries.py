@@ -197,53 +197,29 @@ assert "scipy" in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-
-def test_kinetic_bessel_gamma_defers_scipy_until_valid_call() -> None:
+def test_kinetic_scalar_mesh_interpolation_defers_scipy_until_valid_call() -> None:
     result = _run(
         """
 import sys
 import numpy as np
-from scirel.kinetic import evaluate_bessel_gamma
-from scirel.kinetic.bessel_gamma import evaluate_bessel_gamma as direct
-
-assert evaluate_bessel_gamma is direct
-assert "scipy" not in sys.modules
-try:
-    evaluate_bessel_gamma([], [])
-except ValueError as error:
-    assert str(error) == "n must contain finite numeric values"
-else:
-    raise AssertionError("invalid Bessel-Gamma input unexpectedly succeeded")
-assert "scipy" not in sys.modules
-result = evaluate_bessel_gamma(np.array([0]), np.array([0.0]))
-assert result["Gamma_n"].tolist() == [1.0 + 0.0j]
-assert "scipy" in sys.modules
-"""
-    )
-    assert result.returncode == 0, result.stdout + result.stderr
-
-
-def test_kinetic_spatial_source_shape_defers_scipy_until_valid_call() -> None:
-    result = _run(
-        """
-import sys
-import numpy as np
-from scirel.kinetic import normalize_spatial_source_shape
-from scirel.kinetic.spatial_source_shape_normalization import (
-    normalize_spatial_source_shape as direct,
+from scirel.kinetic import interpolate_scalar_across_mesh
+from scirel.kinetic.cross_mesh_scalar_interpolation import (
+    interpolate_scalar_across_mesh as direct,
 )
 
-assert normalize_spatial_source_shape is direct
+assert interpolate_scalar_across_mesh is direct
 assert "scipy" not in sys.modules
 try:
-    normalize_spatial_source_shape([0.0, 0.0], [0.0, 1.0])
+    interpolate_scalar_across_mesh([1.0], [0.0, 1.0], [0.5])
 except ValueError as error:
-    assert str(error) == "source must have a positive spatial integral"
+    assert str(error) == "Number of elements in fa and Xa do not agree!"
 else:
-    raise AssertionError("zero source profile unexpectedly succeeded")
+    raise AssertionError("invalid scalar-mesh input unexpectedly succeeded")
 assert "scipy" not in sys.modules
-result = normalize_spatial_source_shape(np.array([1.0, 2.0]), np.array([0.0, 1.0]))
-assert result["integral_source"] == 1.5
+output = interpolate_scalar_across_mesh(
+    np.array([1.0, 3.0]), np.array([0.0, 1.0]), np.array([-1.0, 0.25, 2.0])
+)
+assert output.tolist() == [0.0, 1.5, 0.0]
 assert "scipy" in sys.modules
 """
     )
@@ -291,6 +267,58 @@ else:
 assert "scipy" not in sys.modules
 result = solve_loss_cone_spectrum(0.6, 1, grid_points=16)
 assert result["eigenfunctions"].shape == (16, 1)
+assert "scipy" in sys.modules
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_kinetic_bessel_gamma_defers_scipy_until_valid_call() -> None:
+    result = _run(
+        """
+import sys
+import numpy as np
+from scirel.kinetic import evaluate_bessel_gamma
+from scirel.kinetic.bessel_gamma import evaluate_bessel_gamma as direct
+
+assert evaluate_bessel_gamma is direct
+assert "scipy" not in sys.modules
+try:
+    evaluate_bessel_gamma([], [])
+except ValueError as error:
+    assert str(error) == "n must contain finite numeric values"
+else:
+    raise AssertionError("invalid Bessel-Gamma input unexpectedly succeeded")
+assert "scipy" not in sys.modules
+result = evaluate_bessel_gamma(np.array([0]), np.array([0.0]))
+assert result["Gamma_n"].tolist() == [1.0 + 0.0j]
+assert "scipy" in sys.modules
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_kinetic_spatial_source_shape_defers_scipy_until_valid_call() -> None:
+    result = _run(
+        """
+import sys
+import numpy as np
+from scirel.kinetic import normalize_spatial_source_shape
+from scirel.kinetic.spatial_source_shape_normalization import (
+    normalize_spatial_source_shape as direct,
+)
+
+assert normalize_spatial_source_shape is direct
+assert "scipy" not in sys.modules
+try:
+    normalize_spatial_source_shape([0.0, 0.0], [0.0, 1.0])
+except ValueError as error:
+    assert str(error) == "source must have a positive spatial integral"
+else:
+    raise AssertionError("zero source profile unexpectedly succeeded")
+assert "scipy" not in sys.modules
+result = normalize_spatial_source_shape(np.array([1.0, 2.0]), np.array([0.0, 1.0]))
+assert result["integral_source"] == 1.5
 assert "scipy" in sys.modules
 """
     )
