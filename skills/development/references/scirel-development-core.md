@@ -73,8 +73,13 @@ unchanged evidence does not justify a new commit. A commit may contain several
 compatible fixes, but it must not mix unrelated work.
 
 Batch compatible local fixes into one reviewable change set when they share a
-contract or dependency boundary. Do not create a version or release cycle for
-each function-level improvement; Git history preserves intermediate states.
+contract or dependency boundary. If one task touches several siblings in the
+same domain or affected closure, keep them in one stable batch and perform the
+final selector, work-management update and AOCI maintenance once. Split only
+when ownership, risk, dependency boundary or stop condition differs; do not
+turn each function-level improvement into a separate setup or maintenance
+cycle. Git history preserves intermediate states, and no version or release
+cycle is created for those improvements.
 
 During development, docstrings, comments and draft notes are sufficient for
 an evolving contract. Create or refresh exact asset documents and the catalog

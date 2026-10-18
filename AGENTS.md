@@ -11,7 +11,7 @@ SciRel 是长期独立维护的 Python 科学关系库；不要套用相邻 Code
 - skill/AGENTS 维护与候选 diff 审查可以同轮进行，但必须保持两个独立 claim 和 owned scope：先收口 skill 维护并跑轻量合同检查，候选审查在此之前保持只读；只有审查发现确定且影响范围明确的产品 claim，才另起产品变更，不把它混入 skill 维护或自动进入发布流程。skill 维护和产品变更各自达到 stop condition 后再做一次 AOCI 收尾，不按中间编辑重复维护。
 - operators、TaskGraphs、文档和 catalog 的数量随当前 Git 树变化；数量只属于具体 manifest/revision，不是项目永久门禁。需要 wheel、文档和 catalog 时，才从同一个确切 revision 派生并绑定它们。
 - 普通开发期间 `release/CURRENT.json`、外部 wheel、文档 selection 或 catalog 可以继续指向旧 revision；这属于待切候选的 stale projection，不是当前开发失败，不要为了对齐 `HEAD` 先修复或重建它们。
-- 多个相互关联的小修复可以合并为一个变更批次；Git 历史保存中间状态，不为每个函数或每个文档修订单独制造版本和验收循环。
+- 同一科学域或 affected closure 中相互关联的小修复、公开文档和合同测试先合并为一个稳定变更批次；单个函数或文档不是天然批次边界。只有 owner、风险、依赖边界或 stop condition 不同才拆批，Git 历史保存中间状态，不为每个兄弟项单独制造提交、工作记录、AOCI 维护或验收循环。
 - incubation 期间版本号只是 Git 可追溯的开发元数据；首次公开发布时才选择初始 `major.minor`。兼容修复、数值修正、性能优化和内部重构可批量留在同一能力线，只有公共能力或兼容边界的大范围变化才开启新的能力线。
 - SciRel 对公开算子和 TaskGraph 的实现、输入/输出合同、数值结果、失败语义和直接回归负责；Agent 只负责发现、选择、组合和编写胶水代码，不在胶水层复制科学算法或用组合测试替代能力本身的正确性证据。
 - 先按影响范围选检查：局部实现运行 affected 测试，共享 API/依赖边界扩大到直接反向依赖；只有 named `integration_checkpoint` 且该 checkpoint 明确需要安装 artifact，或 `release_freeze` 时才构建 wheel、生成闭包和运行平台门禁。没有证据支持时，不把一次慢运行或一次成功安装升级成通用性能/跨平台结论。

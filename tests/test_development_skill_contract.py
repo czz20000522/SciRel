@@ -54,7 +54,7 @@ def test_project_contract_keeps_ordinary_optimization_out_of_release_flow():
     assert "普通任务默认处于 `development`" in project_contract
     assert "不会启动发布流程" in project_contract
     assert "数量只属于具体 manifest/revision" in project_contract
-    assert "多个相互关联的小修复可以合并为一个变更批次" in project_contract
+    assert "同一科学域或 affected closure 中相互关联的小修复" in project_contract
     assert "长程 goal 只是待处理 claim 的队列" in project_contract
     assert "首次公开发布时才选择初始 `major.minor`" in project_contract
     assert "按 SciPy 式标准库结构维护一个当前源树" in project_contract
@@ -64,6 +64,8 @@ def test_project_contract_keeps_ordinary_optimization_out_of_release_flow():
     assert "不为每次继续创建 release record" in project_contract
     assert "不因状态查询、继续或不变证据制造新提交" in project_contract
     assert "skill/AGENTS 维护与候选 diff 审查可以同轮进行" in project_contract
+    assert "同一科学域或 affected closure" in project_contract
+    assert "不为每个兄弟项单独制造提交" in project_contract
 
 
 def test_lifecycle_requires_selector_visible_regressions():
@@ -131,6 +133,8 @@ def test_development_loop_keeps_related_evidence_together_without_release_work()
     assert "SciPy-style change-set loop" in lifecycle
     assert "callable docstring" in lifecycle
     assert "comparable benchmark" in lifecycle
+    assert "several related public surfaces" in lifecycle
+    assert "Do not\nrepeat the same setup" in lifecycle
     assert "public API change needs import" in lifecycle
     assert "Neither claim requires a wheel or catalog" in lifecycle
     assert "Unknown" in core
@@ -141,6 +145,8 @@ def test_development_loop_keeps_related_evidence_together_without_release_work()
 def test_skill_routes_structural_reference_adoption_without_native_build_drift():
     readme = (ROOT / "skills/development/README.md").read_text(encoding="utf-8")
 
+    assert "several siblings in the same scientific domain" in readme
+    assert "do not create\none commit" in readme
     assert "domain self-contained" in readme
     assert "top-level namespace small" in readme
     assert "Do not add a native build system" in readme

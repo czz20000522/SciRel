@@ -121,6 +121,14 @@ comparable benchmark and records the before/after result. Formal exact
 documents and the catalog remain checkpoint/release projections, so this loop
 does not require rebuilding them for every edit.
 
+When a task reveals several related public surfaces in one domain or affected
+closure, stabilize them as one batch before the final selector run, commit and
+AOCI maintenance. A function or document by itself is not a required batch
+boundary. Keep exploratory edits in the working tree; split the batch only for
+different ownership, risk, dependency boundaries or stop conditions. Do not
+repeat the same setup, selector discovery, work-management update or
+source-bound maintenance for each sibling.
+
 The evidence level follows the claim: a public API change needs import,
 failure-contract and focused behavior checks plus its docstring/user-facing
 explanation; an internal performance change whose public contract is unchanged
