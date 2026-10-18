@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import operator
+from functools import lru_cache
 import numpy as np
 
 _C2 = (2.99792458e8) ** 2
@@ -146,19 +147,10 @@ def _gamma_prime(n, b):
     return float((ive(n - 1, b) + ive(n + 1, b)) / 2.0 - ive(n, b))
 
 
-def _zfun(z):
-    """Plasma dispersion function via the Weideman/Faddeeva rational expansion."""
-    from scipy.special import erfc
-
+@lru_cache(maxsize=1)
+def _weideman_coefficients():
+    """Build the fixed 64-term Weideman map once on first valid use."""
     n = 64
-    z = complex(z)
-    if z.real == 0.0:
-        return 1j * np.sqrt(np.pi) * np.exp(-z**2) * erfc(z.imag)
-    zc = complex(z)
-    flipped = False
-    if zc.imag < 0.0:
-        zc = zc.conjugate()
-        flipped = True
     m = 2 * n
     m2 = 2 * m
     k = np.arange(-m + 1, m)
@@ -167,10 +159,25 @@ def _zfun(z):
     t = length * np.tan(theta / 2.0)
     f = np.exp(-t**2) * (length**2 + t**2)
     f = np.concatenate(([0.0], f))
-    a = np.real(np.fft.fft(np.fft.fftshift(f))) / m2
-    a = np.flipud(a[1 : n + 1])
+    coefficients = np.real(np.fft.fft(np.fft.fftshift(f))) / m2
+    return length, np.flipud(coefficients[1 : n + 1])
+
+
+def _zfun(z):
+    """Plasma dispersion function via the Weideman/Faddeeva rational expansion."""
+    from scipy.special import erfc
+
+    z = complex(z)
+    if z.real == 0.0:
+        return 1j * np.sqrt(np.pi) * np.exp(-z**2) * erfc(z.imag)
+    zc = complex(z)
+    flipped = False
+    if zc.imag < 0.0:
+        zc = zc.conjugate()
+        flipped = True
+    length, coefficients = _weideman_coefficients()
     zc_map = (length + 1j * zc) / (length - 1j * zc)
-    p = np.polyval(a, zc_map)
+    p = np.polyval(coefficients, zc_map)
     w = 2.0 * p / (length - 1j * zc) ** 2 + (1.0 / np.sqrt(np.pi)) / (length - 1j * zc)
     if flipped:
         w = np.conjugate(2.0 * np.exp(-zc**2) - w)
