@@ -65,10 +65,22 @@ packet.
 
 During development, docstrings, comments and draft notes are sufficient for
 an evolving contract. Create or refresh exact asset documents and the catalog
-when a stable batch, discovery handoff, integration checkpoint or review needs
-them; do not rebuild the complete catalog for every edit. Keep one current
-working-tree representation and use Git history for prior wording or code;
-do not copy full wheel, document or catalog trees into version directories.
+when a discovery handoff, integration checkpoint or review needs them; a stable
+batch or changed count alone is not a trigger. Do not rebuild the complete
+catalog for every edit. Keep one current working-tree representation and use
+Git history for prior wording or code; do not copy full wheel, document or
+catalog trees into version directories.
+
+Without an exact D1 packet, keep product work on this direct development path.
+Do not manufacture a D1 manifest or complete denominator to enter the
+correctness or normalization sub-skills for a local API, import, performance or
+packaging change.
+
+AOCI is a repository-maintenance aid, not a development gate. For a local
+source or skill change, read only the related evidence; after the batch reaches
+its final stable state, perform one applicable `aoci_maintain` and do not repeat
+it for every commit or intermediate edit. A full Overview/Attestation is only
+for a task that actually requires complete repository cognition.
 
 ## Development boundaries
 

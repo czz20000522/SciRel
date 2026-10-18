@@ -4,6 +4,10 @@ This reference keeps daily SciRel work separate from candidate and public
 release work. Read it when a task mentions wheels, documents, catalog counts,
 platform matrices, version changes or release validation.
 
+The current development baseline is Linux amd64 with CPython 3.14. Other
+platforms remain `NOT_RUN` unless a named checkpoint or release claim exercises
+them; a local macOS or Windows result must not be generalized to this baseline.
+
 ## Default: development
 
 Use the current Git worktree as the development truth. New operators,

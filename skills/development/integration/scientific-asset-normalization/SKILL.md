@@ -11,6 +11,10 @@ preserves applicability differences and produces a coherent development implemen
 It does not reopen source discovery, re-decide correctness without a concrete contradiction, write lifecycle state,
 approve, package or publish.
 
+For direct SciRel product work without an exact D1 and correctness-qualified
+batch, return to the development path in [the shared operating contract](../../references/scirel-development-core.md);
+do not manufacture a qualification packet for a local change.
+
 ## Input and workflow
 
 Require exact candidate/dependency digests, source lineages, applicability/contracts, correctness evidence and

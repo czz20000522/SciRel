@@ -58,6 +58,22 @@ EXTERNAL_TOOLING_TESTS = {
 }
 
 ENGINEERING_TESTS = {
+    "skills/development/README.md": ("tests/test_development_skill_contract.py",),
+    "skills/development/references/development-lifecycle.md": (
+        "tests/test_development_skill_contract.py",
+    ),
+    "skills/development/references/scirel-development-core.md": (
+        "tests/test_development_skill_contract.py",
+    ),
+    "skills/development/integration/scirel-integration/SKILL.md": (
+        "tests/test_development_skill_contract.py",
+    ),
+    "skills/development/integration/scientific-asset-correctness/SKILL.md": (
+        "tests/test_development_skill_contract.py",
+    ),
+    "skills/development/integration/scientific-asset-normalization/SKILL.md": (
+        "tests/test_development_skill_contract.py",
+    ),
     "scripts/validate_installed_wheel.py": ("tests/test_validate_installed_wheel.py",),
     "scripts/validate_offline_wheelhouse.py": ("tests/test_validate_offline_wheelhouse.py",),
     "skills/development/usage/scirel-solving/scripts/delivery.py": ("tests/test_scientific_delivery.py",),

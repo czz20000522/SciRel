@@ -10,6 +10,10 @@ This D2 skill consumes exact D1 candidates and owns independent scientific corre
 affected revalidation. It does not discover source scope, normalize/merge candidates, write lifecycle state,
 approve, package or publish.
 
+For direct SciRel product work without an exact D1 packet, return to the
+development path in [the shared operating contract](../../references/scirel-development-core.md); do not invent a
+complete D1 denominator to use this skill.
+
 ## Required input and method
 
 Freeze one manifest containing every target/dependency digest, reverse-dependency scope, scientific contract,

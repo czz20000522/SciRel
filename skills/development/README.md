@@ -3,12 +3,13 @@
 This directory is the independent development package for D2 integration, D3
 project delivery, correction, normalization, review preparation and
 development-only claim validation. Its inputs are exact decomposition packets;
-it does not load or link to the decomposition package. Repeated guidance may
-be duplicated here deliberately so each package can be shipped and pinned
-without a cross-package dependency.
+it does not load or link to the decomposition package.
 
 These skills produce candidates, project artifacts and review packets. They do
 not grant human endorsement, redistribution rights or release authority.
+The core and lifecycle references are the canonical development rules; read
+them once per task mode, then load only the sub-skill reference needed for the
+current scope. Do not duplicate the full lifecycle contract in every route.
 
 Daily work runs in `development` mode by default. Capability counts, documents
 and the development catalog may change with the current Git tree. Candidate

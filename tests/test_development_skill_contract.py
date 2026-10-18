@@ -1,0 +1,45 @@
+from pathlib import Path
+
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import select_affected_tests as selector  # noqa: E402
+
+
+def test_development_skill_changes_use_one_lightweight_contract_test():
+    changed = [
+        "skills/development/README.md",
+        "skills/development/references/development-lifecycle.md",
+        "skills/development/references/scirel-development-core.md",
+        "skills/development/integration/scirel-integration/SKILL.md",
+    ]
+
+    result = selector.select(changed)
+
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == ["tests/test_development_skill_contract.py"]
+
+
+def test_lifecycle_keeps_incubation_counts_dynamic_and_release_gates_explicit():
+    readme = (ROOT / "skills/development/README.md").read_text(encoding="utf-8")
+    lifecycle = (
+        ROOT / "skills/development/references/development-lifecycle.md"
+    ).read_text(encoding="utf-8")
+
+    assert "them once per task mode" in readme
+    assert "Repeated guidance may be duplicated deliberately" not in readme
+    assert "not project-wide invariants" in lifecycle
+    assert "derive its members and counts from the same current" in lifecycle
+    assert "Do not create a release receipt" in lifecycle
+    assert "Linux amd64 with CPython 3.14" in lifecycle
+
+
+def test_direct_product_work_does_not_synthesize_d1_or_full_aoci_proof():
+    core = (
+        ROOT / "skills/development/references/scirel-development-core.md"
+    ).read_text(encoding="utf-8")
+
+    assert "Without an exact D1 packet" in core
+    assert "AOCI is a repository-maintenance aid, not a development gate" in core
+    assert "one applicable `aoci_maintain`" in core
