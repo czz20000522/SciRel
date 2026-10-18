@@ -36,3 +36,24 @@ def test_native_reachability_audit_is_diagnostic_and_does_not_change_manifest() 
     assert report["schema"] == "scirel.native-resource-reachability.v1"
     assert "_fluidbw_native/fb_r_harmonic.m" in report["groups"]["fluidbw-octave"]["reachable_files"]
     assert any("negative runtime test" in item for item in report["limitations"])
+
+
+def test_native_reachability_audit_records_bounded_feval_dispatch() -> None:
+    report = audit(ROOT)
+    dynamic = report["dynamic_edges"]
+    assert dynamic["_fluidbw_native/fb_dispersion.m"] == [
+        "_fluidbw_native/fD.m",
+        "_fluidbw_native/fDR.m",
+    ]
+    assert dynamic["_fluidbw_native/fb_dispersion_observe.m"] == [
+        "_fluidbw_native/fD.m",
+        "_fluidbw_native/fDR.m",
+    ]
+    assert dynamic["_fluidbw_native/fb_special.m"] == [
+        "_fluidbw_native/Gamman.m",
+        "_fluidbw_native/Gammapn.m",
+        "_fluidbw_native/RASY.m",
+        "_fluidbw_native/RINT.m",
+        "_fluidbw_native/RTAY.m",
+        "_fluidbw_native/RYLA.m",
+    ]

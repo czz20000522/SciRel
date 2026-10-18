@@ -98,6 +98,48 @@ def _static_edges(paths: dict[str, Path]) -> dict[str, list[str]]:
     return edges
 
 
+def _dynamic_edges(paths: dict[str, Path]) -> dict[str, list[str]]:
+    """Resolve bounded ``feval(method, ...)`` dispatch from method literals.
+
+    Octave entrypoints sometimes validate a finite method set and then call
+    ``feval(method, ...)``.  A direct-call scan cannot see those edges, so
+    retain the literal method names that also name resources in this closure.
+    This is diagnostic metadata only; it never authorizes deleting a source
+    file or infers dispatch for an unbounded value.
+    """
+
+    by_name: dict[str, list[str]] = {}
+    for relative in paths:
+        by_name.setdefault(Path(relative).name, []).append(relative)
+    edges: dict[str, list[str]] = {}
+    for relative, path in paths.items():
+        text = _strip_comments(path.read_text(encoding="utf-8", errors="replace"))
+        if not re.search(r"\bfeval\s*\(\s*method\b", text):
+            continue
+        names: set[str] = set()
+        for literal in re.findall(r"['\"]([^'\"]+)['\"]", text):
+            name = Path(literal).name
+            if name in by_name or name + ".m" in by_name:
+                names.add(name)
+        # A method literal can also name a direct branch (for example,
+        # ``fb_special`` handles ``zfun`` without ``feval``).  Keep only
+        # names that are not visibly invoked directly in this source; the
+        # result remains conservative for opaque dispatch.
+        names = {
+            name
+            for name in names
+            if not re.search(rf"(?<![A-Za-z0-9_]){re.escape(name)}\s*\(", text)
+        }
+        targets: set[str] = set()
+        for name in names:
+            targets.update(by_name.get(name, ()))
+            if not name.endswith(".m"):
+                targets.update(by_name.get(name + ".m", ()))
+        if targets:
+            edges[relative] = sorted(targets)
+    return edges
+
+
 def _group_entries(group_id: str, files: list[str]) -> tuple[list[str], str]:
     if group_id == "fluidbw-octave":
         names = {"fb_special.m", "fb_evaluate.m", "fb_bonk.m", "fb_assemble.m", "fb_em.m", "fb_materials.m"}
@@ -135,6 +177,7 @@ def audit(root: Path = ROOT, manifest_path: Path = MANIFEST) -> dict[str, Any]:
         raise ValueError("unexpected native closure schema")
     paths = _resource_paths(root, manifest)
     edges = _static_edges(paths)
+    dynamic_edges = _dynamic_edges(paths)
     groups: dict[str, Any] = {}
     for group in manifest["groups"]:
         group_id = group["id"]
@@ -145,7 +188,7 @@ def audit(root: Path = ROOT, manifest_path: Path = MANIFEST) -> dict[str, Any]:
         todo = list(reachable)
         while todo:
             current = todo.pop()
-            for target in edges.get(current, ()):
+            for target in (*edges.get(current, ()), *dynamic_edges.get(current, ())):
                 if target in files and target not in reachable:
                     reachable.add(target)
                     todo.append(target)
@@ -168,6 +211,7 @@ def audit(root: Path = ROOT, manifest_path: Path = MANIFEST) -> dict[str, Any]:
         "resource_count": len(paths),
         "groups": groups,
         "static_edges": {key: value for key, value in sorted(edges.items()) if value},
+        "dynamic_edges": {key: value for key, value in sorted(dynamic_edges.items()) if value},
         "limitations": [
             "Dynamic dispatch and source-tree copies are represented as roots and are not deletion evidence.",
             "An unreachable candidate requires reverse-call confirmation and a negative runtime test before packaging changes.",
