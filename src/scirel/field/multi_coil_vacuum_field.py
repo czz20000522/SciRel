@@ -65,6 +65,31 @@ def _stack_response_rows(responses):
     return {name: np.asarray([response[name] for response in responses]) for name in ('gpsi', 'gBR', 'gBZ')}
 
 def solve_multi_coil_vacuum_field(inputs=None, **kwargs):
+    """Compute an axisymmetric vacuum field from rectangular coil records.
+
+    Parameters
+    ----------
+    inputs : mapping, optional
+        Input mapping containing ``r_grid``, ``z_grid`` and a nonempty
+        ``rectangular_coils`` sequence. Each coil provides ``r0_m``, ``z0_m``,
+        ``nr``, ``nz``, ``dr_m``, ``dz_m`` and finite ``current_a``; optional
+        ``angle_deg`` and dimensionless ``weights`` are accepted.
+    **kwargs
+        Named inputs merged with ``inputs`` by the TaskGraph composition
+        boundary.
+
+    Returns
+    -------
+    dict
+        ``psi_vac`` in Wb/rad and ``b_r_vac``/``b_z_vac`` in tesla on the
+        input grid, plus ``filaments`` as ``[R_m, Z_m, weight]`` rows.
+
+    Raises
+    ------
+    ValueError
+        If the R-Z grid or any coil record is missing, nonfinite, or outside
+        the declared rectilinear and nonnegative domain.
+    """
     from scirel._composition import compose
     from scirel.field.circular_filament_green import circular_filament_green_response as _dependency_0
     from scirel.field.current_green_superposition import superpose_current_green_field as _dependency_1

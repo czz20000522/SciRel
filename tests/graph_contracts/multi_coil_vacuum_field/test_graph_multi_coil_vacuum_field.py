@@ -1,3 +1,5 @@
+import inspect
+
 from scirel.field.multi_coil_vacuum_field import solve_multi_coil_vacuum_field
 import scirel
 from _review_bindings import load_asset as _load_asset, load_graph as _load_graph, load_operator as _load_operator
@@ -15,6 +17,14 @@ def _inputs(current=1000.0):
         "z_grid": z_grid,
         "rectangular_coils": [{"r0_m": 0.45, "z0_m": 0.0, "nr": 2, "nz": 2, "dr_m": 0.04, "dz_m": 0.05, "current_a": current}],
     }
+
+
+def test_public_callable_documents_the_catalog_contract():
+    text = inspect.getdoc(solve_multi_coil_vacuum_field) or ""
+    assert "rectangular_coils" in text
+    assert "psi_vac" in text
+    assert "Wb/rad" in text
+    assert "Raises" in text
 
 
 def test_explicit_coil_current_scales_vacuum_field_linearly():
