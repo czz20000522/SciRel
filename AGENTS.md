@@ -36,7 +36,7 @@ SciRel 是长期独立维护的 Python 科学关系库；不要套用相邻 Code
 - 新增或改变公共资产，在 D2 比较、去重和代码稳定后、最终待审冻结前维护唯一 `scirel.asset-document.v1` exact document；普通 docstring/公共文档批次仍留在 development，不因此生成 exact document 或 catalog，只有 named handoff、integration checkpoint、review preparation 或 release freeze 才创建这些投影。实验内循环使用代码、YAML、注释/docstring 和现有证据锚点，不要求先写正式文档。catalog 只从已验证文档生成。不得从名称/源码猜补科学字段，不得把 CodeFusion 私有 owner/ref 或 adapter session/job 字段写入公共合同。
 - 上一阶段交付只读；本阶段的修正、重复吸收和来源说明写入本阶段派生代码注释/docstring 或接续记录。正式审查文档面向人，不复制内部路径或过程备注。不用文件覆盖方式重复导入整批资产；对照当前 Git 基线逐项整合，保留其他贡献者的修改。
 - 改变科学行为先写失败回归；保持旧数值断言和容差，不能为了通过测试弱化它们。
-- 改动后运行与声明匹配的相关测试；只有明确需要安装 artifact 的 named `integration_checkpoint` 或 `release_freeze` 才构建 wheel，checkpoint 同时产出的 wheel、文档、catalog 和 receipt 必须绑定同一个确切 `source_revision`；只有 `release_freeze` 才在没有源码的环境验证全套测试和公共 API。
+- 改动后运行与声明匹配的相关测试；只有明确需要安装 artifact 的 named `integration_checkpoint` 或 `release_freeze` 才构建 wheel，checkpoint 同时产出的 wheel、文档、catalog 和 receipt 必须绑定同一个确切 `source_revision`；只有 `release_freeze` 才在没有源码的环境验证全套测试和公共 API。运行时闭包 receipt 必须明确 `BOUND`/`UNBOUND`，比较测量前后的 source/probe identity，并把 dirty source、identity 漂移、非隔离子进程或 Linux amd64 + CPython 3.14 目标不匹配保留为未绑定证据；结构校验不得把它们升级为发布证据。
 - 冻结的来源、审核和准入记录不可改写；源码演进另记版本和审查。语言/格式调整也要保留可核对差异。
 - 每个来源项目使用独立容器，环境定义随交付保存；源码、依赖/工具、探针、缓存、证据与产物分开，冻结预处理与索引供各 worker 复用，不逐区域重装或重建。依赖下载通过开发机本地代理；服务器不构建。清理前先列出精确范围进行 dry run；用户明确清空旧工作且不备份时遵从该范围，保留指定来源、工具与凭据，不把历史运行保留规则变成额外批准门槛。
 

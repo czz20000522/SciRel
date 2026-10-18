@@ -98,6 +98,12 @@ ENGINEERING_TESTS = {
     "scripts/measure_capability_runtime.py": (
         "tests/test_capability_import_closure.py",
     ),
+    "scripts/validate_capability_runtime_closure.py": (
+        "tests/test_capability_import_closure.py",
+    ),
+    "contracts/capability-runtime-closure.schema.json": (
+        "tests/test_capability_import_closure.py",
+    ),
     "skills/development/usage/scirel-solving/scripts/delivery.py": ("tests/test_scientific_delivery.py",),
     "skills/development/usage/scirel-solving/references/delivery-tool.md": ("tests/test_scientific_delivery.py",),
     "skills/development/usage/scientific-asset-navigation/scripts/query.py": ("tests/test_scirel_navigation_query.py",),

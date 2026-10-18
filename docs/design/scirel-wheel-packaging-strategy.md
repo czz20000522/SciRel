@@ -74,12 +74,23 @@ NumPy 和 SciPy 是当前大量数值 Operator 的直接运行依赖，mpmath �
 Operator 或 TaskGraph 的最小 Python 依赖。exact document 的 `version.dependencies` 只描述
 SciRel 内部资产关系，也不能被当作 pip 包依赖。能力级拆分必须先建立独立、可复核的运行时闭包证据。
 
-开发期使用 `scripts/measure_capability_runtime.py` 在 fresh process 中分别记录：
+开发期使用 `scripts/measure_capability_runtime.py` 在 fresh process 中生成
+`scirel.capability-runtime-closure.v2` receipt，并分别记录：
 
 1. **import closure**：只导入公共模块/符号时实际加载的外部 import roots；
 2. **call closure**：执行 caller-owned probe 后才出现的延迟依赖；
 3. **optional/native boundary**：需要 `plot` extra、外部程序或随包资源的能力及其失败语义；
-4. **runtime identity**：Python、OS、架构、发行包版本和探针摘要。
+4. **runtime identity**：Python、OS、架构、发行包版本、Git source binding 和探针摘要。
+
+`scripts/validate_capability_runtime_closure.py` 只验证这类 receipt 的身份和结构；它不把一次
+成功探针升级为科学正确性或发行资格。`source.dirty=true`、缺失 Git revision、缺少 probe 摘要或
+目标平台不匹配都必须保留为未绑定证据，不能伪装成 clean-venv 闭包。
+
+receipt 必须显式标记 `binding_status=BOUND` 或 `UNBOUND`；`BOUND` 要求 clean exact revision、
+source content 在测量前后稳定且子进程实际处于 isolated 模式。Linux amd64 + CPython 3.14 等目标
+平台和 Python 约束由 validator 的 expected-system/machine/Python 参数施加。
+source content digest 覆盖 `pyproject.toml` 与 `src/` 中的实际源/运行资源，并排除生成的
+`__pycache__` 与 `.pyc` 文件。
 
 这些结果先作为 source-bound development evidence，不能直接改写 wheel 元数据。只有当本次
 选定的完整能力闭包逐项拥有可复核的 PASS/NOT_RUN 状态、直接和传递依赖清单、失败行为以及

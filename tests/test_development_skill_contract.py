@@ -144,6 +144,24 @@ def test_development_loop_keeps_related_evidence_together_without_release_work()
     assert "development lifecycle" in integration
 
 
+def test_runtime_closure_receipts_keep_binding_and_target_identity_explicit():
+    core = compact(
+        (ROOT / "skills/development/references/scirel-development-core.md").read_text(
+            encoding="utf-8"
+        )
+    )
+    project_contract = compact((ROOT / "AGENTS.md").read_text(encoding="utf-8"))
+
+    for text in (core, project_contract):
+        assert "BOUND" in text
+        assert "UNBOUND" in text
+        assert "identity" in text
+        assert "Linux amd64" in text
+        assert "CPython 3.14" in text
+    assert "structural validator" in core
+    assert "结构校验不得把它们升级为发布证据" in project_contract
+
+
 def test_claim_ceiling_does_not_turn_missing_benchmark_into_release_work():
     lifecycle = compact(
         (ROOT / "skills/development/references/development-lifecycle.md").read_text(

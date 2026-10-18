@@ -91,7 +91,14 @@ For packaging changes, measure the actual capability dependency and native/ABI
 closure before changing the distribution shape. Keep a common wheel when the
 same Python sources and runtime closure support the target platforms; introduce
 platform-specific wheels only for a demonstrated platform or native boundary,
-with a focused install check for that boundary.
+with a focused install check for that boundary. A runtime-closure receipt is
+development evidence, not a release claim: it must state `BOUND` or `UNBOUND`,
+preserve the source and probe identities observed before and after measurement,
+and keep a dirty source, an identity change, an unisolated child or a
+platform/Python mismatch (including the declared Linux amd64 + CPython 3.14
+baseline) unbound. A structural validator may reject malformed
+receipts, but it must not upgrade an unbound or wrong-platform observation into
+release evidence.
 
 Without an exact D1 packet, keep product work on this direct development path.
 Do not manufacture a D1 manifest or complete denominator to enter the
