@@ -45,3 +45,9 @@ wheel does not create a checkpoint by itself; do not build an installed wheel,
 update `release/CURRENT.json`, generate a release receipt or run the full
 platform matrix unless a named consumer, owner-requested checkpoint or
 `release_freeze` requires it.
+
+Before the first public release, a legacy `0.1.0.devN` value remains historical
+metadata. Do not increment it or create another release note while integrating
+or optimizing the product. Requests to continue, finish, review or verify keep
+this direct path in `development`; only a named consumer/handoff or an explicit
+release decision can select another lifecycle mode.

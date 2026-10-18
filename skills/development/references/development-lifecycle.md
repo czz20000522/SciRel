@@ -23,6 +23,14 @@ Do not update `release/CURRENT.json`, platform receipts or a public version as
 part of ordinary development. Do not treat a buildable wheel as a release
 candidate.
 
+If the project has not received an explicit first-public-release decision,
+this mode is the only default. A legacy `0.1.0.devN` value, an old release note,
+or a previous candidate in `release/CURRENT.json` does not create a new release
+cadence. Do not increment `devN`, create a successor release note, or run
+publication/platform gates because a task says to continue or to close the
+current work. Record the Git commit and affected checks, then stop at the claim
+supported by that evidence.
+
 ## Named integration checkpoint
 
 Use this mode only when the task names a consumer, handoff, or owner-requested
@@ -84,18 +92,25 @@ rewrite the frozen tuple.
 
 ## Version rule
 
-Git commits identify ordinary development state. Do not advance `devN` for each
-function, document or benchmark change. Select a candidate or public version
-at the release freeze. A first public release may normalize the version line
-once after the capability and compatibility boundary are understood.
+Git commits identify ordinary development state. Before the first public
+release, do not advance or normalize the package version at all; existing
+`devN` labels are historical working metadata. Select the initial public
+`major.minor` line and any maintenance suffix once, at the first
+`release_freeze`, after the capability and compatibility boundary are
+understood. Later compatible fixes can be batched on that line; a broad
+capability or compatibility boundary can start the next line. A commit, document
+edit, benchmark, count change or buildable wheel never advances a version by
+itself.
 
 ## Transition triggers
 
 Move from development to an integration checkpoint only when the task names a
 consumer, handoff, or owner-requested checkpoint. Move to release freeze only
 when the task names a candidate cut, publication, release approval or an
-equivalent owner decision. A source change, performance improvement, new
-capability or document edit alone stays in development mode.
+equivalent owner decision. Words such as “continue”, “finish”, “review”,
+“verify” and “close” are progress instructions, not lifecycle triggers. A
+source change, performance improvement, new capability or document edit alone
+stays in development mode.
 
 Critical correctness, security or data-integrity fixes may justify an expedited
 freeze only when an external or public consumer depends on an existing frozen

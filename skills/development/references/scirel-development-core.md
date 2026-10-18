@@ -49,6 +49,23 @@ string, a document count, a clean worktree or the fact that a wheel can be built
 Read [the development lifecycle](development-lifecycle.md) for transition
 triggers and the complete mode boundary.
 
+### Incubation and repository shape
+
+Before the first public release, the repository is an incubation tree. Keep
+one Git source of truth for `src/scirel/`, `docs/`, `tools/`/`scripts/` and
+`pyproject.toml`; use Git history and tags for prior states. Do not create
+versioned copies of the source, handbook, catalog or wheel metadata. Build
+outputs, rendered docs, catalogs and receipts belong outside the source tree
+or in task-local ignored directories and are created only when a named
+consumer or `release_freeze` needs them. A legacy `devN` version is not a
+release schedule and must not be advanced during incubation.
+
+This follows the useful SciPy boundary: source and short release notes live in
+the main repository, build tooling is kept beside the source, runtime extras
+are separated from development/test dependency groups, and generated release
+artifacts are produced from one exact Git ref. SciRel adopts the source and
+provenance boundary without importing SciPy's native build toolchain.
+
 ## Product-development loop
 
 SciRel follows a standard-library product loop: one Git source tree is the
@@ -116,9 +133,12 @@ invariant, route, validator or retirement decision; it does not accumulate case
 stories.
 
 Do not increment a development `devN` version for ordinary source, test,
-document or performance commits. Git identifies development state. Choose the
-candidate or public version once at `release_freeze`, and keep the frozen
-wheel/document/catalog tuple immutable afterward.
+document or performance commits. Before the first public release, leave the
+historical version label untouched. At the first `release_freeze`, choose the
+initial public version from the actual capability and compatibility boundary;
+after publication, choose maintenance or capability-line changes using the
+batching policy. Keep each frozen wheel/document/catalog tuple immutable
+afterward.
 
 Use the canonical batching policy in
 [`docs/design/scirel-release-batching.md`](../../../docs/design/scirel-release-batching.md):

@@ -31,6 +31,34 @@ No source change, new capability, performance claim, document edit, clean
 worktree or buildable wheel changes mode by itself. A current capability count
 is a property of the checked-out tree, not a permanent gate.
 
+## Pre-publication guard
+
+Until the owner explicitly decides to make the first public release, treat the
+repository as an incubation tree. An existing `project.version` or historical
+`devN` label is metadata left by an earlier checkpoint; do not increment it,
+create another `devN` release note, or update a release pointer for routine
+development. A request to “continue”, “finish”, “review” or “verify” does not
+change the mode. It remains `development` unless the task names a consumer,
+handoff or release decision.
+
+The first public release chooses its initial public version from the actual
+capability and compatibility boundary at that time. Earlier development labels
+do not constrain that choice. After publication, compatible fixes can accumulate
+as a maintenance batch on the same line; a broad capability or compatibility
+boundary can start the next line.
+
+## SciPy-style repository boundary
+
+Keep one Git source tree for `src/scirel/`, `docs/`, build/test tooling and
+`pyproject.toml`. Generate wheels, rendered documentation, catalogs and receipts
+from an exact ref into task-local or external output directories; do not copy a
+full source, handbook or catalog tree into versioned directories. Keep only
+short release notes in `docs/release/`; Git history and tags provide older
+source and wording. Separate core runtime dependencies, user-selected extras
+and development/test groups in packaging metadata. These are repository
+invariants for the future release path, not reasons to run release gates during
+ordinary development.
+
 The repository documents are the public, handoff-friendly source for project
 and development methods. Skills are personal routing and method overlays; they
 may point to the canonical documents or add a narrowly scoped working habit,
