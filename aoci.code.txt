@@ -1069,7 +1069,7 @@ frank_egedal_source_projection.py[KB7T]: F:选择分数Legendre度数并投影NB
 gamma_lpole_coefficients.py[FB6L]: F:提供冻结fluidBW Bessel-Gamma L极点留数和极点表 | R:code:src/scirel/kinetic/fluid_dispersion_matrix.py | A:get_gamma_lpole_coefficients;lpole_orders | S:系数键为|n|+1，请求最大谐波所需表超冻结范围时报错
 generation_accumulation_update.py[KB7S]: F:追加碰撞代分布和密度并保持有序堆栈累计状态 | R:code:src/scirel/kinetic/neutral_generation_stopping.py | A:update_neutral_generation_accumulation | S:历史分布可有符号而密度非负；已有总量须逐代相加精确一致，完成索引为count-1
 generation_density_reduction.py[KB6T]: F:按柱积分权重归约单代中性分布密度 | R:code:src/scirel/kinetic/cylindrical_velocity_quadrature.py | A:reduce_generation_density | S:一维径权和径向常数二维权走moveaxis投影，其他二维权直接求和，保留来源算序
-grid_mirror_kinetic_closure.py[AB7S]: F:组合磁通面轮廓、端损失电势与镜准中性闭包建立网格动理学状态 | R:code:src/scirel/closures/mirror_ambipolar_potential.py,code:src/scirel/closures/mirror_quasineutral_closure.py | A:solve_grid_mirror_kinetic_closure | S:三个平面映射最近首索引须严格包围；默认规定端电势并在插塞区外清零密度压力
+grid_mirror_kinetic_closure.py[AB7S]: F:组合磁通面轮廓、端损失电势与镜准中性闭包建立网格动理学状态并提供公开调用合同 | R:code:src/scirel/closures/mirror_ambipolar_potential.py,code:src/scirel/closures/mirror_quasineutral_closure.py | A:solve_grid_mirror_kinetic_closure；返回全网格压力、密度、电位、端态诊断和兼容别名；区分局部准中性收敛与端点电流平衡 | S:三个平面映射最近首索引须严格包围；默认规定端电势并在插塞区外清零选定密度压力；psi坐标由调用者统一提供，图不做单位转换；端点未完成电流平衡时拒绝返回
 hydrogen_saha_equilibrium_population.py[KB6T]: F:用历史Saha常数求氢主能级的配对一维平衡粒子密度 | R:- | A:evaluate_h_saha_equilibrium_population | S:假定氢离子密度等电子密度；输入必须低于1e32，拒绝来源哨兵分支与结果非正值
 incoming_boundary_flux_normalization.py[KB7S]: F:在vx正半空间归一入射中性边界到指定粒子通量 | R:code:src/scirel/kinetic/neutral_generation_propagation.py | A:normalize_incoming_neutral_boundary | S:目标取绝对值，负目标同正目标；非正vx输出精确零，即使零目标也先要求原正通量
 kinetic_dispersion_relation.py[AB7S]: F:从同一平衡快照比较有限谐波与Ronnmark动理学色散行列式 | R:code:src/scirel/kinetic/kinetic_dispersion_sum_fluidbw.py,code:src/scirel/kinetic/kinetic_dispersion_ronnmark.py,code:src/scirel/kinetic/species_equilibrium_scales.py | A:evaluate_kinetic_dispersion_relation并保持共享尺度、频率转换和分支顺序 | S:图依赖在平衡和kz校验后加载；omega与kx由本图wn/kn派生，kz保持绝对SI控制
@@ -1243,7 +1243,7 @@ test_graph_free_boundary_anisotropic_picard.py[TB6M]: F:验证自由边界全状
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/grid_mirror_kinetic_closure/===
 task_graph.yaml[TB6M]: F:声明网格镜端参考/plug剖面映射、端损失电位与嵌套准中性组合、屏蔽范围及显式载体。 | R:code:src/scirel/kinetic/grid_mirror_kinetic_closure.py | A:scientific_task_graph contract | S:参考/plug电位只接受径向剖面；端塞外屏蔽不触碰pitch积分、电位和端态诊断。
-test_graph_grid_mirror_kinetic_closure.py[TB6S]: F:检验网格镜端电位/准中性嵌套、剖面映射、规定电位分支和端塞屏蔽，覆盖失败传播与严格控制域。 | R:code:src/scirel/kinetic/grid_mirror_kinetic_closure.py | A:pytest | S:屏蔽不改变全网格pitch诊断/电位/端态；prescribed收敛不证明端点电流平衡。
+test_graph_grid_mirror_kinetic_closure.py[TB6S]: F:检验网格镜端电位/准中性嵌套、剖面映射、规定电位分支和端塞屏蔽，覆盖失败传播与严格控制域 | R:code:src/scirel/kinetic/grid_mirror_kinetic_closure.py | A:pytest；验证公开solver的Parameters/Returns/Raises/Notes及current_balance_solved、confine_to_plug_planes、psi字段合同 | S:屏蔽不改变全网格pitch诊断/电位/端态；prescribed收敛不证明端点电流平衡；文档断言只锁定公开调用合同，不替代数值回归
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/isotropic_pressure_flux/===
 task_graph.yaml[FB7S]: F:声明各向同性压力通量任务端口、唯一求解节点和末态样条序列化 | R:code:src/scirel/equilibrium/isotropic_pressure_flux.py | A:压力电流与磁通双门禁、显式反馈状态及失败输出 | S:plasma_mask的True表示禁用电流；零步不收敛，失败时历史可短于迭代数；图只委派唯一循环，不叠加第二迭代环

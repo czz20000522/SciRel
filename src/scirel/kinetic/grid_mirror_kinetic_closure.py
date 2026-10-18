@@ -105,6 +105,56 @@ def run_graph(inputs, *, asset_loader, task_graph_loader):
     return state
 
 def solve_grid_mirror_kinetic_closure(inputs=None, **kwargs):
+    """Run the grid-aware mirror end-loss and quasineutral closure.
+
+    Parameters
+    ----------
+    inputs : mapping, optional
+        Mapping with required ``r_grid``, ``z_grid``, ``b_t``, ``psi``,
+        ``mass_kg``, ``charge_c``, reference density and temperature profiles,
+        ``electron_temperature_j``, ``reference_z``, ``plug_left_z`` and
+        ``plug_right_z``.  Profiles may be scalars or callables evaluated on
+        the caller-owned flux coordinate.  Optional controls include
+        ``electron_density_ref_m3``, ``phi_ref_v``, prescribed plug
+        potentials, ``plug_potential_mode``, refill fractions,
+        ``quadrature_order``, endpoint tolerances and ``max_iterations``.
+    **kwargs
+        Composition overrides passed to the public graph boundary.
+
+    Returns
+    -------
+    dict
+        Full-grid pressure, density, potential and charge-residual fields;
+        nested ``kinetic_moments``; endpoint potential, particle-flux and
+        current diagnostics; and legacy density, temperature and pressure
+        aliases.  With ``confine_to_plug_planes=True`` (the default), only the
+        selected top-level density, pressure and relative-residual aliases are
+        zeroed outside the nearest inclusive plug rows; potentials, endpoint
+        diagnostics and original moment fields remain full-grid.
+
+    Raises
+    ------
+    ValueError
+        If the grids are unequal, non-rectilinear, nonfinite, too small or
+        have nonpositive field; plane coordinates are invalid or unordered;
+        the mode or confinement flag is invalid; or quadrature order is not an
+        integer of at least 8.  Bound profile and species contracts may raise
+        the same error during dispatch.
+    RuntimeError
+        If an ``ambipolar_end_loss`` endpoint does not return both a converged
+        state and ``current_balance_solved``.
+    Exception
+        Profile, endpoint and nested graph exceptions propagate unchanged.
+
+    Notes
+    -----
+    ``R`` and ``Z`` use ``[Z, R]`` array order.  ``psi`` is a caller-owned flux
+    coordinate and is not rescaled or converted by this graph.  The local
+    quasineutral convergence flag and the two endpoint current-balance flags
+    describe separate calculations; neither establishes a self-consistent
+    magnetic equilibrium.
+    """
+
     from scirel._composition import compose
     from scirel.closures.mirror_ambipolar_potential import solve_mirror_ambipolar_potential as _dependency_0
     from scirel.geometry.flux_surface_profile import evaluate_flux_surface_profile as _dependency_1

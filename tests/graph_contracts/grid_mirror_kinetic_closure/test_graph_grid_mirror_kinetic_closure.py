@@ -3,6 +3,7 @@ import scirel
 from _review_bindings import load_asset as _load_asset, load_graph as _load_graph, load_operator as _load_operator
 # 覆盖：端态映射、端塞外屏蔽、YAML 嵌套声明与 caller profile(psi) 端口。
 from pathlib import Path
+import inspect
 
 import numpy as np
 import pytest
@@ -19,6 +20,15 @@ def _inputs():
 
 def _run(inputs):
     return solve_grid_mirror_kinetic_closure(inputs)
+
+
+def test_public_solver_docstring_declares_contract():
+    doc = inspect.getdoc(solve_grid_mirror_kinetic_closure)
+    assert doc is not None
+    for section in ("Parameters", "Returns", "Raises", "Notes"):
+        assert section in doc
+    for field in ("current_balance_solved", "confine_to_plug_planes", "psi"):
+        assert field in doc
 
 
 def test_nested_kinetic_closure_maps_end_states_and_remains_neutral():
