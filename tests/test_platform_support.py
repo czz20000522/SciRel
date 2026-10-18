@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import sys
 
@@ -25,6 +26,32 @@ def _isolated_matrix_root(tmp_path: Path) -> tuple[Path, dict[str, object]]:
         (tmp_path / evidence).write_text("{}\n", encoding="utf-8")
     matrix_path.write_text(json.dumps(matrix), encoding="utf-8")
     return matrix_path, matrix
+
+
+def _bind_pass_capability(tmp_path: Path, matrix: dict[str, object]) -> Path:
+    current = json.loads((tmp_path / "release/CURRENT.json").read_text(encoding="utf-8"))
+    artifact = current["wheel"]["artifact"]
+    receipt_path = tmp_path / "capability-receipt.json"
+    receipt_path.write_text(
+        json.dumps(
+            {
+                "schema": "scirel.capability-validation.v1",
+                "status": "PASS",
+                "source_revision": current["source_revision"],
+                "package": {"version": current["version"]},
+                "artifact": {
+                    "sha256": artifact["sha256"],
+                    "bytes": artifact["bytes"],
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    for row in matrix["capabilities"]:
+        if row["status"] == "PASS":
+            row["evidence"] = ["capability-receipt.json"]
+            break
+    return receipt_path
 
 
 def test_platform_matrix_is_explicit_and_fail_closed() -> None:
@@ -84,3 +111,79 @@ def test_platform_matrix_rejects_version_drift(tmp_path: Path) -> None:
     matrix_path.write_text(json.dumps(matrix), encoding="utf-8")
     with pytest.raises(ValueError, match="package_version"):
         validate_matrix(tmp_path)
+
+
+def test_pass_capability_requires_current_release_bound_receipt(tmp_path: Path) -> None:
+    matrix_path, matrix = _isolated_matrix_root(tmp_path)
+    for row in matrix["capabilities"]:
+        if row["status"] == "PASS":
+            row.pop("evidence", None)
+            break
+    matrix_path.write_text(json.dumps(matrix), encoding="utf-8")
+    with pytest.raises(ValueError, match="requires bound evidence"):
+        validate_matrix(tmp_path)
+
+
+def test_pass_capability_accepts_receipt_bound_to_current_wheel(tmp_path: Path) -> None:
+    matrix_path, matrix = _isolated_matrix_root(tmp_path)
+    _bind_pass_capability(tmp_path, matrix)
+    matrix_path.write_text(json.dumps(matrix), encoding="utf-8")
+    result = validate_matrix(tmp_path)
+    assert result["capabilities"]["fluidbw-native-octave"] == "PASS"
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("source_revision", "0" * 40, "source revision differs"),
+        ("package_version", "0.1.0.dev8", "package version differs"),
+        ("sha256", "0" * 64, "wheel sha256 differs"),
+        ("bytes", 1, "wheel bytes differs"),
+    ],
+)
+def test_pass_capability_rejects_stale_receipt_binding(
+    tmp_path: Path,
+    field: str,
+    value: object,
+    message: str,
+) -> None:
+    import json
+
+    matrix_path, matrix = _isolated_matrix_root(tmp_path)
+    receipt_path = _bind_pass_capability(tmp_path, matrix)
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    if field == "package_version":
+        receipt["package"]["version"] = value
+    elif field in {"sha256", "bytes"}:
+        receipt["artifact"][field] = value
+    else:
+        receipt[field] = value
+    receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+    matrix_path.write_text(json.dumps(matrix), encoding="utf-8")
+    with pytest.raises(ValueError, match=message):
+        validate_matrix(tmp_path)
+
+
+def test_non_pass_capability_keeps_optional_historical_evidence_boundary(
+    tmp_path: Path,
+) -> None:
+    matrix_path, matrix = _isolated_matrix_root(tmp_path)
+    _bind_pass_capability(tmp_path, matrix)
+    (tmp_path / "historical.json").write_text(
+        json.dumps(
+            {
+                "status": "PASS",
+                "wheel": {
+                    "version": "0.1.0.dev8",
+                    "sha256": "0" * 64,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    for row in matrix["capabilities"]:
+        if row["status"] == "PARTIAL":
+            row["evidence"] = ["historical.json"]
+            break
+    matrix_path.write_text(json.dumps(matrix), encoding="utf-8")
+    validate_matrix(tmp_path)

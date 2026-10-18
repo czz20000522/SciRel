@@ -21,6 +21,8 @@ _PYTHON_SPECIFIER = re.compile(
     r"^(?P<operator>===|~=|==|!=|<=|>=|<|>)"
     r"(?P<version>\d+(?:\.\d+){0,2})(?P<wildcard>\.\*)?$"
 )
+_SHA256_DIGEST = re.compile(r"^[0-9a-f]{64}$")
+_GIT_COMMIT = re.compile(r"^[0-9a-f]{40}$")
 
 
 def _read(path: Path) -> dict[str, Any]:
@@ -134,6 +136,147 @@ def _validate_platform_identity(
     return identifier
 
 
+def _mapping_at(value: object, path: tuple[str, ...]) -> object:
+    """Read a known nested field without accepting arbitrary recursive data."""
+
+    current = value
+    for key in path:
+        if not isinstance(current, dict):
+            return None
+        current = current.get(key)
+    return current
+
+
+def _present_values(value: object, paths: tuple[tuple[str, ...], ...]) -> list[object]:
+    return [candidate for path in paths if (candidate := _mapping_at(value, path)) is not None]
+
+
+def _validate_capability_evidence(
+    root: Path,
+    capability_id: str,
+    evidence: object,
+    *,
+    expected_source_revision: object,
+    expected_package_version: str,
+    expected_wheel_artifact: dict[str, object],
+    required: bool,
+) -> None:
+    """Validate receipt identity for a capability row.
+
+    PASS capability claims are release-bound claims.  A receipt must identify
+    the exact source commit, package version, and wheel bytes selected by
+    ``release/CURRENT.json``.  Older technical receipts may remain in the
+    repository as historical evidence, but cannot support a current PASS row.
+    Non-PASS rows keep their existing boundary: an optional evidence list is
+    only checked for safe, existing repository-relative paths.
+    """
+
+    label = f"capability {capability_id} evidence"
+    if evidence is None:
+        if required:
+            raise ValueError(f"PASS capability requires bound evidence: {capability_id}")
+        return
+    if not isinstance(evidence, list) or (required and not evidence):
+        raise ValueError(f"{label} must be a non-empty list for PASS" if required else f"{label} must be a list")
+
+    paths: list[Path] = []
+    for item in evidence:
+        if not isinstance(item, str) or not item or Path(item).is_absolute():
+            raise ValueError(f"{label} must be repository-relative")
+        path = root / item
+        if not path.is_file():
+            raise ValueError(f"{label} is missing: {item}")
+        paths.append(path)
+
+    if not required:
+        return
+
+    if not isinstance(expected_source_revision, str) or not _GIT_COMMIT.fullmatch(
+        expected_source_revision
+    ):
+        raise ValueError("release CURRENT source_revision is required for PASS capability evidence")
+    expected_sha = expected_wheel_artifact.get("sha256")
+    expected_bytes = expected_wheel_artifact.get("bytes")
+    if (
+        not isinstance(expected_sha, str)
+        or _SHA256_DIGEST.fullmatch(expected_sha) is None
+        or not isinstance(expected_bytes, int)
+        or isinstance(expected_bytes, bool)
+        or expected_bytes < 0
+    ):
+        raise ValueError("release CURRENT wheel artifact is invalid for PASS capability evidence")
+
+    for path in paths:
+        receipt = _read(path)
+        if receipt.get("status") != "PASS":
+            raise ValueError(f"{label} receipt is not PASS: {path}")
+
+        source_values = _present_values(
+            receipt,
+            (
+                ("source_revision",),
+                ("source", "revision"),
+                ("binding", "source_revision"),
+            ),
+        )
+        if not source_values:
+            raise ValueError(f"{label} receipt lacks source_revision: {path}")
+        if any(value != expected_source_revision for value in source_values):
+            raise ValueError(f"{label} receipt source revision differs: {path}")
+        if any(
+            not isinstance(value, str) or _GIT_COMMIT.fullmatch(value) is None
+            for value in source_values
+        ):
+            raise ValueError(f"{label} receipt source revision is invalid: {path}")
+
+        package_values = _present_values(
+            receipt,
+            (
+                ("package_version",),
+                ("package", "version"),
+                ("wheel", "version"),
+                ("validation", "package", "version"),
+                ("validation", "wheel", "version"),
+                ("validation", "package_version"),
+            ),
+        )
+        if not package_values:
+            raise ValueError(f"{label} receipt lacks package version: {path}")
+        if any(value != expected_package_version for value in package_values):
+            raise ValueError(f"{label} receipt package version differs: {path}")
+        if any(not isinstance(value, str) or not value for value in package_values):
+            raise ValueError(f"{label} receipt package version is invalid: {path}")
+
+        artifact_values = [
+            candidate
+            for candidate in (
+                _mapping_at(receipt, ("artifact",)),
+                _mapping_at(receipt, ("wheel",)),
+                _mapping_at(receipt, ("validation", "artifact")),
+                _mapping_at(receipt, ("validation", "wheel")),
+            )
+            if isinstance(candidate, dict)
+            and ("sha256" in candidate or "bytes" in candidate)
+        ]
+        if not artifact_values:
+            raise ValueError(f"{label} receipt lacks wheel sha256/bytes: {path}")
+        for artifact in artifact_values:
+            sha = artifact.get("sha256")
+            size = artifact.get("bytes")
+            if (
+                not isinstance(sha, str)
+                or _SHA256_DIGEST.fullmatch(sha) is None
+                or not isinstance(size, int)
+                or isinstance(size, bool)
+                or size < 0
+            ):
+                raise ValueError(f"{label} receipt wheel identity is invalid: {path}")
+            if sha != expected_sha:
+                raise ValueError(f"{label} receipt wheel sha256 differs: {path}")
+            if size != expected_bytes:
+                raise ValueError(f"{label} receipt wheel bytes differs: {path}")
+
+
 def validate_matrix(root: Path = ROOT) -> dict[str, Any]:
     path = root / "release/platform-support-matrix.json"
     matrix = _read(path)
@@ -146,6 +289,12 @@ def validate_matrix(root: Path = ROOT) -> dict[str, Any]:
     project_version = project.get("project", {}).get("version")
     if matrix["package_version"] != project_version or matrix["package_version"] != current.get("version"):
         raise ValueError("platform matrix package_version differs from project/current release")
+    current_wheel = current.get("wheel")
+    current_wheel_artifact = (
+        current_wheel.get("artifact") if isinstance(current_wheel, dict) else None
+    )
+    if not isinstance(current_wheel_artifact, dict):
+        raise ValueError("release CURRENT wheel artifact is missing")
     binding = matrix["runtime_binding"]
     if not isinstance(binding, dict) or binding.get("release_tuple") != "release/CURRENT.json":
         raise ValueError("platform matrix runtime_binding.release_tuple is invalid")
@@ -204,6 +353,15 @@ def validate_matrix(root: Path = ROOT) -> dict[str, Any]:
             raise ValueError(f"capability references undeclared platform: {identifier}")
         if row["status"] == "PASS" and not row.get("reason"):
             raise ValueError(f"PASS capability needs evidence reason: {identifier}")
+        _validate_capability_evidence(
+            root,
+            identifier,
+            row.get("evidence"),
+            expected_source_revision=current.get("source_revision"),
+            expected_package_version=matrix["package_version"],
+            expected_wheel_artifact=current_wheel_artifact,
+            required=row["status"] == "PASS",
+        )
 
     return {
         "schema": matrix["schema"],
