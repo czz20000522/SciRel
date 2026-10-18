@@ -50,6 +50,7 @@ def test_project_contract_keeps_ordinary_optimization_out_of_release_flow():
     assert "canonical direct test 路径" in project_contract
     assert "遵循该入口" in project_contract
     assert "一个主要 claim、一个 owned scope 和一个 stop condition" in project_contract
+    assert "不为每次继续创建 release record" in project_contract
     assert "不因状态查询、继续或不变证据制造新提交" in project_contract
 
 
@@ -87,9 +88,9 @@ def test_lifecycle_keeps_incubation_counts_dynamic_and_release_gates_explicit():
     assert "durable decision, blocker or next action" in lifecycle
     assert "queue of possible claims, not an execution scheduler" in lifecycle
     assert "Release acceptance means the frozen wheel/document/catalog" in lifecycle
-    assert "exact clean ref" in readme
-    assert "source_dirty" in readme
-    assert "same-revision rule applies only when a wheel" in readme
+    assert "exact clean revision" in lifecycle
+    assert "source_dirty" in lifecycle
+    assert "same-revision closure" in lifecycle
     assert "For every task" not in readme
 
 

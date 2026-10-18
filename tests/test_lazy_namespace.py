@@ -89,7 +89,8 @@ assert callable(geometry.sample_rectilinear_field)
 try:
     geometry.scale_patches([], 2)
 except ModuleNotFoundError as error:
-    assert "require Matplotlib" in str(error)
+    assert "optional dependency 'matplotlib'" in str(error)
+    assert "pip install scirel[plot]" in str(error)
 else:
     raise AssertionError("plotting helper unexpectedly ran without Matplotlib")
 ''', str(ROOT / 'src')], capture_output=True, text=True,

@@ -11,6 +11,8 @@ is witnessed on a Rectangle by independent affine coordinate expectations.
 import copy
 import numpy as np
 
+from scirel._optional import import_optional_module
+
 
 def _affine2d(*, matrix=None):
     """Load Matplotlib only when a plotting transform is requested.
@@ -20,15 +22,11 @@ def _affine2d(*, matrix=None):
     an actionable message instead of an import-time failure from
     ``scirel.geometry``.
     """
-    try:
-        from matplotlib import transforms
-    except ModuleNotFoundError as error:
-        if error.name == "matplotlib" or error.name.startswith("matplotlib."):
-            raise ModuleNotFoundError(
-                "scirel.geometry plotting helpers require Matplotlib; "
-                "install Matplotlib before calling this function"
-            ) from error
-        raise
+    transforms = import_optional_module(
+        "matplotlib.transforms",
+        extra="plot",
+        feature="scirel.geometry plotting helpers",
+    )
     if matrix is None:
         return transforms.Affine2D()
     return transforms.Affine2D(matrix=matrix)

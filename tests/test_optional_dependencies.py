@@ -91,6 +91,17 @@ except ModuleNotFoundError as error:
 else:
     raise AssertionError("PDRK presentation unexpectedly ran without Matplotlib")
 """,
+        """
+from scirel.geometry.plotting import scale_patches
+
+try:
+    scale_patches([], 1.0)
+except ModuleNotFoundError as error:
+    assert error.name == "matplotlib"
+    assert "pip install scirel[plot]" in str(error)
+else:
+    raise AssertionError("geometry plotting unexpectedly ran without Matplotlib")
+""",
     ),
 )
 def test_plot_capabilities_report_the_scirel_extra(operation: str) -> None:

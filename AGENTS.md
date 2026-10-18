@@ -7,7 +7,7 @@ SciRel 是长期独立维护的 Python 科学关系库；不要套用相邻 Code
 - 普通任务默认处于 `development`：优化源码、公共 API、依赖边界、测试、文档、基准和构建配置，使用影响范围匹配的检查，并以一个可审阅的 Git change set 收口。
 - “继续”“完成”“审查”“验证”本身不会启动发布流程。没有明确的 consumer、handoff、candidate cut 或 release decision 时，不构建 wheel、不更新 `release/CURRENT.json`、不生成发布回执、不跑全平台矩阵，也不推进 `devN`。
 - 长程 goal 只是待处理 claim 的队列，不是无限执行许可：每次继续只把当前 claim 推到 stop condition；达到 `passed`、`failed`、`blocked` 或 `NOT_RUN` 后收口，没有新的范围或阻塞就不自动启动下一项优化，也不重复同一检查。
-- 普通开发先确定一个主要 claim、一个 owned scope 和一个 stop condition，运行能够决定该 claim 的最小 affected 检查；达到 `passed`、`failed`、`blocked` 或 `NOT_RUN` 后收口。只有结果改变影响范围、暴露具体阻塞或用户明确要求时，才追加更宽测试、wheel、平台、catalog 或 AOCI；若本次产生 durable decision、blocker 或 next action，按收尾约定同步工作台。
+- 普通开发先确定一个主要 claim、一个 owned scope 和一个 stop condition，运行能够决定该 claim 的最小 affected 检查；达到 `passed`、`failed`、`blocked` 或 `NOT_RUN` 后收口。只有结果改变影响范围、暴露具体阻塞或用户明确要求时，才追加更宽测试、wheel、平台、catalog 或 AOCI；若本次产生 durable decision、blocker 或 next action，按收尾约定同步工作台，不为每次继续创建 release record。
 - operators、TaskGraphs、文档和 catalog 的数量随当前 Git 树变化；数量只属于具体 manifest/revision，不是项目永久门禁。需要 wheel、文档和 catalog 时，才从同一个确切 revision 派生并绑定它们。
 - 多个相互关联的小修复可以合并为一个变更批次；Git 历史保存中间状态，不为每个函数或每个文档修订单独制造版本和验收循环。
 - incubation 期间版本号只是 Git 可追溯的开发元数据；首次公开发布时才选择初始 `major.minor`。兼容修复、数值修正、性能优化和内部重构可批量留在同一能力线，只有公共能力或兼容边界的大范围变化才开启新的能力线。
@@ -17,8 +17,6 @@ SciRel 是长期独立维护的 Python 科学关系库；不要套用相邻 Code
 - 非平凡修改或验证任务按 lifecycle reference 先确定 mode、主要 claim 和负责路径，并记录已有脏改动；证据复用及工作记录更新遵循该入口，不因“继续”或状态查询重复验证、重建 wheel 或同步不变状态。
 - 普通开发只要求可审阅的 diff 和与 claim 匹配的检查；提交由用户交付或仓库工作流需要时再做，不因状态查询、继续或不变证据制造新提交。
 - 并行协作时每个可变源码/测试/文档路径只设一个 owner；其他 agent 只并行做独立只读审查、基准或测试。相同路径的编辑、AOCI maintenance、catalog/投影生成必须串行，源码稳定后才取得最终候选；后续编辑会使此前结果失效。
-- 长程 goal 不会自动扩大当前范围；每次继续都重新绑定 mode、主要 claim、owned scope 和 stop condition。达到 `passed`、`failed`、`blocked` 或 `NOT_RUN` 且没有新边界或阻塞时立即收口，不因为“继续”自行构建 wheel、推进版本、跑平台矩阵、重建 catalog 或开始下一轮优化。
-
 - 区分 SciRel 开发项目与用户安装的 `scirel` 包：skill、审核状态、来源工件、开发工具和平台适配属于项目开发/集成层；科学 wheel 只包含所选科学 API、运行实现、必要组件/数据及分发元数据。历史试验不自动进入后续发行或成为永久门禁；仍被引用的来源与许可依据保留可取得。
 - 按 SciPy 式标准库结构维护一个当前源树：`src/scirel`、直接测试、公共文档、构建配置和依赖声明各保留一套 Git 表示；各科学域保持显式导出、可调用文档和直接回归，运行时、可选和开发依赖分层。完整 wheel、文档快照和 catalog 属于按确切 revision 生成的外部投影，不复制进版本目录。
 - 不同整合批次、发行候选和维护版本在确有重叠或需要隔离验收时使用隔离分支/worktree、环境及构建输出；普通小范围开发继续使用当前工作树。以确切提交、审核内容和 wheel 摘要定义版本，不以分支名/worktree 路径定义批准。具体边界见 `docs/design/project-and-distribution.md`；创建 worktree 前检查已有工作区，不覆盖他人未提交修改。
