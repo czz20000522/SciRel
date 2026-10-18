@@ -59,3 +59,18 @@ def test_probe_mode_runs_in_the_same_isolated_source_environment(tmp_path: Path)
 
     assert result["status"] == "PASS"
     assert "numpy" in result["external_import_roots"]
+
+
+def test_probe_mode_records_call_time_scientific_dependency(tmp_path: Path) -> None:
+    probe = tmp_path / "probe.py"
+    probe.write_text(
+        "from scirel.kinetic import evaluate_bessel_gamma\n"
+        "evaluate_bessel_gamma(0, 0.0)\n",
+        encoding="utf-8",
+    )
+
+    result = measure(ROOT, probe=probe)
+
+    assert result["status"] == "PASS"
+    assert "numpy" in result["external_import_roots"]
+    assert "scipy" in result["external_import_roots"]
