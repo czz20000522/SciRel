@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import operator
 import numpy as np
-from scipy.linalg.lapack import zgeev
 
 __all__ = ["solve_fluid_wavevector_eigenproblem"]
 
 
 def _source_runtime_eigvals(matrix):
+    from scipy.linalg.lapack import zgeev
+
     """Return the eigenvalues via the general complex LAPACK driver the source runtime calls.
 
     The frozen source ``em3d_Lpole.m:238`` evaluates ``d = eig(matM)`` in Octave. For a

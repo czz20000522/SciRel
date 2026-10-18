@@ -127,6 +127,22 @@ assert "scipy" not in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_fluid_wavevector_export_defers_lapack_until_solve() -> None:
+    result = _run(
+        """
+import sys
+import numpy as np
+from scirel.kinetic import solve_fluid_wavevector_eigenproblem
+
+assert "scipy" not in sys.modules
+output = solve_fluid_wavevector_eigenproblem(matrix=np.array([[1.0 + 1.0j]]), kn=1.0)
+assert output["returned_count"] == 1
+assert "scipy" in sys.modules
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_lazy_exports_preserve_identity_for_the_remaining_domains() -> None:
     result = _run(
         """
