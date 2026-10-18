@@ -577,6 +577,13 @@ def test_unknown_script_still_fails_closed_to_the_full_suite():
     assert result["reasons"][0]["classification"] == "unclassified_change"
 
 
+def test_native_reachability_audit_selects_its_direct_contract():
+    result = select("scripts/audit_native_resource_reachability.py")
+
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == ["tests/test_native_resource_reachability.py"]
+
+
 def test_https_runner_selects_only_listener_test():
     result = select("scripts/run_scirel_https.py")
 

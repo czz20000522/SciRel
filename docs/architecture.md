@@ -26,7 +26,7 @@ wheel 的 patch 或 dev 维护批次也在该主线上产生新的兼容 wheel�
 
 开发包顶层仅导出领域模块；科学函数和异常类型位于各自子包，不再同时复制到 `scirel` 顶层。当前项目尚未发布、没有外部用户，调整 API 时同步更新调用方和文档，不为旧入口保留无实际消费者的别名、弃用包装或回退层。历史冻结工件继续按原字节保存，后续构建采用新的入口边界。
 
-顶层使用 Python 模块 `__getattr__` 按需加载并缓存领域模块。`import scirel` 和 `dir(scirel)` 不导入科学后端；`from scirel import field` 加载该领域及其真实传递依赖。调用使用 `field.solve_multi_coil_vacuum_field` 或正式函数页的完整模块路径。`from scirel import *` 会加载声明的全部领域，不应作为按需加载的使用方式。
+顶层使用 Python 模块 `__getattr__` 按需加载并缓存领域模块。`import scirel` 和 `dir(scirel)` 不导入科学后端；`from scirel import field` 只加载该领域 facade，访问具体 API 时才加载其真实传递依赖。调用使用 `field.solve_multi_coil_vacuum_field` 或正式函数页的完整模块路径。`from scirel import *` 会加载声明的全部领域 facade，不应作为按需加载的使用方式。
 
 子包边界、按需导入与独立分发是不同层次。目前普通开发 wheel 仍包含 `scirel.*`，运行依赖仍由 `pyproject.toml` 声明。仅拆目录或延迟导入不会减小 wheel 或取消 NumPy/SciPy/Matplotlib 依赖。后续若引入可选依赖或独立分发，必须先核对传递依赖、共享实现与安装兼容性，并分别验证所选能力闭包；已资格化的精确发行继续使用自己的导出和验证记录。
 
