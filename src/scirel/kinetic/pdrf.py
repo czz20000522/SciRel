@@ -35,7 +35,6 @@ import operator
 from pathlib import Path
 
 import numpy as np
-from scipy import linalg
 
 from scirel._optional import import_optional_module
 
@@ -349,6 +348,12 @@ def solve_pdrf_spectrum(M, A, *, vectors=False, oldmethod=2, scales=None, output
     As = A/scale[:, None]*scale[None, :]
     if not np.isfinite(Ms).all() or not np.isfinite(As).all():
         raise ValueError("scaled matrices must be finite")
+    # SciPy is a core runtime dependency, but only spectrum solving needs its
+    # linear-algebra backend. Keep state initialization and matrix assembly
+    # usable without importing the heavy backend, and preserve all input
+    # validation before the backend boundary.
+    from scipy import linalg
+
     radix = linalg.matrix_balance(Ms, permute=False, separate=True)[1][0]
     Ms = Ms/radix[:, None]*radix[None, :]
     As = As/radix[:, None]*radix[None, :]
