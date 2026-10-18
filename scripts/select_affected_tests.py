@@ -332,7 +332,24 @@ def _load_catalog_assets(
         except (UnicodeDecodeError, json.JSONDecodeError) as error:
             raise ValueError("release document selection is not valid JSON") from error
         selection_digest = hashlib.sha256(selection_bytes).hexdigest()
-        recorded_selection_digest = documentation.get("selection_sha256")
+        # Development selection follows the live catalog.  A named candidate
+        # may still request the release tuple's selection digest, but only when
+        # the caller binds the same selection path and source revision; an
+        # arbitrary checkpoint must remain self-contained.
+        recorded_selection_digest = None
+        if CURRENT_RELEASE.is_file():
+            try:
+                current = json.loads(CURRENT_RELEASE.read_text(encoding="utf-8"))
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+                raise ValueError("release/CURRENT.json is not valid JSON") from error
+            documentation = current.get("documentation")
+            current_revision = current.get("source_revision")
+            if (
+                isinstance(documentation, dict)
+                and documentation.get("source_documents") == selection_ref
+                and (source_revision is None or source_revision == current_revision)
+            ):
+                recorded_selection_digest = documentation.get("selection_sha256")
         if recorded_selection_digest is not None:
             if (
                 not isinstance(recorded_selection_digest, str)

@@ -936,7 +936,12 @@ def test_current_asset_index_uses_canonical_documents():
 def test_post_candidate_asset_index_reads_bound_selection_and_documents():
     """A post-candidate checkout must use the CURRENT source revision as its catalog baseline."""
     namespace = runpy.run_path(str(SELECTOR))
-    catalog_assets = namespace["_load_catalog_assets"]()
+    current = json.loads((ROOT / "release/CURRENT.json").read_text(encoding="utf-8"))
+    documentation = current["documentation"]
+    catalog_assets = namespace["_load_catalog_assets"](
+        selection_ref=documentation["source_documents"],
+        source_revision=current["source_revision"],
+    )
 
     small_k = next(
         asset
@@ -961,6 +966,8 @@ def test_post_candidate_asset_index_reads_bound_selection_and_documents():
 def test_post_candidate_bound_document_digest_drift_fails_closed(monkeypatch):
     namespace = runpy.run_path(str(SELECTOR))
     original = namespace["_bound_git_blob_bytes"]
+    current = json.loads((ROOT / "release/CURRENT.json").read_text(encoding="utf-8"))
+    documentation = current["documentation"]
 
     def corrupt_document(root, revision, relative, *, field):
         value = original(root, revision, relative, field=field)
@@ -974,12 +981,17 @@ def test_post_candidate_bound_document_digest_drift_fails_closed(monkeypatch):
         corrupt_document,
     )
     with pytest.raises(ValueError, match="release document selection digest differs"):
-        namespace["_load_catalog_assets"]()
+        namespace["_load_catalog_assets"](
+            selection_ref=documentation["source_documents"],
+            source_revision=current["source_revision"],
+        )
 
 
 def test_post_candidate_bound_selection_digest_drift_fails_closed(monkeypatch):
     namespace = runpy.run_path(str(SELECTOR))
     original = namespace["_bound_git_blob_bytes"]
+    current = json.loads((ROOT / "release/CURRENT.json").read_text(encoding="utf-8"))
+    documentation = current["documentation"]
 
     def corrupt_selection(root, revision, relative, *, field):
         value = original(root, revision, relative, field=field)
@@ -993,7 +1005,10 @@ def test_post_candidate_bound_selection_digest_drift_fails_closed(monkeypatch):
         corrupt_selection,
     )
     with pytest.raises(ValueError, match="selection binding digest differs"):
-        namespace["_load_catalog_assets"]()
+        namespace["_load_catalog_assets"](
+            selection_ref=documentation["source_documents"],
+            source_revision=current["source_revision"],
+        )
 
 
 def test_shared_corrected_green_keeps_current_consumers():
