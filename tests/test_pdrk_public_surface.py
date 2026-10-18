@@ -45,6 +45,31 @@ assert all(isinstance(namespace[name], ModuleType) for name in expected)
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_pdrk_presentation_modules_do_not_import_scipy_until_called() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-I",
+            "-c",
+            r'''
+import sys
+sys.path.insert(0, sys.argv[1])
+from scirel.kinetic.pdrk import plotting, reference, special
+assert "scipy" not in sys.modules
+assert "scipy.io" not in sys.modules
+assert "scipy.sparse" not in sys.modules
+assert callable(plotting.fluid_plot_scan)
+assert callable(reference.whamp_reference)
+assert callable(special.evaluate_faddeeva_finite_order)
+''',
+            str(ROOT / "src"),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_pdrk_catalog_modules_have_explicit_callable_exports() -> None:
     from scirel.kinetic.pdrk import magnetized, rational, workflows
 

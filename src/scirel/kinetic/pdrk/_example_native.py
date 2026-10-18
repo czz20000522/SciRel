@@ -2,19 +2,19 @@
 from pathlib import Path
 from typing import Mapping
 import numpy as np
-from scipy import sparse
-from ._transport import NativeAction,NativeTransport
 ROOT=Path(__file__).resolve().parent/'_native'
 PLOT=('figure_native','figure_png','line_x','line_y','line_offsets','line_axes','line_width','line_markers','axes_limits','legend_labels')
-ACTIONS={
- 'fluid_plot':NativeAction('examples/fluid_plot_scan.m',('plot_line_count','plot_surface_count','png_bytes'),('s','method','kk','tt','kkx','kkz','ww1','ww2','c2','ms','betasz','betasp','k','tmpcwp','tmpwcs1','capture_png'),('examples',)),
- 'em_plot':NativeAction('examples/em1d_plot.m',PLOT,('predecessor_figure','k','wre','wie','cwp','wcs1','pm'),('examples',)),
- 'whamp_data':NativeAction('examples/whamp_data.m',('whpdat','kxwhp','kzwhp','wrwhp','wiwhp'),(),('examples',)),
- 'whamp_overlay':NativeAction('examples/whamp_overlay.m',(*PLOT,'whpdat','kxwhp','kzwhp','wrwhp','wiwhp'),('predecessor_figure',),('examples',)),
- 'finiteN':NativeAction('finiteN/action.m',('w',),('z','N'),('finiteN',))}
+_ACTION_SPECS={
+ 'fluid_plot':('examples/fluid_plot_scan.m',('plot_line_count','plot_surface_count','png_bytes'),('s','method','kk','tt','kkx','kkz','ww1','ww2','c2','ms','betasz','betasp','k','tmpcwp','tmpwcs1','capture_png'),('examples',)),
+ 'em_plot':('examples/em1d_plot.m',PLOT,('predecessor_figure','k','wre','wie','cwp','wcs1','pm'),('examples',)),
+ 'whamp_data':('examples/whamp_data.m',('whpdat','kxwhp','kzwhp','wrwhp','wiwhp'),(),('examples',)),
+ 'whamp_overlay':('examples/whamp_overlay.m',(*PLOT,'whpdat','kxwhp','kzwhp','wrwhp','wiwhp'),('predecessor_figure',),('examples',)),
+ 'finiteN':('finiteN/action.m',('w',),('z','N'),('finiteN',))}
 def state(x):return x.state if hasattr(x,'state')else x
 
 def source_numeric(value):
+    from scipy import sparse
+
     if sparse.issparse(value):
         target=np.complex128 if value.dtype.kind=='c'else np.float64
         already=(value.dtype.kind=='f'and value.dtype.itemsize==8)or(value.dtype.kind=='c'and value.dtype.itemsize==16)
@@ -25,7 +25,10 @@ def source_numeric(value):
     return value
 
 def invoke(name,ports,transport=None):
-    return (transport or NativeTransport(ROOT,ACTIONS)).invoke(name,{k:v if k=='predecessor_figure'else source_numeric(v)for k,v in ports.items()})
+    from ._transport import NativeAction,NativeTransport
+
+    actions={key:NativeAction(*spec) for key,spec in _ACTION_SPECS.items()}
+    return (transport or NativeTransport(ROOT,actions)).invoke(name,{k:v if k=='predecessor_figure'else source_numeric(v)for k,v in ports.items()})
 
 def fluid_deck():return np.loadtxt(ROOT/'examples/pdrf_SI.in',skiprows=1,ndmin=2)
 def fluid_plot_scan(scan,equilibrium,*,method=2,tmpcwp=None,tmpwcs1=None,capture_png=False,transport=None):

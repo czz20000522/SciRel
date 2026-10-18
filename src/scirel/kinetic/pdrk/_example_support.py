@@ -8,7 +8,6 @@ for a different physical setup. Rights status remains unresolved for redistribut
 """
 import numpy as np
 from . import _example_native as _d1
-from ._fluid_parallel import normalize_plot_coordinates
 
 def fluid_deck():
     """Source ten-column SI default deck as packaged data, returned independently."""
@@ -24,6 +23,8 @@ def fluid_plot_scan(graph,state,*,method=2,length_scale_m=None,frequency_scale_r
     Undefined zero-B beta remains None scientifically; empty MATports in renderer
     mean no defined beta annotation, never an invented zero beta.
     """
+    from ._fluid_parallel import normalize_plot_coordinates
+
     normalize_plot_coordinates([0.],[0.],length_scale_m=length_scale_m,frequency_scale_rad_s=frequency_scale_rad_s)
     if method!=2 and length_scale_m is not None:raise ValueError('source methods3/4 plot SI/radian axes; normalization here is method2-only')
     w1=np.asarray(graph['w1']);w2=np.asarray(graph['w2']);axes=graph['axis_values']
