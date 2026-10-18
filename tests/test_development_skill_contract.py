@@ -52,6 +52,7 @@ def test_project_contract_keeps_ordinary_optimization_out_of_release_flow():
     assert "一个主要 claim、一个 owned scope 和一个 stop condition" in project_contract
     assert "不为每次继续创建 release record" in project_contract
     assert "不因状态查询、继续或不变证据制造新提交" in project_contract
+    assert "skill/AGENTS 维护与候选 diff 审查可以同轮进行" in project_contract
 
 
 def test_lifecycle_requires_selector_visible_regressions():
@@ -88,6 +89,9 @@ def test_lifecycle_keeps_incubation_counts_dynamic_and_release_gates_explicit():
     assert "durable decision, blocker or next action" in lifecycle
     assert "queue of possible claims, not an execution scheduler" in lifecycle
     assert "Release acceptance means the frozen wheel/document/catalog" in lifecycle
+    assert "only a named `integration_checkpoint` whose consumer or handoff needs an artifact" in lifecycle
+    assert "previous release tuple, wheel, document" in lifecycle
+    assert "generic requests to continue, review, verify or refresh do not create that route" in lifecycle
     assert "exact clean revision" in lifecycle
     assert "source_dirty" in lifecycle
     assert "same-revision closure" in lifecycle

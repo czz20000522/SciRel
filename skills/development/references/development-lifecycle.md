@@ -10,12 +10,6 @@ platforms remain `NOT_RUN` unless a named checkpoint, explicit platform claim,
 or release claim exercises them; a local macOS or Windows result must not be
 generalized to this baseline.
 
-A long-running goal is a queue of possible claims, not an execution scheduler.
-One development turn closes one bounded change set. Once its claim reaches the
-stop condition, do not start another optimization, rebuild an unchanged
-artifact or replay an unchanged gate without a new claim or an explicit owner
-request.
-
 ## Default: development
 
 Use the current Git worktree as the development truth. New operators,
@@ -24,13 +18,10 @@ denominator. Generate or update the development catalog only when a named
 discovery handoff or another task actually needs that projection; do not rebuild
 the full catalog after every source or document edit.
 
-This mode is an optimization loop. Before the first public release, a request
-to continue, finish, review or verify remains ordinary development unless it
-also names a consumer, handoff, candidate cut or release decision. Do not turn
-an internal performance, import, API, dependency or documentation improvement
-into wheel installation, release-current updates, platform receipts or a full
-acceptance run. Those artifacts are produced only by the lifecycle mode that
-needs them.
+Before the first public release, unqualified work remains in `development`.
+Ordinary optimization does not produce release projections or a full
+acceptance run; select a named checkpoint or `release_freeze` when that output
+is needed.
 
 Use this impact rule for the daily loop:
 
@@ -39,9 +30,9 @@ Use this impact rule for the daily loop:
   dependencies and a focused contract check;
 - a packaging, platform, or native boundary adds a measured closure/install
   check;
-- only a named checkpoint, `release_freeze`, or an explicit user/owner request
-  creates a wheel/document/catalog closure, and only `release_freeze` runs the
-  complete release matrix.
+- only a named `integration_checkpoint` whose consumer or handoff needs an
+  artifact, or `release_freeze`, creates a wheel/document/catalog closure; only
+  `release_freeze` runs the complete release matrix.
 
 In `development`, “验收” means the smallest check that decides the named
 claim. Release acceptance means the frozen wheel/document/catalog and platform
@@ -76,13 +67,14 @@ long-running task continued.
 Use one minimal pass for ordinary work: select the mode and claim, run the
 initial claim-matched check set (the affected selector for code, or the relevant
 document/schema/link check for documentation), inspect the result and stop at
-the supported claim ceiling. Add a wider test, wheel, platform or catalog route
-only when the first result changes the affected scope, exposes a concrete
-blocker or the user names that output. A work-management closeout remains
+the supported claim ceiling. Add a wider test only when the first result
+changes the affected scope or exposes a concrete blocker. Add a wheel,
+document/catalog projection or platform route only when the named checkpoint or
+`release_freeze` requires it; generic requests to continue, review, verify or
+refresh do not create that route. A work-management closeout remains
 appropriate when this task produced a durable decision, blocker or next action
-under the repository's closeout convention. Tool availability, elapsed time and
-the words “continue”, “finish”, “review” or “verify” are not reasons to start a
-companion route.
+under the repository's closeout convention. Tool availability and elapsed time
+are not reasons to start a companion route.
 
 ### Coordination and stopping
 
@@ -94,14 +86,14 @@ source batch before AOCI maintenance, catalog generation, manifest/document
 closure or another source-bound projection; a later edit invalidates that
 result and requires one new final maintenance pass.
 
-A long-running goal does not widen the current task. At each continuation,
+A long-running goal is a queue of possible claims, not an execution scheduler.
+It does not widen the current task. At each continuation,
 rebind the mode, primary claim, owned scope and stop condition. “Continue” or
 “keep going” resumes that scope; it does not authorize a wheel build, version
-change, platform matrix, catalog regeneration or a new optimization search
-unless the user/owner explicitly requests that output or a named checkpoint or
-`release_freeze` requires it. When the claim reaches `passed`, `failed`,
-`blocked` or `NOT_RUN` and no new scope or blocker is present, stop with the
-reviewable diff and evidence already obtained.
+change, platform matrix, catalog regeneration or a new optimization search.
+When the claim reaches `passed`, `failed`, `blocked` or `NOT_RUN` and no new
+scope or blocker is present, stop with the reviewable diff and evidence already
+obtained. A new claim requires a new owner request or a later task turn.
 
 ### SciPy-style change-set loop
 
@@ -161,8 +153,10 @@ installed-wheel smoke only when a named D3 or external consumer needs the
 wheel, or an integration checkpoint explicitly requests it.
 
 Do not update `release/CURRENT.json`, platform receipts or a public version as
-part of ordinary development. Do not treat a buildable wheel as a release
-candidate.
+part of ordinary development. A previous release tuple, wheel, document
+selection or catalog may therefore be stale relative to `HEAD`; record that
+state and leave the projection untouched. Do not treat a buildable wheel or a
+successful alignment check against an older tuple as a release candidate.
 
 If the project has not received an explicit first-public-release decision,
 this mode is the only default. A legacy `0.1.0.devN` value, an old release note,

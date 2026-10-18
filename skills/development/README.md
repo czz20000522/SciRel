@@ -7,9 +7,10 @@ it does not load or link to the decomposition package.
 
 These skills produce candidates, project artifacts and review packets. They do
 not grant human endorsement, redistribution rights or release authority.
-The core and lifecycle references are the canonical development rules; read
-them once per task mode, then load only the sub-skill reference needed for the
-current scope. Do not duplicate the full lifecycle contract in every route.
+The lifecycle reference owns mode, gate, version and artifact decisions; the
+core reference owns the shared D2/D3 evidence contract. Load those references
+only when the current route needs them, then load the sub-skill reference for
+the current scope. Do not load every route or duplicate the lifecycle contract.
 
 Daily work runs in `development` mode by default. Capability counts, documents
 and the development catalog may change with the current Git tree. Candidate
@@ -45,8 +46,9 @@ Within ordinary `development`, use one of two routes:
 
 Batch compatible fixes into one reviewable Git change set. A changed function,
 document or capability count does not require its own version or acceptance
-cycle; use Git history to preserve earlier states and create a new release
-projection only when a named checkpoint or release decision needs one.
+cycle; use Git history to preserve earlier states. A release projection is
+created only for a named checkpoint that needs an artifact or for
+`release_freeze`.
 
 Mode triggers, version handling, closure binding and the pre-publication guard
 are canonical in [the development lifecycle](references/development-lifecycle.md);
@@ -78,8 +80,10 @@ matrix or release automation until measured ABI/native evidence requires it.
 
 For non-trivial edits, validation or artifact/gate work, use the lifecycle
 reference's work-triage, evidence-reuse and stop rules before selecting tools
-or gates. Simple known edits and read-only status queries can use the routing
-shortcut directly.
+or gates. A skill/AGENTS maintenance turn and a candidate diff audit are
+separate claims: the former uses the lightweight skill contract check, while
+the latter is read-only unless it produces a selected product claim. Simple
+known edits and read-only status queries can use the routing shortcut directly.
 
 Delegation keeps one editing owner per mutable path. Parallelize independent
 inspection or measurement only, and serialize source-bound maintenance. For
