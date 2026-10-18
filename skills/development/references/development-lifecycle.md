@@ -140,6 +140,12 @@ reachability audit for native resources. Static non-reachability is a deletion
 candidate, not deletion evidence; retain a resource until dynamic dispatch,
 external entry points and ownership have been checked.
 
+For capability-level dependency work, use the fresh-process capability runtime
+probe when the question is which public callable or caller-owned probe loads
+which external roots. Treat import-only output as import-closure evidence and
+probe-run output as runtime dependency evidence; neither establishes numerical
+correctness or justifies changing core/optional dependencies by itself.
+
 ## Build and test shape
 
 Keep the Git tree, build/install directories, rendered documentation,

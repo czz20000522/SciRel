@@ -584,6 +584,13 @@ def test_native_reachability_audit_selects_its_direct_contract():
     assert result["test_paths"] == ["tests/test_native_resource_reachability.py"]
 
 
+def test_capability_runtime_probe_selects_its_direct_contract():
+    result = select("scripts/measure_capability_runtime.py")
+
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == ["tests/test_capability_import_closure.py"]
+
+
 def test_https_runner_selects_only_listener_test():
     result = select("scripts/run_scirel_https.py")
 

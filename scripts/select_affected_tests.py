@@ -79,6 +79,9 @@ ENGINEERING_TESTS = {
     "scripts/audit_native_resource_reachability.py": (
         "tests/test_native_resource_reachability.py",
     ),
+    "scripts/measure_capability_runtime.py": (
+        "tests/test_capability_import_closure.py",
+    ),
     "skills/development/usage/scirel-solving/scripts/delivery.py": ("tests/test_scientific_delivery.py",),
     "skills/development/usage/scirel-solving/references/delivery-tool.md": ("tests/test_scientific_delivery.py",),
     "skills/development/usage/scientific-asset-navigation/scripts/query.py": ("tests/test_scirel_navigation_query.py",),
