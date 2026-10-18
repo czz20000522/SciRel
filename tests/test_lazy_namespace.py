@@ -159,6 +159,31 @@ assert all(namespace[name] is getattr(kinetic, name) for name in kinetic.__all__
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_fluid_wavevector_scan_defers_graph_dependencies_until_call():
+    result = subprocess.run(
+        [sys.executable, '-I', '-c', '''
+import sys
+
+sys.path.insert(0, sys.argv[1])
+from scirel.kinetic import scan_fluid_wavevectors
+
+assert callable(scan_fluid_wavevectors)
+assert "scirel.kinetic.fluid_wavevector_scan" in sys.modules
+assert not any(
+    name in sys.modules
+    for name in (
+        "scirel.kinetic.fluid_dispersion_matrix",
+        "scirel.kinetic.fluid_wavevector_eigensolve",
+        "scirel.kinetic.gamma_lpole_coefficients",
+        "scirel.kinetic.species_equilibrium_scales",
+        "scirel.kinetic.z_pole_coefficients",
+    )
+)
+''', str(ROOT / 'src')], capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_field_exports_are_lazy_and_preserve_compatibility_identity():
     result = subprocess.run(
         [sys.executable, '-I', '-c', '''

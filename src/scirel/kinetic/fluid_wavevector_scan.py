@@ -18,12 +18,6 @@ from fractions import Fraction
 
 import numpy as np
 
-from .fluid_dispersion_matrix import assemble_fluid_dispersion_matrix
-from .fluid_wavevector_eigensolve import solve_fluid_wavevector_eigenproblem
-from .gamma_lpole_coefficients import get_gamma_lpole_coefficients
-from .species_equilibrium_scales import derive_species_equilibrium_scales
-from .z_pole_coefficients import get_z_pole_coefficients
-
 __all__ = ["scan_fluid_wavevectors"]
 
 
@@ -102,6 +96,15 @@ def scan_fluid_wavevectors(
     keep=5,
 ):
     """Derive the axis and equilibrium state, then scan the fluid dispersion matrix."""
+    # These are graph dependencies, not namespace dependencies.  Resolve them
+    # at call time so discovering the public scan operator does not import five
+    # additional numerical modules or their transitive helpers.
+    from .fluid_dispersion_matrix import assemble_fluid_dispersion_matrix
+    from .fluid_wavevector_eigensolve import solve_fluid_wavevector_eigenproblem
+    from .gamma_lpole_coefficients import get_gamma_lpole_coefficients
+    from .species_equilibrium_scales import derive_species_equilibrium_scales
+    from .z_pole_coefficients import get_z_pole_coefficients
+
     scales = derive_species_equilibrium_scales(
         ms=ms, qs=qs, ns_unit=ns_unit, Ts_unit=Ts_unit, B0=B0, n00=n00, T00=T00
     )
