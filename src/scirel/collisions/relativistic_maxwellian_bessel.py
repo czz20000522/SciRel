@@ -85,13 +85,22 @@ from __future__ import annotations
 
 import math
 
-from scipy.special import kve
-
 __all__ = [
     "BesselBackendEvaluationError",
     "InvalidBesselArgumentError",
     "relativistic_maxwellian_bessel",
 ]
+
+
+def kve(order, argument):
+    """Load SciPy's scaled modified-Bessel backend at the numeric boundary.
+
+    The name remains a module-local seam so the existing backend-failure tests
+    can replace it without importing SciPy while this module is discovered.
+    """
+    from scipy.special import kve as scipy_kve
+
+    return scipy_kve(order, argument)
 
 
 class InvalidBesselArgumentError(ValueError):
