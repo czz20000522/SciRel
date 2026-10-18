@@ -1517,7 +1517,7 @@ scientific-core-documents-20261015-r9.json[FV6L]: F:绑定恢复后260份当前�
 scientific-core-documents-20261015-r10.json[FV6L]: F:固定267份维护合同的文档构建选择与逐字节摘要 | R:code:release/docs/versions/scientific-core-r18.json | A:records包含235算子与32任务图 | S:延续既有260份合同字节，文档选择不等于全输入科学资格。
 scientific-core-documents-20261017-dev9.json[FV6S]: F:记录dev9文档构建使用的精确267项科学文档闭包及每项摘要 | R:code:tools/docs/handbook.json,code:catalog/examples | A:scirel.selected-document-set.v1选择清单，235 operators与32 task graphs | S:选择清单只定义外部构建投影，必须与catalog/examples双向exact match；不复制完整手册或扩大能力分母
 scientific-core-documents-20261018-dev10.json[OV7S]: F:绑定0.1.0.dev10科学核心文档闭包及235个operator与32个task graph选择 | R:code:catalog/examples | A:生成并校验267条文档选择记录及其SHA-256摘要 | S:选择记录必须与当前267份catalog文档及发布wheel/document闭包一致，任何文档或实现版本变化都要重新生成并验收
-scientific-core-documents-20261018-dev11.json[SV7S]: F:绑定SciRel dev11的267项科学文档选择闭包 | R:code:catalog/examples,code:tools/docs/handbook.json | A:235 operators、32 task graphs、267 records及逐条catalog摘要 | S:selection摘要只绑定已存在exact documents，不替代人工审核或公开发行批准
+scientific-core-documents-20261018-dev11.json[SV7S]: F:绑定SciRel dev11的267项科学文档选择闭包及当前catalog摘要 | R:code:catalog/examples,code:tools/docs/handbook.json,code:src/scirel/kinetic/generalized_dispersion.py | A:235 operators、32 task graphs、267 records及逐条catalog摘要；当前generalized-small-k文档digest随canonical export维护更新 | S:selection摘要只绑定已存在exact documents，不替代人工审核或公开发行批准；任何文档字节漂移必须在候选切出前重新绑定
 
 ===/Users/tomczz/Projects/SciReL/src/scirel/configurations/===
 __init__.py[LA5T]: F:公开BRB、TREXCoil与WHAM有限电流丝几何模型 | R:code:src/scirel/configurations/brb.py,code:src/scirel/configurations/wham.py | A:__all__、__getattr__与按需模块加载维持公共类身份 | S:导入配置领域不提前载入NumPy或SciPy；首次访问仍返回底层几何类并保留原失败和默认合同
