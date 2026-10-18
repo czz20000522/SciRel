@@ -49,7 +49,8 @@ from pathlib import PurePosixPath
 try:
     from public_api_binding import implementation_module
 except ModuleNotFoundError:  # imported as ``scripts.validate_installed_wheel`` in tests
-    from scripts.public_api_binding import implementation_module
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from public_api_binding import implementation_module
 
 
 SCHEMA = "scirel.installed-wheel-validation.v1"
