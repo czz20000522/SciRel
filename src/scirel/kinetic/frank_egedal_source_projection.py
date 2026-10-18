@@ -3,7 +3,6 @@ import math
 import numpy as np
 
 from ._loss_cone_modes import regular_even_mode
-from scipy.special import roots_legendre
 
 
 def fractional_mode(degree, xi, n_terms, backend='truncated'):
@@ -49,6 +48,8 @@ def project_frank_egedal_source_modes(params, spectrum_operator=None):
         if coefficients.shape != degrees.shape or not np.all(np.isfinite(coefficients)):
             raise ValueError('source_coefficients must be finite and match legendre_degrees')
     else:
+        from scipy.special import roots_legendre
+
         pitch_angle_degrees = float(params.get('nbi_pitch_angle_deg', 45.0))
         xi_nbi = float(np.clip(math.cos(math.radians(pitch_angle_degrees)), 0.0, xi_tp_mid))
         coefficients = []
