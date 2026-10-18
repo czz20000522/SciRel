@@ -167,6 +167,40 @@ assert "scipy" in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_electromagnetism_defers_scipy_until_numerical_call() -> None:
+    result = _run(
+        """
+import sys
+import numpy as np
+from scirel.electromagnetism.greens import compute_greens
+from scirel.electromagnetism.distributed import get_deltapsi
+
+assert "scipy" not in sys.modules
+compute_greens(np.array([[1.0, 0.0, 1.0]]), np.array([[0.3, 0.2]]))
+assert "scipy" in sys.modules
+
+class Dimension:
+    size = 2
+
+class Variable:
+    dimensions = ("nzeqadim", "nreqadim")
+    units = "A/cm^2"
+
+    def __getitem__(self, key):
+        return np.ones((2, 2))
+
+class Dataset:
+    dimensions = {"nzeqadim": Dimension(), "nreqadim": Dimension()}
+    variables = {"curr_diamcurv_phi": Variable()}
+
+get_deltapsi(Dataset(), np.array([[0.2, 1.0], [0.2, 1.0]]),
+             np.array([[-0.5, -0.5], [0.5, 0.5]]))
+assert "scipy" in sys.modules
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_closures_tabulated_pressure_defers_scipy_until_called() -> None:
     result = _run(
         """

@@ -10,7 +10,6 @@ compatibility quadrature choice, not a finite-wire self-inductance model.
 from __future__ import annotations
 
 import numpy as np
-from scipy.interpolate import LinearNDInterpolator
 
 from .greens import _weighted_psi
 
@@ -63,6 +62,8 @@ def get_deltapsi(data, Req, Zeq):
         )
     if not np.all(np.isfinite(flux)):
         raise FloatingPointError('distributed flux is not finite')
+    from scipy.interpolate import LinearNDInterpolator
+
     targets = np.column_stack((R.ravel(), Z.ravel()))
     result = np.asarray(LinearNDInterpolator(points, flux)(targets))
     # Preserve nodal values exactly: triangulation roundoff must not create a

@@ -9,7 +9,13 @@ that zeros the radial field. No finite-wire or permeability model is implied.
 """
 from __future__ import annotations
 import numpy as np
-from scipy.special import ellipkm1, ellipe, hyp2f1
+
+
+def _load_special_functions():
+    """Load SciPy's elliptic/hypergeometric kernels at numerical call time."""
+    from scipy.special import ellipkm1, ellipe, hyp2f1
+
+    return ellipkm1, ellipe, hyp2f1
 
 
 def _array(value, columns, name):
@@ -44,6 +50,7 @@ def compute_greens(rzw, rz_pts):
             return tuple(np.zeros((0, len(points))) for _ in range(3))
         return tuple(np.stack([v[j] for v in vals]) for j in range(3))
     sources = _array(rzw, 3, 'rzw')
+    ellipkm1, ellipe, hyp2f1 = _load_special_functions()
     out = np.zeros((3, len(points)))
     r, z = points.T
     with np.errstate(over='raise', divide='raise', invalid='raise'):
@@ -108,6 +115,7 @@ def _weighted_psi(rzw, rz_pts, *, zero_self=False, max_pairs=1_000_000):
     active = sources[(sources[:, 0] > 0.0) & (sources[:, 2] != 0.0)]
     if not len(active):
         return result
+    ellipkm1, ellipe, hyp2f1 = _load_special_functions()
     block_size = max(1, min(len(active), int(max_pairs) // max(1, len(points))))
     r = points[:, 0][None, :]
     z = points[:, 1][None, :]
