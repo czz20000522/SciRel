@@ -194,16 +194,18 @@ def _psi_matrix(points, *, max_pairs=1_000_000):
             z0 = block[:, 1, None]
             h = z - z0
             self_mask = (r == a) & (z == z0)
-            # Avoid evaluating the singular self expression; compatibility
-            # values are assigned back to zero after the regular formula.
-            h = np.where(self_mask, 1.0, h)
-            d = np.hypot(r + a, h)
-            q = (np.hypot(r - a, h) / d) ** 2
-            m = 4 * (r / d) * (a / d)
+            valid = ~self_mask
+            a_full = np.broadcast_to(a, self_mask.shape)[valid]
+            r_full = np.broadcast_to(r, self_mask.shape)[valid]
+            h_full = h[valid]
+            # Exclude exact self pairs before evaluating the singular kernel.
+            # This preserves the old off-self call semantics even for extreme
+            # coordinates where substituting a finite sentinel would overflow.
+            d = np.hypot(r_full + a_full, h_full)
+            q = (np.hypot(r_full - a_full, h_full) / d) ** 2
+            m = 4 * (r_full / d) * (a_full / d)
             small = m < 0.5
-            psi = np.zeros_like(m)
-            a_full = np.broadcast_to(a, m.shape)
-            r_full = np.broadcast_to(r, m.shape)
+            values = np.zeros_like(m)
             if np.any(small):
                 ds = d[small]
                 rs = r_full[small]
@@ -214,11 +216,11 @@ def _psi_matrix(points, *, max_pairs=1_000_000):
                 dm = 4 * (a_full[small] / ds) / ds - 2 * ms * (
                     (rs + a_full[small]) / ds
                 ) / ds
-                psi[small] = c * rs**2 * H
+                values[small] = c * rs**2 * H
                 # Keep compute_greens' arithmetic-failure contract even though
                 # get_gpsi only returns psi: its historical implementation
                 # evaluated BR/BZ for every off-self pair as well.
-                _ = c * (rs / ds) * ((h[small] / ds) * (3 * H + 2 * ms * Hp))
+                _ = c * (rs / ds) * ((h_full[small] / ds) * (3 * H + 2 * ms * Hp))
                 _ = c * (
                     (2 - 3 * (rs / ds) * ((rs + a_full[small]) / ds)) * H
                     + rs * Hp * dm
@@ -229,16 +231,17 @@ def _psi_matrix(points, *, max_pairs=1_000_000):
                 ql = q[large]
                 ml = m[large]
                 K, E = ellipkm1(ql), ellipe(1 - ql)
-                psi[large] = 1e-7 * dl * ((2 - ml) * K - 2 * E)
-                rho2 = np.hypot(r_full[large] - a_full[large], h[large]) ** 2
-                _ = 2e-7 * h[large] / (r_full[large] * dl) * (
-                    -K + (a_full[large] ** 2 + r_full[large] ** 2 + h[large] ** 2) / rho2 * E
+                values[large] = 1e-7 * dl * ((2 - ml) * K - 2 * E)
+                rho2 = np.hypot(r_full[large] - a_full[large], h_full[large]) ** 2
+                _ = 2e-7 * h_full[large] / (r_full[large] * dl) * (
+                    -K + (a_full[large] ** 2 + r_full[large] ** 2 + h_full[large] ** 2) / rho2 * E
                 )
                 _ = 2e-7 / dl * (
                     K + ((a_full[large] - r_full[large]) * (a_full[large] + r_full[large])
-                         - h[large] ** 2) / rho2 * E
+                         - h_full[large] ** 2) / rho2 * E
                 )
-            psi[self_mask] = 0.0
+            psi = np.zeros(self_mask.shape, dtype=float)
+            psi[valid] = values
             matrix[:, start:start + len(indices)] = psi.T
 
     if not np.all(np.isfinite(matrix)):
