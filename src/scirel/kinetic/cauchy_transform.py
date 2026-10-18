@@ -9,7 +9,6 @@ also integrated. For a general callback automatic support discovery is impossibl
 import warnings
 import math
 import numpy as np
-from scipy.integrate import quad, IntegrationWarning
 
 
 def _mesh(value):
@@ -99,6 +98,14 @@ def evaluate_cauchy_transform(z,density,*,bounds=None,analytic_density=None,epsa
         raise ValueError('epsabs and epsrel must be finite positive scalars')
     if isinstance(limit,(bool,np.bool_)) or not isinstance(limit,(int,np.integer)) or limit<1:
         raise ValueError('limit must be a positive integer')
+
+    # Keep the numerical backend out of import-time and rejected-input paths.
+    # SciPy remains a required runtime dependency for a valid quadrature call;
+    # loading it here preserves the public function identity and all backend
+    # warning/error semantics while keeping discovery and contract failures
+    # dependency-light.
+    from scipy.integrate import IntegrationWarning, quad
+
     G=np.empty(values.size,dtype=complex); errors=np.empty((values.size,2),dtype=float)
     for index,point in enumerate(values.flat):
         x,h=float(point.real),abs(float(point.imag))
