@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 from scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments, evaluate_frank_egedal_hot_ion_moments as scientific_operator
 def test_rejects_incomplete_moment_state():
@@ -78,3 +79,58 @@ def test_reviewed_relation_example():
         first["hot_perpendicular_shape"][0, 0], second["hot_perpendicular_shape"][0, 0]
     )
     assert first["quadrature"] == {"velocity_nodes": 48, "pitch_nodes": 48}
+
+
+def test_scalar_only_fractional_mode_falls_back_without_contract_change():
+    def scalar_only(degree, xi, terms):
+        xi = np.asarray(xi)
+        if xi.ndim != 2:
+            raise ValueError("scalar-only callback")
+        return 1.0 + float(degree) * xi
+
+    result = evaluate_frank_egedal_hot_ion_moments(
+        np.array([[0.9, 1.0, 1.1], [1.2, 1.0, 0.8]]),
+        {"B0": 1.0, "mirror_ratio": 4.0, "velocity_nodes": 8, "pitch_nodes": 8},
+        [0.5, 1.5],
+        [0.75, -0.2],
+        15,
+        scalar_only,
+    )
+    assert np.all(np.isfinite(result["hot_parallel_shape"]))
+    assert np.all(np.isfinite(result["hot_perpendicular_shape"]))
+
+
+def test_fractional_mode_runtime_errors_are_not_hidden_by_batch_fallback():
+    def broken(degree, xi, terms):
+        raise RuntimeError("fractional mode failed")
+
+    broken._scirel_batch_safe = True
+
+    with pytest.raises(RuntimeError, match="fractional mode failed"):
+        evaluate_frank_egedal_hot_ion_moments(
+            np.array([[0.9, 1.0, 1.1]]),
+            {"B0": 1.0, "mirror_ratio": 4.0, "velocity_nodes": 8, "pitch_nodes": 8},
+            [0.5],
+            [1.0],
+            15,
+            broken,
+        )
+
+
+def test_unmarked_shape_sensitive_callback_keeps_scalar_contract():
+    seen = []
+
+    def shape_sensitive(degree, xi, terms):
+        xi = np.asarray(xi)
+        seen.append(xi.ndim)
+        return np.ones_like(xi) * (1.0 if xi.ndim == 2 else 2.0)
+
+    evaluate_frank_egedal_hot_ion_moments(
+        np.array([[0.9, 1.0, 1.1]]),
+        {"B0": 1.0, "mirror_ratio": 4.0, "velocity_nodes": 8, "pitch_nodes": 8},
+        [0.5],
+        [1.0],
+        15,
+        shape_sensitive,
+    )
+    assert set(seen) == {2}

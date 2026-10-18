@@ -14,6 +14,15 @@ def fractional_mode(degree, xi, n_terms, backend='truncated'):
     return regular_even_mode(degree, xi)
 
 
+def _make_batch_safe_fractional_mode(backend):
+    """Return the internal callback with an explicit batch-contract marker."""
+    def mode(degree, xi, terms):
+        return fractional_mode(degree, xi, terms, backend)
+
+    mode._scirel_batch_safe = True
+    return mode
+
+
 def project_frank_egedal_source_modes(params, spectrum_operator=None):
     """Select fractional degrees and project the NBI source onto them."""
     if not isinstance(params, dict):
@@ -71,5 +80,5 @@ def project_frank_egedal_source_modes(params, spectrum_operator=None):
                 raise RuntimeError('source-mode normalization is not finite and positive')
             coefficients.append(float(fractional_mode(degree, xi_nbi, n_terms, backend))/(4*math.pi*norm))
         coefficients = np.asarray(coefficients)
-    return {'degrees': degrees, 'source_coefficients': coefficients, 'degree_source': degree_source, 'legendre_terms': n_terms, 'legendre_backend': backend, 'xi_tp_mid': xi_tp_mid, 'fractional_mode': lambda degree, xi, terms: fractional_mode(degree, xi, terms, backend)}
+    return {'degrees': degrees, 'source_coefficients': coefficients, 'degree_source': degree_source, 'legendre_terms': n_terms, 'legendre_backend': backend, 'xi_tp_mid': xi_tp_mid, 'fractional_mode': _make_batch_safe_fractional_mode(backend)}
 __all__ = ['project_frank_egedal_source_modes']

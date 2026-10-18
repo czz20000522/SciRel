@@ -30,6 +30,8 @@ def evaluate_frank_egedal_hot_ion_moments(magnetic_field, params, degrees, sourc
     including admissible negative beta. Raw moments are refined before normalization; unresolved or divergent
     quadrature raises RuntimeError. A refinement agreement is a numerical
     estimate, not proof for an arbitrary caller-provided angular callable.
+    Only the internal source-projection callback marked ``_scirel_batch_safe``
+    uses batched field evaluation; unmarked callbacks retain scalar calls.
     This reconstruction does not validate a measured plasma population.
     """
     magnetic_field = np.asarray(magnetic_field, dtype=float)
@@ -71,6 +73,7 @@ def evaluate_frank_egedal_hot_ion_moments(magnetic_field, params, degrees, sourc
     active_powers = beta_m*degrees[source_coefficients != 0]*(degrees[source_coefficients != 0]+1)
     leading_power = float(np.min(active_powers)) if active_powers.size else 0.0
     weighted_endpoint = vc > 0.0 and lower == 0.0 and leading_power > -3.0
+    batch_safe_fractional_mode = bool(getattr(fractional_mode, '_scirel_batch_safe', False))
     def integrals(b, nv, nx):
         xi_tp_loc = math.sqrt(max(0.0, 1.0 - float(b) / max(mirror_ratio, 1e-12)))
         if xi_tp_loc <= 0.0 or xi_tp_mid <= 0.0:
@@ -118,14 +121,164 @@ def evaluate_frank_egedal_hot_ion_moments(magnetic_field, params, degrees, sourc
         density = 4.0 * math.pi * np.sum(weights * density_factor * distribution)
         perpendicular = 2.0 * math.pi * np.sum(weights * pressure_factor * (1.0-xi_2d ** 2) * distribution)
         return tuple((float(max(value, 0.0)) for value in (parallel, perpendicular, density)))
+
+    def integrals_block(b_values, nv, nx):
+        """Evaluate a block of fields when the angular callback is array-aware.
+
+        The callback receives one extra trailing field axis.  Reductions remain
+        per field, so callers that only accept the historical 2-D ``xi`` shape
+        can use the scalar fallback without changing their contract.
+        """
+        b_values = np.asarray(b_values, dtype=float)
+        nb = b_values.size
+        xi_tp_loc = np.sqrt(np.maximum(0.0, 1.0 - b_values / max(mirror_ratio, 1e-12)))
+        # A block can contain fields above the mirror limit.  Let the scalar
+        # path handle that mixed case so those entries keep their per-field
+        # zero result without suppressing valid neighbours.
+        if np.any(xi_tp_loc <= 0.0) or xi_tp_mid <= 0.0:
+            return None
+        from scipy.special import roots_jacobi, roots_legendre
+
+        if weighted_endpoint:
+            speed_nodes, speed_weights = roots_jacobi(nv, 0.0, 2.0 + leading_power)
+            speed = 0.5 * (speed_nodes + 1.0)
+            speed_weights = speed_weights / 2.0 ** (3.0 + leading_power)
+        else:
+            speed_nodes, speed_weights = roots_legendre(nv)
+            speed = 0.5 * ((1.0 - lower) * speed_nodes + 1.0 + lower)
+            speed_weights = 0.5 * (1.0 - lower) * speed_weights
+        pitch_nodes_raw, pitch_weights = roots_legendre(nx)
+        xi_lower = np.sqrt(np.maximum(0.0, 1.0 - b_values))
+        xi = 0.5 * (
+            (xi_tp_loc - xi_lower)[None, :] * pitch_nodes_raw[:, None]
+            + xi_tp_loc[None, :] + xi_lower[None, :]
+        )
+        pitch_weights = 0.5 * (xi_tp_loc - xi_lower) * pitch_weights[:, None]
+        xi0 = np.sqrt(
+            np.clip(
+                (xi[None, :, :] ** 2 - (1.0 - b_values)[None, None, :])
+                / b_values[None, None, :],
+                0.0,
+                xi_tp_mid * xi_tp_mid,
+            )
+        )
+        speed_3d = speed[:, None, None]
+        xi_3d = xi[None, :, :]
+        mode_values = []
+        try:
+            for degree, coefficient in zip(degrees, source_coefficients):
+                if coefficient == 0.0:
+                    mode_values.append(None)
+                    continue
+                values = np.asarray(fractional_mode(degree, xi0, legendre_terms))
+                if values.ndim == 0:
+                    values = np.full(xi0.shape, values, dtype=float)
+                if values.shape != xi0.shape:
+                    return None
+                mode_values.append(values)
+        except (TypeError, ValueError, IndexError) as error:
+            # A callback may keep the historical 2-D contract.  Only errors
+            # that identify an array-shape/ndim incompatibility may select the
+            # scalar fallback; scientific/runtime failures must propagate.
+            message = str(error).lower()
+            shape_markers = (
+                "ndim", "dimension", "shape", "broadcast", "scalar-only",
+                "too many indices", "not enough indices",
+            )
+            if any(marker in message for marker in shape_markers):
+                return None
+            raise
+
+        logc = np.log((1.0 + vc ** 3) / (speed_3d ** 3 + vc ** 3))
+        if weighted_endpoint:
+            total = np.zeros((nv, nx, nb), dtype=float)
+            log_speed = np.log(speed_3d)
+            for (degree, coefficient), values in zip(
+                zip(degrees, source_coefficients), mode_values
+            ):
+                if coefficient == 0.0:
+                    continue
+                power = beta_m * degree * (degree + 1.0)
+                total += coefficient * values * np.exp(
+                    (power / 3.0) * logc
+                    + (power - leading_power) * log_speed
+                )
+            distribution = np.maximum(
+                total / (speed_3d ** 3 + vc ** 3), 0.0
+            )
+            density_factor, pressure_factor = 1.0, speed_3d ** 2
+        else:
+            total = np.zeros((nv, nx, nb), dtype=float)
+            u = np.power(
+                np.clip(
+                    (1.0 + vc ** 3) / (speed_3d ** 3 + vc ** 3) * speed_3d ** 3,
+                    0.0,
+                    None,
+                ),
+                beta_m / 3.0,
+            )
+            for (degree, coefficient), values in zip(
+                zip(degrees, source_coefficients), mode_values
+            ):
+                if coefficient == 0.0:
+                    continue
+                total += coefficient * values * np.power(
+                    u, degree * (degree + 1.0)
+                )
+            distribution = np.maximum(
+                total / (speed_3d ** 3 + vc ** 3), 0.0
+            )
+            density_factor, pressure_factor = speed_3d ** 2, speed_3d ** 4
+        if not np.all(np.isfinite(distribution)):
+            raise FloatingPointError('reference population distribution is not finite at quadrature nodes')
+
+        outputs = np.empty((nb, 3), dtype=float)
+        for index in range(nb):
+            weights = speed_weights[:, None] * pitch_weights[:, index][None, :]
+            if np.ndim(pressure_factor) == 3:
+                pressure_i = pressure_factor[:, :, 0]
+            else:
+                pressure_i = pressure_factor
+            if np.ndim(density_factor) == 3:
+                density_i = density_factor[:, :, 0]
+            else:
+                density_i = density_factor
+            parallel = 4.0 * math.pi * np.sum(
+                weights * pressure_i * xi_3d[:, :, index] ** 2
+                * distribution[:, :, index]
+            )
+            density = 4.0 * math.pi * np.sum(
+                weights * density_i * distribution[:, :, index]
+            )
+            perpendicular = 2.0 * math.pi * np.sum(
+                weights * pressure_i
+                * (1.0 - xi_3d[:, :, index] ** 2)
+                * distribution[:, :, index]
+            )
+            outputs[index] = np.maximum((parallel, perpendicular, density), 0.0)
+        return outputs
+
+    def integrals_many(field_values, nv, nx):
+        field_values = np.asarray(field_values, dtype=float)
+        if field_values.size < 2 or not batch_safe_fractional_mode:
+            return np.asarray([integrals(float(b), nv, nx) for b in field_values])
+        block_size = 32
+        blocks = []
+        for begin in range(0, field_values.size, block_size):
+            block = integrals_block(field_values[begin:begin + block_size], nv, nx)
+            if block is None:
+                return np.asarray([integrals(float(b), nv, nx) for b in field_values])
+            blocks.append(block)
+        return np.concatenate(blocks, axis=0)
+
     fields = np.unique(np.r_[normalized_field.ravel(),1.0])
     nv, nx = velocity_nodes, pitch_nodes
-    previous = np.asarray([integrals(float(b),nv,nx) for b in fields])
+    previous = integrals_many(fields, nv, nx)
     # Compare RAW moments, not normalized ratios: a divergent reference
     # moment can otherwise cancel algebraically and appear converged.
     for refinement in range(32):
         nv, nx = min(2*nv,max_nodes), min(2*nx,max_nodes)
-        current = np.asarray([integrals(float(b),nv,nx) for b in fields])
+        current = integrals_many(fields, nv, nx)
         reference = current[np.searchsorted(fields,1.0)]
         scales = np.maximum(np.maximum(np.abs(current),np.abs(previous)), np.abs(reference)*1e-12)
         differences = np.abs(current-previous)
