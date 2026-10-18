@@ -20,9 +20,10 @@
       "python": "CPython 3.14",
       "status": "PARTIAL",
       "evidence": [
+        "provenance/validation/scirel-dev11-linux-offline-20261018-f4a19bc.json",
         "provenance/validation/scirel-dev11-linux-offline-20261018-47303fe.json"
       ],
-      "scope": "historical dev11 47303fedf04d9ba077fa47af8b7f3f585e9c8411 Linux amd64 + CPython 3.14 clean-venv technical evidence; the current f4a19bc candidate rerun is pending and complete scientific capability closure is not established"
+      "scope": "f4a19bc dev11 Linux amd64 + CPython 3.14.4 clean-venv installation with the exact wheel bound to source f4a19bcc85824507fca7e7e7bfed436e42268410, fixed offline runtime wheelhouse, core and optional plot extra, pip check, representative core tasks, cross-domain task and wheel payload inventory all PASS; complete scientific/native capability closure is not established. Historical 47303fe evidence is retained separately."
     },
     {
       "id": "linux-aarch64-cp314",
@@ -79,7 +80,7 @@
         "macos-arm64-cp314",
         "macos-x86_64-cp314"
       ],
-      "reason": "representative and selected core evidence exists, but a complete per-platform capability matrix is not yet complete; Linux amd64 exact f4a19bc rerun remains pending"
+      "reason": "Exact dev11 installation evidence now exists on Linux amd64 and macOS arm64; a complete per-platform capability matrix and complete scientific capability closure are not yet complete."
     },
     {
       "id": "fluidbw-native-octave",
@@ -88,7 +89,7 @@
         "linux-x86_64-cp314"
       ],
       "runtime": "GNU Octave 7.3.0",
-      "reason": "historical Linux amd64 evidence exists for an older dev8 wheel, but no receipt is bound to the current dev11 source revision and wheel; exact dev11 + GNU Octave 7.3.0 rerun is pending",
+      "reason": "Historical Linux amd64 evidence exists for an older dev8 wheel; exact dev11 + GNU Octave 7.3.0 native rerun is still pending.",
       "evidence": [
         "provenance/validation/fluidbw-amd64-installed.json"
       ]

@@ -23,6 +23,11 @@
     "package_layout": "release/wheel/layout.json",
     "platform_receipts": [
       {
+        "platform": "linux-x86_64-cp314",
+        "path": "provenance/validation/scirel-dev11-linux-offline-20261018-f4a19bc.json",
+        "sha256": "45f6cadbc504934602ecef207931fbb7308e0aef1fbf66997043ab6870ec3408"
+      },
+      {
         "platform": "macos-arm64-cp314",
         "path": "provenance/validation/scirel-dev11-macos-arm64-offline-20261018-f4a19bc.json",
         "sha256": "6144235ea7922552e21d443d25f3f25d64f05264385fdadf10468e9e0c587964"
@@ -57,5 +62,5 @@
     },
     "source_revision": "f4a19bcc85824507fca7e7e7bfed436e42268410"
   },
-  "next_action": "Keep this development candidate untagged until Linux amd64 exact-candidate validation and remaining scientific/platform release gates are explicitly closed."
+  "next_action": "Keep this development candidate untagged until the remaining scientific/native/platform release gates and human/publication decisions are explicitly closed."
 }

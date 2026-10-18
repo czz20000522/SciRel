@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-18T03:32:30Z",
+  "updated_at": "2026-10-18T04:11:57Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -89,9 +89,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "c5b16688db8085daf5f998cbb1c49ba1923afe3b87efd19fd84db586cc4bd424",
-      "size": 622723,
-      "normalized_sha256": "c5b16688db8085daf5f998cbb1c49ba1923afe3b87efd19fd84db586cc4bd424"
+      "sha256": "d15f96bd22c9bc41ab0f16745ce708091f16cdb60fd87d66a6c2028bbc0c6306",
+      "size": 623335,
+      "normalized_sha256": "d15f96bd22c9bc41ab0f16745ce708091f16cdb60fd87d66a6c2028bbc0c6306"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -5979,6 +5979,12 @@
       "size": 21488,
       "normalized_sha256": "1fe11a6521fe6ce7013d3298304b74482f9cfb7a702dfbc874a691bb804d7411"
     },
+    "provenance/validation/scirel-dev11-linux-offline-20261018-f4a19bc.json": {
+      "role": "index",
+      "sha256": "45f6cadbc504934602ecef207931fbb7308e0aef1fbf66997043ab6870ec3408",
+      "size": 21883,
+      "normalized_sha256": "45f6cadbc504934602ecef207931fbb7308e0aef1fbf66997043ab6870ec3408"
+    },
     "provenance/validation/scirel-dev11-macos-arm64-offline-20261018-47303fe.json": {
       "role": "index",
       "sha256": "951eeec34f116c777be6a33c773a997f9a62e72dc16b5acecc4324a5da48a04c",
@@ -6203,9 +6209,9 @@
     },
     "release/CURRENT.json": {
       "role": "index",
-      "sha256": "376258975ba061d2ed523e566adcb235b83f0811415223793c32d9d8ce5bffd0",
-      "size": 2695,
-      "normalized_sha256": "376258975ba061d2ed523e566adcb235b83f0811415223793c32d9d8ce5bffd0"
+      "sha256": "9c333b8ff440ac5ef1434e536ab90644b32dc99c572e3683bfa74c26ec4c52f9",
+      "size": 2929,
+      "normalized_sha256": "9c333b8ff440ac5ef1434e536ab90644b32dc99c572e3683bfa74c26ec4c52f9"
     },
     "release/README.md": {
       "role": "index",
@@ -6299,9 +6305,9 @@
     },
     "release/platform-support-matrix.json": {
       "role": "index",
-      "sha256": "cafec2ea723d0581cae7e7cdfb1ab1cb73b8e717a7782a530bd04755c6899414",
-      "size": 4190,
-      "normalized_sha256": "cafec2ea723d0581cae7e7cdfb1ab1cb73b8e717a7782a530bd04755c6899414"
+      "sha256": "6b4e69b6a76c64269b8e6a8669e02feb04247eff4fc23f64da04094b04f26af8",
+      "size": 4430,
+      "normalized_sha256": "6b4e69b6a76c64269b8e6a8669e02feb04247eff4fc23f64da04094b04f26af8"
     },
     "release/projects/README.md": {
       "role": "index",
