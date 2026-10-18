@@ -984,7 +984,7 @@ __init__.py[LB7T]: F:公开平衡域稳定科学入口并按需加载实现，�
 anisotropic_force_balance.py[KB7S]: F:计算回旋对称压力张量散度、环向电流和平行力及firehose诊断 | R:code:src/scirel/equilibrium/anisotropic_toroidal_current.py | A:compute_anisotropic_force_balance | S:轴上径向力与电流置零；active_mask仅选诊断RMS，不直接遮蔽场或电流
 anisotropic_picard_feedback.py[KB7T]: F:在均匀张量网格松弛单元电流并通过Green反馈磁通场 | R:code:src/scirel/equilibrium/free_boundary_anisotropic_picard.py | A:update_anisotropic_picard_flux | S:relax是旧电流权重；允许降序轴并取面积绝对值，磁场Green两项须同供或同缺
 anisotropic_toroidal_current.py[KB6T]: F:从全张量与各向同性压力力平衡分解环向电流 | R:code:src/scirel/equilibrium/anisotropic_force_balance.py | A:compute_anisotropic_toroidal_current | S:各向同性基线以p_perp替代两压力，曲率项为两次Jphi之差
-axisymmetric_anisotropic_picard.py[AB7S]: F:迭代显式压力闭包、极向场、力平衡和磁通Green更新 | R:code:src/scirel/equilibrium/axisymmetric_picard_update.py,code:src/scirel/equilibrium/anisotropic_force_balance.py | A:solve_axisymmetric_anisotropic_picard | S:磁场低限与终态firehose越界抛错；strict默认拒绝平行不兼容，达迭代上限可返回未收敛
+axisymmetric_anisotropic_picard.py[AB7S]: F:迭代显式压力闭包、极向场、力平衡和磁通Green更新，并提供公开callable使用合同 | R:code:src/scirel/equilibrium/axisymmetric_picard_update.py,code:src/scirel/equilibrium/anisotropic_force_balance.py | A:solve_axisymmetric_anisotropic_picard | S:文档明确R-Z网格、pressure_closure、终态输出和异常边界；磁场低限与终态firehose越界抛错；strict默认拒绝平行不兼容，达迭代上限可返回未收敛
 axisymmetric_picard_update.py[KB7T]: F:按来源顺序离散电流、投影Green磁通并松弛磁通状态 | R:code:src/scirel/equilibrium/axisymmetric_anisotropic_picard.py | A:update_axisymmetric_picard_flux | S:使用首网格间距乘积，relax作用于旧磁通，区别于电流松弛路线；relax必须小于1
 free_boundary_anisotropic_picard.py[AB8M]: F:组合压力闭包、各向异性电流及导体壁修正，迭代完整场和电流状态 | R:code:src/scirel/equilibrium/anisotropic_picard_feedback.py,code:src/scirel/field/ideal_conductor_boundary.py | A:solve_free_boundary_anisotropic_picard；未松弛目标；三类残差；终态重算；相容诊断 | S:壁修正同时作用ψ及磁场导数；每次压力前检查B下界。很小的松弛更新不能停止，须完整未松弛状态闭合且力相容；maxiter零仍评估但不声称收敛
 isotropic_picard_step.py[KB7T]: F:执行一次有限各向同性电流松弛及Green磁通更新并计算归一残差 | R:code:src/scirel/equilibrium/_pressure_current.py | A:pressure_flux_picard_step；均匀RZ网格、每格电流及新磁通 | S:relax=1仅允许显式单步电流不变而非收敛证明；psi_edge非零，残差按其绝对值归一，非有限立即失败
@@ -1220,7 +1220,7 @@ graph.py[TE2T]: F:测试兼容入口把输入交给维护包Frank-Egedal压强�
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/axisymmetric_anisotropic_picard/===
 task_graph.yaml[TB6M]: F:声明轴对称各向异性Picard完整节点、状态反馈及终态合同 | R:code:src/scirel/equilibrium/axisymmetric_anisotropic_picard.py | A:Wb/rad；梯形或显式单元；压力闭包；mask；未松弛残差；有限迭代 | S:电流面积不乘2πR；mask=False禁用；小松弛步只是诊断，返回字段重算自终态ψ
-test_graph_axisymmetric_anisotropic_picard.py[TB6S]: F:验证Picard图的解析电流、终态闭合、动态掩膜及失效边界 | R:code:src/scirel/equilibrium/axisymmetric_anisotropic_picard.py | A:pytest；恒BZ线性压力；节点积分权重；firehose与平行力失败 | S:恒J=.5在声明矩形积分为.08；终态须重查minimum_field并重算压力，不能返回前一轮
+test_graph_axisymmetric_anisotropic_picard.py[TB6S]: F:验证Picard图的解析电流、终态闭合、动态掩膜及失效边界，并锁定公开callable文档字段 | R:code:src/scirel/equilibrium/axisymmetric_anisotropic_picard.py | A:pytest；恒BZ线性压力；节点积分权重；firehose与平行力失败 | S:恒J=.5在声明矩形积分为.08；终态须重查minimum_field并重算压力，不能返回前一轮；docstring断言覆盖r_grid、pressure_closure和FloatingPointError
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/axisymmetric_equilibrium_grid_support/===
 test_graph_axisymmetric_equilibrium_grid_support.py[TB6M]: F:检验网格映射后材料分类的纯有序DAG、两依赖精确绑定、文档端口闭包、分类参数透传及广播坐标值的完整网格一致性 | R:code:src/scirel/geometry/axisymmetric_equilibrium_grid_support.py | A:pytest | S:坐标值、形状和广播轴步长保持受测实现合同；测试不把私有坐标胶水扩大为公共科学入口
