@@ -49,22 +49,10 @@ string, a document count, a clean worktree or the fact that a wheel can be built
 Read [the development lifecycle](development-lifecycle.md) for transition
 triggers and the complete mode boundary.
 
-### Incubation and repository shape
-
-Before the first public release, the repository is an incubation tree. Keep
-one Git source of truth for `src/scirel/`, `docs/`, `tools/`/`scripts/` and
-`pyproject.toml`; use Git history and tags for prior states. Do not create
-versioned copies of the source, handbook, catalog or wheel metadata. Build
-outputs, rendered docs, catalogs and receipts belong outside the source tree
-or in task-local ignored directories and are created only when a named
-consumer or `release_freeze` needs them. A legacy `devN` version is not a
-release schedule and must not be advanced during incubation.
-
-This follows the useful SciPy boundary: source and short release notes live in
-the main repository, build tooling is kept beside the source, runtime extras
-are separated from development/test dependency groups, and generated release
-artifacts are produced from one exact Git ref. SciRel adopts the source and
-provenance boundary without importing SciPy's native build toolchain.
+Lifecycle, version, closure and artifact-binding policy is canonical in
+[the development lifecycle](development-lifecycle.md). Read that reference
+when packaging, documents, catalogs, wheels, native resources or release state
+are in scope; do not duplicate its gates in a task-specific route.
 
 ## Product-development loop
 
@@ -113,11 +101,6 @@ bytes and a manifest proves membership; neither proves scientific correctness.
 Never shrink scope, loosen a tolerance, hide a failure behind a warning, or
 treat one D3 case as library-wide acceptance.
 
-The capability denominator is scoped to the current manifest or exact
-candidate. A historical closure such as `267 documents = 235 operators + 32
-TaskGraphs` is a fact about that snapshot, not a permanent project invariant.
-Adding or removing capabilities in development changes the next manifest.
-
 ## Compact output and evolution
 
 In `development`, return changed scope, checks actually executed, exact
@@ -132,16 +115,8 @@ preserved at lower or better-bounded total cost. A retro records one reusable
 invariant, route, validator or retirement decision; it does not accumulate case
 stories.
 
-Do not increment a development `devN` version for ordinary source, test,
-document or performance commits. Before the first public release, leave the
-historical version label untouched. At the first `release_freeze`, choose the
-initial public version from the actual capability and compatibility boundary;
-after publication, choose maintenance or capability-line changes using the
-batching policy. Keep each frozen wheel/document/catalog tuple immutable
-afterward.
-
-Use the canonical batching policy in
-[`docs/design/scirel-release-batching.md`](../../../docs/design/scirel-release-batching.md):
-advance the capability line for a broad capability or compatibility boundary;
-accumulate compatible fixes, performance work and internal refactors into a
-maintenance batch. A Git commit alone never advances `devN`.
+Use the version and batching policy in
+[the development lifecycle](development-lifecycle.md) and
+[`docs/design/scirel-release-batching.md`](../../../docs/design/scirel-release-batching.md).
+A Git commit, changed count or buildable wheel never advances a version by
+itself.

@@ -46,8 +46,7 @@ update `release/CURRENT.json`, generate a release receipt or run the full
 platform matrix unless a named consumer, owner-requested checkpoint or
 `release_freeze` requires it.
 
-Before the first public release, a legacy `0.1.0.devN` value remains historical
-metadata. Do not increment it or create another release note while integrating
-or optimizing the product. Requests to continue, finish, review or verify keep
-this direct path in `development`; only a named consumer/handoff or an explicit
-release decision can select another lifecycle mode.
+Keep the direct path in `development` unless the task names a consumer,
+handoff or release decision. Use the canonical
+[development lifecycle](../../references/development-lifecycle.md) for version,
+closure and artifact rules; do not reproduce those gates here.

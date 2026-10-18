@@ -12,6 +12,15 @@ denominator. Generate or update the development catalog only when a named
 discovery handoff or another task actually needs that projection; do not rebuild
 the full catalog after every source or document edit.
 
+Treat the capability set as open during incubation. Counts such as
+`267 documents = 235 operators + 32 TaskGraphs` describe one manifest at one
+revision; they are not project-wide invariants and must never be copied into a
+skill as a permanent gate. When a catalog, document selection or wheel is
+actually requested, derive its members and counts from the same current
+manifest. If several artifacts are produced together, bind all of them to one
+exact Git revision and record the derived closure; if no artifact is requested,
+leave the projections alone.
+
 Run the smallest checks that support the claim: affected scientific and
 reverse-dependency tests, public API/import and failure-contract checks, and
 benchmarks when a performance claim is made. A documentation-only change needs
@@ -60,6 +69,13 @@ Do not create a release receipt, platform matrix, full closure report, or
 Notion release record for ordinary development merely because the repository
 contains those tools.
 
+If a change concerns imports, optional dependencies or native files, add only
+the narrow evidence needed for that claim: an import guard or affected import
+test for import cost, a dependency-boundary check for packaging, and a
+reachability audit for native resources. Static non-reachability is a deletion
+candidate, not deletion evidence; retain a resource until dynamic dispatch,
+external entry points and ownership have been checked.
+
 ## Build and test shape
 
 Keep the Git tree, build/install directories, rendered documentation,
@@ -72,6 +88,12 @@ Use the smallest useful test layer first: affected tests, then the relevant
 module/file or consumer smoke, and only `release_freeze` gates for the full
 platform/scientific matrix. Unknown change ownership fails closed to the wider
 test layer; an ordinary known-scope change does not expand to full validation.
+
+For performance work, measure the affected path before and after the change and
+keep correctness checks in the same scope. Delayed imports are appropriate when
+they remove an optional or heavy dependency from an unrelated path; they must
+preserve the public import contract and the failure behavior when that optional
+capability is actually used.
 
 ## Explicit release freeze
 
