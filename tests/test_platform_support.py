@@ -24,6 +24,11 @@ def _isolated_matrix_root(tmp_path: Path) -> tuple[Path, dict[str, object]]:
         evidence = f"evidence-{index}.json"
         row["evidence"] = [evidence]
         (tmp_path / evidence).write_text("{}\n", encoding="utf-8")
+    for index, row in enumerate(matrix["capabilities"]):
+        if "evidence" in row:
+            evidence = f"capability-evidence-{index}.json"
+            row["evidence"] = [evidence]
+            (tmp_path / evidence).write_text("{}\n", encoding="utf-8")
     matrix_path.write_text(json.dumps(matrix), encoding="utf-8")
     return matrix_path, matrix
 
@@ -47,10 +52,12 @@ def _bind_pass_capability(tmp_path: Path, matrix: dict[str, object]) -> Path:
         ),
         encoding="utf-8",
     )
-    for row in matrix["capabilities"]:
-        if row["status"] == "PASS":
-            row["evidence"] = ["capability-receipt.json"]
-            break
+    next(row for row in matrix["capabilities"] if row["id"] == "fluidbw-native-octave")[
+        "status"
+    ] = "PASS"
+    next(row for row in matrix["capabilities"] if row["id"] == "fluidbw-native-octave")[
+        "evidence"
+    ] = ["capability-receipt.json"]
     return receipt_path
 
 
@@ -59,7 +66,7 @@ def test_platform_matrix_is_explicit_and_fail_closed() -> None:
     assert result["platforms"]["linux-x86_64-cp314"] == "PARTIAL"
     assert result["platforms"]["windows-amd64-cp314"] == "NOT_RUN"
     assert result["platforms"]["macos-arm64-cp314"] == "PARTIAL"
-    assert result["capabilities"]["fluidbw-native-octave"] == "PASS"
+    assert result["capabilities"]["fluidbw-native-octave"] == "PARTIAL"
     assert result["capabilities"]["pdrk-native-octave"] == "PARTIAL"
 
 
@@ -115,10 +122,9 @@ def test_platform_matrix_rejects_version_drift(tmp_path: Path) -> None:
 
 def test_pass_capability_requires_current_release_bound_receipt(tmp_path: Path) -> None:
     matrix_path, matrix = _isolated_matrix_root(tmp_path)
-    for row in matrix["capabilities"]:
-        if row["status"] == "PASS":
-            row.pop("evidence", None)
-            break
+    row = next(row for row in matrix["capabilities"] if row["id"] == "fluidbw-native-octave")
+    row["status"] = "PASS"
+    row.pop("evidence", None)
     matrix_path.write_text(json.dumps(matrix), encoding="utf-8")
     with pytest.raises(ValueError, match="requires bound evidence"):
         validate_matrix(tmp_path)
