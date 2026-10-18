@@ -6,7 +6,10 @@ import json
 import shutil
 import subprocess
 import sys
+import tomllib
 from zipfile import ZipFile
+
+from setuptools import find_packages
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -53,11 +56,22 @@ def test_built_scientific_wheel_excludes_project_tool_packages(tmp_path):
         path.startswith("scirel/") or path.split("/", 1)[0].endswith(".dist-info")
         for path in files
     ), sorted(files)
+    config = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    discovery = config["tool"]["setuptools"]["packages"]["find"]
+    packages = find_packages(
+        where=str(ROOT / discovery["where"][0]),
+        include=discovery["include"],
+        exclude=discovery["exclude"],
+    )
     expected_scientific_source = {
         path.relative_to(ROOT / "src").as_posix()
-        for path in (ROOT / "src" / "scirel").rglob("*.py")
+        for package in packages
+        for path in (ROOT / "src" / package.replace(".", "/")).glob("*.py")
     }
     assert expected_scientific_source <= files
+    assert not any(
+        path.startswith("scirel/_framework_compositions/") for path in files
+    )
 
     installed = tmp_path / 'installed'
     subprocess.run(
