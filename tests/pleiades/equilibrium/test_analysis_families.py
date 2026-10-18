@@ -75,6 +75,16 @@ def test_build_basis_public_docstring_declares_contract():
     assert "cubic" in doc
 
 
+def test_basis_matrix_public_docstring_declares_contract():
+    doc = inspect.getdoc(basis.BasisMatrix)
+    assert doc is not None
+    assert "Parameters" in doc
+    assert "Attributes" in doc
+    assert "Returns" in doc
+    assert "Raises" in doc
+    assert "basis_dim" in doc
+
+
 def test_clamped_reference_and_spline_refinement():
     # Natural spline sin(pi*x) has its stated natural boundary at x=0,1.
     errors=[]

@@ -332,6 +332,36 @@ def _spline_basis(spline_fn,**kwargs):
         return [spline_fn(xdata[:,i],ydata[:,i],**kwargs) for i in range(ydata.shape[1])]
 
 class BasisMatrix(object):
+    """Evaluate a selected basis as columns of a design matrix.
+
+    Parameters
+    ----------
+    basis : str
+        Case-insensitive selector passed to :func:`build_basis`.
+    **kwargs
+        Basis-specific construction options.  Polynomial bases accept
+        ``poly_deg`` and ``coeffs``; spline bases accept their knot/domain
+        options and boundary parameters.
+
+    Attributes
+    ----------
+    basis_fns : list of callable
+        The retained basis evaluators in column order.
+    basis_dim : int
+        Number of columns produced for each one-dimensional domain.
+
+    Returns
+    -------
+    BasisMatrix
+        A callable object whose ``matrix(domain)`` result has shape
+        ``(len(domain), basis_dim)``.
+
+    Raises
+    ------
+    KeyError, TypeError, ValueError, NotImplementedError
+        Exceptions from the selected :func:`build_basis` path propagate for
+        unknown selectors, unsupported options or invalid basis data.
+    """
     def __init__(self,basis,**kwargs):
         self._basis_fns = build_basis(basis=basis,**kwargs)
         self._basis_dim = len(self._basis_fns)
