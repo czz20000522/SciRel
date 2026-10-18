@@ -169,6 +169,67 @@ def test_molecular_family_carriers_and_density_branch():
     np.testing.assert_array_equal(clipped["Alpha_H2_P"], np.zeros_like(fi_hat))
 
 
+def test_batched_spatial_contractions_keep_fortran_columns_bitwise():
+    """The batched implementation must equal the source loop per spatial cell."""
+    rng = np.random.default_rng(604)
+    nvr, nvx, nx = 4, 3, 5
+    n = nvr * nvx
+    matrices = [rng.normal(size=(n, n)) for _ in range(4)]
+    fi_base = rng.normal(size=(nvr, nvx, nx * 2))
+    f2_base = rng.normal(size=(nvr, nvx, nx * 2))
+    fh_base = rng.normal(size=(nvr, nvx, nx * 2))
+    fi_hat = fi_base[:, :, ::2]
+    fH2 = f2_base[:, :, ::2]
+    fH = fh_base[:, :, ::2]
+    ni = rng.normal(size=nx)
+    atomic = contract_atomic_hydrogen_alpha_frequencies(
+        *matrices, fi_hat, ni, fH2, fH
+    )
+    molecular = contract_molecular_hydrogen_alpha_frequencies(
+        matrices[0], matrices[1], matrices[2], fH, f2_base[:, :, ::2],
+        fi_hat, ni, ni * 0.25,
+    )
+    expected = {
+        "Alpha_CX": np.empty_like(fi_hat),
+        "Alpha_H_H2": np.empty_like(fi_hat),
+        "Alpha_H_P": np.empty_like(fi_hat),
+        "Alpha_H_H": np.empty_like(fi_hat),
+    }
+    for k in range(nx):
+        expected["Alpha_CX"][:, :, k] = (
+            matrices[0] @ (fi_hat[:, :, k] * ni[k]).reshape(n, order="F")
+        ).reshape((nvr, nvx), order="F")
+        expected["Alpha_H_H2"][:, :, k] = (
+            matrices[2] @ fH2[:, :, k].reshape(n, order="F")
+        ).reshape((nvr, nvx), order="F")
+        expected["Alpha_H_P"][:, :, k] = (
+            matrices[3] @ (fi_hat[:, :, k] * ni[k]).reshape(n, order="F")
+        ).reshape((nvr, nvx), order="F")
+        expected["Alpha_H_H"][:, :, k] = (
+            matrices[1] @ fH[:, :, k].reshape(n, order="F")
+        ).reshape((nvr, nvx), order="F")
+    for name in expected:
+        np.testing.assert_array_equal(atomic[name], expected[name])
+
+    molecular_expected = {
+        "Alpha_CX": np.empty_like(fi_hat),
+        "Alpha_H2_H": np.empty_like(fi_hat),
+        "Alpha_H2_P": np.empty_like(fi_hat),
+    }
+    for k in range(nx):
+        molecular_expected["Alpha_CX"][:, :, k] = (
+            matrices[0] @ (f2_base[:, :, 2 * k] * ni[k] * 0.25).reshape(n, order="F")
+        ).reshape((nvr, nvx), order="F")
+        molecular_expected["Alpha_H2_H"][:, :, k] = (
+            matrices[1] @ fh_base[:, :, 2 * k].reshape(n, order="F")
+        ).reshape((nvr, nvx), order="F")
+        molecular_expected["Alpha_H2_P"][:, :, k] = (
+            matrices[2] @ (fi_hat[:, :, k] * ni[k]).reshape(n, order="F")
+        ).reshape((nvr, nvx), order="F")
+    for name in molecular_expected:
+        np.testing.assert_array_equal(molecular[name], molecular_expected[name])
+
+
 @pytest.mark.parametrize("contract,inputs,distribution_index", [
     (contract_atomic_hydrogen_alpha_frequencies,
      (np.eye(4),) * 4 + (np.ones((2, 2, 1)), np.ones(1),

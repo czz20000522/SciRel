@@ -36,6 +36,19 @@ def _real_array(value, name):
     return result
 
 
+def _batched_matrix_vectors(matrix, field):
+    """Apply one square matrix to every Fortran-order spatial column.
+
+    Each column remains an ``N x 1`` matrix-vector product, preserving the
+    reduction path of the source loop while moving only the spatial axis into
+    a batch dimension.
+    """
+    n_cells = field.shape[2]
+    flat = field.reshape((matrix.shape[0], n_cells), order="F")
+    values = np.matmul(matrix[None, :, :], flat.T[:, :, None]).squeeze(2).T
+    return values.reshape(field.shape, order="F")
+
+
 def contract_atomic_hydrogen_alpha_frequencies(
     SIG_CX, SIG_H_H, SIG_H_H2, SIG_H_P, fi_hat, ni, fH2, fH
 ):
@@ -90,29 +103,11 @@ def contract_atomic_hydrogen_alpha_frequencies(
         if not np.all(np.isfinite(arr)):
             raise ValueError(f"{name} contains a non-finite value")
 
-    Alpha_CX = np.zeros((nvr, nvx, nx))
-    Alpha_H_H2 = np.zeros((nvr, nvx, nx))
-    Alpha_H_P = np.zeros((nvr, nvx, nx))
-    Alpha_H_H = np.zeros((nvr, nvx, nx))
-    Work = np.zeros((nsig,))
-
-    for k in range(nx):
-        # Alpha_CX  (source kinetic_h.py:1041-1042)
-        Work[:] = (fi_hat[:, :, k] * ni[k]).reshape(Work.shape, order="F")
-        Alpha_CX[:, :, k] = (SIG_CX @ Work).reshape(Alpha_CX[:, :, k].shape, order="F")
-
-        # Alpha_H_H2 (source kinetic_h.py:1060-1061)
-        Work[:] = fH2[:, :, k].reshape(Work.shape, order="F")
-        Alpha_H_H2[:, :, k] = (SIG_H_H2 @ Work).reshape(Alpha_H_H2[:, :, k].shape, order="F")
-
-        # Alpha_H_P  (source kinetic_h.py:1075-1076)
-        Work[:] = (fi_hat[:, :, k] * ni[k]).reshape(Work.shape, order="F")
-        Alpha_H_P[:, :, k] = (SIG_H_P @ Work).reshape(Alpha_H_P[:, :, k].shape, order="F")
-
-    # Alpha_H_H (source kinetic_h.py:1163-1165; per-k, 2-D buffer promoted to 3-D)
-    for k in range(nx):
-        Work[:] = fH[:, :, k].reshape(Work.shape, order="F")
-        Alpha_H_H[:, :, k] = (SIG_H_H @ Work).reshape(Alpha_H_H[:, :, k].shape, order="F")
+    fi_weighted = fi_hat * ni[None, None, :]
+    Alpha_CX = _batched_matrix_vectors(SIG_CX, fi_weighted)
+    Alpha_H_H2 = _batched_matrix_vectors(SIG_H_H2, fH2)
+    Alpha_H_P = _batched_matrix_vectors(SIG_H_P, fi_weighted)
+    Alpha_H_H = _batched_matrix_vectors(SIG_H_H, fH)
 
     for name, arr in (("Alpha_CX", Alpha_CX), ("Alpha_H_H2", Alpha_H_H2),
                       ("Alpha_H_P", Alpha_H_P), ("Alpha_H_H", Alpha_H_H)):

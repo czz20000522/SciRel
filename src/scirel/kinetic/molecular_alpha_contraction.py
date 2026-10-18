@@ -49,6 +49,14 @@ def _real_array(value, name):
     return result
 
 
+def _batched_matrix_vectors(matrix, field):
+    """Apply one square matrix to every Fortran-order spatial column."""
+    n_cells = field.shape[2]
+    flat = field.reshape((matrix.shape[0], n_cells), order="F")
+    values = np.matmul(matrix[None, :, :], flat.T[:, :, None]).squeeze(2).T
+    return values.reshape(field.shape, order="F")
+
+
 def contract_molecular_hydrogen_alpha_frequencies(
     SIG_CX, SIG_H2_H, SIG_H2_P, fH, fHp_hat, fi_hat, n, nHP, ni_correct=False
 ):
@@ -113,23 +121,11 @@ def contract_molecular_hydrogen_alpha_frequencies(
     if ni_correct:
         ni = np.maximum((n - nHP), 0)
 
-    Alpha_CX = np.zeros((nvr, nvx, nx))
-    Alpha_H2_H = np.zeros((nvr, nvx, nx))
-    Alpha_H2_P = np.zeros((nvr, nvx, nx))
-    Work = np.zeros((nsig,))
-
-    for k in range(nx):
-        # Alpha_CX (source kinetic_h2.py:1203-1204, Option A, reshape-fixed)
-        Work[:] = (fHp_hat[:, :, k] * nHP[k]).reshape(Work.shape, order="F")
-        Alpha_CX[:, :, k] = (SIG_CX @ Work).reshape(Alpha_CX[:, :, k].shape, order="F")
-
-        # Alpha_H2_H (source kinetic_h2.py:1136-1137)
-        Work[:] = fH[:, :, k].reshape(Work.shape, order="F")
-        Alpha_H2_H[:, :, k] = (SIG_H2_H @ Work).reshape(Alpha_H2_H[:, :, k].shape, order="F")
-
-        # Alpha_H2_P (source kinetic_h2.py:1225-1226)
-        Work[:] = (fi_hat[:, :, k] * ni[k]).reshape(Work.shape, order="F")
-        Alpha_H2_P[:, :, k] = (SIG_H2_P @ Work).reshape(Alpha_H2_P[:, :, k].shape, order="F")
+    fHp_weighted = fHp_hat * nHP[None, None, :]
+    fi_weighted = fi_hat * ni[None, None, :]
+    Alpha_CX = _batched_matrix_vectors(SIG_CX, fHp_weighted)
+    Alpha_H2_H = _batched_matrix_vectors(SIG_H2_H, fH)
+    Alpha_H2_P = _batched_matrix_vectors(SIG_H2_P, fi_weighted)
 
     for name, arr in (("Alpha_CX", Alpha_CX), ("Alpha_H2_H", Alpha_H2_H),
                       ("Alpha_H2_P", Alpha_H2_P)):
