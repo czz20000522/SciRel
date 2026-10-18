@@ -74,27 +74,43 @@ def evaluate_frank_egedal_hot_ion_moments(magnetic_field, params, degrees, sourc
     leading_power = float(np.min(active_powers)) if active_powers.size else 0.0
     weighted_endpoint = vc > 0.0 and lower == 0.0 and leading_power > -3.0
     batch_safe_fractional_mode = bool(getattr(fractional_mode, '_scirel_batch_safe', False))
+    quadrature_key = None
+    quadrature_cached = None
+
+    def get_quadrature_rules(nv, nx):
+        """Return field-independent quadrature nodes and base weights once."""
+        nonlocal quadrature_key, quadrature_cached
+        key = (nv, nx)
+        if key == quadrature_key:
+            return quadrature_cached
+
+        # Keep the public kinetic namespace dependency-light.  The import is
+        # still delayed until a valid quadrature call, while the same rules
+        # are reused across fields and refinement passes in this evaluation.
+        from scipy.special import roots_jacobi, roots_legendre
+
+        if weighted_endpoint:
+            speed_nodes, speed_weights = roots_jacobi(nv, 0.0, 2.0 + leading_power)
+        else:
+            speed_nodes, speed_weights = roots_legendre(nv)
+        pitch_nodes_raw, pitch_weights = roots_legendre(nx)
+        quadrature_key = key
+        quadrature_cached = (speed_nodes, speed_weights, pitch_nodes_raw, pitch_weights)
+        return quadrature_cached
+
     def integrals(b, nv, nx):
         xi_tp_loc = math.sqrt(max(0.0, 1.0 - float(b) / max(mirror_ratio, 1e-12)))
         if xi_tp_loc <= 0.0 or xi_tp_mid <= 0.0:
             return (0.0, 0.0, 0.0)
-        # Keep the public kinetic namespace dependency-light.  All input
-        # validation above must complete before importing the quadrature
-        # backend; invalid calls therefore preserve their old rejection
-        # order without importing SciPy.  The guard above also avoids the
-        # import when this field has no admissible pitch interval.
-        from scipy.special import roots_jacobi, roots_legendre
-
+        speed_nodes, base_speed_weights, pitch_nodes_raw, base_pitch_weights = get_quadrature_rules(nv, nx)
         if weighted_endpoint:
             # Factor the exact small-speed density power v^(2+leading).
             # Gauss-Jacobi resolves integrable singularities near leading=-3
             # without evaluating an overflowing f and vanishing v² separately.
-            speed_nodes, speed_weights = roots_jacobi(nv,0.0,2.0+leading_power)
-            speed, speed_weights = .5*(speed_nodes+1.0), speed_weights/2.0**(3.0+leading_power)
+            speed, speed_weights = .5*(speed_nodes+1.0), base_speed_weights/2.0**(3.0+leading_power)
         else:
-            speed_nodes, speed_weights = roots_legendre(nv)
-            speed, speed_weights = (0.5 * ((1.0-lower)*speed_nodes + 1.0+lower), 0.5*(1.0-lower)*speed_weights)
-        pitch_nodes_raw, pitch_weights = roots_legendre(nx)
+            speed, speed_weights = (0.5 * ((1.0-lower)*speed_nodes + 1.0+lower), 0.5*(1.0-lower)*base_speed_weights)
+        pitch_weights = base_pitch_weights
         # A distribution specified at B0 only supplies orbits reaching B0.
         # For b<1, xi²<1-b would make the invariant xi0 imaginary.
         xi_lower = math.sqrt(max(0.0, 1.0-b))
@@ -137,17 +153,14 @@ def evaluate_frank_egedal_hot_ion_moments(magnetic_field, params, degrees, sourc
         # zero result without suppressing valid neighbours.
         if np.any(xi_tp_loc <= 0.0) or xi_tp_mid <= 0.0:
             return None
-        from scipy.special import roots_jacobi, roots_legendre
-
+        speed_nodes, base_speed_weights, pitch_nodes_raw, base_pitch_weights = get_quadrature_rules(nv, nx)
         if weighted_endpoint:
-            speed_nodes, speed_weights = roots_jacobi(nv, 0.0, 2.0 + leading_power)
             speed = 0.5 * (speed_nodes + 1.0)
-            speed_weights = speed_weights / 2.0 ** (3.0 + leading_power)
+            speed_weights = base_speed_weights / 2.0 ** (3.0 + leading_power)
         else:
-            speed_nodes, speed_weights = roots_legendre(nv)
             speed = 0.5 * ((1.0 - lower) * speed_nodes + 1.0 + lower)
-            speed_weights = 0.5 * (1.0 - lower) * speed_weights
-        pitch_nodes_raw, pitch_weights = roots_legendre(nx)
+            speed_weights = 0.5 * (1.0 - lower) * base_speed_weights
+        pitch_weights = base_pitch_weights
         xi_lower = np.sqrt(np.maximum(0.0, 1.0 - b_values))
         xi = 0.5 * (
             (xi_tp_loc - xi_lower)[None, :] * pitch_nodes_raw[:, None]
