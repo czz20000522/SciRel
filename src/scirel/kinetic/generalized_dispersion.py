@@ -9,11 +9,60 @@ import ast
 import warnings
 
 import numpy as np
-from scipy.integrate import quad, IntegrationWarning
-from scipy.optimize import root
-from .cauchy_transform import evaluate_cauchy_transform
-from .plasma_dispersion import evaluate_plasma_dispersion
-from .maxwellian_electrostatic import evaluate_maxwellian_electrostatic, _susceptibility
+
+
+# Numerical backends stay out of module import and rejected-input paths.  The
+# quadrature names remain injectable for the existing controlled-warning
+# regression without importing SciPy before a valid numerical call.
+quad = None
+IntegrationWarning = None
+root = None
+
+
+def _load_quadrature_backend():
+    global quad, IntegrationWarning
+    if quad is None:
+        from scipy.integrate import quad as _quad
+
+        quad = _quad
+    if IntegrationWarning is None:
+        from scipy.integrate import IntegrationWarning as _IntegrationWarning
+
+        IntegrationWarning = _IntegrationWarning
+    return quad, IntegrationWarning
+
+
+def _load_root_backend():
+    global root
+    if root is None:
+        from scipy.optimize import root as _root
+
+        root = _root
+    return root
+
+
+def _evaluate_cauchy_transform(*args, **kwargs):
+    from .cauchy_transform import evaluate_cauchy_transform
+
+    return evaluate_cauchy_transform(*args, **kwargs)
+
+
+def _evaluate_plasma_dispersion(*args, **kwargs):
+    from .plasma_dispersion import evaluate_plasma_dispersion
+
+    return evaluate_plasma_dispersion(*args, **kwargs)
+
+
+def _evaluate_maxwellian_electrostatic(*args, **kwargs):
+    from .maxwellian_electrostatic import evaluate_maxwellian_electrostatic
+
+    return evaluate_maxwellian_electrostatic(*args, **kwargs)
+
+
+def _maxwellian_susceptibility(*args, **kwargs):
+    from .maxwellian_electrostatic import _susceptibility
+
+    return _susceptibility(*args, **kwargs)
 
 
 class DensityExpression:
@@ -98,19 +147,20 @@ def _transform(z,density,derivative,mesh,bounds=None,analytic=None,epsabs=1e-10)
     for index in np.ndindex(points.shape):
         point=complex(points[index])
         if point.imag:
-            result[index]=evaluate_cauchy_transform(point,density,bounds=bounds,
+            result[index]=_evaluate_cauchy_transform(point,density,bounds=bounds,
                 integration_mesh=mesh,analytic_density=analytic,epsabs=epsabs)['G']
             continue
         x=point.real
         if bounds is not None and not bounds[0]<x<bounds[1]:
             if x in bounds: raise ValueError('real-axis endpoint singularity')
             edges=[*bounds[:1],*mesh,*bounds[1:]]
+            quad_backend, integration_warning = _load_quadrature_backend()
             try:
                 with warnings.catch_warnings():
-                    warnings.simplefilter('error',IntegrationWarning)
-                    value=sum(quad(lambda v:density(v)/(v-x),a,b,epsabs=epsabs,epsrel=1e-10)[0]
+                    warnings.simplefilter('error',integration_warning)
+                    value=sum(quad_backend(lambda v:density(v)/(v-x),a,b,epsabs=epsabs,epsrel=1e-10)[0]
                               for a,b in zip(sorted(set(edges))[:-1],sorted(set(edges))[1:]))
-            except IntegrationWarning as exc:
+            except integration_warning as exc:
                 raise RuntimeError('generalized real-axis quadrature did not converge') from exc
             result[index]=value
             continue
@@ -122,12 +172,13 @@ def _transform(z,density,derivative,mesh,bounds=None,analytic=None,epsabs=1e-10)
             if abs(d)<1e-7: return float(derivative(x))
             return (density(v)-fx*np.exp(-d*d))/d
         edges=sorted(set([-np.inf,*mesh,x,np.inf]))
+        quad_backend, integration_warning = _load_quadrature_backend()
         try:
             with warnings.catch_warnings():
-                warnings.simplefilter('error',IntegrationWarning)
-                value=sum(quad(integrand,a,b,epsabs=epsabs/len(edges),epsrel=1e-10)[0]
+                warnings.simplefilter('error',integration_warning)
+                value=sum(quad_backend(integrand,a,b,epsabs=epsabs/len(edges),epsrel=1e-10)[0]
                           for a,b in zip(edges[:-1],edges[1:]))
-        except IntegrationWarning as exc:
+        except integration_warning as exc:
             raise RuntimeError('generalized principal-value quadrature did not converge') from exc
         result[index]=value+1j*np.pi*fx
     if not np.isfinite(result).all(): raise ValueError('generalized transform is not representable')
@@ -192,7 +243,7 @@ def _gaussian_derivative(points,Z):
             if magnitude<12:
                 value=-2*(1+point*complex(Z[index]))
             elif magnitude<=1e150:
-                value=-_susceptibility(point,1/np.sqrt(2),point)[0]
+                value=-_maxwellian_susceptibility(point,1/np.sqrt(2),point)[0]
             else:
                 inverse=1/wide
                 value=inverse*inverse
@@ -274,7 +325,7 @@ def evaluate_generalized_dispersion(z,selector=0,*,expression='exp(-v.^2)/sqrt(p
         raise ValueError('selector must be an integer from 0 through 6')
     if selector==0:
         if expression in ('exp(-v.^2)/sqrt(pi)','exp(-v**2)/sqrt(pi)'):
-            Z=np.asarray(evaluate_plasma_dispersion(z)['Z'])
+            Z=np.asarray(_evaluate_plasma_dispersion(z)['Z'])
             return {'Z':Z,'Zp':_gaussian_derivative(z,Z)}
         if integration_mesh is None: raise ValueError('custom expression requires integration_mesh')
         return evaluate_generalized_hilbert(z,expression,integration_mesh=integration_mesh)
@@ -317,11 +368,11 @@ def evaluate_gpdf_residual(kind,x,k,*,ion_temperature=1.,ion_mass=1836.,beam_fra
     """
     x=_points(x)
     if not np.isscalar(k) or not np.isreal(k) or not np.isfinite(k) or k<=0: raise ValueError('k must be finite positive scalar')
-    response=lambda q:1+q*evaluate_plasma_dispersion(q)['Z']
-    if kind=='langmuir': return evaluate_maxwellian_electrostatic(x*np.sqrt(2)*k,k)['D']
+    response=lambda q:1+q*_evaluate_plasma_dispersion(q)['Z']
+    if kind=='langmuir': return _evaluate_maxwellian_electrostatic(x*np.sqrt(2)*k,k)['D']
     if kind=='generalized':
         if selector==0 and expression=='exp(-v.^2)/sqrt(pi)':
-            return evaluate_maxwellian_electrostatic(x*np.sqrt(2)*k,k)['D']
+            return _evaluate_maxwellian_electrostatic(x*np.sqrt(2)*k,k)['D']
         return k*k-evaluate_generalized_dispersion(x,selector,expression=expression,integration_mesh=integration_mesh)['Zp']/2
     if kind=='iaw':
         if not np.isfinite([ion_temperature,ion_mass]).all() or min(ion_temperature,ion_mass)<=0: raise ValueError('ion temperature and mass must be positive')
@@ -373,10 +424,10 @@ def scan_gpdf_roots(kind,*,k_values=None,initial_guess=None,residual_tolerance=1
         def residual(parts):
             phase=complex(*parts)
             if kind in ('langmuir','generalized') and parameters.get('selector',0)==0 and parameters.get('expression','exp(-v.^2)/sqrt(pi)')=='exp(-v.^2)/sqrt(pi)':
-                r=complex(evaluate_maxwellian_electrostatic(phase*np.sqrt(2)*k,k)['epsilon'])
+                r=complex(_evaluate_maxwellian_electrostatic(phase*np.sqrt(2)*k,k)['epsilon'])
             else: r=complex(evaluate_gpdf_residual(kind,phase,k,**parameters)/(k*k))
             return [r.real,r.imag]
-        solved=root(residual,[seed.real,seed.imag],method='hybr',options={'xtol':1e-10,'maxfev':int(max_evaluations)})
+        solved=_load_root_backend()(residual,[seed.real,seed.imag],method='hybr',options={'xtol':1e-10,'maxfev':int(max_evaluations)})
         q=complex(*solved.x); norm=np.linalg.norm(residual(solved.x))
         if not solved.success or norm>residual_tolerance or solved.nfev>max_evaluations:
             raise RuntimeError(f'{kind} scan failed at k={k}: residual={norm}; {solved.message}')

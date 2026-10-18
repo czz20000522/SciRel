@@ -197,6 +197,29 @@ assert "scipy" in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_kinetic_generalized_dispersion_defers_backends_until_valid_call() -> None:
+    result = _run(
+        """
+import sys
+import scirel.kinetic.generalized_dispersion as generalized
+
+assert "scipy" not in sys.modules
+generalized.evaluate_gpdf_small_k(0.3)
+assert "scipy" not in sys.modules
+try:
+    generalized.evaluate_generalized_dispersion([], 0)
+except ValueError as error:
+    assert str(error) == "z must be finite nonempty numeric values"
+else:
+    raise AssertionError("invalid generalized-dispersion input unexpectedly succeeded")
+assert "scipy" not in sys.modules
+generalized.evaluate_generalized_dispersion(1j, 0)
+assert "scipy" in sys.modules
+"""
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_kinetic_loss_cone_spectrum_defers_scipy_until_valid_call() -> None:
     result = _run(
         """
