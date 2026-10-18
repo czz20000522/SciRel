@@ -306,6 +306,9 @@ NO_TEST_FILES = {
     "README.md",
 }
 
+COGNITION_MAINTENANCE_PREFIXES = (".aoci/",)
+COGNITION_MAINTENANCE_FILES = {"aoci.txt", "aoci.meta.txt", "aoci.code.txt"}
+
 
 @dataclass(frozen=True)
 class Asset:
@@ -755,6 +758,13 @@ def select(
             reason = "asset_document_contract"
         elif path in NO_TEST_FILES or path.startswith(NO_TEST_PREFIXES):
             reason = "documentation_only"
+        elif path in COGNITION_MAINTENANCE_FILES or path.startswith(
+            COGNITION_MAINTENANCE_PREFIXES
+        ):
+            # AOCI maintenance is a repository-knowledge update.  It does not
+            # change scientific runtime behavior, so it must not turn every
+            # cognition refresh into a full scientific test run.
+            reason = "cognition_maintenance"
         elif path.startswith("tests/fixtures/l1/"):
             path_tests.update(
                 (

@@ -577,6 +577,16 @@ def test_unknown_script_still_fails_closed_to_the_full_suite():
     assert result["reasons"][0]["classification"] == "unclassified_change"
 
 
+def test_aoci_maintenance_does_not_expand_to_scientific_tests():
+    result = select(".aoci/baseline.json", "aoci.code.txt", "aoci.meta.txt")
+
+    assert result["full_suite_required"] is False
+    assert result["test_paths"] == []
+    assert {item["classification"] for item in result["reasons"]} == {
+        "cognition_maintenance"
+    }
+
+
 def test_native_reachability_audit_selects_its_direct_contract():
     result = select("scripts/audit_native_resource_reachability.py")
 
