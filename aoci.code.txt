@@ -935,7 +935,7 @@ __init__.py[LB6T]: F:提供准中性、电势、压力与Hall闭包的领域公�
 boltzmann_quasineutrality.py[KB7T]: F:计算Boltzmann电子密度、压力与对数及相对准中性残差 | R:code:src/scirel/closures/mirror_quasineutral_closure.py | A:compute_boltzmann_electron_state | S:指数截断至±700；对数残差用浮点tiny代替零密度
 hall_two_fluid_pressure.py[KB7T]: F:从压力律和显式粒子轮廓建立Hall漂移所需的双流体状态 | R:code:src/scirel/closures/reduced_hall_drift.py | A:close_hall_two_fluid_pressure | S:未提供离子压力时从总压减电子压；电子密度直接等于离子密度
 mirror_ambipolar_potential.py[KB7S]: F:逐磁通面求解单离子镜约束端损失的双极电势与粒子通量 | R:code:src/scirel/_validation.py | A:solve_mirror_ambipolar_potential;solve/evaluate | S:solve要求正离子补充与成对零密度；最多8轮扩展括区，未收敛抛RuntimeError
-mirror_quasineutral_closure.py[AB7S]: F:组合镜约束离子矩、Boltzmann电子响应、电势求根和总压力状态 | R:code:src/scirel/kinetic/mirror_constrained_moments.py,code:src/scirel/closures/quasineutral_potential.py | A:solve_mirror_quasineutral_closure | S:仅支持正单离子；场必须标量或与psi同形，参考电子和离子密度须同时为零或为正
+mirror_quasineutral_closure.py[AB7S]: F:组合镜约束离子矩、Boltzmann电子响应、电势求根和总压力状态，并提供公开callable使用合同 | R:code:src/scirel/kinetic/mirror_constrained_moments.py,code:src/scirel/closures/quasineutral_potential.py | A:solve_mirror_quasineutral_closure | S:公开callable文档明确psi形状载体、主要字段、返回状态和ValueError/RuntimeError边界；仅支持正单离子，参考电子和离子密度须同时为零或为正
 quasineutral_potential.py[KB7S]: F:对调用者提供的准中性残差执行矢量括区扩展与二分求根 | R:code:src/scirel/closures/mirror_quasineutral_closure.py | A:solve_quasineutral_potential | S:正残差须在根的低电势侧；至少2次迭代，同时满足区间宽度和残差阈值
 quasineutral_reference_density.py[KB6T]: F:按正离子电荷态计算准中性参考电子密度 | R:code:src/scirel/closures/mirror_quasineutral_closure.py | A:compute_reference_electron_density | S:输入有限仍可能乘积溢出，结果溢出单独抛FloatingPointError
 reduced_hall_drift.py[KB7M]: F:由R-Z双流体状态计算Hall漂移、惯性修正环向电流和力平衡诊断 | R:code:src/scirel/closures/hall_two_fluid_pressure.py | A:close_reduced_hall_drift | S:保留来源梯度和hypot数值行为；惯性局部迭代未收敛抛RuntimeError，速度受Mach上限截断
@@ -1251,7 +1251,7 @@ test_graph_isotropic_pressure_flux.py[TB6S]: F:验证压力通量图的共享求
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/mirror_quasineutral_closure/===
 task_graph.yaml[TB6M]: F:声明双温镜动理学矩/Boltzmann电子/括根二分的局部准中性状态反馈和最终总压强组装。 | R:code:src/scirel/closures/mirror_quasineutral_closure.py | A:scientific_task_graph contract | S:电子参考密度仅缺省时计算；最终根重新求矩，非括根或非收敛失败。
-test_graph_mirror_quasineutral_closure.py[TB6S]: F:独立无plug解析电位检验双温镜准中性图，覆盖损失锥、零密度、回调剖面和失败顺序传播。 | R:code:src/scirel/closures/mirror_quasineutral_closure.py | A:pytest | S:电位求根后重算离子/电子再组装压力；求根失败不执行终态组装。
+test_graph_mirror_quasineutral_closure.py[TB6S]: F:独立无plug解析电位检验双温镜准中性图，覆盖损失锥、零密度、回调剖面和失败顺序传播，并锁定公开callable文档字段 | R:code:src/scirel/closures/mirror_quasineutral_closure.py | A:pytest | S:电位求根后重算离子/电子再组装压力；求根失败不执行终态组装；docstring断言覆盖b_t、电势和RuntimeError
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/multi_coil_vacuum_field/===
 task_graph.yaml[TB5S]: F:声明多线圈几何、Green响应与独立驱动的有序真空场组合 | R:code:src/scirel/field/multi_coil_vacuum_field.py | A:scientific_task_graph；SI输入；Wb/rad磁通；分组叠加 | S:current_a不并入丝权重也不按丝数分摊，各组保持独立驱动
