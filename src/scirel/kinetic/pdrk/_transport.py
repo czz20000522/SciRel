@@ -22,8 +22,6 @@ import uuid
 import time
 
 import numpy as np
-from scipy.io import loadmat, savemat
-from scipy import sparse
 
 _NAME = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 _RESERVED = "scirel_transport_"
@@ -88,6 +86,11 @@ def _digest(path: Path) -> str:
 
 
 def _state_value(value: Any) -> Any:
+    # Sparse state validation is part of transport invocation, not module
+    # discovery.  Keep this private helper's SciPy dependency local so the
+    # PDRK transport facade can be inspected without initializing SciPy.
+    from scipy import sparse
+
     if sparse.issparse(value):
         if value.dtype.kind not in "biufc":
             raise TypeError("sparse state requires numeric/logical dtype")
@@ -143,6 +146,8 @@ class NativeTransport:
             working = Path(temporary)
             in_mat, out_mat = working / "input.mat", working / "output.mat"
             driver = working / "driver.m"
+            from scipy.io import savemat
+
             savemat(in_mat, inputs, oned_as="row")
             input_digest = _digest(in_mat)
             script_digest = _digest(script)
@@ -175,6 +180,8 @@ class NativeTransport:
             result: dict[str, Any] = {}
             if error is None:
                 try:
+                    from scipy.io import loadmat
+
                     loaded = loadmat(out_mat, squeeze_me=False, chars_as_strings=True,
                                      mat_dtype=False)
                     if set(k for k in loaded if not k.startswith("__")) != set(action.outputs):

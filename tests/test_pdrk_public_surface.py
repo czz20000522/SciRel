@@ -70,6 +70,35 @@ assert callable(special.evaluate_faddeeva_finite_order)
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_pdrk_transport_defers_scipy_until_state_validation() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-I",
+            "-c",
+            r'''
+import sys
+import numpy as np
+sys.path.insert(0, sys.argv[1])
+import scirel.kinetic.pdrk._transport as transport
+
+assert "scipy" not in sys.modules
+assert "scipy.io" not in sys.modules
+assert "scipy.sparse" not in sys.modules
+
+value = transport._state_value(np.ones(2))
+assert value.shape == (2,)
+assert "scipy.sparse" in sys.modules
+assert "scipy.io" not in sys.modules
+''',
+            str(ROOT / "src"),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_pdrk_catalog_modules_have_explicit_callable_exports() -> None:
     from scirel.kinetic.pdrk import magnetized, rational, workflows
 
