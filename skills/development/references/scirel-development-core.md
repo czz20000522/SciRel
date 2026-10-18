@@ -14,6 +14,30 @@ bindings stop the affected claim as `blocked` or `NOT_RUN` with a concrete
 reopen condition. Never replace an exact candidate with `latest` or infer a
 scientific oracle from a summary.
 
+Before choosing tests or artifacts, bind the work to one lifecycle mode. The
+default is `development`; `integration_checkpoint` and `release_freeze` require
+an explicit task or owner decision. Do not infer a release freeze from a version
+string, a document count, a clean worktree or the fact that a wheel can be built.
+
+- **development**: evolve Git, source, tests, benchmarks, draft documents and
+  the development catalog. Counts are dynamic. Do affected checks and bounded
+  API/scientific checks; do not update `release/CURRENT.json`, create platform
+  receipts or run the full release matrix unless a consumer explicitly needs an
+  installed development wheel.
+- **integration_checkpoint**: close a stable scientific batch or handoff. Check
+  the current working-tree document/catalog closure and affected reverse
+  dependencies. The denominator is the current manifest, not a historical
+  count. Build an installed development wheel only when the declared consumer
+  or D3 case requires it.
+- **release_freeze**: freeze one exact Git revision for a real candidate or
+  public release. Generate the manifest at that revision, derive its operator,
+  TaskGraph and document counts, build wheel/document/catalog artifacts, bind
+  platform receipts and run the release gates. Only this mode advances the
+  public version or writes the current release tuple.
+
+Read [the development lifecycle](development-lifecycle.md) for transition
+triggers and the complete mode boundary.
+
 ## Development boundaries
 
 - D2 may correct determinate scientific defects, compare and normalize
@@ -42,6 +66,11 @@ membership; neither proves scientific correctness. Never shrink scope, loosen a
 tolerance, hide a failure behind a warning, or treat one D3 case as library-wide
 acceptance.
 
+The capability denominator is scoped to the current manifest or exact
+candidate. A historical closure such as `267 documents = 235 operators + 32
+TaskGraphs` is a fact about that snapshot, not a permanent project invariant.
+Adding or removing capabilities in development changes the next manifest.
+
 ## Compact output and evolution
 
 Return exact identities, selected scope and counts, checks actually executed,
@@ -51,3 +80,8 @@ specialist calls, retries, rework and handoff size against the same claim
 boundary. Promote a route change only when the accepted result is preserved at
 lower or better-bounded total cost. A retro records one reusable invariant,
 route, validator or retirement decision; it does not accumulate case stories.
+
+Do not increment a development `devN` version for ordinary source, test,
+document or performance commits. Git identifies development state. Choose the
+candidate or public version once at `release_freeze`, and keep the frozen
+wheel/document/catalog tuple immutable afterward.
