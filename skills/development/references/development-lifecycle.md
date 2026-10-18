@@ -6,8 +6,9 @@ changing version/release state. A simple read-only status lookup can use the
 routing shortcut directly.
 
 The current development baseline is Linux amd64 with CPython 3.14. Other
-platforms remain `NOT_RUN` unless a named checkpoint or release claim exercises
-them; a local macOS or Windows result must not be generalized to this baseline.
+platforms remain `NOT_RUN` unless a named checkpoint, explicit platform claim,
+or release claim exercises them; a local macOS or Windows result must not be
+generalized to this baseline.
 
 ## Default: development
 
@@ -32,8 +33,9 @@ Use this impact rule for the daily loop:
   dependencies and a focused contract check;
 - a packaging, platform, or native boundary adds a measured closure/install
   check;
-- only a named checkpoint or `release_freeze` creates a wheel/document/catalog
-  closure, and only `release_freeze` runs the complete release matrix.
+- only a named checkpoint, `release_freeze`, or an explicit user/owner request
+  creates a wheel/document/catalog closure, and only `release_freeze` runs the
+  complete release matrix.
 
 Do not repeat a larger gate merely because a smaller check passed, and do not
 start a release projection to make a development count look current.
@@ -70,6 +72,25 @@ appropriate when this task produced a durable decision, blocker or next action
 under the repository's closeout convention. Tool availability, elapsed time and
 the words “continue”, “finish”, “review” or “verify” are not reasons to start a
 companion route.
+
+### Coordination and stopping
+
+For each active change set, assign one coordination owner and one editing owner
+to each mutable source path. Parallel agents may inspect independent paths, run
+read-only checks or measure separate baselines, but they must not edit the same
+source/test/document set or run maintenance against it concurrently. Freeze the
+source batch before AOCI maintenance, catalog generation, manifest/document
+closure or another source-bound projection; a later edit invalidates that
+result and requires one new final maintenance pass.
+
+A long-running goal does not widen the current task. At each continuation,
+rebind the mode, primary claim, owned scope and stop condition. “Continue” or
+“keep going” resumes that scope; it does not authorize a wheel build, version
+change, platform matrix, catalog regeneration or a new optimization search
+unless the user/owner explicitly requests that output or a named checkpoint or
+`release_freeze` requires it. When the claim reaches `passed`, `failed`,
+`blocked` or `NOT_RUN` and no new scope or blocker is present, stop with the
+reviewable diff and evidence already obtained.
 
 ### SciPy-style change-set loop
 
@@ -126,7 +147,7 @@ reverse-dependency tests, public API/import and failure-contract checks, and
 benchmarks when a performance claim is made. A documentation-only change needs
 only the relevant schema, link, example or rendering check. Run an
 installed-wheel smoke only when a named D3 or external consumer needs the
-wheel.
+wheel, or an integration checkpoint explicitly requests it.
 
 Do not update `release/CURRENT.json`, platform receipts or a public version as
 part of ordinary development. Do not treat a buildable wheel as a release

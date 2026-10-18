@@ -77,6 +77,11 @@ reference's work-triage, evidence-reuse and stop rules before selecting tools
 or gates. Simple known edits and read-only status queries can use the routing
 shortcut directly.
 
+Delegation keeps one editing owner per mutable path. Parallelize independent
+inspection or measurement only, and serialize source-bound maintenance. For
+continuation and scope rules, use the lifecycle reference rather than adding a
+second copy here.
+
 ## Correctness ownership
 
 SciRel is the correctness boundary for every public operator and TaskGraph. A
