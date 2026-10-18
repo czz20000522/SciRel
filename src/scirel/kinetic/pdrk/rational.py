@@ -173,7 +173,14 @@ def solve_matrix(matrix,*,model='es1d',sp=0,nw=None,wg=0):
   if 'accepted' in r and not np.all(r['accepted']):
    error=ArithmeticError('unqualified finite descriptor modes; inspect attached diagnostics');error.diagnostics=r;raise error
   return r
- is_sparse = type(matrix).__module__.startswith('scipy.sparse.')
+ # Detect SciPy sparse subclasses without importing SciPy for ordinary dense
+ # rejected inputs.  A user-defined subclass has its own ``__module__`` but
+ # keeps the concrete SciPy sparse base in its MRO, which the old
+ # ``scipy.sparse.issparse`` path accepted.
+ is_sparse = any(
+  cls.__module__.startswith('scipy.sparse.')
+  for cls in type(matrix).__mro__
+ )
  M=matrix if is_sparse else np.asarray(matrix,dtype=complex)
  finite_values=M.data if is_sparse else M
  if len(M.shape)!=2 or M.shape[0]!=M.shape[1] or M.shape[0]==0 or not np.isfinite(finite_values).all():raise ValueError('finite square frequency matrix required')

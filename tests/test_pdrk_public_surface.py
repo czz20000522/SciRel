@@ -187,3 +187,18 @@ assert "scipy" in sys.modules
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
+
+def test_pdrk_dense_solver_keeps_user_sparse_subclasses_supported() -> None:
+    import numpy as np
+    from scipy import sparse
+    from scirel.kinetic.pdrk.rational import solve_matrix
+
+    class WrappedCSR(sparse.csr_matrix):
+        pass
+
+    matrix = WrappedCSR(np.diag([1.0 + 0.2j, 2.0 - 0.1j]))
+    result = solve_matrix(matrix)
+
+    assert result["omega"].shape == (2,)
+    assert np.all(np.isfinite(result["backward_residual"]))
+
