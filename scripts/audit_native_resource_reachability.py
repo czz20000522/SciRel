@@ -118,6 +118,17 @@ def _group_entries(group_id: str, files: list[str]) -> tuple[list[str], str]:
     return [], "no declared entrypoint"
 
 
+def _dynamic_entries(group_id: str, files: list[str]) -> list[str]:
+    """Return resources selected by runtime dispatch rather than static calls."""
+
+    if group_id == "fluidbw-octave":
+        # fb_special.m executes feval(method, ...), so the four named response
+        # branches are runtime roots even though no literal call edge exists.
+        names = {"RASY.m", "RINT.m", "RTAY.m", "RYLA.m"}
+        return sorted(path for path in files if Path(path).name in names)
+    return []
+
+
 def audit(root: Path = ROOT, manifest_path: Path = MANIFEST) -> dict[str, Any]:
     manifest = _read_json(manifest_path)
     if manifest.get("schema") != "scirel.native-resource-closure.v1":
@@ -129,8 +140,9 @@ def audit(root: Path = ROOT, manifest_path: Path = MANIFEST) -> dict[str, Any]:
         group_id = group["id"]
         files = sorted(group["files"])
         entrypoints, reason = _group_entries(group_id, files)
-        reachable = set(entrypoints)
-        todo = list(entrypoints)
+        dynamic_entries = _dynamic_entries(group_id, files)
+        reachable = set(entrypoints) | set(dynamic_entries)
+        todo = list(reachable)
         while todo:
             current = todo.pop()
             for target in edges.get(current, ()):
@@ -144,6 +156,7 @@ def audit(root: Path = ROOT, manifest_path: Path = MANIFEST) -> dict[str, Any]:
             reachable.update(files)
         groups[group_id] = {
             "entrypoints": entrypoints,
+            "dynamic_entrypoints": dynamic_entries,
             "entrypoint_reason": reason,
             "reachable_files": sorted(reachable),
             "unreachable_candidates": [] if dynamic_root else sorted(set(files) - reachable),

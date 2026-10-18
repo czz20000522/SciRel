@@ -15,15 +15,18 @@ def test_native_reachability_audit_preserves_full_closure_and_marks_fluid_candid
     assert report["resource_count"] == 117
     fluid = report["groups"]["fluidbw-octave"]
     assert fluid["unreachable_candidates"] == [
-        "_fluidbw_native/RASY.m",
-        "_fluidbw_native/RINT.m",
-        "_fluidbw_native/RTAY.m",
         "_fluidbw_native/fD.m",
         "_fluidbw_native/fDtensor.m",
         "_fluidbw_native/fb_dispersion.m",
         "_fluidbw_native/fb_dispersion_observe.m",
     ]
-    assert len(fluid["reachable_files"]) == 29
+    assert fluid["dynamic_entrypoints"] == [
+        "_fluidbw_native/RASY.m",
+        "_fluidbw_native/RINT.m",
+        "_fluidbw_native/RTAY.m",
+        "_fluidbw_native/RYLA.m",
+    ]
+    assert len(fluid["reachable_files"]) == 32
     assert report["groups"]["pdrk-current-fixtures"]["unreachable_candidates"] == []
     assert report["groups"]["pdrk-rational-legacy"]["unreachable_candidates"] == []
 
