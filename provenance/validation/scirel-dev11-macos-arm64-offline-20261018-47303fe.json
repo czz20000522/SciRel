@@ -614,5 +614,21 @@
         "sha256": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"
       }
     ]
+  },
+  "build": {
+    "byte_identical": true,
+    "first_build": {
+      "sha256": "5dd1d370f4bcf3d42dbaaec8085bbca307a74af6959815f3dd9768a567c2a878",
+      "bytes": 664793
+    },
+    "second_build": {
+      "sha256": "5dd1d370f4bcf3d42dbaaec8085bbca307a74af6959815f3dd9768a567c2a878",
+      "bytes": 664793
+    },
+    "bound_candidate": {
+      "sha256": "5dd1d370f4bcf3d42dbaaec8085bbca307a74af6959815f3dd9768a567c2a878",
+      "bytes": 664793
+    },
+    "matches_bound_candidate": true
   }
 }
