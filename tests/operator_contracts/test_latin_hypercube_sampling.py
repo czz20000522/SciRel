@@ -1,4 +1,13 @@
+import inspect
+
 from scirel.inference.latin_hypercube_sampling import sample_latin_hypercube
+
+
+def test_public_callable_documents_the_catalog_contract():
+    text = inspect.getdoc(sample_latin_hypercube) or ""
+    assert "bounds" in text
+    assert "initial_samples" in text
+    assert "ValueError" in text
 
 
 def test_seeded_strata():
