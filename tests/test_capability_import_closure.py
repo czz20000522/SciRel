@@ -26,6 +26,14 @@ def test_documented_field_capability_reports_import_closure() -> None:
     assert "scirel.equilibrium._anisotropic_numerics" not in result["loaded_scirel_modules"]
 
 
+def test_documented_closure_capability_does_not_load_kinetic_private_helpers() -> None:
+    result = measure(ROOT, asset_id="scirel.closures.boltzmann-quasineutrality")
+
+    assert result["status"] == "PASS"
+    assert "scirel._numerics" in result["loaded_scirel_modules"]
+    assert "scirel.kinetic._mirror_numerics" not in result["loaded_scirel_modules"]
+
+
 def test_direct_pdrk_capability_reports_implementation_path() -> None:
     result = measure(ROOT, asset_id="scirel.kinetic.pdrk-rational-jpole-coefficients")
 

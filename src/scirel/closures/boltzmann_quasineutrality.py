@@ -1,7 +1,7 @@
 """Boltzmann electron response and charge-neutrality residual."""
 from __future__ import annotations
 import numpy as np
-from scirel.kinetic._mirror_numerics import _scaled_difference
+from scirel._numerics import _scaled_difference
 ELEMENTARY_CHARGE_C = 1.602176634e-19
 
 

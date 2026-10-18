@@ -200,6 +200,11 @@ SOURCE_AUXILIARY_TESTS = {
         "tests/operator_contracts/test_anisotropic_force_balance.py",
         "tests/operator_contracts/test_reduced_hall_drift.py",
         "tests/graph_contracts/reduced_hall_anisotropic_picard/test_graph_reduced_hall_anisotropic_picard.py",
+        "tests/operator_contracts/test_boltzmann_quasineutrality.py",
+        "tests/operator_contracts/test_quasineutral_potential.py",
+        "tests/operator_contracts/test_mirror_ambipolar_potential.py",
+        "tests/operator_contracts/test_mirror_gauge_scientific_correction.py",
+        "tests/operator_contracts/test_mirror_constrained_moments.py",
     ),
     "src/scirel/equilibrium/_anisotropic_numerics.py": (
         "tests/operator_contracts/test_anisotropic_force_balance.py",

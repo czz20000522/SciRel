@@ -4,7 +4,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 import numpy as np
-from scirel.kinetic._mirror_numerics import _potential_midpoint
+from scirel._numerics import _potential_midpoint
 
 
 ELEMENTARY_CHARGE_C = 1.602176634e-19
