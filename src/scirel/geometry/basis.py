@@ -123,7 +123,7 @@ class NaturalCubicSpline(CubicSpline):
         d_y=self.d_y
         
         '''Define Matrix'''
-        A=np.matrix(np.zeros((dimension,dimension)))
+        A=np.zeros((dimension,dimension), dtype=float)
         for i in range(0,dimension-1):
             A[i,i]=2*(1/d_x[i]+1/d_x[i-1])
             A[i+1,i]=1/d_x[i]
@@ -132,7 +132,7 @@ class NaturalCubicSpline(CubicSpline):
         A[-1,-1]=2/d_x[-1]
         
         '''Define the b vector'''
-        b=np.matrix(np.zeros((dimension))).T
+        b=np.zeros(dimension, dtype=float)
         b[0]=3*d_y[0]/d_x[0]**2
         b[-1]=3*d_y[-1]/d_x[-1]**2
         for i in range(1,dimension-1):
@@ -152,7 +152,7 @@ class ClampedCubicSpline(CubicSpline):
         d_x=self.d_x
         d_y=self.d_y
         '''Define Matrix'''
-        A=np.matrix(np.zeros((dimension-2,dimension-2)))
+        A=np.zeros((dimension-2,dimension-2), dtype=float)
         # Row i describes slope at knot i+1, adjacent h[i] and h[i+1].
         for i in range(0,dimension-2):
             A[i,i]=2*(1./d_x[i]+1./d_x[i+1])
@@ -160,7 +160,7 @@ class ClampedCubicSpline(CubicSpline):
                 A[i+1,i]=1/d_x[i+1]
                 A[i,i+1]=1/d_x[i+1]
         '''Define the b vector'''
-        b=np.matrix(np.zeros((dimension-2))).T
+        b=np.zeros(dimension-2, dtype=float)
         for i in range(0,dimension-2):
             b[i]=3.*(d_y[i]/d_x[i]**2+d_y[i+1]/d_x[i+1]**2)
         b[0]+=-1.*yp[0]/d_x[0]
@@ -187,7 +187,7 @@ class FirstClampedCubicSpline(CubicSpline):
         d_y=self.d_y
         x_data=self.x_data
         y_data=self.y_data
-        A=np.matrix(np.zeros((dimension-1,dimension-1)))
+        A=np.zeros((dimension-1,dimension-1), dtype=float)
         # Interior C2 continuity at knot i+1; outer Robin row follows.
         for i in range(0,dimension-2):
             A[i,i]=2*(1/d_x[i]+1/d_x[i+1])
@@ -195,7 +195,7 @@ class FirstClampedCubicSpline(CubicSpline):
             A[i,i+1]=1/d_x[i+1]
         A[-1,-2]=2/d_x[-1]
         A[-1,-1]=4/d_x[-1]+1/x_data[-1]
-        b=np.matrix(np.zeros((dimension-1))).T
+        b=np.zeros(dimension-1, dtype=float)
         for i in range(0,dimension-2):
             b[i]=3*(d_y[i]/d_x[i]**2+d_y[i+1]/d_x[i+1]**2)
         b[0]+=-1*yp/d_x[0]
@@ -216,7 +216,7 @@ class SecondClampedCubicSpline(CubicSpline):
         d_y=self.d_y
         x_data=self.x_data
         y_data=self.y_data
-        A=np.matrix(np.zeros((dimension,dimension)))
+        A=np.zeros((dimension,dimension), dtype=float)
         for i in range(0,dimension-1):
             A[i,i]=2*(1/d_x[i]+1/d_x[i-1])
             A[i+1,i]=1/d_x[i]
@@ -225,7 +225,7 @@ class SecondClampedCubicSpline(CubicSpline):
         A[0,1]=1
         A[-1,-2]=2/d_x[-1]
         A[-1,-1]=4/d_x[-1]+1/x_data[-1]
-        b=np.matrix(np.zeros((dimension))).T
+        b=np.zeros(dimension, dtype=float)
         for i in range(1,dimension-1):
             b[i]=3*(d_y[i]/d_x[i]**2+d_y[i-1]/d_x[i-1]**2)
         b[0]+=3*y_data[1]/x_data[1]
