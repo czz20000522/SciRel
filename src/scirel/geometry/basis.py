@@ -270,6 +270,33 @@ basis_map = {"natural_cubic_spline":NaturalCubicSpline,
         }
 
 def build_basis(basis='poly',**kwargs):
+    """Construct the selected polynomial or retained cubic-spline basis.
+
+    Parameters
+    ----------
+    basis : str, default='poly'
+        Case-insensitive selector.  Supported selectors include ``poly`` and
+        the retained natural, clamped, first-clamped and second-clamped cubic
+        splines.
+    **kwargs
+        Basis-specific options such as ``poly_deg``/``coeffs`` for polynomial
+        bases or ``n_knots``, ``domain``, ``xdata`` and ``ydata`` for splines.
+
+    Returns
+    -------
+    list of callable
+        Independent basis evaluators in their declared column order.
+
+    Raises
+    ------
+    KeyError
+        If ``basis`` is not a registered selector.
+    TypeError
+        If a basis-specific keyword is unknown.
+    NotImplementedError
+        If a retained selector such as the quartic or special-function path
+        has no supported basis construction in this package.
+    """
     basis = basis.lower()
     basis_fn = basis_map[basis]
     if basis == 'poly':
