@@ -41,8 +41,6 @@ original failure/replay evidence and pending redistribution licensing remain.
 from __future__ import annotations
 
 import numpy as np
-from scipy import interpolate
-from scipy.special import logsumexp
 
 from .cylindrical_velocity_quadrature import make_cylindrical_velocity_quadrature
 
@@ -239,6 +237,12 @@ def _positive_moment_projection(raw, volume, vx, vr, density, mean_v,
     theta = np.zeros(rank)
     logq = np.log(q)
     probability = q
+    # Keep the entropy backend out of import-time and rejected-input paths.
+    # SciPy remains a declared runtime dependency for this numerical branch;
+    # load it only once the public input contract and finite overlap state are
+    # established.
+    from scipy.special import logsumexp
+
     for iteration in range(max_iterations + 1):
         z = logq + x @ theta
         value = logsumexp(z)
@@ -575,6 +579,11 @@ def interp_distribution_across_mesh(
         for k in range(nxa):
             tot_a[k] = np.sum(Vr2pidVra * (fa[:, :, k] @ dVxa))
         tot_b = np.zeros(nxb)
+        # Keep SciPy out of import-time and rejected-input paths.  This
+        # compatibility branch needs interp1d only after all public input
+        # validation and overlap construction have succeeded.
+        from scipy import interpolate
+
         tot_b[k0:k1 + 1] = interpolate.interp1d(x_a, tot_a, fill_value="extrapolate")(x_b[k0:k1 + 1])
         ii = np.where(fb > 0)
         if ii[0].size > 0:
