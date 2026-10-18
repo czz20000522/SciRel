@@ -6,8 +6,6 @@ or add a collisional refill model.
 """
 import math
 import numpy as np
-from scipy.integrate import quad_vec
-from scipy.special import gammainc
 
 
 def _potential_midpoint(left, right):
@@ -147,6 +145,13 @@ def _trapped_fractions(a_left, b_left, a_right, b_right, order=32):
                 xi = math.sqrt(alpha/(1+alpha)) if alpha > 0 else 0.0
                 values = np.array([xi,xi**3,.5*xi*(3-xi*xi)])
             else:
+                # Keep the mirror namespace dependency-light until a plugged
+                # profile actually needs incomplete-gamma quadrature.  The
+                # magnetic-only branch above is analytic and must remain
+                # usable without importing SciPy.
+                from scipy.integrate import quad_vec
+                from scipy.special import gammainc
+
                 points = {0.,40.}
                 # Split at zeros, barrier intersections and the transition
                 # scale of incomplete gamma, including narrow loss cones.

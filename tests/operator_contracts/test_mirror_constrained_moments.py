@@ -1,4 +1,9 @@
 # 覆盖：无损失锥解析极限、端塞损失锥、单侧端塞拒绝、caller profile(psi) 与显式数组等价。
+import os
+from pathlib import Path
+import subprocess
+import sys
+
 import numpy as np
 import pytest
 
@@ -7,6 +12,45 @@ from scirel.kinetic.mirror_constrained_moments import evaluate_mirror_constraine
 
 E = 1.602176634e-19
 M = 1.67262192595e-27
+
+
+def test_mirror_numerics_defers_scipy_until_nonanalytic_trapping_call():
+    root = Path(__file__).resolve().parents[2]
+    source = """
+import sys
+from scirel.kinetic import evaluate_mirror_constrained_moments
+
+assert "scipy" not in sys.modules
+try:
+    evaluate_mirror_constrained_moments(
+        1.0, 0.0, 0.0, float("nan"), 1.0, 1.0, 1.0, 1.0, 1.0
+    )
+except ValueError:
+    pass
+else:
+    raise AssertionError("invalid mirror input unexpectedly succeeded")
+assert "scipy" not in sys.modules
+
+evaluate_mirror_constrained_moments(1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
+assert "scipy" not in sys.modules
+
+evaluate_mirror_constrained_moments(
+    1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+    b_plug_left_t=2.0, b_plug_right_t=3.0,
+    phi_plug_left_v=0.1, phi_plug_right_v=0.2,
+)
+assert "scipy" in sys.modules
+"""
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = str(root / "src")
+    result = subprocess.run(
+        [sys.executable, "-c", source],
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_untruncated_moments_match_closed_form():
