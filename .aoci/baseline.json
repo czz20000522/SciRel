@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-18T22:05:43Z",
+  "updated_at": "2026-10-18T22:09:18Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -101,9 +101,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "c4cf7d747ba979782e909d06dfd6c7b7de8086f0bb601147ce848724175ebd08",
-      "size": 643110,
-      "normalized_sha256": "c4cf7d747ba979782e909d06dfd6c7b7de8086f0bb601147ce848724175ebd08"
+      "sha256": "e678f9ae6c30dfdf22828662dac7bfe0163ea89022fa041ffbe1120c4fb7436e",
+      "size": 643668,
+      "normalized_sha256": "e678f9ae6c30dfdf22828662dac7bfe0163ea89022fa041ffbe1120c4fb7436e"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -8141,9 +8141,9 @@
     },
     "src/scirel/equilibrium/free_boundary_anisotropic_picard.py": {
       "role": "index",
-      "sha256": "fb7e1c8e12136fcaf5f8c4fa6dcc4b3ec78a3dacfba41b02e205b5236fad59c7",
-      "size": 15148,
-      "normalized_sha256": "fb7e1c8e12136fcaf5f8c4fa6dcc4b3ec78a3dacfba41b02e205b5236fad59c7"
+      "sha256": "97c5daabb6f7d672c6d940607af2e027e151ec8622ba01cebd447ce9257f9371",
+      "size": 16904,
+      "normalized_sha256": "97c5daabb6f7d672c6d940607af2e027e151ec8622ba01cebd447ce9257f9371"
     },
     "src/scirel/equilibrium/isotropic_picard_step.py": {
       "role": "index",
@@ -8177,9 +8177,9 @@
     },
     "src/scirel/equilibrium/reduced_hall_anisotropic_picard.py": {
       "role": "index",
-      "sha256": "076820bbfee11501cbdacace2f94fd4b525dd58cb1aef347a1cf4c837a2cc808",
-      "size": 10806,
-      "normalized_sha256": "076820bbfee11501cbdacace2f94fd4b525dd58cb1aef347a1cf4c837a2cc808"
+      "sha256": "95cf0520ebb03b24d70c3b625b57116dc12e44001467efe27b6793607a91f934",
+      "size": 12547,
+      "normalized_sha256": "95cf0520ebb03b24d70c3b625b57116dc12e44001467efe27b6793607a91f934"
     },
     "src/scirel/equilibrium_api.py": {
       "role": "index",
@@ -10019,9 +10019,9 @@
     },
     "tests/graph_contracts/free_boundary_anisotropic_picard/test_graph_free_boundary_anisotropic_picard.py": {
       "role": "index",
-      "sha256": "5b7baff5174f431c50947b179db1b85892db114e754f1cdd7157a185bac084b0",
-      "size": 11893,
-      "normalized_sha256": "5b7baff5174f431c50947b179db1b85892db114e754f1cdd7157a185bac084b0"
+      "sha256": "d89552b05cb318ff9ee036802bf49db8c0e4cff537b3e0abcbe1e5c3ad2ccde2",
+      "size": 12243,
+      "normalized_sha256": "d89552b05cb318ff9ee036802bf49db8c0e4cff537b3e0abcbe1e5c3ad2ccde2"
     },
     "tests/graph_contracts/grid_mirror_kinetic_closure/task_graph.yaml": {
       "role": "index",
@@ -10079,9 +10079,9 @@
     },
     "tests/graph_contracts/reduced_hall_anisotropic_picard/test_graph_reduced_hall_anisotropic_picard.py": {
       "role": "index",
-      "sha256": "1528cc417052be1caf0932384e83095779c8a47242a1998aaa20c448c364201e",
-      "size": 7729,
-      "normalized_sha256": "1528cc417052be1caf0932384e83095779c8a47242a1998aaa20c448c364201e"
+      "sha256": "a0bc78e16d7b8dc2ec4b68833e017288e4f9c6f407c5847510b9810d05fc337f",
+      "size": 8072,
+      "normalized_sha256": "a0bc78e16d7b8dc2ec4b68833e017288e4f9c6f407c5847510b9810d05fc337f"
     },
     "tests/graph_contracts/test_fluidbw_r43_graphs.py": {
       "role": "index",

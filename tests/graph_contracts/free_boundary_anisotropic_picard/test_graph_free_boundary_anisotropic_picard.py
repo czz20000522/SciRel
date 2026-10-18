@@ -2,6 +2,7 @@ from scirel.equilibrium.free_boundary_anisotropic_picard import solve_free_bound
 import scirel
 from _review_bindings import load_asset as _load_asset, load_graph as _load_graph, load_operator as _load_operator
 from pathlib import Path
+import inspect
 
 import numpy as np
 import pytest
@@ -10,6 +11,15 @@ import pytest
 
 def _run(values):
     return solve_free_boundary_anisotropic_picard(values)
+
+
+def test_public_solver_docstring_declares_contract():
+    doc = inspect.getdoc(solve_free_boundary_anisotropic_picard)
+    assert doc is not None
+    for section in ("Parameters", "Returns", "Raises", "Notes"):
+        assert section in doc
+    for field in ("fixed-point", "maxiter=0", "minimum_field"):
+        assert field in doc
 
 
 # 验证：YAML 的 N6 映射、显式 N4 closure port 和反馈边必须与可调用图同步。

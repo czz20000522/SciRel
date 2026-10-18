@@ -205,6 +205,49 @@ def run_graph(inputs, *, asset_loader):
     return {'psi': psi, 'BR': br, 'BZ': bz, 'B': field['B'], 'profiles': {key: profiles[key] for key in ('p_parallel', 'p_perp', 'density', 'electron_temperature')}, 'j_phi': terminal_j_phi, 'plasma_currents': terminal_cell_currents, 'picard_current_state': currents_old, 'gradp_term': current_parts['gradp_term'], 'anisotropy_curvature_term': current_parts['anisotropy_curvature_term'], 'converged': bool(fixed_point_residual<=tol and compatible and iterations>0), 'fixed_point_residual':fixed_point_residual, 'flux_fixed_point_residual':flux_fixed_point_residual, 'field_fixed_point_residual':field_fixed_point_residual, 'current_fixed_point_residual':current_fixed_point_residual, 'flux_converged':bool(residual<=tol), 'equilibrium_compatible':compatible, 'force_diagnostics':force_diagnostics, 'parallel_force_diagnostics':compatibility, 'iterations': iterations, 'residual': residual, 'residual_history': np.asarray(residual_history, dtype=float), 'parameters': params, 'boundary_currents': None if boundary_result is None else boundary_result['boundary_currents'], 'boundary_flux_correction': boundary_flux_correction, 'boundary_residual_norm': None if boundary_result is None else boundary_result['residual_norm'], 'failure_reason': 'parallel_force_incompatible' if not compatible else None if fixed_point_residual<=tol and iterations>0 else 'maxiter_reached'}
 
 def solve_free_boundary_anisotropic_picard(inputs=None, **kwargs):
+    """Run the free-boundary anisotropic Picard state loop.
+
+    Parameters
+    ----------
+    inputs : mapping, optional
+        Mapping containing the rectilinear ``r_grid``/``z_grid``, vacuum
+        ``psi_vac``/``br_vac``/``bz_vac``, dense ``g_psi``, caller ``params``
+        and ``pressure_closure`` port, plus ``tol``, ``maxiter`` and
+        ``relax``.  Optional inputs provide paired ``g_br``/``g_bz``,
+        ``plasma_mask``, wall ``boundary_correction``, explicit ``cell_edges``
+        and compatibility/field-floor controls.
+    **kwargs
+        Composition overrides passed to the public graph boundary.
+
+    Returns
+    -------
+    dict
+        Terminal ``psi``, ``BR``, ``BZ`` and ``B`` fields, pressure-closure
+        profiles, toroidal and cell-integrated currents, force diagnostics,
+        full fixed-point residual components, iteration history and explicit
+        convergence/compatibility/failure fields.  Bounded nonconvergence
+        returns the last complete state with ``converged=False``.
+
+    Raises
+    ------
+    ValueError
+        If grids, ports, closure fields, controls, masks or wall configuration
+        violate the declared contract, or strict parallel-force compatibility
+        fails.
+    FloatingPointError
+        If an intermediate or terminal field falls below ``minimum_field``.
+    Exception
+        Caller closure and dependency exceptions propagate unchanged.
+
+    Notes
+    -----
+    The stopping test uses the unrelaxed terminal flux, field and current
+    state, not only the relaxed flux increment.  ``maxiter=0`` returns a
+    nonconverged terminal evaluation.  The graph owns iteration and state
+    composition; it does not certify the physical wall model or a global
+    equilibrium.
+    """
+
     from scirel._composition import compose
     from scirel.diagnostics.picard_flux_residual import compute_picard_flux_residual as _dependency_0
     from scirel.equilibrium.anisotropic_picard_feedback import update_anisotropic_picard_flux as _dependency_1

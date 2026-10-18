@@ -986,12 +986,12 @@ anisotropic_picard_feedback.py[KB7T]: F:在均匀张量网格松弛单元电流�
 anisotropic_toroidal_current.py[KB6T]: F:从全张量与各向同性压力力平衡分解环向电流 | R:code:src/scirel/equilibrium/anisotropic_force_balance.py | A:compute_anisotropic_toroidal_current | S:各向同性基线以p_perp替代两压力，曲率项为两次Jphi之差
 axisymmetric_anisotropic_picard.py[AB7S]: F:迭代显式压力闭包、极向场、力平衡和磁通Green更新，并提供公开callable使用合同 | R:code:src/scirel/equilibrium/axisymmetric_picard_update.py,code:src/scirel/equilibrium/anisotropic_force_balance.py | A:solve_axisymmetric_anisotropic_picard | S:文档明确R-Z网格、pressure_closure、终态输出和异常边界；磁场低限与终态firehose越界抛错；strict默认拒绝平行不兼容，达迭代上限可返回未收敛
 axisymmetric_picard_update.py[KB7T]: F:按来源顺序离散电流、投影Green磁通并松弛磁通状态 | R:code:src/scirel/equilibrium/axisymmetric_anisotropic_picard.py | A:update_axisymmetric_picard_flux | S:使用首网格间距乘积，relax作用于旧磁通，区别于电流松弛路线；relax必须小于1
-free_boundary_anisotropic_picard.py[AB8M]: F:组合压力闭包、各向异性电流及导体壁修正，迭代完整场和电流状态 | R:code:src/scirel/equilibrium/anisotropic_picard_feedback.py,code:src/scirel/field/ideal_conductor_boundary.py | A:solve_free_boundary_anisotropic_picard；未松弛目标；三类残差；终态重算；相容诊断 | S:壁修正同时作用ψ及磁场导数；每次压力前检查B下界。很小的松弛更新不能停止，须完整未松弛状态闭合且力相容；maxiter零仍评估但不声称收敛
+free_boundary_anisotropic_picard.py[AB8M]: F:组合压力闭包、各向异性电流及导体壁修正，迭代完整场和电流状态并提供公开调用合同 | R:code:src/scirel/equilibrium/anisotropic_picard_feedback.py,code:src/scirel/field/ideal_conductor_boundary.py | A:solve_free_boundary_anisotropic_picard；未松弛目标；三类残差；终态重算；相容诊断；返回固定点、失败原因和墙修正字段 | S:壁修正同时作用ψ及磁场导数；每次压力前检查B下界；很小的松弛更新不能停止，须完整未松弛状态闭合且力相容；maxiter零仍评估但不声称收敛
 isotropic_picard_step.py[KB7T]: F:执行一次有限各向同性电流松弛及Green磁通更新并计算归一残差 | R:code:src/scirel/equilibrium/_pressure_current.py | A:pressure_flux_picard_step；均匀RZ网格、每格电流及新磁通 | S:relax=1仅允许显式单步电流不变而非收敛证明；psi_edge非零，残差按其绝对值归一，非有限立即失败
 isotropic_pressure_flux.py[AB8T]: F:将压力通量公共任务委派到唯一闭合感知求解器并序列化末态 | R:code:src/scirel/equilibrium/pleiades_feedback.py,code:src/scirel/equilibrium/pressure_flux_state.py | A:solve_isotropic_pressure_flux；映射或关键词端口及双残差历史 | S:不保留第二反馈循环；relax1拒绝，零步残差无穷且不收敛，降序存储仍按物理R找边界；nonfinite终末可无有效样条，离散闭合不等于连续力平衡
 kinetic_mirror_hall_equilibrium.py[AB7T]: F:将网格镜动理学闭包嵌入约化Hall磁平衡反馈 | R:code:src/scirel/kinetic/grid_mirror_kinetic_closure.py,code:src/scirel/equilibrium/reduced_hall_anisotropic_picard.py | A:solve_kinetic_mirror_hall_equilibrium | S:每次Hall压力请求以当前B/psi覆盖kinetic_config对应字段，嵌套依赖可显式替换
 pressure_flux_state.py[KB7T]: F:建立可精确重建的边界前缀压力样条及有限裁剪导数状态 | R:code:src/scirel/equilibrium/_pressure_current.py | A:build_pressure_flux_state；采样、节点系数、边界与零电流 | S:按物理R首个精确零压定位，仅存实际四点以上拟合前缀；输出保留存储顺序，布尔True屏蔽且裁剪前先核有限
-reduced_hall_anisotropic_picard.py[AB7S]: F:按来源顺序组合压力闭包、Hall漂移与磁通Picard反馈 | R:code:src/scirel/closures/reduced_hall_drift.py,code:src/scirel/equilibrium/axisymmetric_picard_update.py | A:solve_reduced_hall_anisotropic_picard | S:终态再次求闭包和Hall诊断；strict默认拒绝平行力或Ohm不兼容，负firehose阈值可禁用检查
+reduced_hall_anisotropic_picard.py[AB7S]: F:按来源顺序组合压力闭包、Hall漂移与磁通Picard反馈并提供公开调用合同 | R:code:src/scirel/closures/reduced_hall_drift.py,code:src/scirel/equilibrium/axisymmetric_picard_update.py | A:solve_reduced_hall_anisotropic_picard；返回终态Hall、磁场、压力、力、兼容消息和固定点残差；区分外层收敛与局部惯性迭代 | S:终态再次求闭包和Hall诊断；strict默认拒绝平行力或Ohm不兼容，负firehose阈值可禁用检查；maxiter边界返回完整末态而非伪造收敛
 pleiades_feedback.py[KB8M]: F:运行有界压力样条电流与Green反馈并给出双残差终末结果 | R:code:src/scirel/equilibrium/_pressure_current.py | A:compute_equilibrium、EquilibriumResult、as_tuple及显式__all__导出 | S:只排序中平面拟合索引不重排Green；通量变化与末态电流闭合均达标才收敛，relax1排除、零步未解；target范数为闭合归一分母，历史仅含完成评价，不作连续力平衡证明
 _anisotropic_numerics.py[KB7S]: F:提供各向异性平衡族共享的柱坐标梯度、压力张量散度、误差包络、面积和磁通增量数值核 | R:code:src/scirel/equilibrium/anisotropic_force_balance.py,code:src/scirel/equilibrium/axisymmetric_picard_update.py | A:stable_gradient;gradient_roundoff;pressure_divergence;cell_areas;flux_field_increment | S:数组按[Z,R]且psi为R Aphi；轴上分支和无2piR丝电流合同保留，有限运行不扩展物理域
 _pressure_current.py[KB7T]: F:共享压力前缀样条、导数裁剪及电流松弛Green磁通方程 | R:code:src/scirel/equilibrium/pleiades_feedback.py,code:src/scirel/equilibrium/isotropic_picard_step.py | A:fit_pressure_spline、pressure_derivative、current_target、relaxed_green_update；样条后端在输入合同通过后加载 | S:非法重复节点不加载SciPy；样条系数与导数先核有限再作边界掩码；电流、Green和总磁通每步拒非有限
@@ -1239,7 +1239,7 @@ test_graph_frank_egedal_pressure_closure.py[TB6S]: F:检验热矩闭合顺序、
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/free_boundary_anisotropic_picard/===
 task_graph.yaml[TB6L]: F:声明自由边界压力闭合、电流反馈、墙场修正及全状态判停合同 | R:code:src/scirel/equilibrium/free_boundary_anisotropic_picard.py | A:非均匀网格；cell_edges；场下界；完整残差；有限反馈；终态相容性 | S:墙同时修ψ及其场导数；缺场Green从磁通增量求场；松弛步小不证明收敛，电流面积无2πR
-test_graph_free_boundary_anisotropic_picard.py[TB6M]: F:验证自由边界全状态反馈、解析固定点、墙场一致及失败域 | R:code:src/scirel/equilibrium/free_boundary_anisotropic_picard.py | A:顺序两步；独立固定点；单元权重；小步反例；不变ψ变场；空场拒绝 | S:历史节点名不决定旧行为；全ψ清零的墙也消B而触发下界，不能保留虚构真空场
+test_graph_free_boundary_anisotropic_picard.py[TB6M]: F:验证自由边界全状态反馈、解析固定点、墙场一致及失败域，并锁定公开solver文档合同 | R:code:src/scirel/equilibrium/free_boundary_anisotropic_picard.py | A:顺序两步；独立固定点；单元权重；小步反例；不变ψ变场；空场拒绝；Parameters/Returns/Raises/Notes断言 | S:历史节点名不决定旧行为；全ψ清零的墙也消B而触发下界，不能保留虚构真空场；文档断言只锁定调用合同，不替代数值回归
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/grid_mirror_kinetic_closure/===
 task_graph.yaml[TB6M]: F:声明网格镜端参考/plug剖面映射、端损失电位与嵌套准中性组合、屏蔽范围及显式载体。 | R:code:src/scirel/kinetic/grid_mirror_kinetic_closure.py | A:scientific_task_graph contract | S:参考/plug电位只接受径向剖面；端塞外屏蔽不触碰pitch积分、电位和端态诊断。
@@ -1259,7 +1259,7 @@ test_graph_multi_coil_vacuum_field.py[TB5T]: F:独立矩形丝和圆Green检验�
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/reduced_hall_anisotropic_picard/===
 task_graph.yaml[TB6M]: F:声明约化Hall Picard外层磁通与可选局域惯性内层、压强端口和广义Ohm/相容诊断合同。 | R:code:src/scirel/equilibrium/reduced_hall_anisotropic_picard.py | A:scientific_task_graph contract | S:外层和惯性分别有状态/上限；负firehose下限显式关闭门控，空消息非全物理域保证。
-test_graph_reduced_hall_anisotropic_picard.py[TB6S]: F:检验Hall关闭的静态电流、实际Green反馈和标量压强广播，使用独立丝响应核对磁通/场并验证控制域。 | R:code:src/scirel/equilibrium/reduced_hall_anisotropic_picard.py | A:pytest | S:负minimum_firehose_margin明确关闭该下限检查；真空与镜Green按每弧度组合。
+test_graph_reduced_hall_anisotropic_picard.py[TB6S]: F:检验Hall关闭的静态电流、实际Green反馈和标量压强广播，使用独立丝响应核对磁通/场并验证控制域和公开文档合同 | R:code:src/scirel/equilibrium/reduced_hall_anisotropic_picard.py | A:pytest；验证hall_state、fixed-point、global等公开说明及迭代行为 | S:负minimum_firehose_margin明确关闭该下限检查；真空与镜Green按每弧度组合；文档断言只锁定调用合同，不替代数值回归
 
 ===/Users/tomczz/Projects/SciReL/tests/graph_contracts/===
 test_fluidbw_r43_graphs.py[TB6T]: F:检验fluidBW三条来源组合的尺度、两种动理学行列式与流体/动理学波数扫描固定参考。 | R:code:src/scirel/kinetic/kinetic_dispersion_relation.py | A:pytest | S:动理学扫描保留绝对kz=0与固定起始种子，不能误用归一化非零kz。

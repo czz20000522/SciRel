@@ -116,6 +116,48 @@ def run_graph(inputs, *, asset_loader):
     return {'psi': psi, 'plasma_cell_currents': cell_currents, 'J_phi': hall['J_phi'], 'B_R': magnetic['B_R'], 'B_Z': magnetic['B_Z'], 'B': magnetic['B'], 'p_parallel': p_parallel, 'p_perpendicular': p_perpendicular, 'parallel_force': hall['parallel_force'], 'force_R': hall['force_R'], 'force_Z': hall['force_Z'], 'ion_toroidal_velocity': hall['ion_toroidal_velocity'], 'electron_toroidal_velocity': hall['electron_toroidal_velocity'], 'electric_field_R': hall['electric_field_R'], 'electric_field_Z': hall['electric_field_Z'], 'hall_state': hall, 'converged': converged, 'fixed_point_residual':fixed_point_residual, 'iterations': iteration, 'relative_psi_change': relative_change, 'parallel_force_error': hall['parallel_force_error'], 'generalized_ohm_error': hall['generalized_ohm_error'], 'closure_state': state, 'firehose_margin': hall['firehose_margin'], 'compatibility_messages': messages, 'iteration_history': history}
 
 def solve_reduced_hall_anisotropic_picard(inputs=None, **kwargs):
+    """Run reduced-Hall magnetic feedback with a caller-owned pressure closure.
+
+    Parameters
+    ----------
+    inputs : mapping, optional
+        Mapping containing rectilinear ``r_grid``/``z_grid``, ``psi_vac``,
+        dense ``g_psi``, the ``pressure_closure(B, psi)`` port and positive
+        ion properties.  Optional controls cover outer Picard stopping,
+        reduced-Hall inertia, active masks, firehose and generalized-Ohm gates,
+        compatibility thresholds and explicit ``cell_edges``.
+    **kwargs
+        Composition overrides passed to the public graph boundary.
+
+    Returns
+    -------
+    dict
+        Terminal flux, reduced-Hall current and magnetic fields, pressure and
+        force components, drift/electric fields, complete ``hall_state``,
+        caller ``closure_state``, iteration history, fixed-point residual and
+        compatibility messages.  Bounded outer nonconvergence returns the last
+        terminally checked state with ``converged=False``.
+
+    Raises
+    ------
+    ValueError, TypeError
+        If grids, Green response, closure, masks or controls are invalid, or
+        strict terminal compatibility thresholds are exceeded.
+    FloatingPointError
+        If the field floor or active-cell firehose/tension gate fails.
+    RuntimeError
+        If a reduced-Hall local inertia iteration does not converge.
+    Exception
+        Caller closure and dependency exceptions propagate unchanged.
+
+    Notes
+    -----
+    ``psi`` is interpreted by the caller closure in the same ``R A_phi``
+    convention as the dense Green response.  The outer graph recomputes and
+    gates the terminal closure/current state; convergence is not a global
+    equilibrium or identifiability guarantee.
+    """
+
     from scirel._composition import compose
     from scirel.closures.reduced_hall_drift import close_reduced_hall_drift as _dependency_0
     from scirel.equilibrium.axisymmetric_picard_update import update_axisymmetric_picard_flux as _dependency_1

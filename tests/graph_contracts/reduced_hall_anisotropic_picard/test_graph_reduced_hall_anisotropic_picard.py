@@ -3,6 +3,7 @@ import scirel
 from _review_bindings import load_asset as _load_asset, load_graph as _load_graph, load_operator as _load_operator
 import importlib.util
 from pathlib import Path
+import inspect
 
 import numpy as np
 import pytest
@@ -31,6 +32,15 @@ def _inputs(**overrides):
     values = dict(r_grid=R, z_grid=Z, psi_vac=.5 * 1.2 * R**2, g_psi=np.zeros((R.size, R.size)), ion_mass_kg=M, ion_charge_c=E, pressure_closure=_closure, hall_multiplier=0.0, tol=1e-12, maxiter=3)
     values.update(overrides)
     return values
+
+
+def test_public_solver_docstring_declares_contract():
+    doc = inspect.getdoc(solve_reduced_hall_anisotropic_picard)
+    assert doc is not None
+    for section in ("Parameters", "Returns", "Raises", "Notes"):
+        assert section in doc
+    for field in ("hall_state", "fixed-point", "global"):
+        assert field in doc
 
 
 def test_hall_disabled_recovers_static_pressure_current_and_vacuum_flux():
