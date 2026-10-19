@@ -1,0 +1,46 @@
+{
+  "schema": "scirel.executed-tutorial.v1",
+  "tutorial": "kinetic-initial-value",
+  "source_revision": "a65683108aa3c44e90f5ade8a55bcb591ae4cde7",
+  "wheel_version": "0.1.0.dev11",
+  "wheel_sha256": null,
+  "results": {
+    "schema": "scirel.executed-tutorial-results.v1",
+    "all_checks_passed": true,
+    "root_count": 19,
+    "maximum_dielectric_residual": 1.0389671320312603e-12,
+    "velocity_nodes": 2049,
+    "field_samples": 2001,
+    "last_field_real": -0.0,
+    "last_field_imag": -0.30312812781419374,
+    "recurrence_time": 2144.660584850632,
+    "diagnostic_status": "available"
+  },
+  "results_sha256": "ebfdc82349abc9329474f8da430196d335f0aa8ed839aa567122cb2edd44fef5",
+  "source_files": {
+    "src/scirel/kinetic/generalized_dispersion.py": "1fdcf973ad45145abd8b4b654a2fd52a88daa58ba943f11588e4989367555141",
+    "src/scirel/kinetic/vlasov_poisson.py": "a94a5247c72b5fcf206b6dcfee294e4a68abc57866264fc776834174f3a221b8"
+  },
+  "document_files": {
+    "catalog/examples/scirel.kinetic.generalized-root-scans.json": "1760ef75bcee10e8e92bbd67d025b1e3e6dea9961866080f70fb6d557bce09dd",
+    "catalog/examples/scirel.kinetic.vp-landau.json": "f682f558f310c530b1736d87f2376261d67cd59cd3e0c33c9542fe7938f41c43"
+  },
+  "tutorial_rst_sha256": "c530762eebd036b6c082b9b828f03f237a449e9e6e926eff2de73f5210788eea",
+  "environment": {
+    "python": "3.14.7",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "matplotlib": null,
+    "platform": "macOS arm64",
+    "execution_environment": "macOS arm64 CPython 3.14.7 source checkout with locked development dependencies",
+    "network": "none during tutorial execution",
+    "source_or_saved_answers": false,
+    "exit_code": 0,
+    "system_site_packages": false,
+    "developer_tools": "SciRel functions resolved from current source checkout; 148 focused generalized-dispersion/Vlasov-Poisson regressions passed",
+    "source_checkout_mounted": true
+  },
+  "human_approval": false,
+  "release_approval": false,
+  "previous_execution_sha256": "4c0a6ca798ebc58dde666579b2fb12fe49b13d5295f8619fbcb9cbc553f0f2b4"
+}

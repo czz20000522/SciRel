@@ -1662,14 +1662,14 @@ code.css[CU5T]: F:为共享文档代码块提供白底语法配色、工具栏�
 guide.css[EU4T]: F:统一手册和案例的白底排版、目录树及响应式与打印布局 | R:code:tools/docs/handbook.html,code:tools/docs/chapter.html | A:共享CSS | S:窄屏取消侧栏粘附和限高
 handbook.html[EU5T]: F:提供科学手册的目录、全书搜索与动态正文页面外壳 | R:code:tools/docs/handbook.js,code:tools/docs/guide.css | A:学习指南主页 | S:内容由同快照接口读取，页面本身不复制科学合同
 handbook.js[EU6S]: F:呈现领域章节、主题资产与全书搜索，连接函数参考和已执行案例 | R:code:tools/docs/navigation.js,code:scripts/scirel_docs.py | A:章节与主题hash路由、搜索结果、旧锚点转向 | S:主题合同分页读取且旧异步响应不能覆盖新页；无案例主题明确待补充，不生成科学结果
-handbook.json[SU6L]: F:按九领域七十二主题组织267份合同的当前学习目录 | R:code:scripts/scirel_docs.py,code:docs/handbook-authoring.md | A:章节、主题、唯一资产主归属与两教程 | S:空间色散主题区分候选根、有限谱与物理模态；按科学问题组织而非来源项目。
+handbook.json[SU6L]: F:按科学领域与主题组织当前动态合同目录 | R:code:scripts/scirel_docs.py,code:docs/handbook-authoring.md,code:catalog/examples | A:唯一资产主归属、FVM输运、新经典自举、等离子体代数、源剖面和两教程导航；目录随当前catalog动态增长 | S:handbook是发现与学习投影，不是永久分母或发布批准；主题按科学问题组织，不能从目录位置推断物理资格
 navigation.js[EU5T]: F:将绑定学科目录挂载为手册与案例共享的折叠树并定位当前页 | R:code:tools/docs/handbook.json,code:tools/docs/handbook.js | A:ScirelNavigation.mount | S:案例原TOC移入对应主题；跳到正文仅移动焦点不触发hash路由
-chapter-selection.json[FU6T]: F:显式选择唯一当前磁静力学教程及执行摘要 | R:code:scripts/scirel_docs.py,code:tools/docs/magnetostatics/execution.json | A:magnetostatics路由、canonical目录与execution_sha256 | S:不按时间猜最新版；选择缺失或执行摘要变化时失败，新的包必须实跑后继并更新绑定
+chapter-selection.json[FU6T]: F:显式选择唯一当前磁静力学教程及执行摘要 | R:code:scripts/scirel_docs.py,code:tools/docs/magnetostatics/execution.json | A:magnetostatics路由、canonical目录与当前source-bound execution摘要绑定 | S:不按时间猜最新版；选择缺失或执行摘要变化时失败，当前教程回放仍只支持章节 claim，不扩大为全包发行验收
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/magnetostatics/===
 chapter.json[SU6T]: F:定义轴对称线圈教程的问题方法、双格式公式和结果解释 | R:code:tools/docs/magnetostatics/example.py,code:tools/docs/chapter.html | A:圆环、线圈对、矩形截面、加密、API参考与导线奇点限制 | S:代码取自实跑脚本；MathML须与文本等义；固定总安匝数，局部加密不是全域误差界；离散零不代表物理自场
 example.py[TB6T]: F:调用安装包运行圆环、对称线圈和矩形截面案例并导出结果 | R:code:src/scirel/field/multi_coil_vacuum_field.py,code:src/scirel/field/circular_filament_green.py | A:example.py results.json | S:矩形节点权重归一保持总安匝数；解析轴场、对称性和电流线性断言通过才写结果
-execution.json[OQ6T]: F:绑定章节执行的实现、合同、脚本、结果、图表和dev11安装wheel身份 | R:code:scripts/scirel_docs.py,code:tools/docs/magnetostatics/example.py,code:release/CURRENT.json | A:源码摘要、Git提交、包版本与wheel摘要、运行环境、退出与确定性绘图绑定 | S:科学在断网无源码挂载环境运行；图表字节可重复；章节回执只覆盖本章检查，不能扩大为全包发行验收
+execution.json[OQ6T]: F:绑定当前磁静力学教程的源码、合同、脚本、结果、图表和source-bound开发身份 | R:code:scripts/scirel_docs.py,code:tools/docs/magnetostatics/example.py,code:tools/docs/chapter-selection.json | A:当前Git source revision、实现摘要、章节合同/文档摘要、结果与图表哈希、运行环境和退出状态 | S:本次为源树开发回放，不能冒充无源码wheel验收；图表字节与章节结果绑定，章节回执不扩大为全包发行证据
 pair.svg[SU4L]: F:展示同向线圈对相对单环的归一轴场与反向通电的轴场曲线 | R:code:tools/docs/magnetostatics/plot.py,code:tools/docs/magnetostatics/results.json | A:教程图2、中心归一化与反向电流mT轴场 | S:图表只呈现记录结果，归一化曲线不表示绝对场强
 plot.py[XU5T]: F:从已运行结果绘制圆环比较、对称线圈与区域等值线的可重复黑白SVG | R:code:tools/docs/magnetostatics/results.json | A:固定SVG哈希盐、去除时间元数据与尾随空格、生成single/pair/rectangle图 | S:只渲染记录值，轴上解析线另算作图；不重新执行SciRel科学函数
 rectangle.svg[SU4L]: F:显示矩形截面线圈组空腔内Bz灰度与等值线 | R:code:tools/docs/magnetostatics/plot.py,code:tools/docs/magnetostatics/results.json | A:教程图3、R/Z米制坐标、mT色标与等比例坐标 | S:仅显示R不超过0.30m的无导线区域，不证明全空间均匀性
@@ -1697,6 +1697,7 @@ zh_generalized_response.json[SU6L]: F:为二十二项广义响应与线性初值
 zh_geometry_primitives.json[SU6L]: F:为三十二项几何、基函数、场线及采样合同提供中文阅读层 | R:code:catalog/examples,code:provenance/integrations/completed-project-contract-restoration.json | A:样条边界、场线变体、插值、微分及图元约定 | S:保留两种场线类的过滤/采样差异及有限曲率证据；相似名称不作为去重合同的依据。
 zh_rational_modes.json[SU6L]: F:维护四十六项有理动力学、多流体及原生输出的中文科学说明 | R:code:catalog/examples,code:provenance/integrations/completed-project-contract-restoration.json | A:物种单位、极点近似、谱分类、状态接续、图形及失败语义 | S:区别旧ES/EM、当前损失锥和流体常数约定；失败前缀及图形产物不冒充完整成功或视觉验收。
 zh_spatial_dispersion.json[SU6L]: F:提供七份空间色散合同的模型创作中文阅读层 | R:code:scripts/build_scirel_sphinx.py | A:绑定合同摘要的定义、端口、边界、失败及验证说明 | S:四个历史R方法名共享修正算法；逐条保留权限及有限近似限制，不从接口名称推断科学合同。
+zh_missing_runtime_domains.json[SU6L]: F:为新增FVM、新经典、等离子体代数、源剖面与面到单元合同提供中文阅读层 | R:code:scripts/build_scirel_sphinx.py,code:tools/docs/handbook.json,code:catalog/examples | A:15项exact摘要、定义、模型、边界、端口、适用性、失败语义、示例和验证限制；source_sha256逐项绑定当前文档 | S:译文保持端口次序、失败合同和证据上限，不凭中文阅读层扩大科学资格或wheel清单
 
 ===/Users/tomczz/Projects/SciReL/docs/usage/===
 axisymmetric-core.md[SB7S]: F:说明轴对称几何、电流源、磁通矩阵、压力平衡及消费者的领域用法 | R:code:src/scirel/electromagnetism/greens.py,code:src/scirel/equilibrium/api.py | A:源状态缓存；矩阵轴；奇异点；双残差；场线与EQDSK | S:ψ为Wb/rad；矩阵目标行源列不同于Device源集合行；全尺寸结果只支持具名离散模型
@@ -1765,6 +1766,7 @@ scirel-dev11-macos-arm64-offline-20261018-47303fe.json[FV7T]: F:保存dev11 macO
 scirel-dev11-document-integration-20261018-f4a19bc.json[OQ5T]: F:记录f4a19bc提交生成的dev11 wheel与267项文档闭包的同源绑定、manifest摘要和macOS验证证据 | R:code:release/CURRENT.json,code:release/platform-support-matrix.json,code:provenance/validation/scirel-dev11-macos-arm64-offline-20261018-f4a19bc.json | A:wheel文档整合；selection、handbook、snapshot和平台回执 | S:外部artifact只由逻辑manifest引用；Linux旧回执仅作历史证据；PASS不代表完整科学闭包或公开发行
 scirel-dev11-macos-arm64-offline-20261018-f4a19bc.json[OQ6T]: F:证明f4a19bc dev11 wheel在macOS arm64 CPython 3.14 clean-venv中的离线依赖、公共API、plot extra和wheel payload通过，并绑定两次重建摘要 | R:code:release/CURRENT.json,code:release/platform-support-matrix.json,code:provenance/validation/scirel-dev11-document-integration-20261018-f4a19bc.json | A:平台安装验收；锁定wheelhouse；pip check；代表性Operator与TaskGraph | S:artifact和source revision必须精确匹配CURRENT；技术PASS不扩大为完整科学能力或发行批准
 scirel-dev11-linux-offline-20261018-f4a19bc.json[OV7S]: F:记录f4a19bc dev11 Linux amd64与CPython 3.14无源码clean-venv离线安装及可选依赖回执 | R:code:src/scirel,code:pyproject.toml,code:uv.lock,code:release/CURRENT.json,code:release/platform-support-matrix.json | A:scirel.offline-wheelhouse-validation.v1；Linux exact wheel、core、plot、pip check与代表性任务验收 | S:必须保留no-index、only-binary、依赖闭包、构建摘要和实际wheel摘要；PASS只覆盖有界技术回执，不等于完整科学能力或发行批准
+scirel-dev11-kinetic-tutorial-development-20261019.json[OV6T]: F:记录当前源树上的kinetic-initial-value教程开发回放与有限结果检查 | R:code:src/scirel/kinetic/generalized_dispersion.py,code:src/scirel/kinetic/vlasov_poisson.py,code:tools/docs/sphinx/tutorials/kinetic-initial-value.rst,code:catalog/examples/scirel.kinetic.generalized-root-scans.json,code:catalog/examples/scirel.kinetic.vp-landau.json | A:当前Git source revision、148项GPDF/Vlasov回归、根数、介电残差、速度节点和终端诊断状态 | S:这是source-bound development evidence，不是wheel或发布回执；不宣称任意根的唯一性、物理全局精度或公开发行
 
 ===/Users/tomczz/Projects/SciReL/tools/docs/zh/selections/===
 legacy-six.json[SL7L]: F:说明六项吸收能力及两共享消费者的八条精确中文合同 | R:code:src/scirel/equilibrium/isotropic_pressure_flux.py,code:src/scirel/diagnostics/_margin_kernel.py | A:几何、样条状态、Picard、闭合求解、表插值、点式和组合裕度 | S:单点重复B不施导数约束；微角非零就旋转；状态前缀可重建，精确算术只修表示错误，不推断全局物理或许可

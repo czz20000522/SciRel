@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-19T04:10:53Z",
+  "updated_at": "2026-10-19T04:40:54Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -101,9 +101,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "a03f667fa803f3aa4fab7afec9bef2a3e0cb6d6638ca96c38b475ff2f4773dea",
-      "size": 650810,
-      "normalized_sha256": "a03f667fa803f3aa4fab7afec9bef2a3e0cb6d6638ca96c38b475ff2f4773dea"
+      "sha256": "e61e06c9a02074fd3015c60ab041f84e2bf265c5b4dcd9e328e89d046fa19e04",
+      "size": 652232,
+      "normalized_sha256": "e61e06c9a02074fd3015c60ab041f84e2bf265c5b4dcd9e328e89d046fa19e04"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -6081,6 +6081,12 @@
       "size": 1978,
       "normalized_sha256": "da4f77d83e8d7fa37aa2f7badb0a8f2ff5ae4ba89eb8e4dd7cba0d7d805bff5b"
     },
+    "provenance/validation/scirel-dev11-kinetic-tutorial-development-20261019.json": {
+      "role": "index",
+      "sha256": "b084a1fe84032a2e9dbe0c98f62639f7afa788386a493ca8d6beefa77dfae4d9",
+      "size": 2065,
+      "normalized_sha256": "b084a1fe84032a2e9dbe0c98f62639f7afa788386a493ca8d6beefa77dfae4d9"
+    },
     "provenance/validation/scirel-dev11-linux-offline-20261018-47303fe.json": {
       "role": "index",
       "sha256": "1fe11a6521fe6ce7013d3298304b74482f9cfb7a702dfbc874a691bb804d7411",
@@ -11789,9 +11795,9 @@
     },
     "tools/docs/chapter-selection.json": {
       "role": "index",
-      "sha256": "ffcc9439bf79f7075f71c3075f5ee2efae6fdb36d00404a8e770ff5ab60155ca",
+      "sha256": "376dfbcd610fef9d6cf02653faebe2b9b7ba651535a17ce178850ee98c559c78",
       "size": 238,
-      "normalized_sha256": "ffcc9439bf79f7075f71c3075f5ee2efae6fdb36d00404a8e770ff5ab60155ca"
+      "normalized_sha256": "376dfbcd610fef9d6cf02653faebe2b9b7ba651535a17ce178850ee98c559c78"
     },
     "tools/docs/chapter.html": {
       "role": "index",
@@ -11825,9 +11831,9 @@
     },
     "tools/docs/handbook.json": {
       "role": "index",
-      "sha256": "7aea04ee827699038d4be7a34bf2d579c875614867334657dae9de1e050bd9fc",
-      "size": 49147,
-      "normalized_sha256": "7aea04ee827699038d4be7a34bf2d579c875614867334657dae9de1e050bd9fc"
+      "sha256": "350cd5080f53cf8f6d6b9f94e4a0c33a9999493075e79c3ba1a68609add27a08",
+      "size": 51512,
+      "normalized_sha256": "350cd5080f53cf8f6d6b9f94e4a0c33a9999493075e79c3ba1a68609add27a08"
     },
     "tools/docs/handbooks/axisymmetric-core.json": {
       "role": "index",
@@ -12059,9 +12065,9 @@
     },
     "tools/docs/magnetostatics/execution.json": {
       "role": "index",
-      "sha256": "46798ed2a97f1488518f26de59414c18e0758820b05db82260327b3b94fcbcd9",
-      "size": 3020,
-      "normalized_sha256": "46798ed2a97f1488518f26de59414c18e0758820b05db82260327b3b94fcbcd9"
+      "sha256": "d4586836029464ff9cba592f9197a5ac8d495cbdbffab841ec08c2987a467955",
+      "size": 2964,
+      "normalized_sha256": "d4586836029464ff9cba592f9197a5ac8d495cbdbffab841ec08c2987a467955"
     },
     "tools/docs/magnetostatics/pair.svg": {
       "role": "index",
@@ -12212,6 +12218,12 @@
       "sha256": "406837dc47aa1b7b4a3b48cd16b5e7225557a882c59ce4f4daec30bd2a10f0e9",
       "size": 428693,
       "normalized_sha256": "406837dc47aa1b7b4a3b48cd16b5e7225557a882c59ce4f4daec30bd2a10f0e9"
+    },
+    "tools/docs/zh/zh_missing_runtime_domains.json": {
+      "role": "index",
+      "sha256": "2d90b1962a10f01edbd267e9519629fca5d1c0c5e8978691612ddd7314d16f7c",
+      "size": 64976,
+      "normalized_sha256": "2d90b1962a10f01edbd267e9519629fca5d1c0c5e8978691612ddd7314d16f7c"
     },
     "tools/docs/zh/zh_pdrf_dependencies.json": {
       "role": "index",

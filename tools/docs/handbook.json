@@ -190,6 +190,52 @@
             "scirel.diagnostics.firehose-mirror-margins",
             "scirel.diagnostics.parallel-pressure-residual"
           ]
+        },
+        {
+          "id": "finite-volume-transport",
+          "title": "有限体积输运算子",
+          "summary": "构造一维有限体积变量、守恒通量和线性时间步。",
+          "assets": [
+            "scirel.fvm.cell-variable",
+            "scirel.fvm.convection",
+            "scirel.fvm.diffusion",
+            "scirel.fvm.theta-step"
+          ],
+          "introduction": "有限体积入口共享显式面网格、边界约束和三对角离散；它们表达数值通量与时间步合同，不自动提供任意网格稳定性或正性保证。"
+        },
+        {
+          "id": "neoclassical-bootstrap-current",
+          "title": "新经典自举电流",
+          "summary": "由碰撞性、俘获分数和压力梯度计算自举电流及拟合系数。",
+          "assets": [
+            "scirel.neoclassical.bootstrap-current",
+            "scirel.neoclassical.redl-bootstrap-coefficients",
+            "scirel.neoclassical.sauter-bootstrap-coefficients"
+          ],
+          "introduction": "这些入口计算 Sauter/Redl 经验拟合系数及平行自举电流；碰撞性、俘获分数、压力梯度和几何一致性由调用者负责。"
+        },
+        {
+          "id": "plasma-algebra-and-energy",
+          "title": "等离子体代数与能量诊断",
+          "summary": "计算库仑对数、稀释因子和压强剖面储能。",
+          "assets": [
+            "scirel.physics.coulomb-ee",
+            "scirel.physics.coulomb-ei",
+            "scirel.physics.coulomb-ii",
+            "scirel.physics.dilution",
+            "scirel.physics.thermal-energy"
+          ],
+          "introduction": "这些直接关系提供库仑对数、单杂质稀释因子和压强剖面储能；数值关系的成功不等于完整碰撞模型或等离子体校准。"
+        },
+        {
+          "id": "source-profiles",
+          "title": "归一化源剖面",
+          "summary": "在非均匀半径网格上构造守恒的指数和高斯源剖面。",
+          "assets": [
+            "scirel.source.exponential",
+            "scirel.source.gaussian"
+          ],
+          "introduction": "指数和高斯源在调用者给出的非均匀单元权重上归一化；宽度、总量、网格和极端尺度失败语义必须按各自合同读取。"
         }
       ]
     },
@@ -780,7 +826,8 @@
             "scirel.sampling.point-nearest",
             "scirel.sampling.scattered-linear",
             "scirel.sampling.rectangular-spline",
-            "scirel.sampling.regular-grid"
+            "scirel.sampling.regular-grid",
+            "scirel.geometry.face-to-cell"
           ]
         },
         {
