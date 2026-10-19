@@ -172,7 +172,7 @@
    "Independent analytic finite-interval identities and component error reporting.",
    "Explicit feature-mesh whole-line shifted Gaussian cases with independent Faddeeva references.",
    "Failure closure for callback-only whole-line support and malformed tolerances.",
-   "Known near-real-axis kernel peaks and logarithmic-scale tails are resolved independently of density feature mesh; strict finite-support continuation endpoint policy is retained."
+   "Known near-real-axis kernel peaks and logarithmic-scale tails are resolved independently of density feature mesh; the strict finite-support continuation endpoint policy applies."
   ],
   "tests": [
    "tests/operator_contracts/test_gpdf_d2.py",

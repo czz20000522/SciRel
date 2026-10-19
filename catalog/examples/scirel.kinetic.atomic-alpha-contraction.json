@@ -5,7 +5,7 @@
   "en": "Atomic alpha collision frequency contraction",
   "zh": "原子氢碰撞频率收缩"
  },
- "summary": "Per spatial cell, contract the atomic four-family assembled SIG collision matrices (CX, H-H2, H-P, H-H) with the Fortran-order flattened predecessor distributions to four (nvr,nvx,nx) Alpha collision-frequency fields.",
+ "summary": "Per spatial cell, contract the atomic four-family assembled SIG collision matrices (CX, H-H2, H-P, H-H) with the Fortran-order flattened input distributions to four (nvr,nvx,nx) Alpha collision-frequency fields.",
  "taxonomy": [
   "kinetic",
   "neutral-transport",
@@ -18,17 +18,17 @@
  "identity": {
   "relation": "Alpha_CX[:,:,k] = F^-1(SIG_CX @ F(fi_hat[:,:,k]*ni[k])), Alpha_H_H2[:,:,k] = F^-1(SIG_H_H2 @ F(fH2[:,:,k])), Alpha_H_P[:,:,k] = F^-1(SIG_H_P @ F(fi_hat[:,:,k]*ni[k])), Alpha_H_H[:,:,k] = F^-1(SIG_H_H @ F(fH[:,:,k])), where F/F^-1 are the source's legacy Fortran-order (order='F') flatten/restore between the (nvr,nvx) slice and the (nvr*nvx,) Work carrier.",
   "direction": "four assembled SIG collision matrices + explicit predecessor distributions (fi_hat, ni, fH2, fH) -> four Alpha collision-frequency fields (Alpha_CX, Alpha_H_H2, Alpha_H_P, Alpha_H_H)",
-  "definition": "The saved source's per-k matrix-vector contraction: each family multiplies one assembled (N,N) SIG matrix by the Fortran-order flattening of one predecessor distribution carried on the (nvr*nvx,) Work buffer and restores the product to the (nvr,nvx) slice. The CX and H-P families carry fi_hat scaled cell-wise by ni[k]; the H-H2 and H-H families carry the bare predecessor distributions fH2 and fH.",
-  "model": "the saved formal implementation, ported verbatim and reproduced bit for bit on the declared legal domain (SHA-256-pinned environment-gated replay)",
+  "definition": "The per-k matrix-vector contraction: each family multiplies one assembled (N,N) SIG matrix by the Fortran-order flattening of one input distribution carried on the (nvr*nvx,) Work buffer and restores the product to the (nvr,nvx) slice. The CX and H-P families carry fi_hat scaled cell-wise by ni[k]; the H-H2 and H-H families carry the bare distributions fH2 and fH.",
+  "model": "Per-k atomic four-family SIG matrix contraction on the declared legal domain",
   "geometry": "per spatial cell k: an (nvr,nvx) cylindrical velocity slice Fortran-order flattened to an (N,) carrier (N = nvr*nvx), contracted against an (N,N) assembled collision matrix, restored to (nvr,nvx); iterated over nx slices",
   "coordinates": "cylindrical (vr,vx) velocity space per spatial slice x; velocity axes in the caller's normalized units, densities in m^-3; the callable performs no implicit unit conversion",
   "boundary": "finite aligned inputs of the declared shapes; negative or zero densities are not rejected at runtime -- every finite density profile is contracted as given; bounded negative output cells inherited from the signed elastic SIG families (vx_vx / vr2_vx2 factors) are reproduced as-is, never clamped",
   "assumptions": [
-   "The saved formal operator is ported verbatim; no repair is claimed for the atomic arm.",
+   "The operator applies the declared contraction unchanged; no repair is claimed for the atomic arm.",
    "The SIG matrices arrive already assembled (atomic four-family collision-matrix assembly): entries are cross section times relative speed times the velocity-space quadrature weight evaluated on the (vr,vx) energy carrier, including the signed elastic vx_vx / vr2_vx2 factors; this operator only contracts and never clamps or re-scales them.",
    "Bounded negative cells inherited from the signed elastic SIG families are reproduced as-is; whether they correspond to physically acceptable diffusion behavior is left to expert review.",
-   "Negative or zero densities are not rejected at runtime; the saved domain assumes physically meaningful finite profiles, and the fail-closed contract covers only shape/alignment and non-finite values.",
-   "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+   "Negative or zero densities are not rejected at runtime; the declared domain assumes physically meaningful finite profiles, and the fail-closed contract covers only shape/alignment and non-finite values.",
+   "No external atomic-physics reference is bound; the gap remains recorded as validation_oracle_gap."
   ]
  },
  "inputs": [
@@ -39,7 +39,7 @@
    "shape": "[N, N] with N = nvr*nvx",
    "dtype": "real array-like",
    "required": true,
-   "constraints": "Finite; must be 2-D square with order exactly nvr*nvx. The saved assembly produces a nonnegative SIG_CX; the contraction preserves whatever sign pattern the caller supplies."
+   "constraints": "Finite; must be 2-D square with order exactly nvr*nvx. The declared assembly produces a nonnegative SIG_CX; the contraction preserves whatever sign pattern the caller supplies."
   },
   {
    "name": "SIG_H_H",
@@ -113,7 +113,7 @@
    "shape": "[nvr,nvx,nx]",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "Finite (fail closed otherwise); nonnegative on the saved domain where SIG_CX is nonnegative; never clamped."
+   "constraints": "Finite (fail closed otherwise); nonnegative on the declared domain where SIG_CX is nonnegative; never clamped."
   },
   {
    "name": "Alpha_H_H2",
@@ -146,7 +146,7 @@
  "applicability": {
   "preconditions": [
    "Finite aligned SIG matrices of common order nvr*nvx and finite (nvr,nvx,nx) distributions with an (nx,) density profile.",
-   "The predecessor distributions and the assembled SIG matrices already exist; this operator performs no assembly, gating, or cache handling."
+   "The input distributions and the assembled SIG matrices already exist; this operator performs no assembly, gating, or cache handling."
   ],
   "supported": [
    "Atomic four-family Alpha collision-frequency contraction (Alpha_CX, Alpha_H_H2, Alpha_H_P, Alpha_H_H) on a declared velocity carrier."

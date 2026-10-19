@@ -35,11 +35,11 @@
   ],
   "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
   "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
-  "definition": "vthermal=sqrt(2 kB T/m), signed rho=sqrt(kB T/m)/Omega, wn=min abs(Omega), kn=1/max abs(rho); source eV conversion retained.",
+  "definition": "vthermal=sqrt(2 kB T/m), signed rho=sqrt(kB T/m)/Omega, wn=min abs(Omega), kn=1/max abs(rho); temperatures are converted from eV to K with 1.6022e-19/kB.",
   "direction": "forward",
   "geometry": "uniform background B along z; wavevector (kx,0,kz)",
   "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
-  "relation": "source case listed-species scales and normalization"
+  "relation": "listed-species scales and normalization for the selected BONK or EM case"
  },
  "inputs": [
   {
@@ -83,7 +83,7 @@
   }
  },
  "schema": "scirel.asset-document",
- "summary": "Derive the complete source BONK or EM species, normalization and material state.",
+ "summary": "Derive the complete BONK or EM species, normalization and material state.",
  "taxonomy": [
   "kinetic",
   "plasma-waves",

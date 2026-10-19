@@ -5,7 +5,7 @@
   "en": "Effective multi-fluid dispersion scan",
   "zh": "多流体色散扫描"
  },
- "summary": "Run the full retained source scan family through corrected operators with explicit state and limits.",
+ "summary": "Run the complete scan family through corrected operators with explicit state and limits.",
  "taxonomy": [
   "kinetic",
   "plasma",
@@ -18,7 +18,7 @@
   "relation": "Complete bounded effective multi-fluid spectrum scan and terminal projection",
   "direction": "species,selectors,grids -> complete scan spectra, last-point matrices/state, plotting",
   "definition": "Initialize once; for each source-selected k point assemble the corrected matrix and compute the conditioned eigenspectrum; collect every sorted mode and retain the last-point M,A,w1,w2,state. Methods2/3/4 retain defaults101/196 magnitude points,51 angles,50x75 Cartesian mesh and row-major kz then kx order. Single branch handles0/1 and unknown nonnegative selectors. Then produce a two-panel PNG in Agg for2/3/4; other selectors retain zero axes. Optional SI positional return is (M,A,w1,w2,kk,ww1,ww2,betasz,vA,csz2,c2,rhos0,wcs,qs,ms,wps,B0) prefix, all defined.",
-  "model": "Composition of fresh state, corrected local multi-fluid matrix and conditioned spectrum; source scan grids retained",
+  "model": "Composition of fresh state, corrected local multi-fluid matrix and conditioned spectrum; the scan grids follow the declared method defaults",
   "geometry": "x-z wavevector scans; B0 along z",
   "coordinates": "Scan axes precede mode axis; Cartesian shape [kz_index,kx_index,mode]",
   "boundary": "Entire scan bounded by max_points; failure aborts without partial scientific results; independent sorting is not branch continuation",
@@ -26,7 +26,7 @@
    "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
    "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
    "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
-   "Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim."
+   "Relativistic inertia uses d(gamma*v)/dv with noncovariant pressure and friction; no fully covariant thermodynamics claim is made."
   ]
  },
  "inputs": [
@@ -167,7 +167,7 @@
    "shape": "scalar",
    "dtype": "real numeric",
    "required": false,
-   "constraints": "Finite; method2 source angle pi/4 normalized or0 SI is retained.",
+   "constraints": "Finite; method2 takes the declared pi/4 angle in normalized units, or 0 in SI.",
    "default": 1.0471975511965976
   },
   {
@@ -464,13 +464,13 @@
    "Caller chooses consistent SI or normalized quantities; unit selection labels data and selects defaults, and does not implicitly convert arrays."
   ],
   "supported": [
-   "The complete retained normalized/SI local multi-fluid mapping, source scan selectors and caller-owned state under the explicitly declared effective closure."
+   "The complete normalized/SI local multi-fluid mapping, the declared scan selectors and caller-owned state under the explicitly declared effective closure."
   ],
   "excluded": [
    "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
    "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
    "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
-   "Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim."
+   "Relativistic inertia uses d(gamma*v)/dv with noncovariant pressure and friction; no fully covariant thermodynamics claim is made."
   ]
  },
  "failure_semantics": {
@@ -520,8 +520,8 @@
    "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
    "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
    "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
-   "Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim.",
-   "Only local authorized D2 evaluation; source and paper redistribution NOT_ESTABLISHED, no public distribution permission or human/release approval.",
+   "Relativistic inertia uses d(gamma*v)/dv with noncovariant pressure and friction; no fully covariant thermodynamics claim is made.",
+   "Evaluated locally under the declared authorization only; redistribution of the source material and of the associated paper is NOT_ESTABLISHED, with no public distribution permission and no human or release approval.",
    "Example output is a bounded runtime observation, not a universal scientific claim."
   ]
  },

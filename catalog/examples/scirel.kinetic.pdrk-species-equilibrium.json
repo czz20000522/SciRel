@@ -17,7 +17,7 @@
  "identity": {
   "relation": "Magnetized species equilibrium",
   "direction": "deck,setup -> equilibrium state",
-  "definition": "Convert q/e and m/mp to SI, temperatures eV to K and drift/c to m/s; vt_parallel=sqrt(2 kB Tparallel/m), omega_c=qB0/m, omega_p^2=nq^2/(epsilon0 m), cwp=c/omega_p1. Retain alpha==1 Maxwellian branch and separate polar/Cartesian par entries. Source constant profile: c=2.9979e8 m/s, epsilon0=8.8542e-12 F/m, kB=1.3807e-23 J/K, qe=1.6022e-19 C, mp=1.6726e-27 kg; mu0=1/(c^2 epsilon0). Deck charge is q/qe, mass is m/mp, temperatures are eV, parallel drift is vd/c. These source approximations intentionally differ from other runtime profiles.",
+  "definition": "Convert q/e and m/mp to SI, temperatures eV to K and drift/c to m/s; vt_parallel=sqrt(2 kB Tparallel/m), omega_c=qB0/m, omega_p^2=nq^2/(epsilon0 m), cwp=c/omega_p1. Keep the alpha==1 Maxwellian branch and separate polar/Cartesian par entries. Constant profile: c=2.9979e8 m/s, epsilon0=8.8542e-12 F/m, kB=1.3807e-23 J/K, qe=1.6022e-19 C, mp=1.6726e-27 kg; mu0=1/(c^2 epsilon0). Deck charge is q/qe, mass is m/mp, temperatures are eV, parallel drift is vd/c. These approximations intentionally differ from other runtime profiles.",
   "model": "Uniform magnetized, nonrelativistic charged Gaussian species with optional gyrotropic loss-cone mixture; B0 along signed z and k=(kx,0,kz).",
   "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
   "coordinates": "SI angular frequency rad/s and wave number m^-1; normalized source scan/selection quantities are labeled explicitly.",
@@ -35,12 +35,12 @@
    "shape": "(S,8)",
    "dtype": "real numeric array-like",
    "required": false,
-   "constraints": "S>=1; charged q!=0,m>0,n>=0 with first n>0,Tparallel/Tperp/alpha>0,Delta in[0,1],abs(vd/c)<1; finite representable binary64. None loads packaged scenario deck.",
+   "constraints": "S>=1; charged q!=0,m>0,n>=0 with first n>0,Tparallel/Tperp/alpha>0,Delta in[0,1],abs(vd/c)<1; finite representable binary64. None loads the scenario deck.",
    "default": null
   },
   {
    "name": "scenario",
-   "description": "Packaged scientific setup and seed prescription.",
+   "description": "Scientific setup and seed prescription.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "str",
@@ -120,7 +120,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
-  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError with retained result and receipt when its caught scientific terminal fails.",
+  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError carrying the result and receipt computed so far when its caught scientific terminal fails.",
   "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
   "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
  },
@@ -136,7 +136,7 @@
   "dependencies": []
  },
  "example": {
-  "description": "Small wheel-only example using packaged native resources and raw Octave; no source checkout or network.",
+  "description": "A self-contained example that uses the packaged native resources and raw Octave; no network access is required.",
   "code": "import numpy as np\nfrom scirel.kinetic.pdrk import magnetized as m, workflows as w\ndeck=np.array([[1,1,1e6,100,100,1,1,0],[-1,1,1e6,100,100,1,1,0.]])\ncontrols=dict(B0=1e-7,N=1,J=4,sp=0,iem=1,iout=2,ipa=3,ipb=3,iloga=0,ilogb=0,pa1=.2,pa2=.4,dpa=.1)\neq=m.initialize_equilibrium(deck,controls=controls,par=[.2,0,.2,0,0,0])\nassert int(eq.state['S'].item())==2\n",
   "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
  },
@@ -148,12 +148,12 @@
   "tests": [
    "tests/operator_contracts/test_pdrk_magnetized.py"
   ],
-  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
   "known_limitations": [
    "Local technical development; human scientific endorsement and publication clearance remain pending.",
    "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
    "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
-   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+   "The native example and full verification require GNU Octave on Linux amd64; the current macOS run is NOT_RUN."
   ]
  },
  "references": [

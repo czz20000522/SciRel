@@ -71,7 +71,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
-  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError with retained result and receipt when its caught scientific terminal fails.",
+  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError carrying the result and receipt computed so far when its caught scientific terminal fails.",
   "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
   "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
  },
@@ -87,7 +87,7 @@
   "dependencies": []
  },
  "example": {
-  "description": "Requires GNU Octave on Linux amd64 for the native PDRK path; this macOS execution is NOT_RUN.",
+  "description": "Requires GNU Octave on Linux amd64 for the native execution path; this macOS execution is NOT_RUN.",
   "code": "import numpy as np\nfrom scirel.kinetic.pdrk import magnetized as m, workflows as w\nr=m.loss_cone_partition([.5,1.],[.4,.7])\nassert np.allclose(np.sum(r.state['rsab'],axis=0),1)\n",
   "expected": "NOT_RUN: GNU Octave on Linux amd64 is unavailable on this macOS host; the example was attempted and raised NativeExecutionError before native execution."
  },

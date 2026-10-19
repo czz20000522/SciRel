@@ -15,7 +15,7 @@
   "relation": "Cell/face staggered reconstruction",
   "direction": "Explicit cell/face data to spatial operator or state update",
   "definition": "Cell centers are arithmetic face midpoints. face_value linearly interpolates inner faces and uses prescribed values or half-cell gradient extrapolation at endpoints. face_grad fits three neighboring point values for internal faces. At the last internal face it uses the two adjacent cells with the actual right Dirichlet value or the prescribed positive-coordinate Neumann derivative. For the latter, let s=(u1-u0)/(x1-x0), b be the boundary, and f the internal face: q_prime(f)=s+(g-s)*(2*f-x0-x1)/(2*b-x0-x1). A boolean N+1 two_point_mask overrides internal gradients with adjacent secants. Endpoint Dirichlet gradients remain half-cell secants; Neumann gradients are prescribed. grad is the face_value difference divided by cell width.",
-  "model": "TORAX one-dimensional finite-volume discretization",
+  "model": "One-dimensional conservative finite-volume discretization",
   "geometry": "Explicit one-dimensional face grid, cell centers at arithmetic midpoints",
   "coordinates": "Caller coordinate X; positive increasing direction",
   "boundary": "One scalar Dirichlet value or positive-coordinate Neumann gradient at each end; homogeneous unit cross-section unless metrics supplied",

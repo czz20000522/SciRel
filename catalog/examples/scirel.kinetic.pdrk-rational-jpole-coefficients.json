@@ -170,7 +170,7 @@
   },
   {
    "name": "high_precision_linear_residual",
-   "description": "Normalized matching-system residual retained as a decimal string.",
+   "description": "The normalized matching-system residual, returned as a decimal string.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "str",
@@ -259,7 +259,7 @@
   ],
   "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
   "known_limitations": [
-   "Original license unverified; MATLAB execution NOT_RUN.",
+   "Redistribution permission for the reference material is unverified; MATLAB execution NOT_RUN.",
    "Finite-J/finite-N physics must be qualified for a new requested regime.",
    "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
    "Human scientific and plot approval pending.",

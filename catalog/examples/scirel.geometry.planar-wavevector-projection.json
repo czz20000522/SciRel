@@ -23,7 +23,7 @@
   "coordinates": "Cartesian x-z components with z parallel to the background field",
   "boundary": "Magnitude is nonnegative; zero magnitude keeps the supplied polar angle, whereas Cartesian mode returns no angle.",
   "assumptions": [
-   "The caller has converted source-specific wave numbers to consistent inverse-metre units.",
+   "The caller has converted all wave numbers to consistent inverse-metre units.",
    "The operation does not rotate coordinates or handle a y component."
   ]
  },
@@ -125,7 +125,7 @@
    "Single-angle polar sweeps and paired Cartesian component sweeps in the x-z plane."
   ],
   "excluded": [
-   "PDRK scan selection, logarithmic controls, par state updates and derived angle output.",
+   "Scan-driver selection, logarithmic controls, parameter-state updates and derived angle output.",
    "Complex wavevectors, y components, coordinate rotations and dispersion physics."
   ]
  },
@@ -162,13 +162,13 @@
   "tests": [
    "tests/operator_contracts/test_planar_wavevector.py"
   ],
-  "evidence_ceiling": "The source-free direct tests establish this callable's declared bounded arithmetic, boolean-pseudo-number rejection and failures in this tree. The PDRF/PDRK comparison runs described in docs/evaluations were performed once against saved source implementations during intake; they are provisional development evidence, are not re-runnable from this repository, and neither set proves source physics, a strict D1 freeze, or expert approval.",
+  "evidence_ceiling": "The direct tests establish this callable's declared bounded arithmetic, boolean-pseudo-number rejection and failure behaviour in this tree. No external cross-implementation comparison is re-runnable from this repository, and none is claimed as evidence here.",
   "known_limitations": [
-   "PDRF normalized input-card wave numbers lack a verified conversion to 1/m.",
-   "The PDRF/PDRK comparison covers only the mapped real numeric domain; SciRel additionally rejects string/boolean numeric surrogates, so the source comparison does not exercise this rejection.",
-   "Cartesian hypot intentionally differs from the PDRF square-and-sum overflow at large finite components.",
-   "PDRK scan-state semantics require a separate relation.",
-   "Strict source handoff, expert recognition and distribution licensing remain pending."
+   "Wave numbers supplied in normalized input-card units lack a verified conversion to 1/m.",
+   "The mapping is exercised only on real numeric inputs; string and boolean numeric surrogates are rejected by SciRel and lie outside every existing comparison.",
+   "The Cartesian norm deliberately avoids the squared-sum overflow that a naive square-and-sum evaluation shows at large finite components.",
+   "Scan-driver state semantics require a separate relation.",
+   "Distribution licensing remains pending."
   ]
  }
 }

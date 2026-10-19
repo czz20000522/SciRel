@@ -2,10 +2,10 @@
  "schema": "scirel.asset-document",
  "asset_id": "scirel.kinetic.pdrk-stored-program-workflow",
  "title": {
-  "en": "Packaged stored-program workflow",
-  "zh": "随包完整程序流程"
+  "en": "Stored-program workflow",
+  "zh": "完整程序流程"
  },
- "summary": "Run one packaged stored scenario through its scientific scan, selection, field/output and writer composition in one native process.",
+ "summary": "Run one stored scenario through its scientific scan, selection, field/output and writer composition in one native process.",
  "taxonomy": [
   "kinetic",
   "magnetized-plasma",
@@ -15,9 +15,9 @@
   "PDRK original_program"
  ],
  "identity": {
-  "relation": "Packaged stored-program workflow",
+  "relation": "Stored-program workflow",
   "direction": "Declared scientific input ports in one mapping -> completed scientific state and declared artifacts",
-  "definition": "Run one packaged stored scenario through its scientific scan, selection, field/output and writer composition in one native process. inputs mapping: scenario=\"default\",timeout=86400,rng_seed=None. Both stored interactive continuation prompts receive empty responses. A seed is applied once before main clears its workspace. Scientific graph nodes reuse the declared native numerical relations; a fused native implementation may execute them in one process. Controlled glue only schedules, carries state and projects results. The public Python wrapper accepts one inputs mapping; each listed scientific port is an entry of that mapping, with required/default status from the actual underlying callable.",
+  "definition": "Run one stored scenario through its scientific scan, selection, field/output and writer composition in one native process. inputs mapping: scenario=\"default\",timeout=86400,rng_seed=None. Both stored interactive continuation prompts receive empty responses. A seed is applied once before main clears its workspace. Scientific graph nodes reuse the declared native numerical relations; a fused native implementation may execute them in one process. Controlled glue only schedules, carries state and projects results. The public Python wrapper accepts one inputs mapping; each listed scientific port is an entry of that mapping, with required/default status from the actual underlying callable.",
   "model": "Uniform magnetized, nonrelativistic charged Gaussian species with optional gyrotropic loss-cone mixture; B0 along signed z and k=(kx,0,kz).",
   "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
   "coordinates": "SI angular frequency rad/s and wave number m^-1; normalized source scan/selection quantities are labeled explicitly.",
@@ -31,7 +31,7 @@
  "inputs": [
   {
    "name": "scenario",
-   "description": "Packaged scientific setup and seed prescription.",
+   "description": "Scientific setup and seed prescription.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "str",
@@ -68,25 +68,25 @@
    "shape": "mapping",
    "dtype": "NativeResult.state mapping",
    "required": true,
-   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are preserved and inactive fields remain empty arrays."
   },
   {
    "name": "program_completed",
-   "description": "Scientific terminal completion flag or caught original-program error; transport success alone is insufficient.",
+   "description": "Scientific terminal completion flag or caught program error; transport success alone is insufficient.",
    "units": "dimensionless",
    "shape": "(1,1) or string",
    "dtype": "logical or str",
    "required": true,
-   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are preserved and inactive fields remain empty arrays."
   },
   {
    "name": "program_error",
-   "description": "Scientific terminal completion flag or caught original-program error; transport success alone is insufficient.",
+   "description": "Scientific terminal completion flag or caught program error; transport success alone is insufficient.",
    "units": "dimensionless",
    "shape": "(1,1) or string",
    "dtype": "logical or str",
    "required": true,
-   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are preserved and inactive fields remain empty arrays."
   },
   {
    "name": "mat_bytes",
@@ -95,7 +95,7 @@
    "shape": "(nbytes,1)",
    "dtype": "uint8",
    "required": true,
-   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are preserved and inactive fields remain empty arrays."
   },
   {
    "name": "all_png",
@@ -104,7 +104,7 @@
    "shape": "(nbytes,1)",
    "dtype": "uint8",
    "required": true,
-   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are preserved and inactive fields remain empty arrays."
   },
   {
    "name": "select_png",
@@ -113,7 +113,7 @@
    "shape": "(nbytes,1)",
    "dtype": "uint8",
    "required": true,
-   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are preserved and inactive fields remain empty arrays."
   },
   {
    "name": "pola_png",
@@ -122,7 +122,7 @@
    "shape": "(nbytes,1)",
    "dtype": "uint8",
    "required": true,
-   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are preserved and inactive fields remain empty arrays."
   },
   {
    "name": "all_fig",
@@ -131,7 +131,7 @@
    "shape": "(nbytes,1)",
    "dtype": "uint8",
    "required": true,
-   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are preserved and inactive fields remain empty arrays."
   },
   {
    "name": "select_fig",
@@ -140,7 +140,7 @@
    "shape": "(nbytes,1)",
    "dtype": "uint8",
    "required": true,
-   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are preserved and inactive fields remain empty arrays."
   },
   {
    "name": "pola_fig",
@@ -149,7 +149,7 @@
    "shape": "(nbytes,1)",
    "dtype": "uint8",
    "required": true,
-   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are preserved and inactive fields remain empty arrays."
   }
  ],
  "applicability": {
@@ -165,7 +165,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
-  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError with retained result and receipt when its caught scientific terminal fails.",
+  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError carrying the result and receipt computed so far when its caught scientific terminal fails.",
   "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
   "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
  },
@@ -197,25 +197,25 @@
   ]
  },
  "example": {
-  "description": "Small wheel-only example using packaged native resources and raw Octave; no source checkout or network.",
+  "description": "A self-contained example that uses the packaged native resources and raw Octave; no network access is required.",
   "code": "from scirel.kinetic.pdrk import workflows as w\nr=w.original_program({'scenario':'es1d_beam','timeout':120,'rng_seed':2718})\nassert r.state['program_completed'].item()\nassert r.state['mat_bytes'].size>0\n",
   "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
  },
  "verification": {
   "scope": [
-   "Stored full-program composition, prompts, artifacts and controlled startup RNG have complete D1 source-fidelity evidence for seven source scenarios.",
-   "D2 corrections are qualified by bounded independent matrix/field/state tests and small graphs. These do not establish new full-default seven-scenario scientific acceptance."
+   "The full-program composition, prompts, artifacts and controlled startup RNG are covered by direct evidence for seven declared scenarios.",
+   "The matrix/field/state corrections are qualified by bounded independent component tests and small graphs. These do not establish full-default seven-scenario scientific acceptance."
   ],
   "tests": [
    "tests/operator_contracts/test_pdrk_graphs.py"
   ],
-  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
   "known_limitations": [
    "Local technical development; human scientific endorsement and publication clearance remain pending.",
    "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
    "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
-   "The full stored-program example can cost more than the small graph examples; it is one source scenario, not a requirement to rerun all seven defaults.",
-   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+   "The full stored-program example can cost more than the small graph examples; it is one declared scenario, not a requirement to rerun all seven defaults.",
+   "The native example and full verification require GNU Octave on Linux amd64; the current macOS run is NOT_RUN."
   ]
  },
  "graph": {

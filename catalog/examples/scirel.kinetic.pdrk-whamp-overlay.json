@@ -5,7 +5,7 @@
   "en": "WHAMP table figure overlay",
   "zh": "WHAMP 表格图像叠加"
  },
- "summary": "Apply the literal stored-reference overlay to an explicit native predecessor figure; source legends are retained without claiming compatible predecessor physics.",
+ "summary": "Apply the literal stored-reference overlay onto an explicit native figure; its legends are those of the stored reference and make no claim about compatible external physics.",
  "taxonomy": [
   "kinetic",
   "pdrk",
@@ -15,7 +15,7 @@
  "identity": {
   "relation": "Attributed stored reference data to sequential native figure overlay",
   "direction": "artifact composition",
-  "definition": "Overlay source rows 1:2:end as black x markers of linewidth2; retain the imaginary-axis range [-1,0.1] and five southwest legend labels. Existing predecessor curves are retained.",
+  "definition": "Overlay rows 1:2:end of the stored reference as black x markers of linewidth2; the imaginary-axis range is fixed at [-1,0.1] and five southwest legend labels are drawn. Existing curves on the caller's figure remain.",
   "model": "Stored external-solver reference observations; not an executable WHAMP solver.",
   "geometry": "The source kx column is the literal constant 0.5.",
   "coordinates": "Column units and complete run normalization are not stated in the source.",
@@ -27,7 +27,7 @@
  "inputs": [
   {
    "name": "predecessor_plot",
-   "description": "Explicit predecessor native figure and its scientific provenance.",
+   "description": "Explicit native figure together with the documented origin of its curves.",
    "units": "not applicable",
    "shape": "NativeResult or mapping containing figure_native bytes, or null",
    "dtype": "NativeResult | mapping | None",
@@ -101,11 +101,11 @@
   "tests": [
    "tests/operator_contracts/test_pdrk_examples_support.py"
   ],
-  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native Octave execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
   "known_limitations": [
    "Overlay compatibility is the caller's scientific responsibility.",
    "Human figure interpretation and missing source metadata remain outside this operator.",
-   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+   "The native example and full native-path qualification require GNU Octave on Linux amd64; the run on this macOS host is NOT_RUN."
   ]
  }
 }

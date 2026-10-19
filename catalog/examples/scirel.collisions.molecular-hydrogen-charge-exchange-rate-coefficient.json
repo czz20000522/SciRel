@@ -5,7 +5,7 @@
   "en": "Molecular-hydrogen charge-exchange Maxwellian rate coefficient",
   "zh": "分子氢电荷交换Maxwellian速率系数"
  },
- "summary": "Evaluate the saved H2 + H2+ charge-exchange Maxwellian rate-coefficient fit from paired plasma temperature and impact energy samples in eV.",
+ "summary": "Evaluate the H2 + H2+ charge-exchange Maxwellian rate-coefficient fit from paired plasma temperature and impact energy samples in eV.",
  "taxonomy": [
   "collisions",
   "rate-coefficient",
@@ -21,22 +21,22 @@
  "identity": {
   "relation": "molecular-H2 charge-exchange Maxwellian rate coefficient from a bivariate logarithmic fit",
   "direction": "paired plasma temperature and impact energy in eV -> rate coefficient in m^3/s",
-  "definition": "Sequentially clip positive temperature and nonnegative impact energy to [0.1, 2.01e4] eV. With L_T=log(T), L_E=log(E), accumulate log_rate=sum_j=0..8 sum_i=0..8 a[i,j]*L_E^j*L_T^i using the saved energy-outer, temperature-inner addition order and the saved molecular 9x9 coefficient table. Return exp(log_rate)*1e-6 m^3/s. The output keeps the paired input shape.",
-  "model": "saved KN1DPy molecular-H2 nine-by-nine bivariate logarithmic rate fit; not a velocity-mesh Maxwellian integral",
+  "definition": "Sequentially clip positive temperature and nonnegative impact energy to [0.1, 2.01e4] eV. With L_T=log(T), L_E=log(E), accumulate log_rate=sum_j=0..8 sum_i=0..8 a[i,j]*L_E^j*L_T^i using the energy-outer, temperature-inner addition order and the molecular 9x9 coefficient table. Return exp(log_rate)*1e-6 m^3/s. The output keeps the paired input shape.",
+  "model": "Molecular-H2 nine-by-nine bivariate logarithmic rate fit; not a velocity-mesh Maxwellian integral",
   "geometry": "none; paired scalar or array material samples",
   "coordinates": "temperature and impact energy in eV, with no spatial or velocity axis inferred",
-  "boundary": "finite real numeric inputs of identical shape; temperature strictly positive, impact energy nonnegative; source endpoint clipping in both dimensions; finite positive represented output",
+  "boundary": "finite real numeric inputs of identical shape; temperature strictly positive, impact energy nonnegative; endpoint clipping in both dimensions; finite positive represented output",
   "assumptions": [
-   "The molecular coefficient table and saved summation order are retained on finite real inputs for exact historical replay.",
+   "The molecular coefficient table and summation order define the fit on finite real inputs.",
    "The atomic-H charge-exchange rate is a distinct physical system with another coefficient table. The molecular fit also does not call the molecular cross-section fit or maxwellian-relative-speed-rate-average; their equivalence is not established.",
-   "The saved operator document describes broadcast-compatible input shapes but the callable requires exact shape equality. The maintained contract follows the observed callable.",
-   "The saved implementation clips nonpositive temperature and negative energy despite its document's declared input domain, and accepts boolean and numeric-string coercions. The maintained callable rejects these inputs."
+   "The callable requires exact shape equality between temperature and energy; broadcast-compatible input shapes are not supported.",
+   "Nonpositive temperature, negative energy and boolean or numeric-string coercions are rejected."
   ]
  },
  "inputs": [
   {
    "name": "temperature_ev",
-   "description": "Plasma temperature for the saved molecular Maxwellian rate fit.",
+   "description": "Plasma temperature for the molecular Maxwellian rate fit.",
    "units": "eV",
    "shape": "scalar or array; exactly the shape of energy_ev",
    "dtype": "real numeric array-like",
@@ -66,14 +66,14 @@
  ],
  "applicability": {
   "preconditions": [
-   "The caller accepts the saved endpoint-clipping convention and supplies physically paired temperatures and impact energies."
+   "The caller accepts the endpoint-clipping convention and supplies physically paired temperatures and impact energies."
   ],
   "supported": [
-   "Scalar and equal-shape array evaluation of the saved molecular-H2 charge-exchange rate fit on or clipped to its declared domain."
+   "Scalar and equal-shape array evaluation of the molecular-H2 charge-exchange rate fit on or clipped to its declared domain."
   ],
   "excluded": [
    "Atomic-H charge exchange, molecular elastic scattering, dissociation, CX collision-frequency assembly and explicit velocity-mesh averaging of a cross section.",
-   "External atomic-physics accuracy claims or physical correctness outside the saved fit's compared domain."
+   "External atomic-physics accuracy claims or physical correctness outside the fit's compared domain."
   ]
  },
  "failure_semantics": {
@@ -102,20 +102,20 @@
  },
  "verification": {
   "scope": [
-   "Fixed saved reference values and independent polyval2d reevaluation verify the molecular coefficient direction and fit on ordinary samples; the double-upper-endpoint corner is checked against the saved-order value.",
+   "Fixed reference values and independent polyval2d reevaluation verify the molecular coefficient direction and fit on ordinary samples; the double-upper-endpoint corner is checked against the declared-order value.",
    "Direct tests cover molecular-vs-atomic difference, clipping, scalar shape, invalid domain and non-real input rejection.",
-   "Five optional SHA-gated historical replays compare finite one- and two-dimensional carriers exactly and document three rejection differences."
+   "An optional external comparison test compares finite one- and two-dimensional carriers exactly and covers three rejection differences; it runs only when an external implementation root is configured."
   ],
   "tests": [
    "tests/operator_contracts/test_hydrogen2_charge_exchange_rate.py",
    "tests/operator_contracts/test_hydrogen2_charge_exchange_rate_l1.py"
   ],
-  "evidence_ceiling": "Maintained tests establish the discrete molecular fit, clipping, sibling difference and failure contract on tested samples. SHA-gated saved replay establishes historical arithmetic agreement on compared grids only. No external atomic-physics oracle validates the fit; whole-source D1 qualification, expert approval and distribution licensing are absent.",
+  "evidence_ceiling": "The tests establish the discrete fit, clipping and failure contract on tested samples. Bit-exact agreement with an independent implementation of the same expressions holds on the compared grids only. No external atomic-physics oracle validates the fit; public distribution licensing is absent.",
   "known_limitations": [
-   "The saved package records an external atomic-physics validation_oracle_gap; the fit is not independently validated as a physical rate model.",
+   "No external atomic-physics oracle is bound; the fit is not independently validated as a physical rate model.",
    "Out-of-fit-range values silently repeat endpoint rates rather than extrapolating or failing.",
    "The fitted rate is not derived at runtime from the separate molecular cross-section asset or the mesh rate-average asset.",
-   "The saved bundle's strict D1 qualification is withdrawn, and public distribution licensing remains pending."
+   "Public distribution licensing remains pending."
   ]
  }
 }

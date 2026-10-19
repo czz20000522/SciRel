@@ -138,7 +138,7 @@
   ]
  },
  "example": {
-  "description": "Requires GNU Octave on Linux amd64 for the native PDRK path; this macOS execution is NOT_RUN.",
+  "description": "Requires GNU Octave on Linux amd64 for the native Octave path; this macOS execution is NOT_RUN.",
   "code": "from scirel.kinetic.pdrk.multifluid import fluid_equilibrium_si, scan_fluid_corrected\nfrom scirel.kinetic.pdrk.plotting import fluid_plot_scan\ns = fluid_equilibrium_si()\ng = scan_fluid_corrected(dict(state=s, grid_controls=dict(scan_k=[1e-5, 2e-5])))\nr = fluid_plot_scan(g, s)\nassert r.state[\"png_bytes\"].size > 0",
   "expected": "NOT_RUN: GNU Octave on Linux amd64 is unavailable on this macOS host; the example was attempted and raised NativeExecutionError before native execution."
  },

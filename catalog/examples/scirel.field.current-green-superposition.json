@@ -140,7 +140,7 @@
   "tests": [
    "tests/operator_contracts/test_current_green_superposition.py"
   ],
-  "evidence_ceiling": "Verifies the maintained linear contraction and shape contract; it does not establish that an upstream Green model is scientifically applicable.",
+  "evidence_ceiling": "Verifies the linear contraction and shape contract; it does not establish that the Green model supplying its input is scientifically applicable.",
   "known_limitations": [
    "Only scalar and one-dimensional current inputs are supported.",
    "The operator does not infer or reorder source axes.",

@@ -18,15 +18,15 @@
  "identity": {
   "relation": "source[vr,vx,x] = target[vr,vx,x] * rate[x] with rate[x] = sum over (vr,vx) of W(vr,vx) * alpha[vr,vx,x] * previous[vr,vx,x] * dvx[vx]",
   "direction": "target, CX frequency, previous generation and quadrature -> the scattered source",
-  "definition": "The saved cell-local construction: the rate contraction reduces the previous generation against the CX field, and the target shape is scaled per cell; no cross-cell transport enters",
-  "model": "the saved formal implementation's Simple_CX per-generation scattering step",
+  "definition": "The cell-local construction: the rate contraction reduces the previous generation against the CX field, and the target shape is scaled per cell; no cross-cell transport enters",
+  "model": "Simple_CX per-generation cell-local scattering step",
   "geometry": "two velocity dimensions over one spatial axis; cell-local in space",
   "coordinates": "all fields in the source's discrete units; frequency in s^-1",
   "boundary": "finite aligned three-dimensional target/frequency/previous fields; finite nonnegative (nvr,nvx) weight and (nvx) dvx; nonnegative frequency, weight, and dvx",
   "assumptions": [
-   "Cell-locality is the saved per-generation scattering approximation; transport between cells is a separate step in the source.",
+   "Cell-locality is the declared per-generation scattering approximation; transport between cells is a separate step of the larger calculation.",
    "The caller owns the quadrature normalization and the CX frequency field.",
-   "Declared r60 pre-review tightening: the saved arm does not gate its output for finiteness, so extreme-but-valid inputs can overflow to non-finite results; this asset fail-closes on a non-finite result, per the exact document's finite-output contract. The saved-arm divergence is pinned by a bounded regression test."
+   "Declared finiteness tightening: the output is gated for finiteness, so extreme-but-valid inputs that would overflow fail closed rather than returning non-finite results, per the finite-output contract. The divergence is pinned by a bounded regression test."
   ]
  },
  "inputs": [
@@ -124,16 +124,16 @@
  },
  "verification": {
   "scope": [
-   "That the source equals an independent cell-local rate contraction with the saved operation order.",
+   "That the source equals an independent cell-local rate contraction in the declared operation order.",
    "The alignment and nonnegativity failure contracts.",
-   "Read-only valid-input comparison against the SHA-256-pinned saved KN1DPy implementation; historical development evidence only."
+   "A read-only valid-input comparison against digest-pinned reference values; bounded evidence only."
   ],
   "tests": [
    "tests/operator_contracts/test_neutral_scattered_sources.py"
   ],
-  "evidence_ceiling": "The maintained source-free tests establish saved-order arithmetic, signed-value and fail-closed contracts. A separate read-only replay can compare bounded finite real inputs with the SHA-256-pinned saved implementation; it does not establish malformed-input parity, qualified-L1 provenance, expert recognition, version-level trust or distribution licensing.",
+  "evidence_ceiling": "The maintained tests establish the declared operation-order arithmetic, signed-value and fail-closed contracts. A separate read-only comparison can check bounded finite real inputs against digest-pinned reference values; it does not establish malformed-input parity, independently reviewed qualification, expert recognition, version-level trust or distribution licensing.",
   "known_limitations": [
-   "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+   "This contract carries no independently reviewed qualification of parity with any external implementation; no such qualification can be claimed without a fresh independent review.",
    "Public distribution licensing remains pending a human decision."
   ]
  }

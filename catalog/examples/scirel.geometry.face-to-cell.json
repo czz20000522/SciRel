@@ -18,7 +18,7 @@
   "relation": "cell[i]=(face[i]+face[i+1])/2",
   "direction": "finite face vector -> cell vector",
   "definition": "Adjacent arithmetic midpoint; output has one fewer entry and same units. Sum first when representable, otherwise sum halved endpoints; no invented geometry or coordinate fallback.",
-  "model": "retained TORAX relation with explicit SciRel numeric boundary checks",
+  "model": "Midpoint-averaging relation with explicit SciRel numeric boundary checks",
   "geometry": "one-dimensional cell/face grid",
   "coordinates": "face index order; no coordinate values consumed",
   "boundary": "finite real one-dimensional face vector with at least two entries",
@@ -57,7 +57,7 @@
    "Finite one-dimensional midpoint interpolation with at least two face values; no broadcasting."
   ],
   "excluded": [
-   "Whole TORAX evolution, experimental calibration, and implicit coordinate reconstruction."
+   "Whole-transport evolution, experimental calibration, and implicit coordinate reconstruction."
   ]
  },
  "failure_semantics": {
@@ -88,7 +88,7 @@
   "scope": [
    "Manufactured midpoint values, subnormal rounding, finite endpoint overflow avoidance, shape and dtype boundary.",
    "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
-   "Source relation attribution and comparison with actual canonical SciRel callers/dependencies."
+   "Agreement with the canonical SciRel callers and dependencies of this relation."
   ],
   "tests": [
    "tests/operator_contracts/test_torax_algebra_grid.py"
@@ -96,7 +96,7 @@
   "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration.",
   "known_limitations": [
    "No nonuniform coordinate interpolation is provided.",
-   "Source parity is bounded to the retained midpoint relation; SciRel adds explicit input checks."
+   "Agreement is bounded to the midpoint relation; SciRel adds explicit input checks."
   ]
  }
 }

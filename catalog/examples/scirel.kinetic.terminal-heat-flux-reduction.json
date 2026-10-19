@@ -18,15 +18,15 @@
  "identity": {
   "relation": "terminal H2 random and total axial heat-flux reduction",
   "direction": "terminal (vr,vx,x) distribution, normalized velocity nodes, explicit mass and thermal speed, quadrature -> two x profiles",
-  "definition": "For each spatial cell k, density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j] and particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j], using the saved per-cell matrix-vector and radial order. Let u=particle_flux/density, c_x=vx-u/Vth, c_squared=vr^2+c_x^2, and m=2*mass_ratio*1.6726231e-27 kg. The random flux is 0.5*m*Vth^3 times the weighted integral of c_squared*c_x*f. Pressure is m*Vth^2/(3*1.602177e-19) times the weighted integral of c_squared*f, and axial stress is m*Vth^2/1.602177e-19 times the weighted integral of c_x^2*f minus pressure. Total flux is (0.5*density*m*u^2+2.5*pressure*1.602177e-19)*u+1.602177e-19*axial_stress*u+random_flux. On finite exact arithmetic it equals the raw kinetic-energy flux 0.5*m*Vth^3 times the weighted integral of (vr^2+vx^2)*vx*f.",
-  "model": "saved KN1DPy terminal H2 energy-moment diagnostic with caller-supplied mass ratio and thermal speed",
+  "definition": "For each spatial cell k, density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j] and particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j], using the declared per-cell matrix-vector and radial order. Let u=particle_flux/density, c_x=vx-u/Vth, c_squared=vr^2+c_x^2, and m=2*mass_ratio*1.6726231e-27 kg. The random flux is 0.5*m*Vth^3 times the weighted integral of c_squared*c_x*f. Pressure is m*Vth^2/(3*1.602177e-19) times the weighted integral of c_squared*f, and axial stress is m*Vth^2/1.602177e-19 times the weighted integral of c_x^2*f minus pressure. Total flux is (0.5*density*m*u^2+2.5*pressure*1.602177e-19)*u+1.602177e-19*axial_stress*u+random_flux. On finite exact arithmetic it equals the raw kinetic-energy flux 0.5*m*Vth^3 times the weighted integral of (vr^2+vx^2)*vx*f.",
+  "model": "Terminal H2 energy-moment heat-flux diagnostic with caller-supplied mass ratio and thermal speed",
   "geometry": "one-dimensional x profile over cylindrical (vr,vx) velocity cells",
   "coordinates": "radial and axial velocity nodes are dimensionless speeds normalized by the supplied thermal speed; radial nodes are nonnegative and axial nodes may be signed",
   "boundary": "finite nonnegative nonempty three-dimensional distribution; finite one-dimensional aligned velocity nodes and nonnegative quadrature weights; positive scalar mass ratio and thermal speed; positive integrated density in every x cell",
   "assumptions": [
    "On positive quadrature weights the random-flux field agrees with scirel.kinetic.axisymmetric-neutral-moments when its derived thermal speed equals this caller-supplied speed and molecularity is 2. The total-flux field is additional; this terminal relation allows zero weights and does not expose the intermediate pressure or stress fields.",
-   "The mass ratio multiplies the saved hydrogen mass constant, not a standard atomic mass unit; the H2 mass uses twice that factor.",
-   "The callable neither establishes the upstream terminal distribution nor validates a full KN1D terminal closure. Boolean, complex and numeric-string coercions in the saved implementation are excluded by the maintained real-numeric contract."
+   "The mass ratio multiplies the declared hydrogen mass constant, not a standard atomic mass unit; the H2 mass uses twice that factor.",
+   "The callable neither establishes the incoming terminal distribution nor validates a full terminal closure. Boolean, complex and numeric-string coercions are excluded by the maintained real-numeric contract."
   ]
  },
  "inputs": [
@@ -50,7 +50,7 @@
   },
   {
    "name": "mass_ratio",
-   "description": "Positive factor of the saved hydrogen mass used for the H2 particle mass.",
+   "description": "Positive factor of the declared hydrogen mass used for the H2 particle mass.",
    "units": "factor of 1.6726231e-27 kg",
    "shape": "scalar",
    "dtype": "real numeric scalar",
@@ -154,15 +154,15 @@
   "scope": [
    "Independent per-cell centered and raw energy-flux integrals check both outputs on a nonuniform signed carrier.",
    "Positive-weight random-flux overlap agrees with the existing nine-moment relation; zero-weight acceptance distinguishes their contracts.",
-   "Three SHA-gated historical cases cover exact finite replay and the saved boolean-coercion divergence."
+   "Three digest-pinned reference cases cover exact finite replay and the declared boolean-coercion divergence."
   ],
   "tests": [
    "tests/operator_contracts/test_terminal_molecular_heat_flux.py",
    "tests/operator_contracts/test_terminal_molecular_heat_flux_l1.py"
   ],
-  "evidence_ceiling": "Direct and optional saved comparisons establish the finite discrete heat-flux relation and boundary differences on tested carriers. They do not establish the upstream terminal distribution, physical normalization, whole-source D1 qualification or expert approval.",
+  "evidence_ceiling": "Direct comparisons establish the finite discrete heat-flux relation and boundary differences on tested carriers. They do not establish the incoming terminal distribution, physical normalization, qualification of the whole closure or expert approval.",
   "known_limitations": [
-   "The source's strict D1 qualification is withdrawn; historical parity is only bounded development evidence.",
+   "No independently reviewed qualification of parity with an external implementation holds; parity evidence is bounded to the declared finite cases.",
    "The physical normalization of the supplied distribution requires expert review.",
    "Public distribution licensing remains pending."
   ]

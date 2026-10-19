@@ -4,95 +4,95 @@
  "records": [
   {
    "asset_id": "scirel.equilibrium.compute-equilibrium",
-   "source_sha256": "dbdeb0426b76f6ebc42267d85b5d12e827aa66292c50aed4e302d5dbae18e6f2",
-   "summary": "在给定真空磁通和 Green 矩阵下执行有界轴对称压力电流反馈，并返回显式终态。",
-   "definition": "压力闭合为 j_phi=R dP/dpsi；每轮按给定松弛系数更新电流、磁通、压力拟合和两个残差，只有两个残差同时满足 tol 才报告 converged。",
-   "model": "基于给定压力—半径函数、真空磁通和 Green 矩阵的来源约束反馈实现。",
-   "boundary": "压力边界是沿物理半径向外遍历时的第一个精确零点；下降存储坐标先按物理半径排序，输出仍保持调用者顺序。",
+   "source_sha256": "cbd4f22566894f8b4a79576a41a253c63e310ee90d28ca63686dddd8d4204f61",
+   "summary": "在给定真空磁通与 Green 矩阵下执行有界轴对称压力—电流反馈，并返回显式终态。",
+   "definition": "压力闭合为 j_phi=R dP/dpsi，其中 psi=R A_phi。更新残差为 ||psi_new-psi_old||_2/abs(edge_new)。闭合残差为 ||I_new-I_target(psi_new,新拟合)||_2/||I_target||_2：目标为零且误差为零时取零；目标为零但电流非零时残差为无穷，并给出非有限终态。只有两个残差同时不超过 tol 才算收敛。状态只在本次调用内有效；依次更新拟合导数、裁剪、松弛后的电流、Green 收缩、新磁通、边界/拟合及两个残差，并在收敛、状态无效或达到 maxiter 时停止。",
+   "model": "基于压力—半径反馈，使用 InterpolatedUnivariateSpline 和调用者提供的 Green 矩阵。",
+   "boundary": "压力边界为沿物理半径向外遍历时的第一个精确零点；从轴侧至边界的磁通必须严格增加。存储坐标下降时，只把中平面拟合索引按 R 排序；Green 双轴、电流及结果均保持调用者次序。",
    "assumptions": [
-    "Finite real arrays",
-    "Green matrix shape is (R.size,R.size)",
-    "Pressure-only closure; no toroidal F F-prime term, prescribed current profile or independent continuum force-balance certification.",
-    "relax is in [0,1) because relax=1 freezes zero initial currents"
+    "输入为有限实数数组。",
+    "Green 矩阵形状为 (R.size,R.size)。",
+    "只采用压力闭合；不包含环向 F F' 项、给定的电流剖面，也不独立认证连续体力平衡。",
+    "relax 位于 [0,1)；relax=1 会使零初始电流保持不变。"
    ],
    "inputs": [
     {
      "name": "R",
-     "description": "Radial grid",
-     "constraints": "Column-consistent, uniformly spaced, at least 2x2",
-     "dtype": "finite real",
+     "description": "径向网格。",
+     "constraints": "各列一致、均匀间隔，至少 2×2。",
+     "dtype": "有限实数",
      "shape": "2-D 矩形",
-     "units": "源-unspecified"
+     "units": "未声明"
     },
     {
      "name": "Z",
-     "description": "Vertical grid",
-     "constraints": "Row-consistent, uniformly spaced, contains >=3 exact zero midplane points",
-     "dtype": "finite real",
+     "description": "纵向网格。",
+     "constraints": "各行一致、均匀间隔，至少包含 3 个精确为零的中平面点。",
+     "dtype": "有限实数",
      "shape": "2-D 矩形",
-     "units": "源-unspecified"
+     "units": "未声明"
     },
     {
      "name": "Pfunc",
-     "description": "Pressure versus radius callable",
-     "constraints": "Must provide an exact zero pressure edge",
-     "dtype": "finite real outputs on midplane",
-     "shape": "合同说明：callable",
-     "units": "源-unspecified"
+     "description": "压力随半径变化的可调用对象。",
+     "constraints": "必须在压力边界处给出精确零。",
+     "dtype": "中平面上输出有限实数",
+     "shape": "可调用对象",
+     "units": "未声明"
     },
     {
      "name": "psi_vac",
-     "description": "Vacuum flux",
-     "constraints": "Midplane flux strictly increasing through pressure edge",
-     "dtype": "finite real",
+     "description": "真空磁通。",
+     "constraints": "中平面磁通在压力边界处严格增加。",
+     "dtype": "有限实数",
      "shape": "R.形状",
-     "units": "源-unspecified"
+     "units": "未声明"
     },
     {
      "name": "g_psi",
-     "description": "Supplied Green matrix",
-     "constraints": "Finite",
-     "dtype": "finite real",
+     "description": "调用者提供的 Green 矩阵。",
+     "constraints": "必须有限。",
+     "dtype": "有限实数",
      "shape": "(R.大小,R.大小)",
-     "units": "源-unspecified"
+     "units": "未声明"
     },
     {
      "name": "tol",
-     "description": "Threshold for both normalized flux-update and current-closure residuals",
-     "constraints": "positive finite",
-     "dtype": "float",
+     "description": "归一化磁通更新残差与电流闭合残差的共同阈值。",
+     "constraints": "有限正数。",
+     "dtype": "浮点数",
      "shape": "标量",
      "units": "无量纲"
     },
     {
      "name": "maxiter",
-     "description": "Maximum feedback updates",
-     "constraints": "nonnegative nonboolean integer",
-     "dtype": "int",
+     "description": "最大反馈更新次数。",
+     "constraints": "非负、非布尔的整数。",
+     "dtype": "整数",
      "shape": "标量",
      "units": "无量纲"
     },
     {
      "name": "relax",
-     "description": "Weight on old current",
-     "constraints": "finite in [0,1)",
-     "dtype": "float",
+     "description": "旧电流的权重。",
+     "constraints": "有限且位于 [0,1) 内。",
+     "dtype": "浮点数",
      "shape": "标量",
      "units": "无量纲"
     },
     {
      "name": "plas_clip",
-     "description": "Optional plasma-current exclusion mask",
-     "constraints": "same grid shape and boolean",
-     "dtype": "bool array or None",
+     "description": "可选的等离子体电流排除掩膜。",
+     "constraints": "与网格同形且为布尔数组。",
+     "dtype": "布尔数组或 None",
      "shape": "R.形状 或 None",
      "units": "无量纲"
     },
     {
      "name": "plotit",
-     "description": "GUI plotting selector",
-     "constraints": "True is unsupported",
-     "dtype": "bool",
+     "description": "GUI 绘图选择器。",
+     "constraints": "True 不受支持。",
+     "dtype": "布尔值",
      "shape": "标量",
      "units": "无量纲"
     }
@@ -100,50 +100,50 @@
    "outputs": [
     {
      "name": "EquilibriumResult",
-     "description": "Flux, plasma currents, final pressure fit, status, iteration count, original update residual, closure_residual and reason; immutable residual_history and closure_residual_history tuples for completed paired residual evaluations",
-     "constraints": "status is converged, maxiter or nonfinite; history length may be less than attempted iterations when an update fails before residual evaluation",
-     "dtype": "dataclass",
-     "shape": "psi/plas_currents R.形状",
-     "units": "源-unspecified"
+     "description": "磁通、等离子体电流、最终压力拟合、状态、迭代次数、原始更新残差、closure_residual 与原因；以及已完成成对残差求值的不可变 residual_history 和 closure_residual_history 元组。",
+     "constraints": "status 为 converged、maxiter 或 nonfinite；若某次更新在残差求值前失败，历史长度可能小于尝试的迭代次数。",
+     "dtype": "数据类",
+     "shape": "psi/plas_currents 与 R 同形",
+     "units": "未声明"
     }
    ],
    "applicability": {
     "preconditions": [
-     "All finite real rectangular uniformly spaced inputs",
-     "Exact zero pressure edge"
+     "所有输入均为有限实数、矩形且均匀间隔的网格。",
+     "压力边界处必须取精确零。"
     ],
     "supported": [
-     "Bounded update feedback with optional boolean plasma mask",
-     "Explicit terminal state for convergence, iteration cap and nonfinite update",
-     "Convergence cannot be triggered by a stationary flux when relaxed current still violates the pressure closure.",
-     "Coherent descending R/Z storage preserves the physical radial pressure traversal and caller-ordered outputs."
+     "支持带可选布尔等离子体掩膜的有界更新反馈。",
+     "对收敛、迭代上限和非有限更新都给出显式终态。",
+     "当松弛后的电流仍违反压力闭合时，静止磁通不能触发收敛。",
+     "一致的下降 R/Z 存储保持物理径向压力遍历次序，输出按调用者次序排列。"
     ],
     "excluded": [
-     "Physical equilibrium correctness",
-     "Force-balance residual",
-     "Nonuniform/curvilinear grids",
-     "plotit=True",
-     "relax=1",
-     "Nonfinite Green matrices"
+     "物理平衡的正确性。",
+     "力平衡残差。",
+     "非均匀或曲线网格。",
+     "不支持 plotit=True。",
+     "不支持 relax=1。",
+     "非有限 Green 矩阵。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "ValueError before iteration for shape, dtype, grid, parameter, mask or contract violations.",
-    "runtime_failure": "nonfinite status for nonfinite derivative/current/Green/fit/residual; no nonfinite pressure derivative is silently replaced by zero.",
-    "nonconvergence": "maxiter status with last local state and residual; maxiter=0 has residual +inf.",
-    "partial_results": "nonfinite is explicitly not accepted; failed Green arithmetic retains the preceding finite flux/current pair. Histories contain only completed paired residual evaluations."
+    "invalid_input": "形状、dtype、网格、参数、掩膜或合同违规时，在迭代前抛出 ValueError。",
+    "runtime_failure": "导数、电流、Green 收缩、拟合或残差出现非有限值时，终态记为 nonfinite；不会把非有限压力导数静默替换为零。",
+    "nonconvergence": "达到 maxiter 时返回状态 maxiter，并带上最后一次局部状态与残差；maxiter=0 时残差为 +inf。",
+    "partial_results": "明确不接受 nonfinite 结果；Green 运算失败时沿用此前有限的磁通/电流对。历史只包含已完成的成对残差求值。"
    },
    "example": {
-    "description": "在 2×5 网格上运行一个有界制造反馈案例。",
+    "description": "在 2×5 网格上运行有界的人造反馈案例。",
     "expected": "返回显式终态；status 表示数值终止状态，不等同于物理平衡。"
    },
    "verification": {
     "scope": [
-     "Manufactured update/residual and terminal status fixtures",
-     "Input boundary rejection regressions",
-     "Inherited equilibrium proposal tests",
-     "Analytic current closure and near-unit-relaxation false-convergence regression.",
-     "Ascending/descending paired nonzero-G pressure feedback and independent derivative/current closure."
+     "人造的更新/残差与终态用例。",
+     "输入边界拒绝回归。",
+     "压力平衡提案测试。",
+     "解析电流闭合与近单位松弛的假收敛回归。",
+     "升序/降序成对非零 G 压力反馈，以及独立的导数/电流闭合。"
     ],
     "tests": [
      "tests/pleiades/equilibrium/test_equilibrium_proposals.py",
@@ -152,10 +152,10 @@
      "tests/pleiades/equilibrium/test_descending_pressure_equilibrium.py",
      "tests/operator_contracts/test_legacy_six_absorption.py"
     ],
-    "evidence_ceiling": "Bounded numerical contract only; no scientific approval.",
+    "evidence_ceiling": "仅限有界数值合同；不构成科学批准。",
     "known_limitations": [
-     "No arbitrary pressure/Green physical closure validation",
-     "No independent continuum force-balance residual; supplied G controls the discrete model."
+     "不验证任意压力/Green 组合的物理闭合。",
+     "不提供独立的连续体力平衡残差；离散模型由调用者提供的 G 决定。"
     ]
    }
   }

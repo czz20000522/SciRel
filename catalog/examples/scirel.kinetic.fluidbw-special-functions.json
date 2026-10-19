@@ -4,7 +4,7 @@
  ],
  "applicability": {
   "excluded": [
-   "No execution or fidelity claim for original Taylor/asymptotic/integral selector.",
+   "No execution or fidelity claim for the Taylor/asymptotic/integral selector.",
    "No certified entire-complex-plane precision claim."
   ],
   "preconditions": [
@@ -21,8 +21,8 @@
  "asset_id": "scirel.kinetic.fluidbw-special-functions",
  "example": {
   "code": "from scirel.kinetic.fluidbw import evaluate_fluidbw_special\nvalue=evaluate_fluidbw_special('RTAY',2,0)\n",
-  "description": "Requires Linux amd64 and GNU Octave 7.3.0; this example exercises the native fluidBW boundary and is reported as NOT_RUN on macOS.",
-  "expected": "NOT_RUN on this macOS host: the call reaches the fluidBW runtime guard and raises RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")."
+  "description": "Requires Linux amd64 and GNU Octave 7.3.0; this example exercises the native runtime boundary and is reported as NOT_RUN on macOS.",
+  "expected": "NOT_RUN on this macOS host: the call reaches the native runtime guard and raises RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")."
  },
  "failure_semantics": {
   "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
@@ -102,8 +102,8 @@
   "fluidbw"
  ],
  "title": {
-  "en": "Corrected fluidBW special responses",
-  "zh": "修正的 fluidBW 特殊函数响应"
+  "en": "Special-function responses",
+  "zh": "特殊函数响应"
  },
  "verification": {
   "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",

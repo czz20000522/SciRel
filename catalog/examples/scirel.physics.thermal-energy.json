@@ -5,7 +5,7 @@
   "en": "Stored thermal energy from pressure profiles",
   "zh": "压强剖面的储存热能"
  },
- "summary": "Integrate electron, ion and total scalar pressure profiles independently with the TORAX 3/2 factor",
+ "summary": "Integrate electron, ion and total scalar pressure profiles independently with the 3/2 factor",
  "taxonomy": [
   "physics",
   "energy",
@@ -16,7 +16,7 @@
   "relation": "W = 3/2 integral(p dV) for each supplied pressure profile",
   "direction": "(p_el,p_ion,p_tot,vpr,drho_norm) -> (W_el,W_ion,W_tot)",
   "definition": "Return (1.5*sum(p_el*vpr*drho_norm),1.5*sum(p_ion*vpr*drho_norm),1.5*sum(p_tot*vpr*drho_norm)). Inputs are first converted to binary64, then exact rational products and accumulation retain signed cancellation and round only the final result to float64.",
-  "model": "Nonrelativistic isotropic-gas internal energy density u=3p/2; signed finite inputs retained as algebraic compatibility",
+  "model": "Nonrelativistic isotropic-gas internal energy density u=3p/2; signed finite inputs accepted as algebraic compatibility",
   "geometry": "Normalized radial cell grid with explicit volume metric and quadrature weights",
   "coordinates": "rho_norm is dimensionless normalized radius",
   "boundary": "Discrete cell-volume sum; no extrapolation or hidden endpoint reconstruction",

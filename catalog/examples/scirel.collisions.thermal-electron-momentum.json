@@ -5,7 +5,7 @@
   "en": "Thermal electron normalized momentum",
   "zh": "热电子归一化动量"
  },
- "summary": "计算非相对论热电子归一化动量 p_Te=sqrt(2T/mc²)。它是无量纲速度比 v/c，不是 cm/s 速度，不能直接作为 normalized-momentum 的 vnorm。 V6 区分中间溢出与最终不可表示性，避免可表示结果被错误拒绝或因中间下溢丢失。",
+ "summary": "计算非相对论热电子归一化动量 p_Te=sqrt(2T/mc²)。它是无量纲速度比 v/c，不是 cm/s 速度，不能直接作为 normalized-momentum 的 vnorm。 中间溢出与最终不可表示性分别处理，避免可表示结果被错误拒绝或因中间下溢丢失。",
  "taxonomy": [
   "collisions",
   "momentum-scales",
@@ -21,7 +21,7 @@
   "relation": "the thermal-electron normalized momentum p_Te as a function of the electron temperature and the electron rest energy",
   "direction": "temperature_kev, restmkev -> p_Te",
   "definition": "返回 sqrt(2×temperature_kev/restmkev) 的无量纲非相对论热速度比。常规区保留原 binary64 求值顺序；中间值溢出或变为次正规数时，按输入浮点数的精确值使用 100 位 Decimal 计算并最终舍入到 binary64。",
-  "model": "独立闭式定义，不是拟合；常规 binary64 运算与危险中间量的高精度求值后继，不包含单位自动转换。",
+  "model": "独立闭式定义，不是拟合；在常规 binary64 运算之外对危险中间量作高精度求值，不包含单位自动转换。",
   "geometry": "not applicable; a scalar algebraic evaluation",
   "coordinates": "not applicable",
   "boundary": "正温度/静能的比值可能在开平方前下溢，后备求值保留可表示的正根；只有最终值超出 binary64 范围时拒绝。",
@@ -74,16 +74,16 @@
    "按参数名拒绝不合形状或不满足有限/符号合同的输入；最终溢出拒绝，不返回部分结果。"
   ],
   "excluded": [
-   "Composition with scirel.collisions.normalized-momentum. V3 listed it as supported; the two leaves are dimensionally incompatible and the direct composition divides by c twice, so it is removed rather than described.",
+   "Composition with scirel.collisions.normalized-momentum: the two leaves are dimensionally incompatible and the direct composition divides by c twice, so it is not provided.",
    "Any relativistic correction to the thermal speed ratio.",
    "Any statement of the electron rest energy, of the speed of light, or of any other physical constant; every constant is the caller's.",
    "Any unit conversion, including the conversion of the returned ratio to a velocity.",
-   "The four Coulomb-log mappings the retained route also exposes: they are different relations and are not published with these two leaves.",
+   "The four Coulomb-log mappings of the same family: they are different relations and are not published with these two leaves.",
    "最终结果超出 binary64 可表示范围时拒绝；中间结果溢出本身不在排除范围。"
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError when temperature_kev or restmkev is not scalar-shaped, with a message naming the parameter, or when either is not finite and strictly positive, with the retained route's message. Both checks are the retained route's numeric guard plus an explicit shape check; the conversion and the domain checks themselves are unchanged.",
+  "invalid_input": "Raises ValueError when temperature_kev or restmkev is not scalar-shaped, or when either is not finite and strictly positive, with a message naming the offending parameter.",
   "runtime_failure": "仅在后备计算后最终值仍非有限时引发 ValueError。中间乘积/商溢出、下溢或次正规精度损失触发高精度后备，不直接拒绝输入。",
   "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
   "partial_results": "Never returned; a rejected call produces no value."
@@ -111,7 +111,7 @@
    "保持普通区原数值断言、有效容差、输入形状和错误消息；常规结果逐位不变。",
    "修复前 13 个新增极值检查有 7 个实际失败；它们包含有限大值误拒绝、中间下溢归零和符号保持。",
    "200 位 Decimal 独立求值及真实非有限终值拒绝检验覆盖新行为；原热输入 1e308/511 的拒绝断言被实证纠正，原件保留。",
-   "旧来源/V2—V5 的历史外部比较不在本次重放；本次只重新绑定两个定义及其独立科学合同。"
+   "外部历史比较不在本合同的证据范围内；本合同只绑定两个定义及其独立科学合同。"
   ],
   "tests": [
    "tests/operator_contracts/test_momentum_scales.py",

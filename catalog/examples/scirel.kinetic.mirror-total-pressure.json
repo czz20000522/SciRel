@@ -74,7 +74,7 @@
    "shape": "unchanged input density shape",
    "dtype": "original input value",
    "required": true,
-   "constraints": "Finite nonnegative and common-shape broadcastable; original valid object retained."
+   "constraints": "Finite nonnegative and common-shape broadcastable; the caller's valid object is returned as is."
   },
   {
    "name": "ion_p_parallel",
@@ -101,7 +101,7 @@
    "shape": "unchanged input density shape",
    "dtype": "original input value",
    "required": true,
-   "constraints": "Finite nonnegative and common-shape broadcastable; original valid object retained."
+   "constraints": "Finite nonnegative and common-shape broadcastable; the caller's valid object is returned as is."
   },
   {
    "name": "electron_pressure",
@@ -119,7 +119,7 @@
    "shape": "unchanged input potential shape or None",
    "dtype": "original input value or None",
    "required": true,
-   "constraints": "If supplied, finite and broadcast-compatible; original object retained. Absent means None."
+   "constraints": "If supplied, finite and broadcast-compatible; the caller's object is returned as is. Absent means None."
   },
   {
    "name": "relative_charge_residual",
@@ -177,7 +177,7 @@
  "example": {
   "description": "Add a scalar electron pressure to two ion pressure arrays while retaining the ion input mapping and an absent potential.",
   "code": "import numpy as np\nfrom scirel.kinetic import assemble_mirror_total_pressure\nion = {'p_parallel_pa': [2.0, 3.0], 'p_perpendicular_pa': [4.0, 5.0], 'density_m3': [1.0, 2.0], 'marker': 'ion'}\nelectron = {'electron_density_m3': [6.0, 7.0], 'electron_pressure_pa': 1.5, 'relative_charge_residual': [0.1, 0.2]}\nr = assemble_mirror_total_pressure(ion, electron)\nnp.testing.assert_allclose(r['p_parallel'], [3.5, 4.5])\nnp.testing.assert_allclose(r['p_perpendicular'], [5.5, 6.5])\nassert r['kinetic_moments'] is ion and r['marker'] == 'ion'\nassert r['electrostatic_potential'] is None",
-  "expected": "The returned total pressures were p_parallel=[3.5, 4.5] Pa and p_perpendicular=[5.5, 6.5] Pa; the input ion mapping was retained and electrostatic_potential was None."
+  "expected": "The returned total pressures were p_parallel=[3.5, 4.5] Pa and p_perpendicular=[5.5, 6.5] Pa; the ion mapping was passed through and electrostatic_potential was None."
  },
  "verification": {
   "scope": [

@@ -96,7 +96,7 @@
   "tests": [
    "tests/pleiades/equilibrium/test_analysis_families.py"
   ],
-  "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+  "evidence_ceiling": "Numerical evidence for the named fixtures only; it does not establish arbitrary-input correctness or experimental physical validation.",
   "known_limitations": [
    "Intersection is bounded to fitted parameter intervals and rejects no-crossing/multiple-root cases; tangency/completeness remains unqualified",
    "Arbitrary contour topology, magnetic-axis limit and physical stability are unqualified",

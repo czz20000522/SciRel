@@ -5,7 +5,7 @@
   "en": "Normalized momentum on a grid",
   "zh": "网格归一化动量"
  },
- "summary": "将带符号无量纲网格映射为 p_n=x vnorm/clight；vnorm 与 clight 必须是同单位速度，不能将无量纲热速比直接传入。 V6 区分中间溢出与最终不可表示性，避免可表示结果被错误拒绝或因中间下溢丢失。",
+ "summary": "将带符号无量纲网格映射为 p_n=x vnorm/clight；vnorm 与 clight 必须是同单位速度，不能将无量纲热速比直接传入。 中间溢出与最终不可表示性分别处理，避免可表示结果被错误拒绝或因中间下溢丢失。",
  "taxonomy": [
   "collisions",
   "momentum-scales",
@@ -21,7 +21,7 @@
   "relation": "the normalized momentum profile p_n on a grid, from the grid, a velocity scale and the speed of light",
   "direction": "x, vnorm, clight -> p_n",
   "definition": "逐元素返回无量纲 p_n=x×vnorm/clight；vnorm 与 clight 必须为相同单位的速度。常规区保留原 binary64 求值顺序；中间值溢出或变为次正规数时，按输入浮点数的精确值使用 100 位 Decimal 计算并最终舍入到 binary64。",
-  "model": "独立闭式定义，不是拟合；常规 binary64 运算与危险中间量的高精度求值后继，不包含单位自动转换。",
+  "model": "独立闭式定义，不是拟合；在常规 binary64 运算之外对危险中间量作高精度求值，不包含单位自动转换。",
   "geometry": "not applicable; an elementwise scaling of a one-dimensional grid",
   "coordinates": "not applicable; the grid is a caller-supplied dimensionless coordinate, not a spatial coordinate",
   "boundary": "零速度尺度得到有符号零，映射对 x 为奇函数；中间乘积溢出不导致误拒绝。最终极小值按 binary64 舍入可成为有符号零，最终溢出仍拒绝。",
@@ -83,16 +83,16 @@
    "按参数名拒绝不合形状或不满足有限/符号合同的输入；最终溢出拒绝，不返回部分结果。"
   ],
   "excluded": [
-   "Composition with scirel.collisions.thermal-electron-momentum. V3 listed it as supported; the two leaves are dimensionally incompatible and the direct composition divides by c twice, so it is removed rather than described. A caller that wants the dimensionless grid momentum x * p_Te must convert the ratio to a velocity first, for example vnorm = p_Te * clight, and that conversion is the caller's step.",
+   "Composition with scirel.collisions.thermal-electron-momentum: the two leaves are dimensionally incompatible and the direct composition divides by c twice, so it is not provided. A caller that wants the dimensionless grid momentum x * p_Te must convert the ratio to a velocity first, for example vnorm = p_Te * clight, and that conversion is the caller's step.",
    "Any unit conversion between vnorm and clight; the relation assumes a common unit and cannot verify it.",
    "Any statement of the speed of light or of any other physical constant; every constant is the caller's.",
    "Any requirement that the momentum be nonnegative, which belongs to the electron-ion leaf.",
-   "The four Coulomb-log mappings the retained route also exposes: they are different relations and are not published with these two leaves.",
+   "The four Coulomb-log mappings of the same family: they are different relations and are not published with these two leaves.",
    "最终结果超出 binary64 可表示范围时拒绝；中间结果溢出本身不在排除范围。"
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError when x is not a finite one-dimensional array, when vnorm or clight is not scalar-shaped, with a message naming the parameter, or when vnorm is negative or non-finite or clight is non-positive or non-finite, with the retained route's message. The shape check is the only addition; the conversion and the domain checks themselves are unchanged.",
+  "invalid_input": "Raises ValueError when x is not a finite one-dimensional array, when vnorm or clight is not scalar-shaped, or when vnorm is negative or non-finite or clight is non-positive or non-finite, with a message naming the offending parameter.",
   "runtime_failure": "仅在后备计算后最终值仍非有限时引发 ValueError。中间乘积/商溢出、下溢或次正规精度损失触发高精度后备，不直接拒绝输入。",
   "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
   "partial_results": "Never returned; a rejected call produces no profile."
@@ -120,7 +120,7 @@
    "保持普通区原数值断言、有效容差、输入形状和错误消息；常规结果逐位不变。",
    "修复前 13 个新增极值检查有 7 个实际失败；它们包含有限大值误拒绝、中间下溢归零和符号保持。",
    "200 位 Decimal 独立求值及真实非有限终值拒绝检验覆盖新行为；原热输入 1e308/511 的拒绝断言被实证纠正，原件保留。",
-   "旧来源/V2—V5 的历史外部比较不在本次重放；本次只重新绑定两个定义及其独立科学合同。"
+   "外部历史比较不在本合同的证据范围内；本合同只绑定两个定义及其独立科学合同。"
   ],
   "tests": [
    "tests/operator_contracts/test_momentum_scales.py",

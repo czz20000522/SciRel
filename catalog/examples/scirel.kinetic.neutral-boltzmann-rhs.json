@@ -18,13 +18,13 @@
  "identity": {
   "relation": "Vth*(S + Beta_CX - alpha_c*f + OmegaM + Swall) on a shared 3-D mesh",
   "direction": "thermal speed plus six aligned 3-D fields -> Boltzmann RHS",
-  "definition": "The saved signed sum: rhs = Vth * (coeff_source + charge_exchange_source_sum - collision_frequency * total_distribution + elastic_source_sum + wall_source_sum).",
-  "model": "the saved formal implementation's explicit Boltzmann RHS assembly",
+  "definition": "The signed sum: rhs = Vth * (coeff_source + charge_exchange_source_sum - collision_frequency * total_distribution + elastic_source_sum + wall_source_sum).",
+  "model": "the explicit Boltzmann RHS assembly",
   "geometry": "two velocity dimensions over one spatial axis",
   "coordinates": "thermal speed m/s; all fields in the source's discrete units",
   "boundary": "thermal speed finite and positive; all six fields finite 3-D arrays with one common shape",
   "assumptions": [
-   "The saved signed sum is the development reference; the sign convention (alpha_c*f subtracted) is preserved.",
+   "The signed sum defines the relation; the sign convention (alpha_c*f subtracted) is preserved.",
    "The caller owns the individual source/frequency fields; this asset only assembles.",
    "SciRel rejects boolean, string and complex coercions and any non-finite RHS produced from finite inputs."
   ]
@@ -150,7 +150,7 @@
   ],
   "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
   "known_limitations": [
-   "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+   "Broader verification is not claimed beyond the listed direct tests.",
    "Public distribution licensing remains pending a human decision.",
    "Example output is a bounded runtime observation, not a universal scientific claim."
   ]

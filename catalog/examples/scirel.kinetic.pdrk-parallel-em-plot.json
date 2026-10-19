@@ -22,7 +22,7 @@
   "boundary": "Explicit predecessor figure or fresh axes.",
   "assumptions": [
    "cwp and wcs1 are supplied physical normalization scales.",
-   "A retained source legend does not prove arbitrary predecessor curve identities."
+   "A plot legend alone does not prove arbitrary predecessor curve identities."
   ]
  },
  "inputs": [
@@ -71,7 +71,7 @@
    "shape": "object or null",
    "dtype": "NativeTransport or None",
    "required": false,
-   "constraints": "Requires a compatible external Octave runtime. No original checkout or network is consulted.",
+   "constraints": "Requires a compatible external Octave runtime. No network access is required.",
    "default": null
   }
  ],
@@ -119,7 +119,7 @@
   ]
  },
  "example": {
-  "description": "Requires GNU Octave on Linux amd64 for the native PDRK path; this macOS execution is NOT_RUN.",
+  "description": "Requires GNU Octave on Linux amd64 for the native execution path; this macOS execution is NOT_RUN.",
   "code": "import numpy as np\nfrom scirel.kinetic.pdrk.plotting import em1d_plot\nr = em1d_plot(dict(k=np.array([0.2, 0.3]), omega=np.array([0.2+0j, 0.3+0j])), dict(cwp=1.0, wcs1=1.0))\nassert r.state[\"figure_native\"].size > 0",
   "expected": "NOT_RUN: GNU Octave on Linux amd64 is unavailable on this macOS host; the example was attempted and raised NativeExecutionError before native execution."
  },

@@ -5,7 +5,7 @@
   "en": "Maxwellian rational pole table",
   "zh": "麦克斯韦有理极点表"
  },
- "summary": "Select an explicit source table family and variant; J12 uses the qualified high-precision reconstruction of the source two-sided Padé equations.",
+ "summary": "Select an explicit pole-table family and variant; J12 uses the high-precision reconstruction of the two-sided Padé equations.",
  "taxonomy": [
   "kinetic",
   "plasma",
@@ -17,7 +17,7 @@
  "identity": {
   "relation": "Maxwellian rational pole table",
   "direction": "Declared inputs to named scientific outputs.",
-  "definition": "Z_J(z)=sum_j b_j/(z-c_j). Historical lower-order families and source ordering retained; regenerated J12 is an intentional numerical correction, not historical numeric identity.",
+  "definition": "Z_J(z)=sum_j b_j/(z-c_j). The lower-order families keep their declared table ordering; the regenerated J12 is an intentional numerical correction, not a reproduction of earlier numbers.",
   "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
   "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
   "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
@@ -110,7 +110,7 @@
   "dependencies": []
  },
  "example": {
-  "description": "Run the declared PDRK relation with its native-backed scientific ports.",
+  "description": "Run the declared kinetic dispersion relation with its native-backed scientific ports.",
   "code": "from scirel.kinetic.pdrk.rational import pole_table\nr = pole_table('es1d', 8)\nassert r['state']['czj'].size == 8",
   "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
  },
@@ -123,13 +123,13 @@
   "tests": [
    "tests/operator_contracts/test_pdrk_rational.py"
   ],
-  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native Octave execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
   "known_limitations": [
-   "PDRK source redistribution authority remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
+   "Redistribution authority for the source material remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
    "Finite-J/finite-N physics must be qualified for a new requested regime.",
    "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
    "Human scientific and plot approval pending.",
-   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+   "The native example and full native-path qualification require GNU Octave on Linux amd64; the run on this macOS host is NOT_RUN."
   ]
  },
  "references": [

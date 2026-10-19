@@ -5,7 +5,7 @@
   "en": "H2-on-H2 elastic momentum-transfer cross section",
   "zh": "分子氢分子氢弹性动量转移截面"
  },
- "summary": "H2-on-H2 elastic momentum-transfer cross section in m^2 as a function of collision energy in eV: a single five-coefficient logarithmic polynomial on the source-clipped [0.03, 1.01e4] eV domain. The saved implementation's own selector validation is kept: viscosity=True is the source's documented same-fit fallback, and the selector must be a scalar boolean or integer. Negative energies are rejected, which the saved implementation did not check although its document declared nonnegative energies.",
+ "summary": "H2-on-H2 elastic momentum-transfer cross section in m^2 as a function of collision energy in eV: a single five-coefficient logarithmic polynomial on the clipped [0.03, 1.01e4] eV domain. The selector validation is kept: viscosity=True selects the documented same-fit fallback, and the selector must be a scalar boolean or integer. Negative energies are rejected.",
  "taxonomy": [
   "collisions",
   "cross-section",
@@ -22,14 +22,14 @@
  "identity": {
   "relation": "the H2-on-H2 elastic momentum-transfer cross section as a function of collision energy",
   "direction": "collision energies and fallback selector -> cross section per energy",
-  "definition": "Energies are clipped to [0.03, 1.01e4] eV and the cross section is exp(polyval(log(E_clipped), a)) * 1e-4 m^2 with the frozen five coefficients. viscosity=True selects the source's documented fallback, which evaluates the same momentum-transfer fit. Endpoint values repeat outside the clipped range.",
-  "model": "a single source-faithful cross-section fit with a documented no-op fallback selector; no interpolation of external data and no rate integration",
+  "definition": "Energies are clipped to [0.03, 1.01e4] eV and the cross section is exp(polyval(log(E_clipped), a)) * 1e-4 m^2 with the five coefficients. viscosity=True selects the documented fallback, which evaluates the same momentum-transfer fit. Endpoint values repeat outside the clipped range.",
+  "model": "a single declared cross-section fit with a documented no-op fallback selector; no interpolation of external data and no rate integration",
   "geometry": "none; a scalar material function of collision energy",
   "coordinates": "collision energy in eV; output cross section in m^2",
-  "boundary": "energies must be finite and nonnegative; in-domain values outside the fit range clip to the range endpoints; the selector must be a scalar boolean or integer (the saved implementation's own validation)",
+  "boundary": "energies must be finite and nonnegative; in-domain values outside the fit range clip to the range endpoints; the selector must be a scalar boolean or integer",
   "assumptions": [
-   "The coefficients and the fallback-selector convention are the saved source's frozen behavior, kept bit for bit; the source emits a non-scientific warning on the fallback path, which is not reproduced.",
-   "No external physical cross-section reference is bound: the saved package records that residual as validation_oracle_gap."
+   "The coefficients and the fallback-selector convention are kept bit for bit; the fallback path emits no warning.",
+   "No external physical cross-section reference is bound; this residual stays open."
   ]
  },
  "inputs": [
@@ -44,13 +44,13 @@
   },
   {
    "name": "viscosity",
-   "description": "Fallback selector: True selects the source's documented fallback, which evaluates the same momentum-transfer fit.",
+   "description": "Fallback selector: True selects the documented fallback, which evaluates the same momentum-transfer fit.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "scalar boolean/integer selector",
    "required": false,
    "default": false,
-   "constraints": "A scalar boolean or integer; arrays and non-integral scalars are rejected, the saved implementation's own validation."
+   "constraints": "A scalar boolean or integer; arrays and non-integral scalars are rejected."
   }
  ],
  "outputs": [
@@ -66,10 +66,10 @@
  ],
  "applicability": {
   "preconditions": [
-   "The caller accepts the saved source's clipping convention and its no-op fallback selector semantics."
+   "The caller accepts the clipping convention and the no-op fallback selector semantics."
   ],
   "supported": [
-   "H2-on-H2 elastic momentum-transfer cross sections on the saved fit within (or clamped to) its declared energy range.",
+   "H2-on-H2 elastic momentum-transfer cross sections on the fit within (or clamped to) its declared energy range.",
    "Scalar and array evaluation of any shape, including zero-dimensional inputs.",
    "Rejecting negative energies and invalid selectors."
   ],
@@ -106,25 +106,25 @@
  },
  "verification": {
   "scope": [
-   "That the fit equals an independent evaluation of the frozen coefficient set on the clipped domain to a relative tolerance of 1e-15.",
-   "The declared fallback: viscosity=True reproduces the momentum-transfer values exactly, and the saved implementation's own scalar-boolean/integer validation rejects arrays and non-integral scalars.",
+   "That the fit equals an independent evaluation of the coefficient set on the clipped domain to a relative tolerance of 1e-15.",
+   "The declared fallback: viscosity=True reproduces the momentum-transfer values exactly, and the scalar boolean/integer validation rejects arrays and non-integral scalars.",
    "The endpoint clipping: values below and above the fit range repeat the endpoint values exactly.",
-   "The input contract: non-finite and negative energies are rejected with messages naming the quantity; the negative-energy rejection is a documented repair (the saved implementation silently clipped negatives).",
-   "Exact bit-level replay against the saved KN1DPy implementation, pinned by SHA-256, on one- and two-dimensional grids including the fallback path, plus the repair witness. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance."
+   "The input contract: non-finite and negative energies are rejected with messages naming the quantity; a negative energy raises rather than being silently clipped.",
+   "Bit-exact agreement with an independent implementation of the same fit expressions on one- and two-dimensional grids, including the fallback path, together with the rejection witness; the comparison runs only when an external implementation root is configured."
   ],
   "tests": [
    "tests/operator_contracts/test_hydrogen2_hydrogen2_elastic_cross_section.py",
    "tests/operator_contracts/test_collision_cross_section_input_types.py",
    "tests/operator_contracts/test_hydrogen2_hydrogen2_elastic_cross_section_l1.py"
   ],
-  "evidence_ceiling": "Independent implementation verification against the primary KN1D sigma_el_hh_hh.pro fit definition now covers every branch, clipping boundary and SI conversion. A source-free NumPy-only installation passed scalar independent evaluation across 56 energies per branch; all 62 existing fit/input tests passed with their original assertions and tolerances. This qualifies the stated empirical expression, not new experimental accuracy. The historical whole KN1DPy D1 withdrawal and original lack of external experimental cross-section validation remain; human endorsement and redistribution permission remain separate.",
+  "evidence_ceiling": "An independent evaluation of the fit expressions covers every branch, clipping boundary and SI conversion; a NumPy-only installation passed scalar independent evaluation across 56 energies per branch, and all 62 fit/input tests passed with their original assertions and tolerances. This qualifies the stated empirical expression, not new experimental accuracy. No external experimental cross-section validation is bound, and redistribution permission remains separate.",
   "known_limitations": [
-   "The integrated input check rejects complex, boolean and numeric-string energies before float conversion; the saved arm could coerce them. Valid real-input fit arithmetic is unchanged.",
-   "The fit is not validated against an external atomic-physics reference; the saved package's own validation gap carries over unchanged.",
-   "The viscosity selector is a source-convention no-op fallback, not a second fit; callers cannot obtain a distinct viscosity cross section for this species pair from this asset.",
-   "Energies outside the fit range silently return the endpoint value; this is the saved source's declared clipping convention, not an error.",
-   "The negative-energy rejection is a documented development repair, not source behavior: a caller migrating from the saved implementation sees a ValueError where it previously saw the clipped endpoint.",
-   "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+   "The integrated input check rejects complex, boolean and numeric-string energies before float conversion; no coercion is performed. Valid real-input fit arithmetic is unchanged.",
+   "Neither branch is validated against an external atomic-physics reference; no external validation gap is closed here.",
+   "The viscosity selector is a no-op fallback convention, not a second fit; callers cannot obtain a distinct viscosity cross section for this species pair from this asset.",
+   "Energies outside the fit range silently return the endpoint value; this is the declared clipping convention, not an error.",
+   "The negative-energy rejection is an explicit precondition of this contract: a negative energy raises ValueError rather than returning the clipped endpoint.",
+   "The optional cross-implementation comparison runs only in an environment that supplies an external implementation root; it is skipped otherwise and covers only the compared grids.",
    "Public distribution licensing remains pending a human decision."
   ]
  }

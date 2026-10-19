@@ -15,7 +15,7 @@
   "relation": "+d/dx(D du/dx)=M u+b",
   "direction": "Explicit cell/face data to spatial operator or state update",
   "definition": "Inner face flux=D_face*(u_right-u_left)/center_spacing; boundary Dirichlet flux uses half-cell secants, Neumann flux uses positive-coordinate gradient. Row residual=(right_flux-left_flux)/cell_width. Sum(cell_width*residual)=right_boundary_flux-left_boundary_flux. Signed D preserves algebra; physical diffusion requires D>=0.",
-  "model": "TORAX one-dimensional finite-volume discretization",
+  "model": "One-dimensional conservative finite-volume discretization",
   "geometry": "Explicit one-dimensional face grid, cell centers at arithmetic midpoints",
   "coordinates": "Caller coordinate X; positive increasing direction",
   "boundary": "One scalar Dirichlet value or positive-coordinate Neumann gradient at each end; homogeneous unit cross-section unless metrics supplied",

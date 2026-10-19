@@ -30,7 +30,7 @@
  "inputs": [
   {
    "name": "state",
-   "description": "NativeResult or its state mapping produced by the named predecessor. Scalar numeric fields are usually1x1 native arrays; row/column singleton dimensions are retained. Scientific numeric transport is float64/complex128; inactive fields are empty arrays, never fabricated zeros.",
+   "description": "NativeResult or its state mapping produced by the named predecessor. Scalar numeric fields are usually 1x1 native arrays; row/column singleton dimensions are preserved. Scientific numeric transport is float64/complex128; inactive fields are empty arrays, never fabricated zeros.",
    "units": "mixed; physical dimensions recorded by state fields",
    "shape": "mapping or NativeResult",
    "dtype": "state carrier",
@@ -44,7 +44,7 @@
    "shape": "length3",
    "dtype": "numeric sequence",
    "required": false,
-   "constraints": "Exactly three compatible native scalar factors; source plotting conventions retained. No hidden normalization globals.",
+   "constraints": "Exactly three compatible native scalar factors; the plotting conventions are preserved. No hidden normalization globals.",
    "default": [
     1.0,
     1.0,
@@ -113,7 +113,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
-  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError with retained result and receipt when its caught scientific terminal fails.",
+  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError carrying the result and receipt computed so far when its caught scientific terminal fails.",
   "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
   "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
  },
@@ -129,7 +129,7 @@
   "dependencies": []
  },
  "example": {
-  "description": "Small wheel-only example using packaged native resources and raw Octave; no source checkout or network.",
+  "description": "A self-contained example that uses the packaged native resources and raw Octave; no network access is required.",
   "code": "import numpy as np\nfrom scirel.kinetic.pdrk import magnetized as m, workflows as w\ndeck=np.array([[1,1,1e6,100,100,1,1,0],[-1,1,1e6,100,100,1,1,0.]])\ncontrols=dict(B0=1e-7,N=1,J=4,sp=0,iem=1,iout=2,ipa=3,ipb=3,iloga=0,ilogb=0,pa1=.2,pa2=.4,dpa=.1)\neq=m.initialize_equilibrium(deck,controls=controls,par=[.2,0,.2,0,0,0])\nscan=w.scan_spectrum({'state':eq,'rng_seed':2718})\nroots=np.asarray(scan.state['ww']);j=int(np.argmax(roots[0,0].real))\nseeds=np.array([[.2,0,roots[0,0,j]/float(np.asarray(scan.state['wcs1']).item())]])\nr=m.render_selected_modes(m.select_modes(scan,seeds))\nassert r.state['figure_native'].size>0\n",
   "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
  },
@@ -141,13 +141,13 @@
   "tests": [
    "tests/operator_contracts/test_pdrk_magnetized.py"
   ],
-  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
   "known_limitations": [
    "Local technical development; human scientific endorsement and publication clearance remain pending.",
    "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
    "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
    "Native FIG/workspace encodings are runtime-specific; bytes are artifacts, not a portable physical data standard.",
-   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+   "The native example and full verification require GNU Octave on Linux amd64; the current macOS run is NOT_RUN."
   ]
  },
  "references": [

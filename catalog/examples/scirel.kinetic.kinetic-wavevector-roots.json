@@ -62,7 +62,7 @@
   },
   {
    "name": "Ts0",
-   "description": "各组分温度，已按源码约定换算为开尔文",
+   "description": "各组分温度，已按声明的约定换算为开尔文",
    "units": "K",
    "shape": "`(S,)` 一维组分轴",
    "dtype": "real numeric",
@@ -85,11 +85,11 @@
    "shape": "标量",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限；允许为零（源码算例 2 取 `kz=0.0`），此时平行共振宗量退化为 $\\omega/\\omega_{cs}$。"
+   "constraints": "有限；允许为零（算例 2 取 `kz=0.0`），此时平行共振宗量退化为 $\\omega/\\omega_{cs}$。"
   },
   {
    "name": "kx_start",
-   "description": "延续求根的起始复初值，对应源码 frozen source 的 `x01=(0.6+0.0i)*kn`",
+   "description": "延续求根的起始复初值 `x01=(0.6+0.0i)*kn`",
    "units": "1/m",
    "shape": "标量复数",
    "dtype": "complex128",
@@ -103,7 +103,7 @@
    "shape": "标量",
    "dtype": "real numeric",
    "required": false,
-   "constraints": "有限且严格为正，默认 `1e-16`（源码 `optimset` 取值）。",
+   "constraints": "有限且严格为正，默认 `1e-16`（`optimset` 取值）。",
    "default": 1e-16
   },
   {
@@ -113,7 +113,7 @@
    "shape": "标量",
    "dtype": "real numeric",
    "required": false,
-   "constraints": "有限且严格为正，默认 `1e-16`（源码 `optimset` 取值）。",
+   "constraints": "有限且严格为正，默认 `1e-16`（`optimset` 取值）。",
    "default": 1e-16
   },
   {
@@ -309,15 +309,15 @@
   ]
  },
  "example": {
-  "description": "Evaluate one bounded source-method case. Python preflight ran locally; fluidBW/Octave parity remains NOT_RUN on this macOS host.",
+  "description": "Evaluate one bounded case. Python preflight ran locally; Octave parity remains NOT_RUN on this macOS host.",
   "code": "from scirel.kinetic import solve_kinetic_wavevector_roots\nr=solve_kinetic_wavevector_roots(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937],omegas=[1e11],kz=0,kx_start=8000); assert len(r['roots'])==1",
-  "expected": "Python preflight returned one converged root 6.01073715e-13 + 1315.20499512j with residual about 1.14e-13 - 2.86e-17j and exit flag 1. Source fluidBW/Octave parity is NOT_RUN on this macOS host."
+  "expected": "Python preflight returned one converged root 6.01073715e-13 + 1315.20499512j with residual about 1.14e-13 - 2.86e-17j and exit flag 1. Octave parity is NOT_RUN on this macOS host."
  },
  "verification": {
   "scope": [
    "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
    "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
-   "Python preflight ran, but source fluidBW/Octave parity is NOT_RUN on this macOS host."
+   "Python preflight ran, but Octave parity is NOT_RUN on this macOS host."
   ],
   "tests": [
    "tests/operator_contracts/test_fluidbw_r43_kinetic.py"
@@ -326,7 +326,7 @@
   "known_limitations": [
    "multiple signed roots may exist; exit flags and residuals expose nonconvergence without mirroring roots",
    "Public distribution license and expert review remain pending.",
-   "Source fluidBW/Octave parity is NOT_RUN on this host."
+   "Octave parity is NOT_RUN on this host."
   ]
  }
 }

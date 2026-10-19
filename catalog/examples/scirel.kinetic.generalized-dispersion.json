@@ -131,7 +131,7 @@
    "Independent Gaussian squared-kernel and high-precision derivative checks at large phase and asymptotic transitions; top-hat direct integral/series, center/edge/real-axis branches and tiny derivative components with zero absolute tolerances."
   ],
   "known_limitations": [
-   "Selector 5 retains incomplete mass; selector 6 retains upstream finite-cutoff normalization.",
+   "Selector 5 is mass-incomplete; selector 6 uses the finite-cutoff normalization of the truncated distribution.",
    "Piecewise lower-plane response is the real-contour transform, not an inferred analytic continuation.",
    "Named fixed selectors retain original physical parameters; this API does not add arbitrary shape parameters.",
    "Scientific validity is bounded by the tested numerical domain and applicability conditions."

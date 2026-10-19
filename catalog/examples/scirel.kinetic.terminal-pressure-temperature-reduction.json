@@ -18,15 +18,15 @@
  "identity": {
   "relation": "terminal H2 pressure and temperature reduction",
   "direction": "terminal (vr,vx,x) distribution, velocity nodes, explicit mass and thermal speed, quadrature -> two x profiles",
-  "definition": "For each spatial cell k, density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j] and flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j], with the saved per-cell matrix-vector and radial reduction order. The centered squared normalized speed is vr[i]^2+(vx[j]-flux/(density*Vth))^2. Pressure is 2*mass_ratio*1.6726231e-27*Vth^2/(3*1.602177e-19) times its weighted distribution integral; temperature is pressure/density. Density must be strictly positive in each spatial cell, but individual weights may be zero.",
-  "model": "saved KN1DPy terminal H2 centered-moment diagnostic with caller-supplied mass ratio and thermal speed",
+  "definition": "For each spatial cell k, density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j] and flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j], with the stated per-cell matrix-vector and radial reduction order. The centered squared normalized speed is vr[i]^2+(vx[j]-flux/(density*Vth))^2. Pressure is 2*mass_ratio*1.6726231e-27*Vth^2/(3*1.602177e-19) times its weighted distribution integral; temperature is pressure/density. Density must be strictly positive in each spatial cell, but individual weights may be zero.",
+  "model": "terminal H2 centered-moment diagnostic with caller-supplied mass ratio and thermal speed",
   "geometry": "one-dimensional x profile over cylindrical (vr,vx) velocity cells",
   "coordinates": "vr and vx are dimensionless speeds normalized by the supplied thermal speed; vr is nonnegative and vx may be signed",
   "boundary": "finite nonnegative nonempty three-dimensional distribution; finite one-dimensional aligned velocity nodes and nonnegative quadrature weights; positive scalar mass ratio and thermal speed; positive integrated density in every x cell",
   "assumptions": [
    "On positive quadrature weights this pressure and temperature relation agrees with the corresponding fields of scirel.kinetic.axisymmetric-neutral-moments when that asset's derived thermal speed equals this caller-supplied speed and molecularity is 2. This relation allows zero weights and computes no stress or heat flux.",
-   "The mass ratio multiplies the saved hydrogen mass constant, not a standard atomic mass unit; the H2 pressure uses twice that mass.",
-   "The callable neither establishes the upstream terminal distribution nor validates the full KN1D terminal closure. Boolean, complex and numeric-string coercions in the saved implementation are excluded by the maintained real-numeric contract."
+   "The mass ratio multiplies the frozen hydrogen mass constant, not a standard atomic mass unit; the H2 pressure uses twice that mass.",
+   "The callable neither establishes the incoming terminal distribution nor validates the full terminal closure. Boolean, complex and numeric-string coercions are excluded by the maintained real-numeric contract."
   ]
  },
  "inputs": [
@@ -50,7 +50,7 @@
   },
   {
    "name": "mass_ratio",
-   "description": "Positive factor of the saved hydrogen mass used for the H2 particle mass.",
+   "description": "Positive factor of the frozen hydrogen mass used for the H2 particle mass.",
    "units": "factor of 1.6726231e-27 kg",
    "shape": "scalar",
    "dtype": "real numeric scalar",
@@ -154,15 +154,15 @@
   "scope": [
    "Independent centered per-cell second-moment reduction checks both outputs on a nonuniform signed carrier.",
    "Positive-weight overlap agrees with the existing nine-moment relation; zero-weight acceptance distinguishes their contracts.",
-   "Three SHA-gated historical cases cover exact finite replay and the saved boolean-coercion divergence."
+   "Three digest-pinned fixed cases cover exact finite agreement and the boolean-coercion divergence."
   ],
   "tests": [
    "tests/operator_contracts/test_terminal_molecular_pressure_temperature.py",
    "tests/operator_contracts/test_terminal_molecular_pressure_temperature_l1.py"
   ],
-  "evidence_ceiling": "Direct and optional saved comparisons establish the finite discrete centered-moment relation and boundary differences on tested carriers. They do not establish the upstream terminal distribution, physical normalization, whole-source D1 qualification or expert approval.",
+  "evidence_ceiling": "Direct numerical comparisons establish the finite discrete centered-moment relation and boundary differences on tested carriers. They do not establish the incoming terminal distribution, physical normalization, complete qualification or expert approval.",
   "known_limitations": [
-   "The source's strict D1 qualification is withdrawn; historical parity is only bounded development evidence.",
+   "Numerical agreement with the reference cases is bounded evidence and does not establish full qualification.",
    "The physical normalization of the supplied distribution requires expert review.",
    "Public distribution licensing remains pending."
   ]

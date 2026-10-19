@@ -18,7 +18,7 @@
   "relation": "lnΛ=31.0-0.5 ln(n_e)+ln(1000*T_e)",
   "direction": "temperature and density -> dimensionless logarithm",
   "definition": "31.0-0.5*ln(n_e)+ln(1000*T_e); keV is converted to eV by the factor 1000. Evaluation uses ln(1000)+ln(T), avoiding intermediate overflow/underflow.",
-  "model": "retained TORAX relation with explicit SciRel numeric boundary checks",
+  "model": "Wesson Coulomb-log relation with explicit SciRel numeric boundary checks",
   "geometry": "homogeneous plasma point",
   "coordinates": "broadcast T_e and n_e arrays",
   "boundary": "strictly positive finite T_e in keV and n_e in m^-3",
@@ -66,7 +66,7 @@
    "Finite NumPy evaluation of the declared relation and broadcast shape."
   ],
   "excluded": [
-   "Whole TORAX evolution, experimental calibration, and implicit coordinate reconstruction.",
+   "Whole-transport evolution, experimental calibration, and implicit coordinate reconstruction.",
    "Interpreting zero or negative computed logarithms as valid weakly coupled collision physics; physical calibration or a regime-switching model."
   ]
  },
@@ -98,7 +98,7 @@
   "scope": [
    "Independent 60-digit Decimal logarithms over temperature/density/charge scales including smallest subnormal and largest float64; transformation/scaling identities.",
    "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
-   "Source relation attribution and comparison with actual canonical SciRel callers/dependencies."
+   "Agreement with the canonical SciRel callers and dependencies of this relation."
   ],
   "tests": [
    "tests/operator_contracts/test_torax_algebra_grid.py"

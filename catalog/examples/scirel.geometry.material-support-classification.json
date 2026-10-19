@@ -103,7 +103,7 @@
    "shape": "scalar",
    "dtype": "int",
    "required": true,
-   "constraints": "A positive integer. A zero thickness is rejected: the retained relation expressed the exclusion as slice assignments, and a zero thickness made every slice cover the whole box."
+   "constraints": "A positive integer. A zero thickness is rejected: the exclusion is expressed as slice assignments, and a zero thickness would make every slice cover the whole box."
   },
   {
    "name": "pec_mask",
@@ -141,7 +141,7 @@
    "shape": "[N_x, N_y, N_z]",
    "dtype": "bool",
    "required": true,
-   "constraints": "A subset of covered_mask. Because the retained relation intersects this term with the coverage mask, it is empty whenever the sampled equilibrium's radial axis begins above the grid's minimum radius."
+   "constraints": "A subset of covered_mask. Because this term is intersected with the coverage mask, it is empty whenever the sampled equilibrium's radial axis begins above the grid's minimum radius."
   }
  ],
  "applicability": {
@@ -194,19 +194,19 @@
    "Both separatrix sides, their disjointness, and the monotonicity of the less_than side in the separatrix flux.",
    "Exclusion of the PML frame on all six faces for two different frame thicknesses.",
    "Removal of PEC points after the flux-surface classification.",
-   "The zero-thickness rejection, together with a demonstration that the retained route also never returned a mask for a zero thickness and that its error named the wrong cause.",
+   "The zero-thickness rejection: pml_cells must be a positive integer, and the error names pml_cells together with the exclusion that a zero thickness would cause.",
    "The innermost-radius segment as a live branch, adding exactly the axis points on a side that excludes the axis, and as an inert branch when the coverage mask intersects it away.",
    "The empty-support error naming the actual contributing causes.",
    "Fail-closed validation of every parameter.",
-   "Exact agreement with the retained support mask for the same sampled flux and coordinates."
+   "Exact agreement with the independently computed support mask for the same sampled flux and coordinates."
   ],
   "tests": [
    "tests/operator_contracts/test_material_support.py"
   ],
-  "evidence_ceiling": "Establishes that the declared classification reproduces the retained support mask, that the zero-thickness defect is replaced by an explicit precondition, and that the innermost-radius segment's interaction with the coverage mask is preserved and documented. It does not establish that the selected side of the separatrix flux is physically the confined region for any device, nor that the innermost grid radius coincides with the magnetic axis.",
+  "evidence_ceiling": "Establishes that the declared classification reproduces the support mask, that zero thickness is rejected by an explicit precondition, and that the innermost-radius segment's interaction with the coverage mask is documented. It does not establish that the selected side of the separatrix flux is physically the confined region for any device, nor that the innermost grid radius coincides with the magnetic axis.",
   "known_limitations": [
    "The magnetic axis is identified with the grid's innermost radius, which is the grid's r = 0 only when the grid contains the origin. On a grid that does not, the axis term marks a thin column at the smallest sampled radius instead of the axis.",
-   "The innermost-radius segment is intersected with the coverage mask, so it cannot add points when the equilibrium map's radial axis begins above the grid's minimum radius. The retained relation behaves the same way, so this is preserved rather than repaired.",
+   "The innermost-radius segment is intersected with the coverage mask, so it cannot add points when the equilibrium map's radial axis begins above the grid's minimum radius. This is part of the declared relation, not a defect repair.",
    "A solver grid with no PML frame is rejected rather than supported. A no-frame run is a different relation and would need its own asset.",
    "The relation is purely geometric in the sampled flux; it does not verify that the sampled flux is a physical equilibrium.",
    "Public distribution licensing remains pending a human decision."

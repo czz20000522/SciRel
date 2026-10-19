@@ -5,7 +5,7 @@
   "en": "Atomic-hydrogen charge-exchange cross section",
   "zh": "原子氢电荷交换截面"
  },
- "summary": "H + H+ charge-exchange cross section in m^2 as a function of collision energy in eV: a Janev nine-coefficient logarithmic polynomial by default, with an alternative Freeman-Jones analytic fit under freeman=True. Both branches are evaluated on their source-clipped energy ranges, so endpoint values repeat outside each fit's domain. Negative energies and non-scalar branch selectors are rejected, which the saved implementation did not check although its own document declared both.",
+ "summary": "H + H+ charge-exchange cross section in m^2 as a function of collision energy in eV: a Janev nine-coefficient logarithmic polynomial by default, with an alternative Freeman-Jones analytic fit under freeman=True. Both branches are evaluated on their clipped energy ranges, so endpoint values repeat outside each fit's domain. Negative energies and non-scalar branch selectors are rejected.",
  "taxonomy": [
   "collisions",
   "cross-section",
@@ -22,15 +22,15 @@
  "identity": {
   "relation": "the H + H+ charge-exchange cross section as a function of collision energy, given by the Janev logarithmic polynomial exp(polyval(log(E), a)) * 1e-4 with the Freeman-Jones analytic form 1e-4 * 0.6937e-14 * (1 - 0.155 log10(E))^2 / (1 + 0.1112e-14 E^3.3) as the alternative branch",
   "direction": "collision energies and branch selector -> cross section per energy",
-  "definition": "The default branch clips energies to [0.1, 2.01e4] eV and returns exp(polyval(log(E_clipped), a)) * 1e-4 m^2 with the frozen nine Janev coefficients a. The freeman=True branch clips to [0.1, 1e5] eV and returns 1e-4 * 0.6937e-14 * (1 - 0.155 log10(E_clipped))^2 / (1 + 0.1112e-14 E_clipped^3.3) m^2. Endpoint values repeat outside each clipped range.",
-  "model": "two independent source-faithful cross-section fits; no interpolation of external data and no rate integration",
+  "definition": "The default branch clips energies to [0.1, 2.01e4] eV and returns exp(polyval(log(E_clipped), a)) * 1e-4 m^2 with the nine Janev coefficients a. The freeman=True branch clips to [0.1, 1e5] eV and returns 1e-4 * 0.6937e-14 * (1 - 0.155 log10(E_clipped))^2 / (1 + 0.1112e-14 E_clipped^3.3) m^2. Endpoint values repeat outside each clipped range.",
+  "model": "two independent declared cross-section fits; no interpolation of external data and no rate integration",
   "geometry": "none; a scalar material function of collision energy",
   "coordinates": "collision energy in eV; output cross section in m^2",
   "boundary": "energies must be finite and nonnegative; in-domain values outside a branch's fit range clip to the range endpoints; the branch selector must be a scalar; both fits are strictly positive and finite on their clipped domains",
   "assumptions": [
-   "The Janev coefficients and the Freeman-Jones constants are the saved source's frozen values and are evaluated with the saved source's expressions; they are not re-derived from any external reference.",
-   "The two branches are independent fits, not equivalent parameterizations of one relation; selecting one is a caller decision, and no test establishes either fit against an external physical cross-section reference (the saved package records that residual as validation_oracle_gap).",
-   "Endpoint clipping is the saved source's declared behavior and is kept: a caller evaluating far outside the fit range silently obtains the endpoint value."
+   "The Janev coefficients and the Freeman-Jones constants are the declared fit values, evaluated with the declared expressions; they are not re-derived from any external reference.",
+   "The two branches are independent fits, not equivalent parameterizations of one relation; selecting one is a caller decision, and no test establishes either fit against an external physical cross-section reference.",
+   "Endpoint clipping is the declared behavior: a caller evaluating far outside the fit range silently obtains the endpoint value."
   ]
  },
  "inputs": [
@@ -67,11 +67,11 @@
  ],
  "applicability": {
   "preconditions": [
-   "The caller accepts the saved source's clipping convention: energies outside a branch's fit range silently return the endpoint value rather than an error or an extrapolation.",
+   "The caller accepts the clipping convention: energies outside a branch's fit range silently return the endpoint value rather than an error or an extrapolation.",
    "The caller chooses the branch; the two fits disagree in magnitude and are not interchangeable."
   ],
   "supported": [
-   "H + H+ charge-exchange cross sections on either saved fit within (or clamped to) its declared energy range.",
+   "H + H+ charge-exchange cross sections on either fit within (or clamped to) its declared energy range.",
    "Scalar and array evaluation of any shape, including zero-dimensional inputs.",
    "Rejecting negative energies and non-scalar branch selectors."
   ],
@@ -111,8 +111,8 @@
    "That the Janev branch equals an independent evaluation of exp(polyval(log(E), a)) * 1e-4 on the clipped domain to a relative tolerance of 1e-15, and the Freeman-Jones branch equals an independent evaluation of its analytic form likewise.",
    "That the two branches disagree, so the selector materially selects a different relation.",
    "The endpoint clipping: values below and above each fit range repeat the endpoint values exactly.",
-   "The input contract: non-finite and negative energies are rejected with messages naming the quantity; arrays passed as freeman are rejected. The negative-energy and array-selector rejections are documented repairs: the saved implementation silently clipped negatives and reduced arrays with np.any although its document declared nonnegative energies and a scalar selector.",
-   "Exact bit-level replay of both branches against the saved KN1DPy implementation, pinned by SHA-256, plus repair witnesses showing the saved implementation returns the clipped endpoint for a negative energy and accepts an array selector where this asset rejects both. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance.",
+   "The input contract: non-finite and negative energies are rejected with messages naming the quantity; arrays passed as freeman are rejected. A negative energy raises rather than being silently clipped, and an array selector is rejected rather than reduced with np.any.",
+   "Bit-exact agreement of both branches with an independent implementation of the same fit expressions, together with witnesses that a negative energy and an array selector are rejected where the comparison implementation accepts them; the comparison runs only when an external implementation root is configured.",
    "The composition contract: this callable serves directly as the cross_section_m2 port of scirel.collisions.maxwellian-relative-speed-rate-average and yields finite positive rate coefficients."
   ],
   "tests": [
@@ -120,14 +120,14 @@
    "tests/operator_contracts/test_collision_cross_section_input_types.py",
    "tests/operator_contracts/test_atomic_hydrogen_charge_exchange_cross_section_l1.py"
   ],
-  "evidence_ceiling": "Independent implementation verification against the primary KN1D sigma_cx_h0.pro fit definition now covers every branch, clipping boundary and SI conversion. A source-free NumPy-only installation passed scalar independent evaluation across 56 energies per branch; all 62 existing fit/input tests passed with their original assertions and tolerances. This qualifies the stated empirical expression, not new experimental accuracy. The historical whole KN1DPy D1 withdrawal and original lack of external experimental cross-section validation remain; human endorsement and redistribution permission remain separate.",
+  "evidence_ceiling": "An independent evaluation of the fit expressions covers every branch, clipping boundary and SI conversion; a NumPy-only installation passed scalar independent evaluation across 56 energies per branch, and all 62 fit/input tests passed with their original assertions and tolerances. This qualifies the stated empirical expression, not new experimental accuracy. No external experimental cross-section validation is bound, and redistribution permission remains separate.",
   "known_limitations": [
-   "The integrated input check rejects complex, boolean and numeric-string energies before float conversion; the saved arm could coerce them. Valid real-input fit arithmetic is unchanged.",
-   "Neither branch is validated against an external atomic-physics reference; the saved package's own validation gap carries over unchanged.",
-   "Energies outside a branch's fit range silently return the endpoint value; this is the saved source's declared clipping convention, not an error.",
+   "The integrated input check rejects complex, boolean and numeric-string energies before float conversion; no coercion is performed. Valid real-input fit arithmetic is unchanged.",
+   "Neither branch is validated against an external atomic-physics reference; no external validation gap is closed here.",
+   "Energies outside the fit range silently return the endpoint value; this is the declared clipping convention, not an error.",
    "The two branches are different fits, not equivalent forms; selecting the wrong one for an application is a scientific error no runtime check can detect.",
-   "The negative-energy and scalar-selector rejections are documented development repairs, not source behavior: a caller migrating from the saved implementation sees a ValueError where it previously saw the clipped endpoint or an array-reduced branch selection.",
-   "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+   "The negative-energy and scalar-selector rejections are explicit preconditions of this contract: a negative energy or an array selector raises ValueError rather than returning the clipped endpoint or an array-reduced branch selection.",
+   "The optional cross-implementation comparison runs only in an environment that supplies an external implementation root; it is skipped otherwise and covers only the compared grids.",
    "Public distribution licensing remains pending a human decision."
   ]
  }

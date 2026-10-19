@@ -19,13 +19,13 @@
   "relation": "terminal H2 axial flux and mean-velocity reduction",
   "direction": "terminal (vr,vx,x) distribution, normalized axial nodes, explicit thermal speed and quadrature -> two x profiles",
   "definition": "For each spatial cell k, density[k]=sum_i cylindrical_weight[i]*sum_j terminal_distribution[i,j,k]*dvx[j]; flux[k]=thermal_speed_m_s*sum_i cylindrical_weight[i]*sum_j vx[j]*terminal_distribution[i,j,k]*dvx[j], using the source's per-cell matrix-vector and radial summation order. mean_velocity[k]=flux[k]/density[k]. Density must be strictly positive although individual quadrature cells may have zero weight.",
-  "model": "saved KN1DPy terminal H2 diagnostic with a caller-supplied thermal speed",
+  "model": "terminal H2 diagnostic with a caller-supplied thermal speed",
   "geometry": "one-dimensional x profile over a cylindrical (vr,vx) velocity carrier; radial nodes themselves are not required",
   "coordinates": "vx is normalized by the supplied thermal speed; flux and mean velocity use that speed without implicit conversion",
   "boundary": "finite, nonnegative nonempty three-dimensional distribution; finite one-dimensional vx, radial weights and axial widths with aligned sizes; radial weights and widths may be zero; finite positive thermal speed and strictly positive integrated density per x cell",
   "assumptions": [
    "On positive quadrature weights this flux and velocity relation agrees with the corresponding fields of scirel.kinetic.axisymmetric-neutral-moments when that asset's derived thermal speed equals this caller-supplied speed. It remains a separate input/failure contract: the nine-moment asset requires vr, temperature, mass, strictly positive volume weights and higher-moment evaluation.",
-   "This callable does not infer a terminal generation, advance state, validate the distribution's upstream producer or claim a full KN1D terminal closure.",
+   "This callable does not infer a terminal generation, advance state, validate the producer of the incoming distribution or claim a full terminal closure.",
    "The source's float coercion of boolean or numeric-string inputs is not part of this maintained real-numeric contract."
   ]
  },
@@ -136,15 +136,15 @@
   "scope": [
    "Independent per-cell reduction checks both outputs on a nonuniform signed carrier.",
    "Positive-weight overlap agrees with the existing nine-moment relation; zero-weight acceptance distinguishes their contracts.",
-   "Three SHA-gated historical cases cover exact finite replay and the saved boolean-coercion divergence."
+   "Three digest-pinned fixed cases cover exact finite agreement and the boolean-coercion divergence."
   ],
   "tests": [
    "tests/operator_contracts/test_terminal_molecular_flux_velocity.py",
    "tests/operator_contracts/test_terminal_molecular_flux_velocity_l1.py"
   ],
-  "evidence_ceiling": "Direct and optional saved comparisons establish the stated finite discrete relation and boundary differences on tested carriers. They do not establish the upstream terminal distribution, physical normalization, whole-source D1 qualification or expert approval.",
+  "evidence_ceiling": "Direct numerical comparisons establish the stated finite discrete relation and boundary differences on tested carriers. They do not establish the incoming terminal distribution, physical normalization, complete qualification or expert approval.",
   "known_limitations": [
-   "The source's strict D1 qualification is withdrawn; historical parity is only bounded development evidence.",
+   "Numerical agreement with the reference cases is bounded evidence and does not establish full qualification.",
    "The physical normalization of the supplied distribution and source flux label requires expert review.",
    "Public distribution licensing remains pending."
   ]

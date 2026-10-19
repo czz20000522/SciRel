@@ -246,7 +246,7 @@
    "units": "dimensionless"
   },
   {
-   "constraints": "Finite real nonzero elements; input order retained.",
+   "constraints": "Finite real nonzero elements in the caller's order.",
    "default": null,
    "description": "Angular frequency axis; None selects the source frequency ladder.",
    "dtype": "real array or None",

@@ -15,15 +15,15 @@
   "normalize_spatial_source_shape"
  ],
  "identity": {
-  "relation": "shape = source / integral(source, x) with the trapezoidal measure; the normalized shape re-integrates to 1 within the saved tolerance",
+  "relation": "shape = source / integral(source, x) with the trapezoidal measure; the normalized shape re-integrates to 1 within the declared tolerance",
   "direction": "source profile plus coordinates -> unit-integral shape and original integral",
-  "definition": "The saved numpy trapezoidal rule on the caller's coordinates; the saved unit-integral re-check uses rtol 1e-12, atol 1e-14; a zero profile is rejected, never silently replaced",
-  "model": "the saved formal implementation's profile normalization",
+  "definition": "The NumPy trapezoidal rule on the caller's coordinates; the unit-integral re-check uses rtol 1e-12, atol 1e-14; a zero profile is rejected, never silently replaced",
+  "model": "Unit-integral normalization of a one-dimensional nonnegative spatial profile under the trapezoidal measure",
   "geometry": "one-dimensional space",
   "coordinates": "coordinates in m; shape in m^-1; integral in the source's profile unit times m",
   "boundary": "aligned finite one-dimensional profile and strictly increasing coordinates with at least two nodes; nonnegative source; finite positive integral",
   "assumptions": [
-   "The trapezoidal measure is the saved spatial discretization; other quadratures are excluded.",
+   "The trapezoidal measure is the declared spatial discretization; other quadratures are excluded.",
    "The strict positivity precondition is what lets the shape rebuild a total source."
   ]
  },
@@ -106,15 +106,15 @@
   "scope": [
    "That the shape equals the independent trapezoidal normalization and re-integrates to exactly 1.",
    "The alignment, monotonicity, real-input and positivity failure contracts.",
-   "Read-only digest-bound archived-source replay on three finite valid profiles during integration."
+   "A read-only digest-pinned comparison on three finite valid profiles."
   ],
   "tests": [
    "tests/operator_contracts/test_neutral_normalizations.py"
   ],
-  "evidence_ceiling": "Maintained tests establish the trapezoidal normalization and declared failure behavior. Read-only digest-bound archived-source replay found exact agreement on three finite valid profiles; coercion behavior differs as declared. This does not prove all-input source parity, qualified D1, global applicability, expert approval or release.",
+  "evidence_ceiling": "Maintained tests establish the trapezoidal normalization and declared failure behavior. A separate read-only comparison found exact agreement on three finite valid profiles; coercion behavior differs as declared. This does not prove parity on all inputs, reviewed qualification, global applicability, expert approval or release.",
   "known_limitations": [
-   "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
-   "The historical function accepts boolean and numeric-string coercions, and complex input may raise TypeError; SciRel consistently rejects these as invalid real-array inputs.",
+   "This contract carries no independently reviewed qualification of parity with any external implementation; no such qualification can be claimed without a fresh independent review.",
+   "The earlier behavior accepts boolean and numeric-string coercions, and complex input may raise TypeError; SciRel consistently rejects these as invalid real-array inputs.",
    "Public distribution licensing remains pending a human decision."
   ]
  }

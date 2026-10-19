@@ -16,18 +16,18 @@
   "interp_scalarx"
  ],
  "identity": {
-  "relation": "the saved interp_scalarx handoff: fb[k0:k1+1] = interp1d(xa, fa)(xb[okk]) with okk the mesh_b nodes inside the mesh_a range and zeros elsewhere",
+  "relation": "the interp_scalarx handoff: fb[k0:k1+1] = interp1d(xa, fa)(xb[okk]) with okk the mesh_b nodes inside the mesh_a range and zeros elsewhere",
   "direction": "profile and mesh_a nodes plus mesh_b nodes -> interpolated profile on mesh_b",
   "definition": "okk selects xb in [min(xa), max(xa)]; the in-range block receives the scipy linear interpolation; out-of-range nodes are exactly zero; do_warn reproduces the source's boundary warnings without changing the output",
-  "model": "the saved formal implementation of the N5 H<->H2 seam interpolation",
+  "model": "the N5 H<->H2 seam interpolation",
   "geometry": "one-dimensional spatial meshes",
   "coordinates": "nodes in m; profile in the caller's units",
   "boundary": "finite real one-dimensional arrays; xa has at least two strictly increasing nodes and is aligned to fa; at least one in-range xb node; finite output. The in-range mesh_b nodes must form one contiguous block.",
   "assumptions": [
-   "The out-of-range zero fill is the saved physics contract (interpolations outside the phase space are set to zero), not a defect.",
+   "The out-of-range zero fill is a deliberate physics contract (interpolations outside the phase space are set to zero), not a defect.",
    "Linear interpolation only; higher-order or conservative remaps are excluded.",
-   "The saved arm assigns interpolated values positionally into the fb[k0:k1+1] slice, so a non-contiguous in-range selection raises a raw numpy broadcast error there; this asset fails closed with a named ValueError. Contiguity refers to the selected index range, not sortedness of xb: an unsorted-but-contiguous xb maps correctly and stays legal.",
-   "SciRel rejects boolean, string and complex array coercions, a one-node source mesh, and a non-integer do_warn. The saved arm accepts some of these inputs or fails later with a less specific error. Valid finite real arrays and integer warning thresholds retain its interpolation and warning arithmetic."
+   "Interpolated values are assigned positionally into the fb[k0:k1+1] slice, so a non-contiguous in-range selection would raise a raw numpy broadcast error; this asset fails closed with a named ValueError instead. Contiguity refers to the selected index range, not sortedness of xb: an unsorted-but-contiguous xb maps correctly and stays legal.",
+   "SciRel rejects boolean, string and complex array coercions, a one-node input mesh, and a non-integer do_warn up front rather than failing later with a less specific error. Valid finite real arrays and integer warning thresholds use the stated interpolation and warning arithmetic."
   ]
  },
  "inputs": [
@@ -65,7 +65,7 @@
    "shape": "scalar",
    "dtype": "integer scalar",
    "required": false,
-   "constraints": "0 (default) skips warnings; other integer values apply the saved do_warn * max(abs(fb)) boundary threshold (output unchanged). Boolean, fractional and string switches are rejected.",
+   "constraints": "0 (default) skips warnings; other integer values apply the do_warn * max(abs(fb)) boundary threshold (output unchanged). Boolean, fractional and string switches are rejected.",
    "default": 0
   }
  ],

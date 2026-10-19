@@ -17,23 +17,23 @@
   "E-star-dot-J species fractions"
  ],
  "identity": {
-  "relation": "four-species absorbed-power ledger to source-ordered percentage shares and the closure residual",
+  "relation": "four-species absorbed-power ledger to caller-ordered percentage shares and the closure residual",
   "direction": "species_power_values -> total_power, species_fraction_percent, total_fraction_percent, fraction_sum_residual_percent, branch",
   "definition": "Sum the four supplied real binary64 powers, divide each by the total and scale by one hundred. Signed totals use the exact rational sum before binary64 rounding; same-sign ordinary totals retain the established floating reduction. Ordinary percentages retain divide-then-scale rounding. Severe cancellation or intermediate range loss triggers exact rational percentage evaluation. The residual uses the actual returned floating percentages, not unrounded theoretical shares.",
-  "model": "source-defined absorbed-power split across exactly four species",
+  "model": "absorbed-power split across exactly four species",
   "geometry": "not applicable; the relation is a per-ledger scalar closure with no spatial dependence",
   "coordinates": "not applicable; entries are carried in the caller's species order and never reordered",
   "boundary": "The mathematical total must be nonzero and its returned binary64 value finite. Every returned percentage and their reported sum must be finite. Severe signed cancellation can make the returned sum differ substantially from 100 because individual shares were rounded.",
   "assumptions": [
-   "The four entries are the absorbed powers of one source-defined species ordering; the operator never infers or reorders species.",
+   "The four entries are the absorbed powers of one species ordering supplied by the caller; the operator never infers or reorders species.",
    "A negative entry is a physically meaningful signed contribution and is reported as computed, not clipped.",
-   "The relation is the same for both observed source routes: the E-star-dot-J route and the Wdot route differ only in the entry-point name."
+   "The relation is the same for both entry points: the E-star-dot-J route and the Wdot route differ only in the entry-point variable."
   ]
  },
  "inputs": [
   {
    "name": "species_power_values",
-   "description": "Absorbed-power ledger in source-defined species order.",
+   "description": "Absorbed-power ledger in the caller's species order.",
    "units": "source power units",
    "shape": "[4]",
    "dtype": "real array-like",
@@ -90,7 +90,7 @@
  ],
  "applicability": {
   "preconditions": [
-   "The four entries belong to one source-defined species ordering.",
+   "The four entries belong to one species ordering supplied by the caller.",
    "The caller has already established that the ledger total is physically meaningful."
   ],
   "supported": [
@@ -98,7 +98,7 @@
    "Ledgers whose total is small but non-zero."
   ],
   "excluded": [
-   "Ledgers whose total is exactly zero, for which the source defines no percentage result.",
+   "Ledgers whose total is exactly zero, for which no percentage result is defined.",
    "Ledgers with fewer or more than four species.",
    "Renormalizing or clipping negative shares."
   ]
@@ -129,7 +129,7 @@
  },
  "verification": {
   "scope": [
-   "Ordinary ledger arithmetic and keys remain identical to the two observed source routes; extreme signed cancellation and intermediate range loss are corrected against exact rational arithmetic.",
+   "Ordinary ledger arithmetic and keys are the same for both entry points; extreme signed cancellation and intermediate range loss are corrected against exact rational arithmetic.",
    "Caller species ordering and explicit residual of the returned shares; no unconditional numerical closure-to-100 claim for ill-conditioned signed ledgers.",
    "Single-species ledgers, negative ledgers, and small-total ledgers.",
    "Fail-closed behavior at the exact zero-total boundary and under signed cancellation.",
@@ -141,11 +141,11 @@
    "tests/operator_contracts/test_species_absorption_fraction.py",
    "tests/operator_contracts/test_legacy_admission_regressions.py"
   ],
-  "evidence_ceiling": "Independent rational counterexamples establish the numerical ledger relation and its failure boundaries; ordinary route assertions are retained. No evidence here establishes that the caller supplied physically correct absorbed powers.",
+  "evidence_ceiling": "Independent rational counterexamples establish the numerical ledger relation and its failure boundaries; the ordinary assertions remain in force. No evidence here establishes that the caller supplied physically correct absorbed powers.",
   "known_limitations": [
    "The species count is fixed at four; no general-length ledger is supported.",
    "The zero-total branch is unavailable by design, so a physically zero-absorption run cannot be represented.",
-   "The observed-route comparison requires the read-only source checkout to be reachable; it is skipped rather than silently passed when it is not.",
+   "The optional cross-implementation comparison runs only when an external implementation is reachable; it is skipped rather than silently passed when it is not.",
    "Public distribution licensing remains pending a human decision."
   ]
  }

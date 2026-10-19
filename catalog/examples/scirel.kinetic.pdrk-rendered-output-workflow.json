@@ -45,7 +45,7 @@
    "shape": "(npl,3)",
    "dtype": "real/complex numeric array-like",
    "required": true,
-   "constraints": "npl>=1; coordinates belong to the existing scan. First-index ties and source nearest/PCHIP ordering retained; seeds do not certify mode identity."
+   "constraints": "npl>=1; coordinates belong to the existing scan. First-index ties and the nearest/PCHIP ordering are used; seeds do not certify mode identity."
   },
   {
    "name": "scales",
@@ -54,7 +54,7 @@
    "shape": "length3",
    "dtype": "numeric sequence",
    "required": false,
-   "constraints": "Exactly three compatible native scalar factors; source plotting conventions retained. No hidden normalization globals.",
+   "constraints": "Exactly three compatible native scalar factors; the declared plotting conventions are used. No hidden normalization globals.",
    "default": [
     1.0,
     1.0,
@@ -90,7 +90,7 @@
    "shape": "mapping",
    "dtype": "NativeResult.state mapping",
    "required": true,
-   "constraints": "Compatible typed scientific predecessor; native stored dimensions are retained; trailing singleton axes may be omitted while interior singleton axes remain and inactive fields remain empty arrays."
+   "constraints": "Typed scientific value compatible with the native representation; native dimensions are preserved; trailing singleton axes may be omitted while interior singleton axes remain and inactive fields remain empty arrays."
   },
   {
    "name": "Pola",
@@ -130,7 +130,7 @@
   },
   {
    "name": "workspace_mat",
-   "description": "Opaque native saved-workspace bytes; writer may use Octave text format despite .mat suffix.",
+   "description": "Opaque native workspace bytes; the writer may use Octave text format despite the .mat suffix.",
    "units": "bytes",
    "shape": "(nbytes,1)",
    "dtype": "uint8",
@@ -151,7 +151,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
-  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError with retained result and receipt when its caught scientific terminal fails.",
+  "runtime_failure": "NativeExecutionError records unavailable, failed or timed-out Octave execution. source_output additionally raises SourceOutputError carrying its result and receipt when its caught scientific terminal fails.",
   "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
   "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
  },
@@ -192,12 +192,12 @@
   "tests": [
    "tests/operator_contracts/test_pdrk_graphs.py"
   ],
-  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native Octave execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
   "known_limitations": [
-   "Local technical development; human scientific endorsement and publication clearance remain pending.",
+   "Human scientific endorsement and publication clearance remain pending.",
    "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
    "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
-   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+   "The native example and full native-path qualification require GNU Octave on Linux amd64; the run on this macOS host is NOT_RUN."
   ]
  },
  "graph": {

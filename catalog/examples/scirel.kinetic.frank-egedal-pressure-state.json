@@ -130,7 +130,7 @@
   ],
   "supported": [
    "Pointwise anisotropic pressure assembly with a common isotropic gas and electron contribution.",
-   "Optional gas and hot-ion density scales, optional constant electron energy, and documented legacy scale aliases."
+   "Optional gas and hot-ion density scales, optional constant electron energy, and documented historical scale aliases."
   ],
   "excluded": [
    "Computing a radial envelope, hot-ion moments, electron temperature, potential or equilibrium.",
@@ -164,7 +164,7 @@
  "verification": {
   "scope": [
    "A two-by-two case checks independently assembled gas, hot-ion and electron contributions to density and both pressure components.",
-   "The no-density-scale case checks density=None, retained electron-energy grid and zero electron pressure.",
+   "The no-density-scale case checks density=None, the unchanged electron-energy grid and zero electron pressure.",
    "Nonfinite psi and negative gas pressure are rejected in direct tests; the documented example checks a two-cell assembly."
   ],
   "tests": [

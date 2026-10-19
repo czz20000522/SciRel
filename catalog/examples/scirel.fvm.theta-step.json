@@ -15,7 +15,7 @@
   "relation": "u_t=C(t)u+c(t)",
   "direction": "Explicit cell/face data to spatial operator or state update",
   "definition": "(I-dt*theta*C_new)u_new=(I+dt*(1-theta)*C_old)u_old+dt*((1-theta)*c_old+theta*c_new). C is diffusion plus convection; c includes boundary forcing and explicit source. Output carries new boundary data. No hidden iteration or stopping condition.",
-  "model": "TORAX one-dimensional finite-volume discretization",
+  "model": "One-dimensional conservative finite-volume discretization",
   "geometry": "Explicit one-dimensional face grid, cell centers at arithmetic midpoints",
   "coordinates": "Caller coordinate X; positive increasing direction",
   "boundary": "One scalar Dirichlet value or positive-coordinate Neumann gradient at each end; homogeneous unit cross-section unless metrics supplied",

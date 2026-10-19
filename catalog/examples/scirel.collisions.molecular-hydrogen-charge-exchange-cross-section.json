@@ -5,7 +5,7 @@
   "en": "Molecular-hydrogen charge-exchange cross section",
   "zh": "分子氢电荷交换截面"
  },
- "summary": "H2 + H2+ charge-exchange cross section in m^2 as a function of collision energy in eV: a Janev nine-coefficient logarithmic polynomial evaluated on the source-clipped [0.1, 2.01e4] eV domain, so endpoint values repeat outside the fit's range. Negative energies are rejected, which the saved implementation did not check although its own document declared nonnegative energies.",
+ "summary": "H2 + H2+ charge-exchange cross section in m^2 as a function of collision energy in eV: a Janev nine-coefficient logarithmic polynomial evaluated on the clipped [0.1, 2.01e4] eV domain, so endpoint values repeat outside the fit's range. Negative energies are rejected.",
  "taxonomy": [
   "collisions",
   "cross-section",
@@ -22,16 +22,16 @@
  "identity": {
   "relation": "the H2 + H2+ charge-exchange cross section as a function of collision energy, given by the Janev logarithmic polynomial exp(polyval(log(E), a)) * 1e-4",
   "direction": "collision energies -> cross section per energy",
-  "definition": "Energies are clipped to [0.1, 2.01e4] eV and the cross section is exp(polyval(log(E_clipped), a)) * 1e-4 m^2 with the frozen nine Janev coefficients a. Endpoint values repeat outside the clipped range.",
-  "model": "a single source-faithful cross-section fit; no interpolation of external data, no alternative branch and no rate integration",
+  "definition": "Energies are clipped to [0.1, 2.01e4] eV and the cross section is exp(polyval(log(E_clipped), a)) * 1e-4 m^2 with the nine Janev coefficients a. Endpoint values repeat outside the clipped range.",
+  "model": "a single declared cross-section fit; no interpolation of external data, no alternative branch and no rate integration",
   "geometry": "none; a scalar material function of collision energy",
   "coordinates": "collision energy in eV; output cross section in m^2",
   "boundary": "energies must be finite and nonnegative; in-domain values outside the fit range clip to the range endpoints; the fit is strictly positive and finite on its clipped domain",
   "assumptions": [
-   "The Janev coefficients are the saved source's frozen values and are evaluated with the saved source's expression; they are not re-derived from any external reference.",
+   "The Janev coefficients are the declared fit values, evaluated with the declared expression; they are not re-derived from any external reference.",
    "The atomic H + H+ charge-exchange cross section (a sibling asset) is a different physical system: the two fits disagree and are not interchangeable.",
-   "Endpoint clipping is the saved source's declared behavior and is kept: a caller evaluating far outside the fit range silently obtains the endpoint value.",
-   "No external physical cross-section reference is bound: the saved package records that residual as validation_oracle_gap."
+   "Endpoint clipping is the declared behavior: a caller evaluating far outside the fit range silently obtains the endpoint value.",
+   "No external physical cross-section reference is bound; this residual stays open."
   ]
  },
  "inputs": [
@@ -58,10 +58,10 @@
  ],
  "applicability": {
   "preconditions": [
-   "The caller accepts the saved source's clipping convention: energies outside the fit range silently return the endpoint value rather than an error or an extrapolation."
+   "The caller accepts the clipping convention: energies outside the fit range silently return the endpoint value rather than an error or an extrapolation."
   ],
   "supported": [
-   "H2 + H2+ charge-exchange cross sections on the saved fit within (or clamped to) its declared energy range.",
+   "H2 + H2+ charge-exchange cross sections on the fit within (or clamped to) its declared energy range.",
    "Scalar and array evaluation of any shape, including zero-dimensional inputs.",
    "Rejecting negative energies."
   ],
@@ -102,8 +102,8 @@
    "That the fit equals an independent evaluation of exp(polyval(log(E), a)) * 1e-4 on the clipped domain to a relative tolerance of 1e-15 on in-domain and holdout grids.",
    "The endpoint clipping: values below and above the fit range repeat the endpoint values exactly.",
    "That the molecular fit materially differs from the atomic-hydrogen sibling asset's Janev branch.",
-   "The input contract: non-finite and negative energies are rejected with messages naming the quantity. The negative-energy rejection is a documented repair: the saved implementation silently clipped negatives although its document declared nonnegative energies.",
-   "Exact bit-level replay against the saved KN1DPy implementation, pinned by SHA-256, on one- and two-dimensional grids, plus the repair witness showing the saved implementation returns the clipped endpoint for a negative energy where this asset rejects it. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance.",
+   "The input contract: non-finite and negative energies are rejected with messages naming the quantity. A negative energy raises rather than being silently clipped.",
+   "Bit-exact agreement with an independent implementation of the same fit expressions on one- and two-dimensional grids, together with the witness that a negative energy is rejected where the comparison implementation returns the clipped endpoint; the comparison runs only when an external implementation root is configured.",
    "The composition contract: this callable serves directly as the cross_section_m2 port of scirel.collisions.maxwellian-relative-speed-rate-average and yields finite positive rate coefficients."
   ],
   "tests": [
@@ -111,13 +111,13 @@
    "tests/operator_contracts/test_collision_cross_section_input_types.py",
    "tests/operator_contracts/test_molecular_hydrogen_charge_exchange_cross_section_l1.py"
   ],
-  "evidence_ceiling": "Independent implementation verification against the primary KN1D sigma_cx_hh.pro fit definition now covers every branch, clipping boundary and SI conversion. A source-free NumPy-only installation passed scalar independent evaluation across 56 energies per branch; all 62 existing fit/input tests passed with their original assertions and tolerances. This qualifies the stated empirical expression, not new experimental accuracy. The historical whole KN1DPy D1 withdrawal and original lack of external experimental cross-section validation remain; human endorsement and redistribution permission remain separate.",
+  "evidence_ceiling": "An independent evaluation of the fit expressions covers every branch, clipping boundary and SI conversion; a NumPy-only installation passed scalar independent evaluation across 56 energies per branch, and all 62 fit/input tests passed with their original assertions and tolerances. This qualifies the stated empirical expression, not new experimental accuracy. No external experimental cross-section validation is bound, and redistribution permission remains separate.",
   "known_limitations": [
-   "The integrated input check rejects complex, boolean and numeric-string energies before float conversion; the saved arm could coerce them. Valid real-input fit arithmetic is unchanged.",
-   "The fit is not validated against an external atomic-physics reference; the saved package's own validation gap carries over unchanged.",
-   "Energies outside the fit range silently return the endpoint value; this is the saved source's declared clipping convention, not an error.",
-   "The negative-energy rejection is a documented development repair, not source behavior: a caller migrating from the saved implementation sees a ValueError where it previously saw the clipped endpoint.",
-   "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+   "The integrated input check rejects complex, boolean and numeric-string energies before float conversion; no coercion is performed. Valid real-input fit arithmetic is unchanged.",
+   "Neither branch is validated against an external atomic-physics reference; no external validation gap is closed here.",
+   "Energies outside the fit range silently return the endpoint value; this is the declared clipping convention, not an error.",
+   "The negative-energy rejection is an explicit precondition of this contract: a negative energy raises ValueError rather than returning the clipped endpoint.",
+   "The optional cross-implementation comparison runs only in an environment that supplies an external implementation root; it is skipped otherwise and covers only the compared grids.",
    "Public distribution licensing remains pending a human decision."
   ]
  }

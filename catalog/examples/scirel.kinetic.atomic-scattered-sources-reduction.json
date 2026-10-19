@@ -5,7 +5,7 @@
   "en": "Atomic scattered-source two-channel reduction",
   "zh": "原子双通道散射源归约"
  },
- "summary": "The source-order sum Beta_CX + OmegaM of the atomic charge-exchange and elastic scattered-generation source distributions on one velocity-space mesh, preserving signed values.",
+ "summary": "The pointwise sum Beta_CX + OmegaM of the atomic charge-exchange and elastic scattered-generation source distributions on one velocity-space mesh, preserving signed values.",
  "taxonomy": [
   "kinetic",
   "neutral-transport",
@@ -18,15 +18,15 @@
  "identity": {
   "relation": "Beta = Beta_CX + OmegaM pointwise on one (nvr,nvx,nx) mesh",
   "direction": "two aligned source fields -> their pointwise sum",
-  "definition": "The saved plain pointwise addition; no clamping of signed values",
-  "model": "the saved formal implementation's scattered-source aggregation",
+  "definition": "Plain pointwise addition; no clamping of signed values",
+  "model": "Pointwise aggregation of the two scattered-generation source channels",
   "geometry": "two velocity dimensions over one spatial axis",
   "coordinates": "all fields in the source's discrete source-distribution units",
   "boundary": "two finite aligned three-dimensional fields; signed values preserved",
   "assumptions": [
-   "The caller owns the upstream per-channel source construction; this asset only aggregates.",
-   "Signed entries are meaningful (upstream normalizations may subtract); the saved sum does not clamp.",
-   "Declared r60 pre-review tightening: the saved arm does not gate its output for finiteness, so extreme-but-valid inputs can overflow to non-finite results; this asset fail-closes on a non-finite result, per the exact document's finite-output contract. The saved-arm divergence is pinned by a bounded regression test."
+   "The caller owns the construction of each channel's source; this asset only aggregates.",
+   "Signed entries are meaningful (the channel normalizations may subtract); the sum does not clamp.",
+   "Declared finiteness tightening: the output is gated for finiteness, so extreme-but-valid inputs that would overflow fail closed rather than returning non-finite results, per the finite-output contract. The divergence is pinned by a bounded regression test."
   ]
  },
  "inputs": [

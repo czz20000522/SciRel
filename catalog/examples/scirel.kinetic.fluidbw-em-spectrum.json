@@ -12,7 +12,7 @@
   ],
   "supported": [
    "Two cases, J8/J12, all eight N controls and source79-frequency default.",
-   "All finite spectra, source-order values, selection candidates and terminal matrices."
+   "All finite spectra, original-order values, selection candidates and terminal matrices."
   ]
  },
  "asset_id": "scirel.kinetic.fluidbw-em-spectrum",
@@ -256,7 +256,7 @@
   ],
   "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
   "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
-  "definition": "All finite matrix eigenvalues are retained. Selected5 are heuristic positive-real, least-|imaginary| candidates; physical-state similarity-scaled backward gate<=2e-12.",
+  "definition": "All finite matrix eigenvalues are returned. Selected5 are heuristic positive-real, least-|imaginary| candidates; physical-state similarity-scaled backward gate<=2e-12.",
   "direction": "inverse: angular frequency to finite-model spectrum",
   "geometry": "uniform background B along z; wavevector (kx,0,kz)",
   "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
@@ -294,7 +294,7 @@
    "units": "dimensionless"
   },
   {
-   "constraints": "Finite real nonzero elements; input order retained.",
+   "constraints": "Finite real nonzero elements in the caller's order.",
    "default": null,
    "description": "Angular frequency axis; None selects the source frequency ladder.",
    "dtype": "real array or None",
@@ -325,7 +325,7 @@
   }
  },
  "schema": "scirel.asset-document",
- "summary": "Compose source EM cases, corrected finite matrices and original-order spectra with bounded numerical evidence.",
+ "summary": "Compose EM cases, corrected finite matrices and original-order spectra with bounded numerical evidence.",
  "taxonomy": [
   "kinetic",
   "plasma-waves",
@@ -346,7 +346,7 @@
   ],
   "scope": [
    "Two cases, J8/J12, all eight N controls and source79-frequency default.",
-   "All finite spectra, source-order values, selection candidates and terminal matrices."
+   "All finite spectra, original-order values, selection candidates and terminal matrices."
   ],
   "tests": [
    "tests/operator_contracts/test_fluidbw_full_d2.py"

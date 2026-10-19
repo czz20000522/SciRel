@@ -2,10 +2,10 @@
  "schema": "scirel.asset-document",
  "asset_id": "scirel.kinetic.kn1d-outer-convergence",
  "title": {
-  "en": "KN1DPy top-level outer convergence",
-  "zh": "KN1DPy顶层外层收敛判据"
+  "en": "Top-level outer convergence",
+  "zh": "顶层外层收敛判据"
  },
- "summary": "Evaluate the source top-level kn1d outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate.",
+ "summary": "Evaluate the top-level outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate.",
  "taxonomy": [
   "kinetic",
   "neutral-transport",
@@ -16,16 +16,16 @@
   "evaluate_kn1d_outer_convergence"
  ],
  "identity": {
-  "relation": "Evaluate the source top-level kn1d outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate.",
+  "relation": "Evaluate the top-level outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate.",
   "direction": "previous and current outer-pass molecular density profiles plus truncate -> top-level reentry decision",
-  "definition": "Evaluate the source top-level kn1d outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate.",
-  "model": "the saved KN1DPy top-level outer-pass ratio-of-max relation with truncate threshold and fail-closed domain tightenings",
+  "definition": "Evaluate the top-level outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate.",
+  "model": "the top-level outer-pass ratio-of-max relation with truncate threshold and fail-closed domain tightenings",
   "geometry": "one spatial axis for two aligned density profiles",
   "coordinates": "densities in m^-3, truncate dimensionless",
   "boundary": "nonempty aligned finite nonnegative real 1-D density arrays, positive current maximum, finite positive real truncate, and representable finite seed_error",
   "assumptions": [
-   "The saved ratio-of-max and strict greater-than comparison with truncate are retained; this top-level threshold is separate from the inner 10*truncate relation. SciRel rejects non-real coercions and non-finite derived values.",
-   "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+   "The relation applies the ratio-of-max test with a strict greater-than comparison against truncate; this top-level threshold is separate from the inner 10*truncate relation. SciRel rejects non-real coercions and non-finite derived values.",
+   "No external atomic-physics reference is bound: the residual is recorded as validation_oracle_gap."
   ]
  },
  "inputs": [
@@ -99,7 +99,7 @@
   "dependencies": []
  },
  "example": {
-  "description": "Evaluate the top-level kn1d outer-pass convergence.",
+  "description": "Evaluate the top-level outer-pass convergence.",
   "code": "import numpy as np\nfrom scirel.kinetic import evaluate_kn1d_outer_convergence\nprev = np.array([100.0])\ncurr = np.array([100.05])\nresult = evaluate_kn1d_outer_convergence(prev, curr, truncate=0.1)\nassert result['should_reiterate'] is False\nassert result['reentry_threshold'] == 0.1\ncurr2 = np.array([120.0])\nresult2 = evaluate_kn1d_outer_convergence(prev, curr2, truncate=0.1)\nassert result2['should_reiterate'] is True",
   "expected": "For current=[100.05], seed_error=0.0004997501249375028 and should_reiterate=False; for current=[120], seed_error=0.16666666666666666 and should_reiterate=True."
  },
@@ -113,7 +113,7 @@
   ],
   "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
   "known_limitations": [
-   "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+   "Broader verification is not claimed beyond the listed direct tests.",
    "Public distribution licensing remains pending a human decision.",
    "Example output is a bounded runtime observation, not a universal scientific claim."
   ]

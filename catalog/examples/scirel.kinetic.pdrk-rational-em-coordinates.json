@@ -30,7 +30,7 @@
  "inputs": [
   {
    "name": "kj",
-   "description": "Signed normalized radial wavevector parameter k*c/omega_pi; negative values are retained.",
+   "description": "Signed normalized radial wavevector parameter k*c/omega_pi; negative values are allowed.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "numeric",

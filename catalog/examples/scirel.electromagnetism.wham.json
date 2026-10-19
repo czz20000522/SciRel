@@ -15,7 +15,7 @@
   "scope": [
    "Bounded rigid-geometry and coordinate invariants",
    "Ordered current projection and source lifecycle",
-   "Full retained BRB/WHAM configuration composition at finite targets"
+   "Full BRB/WHAM configuration composition at finite targets"
   ],
   "tests": [
    "tests/pleiades/geometry/test_native_geometry_qualification.py",
@@ -27,7 +27,7 @@
    "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
    "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
    "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
-   "All scientific, human and release approvals remain false."
+   "No scientific, experimental or licensing approval is claimed."
   ]
  },
  "asset_id": "scirel.electromagnetism.wham",

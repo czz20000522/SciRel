@@ -18,16 +18,16 @@
  "identity": {
   "relation": "terminal H2+ density and temperature from explicit density, temperature and rate profiles",
   "direction": "aligned x profiles and an eleven-channel reaction table -> four x profiles",
-  "definition": "For each spatial cell k, dissociation_frequency=neutral_density[k]*sum(reaction_rate_table[k,7:11]) and energy_exchange_frequency=(7.7e-7*neutral_density[k]*1e-6)/(sqrt(mass_ratio)*ion_temperature[k]^1.5), preserving saved arithmetic order. The H2+ density denominator is dissociation_frequency+loss_frequency and must be finite and strictly positive. Molecular-ion density is molecular_density*neutral_density*ionization_rate divided by that denominator. Molecular-ion temperature is ion_temperature*energy_exchange_frequency divided by energy_exchange_frequency plus the density denominator; its denominator must also be finite and strictly positive.",
-  "model": "saved KN1DPy terminal molecular-ion algebraic state reduction with caller-supplied rate table",
+  "definition": "For each spatial cell k, dissociation_frequency=neutral_density[k]*sum(reaction_rate_table[k,7:11]) and energy_exchange_frequency=(7.7e-7*neutral_density[k]*1e-6)/(sqrt(mass_ratio)*ion_temperature[k]^1.5), preserving the stated arithmetic order. The H2+ density denominator is dissociation_frequency+loss_frequency and must be finite and strictly positive. Molecular-ion density is molecular_density*neutral_density*ionization_rate divided by that denominator. Molecular-ion temperature is ion_temperature*energy_exchange_frequency divided by energy_exchange_frequency plus the density denominator; its denominator must also be finite and strictly positive.",
+  "model": "terminal molecular-ion algebraic state reduction with caller-supplied rate table",
   "geometry": "one-dimensional spatial cell profiles; no velocity-grid input or iteration",
   "coordinates": "all profiles share the same x-cell index; reaction table columns 7 through 10 use zero-based Python indexing",
   "boundary": "finite aligned nonempty profiles; nonnegative molecular and neutral densities, ionization and loss rates, and eleven reaction channels; strictly positive ion temperature and mass ratio; both computed denominators finite and strictly positive",
   "assumptions": [
    "The caller owns the eleven-channel reaction table and all state profiles. This callable does not assemble collision coefficients, generate an H2+ Maxwellian or iterate a terminal feedback loop.",
    "Only channels 7:11 contribute to dissociation; changing the first seven table columns does not change these outputs.",
-   "The input names ionization_rate_s_inv and reaction_rate_table_s_inv are inherited from the saved callable, but their multiplication by neutral density leaves their physical dimensions unresolved. The numerical formula and source labels are preserved pending expert unit review.",
-   "Boolean, complex and numeric-string coercions in the saved implementation are excluded by the maintained real-numeric contract."
+   "The input names ionization_rate_s_inv and reaction_rate_table_s_inv are inherited from the historical interface, but their multiplication by neutral density leaves their physical dimensions unresolved. The numerical formula and the historical labels are preserved pending expert unit review.",
+   "Boolean, complex and numeric-string coercions are excluded by the maintained real-numeric contract."
   ]
  },
  "inputs": [
@@ -173,15 +173,15 @@
   "scope": [
    "Independent per-cell oracle checks all four fields with nonuniform reaction channels.",
    "First-seven-channel variation and zero molecular density preserve the stated boundaries.",
-   "Three SHA-gated historical cases cover exact finite replay and the saved boolean-coercion divergence."
+   "Three digest-pinned fixed cases cover exact finite agreement and the boolean-coercion divergence."
   ],
   "tests": [
    "tests/operator_contracts/test_terminal_molecular_ion_state.py",
    "tests/operator_contracts/test_terminal_molecular_ion_state_l1.py"
   ],
-  "evidence_ceiling": "Direct and optional saved comparisons establish the finite discrete algebraic relation and boundary differences on tested carriers. They do not establish rate-table provenance, absolute units, a full H2+ kinetic closure, whole-source D1 qualification or expert approval.",
+  "evidence_ceiling": "Direct numerical comparisons establish the finite discrete algebraic relation and boundary differences on tested carriers. They do not establish rate-table provenance, absolute units, a full H2+ kinetic closure, complete qualification or expert approval.",
   "known_limitations": [
-   "The source's strict D1 qualification is withdrawn; historical parity is only bounded development evidence.",
+   "Numerical agreement with the reference cases is bounded evidence and does not establish full qualification.",
    "The density-scaled ionization/reaction-rate units and absolute H2+ density normalization require expert review.",
    "Public distribution licensing remains pending."
   ]

@@ -5,7 +5,7 @@
   "en": "Conservative power-law convection",
   "zh": "守恒幂律对流"
  },
- "summary": "Assemble TORAX power-law convection and selected boundary flux conventions",
+ "summary": "Assemble power-law convection and selected boundary flux conventions",
  "taxonomy": [
   "numerical-methods",
   "finite-volume"
@@ -15,7 +15,7 @@
   "relation": "-d/dx(v u)=M u+b",
   "direction": "Explicit cell/face data to spatial operator or state update",
   "definition": "Face Peclet p=distance*v/D with half-cell distance at boundaries, |D| floored to1e-20. Alpha=.5 for |p|<=.001; [(p-1)+(1-p/10)^5]/p for .001<p<=10; [(1+p/10)^5-1]/p for -10<=p<-.001; 1-1/p above10; -1/p below-10. Internal face flux uses complementary left/right alpha weights and identical flux in adjacent cells. Ghost boundaries reconstruct ghost cell from face data; direct uses imposed face value; semi-implicit weights current cell and face data. Neumann gradients are positive-coordinate at both ends.",
-  "model": "TORAX one-dimensional finite-volume discretization",
+  "model": "One-dimensional conservative finite-volume discretization",
   "geometry": "Explicit one-dimensional face grid, cell centers at arithmetic midpoints",
   "coordinates": "Caller coordinate X; positive increasing direction",
   "boundary": "One scalar Dirichlet value or positive-coordinate Neumann gradient at each end; homogeneous unit cross-section unless metrics supplied",
@@ -40,7 +40,7 @@
    "shape": "N+1",
    "dtype": "real numeric converted to float64",
    "required": true,
-   "constraints": "Finite matching faces; magnitude floor 1e-20 in supplied units, zero sign positive as TORAX"
+   "constraints": "Finite matching faces; magnitude floor 1e-20 in supplied units, zero takes the positive sign"
   },
   {
    "name": "var",
@@ -97,10 +97,10 @@
    "Declared shapes, domains and matching scientific conventions; no implicit broadcasting"
   ],
   "supported": [
-   "Assemble TORAX power-law convection and selected boundary flux conventions"
+   "Assemble power-law convection and selected boundary flux conventions"
   ],
   "excluded": [
-   "The absolute D floor is source behavior in supplied units, not a unit-invariant physical regularization.",
+   "The absolute D floor is a declared convention in supplied units, not a unit-invariant physical regularization.",
    "Conservation is relative to selected numerical boundary flux; ghost/semi-implicit face value may differ from the prescribed Dirichlet value. No unrestricted-grid accuracy or positivity claim."
   ]
  },
@@ -141,7 +141,7 @@
   ],
   "evidence_ceiling": "Named discrete invariants and manufactured uniform-grid convergence; no arbitrary-grid stability/accuracy or full transport-simulation claim.",
   "known_limitations": [
-   "The absolute D floor is source behavior in supplied units, not a unit-invariant physical regularization.",
+   "The absolute D floor is a declared convention in supplied units, not a unit-invariant physical regularization.",
    "Conservation is relative to selected numerical boundary flux; ghost/semi-implicit face value may differ from the prescribed Dirichlet value. No unrestricted-grid accuracy or positivity claim."
   ]
  },

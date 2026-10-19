@@ -21,15 +21,15 @@
   "relation": "the cylindrical velocity-space quadrature of a normalized (vr, vx) mesh: ghost-extended cell faces, annular radial measure, cell volumes, ghosted finite-volume coefficients, speed squared and axial sign index ranges",
   "direction": "vr, vx -> radial_measure, radial_four_pi_measure, dvx, vr_left, vr_right, vx_left, vx_right, volume, inv_dvx_ghost, vx_over_dvx_ghost, vr_over_dvr_ghost, speed_squared, positive/negative vx index ranges",
   "definition": "The radial mesh is extended by mirroring the last node (2*vr[-1] - vr[-2]) and the axial mesh by mirroring both ends; cell faces are midpoints of adjacent extended nodes with the innermost radial face fixed at zero. radial_measure = pi*(r_right^2 - r_left^2), volume = radial_measure[:, None] * dvx[None, :], radial_four_pi_measure = 4/3*pi*(r_right^3 - r_left^3). The ghosted arrays carry 1/dvx, vx/dvx and vr/dvr in their interior and exact zeros on the boundary shell. The index ranges locate strictly positive and strictly negative axial velocities.",
-  "model": "discrete finite-volume construction on the saved source's ghost-face convention; no distribution, collision model or field model is evaluated",
+  "model": "discrete finite-volume construction on the declared ghost-face convention; no distribution, collision model or field model is evaluated",
   "geometry": "velocity space, cylindrical: radial speed vr (inner face at zero) and axial velocity vx; the azimuthal angle is integrated out into the pi*(r_right^2 - r_left^2) measure",
   "coordinates": "vr and vx in whatever normalized velocity unit the caller works in; no unit conversion is performed",
   "boundary": "the innermost radial face is exactly zero; the outermost faces are midpoints between the last node and its mirrored ghost; the ghosted coefficient arrays are exactly zero on their boundary shell; vx must contain both strictly negative and strictly positive entries",
   "assumptions": [
    "The meshes are already expressed in the caller's normalized velocity unit, consistent with the normalization temperature convention of the downstream consumers.",
-   "The ghost faces follow the saved source's half-cell extrapolation convention; callers whose scheme expects different face placements must not reuse the measure unreviewed.",
+   "The ghost faces follow the declared half-cell extrapolation convention; callers whose scheme expects different face placements must not reuse the measure unreviewed.",
    "The azimuthal measure is exact for the annulus (pi times the squared-face difference), not a midpoint rule in vr.",
-   "Non-finite mesh points are rejected. The saved implementation checked only monotonicity and sizes, propagating NaN silently although its own document declared the fail-closed finite contract; this is the one documented repair."
+   "Non-finite mesh points are rejected. The earlier behavior checked only monotonicity and sizes and propagated NaN silently although its own document declared the fail-closed finite contract; this is the one documented repair."
   ]
  },
  "inputs": [
@@ -219,7 +219,7 @@
  "applicability": {
   "preconditions": [
    "The caller works in a single normalized velocity unit for both meshes and downstream consumers.",
-   "The downstream scheme accepts the saved source's ghost-face and sign-index conventions."
+   "The downstream scheme accepts the declared ghost-face and sign-index conventions."
   ],
   "supported": [
    "Constructing the cylindrical cell-volume measure that the Maxwellian relative-speed rate average normalizes against.",
@@ -230,7 +230,7 @@
   "excluded": [
    "Mesh generation or adaptation: the meshes are caller inputs.",
    "Any distribution, collision or field model.",
-   "Schemes whose cell faces differ from the saved source's ghost-face convention.",
+   "Schemes whose cell faces differ from the declared ghost-face convention.",
    "Unit conversion between normalized velocity and m/s; that scale is the caller's."
   ]
  },
@@ -260,8 +260,8 @@
  },
  "verification": {
   "scope": [
-   "That the public callable reproduces the saved source's field set, shapes and index semantics exactly ( eighteen output fields asserted by name ).",
-   "The hand-derived oracle on a different mesh than the saved package test: annular measures, ghost-extended faces, dvx, volume, speed squared and sign indices, exact to floating point.",
+   "That the public callable returns the declared field set, shapes and index semantics exactly ( eighteen output fields asserted by name ).",
+   "The hand-derived oracle on a different mesh than the declared reference case: annular measures, ghost-extended faces, dvx, volume, speed squared and sign indices, exact to floating point.",
    "The box-partition closure: the total volume equals the annulus up to the ghost face times the ghosted axial span.",
    "Nonuniform radial meshes: the annular measure stays exact for the ghost-face construction, including the mirrored outer face.",
    "The ghosted coefficient arrays are exactly zero on the boundary shell and carry 1/dvx, vx/dvx and vr/dvr in the interior.",
@@ -273,10 +273,10 @@
   ],
   "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
   "known_limitations": [
-   "The outer faces use the saved source's half-cell extrapolation (mirror the last node); schemes expecting different face placements must not reuse the measure unreviewed.",
+   "The outer faces use the declared half-cell extrapolation (mirror the last node); schemes expecting different face placements must not reuse the measure unreviewed.",
    "The asset performs no unit conversion: the meshes and every output share the caller's normalized velocity unit, and the physical thermal-speed scale is the caller's.",
-   "Non-finite and non-real mesh rejection are documented development repairs, not source behavior: a caller migrating from the saved implementation sees a ValueError where it previously saw coercion, an unrelated TypeError or a silently corrupted quadrature. The same holds for the nonnegative radial domain and the output representability check: a negative or float64-ceiling mesh that the saved implementation accepted with negative or non-finite measures is rejected here.",
-   "The nonnegative radial domain makes the saved source's positive-radial-speed convention explicit; a caller that believes a signed radial axis is meaningful is looking at a different relation.",
+   "Non-finite and non-real mesh rejection are documented repairs beyond the original behavior: a caller who relied on the earlier behavior sees a ValueError where it previously saw coercion, an unrelated TypeError or a silently corrupted quadrature. The same holds for the nonnegative radial domain and the output representability check: a negative or float64-ceiling mesh that the earlier behavior accepted with negative or non-finite measures is rejected here.",
+   "The nonnegative radial domain makes the positive-radial-speed convention explicit; a caller that believes a signed radial axis is meaningful is looking at a different relation.",
    "Scientific validity is bounded by the tested numerical domain and applicability conditions."
   ]
  }

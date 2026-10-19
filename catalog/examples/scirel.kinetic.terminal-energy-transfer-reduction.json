@@ -18,16 +18,16 @@
  "identity": {
   "relation": "terminal H2 loss, momentum and energy-transfer reduction from an explicit RHS",
   "direction": "terminal (vr,vx,x) distribution, signed RHS and external source, normalized velocity nodes, mass, speed and quadrature -> four x profiles",
-  "definition": "For each spatial cell k, density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j] and particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j], with saved per-cell matrix-vector and radial order. Let u=particle_flux/density, c_x=vx-u/Vth, c_squared=vr^2+c_x^2 and m=2*mass_ratio*1.6726231e-27 kg. Loss is external_source minus the weighted RHS integral. Thermal transfer is 0.5*m*Vth^2 times the weighted integral of c_squared*RHS. Momentum transfer is m*Vth times the weighted integral of c_x*RHS. Total transfer is thermal_transfer+momentum_transfer*u-0.5*m*(loss-external_source)*u^2. In finite exact arithmetic, total transfer equals 0.5*m*Vth^2 times the weighted integral of (vr^2+vx^2)*RHS and is independent of the external-source input.",
-  "model": "saved KN1DPy terminal H2 transfer diagnostic with caller-owned collision RHS and external molecular source",
+  "definition": "For each spatial cell k, density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j] and particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j], with the declared per-cell matrix-vector and radial order. Let u=particle_flux/density, c_x=vx-u/Vth, c_squared=vr^2+c_x^2 and m=2*mass_ratio*1.6726231e-27 kg. Loss is external_source minus the weighted RHS integral. Thermal transfer is 0.5*m*Vth^2 times the weighted integral of c_squared*RHS. Momentum transfer is m*Vth times the weighted integral of c_x*RHS. Total transfer is thermal_transfer+momentum_transfer*u-0.5*m*(loss-external_source)*u^2. In finite exact arithmetic, total transfer equals 0.5*m*Vth^2 times the weighted integral of (vr^2+vx^2)*RHS and is independent of the external-source input.",
+  "model": "Terminal H2 loss, momentum and energy-transfer diagnostic on an explicit collision RHS with an external molecular source",
   "geometry": "one-dimensional x profile over cylindrical (vr,vx) velocity cells",
   "coordinates": "radial and axial velocity nodes are dimensionless speeds normalized by the supplied thermal speed; radial nodes are nonnegative and axial nodes may be signed",
   "boundary": "finite nonnegative nonempty three-dimensional terminal distribution; finite signed RHS of the same shape and signed external source [nx]; finite aligned velocity nodes and nonnegative quadrature weights; positive scalar mass ratio, thermal speed and integrated density in every x cell",
   "assumptions": [
    "The caller supplies the RHS and external source. This callable does not assemble the Boltzmann RHS, infer a terminal generation or bind a callable dependency to an RHS producer.",
-   "The mass ratio multiplies the saved hydrogen mass constant, not a standard atomic mass unit; the H2 mass uses twice that factor.",
+   "The mass ratio multiplies the declared hydrogen mass constant 1.6726231e-27 kg, not a standard atomic mass unit; the H2 mass uses twice that factor.",
    "The source labels the momentum output N/m^2, while a volumetric interpretation of the RHS could imply a different dimension. Physical units and distribution normalization require expert review before use as an absolute transfer rate.",
-   "Boolean, complex and numeric-string coercions in the saved implementation are excluded by the maintained real-numeric contract."
+   "Boolean, complex and numeric-string coercions are excluded by the maintained real-numeric contract."
   ]
  },
  "inputs": [
@@ -51,7 +51,7 @@
   },
   {
    "name": "mass_ratio",
-   "description": "Positive factor of the saved hydrogen mass used for the H2 particle mass.",
+   "description": "Positive factor of the declared hydrogen mass used for the H2 particle mass.",
    "units": "factor of 1.6726231e-27 kg",
    "shape": "scalar",
    "dtype": "real numeric scalar",
@@ -191,15 +191,15 @@
   "scope": [
    "Independent centered RHS moments and a raw uncentered energy-moment oracle check all four outputs on a signed nonuniform carrier.",
    "External-source variation changes only loss; some zero quadrature cells are accepted with positive density.",
-   "Three SHA-gated historical cases cover exact finite replay and the saved boolean-coercion divergence."
+   "Three digest-pinned reference cases cover exact finite replay and the declared boolean-coercion divergence."
   ],
   "tests": [
    "tests/operator_contracts/test_terminal_molecular_energy_transfer.py",
    "tests/operator_contracts/test_terminal_molecular_energy_transfer_l1.py"
   ],
-  "evidence_ceiling": "Direct and optional saved comparisons establish the finite discrete RHS reduction and boundary differences on tested carriers. They do not establish the upstream terminal distribution or RHS, absolute physical normalization, whole-source D1 qualification or expert approval.",
+  "evidence_ceiling": "Direct comparisons establish the finite discrete RHS reduction and boundary differences on tested carriers. They do not establish the incoming terminal distribution or RHS, absolute physical normalization, qualification of the whole closure or expert approval.",
   "known_limitations": [
-   "The source's strict D1 qualification is withdrawn; historical parity is only bounded development evidence.",
+   "No independently reviewed qualification of parity with an external implementation holds; parity evidence is bounded to the declared finite cases.",
    "The source-labeled momentum unit and absolute distribution/RHS normalization require expert review.",
    "Public distribution licensing remains pending."
   ]

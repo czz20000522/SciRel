@@ -209,7 +209,7 @@
   "invalid_input": "ValueError for missing derivative information, conflicting derivative/axis inputs, nonfinite or nonpositive B, invalid shapes or nonmonotone/variable-psi derivative lines; other documented scalar controls are validated.",
   "runtime_failure": "FloatingPointError for nonfinite computed residuals or margins; callable errors propagate.",
   "nonconvergence": "No nonlinear solve; the caller is responsible for derivative sampling convergence.",
-  "partial_results": "None. Optional upstream parallel-equilibrium values in the margin API are forwarded without independent validation."
+  "partial_results": "None. Optional parallel-equilibrium values supplied alongside the margin API are forwarded without independent validation."
  },
  "public_api": {
   "python": {
@@ -240,7 +240,7 @@
   ],
   "evidence_ceiling": "Analytic identities, explicit failure regressions and independent numerical comparisons establish the stated mathematical contract. They do not establish measured-plasma validity or a general stability theorem.",
   "known_limitations": [
-   "The new derivative/axis/psi keywords require callers to supply missing physical information; old global-B-sort behavior is intentionally removed.",
+   "The derivative/axis/psi keywords require callers to supply missing physical information; global-B sorting is not part of this contract.",
    "Sampled flags and residuals are local model diagnostics, not proof of global equilibrium or kinetic stability."
   ]
  },

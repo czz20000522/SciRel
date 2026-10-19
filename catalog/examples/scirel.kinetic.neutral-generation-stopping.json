@@ -19,13 +19,13 @@
   "relation": "Evaluate the source Delta_n stopping criterion for collision-generation convergence: returns the relative generation density ratio and whether the next generation is unnecessary.",
   "direction": "current and accumulated generation density profiles plus stop controls -> (delta, done, reason)",
   "definition": "Evaluate the source Delta_n stopping criterion for collision-generation convergence: returns the relative generation density ratio and whether the next generation is unnecessary.",
-  "model": "the saved KN1DPy per-generation ratio-of-max stopping relation with explicit fail-closed domain tightenings",
+  "model": "the per-generation ratio-of-max stopping relation with explicit fail-closed domain tightenings",
   "geometry": "one spatial axis for two aligned density profiles",
   "coordinates": "densities in m^-3, truncate dimensionless",
   "boundary": "nonempty finite nonnegative 1-D density arrays of one shape; accumulated density has a positive maximum; finite positive real truncate; boolean seed_iteration_enabled and a finite nonnegative real seed_error exactly when enabled; derived delta finite",
   "assumptions": [
-   "The saved ratio-of-max and strict truncate/seed-relative comparisons are retained. SciRel validates seed controls before the early truncate return and rejects real-value coercions and non-finite derived delta.",
-   "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+   "The relation applies the ratio-of-max test with strict truncate and seed-relative comparisons. SciRel validates seed controls before the early truncate return and rejects real-value coercions and non-finite derived delta.",
+   "No external atomic-physics reference is bound: the residual is recorded as validation_oracle_gap."
   ]
  },
  "inputs": [
@@ -85,7 +85,7 @@
    "shape": "tuple of 3 scalars",
    "dtype": "tuple(float, bool, str)",
    "required": true,
-   "constraints": "Finite delta; done is a Python bool; reason is a saved status string."
+   "constraints": "Finite delta; done is a Python bool; reason is a status string."
   }
  ],
  "applicability": {
@@ -133,7 +133,7 @@
   ],
   "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
   "known_limitations": [
-   "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+   "Broader verification is not claimed beyond the listed direct tests.",
    "Public distribution licensing remains pending a human decision.",
    "Example output is a bounded runtime observation, not a universal scientific claim."
   ]

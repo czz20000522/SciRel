@@ -18,15 +18,15 @@
  "identity": {
   "relation": "Beta_EL = sum over channels q of Omega_q[x] * M_q[vr,vx,x]",
   "direction": "named channel frequency profiles plus regenerated distributions -> one aggregated source",
-  "definition": "The frequency and distribution key sets must match exactly; each term multiplies the (nx,) profile into the last axis; the saved dict iteration order defines the float summation order",
-  "model": "the saved formal implementation's channel aggregation",
+  "definition": "The frequency and distribution key sets must match exactly; each term multiplies the (nx,) profile into the last axis; the dict iteration order defines the float summation order",
+  "model": "the channel aggregation",
   "geometry": "two velocity dimensions over one spatial axis, one term per declared channel",
   "coordinates": "frequencies in s^-1; distributions in the source's discrete units",
   "boundary": "matching nonempty key sets; finite nonnegative (nx,) frequencies; finite nonnegative (nvr,nvx,nx) distributions on one shared velocity and spatial mesh",
   "assumptions": [
-   "Channel keys are caller-declared identifiers (e.g. species-pair names); the asset does not interpret them. All channels must use one velocity mesh; the saved arm may broadcast singleton velocity dimensions, which SciRel rejects.",
-   "Distributions and frequencies are expected nonnegative by physics and enforced so, as saved.",
-   "Declared r60 pre-review tightening: the saved arm does not gate its output for finiteness, so extreme-but-valid inputs can overflow to non-finite results; this asset fail-closes on a non-finite result, per the exact document's finite-output contract. The saved-arm divergence is pinned by a bounded regression test."
+   "Channel keys are caller-declared identifiers (e.g. species-pair names); the asset does not interpret them. All channels must use one velocity mesh; singleton velocity dimensions that would broadcast are rejected.",
+   "Distributions and frequencies are expected nonnegative by physics and that expectation is enforced.",
+   "Fail-closed finiteness: extreme-but-valid inputs can overflow, so this asset rejects a non-finite result instead of returning it, per the declared finite-output contract. A bounded regression test pins that behaviour."
   ]
  },
  "inputs": [
@@ -57,7 +57,7 @@
    "shape": "[nvr,nvx,nx]",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "Finite and nonnegative; the saved-order channel sum."
+   "constraints": "Finite and nonnegative; the channel sum in dict iteration order."
   }
  ],
  "applicability": {
@@ -97,7 +97,7 @@
  },
  "verification": {
   "scope": [
-   "That the aggregation equals an independent channel-weighted sum in the saved iteration order.",
+   "That the aggregation equals an independent channel-weighted sum in the dict iteration order.",
    "The key-set, real-value, common-mesh, alignment, nonnegativity and finite-output failure contracts."
   ],
   "tests": [

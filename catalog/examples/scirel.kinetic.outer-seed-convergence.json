@@ -19,13 +19,13 @@
   "relation": "Evaluate the source outer seed re-entry condition: computes seed_error and reentry_threshold (10*truncate), returns whether the outer seed pass should re-iterate.",
   "direction": "previous and current seed-pass density profiles plus truncate -> inner reentry decision",
   "definition": "Evaluate the source outer seed re-entry condition: computes seed_error and reentry_threshold (10*truncate), returns whether the outer seed pass should re-iterate.",
-  "model": "the saved KN1DPy inner seed-pass ratio-of-max relation with 10*truncate threshold and fail-closed domain tightenings",
+  "model": "the inner seed-pass ratio-of-max relation with 10*truncate threshold and fail-closed domain tightenings",
   "geometry": "one spatial axis for two aligned density profiles",
   "coordinates": "densities in m^-3, truncate dimensionless",
   "boundary": "nonempty aligned finite nonnegative real 1-D density arrays, positive current maximum, finite positive real truncate, and representable finite seed_error and 10*truncate threshold",
   "assumptions": [
-   "The saved ratio-of-max and strict greater-than comparison with 10*truncate are retained; SciRel rejects non-real coercions and non-finite derived values.",
-   "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+   "The relation applies the ratio-of-max test with a strict greater-than comparison against 10*truncate; SciRel rejects non-real coercions and non-finite derived values.",
+   "No external atomic-physics reference is bound: the residual is recorded as validation_oracle_gap."
   ]
  },
  "inputs": [
@@ -113,7 +113,7 @@
   ],
   "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
   "known_limitations": [
-   "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+   "Broader verification is not claimed beyond the listed direct tests.",
    "Public distribution licensing remains pending a human decision.",
    "Example output is a bounded runtime observation, not a universal scientific claim."
   ]

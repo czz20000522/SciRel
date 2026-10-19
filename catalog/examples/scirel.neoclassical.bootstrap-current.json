@@ -26,7 +26,7 @@
  "inputs": [
   {
    "name": "bootstrap_multiplier",
-   "description": "Dimensionless multiplicative scale; signed algebra retained",
+   "description": "Dimensionless multiplicative scale; signed algebra preserved",
    "units": "1",
    "shape": "scalar",
    "dtype": "real numeric converted to float64",
@@ -45,7 +45,7 @@
   },
   {
    "name": "B0",
-   "description": "Reference toroidal magnetic field with signed convention retained",
+   "description": "Reference toroidal magnetic field with a signed convention",
    "units": "T",
    "shape": "scalar",
    "dtype": "real numeric converted to float64",
@@ -180,7 +180,7 @@
    "Evaluate parallel current density from explicit pressure/logarithmic gradients and fit coefficients"
   ],
   "excluded": [
-   "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full TORAX physics qualification.",
+   "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
    "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision.",
    "Physical interpretation assumes axisymmetric tokamak geometry, nonnegative scalar thermal pressures, positive density/temperature before forming their logarithms, and compatible total-flux/field sign conventions. Signed inputs retain algebra only."
   ]
@@ -222,7 +222,7 @@
   ],
   "evidence_ceiling": "Mathematical fit arithmetic and explicit assembly only; no empirical full-physics qualification.",
   "known_limitations": [
-   "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full TORAX physics qualification.",
+   "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
    "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision.",
    "Physical interpretation assumes axisymmetric tokamak geometry, nonnegative scalar thermal pressures, positive density/temperature before forming their logarithms, and compatible total-flux/field sign conventions. Signed inputs retain algebra only."
   ]

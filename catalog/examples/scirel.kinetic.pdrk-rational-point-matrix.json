@@ -78,7 +78,7 @@
   },
   {
    "name": "N",
-   "description": "Retained cyclotron harmonic cutoff; ES3D default10 and EM default2.",
+   "description": "Cyclotron harmonic cutoff, fixed at its declared default; ES3D default10 and EM default2.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "integer",
@@ -138,7 +138,7 @@
   "dependencies": []
  },
  "example": {
-  "description": "Run the declared PDRK relation with its native-backed scientific ports.",
+  "description": "Run the declared relation with its native-backed scientific ports.",
   "code": "from scirel.kinetic.pdrk.rational import equilibrium, pole_table, point_matrix\neq = equilibrium('es3d', [[1, 1, 1, 1, 2, 0.1]], B0=1)['state']\ntab = pole_table('es3d', 8)['state']\nr = point_matrix('es3d', {**eq, **tab}, kx=2, kz=0.7, N=0)\nassert 'constant' in r['state'] and 'M' not in r['state']",
   "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
  },
@@ -151,13 +151,13 @@
   "tests": [
    "tests/operator_contracts/test_pdrk_rational.py"
   ],
-  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
   "known_limitations": [
-   "PDRK source redistribution authority remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
+   "Redistribution permission for the reference material remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
    "Finite-J/finite-N physics must be qualified for a new requested regime.",
    "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
    "Human scientific and plot approval pending.",
-   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+   "The native example and full verification require GNU Octave on Linux amd64; the current macOS run is NOT_RUN."
   ]
  },
  "references": [

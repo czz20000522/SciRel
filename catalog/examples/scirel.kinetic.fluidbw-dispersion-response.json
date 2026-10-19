@@ -18,8 +18,8 @@
  "asset_id": "scirel.kinetic.fluidbw-dispersion-response",
  "example": {
   "code": "from scirel.kinetic.fluidbw import derive_fluidbw_case,evaluate_fluidbw_dispersion\ns=derive_fluidbw_case('bonk',2);s['w']=.63*s['wn']\nr=evaluate_fluidbw_dispersion(0,s,'fD')\n",
-  "description": "Requires Linux amd64 and GNU Octave 7.3.0; this example exercises the native fluidBW boundary and is reported as NOT_RUN on macOS.",
-  "expected": "NOT_RUN on this macOS host: the call reaches the fluidBW runtime guard and raises RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")."
+  "description": "Requires Linux amd64 and GNU Octave 7.3.0; this example exercises the native runtime boundary and is reported as NOT_RUN on macOS.",
+  "expected": "NOT_RUN on this macOS host: the call reaches the native runtime guard and raises RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")."
  },
  "failure_semantics": {
   "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
@@ -99,8 +99,8 @@
   "fluidbw"
  ],
  "title": {
-  "en": "Corrected fluidBW Maxwell response",
-  "zh": "修正的 fluidBW Maxwell 响应"
+  "en": "Maxwell dispersion response",
+  "zh": "Maxwell 色散响应"
  },
  "verification": {
   "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",

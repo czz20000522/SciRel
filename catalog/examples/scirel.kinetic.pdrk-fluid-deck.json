@@ -34,7 +34,7 @@
    "shape": "(2,10)",
    "dtype": "float64 ndarray",
    "required": true,
-   "constraints": "Literal table: density 8.7e6 m^-3 per species; source physical constants and sound speeds retained."
+   "constraints": "Literal table: density 8.7e6 m^-3 per species; the declared physical constants and sound speeds are used as given."
   }
  ],
  "applicability": {

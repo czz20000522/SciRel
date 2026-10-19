@@ -25,7 +25,7 @@
   "boundary": "Arguments and outputs must be finite and representable as complex128; orders must be exactly representable integers of magnitude at most 2^53.",
   "assumptions": [
    "The caller has already formed dimensionless x, such as b=(k_perp*rho_c)^2 for the fluidBW dispersion relation.",
-   "The exponentially scaled Bessel backend is retained; this callable does not select a harmonic truncation."
+   "The computation uses the exponentially scaled Bessel backend; this callable does not select a harmonic truncation."
   ]
  },
  "inputs": [

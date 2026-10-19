@@ -30,7 +30,7 @@
  "inputs": [
   {
    "name": "state",
-   "description": "NativeResult or its state mapping produced by the named predecessor. Scalar numeric fields are usually1x1 native arrays; row/column singleton dimensions are retained. Scientific numeric transport is float64/complex128; inactive fields are empty arrays, never fabricated zeros.",
+   "description": "NativeResult or its state mapping produced by the named predecessor. Scalar numeric fields are usually 1x1 native arrays; row/column singleton dimensions are preserved. Scientific numeric transport is float64/complex128; inactive fields are empty arrays, never fabricated zeros.",
    "units": "mixed; physical dimensions recorded by state fields",
    "shape": "mapping or NativeResult",
    "dtype": "state carrier",
@@ -92,7 +92,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
-  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError with retained result and receipt when its caught scientific terminal fails.",
+  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError carrying the result and receipt computed so far when its caught scientific terminal fails.",
   "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
   "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
  },
@@ -108,24 +108,24 @@
   "dependencies": []
  },
  "example": {
-  "description": "Small wheel-only example using packaged native resources and raw Octave; no source checkout or network.",
+  "description": "A self-contained example that uses the packaged native resources and raw Octave; no network access is required.",
   "code": "import numpy as np\nfrom scirel.kinetic.pdrk import magnetized as m, workflows as w\nst={'pas':np.array([.1,.2,.3]),'wws':np.array([1.,2.,3.]).reshape(3,1,1),'rex':1.,'rez':1.}\nr=m.interpolate_selected_dispersion(st,coordinate=.2)\nassert np.allclose(r.state['winterp'],2.)\n",
   "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
  },
  "verification": {
   "scope": [
-   "Native interp1 behavior retains source-fidelity evidence, including out-of-range NaN.",
+   "Native interp1 behavior, including out-of-range NaN, is covered by direct evidence.",
    "Canonical example checks a manufactured exact interpolation value; no plasma dispersion root accuracy follows."
   ],
   "tests": [
    "tests/operator_contracts/test_pdrk_magnetized.py"
   ],
-  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
   "known_limitations": [
    "Local technical development; human scientific endorsement and publication clearance remain pending.",
    "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
    "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
-   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+   "The native example and full verification require GNU Octave on Linux amd64; the current macOS run is NOT_RUN."
   ]
  },
  "references": [

@@ -5,7 +5,7 @@
   "en": "Left-clamped cylindrical spline",
   "zh": "左端钳制柱坐标样条"
  },
- "summary": "Callable piecewise-cubic Hermite interpolation with a prescribed left first derivative and retained cylindrical right boundary equation.",
+ "summary": "Callable piecewise-cubic Hermite interpolation with a prescribed left first derivative and a cylindrical right boundary equation.",
  "taxonomy": [
   "analysis",
   "basis"
@@ -58,7 +58,7 @@
   },
   {
    "name": "m",
-   "description": "Coefficient in retained cylindrical Robin row",
+   "description": "Coefficient in the cylindrical Robin row",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "float64",
@@ -127,7 +127,7 @@
    "tests/pleiades/equilibrium/test_analysis_families.py",
    "tests/pleiades/equilibrium/test_analysis_corrections.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness or experimental validation.",
   "known_limitations": [
    "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
    "Duplicate, unsorted or nonfinite knots are outside numerical qualification",

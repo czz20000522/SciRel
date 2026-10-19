@@ -18,15 +18,15 @@
  "identity": {
   "relation": "Omega_total = Omega_1 + Omega_2 + Omega_3 pointwise over equal-shape channel profiles",
   "direction": "three caller-ordered channel profiles -> one total profile",
-  "definition": "The three channels are added left to right in caller order (float summation order preserved); exactly three channels are admitted by the saved contract",
-  "model": "the saved formal implementation's channel confluence",
+  "definition": "The three channels are added left to right in caller order (float summation order preserved); exactly three channels are admitted",
+  "model": "the channel confluence",
   "geometry": "none; a pointwise reduction over caller-declared shapes",
   "coordinates": "frequencies in s^-1",
   "boundary": "exactly three non-empty finite equal-shape profiles",
   "assumptions": [
-   "The three-channel count is the saved contract for one species family's elastic pairs; other counts are rejected.",
-   "Channels are expected nonnegative by physics but only finiteness is enforced, as saved.",
-   "The saved arm does not gate the sum finiteness (three 1e308 channels overflow to inf and are returned); this asset fail-closes on a non-finite total instead, per the declared finite-output contract. The divergence is pinned by a regression test."
+   "The three-channel count defines one species family's elastic pairs; other counts are rejected.",
+   "Channels are expected nonnegative by physics, but only finiteness is enforced.",
+   "Three 1e308 channels would overflow to inf; this asset fail-closes on a non-finite total instead, per the declared finite-output contract. A regression test pins that behaviour."
   ]
  },
  "inputs": [
@@ -48,7 +48,7 @@
    "shape": "common shape",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "Finite; equals the pointwise sum in the saved order."
+   "constraints": "Finite; equals the pointwise sum in the declared order."
   }
  ],
  "applicability": {
@@ -88,9 +88,9 @@
  },
  "verification": {
   "scope": [
-   "That the sum equals an independent pointwise addition in the saved order.",
+   "That the sum equals an independent pointwise addition in the declared order.",
    "The channel-count, shape, and finiteness failure contracts.",
-   "That an overflowing channel sum fails closed (declared narrowing of the saved contract; the saved arm would return inf)."
+   "That an overflowing channel sum fails closed (three 1e308 channels would otherwise be inf)."
   ],
   "tests": [
    "tests/operator_contracts/test_neutral_frequency_assembly.py"

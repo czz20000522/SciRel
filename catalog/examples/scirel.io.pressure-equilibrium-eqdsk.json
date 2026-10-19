@@ -5,7 +5,7 @@
   "en": "Converged pressure equilibrium exchange",
   "zh": "收敛压力平衡状态的交换文件"
  },
- "summary": "将真实收敛的压力反馈终态写入明确赋予SI压力语义的Pleiades扩展格式，拒绝未收敛结果。",
+ "summary": "将真实收敛的压力反馈终态写入明确赋予SI压力语义的扩展EQDSK格式，拒绝未收敛结果。",
  "taxonomy": [
   "io",
   "axisymmetric-equilibrium",
@@ -15,7 +15,7 @@
  "identity": {
   "relation": "psi_grid=result.psi; Ip=sum(result.plas_currents); profile_psi=linspace(psi(R=0,Z=0),psi_lim,nnv); p_flux=P(profile_psi); pprime_flux=dP/dpsi(profile_psi).",
   "direction": "收敛EquilibriumResult与其R,Z网格到交换文件及显式压力采样磁通坐标。",
-  "definition": "终态psi=R A_phi，电流单元I=Jphi abs(dR*dZ)。采用已有Pleiades写读格式及稳健弧长轮廓；psi_lim为终态中最近(0.6,0)节点的psi。此后继明确赋予p_flux压力Pa、pprime_flux压力对psi的导数Pa/(Wb/rad)语义，保留压力样条域外零值。其余三profile仍为历史零值，不推断物理F或q。",
+  "definition": "终态psi=R A_phi，电流单元I=Jphi abs(dR*dZ)。采用扩展EQDSK写读格式及稳健弧长轮廓；psi_lim为终态中最近(0.6,0)节点的psi。p_flux明确赋予压力Pa、pprime_flux压力对psi的导数Pa/(Wb/rad)语义，压力样条域外取零值。其余三profile为零值，不推断物理F或q。",
   "model": "压力-only离散反馈终态的显式交换组合；不增加平衡模型。",
   "geometry": "从R=0开始、Z关于0对称的规则二维网格，与压力反馈结果一致。",
   "coordinates": "R,Z为m，[Z,R]数组次序；psi为Wb/rad，Ip为A，p_flux为Pa。",
@@ -23,7 +23,7 @@
   "assumptions": [
    "结果status=converged且两残差有限，压力fit存在。",
    "原反馈模型与压力定义域成立。",
-   "Pleiades扩展格式，不是标准EFIT/COCOS协议。",
+   "扩展EQDSK格式，不是标准EFIT/COCOS协议。",
    "2D Jphi/P由终态独立消费，不是文件中的2D存储字段。"
   ]
  },
@@ -71,7 +71,7 @@
    "shape": "scalar",
    "dtype": "str",
    "required": true,
-   "constraints": "沿用原writer标题长度规则。"
+   "constraints": "沿用写入器标题长度规则。"
   }
  ],
  "outputs": [
@@ -142,15 +142,15 @@
   "scope": [
    "独立解析P(psi)及导数写读。",
    "未收敛结果创建输出前拒绝。",
-   "完整原网格BRB/WHAM非零Green终态及安装消费按精确工件绑定。"
+   "完整原网格BRB/WHAM非零Green终态及安装消费按精确对照值校验。"
   ],
   "tests": [
    "tests/pleiades/test_pressure_eqdsk.py"
   ],
   "evidence_ceiling": "具名离散终态和格式组合，不给连续力平衡、实验或标准协议等价资格。",
   "known_limitations": [
-   "历史固定limiter/vessel选择并非真实边界反演。",
-   "三个历史零profile不提供q/F。",
+   "固定limiter/vessel选择并非真实边界反演。",
+   "三个零profile不提供q/F。",
    "Jphi/P二维数组需由实际终态单独消费。"
   ]
  }

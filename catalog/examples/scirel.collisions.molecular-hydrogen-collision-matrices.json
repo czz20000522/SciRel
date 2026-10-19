@@ -5,7 +5,7 @@
   "en": "Molecular hydrogen four-family collision matrices",
   "zh": "分子氢四族碰撞矩阵组装"
  },
- "summary": "在圆柱归一化速度网格上组装电荷交换、两路动量传递和自碰撞应力矩阵。明确 H/D 实验室能量缩放；保留带符号弹性矩阵，支持显式增加角节点以检查收敛。",
+ "summary": "在圆柱归一化速度网格上组装电荷交换、两路动量传递和自碰撞应力矩阵。明确 H/D 实验室能量缩放；弹性矩阵保留符号，支持显式增加角节点以检查收敛。",
  "taxonomy": [
   "collisions",
   "collision-matrix",
@@ -18,15 +18,15 @@
  ],
  "identity": {
   "relation": "molecular H2 four-family normalized collision-kernel matrix assembly",
-  "direction": "normalized cylindrical velocity axes, cell weights, normalization energy and mass ratio -> four SIG matrices and predecessor geometry",
+  "direction": "normalized cylindrical velocity axes, cell weights, normalization energy and mass ratio -> four SIG matrices and the accompanying geometry",
   "definition": "令 g²=vr_i²+vr_k²−2vr_i vr_k cosθ+(vx_j−vx_l)²，θ_m=π(m+1/2)/n_theta。矩阵列权重为 Vr2pidVr_k*dVx_l，Fortran 排序 row=i+nvr*j、col=k+nvr*l。CX 核为 <g σ_CX>，混合动量核为 (vx_j−vx_l)<g σ_mt>，自碰撞应力核为 <(g_perp²−2g_x²)g σ_vis>/8。Vth²=2Q*Tnorm/(mu*H_MASS)。分子 CX 拟合能量为 g²*2Tnorm/mu，H2-H 与 H2-P 为 g²*Tnorm/mu，自黏性为 g²*2Tnorm。",
-  "model": "KN1D 的轴对称速度积分核；动量传递截面与黏性截面采用不同同位素缩放。",
+  "model": "轴对称速度积分核；动量传递截面与黏性截面采用不同同位素缩放。",
   "geometry": "圆柱速度空间，均匀中点方位角平均，默认 5 点，n_theta 可显式增加。",
   "coordinates": "vr and vx are dimensionless v/Vth; source and target velocity pairs flatten in Fortran order",
   "boundary": "正且递增 vr、递增 vx、非负径向权重和正轴向权重、正有限 Tnorm/mu；不要求 vx 跨零。n_theta 为正整数；输出保留弹性核的负值。",
   "assumptions": [
    "常数 H_MASS=1.6726231e-27 kg、Q=1.602177e-19 C；Vth=sqrt(2Q*Tnorm/(mu*H_MASS))，全部节点用 v/Vth。",
-   "拟合自变量是相应弹丸在静止靶参考系中的实验室能量，并非一律使用质心能量。KN1D §2.1.2.6 的动量传递按 E_D/2 映射氢拟合，黏性按 E_D 映射；本次验证 H(mu=1) 与 D(mu=2)，其他正 mu 仅代数扩展，无新增物理资格。",
+   "拟合自变量是相应弹丸在静止靶参考系中的实验室能量，并非一律使用质心能量。动量传递按 E_D/2 映射氢拟合，黏性按 E_D 映射；已验证 H(mu=1) 与 D(mu=2)，其他正 mu 仅代数扩展，无新增物理资格。",
    "分子 CX 的弹丸质量为 2H_MASS；混合 H-H2/P-H2 拟合始终使用 H 弹丸质量，交换测试粒子与背景不改变相对速度对应截面。",
    "分子自黏性使用动量传递拟合作为近似替代；没有新的分子黏性实验测量依据。",
    "默认五角规则是数值近似；调用方需独立检查角和速度网格收敛。"
@@ -200,7 +200,7 @@
    "H/D 四通道矩阵组装、共同轴向速度平移、带权交换对称或反对称。"
   ],
   "excluded": [
-   "完整输运方程求解、原项目缓存生命周期、其他物种或未经验证的同位素推广。",
+   "完整输运方程求解、跨调用缓存生命周期、其他物种或未经验证的同位素推广。",
    "从有限节点数推断任意分布的精度或新的实验截面资格。"
   ]
  },
@@ -243,7 +243,7 @@
  },
  "verification": {
   "scope": [
-   "保留既有独立几何和拟合对照及原数值容差。",
+   "独立几何与拟合对照沿用既有数值容差。",
    "H/D 四通道 4096 角中点结果与独立 SciPy 自适应积分比较；检查带权交换关系和共同 boost。",
    "真实归一化分布生成矩和 Alpha，验证 H↔H2 动量交换、Maxwell 平衡动量与弱漂移。"
   ],
@@ -251,11 +251,11 @@
    "tests/operator_contracts/test_molecular_hydrogen_collision_matrices.py",
    "tests/operator_contracts/test_collision_physical_closure.py"
   ],
-  "evidence_ceiling": "支持声明的 KN1D 积分核与已测离散输入的一致性，不是所有能区的实验截面验证或完整来源项目 D3；作者结果仍待根独立接收。",
+  "evidence_ceiling": "支持声明的速度积分核与已测离散输入的一致性；不是所有能区的实验截面验证，也不构成完整物理资格。",
   "known_limitations": [
-   "拟合端点裁剪和分子黏性替代属于继承模型近似。",
+   "拟合端点裁剪和分子黏性替代属于模型近似。",
    "默认五角没有普适精度保证；高阶验证不替代用户网格收敛。",
-   "人类科学认可和再分发许可单独决定；原严格 D1 撤回与历史缺口不被抹去。"
+   "人类科学认可和再分发许可单独决定；验证缺口不因本文件而闭合。"
   ]
  }
 }

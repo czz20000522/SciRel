@@ -33,7 +33,7 @@
    "shape": "scalar or array",
    "dtype": "complex128-compatible",
    "required": true,
-   "constraints": "Native MAT shape: scalar becomes (1,1), a 1D vector becomes (1,n), higher-dimensional array shape is retained."
+   "constraints": "Native MAT shape: scalar becomes (1,1), a 1D vector becomes (1,n), higher-dimensional array shape is preserved."
   },
   {
    "name": "N",
@@ -52,7 +52,7 @@
    "shape": "object or null",
    "dtype": "NativeTransport or None",
    "required": false,
-   "constraints": "Requires a compatible external Octave runtime. No original checkout or network is consulted.",
+   "constraints": "Requires a compatible external Octave runtime. No network access is required.",
    "default": null
   }
  ],
@@ -73,7 +73,7 @@
   ],
   "supported": [
    "Default N16 and explicit positive finite orders, including pure imaginary and lower-half arguments.",
-   "Source-double real/complex port normalization."
+   "Double-precision real and complex normalization."
   ],
   "excluded": [
    "Canonical shape preservation or a global accuracy guarantee for arbitrary N."
@@ -101,7 +101,7 @@
   ]
  },
  "example": {
-  "description": "Requires GNU Octave on Linux amd64 for the native PDRK path; this macOS execution is NOT_RUN.",
+  "description": "Requires GNU Octave on Linux amd64 for the native execution path; this macOS execution is NOT_RUN.",
   "code": "import numpy as np\nfrom scirel.kinetic.pdrk.special import evaluate_faddeeva_finite_order\nr = evaluate_faddeeva_finite_order(np.array([[0, 1j], [-1j, 1+2j]]), N=32)\nassert r.state[\"w\"].shape == (2, 2)",
   "expected": "NOT_RUN: GNU Octave on Linux amd64 is unavailable on this macOS host; the example was attempted and raised NativeExecutionError before native execution."
  },

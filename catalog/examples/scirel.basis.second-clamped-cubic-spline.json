@@ -5,7 +5,7 @@
   "en": "Origin-natural cylindrical spline",
   "zh": "零原点自然边界柱坐标样条"
  },
- "summary": "Callable piecewise-cubic Hermite interpolation with the retained origin row and cylindrical right boundary equation.",
+ "summary": "Callable piecewise-cubic Hermite interpolation with the prescribed origin row and a cylindrical right boundary equation.",
  "taxonomy": [
   "analysis",
   "basis"
@@ -20,7 +20,7 @@
   "model": "C2 cubic spline; Clamped/FirstClamped use corrected unequal-knot continuity rows",
   "geometry": "one-dimensional scalar abscissa and ordinate samples",
   "coordinates": "Knots in arbitrary coherent coordinate units",
-  "boundary": "Source origin row and right fdd+fd/x-m²f/x²=0",
+  "boundary": "Origin row and right fdd+fd/x-m²f/x²=0",
   "assumptions": [
    "Finite strictly increasing matched one-dimensional knots and values with N>=3",
    "In-domain deriv=0/1/2 for the qualified numerical claim",
@@ -48,7 +48,7 @@
   },
   {
    "name": "m",
-   "description": "Coefficient in retained cylindrical Robin row",
+   "description": "Coefficient in the cylindrical Robin row",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "float64",
@@ -118,11 +118,11 @@
    "tests/pleiades/equilibrium/test_analysis_families.py",
    "tests/pleiades/equilibrium/test_analysis_corrections.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness or experimental validation.",
   "known_limitations": [
    "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
    "Duplicate, unsorted or nonfinite knots are outside numerical qualification",
-   "Source left row is not a natural boundary for arbitrary nonzero first knot/ordinate",
+   "The left row is not a natural boundary for an arbitrary nonzero first knot/ordinate",
    "Physical cylindrical magnetic-fitting boundary interpretation remains unresolved"
   ]
  }

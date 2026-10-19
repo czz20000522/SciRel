@@ -20,12 +20,12 @@
   "relation": "nonnegative finite-grid remap with three extensive-moment constraints",
   "direction": "nonnegative distribution and two normalized cylindrical phase-space meshes -> conservative destination distribution, or a typed infeasibility/convergence failure",
   "definition": "Let w_ij = pi*(r_right^2-r_left^2)*dvx and fV = sqrt(Tnorm_b/Tnorm_a). On source nodes form M_a = sum w_a*fa*(1, vx_a/fV, (vr_a/fV)^2+(vx_a/fV)^2). At each destination x, linearly interpolate these three extensive moments first. For n=M_0>0, find cell probabilities p>=0, sum p=1, E_p[vx_b]=M_1/n and E_p[vr_b^2+vx_b^2]=M_2/n, minimizing sum p*log(p/q). q mixes 1e-12 normalized cell-volume probability with normalized overlap masses on the feasible face. Return fb=n*p/w_b. Zero density gives zero; identical velocity grids and normalization use convex spatial interpolation directly.",
-  "model": "stateless two-velocity/one-spatial-axis cell-overlap remap followed by a nonnegative relative-entropy projection; scientific correction of the saved AN/BN algorithm, not corrected-branch source parity",
+  "model": "stateless two-velocity/one-spatial-axis cell-overlap remap followed by a nonnegative relative-entropy projection; a corrected AN/BN projection, not a reproduction of the defective branch",
   "geometry": "two velocity dimensions over one spatial axis, per phase-space mesh",
   "coordinates": "velocity nodes and distributions in the source normalized units, spatial nodes in m; Tnorm in eV",
-  "boundary": "finite real strictly increasing axes with at least two nodes; nonnegative radial axes and two-sided axial axes; retained velocity-node and spatial overlap checks; finite positive Tnorm and representable scale ratio; aligned finite fa, nonnegative for correct=1; target mean velocity/energy must lie in the destination-node convex hull and the binary64 calculation must meet its return postcondition",
+  "boundary": "finite real strictly increasing axes with at least two nodes; nonnegative radial axes and two-sided axial axes; declared velocity-node and spatial overlap checks; finite positive Tnorm and representable scale ratio; aligned finite fa, nonnegative for correct=1; target mean velocity/energy must lie in the destination-node convex hull and the binary64 calculation must meet its return postcondition",
   "assumptions": [
-   "The operator is stateless and recomputes cell-overlap weights per call; source cache lifecycle and whole KN1D state are outside the contract.",
+   "The operator is stateless and recomputes cell-overlap weights per call; cache lifecycle and the surrounding neutral-transport state are outside the contract.",
    "Cylindrical cell volumes are pi*(r_right^2-r_left^2)*dvx, using the shared SciRel quadrature. Conserved momentum and energy are discrete node moments, not analytic integrals over a continuous reconstructed distribution.",
    "Source normalization is converted with fV=sqrt(Tnorm_b/Tnorm_a). Density, axial momentum density and squared-speed energy density are spatially interpolated before division by density; interpolating mean velocity or mean energy would be wrong when density varies.",
    "For correct=1, finite nonnegative input is required. Positive reference probability (1e-12 cell-volume mixture) can put mass in previously zero-overlap cells; it selects a realizable entropy projection without relaxing moments, clipping negative output or preserving all higher moments.",
@@ -33,7 +33,7 @@
    "Damped Newton solves the entropy dual, with covariance Hessian and stable log-sum-exp. max_correction_iterations caps updates per spatial slice (default 1000); infeasibility and numerical nonconvergence are distinct failures, neither returns a partial distribution.",
    "Zero-density slices are zero. Equal velocity grids and equal Tnorm use convex spatial interpolation and preserve identity at common spatial nodes; out-of-domain spatial nodes are zero-filled.",
    "correct=0 retains the historical algebraic interpolation and conditional density rescale, including signed inputs. It does not provide the default branch's positivity or three-moment physical guarantee.",
-   "The corrected mathematical remap intentionally changes the defective source correction. Historical source comparison, withdrawn strict KN1DPy D1 status, external atomic-physics oracle gaps and pending public licensing are not erased by this repair."
+   "The corrected mathematical remap intentionally departs from the defective correction. It does not erase the external atomic-physics oracle gaps or the pending public licensing question."
   ]
  },
  "inputs": [
@@ -135,7 +135,7 @@
    "shape": "scalar",
    "dtype": "integer scalar",
    "required": false,
-   "constraints": "None (default) skips warnings; an integer applies the saved do_warn * max(fb) threshold without changing output. Other selector types are rejected.",
+   "constraints": "None (default) skips warnings; an integer applies the do_warn * max(fb) threshold without changing output. Other selector types are rejected.",
    "default": null
   },
   {
@@ -169,13 +169,13 @@
    "Nonuniform cylindrical velocity meshes, nonzero axial drift, unequal normalization temperatures and spatially varying density.",
    "Simultaneous discrete density, axial momentum density and squared-speed energy-density conservation with nonnegative output in the default branch.",
    "Zero density, equal-grid identity, convex spatial interpolation, exact hull edges/vertices and explicit infeasibility diagnostics.",
-   "Retained stateless correct=0 compatibility and unchanged boundary-warning selector."
+   "Stateless correct=0 compatibility and the unchanged boundary-warning selector."
   ],
   "excluded": [
    "Remapping a physically unrealizable moment target on a finite destination grid; no clipping, target relaxation or silent enlargement is performed.",
-   "Missing retained velocity-node/spatial overlap, two-dimensional spatial grids or three velocity dimensions.",
+   "Missing velocity-node/spatial overlap, two-dimensional spatial grids or three velocity dimensions.",
    "Guaranteed preservation of higher moments, detailed distribution shape or entropy; the entropy objective chooses among feasible three-moment distributions.",
-   "Atomic-physics validation, complete KN1D capability and source cache-state equivalence.",
+   "Atomic-physics validation, complete neutral-transport capability and cache-state equivalence.",
    "A physical conservation or positivity claim for the signed algebraic correct=0 branch."
   ]
  },
@@ -209,12 +209,12 @@
  },
  "verification": {
   "scope": [
-   "Original positive-input negative-output failure is retained as RED evidence; a convex-hull energy bound proves the first two original-grid targets impossible, and the corrected API explicitly rejects them.",
+   "The positive-input negative-output failure of the defective construction is recorded as RED evidence; a convex-hull energy bound proves the first two targets impossible on the grid of that case, and the corrected API explicitly rejects them.",
    "The same random positive input on a wider feasible grid and the original feasible two-slice tail return nonnegative distributions with all three independently integrated moments.",
    "Independent scalar cylindrical quadrature checks nonuniform grids, nonzero drift, unequal temperatures and interpolation of extensive moments when spatial density varies.",
    "Exact zero-density and equal-grid identity/convex spatial interpolation are checked, including outside-source spatial zero fill.",
    "Lower/upper convex-hull edges, a vertex and a near-face interior target are checked without clipping or relaxing targets.",
-   "Input rejection, distinct infeasibility versus bounded numerical exhaustion, input immutability, deterministic repetition and retained correct=0/warning behavior are checked."
+   "Input rejection, distinct infeasibility versus bounded numerical exhaustion, input immutability, deterministic repetition and the correct=0/warning behavior are checked."
   ],
   "tests": [
    "tests/operator_contracts/test_cross_mesh_distribution.py",
@@ -226,7 +226,7 @@
    "Finite destination nodes can make requested moments unrealizable; the caller must provide a feasible grid or handle InfeasibleMomentsError.",
    "The entropy prior includes a 1e-12 cell-volume mixture and may populate zero-overlap cells. Higher moments and fine distribution shape are not conserved by the three-moment constraints.",
    "Binary64 conditioning, very near hull faces and unrepresentable intermediates can cause explicit numerical failure; the iteration budget is not a universal convergence guarantee.",
-   "correct=0 is retained algebraic compatibility only and does not carry the default branch physical guarantees.",
+   "correct=0 is algebraic compatibility only and does not carry the default branch physical guarantees.",
    "Scientific validity is bounded by the tested numerical domain and applicability conditions."
   ]
  },

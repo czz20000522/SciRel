@@ -170,7 +170,7 @@
   },
   {
    "name": "high_precision_linear_residual",
-   "description": "Normalized matching-system residual retained as a decimal string.",
+   "description": "The normalized matching-system residual, returned as a decimal string.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "str",
@@ -289,7 +289,7 @@
   ]
  },
  "example": {
-  "description": "A bounded J4/I4 construction and retained diagnostic grid.",
+  "description": "A bounded J4/I4 construction and its diagnostic grid.",
   "code": "from scirel.kinetic.pdrk.workflows import regenerate_jpole\nr = regenerate_jpole({'J': 4, 'I': 4, 'precision': 80})\nassert r['ZJ'].shape == (101, 101)",
   "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
  },
@@ -303,13 +303,13 @@
   "tests": [
    "tests/operator_contracts/test_pdrk_rational.py"
   ],
-  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
   "known_limitations": [
-   "PDRK source redistribution authority remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
+   "Redistribution permission for the reference material remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
    "Finite-J/finite-N physics must be qualified for a new requested regime.",
    "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
    "Human scientific and plot approval pending.",
-   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+   "The native example and full verification require GNU Octave on Linux amd64; the current macOS run is NOT_RUN."
   ]
  },
  "graph": {

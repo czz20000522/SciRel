@@ -105,7 +105,7 @@
    "shape": "scalar",
    "dtype": "int",
    "required": true,
-   "constraints": "Counts only radii above the outer map radius, matching the retained relation; radii below the inner map radius are clamped as well but are not counted."
+   "constraints": "Counts only radii above the outer map radius, matching the declared relation; radii below the inner map radius are clamped as well but are not counted."
   },
   {
    "name": "axially_clamped_point_count",
@@ -170,16 +170,16 @@
    "The Cartesian transverse split, including the exactly zero on-axis convention.",
    "Fail-closed validation of the map axes, the map arrays, and the solver grid axes.",
    "The absence of the classification parameters from this relation, by call and by import inspection.",
-   "Exact agreement with the retained reconstruction for the field, the flux, the coverage mask, and both counters."
+   "Exact agreement with an independent reconstruction of the field, the flux, the coverage mask, and both counters."
   ],
   "tests": [
    "tests/operator_contracts/test_axisymmetric_grid_mapping.py"
   ],
-  "evidence_ceiling": "Establishes that the declared tensor-product reconstruction reproduces the retained mapping relation and reports its clamping honestly. It does not establish that the equilibrium map itself is physically correct, nor that bilinear interpolation is adequate at any particular grid resolution, nor that the map's coordinate convention matches any specific device.",
+  "evidence_ceiling": "Establishes that the declared tensor-product reconstruction reproduces the mapping relation and reports its clamping honestly. It does not establish that the equilibrium map itself is physically correct, nor that bilinear interpolation is adequate at any particular grid resolution, nor that the map's coordinate convention matches any specific device.",
   "known_limitations": [
    "The interpolation is linear; a coarse map produces a piecewise-bilinear field with discontinuous derivatives across map cells.",
    "Query points outside the map box silently receive the box-face value. The coverage mask and the clamp counters report this, but a caller that ignores them will not notice.",
-   "The retained asymmetry that only radii above the outer map radius are counted is preserved; radii below the inner map radius are clamped and counted by neither counter.",
+   "The asymmetry that only radii above the outer map radius are counted is part of the relation; radii below the inner map radius are clamped and counted by neither counter.",
    "The relation assumes the axial coordinate is shared between the cylindrical map and the Cartesian grid; a target grid with a different axial origin would be mapped silently wrong.",
    "Public distribution licensing remains pending a human decision."
   ]

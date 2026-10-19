@@ -17,7 +17,7 @@
  "identity": {
   "relation": "Species equilibrium scales",
   "direction": "Declared inputs to named scientific outputs.",
-  "definition": "ES1D normalized scales: vts=sqrt(2T/m), lambdaDs=sqrt(T/(n q²)), kDs=1/lambdaDs, wps=sqrt(n q²/m). ES3D uses Tparallel in those scales, Omega=B0*q/m, and rho=sqrt(Tperp/m)/abs(Omega); B0 is a signed normalized input with default1, not a tesla label. EM constants are exactly qe=1.6022e-19 C, me=9.1094e-31 kg, c=2.9979e8 m/s, epsilon0=8.8542e-12 F/m and kB=1.3807e-23 J/K; c2=c² and mu0=1/(c² epsilon0). EM q=deck_q*qe, m=deck_m*me, Tz/p[K]=deck_Tz/p[eV]*qe/kB, vd=deck_vd*c. Then vtz=sqrt(2 kB Tz/m), lambdaD=sqrt(epsilon0 kB Tz/(n q²)), wp=sqrt(n q²/(m epsilon0)), signed Omega=B0*q/m and signed rho=sqrt(kB Tp/m)/Omega. Source normalizers explicitly use wci=abs(Omega_second), wpi=sqrt(n_first*q_second²/(m_second*epsilon0)), cwp=c/wpi, mu0 above; these are not silently replaced by another species reference. Outputs also include beta_z/p=2mu0*n*kB*Tz/p/B0², vA=B0/sqrt(mu0 sum m*n), cS=sqrt(2min(kB*Tz)/max(m)), vAwp=vA/wci. This normalized ES/SI EM parsing is distinct from current PDRK eight-column m/mp loss-cone initialization and maintained fluid wavevector-at-fixed-frequency relations.",
+  "definition": "ES1D normalized scales: vts=sqrt(2T/m), lambdaDs=sqrt(T/(n q²)), kDs=1/lambdaDs, wps=sqrt(n q²/m). ES3D uses Tparallel in those scales, Omega=B0*q/m, and rho=sqrt(Tperp/m)/abs(Omega); B0 is a signed normalized input with default1, not a tesla label. EM constants are exactly qe=1.6022e-19 C, me=9.1094e-31 kg, c=2.9979e8 m/s, epsilon0=8.8542e-12 F/m and kB=1.3807e-23 J/K; c2=c² and mu0=1/(c² epsilon0). EM q=deck_q*qe, m=deck_m*me, Tz/p[K]=deck_Tz/p[eV]*qe/kB, vd=deck_vd*c. Then vtz=sqrt(2 kB Tz/m), lambdaD=sqrt(epsilon0 kB Tz/(n q²)), wp=sqrt(n q²/(m epsilon0)), signed Omega=B0*q/m and signed rho=sqrt(kB Tp/m)/Omega. Source normalizers explicitly use wci=abs(Omega_second), wpi=sqrt(n_first*q_second²/(m_second*epsilon0)), cwp=c/wpi, mu0 above; these are not silently replaced by another species reference. Outputs also include beta_z/p=2mu0*n*kB*Tz/p/B0², vA=B0/sqrt(mu0 sum m*n), cS=sqrt(2min(kB*Tz)/max(m)), vAwp=vA/wci. This normalized ES/SI EM parsing is distinct from the eight-column m/mp loss-cone initialization and from the maintained fluid wavevector-at-fixed-frequency relations.",
   "model": "ES1D or ES3D normalized Gaussian species, or EM SI drifting bi-Maxwellian species using the exact listed legacy constants; no loss-cone branch implied.",
   "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
   "coordinates": "ES density/charge/mass/temperature and B0 are source-normalized inputs with the explicit algebra above; no unstated physical reference is inferred. EM B0 in tesla and signed drift in units of c; mass in electron masses.",
@@ -107,7 +107,7 @@
   "dependencies": []
  },
  "example": {
-  "description": "Requires GNU Octave on Linux amd64 for the native PDRK path; this macOS execution is NOT_RUN.",
+  "description": "Requires GNU Octave on Linux amd64 for the native Octave path; this macOS execution is NOT_RUN.",
   "code": "from scirel.kinetic.pdrk.rational import equilibrium\nr = equilibrium('em', [[-1, 1, 1e6, 100, 100, 0], [1, 1836, 1e6, 100, 100, 0]], B0=1e-7)\nassert r['state']['S'].item() == 2",
   "expected": "NOT_RUN: GNU Octave on Linux amd64 is unavailable on this macOS host; the example was attempted and raised NativeExecutionError before native execution."
  },

@@ -5,7 +5,7 @@
   "en": "Relative-rate multifluid equilibrium",
   "zh": "相对阻尼率多流体平衡"
  },
- "summary": "Convert five explicitly defined scalar rates and declared electron/ion classes into a conservative momentum-exchange equilibrium. This is a new port interpretation, not a claim of equivalence to the ambiguous upstream nu controls.",
+ "summary": "Convert five explicitly defined scalar rates and declared electron/ion classes into a conservative momentum-exchange equilibrium. This is a declared interpretation, not a claim of equivalence to the ambiguous nu controls.",
  "taxonomy": [
   "kinetic",
   "pdrk",
@@ -23,7 +23,7 @@
   "assumptions": [
    "Pair exchange K is symmetric, nonnegative and has zero diagonal.",
    "Collision generator acts on velocity perturbations; no inferred source collision-rate interpretation.",
-   "Fluid constants profile: c2=(2.9979e8 m/s)^2, epsilon0=8.854e-12 F/m, mu0=1/(c2*epsilon0), gamma default5/3. Charge and mass are explicit SI deck inputs; packaged defaults use q=+/-1.602e-19 C, me=9.109e-31 kg and mp=1.673e-27 kg. Sound speeds are direct inputs; no kB or temperature-to-speed conversion is performed. This is distinct from current kinetic initialization epsilon0=8.8542e-12 F/m."
+   "Fluid constants profile: c2=(2.9979e8 m/s)^2, epsilon0=8.854e-12 F/m, mu0=1/(c2*epsilon0), gamma default5/3. Charge and mass are explicit SI deck inputs; the defaults use q=+/-1.602e-19 C, me=9.109e-31 kg and mp=1.673e-27 kg. Sound speeds are direct inputs; no kB or temperature-to-speed conversion is performed. This is distinct from current kinetic initialization epsilon0=8.8542e-12 F/m."
   ]
  },
  "inputs": [
@@ -34,7 +34,7 @@
    "shape": "(S,10), S>=1",
    "dtype": "float64 array or None",
    "required": true,
-   "constraints": "Finite; mass and density positive; sound speeds nonnegative. None loads the packaged independent two-species SI deck."
+   "constraints": "Finite; mass and density positive; sound speeds nonnegative. None loads the independent two-species SI deck."
   },
   {
    "name": "species_classes",
@@ -146,7 +146,7 @@
    "Five nonnegative scalar relative/bath rate controls."
   ],
   "excluded": [
-   "Reinterpreting the original nue/nui/nuee/nuii/nuei controls without a physical declaration."
+   "Reinterpreting the nue/nui/nuee/nuii/nuei controls without a physical declaration."
   ]
  },
  "failure_semantics": {
@@ -186,7 +186,7 @@
   "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
   "known_limitations": [
    "Relative-pair and bath rates have different conservation properties.",
-   "Rates are a declared new scientific variant; upstream positive-rate growth is not retained.",
+   "Rates form a declared scientific variant; positive-rate growth is not reproduced.",
    "Example output is a bounded runtime observation, not a universal scientific claim."
   ]
  },

@@ -15,8 +15,8 @@
  "identity": {
   "relation": "I_target=R (dP/dpsi) abs(dR*dZ); I_new=(1-relax) I_target+relax I_old; psi_new=psi_vac+G I_new. P is re-fitted from the prescribed midplane P(R).",
   "direction": "rectangular R,Z grids, pressure law, vacuum flux and Green matrix to updated flux/current state",
-  "definition": "Pressure-only axisymmetric current closure j_phi=R dP/dpsi under psi=R A_phi. Update residual ||psi_new-psi_old||_2/abs(edge_new) is retained. New closure_residual=||I_new-I_target(psi_new,new fit)||_2/||I_target||_2, with zero target/zero error mapped to zero and zero target/nonzero current mapped to an infinite residual and nonfinite terminal failure. Converged requires both residuals <=tol. State is call-local; update fit derivative, clip, relaxed currents, Green contraction, new flux, edge/fit and both residuals in order; stop on convergence, invalid state or maxiter.",
-  "model": "Source-derived pressure-versus-radius feedback with InterpolatedUnivariateSpline and supplied Green matrix",
+  "definition": "Pressure-only axisymmetric current closure j_phi=R dP/dpsi under psi=R A_phi. Update residual is ||psi_new-psi_old||_2/abs(edge_new). Closure residual is ||I_new-I_target(psi_new,new fit)||_2/||I_target||_2, with zero target/zero error mapped to zero and zero target/nonzero current mapped to an infinite residual and nonfinite terminal failure. Convergence requires both residuals <=tol. State is call-local; update fit derivative, clip, relaxed currents, Green contraction, new flux, edge/fit and both residuals in order; stop on convergence, invalid state or maxiter.",
+  "model": "Pressure-versus-radius feedback with InterpolatedUnivariateSpline and a supplied Green matrix",
   "geometry": "Finite rectangular uniformly spaced 2-D R,Z arrays with exact Z=0 midplane",
   "coordinates": "Caller must supply coherent units and Green/pressure convention. The pressure-only SI interpretation is R,Z in m, P in Pa, psi=R A_phi in Wb/rad, I in A; arbitrary supplied G is not a verified physical equilibrium Green operator.",
   "boundary": "压力边界为沿物理半径向外遍历时的第一个精确零点；从轴侧至边界的磁通须严格增加。下降的存储坐标先仅将中平面拟合索引按R排序，Green双轴、电流及结果均保留调用者次序。",

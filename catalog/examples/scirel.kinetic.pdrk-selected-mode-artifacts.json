@@ -17,7 +17,7 @@
  "identity": {
   "relation": "Selected-mode fields and workspace artifacts",
   "direction": "selected plotting state -> normalized fields and artifacts",
-  "definition": "The output terminal owns its EM iout2 near-target eigensolve and shared Hermitian E normalization, then writes plots and workspace. E has unit Hermitian norm; largest represented E component is real nonnegative, first exact tie wins; B shares the scale and phase. UE=epsilon0|E|^2/2,UB=|B|^2/(2mu0). iout1 writes numeric d0=d without a new field solve.",
+  "definition": "The output terminal owns its EM iout2 near-target eigensolve and shared Hermitian E normalization, then writes plots and workspace. E has unit Hermitian norm; largest represented E component is real nonnegative, first exact tie wins; B shares the scale and phase. UE=epsilon0|E|^2/2,UB=|B|^2/(2mu0). iout1 writes the numeric value d without a new field solve.",
   "model": "Uniform magnetized, nonrelativistic charged Gaussian species with optional gyrotropic loss-cone mixture; B0 along signed z and k=(kx,0,kz).",
   "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
   "coordinates": "SI angular frequency rad/s and wave number m^-1; normalized source scan/selection quantities are labeled explicitly.",
@@ -30,7 +30,7 @@
  "inputs": [
   {
    "name": "state",
-   "description": "NativeResult or its state mapping produced by the named predecessor. Scalar numeric fields are usually1x1 native arrays; native stored dimensions are retained; trailing singleton axes may be omitted while interior singleton axes remain. Scientific numeric transport is float64/complex128; inactive fields are empty arrays, never fabricated zeros.",
+   "description": "NativeResult or a state mapping derived from it. Scalar numeric fields are usually1x1 native arrays; native dimensions are preserved; trailing singleton axes may be omitted while interior singleton axes remain. Scientific numeric transport is float64/complex128; inactive fields are empty arrays, never fabricated zeros.",
    "units": "mixed; physical dimensions recorded by state fields",
    "shape": "mapping or NativeResult",
    "dtype": "state carrier",
@@ -79,7 +79,7 @@
   },
   {
    "name": "workspace_mat",
-   "description": "Opaque native saved-workspace bytes; writer may use Octave text format despite .mat suffix.",
+   "description": "Opaque native workspace bytes; the writer may use Octave text format despite the .mat suffix.",
    "units": "bytes",
    "shape": "(nbytes,1)",
    "dtype": "uint8",
@@ -118,7 +118,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
-  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError with retained result and receipt when its caught scientific terminal fails.",
+  "runtime_failure": "NativeExecutionError records unavailable, failed or timed-out Octave execution. source_output additionally raises SourceOutputError carrying its result and receipt when its caught scientific terminal fails.",
   "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
   "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
  },
@@ -150,13 +150,13 @@
   "tests": [
    "tests/operator_contracts/test_pdrk_magnetized.py"
   ],
-  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native Octave execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
   "known_limitations": [
-   "Local technical development; human scientific endorsement and publication clearance remain pending.",
+   "Human scientific endorsement and publication clearance remain pending.",
    "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
    "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
    "Native FIG/workspace encodings are runtime-specific; bytes are artifacts, not a portable physical data standard.",
-   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+   "The native example and full native-path qualification require GNU Octave on Linux amd64; the run on this macOS host is NOT_RUN."
   ]
  },
  "references": [

@@ -5,7 +5,7 @@
   "en": "Read Pleiades extended EQDSK",
   "zh": "读取Pleiades扩展EQDSK"
  },
- "summary": "Parse one validated Pleiades extended EQDSK text file.",
+ "summary": "Parse one validated extended EQDSK text file.",
  "taxonomy": [
   "io",
   "eqdsk",
@@ -15,10 +15,10 @@
   "read_eqdsk"
  ],
  "identity": {
-  "relation": "Deterministic text serialization/deserialization of Pleiades EQDSK records",
+  "relation": "Deterministic text serialization/deserialization of extended EQDSK records",
   "direction": "extended EQDSK text and validated dictionary/class state",
   "definition": "48-character title, four integer fields, four 5-value scalar records, five profiles, C-order psi grid, q profile and fixed-width limiter/vessel coordinate pairs",
-  "model": "Pleiades legacy extended dialect retained from D0 lexical successor",
+  "model": "Extended EQDSK text dialect with fixed-width record blocks and the declared grid-origin convention.",
   "geometry": "nnr by nnz grid reconstructed as R linspace(0,rbox) and Z linspace(-zbox/2,zbox/2)",
   "coordinates": "R/Z coordinate values in source-defined convention; units and COCOS unspecified",
   "boundary": "Unlike official EFIT G-EQDSK: this dialect has 48-character title + four ints, nnr/nnz/nnv, and no magnetic-axis scalar contract.",
@@ -62,7 +62,7 @@
  ],
  "applicability": {
   "preconditions": [
-   "Pleiades extended dialect records"
+   "Extended EQDSK dialect records"
   ],
   "supported": [
    "Roundtrip of finite validated dictionaries",
@@ -73,7 +73,7 @@
   "excluded": [
    "Standard EFIT gEQDSK semantics",
    "Units or COCOS assignment",
-   "Raw contour/spline writer source route",
+   "Raw contour or spline writing",
    "Arbitrary malformed truncation recovery"
   ]
  },
@@ -97,7 +97,7 @@
   "dependencies": []
  },
  "example": {
-  "description": "Build a minimal fixed-width Pleiades EQDSK text file and read its 2-by-2 psi records.",
+  "description": "Build a minimal fixed-width extended EQDSK text file and read its 2-by-2 psi records.",
   "code": "from pathlib import Path\nfrom tempfile import TemporaryDirectory\nfrom scirel.io.eqdsk import read_pleiades_eqdsk\nlines = ['MANUAL EXAMPLE'.ljust(48) + '   1   2   2   2']\nfor values in [[1., 2., 0., 0., 0.]] + [[0.]*5]*3 + [[1., 2.]]*4 + [[1., 2., 3., 4.], [0., 0.]]:\n    lines.append(''.join('%16.9E' % value for value in values))\nlines.append('    0    0')\nwith TemporaryDirectory() as directory:\n    path = Path(directory)/'example.eqdsk'\n    path.write_text('\\n'.join(lines)+'\\n')\n    parsed = read_pleiades_eqdsk(path)\n    assert parsed['psi'].tolist() == [[1., 2.], [3., 4.]]",
   "expected": "The parser returns psi=[[1.0, 2.0], [3.0, 4.0]] in declared order."
  },
@@ -108,9 +108,9 @@
   "tests": [
    "tests/pleiades/test_eqdsk.py"
   ],
-  "evidence_ceiling": "Structural IO qualification only; no physical interpretation or release approval.",
+  "evidence_ceiling": "Structural IO boundary only; no physical interpretation is claimed.",
   "known_limitations": [
-   "This reader does not select raw contours or write them; the separate write-pleiades-eqdsk-legacy-raw contract defines that bounded writer qualification",
+   "This reader does not select raw contours or write them; that writer is a separate contract.",
    "Not standard EFIT gEQDSK",
    "No units/COCOS"
   ]

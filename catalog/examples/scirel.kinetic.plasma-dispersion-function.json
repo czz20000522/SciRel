@@ -69,8 +69,8 @@
    "Scalar and array evaluation with shape preservation."
   ],
   "excluded": [
-   "PDRK Weideman truncation-order control and its exact approximate outputs.",
-   "fluidBW method and early-return diagnostic flags.",
+   "Weideman truncation-order control and its exact approximate outputs.",
+   "The native dispersion method and early-return diagnostic flags.",
    "Thermal-speed, drift or wave-number convention conversion; dispersion matrix assembly and root finding."
   ]
  },
@@ -102,17 +102,17 @@
   "scope": [
    "Analytic origin value, complex-plane symmetry and upper-half-plane representability.",
    "Scalar, array, dtype, no-mutation and failure semantics.",
-   "Historical bounded comparisons against pinned PDRK N=32 and fluidBW N=64 implementations, recorded in the integration evaluation."
+   "Bounded comparisons against pinned N=32 and N=64 references, recorded in the integration evaluation."
   ],
   "tests": [
    "tests/operator_contracts/test_plasma_dispersion_function.py"
   ],
-  "evidence_ceiling": "Direct tests verify the declared SciRel calculation and failure behavior. Saved-source comparisons in docs/evaluations/2026-09-28-plasma-dispersion-integration.md establish numerical agreement only on listed finite arguments at stated tolerances; PDRK N=16 is a distinct approximation, and both source projects are outside the current qualified D1 delivery. They do not prove arbitrary-input source parity, a chosen physical normalization, dispersion-root correctness or expert scientific approval.",
+  "evidence_ceiling": "Direct tests verify the declared SciRel calculation and failure behavior. Recorded comparisons establish numerical agreement only on listed finite arguments at stated tolerances; N=16 is a distinct approximation. They do not prove arbitrary-input numerical parity, a chosen physical normalization, dispersion-root correctness or expert scientific approval.",
   "known_limitations": [
    "Caller-specific thermal-speed and drift definitions are not inferred or converted.",
    "Source truncation order and diagnostic flags are not part of this standardized output.",
    "Finite z may yield unrepresentable lower-half-plane values; SciRel rejects them.",
-   "The saved first-stage source-prose error remains in frozen evidence; SciRel documents the analytic identity."
+   "An earlier prose statement of this step was incorrect; SciRel documents the analytic identity instead."
   ]
  }
 }

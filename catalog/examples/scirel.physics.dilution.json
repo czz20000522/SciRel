@@ -18,7 +18,7 @@
   "relation": "d=(Z_impurity-Z_eff)/(Z_i*(Z_impurity-Z_i))",
   "direction": "charge states -> dimensionless main-ion density fraction",
   "definition": "One-main/one-impurity quasineutrality algebra; denominator is evaluated in stages to avoid avoidable overflow.",
-  "model": "retained TORAX relation with explicit SciRel numeric boundary checks",
+  "model": "Main-ion dilution relation with explicit SciRel numeric boundary checks",
   "geometry": "charge-state composition",
   "coordinates": "broadcast impurity and effective-charge arrays; main charge scalar",
   "boundary": "positive finite Zi and Zimp, distinct Zi/Zimp, and Zeff between charge states",
@@ -75,7 +75,7 @@
    "Finite NumPy evaluation of the declared relation and broadcast shape."
   ],
   "excluded": [
-   "Whole TORAX evolution, experimental calibration, and implicit coordinate reconstruction."
+   "Whole-transport evolution, experimental calibration, and implicit coordinate reconstruction."
   ]
  },
  "failure_semantics": {
@@ -106,7 +106,7 @@
   "scope": [
    "Independent species charge-balance construction, endpoints, singular boundaries and large-charge representability.",
    "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
-   "Source relation attribution and comparison with actual canonical SciRel callers/dependencies."
+   "Agreement with the canonical SciRel callers and dependencies of this relation."
   ],
   "tests": [
    "tests/operator_contracts/test_torax_algebra_grid.py"

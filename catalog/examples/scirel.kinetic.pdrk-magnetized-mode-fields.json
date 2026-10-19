@@ -30,7 +30,7 @@
  "inputs": [
   {
    "name": "state",
-   "description": "NativeResult or its state mapping produced by the named predecessor. Scalar numeric fields are usually1x1 native arrays; row/column singleton dimensions are retained. Scientific numeric transport is float64/complex128; inactive fields are empty arrays, never fabricated zeros.",
+   "description": "NativeResult or a state mapping derived from it. Scalar numeric fields are usually1x1 native arrays; row/column singleton dimensions are preserved. Scientific numeric transport is float64/complex128; inactive fields are empty arrays, never fabricated zeros.",
    "units": "mixed; physical dimensions recorded by state fields",
    "shape": "mapping or NativeResult",
    "dtype": "state carrier",
@@ -44,7 +44,7 @@
    "shape": "scalar",
    "dtype": "real/complex numeric",
    "required": true,
-   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+   "constraints": "Typed scientific value compatible with the native representation; native singleton dimensions are preserved and inactive fields remain empty arrays."
   }
  ],
  "outputs": [
@@ -55,7 +55,7 @@
    "shape": "(6,1)",
    "dtype": "complex128",
    "required": true,
-   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+   "constraints": "Typed scientific value compatible with the native representation; native singleton dimensions are preserved and inactive fields remain empty arrays."
   },
   {
    "name": "V",
@@ -64,7 +64,7 @@
    "shape": "(NN,1)",
    "dtype": "complex128",
    "required": true,
-   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+   "constraints": "Typed scientific value compatible with the native representation; native singleton dimensions are preserved and inactive fields remain empty arrays."
   },
   {
    "name": "D",
@@ -73,7 +73,7 @@
    "shape": "(1,1)",
    "dtype": "complex128",
    "required": true,
-   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+   "constraints": "Typed scientific value compatible with the native representation; native singleton dimensions are preserved and inactive fields remain empty arrays."
   },
   {
    "name": "UE",
@@ -82,7 +82,7 @@
    "shape": "(1,1)",
    "dtype": "float64",
    "required": true,
-   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+   "constraints": "Typed scientific value compatible with the native representation; native singleton dimensions are preserved and inactive fields remain empty arrays."
   },
   {
    "name": "UB",
@@ -91,7 +91,7 @@
    "shape": "(1,1)",
    "dtype": "float64",
    "required": true,
-   "constraints": "Compatible typed scientific predecessor; native singleton dimensions are retained and inactive fields remain empty arrays."
+   "constraints": "Typed scientific value compatible with the native representation; native singleton dimensions are preserved and inactive fields remain empty arrays."
   }
  ],
  "applicability": {
@@ -108,7 +108,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
-  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError with retained result and receipt when its caught scientific terminal fails.",
+  "runtime_failure": "NativeExecutionError records unavailable, failed or timed-out Octave execution. source_output additionally raises SourceOutputError carrying its result and receipt when its caught scientific terminal fails.",
   "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
   "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
  },
@@ -128,7 +128,7 @@
   ]
  },
  "example": {
-  "description": "Requires GNU Octave on Linux amd64 for the native PDRK path; this macOS execution is NOT_RUN.",
+  "description": "Requires GNU Octave on Linux amd64 for the native Octave path; this macOS execution is NOT_RUN.",
   "code": "import numpy as np\nfrom scirel.kinetic.pdrk import magnetized as m, workflows as w\ndeck=np.array([[1,1,1e6,100,100,1,1,0],[-1,1,1e6,100,100,1,1,0.]])\ncontrols=dict(B0=1e-7,N=1,J=4,sp=0,iem=1,iout=2,ipa=3,ipb=3,iloga=0,ilogb=0,pa1=.2,pa2=.4,dpa=.1)\neq=m.initialize_equilibrium(deck,controls=controls,par=[.2,0,.2,0,0,0])\npoint=m.electromagnetic_matrix(eq,kx=0.,kz=.2/float(eq.state['cwp'].item()))\ns=m.eigensolve(point)\nvalues=np.asarray(s.state['d']).ravel()\nr=m.reconstruct_point_fields(point,frequency_guess=values[np.argmax(values.real)])\nassert abs(np.sum(abs(r.state['dEB'].ravel()[:3])**2)-1)<1e-12\n",
   "expected": "NOT_RUN: GNU Octave on Linux amd64 is unavailable on this macOS host; the example was attempted and raised NativeExecutionError before native execution."
  },
@@ -143,7 +143,7 @@
   ],
   "evidence_ceiling": "Direct tests establish the declared contract where they run; the native example and native acceptance remain NOT_RUN because GNU Octave on Linux amd64 is unavailable on this macOS host. No release or human scientific approval is implied.",
   "known_limitations": [
-   "Local technical development; human scientific endorsement and publication clearance remain pending.",
+   "Human scientific endorsement and publication clearance remain pending.",
    "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
    "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
    "Native GNU Octave/Linux amd64 execution is NOT_RUN on this host."

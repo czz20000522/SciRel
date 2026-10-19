@@ -35,7 +35,7 @@
   ],
   "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
   "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
-  "definition": "Unit-labelled source-derived graphics; BONKcase1/2/3 PNG; EMjplt1/2 PNG and case-dependent ICW/ECW MAT.",
+  "definition": "Unit-labelled graphics from the graph state; BONKcase1/2/3 PNG; EMjplt1/2 PNG and case-dependent ICW/ECW MAT.",
   "direction": "forward",
   "geometry": "uniform background B along z; wavevector (kx,0,kz)",
   "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
@@ -101,7 +101,7 @@
   }
  },
  "schema": "scirel.asset-document",
- "summary": "Render every retained BONK/EM plot branch and EM MAT outputs from complete graph results, with corrected labels and actual artifact reporting.",
+ "summary": "Render every BONK/EM plot branch and the EM MAT outputs from complete graph results, with corrected labels and actual artifact reporting.",
  "taxonomy": [
   "kinetic",
   "plasma-waves",

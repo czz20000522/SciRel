@@ -17,16 +17,16 @@
  ],
  "identity": {
   "relation": "Beta = Swall + Beta_CX + OmegaM pointwise on one (nvr,nvx,nx) mesh",
-  "direction": "three aligned source fields -> their pointwise sum in the saved source order",
-  "definition": "The saved plain pointwise addition in the order wall, CX, elastic; no clamping of signed values",
-  "model": "the saved formal implementation's scattered-source aggregation",
+  "direction": "three aligned source fields -> their pointwise sum in the declared order",
+  "definition": "Plain pointwise addition in the order wall, CX, elastic; no clamping of signed values",
+  "model": "the scattered-source aggregation",
   "geometry": "two velocity dimensions over one spatial axis",
   "coordinates": "all fields in the source's discrete source-distribution units",
   "boundary": "three finite aligned three-dimensional fields; signed values preserved",
   "assumptions": [
-   "The wall-source channel exists only on the molecular side of the saved source; this is why the molecular reduction is a separate asset from its atomic sibling.",
+   "The wall-source channel exists only on the molecular side; this is why the molecular reduction is a separate asset from its atomic sibling.",
    "The caller owns the per-channel source construction; this asset only aggregates.",
-   "Declared r60 pre-review tightening: the saved arm does not gate its output for finiteness, so extreme-but-valid inputs can overflow to non-finite results; this asset fail-closes on a non-finite result, per the exact document's finite-output contract. The saved-arm divergence is pinned by a bounded regression test."
+   "Fail-closed finiteness: extreme-but-valid inputs can overflow, so this asset rejects a non-finite result instead of returning it, per the declared finite-output contract. A bounded regression test pins that behaviour."
   ]
  },
  "inputs": [
@@ -66,7 +66,7 @@
    "shape": "[nvr,nvx,nx]",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "The pointwise sum in the saved order; finite; signed values preserved."
+   "constraints": "The pointwise sum in the declared order; finite; signed values preserved."
   }
  ],
  "applicability": {
@@ -100,7 +100,7 @@
   "dependencies": []
  },
  "example": {
-  "description": "Aggregate three molecular sources in the saved order and reject misalignment.",
+  "description": "Aggregate three molecular sources in the declared order and reject misalignment.",
   "code": "import numpy as np\nfrom scirel.kinetic import reduce_molecular_scattered_sources\nrng = np.random.default_rng(31)\nwall, cx, elastic = (rng.random((2, 3, 4)) for _ in range(3))\nresult = reduce_molecular_scattered_sources(wall, cx, elastic)\nnp.testing.assert_array_equal(result, wall + cx + elastic)\ntry:\n    reduce_molecular_scattered_sources(wall, cx, np.ones((2, 3, 5)))\nexcept ValueError as error:\n    assert 'finite aligned 3-D' in str(error)\nelse:\n    raise AssertionError('a misaligned field must be rejected')",
   "expected": "The returned field equaled wall + charge_exchange + elastic elementwise, and a misaligned 3-D field raised ValueError."
  },
@@ -114,7 +114,7 @@
   ],
   "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
   "known_limitations": [
-   "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+   "Broader verification is not claimed beyond the listed direct tests.",
    "Public distribution licensing remains pending a human decision.",
    "Example output is a bounded runtime observation, not a universal scientific claim."
   ]

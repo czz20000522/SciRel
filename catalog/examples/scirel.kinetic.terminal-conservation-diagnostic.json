@@ -19,14 +19,14 @@
   "relation": "source-defined normalized axial total-energy balance residual",
   "direction": "axial positions, total H2 heat flux and total H2 energy transfer -> dimensionless nodal error profile",
   "definition": "For each interval k from 0 through nx-2, q1[k]=(flux[k+1]-flux[k])/(x[k+1]-x[k]) and q2[k]=0.5*(transfer[k+1]+transfer[k]). Set q1[nx-1]=q2[nx-1]=0. Let N=max(abs(q1),abs(q2)) over both whole arrays; require N>0 and finite. Return abs(q1-q2)/N. The final zero is an endpoint convention, not a checked boundary equation. The global normalization can make an individual residual exceed one.",
-  "model": "saved KN1DPy terminal H2 total-energy profile diagnostic with caller-owned upstream profiles",
+  "model": "Terminal H2 total-energy profile diagnostic on caller-owned incident profiles",
   "geometry": "one-dimensional axial spatial mesh; one result per supplied node",
   "coordinates": "adjacent axial positions in metres; no monotonicity requirement beyond nonzero adjacent spacing",
   "boundary": "at least two finite aligned nodes; each adjacent represented spacing is finite and nonzero; signed flux and transfer are allowed; finite positive global normalization",
   "assumptions": [
    "The caller supplies both total profiles on the same axial mesh. This leaf does not calculate heat flux, energy transfer or a terminal generation, and has no runtime dependency on their producers.",
-   "The named input units W/m^2 and W/m^3 give compatible axial derivative and transfer units when the upstream profile normalizations support those physical interpretations. The diagnostic alone does not verify them.",
-   "Boolean, complex and numeric-string coercions accepted by the saved implementation are excluded by the maintained real-numeric input contract."
+   "The named input units W/m^2 and W/m^3 give compatible axial derivative and transfer units only when the incident profile normalizations support those physical interpretations. The diagnostic alone does not verify them.",
+   "Boolean, complex and numeric-string coercions are excluded by the maintained real-numeric input contract."
   ]
  },
  "inputs": [
@@ -109,16 +109,16 @@
   "scope": [
    "Independent interval slopes, adjacent transfer means and global normalization on signed nonuniform profiles; linear-balance and decreasing-grid witnesses.",
    "Direct rejection tests cover shape, spacing, non-real inputs, zero normalization and non-finite derived gradient.",
-   "Three optional SHA-gated historical cases compare two finite carriers exactly and document boolean-coercion divergence."
+   "Three optional digest-pinned reference cases compare two finite carriers exactly and document the boolean-coercion divergence."
   ],
   "tests": [
    "tests/operator_contracts/test_terminal_molecular_conservation.py",
    "tests/operator_contracts/test_terminal_molecular_conservation_l1.py"
   ],
-  "evidence_ceiling": "Direct tests and optional saved replay establish this discrete diagnostic on tested profiles, not the upstream total profile normalization, full boundary balance, whole-source D1 qualification or expert approval.",
+  "evidence_ceiling": "Direct tests establish this discrete diagnostic on tested profiles; they do not establish the incident total-profile normalization, the full boundary balance, qualification of the whole closure or expert approval.",
   "known_limitations": [
-   "The saved source's strict D1 qualification is withdrawn; replay is historical development evidence only.",
-   "Absolute physical meaning of the upstream total profiles and their unit labels requires expert review.",
+   "No independently reviewed qualification of parity with an external implementation holds; comparison evidence is bounded to the tested profiles.",
+   "Absolute physical meaning of the incident total profiles and their unit labels requires expert review.",
    "The final node is not independently checked and a zero error does not establish a complete conservation law.",
    "Public distribution licensing remains pending."
   ]

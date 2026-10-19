@@ -23,7 +23,7 @@
   "assumptions": [
    "The rotating-pressure Bx contribution uses the direct divergence of the declared pressure tensor.",
    "Relativistic inertia gamma I+gamma^3 vv^T/c^2 excludes the nonrelativistic collision generator.",
-   "Fluid constants profile: c2=(2.9979e8 m/s)^2, epsilon0=8.854e-12 F/m, mu0=1/(c2*epsilon0), gamma default5/3. Charge and mass are explicit SI deck inputs; packaged defaults use q=+/-1.602e-19 C, me=9.109e-31 kg and mp=1.673e-27 kg. Sound speeds are direct inputs; no kB or temperature-to-speed conversion is performed. This is distinct from current kinetic initialization epsilon0=8.8542e-12 F/m."
+   "Fluid constants profile: c2=(2.9979e8 m/s)^2, epsilon0=8.854e-12 F/m, mu0=1/(c2*epsilon0), gamma default5/3. Charge and mass are explicit SI deck inputs; the defaults use q=+/-1.602e-19 C, me=9.109e-31 kg and mp=1.673e-27 kg. Sound speeds are direct inputs; no kB or temperature-to-speed conversion is performed. This is distinct from current kinetic initialization epsilon0=8.8542e-12 F/m."
   ]
  },
  "inputs": [
@@ -124,7 +124,7 @@
  "example": {
   "description": "Solve a small explicit method-2 grid.",
   "code": "from scirel.kinetic.pdrk.multifluid import fluid_equilibrium_si, scan_fluid_corrected\nr = scan_fluid_corrected(dict(state=fluid_equilibrium_si(), method=2, grid_controls=dict(scan_k=[1e-5, 2e-5])))\nassert r[\"w1\"].shape == (2, 1, 14)",
-  "expected": "The explicit method-2 scan returned w1 with shape (2,1,14) and axis_names=(\"k\",\"theta\"); this is a bounded Python preflight, not PDRK native acceptance."
+  "expected": "The explicit method-2 scan returned w1 with shape (2,1,14) and axis_names=(\"k\",\"theta\"); this is a bounded Python preflight, not native acceptance."
  },
  "verification": {
   "scope": [

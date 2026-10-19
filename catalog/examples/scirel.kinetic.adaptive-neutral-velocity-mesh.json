@@ -5,7 +5,7 @@
   "en": "Adaptive neutral velocity mesh",
   "zh": "自适应中性粒子速度网格"
  },
- "summary": "Build the source-equivalent symmetric cylindrical velocity mesh (vx, vr) for a neutral species from its ion temperatures and requested discharge energies: a uniform vmax=3.5 mesh when the temperature spread is small, the saved quadratic stretching otherwise, with requested positive energies inserted as exact nodes and the normalization temperature returned.",
+ "summary": "Build the symmetric cylindrical velocity mesh (vx, vr) for a neutral species from its ion temperatures and requested discharge energies: a uniform vmax=3.5 mesh when the temperature spread is small, quadratic stretching otherwise, with requested positive energies inserted as exact nodes and the normalization temperature returned.",
  "taxonomy": [
   "kinetic",
   "neutral-transport",
@@ -16,20 +16,20 @@
   "create_vr_vx_mesh"
  ],
  "identity": {
-  "relation": "the saved adaptive cylindrical velocity mesh: uniform base v in [0, 3.5] when (Tmax - Tmin) <= 0.1*Tmax, otherwise the saved quadratic stretching from ratio = sqrt(Tmin/Tmax); requested positive energies inserted as exact nodes with axial symmetry preserved; Tnorm = mean of the selected population",
+  "relation": "the adaptive symmetric cylindrical velocity mesh: uniform base v in [0, 3.5] when (Tmax - Tmin) <= 0.1*Tmax, otherwise quadratic stretching from ratio = sqrt(Tmin/Tmax); requested positive energies inserted as exact nodes with axial symmetry preserved; Tnorm = mean of the selected population",
   "direction": "node count, ion temperatures, requested energies, optional cap -> vx, vr, Tnorm, energy indices",
   "definition": "selected = temperatures + positive requested energies (capped entries dropped from this population when temperature_cap_ev > 0); vmax = 3.5 for the base mesh; the uniform branch uses nv+1 equispaced nodes, the stretched branch g*b*i + b*i^2; all positive requested energies are then inserted, including capped-out entries, so the final mesh can exceed 3.5; vr = v[1:], vx = mirror of vr; the returned ix/ir locate the last requested-energy node",
-  "model": "the saved formal implementation's source-specific mesh construction",
+  "model": "the symmetric cylindrical velocity-mesh construction",
   "geometry": "one radial half-mesh mirrored into a symmetric axial mesh",
   "coordinates": "temperatures and energies in eV; mesh nodes in normalized speed units; Tnorm in eV",
   "boundary": "nv >= 1; temperatures nonempty finite positive one-dimensional; requested energies finite one-dimensional; cap finite nonnegative scalar; selected population nonempty and positive; final mesh finite and strictly increasing",
   "assumptions": [
-   "The vmax = 3.5 truncation and the 0.1*Tmax uniformity threshold are the saved source's constants.",
+   "The vmax = 3.5 truncation and the 0.1*Tmax uniformity threshold are fixed constants of this relation.",
    "The mesh is species-agnostic: callers pass their own temperatures and energies.",
-   "The saved callable defaults requested_energy_ev to the empty tuple; this integration uses None as the JSON-serializable equivalent and treats it identically (the mesh result is unchanged for both defaults).",
-   "Declared r61 pre-review tightenings: the saved arm accepts fractional nv (building a fractional-count mesh) and non-finite temperatures (returning an all-NaN mesh); this asset fail-closes on non-integer nv and on non-finite temperatures, per the positive-integer and finite-input contracts. The saved-arm divergences are pinned by regression tests.",
-   "The cap filters the population used for Tnorm and base-mesh stretching, but the saved loop still inserts every positive requested energy, even one above the cap. This can extend the final mesh beyond the base 3.5 endpoint.",
-   "This dev5 integration rejects boolean, numeric-string and complex input coercions, non-finite requested energies or cap, and duplicate insertions that leave a non-strict final mesh. The saved arm returns duplicate axes; SciRel fails closed because its cylindrical quadrature requires strictly increasing nodes. The saved finite real-valued mesh formula and index lifecycle are unchanged on the accepted domain."
+   "The callable defaults requested_energy_ev to the empty tuple; the JSON form uses None as the equivalent and treats it identically (the mesh result is unchanged for both defaults).",
+   "Declared fail-closed tightenings: fractional nv would build a fractional-count mesh and non-finite temperatures would yield an all-NaN mesh; this asset fail-closes on non-integer nv and on non-finite temperatures, per the positive-integer and finite-input contracts. Regression tests pin those boundaries.",
+   "The cap filters the population used for Tnorm and base-mesh stretching, but every positive requested energy is still inserted, even one above the cap. This can extend the final mesh beyond the base 3.5 endpoint.",
+   "This asset rejects boolean, numeric-string and complex input coercions, non-finite requested energies or cap, and duplicate insertions that leave a non-strict final mesh. Duplicate axes are rejected because the cylindrical quadrature requires strictly increasing nodes. The finite real-valued mesh formula and index lifecycle are unchanged on the accepted domain."
   ]
  },
  "inputs": [
@@ -121,7 +121,7 @@
  },
  "verification": {
   "scope": [
-   "That the uniform and stretched branches match the saved source formula exactly.",
+   "That the uniform and stretched branches match the stated formula exactly.",
    "That requested positive energies are inserted as exact nodes with axial symmetry preserved.",
    "That the cap truncates the selected population and the tnorm follows.",
    "The input and failure contracts."

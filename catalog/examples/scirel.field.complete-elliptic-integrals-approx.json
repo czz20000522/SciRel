@@ -42,7 +42,7 @@
  "outputs": [
   {
    "name": "complete_k",
-   "description": "First-kind complete elliptic integral K(m), source approximation.",
+   "description": "First-kind complete elliptic integral K(m), polynomial-log approximation.",
    "units": "dimensionless",
    "shape": "same as modulus_squared",
    "dtype": "float64 array",
@@ -51,7 +51,7 @@
   },
   {
    "name": "complete_e",
-   "description": "Second-kind complete elliptic integral E(m), source approximation.",
+   "description": "Second-kind complete elliptic integral E(m), polynomial-log approximation.",
    "units": "dimensionless",
    "shape": "same as modulus_squared",
    "dtype": "float64 array",
@@ -105,11 +105,11 @@
    "tests/operator_contracts/test_filament_coil_green_gseq.py",
    "tests/operator_contracts/test_legacy_admission_regressions.py"
   ],
-  "evidence_ceiling": "Maintained tests establish exact interior polynomial-log arithmetic and unchanged sampled relative bounds 1e-8 for K and 2e-8 for E against SciPy on 200001 points. Analytic endpoint identities K(1)=+Inf and E(1)=1 hold independently of neighboring array elements, and the physical field consumer still rejects coincident geometry. The current endpoint correction supersedes the earlier SciRel whole-array guard; historical source and L1 package observations remain separate evidence. This is not all-input source parity or a continuous approximation-error bound.",
+  "evidence_ceiling": "The tests establish exact interior polynomial-log arithmetic and unchanged sampled relative bounds 1e-8 for K and 2e-8 for E against SciPy on 200001 points. The analytic endpoint identities K(1)=+Inf and E(1)=1 hold elementwise, independently of neighboring array elements, and the physical field consumer still rejects coincident geometry. The endpoint limit is applied per element, so a mixed array does not inherit a batch-level sentinel. This is not all-input parity or a continuous approximation-error bound.",
   "known_limitations": [
-   "The saved GSEQ bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+   "No external cross-implementation comparison is bound to this contract; only the tests in this repository establish its behaviour.",
    "The approximation is less accurate than library special functions (~1e-8 relative sampled); consumers needing higher accuracy should use the baseline scipy-elliptic filament relation instead.",
-   "The endpoint correction intentionally differs from the historical source guard; K(1) must not be treated as a finite magnetic field.",
+   "The endpoint value is the analytic limit rather than a guarded surrogate; K(1) must not be treated as a finite magnetic field.",
    "Public distribution licensing remains pending a human decision."
   ]
  }

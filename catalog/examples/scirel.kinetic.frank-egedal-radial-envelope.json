@@ -21,7 +21,7 @@
   "definition": "Let u=clip((psi-psi_axis)/(psi_edge-psi_axis),0,1). Return [clip(1-u,0,infinity)]^alpha elementwise. psi_axis defaults to min(psi), psi_edge to max(psi), and alpha to 1.0. Both signs of the finite nonzero flux interval are accepted; alpha=0 makes the entire clipped grid equal one, including the outer endpoint, by NumPy's zero-power convention.",
   "model": "Source-defined radial multiplier for a Frank-Egedal pressure construction; it does not compute a pressure or equilibrium",
   "geometry": "Caller-supplied two-dimensional axisymmetric flux samples; no radial coordinate or magnetic geometry is reconstructed",
-  "coordinates": "The array is indexed [Z,R] by the saved source contract. psi, psi_axis and psi_edge must share one caller-selected flux convention; the historical descriptor labels psi in Wb, but the callable does not enforce or convert that convention.",
+  "coordinates": "The array is indexed [Z,R] by the declared contract. psi, psi_axis and psi_edge must share one caller-selected flux convention; the historical descriptor labels psi in Wb, but the callable does not enforce or convert that convention.",
   "boundary": "The normalized coordinate is clipped to [0,1], so the envelope is constant outside the interval. Reversing psi_axis and psi_edge reverses its orientation. No spatial boundary condition is solved.",
   "assumptions": [
    "The two reference fluxes denote distinct levels in the same units and normalization as psi.",

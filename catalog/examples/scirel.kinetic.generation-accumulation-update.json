@@ -19,13 +19,13 @@
   "relation": "Append one generation to the accumulated state: accumulates distribution, density, per-generation stacks, and the completed generation index.",
   "direction": "prior state or None plus one generation distribution and density -> new accumulated state",
   "definition": "Append one generation to the accumulated state: accumulates distribution, density, per-generation stacks, and the completed generation index.",
-  "model": "the saved KN1DPy source-order generation accumulation with explicit caller-state validation",
+  "model": "Generation accumulation in the declared order with explicit caller-state validation",
   "geometry": "two velocity axes and one spatial axis for distributions, one spatial axis for densities",
   "coordinates": "distribution in source-discrete units and density in m^-3; no coordinate conversion",
   "boundary": "finite real 3-D generation distribution (signed cells allowed), aligned finite nonnegative 1-D generation density, and either None or a complete finite internally consistent prior accumulation state",
   "assumptions": [
-   "The saved first-call and source-order additive update are retained; caller-owned state is validated for shapes, index and ordered totals before reuse, and finite-input overflow fails closed.",
-   "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+   "The first call and the ordered additive update follow the declared accumulation order; caller-owned state is validated for shapes, index and ordered totals before reuse, and finite-input overflow fails closed.",
+   "No external atomic-physics reference is bound; the gap remains recorded as validation_oracle_gap."
   ]
  },
  "inputs": [
@@ -36,7 +36,7 @@
    "shape": "mapping or None",
    "dtype": "mapping of arrays and an integer",
    "required": true,
-   "constraints": "When supplied, must contain generation_distributions [ngen,nvr,nvx,nx], generation_density_m3 [ngen,nx], total_distribution [nvr,nvx,nx], total_density_m3 [nx], and a zero-based integer completed_generation_index equal to ngen-1. Arrays must be finite and aligned; densities nonnegative; totals must equal the source-order sum of their stacks."
+   "constraints": "When supplied, must contain generation_distributions [ngen,nvr,nvx,nx], generation_density_m3 [ngen,nx], total_distribution [nvr,nvx,nx], total_density_m3 [nx], and a zero-based integer completed_generation_index equal to ngen-1. Arrays must be finite and aligned; densities nonnegative; totals must equal the ordered sum of their stacks."
   },
   {
    "name": "generation_distribution",
@@ -65,7 +65,7 @@
    "shape": "mapping",
    "dtype": "mapping of arrays and an integer",
    "required": true,
-   "constraints": "All arrays finite; total_distribution and total_density_m3 equal source-order sums of their generation stacks; density arrays nonnegative; completed_generation_index is the 0-based index of the last appended generation."
+   "constraints": "All arrays finite; total_distribution and total_density_m3 equal ordered sums of their generation stacks; density arrays nonnegative; completed_generation_index is the 0-based index of the last appended generation."
   }
  ],
  "applicability": {

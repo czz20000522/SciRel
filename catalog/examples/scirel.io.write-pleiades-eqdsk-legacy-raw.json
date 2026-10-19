@@ -5,7 +5,7 @@
   "en": "Write Pleiades EQDSK from flux-grid contour state",
   "zh": "从磁通网格状态写入 Pleiades EQDSK"
  },
- "summary": "Recover the source contour writer with explicit grid, contour-selection and parametric-arclength contracts.",
+ "summary": "Serialize grid, flux and current state as an extended EQDSK record with explicit grid, contour-selection and parametric-arclength contracts.",
  "taxonomy": [
   "io",
   "eqdsk",
@@ -16,17 +16,17 @@
   "write_pleiades_eqdsk_legacy_raw"
  ],
  "identity": {
-  "relation": "Grid/flux/current state -> Pleiades extended EQDSK with selected limiter/vessel contours",
+  "relation": "Grid/flux/current state -> extended EQDSK text with selected limiter/vessel contours",
   "direction": "R,Z,psi,plasma-current state to serialized dialect record",
-  "definition": "Nearest grid node to (0.6,0) chooses psi_lim; vessel level is 1.02 psi_lim; longest contour component at each level is selected; source hint vertices near (0.05,0.5) and (0.05,-0.5) choose the arc. This successor resamples by cumulative polyline arclength instead of fitting R(Z), retaining adjacency and orientation.",
-  "model": "Pleiades legacy extended dialect and source contour choices; no EFIT/COCOS or physical boundary claim. The five serialized profile blocks are fixed zero arrays of source length 101; this writer does not infer pressure, safety-factor, or other physical profiles.",
+  "definition": "Nearest grid node to (0.6,0) chooses psi_lim; vessel level is 1.02 psi_lim; longest contour component at each level is selected; hint vertices near (0.05,0.5) and (0.05,-0.5) choose the arc. Resampling is by cumulative polyline arclength rather than fitting R(Z), preserving adjacency and orientation.",
+  "model": "Extended EQDSK text dialect with fixed limiter/vessel contour selection; no EFIT/COCOS or physical boundary claim. The five serialized profile blocks are fixed zero arrays of length 101; this writer does not infer pressure, safety-factor, or other physical profiles.",
   "geometry": "Finite separable rectangular zero-origin R,Z grid and 2-D flux field.",
-  "coordinates": "R,Z caller coordinates; serialized coordinate pairs and psi use source units.",
-  "boundary": "Exactly 100 limiter and 100 vessel coordinate pairs; source-selected contour may fail when levels are absent/degenerate.",
+  "coordinates": "R,Z caller coordinates; serialized coordinate pairs and psi use the dialect's units.",
+  "boundary": "Exactly 100 limiter and 100 vessel coordinate pairs; the selected contour may fail when levels are absent/degenerate.",
   "assumptions": [
    "R starts at zero and Z is centred at zero",
    "Current array is finite and same shape; Ip is its sum",
-   "The five profile blocks remain the source-required zeros (101 values each); their zeros carry no inferred physical interpretation",
+   "The five profile blocks are fixed zeros (101 values each); their zeros carry no inferred physical interpretation",
    "Contour approximation is polyline arclength, not a physical boundary solver."
   ]
  },
@@ -83,18 +83,18 @@
    "shape": "string",
    "dtype": "str",
    "required": true,
-   "constraints": "Truncated to source title budget"
+   "constraints": "Truncated to the title budget"
   }
  ],
  "outputs": [
   {
    "name": "file",
-   "description": "Pleiades extended EQDSK text with 100 limiter/vessel pairs",
+   "description": "Extended EQDSK text with 100 limiter/vessel pairs",
    "units": "n/a",
    "shape": "text file",
    "dtype": "UTF-8",
    "required": true,
-   "constraints": "Read back by read_pleiades_eqdsk"
+   "constraints": "Read back by the matching reader."
   }
  ],
  "applicability": {
@@ -141,7 +141,7 @@
  },
  "verification": {
   "scope": [
-   "Source positive/negative/ellipse failure regressions and corrected contour output",
+   "Positive/negative/ellipse failure regressions and corrected contour output",
    "Independent lexical, sign, count and no-silent-loss checks"
   ],
   "tests": [
@@ -150,7 +150,7 @@
   "evidence_ceiling": "Bounded serialization and contour geometry; no physical boundary or standard-EFIT claim.",
   "known_limitations": [
    "Selection hints can fail when the requested level has no contour",
-   "Polyline contour accuracy depends on source grid resolution",
+   "Polyline contour accuracy depends on the grid resolution",
    "Arbitrary origins remain unsupported"
   ]
  }

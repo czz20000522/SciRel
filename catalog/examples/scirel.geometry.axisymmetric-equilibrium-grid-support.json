@@ -5,7 +5,7 @@
   "en": "Axisymmetric equilibrium to solver-grid material support",
   "zh": "轴对称平衡到求解网格材料支撑"
  },
- "summary": "Reconstruct an axisymmetric equilibrium on a Cartesian solver grid and classify the material support of that grid, composing the mapping relation and the material-support relation in one ordered DAG with the retained entry's call shape.",
+ "summary": "Reconstruct an axisymmetric equilibrium on a Cartesian solver grid and classify the material support of that grid, composing the mapping relation and the material-support relation in one ordered DAG with a single call.",
  "taxonomy": [
   "geometry",
   "task-graph",
@@ -24,7 +24,7 @@
   "coordinates": "cylindrical for the map, Cartesian for the grid, with the axial coordinate shared between them",
   "boundary": "the composition's boundary is the union of its two dependency boundaries: query points outside the map box are clamped and reported, and the support mask must be non-empty or the call fails",
   "assumptions": [
-   "The equilibrium mapping carries both the map arrays and the flux-surface classification parameters, which is the retained entry's own layout.",
+   "The equilibrium mapping carries both the map arrays and the flux-surface classification parameters, which is this operator's expected layout.",
    "The grid axes are shared between the mapping relation and the coordinate glue, so both agree about the solver box.",
    "The composition is a pure ordered DAG: it has no feedback loop, no iteration, and no state between calls.",
    "The caller owns every array; the graph returns views of the dependencies' own results without copying them."
@@ -171,7 +171,7 @@
  ],
  "applicability": {
   "preconditions": [
-   "The caller's equilibrium mapping carries both the map arrays and the two flux-surface classification parameters, as the retained entry expected.",
+   "The caller's equilibrium mapping carries both the map arrays and the two flux-surface classification parameters, as this operator expects.",
    "Both bound relations' preconditions hold for the supplied arrays.",
    "The solver box has a genuine PML frame of at least one cell."
   ],
@@ -214,16 +214,16 @@
   ]
  },
  "example": {
-  "description": "Compose equilibrium mapping and material-support classification on a synthetic 9x9x7 solver grid, checking every retained output mask and count.",
+  "description": "Compose equilibrium mapping and material-support classification on a synthetic 9x9x7 solver grid, checking every returned output mask and count.",
   "code": "import numpy as np\nfrom scirel.geometry import solve_axisymmetric_equilibrium_grid_mapping\nr_axis = np.linspace(0.05, 1.0, 21)\nz_axis = np.linspace(-0.5, 0.5, 21)\nrr, zz = np.meshgrid(r_axis, z_axis, indexing='ij')\nequilibrium = {\n    'r_m': r_axis,\n    'z_m': z_axis,\n    'psi_wb_per_rad': 0.9 * rr + 0.1 * np.sin(2.0 * np.pi * zz),\n    'br_t': 0.3 * rr - 0.1 * zz ** 2,\n    'bz_t': 1.0 - 0.4 * rr ** 2,\n    'separatrix_flux_wb_per_rad': 0.4,\n    'closed_flux_side': 'less_than',\n}\nresult = solve_axisymmetric_equilibrium_grid_mapping(inputs={\n    'equilibrium': equilibrium,\n    'x_m': np.linspace(-0.5, 0.5, 9),\n    'y_m': np.linspace(-0.5, 0.5, 9),\n    'z_m': np.linspace(-0.4, 0.4, 7),\n    'xpoint_half_length_m': 0.2,\n    'pml_cells': 1,\n    'pec_mask': np.zeros((9, 9, 7), dtype=bool),\n})\nassert result['magnetic_flux_density_t'].shape == (9, 9, 7, 3)\nassert result['poloidal_flux_wb_per_rad'].shape == (9, 9, 7)\nassert result['covered_mask'].sum() == 560\nassert result['material_support_mask'].sum() > 0\nassert result['closed_flux_mask'].sum() >= result['material_support_mask'].sum()\nassert result['axis_segment_mask'].sum() == 0\nassert result['radially_clamped_point_count'] == 0\nassert result['axially_clamped_point_count'] == 0\nassert not result['material_support_mask'][0, :, :].any()\nassert not result['material_support_mask'][:, :, -1].any()",
   "expected": "The finite field and flux have the declared shapes, 560 points are covered, support excludes solver-box faces, and the innermost-radius segment is empty."
  },
  "verification": {
   "scope": [
-   "Exact agreement of the six retained outputs with the retained single operator on the same inputs.",
+   "Exact agreement of the six outputs with the mapping and material-support relations applied directly to the same inputs.",
    "Binding of exactly the two declared dependencies, verified by injected recording callables.",
    "Rejection of unknown composition keywords and of a missing required input.",
-   "The graph's imports, and the absence of any file, YAML, or source-checkout read at run time.",
+   "The graph's imports, and the absence of any file or configuration read at run time.",
    "The declared dependency closure against the graph's own nodes, and the connectivity of every declared input and output.",
    "Forwarding of the classification parameters from the equilibrium mapping verbatim, verified by moving the support mask while the mapping outputs stay fixed.",
    "Agreement between the coordinate glue and the mapping relation's own coverage mask."
@@ -231,10 +231,10 @@
   "tests": [
    "tests/graph_contracts/axisymmetric_equilibrium_grid_support/test_graph_axisymmetric_equilibrium_grid_support.py"
   ],
-  "evidence_ceiling": "Establishes that the composition reproduces the retained entry and that its declared dependency closure, connectivity, and purity hold. It does not establish that either dependency is physically adequate for a device, and it does not establish the composition's suitability for grids or equilibria outside the tested contracts.",
+  "evidence_ceiling": "Establishes that the composition reproduces both dependency relations and that its declared dependency closure, connectivity, and purity hold. It does not establish that either dependency is physically adequate for a device, and it does not establish the composition's suitability for grids or equilibria outside the tested contracts.",
   "known_limitations": [
    "The composition inherits both dependencies' limitations, including the clamped out-of-box policy and the innermost-radius proxy for the magnetic axis.",
-   "The two added diagnostic masks are not part of the retained output set, so a caller that compares output key sets against the retained entry must account for them.",
+   "The two diagnostic masks are additions beyond the six declared outputs, so a caller comparing output key sets must account for them.",
    "The graph has no feedback loop by design, so an equilibrium that would need to be re-derived from the reconstructed field is out of scope.",
    "Public distribution licensing remains pending a human decision."
   ]

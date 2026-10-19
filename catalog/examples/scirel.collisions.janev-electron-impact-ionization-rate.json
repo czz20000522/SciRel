@@ -5,7 +5,7 @@
   "en": "Janev electron-impact ionization rate for H and H2",
   "zh": "Janev原子氢与分子氢电子碰撞电离率"
  },
- "summary": "Evaluate separate saved H and H2 Maxwellian electron-impact ionization-rate fits from electron temperature in eV.",
+ "summary": "Evaluate separate H and H2 Maxwellian electron-impact ionization-rate fits from electron temperature in eV.",
  "taxonomy": [
   "collisions",
   "rate-coefficient",
@@ -22,15 +22,15 @@
  "identity": {
   "relation": "H or H2 electron-impact Maxwellian ionization rate coefficient from a species-specific logarithmic polynomial",
   "direction": "electron temperature in eV and target species H or H2 -> ionization rate coefficient in m^3/s",
-  "definition": "Clip strictly positive electron temperature to [0.1, 2.01e4] eV, then evaluate exp(polyval(log(T), a_species))*1e-6 m^3/s with the saved ascending-power nine-coefficient Janev table for the selected H or H2 branch. Preserve the input shape and NumPy polynomial evaluation order.",
-  "model": "saved KN1DPy Janev H and H2 Maxwellian ionization-rate fits; not a runtime cross-section integral",
+  "definition": "Clip strictly positive electron temperature to [0.1, 2.01e4] eV, then evaluate exp(polyval(log(T), a_species))*1e-6 m^3/s with the ascending-power nine-coefficient Janev table for the selected H or H2 branch. Preserve the input shape and NumPy polynomial evaluation order.",
+  "model": "Janev H and H2 Maxwellian ionization-rate fits; not a runtime cross-section integral",
   "geometry": "none; pointwise scalar or array temperature samples",
   "coordinates": "electron temperature in eV, with no spatial axis inferred",
   "boundary": "finite real numeric temperature strictly positive; target species exactly H or H2; endpoint clipping; finite positive represented output",
   "assumptions": [
-   "The two coefficient tables, 1e-6 unit conversion and source polynomial evaluation order are retained for exact historical replay on finite positive real temperatures.",
+   "The two coefficient tables, the 1e-6 unit conversion and the polynomial evaluation order define the fit on finite positive real temperatures.",
    "H and H2 are distinct target species; the caller selects a branch explicitly. The rate coefficient alone does not construct a density-scaled source or sink.",
-   "The saved implementation clips zero and negative temperatures and coerces boolean and numeric-string inputs. The maintained callable rejects them under the declared positive real input contract."
+   "This callable rejects zero and negative temperatures and does not coerce boolean or numeric-string inputs; the declared positive real input contract is the only accepted domain."
   ]
  },
  "inputs": [
@@ -45,7 +45,7 @@
   },
   {
    "name": "target_species",
-   "description": "Select the saved atomic-H or molecular-H2 ionization fit.",
+   "description": "Select the atomic-H or molecular-H2 ionization fit.",
    "units": "dimensionless enumeration",
    "shape": "scalar",
    "dtype": "string",
@@ -66,14 +66,14 @@
  ],
  "applicability": {
   "preconditions": [
-   "The caller supplies electron temperature in eV, chooses H or H2 explicitly, and accepts saved endpoint clipping."
+   "The caller supplies electron temperature in eV, chooses H or H2 explicitly, and accepts endpoint clipping."
   ],
   "supported": [
-   "Scalar and array pointwise evaluation of the saved H and H2 Janev ionization fits on or clipped to their declared temperature interval."
+   "Scalar and array pointwise evaluation of the H and H2 Janev ionization fits on or clipped to their declared temperature interval."
   ],
   "excluded": [
    "Other target species, density-scaled source or sink assembly, collisional-radiative state coupling, and direct velocity-mesh averaging of a cross section.",
-   "Physical accuracy claims outside the compared saved fit or without an external atomic-physics reference."
+   "Physical accuracy claims outside the compared fit or without an external atomic-physics reference."
   ]
  },
  "failure_semantics": {
@@ -102,20 +102,20 @@
  },
  "verification": {
   "scope": [
-   "Fixed saved reference values verify both species-specific coefficient tables at six temperatures, including both fit endpoints.",
+   "Fixed reference values verify both species-specific coefficient tables at six temperatures, including both fit endpoints.",
    "Direct tests cover branch distinction, clipping, scalar shape, invalid target species, invalid temperature and non-real coercion rejection.",
-   "Five optional SHA-gated historical replays compare finite two-dimensional carriers exactly for both branches and document three rejection differences."
+   "An optional external comparison test compares finite two-dimensional carriers exactly for both branches and covers three rejection differences; it runs only when an external implementation root is configured."
   ],
   "tests": [
    "tests/operator_contracts/test_janev_electron_impact_ionization_rate.py",
    "tests/operator_contracts/test_janev_electron_impact_ionization_rate_l1.py"
   ],
-  "evidence_ceiling": "Maintained tests establish the discrete two-branch fit, clipping and failure contract on tested samples. SHA-gated replay establishes historical arithmetic agreement on compared grids only. No external atomic-physics oracle validates either fit; whole-source D1 qualification, expert approval and distribution licensing are absent.",
+  "evidence_ceiling": "The tests establish the discrete two-branch fit, clipping and failure contract on tested samples. Bit-exact agreement with an independent implementation of the same expressions holds on the compared grids only. No external atomic-physics oracle validates either fit; public distribution licensing is absent.",
   "known_limitations": [
-   "The saved package records an external physical-reference validation_oracle_gap.",
+   "No external physical-reference oracle is bound; this gap remains open.",
    "Out-of-fit-range positive temperatures silently repeat endpoint rates rather than extrapolating or failing.",
    "A rate coefficient is not a complete source or sink without caller-supplied density and state contracts.",
-   "The saved bundle's strict D1 qualification is withdrawn, and public distribution licensing remains pending."
+   "Public distribution licensing remains pending."
   ]
  }
 }

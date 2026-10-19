@@ -25,7 +25,7 @@
   "assumptions": [
    "SciPy double arithmetic plus mpmath1.3.0 core for genuine precision fallback.",
    "Accuracy is limited by conditioning and rounded input coefficients; high precision is not a universal forward-error proof.",
-   "The retained four/six output vpa order split is intentionally removed; post-eig symbolic conversion provided no additional precision."
+   "The four/six output vpa order split is intentionally not applied; post-eig symbolic conversion provided no additional precision."
   ]
  },
  "inputs": [
@@ -184,7 +184,7 @@
   "excluded": [
    "No species initialization, unit conversion, physical sign/relativity validation, scan scheduling, plotting or mode tracking.",
    "No universal forward eigenvalue accuracy, unique degenerate polarizations or recovery of precision lost in input coefficients.",
-   "Only local authorized D2 evaluation; redistribution rights remain NOT_ESTABLISHED."
+   "Evaluated locally under the declared authorization only; redistribution rights remain NOT_ESTABLISHED."
   ]
  },
  "failure_semantics": {
@@ -224,7 +224,7 @@
    "Backward residual bounds do not certify universal forward accuracy; rounded input matrices limit available information.",
    "No branch tracking or unique phase/degenerate basis.",
    "No source/physical species model is inferred from arbitrary matrix inputs.",
-   "Local authorized D2 only; source/paper redistribution NOT_ESTABLISHED.",
+   "Local evaluation under the declared authorization only; redistribution of the source material or the paper is NOT_ESTABLISHED.",
    "Example output is a bounded runtime observation, not a universal scientific claim."
   ]
  },

@@ -37,7 +37,7 @@
    "shape": "scalar",
    "dtype": "real",
    "required": true,
-   "constraints": "Finite; must be nonnegative (a raw radius in (-1e-8, 0) is rejected: the source offset would silently regularize it to a positive one -- registered hardening); the regularized radius must be finite and positive."
+   "constraints": "Finite; must be nonnegative (a raw radius in (-1e-8, 0) is rejected: the axis offset would silently regularize it to a positive one -- declared hardening); the regularized radius must be finite and positive."
   },
   {
    "name": "observation_z_m",
@@ -70,7 +70,7 @@
  "outputs": [
   {
    "name": "regularized_radius_m",
-   "description": "Observation radius after the source axis offset, the value downstream GSEQ Green operators must receive.",
+   "description": "Observation radius after the axis offset, the value the filament-coil Green operators must receive.",
    "units": "m",
    "shape": "scalar",
    "dtype": "float",
@@ -84,7 +84,7 @@
    "shape": "[ncoil]",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "Finite values in (0, 1] on accepted non-singular geometry; overflow from finite but extreme inputs raises ValueError (registered hardening); exactly 1 marks an observation point on the filament ring (singular downstream). A zero modulus caused by floating-point underflow raises ValueError."
+   "constraints": "Finite values in (0, 1] on accepted non-singular geometry; overflow from finite but extreme inputs raises ValueError (declared hardening)."
   },
   {
    "name": "distance_m",
@@ -141,14 +141,14 @@
   "tests": [
    "tests/operator_contracts/test_filament_coil_green_gseq.py"
   ],
-  "evidence_ceiling": "The maintained direct tests establish the regularized radius, per-coil moduli and distance denominators against an independent recomputation (exact float equality on the offset, rtol=1e-15 on the closed forms), the (0, 1] modulus range on admissible geometry, axis-point admissibility through the source offset, and the fail-closed input contracts. No test establishes the geometry against an external physics reference; the relation is a direct closed-form contract of the saved source. The extreme underflow regression establishes rejection of one finite positive geometry whose computed modulus rounds to zero.",
+  "evidence_ceiling": "The direct tests establish the regularized radius, per-coil moduli and distance denominators against an independent recomputation (exact float equality on the offset, rtol=1e-15 on the closed forms), the (0, 1] modulus range on admissible geometry, axis-point admissibility through the axis offset, and the fail-closed input contracts. No test establishes the geometry against an external physics reference; the relation is a direct closed-form contract. The extreme underflow regression establishes rejection of one finite positive geometry whose computed modulus rounds to zero.",
   "known_limitations": [
-   "The saved GSEQ bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
-   "Registered input hardening: raw observation radii in (-1e-8, 0) are rejected rather than silently regularized to positive values by the source axis offset.",
-   "Registered output hardening: finite but extreme input magnitudes (e.g. r0 = rl = 1e308) that overflow the squared geometry sums are rejected with ValueError instead of handing non-finite modulus/distance downstream (the saved implementation returns them silently).",
+   "No external cross-implementation comparison is bound to this contract; only the tests in this repository establish its behaviour.",
+   "Declared input hardening: raw observation radii in (-1e-8, 0) are rejected rather than silently regularized to positive values by the axis offset.",
+   "Declared output hardening: finite but extreme input magnitudes (e.g. r0 = rl = 1e308) that overflow the squared geometry sums are rejected with ValueError instead of handing a non-finite modulus or distance to the response operator.",
    "A modulus of exactly 1 (observation point on a filament ring) is an admissible output; consumers must reject it (the response operator does).",
    "Public distribution licensing remains pending a human decision.",
-   "A zero modulus caused by floating-point underflow is rejected here; this is an additional SciRel boundary beyond the saved package."
+   "A zero modulus caused by floating-point underflow is rejected here, an explicit boundary of this contract."
   ]
  }
 }

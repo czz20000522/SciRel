@@ -154,7 +154,7 @@
   ],
   "evidence_ceiling": "Verified for the declared axisymmetric vacuum-filament model and tested input contracts; it does not establish applicability to material coils, plasma response, or three-dimensional geometry.",
   "known_limitations": [
-   "No field cache or device object is retained.",
+   "No field cache or device object is kept between calls.",
    "No feedback, optimization, or conductor-material model is included.",
    "Public distribution licensing remains pending a human decision."
   ]

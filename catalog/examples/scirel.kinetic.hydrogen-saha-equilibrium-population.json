@@ -21,16 +21,16 @@
  "identity": {
   "relation": "Saha equilibrium population density of atomic-hydrogen principal level n from paired electron density and temperature",
   "direction": "electron density in m^-3, electron temperature in eV, principal level -> population density in m^-3 per sample",
-  "definition": "For level n, evaluate n_e*(3.310e-28*n_e)*n^2*exp(13.6057/(n^2*T_e))/T_e^1.5 in the saved operation order. The second n_e factor substitutes hydrogen-ion density n_H+ under the model assumption n_H+ = n_e. The constants are the saved Saha factor and ionization energy in eV.",
-  "model": "Saved closed Saha equilibrium relation on its positive finite scientific branch with hydrogen-ion density identified with electron density; no dynamic state or non-equilibrium kinetics",
+  "definition": "For level n, evaluate n_e*(3.310e-28*n_e)*n^2*exp(13.6057/(n^2*T_e))/T_e^1.5 in the stated operation order. The second n_e factor substitutes hydrogen-ion density n_H+ under the model assumption n_H+ = n_e. The constants are the Saha factor and ionization energy in eV.",
+  "model": "Closed Saha equilibrium relation on its positive finite scientific branch with hydrogen-ion density identified with electron density; no dynamic state or non-equilibrium kinetics",
   "geometry": "No spatial geometry; elementwise paired material samples",
   "coordinates": "One shared one-dimensional sample axis for electron density and temperature; principal level is scalar",
   "boundary": "Non-empty, same-shape one-dimensional real arrays, finite and strictly between zero and 1e32; scalar integral level >= 1; finite positive represented result. The source's 1e32 sentinel is never returned.",
   "assumptions": [
-   "The source's 3.310e-28 and 13.6057 eV constants and formula order are retained, without external re-derivation.",
+   "The 3.310e-28 and 13.6057 eV constants and the formula order are fixed without external re-derivation.",
    "This relation assumes Saha equilibrium; it does not establish that the caller's plasma is in equilibrium.",
    "The n_e squared factor requires n_H+ = n_e for the modeled hydrogen population. Saha equilibrium alone does not establish that equality; the caller must establish it separately.",
-   "The saved formal implementation rejected non-scientific branches. SciRel also rejects boolean and numeric-string coercions under the declared real/integer input contract and preserves Python and NumPy integer principal levels before squaring."
+   "Non-scientific branches are rejected. SciRel also rejects boolean and numeric-string coercions under the declared real/integer input contract and preserves Python and NumPy integer principal levels before squaring."
   ]
  },
  "inputs": [
@@ -122,7 +122,7 @@
   "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
   "known_limitations": [
    "Saha equilibrium and n_H+ = n_e are separate assumptions, neither inferred from inputs; states with n_H+ different from n_e require a different relation.",
-   "The saved document's scalar/profile wording conflicts with its formal implementation's one-dimensional restriction; this contract follows the implementation.",
+   "The scalar/profile reading is not supported; this contract follows the one-dimensional restriction.",
    "Physical-reference validation_oracle_gap and pending public-distribution licensing remain.",
    "Scientific validity is bounded by the tested numerical domain and applicability conditions."
   ]

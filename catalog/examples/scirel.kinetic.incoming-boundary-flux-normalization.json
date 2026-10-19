@@ -16,16 +16,16 @@
   "normalize_incoming_neutral_boundary"
  ],
  "identity": {
-  "relation": "the saved positive-half flux normalization: incoming_flux = Vth * sum(volume * shape * vx) over vx > 0; scale = abs(target_flux) / incoming_flux",
+  "relation": "the positive-half flux normalization: incoming_flux = Vth * sum(volume * shape * vx) over vx > 0; scale = abs(target_flux) / incoming_flux",
   "direction": "boundary shape plus axes, volume, thermal speed and target flux -> scaled boundary, scale, incoming flux",
-  "definition": "Only the positive-vx half enters the integral; the returned distribution is exactly zero on the nonpositive half; the scale is the saved abs(target)/flux form, so negative and positive targets of equal magnitude yield the same scale and a zero target yields zero scale and boundary",
-  "model": "the saved formal implementation's boundary source normalization",
+  "definition": "Only the positive-vx half enters the integral; the returned distribution is exactly zero on the nonpositive half; the scale is the abs(target)/flux form, so negative and positive targets of equal magnitude yield the same scale and a zero target yields zero scale and boundary",
+  "model": "the boundary source normalization",
   "geometry": "one radial dimension times the axial velocity axis",
   "coordinates": "shape and volume in the source's normalized units, vx in normalized axial speed, thermal speed m/s, target flux m^-2 s^-1",
   "boundary": "finite nonnegative (nvr,nvx) shape and volume, finite positive thermal speed, finite target flux, at least one positive vx node, strictly positive positive-half flux; evaluated outputs must be finite",
   "assumptions": [
    "The caller owns the boundary shape and the quadrature; this asset normalizes, it does not construct a distribution.",
-   "The sign convention of the requested flux is the caller's (the saved scale uses abs); this function does not preserve target sign in its returned distribution."
+   "The sign convention of the requested flux is the caller's (the scale uses abs); this function does not preserve target sign in its returned distribution."
   ]
  },
  "inputs": [
@@ -142,7 +142,7 @@
  "verification": {
   "scope": [
    "That the returned positive-half flux integral after scaling equals the absolute value of the requested target on finite valid inputs.",
-   "That the negative half is exactly zero and the scale matches the saved abs(target)/flux form.",
+   "That the negative half is exactly zero and the scale matches the abs(target)/flux form.",
    "The fail-closed contracts, including real finite inputs, nonnegative volume and finite derived outputs; zero target remains a valid zero boundary."
   ],
   "tests": [

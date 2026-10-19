@@ -509,10 +509,10 @@
    "The caller Green response and plug-plane/reference inputs follow the two bound child contracts."
   ],
   "supported": [
-   "Binding the saved grid mirror end-loss/quasineutral pressure closure into an axisymmetric reduced-Hall Picard equilibrium with explicit nested dependencies."
+   "Binding the grid mirror end-loss/quasineutral pressure closure into an axisymmetric reduced-Hall Picard equilibrium with explicit nested dependencies."
   ],
   "excluded": [
-   "A demonstrated real end-to-end physical parity with the source project or general proof of compatibility between the two child graphs.",
+   "A demonstrated real end-to-end physical parity with another implementation, or a general proof of compatibility between the two child graphs.",
    "Automatic flux-unit conversion, free-boundary reconstruction, non-axisymmetric dynamics or correction of inconsistent kinetic and Hall species parameters.",
    "Guarantee of outer Picard or nested kinetic/ambipolar convergence for arbitrary inputs."
   ]
@@ -550,7 +550,7 @@
  },
  "verification": {
   "scope": [
-   "Direct public-wrapper and historical composition tests show that current B/psi and the outer grid are injected into the kinetic payload without conversion and that its state is returned through the Hall pressure port.",
+   "Direct public-wrapper and composition tests show that current B/psi and the outer grid are injected into the kinetic payload without conversion and that its state is returned through the Hall pressure port.",
    "A manufactured vacuum psi=0.5*R^2 yields B_Z=1 T at interior radii; its radial density profile, prescribed plug potentials, matched ion properties and synthetic nonzero diagonal Green response exercise both default nested graphs together. The outer Picard converges with strict compatibility enabled; the test checks a nonzero flux update, current, pressure gradient and local charge residual.",
    "A separate manufactured 17x17 case uses two circular-filament vacuum sources and the mirror-plasma flux Green response with one active plasma cell. Both default nested graphs run with nonzero Hall drift and strict compatibility enabled. At one off-source point, terminal plasma flux and finite-grid B_R/B_Z increments match a separately evaluated plasma filament flux and field; the field increments have a 10% finite-grid derivative tolerance. Disabling Hall removes the Hall-specific radial electric-field contribution.",
    "The nested grid kinetic graph's fixed-profile case is invariant under consistent 2*pi rescaling of its psi interpolation coordinate; this does not cover unadjusted psi-dependent callbacks. Child graph tests separately exercise selected end-state mapping, confinement, profile validation and reduced-Hall controls."
@@ -558,13 +558,13 @@
   "tests": [
    "tests/framework_compositions/test_kinetic_mirror_hall_equilibrium.py"
   ],
-  "evidence_ceiling": "Two manufactured per-radian cases demonstrate actual nested numerical execution and bounded Picard convergence, including one circular-filament/mirror-Green coupling with one active cell and nonzero Hall drift. One off-source point also checks plasma-only field increments within 10% of direct filament fields; this is not a grid-convergence study. The tests do not establish same-input source parity, real-device physical validation, arbitrary psi-dependent profile interoperability, full parameter-domain convergence, expert approval or release.",
+  "evidence_ceiling": "The tests do not establish same-input parity with another implementation, real-device physical validation, arbitrary psi-dependent profile interoperability or full parameter-domain convergence.",
   "known_limitations": [
    "The wrapper never checks that Hall ion_mass_kg/ion_charge_c agree with kinetic_config.mass_kg/charge_c.",
-   "The historical saved kinetic graph labels flux as Wb; this maintained composition passes Hall psi=R A_phi in Wb/rad without conversion. Every psi-dependent kinetic profile needs a matching coordinate definition, and the wrapper does not verify one.",
-   "Near-zero force and electric-field cases can make normalized compatibility errors sensitive to floating-point cancellation; the historical probe does not establish a general tolerance policy.",
+   "The kinetic composition labels flux as Wb; this composition passes Hall psi=R A_phi in Wb/rad without conversion. Every psi-dependent kinetic profile needs a matching coordinate definition, and the wrapper does not verify one.",
+   "Near-zero force and electric-field cases can make normalized compatibility errors sensitive to floating-point cancellation; the probe does not establish a general tolerance policy.",
    "The wrapper accepts alternate injected graph callables and unknown Hall payload keys; exact canonical behavior applies only to the default bindings.",
-   "Source license and expert approval of the current implementation remain pending."
+   "Licensing of the current implementation remains pending."
   ]
  },
  "graph": {

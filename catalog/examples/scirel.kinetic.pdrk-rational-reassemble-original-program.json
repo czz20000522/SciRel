@@ -17,7 +17,7 @@
  "identity": {
   "relation": "Corrected kinetic scientific presentation",
   "direction": "Declared inputs to named scientific outputs.",
-  "definition": "Four legacy scientific purposes es1d/es3d/em/generator retained. Source D1 plots remain historical evidence, not a known-wrong corrected default. Rounded raster plots are distinct from decimal carrier state; human visual approval remains explicit.",
+  "definition": "Four scientific purposes es1d/es3d/em/generator are supported. Reference plots are not a known-wrong corrected default. Rounded raster plots are distinct from decimal carrier state; human visual approval remains explicit.",
   "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
   "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
   "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
@@ -48,7 +48,7 @@
   },
   {
    "name": "points",
-   "description": "Finite ordered wavevector tuples. None uses exact original for-loop iterates: ES1D .4:-.02:.01; ES3D kx .05:.1:5,kz0; EM kc/omega_pi .01:.02:1 at71degrees.",
+   "description": "Finite ordered wavevector tuples. None uses the exact declared for-loop iterates: ES1D .4:-.02:.01; ES3D kx .05:.1:5,kz0; EM kc/omega_pi .01:.02:1 at71degrees.",
    "units": "ES wavevectors dimensionless; supplied EM kx,kz in m^-1. EM default scan parameter kc/omega_pi dimensionless.",
    "shape": "P tuples of length1 for es1d; length2 for es3d/em",
    "dtype": "iterable of real tuples or None",
@@ -58,7 +58,7 @@
   },
   {
    "name": "deck",
-   "description": "Species table; None reads the packaged default for the selected model. ES1D columns q,m,n,T,vd. ES3D q,m,n,Tparallel,Tperp,vd. EM q/e,m/me,n,Tparallel,Tperp,vd/c.",
+   "description": "Species table; None reads the default for the selected model. ES1D columns q,m,n,T,vd. ES3D q,m,n,Tparallel,Tperp,vd. EM q/e,m/me,n,Tparallel,Tperp,vd/c.",
    "units": "ES dimensionless normalized quantities; EM n in m^-3, T in eV, mass in electron masses.",
    "shape": "Sx5 for es1d; Sx6 for es3d/em",
    "dtype": "real array or None",
@@ -93,7 +93,7 @@
   },
   {
    "name": "N",
-   "description": "Retained cyclotron harmonic index n=-N,...,N. None selects ES3D10 or EM2; ES1D does not use N.",
+   "description": "The cyclotron harmonic index n=-N,...,N is fixed by the caller. None selects ES3D10 or EM2; ES1D does not use N.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "integer or None",
@@ -118,7 +118,7 @@
    "shape": "scalar",
    "dtype": "integer",
    "required": false,
-   "constraints": "sp0 or1. Sparse frequency count follows solve_matrix default1; original shifted solve limitations still apply. Applies only to es1d/es3d/em scan branch; omit for generator.",
+   "constraints": "sp0 or1. Sparse frequency count follows solve_matrix default1; shifted-solve limitations still apply. Applies only to es1d/es3d/em scan branch; omit for generator.",
    "default": 0
   },
   {
@@ -232,13 +232,13 @@
   "tests": [
    "tests/operator_contracts/test_pdrk_rational.py"
   ],
-  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
   "known_limitations": [
-   "PDRK source redistribution authority remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
+   "Redistribution permission for the reference material remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
    "Finite-J/finite-N physics must be qualified for a new requested regime.",
    "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
    "Human scientific and plot approval pending.",
-   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+   "The native example and full verification require GNU Octave on Linux amd64; the current macOS run is NOT_RUN."
   ]
  },
  "graph": {

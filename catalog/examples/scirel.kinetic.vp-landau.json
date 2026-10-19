@@ -124,7 +124,7 @@
  "failure_semantics": {
   "invalid_input": "ValueError from initialization, state validation or Poisson closure is propagated.",
   "runtime_failure": "FloatingPointError from a nonfinite derivative, field or RK4 state is propagated.",
-  "nonconvergence": "The diagnostic is optional: insufficient peaks are captured as diagnostic=None with diagnostic_status while the evolved state is retained.",
+  "nonconvergence": "The diagnostic is optional: insufficient peaks are captured as diagnostic=None with diagnostic_status while the evolved state is preserved.",
   "partial_results": "If evolution fails no result mapping is returned; if only the diagnostic is unavailable, the valid state and envelope are returned."
  },
  "public_api": {

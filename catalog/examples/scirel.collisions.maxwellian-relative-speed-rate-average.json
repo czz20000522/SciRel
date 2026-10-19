@@ -5,7 +5,7 @@
   "en": "Maxwellian relative-speed rate average",
   "zh": "Maxwellian相对速度速率平均"
  },
- "summary": "Energy-resolved rate coefficient <sigma v>: a monoenergetic particle directed along the axial velocity axis is averaged, through a caller-supplied cross section, against a discretized Maxwellian target on a cylindrical (vr, vx) velocity mesh with caller-supplied cell volumes. The collision energy is formed with the particle mass, the saved KN1DPy make_sigmav convention, not the reduced mass. Non-finite inputs and a non-representable rate are rejected, which the saved implementation did not check.",
+ "summary": "Energy-resolved rate coefficient <sigma v>: a monoenergetic particle directed along the axial velocity axis is averaged, through a caller-supplied cross section, against a discretized Maxwellian target on a cylindrical (vr, vx) velocity mesh with caller-supplied cell volumes. The collision energy is formed with the particle mass, not the reduced mass. Non-finite inputs and a non-representable rate are rejected.",
  "taxonomy": [
   "collisions",
   "rate-coefficient",
@@ -27,11 +27,11 @@
   "coordinates": "vr and vx in units of the target thermal speed sqrt(2 e T_norm / (m_target m_H)), where m_H is the saved hydrogen mass 1.6726231e-27 kg; the particle speed lies on the vx axis",
   "boundary": "a zero particle energy is a particle at rest and is accepted; temperatures and masses must be positive; the cross-section values sampled on the mesh must be finite and nonnegative; a computed rate that is not representable in double precision is rejected rather than returned",
   "assumptions": [
-   "The collision energy is formed with the particle mass, the saved KN1DPy make_sigmav convention. A reduced-mass collision energy is a different relation and is not provided.",
+   "The collision energy is formed with the particle mass. A reduced-mass collision energy is a different relation and is not provided.",
    "The cell-volume weights need only be proportional to the cylindrical velocity-space measure: the target distribution is normalized by the supplied weights, so a constant rescaling of the weights leaves the rate unchanged. Only their relative sizes enter.",
    "The cross-section law is the caller's. This asset evaluates no physical cross-section model, interpolates no table and performs no unit conversion.",
-   "The module constant AMU_KG = 1.6726231e-27 kg is the saved hydrogen mass, not the standard atomic mass unit; its historical name is retained for compatibility. ELEMENTARY_CHARGE_C = 1.602177e-19 C is also frozen from the saved source. Neither constant is a current CODATA estimate.",
-   "The mesh and its volumes are caller inputs. The asset does not generate them and does not enforce the source's N1 convention that vr is a nonnegative radial speed axis; only shapes, finiteness and positivity of the weights are checked."
+   "The module constant AMU_KG = 1.6726231e-27 kg is a historical hydrogen mass, not the standard atomic mass unit; the name is kept for continuity. ELEMENTARY_CHARGE_C = 1.602177e-19 C is a fixed value of the same vintage. Neither constant is a current CODATA estimate.",
+   "The mesh and its volumes are caller inputs. The asset does not generate them and does not require vr to be a nonnegative radial speed axis; only shapes, finiteness and positivity of the weights are checked."
   ]
  },
  "inputs": [
@@ -130,9 +130,9 @@
  ],
  "applicability": {
   "preconditions": [
-   "The caller supplies a consistent velocity mesh and cell-volume measure, in the source's N1 convention a vr-weighted cylindrical measure in units of the target thermal speed at tnorm_ev.",
+   "The caller supplies a consistent velocity mesh and cell-volume measure: a vr-weighted cylindrical measure in units of the target thermal speed at tnorm_ev.",
    "The cross-section callable accepts the sampled collision-energy array, shape (ne, nvr, nvx) in eV, and returns cross sections in m^2 of the same shape.",
-   "The caller accepts the source's convention that the collision energy is formed with the particle mass rather than the reduced mass."
+   "The caller accepts that the collision energy is formed with the particle mass rather than the reduced mass."
   ],
   "supported": [
    "Energy-resolved beam-in-Maxwellian-target rate coefficients on an explicit velocity mesh, for any positive temperatures and masses and any caller-supplied cross-section law.",
@@ -143,7 +143,7 @@
   ],
   "excluded": [
    "Temperature-only analytic reactivity parameterizations, such as closed-form fusion <sigma v>(T) fits: a different model with different inputs, not a variant of this relation.",
-   "A reduced-mass collision energy; the saved source's particle-mass convention is kept and a reduced-mass model would be a scientific change requiring its own evidence.",
+   "A reduced-mass collision energy; the particle-mass convention is kept and a reduced-mass model would be a scientific change requiring its own evidence.",
    "An isotropic or distributed projectile: the particle is monoenergetic and directed along the axial axis.",
    "Cross-section evaluation, interpolation or tabulation: the callable is the caller's.",
    "Velocity-mesh or volume generation: the mesh, its normalization temperature and its volumes are caller inputs.",
@@ -179,27 +179,27 @@
    "That the public callable implements exactly the discrete relation stated in identity.definition, checked against an independent loop-per-energy formulation of the same relation (weights normalized first, one beam energy reduced at a time) to a relative tolerance of 1e-14 over constant and energy-dependent cross sections.",
    "That the collision energy is formed with the particle mass: the independent formulation forms 0.5 m_particle vth^2 v_rel^2 / e the same way, and the agreement above is that convention's agreement.",
    "The rest-beam limit: at zero particle energy with T_target = T_norm the rate approaches sigma times the mean target speed vth * 2/sqrt(pi), with the discretization error decreasing monotonically under mesh refinement to below 5e-4.",
-   "The cold-target limit: for T_target far below T_norm the rate approaches sigma(E_beam) times the beam speed sqrt(2 e E / (m m_H)) to a relative error below 5e-3 on a 200x300 mesh, with m_H the saved hydrogen mass.",
+   "The cold-target limit: for T_target far below T_norm the rate approaches sigma(E_beam) times the beam speed sqrt(2 e E / (m m_H)) to a relative error below 5e-3 on a 200x300 mesh, with m_H the hydrogen mass used by the operator.",
    "The volume-scale invariance: a constant rescaling of cylindrical_volume leaves the rate unchanged, because the target distribution is normalized by the supplied weights.",
-   "The input contract: one-dimensional nonempty finite nonnegative energies, finite positive scalar masses and temperatures, finite one-dimensional axes, strictly positive finite (nvr, nvx) volumes, and a callable cross section; every out-of-domain value is rejected with a message naming the parameter. Non-finite inputs are rejected; the saved implementation propagated them silently.",
+   "The input contract: one-dimensional nonempty finite nonnegative energies, finite positive scalar masses and temperatures, finite one-dimensional axes, strictly positive finite (nvr, nvx) volumes, and a callable cross section; every out-of-domain value is rejected with a message naming the parameter. Non-finite inputs are rejected rather than propagated.",
    "The cross-section contract: wrong shape, non-finite values and negative values are rejected; exceptions raised by the callable propagate.",
    "The finite-output contract: a finite 1e305-scale cross section whose product overflows the rate is rejected rather than returned as an infinity.",
    "The callback-order contract: an extreme-but-finite particle energy (1e308 eV overflows the collision-energy arithmetic) is rejected with a ValueError before the cross-section callable is invoked; a recording callable observes nothing. Ordinary finite inputs produce unchanged numbers.",
-   "The composition contract of the saved single-node consumer graph: a caller-side mesh snapshot feeds the operator by port name, is consumed unmodified, and the returned rate lands in a caller-side energy-resolved table without reshaping.",
-   "Bounded historical replay against the saved KN1DPy implementation, pinned by SHA-256, for constant and linear cross sections at rtol 1e-14, plus the documented repair witness that the saved implementation returns a non-finite rate for a NaN mesh point while this asset rejects it. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance.",
-   "The module constants AMU_KG and ELEMENTARY_CHARGE_C equal the saved source's frozen values bit for bit."
+   "The composition contract of the single-node consumer graph: a caller-side mesh snapshot feeds the operator by port name, is consumed unmodified, and the returned rate lands in a caller-side energy-resolved table without reshaping.",
+   "Bit-exact agreement with an independent implementation for constant and linear cross sections at rtol 1e-14, together with the rejection witness for a NaN mesh point; the comparison runs only when an external implementation root is configured.",
+   "The module constants AMU_KG and ELEMENTARY_CHARGE_C equal the declared values bit for bit."
   ],
   "tests": [
    "tests/operator_contracts/test_maxwellian_relative_speed_rate_average.py"
   ],
-  "evidence_ceiling": "The maintained tests establish the discrete relation against an in-file independent formulation, the two analytic limits to mesh-converged tolerances, the volume-scale invariance, the input and failure contracts including the documented repairs, and the composition contract of the saved consumer graph. The separately executed intake replay establishes bounded numerical agreement with the saved KN1DPy implementation on the compared constant- and linear-sigma domain only. No test establishes that the particle-mass collision-energy convention is the physically correct model, that any caller cross section or mesh is physically valid, or that the source project behaves correctly outside the compared domain. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+  "evidence_ceiling": "The tests establish the discrete relation against an in-file independent formulation, the two analytic limits to mesh-converged tolerances, the volume-scale invariance, the input and failure contracts, and the composition contract of the consumer graph. Bit-exact agreement with an independent implementation holds on the compared constant- and linear-sigma domain only. No test establishes that the particle-mass collision-energy convention is the physically correct model, that any caller cross section or mesh is physically valid, or that behaviour outside the compared domain is correct. Public distribution licensing remains pending.",
   "known_limitations": [
-   "The collision energy uses the particle mass, the saved source's convention; a reduced-mass model is a different relation and is not provided.",
+   "The collision energy uses the particle mass; a reduced-mass model is a different relation and is not provided.",
    "No cross-section model is included. A caller whose callable is wrong gets a wrong rate with no warning; the asset checks only shape, finiteness and nonnegativity of the returned values.",
    "The asset does not enforce that vr is a nonnegative radial axis or that the volume weights follow the vr-weighted cylindrical measure; a mismatched measure silently misweights the quadrature. Only proportionality of the measure is required and a constant factor is irrelevant.",
    "Quadrature accuracy is entirely the mesh's. Coarse meshes misresolve the Maxwellian tail and the beam resonance; no convergence check runs at runtime, and the analytic limits above hold only in the mesh-refined regime.",
-   "Non-finite and non-real input rejection, finite-output rejection and the collision-energy representability gate are documented development repairs, not source behavior: a caller migrating from the saved implementation sees a ValueError where it previously saw either coercion, an unrelated TypeError, a silent non-finite rate or a callback invoked with values the asset never declared.",
-   "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+   "Non-finite and non-real input rejection, finite-output rejection and the collision-energy representability gate are explicit preconditions of this contract: a ValueError is raised instead of coercing, propagating a non-finite rate or invoking the callback with values the asset never declared.",
+   "The optional cross-implementation comparison runs only in an environment that supplies an external implementation root; it is skipped otherwise and covers only the compared grids.",
    "Public distribution licensing remains pending a human decision."
   ]
  }

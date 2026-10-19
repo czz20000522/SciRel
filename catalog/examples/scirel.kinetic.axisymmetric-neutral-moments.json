@@ -17,20 +17,20 @@
   "reduce_axisymmetric_neutral_moments"
  ],
  "identity": {
-  "relation": "the saved cylindrical velocity-space moment integrals of one distribution with thermal-speed normalization Vth = sqrt(2 e T_norm / (m_amu m_H))",
+  "relation": "the cylindrical velocity-space moment integrals of one distribution with thermal-speed normalization Vth = sqrt(2 e T_norm / (m_amu m_H))",
   "direction": "distribution plus axes, volume, normalization and species scalars -> nine moment profiles",
-  "definition": "density = integral of f over velocity; axial_flux = Vth * integral(vx f); flow = flux/density; pressure and stresses from the centered second moments about the flow in eV m^-3; heat flux from the centered third moment in W m^-2; sigma_zz is returned as an independent copy of sigma_yy (the saved cylindrical identification); the optional explicit quadrature pair must reconstruct cylindrical_volume exactly and switches to the saved per-slice summation order",
-  "model": "the saved formal implementation's discrete cylindrical moment reduction",
+  "definition": "density = integral of f over velocity; axial_flux = Vth * integral(vx f); flow = flux/density; pressure and stresses from the centered second moments about the flow in eV m^-3; heat flux from the centered third moment in W m^-2; sigma_zz is returned as an independent copy of sigma_yy (the declared cylindrical identification); the optional explicit quadrature pair must reconstruct cylindrical_volume exactly and switches to the declared per-slice summation order",
+  "model": "Discrete cylindrical velocity-space moment reduction of one distribution under thermal-speed normalization",
   "geometry": "one-dimensional space, two-dimensional axisymmetric velocity space",
   "coordinates": "velocity axes and distributions in the source's normalized units; density m^-3, flux m^2 s^-1, flow m/s, pressure and stresses eV m^-3, temperature eV, heat flux W m^-2",
   "boundary": "finite 3-D distribution aligned to the axes; finite positive volume; positive normalization temperature and mass; molecularity in {1, 2}; empty_slice_policy in {reject, source_default}",
   "assumptions": [
-   "sigma_zz = sigma_yy is the saved source's cylindrical symmetry identification, preserved verbatim; whether a successor should return an independent zz stress is an open expert question.",
-   "The source_default empty-slice policy (flow 0 m/s, temperature 1 eV on zero-density slices) is the saved initial-iteration semantics, preserved for callers that need it; reject is this integration's default.",
-   "The moment recovery assumes the caller's distribution is normalized as the saved source normalizes it; this asset reduces, it does not renormalize.",
-   "Declared r60 pre-review tightenings: the saved arm does not check the finiteness of the velocity axes, the volume weights, the normalization temperature or the mass, and it does not gate the outputs; this asset fail-closes on non-finite axes, volume, temperature, mass and on any non-finite returned field. The saved-arm divergences are pinned by regression tests.",
-   "Declared r61 pre-review tightenings: complex distribution input fails closed (the saved arm silently discarded the imaginary part), and a 0-D scalar vx (a reviewer-reproduced raw IndexError on the r60c bytes) now fails closed with ValueError because the axes must be one-dimensional arrays; a zero node inside a one-dimensional mesh stays valid.",
-   "The historical isotope_mass_amu parameter multiplies the saved hydrogen mass 1.6726231e-27 kg, not a standard atomic mass unit. This dev5 integration additionally rejects boolean, numeric-string and complex array coercions, nonnumeric scalar inputs and noninteger molecularity; the saved finite real-valued arithmetic and summation order remain unchanged."
+   "sigma_zz = sigma_yy is the declared cylindrical symmetry identification; whether the contract should return an independent zz stress is an open expert question.",
+   "The source_default empty-slice policy (flow 0 m/s, temperature 1 eV on zero-density slices) reports the neutral initial values for callers that need them; reject is the default.",
+   "The moment recovery assumes the caller's distribution already carries the declared normalization; this asset reduces, it does not renormalize.",
+   "The fail-closed finiteness checks extend the declared contract: non-finite velocity axes, volume weights, normalization temperature or mass, and any non-finite returned field, are rejected; the earlier behavior did not gate them, and its divergences are pinned by regression tests.",
+   "Declared tightenings: complex distribution input fails closed (the earlier behavior silently discarded the imaginary part), and a 0-D scalar vx now fails closed with ValueError because the axes must be one-dimensional arrays; a zero node inside a one-dimensional mesh stays valid.",
+   "The isotope_mass_amu parameter multiplies the declared hydrogen mass 1.6726231e-27 kg, not a standard atomic mass unit. This asset additionally rejects boolean, numeric-string and complex array coercions, nonnumeric scalar inputs and noninteger molecularity; the finite real-valued arithmetic and summation order are unchanged."
   ]
  },
  "inputs": [
@@ -81,7 +81,7 @@
   },
   {
    "name": "isotope_mass_amu",
-   "description": "The mass factor relative to the saved hydrogen mass, despite the historical parameter name.",
+   "description": "The mass factor relative to the declared hydrogen mass, despite the parameter name.",
    "units": "multiples of saved hydrogen mass (1.6726231e-27 kg)",
    "shape": "scalar",
    "dtype": "real scalar",
@@ -177,9 +177,9 @@
  "verification": {
   "scope": [
    "That all nine default-policy fields are finite with the declared shape and density equals the direct cylindrical volume integral.",
-   "That the explicit-quadrature density follows the saved per-slice summation order and fails closed on a volume mismatch.",
+   "That the explicit-quadrature density follows the declared per-slice summation order and fails closed on a volume mismatch.",
    "That a shifted-Maxwellian-like distribution recovers its flow speed and temperature within quadrature accuracy (independent physical witness).",
-   "That sigma_zz aliases sigma_yy as an independent copy, and that the two empty-slice policies diverge exactly as saved.",
+   "That sigma_zz aliases sigma_yy as an independent copy, and that the two empty-slice policies diverge exactly as declared.",
    "That non-finite velocity axes and non-real coercions fail closed under the declared input contract."
   ],
   "tests": [
@@ -187,8 +187,8 @@
   ],
   "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
   "known_limitations": [
-   "The sigma_zz = sigma_yy identification is the saved source's; an independent zz stress is not provided. Whether that identification is the intended published contract is carried over as an open expert question.",
-   "Under 'source_default', zero-density slices report the saved neutral values (flow 0 m/s, temperature 1 eV), which are not physical measurements.",
+   "An independent zz stress is not provided: the sigma_zz = sigma_yy identification is part of the declared contract. Whether that identification is the intended published contract remains an open expert question.",
+   "Under 'source_default', zero-density slices report the declared neutral values (flow 0 m/s, temperature 1 eV), which are not physical measurements.",
    "Scientific validity is bounded by the tested numerical domain and applicability conditions."
   ]
  }

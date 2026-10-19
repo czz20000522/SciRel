@@ -80,7 +80,7 @@
    "Compute the Redl dimensionless bootstrap fit coefficients from explicit face collisionalities"
   ],
   "excluded": [
-   "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full TORAX physics qualification.",
+   "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
    "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision."
   ]
  },
@@ -117,7 +117,7 @@
   ],
   "evidence_ceiling": "Mathematical fit arithmetic and explicit assembly only; no empirical full-physics qualification.",
   "known_limitations": [
-   "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full TORAX physics qualification.",
+   "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
    "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision."
   ]
  },

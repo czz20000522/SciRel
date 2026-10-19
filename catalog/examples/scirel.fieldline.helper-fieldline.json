@@ -101,8 +101,8 @@
  "verification": {
   "scope": [
    "Only the explicitly stated finite input domain and named direct/independent installed fixtures",
-   "Independent installed ARM named fixtures retain the original 13x9 affine-gradient inputs and 4e-9 absolute gate. Recorded maximum errors are 1.3323e-15 or less across the two variants. The original circle uses 401 points and spatial grids 40/80/160 on the unchanged domain: field-curvature vector errors are 1.1787063e-5, 1.3972100e-6 and 1.6021077e-7, passing both >3.4 refinement ratios and final <.004 gates. These are named-fixture observations, not universal convergence rates.",
-   "Independent installed ARM held-out ellipse on 71x83 unequal-spacing grids and 257 line points, including coherent descending coordinates, B reversal and vertex reversal, has maximum component error 1.329318e-7 or less in recorded cases. Boundary cases reject outside support, duplicate vertices, nonfinite fields and actual field nulls. Field-scale tests at signed 1e-180 and 1e180, with a translated geometry, pass unchanged finite-fixture criteria; no arbitrary-dynamic-range guarantee follows."
+   "Named fixtures use the 13x9 affine-gradient inputs and the 4e-9 absolute gate. Recorded maximum errors are 1.3323e-15 or less across the two variants. The circle case uses 401 points and spatial grids 40/80/160 on the same domain: field-curvature vector errors are 1.1787063e-5, 1.3972100e-6 and 1.6021077e-7, passing both >3.4 refinement ratios and final <.004 gates. These are named-fixture observations, not universal convergence rates.",
+   "A held-out ellipse on 71x83 unequal-spacing grids and 257 line points, including coherent descending coordinates, B reversal and vertex reversal, has maximum component error 1.329318e-7 or less in recorded cases. Boundary cases reject outside support, duplicate vertices, nonfinite fields and actual field nulls. Field-scale tests at signed 1e-180 and 1e180, with a translated geometry, pass unchanged finite-fixture criteria; no arbitrary-dynamic-range guarantee follows."
   ],
   "tests": [
    "tests/pleiades/equilibrium/test_analysis_families.py",
@@ -114,13 +114,13 @@
    "tests/pleiades/equilibrium/test_fieldline_t7_precision.py::test_curvature_constant_field_scale_does_not_create_a_null",
    "tests/pleiades/equilibrium/test_fieldline_t7_precision.py::test_helper_gradient_honors_linear_method"
   ],
-  "evidence_ceiling": "Independent source-free ARM named-fixture technical evidence for the recorded Mac successor candidate. It does not establish whole-project D2 or D3 completion, arbitrary-input correctness, experimental validation, human endorsement or release. Historical fixed-interpolant refinement failures remain separate qualified observations.",
+  "evidence_ceiling": "Named-fixture technical evidence for this repository's own tests. It does not establish arbitrary-input correctness, experimental validation or human endorsement.",
   "known_limitations": [
    "Intersection is bounded to fitted parameter intervals and rejects no-crossing/multiple-root cases; tangency/completeness remains unqualified",
    "Arbitrary contour topology, magnetic-axis limit and physical stability are unqualified",
    "Polar projection is supplied separately with explicit theta and origin failure; magnetic-axis limit remains unqualified.",
    "HelperFieldLine has field-based curvature only; flux-gradient curvature belongs to the separate FieldLine variant. The explicit method selector is honored by interpolation and gradient/curvature consumers.",
-   "Refining path samples on a fixed interpolated field need not monotonically improve physical curvature error; the four historical fixed-interpolant refinement failures remain preserved and are not the spatial-grid refinement gate.",
+   "Refining path samples on a fixed interpolated field need not monotonically improve physical curvature error; four fixed-interpolant refinement cases remain recorded as failures and are distinct from the spatial-grid refinement gate.",
    "Local quartic field-curvature derivatives assume a sufficiently smooth genuine field line. Public d_ds retains its polygonal three-point contract; neither implies a universal curvature-error bound."
   ]
  }

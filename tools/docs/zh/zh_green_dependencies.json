@@ -38,7 +38,7 @@
     {
      "name": "BR",
      "description": "目标行、源列的径向场响应。",
-     "constraints": "保留有符号权重及实际高度差。",
+     "constraints": "保持有符号权重及实际高度差。",
      "dtype": "float64（双精度浮点数）"
     },
     {
@@ -155,7 +155,7 @@
   },
   {
    "asset_id": "scirel.electromagnetism.circular-filament-green",
-   "source_sha256": "dfaef05f6bf8c3b3aa948d664bc954531dc94a45004725f47f70814e063db0fe",
+   "source_sha256": "8f59e66cb220a4ce2f913968a7cb4c780f0bf368142fdd73a7509376d23cbca0",
    "summary": "计算有序圆电流丝在柱坐标目标点的磁通和磁场响应。",
    "definition": "对每个源行 (R,Z,weight)，返回每安培加权响应 psi=R A_phi、BR 和 BZ。",
    "model": "使用小模数超几何分支和互补椭圆积分分支的轴对称理想圆电流丝核。",
@@ -169,7 +169,7 @@
     {
      "name": "rzw",
      "description": "源行，或相互独立的源集合列表。",
-     "constraints": "源半径非负、权重有符号；列表输出保留源集合维度。",
+     "constraints": "源半径非负、权重有符号；列表输出保持源集合维度。",
      "dtype": "有限 float64"
     },
     {
@@ -182,7 +182,7 @@
    "outputs": [
     {
      "name": "response",
-     "description": "psi、BR、BZ 元组；列表输入为每集合保留目标轴。",
+     "description": "psi、BR、BZ 元组；列表输入时，每个集合各返回一条目标轴。",
      "constraints": "返回有限响应；否则抛出 FloatingPointError。",
      "dtype": "float64（双精度浮点数）"
     }
@@ -211,7 +211,7 @@
    },
    "verification": {
     "scope": [
-     "具名 D2 Green 对照案例。",
+     "有界的 Green 对照用例。",
      "轴极限及导数回归。",
      "显式奇点和生命周期测试。",
      "独立 70/140 位角积分检验近丝 BZ 及 m=0.5 两侧连续响应，保持原容差；验证极小正半径、轴上 BZ 与不可表示算术失败。"
@@ -220,7 +220,7 @@
     "known_limitations": [
      "活跃理想丝精确自点发散并拒绝；矩阵入口各自声明离散零自项。",
      "不建立有限导体内部自场、材料磁导率或全连续域误差界。",
-     "独立计算及安装任务不构成人工或发行批准。"
+     "独立计算及安装任务不构成人工科学认可。"
     ]
    }
   }

@@ -5,7 +5,7 @@
   "en": "Neutral total-loss collision frequency assembly",
   "zh": "中性总损失碰撞频率组装"
  },
- "summary": "Assemble the neutral total-loss frequency alpha_c = optional Alpha_CX + base loss + Omega_EL + wall loss (2 vr / D broadcast over the grid) used by the saved source's spatial advance.",
+ "summary": "Assemble the neutral total-loss frequency alpha_c = optional Alpha_CX + base loss + Omega_EL + wall loss (2 vr / D broadcast over the grid) consumed by the spatial advance.",
  "taxonomy": [
   "kinetic",
   "neutral-transport",
@@ -18,15 +18,15 @@
  "identity": {
   "relation": "alpha_c[vr,vx,x] = optional CX[vr,vx,x] + base[x] + elastic[x] + wall[vr,x], with wall = 2 vr / D[x] where D[x] > 0 and zero where D[x] = 0",
   "direction": "axes, base/elastic/diameter profiles and optional CX field -> (nvr,nvx,nx) total frequency",
-  "definition": "The saved assembly order (base + elastic + wall, then + CX when enabled); zero pipe diameter yields zero wall loss in those cells (the saved semantics, not an infinite-pipe limit); enabling charge exchange without a field fails closed",
-  "model": "the saved formal implementation's total-loss assembly",
+  "definition": "The assembly order (base + elastic + wall, then + CX when enabled); zero pipe diameter yields zero wall loss in those cells (the declared semantics, not an infinite-pipe limit); enabling charge exchange without a field fails closed",
+  "model": "the total-loss assembly",
   "geometry": "one radial and one axial velocity dimension over one spatial axis",
   "coordinates": "frequencies in s^-1; pipe diameter in m",
   "boundary": "finite one-dimensional axes with positive radial nodes; finite nonnegative base/elastic/diameter profiles of one common spatial shape; CX field (when enabled) finite nonnegative (nvr,nvx,nx)",
   "assumptions": [
-   "The wall loss 2 vr / D is the saved free-flight pipe model; it is a geometric escape frequency, not a surface-interaction model.",
-   "A zero pipe diameter means no wall loss in the saved arithmetic; whether the published contract should instead reject zero diameters is an open expert question.",
-   "Declared r60 pre-review tightening: the saved arm does not gate its output for finiteness, so extreme-but-valid inputs can overflow to non-finite results; this asset fail-closes on a non-finite result, per the exact document's finite-output contract. The saved-arm divergence is pinned by a bounded regression test."
+   "The wall loss 2 vr / D is the free-flight pipe model; it is a geometric escape frequency, not a surface-interaction model.",
+   "A zero pipe diameter means no wall loss in the stated arithmetic; whether the published contract should instead reject zero diameters is an open expert question.",
+   "Fail-closed finiteness: extreme-but-valid inputs can overflow, so this asset rejects a non-finite result instead of returning it, per the declared finite-output contract. A bounded regression test pins that behaviour."
   ]
  },
  "inputs": [
@@ -92,7 +92,7 @@
    "shape": "scalar",
    "dtype": "boolean scalar",
    "required": false,
-   "constraints": "The saved branch selector.",
+   "constraints": "Whether the CX contribution is included.",
    "default": true
   }
  ],
@@ -152,7 +152,7 @@
   ],
   "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
   "known_limitations": [
-   "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+   "Broader verification is not claimed beyond the listed direct tests.",
    "Public distribution licensing remains pending a human decision.",
    "Example output is a bounded runtime observation, not a universal scientific claim."
   ]

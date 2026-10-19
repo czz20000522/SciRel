@@ -5,7 +5,7 @@
   "en": "Basis evaluator factory",
   "zh": "基函数求值器构造"
  },
- "summary": "Construct callable ascending-power polynomial or retained cubic-spline basis functions.",
+ "summary": "Construct callable ascending-power polynomial or cubic-spline basis functions.",
  "taxonomy": [
   "analysis",
   "basis"
@@ -16,8 +16,8 @@
  "identity": {
   "relation": "Basis evaluator factory",
   "direction": "Declared inputs to List of independent basis evaluators",
-  "definition": "Construct a list of ascending-power polynomial or retained cubic-spline evaluators",
-  "model": "Source basis-map selection with poly_deg=3 or n_knots=5 defaults",
+  "definition": "Construct a list of ascending-power polynomial or cubic-spline evaluators",
+  "model": "Basis-map selection with poly_deg=3 or n_knots=5 defaults",
   "geometry": "one-dimensional scalar abscissa and ordinate samples",
   "coordinates": "Generic coordinate and ordinate units",
   "boundary": "Spline selectors inherit their precise endpoint rules",
@@ -35,7 +35,7 @@
    "shape": "string",
    "dtype": "str",
    "required": false,
-   "constraints": "poly or retained cubic-spline selector; lowercased",
+   "constraints": "poly or cubic-spline selector; lowercased",
    "default": "poly"
   }
  ],
@@ -97,7 +97,7 @@
   "tests": [
    "tests/pleiades/equilibrium/test_analysis_families.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness or experimental validation.",
   "known_limitations": [
    "Quartic and special-function factory selections are rejected; no invented implementations",
    "Physical special-spline closures and unsupported knot domains remain unresolved"

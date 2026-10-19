@@ -17,7 +17,7 @@
  "identity": {
   "relation": "Closed-form filament-coil Green response",
   "direction": "regularized observation geometry and coil vectors to summed flux and fields",
-  "definition": "Apply the scalar GSEQ expressions to aligned coil arrays and sum the per-coil terms.",
+  "definition": "Apply the scalar closed-form Green expressions to aligned coil arrays and sum the per-coil terms.",
   "model": "Closed-form axisymmetric circular-coil response using supplied K(m) and E(m).",
   "geometry": "One observation point paired with one-dimensional coil arrays.",
   "coordinates": "R,Z in metres; current amperes; turns count; psi Wb/rad and fields tesla.",
@@ -36,7 +36,7 @@
    "shape": "scalar",
    "dtype": "real",
    "required": true,
-   "constraints": "Finite and strictly positive; the offset is applied once upstream and is not repeated here."
+   "constraints": "Finite and strictly positive; the offset is applied once by the caller and is not repeated here."
   },
   {
    "name": "observation_z_m",
@@ -119,7 +119,7 @@
    "shape": "scalar",
    "dtype": "float",
    "required": true,
-   "constraints": "Finite on accepted inputs; overflow from finite but extreme currents/turns raises ValueError (registered hardening)."
+   "constraints": "Finite on accepted inputs; overflow from finite but extreme currents/turns raises ValueError (declared hardening)."
   },
   {
    "name": "radial_field_t",
@@ -128,7 +128,7 @@
    "shape": "scalar",
    "dtype": "float",
    "required": true,
-   "constraints": "Finite on accepted inputs; overflow from finite but extreme currents/turns raises ValueError (registered hardening)."
+   "constraints": "Finite on accepted inputs; overflow from finite but extreme currents/turns raises ValueError (declared hardening)."
   },
   {
    "name": "axial_field_t",
@@ -137,7 +137,7 @@
    "shape": "scalar",
    "dtype": "float",
    "required": true,
-   "constraints": "Finite on accepted inputs; overflow from finite but extreme currents/turns raises ValueError (registered hardening)."
+   "constraints": "Finite on accepted inputs; overflow from finite but extreme currents/turns raises ValueError (declared hardening)."
   }
  ],
  "applicability": {
@@ -192,13 +192,13 @@
   "tests": [
    "tests/operator_contracts/test_filament_coil_green_gseq.py"
   ],
-  "evidence_ceiling": "The maintained direct tests establish the three responses against an independent closed-form recomputation (exact float equality), linear superposition in current, midplane B_r cancellation of a mirrored pair, and the fail-closed input contracts including the registered singular-geometry rejection. Cross-implementation evidence: with identical scipy-evaluated K, E the GSEQ closed form agrees with the baseline scirel.field.circular-filament-green response to rtol 1e-12 on probed geometries (same physics, different arrangement); feeding the source's polynomial-log approximation instead shifts responses by up to ~1e-5 relative on the probed set, consistent with the approximation's documented ~1e-8 K/E error amplified by the closed form -- sampled evidence over probed geometries, not a continuous bound. No test establishes the responses against an external physics reference beyond the shared closed form.",
+  "evidence_ceiling": "The direct tests establish the three responses against an independent closed-form recomputation (exact float equality), linear superposition in current, midplane B_r cancellation of a mirrored pair, and the fail-closed input contracts including the singular-geometry rejection. With identical scipy-evaluated K and E the closed form agrees with the baseline scirel.field.circular-filament-green response to rtol 1e-12 on probed geometries (same physics, different arrangement); feeding the polynomial-log approximation instead shifts responses by up to ~1e-5 relative on the probed set, consistent with the approximation's documented ~1e-8 K/E error amplified by the closed form -- sampled evidence over probed geometries, not a continuous bound. No test establishes the responses against an external physics reference beyond the shared closed form.",
   "known_limitations": [
-   "The saved GSEQ bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+   "No external cross-implementation comparison is bound to this contract; only the tests in this repository establish its behaviour.",
    "This asset is a declared relation variant of scirel.field.circular-filament-green, not a new Green capability; the variant boundary (caller-supplied elliptic values, scalar target, source regularization, fail-closed singulars) must not be collapsed by silent unification.",
-   "Registered input hardening chain (documented for the family): the geometry operator rejects raw negative observation radii, and this operator rejects zero-separation/modulus-1 singular geometry; both boundaries are silently accepted (or NaN-returned) by the saved implementations.",
-   "Registered output hardening: finite but extreme current/turns magnitudes that overflow the combined response factor raise ValueError instead of returning Inf/NaN (the saved implementation returns them silently).",
-   "The singular-geometry rejection (observation point on a filament ring) deliberately diverges from the saved implementation, which returns NaN responses silently on that boundary.",
+   "Declared input hardening chain (documented for the family): the geometry operator rejects raw negative observation radii, and this operator rejects zero-separation/modulus-1 singular geometry; neither boundary is silently accepted here.",
+   "Declared output hardening: finite but extreme current/turns magnitudes that overflow the combined response factor raise ValueError instead of returning Inf/NaN.",
+   "The singular-geometry rejection (observation point on a filament ring) is an explicit contract: that configuration raises rather than returning NaN responses.",
    "Public distribution licensing remains pending a human decision."
   ]
  }

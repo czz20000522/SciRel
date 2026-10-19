@@ -3,8 +3,8 @@
  "language": "zh-CN",
  "records": [
   {
-   "summary": "构造固定组分算例的 SI 状态和归一化尺度。",
-   "definition": "热速度为 sqrt(2 kB T/m)，含符号回旋半径为 sqrt(kB T/m)/Omega；wn=min abs(Omega)，kn=1/max abs(rho)，保留原有 eV 换算。",
+   "summary": "给出 BONK 或 EM 算例的完整组分、归一化与材料状态。",
+   "definition": "热速度为 sqrt(2 kB T/m)，含符号回旋半径为 sqrt(kB T/m)/Omega；wn=min abs(Omega)，kn=1/max abs(rho)；温度按 1.6022e-19/kB 由 eV 换算为 K。",
    "inputs": [
     {
      "name": "family",
@@ -23,7 +23,7 @@
     {
      "name": "result",
      "description": "完整组分尺度和材料元数据；EM 状态设置 kz=0.1kn。",
-     "constraints": "保留状态和末端诊断的科学含义，不修改调用者的状态。",
+     "constraints": "状态与末端诊断保持科学含义，不修改调用者的状态。",
      "dtype": "映射"
     }
    ],
@@ -32,7 +32,7 @@
     "expected": "本 macOS 主机上为 NOT_RUN：调用到达 fluidBW 运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
    "asset_id": "scirel.kinetic.fluidbw-case-state",
-   "source_sha256": "54b9c24487b8f72f76e600ba69121d3d02968bd71cb55f47727eecac928cd1df",
+   "source_sha256": "a916e832e7550853afaa39b2ef2e3c72f62e46c3b6f914da9d3a897508feed77",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -64,7 +64,7 @@
      "BONK 的三个算例与 EM 的两个算例，包含完整固定常量及状态。"
     ],
     "known_limitations": [
-     "来源权限仍为 NOT_ESTABLISHED，尚无公开发行。",
+     "再分发许可仍为 NOT_ESTABLISHED，尚未公开发布。",
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
      "科学有效性受已测试数值域和适用条件限制。",
@@ -74,8 +74,8 @@
    }
   },
   {
-   "summary": "计算缩放贝塞尔函数、等离子体 Z 函数及完整 R 响应。",
-   "definition": "RC=[R,d(bR)/db;Y dR/dY,Y d/dY(d(bR)/db)]，R=2Y/b sum(n² Gamma_n/(Y²−n²),n>=1)。真正的极点报错。历史名称 RTAY、RASY、RINT、RYLA 均使用修正后的谐波求和，不代表原来的四种算法。",
+   "summary": "计算 Gamma、Z 函数与完整 R 响应合同；四个既有 R 方法名共用同一修正谐波求值器。",
+   "definition": "RC=[R,d(bR)/db;Y dR/dY,Y d/dY(d(bR)/db)]，R=2Y/b sum(n² Gamma_n/(Y²−n²),n>=1)；真正的极点会报错。RTAY、RASY、RINT、RYLA 四个既有方法名共用同一修正谐波求值器，并不代表四种不同算法。",
    "inputs": [
     {
      "name": "method",
@@ -105,11 +105,11 @@
     }
    ],
    "example": {
-    "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生 fluidBW 边界，在 macOS 上记为 NOT_RUN。",
-    "expected": "本 macOS 主机上为 NOT_RUN：调用到达 fluidBW 运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
+    "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生运行时边界，在 macOS 上记为 NOT_RUN。",
+    "expected": "本 macOS 主机上为 NOT_RUN：调用触发原生运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
    "asset_id": "scirel.kinetic.fluidbw-special-functions",
-   "source_sha256": "d5507dd5445ebb5c6f417dc0b1600d62652819bd2a1d0206239200939fd9cec9",
+   "source_sha256": "7bc9863d39de3ca96d8a527df9a3f2c1d3df419a08976bfdb4256d9252685632",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -129,7 +129,7 @@
      "复数标量 Y、b 的完整 R 响应，检查尾项与浮点相消，最多 65536 项；b=0 与 Y=0 使用解析极限。"
     ],
     "excluded": [
-     "不宣称执行或忠实保留原 Taylor、渐近、积分等选择器对应的算法。",
+     "不宣称执行或忠实复现 Taylor、渐近、积分等选择器对应的算法。",
      "不宣称整个复平面具有认证精度。"
     ]
    },
@@ -146,7 +146,7 @@
      "复数标量 Y、b 的完整 R 响应，检查尾项与浮点相消，最多 65536 项；b=0 与 Y=0 使用解析极限。"
     ],
     "known_limitations": [
-     "来源权限仍为 NOT_ESTABLISHED，尚无公开发行。",
+     "再分发许可仍为 NOT_ESTABLISHED，尚未公开发布。",
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
      "科学有效性受已测试数值域和适用条件限制。",
@@ -156,7 +156,7 @@
    }
   },
   {
-   "summary": "从显式 SI 状态计算 Maxwell 色散张量和行列式。",
+   "summary": "从显式 SI 状态计算行列式、介电张量 K、Maxwell 色散张量 D 与未改动的状态，并覆盖带符号及零波矢极限。",
    "definition": "D=K+nnᵀ−n²I。fD 与 fDtensor 在解析消去后分别采用对称谐波截断 5 与 15；fDR 使用修正的完整 R 响应与 J8 近似。",
    "inputs": [
     {
@@ -182,16 +182,16 @@
     {
      "name": "result",
      "description": "无量纲行列式、3×3 介电张量 K 与色散张量 D，以及未被修改的显式 state_after。",
-     "constraints": "保留状态和末端诊断的科学含义，不修改调用者的状态。",
+     "constraints": "状态与末端诊断保持科学含义，不修改调用者的状态。",
      "dtype": "映射"
     }
    ],
    "example": {
-    "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生 fluidBW 边界，在 macOS 上记为 NOT_RUN。",
-    "expected": "本 macOS 主机上为 NOT_RUN：调用到达 fluidBW 运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
+    "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生运行时边界，在 macOS 上记为 NOT_RUN。",
+    "expected": "本 macOS 主机上为 NOT_RUN：调用触发原生运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
    "asset_id": "scirel.kinetic.fluidbw-dispersion-response",
-   "source_sha256": "22d497b49ee51fc47cfd2aa71ea630da053ed4f9e422a68031120093c88e9152",
+   "source_sha256": "9693c38e9344f3edf3cdbb270a115dec64dc924b0965ea01c362f307496b8f76",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -206,7 +206,7 @@
     ],
     "supported": [
      "一致的 SI 状态、复数 kx、有符号或为零的 kz，以及非共振 kx=0 的解析极限。",
-     "分别保留有限 5/15 谐波模型与完整谐波 J8 模型的合同。"
+     "输出合同区分有限 5/15 谐波模型与完整谐波 J8 模型。"
     ],
     "excluded": [
      "不支持 kz=0 时留有非零留数的真正回旋极点，以及无磁场、零温、零密度或静态频率极限。"
@@ -221,10 +221,10 @@
    "verification": {
     "scope": [
      "一致的 SI 状态、复数 kx、有符号或为零的 kz，以及非共振 kx=0 的解析极限。",
-     "分别保留有限 5/15 谐波模型与完整谐波 J8 模型的合同。"
+     "输出合同区分有限 5/15 谐波模型与完整谐波 J8 模型。"
     ],
     "known_limitations": [
-     "来源权限仍为 NOT_ESTABLISHED，尚无公开发行。",
+     "再分发许可仍为 NOT_ESTABLISHED，尚未公开发布。",
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
      "科学有效性受已测试数值域和适用条件限制。",
@@ -234,7 +234,7 @@
    }
   },
   {
-   "summary": "组装有限有理近似的横向波矢本征矩阵。",
+   "summary": "组装完整的有限 L/J 矩阵，恢复电导多项式并对原始表矩施加约束。",
    "definition": "M 作用于按 Jx_snl、Jy_snl、Jz_snl、Ey、Ez、By、Bz 排列的状态，满足 kx X=M X；电导多项式恢复四个矩阵元素，n>=1 的逆矩投影为零，并稳定计算 Gamma。",
    "inputs": [
     {
@@ -265,8 +265,8 @@
    "outputs": [
     {
      "name": "result",
-     "description": "具有混合状态 SI 量纲的 M；修正极点与原始 cn_raw 表、归一化账目、状态、omega 和 N。",
-     "constraints": "保留状态和末端诊断的科学含义，不修改调用者的状态。",
+     "description": "具有混合状态 SI 量纲的 M；修正极点与精确的 cn_raw 表、归一化账目、状态、omega 和 N。",
+     "constraints": "状态与末端诊断保持科学含义，不修改调用者的状态。",
      "dtype": "映射"
     }
    ],
@@ -289,7 +289,7 @@
      "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
     ],
     "supported": [
-     "J8/J12 与全部 N=0..7 控制，保留完整矩阵状态及原始表。",
+     "J8/J12 与全部 N=0..7 控制，包含完整矩阵状态及原始数据表。",
      "一致的 SI 状态，允许有符号或为零的 kz，但须避开真正的有理共振分母。"
     ],
     "excluded": [
@@ -304,11 +304,11 @@
    },
    "verification": {
     "scope": [
-     "J8/J12 与全部 N=0..7 控制，保留完整矩阵状态及原始表。",
+     "J8/J12 与全部 N=0..7 控制，包含完整矩阵状态及原始数据表。",
      "一致的 SI 状态，允许有符号或为零的 kz，但须避开真正的有理共振分母。"
     ],
     "known_limitations": [
-     "来源权限仍为 NOT_ESTABLISHED，尚无公开发行。",
+     "再分发许可仍为 NOT_ESTABLISHED，尚未公开发布。",
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
      "科学有效性受已测试数值域和适用条件限制。",
@@ -318,7 +318,7 @@
    }
   },
   {
-   "summary": "逐频率执行有界复波矢搜索并独立核验候选根。",
+   "summary": "组合完整 BONK 算例与有序根搜索，显式给出已核验根和末端状态诊断。",
    "definition": "对每个角频率在固定的无量纲实部、虚部搜索域内尝试求根；只有独立行列式残差和范数化 Maxwell 零空间残差均通过，root_valid 才为真。",
    "inputs": [
     {
@@ -330,7 +330,7 @@
     {
      "name": "omegas",
      "description": "角频率轴，单位 rad/s；None 使用算例的默认频率阶梯。",
-     "constraints": "元素必须为有限、非零实数；保留输入次序。",
+     "constraints": "元素必须为有限、非零实数，次序与调用者给定的一致。",
      "dtype": "实数数组或 None"
     }
    ],
@@ -338,7 +338,7 @@
     {
      "name": "result",
      "description": "nf 的单位为 m^-1，xx 的单位为 rad/s；包含 root_valid、双重残差、原始求解标志、迭代和求值次数、全部尝试及完整材料状态。",
-     "constraints": "保留状态和末端诊断的科学含义，不修改调用者的状态。",
+     "constraints": "状态与末端诊断保持科学含义，不修改调用者的状态。",
      "dtype": "映射"
     }
    ],
@@ -347,7 +347,7 @@
     "expected": "本 macOS 主机上为 NOT_RUN：调用到达 fluidBW 运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
    "asset_id": "scirel.kinetic.fluidbw-bonk-search",
-   "source_sha256": "654549d1101b9153f1c567fe76e6862b4f51eeeb40b058f033977c1b95a2cb02",
+   "source_sha256": "11bb0ac3715de411bd8518cc3cd7393b3bc5623b68456028a3935e30d7bae545",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -362,7 +362,7 @@
     ],
     "supported": [
      "三个完整算例及默认的 77 个频率；也允许任意符合合同的有限频率轴。",
-     "保留原求解容差，显式记录有界尝试和根核验。"
+     "沿用求解器原有容差，并显式记录有界尝试与根核验。"
     ],
     "excluded": [
      "不提供分支追踪、全部物理模态枚举或无条件收敛保证。"
@@ -377,10 +377,10 @@
    "verification": {
     "scope": [
      "三个完整算例及默认的 77 个频率；也允许任意符合合同的有限频率轴。",
-     "保留原求解容差，显式记录有界尝试和根核验。"
+     "沿用求解器原有容差，并显式记录有界尝试与根核验。"
     ],
     "known_limitations": [
-     "来源权限仍为 NOT_ESTABLISHED，尚无公开发行。",
+     "再分发许可仍为 NOT_ESTABLISHED，尚未公开发布。",
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
      "科学有效性受已测试数值域和适用条件限制。",
@@ -390,8 +390,8 @@
    }
   },
   {
-   "summary": "计算有限 EM 矩阵的完整谱和五个启发式候选。",
-   "definition": "保留全部有限矩阵本征值；按正实部及较小虚部绝对值启发式选取五个候选，物理状态相似缩放后的后向误差门槛不超过 2e-12。",
+   "summary": "组合 EM 算例、修正后的有限矩阵与按原始次序排列的谱，并附带有限的数值证据。",
+   "definition": "返回全部有限矩阵本征值；按正实部及较小虚部绝对值启发式选取五个候选，物理状态相似缩放后的后向误差门槛不超过 2e-12。",
    "inputs": [
     {
      "name": "jcase",
@@ -414,7 +414,7 @@
     {
      "name": "omegas",
      "description": "角频率轴，单位 rad/s；None 使用算例的默认频率阶梯。",
-     "constraints": "元素必须为有限、非零实数；保留输入次序。",
+     "constraints": "元素必须为有限、非零实数，次序与调用者给定的一致。",
      "dtype": "实数数组或 None"
     }
    ],
@@ -422,7 +422,7 @@
     {
      "name": "result",
      "description": "kxx 为频率轴长度×5 的 m^-1 数组；另含每个频率的全部谱、候选、矩阵、精确表、算例状态和独立本征诊断。",
-     "constraints": "保留状态和末端诊断的科学含义，不修改调用者的状态。",
+     "constraints": "状态与末端诊断保持科学含义，不修改调用者的状态。",
      "dtype": "映射"
     }
    ],
@@ -431,7 +431,7 @@
     "expected": "本 macOS 主机上为 NOT_RUN：调用到达 fluidBW 运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
    "asset_id": "scirel.kinetic.fluidbw-em-spectrum",
-   "source_sha256": "26054cceef94765ab873aed151ba6c55fd82c9d37d6a6356a35cd48dded495a3",
+   "source_sha256": "ca73c09cb3a4cb404d64e3eb37a164683b235dcdcc1b8bad870e7069f9d1e1eb",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -446,7 +446,7 @@
     ],
     "supported": [
      "两个算例、J8/J12、全部八个 N 控制和默认 79 个频率。",
-     "全部有限谱、原有排序值、候选及末端矩阵。"
+     "全部有限谱、按原始次序排列的值、候选及末端矩阵。"
     ],
     "excluded": [
      "不把全部辅助本征值认定为动理学物理模态，不保证无限模态完备性或跨线程不变性。"
@@ -461,10 +461,10 @@
    "verification": {
     "scope": [
      "两个算例、J8/J12、全部八个 N 控制和默认 79 个频率。",
-     "全部有限谱、原有排序值、候选及末端矩阵。"
+     "全部有限谱、按原始次序排列的值、候选及末端矩阵。"
     ],
     "known_limitations": [
-     "来源权限仍为 NOT_ESTABLISHED，尚无公开发行。",
+     "再分发许可仍为 NOT_ESTABLISHED，尚未公开发布。",
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
      "科学有效性受已测试数值域和适用条件限制。",
@@ -474,8 +474,8 @@
    }
   },
   {
-   "summary": "将完整求解状态写为带单位的科学图及 MAT 材料。",
-   "definition": "支持 BONK 三个算例的 PNG、EM 两种绘图布局的 PNG，以及依算例确定的 ICW/ECW MAT。图像沿用既有科学状态和单位标注。",
+   "summary": "将完整求解结果渲染为 BONK/EM 各绘图分支与 EM MAT 材料，修正标注并报告实际生成的文件。",
+   "definition": "由图形状态生成带单位标注的图像：BONK 三个算例的 PNG、EM 两种布局的 PNG，以及依算例确定的 ICW/ECW MAT。",
    "inputs": [
     {
      "name": "result",
@@ -506,7 +506,7 @@
     {
      "name": "result",
      "description": "files 列出实际写出的 PNG/MAT 文件名，包括同目录中的重复写入。",
-     "constraints": "保留状态和末端诊断的科学含义，不修改调用者的状态。",
+     "constraints": "状态与末端诊断保持科学含义，不修改调用者的状态。",
      "dtype": "映射"
     }
    ],
@@ -515,7 +515,7 @@
     "expected": "本 macOS 主机上为 NOT_RUN：调用到达 fluidBW 运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
    "asset_id": "scirel.kinetic.fluidbw-materials",
-   "source_sha256": "e494fff74945031729e5e2e9c5f529e483847679b582b7f54fbdd4fdc1b08e71",
+   "source_sha256": "34ca2801cf4e6431552fd1872ead95de0a417ddd07e4dba6516123bdf2618134",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -533,7 +533,7 @@
      "图形由当前进程拥有，明确文件系统所有权并报告覆盖写。"
     ],
     "excluded": [
-     "不宣称艺术质量、逐像素一致或物理真值；原有裁剪及后端警告可能保留。"
+     "不宣称艺术质量、逐像素一致或物理真值；裁剪行为与后端警告仍可能出现。"
     ]
    },
    "failure_semantics": {
@@ -548,7 +548,7 @@
      "图形由当前进程拥有，明确文件系统所有权并报告覆盖写。"
     ],
     "known_limitations": [
-     "来源权限仍为 NOT_ESTABLISHED，尚无公开发行。",
+     "再分发许可仍为 NOT_ESTABLISHED，尚未公开发布。",
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
      "科学有效性受已测试数值域和适用条件限制。",

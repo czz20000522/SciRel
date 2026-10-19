@@ -15,7 +15,7 @@
  "identity": {
   "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
   "relation": "omega_r=1+1.5k²; omega_i=-sqrt(pi/8) exp(-1/(2k²)-1.5)/k³",
-  "definition": "Logarithmic evaluation of the damping amplitude avoids the upstream 0/0 form when k³ underflows. Exact k=0 is rejected.",
+  "definition": "Logarithmic evaluation of the damping amplitude avoids the 0/0 form the direct expression takes when k³ underflows. Exact k=0 is rejected.",
   "direction": "Declared inputs to declared scientific outputs",
   "geometry": "One-dimensional velocity space",
   "coordinates": "Dimensionless real velocity and complex phase or frequency",
