@@ -5,15 +5,16 @@ SciRel 是长期独立维护的 Python 科学关系库；不要套用相邻 Code
 ## 当前默认开发模式
 
 - 普通任务默认处于 `development`：以当前 Git 源树为真相，先确定一个主要 claim、owned scope 和 stop condition，再做影响范围匹配的检查。模式、证据复用、停止、artifact 和版本规则以 `skills/development/references/development-lifecycle.md` 为唯一流程来源。
-- “继续”“完成”“审查”“验证”不会自动进入发布流程。没有明确的 consumer、handoff、candidate cut 或 release decision 时，不构建 wheel、不更新 `release/CURRENT.json`、不生成发布回执、不跑全平台矩阵、不推进 `devN`。`integration_checkpoint` 只是明确请求 artifact 的开发期例外；`release_freeze` 才冻结候选。
+- 生命周期只有三个边界：`development` 只优化源树并运行 claim 匹配的最小检查；`integration_checkpoint` 只在明确的 consumer、handoff 或 owner 请求下生成有界 artifact/安装闭包；`release_freeze` 只在明确的 candidate cut、发布或 release decision 下冻结并验收。
+- 未发布阶段不会因为“继续”“完成”“审查”或“验证”自动进入发布流程；这些动作不会自动进入发布流程。没有明确 checkpoint 或 release decision 时，不构建 wheel、不更新 `release/CURRENT.json`、不生成发布回执、不跑全平台矩阵、不推进 `devN`。
 - 长程 goal 是 claim 队列，不是执行调度器。继续同一 claim 时只做轻量身份检查；达到 `passed`、`failed`、`blocked` 或 `NOT_RUN` 且没有新范围或阻塞就收口，不重复相同检查，也不自动启动下一项优化。
 - incubation 期间 capability、operator、TaskGraph、document 和 catalog 的数量随 manifest/revision 变化；数量不是永久门禁。需要 projection 时从同一确切 revision 派生并绑定 wheel、文档和 catalog；普通开发不为追赶旧 projection 重建它们。
 - 按 SciPy 式标准库结构维护一个当前源树：`src/scirel`、直接测试、公共文档、构建/测试工具和依赖声明各保留一套 Git 表示；Git 历史保存旧版本，不复制平行 wheel、文档或 catalog 树。SciPy 只提供结构参考，不决定 SciRel 的 Python 下界、依赖 pin、classifier 或 native 分发。
 - SciRel 对每个公开 Operator 和 TaskGraph 的实现、输入/输出合同、数值结果、失败语义和直接回归负责；Agent 只发现、选择、组合和编写 glue，不复制科学算法，也不用组合成功替代能力正确性。
-- 日常检查采用 selector-first：先运行 affected selector；只有 selector 显示共享边界或 claim 明确需要时才追加反向依赖、API/import/failure 或 benchmark；未知归属才扩大测试层。性能基准不能运行时只将性能子声明记为 `NOT_RUN`，保留 affected correctness 结果。只有 named checkpoint 或 `release_freeze` 才生成安装 artifact 或闭包；checkpoint 只运行 consumer/claim-scoped 的安装与闭包检查，只有 `release_freeze` 才运行全平台门禁。
+- 日常检查采用 selector-first：先运行 affected selector；只有 selector 显示共享边界或 claim 明确需要时才追加反向依赖、API/import/failure 或 benchmark；未知归属才扩大测试层。性能声明由 owner 选择最小可复现命令或脚本；性能基准没有统一入口或运行条件时只将性能子声明记为 `NOT_RUN`，保留 affected correctness 结果。只有 named checkpoint 或 `release_freeze` 才生成安装 artifact 或闭包；checkpoint 只运行 consumer/claim-scoped 的安装与闭包检查，只有 `release_freeze` 才运行全平台门禁。
 - exact document/catalog 是 handoff、checkpoint、review preparation 或 release 的投影。普通开发可用 docstring、注释和直接测试；形成 exact-document projection 时检查 document→export 与 function-export→document 双向绑定。类与异常由 public-surface/asset-document 测试覆盖。
 - 平台 wheel 的拆分由实测 native/ABI 和依赖闭包决定；纯 Python 或通用依赖能覆盖的能力保持统一分发。Linux amd64 + CPython 3.14 是开发基线，其他平台只能由明确 claim 提供证据。运行时闭包 receipt 必须明确 `BOUND`/`UNBOUND`；`BOUND` 还要求实际执行过隔离子进程，脏源、身份漂移、无 child 测量或目标不匹配都保持未绑定。
-- skill/AGENTS 维护与候选 diff 审查是两个独立 claim：先完成 skill 的轻量合同检查，候选审查保持只读；只有形成明确产品 claim 才进入产品变更。受管文件达到最终稳定状态后只做一次 AOCI maintenance。checkpoint 产生的 wheel、文档、catalog 和 receipt 必须绑定同一个确切 `source_revision`。
+- skill/AGENTS 维护与候选 diff 审查是两个独立 claim：先完成 skill 的轻量合同检查和结构检查，候选审查保持只读；候选 diff 只有在另有明确产品 claim 时才进入产品变更。受管文件达到最终稳定状态后只做一次 AOCI maintenance。checkpoint 产生的 wheel、文档、catalog 和 receipt 必须绑定同一个确切 `source_revision`。
 - 任务消费或产生 D0/D1 来源交付时，先读相关 README、架构、函数、科学测试和 provenance；官方来源只读，保留来源改动、剔除范围和失败证据。没有 exact D1 packet 时不制造 D1 manifest 或完整 denominator。
 - D1 忠实复现冻结 D0 的现有功能和失败行为；D2 负责科学比较、修正和归一化；D3 验证实际安装包的应用。来源运行、科学 wheel 运行和项目开发依赖分开选择，wheel 只声明最终实现的实际传递闭包。
 - 普通 TaskGraph 依赖保持 DAG；反馈/迭代显式声明状态、顺序、停止条件和上限。资产发现使用分片索引和渐进披露，不建立需要全量 import 或把全部合同送入上下文的 registry。

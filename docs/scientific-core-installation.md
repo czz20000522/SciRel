@@ -36,7 +36,18 @@ python3.14 -m venv /tmp/scirel-linux-x86_64-cp314
 虚拟环境，或依赖从环境前缀之外导入，收据为 `FAIL`。这只是运行闭包和代表性任务的技术回执，不能
 单独提升 `release/platform-support-matrix.json` 的状态。
 
-可选绘图能力必须在同一个 clean venv 中单独安装并验收：
+SciPy 调用能力和绘图能力必须在同一个 clean venv 中分别安装并验收：
+
+```bash
+python -m pip install --no-index --only-binary=:all: --find-links /path/to/wheelhouse 'scirel[scipy]'
+python -I scripts/validate_installed_wheel.py \
+  --expected-platform linux-x86_64-cp314 \
+  --wheel /path/to/wheelhouse/scirel-<project.version>-py3-none-any.whl \
+  --extra scipy \
+  --output /path/to/scipy-extra-validation.json
+```
+
+可选绘图能力继续单独安装并验收：
 
 ```bash
 python -m pip install --no-index --only-binary=:all: --find-links /path/to/wheelhouse 'scirel[plot]'
@@ -71,7 +82,7 @@ Python wheel 不会替用户安装这个系统运行时，缺少时该类入口�
 它们复用逐项独立证据并完成当前安装闭包；不据此宣称任一旧来源项目的全部核心能力已完成。
 带符号功率相消、热速度极值和椭圆积分端点采用已证反例的后继修正；原交付仍保留。
 
-新增的 19 个入口补全复误差函数、一般速度分布响应、静电根扫描和线性 Vlasov–Poisson 初值计算；连同已有 4 个入口构成此次完整的动理学功能组。它们只需 NumPy 与 SciPy，不要求 MATLAB、Octave 或来源绘图库。
+新增的 19 个入口补全复误差函数、一般速度分布响应、静电根扫描和线性 Vlasov–Poisson 初值计算；连同已有 4 个入口构成此次完整的动理学功能组。它们需要 `scirel[scipy]`，不要求 MATLAB、Octave 或来源绘图库。
 
 本次增加 6 个已独立核验入口：表格压力、逐点火蛇裕度、单步 Picard 更新、完整压力反馈、可重建压力状态和固定十六丝磁环几何。完整压力求解复用同一闭合感知迭代，磁镜及火蛇裕度保留危险相消后的有限残量；不新增 Python 运行依赖。
 

@@ -388,12 +388,14 @@ source = { editable = "." }
 dependencies = [
     { name = "mpmath" },
     { name = "numpy" },
-    { name = "scipy" },
 ]
 
 [package.optional-dependencies]
 plot = [
     { name = "matplotlib" },
+]
+scipy = [
+    { name = "scipy" },
 ]
 
 [package.dev-dependencies]
@@ -403,11 +405,13 @@ build = [
 ]
 optional-runtime-deps = [
     { name = "matplotlib" },
+    { name = "scipy" },
 ]
 test = [
     { name = "matplotlib" },
     { name = "netcdf4" },
     { name = "pytest" },
+    { name = "scipy" },
     { name = "setuptools" },
     { name = "wheel" },
 ]
@@ -417,20 +421,24 @@ requires-dist = [
     { name = "matplotlib", marker = "extra == 'plot'", specifier = "==3.11.2" },
     { name = "mpmath", specifier = "==1.4.1" },
     { name = "numpy", specifier = "==2.5.4" },
-    { name = "scipy", specifier = "==1.18.1" },
+    { name = "scipy", marker = "extra == 'scipy'", specifier = "==1.18.1" },
 ]
-provides-extras = ["plot"]
+provides-extras = ["scipy", "plot"]
 
 [package.metadata.requires-dev]
 build = [
     { name = "setuptools", specifier = "==84.0.0" },
     { name = "wheel", specifier = "==0.48.0" },
 ]
-optional-runtime-deps = [{ name = "matplotlib", specifier = "==3.11.2" }]
+optional-runtime-deps = [
+    { name = "matplotlib", specifier = "==3.11.2" },
+    { name = "scipy", specifier = "==1.18.1" },
+]
 test = [
     { name = "matplotlib", specifier = "==3.11.2" },
     { name = "netcdf4", specifier = "==1.7.4" },
     { name = "pytest", specifier = "==9.1.1" },
+    { name = "scipy", specifier = "==1.18.1" },
     { name = "setuptools", specifier = "==84.0.0" },
     { name = "wheel", specifier = "==0.48.0" },
 ]

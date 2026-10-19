@@ -54,7 +54,15 @@ def test_built_scientific_wheel_excludes_project_tool_packages(tmp_path):
         )
         requires_dist = set(metadata.get_all("Requires-Dist") or [])
         assert set(project["dependencies"]) <= requires_dist
+        unconditional = {
+            requirement.split(";", 1)[0].strip()
+            for requirement in requires_dist
+            if ";" not in requirement
+        }
+        assert "scipy==1.18.1" not in unconditional
+        assert "matplotlib==3.11.2" not in unconditional
         assert f'{project["optional-dependencies"]["plot"][0]}; extra == "plot"' in requires_dist
+        assert f'{project["optional-dependencies"]["scipy"][0]}; extra == "scipy"' in requires_dist
         accepted = json.loads((ROOT / 'provenance/selections/scientific-core-20261014-r7.json').read_text())
         for resource in accepted['data_files']:
             name = resource['path'].removeprefix('src/')

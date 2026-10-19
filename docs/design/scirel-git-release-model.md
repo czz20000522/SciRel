@@ -96,7 +96,7 @@ manifest 的成员关系和派生计数。
 SciPy 的仓库把核心运行依赖、可选运行依赖和测试/开发依赖分别表达在 `pyproject.toml` 的不同字段中。SciRel 采用相同边界：
 
 - `[project].dependencies` 只放无 extra 即可运行的核心科学闭包；
-- `[project.optional-dependencies]` 放用户主动选择的能力，例如 `plot`；NetCDF4 仅保留在测试依赖组，不进入用户 wheel extra；
+- `[project.optional-dependencies]` 放用户主动选择的能力，例如 `scipy` 和 `plot`；NetCDF4 仅保留在测试依赖组，不进入用户 wheel extra；
 - `[dependency-groups]` 放测试、构建和开发环境，不进入 wheel 的 `Requires-Dist`；当前 `test` 组通过 `build` 组复用构建工具。
 
 `uv.lock` 是该 Git 提交的开发解析锁，不是第二份发行元数据。发布和 clean-venv 验收仍需记录目标平台实际解析到的 wheel 与摘要。
@@ -105,9 +105,9 @@ SciPy 的仓库把核心运行依赖、可选运行依赖和测试/开发依赖�
 
 当前迁移边界按候选逐步推进：
 
-1. 核心依赖收敛为 NumPy、SciPy、mpmath；Matplotlib 保留为 `plot` extra，netCDF4 仅在测试闭包中保留；
+1. 核心依赖收敛为 NumPy、mpmath；SciPy 与 Matplotlib 按调用边界分别保留为 `scipy`、`plot` extra，netCDF4 仅在测试闭包中保留；
 2. 每次修改依赖时，在同一 Git 提交中同步 `uv.lock` 与 `pyproject.toml`；用户 extra 只保留实际运行能力，测试/构建依赖使用 `dependency-groups`；
-3. 从安装包验证脚本生成 core、`plot` extra 和测试闭包的独立 receipt；
+3. 从安装包验证脚本生成 core、`scipy`/`plot` extra 和测试闭包的独立 receipt；
 4. 旧的每版本 release JSON 不属于工作树活动资产；历史身份从 Git 历史和短发行说明恢复，不再扩展平行版本目录，也不在当前 tuple 中保留多版本基线列表；
 5. 发行指针收敛为一个当前 Git 绑定的 `release/CURRENT.json` tuple，历史记录不改写。
 

@@ -5,7 +5,8 @@ SciRel 是独立维护的 Python 科学关系库。它将已有科研代码中�
 自定义程序。科学能力以 Python 包交付，可由 CodeFusion、Codex、Claude Code 或其他 Agent 平台使用。
 
 SciRel 开发项目负责生产和维护这个库；用户的核心交付是确切版本的 `scirel` 包及声明的运行依赖。
-`pip install scirel` 后直接调用公共领域 API 是一等消费路径，平台预装只是一种启动优化。
+`pip install scirel` 后直接调用 NumPy-only 公共领域 API 是一等消费路径；需要 SciPy
+调用能力时安装 `scirel[scipy]`，需要绘图能力时安装 `scirel[plot]`。
 skill、来源工件、审核状态、测试、构建工具和平台适配属于项目开发/集成层，不是科学函数的运行依赖。
 按版本提供必要使用文档；Agent catalog 是同一科学合同的发现投影。项目、包与多版本工作树的边界见
 [开发项目与科学包交付](docs/design/project-and-distribution.md)。
@@ -102,7 +103,8 @@ CodeFusion 联调先选定索引中的确切 `entry_id`，再按该条目的状�
 
 ## 统一科学运行环境
 
-当前维护基线为 Python 3.14.7、NumPy 2.5.4、SciPy 1.18.1、Matplotlib 3.11.2，
+当前维护基线为 Python 3.14.7、NumPy 2.5.4、mpmath 1.4.1；SciPy 1.18.1 和
+Matplotlib 3.11.2 分别由 `scipy` 与 `plot` extra 提供，
 用 `uv sync --locked --group test` 建立独立开发环境。历史能力也逐项迁入这一基线；
 版本固定与科学验收分别记录，见[科学运行依赖基线](docs/design/scientific-runtime-baseline.md)。
 

@@ -52,8 +52,8 @@ Agent 只组合已声明合同并编写胶水代码。安装成功、某个平�
 
 | 层次 | 初始成员 | 进入用户 wheel 的条件 | 验收边界 |
 | --- | --- | --- | --- |
-| Core Python | NumPy、SciPy、mpmath | 被 universal core 的实现直接或传递调用，并在声明平台有可安装闭包 | 无 checkout、无来源项目、无网络的 clean venv 中完成 import、简单任务、跨域任务和结果检查 |
-| Optional Python | Matplotlib | 只由明确的绘图能力使用，并且不阻断 core import | 安装 `plot` extra 后运行绘图 API smoke、科学回归和失败行为；未安装 extra 时 core 仍可导入 |
+| Core Python | NumPy、mpmath | 被 universal core 的实现直接或传递调用，并在声明平台有可安装闭包 | 无 checkout、无来源项目、无网络的 clean venv 中完成 import、简单任务、跨域任务和结果检查 |
+| Optional Python | SciPy、Matplotlib | 只由明确的 SciPy 或绘图能力使用，并且不阻断 core import | 分别安装 `scipy`/`plot` extra 后运行对应 API smoke、科学回归和失败行为；未安装 extra 时 core 仍可导入 |
 | Native capability | GNU Octave 及随包 `.m` 资源 | 外部程序版本、平台和调用合同均有独立证明 | 在 capability matrix 声明的 OS/架构/Octave 版本中执行；不计入 universal core 的跨平台结论 |
 | Development | pytest、setuptools、wheel、文档工具、Git、PowerShell、独立参考库 | 仅构建、测试、文档、来源对照或发布流程需要 | 只在项目开发环境验收，不写入用户运行闭包；测试/构建包由 `pyproject.toml` 的 `dependency-groups` 管理 |
 
@@ -63,10 +63,10 @@ Agent 只组合已声明合同并编写胶水代码。安装成功、某个平�
 
 ### Core Python
 
-NumPy 和 SciPy 是当前大量数值 Operator 的直接运行依赖，mpmath 在有理 Padé 和高精度辅助
-计算中被实现调用。它们先作为 core 保留，直到逐项确认某一能力不再需要。Core 的定义是
-“不含绘图和外部 native 程序也能完成的已声明科学能力”，不是把当前源树每个模块都自动纳入
-通用正确性范围。
+NumPy 是 core 的基础依赖，mpmath 在有理 Padé 和高精度辅助计算中被实现调用。SciPy
+能力只在其调用边界进入，未安装 `scipy` extra 时仍可发现和导入 NumPy-only 能力；SciPy
+依赖能力按文档化失败合同拒绝或返回结构化失败。Core 的定义是“不含 SciPy、绘图和外部
+native 程序也能完成的已声明科学能力”，不是把当前源树每个模块都自动纳入通用正确性范围。
 
 ### 能力级运行时闭包（开发期）
 
@@ -92,11 +92,10 @@ source content 在测量前后稳定且子进程实际处于 isolated 模式。L
 source content digest 覆盖 `pyproject.toml` 与 `src/` 中的实际源/运行资源，并排除生成的
 `__pycache__` 与 `.pyc` 文件。
 
-这些结果先作为 source-bound development evidence，不能直接改写 wheel 元数据。只有当本次
-选定的完整能力闭包逐项拥有可复核的 PASS/NOT_RUN 状态、直接和传递依赖清单、失败行为以及
-目标平台 clean-venv 证据后，才可设计 capability metadata 或 schema successor，并据此把
-SciPy/mpmath 移入 optional extra、拆出 native capability 或保留为 core。缺少任一能力的
-闭包证据时，保留当前 core 声明比按几个 NumPy-only 样本缩小安装闭包更安全。
+这些结果先作为 source-bound development evidence。当前新增的 Linux NumPy-only clean-venv
+失败边界和 161 条 NumPy-only example 结果足以支持把 SciPy 声明为调用能力 extra；这不等于
+所有 SciRel 能力都脱离 SciPy，也不替代每个能力的成功路径、直接/传递依赖清单和安装后闭包。
+mpmath 仍保留在 core，直到它自己的调用分母和失败路径完成同等审计。
 
 当前 fresh-process 观察已经显示部分 field、geometry、PDRK rational 和 physics 能力只加载
 NumPy；这说明存在依赖精简机会，但不构成移除 SciPy 或 mpmath 的资格。后续若引入能力级
@@ -111,9 +110,9 @@ source checkout 中，对 10 个代表性入口完成了 `scirel.capability-runt
 Bessel 入口只观测到 NumPy 或无外部根；相对论 Bessel 的导入本身不加载 SciPy。
 
 caller-owned probe 把边界补齐：Faddeeva 正虚轴稳定化、相对论 Bessel 合法调用和 Maxwellian
-electrostatic response 加载 SciPy；高精度 J-pole 构造加载 mpmath。该快照支持“按调用路径继续
-拆分”的方向，但不授权从 core `Requires-Dist` 移除 SciPy/mpmath；完整能力分母、失败路径和
-目标平台 clean-venv 证据仍需在正式 capability 方案前补齐。原始技术证据保存在本机
+electrostatic response 加载 SciPy；高精度 J-pole 构造加载 mpmath。该快照支持 SciPy 按调用路径
+进入 extra；mpmath 仍需独立闭包审计。完整能力分母、失败路径和目标平台 clean-venv 成功证据
+仍需在完整 capability 方案中补齐。原始技术证据保存在本机
 `build/verification/scirel-linux-smoke-abc3000-20261019/capability-closure-inventory.json`，
 不属于 release projection。
 
@@ -134,8 +133,8 @@ electrostatic response 加载 SciPy；高精度 J-pole 构造加载 mpmath。该
 
 原始调用 inventory 保存在
 `build/verification/scirel-linux-smoke-abc3000-20261019/full-call-inventory.json`；它是开发期
-source-bound evidence，不属于 release projection。正式 capability 拆分仍需为每个受影响能力
-补齐完整分母、成功与失败路径、可安装依赖闭包和目标平台 clean-venv 结果。
+source-bound evidence，不属于 release projection。它支持粗粒度 SciPy extra 边界，但不替代
+每个受影响能力的成功与失败路径、可安装依赖闭包和目标平台 clean-venv 结果。
 
 #### 2026-10-19 NumPy-only 能力边界试探
 
@@ -146,7 +145,7 @@ mpmath、Matplotlib 及其绘图传递依赖，只保留 `numpy==2.5.4`。从全
 
 这覆盖 basis、closures、collisions、diagnostics、field、equilibrium、geometry、inference、
 io、kinetic、sampling 等多个领域，说明当前源树中存在相当大的 NumPy-only 能力候选集合。
-它仍是能力级 source/runtime 证据，不授权修改全局 `Requires-Dist`；下一步还需为候选集合补齐
+它仍是能力级 source/runtime 证据，支持 NumPy-only core 候选；下一步还需为候选集合补齐
 失败路径、完整反向依赖、安装包边界和独立的 API/文档闭包。
 
 原始结果保存在
@@ -160,8 +159,8 @@ lazy import 边界允许 NumPy-only 能力在没有 SciPy 时被发现和导入�
 
 原始结果保存在
 `build/verification/scirel-linux-smoke-abc3000-20261019/no-scipy-public-surface.json`。
-这仍不等于可以立即移除 unconditional `scipy` dependency：SciPy 能力的调用失败语义、候选
-wheel metadata、完整 capability closure 和安装包验证仍需单独收口。
+这支持 core 安装在没有 SciPy 时完成 package discovery；SciPy 能力的调用失败语义、extra
+wheel metadata、完整 capability closure 和安装包成功路径仍需单独收口。
 
 #### 2026-10-19 SciPy 调用边界审计
 
@@ -178,9 +177,9 @@ clean venv 重放同一调用边界。另保留了一次 import blocker 重放�
 | `compute_equilibrium` | 早期参数错误仍按 `ValueError`；合法基线捕获 spline 导入失败并返回 `status="nonfinite"` 的结果对象 | SciPy call capability，失败形态与其他入口不同 |
 
 当前多数边界暴露原始 `ModuleNotFoundError`，而 `compute_equilibrium` 将后端缺失转为结构化
-`nonfinite` 结果；它们都应先写入能力文档和缺依赖回归，再决定是否统一异常。该证据仍不授权改变
-`pyproject.toml` 的 core 依赖，也不授权把 SciPy 移入 extra；optional 化还需要成功路径、完整能力
-分母、wheel metadata 和安装后公共 API 闭包。
+`nonfinite` 结果；这些失败合同已写入能力文档，后续再决定是否统一异常。该证据支持把 SciPy
+移入 `scipy` extra；optional 化仍需要成功路径、完整能力分母、wheel metadata 和安装后公共 API
+闭包。
 
 Linux clean-venv 结果保存在
 `build/verification/scirel-linux-smoke-422588e-20261019/no-scipy-boundary-clean-venv.json`，其

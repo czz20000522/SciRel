@@ -5,7 +5,8 @@ SciRel 的版本和文档遵循 Git 单一来源：源码、`pyproject.toml`、e
 SciRel 按科学标准库维护。它提供可安装、可复用、可发现的 Operator 和
 TaskGraph；每项公开能力都绑定 exact contract、实现版本、运行依赖、适用域、失败语义和验证边界。
 `pip install scirel` 后，在没有 SciRel 源码、来源项目、审核数据库、宿主服务或网络的环境中，
-调用已安装能力是一级消费路径。宿主预装 wheel 只是减少启动成本的优化，不能成为唯一可用路径。
+调用已安装的 core 能力是一级消费路径；SciPy-backed 能力通过 `scirel[scipy]` 进入，绘图能力通过
+`scirel[plot]` 进入。宿主预装 wheel 只是减少启动成本的优化，不能成为唯一可用路径。
 
 SciRel 的第二项职责是保证公开能力本身的正确性。进入可发现 release 的能力必须有科学实现、
 输入输出和单位合同、适用域与失败回归、独立参考或边界证据、结果级检查以及声明平台的安装运行回执。

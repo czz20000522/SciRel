@@ -20,10 +20,11 @@ build wheels, modify release records, or update the platform matrix. It is
 safe to run against a historical wheel while a later candidate is being
 prepared.
 
-Use ``--extra plot`` after installing that extra in the same clean environment
-to validate its declared dependency closure and a capability-specific smoke
-path. Repeat ``--extra`` to validate more than one optional capability. Core
-validation remains the default; undeclared extras fail closed.
+Use ``--extra scipy`` or ``--extra plot`` after installing that extra in the
+same clean environment to validate its declared dependency closure and a
+capability-specific smoke path. Repeat ``--extra`` to validate more than one
+optional capability. Core validation remains the default; undeclared extras
+fail closed.
 """
 
 from __future__ import annotations
@@ -313,7 +314,34 @@ def _run_plot_extra() -> tuple[dict[str, Any], list[str]]:
         return details, [f"plot extra smoke failed: {type(exc).__name__}: {exc}"]
 
 
+def _run_scipy_extra() -> tuple[dict[str, Any], list[str]]:
+    """Run one small SciRel call whose numerical backend is SciPy."""
+
+    try:
+        from scirel.collisions.relativistic_maxwellian_bessel import (
+            relativistic_maxwellian_bessel,
+        )
+
+        result = relativistic_maxwellian_bessel(1.0)
+        if set(result) != {"bk0", "bk1", "bk2"}:
+            raise RuntimeError(f"unexpected Bessel closure keys: {sorted(result)}")
+        return {
+            "status": "PASS",
+            "scipy_version": metadata.version("scipy"),
+            "operator": "relativistic_maxwellian_bessel",
+            "finite_outputs": all(
+                isinstance(value, float) and value == value and abs(value) != float("inf")
+                for value in result.values()
+            ),
+        }, []
+    except Exception as exc:
+        details = {"status": "FAIL", "error": f"{type(exc).__name__}: {exc}"}
+        return details, [f"scipy extra smoke failed: {type(exc).__name__}: {exc}"]
+
+
 def _run_extra_smoke(extra: str) -> tuple[dict[str, Any], list[str]]:
+    if extra == "scipy":
+        return _run_scipy_extra()
     if extra == "plot":
         return _run_plot_extra()
     return {"status": "FAIL", "error": f"unsupported extra: {extra}"}, [

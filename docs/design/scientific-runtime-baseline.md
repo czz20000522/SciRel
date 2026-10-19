@@ -1,12 +1,14 @@
 # 科学运行依赖基线
 
 SciRel 尚未公开发行，维护中的科学实现共用一套较新的稳定运行依赖，不为历史试验长期保留不同版本的兼容分支。
-当前选定 Python 3.14.7、NumPy 2.5.4、SciPy 1.18.1、Matplotlib 3.11.2、netCDF4 1.7.4 与 mpmath 1.4.1。
+当前选定 Python 3.14.7、NumPy 2.5.4、mpmath 1.4.1；SciPy 1.18.1 与 Matplotlib 3.11.2
+分别由 `scipy`、`plot` extra 提供；netCDF4 1.7.4 只属于测试闭包。
 Python 的小版本线由 `pyproject.toml` 限定，开发解释器补丁版由 `.python-version` 固定；
 科学依赖及构建工具的直接版本以 `pyproject.toml` 为唯一依据，`uv.lock` 固定解析后的传递依赖和分发摘要。
 新增科学依赖先评估实际需要、许可证、平台 wheel 和已有依赖兼容性，再更新这一基线。
 本基线统一版本选择，不要求来源运行、科学 wheel 和 SciRel 项目开发安装同一套依赖。
-三类环境的用途和验收按[依赖边界](project-and-distribution.md#三类依赖与独立环境)分别确定。
+三类环境的用途和验收按[依赖边界](project-and-distribution.md#三类依赖与独立环境)分别确定；
+SciPy-backed 能力还要单独验证 `scirel[scipy]` 的成功与失败路径。
 
 ## 安装与构建
 

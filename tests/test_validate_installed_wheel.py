@@ -154,6 +154,15 @@ def test_declared_extra_requirements_select_only_the_requested_marker(
     assert validator._declared_extra_requirements("netcdf")[0]["name"] == "netCDF4"
 
 
+def test_scipy_extra_smoke_runs_a_scirel_backend_call() -> None:
+    details, errors = validator._run_scipy_extra()
+
+    assert errors == []
+    assert details["status"] == "PASS"
+    assert details["operator"] == "relativistic_maxwellian_bessel"
+    assert details["finite_outputs"] is True
+
+
 def test_distribution_metadata_must_resolve_inside_environment_prefix(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

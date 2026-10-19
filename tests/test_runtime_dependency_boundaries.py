@@ -50,8 +50,11 @@ def test_declared_runtime_import_closure_is_complete() -> None:
     result = validate(ROOT)
 
     assert result["status"] == "PASS"
-    assert result["core_dependencies"] == ["mpmath", "numpy", "scipy"]
-    assert result["optional_dependencies"] == {"plot": ["matplotlib"]}
+    assert result["core_dependencies"] == ["mpmath", "numpy"]
+    assert result["optional_dependencies"] == {
+        "plot": ["matplotlib"],
+        "scipy": ["scipy"],
+    }
     assert result["observed_external_roots"] == ["matplotlib", "mpmath", "numpy", "scipy"]
     assert result["errors"] == []
 

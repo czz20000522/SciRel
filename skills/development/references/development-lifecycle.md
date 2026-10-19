@@ -1,7 +1,20 @@
 # SciRel development lifecycle
 
 This reference keeps daily SciRel work separate from candidate and public
-release work. Read it when producing or binding artifacts, choosing gates, or
+release work. Choose exactly one lifecycle mode before editing or running a
+claim-matched check:
+
+- `development` (default): optimize the current source tree and run the
+  smallest checks for the named claim. Do not build a wheel, refresh release
+  projections, run a platform matrix or advance a version.
+- `integration_checkpoint`: an explicit consumer, handoff or owner-requested
+  artifact needs a scoped install/closure check. It is still development work;
+  it does not freeze a release or advance `devN`.
+- `release_freeze`: the owner explicitly cuts a candidate or public release.
+  Freeze one revision, derive all projections from it, build the artifacts and
+  run the declared release gates.
+
+Read this reference when producing or binding artifacts, choosing gates, or
 changing version/release state. A simple read-only status lookup can use the
 routing shortcut directly.
 
@@ -20,8 +33,9 @@ the full catalog after every source or document edit.
 
 Before the first public release, unqualified work remains in `development`.
 Ordinary optimization does not produce release projections or a full
-acceptance run; select a named checkpoint or `release_freeze` when that output
-is needed.
+acceptance run. A request to continue, finish, review or verify is not a mode
+change; select a named checkpoint or `release_freeze` only when that output is
+actually needed.
 
 Treat `integration_checkpoint` as an explicit artifact request inside the
 development route, not as a default stage or a release cadence. Use this
@@ -158,9 +172,11 @@ failure-contract and focused behavior checks plus its docstring/user-facing
 explanation; an internal performance change whose public contract is unchanged
 needs the affected correctness checks and a comparable before/after benchmark.
 The claim owner chooses the smallest reproducible benchmark that exercises the
-changed path. If no such benchmark can run, mark only the performance subclaim
-`NOT_RUN`, retain the affected correctness result, and stop at that evidence
-ceiling; do not turn the missing benchmark into a release or platform route.
+changed path. A repository-wide benchmark runner is not required: the owner
+may provide a minimal command or script for the changed path. If no such
+command or runtime can run, mark only the performance subclaim `NOT_RUN`,
+retain the affected correctness result, and stop at that evidence ceiling; do
+not turn the missing benchmark into a release or platform route.
 Neither claim requires a wheel or catalog during ordinary development.
 
 Routine docstring and public-document edits stay in `development`. They do not
